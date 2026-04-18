@@ -326,11 +326,17 @@ Reviewer 用 marketer 账号手动跑一遍：
 - `design-draft/stitch-references/kol-detail.png` — 详情页基准
 - `docs/specs/roadmap.md` — 整体路线（B1 在路线图中位置）
 
-## 10. 启动检查清单（Planner 在 B0 完成后启动 B1 时核对）
+## 10. 启动检查清单（Planner 在前置完成后启动 B1 时核对）
+
+> **顺序约束（Option α 锁定）：** B0 → BI1 → BI2 → BI3 → **B1** → B2 → ...
+> 详见 `docs/specs/roadmap.md`
 
 - [ ] B0 status=done，全部 features 验收通过
-- [ ] B0 evaluator signoff 报告存在
-- [ ] johnsong / 当前 generator 已休息，无未完成会话
+- [ ] **BI1 完成**（测试基建就位，Vitest/Playwright/Testcontainers 可用）—— acceptance F010 测试套件依赖此
+- [ ] **BI2 完成**（部署自动化 + 健康检查 + 回滚就位）
+- [ ] **BI3 完成**（HTTPS + Staging 子域 + 自动续期就位，可在 staging 跑 B1 预发验证）
+- [ ] B0/BI1/BI2/BI3 evaluator signoff 报告存在
+- [ ] 当前 generator 已休息，无未完成会话
 - [ ] kol-database.png 与 kol-detail.png 与最新设计同步
 - [ ] B0 实际 schema 与本 spec §4 状态机字段匹配（如有差异修订本 spec）
 - [ ] 用户确认 B1 范围（如不要 CSV 导入可剥离 F005，缩到 9 features）

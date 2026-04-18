@@ -272,7 +272,10 @@ F006/F007/F008/F009 → F010 (CI integration runs all)
 - `docs/specs/B0-database-schema.md` — DB schema（被 F007 RLS 测试覆盖）
 - `evaluator.md` — Codex 工作流（本批次产物服务于 Codex）
 
-## 9. 启动检查清单（B0 完成 + 用户确认后核对）
+## 9. 启动检查清单（B0 完成后立即启动 — Option α 已锁定）
+
+> **顺序约束：** B0 → **BI1** → BI2 → BI3 → B1 → ...
+> 详见 `docs/specs/roadmap.md`
 
 - [ ] B0 status=done，全部 features 验收通过
 - [ ] B0 evaluator signoff 报告存在

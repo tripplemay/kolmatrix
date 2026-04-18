@@ -27,8 +27,9 @@ type: project
 - Prisma 7: schema datasource 只留 provider；URL 在 prisma.config.ts（env<Env>('...')）
 - 硬编码 HEX 扫描："'#[0-9a-fA-F]{6}'" 在 globals.css 之外 = 0
 
-## 后续批次（待启动）
-- V4/V5 设计稿补完；B1+ 业务批次在 B0 done 后启动
+## 后续顺序（已锁定 Option α infra-first）
+- B0 done → **BI1 测试基建** → **BI2 部署** → **BI3 域名/TLS** → B1 KOL DB → B2 → B3 → B4 → B5
+- 详见 docs/specs/roadmap.md
 
 ## 已知 gap（非阻塞）
 - Next 16 `middleware.ts` 已弃用（应迁 `proxy.ts`），留给未来批次

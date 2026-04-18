@@ -338,9 +338,12 @@ F007 (Runbook) 跨阶段，最后写
 - `docs/specs/BI2-deployment-automation-spec.md` — 部署自动化（依赖本批次的 HTTPS 端点 + Staging）
 - `docs/specs/B0-foundation-spec.md` §3 关键决策 — Tailwind / next-intl / 部署相关
 
-## 9. 启动检查清单（用户确认后核对）
+## 9. 启动检查清单（BI2 完成后立即启动 — Option α 已锁定）
 
-- [ ] BI2 完成（部署自动化已就位，HTTPS 端点 `/api/health` 已实现）—— 可选条件，BI3 单独跑也可
+> **顺序约束：** B0 → BI1 → BI2 → **BI3** → B1 → ...
+> 详见 `docs/specs/roadmap.md`
+
+- [ ] BI2 完成（部署自动化已就位，HTTPS 端点 `/api/health` 已实现）
 - [ ] 用户域名管理面板有 `kol.guangai.ai` 控制权（可加 staging 子域 A 记录）
 - [ ] 用户有 `kolmatrix.com` 域名（F006 mail 域；如未购买，F006 降级为文档）
 - [ ] VPS 已安装：`certbot`、`python3-certbot-nginx`、`mailutils` 或 `msmtp`、`openssl`

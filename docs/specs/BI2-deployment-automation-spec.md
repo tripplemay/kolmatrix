@@ -425,7 +425,10 @@ F008 (runbook) 跨阶段，最后写
 - `harness-rules.md` — 分支规则（推 main，部署手动触发）
 - `docs/specs/B0-database-schema.md` — Migration 规范
 
-## 9. 启动检查清单（BI1 完成 + 用户确认后核对）
+## 9. 启动检查清单（BI1 完成后立即启动 — Option α 已锁定）
+
+> **顺序约束：** B0 → BI1 → **BI2** → BI3 → B1 → ...
+> 详见 `docs/specs/roadmap.md`
 
 - [ ] BI1 status=done（自动化测试已就位，deploy 失败可查测试 log）
 - [ ] B0 中 Auth 已实现（`/api/health` 端点能用 middleware skip auth）

@@ -1,14 +1,52 @@
 # KOLMatrix 批次路线图（Roadmap）
 
-> 版本：v1.0 · 日期：2026-04-18
+> 版本：v2.0（infra-first 顺序锁定）· 日期：2026-04-18
 > 目的：给 Planner / Generator / Evaluator 一份长期视野，知道 B0 之后会发生什么。
 > 路线图 ≠ 不可变承诺，每个批次启动时 Planner 重新评估范围。
 
+## 执行顺序（已锁定 — Option α infra-first）
+
+```
+当前 ──► B0-foundation (johnsong, 4/10)
+            │
+            ▼
+       BI1 测试基建 (强依赖, B1 前置)
+            │
+            ▼
+       BI2 部署自动化
+            │
+            ▼
+       BI3 域名 + TLS + Staging
+            │
+            ▼  ← 至此基础设施完整, 可首次 prod 部署
+       B1 KOL Database
+            │
+            ▼
+       B2 AI 评分 + BullMQ
+            │
+            ▼
+       B3 Campaigns
+            │
+            ▼
+       B4 邮件触达 (依赖 BI3.F006 mail DNS)
+            │
+            ▼
+       B5 KOL Discovery
+            │
+            ▼
+       B6+ 远期批次
+```
+
+**决策依据：**
+- 用户选 Option α（基建优先），把 infra 痛苦一次性做完，业务批次后续顺畅
+- BI1-BI3 总共约 5-7 天工时，前置投入换长期开发流畅
+- 第一次 prod 部署时全套安全网就位（HTTPS / 健康检查 / 自动回滚 / 测试覆盖）
+
 ## 当前状态
 
-- ✅ **B0-foundation** — 工程地基（脚手架 + DB + Auth + App Shell + Dashboard mock + 公共组件库）— johnsong 实施中，3/10 完成
-- ⏳ **B1-kol-database** — 待启动（spec 已草稿）
-- 📝 后续批次见下表，spec 按需起草
+- ⏳ **B0-foundation** — johnsong 实施中（4/10 完成，下一个 F005 App Shell）
+- 📝 BI1/BI2/BI3 spec 已就绪，B0 done 后立即启动 BI1
+- 📝 B1 spec 已就绪，BI1-BI3 全部完成后启动
 
 ## 批次路线（B1 ~ B5）
 
@@ -33,17 +71,19 @@
 | B10 | 竞品分析 + 效果数据回流 | 远期 |
 | B11 | Webhook & API 开放 | 远期 |
 
-## 工程基建批次（BI 系列，与业务批次并行）
+## 工程基建批次（BI 系列，infra-first 锁定）
 
 业务批次（B1-B11）专注用户可见功能，工程基建（BI 系列）专注开发/部署/测试质量。
-基建批次可独立调度，但 **BI1 必须在 B1 启动前完成**（测试是 acceptance 基础）。
+**用户已选 Option α**：BI1 → BI2 → BI3 顺序串行，全部完成后才启动 B1 业务批次。
 
-| 批次 | 主题 | 主要交付 | 紧迫程度 |
-|---|---|---|---|
-| **BI1** | 测试基建 | Vitest + Testcontainers + Playwright + 首批 unit/integration tests + CI 集成 | 🔴 高（B1 前置） |
-| **BI2** | 部署自动化 | GitHub Actions deploy workflow + 健康检查 + 回滚 + DB 自动备份 + `/api/health` + PM2 ecosystem | 🟡 中（首次需要 staging 验证前） |
-| **BI3** | 域名与 TLS | Let's Encrypt 申请 + Nginx HTTPS + Staging 子域 + 续期监控 | 🟡 中（与 BI2 配套） |
-| **BI4** | 监控与日志 | Sentry 集成 + pino 结构化日志 + Grafana 仪表（可选 PostHog） | 🟢 低（远期） |
+| 批次 | 主题 | 主要交付 | 顺序 | 工时估算 |
+|---|---|---|---|---|
+| **BI1** | 测试基建 | Vitest + Testcontainers + Playwright + 首批 unit/integration tests + CI 集成 | B0 完成后 | 2-3 天 |
+| **BI2** | 部署自动化 | GitHub Actions deploy workflow + 健康检查 + 回滚 + DB 自动备份 + `/api/health` + PM2 ecosystem | BI1 完成后 | 1-2 天 |
+| **BI3** | 域名与 TLS | Let's Encrypt 申请 + Nginx HTTPS + Staging 子域 + 续期监控 + Mail DNS 占位 | BI2 完成后 | 1 天 |
+| **BI4** | 监控与日志 | Sentry 集成 + pino 结构化日志 + Grafana 仪表（可选 PostHog） | 远期（B3/B4 后） | 2 天 |
+
+**总基建工时：** ~5-7 天（B0 完成后投入，B1 之前完成）
 
 详见：
 - `docs/dev/infrastructure.md` — CI/CD + 部署 + TLS 完整规划
