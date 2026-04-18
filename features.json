@@ -78,7 +78,7 @@
       "title": "公共组件库抽取（src/components/common/ 12 个组件，强制 Dashboard 复用）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/components/common/ 下 12 个组件文件全部存在并导出（StatCard/KolCard/CampaignRow/AiScoreBadge/GlassPanel/GradientButton/SecondaryButton/GhostButton/TagChip/AvatarWithPlatformBadge/ActivityFeedItem/SectionHeader）；每个文件 props interface 完整 + 文件头说明注释；每个文件 ≤100 行；色彩走 Tailwind token 禁止硬编码 HEX；F007 Dashboard 必须 import 并使用全部 12 个组件（grep 验证）；视觉对照 design-draft/stitch-references/dashboard.png 一致；执行顺序在 F005 之后 F007 之前"
     }
   ]
