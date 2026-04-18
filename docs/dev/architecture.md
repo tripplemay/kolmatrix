@@ -378,9 +378,9 @@ messages/
 
 | 层 | 选型 | 备注 |
 |---|---|---|
-| Framework | Next.js 15 (App Router) | RSC + Server Actions |
+| Framework | Next.js 16 (App Router) | RSC + Server Actions, React 19.2 |
 | Language | TypeScript 5+ | strict mode |
-| Style | Tailwind 3.4 + shadcn/ui | v4 待评估 |
+| Style | Tailwind v4 (CSS-first @theme) + shadcn/ui | v4 已稳定，shadcn 原生支持 |
 | Auth | NextAuth v5 (beta) | JWT session |
 | ORM | Prisma 5 | + RLS |
 | DB | PostgreSQL 16 | 共用 aigcgateway 实例 |

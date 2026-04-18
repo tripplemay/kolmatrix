@@ -30,7 +30,7 @@
   "evaluator_feedback": null,
   "generator_handoff": null,
   "session_notes": {
-    "Kimi": "B0 spec v2 已修订（commit feat/spec/B0-revision）。两个新硬性要求：(1) 像素级还原 Stitch 截图（间距 ±2px / ΔE<2 / 字号 100%），不再是 ≤10% 差异；视觉验收基准 = design-draft/stitch-references/dashboard.png。(2) 新增 F010 公共组件库，12 个 common/ 组件必须先抽好 Dashboard 才能写，禁止 page.tsx 内 inline。强制执行顺序 F001→F002→F003→F004→F005→F010→F007→F006→F008→F009。任何硬编码 HEX 验收直接 fail。如规格存在偏差，开工前请先反馈，不要直接实现。"
+    "Kimi": "B0 spec v3 已修订（响应 johnsong 规格偏差报告）。技术栈升级 = Next.js 16 + React 19.2 + Tailwind v4 (CSS-first @theme, 不再用 tailwind.config.ts) + shadcn 最新版（已原生支持 v4）。其他要求保持 v2: (1) 像素级还原 design-draft/stitch-references/dashboard.png（间距 ±2px / ΔE<2 / 字号 100%）。(2) F010 公共组件库 12 个 common/ 组件必须先抽好，Dashboard 强制复用，page.tsx ≤80 行。强制执行顺序 F001→F002→F003→F004→F005→F010→F007→F006→F008→F009。任何硬编码 HEX 验收直接 fail（除 globals.css 唯一 token 文件）。如规格存在偏差，开工前请先反馈。"
   },
   "features": []
 }

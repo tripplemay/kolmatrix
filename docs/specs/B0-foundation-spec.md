@@ -9,6 +9,8 @@
 
 KOLMatrix 项目在视觉基调（Neural Velocity）+ Stitch 参考稿（Dashboard / KOL Discovery / KOL Detail）就绪后，需要从零搭建可运行的 Next.js 工程。本批次（B0）目标是把"地基"打好——脚手架、设计系统映射、组件框架、数据库、认证、首屏 Dashboard——使后续 V3+ 业务批次能在稳定基线上做纯功能开发。
 
+**版本基线（2026-04-18 latest）：** Next.js 16 (App Router) + React 19.2 + TypeScript 5+ + Tailwind v4（CSS-first config via `@theme`）+ shadcn/ui 最新版（已原生支持 Tailwind v4）。
+
 **完成标准（Definition of Done）：**
 - 新 dev 按 README 操作，30 分钟内本地能跑通 `npm run dev` 看到 Dashboard
 - 数据库结构、认证、RLS、国际化、CI 全部到位
@@ -18,7 +20,7 @@ KOLMatrix 项目在视觉基调（Neural Velocity）+ Stitch 参考稿（Dashboa
 ## 2. 范围
 
 ### In Scope
-- 项目脚手架（Next.js 15 App Router + TypeScript + Tailwind）
+- 项目脚手架（Next.js 16 App Router + React 19.2 + TypeScript + Tailwind v4）
 - Neural Velocity 设计 token → Tailwind 映射
 - App Shell 组件实现（Sidebar + Topbar + Layout）
 - Prisma schema 设计 + 初始 migration + seed
@@ -44,6 +46,9 @@ KOLMatrix 项目在视觉基调（Neural Velocity）+ Stitch 参考稿（Dashboa
 | 决策 | 选定方案 | 理由 |
 |---|---|---|
 | 包管理器 | npm | CLAUDE.md 已用，无需切换 |
+| Next.js | **v16**（2026-04 latest） | greenfield 上最新栈零成本；锁旧版半年后被迫升 |
+| React | **v19.2**（随 Next 16） | Actions / useOptimistic / native form actions 提升 DX |
+| Tailwind | **v4**（CSS-first config via `@theme`） | shadcn 2026-04 已原生支持；性能更优；新项目无 v3 兼容包袱 |
 | 认证 | NextAuth v5（Auth.js） | 开源、零成本、与 Next.js App Router 适配最好 |
 | 服务端数据 | TanStack Query v5 | 行业标配，缓存/重试/失效完善 |
 | 表单 | react-hook-form + zod | TypeScript 友好，schema 复用到 API 校验 |
@@ -53,7 +58,6 @@ KOLMatrix 项目在视觉基调（Neural Velocity）+ Stitch 参考稿（Dashboa
 | RLS 启用方式 | PostgreSQL RLS + Prisma 中间件设置 `set local app.tenant_id` | 数据库强制保证，应用层无法绕过 |
 | API 风格 | Next.js Route Handlers + RSC（默认） | 减少手写 API 层 |
 | 文件夹组织 | feature-first（`/src/features/{feature}/`） | 后续业务批次可按特性独立扩展 |
-| Tailwind 版本 | v3.4 LTS（暂不上 v4） | shadcn/ui 当前对 v3 适配最稳 |
 
 ## 4. 功能列表（10 项，全 executor:generator）
 
@@ -62,8 +66,10 @@ KOLMatrix 项目在视觉基调（Neural Velocity）+ Stitch 参考稿（Dashboa
 ### F001 — 项目脚手架
 **实现：**
 - `npx create-next-app@latest` 创建项目（TypeScript / App Router / Tailwind / ESLint / src 目录 / 不要 turbopack）
-- 安装：`prisma @prisma/client`、`next-auth@beta`、`@auth/prisma-adapter`、`next-intl`、`@tanstack/react-query`、`react-hook-form zod @hookform/resolvers`、`recharts`、`bcrypt`、`shadcn-ui`（init）
-- 配置 ESLint + Prettier + import order + tailwind plugin
+  - 自然得到 Next 16 + React 19.2 + Tailwind v4
+- 安装：`prisma @prisma/client`、`next-auth@beta`、`@auth/prisma-adapter`、`next-intl`、`@tanstack/react-query`、`react-hook-form zod @hookform/resolvers`、`recharts`、`bcrypt`
+- `npx shadcn@latest init`（自动检测 Tailwind 4 并适配）
+- 配置 ESLint + Prettier + import order
 - `tsconfig.json` 路径别名 `@/*` → `src/*`
 - `.gitignore` 补 `.env*`, `node_modules`, `.next`
 
@@ -74,18 +80,30 @@ KOLMatrix 项目在视觉基调（Neural Velocity）+ Stitch 参考稿（Dashboa
 - `npx tsc --noEmit` 0 错误
 - `npm run lint` 0 错误
 
-### F002 — 设计 Token → Tailwind 映射
+### F002 — 设计 Token → Tailwind 映射（Tailwind v4 CSS-first）
 **实现：**
-- `tailwind.config.ts`：扩展 colors（navy / cyan / purple / surface 阶层）、borderRadius（含 12px / 16px）、fontFamily（Inter）
-- `src/styles/globals.css`：CSS variables 同步色彩 token，定义 `.glass-panel`、`.ambient-glow`、`.ai-glow`、`.gradient-text`、`.gradient-cta`
-- 引入 Inter 字体（next/font/google）
-- 引入 Material Symbols Outlined（layout 注入 `<link>`）
+- Tailwind v4 不再用 `tailwind.config.ts`，而是在 `src/styles/globals.css` 用 `@theme` 块定义 token：
+  ```css
+  @import "tailwindcss";
+  @theme {
+    --color-navy-base: #0b1326;
+    --color-cyan: #00E5FF;
+    --color-purple: #9D50FF;
+    /* ... 全部 surface 阶层 + cyan/purple variants */
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --font-sans: "Inter", sans-serif;
+  }
+  ```
+- `globals.css` 同时定义自定义 utilities：`.glass-panel`、`.ambient-glow`、`.ai-glow`、`.gradient-text`、`.gradient-cta`
+- 引入 Inter 字体（next/font/google）并暴露为 `--font-inter` CSS variable
+- 引入 Material Symbols Outlined（layout 注入 CDN `<link>`）
 
 **Acceptance：**
-- 任意组件用 `bg-navy`、`text-cyan`、`rounded-md` 渲染颜色与设计系统完全一致
+- 任意组件用 `bg-navy-base`、`text-cyan`、`rounded-md` 渲染颜色与设计系统完全一致
 - `.glass-panel` 渲染出 backdrop-blur + 20% cyan bg + cyan glow
 - 所有页面默认 Inter 字体
-- **代码 grep 任何 6 位 HEX 字符串（如 `#00E5FF`）必须为 0 命中**（除 `tailwind.config.ts` / `globals.css` 这两个 token 定义文件外）
+- **代码 grep 任何 6 位 HEX 字符串（如 `#00E5FF`）必须为 0 命中**（除 `globals.css` 唯一 token 定义文件外）
 
 ### F003 — Prisma Schema + Migration
 **实现：**
@@ -254,7 +272,7 @@ F001 → F002 → F003 → F004 → F005 → **F010 → F007** → F006 → F008
 |---|---|
 | NextAuth v5 文档不完整 / API 变动 | 锁版本到 `5.0.0-beta.20+`；遇阻立即创建框架提案 |
 | RLS + Prisma 集成踩坑 | 用 Prisma `$extends` 中间件统一注入 `set local`；编单元测试覆盖 cross-tenant 隔离 |
-| Tailwind v3 → v4 迁移压力 | 本批次锁 v3.4，v4 留给后续独立批次 |
+| Tailwind v4 CSS-first config 学习曲线 | 文档完善（tailwindcss.com/docs/v4），与 v3 区别小 — 配置从 JS 移到 CSS，类名几乎不变 |
 | 像素级还原难度 | Stitch HTML 用 CDN Tailwind，与项目本地配置存在差异。验收用截屏并排对比（间距 ±2px / 颜色 ΔE<2 / 字号 100%），不要求字节级一致 |
 | 公共组件抽象过早 | B0 12 组件直接对照 Stitch 截图抽取，不预测未来需求。后续如果 props 不够灵活，B1 再演进 |
 | Material Symbols 加载阻塞 | 用 `font-display: swap`；如影响 LCP 改为本地子集 |
@@ -266,9 +284,9 @@ F001 → F002 → F003 → F004 → F005 → **F010 → F007** → F006 → F008
 ### L1 — 自动化检查
 - Prisma schema 单元测试：所有表的 RLS 隔离（cross-tenant 查询返回 0）
 - Auth 流单元测试：登录 / 跳转 / 会话验证
-- Token 映射回归：assert `tailwind.config.ts` 含 12 个色阶 token
+- Token 映射回归：assert `globals.css` `@theme` 块含 12 个色阶 token
 - 构建验证：`npm run build` + `tsc --noEmit` + `lint` 全绿
-- **HEX 硬编码扫描：** `grep -rE '#[0-9a-fA-F]{6}' src/` 在 `globals.css` / `tailwind.config.ts` 之外的命中数 = 0
+- **HEX 硬编码扫描：** `grep -rE '#[0-9a-fA-F]{6}' src/` 在 `globals.css` 之外的命中数 = 0
 - **公共组件复用扫描：** Dashboard `page.tsx` 必须 import 全部 12 个 F010 组件；`page.tsx` JSX 总长度 ≤ 80 行
 
 ### L2 — 视觉回归
@@ -276,7 +294,7 @@ F001 → F002 → F003 → F004 → F005 → **F010 → F007** → F006 → F008
 - 访问 `/dashboard` 截屏（1280x2048 viewport）
 - **与 `design-draft/stitch-references/dashboard.png` 并排比对**，验收标准：
   - 间距偏差 ≤ 2px
-  - 颜色偏差 ΔE < 2（`tailwind.config.ts` token 必须严格对应设计 HEX）
+  - 颜色偏差 ΔE < 2（`globals.css` `@theme` token 必须严格对应设计 HEX）
   - 字号 100% 匹配
   - 布局结构（元素顺序、对齐、网格）100% 对齐
 - 发现差异 → 写入 `evaluator_feedback`，回退 fixing 阶段

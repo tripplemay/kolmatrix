@@ -156,78 +156,69 @@ export function deriveActiveNav(pathname: string): NavItemId {
 
 > Per-page 配置详见 `design-draft/design-system.md` §9 "Per-page 配置" 表。
 
-## 5. Token → Tailwind 映射
+## 5. Token → Tailwind 映射（Tailwind v4 CSS-first config）
 
-需在 `tailwind.config.ts` 中扩展。
+Tailwind v4 不再使用 `tailwind.config.ts`，所有 token 在 `src/styles/globals.css` 的 `@theme` 块中定义。
 
-### 5.1 Colors
+### 5.1 完整 globals.css 结构
 
-```typescript
-colors: {
-  navy: {
-    base: '#0b1326',          // surface
-    container: '#171f33',
-    'container-low': '#131b2e',
-    'container-high': '#222a3d',
-    'container-highest': '#2d3449',
-    'container-lowest': '#060e20',
-    bright: '#31394d',
-  },
-  cyan: {
-    DEFAULT: '#00E5FF',       // primary
-    fixed: '#9cf0ff',
-    'fixed-dim': '#00daf3',
-    container: '#00e5ff',
-    light: '#c3f5ff',         // gradient end
-    glow: 'rgba(0, 229, 255, 0.20)',
-  },
-  purple: {
-    DEFAULT: '#9D50FF',       // secondary
-    container: '#6e06d0',
-  },
-  text: {
-    primary: '#dae2fd',       // on_surface
-    muted: '#bac9cc',         // on_surface_variant
-    'very-muted': '#6B7280',
-  },
-  accent: {
-    warning: '#fec931',       // tertiary_container
-    error: '#ffb4ab',
-  },
-  outline: {
-    DEFAULT: '#849396',
-    variant: '#3b494c',
-  },
+```css
+@import "tailwindcss";
+
+@theme {
+  /* === Colors: Surface（深色 navy 阶层）=== */
+  --color-navy-base: #0b1326;
+  --color-navy-container: #171f33;
+  --color-navy-container-low: #131b2e;
+  --color-navy-container-high: #222a3d;
+  --color-navy-container-highest: #2d3449;
+  --color-navy-container-lowest: #060e20;
+  --color-navy-bright: #31394d;
+
+  /* === Colors: Cyan（AI 能量主色）=== */
+  --color-cyan: #00E5FF;
+  --color-cyan-fixed: #9cf0ff;
+  --color-cyan-fixed-dim: #00daf3;
+  --color-cyan-container: #00e5ff;
+  --color-cyan-light: #c3f5ff;
+  --color-cyan-glow: rgba(0, 229, 255, 0.20);
+
+  /* === Colors: Purple（次级）=== */
+  --color-purple: #9D50FF;
+  --color-purple-container: #6e06d0;
+
+  /* === Colors: Text === */
+  --color-text-primary: #dae2fd;
+  --color-text-muted: #bac9cc;
+  --color-text-very-muted: #6B7280;
+
+  /* === Colors: Accent === */
+  --color-accent-warning: #fec931;
+  --color-accent-error: #ffb4ab;
+
+  /* === Colors: Outline === */
+  --color-outline: #849396;
+  --color-outline-variant: #3b494c;
+
+  /* === Radius === */
+  --radius-sm: 8px;
+  --radius-md: 12px;          /* main containers */
+  --radius-lg: 16px;          /* feature cards */
+  --radius-full: 9999px;
+  /* 4px 默认不要使用 */
+
+  /* === Fonts === */
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-inter), system-ui, sans-serif;
 }
-```
 
-### 5.2 BorderRadius
-
-```typescript
-borderRadius: {
-  sm: '8px',
-  md: '12px',                 // main containers
-  lg: '16px',                 // feature cards
-  full: '9999px',
-  // 4px 默认 ('DEFAULT') 不要使用
-}
-```
-
-### 5.3 FontFamily
-
-```typescript
-fontFamily: {
-  sans: ['Inter', ...defaultTheme.fontFamily.sans],
-  display: ['Inter', ...defaultTheme.fontFamily.sans],
-}
-```
-
-### 5.4 自定义 Utilities（globals.css）
+/* === 自定义 utilities === */
 
 ```css
 @layer components {
   .glass-panel {
-    @apply backdrop-blur-[24px] bg-cyan-glow border border-cyan-fixed/20;
+    @apply backdrop-blur-[24px] bg-cyan-glow;
+    border: 1px solid rgba(156, 240, 255, 0.20);
     box-shadow: 0 0 40px rgba(0, 229, 255, 0.05);
   }
   .ambient-glow {

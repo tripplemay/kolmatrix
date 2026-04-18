@@ -3,19 +3,19 @@
   "features": [
     {
       "id": "F001",
-      "title": "Next.js 15 项目脚手架（TypeScript / App Router / Tailwind / 关键依赖）",
+      "title": "Next.js 16 项目脚手架（TypeScript / App Router / Tailwind v4 / 关键依赖）",
       "priority": "high",
       "executor": "generator",
       "status": "pending",
-      "acceptance": "npm install 成功；npm run dev 启动到 :3000；npm run build 通过；npx tsc --noEmit 0 错误；npm run lint 0 错误；package.json 含 prisma/next-auth@beta/next-intl/@tanstack/react-query/react-hook-form/zod/recharts/bcrypt/shadcn-ui"
+      "acceptance": "npx create-next-app@latest 自然得到 Next 16 + React 19.2 + Tailwind v4；npm install 成功；npm run dev 启动到 :3000；npm run build 通过；npx tsc --noEmit 0 错误；npm run lint 0 错误；package.json 含 prisma/next-auth@beta/next-intl/@tanstack/react-query/react-hook-form/zod/recharts/bcrypt + npx shadcn@latest init 完成"
     },
     {
       "id": "F002",
-      "title": "Neural Velocity 设计 token → Tailwind / CSS Variables 映射",
+      "title": "Neural Velocity 设计 token → Tailwind v4 @theme 映射",
       "priority": "high",
       "executor": "generator",
       "status": "pending",
-      "acceptance": "tailwind.config.ts 含 navy/cyan/purple 全部色阶；borderRadius 含 md(12px)/lg(16px)；Inter 字体生效；globals.css 提供 .glass-panel/.ambient-glow/.ai-glow/.gradient-text/.gradient-cta；任意组件用 token 渲染颜色与 design-system.md §2 完全一致；代码 grep '#[0-9a-fA-F]{6}' 在 globals.css/tailwind.config.ts 之外命中数为 0"
+      "acceptance": "src/styles/globals.css 含 @theme 块定义 navy/cyan/purple 全部色阶 + radius-md(12px)/lg(16px) + font-sans Inter；不再使用 tailwind.config.ts；自定义 utilities .glass-panel/.ambient-glow/.ai-glow/.gradient-text/.gradient-cta；任意组件用 token 渲染颜色与 design-system.md §2 完全一致；代码 grep '#[0-9a-fA-F]{6}' 在 globals.css 之外命中数为 0"
     },
     {
       "id": "F003",

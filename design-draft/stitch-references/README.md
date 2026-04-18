@@ -30,7 +30,7 @@ cd design-draft/stitch-references && python3 -m http.server 8088
 打开 HTML 需要联网拉 CDN（Tailwind / Inter / Material Symbols）。生产代码请走项目本地 Tailwind + next/font。
 
 ### 2. 颜色 token 已在项目 design-system.md 沉淀
-不要从 HTML 里复制 HEX——优先用 `tailwind.config.ts` 中的 token（B0 F002 任务会建立）。
+不要从 HTML 里复制 HEX——优先用 `globals.css` `@theme` 块中的 Tailwind v4 token（B0 F002 任务会建立）。
 
 ### 3. KOL 详情页 历史
 - 第一版（`c5eff504`，hidden）：完整 8 个 section

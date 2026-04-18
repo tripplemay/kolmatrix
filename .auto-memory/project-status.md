@@ -13,7 +13,8 @@ type: project
 ## 关键决策（B0 spec v2）
 - 视觉验收 = **像素级还原**（间距 ±2px / 颜色 ΔE<2 / 字号 100%），基准 `design-draft/stitch-references/dashboard.png`
 - F010 公共组件库（12 个）必须先抽好，Dashboard 强制复用，page.tsx ≤80 行
-- 任何硬编码 HEX 验收直接 fail（除 globals.css / tailwind.config.ts）
+- 技术栈 = Next.js 16 + React 19.2 + Tailwind v4 (CSS-first @theme)（v3 spec 已修订, 见 v3 commit）
+- 任何硬编码 HEX 验收直接 fail（除 globals.css 唯一 token 文件）
 - 强制执行顺序: F001→F002→F003→F004→F005→**F010→F007**→F006→F008→F009
 
 ## Stitch 设计稿

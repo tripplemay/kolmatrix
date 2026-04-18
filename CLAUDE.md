@@ -21,7 +21,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 KOLMatrix — 全球游戏 KOL/KOC 智能营销管理平台
 
-**Tech Stack:** Next.js 15 (App Router) + TypeScript + PostgreSQL + Prisma（RLS 多租户）+ Redis + BullMQ（后台队列）+ Resend（合规邮件）+ shadcn/ui + Tailwind + next-intl（CN/EN/JA/KO/ES）+ AI 调用走 aigcgateway
+**Tech Stack:** Next.js 16 (App Router) + React 19.2 + TypeScript + Tailwind v4（CSS-first @theme）+ PostgreSQL + Prisma（RLS 多租户）+ Redis + BullMQ（后台队列）+ Resend（合规邮件）+ shadcn/ui + next-intl（CN/EN/JA/KO/ES）+ AI 调用走 aigcgateway
 
 ## Commands
 
