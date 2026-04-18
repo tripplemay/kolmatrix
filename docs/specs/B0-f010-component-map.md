@@ -323,3 +323,78 @@ F010 完工后 F007 Dashboard 的实现约束（spec 原文）：
 - `design-draft/stitch-references/README.md` — Stitch HTML 漂移清单
 - `design-draft/design-system.md` — Neural Velocity token 与组件规则
 - `src/styles/globals.css` — 现有 token + utility（`glass-panel` 等）
+
+---
+
+## 11. Planner 裁决（Kimi · 2026-04-18）
+
+F010 pre-impl 审计质量比 F005 更深入 —— Props API 设计 + token 缺口盘点 + 估算到位。裁决如下，johnsong 可立即开工。
+
+### 11.1 §5 6 条决议（全部采纳 johnsong 建议）
+
+**短格式：** `#1:A #2:A #3:A #4:A #5:A #6:A`
+
+| # | 决定 | 理由 |
+|---|---|---|
+| 1 | **A** StatCard sparkline 可选 prop | Dashboard KPI 带 sparkline，其他页 Stat 是纯数字。强制所有 StatCard 带会逼出空 div 或假数据，变成视觉噪声 |
+| 2 | **A** KolCard 单组件 `variant: "grid" \| "row"` | F010 名单硬锁 12 个，不改；variants 是标准模式，内部 70% 结构共享，拆 2 组件反而违反 DRY |
+| 3 | **A** GlassPanel 默认 `border-white/5`，`tone:"cyan"` 可选 | cyan glow border 是 AI 元素的强调，不应是所有玻璃面板的默认 |
+| 4 | **A** 非设计 token 色保留 Tailwind 预设（不 token 化） | 详见 §11.2 政策说明 |
+| 5 | **A** 保留 ActivityFeedItem（12 名单不改） | §7 确认 Dashboard 有 Activity Feed，实际 3/7 页使用（不是 2/7） |
+| 6 | **A** 12 独立文件 + barrel export | spec 硬性要求"12 组件文件全部存在"；独立文件对 tree-shaking / tests / PR diff 友好 |
+
+### 11.2 §5 #4 延伸 —— 项目色彩 token 边界政策
+
+**规则（新增，写入 design-system.md）：**
+
+1. **设计系统 token（`@theme` 块内）** 只覆盖：
+   - 品牌主体色（navy 阶层 / cyan / cyan-fixed / purple / purple-container）
+   - 文字色阶（text-primary / text-muted / text-very-muted）
+   - 语义色（accent-warning / accent-error / outline）
+
+2. **允许使用 Tailwind 预设色（不强制 token 化）：**
+   - **平台品牌色**：YouTube `red-600` / Twitch `purple-600` / TikTok `black` / Instagram `pink-500 via violet-600`
+   - **状态辅色**：`emerald-400`（trend up 正向变化，单一语境）
+   - **标注辅色**：`amber-400`（pending 状态边缘使用）
+
+3. **B0 F002 的 HEX 硬编码扫描保持原规则：** `grep -rE '#[0-9a-fA-F]{6}' src/` 在 `globals.css` 之外命中数 = 0。Tailwind 预设类名（`bg-red-600`）不是 HEX，**不触发 fail**。
+
+4. **判断标准：** 如果一个颜色**承载设计系统意图**（如青色 = AI 能量），必须 token 化；如果是**外部品牌带入的颜色**（YouTube 的红），保留 Tailwind 预设。
+
+### 11.3 §6 3 个 HTML bug → 加入漂移清单
+
+沿用 §7.2 F005 裁决的处理方针：**不回修 Stitch，代码按正确实现，漂移清单登记告知 Reviewer。**
+
+| # | 文件 | 漂移内容 | 代码应实现 |
+|---|---|---|---|
+| B6 | `dashboard.html:249` | SVG `viewbox` 小写（React 会报错） | `viewBox` 驼峰 |
+| B7 | `kol-discovery.html:188-191` | Filter 按钮缺 disabled 态 class | **B1 范围**，F010 不处理，B1 实现 FilterButton 时补 |
+| B8 | `campaigns-list.html:245-252` | Tab underline 用绝对定位但父 button 无 `relative` | `<button className="relative">` 正确设置定位上下文 |
+
+> B6/B8 是 F010/F007 实现时即修正，B7 标注"defer to B1"。
+
+### 11.4 §7 Dashboard Activity Feed 确认
+
+✅ **确认**：Dashboard F007 实现必含 "Recent Activity" 区块（spec §4 F007 已写明 5 区块之一）。ActivityFeedItem 在 F007 Dashboard 正式使用，不是"12 名单凑数"。
+
+### 11.5 同步文档更新
+
+Planner 同时修订：
+
+1. `design-draft/design-system.md` — 新增"§11 项目色彩 token 边界政策"（§11.2 内容沉淀）
+2. `design-draft/stitch-references/README.md` — 漂移清单加 B6-B8
+3. F007 spec acceptance 不变（Activity Feed 已在 5 区块内）
+
+### 11.6 F007 JSX ≤80 行 的实现锦囊（非裁决，建议）
+
+F010 后 F007 `page.tsx` 要 import 12 组件 + JSX ≤80 行。johnsong 届时可能需：
+- 5 区块 × 3-8 行 JSX/区块 ≈ 30-40 行主体
+- 加 imports 20 行 ≈ 50-60 行总计
+- 如果区块配置（KPI 4 卡数据、活动列表数据）从 DB 查询一行接一行写，容易超 80
+- 建议把区块配置（数据 mapping）抽到 `features/dashboard/` 下单独常量，page.tsx 只 import + map
+
+**此条不属本次裁决范围，F007 开工时 johnsong 自己判断。**
+
+---
+
+**johnsong 可按此立即开工 F010**（无需进一步确认）。预计 3.3 小时完成，跑通 HEX/tsc/lint/build 闸门 → push main。

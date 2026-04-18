@@ -287,7 +287,43 @@
 
 ---
 
-## 10. 覆盖验收清单
+## 10. 项目色彩 Token 边界政策（2026-04-18 沉淀）
+
+> 来自 F010 pre-impl 裁决 §11.2。`docs/specs/B0-f010-component-map.md` 有完整理由。
+
+### 10.1 必须 token 化（写入 `globals.css @theme`）
+
+- **品牌主体色**：navy 阶层 / cyan / cyan-fixed / purple / purple-container
+- **文字色阶**：text-primary / text-muted / text-very-muted
+- **语义色**：accent-warning / accent-error / outline / outline-variant
+
+这些色承载设计系统意图（如 cyan = AI 能量）。
+
+### 10.2 允许使用 Tailwind 预设色（不强制 token 化）
+
+- **平台品牌色**（外部带入）：
+  - YouTube `bg-red-600` / Twitch `bg-purple-600` / TikTok `bg-black` / Instagram `bg-gradient-to-tr from-pink-500 to-violet-600`
+- **状态辅色**（单一语境）：
+  - `emerald-400`：trend up 正向变化
+  - `amber-400`：pending 状态边缘使用
+
+### 10.3 判断原则
+
+| 颜色类型 | 处理 |
+|---|---|
+| 承载设计系统意图（如 AI 能量 = cyan） | 必须 token |
+| 外部品牌色（YouTube red） | Tailwind 预设 |
+| 单一语境辅色（trend up = emerald） | Tailwind 预设 |
+
+### 10.4 HEX 硬编码扫描规则
+
+B0 F002 强制：`grep -rE '#[0-9a-fA-F]{6}' src/` 在 `globals.css` 之外命中数 = 0。
+
+**Tailwind 预设类名（`bg-red-600`）不是 HEX，不触发 fail。** 这允许平台品牌色 + emerald 状态色走预设类而不破坏扫描。
+
+---
+
+## 11. 覆盖验收清单
 
 新页面上线前必须自检：
 
