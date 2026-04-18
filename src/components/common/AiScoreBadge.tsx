@@ -46,10 +46,7 @@ export function AiScoreBadge({
 
   if (variant === "inline") {
     return (
-      <span
-        aria-label={label}
-        className={cn("text-cyan font-bold", TEXT_SIZE[size], className)}
-      >
+      <span aria-label={label} className={cn("text-cyan font-bold", TEXT_SIZE[size], className)}>
         {score}
       </span>
     );

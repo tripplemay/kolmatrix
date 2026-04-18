@@ -26,7 +26,13 @@ const TITLE_SIZE: Record<HeadingLevel, string> = {
   h3: "text-lg font-bold",
 };
 
-export function SectionHeader({ title, subtitle, as = "h3", actions, className }: SectionHeaderProps) {
+export function SectionHeader({
+  title,
+  subtitle,
+  as = "h3",
+  actions,
+  className,
+}: SectionHeaderProps) {
   const Heading = as;
   return (
     <header className={cn("mb-6 flex items-start justify-between gap-4", className)}>

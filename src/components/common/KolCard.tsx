@@ -47,7 +47,7 @@ export function KolCard({
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
       className={cn(
-        "group bg-surface-low hover:bg-surface-high border-transparent hover:border-cyan/30 relative rounded-[16px] border transition-colors",
+        "group bg-surface-low hover:bg-surface-high hover:border-cyan/30 relative rounded-[16px] border border-transparent transition-colors",
         isGrid ? "flex flex-col items-center p-5 text-center" : "flex items-center gap-4 p-4",
         onClick && "cursor-pointer",
         className
@@ -68,7 +68,9 @@ export function KolCard({
         <h4 className="text-on-surface truncate text-sm font-bold">{name}</h4>
         <p className="text-on-surface-variant/70 text-xs">{followers}</p>
         {tags && tags.length ? (
-          <div className={cn("mt-2 flex flex-wrap gap-1", isGrid ? "justify-center" : "justify-start")}>
+          <div
+            className={cn("mt-2 flex flex-wrap gap-1", isGrid ? "justify-center" : "justify-start")}
+          >
             {tags.slice(0, 3).map((t) => (
               <TagChip key={t} label={t} tone="navy" />
             ))}

@@ -79,3 +79,4 @@ export async function withPlatformAdmin<T>(
 }
 
 export { Prisma };
+export type TenantPrisma = Prisma.TransactionClient;

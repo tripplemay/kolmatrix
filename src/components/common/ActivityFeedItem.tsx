@@ -59,7 +59,10 @@ export function ActivityFeedItem({
         <span className="text-on-surface-variant/70 text-[11px]">{time}</span>
       </div>
       {icon ? (
-        <span className="text-on-surface-variant/70 material-symbols-outlined text-[18px]" aria-hidden>
+        <span
+          className="text-on-surface-variant/70 material-symbols-outlined text-[18px]"
+          aria-hidden
+        >
           {icon}
         </span>
       ) : null}

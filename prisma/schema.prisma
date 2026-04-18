@@ -162,6 +162,7 @@ model Campaign {
   startDate      DateTime? @map("start_date") @db.Date
   endDate        DateTime? @map("end_date") @db.Date
   ownerUserId    String    @map("owner_user_id") @db.Uuid
+  openRate       Decimal?  @map("open_rate") @db.Decimal(5, 4)
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz

@@ -43,9 +43,13 @@ export function GhostButton({
       )}
       {...rest}
     >
-      {icon && iconPosition === "left" ? <span className="inline-flex shrink-0">{icon}</span> : null}
+      {icon && iconPosition === "left" ? (
+        <span className="inline-flex shrink-0">{icon}</span>
+      ) : null}
       <span className="inline-flex items-center">{children}</span>
-      {icon && iconPosition === "right" ? <span className="inline-flex shrink-0">{icon}</span> : null}
+      {icon && iconPosition === "right" ? (
+        <span className="inline-flex shrink-0">{icon}</span>
+      ) : null}
     </button>
   );
 }

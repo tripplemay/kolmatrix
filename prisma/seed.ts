@@ -311,6 +311,7 @@ async function main() {
       kpiTarget: { reach: 5_000_000, conversion_rate: 0.05 },
       startDate: new Date("2026-04-01"),
       endDate: new Date("2026-06-30"),
+      openRate: 0.428,
     },
     {
       name: "Genshin Impact — Winter Event",
@@ -322,6 +323,7 @@ async function main() {
       kpiTarget: { reach: 3_200_000, conversion_rate: 0.06 },
       startDate: new Date("2026-03-15"),
       endDate: new Date("2026-05-15"),
+      openRate: 0.382,
     },
     {
       name: "PUBG Mobile — Season 30",
@@ -333,24 +335,28 @@ async function main() {
       kpiTarget: { reach: 1_800_000, conversion_rate: 0.04 },
       startDate: new Date("2026-01-01"),
       endDate: new Date("2026-03-01"),
+      openRate: 0.514,
     },
   ];
 
+  const campaignIdByName = new Map<string, string>();
   for (const campaign of campaignSeeds) {
-    await prisma.campaign.upsert({
-      where: {
-        // Synthetic unique lookup via (tenantId, name) — emulate via findFirst then conditional create.
-        id:
-          (
-            await prisma.campaign.findFirst({
-              where: { tenantId: tenant.id, name: campaign.name },
-              select: { id: true },
-            })
-          )?.id ?? "00000000-0000-0000-0000-000000000000",
-      },
-      update: { status: campaign.status },
-      create: { tenantId: tenant.id, ownerUserId: marketer.id, ...campaign },
+    const existing = await prisma.campaign.findFirst({
+      where: { tenantId: tenant.id, name: campaign.name },
+      select: { id: true },
     });
+    if (existing) {
+      await prisma.campaign.update({
+        where: { id: existing.id },
+        data: { status: campaign.status, openRate: campaign.openRate },
+      });
+      campaignIdByName.set(campaign.name, existing.id);
+    } else {
+      const created = await prisma.campaign.create({
+        data: { tenantId: tenant.id, ownerUserId: marketer.id, ...campaign },
+      });
+      campaignIdByName.set(campaign.name, created.id);
+    }
   }
 
   const templateSeeds = [
@@ -431,12 +437,58 @@ async function main() {
     }
   }
 
+  // ----- Email logs (F007 Dashboard KPI + chart) -----
+  // Idempotent: clear prior seeded logs for this tenant before repopulating so
+  // re-running the seed does not inflate counts.
+  await prisma.emailLog.deleteMany({ where: { tenantId: tenant.id } });
+
+  const kolRows = await prisma.kol.findMany({
+    where: { tenantId: tenant.id },
+    select: { id: true, handle: true },
+  });
+  const campaignEntries = Array.from(campaignIdByName.entries());
+  const EMAIL_LOG_COUNT = 300;
+  const nowMs = Date.now();
+  const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+  const emailRows = Array.from({ length: EMAIL_LOG_COUNT }).map((_, i) => {
+    const [campaignName, campaignId] = campaignEntries[i % campaignEntries.length];
+    const kol = kolRows[i % kolRows.length];
+    const sentAt = new Date(nowMs - Math.random() * sevenDaysMs);
+    // Realistic funnel: ~5% bounce, 60% opened, 20% replied, rest sent-only.
+    const roll = Math.random();
+    const bounced = roll < 0.05;
+    const opened = !bounced && roll < 0.65;
+    const replied = opened && Math.random() < 0.33;
+    const status = bounced ? "bounced" : replied ? "replied" : opened ? "opened" : "sent";
+    const openedAt = opened ? new Date(sentAt.getTime() + Math.random() * 6 * 3600_000) : null;
+    const repliedAt =
+      replied && openedAt ? new Date(openedAt.getTime() + Math.random() * 24 * 3600_000) : null;
+    return {
+      tenantId: tenant.id,
+      campaignId,
+      kolId: kol.id,
+      toAddress: `${kol.handle}@demo.kolmatrix`,
+      fromAddress: "outreach@kolmatrix.local",
+      subject: `Partner with ${campaignName} — exclusive early access`,
+      bodyHtml: "<p>seed-generated outreach</p>",
+      provider: "resend",
+      status,
+      sentAt,
+      deliveredAt: bounced ? null : sentAt,
+      openedAt,
+      repliedAt,
+      bounceReason: bounced ? "mailbox_full" : null,
+    };
+  });
+  await prisma.emailLog.createMany({ data: emailRows });
+
   console.log("Seed complete:", {
     tenant: tenant.slug,
     users: [admin.email, marketer.email],
     kols: KOLS.length,
     campaigns: campaignSeeds.length,
     templates: templateSeeds.length,
+    emailLogs: EMAIL_LOG_COUNT,
   });
 }
 

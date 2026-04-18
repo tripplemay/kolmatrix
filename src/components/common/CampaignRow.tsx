@@ -34,26 +34,55 @@ const STATUS_DOT: Record<Status, string> = {
 };
 
 export function CampaignRow(props: CampaignRowProps) {
-  const { name, logo, subtitle, progress, primaryMetric, secondaryMetric, status, onMoreClick, className } = props;
-  const clampedProgress = typeof progress === "number" ? Math.min(Math.max(progress, 0), 100) : null;
+  const {
+    name,
+    logo,
+    subtitle,
+    progress,
+    primaryMetric,
+    secondaryMetric,
+    status,
+    onMoreClick,
+    className,
+  } = props;
+  const clampedProgress =
+    typeof progress === "number" ? Math.min(Math.max(progress, 0), 100) : null;
 
   return (
-    <div className={cn("bg-surface-high flex flex-col items-start gap-4 rounded-[12px] p-4 sm:flex-row sm:items-center", className)}>
+    <div
+      className={cn(
+        "bg-surface-high flex flex-col items-start gap-4 rounded-[12px] p-4 sm:flex-row sm:items-center",
+        className
+      )}
+    >
       <div className="flex min-w-0 items-center gap-3 sm:w-1/3">
         <div className="bg-surface-highest relative h-12 w-12 shrink-0 overflow-hidden rounded-[10px]">
           {logo ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={logo} alt="" className="h-full w-full object-cover" />
           ) : (
-            <span className="material-symbols-outlined text-on-surface-variant flex h-full w-full items-center justify-center text-lg" aria-hidden>campaign</span>
+            <span
+              className="material-symbols-outlined text-on-surface-variant flex h-full w-full items-center justify-center text-lg"
+              aria-hidden
+            >
+              campaign
+            </span>
           )}
           {status ? (
-            <span aria-label={`status ${status}`} className={cn("border-surface-high absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2", STATUS_DOT[status])} />
+            <span
+              aria-label={`status ${status}`}
+              className={cn(
+                "border-surface-high absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2",
+                STATUS_DOT[status]
+              )}
+            />
           ) : null}
         </div>
         <div className="min-w-0">
           <h4 className="text-on-surface truncate text-[15px] font-semibold">{name}</h4>
-          {subtitle ? <p className="text-on-surface-variant/70 truncate text-xs">{subtitle}</p> : null}
+          {subtitle ? (
+            <p className="text-on-surface-variant/70 truncate text-xs">{subtitle}</p>
+          ) : null}
         </div>
       </div>
       {clampedProgress !== null ? (
@@ -71,7 +100,12 @@ export function CampaignRow(props: CampaignRowProps) {
         {primaryMetric ? <MetricCell metric={primaryMetric} /> : null}
         {secondaryMetric ? <MetricCell metric={secondaryMetric} /> : null}
         {onMoreClick ? (
-          <button type="button" onClick={onMoreClick} aria-label="More" className="text-on-surface-variant hover:text-on-surface inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors">
+          <button
+            type="button"
+            onClick={onMoreClick}
+            aria-label="More"
+            className="text-on-surface-variant hover:text-on-surface inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors"
+          >
             <span className="material-symbols-outlined text-[18px]">more_vert</span>
           </button>
         ) : null}
@@ -83,7 +117,9 @@ export function CampaignRow(props: CampaignRowProps) {
 function MetricCell({ metric }: { metric: Metric }) {
   return (
     <div className="text-right">
-      <p className="text-on-surface-variant/70 text-[10px] font-semibold tracking-wider uppercase">{metric.label}</p>
+      <p className="text-on-surface-variant/70 text-[10px] font-semibold tracking-wider uppercase">
+        {metric.label}
+      </p>
       <p className="text-on-surface text-sm font-semibold">{metric.value}</p>
     </div>
   );

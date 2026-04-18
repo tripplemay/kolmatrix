@@ -38,7 +38,15 @@ function defaultAccent(dir: TrendDirection): TrendAccent {
   return "purple";
 }
 
-export function StatCard({ label, value, subLabel, trend, icon, sparkline, className }: StatCardProps) {
+export function StatCard({
+  label,
+  value,
+  subLabel,
+  trend,
+  icon,
+  sparkline,
+  className,
+}: StatCardProps) {
   const accent = trend?.accent ?? (trend ? defaultAccent(trend.direction) : "emerald");
   const sparkMax = sparkline && sparkline.length ? Math.max(...sparkline, 1) : 1;
 
@@ -66,7 +74,12 @@ export function StatCard({ label, value, subLabel, trend, icon, sparkline, class
       </h3>
       <div className="flex items-center justify-between">
         {trend ? (
-          <span className={cn("inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium", TREND_TEXT[accent])}>
+          <span
+            className={cn(
+              "inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium",
+              TREND_TEXT[accent]
+            )}
+          >
             <span className="material-symbols-outlined text-[12px]" aria-hidden>
               {TREND_ICON[trend.direction]}
             </span>
@@ -81,7 +94,10 @@ export function StatCard({ label, value, subLabel, trend, icon, sparkline, class
             {sparkline.map((v, i) => (
               <div
                 key={i}
-                className={cn("bg-cyan/60 w-1.5 rounded-t-sm", i === sparkline.length - 1 && "bg-cyan")}
+                className={cn(
+                  "bg-cyan/60 w-1.5 rounded-t-sm",
+                  i === sparkline.length - 1 && "bg-cyan"
+                )}
                 style={{ height: `${Math.max((v / sparkMax) * 100, 8)}%` }}
               />
             ))}
