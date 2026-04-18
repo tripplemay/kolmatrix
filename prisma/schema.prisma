@@ -1,0 +1,273 @@
+// KOLMatrix — B0 Foundation Prisma schema
+// Reference: docs/specs/B0-database-schema.md §4
+//
+// All business tables carry tenant_id + RLS policies (installed via
+// migration SQL). The migration SQL also bootstraps the auditable
+// indexes and the soft-delete / updated_at triggers referenced by
+// the acceptance criteria.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Prisma 7: connection URL lives in prisma.config.ts.
+// Schema only declares the provider.
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+//  Core multi-tenant tables
+// ============================================================
+
+model Tenant {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  slug      String   @unique
+  plan      String   @default("free")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  users     User[]
+  kols      Kol[]
+  campaigns Campaign[]
+  templates EmailTemplate[]
+
+  @@map("tenant")
+}
+
+model User {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String    @map("tenant_id") @db.Uuid
+  email          String    @unique
+  emailVerified  DateTime? @map("email_verified") @db.Timestamptz
+  hashedPassword String?   @map("hashed_password")
+  name           String
+  role           String    @default("marketer")
+  locale         String    @default("en")
+  image          String?
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant             Tenant          @relation(fields: [tenantId], references: [id])
+  accounts           Account[]
+  sessions           Session[]
+  campaignsOwned     Campaign[]      @relation("CampaignOwner")
+  templatesAuthored  EmailTemplate[] @relation("TemplateAuthor")
+
+  @@index([tenantId])
+  @@map("user")
+}
+
+// ============================================================
+//  NextAuth adapter tables
+//  Conform to @auth/prisma-adapter expectations.
+// ============================================================
+
+model Account {
+  id                String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String  @map("user_id") @db.Uuid
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("account")
+}
+
+model Session {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id") @db.Uuid
+  expires      DateTime @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime @db.Timestamptz
+
+  @@unique([identifier, token])
+  @@map("verification_token")
+}
+
+// ============================================================
+//  KOL domain
+// ============================================================
+
+model Kol {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String    @map("tenant_id") @db.Uuid
+  platform           String
+  handle             String
+  displayName        String    @map("display_name")
+  bio                String?
+  avatarUrl          String?   @map("avatar_url")
+  countryCode        String?   @map("country_code")
+  language           String?
+  followerCount      Int       @default(0) @map("follower_count")
+  engagementRate    Decimal?   @map("engagement_rate") @db.Decimal(5, 2)
+  avgViews           Int?      @map("avg_views")
+  categories         String[]
+  audienceAgeDist    Json?     @map("audience_age_dist") @db.JsonB
+  audienceGeoDist    Json?     @map("audience_geo_dist") @db.JsonB
+  audienceGenderDist Json?     @map("audience_gender_dist") @db.JsonB
+  aiScore            Int?      @map("ai_score")
+  aiScoreBreakdown   Json?     @map("ai_score_breakdown") @db.JsonB
+  aiEvaluatedAt      DateTime? @map("ai_evaluated_at") @db.Timestamptz
+  status             String    @default("active")
+  externalId         String?   @map("external_id")
+  lastSyncedAt       DateTime? @map("last_synced_at") @db.Timestamptz
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt          DateTime? @map("deleted_at") @db.Timestamptz
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  kolCampaigns KolCampaign[]
+  emailLogs    EmailLog[]
+
+  @@unique([tenantId, platform, handle])
+  @@index([tenantId, aiScore(sort: Desc)])
+  @@index([tenantId, platform, followerCount])
+  @@map("kol")
+}
+
+// ============================================================
+//  Campaigns
+// ============================================================
+
+model Campaign {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String    @map("tenant_id") @db.Uuid
+  name           String
+  game           String?
+  markets        String[]
+  status         String    @default("draft")
+  budgetAmount   Decimal?  @map("budget_amount") @db.Decimal(12, 2)
+  budgetCurrency String    @default("USD") @map("budget_currency")
+  kpiTarget      Json?     @map("kpi_target") @db.JsonB
+  startDate      DateTime? @map("start_date") @db.Date
+  endDate        DateTime? @map("end_date") @db.Date
+  ownerUserId    String    @map("owner_user_id") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  owner        User          @relation("CampaignOwner", fields: [ownerUserId], references: [id])
+  kolCampaigns KolCampaign[]
+  emailLogs    EmailLog[]
+
+  @@index([tenantId, status, startDate])
+  @@map("campaign")
+}
+
+model KolCampaign {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String    @map("tenant_id") @db.Uuid
+  kolId          String    @map("kol_id") @db.Uuid
+  campaignId     String    @map("campaign_id") @db.Uuid
+  status         String    @default("candidate")
+  matchScore     Int?      @map("match_score")
+  matchReasoning Json?     @map("match_reasoning") @db.JsonB
+  contactedAt    DateTime? @map("contacted_at") @db.Timestamptz
+  repliedAt      DateTime? @map("replied_at") @db.Timestamptz
+  acceptedAt     DateTime? @map("accepted_at") @db.Timestamptz
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  kol      Kol      @relation(fields: [kolId], references: [id])
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+
+  @@unique([tenantId, kolId, campaignId])
+  @@index([tenantId, campaignId, status])
+  @@map("kol_campaign")
+}
+
+// ============================================================
+//  Email
+// ============================================================
+
+model EmailTemplate {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String    @map("tenant_id") @db.Uuid
+  name      String
+  subject   String
+  bodyHtml  String    @map("body_html")
+  bodyText  String    @map("body_text")
+  variables Json?     @db.JsonB
+  locale    String    @default("en")
+  category  String    @default("outreach")
+  createdBy String    @map("created_by") @db.Uuid
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+
+  tenant  Tenant @relation(fields: [tenantId], references: [id])
+  creator User   @relation("TemplateAuthor", fields: [createdBy], references: [id])
+
+  @@index([tenantId, locale, category])
+  @@map("email_template")
+}
+
+model EmailLog {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId          String    @map("tenant_id") @db.Uuid
+  campaignId        String?   @map("campaign_id") @db.Uuid
+  kolId             String?   @map("kol_id") @db.Uuid
+  templateId        String?   @map("template_id") @db.Uuid
+  toAddress         String    @map("to_address")
+  fromAddress       String    @map("from_address")
+  subject           String
+  bodyHtml          String    @map("body_html")
+  provider          String    @default("resend")
+  providerMessageId String?   @unique @map("provider_message_id")
+  status            String    @default("queued")
+  sentAt            DateTime? @map("sent_at") @db.Timestamptz
+  deliveredAt       DateTime? @map("delivered_at") @db.Timestamptz
+  openedAt          DateTime? @map("opened_at") @db.Timestamptz
+  repliedAt         DateTime? @map("replied_at") @db.Timestamptz
+  bounceReason      String?   @map("bounce_reason")
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  campaign Campaign? @relation(fields: [campaignId], references: [id])
+  kol      Kol?      @relation(fields: [kolId], references: [id])
+
+  @@index([tenantId, campaignId, status])
+  @@index([tenantId, kolId])
+  @@map("email_log")
+}
+
+// ============================================================
+//  Audit
+// ============================================================
+
+model AuditLog {
+  id           BigInt   @id @default(autoincrement())
+  tenantId     String?  @map("tenant_id") @db.Uuid
+  actorUserId  String?  @map("actor_user_id") @db.Uuid
+  action       String
+  resourceType String   @map("resource_type")
+  resourceId   String?  @map("resource_id") @db.Uuid
+  payload      Json?    @db.JsonB
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([tenantId, resourceType, resourceId])
+  @@map("audit_log")
+}

@@ -2,7 +2,7 @@
   "status": "building",
   "user_goal": "搭建 KOLMatrix Next.js 工程地基，完成可运行的 Dashboard mock，使后续业务批次能在稳定基线上做纯功能开发",
   "total_features": 10,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
   "current_sprint": "B0-foundation",
   "last_updated": "2026-04-18",
@@ -30,7 +30,8 @@
   "evaluator_feedback": null,
   "generator_handoff": null,
   "session_notes": {
-    "Kimi": "B0 spec v3 已修订（响应 johnsong 规格偏差报告）。技术栈升级 = Next.js 16 + React 19.2 + Tailwind v4 (CSS-first @theme, 不再用 tailwind.config.ts) + shadcn 最新版（已原生支持 v4）。其他要求保持 v2: (1) 像素级还原 design-draft/stitch-references/dashboard.png（间距 ±2px / ΔE<2 / 字号 100%）。(2) F010 公共组件库 12 个 common/ 组件必须先抽好，Dashboard 强制复用，page.tsx ≤80 行。强制执行顺序 F001→F002→F003→F004→F005→F010→F007→F006→F008→F009。任何硬编码 HEX 验收直接 fail（除 globals.css 唯一 token 文件）。如规格存在偏差，开工前请先反馈。"
+    "Kimi": "B0 spec v3 已修订（响应 johnsong 规格偏差报告）。技术栈升级 = Next.js 16 + React 19.2 + Tailwind v4 (CSS-first @theme, 不再用 tailwind.config.ts) + shadcn 最新版（已原生支持 v4）。其他要求保持 v2: (1) 像素级还原 design-draft/stitch-references/dashboard.png（间距 ±2px / ΔE<2 / 字号 100%）。(2) F010 公共组件库 12 个 common/ 组件必须先抽好，Dashboard 强制复用，page.tsx ≤80 行。强制执行顺序 F001→F002→F003→F004→F005→F010→F007→F006→F008→F009。任何硬编码 HEX 验收直接 fail（除 globals.css 唯一 token 文件）。如规格存在偏差，开工前请先反馈。",
+    "johnsong": "F001-F003 完成。Prisma 7 变更提醒: schema 的 datasource 块只保留 provider, URL 移到 prisma.config.ts 的 datasource.url (env<Env>('DATABASE_URL'))；previewFeatures=driverAdapters 已去除（默认启用）；运行时 PrismaClient({adapter: new PrismaPg({connectionString: ...})})。本机 WSL 无 Docker, F003 的 migrate/seed/studio 未实机验证, 产物齐备 (schema / migration SQL incl. RLS + GIN / docker-compose / seed.ts / .env.example / db:* npm scripts)。Evaluator 或下一个 agent 启用 Docker 后跑 npm run db:up && npm run db:migrate && npm run db:seed 验证。"
   },
   "features": []
 }

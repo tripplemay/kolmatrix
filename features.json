@@ -22,7 +22,7 @@
       "title": "Prisma Schema + 初始 Migration + Seed",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "prisma/schema.prisma 含 B0-database-schema.md §4 全部 7 表 + NextAuth 3 表；docker-compose.yml 起 PG16+Redis7；npx prisma migrate dev 通过；prisma/seed.ts 注入 1 tenant + 2 users + 12 KOLs + 3 campaigns + 4 templates；npx prisma studio 能浏览数据"
     },
     {
