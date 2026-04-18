@@ -53,10 +53,12 @@ Neural Velocity 同时满足：
 **URL：** https://stitch.withgoogle.com/projects/9338165817879839093
 **设计系统 Asset：** `assets/18406648320972948834`
 
-### 已生成屏幕
+### 已生成屏幕（Canonical App Shell 已对齐）
 
 | 批次 | 页面 | 屏幕 ID | 状态 |
 |---|---|---|---|
-| V1 | Dashboard（基调基准） | `724c65f2855b4af2bb6c953b3ba3c588` | ✅ |
-| V2 | KOL Discovery（发现引擎） | `e11cdb31e0b64728a232675f1f05b6e1` | ✅ |
-| V2 | KOL Detail（详情页） | `c5eff50452ae44b4a093a414766b0f0a` | ✅ |
+| V1 | Dashboard | `8b4aa02ae47c4da181239399c6ef4658` | ✅ |
+| V2 | KOL Discovery | `a1771401c71140e49e20ebc559782dc3` | ✅ |
+| V2 | KOL Detail | `b06528d25565440c833a7f94035feead` | ✅ |
+
+> **历史变更（2026-04-18）：** V1/V2 初版的 sidebar/topbar 三页不一致。已通过 `edit_screens` 重新生成为 canonical shell 版本（旧 3 张已隐藏/删除）。Canonical App Shell 完整规范已写入设计系统 `designMd`，后续生成自动应用。详见 `design-draft/design-system.md` §9。

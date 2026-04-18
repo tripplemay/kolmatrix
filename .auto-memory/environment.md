@@ -10,8 +10,10 @@ type: reference
 - API：`https://kol.guangai.ai/api/v1/`
 - Stitch 视觉基调基准项目（Neural Velocity，已定稿 2026-04-18）：`9338165817879839093`
   - URL: https://stitch.withgoogle.com/projects/9338165817879839093
-  - 设计系统 Asset: `18406648320972948834`
-  - Dashboard 屏幕: `724c65f2855b4af2bb6c953b3ba3c588`
+  - 设计系统 Asset: `18406648320972948834`（已含 canonical App Shell 强制规范）
+  - Dashboard 屏幕（canonical shell）: `8b4aa02ae47c4da181239399c6ef4658`
+  - KOL Discovery 屏幕: `a1771401c71140e49e20ebc559782dc3`
+  - KOL Detail 屏幕: `b06528d25565440c833a7f94035feead`
 - Stitch 早期探索项目（已淘汰）：`5540715662009406892`（scratch screens，不作参考）
 - 视觉规范完整文档：`design-draft/design-system.md` + `docs/specs/visual-baseline.md`
 

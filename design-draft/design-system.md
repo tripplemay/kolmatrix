@@ -185,7 +185,109 @@
 
 ---
 
-## 9. 覆盖验收清单
+## 9. Canonical App Shell（强制规范）
+
+> 所有页面必须使用统一的 sidebar + topbar，仅激活态和页面标题随页变化。
+> 该规范同步写入 Stitch 设计系统的 `designMd`，AI 生成新页面时自动遵循。
+
+### Sidebar（左侧 240px，固定，全高）
+
+- 背景：`#060e20`（surface_container_lowest），无右边框
+- 右侧分隔：20px 青色光晕阴影 @ 3% 不透明度（替代边框）
+- 内边距：24px
+
+#### Logo Block（顶部 56px 高，下方 32px margin）
+
+- 40×40px 渐变方块（135° `#00daf3 → #c3f5ff`，10px 圆角），内嵌白色 "K" 字标（Inter 700 18px navy 色）
+- 右侧文字：`KOLMatrix` Inter 700 18px（cyan 渐变文字）
+- 文字下方 tagline：`NEURAL VELOCITY` Inter 600 9px tracking 0.15em，颜色 `#6B7280`
+
+#### Navigation List（**严格 8 项**，顺序固定）
+
+| 序 | 项 | 图标（material-symbols） |
+|---|---|---|
+| 1 | Dashboard | `dashboard` |
+| 2 | KOL Discovery | `travel_explore` |
+| 3 | KOL Database | `groups` |
+| 4 | Campaigns | `rocket_launch` |
+| 5 | Email Center | `forward_to_inbox` |
+| 6 | Products | `inventory_2` |
+| 7 | Analytics | `query_stats` |
+| 8 | Settings | `settings` |
+
+每项：padding `10px 14px`，圆角 10px，Inter 500 14px，icon 20px + label，gap 12px。
+
+| 状态 | 文字 | 图标 | 背景 |
+|---|---|---|---|
+| 默认 | `#bac9cc` | `#bac9cc` | 透明 |
+| Hover | `#dae2fd` | cyan `#00E5FF` | `rgba(34,42,61,0.5)` |
+| Active | cyan `#00E5FF` Inter 600 | cyan | 90° 渐变 `rgba(0,229,255,0.10) → 透明`，左侧 2px cyan 竖条 |
+
+#### User Chip（底部固定）
+
+- 横向：avatar 36px 圆形 + 右侧文本（"Sarah Chen" Inter 600 14px / "Ops Lead" Inter 400 11px `#6B7280`）+ 远端小 chevron 图标
+- padding 12px，圆角 10px，hover 背景 `rgba(34,42,61,0.4)`
+
+#### Sidebar 禁忌
+
+- ❌ Help Center 链接
+- ❌ Create Campaign 按钮（属于主内容头部）
+- ❌ Connect Wallet 等任何 Web3/crypto 元素
+- ❌ 8 项之外的任何 nav item
+- ❌ rocket logo 单色（必须是 K 字标 + 渐变方块）
+
+### Topbar（顶部 64px，sticky）
+
+- 背景：`rgba(11,19,38,0.85)` + backdrop-blur 24px（毛玻璃）
+- 无底部边框，下方 4px 环境光晕 `rgba(0,0,0,0.3)`
+- 横向 padding 32px，垂直居中
+- 三段式布局：左 / 中 / 右
+
+#### LEFT — 页面标题
+- Inter 600 16px 白色，简单文本（如 "Dashboard" / "KOL Discovery" / "KOL Profile"）
+- ❌ 不放任何横向 nav 链接（"Global Trends"、"Leaderboard" 等）
+
+#### CENTER — Global Search（max-width 480px，flex-1，mx-auto）
+
+- 药丸形，高 40px，padding-x 16px
+- 背景 `#2d3449`（surface_container_highest）
+- 左侧 search 图标 18px `#6B7280`
+- Placeholder：`"Search KOLs, campaigns, emails..."` Inter 400 13px `#6B7280`
+- 右侧 `Cmd+K` 小 chip（Inter 500 11px `#6B7280` 细边框）
+- Focus：1px cyan ghost border + 4px outer cyan glow @ 20%
+
+#### RIGHT — Action Cluster（gap 16px）
+
+1. 语言切换：`EN` chip Inter 500 13px `#bac9cc` + 小 chevron
+2. 通知铃铛：`notifications` 图标 22px `#bac9cc`，未读时右上 6px 红点
+3. 垂直分隔：1×24px `rgba(186,201,204,0.15)`
+4. 用户头像：32px 圆形 + 小 chevron（**不显示用户名**，名字在 sidebar）
+
+#### Topbar 禁忌
+
+- ❌ Connect Wallet（或任何 Web3 元素）
+- ❌ 横向 nav 链接
+- ❌ 底部边框线（用环境光晕）
+- ❌ `auto_awesome` / sparkle 按钮（已被 Cmd+K 提示替代）
+
+### Per-page 配置
+
+| 页面 | Sidebar Active | Topbar 标题 |
+|---|---|---|
+| Dashboard | Dashboard | Dashboard |
+| KOL Discovery | KOL Discovery | KOL Discovery |
+| KOL Detail | KOL Discovery | KOL Profile |
+| Campaigns | Campaigns | Campaigns |
+| Campaign Detail | Campaigns | Campaign · {name} |
+| Email Center | Email Center | Email Center |
+| KOL Database | KOL Database | KOL Database |
+| Products | Products | Products |
+| Analytics | Analytics | Analytics |
+| Settings | Settings | Settings |
+
+---
+
+## 10. 覆盖验收清单
 
 新页面上线前必须自检：
 
@@ -207,6 +309,10 @@
 |---|---|
 | 项目 | `projects/9338165817879839093` |
 | 设计系统 Asset | `assets/18406648320972948834` |
-| Dashboard 屏幕 | `724c65f2855b4af2bb6c953b3ba3c588` |
+| Dashboard 屏幕（canonical shell） | `8b4aa02ae47c4da181239399c6ef4658` |
+| KOL Discovery 屏幕（canonical shell） | `a1771401c71140e49e20ebc559782dc3` |
+| KOL Detail 屏幕（canonical shell） | `b06528d25565440c833a7f94035feead` |
 
 访问：https://stitch.withgoogle.com/projects/9338165817879839093
+
+> **shell 同步机制：** Stitch 设计系统的 `designMd` 已嵌入 §9 Canonical App Shell 完整规范。后续 `generate_screen_from_text` 生成新页面时会自动读取，AI 应输出统一 shell。如出现不一致，用 `edit_screens` 批量对齐。
