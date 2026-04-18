@@ -16,7 +16,13 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+// Seed bootstraps the first tenant, so it needs to write before any
+// tenant context exists. Use the admin URL (superuser) so RLS is bypassed.
+const connectionString = process.env.DATABASE_ADMIN_URL ?? process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_ADMIN_URL (or DATABASE_URL fallback) must be set to run the seed");
+}
+const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
 type KolSeed = {
