@@ -404,3 +404,95 @@ export function LanguageSwitcher() {
 - `src/components/layout/nav-config.ts` — 已预留 `i18nKey` 字段
 - `prisma/schema.prisma` — `User.locale String @default("en")` 字段已有
 - Context7 `next-intl` v4.x 文档 — 审计时已查
+
+---
+
+## 10. Planner 裁决（Kimi · 2026-04-19）
+
+F006 是 B0 最后一个 feature。审计扎实，路由/middleware/messages 三大块方案已经成熟。全部 8 条决议采纳 johnsong 建议——只有 #F2/#F3 两条是 B 方案，其余 A。
+
+### 10.1 §7 8 条决议
+
+**短格式：** `#F1:A #F2:B #F3:B #F4:A #F5:A #F6:A #F7:A #F8:A`
+
+| # | 决定 | 理由 |
+|---|---|---|
+| F1 | **A** 保留根 `src/app/login/` 无 locale 前缀 | 未认证时无 locale 上下文；登录页文字极少（Email / Password / Sign in）；B0 不引浏览器 Accept-Language 探测，B1+ 视觉打磨时再加 |
+| F2 | **B** 尊重 URL 显式 locale | 共享链接 `/zh/kols` 不应因 `user.locale=en` 被强行重定向；LanguageSwitcher 主动切换才双写 DB+cookie |
+| F3 | **B** Activity feed mock 保留英文硬编码 | mock 数据本就是 transient，B3 接真实 DB 数据后重新设计字段结构；把 transient 文案塞进 messages 会污染翻译清单 |
+| F4 | **A** 非 EN 初始值复制 EN + `// TODO: translate` | spec 明写此策略；next-intl v4 空字符串不自动跨 locale fallback，空值会显空字符，用户体验差 |
+| F5 | **A** 保持 Inter（系统 CJK fallback） | B0 不引字体依赖；视觉若严重差 B1 再加 Noto Sans SC / PingFang SC |
+| F6 | **A** 日期动态 locale | `Date.toLocaleDateString(locale, options)` 是 i18n 基础要求 |
+| F7 | **A** 仅 LanguageSwitcher 显式切换才更新 DB | 登录 cookie 不回写，避免副作用；用户 DB 偏好应显式控制 |
+| F8 | **A** 登录后 redirect `/{user.locale}/dashboard` | 尊重 DB 偏好；与 F2:B 组合 = 登录时用 DB 默认语言 + URL 可临时覆盖 |
+
+### 10.2 §4 Middleware 组合方案评审
+
+johnsong 的 `auth() + handleI18nRouting()` 链式方案正确，**无需修改**。顺序 intl→auth 保证 URL 先规范化再鉴权。`stripLocale` helper 是务实的 path 剥离方案。
+
+**唯一补充：** `updateUserLocale` server action 文件路径最终位于 `src/app/[locale]/(app)/actions.ts`（johnsong §6 已引用），但 `"use server"` 必须标在文件首行，且必须用 `"use server"` + zod 参数校验（防越权）：
+
+```typescript
+"use server";
+import { z } from "zod";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/db";
+import { routing } from "@/i18n/routing";
+
+const schema = z.object({ locale: z.enum(routing.locales) });
+
+export async function updateUserLocale(raw: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+  const { locale } = schema.parse({ locale: raw });
+  await prisma.user.update({ where: { id: session.user.id }, data: { locale } });
+}
+```
+
+### 10.3 §2 路由 migration 清单评审
+
+全部操作合理，**无增删**。注意：
+
+1. `src/app/[locale]/layout.tsx` 不需要改 `<html lang>`（根 `src/app/layout.tsx` 保留 `lang="en"` 作为外层默认；locale 可用 `data-lang` 传递给 meta tag 或 SEO）—— 如果视觉 QA 认为需要，B1+ 再加动态 `<html lang={locale}>` 处理
+2. 所有 `src/app/(app)/**` 移到 `src/app/[locale]/(app)/**` 后，**import paths 不变**（`@/` 别名不受影响），唯一要改的是 route-relative 路径（`../` 级数可能变）
+3. `messages/{locale}.json` 放**项目根**还是 `src/messages/`？johnsong 方案是项目根，一致 next-intl 文档——accept
+
+### 10.4 §5 messages/en.json 草案评审
+
+**结构合理**，只加 2 点建议（非阻塞）：
+
+1. `login.invalidCredentials` 建议措辞细化成占位："Email 或 password 不正确。请重试或找管理员重置"（国际化通用更清晰）
+2. `dashboard.kpi` 子命名空间 keys 顺序（totalKols / activeCampaigns / emailsSent / avgAiMatch）应与 UI 渲染顺序一致，方便译员对齐视觉
+
+这些是微调，johnsong 自行决定即可。
+
+### 10.5 §6 LanguageSwitcher 实现评审
+
+**方案可行**。只提醒 3 点：
+
+1. `useTransition` 配合 server action 正确；切语言期间整块 dropdown 应 disabled（当前 `disabled={l === locale || isPending}` 已做）
+2. `segments[0] = next` 替换 URL 首段是正确做法；但要处理无 locale 前缀的情况（如访问 `/` 根），johnsong 的 `if (LOCALES.includes(segments[0])) ... else segments.unshift(next)` 正确
+3. LanguageSwitcher 位置：当前在 `TopbarActions.tsx` 里，locale dropdown 展开时注意不要被 topbar sticky 遮挡（需 `z-50` + 超出 topbar 范围）
+
+### 10.6 B0 收尾预告（F006 是最后一个）
+
+F006 完成后：
+1. `progress.json` → `status: "building"` → Generator 推送最后 push
+2. 用户告知"B0 build 完成"→ 我 update `status: "verifying"` → Codex (Reviewer) 按 B0 spec §7 严格手工验收
+3. Codex 跑完 4 层验收（L1 构建扫描 / L1.5 严格手工 / L2 视觉回归 / L3 E2E / L4 文档）
+4. 若全 PASS → `status: "done"` + signoff 写 `docs/test-reports/B0-foundation-signoff.md`
+5. 启动 **BI1 测试基建**（按 Option α 序列）
+
+### 10.7 B0 整体统计（预告）
+
+B0 从启动到 F006 开工，用户 + Planner + Generator 三方协作产出：
+- 代码：Next 16 + React 19 + Tailwind v4 完整脚手架 + Auth + RLS + 12 common 组件 + Dashboard 5 区块 + CI workflow
+- 文档：4 份 pre-impl 审计 + 4 份 Planner 裁决（裁决机制已成熟）
+- 设计：canonical App Shell 写入 designMd 自动注入 + 色彩 token 边界政策沉淀
+- 状态机：10 features 完整跑通 planning → building（即将 → verifying → done）
+
+**pre-impl 审计 → Planner 裁决**模式显著降低了返工成本。F005 4 次裁决 + F010 6 决议 + F007 7 决议 + F006 8 决议共 25 个决策点，**没有一个导致 building 阶段返工**。
+
+---
+
+**johnsong 可按此立即开工 F006**（无需进一步确认）。预计 5.75 小时完成 + 本地点测 + push main → B0 进入 verifying。
