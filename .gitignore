@@ -1,0 +1,28 @@
+# Harness agent local identity（本机身份，不入 git）
+.agent-id
+
+# OS / editor
+.DS_Store
+*.swp
+*.swo
+.obsidian/
+
+# Node / Next.js
+node_modules/
+.next/
+dist/
+build/
+coverage/
+.turbo/
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Project scaffolding leftovers
+_backup/
