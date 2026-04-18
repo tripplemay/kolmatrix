@@ -33,6 +33,22 @@
 | B10 | 竞品分析 + 效果数据回流 | 远期 |
 | B11 | Webhook & API 开放 | 远期 |
 
+## 工程基建批次（BI 系列，与业务批次并行）
+
+业务批次（B1-B11）专注用户可见功能，工程基建（BI 系列）专注开发/部署/测试质量。
+基建批次可独立调度，但 **BI1 必须在 B1 启动前完成**（测试是 acceptance 基础）。
+
+| 批次 | 主题 | 主要交付 | 紧迫程度 |
+|---|---|---|---|
+| **BI1** | 测试基建 | Vitest + Testcontainers + Playwright + 首批 unit/integration tests + CI 集成 | 🔴 高（B1 前置） |
+| **BI2** | 部署自动化 | GitHub Actions deploy workflow + 健康检查 + 回滚 + DB 自动备份 + `/api/health` + PM2 ecosystem | 🟡 中（首次需要 staging 验证前） |
+| **BI3** | 域名与 TLS | Let's Encrypt 申请 + Nginx HTTPS + Staging 子域 + 续期监控 | 🟡 中（与 BI2 配套） |
+| **BI4** | 监控与日志 | Sentry 集成 + pino 结构化日志 + Grafana 仪表（可选 PostHog） | 🟢 低（远期） |
+
+详见：
+- `docs/dev/infrastructure.md` — CI/CD + 部署 + TLS 完整规划
+- `docs/dev/testing.md` — 测试策略 + Codex 工作流
+
 ## 设计稿生成策略
 
 每批次开工前必须保证：
