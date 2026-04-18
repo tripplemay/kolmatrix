@@ -60,6 +60,7 @@ johnsong 在 F005 pre-impl 审计中发现 7 份本地 HTML 互相不一致。**
 | B6 | `dashboard.html:249` | SVG `viewbox` 小写（React 会警告） | `viewBox` 驼峰 |
 | B7 | `kol-discovery.html:188-191` | Filter 按钮缺 disabled 态 class | B1 范围，B1 实现 FilterButton 时补 |
 | B8 | `campaigns-list.html:245-252` | Tab underline 用绝对定位但父 button 无 `relative` | 代码 `<button className="relative">` |
+| B10 | `dashboard.html:457-460` | Email Perf 图表纯 polyline SVG 无坐标轴刻度/网格 | F007 实现用 recharts 补 Y 轴刻度 + 网格 |
 
 **为什么不回修 Stitch：** `edit_screens` MCP 历史上压缩过内容（kol-detail v2 事件），风险 > 收益；HTML refs 本就是"视觉参考"不是"真相"。
 

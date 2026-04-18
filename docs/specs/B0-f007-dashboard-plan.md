@@ -242,3 +242,84 @@ void TagChip; void AvatarWithPlatformBadge; void SecondaryButton;
 - `prisma/schema.prisma` — Campaign 缺 openRate；EmailLog 已有
 - `prisma/seed.ts` — 待补 EmailLog + openRate 初值
 - `src/components/common/` — F010 12 组件（已产出，barrel 导出）
+
+---
+
+## 11. Planner 裁决（Kimi · 2026-04-19）
+
+F007 pre-impl 审计挖出了 spec 里一个实际冲突（#7）—— 好事，正是 pre-impl 审计价值所在。
+
+### 11.1 §5 7 条决议
+
+**短格式：** `#1:A #2:A #3:A #4:A #5:A #6:A #7:B`
+
+| # | 决定 | 理由 |
+|---|---|---|
+| 1 | **A** 补 seed + openRate migration 合进 F007 sprint | 三者同属"让 Dashboard 真跑起来"叙事；拆 2 PR 切片反而割裂验收上下文 |
+| 2 | **A** EmailPerformanceChart 在 `features/dashboard/` | F010 12 名单硬锁；chart 是 Dashboard 独享实现 |
+| 3 | **A** `features/dashboard/mocks.ts` 单文件 | 测试友好 + 后续 B3 换真实数据时 point-of-replacement 清晰 |
+| 4 | **A** Server Component | Next 15 App Router 默认最佳实践；SSR + auth + Prisma 自然流 |
+| 5 | **A** session.user.name 动态 | 多租户硬要求；seed 已建 Sarah Chen user，session 登录后就是她 |
+| 6 | **A** 新 `AiMatchRingCard` 特例 | StatCard 保持通用；环形进度是单点视觉，扩 StatCard 只为这个 case 不合理 |
+| 7 | **B** 接受间接使用 + 静态防 inline 检查 | 详见 §11.2 spec 修订 |
+
+### 11.2 决议 #7 深度 — F007 acceptance 口径修订
+
+**原 spec 冲突：**
+- 要求 page.tsx 必须 `import` 全部 12 个组件（grep 验证）
+- 实际：TagChip / AvatarWithPlatformBadge / SecondaryButton 在 Dashboard 没有独立顶层使用，只被 KolCard 内部消费
+- 强求直接 import 会逼出 `void TagChip` 虚引用——**违反 "不允许 inline 重写视觉" 的精神本意**
+
+**裁决：采纳 johnsong 的 B 方案 + §6 新口径。**
+
+F007 acceptance 修订如下（**我来更新 features.json 和 B0-foundation-spec.md**）：
+
+```
+旧: page.tsx JSX 总长度 ≤80 行；必须 import 并使用 F010 全部 12 个公共组件，
+    不允许在 page.tsx 内 inline 写同等视觉的 div。
+
+新: page.tsx JSX 总长度 ≤80 行；
+    (1) page.tsx 直接 import ≥5 个 F010 组件（真实顶层使用的那些）；
+    (2) Dashboard 渲染树中 12 个 F010 组件全部出现（直接 page.tsx
+        或间接通过 KolCard 等封装引入都算）——通过 import 图静态分析验证；
+    (3) page.tsx 内不允许 inline 写 card / button / chip / header 等
+        视觉片段（静态 grep 检查：无 <div className="... rounded-xl ..."
+        之类直接仿组件样式的写法）。
+```
+
+**本意未变：** 强制复用 F010 组件库，防止在 page.tsx 重写视觉。只是"如何验证" 从"必须 12 个直接 import"改为"渲染树包含 + 不 inline"。
+
+### 11.3 §7 原型 bug 补钉
+
+| # | 文件 | 漂移 | 处理 |
+|---|---|---|---|
+| B9 | dashboard.html:249 | ~重复 B6~ | 已在 F010 裁决 §11.3 登记 |
+| B10 | dashboard.html:457-460 | Email Perf 图表纯 polyline 无坐标轴 | F007 实现用 recharts 补 Y 轴 + 网格（加入 README 漂移清单） |
+
+Planner 同步追加 B10 到 `design-draft/stitch-references/README.md`。
+
+### 11.4 4 个数据 gap 的处理（通过决议 #1:A 同意）
+
+| Gap | 处理 |
+|---|---|
+| G1 Emails Sent 7d = 0 | 补 seed 100-500 条 EmailLog（7 天内分散） |
+| G2 Campaign.openRate 无字段 | 加 schema `openRate Decimal? @db.Decimal(5,4)` + migration + seed 初值 |
+| G3 KPI trend 无历史表 | mock 固定值（+12% / 0% / +5.2%）—— B3+ 再加 kol_history 表 |
+| G4 KPI 4 环形进度 | 通过 #6:A 解决，新建 AiMatchRingCard 特例组件 |
+
+### 11.5 同步文档更新
+
+Planner 立即执行：
+1. `features.json` F007 acceptance 改为 §11.2 新口径
+2. `docs/specs/B0-foundation-spec.md` §4 F007 acceptance 段落改为新口径
+3. `design-draft/stitch-references/README.md` 漂移清单加 B10
+
+### 11.6 额外叮嘱（不阻塞开工）
+
+- Prisma migration 命名建议：`20260419_add_campaign_open_rate`（时间戳 + 动词 + 对象）
+- migration 文件头必须加 `-- ROLLBACK: ALTER TABLE campaign DROP COLUMN open_rate;`（BI2 会检查此规范）
+- EmailLog seed 的 100-500 条要覆盖 `status: 'sent'` / `'opened'` / `'replied'` / `'bounced'` 四状态，给 F007 chart 4 条曲线真实数据源
+
+---
+
+**johnsong 可立即开工 F007**（无需再确认）。预计 4.3 小时，走 HEX / tsc / lint / build / 80 行检查闸门 → push main。

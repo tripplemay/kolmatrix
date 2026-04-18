@@ -188,8 +188,13 @@ KOLMatrix 项目在视觉基调（Neural Velocity）+ Stitch 参考稿（Dashboa
 - KPI 数字来自 DB（删除 seed 后变 0）
 - 切换 EN/ZH topbar 后 nav 标签变化（dashboard 文案至少 EN）
 - **`page.tsx` 内 JSX 总长度 ≤ 80 行**（强制把 UI 拆到组件）
+- **F010 12 组件接入口径**（F007 裁决 §11.2 修订，2026-04-19）：
+  1. page.tsx 直接 import **≥5 个**真实顶层使用的 F010 组件
+  2. Dashboard 渲染树中 **12 个 F010 组件全部出现**（直接 page.tsx 或间接经 KolCard 等封装引入都算）——通过 import 图静态分析验证
+  3. page.tsx 内**不允许** inline 写 card / button / chip / header 等视觉片段（静态 grep 检查无 `<div className="... rounded-xl ...">` 等直接仿组件样式）
 - **重复样式片段（同一 className 组合出现 ≥2 次）必须抽组件**
 - **任何硬编码 HEX 直接 fail**
+- F007 sprint 内**允许**补 Campaign.openRate migration + EmailLog seed（G1/G2 合并 PR，见 F007 裁决 §11.4）
 
 ### F008 — CI Workflow
 **实现：**

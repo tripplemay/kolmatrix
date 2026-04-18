@@ -55,7 +55,7 @@
       "priority": "high",
       "executor": "generator",
       "status": "pending",
-      "acceptance": "/dashboard 渲染 5 区块（greeting / KPI 4 卡 / Active Campaigns 3 行 / AI-Recommended KOLs 2x2 / Email Performance LineChart + Activity Feed）；KPI 数字来自 Prisma seed（删除 seed 后变 0）；像素级还原 design-draft/stitch-references/dashboard.png（标准同 F005）；必须 import 并使用 F010 全部 12 个公共组件，page.tsx JSX 总长度 ≤80 行；任何硬编码 HEX 直接 fail；重复样式片段 ≥2 次必须抽组件"
+      "acceptance": "/dashboard 渲染 5 区块（greeting / KPI 4 卡 / Active Campaigns 3 行 / AI-Recommended KOLs 2x2 / Email Performance LineChart + Activity Feed）；KPI 数字来自 Prisma seed（删除 seed 后变 0）；像素级还原 design-draft/stitch-references/dashboard.png（标准同 F005）；page.tsx JSX 总长度 ≤80 行；F010 12 组件接入口径（F007 裁决 §11.2 修订）: (1) page.tsx 直接 import ≥5 个真实顶层使用的 F010 组件 (2) Dashboard 渲染树中 12 个 F010 组件全部出现（直接或间接经 KolCard 等封装都算，import 图静态分析验证）(3) page.tsx 不允许 inline 写 card/button/chip/header 视觉片段；任何硬编码 HEX 直接 fail；F007 sprint 内可补 Campaign.openRate migration + EmailLog seed（G1/G2 允许合进 PR）"
     },
     {
       "id": "F008",
@@ -79,7 +79,7 @@
       "priority": "high",
       "executor": "generator",
       "status": "completed",
-      "acceptance": "src/components/common/ 下 12 个组件文件全部存在并导出（StatCard/KolCard/CampaignRow/AiScoreBadge/GlassPanel/GradientButton/SecondaryButton/GhostButton/TagChip/AvatarWithPlatformBadge/ActivityFeedItem/SectionHeader）；每个文件 props interface 完整 + 文件头说明注释；每个文件 ≤100 行；色彩走 Tailwind token 禁止硬编码 HEX；F007 Dashboard 必须 import 并使用全部 12 个组件（grep 验证）；视觉对照 design-draft/stitch-references/dashboard.png 一致；执行顺序在 F005 之后 F007 之前"
+      "acceptance": "src/components/common/ 下 12 个组件文件全部存在并导出（StatCard/KolCard/CampaignRow/AiScoreBadge/GlassPanel/GradientButton/SecondaryButton/GhostButton/TagChip/AvatarWithPlatformBadge/ActivityFeedItem/SectionHeader）；每个文件 props interface 完整 + 文件头说明注释；每个文件 ≤100 行；色彩走 Tailwind token 禁止硬编码 HEX；F007 Dashboard 渲染树接入 12 个组件（F007 裁决 §11.2 修订，接受间接使用）；视觉对照 design-draft/stitch-references/dashboard.png 一致；执行顺序在 F005 之后 F007 之前"
     }
   ]
 }
