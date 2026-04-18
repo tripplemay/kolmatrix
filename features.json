@@ -38,7 +38,7 @@
       "title": "App Shell 组件实现（Sidebar + Topbar + Layout）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "8 nav 项顺序与图标完全匹配 B0-app-shell-component.md §4；激活态 cyan 文字 + 左侧 2px 竖条 + 渐变背景；topbar 三段式 + 玻璃拟态背景 + 搜索 Cmd+K hint；user chip 显示 Sarah Chen / Ops Lead；无 Help Center / Connect Wallet / 横向 nav 链接；像素级还原 design-draft/stitch-references/dashboard.png：色彩 100% 走 token、字体/字号/字距/行高/间距/圆角/阴影/渐变与设计稿一致、布局结构 100% 对齐（间距 ±2px / ΔE<2 / 字号 100%）"
     },
     {

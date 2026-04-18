@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "搭建 KOLMatrix Next.js 工程地基，完成可运行的 Dashboard mock，使后续业务批次能在稳定基线上做纯功能开发",
   "total_features": 10,
-  "completed_features": 4,
+  "completed_features": 5,
   "fix_rounds": 0,
   "current_sprint": "B0-foundation",
-  "last_updated": "2026-04-18",
+  "last_updated": "2026-04-18T22:55:00Z",
   "reference_docs": [
     "docs/specs/B0-foundation-spec.md",
     "docs/dev/architecture.md",
@@ -31,7 +31,7 @@
   "generator_handoff": null,
   "session_notes": {
     "Kimi": "B0 spec v3 已修订（响应 johnsong 规格偏差报告）。技术栈升级 = Next.js 16 + React 19.2 + Tailwind v4 (CSS-first @theme, 不再用 tailwind.config.ts) + shadcn 最新版（已原生支持 v4）。其他要求保持 v2: (1) 像素级还原 design-draft/stitch-references/dashboard.png（间距 ±2px / ΔE<2 / 字号 100%）。(2) F010 公共组件库 12 个 common/ 组件必须先抽好，Dashboard 强制复用，page.tsx ≤80 行。强制执行顺序 F001→F002→F003→F004→F005→F010→F007→F006→F008→F009。任何硬编码 HEX 验收直接 fail（除 globals.css 唯一 token 文件）。如规格存在偏差，开工前请先反馈。",
-    "johnsong": "F001-F004 完成并 E2E 验证, 下一个 F005 (App Shell 像素级还原)。接续要点: (A) 本机 WSL 通过 Docker Desktop WSL integration 可用; docker-compose.override.yml (gitignored) 把 PG/Redis 映射到 5433/6380 避开 nextpanel 占用的 5432; .env 里 DATABASE_URL 用 kolmatrix_app (非 superuser, RLS 生效), DATABASE_ADMIN_URL 用 kolmatrix (superuser, migrations/seed)。(B) 登录验证账号 marketer@kolmatrix.local / KOLM@2026!, /dashboard stub 渲染 KOL count=12。(C) Prisma 7 差异: schema datasource 只留 provider; URL 在 prisma.config.ts (env<Env>('...'))。运行时 PrismaClient({adapter: new PrismaPg({connectionString})})。(D) auth 分 auth.config.ts (edge) 和 auth.ts (Node); middleware.ts 必须 export default auth, Next 16 要求函数导出。Next 16 已弃用 middleware.ts 名字, 后续迁 proxy.ts。(E) src/lib/db.ts: prisma + withTenant(uuid, fn) + withPlatformAdmin(fn); 后者给 Credentials authorize 查邮箱用 (SET LOCAL app.is_platform_admin=true)。(F) 硬编码 HEX 扫描命令: grep -rEn '#[0-9a-fA-F]{6}' src/ --include='*.ts*' --include='*.css' | grep -v 'styles/globals.css' 必须空。(G) F005 实现约束(B0-app-shell-component.md §4): 8 nav 项顺序锁 Dashboard/KOL Discovery/KOL Database/Campaigns/Email Center/Products/Analytics/Settings; 激活态 cyan 文字+左侧 2px 竖条+渐变背景; topbar 三段式+玻璃拟态+Cmd+K hint; user chip 显示 Sarah Chen/Ops Lead; 无 Help Center/Connect Wallet/横向 nav。F005 完成后进入 F010 (12 个 common/ 组件), 然后 F007 Dashboard 强制复用全部 12 个, page.tsx JSX ≤80 行。"
+    "johnsong": "F001-F005 完成。F005 产出 src/components/layout/ 下 12 个文件 (AppShellLayout + Sidebar/SidebarLogo/SidebarNav/SidebarUserChip + Topbar/TopbarSearch/TopbarActions/LanguageSwitcher/NotificationBell/UserAvatarMenu + nav-config)。(app)/layout.tsx 已接入 AppShellLayout, dashboard/page.tsx 改为不含自己 chrome 的 stub。验收全绿: HEX 扫描 0 命中 / tsc --noEmit 0 错误 / eslint 0 错误 / next build 成功 (5 routes)。实现要点: (A) Material Symbols 图标通过 root layout 已加载的 Google Fonts CDN, 组件内用 <span className='material-symbols-outlined'> 消费。(B) AppShellLayout 是 client component ('use client'), 从 usePathname() 推 activeNavId + pageTitle; (app)/layout.tsx 是 server component, 调 auth() 取 session 并把 server action handleSignOut 作为 prop 传入 client component。(C) Sidebar 240px 宽 bg-surface-lowest + Create Campaign gradient-cta + 8 nav + 底部 user chip; 激活态用绝对定位 2px cyan 竖条 + from-cyan/12 渐变背景。(D) Topbar 64px sticky + bg-navy-base/85 + backdrop-blur-[24px] + 阴影; 三段式: 左 page title, 中 TopbarSearch (max-480px + ⌘K hint + focus ring cyan), 右 TopbarActions (Language EN / Bell 带红点 / divider / UserAvatarMenu)。(E) 所有色彩走 Tailwind v4 token (text-cyan / bg-surface-* / text-on-surface* / gradient-cta 等), globals.css 外 HEX 零命中。下一个任务 F010: 12 个 common/ 组件 (StatCard / KolCard / CampaignRow / AiScoreBadge / GlassPanel / GradientButton / TagChip / AvatarWithPlatformBadge / ActivityFeedItem / SectionHeader + 2 个), 为 F007 Dashboard 强制复用做准备。F006 国际化先不做 (顺序锁 F010 在前)。已知待办: Next 16 弃用 middleware.ts 文件名, 建议后续批次改 proxy.ts (build 时 warn 但不 block)。L2 视觉回归 (截屏对比 dashboard.png) 是 Codex/Reviewer 的验收阶段任务, 生成器已做完实现。"
   },
   "features": []
 }
