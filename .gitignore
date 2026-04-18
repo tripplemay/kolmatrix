@@ -1,6 +1,9 @@
 # Harness agent local identity（本机身份，不入 git）
 .agent-id
 
+# Claude Code runtime locks
+.claude/
+
 # OS / editor
 .DS_Store
 *.swp

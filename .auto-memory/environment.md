@@ -8,6 +8,12 @@ type: reference
 
 - 控制台：`https://kol.guangai.ai`
 - API：`https://kol.guangai.ai/api/v1/`
+- Stitch 视觉基调基准项目（Neural Velocity，已定稿 2026-04-18）：`9338165817879839093`
+  - URL: https://stitch.withgoogle.com/projects/9338165817879839093
+  - 设计系统 Asset: `18406648320972948834`
+  - Dashboard 屏幕: `724c65f2855b4af2bb6c953b3ba3c588`
+- Stitch 早期探索项目（已淘汰）：`5540715662009406892`（scratch screens，不作参考）
+- 视觉规范完整文档：`design-draft/design-system.md` + `docs/specs/visual-baseline.md`
 
 ## 生产服务器（与 aigcgateway 共机）
 
