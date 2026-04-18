@@ -14,7 +14,7 @@
       "title": "Neural Velocity 设计 token → Tailwind v4 @theme 映射",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/styles/globals.css 含 @theme 块定义 navy/cyan/purple 全部色阶 + radius-md(12px)/lg(16px) + font-sans Inter；不再使用 tailwind.config.ts；自定义 utilities .glass-panel/.ambient-glow/.ai-glow/.gradient-text/.gradient-cta；任意组件用 token 渲染颜色与 design-system.md §2 完全一致；代码 grep '#[0-9a-fA-F]{6}' 在 globals.css 之外命中数为 0"
     },
     {

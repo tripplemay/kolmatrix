@@ -1,0 +1,186 @@
+/**
+ * KOLMatrix — Neural Velocity token (F002 single source of truth)
+ *
+ * This file is the ONLY allowed location for hardcoded HEX literals in the
+ * codebase. All components must consume these tokens via Tailwind utilities
+ * (e.g. `bg-surface-low`, `text-cyan`, `rounded-md`) or the custom utilities
+ * declared at the bottom (`glass-panel`, `ambient-glow`, `ai-glow`,
+ * `gradient-text`, `gradient-cta`).
+ *
+ * Reference: design-draft/design-system.md §2 + §5
+ */
+
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   Neural Velocity tokens (exposed as Tailwind v4 design tokens)
+   ============================================================ */
+@theme {
+  /* Brand — electric cyan (AI pulse) */
+  --color-cyan: #00E5FF;
+  --color-cyan-fixed: #9cf0ff;
+  --color-cyan-fixed-dim: #00daf3;
+  --color-cyan-soft: #c3f5ff;
+
+  /* Brand — purple (secondary / classification) */
+  --color-purple: #9D50FF;
+  --color-purple-container: #6e06d0;
+
+  /* Navy surface stack (color-layered, no 1px borders) */
+  --color-navy-base: #0b1326;
+  --color-navy-deep: #0F172A;
+  --color-surface-lowest: #060e20;
+  --color-surface-low: #131b2e;
+  --color-surface: #171f33;
+  --color-surface-high: #222a3d;
+  --color-surface-highest: #2d3449;
+  --color-surface-bright: #31394d;
+
+  /* On-* (foreground text on surfaces) */
+  --color-on-surface: #dae2fd;
+  --color-on-surface-variant: #bac9cc;
+  --color-on-primary: #00363d;
+
+  /* Outlines (rare; negative space preferred) */
+  --color-outline: #849396;
+  --color-outline-variant: #3b494c;
+
+  /* Semantic state */
+  --color-warning: #fec931;
+  --color-error: #ffb4ab;
+
+  /* Radii (§4) */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* Typography */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+/* ============================================================
+   shadcn/ui compatibility bridge
+   Map shadcn semantic vars onto Neural Velocity tokens so that
+   existing shadcn primitives (button, etc.) render in brand palette.
+   ============================================================ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+}
+
+/* Dark-first mapping — project has no light mode.
+   Root uses Neural Velocity navy palette directly. */
+:root {
+  --background: var(--color-navy-base);
+  --foreground: var(--color-on-surface);
+  --card: var(--color-surface-low);
+  --card-foreground: var(--color-on-surface);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-on-surface);
+  --primary: var(--color-cyan);
+  --primary-foreground: var(--color-on-primary);
+  --secondary: var(--color-purple);
+  --secondary-foreground: var(--color-on-surface);
+  --muted: var(--color-surface);
+  --muted-foreground: var(--color-on-surface-variant);
+  --accent: var(--color-surface-high);
+  --accent-foreground: var(--color-on-surface);
+  --destructive: var(--color-error);
+  --border: var(--color-outline-variant);
+  --input: var(--color-surface-highest);
+  --ring: var(--color-cyan);
+  --chart-1: var(--color-cyan);
+  --chart-2: var(--color-purple);
+  --chart-3: var(--color-cyan-soft);
+  --chart-4: var(--color-cyan-fixed);
+  --chart-5: var(--color-warning);
+  --radius: 12px;
+  --sidebar: var(--color-surface-lowest);
+  --sidebar-foreground: var(--color-on-surface);
+  --sidebar-primary: var(--color-cyan);
+  --sidebar-primary-foreground: var(--color-on-primary);
+  --sidebar-accent: var(--color-surface-high);
+  --sidebar-accent-foreground: var(--color-on-surface);
+  --sidebar-border: var(--color-outline-variant);
+  --sidebar-ring: var(--color-cyan);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ============================================================
+   Custom utilities (§5 质感规则 materialization)
+   ============================================================ */
+@utility glass-panel {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  background-color: color-mix(in srgb, var(--color-cyan) 20%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--color-cyan) 30%, transparent);
+  border-radius: var(--radius-md);
+}
+
+@utility ambient-glow {
+  box-shadow: 0 0 40px color-mix(in srgb, var(--color-on-surface) 5%, transparent);
+}
+
+@utility ai-glow {
+  text-shadow: 0 0 12px color-mix(in srgb, var(--color-cyan) 60%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--color-cyan) 40%, transparent);
+}
+
+@utility gradient-text {
+  background: linear-gradient(135deg, var(--color-cyan-fixed-dim), var(--color-cyan-soft));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+@utility gradient-cta {
+  background: linear-gradient(135deg, var(--color-cyan-fixed-dim) 0%, var(--color-cyan-soft) 100%);
+  color: var(--color-on-primary);
+}
