@@ -277,32 +277,113 @@ F001 → F002 → F003 → F004 → F005 → **F010 → F007** → F006 → F008
 | 公共组件抽象过早 | B0 12 组件直接对照 Stitch 截图抽取，不预测未来需求。后续如果 props 不够灵活，B1 再演进 |
 | Material Symbols 加载阻塞 | 用 `font-display: swap`；如影响 LCP 改为本地子集 |
 
-## 7. 验收方式（Evaluator 阶段）
+## 7. 验收方式（Evaluator 阶段 — 严格手工模式）
 
-由 Reviewer (codex) 执行，包括：
+由 Reviewer (codex) 执行。**严格标准，不放水**；因 BI1 测试基建未到位，自动化部分由手工深度验证替代（手段变，标准不变）。BI1 F006-F009 完成后将补打 B0 自动化覆盖，形成回归保护网（若届时发现 B0 漏洞起 B0 hotfix 批次）。
 
-### L1 — 自动化检查
-- Prisma schema 单元测试：所有表的 RLS 隔离（cross-tenant 查询返回 0）
-- Auth 流单元测试：登录 / 跳转 / 会话验证
-- Token 映射回归：assert `globals.css` `@theme` 块含 12 个色阶 token
-- 构建验证：`npm run build` + `tsc --noEmit` + `lint` 全绿
-- **HEX 硬编码扫描：** `grep -rE '#[0-9a-fA-F]{6}' src/` 在 `globals.css` 之外的命中数 = 0
-- **公共组件复用扫描：** Dashboard `page.tsx` 必须 import 全部 12 个 F010 组件；`page.tsx` JSX 总长度 ≤ 80 行
+### L1 — 构建与代码扫描（可自动化，不依赖 BI1）
+- 构建验证：`npm run build` + `npx tsc --noEmit` + `npm run lint` 全绿
+- HEX 硬编码扫描：`grep -rE '#[0-9a-fA-F]{6}' src/` 在 `globals.css` 之外命中数 = 0
+- 公共组件复用扫描：Dashboard `page.tsx` 必 import 全部 12 个 F010 组件；`page.tsx` JSX 总长度 ≤ 80 行
+- Token 映射校验：`globals.css` 的 `@theme` 块含 `design-system.md §2` 全部色阶 token（手工 diff 字段名 + 值）
 
-### L2 — 视觉回归
-- 启动 `npm run dev` → 访问 `/login` 截屏（仅功能验收，无视觉要求）
-- 访问 `/dashboard` 截屏（1280x2048 viewport）
-- **与 `design-draft/stitch-references/dashboard.png` 并排比对**，验收标准：
+### L1.5 — 严格手工深度验证（BI1 前的等效替代，不得跳过）
+
+**RLS 隔离手工验证（6 张多租户表全覆盖）：**
+
+```bash
+# Codex 在本地用 psql 连到 kolmatrix_app 角色（不是 superuser）
+# 对以下 6 张表分别验证：user / kol / campaign / kol_campaign / email_template / email_log
+
+# 场景 1: 带 tenant 上下文
+psql -U kolmatrix_app kolmatrix -c "
+BEGIN;
+SET LOCAL app.tenant_id = '<seed-tenant-A-id>';
+SELECT count(*) FROM kol;  -- 应 = 12 (seed 数据)
+SELECT count(*) FROM campaign;  -- 应 = 3
+-- ...其余 4 张表
+COMMIT;
+"
+
+# 场景 2: 不带 tenant 上下文
+psql -U kolmatrix_app kolmatrix -c "SELECT count(*) FROM kol;"
+# 应 = 0 (RLS 拦截)
+
+# 场景 3: 跨 tenant 泄漏测试
+# SET LOCAL app.tenant_id = '<fake-uuid>'; SELECT * FROM kol; -- 应 = 0
+```
+
+每张表都必须跑这 3 个场景，Codex 在 signoff 报告中记录 psql 输出。
+
+**Auth 完整流手工验证：**
+
+浏览器（Chrome / Safari 任一）完整跑一遍：
+1. 未登录直接访问 `/dashboard` → 应 302 跳 `/login`
+2. 错误 email → 登录表单返回错误提示
+3. 正确 email + 错误密码 → 返回 401 / 表单错误
+4. 正确凭证（`marketer@kolmatrix.local` / `KOLM@2026!`）→ 应跳 `/dashboard`
+5. DevTools → Cookies 确认 `next-auth.session-token` 存在
+6. 刷新 Dashboard 仍登录态
+7. 登出（如有登出按钮）→ session 失效
+8. 使用另一个 tenant 的 `admin@kolmatrix.local` 账号登录，确认只见自己 tenant 数据
+
+Codex 必须按顺序走完，在 signoff 记录每步通过情况。
+
+### L2 — 视觉回归（手工并排对比，标准 ΔE<2 不放水）
+
+- Codex 启动 `npm run dev` → 打开 `/dashboard`
+- 窗口调整到 1280×2048（Stitch 设计稿原生尺寸）
+- 用**任一图像对比工具**截屏并与 `design-draft/stitch-references/dashboard.png` 并排比对：
+  - 推荐：Photoshop 图层叠加 + Difference blend mode
+  - 或：`pixelmatch` CLI（`npm install -g pixelmatch-cli` + 跑 `pixelmatch a.png b.png diff.png`）
+  - 或：Kaleidoscope / Beyond Compare 等专业 diff 工具
+- 严格标准（与自动化一致）：
   - 间距偏差 ≤ 2px
-  - 颜色偏差 ΔE < 2（`globals.css` `@theme` token 必须严格对应设计 HEX）
+  - 颜色偏差 ΔE < 2
   - 字号 100% 匹配
-  - 布局结构（元素顺序、对齐、网格）100% 对齐
-- 发现差异 → 写入 `evaluator_feedback`，回退 fixing 阶段
+  - 布局结构（元素顺序 / 对齐 / 网格）100% 对齐
+- Codex **必须在 signoff 报告中贴对比截图**（actual / baseline / diff 三张），标注所有差异点
+- 任一差异 > 标准 → 判 PARTIAL，写 evaluator_feedback 推回 fixing
 
-### L3 — 文档与 DX
-- README 步骤可重现（Reviewer 在干净环境跑一遍 30 分钟内起服务）
+### L3 — 端到端用户流（手工 checklist）
+
+Codex 用 marketer 账号按顺序跑完整流程，每步截屏留证：
+
+1. 访问 `/login` → 输入凭证 → 跳 `/dashboard`
+2. Dashboard 5 区块（greeting / KPI 4 卡 / Active Campaigns / AI KOLs / Email Chart + Activity）全部渲染
+3. KPI "Total KOLs" 数值 = 12（seed 数据）
+4. Sidebar 8 个 nav 项均可点（点 Campaigns → 应到 `/campaigns`，未实现页面可 404，但路由对）
+5. Topbar `EN` 切换器点 ZH → sidebar 8 项文案变 ZH
+6. 返回 EN → 文案恢复
+7. 用户头像 dropdown 有 Sign out 选项
+
+### L4 — 文档与 DX
+
+- README 步骤可重现：Reviewer 在干净环境（如 Docker / 新账户）按 README 从零跑 30 分钟内起服务
 - `.env.example` 与代码实际读取的环境变量名一一对应
-- 全部 12 个 F010 组件文件头注释完整
+- 全部 12 个 F010 公共组件文件头注释完整
+
+---
+
+### signoff 报告要求
+
+Codex 在 `docs/test-reports/B0-foundation-signoff.md` 必须包含：
+
+1. **4 层验收逐项结论**（L1 自动化 + L1.5 手工深度 + L2 视觉 + L3 E2E + L4 文档）
+2. **RLS psql 输出全文**（6 张表 × 3 场景 = 18 个结果）
+3. **视觉对比截图**（actual + baseline + diff，至少 Dashboard 一张）
+4. **E2E 截屏 7 张**（L3 checklist 每步一张）
+5. **发现的问题清单**（PARTIAL / FAIL，含复现步骤 + 建议）
+6. **最终判定：** 全 PASS → `status=done`；有问题 → `status=fixing` + `evaluator_feedback`
+
+### BI1 后的延伸工作（非 B0 验收阻塞）
+
+BI1 `F006-F009` 实施时会在 `tests/` 下写 B0 代码的自动化测试（component unit / RLS integration / E2E / 视觉回归）。跑通这些测试相当于对 B0 做自动化回归检查：
+
+- 测试跑通 → 确认 B0 实现经得起自动化验证
+- 测试跑不通 → 区分原因：
+  - 测试逻辑错 → BI1 fixing 修
+  - B0 实现错 → 起 **B0-hotfix 独立批次**修复（按 harness §铁律 9：生产紧急故障也要走流程）
 
 ## 8. 引用文档
 
