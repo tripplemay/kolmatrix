@@ -1,4 +1,77 @@
 {
-  "sprint": null,
-  "features": []
+  "sprint": "B0-foundation",
+  "features": [
+    {
+      "id": "F001",
+      "title": "Next.js 15 项目脚手架（TypeScript / App Router / Tailwind / 关键依赖）",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "npm install 成功；npm run dev 启动到 :3000；npm run build 通过；npx tsc --noEmit 0 错误；npm run lint 0 错误；package.json 含 prisma/next-auth@beta/next-intl/@tanstack/react-query/react-hook-form/zod/recharts/bcrypt/shadcn-ui"
+    },
+    {
+      "id": "F002",
+      "title": "Neural Velocity 设计 token → Tailwind / CSS Variables 映射",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "tailwind.config.ts 含 navy/cyan/purple 全部色阶；borderRadius 含 md(12px)/lg(16px)；Inter 字体生效；globals.css 提供 .glass-panel/.ambient-glow/.ai-glow/.gradient-text/.gradient-cta；任意组件用 token 渲染颜色与 design-system.md §2 完全一致"
+    },
+    {
+      "id": "F003",
+      "title": "Prisma Schema + 初始 Migration + Seed",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "prisma/schema.prisma 含 B0-database-schema.md §4 全部 7 表 + NextAuth 3 表；docker-compose.yml 起 PG16+Redis7；npx prisma migrate dev 通过；prisma/seed.ts 注入 1 tenant + 2 users + 12 KOLs + 3 campaigns + 4 templates；npx prisma studio 能浏览数据"
+    },
+    {
+      "id": "F004",
+      "title": "PostgreSQL RLS 策略 + tenant 上下文中间件 + NextAuth v5 认证 + 登录页",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "migration 含 6 张多租户表的 RLS policies；src/lib/db.ts 提供 withTenant(tenantId, fn) 包装；src/auth.ts 配置 NextAuth v5 CredentialsProvider+Prisma adapter+JWT；middleware 拦截 /(app)/*；/login 渲染表单（功能向）；marketer 登录后查 kol 表只见自己 tenant 数据；不带上下文 raw 查询返回 0 行"
+    },
+    {
+      "id": "F005",
+      "title": "App Shell 组件实现（Sidebar + Topbar + Layout）",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "8 nav 项顺序与图标完全匹配 B0-app-shell-component.md §4；激活态 cyan 文字 + 左侧 2px 竖条 + 渐变背景；topbar 三段式 + 玻璃拟态背景 + 搜索 Cmd+K hint；user chip 显示 Sarah Chen / Ops Lead；无 Help Center / Connect Wallet / 横向 nav 链接；视觉对照 Stitch screen 8b4aa02ae47c4da181239399c6ef4658 接近（≤10% 差异）"
+    },
+    {
+      "id": "F006",
+      "title": "next-intl 国际化基础（5 语言路由 + Topbar 切换器联动）",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "/[locale]/dashboard 路由结构生效；messages/{en,zh,ja,ko,es}.json 完整文件；EN 全翻译，其他语言占位；topbar EN 切换器点 ZH 后 sidebar 8 项文案变 ZH；缺 key fallback EN 不报错；user.locale 持久化到 cookie"
+    },
+    {
+      "id": "F007",
+      "title": "Dashboard 页面（mock + 真组件，对照 Stitch 视觉）",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "/dashboard 渲染 5 区块（greeting / KPI 4 卡 / Active Campaigns 3 行 / AI-Recommended KOLs 2x2 / Email Performance LineChart + Activity Feed）；KPI 数字来自 Prisma seed（删除 seed 后变 0）；玻璃拟态评分徽章 + 渐变 CTA + cyan glow；视觉对照 Stitch 8b4aa02a 接近"
+    },
+    {
+      "id": "F008",
+      "title": "GitHub Actions CI Workflow",
+      "priority": "medium",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": ".github/workflows/ci.yml 配置 install/lint/typecheck/build 4 jobs；PostgreSQL service for migrate smoke；Node 20 LTS + npm cache；paths-ignore 配置 .auto-memory/**/progress.json/features.json/backlog.json/docs/**/design-draft/**/framework/**/*.md/harness-rules.md；修改 docs 不触发 CI；PR 合入触发 CI 全绿"
+    },
+    {
+      "id": "F009",
+      "title": "README + 本地搭建文档 + .env.example",
+      "priority": "medium",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "README.md 含项目介绍 + 5 行 quickstart；docs/dev/setup.md 详细环境搭建（Node 20/Docker/env vars/seed）；.env.example 列全所需环境变量（DATABASE_URL/NEXTAUTH_SECRET/NEXTAUTH_URL/AIGCGATEWAY_*/RESEND_API_KEY 占位）；CONTRIBUTING.md 引用 harness-rules；新 dev fork 后 30 分钟内本地能起服务看到 Dashboard"
+    }
+  ]
 }

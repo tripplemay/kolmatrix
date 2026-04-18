@@ -1,21 +1,35 @@
 {
-  "status": "new",
-  "user_goal": "",
-  "total_features": 0,
+  "status": "building",
+  "user_goal": "搭建 KOLMatrix Next.js 工程地基，完成可运行的 Dashboard mock，使后续业务批次能在稳定基线上做纯功能开发",
+  "total_features": 9,
   "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": null,
-  "last_updated": "",
-  "reference_docs": [],
+  "current_sprint": "B0-foundation",
+  "last_updated": "2026-04-18",
+  "reference_docs": [
+    "docs/specs/B0-foundation-spec.md",
+    "docs/dev/architecture.md",
+    "docs/specs/B0-database-schema.md",
+    "docs/specs/B0-app-shell-component.md",
+    "docs/specs/PRD.md",
+    "docs/specs/visual-baseline.md",
+    "design-draft/design-system.md"
+  ],
   "docs": {
-    "spec": null,
+    "spec": "docs/specs/B0-foundation-spec.md",
     "test_cases": null,
     "signoff": null,
     "framework_reviewed": false
   },
-  "role_assignments": null,
+  "role_assignments": {
+    "planner": "Kimi",
+    "generator": "johnsong",
+    "evaluator": "Reviewer"
+  },
   "evaluator_feedback": null,
   "generator_handoff": null,
-  "session_notes": {},
+  "session_notes": {
+    "Kimi": "B0 Planner 完成。建议执行顺序：F001 脚手架 → F002 token 映射 → F003 schema/migration/seed → F004 RLS+Auth+登录页 → F005 App Shell 组件 → F006 i18n → F007 Dashboard → F008 CI → F009 README。F005 视觉验收以 Stitch screen 8b4aa02ae47c4da181239399c6ef4658 为基准。F003/F004 涉及多租户 RLS，仔细看 architecture.md §3.2 和 B0-database-schema.md §5。所有色彩/圆角/字体硬性走 token，禁止硬编码 HEX。如发现规格偏差，开工前先反馈，不要直接实现。"
+  },
   "features": []
 }
