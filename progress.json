@@ -31,7 +31,7 @@
   "generator_handoff": null,
   "session_notes": {
     "Kimi": "B0 spec v3 已修订（响应 johnsong 规格偏差报告）。技术栈升级 = Next.js 16 + React 19.2 + Tailwind v4 (CSS-first @theme, 不再用 tailwind.config.ts) + shadcn 最新版（已原生支持 v4）。其他要求保持 v2: (1) 像素级还原 design-draft/stitch-references/dashboard.png（间距 ±2px / ΔE<2 / 字号 100%）。(2) F010 公共组件库 12 个 common/ 组件必须先抽好，Dashboard 强制复用，page.tsx ≤80 行。强制执行顺序 F001→F002→F003→F004→F005→F010→F007→F006→F008→F009。任何硬编码 HEX 验收直接 fail（除 globals.css 唯一 token 文件）。如规格存在偏差，开工前请先反馈。",
-    "johnsong": "F001-F003 完成。Prisma 7 变更提醒: schema 的 datasource 块只保留 provider, URL 移到 prisma.config.ts 的 datasource.url (env<Env>('DATABASE_URL'))；previewFeatures=driverAdapters 已去除（默认启用）；运行时 PrismaClient({adapter: new PrismaPg({connectionString: ...})})。本机 WSL 无 Docker, F003 的 migrate/seed/studio 未实机验证, 产物齐备 (schema / migration SQL incl. RLS + GIN / docker-compose / seed.ts / .env.example / db:* npm scripts)。Evaluator 或下一个 agent 启用 Docker 后跑 npm run db:up && npm run db:migrate && npm run db:seed 验证。"
+    "johnsong": "F001-F003 完成并已实机验证。Prisma 7 变更提醒: schema 的 datasource 块只保留 provider, URL 移到 prisma.config.ts 的 datasource.url (env<Env>('DATABASE_URL'))；previewFeatures=driverAdapters 已去除（默认启用）；运行时 PrismaClient({adapter: new PrismaPg({connectionString: ...})})。本机 5432 被 nextpanel-postgres 占用, 通过 docker-compose.override.yml (gitignored) 映射到 5433, 对应 .env 的 DATABASE_URL 也用 5433; 默认 docker-compose.yml 和 .env.example 仍是 5432。migrate + seed 实测通过: 7+3+1+1=12 表, RLS 正确开启在 user/kol/campaign/kol_campaign/email_template/email_log 六张业务表, tenant/audit_log/NextAuth 辅助表不开。seed 产出 1+2+12+3+4 记录数符合预期。"
   },
   "features": []
 }

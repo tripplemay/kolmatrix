@@ -33,3 +33,7 @@ _backup/
 # Next build output
 next-env.d.ts
 *.tsbuildinfo
+
+# docker-compose local overrides
+docker-compose.override.yml
+docker-compose.override.yaml
