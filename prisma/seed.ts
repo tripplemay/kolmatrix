@@ -334,12 +334,13 @@ async function main() {
     await prisma.campaign.upsert({
       where: {
         // Synthetic unique lookup via (tenantId, name) — emulate via findFirst then conditional create.
-        id: (
-          await prisma.campaign.findFirst({
-            where: { tenantId: tenant.id, name: campaign.name },
-            select: { id: true },
-          })
-        )?.id ?? "00000000-0000-0000-0000-000000000000",
+        id:
+          (
+            await prisma.campaign.findFirst({
+              where: { tenantId: tenant.id, name: campaign.name },
+              select: { id: true },
+            })
+          )?.id ?? "00000000-0000-0000-0000-000000000000",
       },
       update: { status: campaign.status },
       create: { tenantId: tenant.id, ownerUserId: marketer.id, ...campaign },
