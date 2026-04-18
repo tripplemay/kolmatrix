@@ -251,22 +251,27 @@ Tailwind v4 不再使用 `tailwind.config.ts`，所有 token 在 `src/styles/glo
 - 40x40 渐变方块（`bg-gradient-to-br from-cyan-fixed-dim to-cyan-light`）+ 内嵌白色 "K" 字（`text-navy-base font-bold text-lg`）
 - 旁边竖排：`KOLMatrix` (gradient-text 18px font-bold) + `NEURAL VELOCITY` (text-text-very-muted text-[9px] uppercase tracking-[0.15em] font-semibold)
 
-### 6.2 SidebarNavItem 状态切换
+### 6.2 SidebarNavItem 状态切换（canonical #5: 齐边 + border-l-2）
+
+> **Canonical 裁决（2026-04-18）：** 激活态采用 `rounded-none border-l-2` 齐边方案。原设计 `rounded-[10px]` 与 border-l-2 互斥会切断 border，放弃 rounded 圆角。详见 `docs/specs/B0-app-shell-canonical-review.md §7.1 #5`。
+
 ```tsx
 <Link
   href={href}
   className={cn(
-    'flex items-center gap-3 px-3.5 py-2.5 rounded-[10px]',
+    'flex items-center gap-3 px-3.5 py-2.5',
     'text-[14px] font-medium transition-colors duration-200',
     isActive
-      ? 'text-cyan font-semibold bg-gradient-to-r from-cyan/10 to-transparent border-l-2 border-cyan'
-      : 'text-text-muted hover:text-text-primary hover:bg-navy-container-high/50'
+      ? 'text-cyan font-semibold bg-gradient-to-r from-cyan/10 to-transparent border-l-2 border-cyan rounded-none'
+      : 'text-text-muted hover:text-text-primary hover:bg-navy-container-high/50 rounded-[10px]'
   )}
 >
   <span className="material-symbols-outlined text-[20px]">{icon}</span>
   {label}
 </Link>
 ```
+
+> 非激活态仍可保留 `rounded-[10px]`（hover 视觉柔和）；激活态强制 `rounded-none` 让 `border-l-2` 齐边。
 
 ### 6.3 Topbar 玻璃拟态
 ```tsx

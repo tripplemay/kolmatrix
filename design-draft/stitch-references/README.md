@@ -44,9 +44,26 @@ cd design-draft/stitch-references && python3 -m http.server 8088
 ### 4. App Shell 一致性
 所有页面共享 canonical App Shell（sidebar 8 项 + topbar 三段式），由设计系统 `designMd` 强制注入。开发实现时，shell 抽取为 `<AppShellLayout>` 单一组件复用，不在每页重写。
 
+## ⚠️ 已知 HTML 参考漂移（2026-04-18 审计发现）
+
+johnsong 在 F005 pre-impl 审计中发现 7 份本地 HTML 互相不一致。**canonical 真相来源是 `design-draft/design-system.md` §9 + `docs/specs/B0-app-shell-component.md` + `docs/specs/B0-app-shell-canonical-review.md`**，不是单份 HTML 快照。
+
+代码实现按 canonical，不复刻这些 HTML bugs。Reviewer 做视觉回归 L2 时：**canonical 描述优先于 HTML 字面渲染**。
+
+| # | 文件 | 漂移内容 | 代码应实现 |
+|---|---|---|---|
+| B1 | `kol-discovery.html` | sidebar 只有 7 项（缺 Products） | 8 项完整 nav |
+| B2 | `dashboard.html` | sidebar 只有 7 项（缺 Settings） | 8 项完整 nav |
+| B3 | `kol-detail.html` | 激活态用独特 `w-[2px]` span 设计 | canonical `border-l-2` 齐边 |
+| B4 | `campaigns-list.html` | footer 用 `unfold_more` 图标 | `expand_more` |
+| B5 | `dashboard.html` | sidebar footer 用单账号链接 | User Chip（avatar + name + role + chevron） |
+
+**为什么不回修 Stitch：** `edit_screens` MCP 历史上压缩过内容（kol-detail v2 事件），风险 > 收益；HTML refs 本就是"视觉参考"不是"真相"。
+
 ## 视觉验收基准
 
 - B0 F005（App Shell）+ F007（Dashboard）的视觉验收以 `dashboard.png` 为基准（像素级还原 ±2px / ΔE<2 / 字号 100%）
+- **对齐原则：** 代码按 canonical 实现；遇 HTML ref 与 canonical 不符（上述 B1-B5）时，以 canonical 为准
 - B1 后续业务页面以对应 .png 为基准
 - Reviewer 阶段截屏对照验收
 

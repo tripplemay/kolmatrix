@@ -85,3 +85,74 @@ F005 当前实现把 Sidebar 底部做成**大 chip**（头像 + name + role in 
 - `design-draft/design-system.md` §9 — Canonical App Shell 规范
 - `design-draft/stitch-references/*.html` — 7 份本地原型快照（已发现 4 个 bug）
 - `harness-rules.md` — "规格偏差开工前反馈" 条款
+
+---
+
+## 7. Planner 裁决（Kimi · 2026-04-18）
+
+感谢严谨的 pre-impl 审计。裁决如下——johnsong 可按此立即开工 F005，无需等进一步确认。
+
+### 7.1 §2 的 11 条 Canonical 决定
+
+**短格式：** `#1:A #2:A #3:B #4:A #5:A #6:B #7:A #8:A #9:A #10:A #11:A`
+
+全部采纳 johnsong 建议（与 Stitch 多数派 + designMd 一致）。详细理由：
+
+| # | 决定 | 理由 |
+|---|---|---|
+| 1 | **A** `<aside>` | 语义正确（sidebar 是 complementary content）。内部可嵌 `<nav>` 包裹 nav list |
+| 2 | **A** `fixed left-0 top-0` | SaaS dashboard 标配，sidebar 不随主内容滚动 |
+| 3 | **B** `px-6 py-6`（24px padding） | designMd §9 明确 "Padding: 24px"；视觉舒展优先 |
+| 4 | **A** z-50 | 未来可能叠弹窗/toast，sidebar/topbar 都走 z-50 保险 |
+| 5 | **A** `rounded-none border-l-2 border-cyan` 齐边 | 6/7 多数派 + border-l-2 与 rounded 互斥（rounded 会把 border 切断）。放弃 designMd 原写的 `rounded-[10px]`，齐边方案更 canonical |
+| 6 | **B** 移除 Create Campaign CTA | designMd §9 STRICT FORBIDDEN 明写"no Create Campaign in sidebar"。dashboard.html 里的是 Stitch 生成漂移，忽略 |
+| 7 | **A** `sticky top-0` | 比 fixed 简单，随主内容滚动上下文 |
+| 8 | **A** `rounded-full` 药丸 | designMd "Pill shape, height 40px"，明确 |
+| 9 | **A** 显示 ⌘K hint | designMd "Right side small kbd chip showing 'Cmd+K'" |
+| 10 | **A** "EN" 文字 + chevron | designMd "small chip Inter 500 13px '#bac9cc' showing 'EN' + tiny chevron" |
+| 11 | **A** 头像 chevron 保留 | designMd "32px circular + small chevron beside, opens user menu on click" |
+
+### 7.2 §3 的 4 个 Stitch 原型 bug
+
+**决定：不回修 Stitch，标注为"已知 HTML 参考漂移"。**
+
+理由：
+1. `edit_screens` MCP 历史上压缩过 kol-detail.html 内容（B0 v2 事件），风险 > 收益
+2. HTML refs 本就是"视觉参考"不是"真相来源"，canonical 真相在 designMd + 本文决议
+3. 实现照 canonical 走（F005/F010 已按此策略），视觉回归 L2 对照时 Reviewer 用 canonical 描述比对，不咬字 Stitch 渲染
+
+**补救：** 更新 `design-draft/stitch-references/README.md` 列出 4 bug + 告知 Reviewer "canonical 描述优先"。
+
+| # | 文件 | 已知漂移 | 实现层面 |
+|---|---|---|---|
+| B1 | kol-discovery.html | 只 7 项（缺 Products） | 代码实现 8 项 |
+| B2 | dashboard.html | 只 7 项（缺 Settings） | 代码实现 8 项 |
+| B3 | kol-detail.html | 激活态独特 `w-[2px]` span | 代码用 #5 canonical 齐边 `border-l-2` |
+| B4 | campaigns-list.html | footer `unfold_more` 图标 | 代码用 `expand_more` |
+
+### 7.3 §4 User Chip 方向
+
+**决定：User Chip 方向（avatar + name + role 圆角盒 + chevron），采纳 johnsong 建议。**
+
+dashboard.html 单账号链接是 Stitch 旧版漂移，补到 §7.2 表格作为 B5：
+
+| # | 文件 | 已知漂移 | 实现层面 |
+|---|---|---|---|
+| B5 | dashboard.html（footer） | 单账号链接（`account_circle + Sarah Chen`） | 代码按 User Chip 实现 |
+
+### 7.4 同步文档更新
+
+Planner 同时修订以下 spec：
+
+1. `docs/specs/B0-app-shell-component.md`
+   - §5 Nav Item 激活态改为 canonical #5（rounded-none + border-l-2 flush edge）
+   - 删除任何 Create Campaign CTA 相关残留
+   - padding 统一 `px-6 py-6`
+
+2. `design-draft/stitch-references/README.md`
+   - 加"⚠️ 已知 HTML 参考漂移"段，列出 B1-B5
+   - 明确"canonical 描述优先"原则
+
+本次裁决推送到 main 后，johnsong 可立即开工 F005，无需再询问。
+
+**本裁决的范围：** 仅限 F005 App Shell。F010 公共组件库如再发现类似分歧，走同样的"pre-impl 审计 → 裁决"流程。
