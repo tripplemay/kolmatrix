@@ -10,21 +10,8 @@ interface SidebarProps {
 
 export function Sidebar({ activeId, user }: SidebarProps) {
   return (
-    <aside className="bg-surface-lowest flex w-[240px] shrink-0 flex-col">
-      <div className="px-5 pt-6 pb-5">
-        <SidebarLogo />
-      </div>
-      <div className="px-5 pb-4">
-        <button
-          type="button"
-          className="gradient-cta inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-[12px] text-[13px] font-semibold transition-shadow hover:shadow-[0_0_24px_rgba(0,229,255,0.4)]"
-        >
-          <span className="material-symbols-outlined text-[18px]" aria-hidden>
-            add
-          </span>
-          Create Campaign
-        </button>
-      </div>
+    <aside className="bg-surface-lowest fixed top-0 left-0 z-50 flex h-screen w-[240px] flex-col px-6 py-6 shadow-[20px_0_20px_-15px_rgba(0,229,255,0.03)]">
+      <SidebarLogo />
       <SidebarNav activeId={activeId} />
       <SidebarUserChip name={user.name} role={user.role} avatarUrl={user.avatarUrl} />
     </aside>

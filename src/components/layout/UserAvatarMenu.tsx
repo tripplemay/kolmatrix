@@ -59,7 +59,7 @@ export function UserAvatarMenu({ user, onSignOut }: UserAvatarMenuProps) {
         <div
           role="menu"
           className={cn(
-            "glass-panel ambient-glow absolute right-0 mt-2 w-56 overflow-hidden rounded-[14px] p-1.5"
+            "bg-surface-low ring-cyan/15 ambient-glow absolute right-0 z-[60] mt-2 w-56 overflow-hidden rounded-[14px] p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.45)] ring-1"
           )}
         >
           <div className="px-3 py-2">

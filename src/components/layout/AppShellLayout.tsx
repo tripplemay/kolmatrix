@@ -26,9 +26,9 @@ export function AppShellLayout({
   const pageTitle = deriveActivePageTitle(activeId);
 
   return (
-    <div className="bg-navy-base flex min-h-screen">
+    <div className="bg-navy-base min-h-screen">
       <Sidebar activeId={activeId} user={user} />
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="ml-[240px] flex min-h-screen flex-col">
         <Topbar
           pageTitle={pageTitle}
           user={user}
@@ -36,7 +36,7 @@ export function AppShellLayout({
           currentLocale={currentLocale}
           onSignOut={onSignOut}
         />
-        <main className="flex-1 overflow-y-auto px-8 py-6">{children}</main>
+        <main className="flex-1 px-8 py-6">{children}</main>
       </div>
     </div>
   );
