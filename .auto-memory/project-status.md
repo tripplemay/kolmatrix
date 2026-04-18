@@ -4,27 +4,28 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **B0-foundation** — Planner v2 完成，status=building，10 个 features（含新增 F010 公共组件库）
-- 等待 johnsong 拉取 main 后接手 building 阶段
+- **B0-foundation** — johnsong 实施中（v3 spec, Next 16 + Tailwind 4 + React 19）
+- **V3 设计稿** — 已完成（7 张 P0 页面 Stitch 设计稿全就绪）
+
+## P0 页面设计稿清单（design-draft/stitch-references/）
+- Dashboard / KOL Discovery / KOL Detail / Campaigns 列表 / Campaign 详情 / KOL Database / Email Center
+- 全部用 canonical App Shell，HTML + 截图入库
 
 ## 角色分配（B0）
-- Planner: Kimi（已完成）/ Generator: johnsong / Evaluator: Reviewer
+- Planner: Kimi（已完成）/ Generator: johnsong（实施中）/ Evaluator: Reviewer（待命）
 
-## 关键决策（B0 spec v2）
-- 视觉验收 = **像素级还原**（间距 ±2px / 颜色 ΔE<2 / 字号 100%），基准 `design-draft/stitch-references/dashboard.png`
-- F010 公共组件库（12 个）必须先抽好，Dashboard 强制复用，page.tsx ≤80 行
-- 技术栈 = Next.js 16 + React 19.2 + Tailwind v4 (CSS-first @theme)（v3 spec 已修订, 见 v3 commit）
-- 任何硬编码 HEX 验收直接 fail（除 globals.css 唯一 token 文件）
-- 强制执行顺序: F001→F002→F003→F004→F005→**F010→F007**→F006→F008→F009
+## 关键决策
+- 视觉基调 = Neural Velocity；canonical App Shell 写入设计系统 designMd
+- 视觉验收 = 像素级还原（间距 ±2px / ΔE<2 / 字号 100%）
+- F010 公共组件库 12 个 + Dashboard 强制复用，page.tsx ≤80 行
+- 任何硬编码 HEX 验收 fail（除 globals.css）
+- 强制顺序: F001→F002→F003→F004→F005→F010→F007→F006→F008→F009
+- 自动生成 Stitch 会压缩内容（V3 改手动生成解决）
 
-## Stitch 设计稿
-- Dashboard `8b4aa02a` / KOL Discovery `a1771401` / KOL Detail `31db0441`
-- HTML + 截图已入库 `design-draft/stitch-references/`
-
-## 后续批次（占位）
-- B1: KOL Database 列表 + Campaigns 列表 + Sentry
-- B2: BullMQ workers + KOL crawler + AI 评分
-- B3: Resend 邮件系统 + DNS
+## 后续批次（待启动）
+- V4 设计稿：产品知识库 + 客户协同筛选 + Email Tracking 详情
+- V5 设计稿：登录/注册/设置/团队管理
+- B1 业务批次：在 B0 完成后启动（KOL Discovery/Detail/Campaigns/KOL Database 业务实现）
 
 ## 已知 gap（非阻塞）
 - Stitch Variant B/C 项目（`9900459935539855080` / `7841901791452897882`）需手动删除

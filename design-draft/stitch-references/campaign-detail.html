@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Honor of Kings — Global Launch | KOLMatrix</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#bac9cc",
+                        "on-tertiary-fixed": "#251a00",
+                        "surface-container": "#171f33",
+                        "secondary": "#d8b9ff",
+                        "background": "#0b1326",
+                        "surface-container-lowest": "#060d20",
+                        "surface-container-high": "#222a3e",
+                        "on-secondary": "#450086",
+                        "inverse-surface": "#dbe2fd",
+                        "tertiary-fixed-dim": "#f3bf26",
+                        "tertiary-container": "#fec931",
+                        "on-secondary-container": "#d5b5ff",
+                        "tertiary-fixed": "#ffdf96",
+                        "secondary-fixed-dim": "#d8b9ff",
+                        "surface-container-low": "#131b2e",
+                        "on-tertiary": "#3e2e00",
+                        "on-secondary-fixed": "#290055",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-fixed": "#001f24",
+                        "on-primary": "#00363d",
+                        "on-primary-fixed-variant": "#004f58",
+                        "primary-fixed-dim": "#00daf3",
+                        "primary": "#c3f5ff",
+                        "error-container": "#93000a",
+                        "inverse-primary": "#006875",
+                        "surface-bright": "#31394e",
+                        "surface": "#0b1326",
+                        "secondary-fixed": "#eddcff",
+                        "error": "#ffb4ab",
+                        "surface-variant": "#2d3449",
+                        "on-primary-container": "#00626e",
+                        "primary-container": "#00e5ff",
+                        "surface-container-highest": "#2d3449",
+                        "outline-variant": "#3b494c",
+                        "inverse-on-surface": "#283044",
+                        "surface-tint": "#00daf3",
+                        "on-secondary-fixed-variant": "#6200bc",
+                        "tertiary": "#ffeac0",
+                        "on-tertiary-container": "#6f5500",
+                        "primary-fixed": "#9cf0ff",
+                        "secondary-container": "#6e06d0",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "on-background": "#dbe2fd",
+                        "on-error": "#690005",
+                        "on-surface": "#dbe2fd",
+                        "surface-dim": "#0b1326",
+                        "outline": "#849396"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b1326; color: #dbe2fd; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+        .glass-card { background: rgba(23, 31, 51, 0.4); backdrop-filter: blur(24px); }
+        .cyan-glow { shadow-[20px_0_20px_rgba(0,229,255,0.03)]; }
+        .cyan-text-gradient { background: linear-gradient(135deg, #00daf3, #c3f5ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .primary-cta-gradient { background: linear-gradient(135deg, #00daf3, #c3f5ff); color: #001f24; }
+        .sidebar-active-gradient { background: linear-gradient(90deg, rgba(0,229,255,0.10) 0%, transparent 100%); border-left: 2px solid #00E5FF; }
+    </style>
+</head>
+<body class="flex min-h-screen overflow-x-hidden">
+<!-- SIDEBAR -->
+<aside class="fixed left-0 top-0 h-screen w-[240px] flex flex-col bg-[#060e20] p-6 space-y-1 shadow-[20px_0_20px_rgba(0,229,255,0.03)] z-50">
+<!-- Logo Block -->
+<div class="flex items-center gap-3 h-[56px] mb-8">
+<div class="w-10 h-10 rounded-[10px] bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] flex items-center justify-center">
+<span class="text-[#060e20] font-bold text-lg">K</span>
+</div>
+<div>
+<h1 class="text-white font-bold text-[18px] leading-tight">KOLMatrix</h1>
+<p class="text-[#6B7280] text-[9px] font-semibold tracking-[0.15em] uppercase">NEURAL VELOCITY</p>
+</div>
+</div>
+<!-- Navigation List -->
+<nav class="flex-grow space-y-1">
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">dashboard</span>
+<span class="text-[14px] font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">travel_explore</span>
+<span class="text-[14px] font-medium">KOL Discovery</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">groups</span>
+<span class="text-[14px] font-medium">KOL Database</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#00E5FF] font-semibold sidebar-active-gradient group" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#00E5FF]">rocket_launch</span>
+<span class="text-[14px]">Campaigns</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">forward_to_inbox</span>
+<span class="text-[14px] font-medium">Email Center</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">inventory_2</span>
+<span class="text-[14px] font-medium">Products</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">query_stats</span>
+<span class="text-[14px] font-medium">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">settings</span>
+<span class="text-[14px] font-medium">Settings</span>
+</a>
+</nav>
+<!-- User Chip -->
+<div class="mt-auto pt-6">
+<div class="flex items-center gap-3 p-3 rounded-[10px] hover:bg-[#222a3d]/40 cursor-pointer transition-all">
+<div class="relative">
+<img class="w-9 h-9 rounded-full object-cover" data-alt="professional headshot of a smiling asian woman with glasses in a modern office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCe6CE_lAiUwq1qvv7GYUemIvxohW-_cwUJ8mL5Q2pEYPIVBVD2tIrNrwkgSdTOKtaAmusvwUqzgqlz-naoMNwxx4hgR5VTlEWET-6mcshAgPRkP-W09J-NnTIf5ol2YgBRVEMcTr7mXXxU3LVynUZ_2qirImMYljeTH8GgYXvdKM8d9onhUeDiJt_762fmqwIM7ckMFTXbQ9IEA615Y4r7aCbzW7lFo6iL-7iU6v6sXNGfoDbbgV_OCR76vWeHoxIHvHsfrOY68LI"/>
+<div class="absolute inset-0 rounded-full border border-transparent hover:border-[#00E5FF] transition-all"></div>
+</div>
+<div class="flex-grow">
+<p class="text-white text-[14px] font-semibold leading-none">Sarah Chen</p>
+<p class="text-[#6B7280] text-[11px] mt-1">Ops Lead</p>
+</div>
+<span class="material-symbols-outlined text-[#6B7280] text-[18px]">expand_more</span>
+</div>
+</div>
+</aside>
+<!-- MAIN WRAPPER -->
+<div class="flex-grow ml-[240px] flex flex-col min-w-0">
+<!-- TOP NAVBAR -->
+<header class="sticky top-0 h-16 bg-[#0b1326]/85 backdrop-blur-2xl flex items-center justify-between px-8 z-40 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+<h2 class="text-white font-semibold text-[16px]">Honor of Kings — Global Launch</h2>
+<div class="flex-1 max-w-[480px] mx-12">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#6B7280] text-[18px] group-focus-within:text-[#00E5FF]">search</span>
+<input class="w-full h-10 bg-[#2d3449] border-none rounded-full pl-12 pr-16 text-[13px] text-white placeholder-[#6B7280] focus:ring-1 focus:ring-[#00E5FF] focus:shadow-[0_0_8px_rgba(0,229,255,0.2)] transition-all" placeholder="Search KOLs, campaigns, emails..." type="text"/>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded border border-[#6B7280]/30 text-[11px] text-[#6B7280] font-medium">Cmd+K</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1 px-3 py-1.5 rounded-full hover:bg-surface-container-high cursor-pointer transition-all group">
+<span class="text-[#bac9cc] text-[13px] font-medium group-hover:text-[#00E5FF]">EN</span>
+<span class="material-symbols-outlined text-[#bac9cc] text-[14px] group-hover:text-[#00E5FF]">expand_more</span>
+</div>
+<div class="relative hover:bg-surface-container-high p-2 rounded-full cursor-pointer transition-all group">
+<span class="material-symbols-outlined text-[#bac9cc] text-[22px] group-hover:text-[#00E5FF]">notifications</span>
+<div class="absolute top-2 right-2 w-[6px] h-[6px] bg-red-500 rounded-full border border-[#0b1326]"></div>
+</div>
+<div class="w-[1px] h-6 bg-white/15"></div>
+<div class="flex items-center gap-2 cursor-pointer group">
+<div class="w-8 h-8 rounded-full bg-[#2d3449] overflow-hidden border border-transparent group-hover:border-[#00E5FF] transition-all">
+<img class="w-full h-full object-cover" data-alt="professional user avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnSyeIga9EbxEz6cJFZ502_kBkRyIQcE8FfXFm98wX5bEsAf85LAlgIb6WaCitQ2EnP0ceLivqWYKQeKDwPH1NPyUjihfMl5RkHD1e5Ug3uVbqSqKnQ-ubnn56bYXXKI8saXGtR8VqCrDCGLD9wnUgX5-smA1AEMk7iyK_hmI8gICTUiCktBOAmVeU3aQj1J2XtLV8vNSeNh1BSXzyy1mB8lQOi9Ef9namBym_ITNiSGmqvg3tXttIoLJDaZGMyhuN4jqIi8VgTjk"/>
+</div>
+<span class="material-symbols-outlined text-[#bac9cc] text-[18px] group-hover:text-[#00E5FF]">expand_more</span>
+</div>
+</div>
+</header>
+<!-- MAIN CONTENT -->
+<main class="p-8 space-y-8 max-w-[1440px]">
+<!-- Breadcrumb -->
+<nav class="flex items-center text-[13px] font-medium">
+<a class="text-[#6B7280] hover:text-[#00E5FF] transition-colors" href="#">Campaigns</a>
+<span class="text-[#6B7280] mx-2">/</span>
+<span class="text-on-surface-variant">Honor of Kings — Global Launch</span>
+</nav>
+<!-- Hero Card -->
+<section class="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6">
+<!-- Left: Hero Details -->
+<div class="bg-surface-container-low rounded-2xl p-8 flex gap-8 items-start relative overflow-hidden group shadow-[0_0_40px_rgba(0,229,255,0.03)] border border-white/5">
+<div class="w-24 h-24 rounded-2xl bg-[#060e20] overflow-hidden flex-shrink-0 shadow-lg border border-white/10">
+<img class="w-full h-full object-cover" data-alt="vibrant epic fantasy video game concept art with glowing neon highlights and futuristic battle scene" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAx3KAL4lWZ710eJonmPdAxrf4L_N9m4d6uO-CgcLn5mR7AW5-_cv6b_X0-nCpup9TLCp3y2rWpX8mFWyqJnRqjnEO5No0Zsxbb_LqT633sGA9_4X1eleiApoAQvUwOo61t5wNWg1ZD_C5S3_5V5nM4CxsPkg7RkWNks79GrYHBivo3bgZ7b_qAsqAYKeUC-gtoZ8fS3xCaBYMb9pT-GTQKysoXVHQmMgVdJ3Ftzq8NBnSJsb6s9za37Nbml_GEni_PpQQgOrZJrk"/>
+</div>
+<div class="flex-grow">
+<h1 class="text-3xl font-extrabold text-white tracking-tight mb-2">Honor of Kings — Global Launch</h1>
+<p class="text-on-surface-variant text-[15px] mb-6">Tencent · EN, JP, KR markets · started Mar 15, 2026</p>
+<div class="flex items-center gap-6 mb-8">
+<div class="flex items-center gap-2 px-3 py-1 rounded-full bg-primary-container/10 border border-primary-container/20">
+<div class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></div>
+<span class="text-primary-container text-[12px] font-bold tracking-wide">ACTIVE</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1 rounded-full border border-secondary/20 text-secondary text-[12px] font-medium">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+                                12 days left
+                            </div>
+<div class="flex items-center gap-2">
+<img class="w-6 h-6 rounded-full border border-white/20" data-alt="sarah chen avatar small" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAY3QzLUzG6dsQJ5mF-roSqL482U81vgElkq7YeJNgAU81wMuNMnV-H_HEUBEKPU-7pam9YMFQtQDEnwFHgNZsjg624DwshW5mkATQHqqHL7J4jTfjJd2q7Q_kFriQiQlBuyXCNM7i29yCQtZXwAYIfdQTp04Mg7vaZOR8nH_bL5FoXOultqIYTy5R7xiW6Cx9AmyFoZewp3LngmVGTxTMjNfZ8Kx6Bsf6UB8L73-f63r1I9UqH6O4b7np2k3NQLhlp6DnyGVtUXC0"/>
+<span class="text-[13px] text-on-surface-variant">Owner: <span class="text-white font-medium">Sarah Chen</span></span>
+</div>
+</div>
+<div class="flex flex-wrap gap-3">
+<button class="primary-cta-gradient px-6 py-2.5 rounded-xl font-bold text-[14px] shadow-[0_4px_16px_rgba(0,218,243,0.3)] hover:scale-[1.02] transition-transform active:scale-[0.98]">Edit Campaign</button>
+<button class="bg-secondary-container/20 text-secondary border border-secondary/30 px-6 py-2.5 rounded-xl font-bold text-[14px] hover:bg-secondary-container/30 transition-all">Add KOLs</button>
+<button class="border border-primary-container/30 text-primary-container px-5 py-2.5 rounded-xl font-bold text-[14px] flex items-center gap-2 hover:bg-primary-container/5 transition-all">
+<span class="material-symbols-outlined text-[18px]">share</span>
+                                Share
+                            </button>
+<button class="border border-tertiary-container/30 text-tertiary-container px-5 py-2.5 rounded-xl font-bold text-[14px] flex items-center gap-2 hover:bg-tertiary-container/5 transition-all">
+<span class="material-symbols-outlined text-[18px]">pause</span>
+                                Pause
+                            </button>
+</div>
+</div>
+</div>
+<!-- Right: Campaign Health -->
+<div class="glass-card rounded-2xl p-6 border border-white/5 flex flex-col justify-between">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-white font-bold text-[16px]">Campaign Health</h3>
+<span class="text-primary-container text-[12px] font-bold">OPTIMIZED</span>
+</div>
+<div class="grid grid-cols-2 gap-y-6">
+<div>
+<p class="text-[#6B7280] text-[11px] uppercase font-bold tracking-wider mb-2">Progress</p>
+<div class="flex items-center gap-3">
+<span class="text-white font-bold text-xl">75%</span>
+<div class="flex-grow h-1.5 bg-[#2d3449] rounded-full overflow-hidden">
+<div class="h-full bg-primary-container w-3/4 rounded-full"></div>
+</div>
+</div>
+</div>
+<div>
+<p class="text-[#6B7280] text-[11px] uppercase font-bold tracking-wider mb-2">Open Rate</p>
+<p class="text-white font-bold text-xl">68%</p>
+</div>
+<div>
+<p class="text-[#6B7280] text-[11px] uppercase font-bold tracking-wider mb-2">Reply Rate</p>
+<p class="text-white font-bold text-xl">24%</p>
+</div>
+<div>
+<p class="text-[#6B7280] text-[11px] uppercase font-bold tracking-wider mb-2">Projected ROI</p>
+<p class="text-primary-container font-bold text-xl">+42%</p>
+</div>
+</div>
+</div>
+</section>
+<!-- KPI Strip -->
+<section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+<div class="bg-surface-container-low border border-white/5 p-5 rounded-xl">
+<p class="text-[#6B7280] text-[11px] font-bold uppercase tracking-widest mb-3">Budget Spent</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-extrabold text-white">$48.2K</span>
+<span class="text-[12px] text-[#6B7280]">/ $80k</span>
+</div>
+<div class="w-full h-1 bg-[#2d3449] rounded-full mt-3 overflow-hidden">
+<div class="bg-primary-container h-full w-[60%]"></div>
+</div>
+</div>
+<div class="bg-surface-container-low border border-white/5 p-5 rounded-xl">
+<p class="text-[#6B7280] text-[11px] font-bold uppercase tracking-widest mb-3">Contacted</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-extrabold text-white">45</span>
+<span class="text-[12px] text-[#6B7280]">/ 60</span>
+</div>
+</div>
+<div class="bg-surface-container-low border border-white/5 p-5 rounded-xl">
+<p class="text-[#6B7280] text-[11px] font-bold uppercase tracking-widest mb-3">Accepted</p>
+<p class="text-xl font-extrabold text-white">22</p>
+<p class="text-[11px] text-primary-container font-medium mt-1">48% conv. rate</p>
+</div>
+<div class="bg-surface-container-low border border-white/5 p-5 rounded-xl">
+<p class="text-[#6B7280] text-[11px] font-bold uppercase tracking-widest mb-3">Total Reach</p>
+<p class="text-xl font-extrabold text-white">18.4M</p>
+<p class="text-[11px] text-[#6B7280] mt-1">82% target met</p>
+</div>
+<div class="bg-surface-container-low border border-white/5 p-5 rounded-xl">
+<p class="text-[#6B7280] text-[11px] font-bold uppercase tracking-widest mb-3">Avg Match</p>
+<p class="text-xl font-extrabold text-white">87</p>
+<p class="text-[11px] text-[#6B7280] mt-1">High synergy</p>
+</div>
+<div class="bg-surface-container-low border border-white/5 p-5 rounded-xl">
+<p class="text-[#6B7280] text-[11px] font-bold uppercase tracking-widest mb-3">Published</p>
+<p class="text-xl font-extrabold text-white">8</p>
+<p class="text-[11px] text-secondary font-medium mt-1">2 scheduled</p>
+</div>
+</section>
+<!-- KOL List -->
+<section class="bg-surface-container-low rounded-2xl border border-white/5 overflow-hidden">
+<div class="p-6 flex flex-wrap items-center justify-between gap-4 border-b border-white/5">
+<h3 class="text-white font-bold text-lg">KOLs in this campaign</h3>
+<div class="flex gap-2 p-1 bg-[#2d3449]/50 rounded-xl">
+<button class="px-4 py-1.5 rounded-lg text-[13px] font-bold bg-[#0b1326] text-primary-container shadow-sm transition-all">All</button>
+<button class="px-4 py-1.5 rounded-lg text-[13px] font-bold text-[#bac9cc] hover:text-white transition-all">Accepted</button>
+<button class="px-4 py-1.5 rounded-lg text-[13px] font-bold text-[#bac9cc] hover:text-white transition-all">Contacted</button>
+<button class="px-4 py-1.5 rounded-lg text-[13px] font-bold text-[#bac9cc] hover:text-white transition-all">Refused</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="text-[#6B7280] text-[11px] font-bold uppercase tracking-widest border-b border-white/5">
+<tr>
+<th class="px-8 py-4">Influencer</th>
+<th class="px-6 py-4">Platforms &amp; Reach</th>
+<th class="px-6 py-4">Match</th>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4">Last Activity</th>
+<th class="px-8 py-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/5">
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-8 py-4">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="portrait of a young gaming influencer in a neon lit studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZmuVxGPPRy_83FTBXC375pIufTNjVC_xuDjPyZj28WiGxU5_vfGKcLE98TZNXvlBpJY0kdRsC263PrvgGORbeOYDoLRhB19V2b2ydYgiXlYY_FNSdW7ZanZmtRC4mrgEI-ouBy2y2tOiaBiwxIC5i6-Cw6CkQdhEFvomSjV5KFqXxa-49r562xcugkCtkXfWouYZIVr0H67NkDm6oCn-M40LsORtu7fHx_1_ucv1Pn3N8CffDeGtqEVgcRrtcwW0IFDSW3ISscls"/>
+<div>
+<p class="text-white font-semibold text-[14px]">GamerXia</p>
+<p class="text-[#6B7280] text-[12px]">@xia_official</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex gap-4">
+<div class="flex items-center gap-1.5">
+<img alt="YouTube" class="w-3.5 h-3.5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJrIhqg3JWohZF9WCOznNJRNtd5apSYQkY0SJV4-q0kD7mSiYat-bl4EzIZOREE4syAH7C-CApBVEqiMDT0fJnNNqxE3QR2KpXW8MoyHC1lwmJYggL1DQMNEyqOV4Th009fopz6bmKRUD01QrXFbR-L-MpTQmr1LqHFjum3WT3YuJgvcno2X0hqzxqQu5WUaGd5dtH4vECisZRd7ijTjNa9TmyH_nU3bYPELkoG3wuI7qNoxgxzugaOLyZUZUumiKrfQKumOhxpUA"/>
+<span class="text-white text-[13px] font-medium">1.2M</span>
+</div>
+<div class="flex items-center gap-1.5">
+<img alt="TikTok" class="w-3.5 h-3.5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCF9IkPMlB2krTyMO3eKYYMyR5YUBQqnj5kMcCQ6CvEItilk_v1alR4lBTkOMrWzh3nkNb9CIhFUpo0zsH4Us3ubIrGdR8GFlXh5vf1aqhXFP6xn7VeYJyFW_iU_326o9kYD6-n-vpoomHVqCl8iDcrrVats92gKDNgL14bcoMitYebZl4Anbfpm3RO-09ZcN-a2wa9dXvG5Yzh4xjA98Y8NTychfgvi2_CxWagD91TS_OPjYAzzM2hwssDm65JDacnHeGvqRHioSc"/>
+<span class="text-white text-[13px] font-medium">3.8M</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="px-2 py-0.5 rounded-lg bg-primary-container/10 border border-primary-container/20 text-primary-container text-[12px] font-bold w-fit">
+                                        94
+                                    </div>
+</td>
+<td class="px-6 py-4">
+<div class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[11px] font-bold uppercase tracking-wider w-fit">ACCEPTED</div>
+</td>
+<td class="px-6 py-4 text-[#bac9cc] text-[13px]">2h ago</td>
+<td class="px-8 py-4 text-right">
+<button class="material-symbols-outlined text-[#6B7280] hover:text-white transition-colors">more_horiz</button>
+</td>
+</tr>
+<!-- More rows -->
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-8 py-4">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="professional portrait of male streamer with headset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSHsXMt5OWqdDw6f_R1zMXbDUZMdwksq0_FInS2XhCv2WAWCc47elSFCTp3JjTL4_gU753fHbM6di766DV0NaX4yaF2dX7NT6VwpF-h6ey3Uh-0XaM-3p9uUFpATCzAGWb0Alhul1ZO6_pdLYI_M7ve6JIevXBkdXPa3piXojRBMCEwrvy1zE-EViepLq3Iq0YLZ9UZSyJ_9dIPmIuBej2cZbPu6B9xNolKBNZZYizJPu6kPuAtwGEO1NWXkp8RfnFoO8YXCYjJg8"/>
+<div>
+<p class="text-white font-semibold text-[14px]">SniperPro_JP</p>
+<p class="text-[#6B7280] text-[12px]">@sniper_jp</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex gap-4">
+<div class="flex items-center gap-1.5">
+<img alt="Twitch" class="w-3.5 h-3.5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsTBHb2IaFdcS9lzVq0pxIaY4kNtzWGp6mMcV_uxtR9tEav-X8gXy1Lb2Putjj7QwgtLel3hoisf_ZAOjwlRbbl_W3HAyhutB4dPG7PV60rSevtu2Ra9h_yLBwldhLY0xOsHwG17bWfVF4nk7Lkd_IXdMuK1oMjN_g0XDdQyTNUTyFFeUyehh1BCkbdm3pMWj5SkdNJG6YfmVW525wWSXvtIVSj62oTskCMU8HJ4gBTchABMNLTgTM40kUNhvgyogvc5oYN3d6Tj8"/>
+<span class="text-white text-[13px] font-medium">850K</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="px-2 py-0.5 rounded-lg bg-primary-container/10 border border-primary-container/20 text-primary-container text-[12px] font-bold w-fit">
+                                        89
+                                    </div>
+</td>
+<td class="px-6 py-4">
+<div class="px-3 py-1 rounded-full bg-primary-container/10 text-primary-container text-[11px] font-bold uppercase tracking-wider w-fit">REPLIED</div>
+</td>
+<td class="px-6 py-4 text-[#bac9cc] text-[13px]">5h ago</td>
+<td class="px-8 py-4 text-right">
+<button class="material-symbols-outlined text-[#6B7280] hover:text-white transition-colors">more_horiz</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Dual View Section -->
+<section class="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6">
+<!-- Left: Email Performance -->
+<div class="bg-surface-container-low rounded-2xl p-6 border border-white/5">
+<div class="flex items-center justify-between mb-8">
+<h3 class="text-white font-bold text-[16px]">Email performance</h3>
+<div class="flex items-center gap-4 text-[12px] font-medium">
+<div class="flex items-center gap-2 text-primary-container">
+<div class="w-3 h-3 rounded-full bg-primary-container"></div> Sent
+                            </div>
+<div class="flex items-center gap-2 text-secondary">
+<div class="w-3 h-3 rounded-full bg-secondary"></div> Opened
+                            </div>
+<div class="flex items-center gap-2 text-primary-fixed">
+<div class="w-3 h-3 rounded-full bg-primary-fixed"></div> Replied
+                            </div>
+</div>
+</div>
+<!-- Chart Placeholder -->
+<div class="h-64 flex items-end justify-between gap-2 px-2">
+<div class="flex-grow flex flex-col gap-1 items-center">
+<div class="w-full flex items-end gap-1 h-48">
+<div class="w-1/3 bg-primary-container/30 h-[60%] rounded-t-sm"></div>
+<div class="w-1/3 bg-secondary/30 h-[40%] rounded-t-sm"></div>
+<div class="w-1/3 bg-primary-fixed/30 h-[15%] rounded-t-sm"></div>
+</div>
+<span class="text-[10px] text-[#6B7280]">Mar 15</span>
+</div>
+<div class="flex-grow flex flex-col gap-1 items-center">
+<div class="w-full flex items-end gap-1 h-48">
+<div class="w-1/3 bg-primary-container/30 h-[80%] rounded-t-sm"></div>
+<div class="w-1/3 bg-secondary/30 h-[55%] rounded-t-sm"></div>
+<div class="w-1/3 bg-primary-fixed/30 h-[25%] rounded-t-sm"></div>
+</div>
+<span class="text-[10px] text-[#6B7280]">Mar 20</span>
+</div>
+<div class="flex-grow flex flex-col gap-1 items-center">
+<div class="w-full flex items-end gap-1 h-48">
+<div class="w-1/3 bg-primary-container/40 h-[95%] rounded-t-sm"></div>
+<div class="w-1/3 bg-secondary/40 h-[75%] rounded-t-sm"></div>
+<div class="w-1/3 bg-primary-fixed/40 h-[35%] rounded-t-sm"></div>
+</div>
+<span class="text-[10px] text-[#6B7280]">Mar 25</span>
+</div>
+<div class="flex-grow flex flex-col gap-1 items-center">
+<div class="w-full flex items-end gap-1 h-48">
+<div class="w-1/3 bg-primary-container h-full rounded-t-sm"></div>
+<div class="w-1/3 bg-secondary h-[85%] rounded-t-sm"></div>
+<div class="w-1/3 bg-primary-fixed h-[45%] rounded-t-sm"></div>
+</div>
+<span class="text-[10px] text-[#00E5FF] font-bold">Today</span>
+</div>
+</div>
+</div>
+<!-- Right: AI Suggestions -->
+<div class="glass-card rounded-2xl p-6 border border-white/5 border-l-primary-container/30">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-primary-container">auto_awesome</span>
+<h3 class="text-white font-bold text-[16px]">AI Suggestions</h3>
+</div>
+<p class="text-on-surface-variant text-[13px] mb-6 leading-relaxed">Neural analysis found <span class="text-primary-container font-bold">8 more KOLs</span> with high relevance to your JP market segment.</p>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all cursor-pointer group border border-transparent hover:border-primary-container/20">
+<div class="flex items-center gap-3">
+<img class="w-9 h-9 rounded-full object-cover" data-alt="gaming influencer portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbOeafyLgpn7lRzFNtxPqBeynth3X4caQRFTKLErTKbVSV5tyuKR0t_mskA73kgUksNGq7g6vefBworwl-XL_PKqxjjBZ0PC6e-hdZSku1OchpdhYCOk5lcPyCvMOyr8ZsK7DrljMTWOMxNXrORnIDpvcxRZ6rSXjoojfSXJKapMPECMc8oCk4rYC1mxHAIPhd5hmtHAMzh3uT2x6hZPs60GJwQkomDtevEEgKfEBfjom3WooD1hVdEuH6RivxH-DsyOjWAPfO3c8"/>
+<div>
+<p class="text-white font-semibold text-[13px]">ZealotFPS</p>
+<p class="text-[#6B7280] text-[11px]">8.2M followers</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-primary-container font-extrabold text-[13px]">98</p>
+<p class="text-[#6B7280] text-[10px] uppercase font-bold">Match</p>
+</div>
+</div>
+<div class="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all cursor-pointer group border border-transparent hover:border-primary-container/20">
+<div class="flex items-center gap-3">
+<img class="w-9 h-9 rounded-full object-cover" data-alt="professional male streamer portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsotCdgxOe6FL396BWXWWa8HKrMT9yGxgEWziWXhHcRSUYLbHeoZtWIwoE3VaGKEnzYPN15AngSZ4AYx-Dsx8grEEMeugtjt3r9VTnhILwx6RgHqZ5nPPHSq3ncVLXJOmpeV1SyxW1gvOjc7vmnndP4_ls16AQRIYnHtCvSBcBpj6qcY5NstBi3QBa1U6AcTBxDtA7adraECj5pMGFhKKwP8RyQMayCNbxDUgLC5OVsC2O0S3sslDBXmXPZ4aRz4wUWzx26iCxjWc"/>
+<div>
+<p class="text-white font-semibold text-[13px]">AceSniper</p>
+<p class="text-[#6B7280] text-[11px]">2.1M followers</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-primary-container font-extrabold text-[13px]">95</p>
+<p class="text-[#6B7280] text-[10px] uppercase font-bold">Match</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-2.5 text-[13px] font-bold text-primary-container border border-primary-container/30 rounded-xl hover:bg-primary-container/10 transition-all">View All Candidates</button>
+</div>
+</section>
+<!-- Activity & Distribution -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- Recent Activity -->
+<div class="bg-surface-container-low rounded-2xl p-6 border border-white/5">
+<h3 class="text-white font-bold text-[16px] mb-8">Recent activity</h3>
+<div class="space-y-6 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[1px] before:bg-white/10">
+<div class="relative pl-8 flex items-start justify-between">
+<div class="absolute left-0 w-4 h-4 bg-[#0b1326] border-2 border-primary-container rounded-full mt-0.5"></div>
+<div>
+<p class="text-white text-[14px] font-medium"><span class="text-primary-container font-semibold">GamerXia</span> accepted the campaign offer</p>
+<p class="text-[#6B7280] text-[12px] mt-1">2 hours ago</p>
+</div>
+<span class="material-symbols-outlined text-[#6B7280] text-[18px]">verified</span>
+</div>
+<div class="relative pl-8 flex items-start justify-between">
+<div class="absolute left-0 w-4 h-4 bg-[#0b1326] border-2 border-primary-fixed rounded-full mt-0.5"></div>
+<div>
+<p class="text-white text-[14px] font-medium">AI evaluated 84 new candidates for KR market</p>
+<p class="text-[#6B7280] text-[12px] mt-1">5 hours ago</p>
+</div>
+<span class="material-symbols-outlined text-[#6B7280] text-[18px]">neurology</span>
+</div>
+<div class="relative pl-8 flex items-start justify-between">
+<div class="absolute left-0 w-4 h-4 bg-[#0b1326] border-2 border-secondary rounded-full mt-0.5"></div>
+<div>
+<p class="text-white text-[14px] font-medium">Email opened by <span class="text-white">BlueShadow</span></p>
+<p class="text-[#6B7280] text-[12px] mt-1">Yesterday at 14:20</p>
+</div>
+<span class="material-symbols-outlined text-[#6B7280] text-[18px]">mail</span>
+</div>
+</div>
+</div>
+<!-- Budget Distribution & Share -->
+<div class="space-y-6">
+<div class="bg-surface-container-low rounded-2xl p-6 border border-white/5 flex items-center justify-between">
+<div class="w-1/2">
+<h3 class="text-white font-bold text-[16px] mb-6">Budget Allocation</h3>
+<div class="space-y-3">
+<div class="flex items-center justify-between text-[13px]">
+<div class="flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full bg-primary-container"></div> Talent</div>
+<span class="text-white font-bold">65%</span>
+</div>
+<div class="flex items-center justify-between text-[13px]">
+<div class="flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full bg-secondary"></div> Ads</div>
+<span class="text-white font-bold">20%</span>
+</div>
+<div class="flex items-center justify-between text-[13px]">
+<div class="flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full bg-primary-fixed"></div> Production</div>
+<span class="text-white font-bold">10%</span>
+</div>
+<div class="flex items-center justify-between text-[13px]">
+<div class="flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full bg-on-surface-variant/30"></div> Reserve</div>
+<span class="text-white font-bold">5%</span>
+</div>
+</div>
+</div>
+<div class="w-32 h-32 relative flex items-center justify-center">
+<svg class="w-full h-full -rotate-90">
+<circle cx="64" cy="64" fill="transparent" r="50" stroke="#2d3449" stroke-width="12"></circle>
+<circle cx="64" cy="64" fill="transparent" r="50" stroke="#00E5FF" stroke-dasharray="314.15" stroke-dashoffset="110" stroke-width="12"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-white font-extrabold text-xl">$80k</span>
+<span class="text-[10px] text-[#6B7280] font-bold">TOTAL</span>
+</div>
+</div>
+</div>
+<div class="bg-primary-container/5 rounded-2xl p-6 border border-primary-container/20">
+<h3 class="text-white font-bold text-[14px] mb-4">Live Client Share Link</h3>
+<div class="flex gap-2">
+<div class="flex-grow bg-[#0b1326] px-4 py-3 rounded-xl border border-white/10 text-[13px] text-primary-container font-medium font-mono truncate">
+                                kol.guangai.ai/c/bsk-honor-of-kings-x9k4
+                            </div>
+<button class="bg-[#0b1326] hover:bg-white/5 border border-white/10 p-3 rounded-xl transition-all">
+<span class="material-symbols-outlined text-[20px] text-[#bac9cc]">content_copy</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+</body></html>

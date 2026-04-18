@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(45, 52, 73, 0.2);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 229, 255, 0.05);
+        }
+        .cyan-glow {
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
+        }
+        .text-gradient-cyan {
+            background: linear-gradient(135deg, #00daf3 0%, #c3f5ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary": "#d8b9ff",
+                        "surface-bright": "#31394e",
+                        "surface-container-high": "#222a3e",
+                        "secondary-fixed-dim": "#d8b9ff",
+                        "on-secondary": "#450086",
+                        "tertiary-fixed-dim": "#f3bf26",
+                        "on-error": "#690005",
+                        "on-secondary-container": "#d5b5ff",
+                        "on-error-container": "#ffdad6",
+                        "on-background": "#dbe2fd",
+                        "on-secondary-fixed-variant": "#6200bc",
+                        "primary": "#c3f5ff",
+                        "on-primary-container": "#00626e",
+                        "inverse-on-surface": "#283044",
+                        "surface-container": "#171f33",
+                        "tertiary-container": "#fec931",
+                        "background": "#0b1326",
+                        "secondary-fixed": "#eddcff",
+                        "on-secondary-fixed": "#290055",
+                        "primary-fixed": "#9cf0ff",
+                        "tertiary-fixed": "#ffdf96",
+                        "error": "#ffb4ab",
+                        "surface-container-lowest": "#060d20",
+                        "primary-fixed-dim": "#00daf3",
+                        "on-tertiary-container": "#6f5500",
+                        "error-container": "#93000a",
+                        "on-primary-fixed": "#001f24",
+                        "inverse-surface": "#dbe2fd",
+                        "on-primary": "#00363d",
+                        "on-surface-variant": "#bac9cc",
+                        "on-tertiary": "#3e2e00",
+                        "surface": "#0b1326",
+                        "outline-variant": "#3b494c",
+                        "outline": "#849396",
+                        "on-primary-fixed-variant": "#004f58",
+                        "on-surface": "#dbe2fd",
+                        "inverse-primary": "#006875",
+                        "primary-container": "#00e5ff",
+                        "surface-variant": "#2d3449",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "on-tertiary-fixed": "#251a00",
+                        "secondary-container": "#6e06d0",
+                        "surface-dim": "#0b1326",
+                        "surface-container-low": "#131b2e",
+                        "surface-container-highest": "#2d3449",
+                        "tertiary": "#ffeac0",
+                        "surface-tint": "#00daf3"
+                    },
+                    fontFamily: {
+                        headline: ["Inter"],
+                        body: ["Inter"],
+                        label: ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- SIDEBAR -->
+<aside class="fixed left-0 top-0 h-full w-[240px] z-50 bg-[#060e20] flex flex-col py-6 px-4 shadow-[20px_0_20px_rgba(0,229,255,0.03)]">
+<!-- Logo Block -->
+<div class="flex items-center gap-3 mb-8 h-14">
+<div class="w-10 h-10 rounded-[10px] bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] flex items-center justify-center">
+<span class="text-[#060e20] font-bold text-lg">K</span>
+</div>
+<div>
+<h1 class="text-white font-bold text-lg tracking-[-0.02em] leading-none">KOLMatrix</h1>
+<p class="text-[#6B7280] font-semibold text-[9px] tracking-[0.15em] uppercase mt-1">Neural Velocity</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex-grow space-y-1">
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] font-medium hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] font-medium hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">travel_explore</span>
+<span class="text-sm">KOL Discovery</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#00E5FF] font-semibold bg-gradient-to-r from-[#00E5FF]/10 to-transparent border-l-2 border-[#00E5FF]" href="#">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+<span class="text-sm">KOL Database</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] font-medium hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">rocket_launch</span>
+<span class="text-sm">Campaigns</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] font-medium hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">forward_to_inbox</span>
+<span class="text-sm">Email Center</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] font-medium hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+<span class="text-sm">Products</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] font-medium hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">query_stats</span>
+<span class="text-sm">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] font-medium hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="text-sm">Settings</span>
+</a>
+</nav>
+<!-- User Chip -->
+<div class="mt-auto pt-4 border-t border-white/5">
+<div class="flex items-center gap-3 p-3 rounded-[10px] hover:bg-[#222a3d]/40 transition-colors cursor-pointer group">
+<img class="w-9 h-9 rounded-full object-cover group-hover:ring-2 ring-[#00E5FF] transition-all" data-alt="professional corporate headshot of Sarah Chen, Ops Lead with a warm and confident expression against a neutral studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-l8z3sMoZhCh2_fTTkELNFyXgdiDDxcGcVIH7tPYumH8WvrVTRU4GrLGSIt65domiQctOK0mRmqr2zJG9SbNXq4NUdhZslBbNkyf5FCNGjfQN0NUUWPt2qC_fAbZYk8fjYyxNFr9tfOtTKPvWiKIysS8ugJXltgwV_Te_ulliB3LwS8iJEpYMtDdFe-u6AOnwqXAN5KHQ3F9o6xAObnQfocyOW2dKMaGr7G_qOLLLi_SXhvsH5T-lUrkfRmA77G2WCpckpXr4Jz8"/>
+<div class="flex-grow overflow-hidden">
+<p class="text-sm font-semibold text-white truncate">Sarah Chen</p>
+<p class="text-[11px] text-[#6B7280]">Ops Lead</p>
+</div>
+<span class="material-symbols-outlined text-[#6B7280] text-sm">expand_more</span>
+</div>
+</div>
+</aside>
+<!-- TOPBAR -->
+<header class="sticky top-0 right-0 w-[calc(100%-240px)] ml-[240px] h-16 z-40 bg-[#0b1326]/85 backdrop-blur-3xl flex justify-between items-center px-8 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+<h2 class="text-white font-semibold text-base flex-none">KOL Database</h2>
+<!-- Search -->
+<div class="max-w-[480px] flex-1 mx-auto relative group">
+<div class="absolute left-4 top-1/2 -translate-y-1/2 text-[#6B7280] group-focus-within:text-[#00E5FF]">
+<span class="material-symbols-outlined text-[18px]">search</span>
+</div>
+<input class="w-full h-10 bg-[#2d3449] rounded-full pl-11 pr-16 border-none text-sm text-on-surface placeholder:text-[#6B7280] focus:ring-1 focus:ring-[#00E5FF]/20 focus:outline-none transition-all" placeholder="Search KOLs, campaigns, emails..." type="text"/>
+<div class="absolute right-4 top-1/2 -translate-y-1/2">
+<span class="px-2 py-0.5 rounded border border-[#6B7280]/30 text-[11px] font-medium text-[#6B7280]">Cmd+K</span>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-6 flex-none">
+<button class="flex items-center gap-1 text-[#bac9cc] hover:text-[#00E5FF] text-sm font-medium transition-colors">
+                EN <span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+<div class="relative cursor-pointer hover:text-[#00E5FF] text-[#bac9cc] transition-colors">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<span class="absolute top-0 right-0 w-[6px] h-[6px] bg-red-500 rounded-full border border-[#0b1326]"></span>
+</div>
+<div class="h-6 w-[1px] bg-white/10"></div>
+<div class="flex items-center gap-2 cursor-pointer">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="professional avatar of Sarah Chen with clean lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2Q6tlfGQ5I0SGMiFCdpHtQmpVy9htwOBMSeFm44A0njyLKJwpVHvmJ8ih8O8ZVTvFWx0MLKc21YcvJJP0gvBQh3UjDRMYt74iO-1R27BHkQv-jwQH9JGjlcKc7vqVWmJo9gMfs3SM39PO0bNQXCCYcI-sLU-NXPSElhjLQfwITd7cUJup5_Cnn0eoR2LbZcpxz7NNoGh5ammHUKObLaKDL9Xv6ipouffoHXFPuMAQ_WV5hgSV455b7lYrg5xe4jBuzvx4g5PtUAk"/>
+<span class="material-symbols-outlined text-[#bac9cc] text-sm">expand_more</span>
+</div>
+</div>
+</header>
+<!-- MAIN CONTENT -->
+<main class="ml-[240px] p-8 min-h-screen">
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h1 class="text-3xl font-bold text-white tracking-tight mb-1">KOL Database</h1>
+<p class="text-[#bac9cc] text-sm">1,247 KOLs in your library · last updated 2h ago</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-high border border-outline-variant text-[#bac9cc] hover:text-white hover:border-outline transition-all text-sm font-medium">
+<span class="material-symbols-outlined text-[18px]">ios_share</span> Export
+                </button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#9D50FF]/10 border border-[#9D50FF]/30 text-[#d8b9ff] hover:bg-[#9D50FF]/20 transition-all text-sm font-medium">
+<span class="material-symbols-outlined text-[18px]">publish</span> Import CSV
+                </button>
+<button class="flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-[#00daf3] to-[#c3f5ff] text-[#0b1326] font-bold text-sm hover:opacity-90 transition-all shadow-[0_0_15px_rgba(0,229,255,0.2)]">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">add</span> Add KOL
+                </button>
+</div>
+</div>
+<div class="flex gap-8 items-start">
+<!-- Table Container Area -->
+<div class="flex-grow space-y-6 overflow-hidden">
+<!-- Quick Stats -->
+<div class="grid grid-cols-4 gap-4">
+<div class="bg-surface-container-low p-5 rounded-2xl border border-white/5 relative overflow-hidden">
+<div class="relative z-10">
+<p class="text-[#bac9cc] text-xs font-medium mb-1">TOTAL KOLS</p>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold text-white">1,247</span>
+<span class="text-[#00E5FF] text-xs font-semibold">+89</span>
+</div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-5">
+<span class="material-symbols-outlined text-6xl">groups</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-5 rounded-2xl border border-white/5">
+<p class="text-[#bac9cc] text-xs font-medium mb-1 uppercase tracking-wider">Active Collabs</p>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold text-white">124</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-5 rounded-2xl border border-white/5">
+<p class="text-[#bac9cc] text-xs font-medium mb-1 uppercase tracking-wider">Avg AI Score</p>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold text-white">76</span>
+<span class="text-[#00E5FF] text-xs font-semibold">+2.4</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-5 rounded-2xl border border-white/5">
+<p class="text-[#bac9cc] text-xs font-medium mb-1 uppercase tracking-wider">Follower Reach</p>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold text-white">487M</span>
+</div>
+</div>
+</div>
+<!-- Filters Strip -->
+<div class="glass-panel p-2 rounded-2xl flex items-center gap-6">
+<div class="flex items-center gap-1 p-1 bg-[#2d3449]/40 rounded-xl">
+<button class="px-4 py-1.5 rounded-lg text-sm font-semibold bg-[#00E5FF] text-[#0b1326]">All (1,247)</button>
+<button class="px-4 py-1.5 rounded-lg text-sm font-medium text-[#bac9cc] hover:text-white transition-colors">Active (842)</button>
+<button class="px-4 py-1.5 rounded-lg text-sm font-medium text-[#bac9cc] hover:text-white transition-colors">Pending (87)</button>
+<button class="px-4 py-1.5 rounded-lg text-sm font-medium text-[#bac9cc] hover:text-white transition-colors">Working (124)</button>
+<button class="px-4 py-1.5 rounded-lg text-sm font-medium text-red-400 bg-red-400/10 ml-2">Blacklisted (14)</button>
+</div>
+<div class="h-8 w-[1px] bg-white/5"></div>
+<div class="flex items-center gap-3 text-[#bac9cc]">
+<button class="flex items-center gap-1 text-xs hover:text-white transition-colors">Platform <span class="material-symbols-outlined text-sm">expand_more</span></button>
+<button class="flex items-center gap-1 text-xs hover:text-white transition-colors">Region <span class="material-symbols-outlined text-sm">expand_more</span></button>
+<button class="flex items-center gap-1 text-xs hover:text-white transition-colors">Tier <span class="material-symbols-outlined text-sm">expand_more</span></button>
+<button class="flex items-center gap-1 text-xs hover:text-white transition-colors">Game <span class="material-symbols-outlined text-sm">expand_more</span></button>
+<button class="flex items-center gap-1 text-xs hover:text-white transition-colors">Tags <span class="material-symbols-outlined text-sm">expand_more</span></button>
+</div>
+</div>
+<!-- Database Table Card -->
+<div class="bg-surface-container-low rounded-2xl border border-white/5 overflow-hidden">
+<div class="flex justify-between items-center p-6 pb-0">
+<h3 class="text-lg font-bold text-white">Database Records</h3>
+<div class="flex bg-[#2d3449]/50 p-1 rounded-lg">
+<button class="p-1.5 rounded bg-[#00E5FF]/20 text-[#00E5FF]"><span class="material-symbols-outlined text-[20px]">table_rows</span></button>
+<button class="p-1.5 rounded text-[#bac9cc] hover:text-white"><span class="material-symbols-outlined text-[20px]">grid_view</span></button>
+<button class="p-1.5 rounded text-[#bac9cc] hover:text-white"><span class="material-symbols-outlined text-[20px]">analytics</span></button>
+</div>
+</div>
+<div class="overflow-x-auto mt-4">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="text-[#bac9cc] text-[11px] font-bold uppercase tracking-widest border-b border-white/5">
+<th class="px-6 py-4"><input class="rounded border-[#6B7280]/30 bg-transparent text-[#00E5FF] focus:ring-[#00E5FF]/20" type="checkbox"/></th>
+<th class="px-6 py-4">KOL</th>
+<th class="px-6 py-4">Platform</th>
+<th class="px-6 py-4 text-right">Followers</th>
+<th class="px-6 py-4 text-right">Engagement</th>
+<th class="px-6 py-4 text-center">AI Score</th>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4">Last Contact</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/5">
+<!-- Example Row 1 -->
+<tr class="hover:bg-white/[0.02] transition-colors">
+<td class="px-6 py-4"><input class="rounded border-[#6B7280]/30 bg-transparent text-[#00E5FF] focus:ring-[#00E5FF]/20" type="checkbox"/></td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-xl object-cover ring-1 ring-white/10" data-alt="vibrant gaming creator profile photo with neon purple backlighting and focused gamer expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBIx-hniZv2_YWC1xE7c6aVBimrMHh7p827o__ryGM5SYsUW_r5QbVp9oTwhLYz7qq1NUa_t5uNIN6LzavGJvEtRzLyc0OaQZAQCKlnDkcsV-KvVnFvaZZhLzXesotBnp_fyVoc9y25MpkkSxk9anA2t9bDFFIWIFUm_y8zhqOmOEOFPyLUfBWmzwuT17_0gDoWXwILzELAF__-oaHPur9EIg8RFXcw514FCF4vM07Dl7_jXxQ6fsAFIFmJHpbmoIZsQ_tbtTT5m4"/>
+<div>
+<p class="text-sm font-semibold text-white">GamerXia</p>
+<div class="flex gap-1 mt-1">
+<span class="text-[10px] px-1.5 bg-[#9D50FF]/10 text-[#d8b9ff] rounded">FPS</span>
+<span class="text-[10px] px-1.5 bg-[#9D50FF]/10 text-[#d8b9ff] rounded">MOBA</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="text-[#ff0000] text-[18px] material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+<span class="text-xs text-[#bac9cc]">YouTube</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<p class="text-sm font-bold text-white">2.34M</p>
+<p class="text-[10px] text-[#00E5FF]">+12.4k</p>
+</td>
+<td class="px-6 py-4 text-right">
+<p class="text-sm font-semibold text-[#dae2fd]">8.2%</p>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="px-3 py-1 rounded-full bg-[#00E5FF]/10 text-[#00E5FF] font-bold text-xs ring-1 ring-[#00E5FF]/20">96</span>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-[11px] font-bold text-[#00E5FF] uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-[#00E5FF] cyan-glow"></span> Active
+                                        </span>
+</td>
+<td class="px-6 py-4 text-xs text-[#6B7280]">2 days ago</td>
+</tr>
+<!-- Example Row 2 -->
+<tr class="hover:bg-white/[0.02] transition-colors">
+<td class="px-6 py-4"><input checked="" class="rounded border-[#6B7280]/30 bg-transparent text-[#00E5FF] focus:ring-[#00E5FF]/20" type="checkbox"/></td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-xl object-cover ring-1 ring-white/10" data-alt="portrait of a young woman content creator with soft natural lighting and a creative office background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_3IAnXLYlBcjMN4DVoXvw3m7T3eZzg4R4Jwf1KBAs-ZXVx19B5yjwDC3IFluteUOoPIFbeMf1VspwO7OcDM9wmQZKnC5JfYA0HkYaGebyydEGhgUGrRhO59kKOuSZatW4wjk9Zp0wYAyB_7WgfrnDNg4mEYfbh_riiB0OBG-TZwAxVKdsLmuKwoJN7yAzDjqUc7VlUX6OC9Kf-1-fzZT1Lu2A4Pl9wiAYJjeUlQWCzULD-bjTF9CDt9oQFObyPJRMEM2kNEzcB9s"/>
+<div>
+<p class="text-sm font-semibold text-white">CloudNine_Stream</p>
+<div class="flex gap-1 mt-1">
+<span class="text-[10px] px-1.5 bg-[#9D50FF]/10 text-[#d8b9ff] rounded">RP</span>
+<span class="text-[10px] px-1.5 bg-[#9D50FF]/10 text-[#d8b9ff] rounded">IRL</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="text-[#9146ff] text-[18px] material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">videocam</span>
+<span class="text-xs text-[#bac9cc]">Twitch</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<p class="text-sm font-bold text-white">892k</p>
+<p class="text-[10px] text-[#00E5FF]">+5.2k</p>
+</td>
+<td class="px-6 py-4 text-right">
+<p class="text-sm font-semibold text-[#dae2fd]">12.5%</p>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="px-3 py-1 rounded-full bg-[#00E5FF]/10 text-[#00E5FF] font-bold text-xs ring-1 ring-[#00E5FF]/20">88</span>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-[11px] font-bold text-amber-400 uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]"></span> Working
+                                        </span>
+</td>
+<td class="px-6 py-4 text-xs text-[#6B7280]">Yesterday</td>
+</tr>
+<!-- More repeated rows for density -->
+<tr class="hover:bg-white/[0.02] transition-colors border-white/5 border-t">
+<td class="px-6 py-4"><input checked="" class="rounded border-[#6B7280]/30 bg-transparent text-[#00E5FF] focus:ring-[#00E5FF]/20" type="checkbox"/></td>
+<td class="px-6 py-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-[#2d3449] animate-pulse"></div><div class="h-4 w-24 bg-[#2d3449] rounded"></div></div></td>
+<td class="px-6 py-4"><div class="h-4 w-16 bg-[#2d3449] rounded"></div></td>
+<td class="px-6 py-4 text-right"><div class="h-4 w-12 bg-[#2d3449] rounded ml-auto"></div></td>
+<td class="px-6 py-4 text-right"><div class="h-4 w-8 bg-[#2d3449] rounded ml-auto"></div></td>
+<td class="px-6 py-4 text-center"><div class="h-6 w-10 bg-[#2d3449] rounded-full mx-auto"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-20 bg-[#2d3449] rounded"></div></td>
+<td class="px-6 py-4 text-xs text-[#6B7280]">5h ago</td>
+</tr>
+<!-- Duplicate check to show selection state -->
+<tr class="hover:bg-white/[0.02] transition-colors border-white/5 border-t">
+<td class="px-6 py-4"><input checked="" class="rounded border-[#6B7280]/30 bg-transparent text-[#00E5FF] focus:ring-[#00E5FF]/20" type="checkbox"/></td>
+<td class="px-6 py-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-[#2d3449] animate-pulse"></div><div class="h-4 w-24 bg-[#2d3449] rounded"></div></div></td>
+<td class="px-6 py-4"><div class="h-4 w-16 bg-[#2d3449] rounded"></div></td>
+<td class="px-6 py-4 text-right"><div class="h-4 w-12 bg-[#2d3449] rounded ml-auto"></div></td>
+<td class="px-6 py-4 text-right"><div class="h-4 w-8 bg-[#2d3449] rounded ml-auto"></div></td>
+<td class="px-6 py-4 text-center"><div class="h-6 w-10 bg-[#2d3449] rounded-full mx-auto"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-20 bg-[#2d3449] rounded"></div></td>
+<td class="px-6 py-4 text-xs text-[#6B7280]">12h ago</td>
+</tr>
+<tr class="hover:bg-white/[0.02] transition-colors border-white/5 border-t">
+<td class="px-6 py-4"><input checked="" class="rounded border-[#6B7280]/30 bg-transparent text-[#00E5FF] focus:ring-[#00E5FF]/20" type="checkbox"/></td>
+<td class="px-6 py-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-[#2d3449] animate-pulse"></div><div class="h-4 w-24 bg-[#2d3449] rounded"></div></div></td>
+<td class="px-6 py-4"><div class="h-4 w-16 bg-[#2d3449] rounded"></div></td>
+<td class="px-6 py-4 text-right"><div class="h-4 w-12 bg-[#2d3449] rounded ml-auto"></div></td>
+<td class="px-6 py-4 text-right"><div class="h-4 w-8 bg-[#2d3449] rounded ml-auto"></div></td>
+<td class="px-6 py-4 text-center"><div class="h-6 w-10 bg-[#2d3449] rounded-full mx-auto"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-20 bg-[#2d3449] rounded"></div></td>
+<td class="px-6 py-4 text-xs text-[#6B7280]">Oct 12</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Side Insights Panel -->
+<aside class="w-[320px] sticky top-24 space-y-6 flex-none">
+<!-- AI Suggestion Card -->
+<div class="glass-panel p-6 rounded-2xl relative overflow-hidden">
+<div class="absolute -top-4 -right-4 w-20 h-20 bg-[#00E5FF]/10 blur-3xl rounded-full"></div>
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-[#00E5FF] text-[20px]">auto_awesome</span>
+<h4 class="text-sm font-bold text-white uppercase tracking-wider">AI Intelligence</h4>
+</div>
+<p class="text-[#dae2fd] text-sm leading-relaxed mb-6">
+                        23 KOLs in your priority list haven't been re-evaluated this quarter. Their metrics may be stale.
+                    </p>
+<button class="w-full py-3 rounded-xl bg-gradient-to-r from-[#00daf3] to-[#c3f5ff] text-[#0b1326] font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-2">
+                        Refresh AI Scores
+                    </button>
+</div>
+<!-- Coverage Gap Card -->
+<div class="bg-surface-container-low p-6 rounded-2xl border border-white/5">
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-[#9D50FF] text-[20px]">location_on</span>
+<h4 class="text-sm font-bold text-[#bac9cc] uppercase tracking-wider">Coverage Gap</h4>
+</div>
+<p class="text-[#dae2fd] text-sm leading-relaxed mb-4">
+                        Light on <span class="text-[#9D50FF] font-bold">LATAM</span> KOLs (8 total) for your upcoming 'Project Aurora'.
+                    </p>
+<button class="flex items-center gap-2 text-[11px] font-bold text-[#d8b9ff] uppercase tracking-widest hover:text-white transition-colors">
+                        Search LATAM KOLs <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<!-- Engagement Trend -->
+<div class="bg-surface-container-low p-6 rounded-2xl border border-white/5">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">Global Engagement</p>
+<h4 class="text-xl font-bold text-white">8.4%</h4>
+</div>
+<span class="text-[#00E5FF] text-xs font-semibold">+1.2%</span>
+</div>
+<div class="h-16 flex items-end gap-1 px-1">
+<div class="flex-1 bg-[#2d3449] rounded-t h-[40%]"></div>
+<div class="flex-1 bg-[#2d3449] rounded-t h-[55%]"></div>
+<div class="flex-1 bg-[#2d3449] rounded-t h-[48%]"></div>
+<div class="flex-1 bg-[#2d3449] rounded-t h-[70%]"></div>
+<div class="flex-1 bg-[#2d3449] rounded-t h-[65%]"></div>
+<div class="flex-1 bg-[#00E5FF] rounded-t h-[85%] cyan-glow"></div>
+<div class="flex-1 bg-[#00E5FF] rounded-t h-[100%] cyan-glow"></div>
+</div>
+</div>
+</aside>
+</div>
+<!-- Bulk Action Bar -->
+<div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
+<div class="bg-[#0b1326]/60 backdrop-blur-2xl border border-white/10 px-8 py-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-8 min-w-[520px]">
+<div class="flex items-center gap-3 pr-8 border-r border-white/10">
+<span class="text-2xl font-bold text-gradient-cyan">4</span>
+<span class="text-[#bac9cc] text-sm font-medium uppercase tracking-wider">KOLs selected</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#00E5FF]/10 text-[#00E5FF] text-xs font-bold uppercase tracking-widest border border-[#00E5FF]/20 hover:bg-[#00E5FF]/20 transition-all">
+<span class="material-symbols-outlined text-[18px]">add_to_photos</span> Add to Campaign
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 text-[#bac9cc] text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-all">
+<span class="material-symbols-outlined text-[18px]">mail</span> Email
+                    </button>
+<button class="p-2 text-red-400 hover:bg-red-400/10 rounded-xl transition-all">
+<span class="material-symbols-outlined text-[20px]">delete_outline</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

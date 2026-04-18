@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOLMatrix - Campaigns</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-card {
+            background: rgba(45, 52, 73, 0.2);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(0, 229, 255, 0.05);
+        }
+        .cyan-glow {
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
+        }
+        .text-gradient-cyan {
+            background: linear-gradient(135deg, #00daf3, #c3f5ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .bg-gradient-cyan {
+            background: linear-gradient(135deg, #00daf3, #c3f5ff);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#6e06d0",
+                        "primary": "#c3f5ff",
+                        "outline": "#849396",
+                        "on-primary-fixed-variant": "#004f58",
+                        "surface-variant": "#2d3449",
+                        "error": "#ffb4ab",
+                        "on-tertiary": "#3e2e00",
+                        "surface-dim": "#0b1326",
+                        "secondary": "#d8b9ff",
+                        "inverse-surface": "#dbe2fd",
+                        "on-surface": "#dbe2fd",
+                        "error-container": "#93000a",
+                        "tertiary-fixed-dim": "#f3bf26",
+                        "surface-container-lowest": "#060d20",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#251a00",
+                        "on-secondary-container": "#d5b5ff",
+                        "on-error": "#690005",
+                        "surface-tint": "#00daf3",
+                        "secondary-fixed-dim": "#d8b9ff",
+                        "on-secondary": "#450086",
+                        "on-surface-variant": "#bac9cc",
+                        "inverse-primary": "#006875",
+                        "surface": "#0b1326",
+                        "tertiary-fixed": "#ffdf96",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "primary-container": "#00e5ff",
+                        "on-secondary-fixed": "#290055",
+                        "on-background": "#dbe2fd",
+                        "inverse-on-surface": "#283044",
+                        "surface-container-high": "#222a3e",
+                        "primary-fixed": "#9cf0ff",
+                        "on-secondary-fixed-variant": "#6200bc",
+                        "on-primary-fixed": "#001f24",
+                        "tertiary": "#ffeac0",
+                        "surface-container": "#171f33",
+                        "outline-variant": "#3b494c",
+                        "on-tertiary-container": "#6f5500",
+                        "tertiary-container": "#fec931",
+                        "primary-fixed-dim": "#00daf3",
+                        "surface-container-highest": "#2d3449",
+                        "surface-bright": "#31394e",
+                        "on-primary": "#00363d",
+                        "on-primary-container": "#00626e",
+                        "secondary-fixed": "#eddcff",
+                        "background": "#0b1326",
+                        "surface-container-low": "#131b2e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "12px",
+                        "2xl": "16px",
+                        "full": "9999px"
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface antialiased overflow-x-hidden">
+<!-- SIDEBAR -->
+<aside class="fixed left-0 top-0 h-full w-[240px] z-50 bg-[#060e20] flex flex-col py-6 px-4 shadow-[20px_0_20px_rgba(0,229,255,0.03)]">
+<!-- Logo Block -->
+<div class="flex items-center h-[56px] mb-8 gap-3">
+<div class="w-10 h-10 rounded-[10px] bg-gradient-cyan flex items-center justify-center shadow-[0_0_15px_rgba(0,218,243,0.3)]">
+<span class="text-[#060e20] font-bold text-lg">K</span>
+</div>
+<div>
+<h1 class="text-white font-bold text-lg leading-none tracking-tight">KOLMatrix</h1>
+<p class="text-[9px] font-semibold text-outline tracking-[0.15em] mt-1 uppercase">Neural Velocity</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex-grow flex flex-col gap-1">
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-xl text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="text-[14px] font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-xl text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">travel_explore</span>
+<span class="text-[14px] font-medium">KOL Discovery</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-xl text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+<span class="text-[14px] font-medium">KOL Database</span>
+</a>
+<!-- Active Tab: Campaigns -->
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-xl text-[#00E5FF] font-semibold bg-gradient-to-r from-[#00E5FF]/10 to-transparent border-l-2 border-[#00E5FF] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">rocket_launch</span>
+<span class="text-[14px]">Campaigns</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-xl text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">forward_to_inbox</span>
+<span class="text-[14px] font-medium">Email Center</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-xl text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+<span class="text-[14px] font-medium">Products</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-xl text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">query_stats</span>
+<span class="text-[14px] font-medium">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-xl text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="text-[14px] font-medium">Settings</span>
+</a>
+</nav>
+<!-- User Chip -->
+<div class="mt-auto flex items-center gap-3 p-3 rounded-xl hover:bg-[#222a3d]/40 transition-colors cursor-pointer group">
+<div class="relative">
+<img class="w-9 h-9 rounded-full object-cover ring-2 ring-transparent group-hover:ring-[#00E5FF]/40 transition-all" data-alt="professional portrait of a confident asian woman with short dark hair in a modern workspace setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCk_kEEalCkRFYyzuVmY8La_jxwj0SUrYayVSjMxPhzkykTr2spGSSLeyqDSppD9hPk2yX_o-DzOWUNPfoGR6ZgaEw6C_QQthCshoVUvkq3cfvXaERUbAv3WNKfKCOYJ0wPZHc-SwhzUpe1J_L86y6MuZXLUs1E8Uic4NgTMUNjKKIYsC-zVn28NdbU9_gt-BS_2Uf4igzXuBjnaIPmX1iaLadm3HUijgyNTP2zquzzbOPxQ6Gn6Tjv4fz4yfWTxfJ1YKfu9Wn3gE8"/>
+</div>
+<div class="flex-grow">
+<p class="text-white text-[14px] font-semibold leading-tight">Sarah Chen</p>
+<p class="text-outline text-[11px]">Ops Lead</p>
+</div>
+<span class="material-symbols-outlined text-[#bac9cc] text-[18px]">unfold_more</span>
+</div>
+</aside>
+<!-- TOPBAR -->
+<header class="fixed top-0 left-[240px] right-0 h-16 bg-[#0b1326]/85 backdrop-blur-[24px] flex items-center px-8 z-40 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+<h2 class="text-white font-semibold text-[16px] flex-none">Campaigns</h2>
+<div class="flex-grow flex justify-center px-8">
+<div class="relative w-full max-w-[480px] group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+<input class="w-full h-10 bg-surface-variant rounded-full pl-11 pr-16 text-[13px] border-none focus:ring-1 focus:ring-[#00E5FF]/40 transition-all placeholder:text-outline text-white" placeholder="Search KOLs, campaigns, emails..." type="text"/>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 border border-outline/30 rounded px-1.5 py-0.5 bg-surface-container">
+<span class="text-[10px] text-outline font-medium tracking-tighter">CMD+K</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-5 flex-none">
+<button class="flex items-center gap-1.5 text-[#bac9cc] hover:text-[#00E5FF] transition-colors">
+<span class="text-[13px] font-medium">EN</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+<div class="relative cursor-pointer hover:text-[#00E5FF] transition-colors text-[#bac9cc]">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<div class="absolute top-0 right-0 w-[6px] h-[6px] bg-error rounded-full"></div>
+</div>
+<div class="w-[1px] h-6 bg-outline/15"></div>
+<div class="cursor-pointer flex items-center gap-2 group">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="close-up avatar of sarah chen looking professional" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAs2rWBl_y6c4hIO3sOWheRMcIiemn6vZPcxmz6CsDF25uJQyHuGYEiU6Sz2iZlxZz7C5h0syTRow94G_7vrftMoH4JW8nnvLYTxKFDTQzIEJ-RJsunN86oAFnfBwk26Bg51PUmXwY1_2LEcmSOOWw4B7c_cYFE5pelcGee63Ou2l4AKH8Z53vEzaxDrAsOP-tfl1Qe7nZwSfDOL0awF9qZlzqtUklWrdQRVzOlA5-hWiTHvX88X1gaVDk34rdrSq1RmwAkJNKMcqA"/>
+<span class="material-symbols-outlined text-outline text-[18px] group-hover:text-[#00E5FF]">expand_more</span>
+</div>
+</div>
+</header>
+<!-- MAIN CONTENT -->
+<main class="ml-[240px] mt-16 p-8 pb-32">
+<!-- Page Header -->
+<div class="flex justify-between items-start mb-8">
+<div>
+<h1 class="text-4xl font-bold text-white tracking-[-0.02em] mb-2">Campaigns</h1>
+<p class="text-on-surface-variant text-[15px]">Manage all KOL marketing campaigns across your organization</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-secondary-container/30 text-secondary hover:bg-secondary-container/10 transition-all font-semibold">
+<span class="material-symbols-outlined text-[20px]">upload_file</span>
+                    Import
+                </button>
+<button class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-cyan text-[#060d20] font-bold shadow-[0_0_20px_rgba(0,229,255,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                    New Campaign
+                </button>
+</div>
+</div>
+<!-- Stats Strip -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+<div class="glass-card p-5 rounded-2xl">
+<p class="text-outline text-[13px] font-medium mb-1">Active Campaigns</p>
+<div class="flex items-end gap-2">
+<h3 class="text-3xl font-bold text-white">8</h3>
+<span class="text-emerald-400 text-[13px] font-semibold mb-1 flex items-center">
+<span class="material-symbols-outlined text-[16px]">trending_up</span> +2
+                    </span>
+</div>
+</div>
+<div class="glass-card p-5 rounded-2xl">
+<p class="text-outline text-[13px] font-medium mb-1">KOLs in Pipeline</p>
+<div class="flex items-end gap-2">
+<h3 class="text-3xl font-bold text-white">247</h3>
+<span class="text-emerald-400 text-[13px] font-semibold mb-1 flex items-center">
+<span class="material-symbols-outlined text-[16px]">trending_up</span> 14%
+                    </span>
+</div>
+</div>
+<div class="glass-card p-5 rounded-2xl">
+<p class="text-outline text-[13px] font-medium mb-1">Avg Reply Rate</p>
+<div class="flex items-end gap-2">
+<h3 class="text-3xl font-bold text-white">38%</h3>
+<span class="text-emerald-400 text-[13px] font-semibold mb-1 flex items-center">
+<span class="material-symbols-outlined text-[16px]">trending_up</span> 5.2%
+                    </span>
+</div>
+</div>
+<div class="glass-card p-5 rounded-2xl">
+<p class="text-outline text-[13px] font-medium mb-1">Reach Forecast</p>
+<div class="flex items-end gap-2">
+<h3 class="text-3xl font-bold text-white">124M</h3>
+<span class="text-on-surface-variant text-[13px] mb-1">Target: 150M</span>
+</div>
+</div>
+</div>
+<!-- Filter/Search Strip -->
+<div class="glass-card rounded-2xl p-2 mb-8 flex flex-col md:flex-row items-center gap-4">
+<div class="flex bg-surface-container-low rounded-xl p-1 w-full md:w-auto">
+<button class="px-5 py-2 rounded-lg text-[13px] font-semibold bg-surface-container-highest text-white transition-all">All</button>
+<button class="px-5 py-2 rounded-lg text-[13px] font-semibold text-outline hover:text-white transition-all relative">
+                    Active
+                    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-[#00E5FF]"></div>
+</button>
+<button class="px-5 py-2 rounded-lg text-[13px] font-semibold text-outline hover:text-white transition-all">Draft</button>
+<button class="px-5 py-2 rounded-lg text-[13px] font-semibold text-outline hover:text-white transition-all">Paused</button>
+<button class="px-5 py-2 rounded-lg text-[13px] font-semibold text-outline hover:text-white transition-all">Completed</button>
+</div>
+<div class="flex items-center gap-3 ml-auto pr-4">
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-high text-[13px] text-on-surface-variant border border-outline/10 cursor-pointer hover:border-[#00E5FF]/30 transition-all">
+<span>Game</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-high text-[13px] text-on-surface-variant border border-outline/10 cursor-pointer hover:border-[#00E5FF]/30 transition-all">
+<span>Region</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-high text-[13px] text-on-surface-variant border border-outline/10 cursor-pointer hover:border-[#00E5FF]/30 transition-all">
+<span>Owner</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-high text-[13px] text-on-surface-variant border border-outline/10 cursor-pointer hover:border-[#00E5FF]/30 transition-all">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+<span>Date</span>
+</div>
+</div>
+</div>
+<!-- Table Container -->
+<div class="glass-card rounded-2xl overflow-hidden mb-8">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline/10 bg-surface-container-low">
+<th class="px-6 py-4 w-12">
+<div class="w-5 h-5 rounded border-2 border-outline/30 flex items-center justify-center cursor-pointer"></div>
+</th>
+<th class="px-6 py-4 text-outline text-[12px] font-bold uppercase tracking-wider">Campaign Name</th>
+<th class="px-6 py-4 text-outline text-[12px] font-bold uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 text-outline text-[12px] font-bold uppercase tracking-wider">Reach Progress</th>
+<th class="px-6 py-4 text-outline text-[12px] font-bold uppercase tracking-wider">ROI</th>
+<th class="px-6 py-4 text-outline text-[12px] font-bold uppercase tracking-wider">Owner</th>
+<th class="px-6 py-4"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline/5">
+<!-- Row 1 -->
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="w-5 h-5 rounded border-2 border-[#00E5FF] bg-[#00E5FF]/10 flex items-center justify-center cursor-pointer">
+<span class="material-symbols-outlined text-[14px] text-[#00E5FF] font-bold">check</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="stylized vibrant high-tech cyber gaming landscape with neon lights and futuristic architecture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4Agtkmkr7LtbBrWFYMjMm5xYSec-m5k0XOxtvNsiehs7vvl2aS4e1InPMioog9Bjlht3ESb4lFo2f8gE_1Amk6kZPT0stqlXibSgtX1iEMuHlZXHnvnHCPidPJCnapAOid9KhAmIkp3TCpjdsPHmMXZydGQQ6gaC_apzZkKqfrSOMX_-ZadXyhKAQ33jzdj7Ndi9sWZhrOZ2naDJ_3_8vy0hKzkBt5af7nqZc-vcrdMjy0LlhzJ1-RxAWxMxBg7eiPfzLq7t4zXo"/>
+</div>
+<div>
+<p class="text-white font-semibold text-[14px]">Cyber-Odyssey Global Launch</p>
+<p class="text-outline text-[12px]">Project-08 • Action RPG</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full bg-[#00E5FF]/10 text-[#00E5FF] text-[11px] font-bold uppercase tracking-wide border border-[#00E5FF]/20">Active</span>
+</td>
+<td class="px-6 py-4 min-w-[160px]">
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center text-[11px]">
+<span class="text-on-surface">12.4M / 15M</span>
+<span class="text-outline">82%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-gradient-cyan rounded-full" style="width: 82%"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-emerald-400 font-bold text-[14px]">
+<span class="material-symbols-outlined text-[18px]">trending_up</span>
+                                4.2x
+                            </div>
+</td>
+<td class="px-6 py-4">
+<div class="flex -space-x-2">
+<img class="w-7 h-7 rounded-full border-2 border-surface-container object-cover" data-alt="avatar of team member male" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDB7VozQcHg29q1VCw796YeF4_nBuCXVmt7apBrSFyAQE06P14XWMJYmuTKsAEICGzNnrmhz3AQiBmYAHUoQ2cnLZ8aibLYgYFrtmUP4TtC0JRDQpc28PyvbAdi66CEjNkU3KbccTlau3mwQ9HAe_Ywk1g6b6FkUawc6RpfUORKjVE_DjXj75M8gkOXKvZPiFW1029uuS19r8Lzn1NgrS3SWhEBf7VaUiKR5xu9Q-WUlVsZ7tt1429dgso9Oa2Vx32-mkPBcN1Tqdw"/>
+<div class="w-7 h-7 rounded-full border-2 border-surface-container bg-surface-container-high flex items-center justify-center text-[10px] text-white font-bold">+2</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1 hover:text-[#00E5FF] text-outline transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="bg-surface-container-low/30 hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="w-5 h-5 rounded border-2 border-[#00E5FF] bg-[#00E5FF]/10 flex items-center justify-center cursor-pointer">
+<span class="material-symbols-outlined text-[14px] text-[#00E5FF] font-bold">check</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="dynamic close-up of a gaming controller on an glowing neon surface in a dark room" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNZD7A1BrZo4cnegsopLiVxpVao9o1S9JWT6ONdg6Rl34mi1GJ03H4w-M6D1F5dFlJOZujbAFdNDDNXzfF_ZozBaJWFEbUTykZo9LsjRHDujN6Mhb4Ntjw57uRyZ3ehV-J3jCfHMUYZIoXtZIYHzYzeNWeUlQKAsWtJHek8l6D9gHYGugW2a6lHWfCeJhkTHhvtvlec_BVI1uiEKL5ac4T0gCOXjhIHDEZL5nNKsM7HM1OjJP3_MRODHFsG5N7pfztiYFC66dXKPc"/>
+</div>
+<div>
+<p class="text-white font-semibold text-[14px]">Nebula Warriors: Tier 1 Beta</p>
+<p class="text-outline text-[12px]">Project-03 • MOBA</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full bg-[#00E5FF]/10 text-[#00E5FF] text-[11px] font-bold uppercase tracking-wide border border-[#00E5FF]/20">Active</span>
+</td>
+<td class="px-6 py-4 min-w-[160px]">
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center text-[11px]">
+<span class="text-on-surface">3.8M / 5M</span>
+<span class="text-outline">76%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-gradient-cyan rounded-full" style="width: 76%"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-emerald-400 font-bold text-[14px]">
+<span class="material-symbols-outlined text-[18px]">trending_up</span>
+                                2.9x
+                            </div>
+</td>
+<td class="px-6 py-4">
+<img class="w-7 h-7 rounded-full border-2 border-surface-container object-cover" data-alt="avatar of project lead male" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYNL00HV-OrKvZRjf4DzxlD5vj1TK2hIF3pGbei4CBi91uKUXHLEsogsO46wnfb_Rl_F7WF5kjkXXKYs6tk4M8hiqmTsoqP8DR4sMhSlUaL2DtB-rLGt2XwX2n2sP7jGxund-en3MStFfbAqNfavBAvSqqBpsRSLVkCiiPF_h8R_R9jKyPAol2kSGk2rDzfKkTGTIXle82p-54ZC_DtJhtZS0sc46VSN6ENiUPPectoW1QD4Wpmqj-s7EEQtwdp6hvKFu90rkY-10"/>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1 hover:text-[#00E5FF] text-outline transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="w-5 h-5 rounded border-2 border-[#00E5FF] bg-[#00E5FF]/10 flex items-center justify-center cursor-pointer">
+<span class="material-symbols-outlined text-[14px] text-[#00E5FF] font-bold">check</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="abstract flowing liquid metal texture with deep blue and purple hues and soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCr0xQ_uqlukv9g2U2B8meH2aKvqR9_N-jnK0Fyg9lwusqGhhkR-FIgk21kALW-UfM2BoSeT7DZWx5x2sXUUHfZfyppvt4B_bxKMDgkCuVsVZ0cOP9Ws9o_TsyvK_yn5a86APTs_-Mey8PF8m3QTYGfHPg2gfYkY7E2vhJ-F7HXIt4RTuPTh-63Ju4YDzzM6Lq2qodoaEKEti1PRHdXZYCcPR_mA6LCUThHD73xamed4I3N7nEynTK34wS4BGS8J4yOzESDXuNuJaY"/>
+</div>
+<div>
+<p class="text-white font-semibold text-[14px]">Apex Vanguard Content Wave</p>
+<p class="text-outline text-[12px]">Project-11 • FPS</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full bg-outline/10 text-outline text-[11px] font-bold uppercase tracking-wide border border-outline/20">Paused</span>
+</td>
+<td class="px-6 py-4 min-w-[160px]">
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center text-[11px]">
+<span class="text-on-surface">18M / 18M</span>
+<span class="text-outline">100%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary rounded-full" style="width: 100%"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-bold text-[14px]">
+<span class="material-symbols-outlined text-[18px]">trending_flat</span>
+                                5.1x
+                            </div>
+</td>
+<td class="px-6 py-4">
+<img class="w-7 h-7 rounded-full border-2 border-surface-container object-cover" data-alt="avatar of marketing manager female" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkZoXBoVicz0GGK9nDN13Q6c7P4-oRzZj4P303NNdg9gJNumc539g_R_-u1aI7HTTqlNtMdHnfEhAS2JLqLrH486MAZfXx_4QAOEspf0TgT4y35SR7UmsvYwtTWMq9uH9gFNbhMrk-rZHfm5_QCIpSj4J1TziCNK_i84YBxZYDIFvOS62UAlR-nHde5Iti2begTBdaUFDxNgghn7docj3lyFY_41oQI9Cnj64X5Z0c2r07rrkHEMDF1Bu0ASvPnLlZDYfMYKpxLag"/>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1 hover:text-[#00E5FF] text-outline transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Dummy rows for layout -->
+<tr class="bg-surface-container-low/30 hover:bg-white/5 transition-colors">
+<td class="px-6 py-4"><div class="w-5 h-5 rounded border-2 border-outline/30 cursor-pointer"></div></td>
+<td class="px-6 py-4 opacity-40"><div class="h-4 bg-outline/20 rounded w-48"></div><div class="h-3 bg-outline/10 rounded w-24 mt-2"></div></td>
+<td class="px-6 py-4 opacity-40"><div class="h-5 bg-outline/20 rounded-full w-16"></div></td>
+<td class="px-6 py-4 opacity-40"><div class="h-2 bg-outline/20 rounded-full w-full"></div></td>
+<td class="px-6 py-4 opacity-40"><div class="h-4 bg-outline/20 rounded w-10"></div></td>
+<td class="px-6 py-4 opacity-40"><div class="w-7 h-7 rounded-full bg-outline/20"></div></td>
+<td class="px-6 py-4 text-right"><span class="material-symbols-outlined text-outline/30">more_vert</span></td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-6 py-4"><div class="w-5 h-5 rounded border-2 border-outline/30 cursor-pointer"></div></td>
+<td class="px-6 py-4 opacity-40"><div class="h-4 bg-outline/20 rounded w-40"></div><div class="h-3 bg-outline/10 rounded w-32 mt-2"></div></td>
+<td class="px-6 py-4 opacity-40"><div class="h-5 bg-outline/20 rounded-full w-16"></div></td>
+<td class="px-6 py-4 opacity-40"><div class="h-2 bg-outline/20 rounded-full w-full"></div></td>
+<td class="px-6 py-4 opacity-40"><div class="h-4 bg-outline/20 rounded w-10"></div></td>
+<td class="px-6 py-4 opacity-40"><div class="w-7 h-7 rounded-full bg-outline/20"></div></td>
+<td class="px-6 py-4 text-right"><span class="material-symbols-outlined text-outline/30">more_vert</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Bar -->
+<div class="flex justify-between items-center px-4">
+<p class="text-on-surface-variant text-[13px]">Showing <span class="text-white font-semibold">1-10</span> of <span class="text-white font-semibold">48</span> campaigns</p>
+<div class="flex gap-2">
+<button class="w-10 h-10 rounded-xl border border-outline/10 flex items-center justify-center text-outline hover:text-white hover:border-outline/30 transition-all">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 rounded-xl bg-surface-container-high text-white font-semibold flex items-center justify-center">1</button>
+<button class="w-10 h-10 rounded-xl border border-outline/10 flex items-center justify-center text-outline hover:text-white hover:border-outline/30 transition-all">2</button>
+<button class="w-10 h-10 rounded-xl border border-outline/10 flex items-center justify-center text-outline hover:text-white hover:border-outline/30 transition-all">3</button>
+<span class="flex items-center justify-center w-10 text-outline">...</span>
+<button class="w-10 h-10 rounded-xl border border-outline/10 flex items-center justify-center text-outline hover:text-white hover:border-outline/30 transition-all">5</button>
+<button class="w-10 h-10 rounded-xl border border-outline/10 flex items-center justify-center text-outline hover:text-white hover:border-outline/30 transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Floating Bulk Actions -->
+<div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
+<div class="bg-surface-container-highest/60 backdrop-blur-3xl px-8 py-4 rounded-full border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-10">
+<div class="flex items-center gap-3">
+<div class="w-7 h-7 rounded bg-[#00E5FF] flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px] text-[#060d20] font-bold">check</span>
+</div>
+<span class="text-white font-semibold text-[15px]">3 campaigns selected</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-white transition-all text-[14px] font-medium">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+                    Edit
+                </button>
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-white transition-all text-[14px] font-medium">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+                    Duplicate
+                </button>
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-white transition-all text-[14px] font-medium">
+<span class="material-symbols-outlined text-[20px]">pause_circle</span>
+                    Pause
+                </button>
+<div class="w-[1px] h-6 bg-outline/20"></div>
+<button class="flex items-center gap-2 text-error/80 hover:text-error transition-all text-[14px] font-bold">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+                    Delete
+                </button>
+</div>
+<button class="p-1 hover:text-[#00E5FF] text-outline transition-colors">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</div>
+</body></html>
