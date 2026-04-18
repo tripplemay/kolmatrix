@@ -20,7 +20,7 @@ export function LoginForm() {
           type="email"
           autoComplete="email"
           required
-          className="bg-input text-on-surface placeholder:text-on-surface-variant/60 h-10 rounded-md px-3 text-sm outline-none focus:ring-2 focus:ring-cyan/60"
+          className="bg-input text-on-surface placeholder:text-on-surface-variant/60 focus:ring-cyan/60 h-10 rounded-md px-3 text-sm outline-none focus:ring-2"
           placeholder="marketer@kolmatrix.local"
         />
       </label>
@@ -34,7 +34,7 @@ export function LoginForm() {
           autoComplete="current-password"
           required
           minLength={1}
-          className="bg-input text-on-surface placeholder:text-on-surface-variant/60 h-10 rounded-md px-3 text-sm outline-none focus:ring-2 focus:ring-cyan/60"
+          className="bg-input text-on-surface placeholder:text-on-surface-variant/60 focus:ring-cyan/60 h-10 rounded-md px-3 text-sm outline-none focus:ring-2"
         />
       </label>
 

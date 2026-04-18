@@ -7,7 +7,14 @@
  */
 import type { NextAuthConfig } from "next-auth";
 
-export const PROTECTED_PREFIXES = ["/dashboard", "/kols", "/campaigns", "/email", "/analytics", "/settings"];
+export const PROTECTED_PREFIXES = [
+  "/dashboard",
+  "/kols",
+  "/campaigns",
+  "/email",
+  "/analytics",
+  "/settings",
+];
 
 const isProtectedPath = (pathname: string) =>
   PROTECTED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));

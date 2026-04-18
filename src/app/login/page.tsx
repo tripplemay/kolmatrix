@@ -11,9 +11,7 @@ export default function LoginPage() {
             Neural Velocity
           </span>
           <h1 className="gradient-text text-3xl font-bold tracking-tight">Sign in</h1>
-          <p className="text-on-surface-variant text-sm">
-            Use your marketer or admin credentials.
-          </p>
+          <p className="text-on-surface-variant text-sm">Use your marketer or admin credentials.</p>
         </div>
         <LoginForm />
       </section>

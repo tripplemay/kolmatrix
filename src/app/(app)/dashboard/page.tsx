@@ -8,9 +8,7 @@ export const metadata = { title: "Dashboard — KOLMatrix" };
 export default async function DashboardStub() {
   const session = await auth();
   const tenantId = session?.user.tenantId;
-  const kolCount = tenantId
-    ? await withTenant(tenantId, (tx) => tx.kol.count())
-    : 0;
+  const kolCount = tenantId ? await withTenant(tenantId, (tx) => tx.kol.count()) : 0;
 
   async function logout() {
     "use server";
