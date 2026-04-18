@@ -11,7 +11,7 @@
 |---|---|---|
 | `dashboard.html` + `dashboard.png` | `8b4aa02ae47c4da181239399c6ef4658` | Dashboard（B0 F007 实现基准）|
 | `kol-discovery.html` + `kol-discovery.png` | `a1771401c71140e49e20ebc559782dc3` | KOL 发现页（B1 实现基准）|
-| `kol-detail.html` + `kol-detail.png` | `b06528d25565440c833a7f94035feead` | KOL 详情页（B1 实现基准）|
+| `kol-detail.html` + `kol-detail.png` | `31db0441f2c54852a0a326c82142ed64` | KOL 详情页（B1 实现基准）|
 
 ## 使用方式
 
@@ -24,18 +24,18 @@ cd design-draft/stitch-references && python3 -m http.server 8088
 # 然后访问 http://localhost:8088/dashboard.html
 ```
 
-## ⚠️ 已知问题
+## ⚠️ 注意事项
 
-### 1. `kol-detail.html` 内容相对简短
-原始 Detail 页面（hidden 状态的 `c5eff504...`）有 8 个完整 section，包括 KOL hero / AI intelligence panel / metrics / audience / content perf / videos / collaborations / AI recommendation / outreach history。
-
-edit_screens 在统一 shell 时似乎压缩了主内容——本版本可能只保留了主要骨架。**B1 实现 KOL 详情页时，可能需要重新生成 Stitch 设计稿或参考原 prompt 自行扩展。** 原 prompt 见 git commit `7957f9d` 之前的会话记录。
-
-### 2. HTML 用 CDN Tailwind 而非项目编译版
+### 1. HTML 用 CDN Tailwind 而非项目编译版
 打开 HTML 需要联网拉 CDN（Tailwind / Inter / Material Symbols）。生产代码请走项目本地 Tailwind + next/font。
 
-### 3. 颜色 token 已在项目 design-system.md 沉淀
+### 2. 颜色 token 已在项目 design-system.md 沉淀
 不要从 HTML 里复制 HEX——优先用 `tailwind.config.ts` 中的 token（B0 F002 任务会建立）。
+
+### 3. KOL 详情页 历史
+- 第一版（`c5eff504`，hidden）：完整 8 个 section
+- 第二版（`b06528d2`，hidden）：edit_screens 时主内容被压缩
+- 当前版（`31db0441`）：手动重新生成，恢复完整内容（632 行 HTML）— **以此为准**
 
 ## 视觉验收基准
 
