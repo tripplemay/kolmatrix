@@ -1,7 +1,7 @@
 {
   "status": "building",
   "user_goal": "搭建 KOLMatrix Next.js 工程地基，完成可运行的 Dashboard mock，使后续业务批次能在稳定基线上做纯功能开发",
-  "total_features": 9,
+  "total_features": 10,
   "completed_features": 0,
   "fix_rounds": 0,
   "current_sprint": "B0-foundation",
@@ -13,7 +13,8 @@
     "docs/specs/B0-app-shell-component.md",
     "docs/specs/PRD.md",
     "docs/specs/visual-baseline.md",
-    "design-draft/design-system.md"
+    "design-draft/design-system.md",
+    "design-draft/stitch-references/README.md"
   ],
   "docs": {
     "spec": "docs/specs/B0-foundation-spec.md",
@@ -29,7 +30,7 @@
   "evaluator_feedback": null,
   "generator_handoff": null,
   "session_notes": {
-    "Kimi": "B0 Planner 完成。建议执行顺序：F001 脚手架 → F002 token 映射 → F003 schema/migration/seed → F004 RLS+Auth+登录页 → F005 App Shell 组件 → F006 i18n → F007 Dashboard → F008 CI → F009 README。F005 视觉验收以 Stitch screen 8b4aa02ae47c4da181239399c6ef4658 为基准。F003/F004 涉及多租户 RLS，仔细看 architecture.md §3.2 和 B0-database-schema.md §5。所有色彩/圆角/字体硬性走 token，禁止硬编码 HEX。如发现规格偏差，开工前先反馈，不要直接实现。"
+    "Kimi": "B0 spec v2 已修订（commit feat/spec/B0-revision）。两个新硬性要求：(1) 像素级还原 Stitch 截图（间距 ±2px / ΔE<2 / 字号 100%），不再是 ≤10% 差异；视觉验收基准 = design-draft/stitch-references/dashboard.png。(2) 新增 F010 公共组件库，12 个 common/ 组件必须先抽好 Dashboard 才能写，禁止 page.tsx 内 inline。强制执行顺序 F001→F002→F003→F004→F005→F010→F007→F006→F008→F009。任何硬编码 HEX 验收直接 fail。如规格存在偏差，开工前请先反馈，不要直接实现。"
   },
   "features": []
 }

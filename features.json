@@ -15,7 +15,7 @@
       "priority": "high",
       "executor": "generator",
       "status": "pending",
-      "acceptance": "tailwind.config.ts 含 navy/cyan/purple 全部色阶；borderRadius 含 md(12px)/lg(16px)；Inter 字体生效；globals.css 提供 .glass-panel/.ambient-glow/.ai-glow/.gradient-text/.gradient-cta；任意组件用 token 渲染颜色与 design-system.md §2 完全一致"
+      "acceptance": "tailwind.config.ts 含 navy/cyan/purple 全部色阶；borderRadius 含 md(12px)/lg(16px)；Inter 字体生效；globals.css 提供 .glass-panel/.ambient-glow/.ai-glow/.gradient-text/.gradient-cta；任意组件用 token 渲染颜色与 design-system.md §2 完全一致；代码 grep '#[0-9a-fA-F]{6}' 在 globals.css/tailwind.config.ts 之外命中数为 0"
     },
     {
       "id": "F003",
@@ -39,7 +39,7 @@
       "priority": "high",
       "executor": "generator",
       "status": "pending",
-      "acceptance": "8 nav 项顺序与图标完全匹配 B0-app-shell-component.md §4；激活态 cyan 文字 + 左侧 2px 竖条 + 渐变背景；topbar 三段式 + 玻璃拟态背景 + 搜索 Cmd+K hint；user chip 显示 Sarah Chen / Ops Lead；无 Help Center / Connect Wallet / 横向 nav 链接；视觉对照 Stitch screen 8b4aa02ae47c4da181239399c6ef4658 接近（≤10% 差异）"
+      "acceptance": "8 nav 项顺序与图标完全匹配 B0-app-shell-component.md §4；激活态 cyan 文字 + 左侧 2px 竖条 + 渐变背景；topbar 三段式 + 玻璃拟态背景 + 搜索 Cmd+K hint；user chip 显示 Sarah Chen / Ops Lead；无 Help Center / Connect Wallet / 横向 nav 链接；像素级还原 design-draft/stitch-references/dashboard.png：色彩 100% 走 token、字体/字号/字距/行高/间距/圆角/阴影/渐变与设计稿一致、布局结构 100% 对齐（间距 ±2px / ΔE<2 / 字号 100%）"
     },
     {
       "id": "F006",
@@ -55,7 +55,7 @@
       "priority": "high",
       "executor": "generator",
       "status": "pending",
-      "acceptance": "/dashboard 渲染 5 区块（greeting / KPI 4 卡 / Active Campaigns 3 行 / AI-Recommended KOLs 2x2 / Email Performance LineChart + Activity Feed）；KPI 数字来自 Prisma seed（删除 seed 后变 0）；玻璃拟态评分徽章 + 渐变 CTA + cyan glow；视觉对照 Stitch 8b4aa02a 接近"
+      "acceptance": "/dashboard 渲染 5 区块（greeting / KPI 4 卡 / Active Campaigns 3 行 / AI-Recommended KOLs 2x2 / Email Performance LineChart + Activity Feed）；KPI 数字来自 Prisma seed（删除 seed 后变 0）；像素级还原 design-draft/stitch-references/dashboard.png（标准同 F005）；必须 import 并使用 F010 全部 12 个公共组件，page.tsx JSX 总长度 ≤80 行；任何硬编码 HEX 直接 fail；重复样式片段 ≥2 次必须抽组件"
     },
     {
       "id": "F008",
@@ -72,6 +72,14 @@
       "executor": "generator",
       "status": "pending",
       "acceptance": "README.md 含项目介绍 + 5 行 quickstart；docs/dev/setup.md 详细环境搭建（Node 20/Docker/env vars/seed）；.env.example 列全所需环境变量（DATABASE_URL/NEXTAUTH_SECRET/NEXTAUTH_URL/AIGCGATEWAY_*/RESEND_API_KEY 占位）；CONTRIBUTING.md 引用 harness-rules；新 dev fork 后 30 分钟内本地能起服务看到 Dashboard"
+    },
+    {
+      "id": "F010",
+      "title": "公共组件库抽取（src/components/common/ 12 个组件，强制 Dashboard 复用）",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "src/components/common/ 下 12 个组件文件全部存在并导出（StatCard/KolCard/CampaignRow/AiScoreBadge/GlassPanel/GradientButton/SecondaryButton/GhostButton/TagChip/AvatarWithPlatformBadge/ActivityFeedItem/SectionHeader）；每个文件 props interface 完整 + 文件头说明注释；每个文件 ≤100 行；色彩走 Tailwind token 禁止硬编码 HEX；F007 Dashboard 必须 import 并使用全部 12 个组件（grep 验证）；视觉对照 design-draft/stitch-references/dashboard.png 一致；执行顺序在 F005 之后 F007 之前"
     }
   ]
 }
