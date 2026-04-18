@@ -39,9 +39,9 @@ Neural Velocity 同时满足：
 
 ## 后续批次
 
-视觉基调定稿后，下一步按关键页面分批生成：
-- **批次 V2（本期）：** KOL 发现引擎 + KOL 详情页（数据密集场景 + AI 旗舰展示）
-- **批次 V3：** Campaign 详情 + 邮件触达中心
+视觉基调定稿后，按关键页面分批生成：
+- **批次 V2（已完成）：** Dashboard + KOL 发现引擎 + KOL 详情页（数据密集场景 + AI 旗舰展示）
+- **批次 V3（下一步）：** Campaign 详情 + 邮件触达中心
 - **批次 V4：** 产品知识库 + 客户协同筛选（客户视角简化）
 - **批次 V5：** 登录 / 注册 / 设置等辅助页
 
@@ -49,9 +49,14 @@ Neural Velocity 同时满足：
 
 ## 附录：Stitch 资源清单
 
-| 资源 | ID / URL |
-|---|---|
-| 主项目 | `projects/9338165817879839093` |
-| 设计系统 Asset | `assets/18406648320972948834` |
-| Dashboard 屏幕（v1） | `724c65f2855b4af2bb6c953b3ba3c588` |
-| 项目 URL | https://stitch.withgoogle.com/projects/9338165817879839093 |
+**主项目：** `projects/9338165817879839093`
+**URL：** https://stitch.withgoogle.com/projects/9338165817879839093
+**设计系统 Asset：** `assets/18406648320972948834`
+
+### 已生成屏幕
+
+| 批次 | 页面 | 屏幕 ID | 状态 |
+|---|---|---|---|
+| V1 | Dashboard（基调基准） | `724c65f2855b4af2bb6c953b3ba3c588` | ✅ |
+| V2 | KOL Discovery（发现引擎） | `e11cdb31e0b64728a232675f1f05b6e1` | ✅ |
+| V2 | KOL Detail（详情页） | `c5eff50452ae44b4a093a414766b0f0a` | ✅ |

@@ -4,19 +4,24 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **视觉基调定稿（批次 V1）** — ✅ Dashboard Stitch 对比完成，选定 **Neural Velocity**
-- 视觉规范已落：`design-draft/design-system.md` + `docs/specs/visual-baseline.md`
+- **批次 V1（视觉基调定稿）** — ✅ 完成，选定 Neural Velocity
+- **批次 V2（P0 关键页面 · 数据密集 + AI 旗舰）** — ✅ 完成
+  - Dashboard（`724c65f2...`）
+  - KOL Discovery（`e11cdb31...`）
+  - KOL Detail（`c5eff504...`）
+  - 全部在 Stitch 项目 `9338165817879839093`
 
 ## 关键决策
-- 视觉基调 = Neural Velocity（深色 navy + 电流青 + 玻璃拟态），Stitch 项目 `9338165817879839093`
-- 对照 Variant B (Editorial Light) / C (Gaming Neon) 评审后淘汰
-- 字体 Inter 全局、圆角主容器 12px、禁用 1px 边框、AI 元素必须带 primary 发光
+- 视觉基调 = Neural Velocity（深色 navy + 电流青 + 玻璃拟态），Inter 全局，圆角 12px，禁用 1px 边框
+- 视觉规范完整文档：`design-draft/design-system.md` + `docs/specs/visual-baseline.md`
+- PRD 归入 `docs/specs/PRD.md`
 
-## 下一步计划（批次 V2）
-- 在 Neural Velocity 项目内生成：**KOL 发现引擎** + **KOL 详情页**
-- 完成后进入 V3：Campaign 详情 + 邮件触达中心
+## 下一步计划（批次 V3 · 待用户确认）
+- Campaign 详情页（活动看板 + KOL 列表 + KPI 进度）
+- 邮件触达中心（模板编辑器 + 发送队列 + 追踪）
+- V4 后续：产品知识库 + 客户协同筛选（客户视角）+ 登录/注册/设置
 
 ## 已知 gap（非阻塞）
-- Stitch MCP 无 delete_project 工具 — B/C 项目需用户手动在网页端删除
+- Stitch MCP 无 delete_project — Variant B (`9900459935539855080`) / C (`7841901791452897882`) 需用户手动在 Stitch 网页端删除
 
 <!-- 写入规则（harness §记忆分层）：覆盖写 / ≤30 行 / 所有角色可写 / 只放 WHAT / 不重复 progress.json -->
