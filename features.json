@@ -62,7 +62,7 @@
       "title": "GitHub Actions CI Workflow",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": ".github/workflows/ci.yml 配置 install/lint/typecheck/build 4 jobs；PostgreSQL service for migrate smoke；Node 20 LTS + npm cache；paths-ignore 配置 .auto-memory/**/progress.json/features.json/backlog.json/docs/**/design-draft/**/framework/**/*.md/harness-rules.md；修改 docs 不触发 CI；PR 合入触发 CI 全绿"
     },
     {
@@ -70,7 +70,7 @@
       "title": "README + 本地搭建文档 + .env.example",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "README.md 含项目介绍 + 5 行 quickstart；docs/dev/setup.md 详细环境搭建（Node 20/Docker/env vars/seed）；.env.example 列全所需环境变量（DATABASE_URL/NEXTAUTH_SECRET/NEXTAUTH_URL/AIGCGATEWAY_*/RESEND_API_KEY 占位）；CONTRIBUTING.md 引用 harness-rules；新 dev fork 后 30 分钟内本地能起服务看到 Dashboard"
     },
     {

@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# KOLMatrix
 
-## Getting Started
+AI-driven KOL campaign command center — discover, evaluate, contact, and track KOLs across YouTube / Twitch / TikTok / Instagram with pixel-perfect Neural Velocity design.
 
-First, run the development server:
+Stack: **Next.js 16 · React 19.2 · Tailwind v4 · Prisma 7 · PostgreSQL 16 (+ RLS) · NextAuth v5 · next-intl · recharts**
+
+## Quickstart (5 commands)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker compose up -d                                  # PG 16 + Redis 7
+cp .env.example .env                                  # fill secrets
+npm ci && npm run postinstall                         # deps + prisma generate
+npx prisma migrate deploy && npm run db:seed          # schema + demo data
+npm run dev                                           # → http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Login: `marketer@kolmatrix.local` / `KOLM@2026!` — opens the Dashboard with 12 KOLs / 3 campaigns / 300 email logs pre-seeded.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Docs
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **[docs/dev/setup.md](docs/dev/setup.md)** — full local environment walkthrough (Node 20 / Docker / envs / Prisma)
+- **[docs/dev/architecture.md](docs/dev/architecture.md)** — system overview
+- **[docs/dev/infrastructure.md](docs/dev/infrastructure.md)** — deployment + ops
+- **[docs/dev/testing.md](docs/dev/testing.md)** — test strategy
+- **[docs/specs/](docs/specs/)** — B0 foundation + B1+ batch specifications
+- **[design-draft/design-system.md](design-draft/design-system.md)** — Neural Velocity design tokens + component rules
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — workflow conventions (multi-agent harness-driven)
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Next.js dev server |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run db:up` / `db:down` | Toggle Docker PG + Redis |
+| `npm run db:migrate` | `prisma migrate deploy` |
+| `npm run db:seed` | `prisma db seed` (idempotent demo data) |
+| `npm run db:studio` | `prisma studio` GUI |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Proprietary — internal project.
