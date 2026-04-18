@@ -1,0 +1,11 @@
+node_modules
+.next
+dist
+build
+coverage
+.turbo
+public
+*.min.js
+*.min.css
+package-lock.json
+design-draft/stitch-references/*.html
