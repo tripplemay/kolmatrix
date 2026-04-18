@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOLMatrix - KOL Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#00E5FF',
+                        secondary: '#9D50FF',
+                        surface: '#0b1326',
+                        'surface-container': '#131b2e',
+                        'on-surface': '#ffffff',
+                        'on-surface-variant': '#94a3b8',
+                    },
+                    fontFamily: {
+                        headline: ["Inter", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                        label: ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        'DEFAULT': '0.5rem',
+                        'lg': '1rem',
+                        'xl': '1.5rem',
+                        'full': '9999px'
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .glass-panel {
+            background: rgba(0, 229, 255, 0.05);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(0, 229, 255, 0.1);
+            box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.05), 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .ambient-glow {
+            box-shadow: 0 0 40px rgba(0, 229, 255, 0.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #00daf3, #c3f5ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cta-gradient {
+            background: linear-gradient(135deg, #00daf3, #c3f5ff);
+            color: #0b1326;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+        }
+        
+        /* Layout Structure */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .main-content-area {
+            margin-left: 240px; 
+            padding-top: 4rem; 
+            width: calc(100% - 240px);
+            min-height: 100vh;
+            padding-bottom: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content-area {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased">
+<!-- SideNavBar -->
+<aside class="w-[240px] h-screen fixed left-0 top-0 bg-[#060e20] shadow-[20px_0_20px_-15px_rgba(0,229,255,0.03)] flex flex-col py-6 px-6 z-50 hidden md:flex font-['Inter'] antialiased tracking-tight">
+<div class="mb-8">
+<h1 class="text-white text-lg font-bold bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] text-transparent bg-clip-text">KOLMatrix</h1>
+<p class="text-[10px] text-[#bac9cc] font-semibold tracking-widest mt-1">NEURAL VELOCITY</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 transition-all duration-300 ease-in-out text-sm rounded" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 pl-[10px] pr-3 py-2.5 text-[#00E5FF] font-semibold bg-gradient-to-r from-[rgba(0,229,255,0.10)] to-transparent border-l-2 border-[#00E5FF] transition-all duration-300 ease-in-out text-sm" href="#">
+<span class="material-symbols-outlined text-[20px]">travel_explore</span>
+<span>KOL Discovery</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 transition-all duration-300 ease-in-out text-sm rounded" href="#">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+<span>KOL Database</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 transition-all duration-300 ease-in-out text-sm rounded" href="#">
+<span class="material-symbols-outlined text-[20px]">rocket_launch</span>
+<span>Campaigns</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 transition-all duration-300 ease-in-out text-sm rounded" href="#">
+<span class="material-symbols-outlined text-[20px]">forward_to_inbox</span>
+<span>Email Center</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 transition-all duration-300 ease-in-out text-sm rounded" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+<span>Products</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 transition-all duration-300 ease-in-out text-sm rounded" href="#">
+<span class="material-symbols-outlined text-[20px]">query_stats</span>
+<span>Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 transition-all duration-300 ease-in-out text-sm rounded" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-[#222a3d] pt-4">
+<a class="flex items-center gap-3 px-3 py-2 text-[#bac9cc] hover:text-[#dae2fd] transition-all duration-300 ease-in-out text-sm rounded" href="#">
+<span class="material-symbols-outlined text-[20px]">account_circle</span>
+<span>Sarah Chen</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="h-16 fixed top-0 right-0 w-full md:w-[calc(100%-240px)] z-40 bg-[#0b1326]/85 backdrop-blur-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex items-center justify-between px-8 font-['Inter'] text-sm font-medium">
+<div class="flex items-center">
+<h2 class="text-white font-semibold text-lg">KOL Profile</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative focus-within:ring-2 focus-within:ring-[#00E5FF]/20 rounded-lg transition-all">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#bac9cc] text-[18px]">search</span>
+<input class="w-64 bg-[#131b2e] border border-transparent focus:border-[#00E5FF]/30 rounded-lg pl-10 pr-4 py-1.5 text-sm text-white placeholder-[#bac9cc] focus:outline-none transition-all" placeholder="Search..." type="text"/>
+</div>
+<button class="text-[#bac9cc] hover:text-[#00E5FF] transition-colors">
+<span class="material-symbols-outlined">language</span>
+</button>
+<button class="text-[#bac9cc] hover:text-[#00E5FF] transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<img alt="Sarah Chen Avatar" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCP0Aa2zSBNbcuJp2F8c9iO63k2L-GWRg7ATIcfTiSyVy6bznljnVMRN8zkb83trSKyhoxEPAJ9RJMyY-8yJb1mDlkjUUKPJNkcs16UoxuId5uN-fLoWIQOdJAWFGNipQIazlO3cxufR4KhlN_jiZ_R29GLASkQIvJehfZVV22R4MTg4bFMIWsG8sYPL-rBBojdGXdNmU2Eo90M1QRV66EpjNu_NQlMhh-aZUGEE4N6YS9ropXUb_h3YfGnNyRWdLOwqlw3dx_RbfM"/>
+</div>
+</header>
+<!-- Main Content -->
+<main class="main-content-area px-8">
+<!-- Content will go here based on user prompt -->
+<div class="text-slate-400 mt-20">Profile content structure to be built here based on instructions.</div>
+</main>
+</body></html>

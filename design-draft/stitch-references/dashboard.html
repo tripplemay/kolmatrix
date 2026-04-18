@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOLMatrix Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            DEFAULT: '#0b1326',
+                            light: '#131b2e',
+                            lighter: '#222a3d',
+                        },
+                        cyan: {
+                            DEFAULT: '#00E5FF',
+                            glow: 'rgba(0, 229, 255, 0.2)',
+                            gradient1: '#00daf3',
+                            gradient2: '#c3f5ff',
+                        },
+                        purple: {
+                            DEFAULT: '#9D50FF',
+                        }
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .glass-panel {
+            background: rgba(19, 27, 46, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .ambient-glow {
+            box-shadow: 0 0 40px rgba(0, 229, 255, 0.05);
+        }
+
+        .ai-glow {
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #00daf3 0%, #c3f5ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+</head>
+<body class="bg-navy antialiased overflow-hidden flex h-screen">
+<!-- SideNavBar -->
+<nav class="w-[240px] h-screen fixed left-0 top-0 bg-[#060e20] shadow-[20px_0_20px_-15px_rgba(0,229,255,0.03)] flex flex-col py-6 px-6 font-['Inter'] antialiased tracking-tight z-40 hidden md:flex">
+<!-- Header -->
+<div class="mb-10 flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-cyan-gradient1/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-[#00E5FF]">rocket</span>
+</div>
+<div>
+<h1 class="text-white text-lg font-bold bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] text-transparent bg-clip-text">KOLMatrix</h1>
+<p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold mt-0.5">NEURAL VELOCITY</p>
+</div>
+</div>
+<!-- CTA -->
+<button class="w-full mb-8 bg-gradient-to-r from-[#00daf3] to-[#c3f5ff] text-navy font-bold py-3 rounded-lg flex items-center justify-center gap-2 hover:shadow-[0_0_20px_rgba(0,229,255,0.4)] transition-all duration-300 ease-out">
+<span class="material-symbols-outlined text-sm">add</span>
+            Create Campaign
+        </button>
+<!-- Navigation Tabs -->
+<div class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 text-[#00E5FF] font-semibold bg-gradient-to-r from-[rgba(0,229,255,0.10)] to-transparent border-l-2 border-[#00E5FF] rounded-none transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 hover:text-[#00E5FF] transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">travel_explore</span>
+                KOL Discovery
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 hover:text-[#00E5FF] transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">groups</span>
+                KOL Database
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 hover:text-[#00E5FF] transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">rocket_launch</span>
+                Campaigns
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 hover:text-[#00E5FF] transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">forward_to_inbox</span>
+                Email Center
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 hover:text-[#00E5FF] transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+                Products
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 hover:text-[#00E5FF] transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">query_stats</span>
+                Analytics
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 hover:text-[#00E5FF] transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Settings
+            </a>
+</div>
+<!-- Footer -->
+<div class="mt-auto pt-6 border-t border-slate-800/50">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 hover:text-[#00E5FF] transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+                Sarah Chen
+            </a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col ml-0 md:ml-[240px] w-full md:max-w-[calc(100%-240px)] h-screen overflow-hidden">
+<!-- TopNavBar -->
+<header class="h-16 fixed top-0 right-0 w-full md:w-[calc(100%-240px)] z-30 bg-[#0b1326]/85 backdrop-blur-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.3)] ambient-glow flex items-center justify-between px-8 font-['Inter'] text-sm font-medium">
+<div class="flex items-center gap-8">
+<h2 class="text-white text-lg font-bold">Dashboard</h2>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-6">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="bg-[#131b2e] border border-slate-800 rounded-lg pl-9 pr-4 py-1.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00E5FF] focus:ring-4 focus:ring-[#00E5FF]/20 transition-all w-48 focus:w-64" placeholder="Search..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-[#bac9cc] hover:text-[#00E5FF] transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined">language</span>
+</button>
+<button class="text-[#bac9cc] hover:text-[#00E5FF] transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+<!-- Profile Image -->
+<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-transparent hover:border-[#00E5FF] transition-colors cursor-pointer">
+<img alt="Sarah Chen Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwrS7pSf-yDQdqdo5MHdE8f12V8SxeWf655phnmVs0lnAVYAdjSBkVyKGoLA0rm0Oh8yASOrFxwezpT7tuTa7JGAnuMmaGY59F92QZnVwUqmEtR6AQwz2Dn0RRKn8hX1i59iAP99PNU4ND3MewwjMEGToaJUcIk5xatKaoZeqt2HI7GB0LbaYJCEJvG0JWYwvlX66bECCud5pRpy5nyMsxq0FCEFMFVgzR7sZlHdG5zxoOpGRIuUDWkglqueYYqXIuWiO5JD2qX9Q"/>
+</div>
+</div>
+</header>
+<!-- Scrollable Content Canvas -->
+<main class="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 no-scrollbar scroll-smooth mt-16">
+<div class="max-w-[1600px] mx-auto space-y-8 pb-12">
+<!-- 1. Greeting Section -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h2 class="text-4xl md:text-5xl font-extrabold tracking-[-0.02em] text-white mb-2">Welcome back, Sarah.</h2>
+<p class="text-slate-400 text-base md:text-lg">Here is your global KOL marketing pulse for April 18, 2026.</p>
+</div>
+<button class="bg-gradient-to-r from-[#00daf3] to-[#c3f5ff] text-navy font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 hover:shadow-[0_0_20px_rgba(0,229,255,0.4)] transition-all duration-300">
+<span class="material-symbols-outlined">add</span>
+                        New Campaign
+                    </button>
+</section>
+<!-- 2. KPI Row -->
+<section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+<!-- KPI 1 -->
+<div class="bg-navy-light rounded-xl p-6 relative overflow-hidden ambient-glow flex flex-col justify-between">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-6xl text-white">groups</span>
+</div>
+<p class="text-slate-400 text-sm font-medium mb-1">Total KOLs</p>
+<h3 class="text-3xl font-bold text-white mb-4">12,847</h3>
+<div class="flex items-center justify-between">
+<span class="text-xs text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-md flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">trending_up</span> +12%</span>
+<!-- Sparkline Mock -->
+<div class="w-16 h-8 flex items-end gap-1">
+<div class="w-2 bg-emerald-400/30 rounded-t-sm" style="height: 40%"></div>
+<div class="w-2 bg-emerald-400/40 rounded-t-sm" style="height: 60%"></div>
+<div class="w-2 bg-emerald-400/60 rounded-t-sm" style="height: 80%"></div>
+<div class="w-2 bg-emerald-400 rounded-t-sm" style="height: 100%"></div>
+</div>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-navy-light rounded-xl p-6 relative overflow-hidden ambient-glow flex flex-col justify-between">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-6xl text-white">campaign</span>
+</div>
+<p class="text-slate-400 text-sm font-medium mb-1">Active Campaigns</p>
+<h3 class="text-3xl font-bold text-white mb-4">8</h3>
+<div class="flex items-center justify-between">
+<span class="text-xs text-purple bg-purple/10 px-2 py-1 rounded-md flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">trending_flat</span> 0%</span>
+<div class="w-16 h-8 flex items-end gap-1">
+<div class="w-2 bg-purple/50 rounded-t-sm" style="height: 70%"></div>
+<div class="w-2 bg-purple/50 rounded-t-sm" style="height: 70%"></div>
+<div class="w-2 bg-purple/50 rounded-t-sm" style="height: 70%"></div>
+<div class="w-2 bg-purple rounded-t-sm" style="height: 70%"></div>
+</div>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-navy-light rounded-xl p-6 relative overflow-hidden ambient-glow flex flex-col justify-between">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-6xl text-white">mail</span>
+</div>
+<p class="text-slate-400 text-sm font-medium mb-1">Emails Sent</p>
+<h3 class="text-3xl font-bold text-white mb-4">1,243</h3>
+<div class="flex items-center justify-between">
+<span class="text-xs text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-md flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">trending_up</span> +5.2%</span>
+<div class="w-16 h-8 flex items-end gap-1">
+<div class="w-2 bg-slate-600 rounded-t-sm" style="height: 50%"></div>
+<div class="w-2 bg-slate-500 rounded-t-sm" style="height: 60%"></div>
+<div class="w-2 bg-slate-400 rounded-t-sm" style="height: 75%"></div>
+<div class="w-2 bg-white rounded-t-sm" style="height: 90%"></div>
+</div>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bg-navy-light rounded-xl p-6 relative overflow-hidden ai-glow flex items-center justify-between">
+<div>
+<p class="text-[#9cf0ff] text-sm font-medium mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">auto_awesome</span> Avg AI Match</p>
+<h3 class="text-4xl font-black text-cyan mb-1">78<span class="text-xl text-cyan/50">%</span></h3>
+</div>
+<!-- Progress Ring Mock -->
+<div class="relative w-20 h-20 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 100 100">
+<circle cx="50" cy="50" fill="transparent" r="40" stroke="rgba(0, 229, 255, 0.1)" stroke-width="8"></circle>
+<circle cx="50" cy="50" fill="transparent" r="40" stroke="#00E5FF" stroke-dasharray="251.2" stroke-dashoffset="55.2" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<span class="absolute material-symbols-outlined text-cyan opacity-50">psychology</span>
+</div>
+</div>
+</section>
+<!-- 3 & 4. Complex Grid Area -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Left Column: Campaigns & AI Recommendations (Spans 2 columns on lg) -->
+<div class="lg:col-span-2 space-y-6">
+<!-- Active Campaigns Panel -->
+<div class="bg-navy-light rounded-xl p-6 ambient-glow">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-xl font-bold text-white">Active Campaigns</h3>
+<button class="text-slate-400 hover:text-cyan transition-colors text-sm font-medium flex items-center gap-1">View All <span class="material-symbols-outlined text-[16px]">arrow_forward</span></button>
+</div>
+<div class="space-y-4">
+<!-- Campaign 1 -->
+<div class="bg-navy-lighter rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-slate-800 overflow-hidden shrink-0">
+<img alt="Honor of Kings" class="w-full h-full object-cover" data-alt="Vibrant digital art style gaming landscape with dynamic lighting and fantasy elements" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgKDCK3SzweDUzCLmO6_jxC4u-lnu84-W4tFJPQC2ZEwqxpyhbuCMhOO21Iwyw2vRskQfi6gOMuNYQBV7p6dTauJ0lSjmwJrKBNrnSuGKDvgdfNOjZOKCZP6iEGyRJYIioFYTWsCpZk-2WotmN5AWpoRPs_oiaUmvfBIuDIBaQdNlOFvJXIa3lTMzrX8QoA8NJ84E2TO8-L34aXCV6EVBYrLceqRP9xAG700nQ1e_im5W6xxJ9O_5f_uDLxVw2YylNg11qNt0CfOA"/>
+</div>
+<div>
+<h4 class="text-white font-bold text-base">Honor of Kings</h4>
+<p class="text-slate-400 text-xs">Global Launch • 450 KOLs</p>
+</div>
+</div>
+<div class="flex-1 w-full sm:w-auto px-0 sm:px-8">
+<div class="flex justify-between text-xs mb-1">
+<span class="text-slate-300">Progress</span>
+<span class="text-cyan font-semibold">75%</span>
+</div>
+<div class="w-full h-1.5 bg-navy rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-[#00daf3] to-[#c3f5ff]" style="width: 75%"></div>
+</div>
+</div>
+<div class="flex items-center gap-6 shrink-0">
+<div class="text-right">
+<p class="text-slate-400 text-[10px] uppercase tracking-wider">Open Rate</p>
+<p class="text-white font-semibold">42.8%</p>
+</div>
+<button class="text-slate-500 hover:text-white"><span class="material-symbols-outlined">more_vert</span></button>
+</div>
+</div>
+<!-- Campaign 2 -->
+<div class="bg-navy-lighter rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-slate-800 overflow-hidden shrink-0">
+<img alt="Genshin Impact" class="w-full h-full object-cover" data-alt="Anime style fantasy landscape with glowing crystals and soft pastel lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmXpHBsT4ZqDbrKRW9bixIWTiNUU5xF7qjft_9BgHG1RuUFqrA-rgApmBlhKJDPd0BqSkKQu_0h11EvbCKJ0FqJbrw047qjafcSHnZfdjAzhzu2awOc1iADyq3aK2x31q_WWVglPEWP1LqLsCok1EYoEnr_qcF_BRve4Xbke8UIirEBYKcWYOxkEt4rhxUoc5KRX4CxE4ELfY16v0uqor0jEDmC7GILCHeO70PtFd407Kz0MzcaTnHHL9B_9oK3KQ1UQKxO2spzdU"/>
+</div>
+<div>
+<h4 class="text-white font-bold text-base">Genshin Impact</h4>
+<p class="text-slate-400 text-xs">Version 5.0 • 1,200 KOLs</p>
+</div>
+</div>
+<div class="flex-1 w-full sm:w-auto px-0 sm:px-8">
+<div class="flex justify-between text-xs mb-1">
+<span class="text-slate-300">Progress</span>
+<span class="text-cyan font-semibold">70%</span>
+</div>
+<div class="w-full h-1.5 bg-navy rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-[#00daf3] to-[#c3f5ff]" style="width: 70%"></div>
+</div>
+</div>
+<div class="flex items-center gap-6 shrink-0">
+<div class="text-right">
+<p class="text-slate-400 text-[10px] uppercase tracking-wider">Open Rate</p>
+<p class="text-white font-semibold">38.2%</p>
+</div>
+<button class="text-slate-500 hover:text-white"><span class="material-symbols-outlined">more_vert</span></button>
+</div>
+</div>
+<!-- Campaign 3 -->
+<div class="bg-navy-lighter rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-slate-800 overflow-hidden shrink-0">
+<img alt="PUBG Mobile" class="w-full h-full object-cover" data-alt="Gritty realistic military tactical gear texture with dark dramatic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAR_xSc6pNNmSIkPQ3xXklM5KyQJ5HyFd6Ch1xufASjM-3Nu7T8fMZDJpf5z5QeESYtLkjm2cFjQ8EEtZemS7CcaAIGpvjlHANK2gp-PoeT6rEMDUd4kIFdAI7BYXSj8jVTDzpKr15SXC-ponqYQ3C34ydovLs5UC_RIJuUE4gSrgJdMhwbbhJF5pMc0op2lx-UKJqVIox_tnzVozG9RW-3LKHJ_1hketTdNF0O_UXpKvGEn2H8a5NUf6k4uGdQPZZNVx3L-XiID8I"/>
+</div>
+<div>
+<h4 class="text-white font-bold text-base">PUBG Mobile</h4>
+<p class="text-slate-400 text-xs">Esports Final • 300 KOLs</p>
+</div>
+</div>
+<div class="flex-1 w-full sm:w-auto px-0 sm:px-8">
+<div class="flex justify-between text-xs mb-1">
+<span class="text-slate-300">Progress</span>
+<span class="text-emerald-400 font-semibold">100%</span>
+</div>
+<div class="w-full h-1.5 bg-navy rounded-full overflow-hidden">
+<div class="h-full bg-emerald-400" style="width: 100%"></div>
+</div>
+</div>
+<div class="flex items-center gap-6 shrink-0">
+<div class="text-right">
+<p class="text-slate-400 text-[10px] uppercase tracking-wider">Open Rate</p>
+<p class="text-white font-semibold">51.4%</p>
+</div>
+<button class="text-slate-500 hover:text-white"><span class="material-symbols-outlined">more_vert</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- AI-Recommended KOLs Grid -->
+<div class="bg-navy-light rounded-xl p-6 ambient-glow">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-xl font-bold text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-cyan">auto_awesome</span>
+                                    AI-Recommended KOLs
+                                </h3>
+<button class="text-slate-400 hover:text-cyan transition-colors text-sm font-medium">See Matrix</button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+<!-- KOL Card 1 -->
+<div class="bg-navy-lighter rounded-xl p-5 relative group hover:bg-[#2a344a] transition-colors cursor-pointer border border-transparent hover:border-cyan/30">
+<div class="absolute top-3 right-3 glass-panel px-2 py-1 rounded-md border border-cyan/20 flex items-center gap-1 z-10 ai-glow">
+<span class="text-cyan font-bold text-xs">94</span>
+</div>
+<div class="flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-full overflow-hidden mb-3 relative">
+<img alt="GamerXia" class="w-full h-full object-cover" data-alt="Young male gamer with neon headset in dark room illuminated by screen light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-ori37C7VXkp-nnEAsXOU9DeqfnV_vfnscHr325Wt0Zgq6u8OxHabN-hvY6zo1T-Rf6zYPJXuUf8-y8iA1uvvvfXvy_IpU6TwRX8C0oCOPeC_5Z0V3hdfFjW0L2HZ5stbzTsT5HDfHXD1Tt0bMHF1jzRPPxXYXIgDjZq4ifqh5-5z3mA8Wgf-IRCxIoev0HaepjPRrYTLmebAthttIz7b9JiN_xiuY-c8peixRTkTLTMYGnDrnL1z48n20iNjD80aT66rQfJAsrI"/>
+</div>
+<h4 class="text-white font-bold text-sm mb-1">GamerXia</h4>
+<p class="text-slate-400 text-xs mb-3 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">play_circle</span> 2.4M Subs</p>
+<div class="flex flex-wrap gap-1 justify-center mt-auto">
+<span class="text-[10px] bg-navy text-slate-300 px-2 py-0.5 rounded-full">RPG</span>
+<span class="text-[10px] bg-navy text-slate-300 px-2 py-0.5 rounded-full">Mobile</span>
+</div>
+</div>
+</div>
+<!-- KOL Card 2 -->
+<div class="bg-navy-lighter rounded-xl p-5 relative group hover:bg-[#2a344a] transition-colors cursor-pointer border border-transparent hover:border-cyan/30">
+<div class="absolute top-3 right-3 glass-panel px-2 py-1 rounded-md border border-cyan/20 flex items-center gap-1 z-10">
+<span class="text-cyan font-bold text-xs">88</span>
+</div>
+<div class="flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-full overflow-hidden mb-3 relative">
+<img alt="SakuraYT" class="w-full h-full object-cover" data-alt="Young female creator with pink hair dye soft natural lighting smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIXTbpMuQ8JeyYcxybhJTUE0hY0J-CAPZde9b9g4-Rnefz6mQTQAVz6wOfeGM0POLntyhk387FTBjCSARyoJ5h67mut6MX7b63oDDZ-mCCfsV9Qd4xSxELN33wCSzq_GdUt8I2yBEzFuxbxCUH0NdWzEE81V_bnglti_yLqaIQHe9XCvebYivm8TVTQu5c4pYrEv6mF6IkP-1vrsJpaf04esWtoZae-i3G8wjM23SrNh4sS1dkDJmg9kwlBIyjFT5swhkHEyIz-ac"/>
+</div>
+<h4 class="text-white font-bold text-sm mb-1">SakuraYT</h4>
+<p class="text-slate-400 text-xs mb-3 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">play_circle</span> 1.8M Subs</p>
+<div class="flex flex-wrap gap-1 justify-center mt-auto">
+<span class="text-[10px] bg-navy text-slate-300 px-2 py-0.5 rounded-full">Gacha</span>
+<span class="text-[10px] bg-navy text-slate-300 px-2 py-0.5 rounded-full">Cosplay</span>
+</div>
+</div>
+</div>
+<!-- KOL Card 3 -->
+<div class="bg-navy-lighter rounded-xl p-5 relative group hover:bg-[#2a344a] transition-colors cursor-pointer border border-transparent hover:border-cyan/30">
+<div class="absolute top-3 right-3 glass-panel px-2 py-1 rounded-md border border-cyan/20 flex items-center gap-1 z-10">
+<span class="text-cyan font-bold text-xs">91</span>
+</div>
+<div class="flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-full overflow-hidden mb-3 relative">
+<img alt="NightRaven_GG" class="w-full h-full object-cover" data-alt="Intense young man with dark hoodie in moody blue lit studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxIj_oyrgTVEaewc6-XbbpaMtRX4LUi0ySSk5doafvTGqgFtnAKb1BH5-Xtcxh1jmpmeLp7HgZW6mGKjDUTf6AD2hFlNyTGy3xn5GIFmkCCGj6il3oKUocY76Hx9wpF0ddG_CzDXuxOm1YpSx68qFPwZntA46HQXaUppEabRccto_G_Walg__Pld6GT0OFwgeFXOFnSXi4eZFEbatqEv3G_QGkTHiWfxErvg8_6E8jdsD6wlMfBqO6lILNq0zfF6LtWWN0qKLVTc8"/>
+</div>
+<h4 class="text-white font-bold text-sm mb-1">NightRaven_GG</h4>
+<p class="text-slate-400 text-xs mb-3 flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-purple">sports_esports</span> 890K Foll</p>
+<div class="flex flex-wrap gap-1 justify-center mt-auto">
+<span class="text-[10px] bg-navy text-slate-300 px-2 py-0.5 rounded-full">FPS</span>
+<span class="text-[10px] bg-navy text-slate-300 px-2 py-0.5 rounded-full">PC</span>
+</div>
+</div>
+</div>
+<!-- KOL Card 4 -->
+<div class="bg-navy-lighter rounded-xl p-5 relative group hover:bg-[#2a344a] transition-colors cursor-pointer border border-transparent hover:border-cyan/30">
+<div class="absolute top-3 right-3 glass-panel px-2 py-1 rounded-md border border-cyan/20 flex items-center gap-1 z-10">
+<span class="text-cyan font-bold text-xs">85</span>
+</div>
+<div class="flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-full overflow-hidden mb-3 relative">
+<img alt="ProGamerKR" class="w-full h-full object-cover" data-alt="Professional looking Asian male looking focused in bright white studio light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwyDQZERqzdVuoHzi6winho8UusAQTVBM7wm3une2x6B7EDs3WX3PXiIKNXkMfDKSzxxey_RVyhvOMhozk3TC92sKDIq6w2-_W_dhoO6rn1CLnQ56YQTAxyvNxbtsyHbetnkGb2x6AVkHDqP8lUz97oM0VNHEZJ14wZtfw8z1JkYP1gdT-f7DKzOXP0TGgo4hSUmhRORcBaeqI6xuJbrjFkKzx9ltF53qWZwHTP0EoYj4wBs3j_njTbHSfawpESYCcMjkHQ46BscA"/>
+</div>
+<h4 class="text-white font-bold text-sm mb-1">ProGamerKR</h4>
+<p class="text-slate-400 text-xs mb-3 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">play_circle</span> 3.1M Subs</p>
+<div class="flex flex-wrap gap-1 justify-center mt-auto">
+<span class="text-[10px] bg-navy text-slate-300 px-2 py-0.5 rounded-full">Strategy</span>
+<span class="text-[10px] bg-navy text-slate-300 px-2 py-0.5 rounded-full">MOBA</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Email Perf & Recent Activity -->
+<div class="space-y-6">
+<!-- Email Performance Card -->
+<div class="bg-navy-light rounded-xl p-6 ambient-glow h-auto lg:h-[350px] flex flex-col">
+<h3 class="text-xl font-bold text-white mb-4">Email Performance</h3>
+<!-- Summary Pills -->
+<div class="flex gap-2 mb-6">
+<div class="bg-navy-lighter rounded-md px-3 py-1.5 flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-cyan"></div>
+<span class="text-xs text-slate-300">Sent</span>
+</div>
+<div class="bg-navy-lighter rounded-md px-3 py-1.5 flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-purple"></div>
+<span class="text-xs text-slate-300">Opened</span>
+</div>
+<div class="bg-navy-lighter rounded-md px-3 py-1.5 flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-[#c3f5ff]"></div>
+<span class="text-xs text-slate-300">Replied</span>
+</div>
+</div>
+<!-- Line Chart Mockup -->
+<div class="flex-1 relative w-full mt-4 border-l border-b border-slate-700/50">
+<!-- Y Axis Labels -->
+<div class="absolute -left-6 top-0 bottom-0 flex flex-col justify-between text-[10px] text-slate-500 py-1">
+<span>1k</span>
+<span>500</span>
+<span>0</span>
+</div>
+<!-- X Axis Labels -->
+<div class="absolute -bottom-6 left-0 right-0 flex justify-between text-[10px] text-slate-500 px-2">
+<span>Apr 4</span>
+<span>Apr 11</span>
+<span>Apr 18</span>
+</div>
+<!-- Chart Lines (SVG) -->
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 100 100">
+<!-- Sent Line (Cyan) -->
+<polyline fill="none" points="0,80 20,60 40,70 60,30 80,40 100,20" stroke="#00E5FF" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></polyline>
+<circle class="ai-glow" cx="100" cy="20" fill="#00E5FF" r="3"></circle>
+<!-- Opened Line (Purple) -->
+<polyline fill="none" points="0,90 20,80 40,85 60,50 80,65 100,45" stroke="#9D50FF" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></polyline>
+<!-- Replied Line (Pale Cyan) -->
+<polyline fill="none" points="0,95 20,90 40,92 60,80 80,85 100,75" stroke="#c3f5ff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></polyline>
+</svg>
+</div>
+</div>
+<!-- Recent Activity -->
+<div class="bg-navy-light rounded-xl p-6 ambient-glow">
+<h3 class="text-lg font-bold text-white mb-4">Recent Activity</h3>
+<div class="space-y-4">
+<!-- Item 1 -->
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-cyan/10 flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-cyan text-[16px]">mail</span>
+</div>
+<div>
+<p class="text-sm text-slate-200">Batch email sent to 45 KOLs</p>
+<p class="text-xs text-slate-500">Honor of Kings Campaign • 10m ago</p>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-purple/10 flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-purple text-[16px]">check_circle</span>
+</div>
+<div>
+<p class="text-sm text-slate-200">GamerXia accepted invite</p>
+<p class="text-xs text-slate-500">Genshin Impact • 1h ago</p>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-emerald-400/10 flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-emerald-400 text-[16px]">publish</span>
+</div>
+<div>
+<p class="text-sm text-slate-200">New video published by ProGamerKR</p>
+<p class="text-xs text-slate-500">PUBG Mobile • 3h ago</p>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-slate-300 text-[16px]">campaign</span>
+</div>
+<div>
+<p class="text-sm text-slate-200">Campaign draft saved</p>
+<p class="text-xs text-slate-500">Valo Major • 5h ago</p>
+</div>
+</div>
+<!-- Item 5 -->
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-cyan/10 flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-cyan text-[16px]">auto_awesome</span>
+</div>
+<div>
+<p class="text-sm text-slate-200">AI generated 150 new leads</p>
+<p class="text-xs text-slate-500">System • 1d ago</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
