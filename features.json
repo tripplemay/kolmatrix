@@ -6,7 +6,7 @@
       "title": "Next.js 16 项目脚手架（TypeScript / App Router / Tailwind v4 / 关键依赖）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "npx create-next-app@latest 自然得到 Next 16 + React 19.2 + Tailwind v4；npm install 成功；npm run dev 启动到 :3000；npm run build 通过；npx tsc --noEmit 0 错误；npm run lint 0 错误；package.json 含 prisma/next-auth@beta/next-intl/@tanstack/react-query/react-hook-form/zod/recharts/bcrypt + npx shadcn@latest init 完成"
     },
     {
