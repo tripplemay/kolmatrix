@@ -16,7 +16,7 @@
 - 健康检查失败 → 自动回滚到上一个 SHA + 通知用户
 - DB 每次部署前自动 pg_dump 备份（保留 30 天）
 - 所有 migration 含 ROLLBACK SQL 注释（CI 强制校验）
-- Production deploy workflow 受 GitHub Environments 保护（reviewer 批准）
+- Production deploy workflow 用 `workflow_dispatch` 手动触发 + `environment: production`（Free 私有 repo 限制，无 required reviewer，见 §3 计费说明）
 
 **Out of Scope：**
 - ❌ Staging 环境（BI3 的 Staging 子域 + DB 完成后再加 staging deploy workflow）
@@ -57,7 +57,7 @@
 | Health check 重试 | 5 次 × 3 秒间隔 | PM2 reload 后 3-15s 内应该 ready |
 | 回滚策略 | git checkout prev-sha + reload；DB 不自动回滚 | DB 回滚风险大，留人工决策 |
 | Migration 失败处理 | 立即停 + 报警 + 不回滚（防数据不一致） | 安全优先，让用户介入 |
-| Environment protection | 用 GitHub Environments + required reviewer | 防止单人误操作 |
+| Environment protection | `environment: production`（无 protection rules，Free 私有 repo 限制）+ `workflow_dispatch` 手动触发 | Free 计划下 required reviewer 需 Team/Enterprise 订阅（2026-04-20 用户选"暂不升级"，工 dispatch 点击已是一道门）|
 
 ## 4. 功能列表（8 项，全 executor:generator）
 
@@ -155,7 +155,7 @@
     deploy:
       runs-on: ubuntu-latest
       environment:
-        name: production    # 需 reviewer 批准
+        name: production    # 用于 secrets 作用域 + deployment history；Free 私有 repo 无 protection rules
         url: https://kol.guangai.ai
       steps:
         - uses: actions/checkout@v4
@@ -220,7 +220,7 @@
 
 **Acceptance：**
 - 用户在 GitHub Actions UI 点 "Run workflow" → 5-10 分钟内 `kol.guangai.ai` 跑新版
-- workflow 受 GitHub Environments 保护（用户配置 required reviewer）
+- workflow 用 `environment: production` 作用域（secrets 绑定），无 required reviewer（Free 私有 repo 限制，见 §3）
 - 失败时 GitHub Actions 显示明确错误日志
 - ROLLBACK SQL 校验：故意删一个 migration 的 ROLLBACK 注释 → CI fail
 
@@ -390,7 +390,7 @@ F008 (runbook) 跨阶段，最后写
 | GitHub Actions 卡住 | workflow timeout 设 30 分钟；超时自动 fail |
 | SSH key 泄露 | repo secrets + GitHub Environments 限制；定期轮换；用 ed25519 |
 | Health check 端点故障掩盖问题 | 端点返回详细 checks 字段，每个组件单独验证；Sentry (BI4) 兜底 |
-| 误触发 deploy（点错按钮） | GitHub Environment 加 required reviewer；workflow 名前缀 `[PROD]` |
+| 误触发 deploy（点错按钮） | Free 私有 repo 无 required reviewer，靠 `workflow_dispatch` 手动点击 + repo admin 权限单人控制 + workflow 名前缀 `[PROD]`（升级 Team 计划后再加 reviewer）|
 | `/var/log/pm2/` 撑满磁盘 | logrotate 配置（VPS 系统级）；BI4 加监控 |
 
 ## 7. 验收方式（Evaluator 阶段）
@@ -405,7 +405,7 @@ F008 (runbook) 跨阶段，最后写
 
 ### L2 — 真实 Deploy 测试
 - Reviewer 触发一次完整 deploy（用 staging 域名或 prod 测试时段）：
-  1. GitHub Actions 点 "Deploy to Production" → 选 main → 等批准
+  1. GitHub Actions 点 "Deploy to Production" → 选 main → 直接启动（Free 私有 repo 无二次批准）
   2. 5-10 分钟内 health check 通过
   3. `/opt/kolmatrix-backups/` 出现新备份
   4. 应用版本号更新（curl /api/health 看 git_sha）
@@ -430,15 +430,15 @@ F008 (runbook) 跨阶段，最后写
 > **顺序约束：** B0 → BI1 → **BI2** → BI3 → B1 → ...
 > 详见 `docs/specs/roadmap.md`
 
-- [ ] BI1 status=done（自动化测试已就位，deploy 失败可查测试 log）
-- [ ] B0 中 Auth 已实现（`/api/health` 端点能用 middleware skip auth）
-- [ ] VPS 已安装：`jq`、`pg_dump`（postgresql-client）、`certbot`（BI3 需要）
-- [ ] PM2 已就绪（`pm2 -v` 显示版本）
-- [ ] 用户已在 GitHub repo Settings → Environments 创建 "production" 环境 + required reviewer
-- [ ] 用户已在 GitHub repo Settings → Secrets 录入：PROD_HOST / PROD_USER / PROD_SSH_KEY
-- [ ] 用户已生成 deploy 专用 SSH key 并 authorize（不复用主 key）
-- [ ] 用户确认 BI2 范围（如不要 GitHub Environment 保护可剥离）
-- [ ] role_assignments 决定（默认 generator=johnsong / evaluator=Reviewer）
+- [x] BI1 status=done（自动化测试已就位，deploy 失败可查测试 log）
+- [x] B0 中 Auth 已实现（`/api/health` 端点能用 middleware skip auth）
+- [x] VPS 已安装：`jq`、`pg_dump`（postgresql-client）、`certbot`（BI3 需要）— 2026-04-20 Planner 核对全齐
+- [x] PM2 已就绪（`pm2 -v` = 6.0.14）
+- [x] `production` environment 已创建（2026-04-20 Planner 自动完成）；Free 私有 repo 下无 required reviewer（见 §3）
+- [x] Secrets 已录入：PROD_HOST / PROD_USER / PROD_SSH_KEY（2026-04-20 Planner 自动完成）
+- [x] deploy 专用 SSH key 已生成并 authorize（`~/.ssh/kolmatrix_deploy`，ed25519；VPS authorized_keys 已追加；新 key 登录验证通过）
+- [x] 用户确认 BI2 全做 8 features（2026-04-20）
+- [x] role_assignments: Planner: Kimi / Generator: johnsong / Evaluator: Reviewer（沿用 B0/BI1）
 
 ## 10. 完成后效果
 

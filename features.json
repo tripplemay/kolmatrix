@@ -55,7 +55,7 @@
       "priority": "high",
       "executor": "generator",
       "status": "pending",
-      "acceptance": ".github/workflows/deploy-prod.yml 用 workflow_dispatch（inputs:ref default main + skip_backup boolean default false），environment:production（需用户配 required reviewer），steps: checkout + validate-rollback-sql + appleboy/ssh-action@v1 跑 deploy-prod.sh + failure notify；scripts/deploy-prod.sh 按 spec §F003 顺序（记 prev-sha → backup → git fetch+checkout → npm ci → prisma migrate deploy → npm run build → pm2 reload → healthcheck.sh；健康失败触发 rollback.sh）；actionlint + shellcheck 通过；workflow 首次手动触发 → GitHub Environments 批准 → 5-10 分钟内 kol.guangai.ai 新版可访问"
+      "acceptance": ".github/workflows/deploy-prod.yml 用 workflow_dispatch（inputs:ref default main + skip_backup boolean default false），environment:production（Planner 2026-04-20 已创建，用于 secrets 作用域 + deployment history；Free 私有 repo 限制无 required reviewer，用户选暂不升级），steps: checkout + validate-rollback-sql + appleboy/ssh-action@v1 跑 deploy-prod.sh + failure notify；Secrets 已就位（PROD_HOST/PROD_USER/PROD_SSH_KEY 录入在 production env）；scripts/deploy-prod.sh 按 spec §F003 顺序（记 prev-sha → backup → git fetch+checkout → npm ci → prisma migrate deploy → npm run build → pm2 reload → healthcheck.sh；健康失败触发 rollback.sh）；actionlint + shellcheck 通过；workflow 首次手动触发 → 5-10 分钟内 kol.guangai.ai 新版可访问"
     },
     {
       "id": "F008",
