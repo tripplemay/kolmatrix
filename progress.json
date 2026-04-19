@@ -1,11 +1,11 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "落地测试基建（Vitest + Testcontainers + Playwright + MSW + Faker），覆盖 B0 核心代码 80%+，CI 集成 4 个新 jobs，为后续业务批次提供可重复的自动化验证能力",
   "total_features": 10,
   "completed_features": 10,
   "fix_rounds": 0,
   "current_sprint": "BI1-test-infrastructure",
-  "last_updated": "2026-04-19T19:30+0900",
+  "last_updated": "2026-04-19T19:40+0900",
   "reference_docs": [
     "docs/specs/BI1-test-infrastructure-spec.md",
     "docs/dev/testing.md",

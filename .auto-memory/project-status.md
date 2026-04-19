@@ -4,7 +4,9 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BI1-test-infrastructure** — planning 完成，status=building，等 johnsong 接手
+- **BI1-test-infrastructure** — 10/10 features building 完成，status=verifying，等 Reviewer
+  - 117 tests 全绿（83 unit + 28 integration + 6 E2E），lines 96.36%
+  - CI 7/7 jobs green；tests/screenshots/baseline/dashboard.png 入库
 - **B0-foundation** ✅ 已完成签收（10/10 + 12 PASS 0 FAIL，Round 3 reverify 通过）
 
 ## 角色分配（BI1，沿用 B0）
