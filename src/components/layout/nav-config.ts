@@ -86,7 +86,3 @@ export function deriveActiveNav(pathname: string): NavItemId {
   if (path.startsWith("/settings")) return "settings";
   return "dashboard";
 }
-
-export function deriveActivePageTitle(id: NavItemId): string {
-  return NAV_ITEMS.find((item) => item.id === id)?.label ?? "Dashboard";
-}

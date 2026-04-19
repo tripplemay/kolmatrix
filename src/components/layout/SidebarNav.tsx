@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
@@ -11,15 +12,18 @@ interface SidebarNavProps {
 }
 
 export function SidebarNav({ activeId }: SidebarNavProps) {
+  const locale = useLocale();
+  const t = useTranslations("nav");
   return (
     <nav aria-label="Primary" className="mt-8 flex-1">
       <ul className="flex flex-col gap-1">
         {NAV_ITEMS.map((item) => {
           const isActive = item.id === activeId;
+          const key = item.i18nKey.replace(/^nav\./, "");
           return (
             <li key={item.id}>
               <Link
-                href={item.href}
+                href={`/${locale}${item.href}`}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "flex items-center gap-3 px-3.5 py-2.5 text-[14px] font-medium transition-colors duration-200",
@@ -31,7 +35,7 @@ export function SidebarNav({ activeId }: SidebarNavProps) {
                 <span className="material-symbols-outlined text-[20px]" aria-hidden>
                   {item.icon}
                 </span>
-                <span>{item.label}</span>
+                <span>{t(key)}</span>
               </Link>
             </li>
           );

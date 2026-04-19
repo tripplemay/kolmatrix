@@ -4,41 +4,20 @@
  * Runs in the middleware (edge runtime), so it must NOT import anything
  * that needs Node APIs — no Prisma client, no bcrypt. Those live in
  * src/auth.ts.
+ *
+ * NOTE (F006): route protection + locale redirect logic lives in
+ * src/middleware.ts (needs to coordinate with next-intl routing).
+ * The `authorized` callback here is a permissive pass-through; it lets
+ * middleware.ts own the decisions.
  */
 import type { NextAuthConfig } from "next-auth";
-
-export const PROTECTED_PREFIXES = [
-  "/dashboard",
-  "/kols",
-  "/campaigns",
-  "/email",
-  "/analytics",
-  "/settings",
-];
-
-const isProtectedPath = (pathname: string) =>
-  PROTECTED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 
 export const authConfig = {
   pages: { signIn: "/login" },
   session: { strategy: "jwt" },
   providers: [],
   callbacks: {
-    authorized({ auth, request }) {
-      const { pathname } = request.nextUrl;
-      const isLoggedIn = Boolean(auth?.user);
-
-      if (pathname === "/login") {
-        if (isLoggedIn) {
-          return Response.redirect(new URL("/dashboard", request.nextUrl));
-        }
-        return true;
-      }
-
-      if (isProtectedPath(pathname)) {
-        return isLoggedIn;
-      }
-
+    authorized() {
       return true;
     },
     async jwt({ token, user }) {

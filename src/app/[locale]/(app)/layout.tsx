@@ -21,7 +21,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   const sessionUser = session.user;
-  const locale = (sessionUser.locale ?? "en") as "en" | "zh" | "ja" | "ko" | "es";
 
   return (
     <AppShellLayout
@@ -32,7 +31,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         avatarUrl: sessionUser.image,
       }}
       unreadNotifications={1}
-      currentLocale={locale}
       onSignOut={handleSignOut}
     >
       {children}

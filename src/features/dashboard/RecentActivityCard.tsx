@@ -3,6 +3,10 @@
  *
  * F007 区块 5 右栏下半部。
  */
+"use client";
+
+import { useTranslations } from "next-intl";
+
 import { ActivityFeedItem, GlassPanel, SectionHeader } from "@/components/common";
 
 import type { ActivityItem } from "./mocks";
@@ -12,9 +16,10 @@ interface Props {
 }
 
 export function RecentActivityCard({ items }: Props) {
+  const t = useTranslations("dashboard");
   return (
     <GlassPanel padding="md" rounded="2xl" tone="neutral">
-      <SectionHeader title="Recent Activity" as="h3" className="mb-4" />
+      <SectionHeader title={t("recentActivity")} as="h3" className="mb-4" />
       <div className="flex flex-col gap-4">
         {items.map((a) => (
           <ActivityFeedItem

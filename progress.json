@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "搭建 KOLMatrix Next.js 工程地基，完成可运行的 Dashboard mock，使后续业务批次能在稳定基线上做纯功能开发",
   "total_features": 10,
-  "completed_features": 9,
+  "completed_features": 10,
   "fix_rounds": 0,
   "current_sprint": "B0-foundation",
-  "last_updated": "2026-04-19T03:15:00Z",
+  "last_updated": "2026-04-19T04:30:00Z",
   "reference_docs": [
     "docs/specs/B0-foundation-spec.md",
     "docs/dev/architecture.md",

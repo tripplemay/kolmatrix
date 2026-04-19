@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -10,6 +11,7 @@ interface UserAvatarMenuProps {
 }
 
 export function UserAvatarMenu({ user, onSignOut }: UserAvatarMenuProps) {
+  const t = useTranslations("userMenu");
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -69,8 +71,8 @@ export function UserAvatarMenu({ user, onSignOut }: UserAvatarMenuProps) {
             ) : null}
           </div>
           <div className="bg-outline-variant/40 mx-2 my-1 h-px" />
-          <MenuItem icon="person">Profile</MenuItem>
-          <MenuItem icon="settings">Settings</MenuItem>
+          <MenuItem icon="person">{t("profile")}</MenuItem>
+          <MenuItem icon="settings">{t("settings")}</MenuItem>
           <div className="bg-outline-variant/40 mx-2 my-1 h-px" />
           {onSignOut ? (
             <form action={onSignOut}>
@@ -82,7 +84,7 @@ export function UserAvatarMenu({ user, onSignOut }: UserAvatarMenuProps) {
                 <span className="material-symbols-outlined text-[18px]" aria-hidden>
                   logout
                 </span>
-                Sign out
+                {t("signOut")}
               </button>
             </form>
           ) : null}

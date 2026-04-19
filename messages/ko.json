@@ -1,0 +1,59 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "kolDiscovery": "KOL Discovery",
+    "kolDatabase": "KOL Database",
+    "campaigns": "Campaigns",
+    "emailCenter": "Email Center",
+    "products": "Products",
+    "analytics": "Analytics",
+    "settings": "Settings"
+  },
+  "topbar": {
+    "searchPlaceholder": "Search KOLs, campaigns, emails...",
+    "languageAriaLabel": "Change language",
+    "locale": {
+      "en": "English",
+      "zh": "中文（简体）",
+      "ja": "日本語",
+      "ko": "한국어",
+      "es": "Español"
+    }
+  },
+  "userMenu": {
+    "profile": "Profile",
+    "settings": "Settings",
+    "signOut": "Sign out"
+  },
+  "login": {
+    "title": "Sign in to KOLMatrix",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "invalidCredentials": "Email or password is incorrect. Please retry or contact your admin to reset it."
+  },
+  "dashboard": {
+    "greeting": "Welcome back, {name}.",
+    "subtitle": "Here is your global KOL marketing pulse for {date}.",
+    "newCampaign": "New Campaign",
+    "activeCampaigns": "Active Campaigns",
+    "viewAll": "View All",
+    "recommendedKols": "AI-Recommended KOLs",
+    "autoMatch": "Auto-Match",
+    "seeMatrix": "See Matrix",
+    "emailPerformance": "Email Performance",
+    "recentActivity": "Recent Activity",
+    "mockNote": "Dashboard mock data: 7d rolling window. KPI values reflect current tenant only.",
+    "kpi": {
+      "totalKols": "Total KOLs",
+      "activeCampaigns": "Active Campaigns",
+      "emailsSent": "Emails Sent",
+      "avgAiMatch": "Avg AI Match"
+    }
+  },
+  "common": {
+    "openRate": "Open Rate",
+    "progress": "Progress"
+  }
+}

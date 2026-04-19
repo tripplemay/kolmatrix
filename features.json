@@ -46,7 +46,7 @@
       "title": "next-intl 国际化基础（5 语言路由 + Topbar 切换器联动）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "/[locale]/dashboard 路由结构生效；messages/{en,zh,ja,ko,es}.json 完整文件；EN 全翻译，其他语言占位；topbar EN 切换器点 ZH 后 sidebar 8 项文案变 ZH；缺 key fallback EN 不报错；user.locale 持久化到 cookie"
     },
     {

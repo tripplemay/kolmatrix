@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 
+import { routing } from "@/i18n/routing";
+
 export default function RootRedirect(): never {
-  redirect("/dashboard");
+  redirect(`/${routing.defaultLocale}/dashboard`);
 }

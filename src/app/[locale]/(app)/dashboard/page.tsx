@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
@@ -14,18 +15,27 @@ import { EmailPerformanceCard } from "@/features/dashboard/EmailPerformanceCard"
 import { KpiRow } from "@/features/dashboard/KpiRow";
 import { RecentActivityCard } from "@/features/dashboard/RecentActivityCard";
 import { EMAIL_PERFORMANCE_DATA, RECENT_ACTIVITIES } from "@/features/dashboard/mocks";
+import { isLocale, routing } from "@/i18n/routing";
 import { withTenant } from "@/lib/db";
 
 import { fetchDashboardData, mapCampaign, mapKol } from "./data";
 
 export const metadata = { title: "Dashboard — KOLMatrix" };
 
-export default async function DashboardPage() {
+interface Props {
+  params: Promise<{ locale: string }>;
+}
+
+export default async function DashboardPage({ params }: Props) {
+  const { locale: rawLocale } = await params;
+  const locale = isLocale(rawLocale) ? rawLocale : routing.defaultLocale;
   const session = await auth();
   const tenantId = session?.user.tenantId;
   if (!tenantId) redirect("/login");
   const d = await withTenant(tenantId, fetchDashboardData);
-  const dateLabel = new Date().toLocaleDateString("en-US", {
+  const t = await getTranslations("dashboard");
+  const tCommon = await getTranslations("common");
+  const dateLabel = new Date().toLocaleDateString(locale, {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -37,11 +47,9 @@ export default async function DashboardPage() {
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
           <h2 className="text-on-surface mb-2 text-4xl font-extrabold tracking-[-0.02em] md:text-5xl">
-            Welcome back, {name}.
+            {t("greeting", { name })}
           </h2>
-          <p className="text-on-surface-variant md:text-lg">
-            Here is your global KOL marketing pulse for {dateLabel}.
-          </p>
+          <p className="text-on-surface-variant md:text-lg">{t("subtitle", { date: dateLabel })}</p>
         </div>
         <GradientButton
           size="lg"
@@ -51,7 +59,7 @@ export default async function DashboardPage() {
             </span>
           }
         >
-          New Campaign
+          {t("newCampaign")}
         </GradientButton>
       </div>
       <KpiRow
@@ -64,7 +72,7 @@ export default async function DashboardPage() {
         <div className="space-y-8 lg:col-span-2">
           <section>
             <SectionHeader
-              title="Active Campaigns"
+              title={t("activeCampaigns")}
               as="h2"
               actions={
                 <GhostButton
@@ -74,7 +82,7 @@ export default async function DashboardPage() {
                     </span>
                   }
                 >
-                  View All
+                  {t("viewAll")}
                 </GhostButton>
               }
             />
@@ -85,7 +93,7 @@ export default async function DashboardPage() {
                   name={c.name}
                   subtitle={c.subtitle}
                   progress={c.progress}
-                  primaryMetric={{ label: "Open Rate", value: c.openRate }}
+                  primaryMetric={{ label: tCommon("openRate"), value: c.openRate }}
                   status={c.status}
                 />
               ))}
@@ -93,14 +101,14 @@ export default async function DashboardPage() {
           </section>
           <section>
             <SectionHeader
-              title="AI-Recommended KOLs"
+              title={t("recommendedKols")}
               as="h2"
               actions={
                 <>
                   <SecondaryButton size="sm" tone="cyan">
-                    Auto-Match
+                    {t("autoMatch")}
                   </SecondaryButton>
-                  <GhostButton>See Matrix</GhostButton>
+                  <GhostButton>{t("seeMatrix")}</GhostButton>
                 </>
               }
             />
@@ -124,9 +132,7 @@ export default async function DashboardPage() {
           <EmailPerformanceCard data={EMAIL_PERFORMANCE_DATA} />
           <RecentActivityCard items={RECENT_ACTIVITIES} />
           <GlassPanel padding="sm" tone="cyan" glow>
-            <p className="text-on-surface-variant text-xs">
-              Dashboard mock data: 7d rolling window. KPI values reflect current tenant only.
-            </p>
+            <p className="text-on-surface-variant text-xs">{t("mockNote")}</p>
           </GlassPanel>
         </aside>
       </div>

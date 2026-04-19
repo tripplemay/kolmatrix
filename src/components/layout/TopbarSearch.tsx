@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 
 import { cn } from "@/lib/utils";
@@ -9,10 +10,9 @@ interface TopbarSearchProps {
   className?: string;
 }
 
-export function TopbarSearch({
-  placeholder = "Search KOLs, campaigns, emails...",
-  className,
-}: TopbarSearchProps) {
+export function TopbarSearch({ placeholder, className }: TopbarSearchProps) {
+  const t = useTranslations("topbar");
+  const effectivePlaceholder = placeholder ?? t("searchPlaceholder");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export function TopbarSearch({
       <input
         ref={inputRef}
         type="search"
-        placeholder={placeholder}
+        placeholder={effectivePlaceholder}
         className="text-on-surface placeholder:text-on-surface-variant/60 flex-1 bg-transparent text-[13px] outline-none"
       />
       <kbd className="text-on-surface-variant/70 bg-surface-bright/60 rounded-md px-1.5 py-0.5 text-[10px] font-medium tracking-wider">

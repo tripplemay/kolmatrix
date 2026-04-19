@@ -3,6 +3,10 @@
  *
  * 把 GlassPanel + SectionHeader + chart 组合在一起，给 page.tsx 节省行数。
  */
+"use client";
+
+import { useTranslations } from "next-intl";
+
 import { GlassPanel, SectionHeader } from "@/components/common";
 
 import { EmailPerformanceChart } from "./EmailPerformanceChart";
@@ -13,9 +17,10 @@ interface Props {
 }
 
 export function EmailPerformanceCard({ data }: Props) {
+  const t = useTranslations("dashboard");
   return (
     <GlassPanel padding="md" rounded="2xl" tone="neutral">
-      <SectionHeader title="Email Performance" as="h3" className="mb-3" />
+      <SectionHeader title={t("emailPerformance")} as="h3" className="mb-3" />
       <EmailPerformanceChart data={data} />
     </GlassPanel>
   );
