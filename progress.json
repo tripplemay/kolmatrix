@@ -21,13 +21,9 @@
     "spec": "docs/specs/BI1-test-infrastructure-spec.md",
     "test_cases": null,
     "signoff": "docs/test-reports/BI1-test-infrastructure-signoff-2026-04-19.md",
-    "framework_reviewed": false
+    "framework_reviewed": true
   },
-  "role_assignments": {
-    "planner": "Kimi",
-    "generator": "johnsong",
-    "evaluator": "Reviewer"
-  },
+  "role_assignments": null,
   "evaluator_feedback": {
     "summary": "BI1 fixing round 1 复验通过：coverage/integration/e2e 达标，批准签收。",
     "pass_count": 10,

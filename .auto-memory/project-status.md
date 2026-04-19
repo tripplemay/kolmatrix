@@ -4,15 +4,14 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BI1-test-infrastructure** — fixing round 1 完成，status=reverifying，等 Reviewer
-  - F008 commit d438777（NULLIF RLS migration，5× marketer E2E 稳定 flaky 消除）
-  - F002/F007 commit ad00973（Colima auto-detect）+ F009 同 commit Linux-only gate
-  - F010 无代码改动（Planner commit 63fb129 修订 acceptance 文案）
-  - 117 tests 全绿 + CI 7/7 jobs green
+- **BI2-deployment-automation** — 等用户确认 features.json + role_assignments + 前置条件 → building
+  - spec 已完整（`docs/specs/BI2-deployment-automation-spec.md`，2026-04-18 起草）
+  - 8 features (全 executor:generator)：F001 /api/health → F002 PM2 → F005 healthcheck → F004 backup → F006 rollback → F007 ROLLBACK SQL 校验 → F003 deploy workflow → F008 runbook
+- **BI1-test-infrastructure** ✅ 已完成签收（10/10 + Round 1 fix + reverify 通过，framework v0.9.1 沉淀）
 - **B0-foundation** ✅ 已完成签收（10/10 + 12 PASS 0 FAIL，Round 3 reverify 通过）
 
-## 角色分配（BI1，沿用 B0）
-- Planner: Kimi / Generator: johnsong / Evaluator: Reviewer
+## 角色分配
+- BI1 已清除；BI2 待用户确认（默认沿用：Planner: Kimi / Generator: johnsong / Evaluator: Reviewer）
 
 ## BI1 10 features 执行顺序（强制）
 F001 Vitest → F002 Testcontainers → F003 Playwright → F004 MSW → F005 Fixtures →
