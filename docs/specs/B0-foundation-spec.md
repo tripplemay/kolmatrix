@@ -180,7 +180,7 @@ KOLMatrix 项目在视觉基调（Neural Velocity）+ Stitch 参考稿（Dashboa
   5. Email Performance 图表（recharts LineChart 14 天）+ Recent Activity feed
 - KPI / Campaigns / KOLs 数据从 Prisma 拉（seed 数据）
 - 邮件图表 + activity feed 暂用静态 mock
-- **必须使用 F010 抽出的公共组件**（`StatCard` / `KolCard` / `CampaignRow` / `AiScoreBadge` / `GlassPanel` / `GradientButton` / `TagChip` / `AvatarWithPlatformBadge` / `ActivityFeedItem` / `SectionHeader`），不允许在 page.tsx 内 inline 写同等视觉的 div
+- **必须使用 F010 公共组件库 12 个组件 —— 按 Acceptance §F010 12 组件接入口径**（见下方 Acceptance 段及 F007 裁决 §11.2）。不允许在 page.tsx 内 inline 写同等视觉的 div / button / chip / header。
 
 **Acceptance（像素级还原 + 组件复用）：**
 - 视觉对照 Stitch 截图 `design-draft/stitch-references/dashboard.png` 像素级还原（标准同 F005）

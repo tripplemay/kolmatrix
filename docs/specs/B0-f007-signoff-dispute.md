@@ -146,3 +146,58 @@ Reviewer 读第一段，按旧口径判 fail；Generator 按第二段实现并�
 - `docs/specs/B0-f007-dashboard-plan.md` §11 — Kimi 原 F007 裁决含 §11.2
 - `features.json` F007 acceptance — 已采纳 §11.2 新口径
 - `docs/specs/B0-foundation-spec.md` F007 — 同时含旧表述（实现段）+ 新 §11.2（Acceptance 段），争议源
+
+---
+
+## 9. Planner 仲裁（Kimi · 2026-04-19）
+
+**仲裁结论：#选项:A** —— 确认 §11.2 为 F007 组件复用的权威口径，修订 spec 消除矛盾。
+
+### 9.1 责任认定
+
+**此争议根源在我（Planner）：**
+- 2026-04-19 F007 pre-impl 审计时主动修订 §11.2（"直接 ≥5 + 渲染树 12 + 不 inline"三条防线）
+- **但忘了同步更新 §F007 实现段**（仍保留"必须使用 10 个组件"旧列表）
+- 结果 spec 同段内部自相矛盾：实现段指向旧口径，Acceptance 段指向新口径
+- Reviewer 选了实现段（更靠前/更简单 grep），判 PARTIAL 是**合规的 literal reading**
+- Generator 选了 Acceptance 段（更新更细化），实现也**合规**
+
+**双方都对，错在 spec 作者（我）。**
+
+### 9.2 §11.2 为何仍是权威口径
+
+1. §11.2 是我 F007 pre-impl 审计时**明确深思的修订**（不是手滑）—— 原动机是避免 `void TagChip` 虚引用污染代码
+2. `features.json` F007 acceptance 已同步新口径（commit `2937c28`）
+3. Generator 完全按 §11.2 实现（5 direct import + 12 in render tree + 0 inline），是组件化合理结果
+4. 强推旧口径会让 JSX 破 80 行（见 §5 影响评估），与 "page.tsx JSX ≤80 行" 硬约束打架
+
+### 9.3 Planner 立即执行（§7 清单完成）
+
+✅ **已完成**（见本 commit）：
+1. `docs/specs/B0-foundation-spec.md` §F007 **实现段** 改为引用 §11.2（消除双重表述）
+2. `docs/test-cases/B0-foundation-test-cases.md` TC-L1-003 改为 **import 图静态分析** 口径（不是单文件 grep）
+3. TC-L1-003 给出 4 步验证流程 + 具体 shell 命令 + Reviewer 操作要点
+
+### 9.4 通知 Reviewer（执行第 3 轮复验）
+
+请 Reviewer 执行以下动作（本段是**给 Reviewer 看的直接指令**）：
+
+1. `git pull` 获取本 commit（§11.2 同步 + TC-L1-003 重写）
+2. 按 **新版** TC-L1-003（4 步）重新验证 F007（**不要**再用"page.tsx 单文件 grep 12 组件"口径）
+3. 当前 Generator 实现应 PASS：直接 5 ≥ 5 / 渲染树 12/12 / 0 inline / 71 行 ≤ 80
+4. 若 PASS → 更新 `docs/test-reports/B0-foundation-reverify-2026-04-19.md`（或新开 `*-round3-2026-04-19.md`）
+5. 若仍 fail → 写明具体不达标的子条件（不能仅引用旧口径）
+
+### 9.5 Generator 动作
+
+**无需代码改动**。当前 `page.tsx`（71 行 / 直接 5 / 渲染树 12 全覆盖 / 0 inline）完全满足 §11.2 新口径。
+
+### 9.6 经验教训（写入 framework 提案待用户确认）
+
+**Planner 修订 acceptance 时必须同步扫清 spec 所有相关段落。** 本次教训：修 Acceptance 不改实现段 → 文档内部冲突 → 给 Reviewer 留下 literal reading 空间。
+
+建议框架补丁：Planner 裁决修订 acceptance 后，必须用 `grep` 扫同 spec 文件内所有相关关键词段落，确认无旧口径残留。
+
+---
+
+**本仲裁对 johnsong / Reviewer 的生效时间：推送 main 后立即。**

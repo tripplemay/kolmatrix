@@ -45,12 +45,75 @@
 - 预期：12/12 存在且可导出
 - 证据：目录清单 + 导出检查结果
 
-### TC-L1-003（P0）Dashboard 复用 F010 组件
-- 步骤：
-1. 检查 `dashboard/page.tsx` 对 12 个组件的 import/使用情况
-2. 检查 `page.tsx` 行数约束（<= 80）
-- 预期：满足“强制复用 + 行数限制”
-- 证据：grep/静态检查结果
+### TC-L1-003（P0）Dashboard 复用 F010 组件（按 F007 裁决 §11.2 口径 — 2026-04-19 修订）
+
+> **验证口径**：不是单文件 `page.tsx` 的 grep，而是 **import 图静态分析**（渲染树追踪）。详见 `docs/specs/B0-foundation-spec.md` §F007 Acceptance + `docs/specs/B0-f007-dashboard-plan.md` §11.2。
+>
+> **背景**：F007 pre-impl 审计期 Planner 修订了口径——TagChip / AvatarWithPlatformBadge / AiScoreBadge 等组件天然是 KolCard 内部消费的子组件，强求 page.tsx 顶层直接 import 会产生 `void TagChip` 虚引用，违反"不允许 inline 仿写视觉"的本意精神。新口径用"直接 ≥5 + 渲染树 12 全覆盖 + 不 inline"三条联合防线。
+
+#### 4 步验证流程
+
+**步骤 1：直接使用检查（≥5）**
+```bash
+grep -E "^import.*from ['\"]@/components/common['\"]" \
+  "src/app/[locale]/(app)/dashboard/page.tsx" \
+  | grep -oE "\{[^}]+\}" | tr ',' '\n' | grep -cE "\w+"
+```
+预期 ≥ 5（实际 5：KolCard / GlassPanel / SecondaryButton / GhostButton / SectionHeader）
+
+**步骤 2：渲染树 12 全覆盖检查（import 图静态分析）**
+从 `page.tsx` 出发追踪所有 import 链：
+```
+page.tsx → import 直接 5 个 + {KpiRow, AiMatchRingCard, EmailPerformanceCard, RecentActivityCard, ActiveCampaignsSection, GreetingBar}
+         ↓
+  KpiRow                    → StatCard
+  KolCard (page.tsx 直接)   → AiScoreBadge + TagChip + AvatarWithPlatformBadge
+  ActiveCampaignsSection    → CampaignRow + GhostButton
+  EmailPerformanceCard      → GlassPanel
+  RecentActivityCard        → ActivityFeedItem
+  GreetingBar               → GradientButton
+```
+预期：12 个 F010 组件**全部**在渲染树覆盖表中（参见 `docs/specs/B0-f007-signoff-dispute.md` §2.3 现成覆盖表）。
+
+辅助查询：
+```bash
+grep -rE "from ['\"]@/components/common['\"]" \
+  "src/app/[locale]/(app)/dashboard" \
+  "src/features/dashboard" \
+  "src/components/common" \
+  | grep -oE "\{[^}]+\}" | tr ',' '\n' | grep -oE "\w+" | sort -u
+```
+应列出 12 个 F010 组件名。
+
+**步骤 3：防 inline 检查**
+```bash
+grep -rE '<div[^>]*className="[^"]*rounded-(xl|lg)[^"]*(border|shadow)' \
+  "src/app/[locale]/(app)/dashboard/page.tsx"
+```
+预期：**0 命中**（无 inline 仿写卡片样式）
+
+**步骤 4：行数约束**
+```bash
+wc -l "src/app/[locale]/(app)/dashboard/page.tsx"
+```
+预期：≤ 80 行（实际 71 行）
+
+#### 预期全部通过则判 PASS
+- 步骤 1：直接 import ≥ 5 个 F010 组件 ✓
+- 步骤 2：渲染树覆盖 12 个 F010 组件（直接或间接经 KolCard / KpiRow 等封装引入都算）✓
+- 步骤 3：无 inline 仿写视觉片段 ✓
+- 步骤 4：行数 ≤ 80 ✓
+
+#### 证据
+- 步骤 1 shell 输出 + 直接 import 组件清单
+- 步骤 2 渲染树覆盖表（可复用 B0-f007-signoff-dispute.md §2.3 的现成表）
+- 步骤 3 grep 输出（应为空）
+- 步骤 4 `wc -l` 结果
+
+#### Reviewer 操作要点（重要）
+- **不要**只看 `page.tsx` 单文件 grep，要看 `features/dashboard/*.tsx` + `components/common/KolCard.tsx` 等层层 import 链
+- **KolCard 内部用 AiScoreBadge / TagChip / AvatarWithPlatformBadge 算覆盖这 3 个**（子组件是 F010 库的合理组合使用）
+- 若只看到 5 个直接 import 就判 fail，是**旧口径**（已废弃）；新口径要 import 图静态分析
 
 ### TC-L1-004（P1）Token 映射完整性
 - 步骤：对照 `design-draft/design-system.md` 检查 `globals.css @theme` token 覆盖
