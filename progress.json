@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "落地测试基建（Vitest + Testcontainers + Playwright + MSW + Faker），覆盖 B0 核心代码 80%+，CI 集成 4 个新 jobs，为后续业务批次提供可重复的自动化验证能力",
   "total_features": 10,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
   "current_sprint": "BI1-test-infrastructure",
-  "last_updated": "2026-04-19T16:08+0900",
+  "last_updated": "2026-04-19T16:35+0900",
   "reference_docs": [
     "docs/specs/BI1-test-infrastructure-spec.md",
     "docs/dev/testing.md",
@@ -32,7 +32,7 @@
   "generator_handoff": null,
   "session_notes": {
     "Kimi": "BI1 测试基建 planning 完成（Option α infra-first 序列第二棒）。10 features 按依赖顺序强制执行: F001 Vitest → F002 Testcontainers → F003 Playwright → F004 MSW → F005 Fixtures → F006 B0 unit tests → F007 B0 RLS+Auth integration → F008 marketer E2E → F009 视觉回归基线 → F010 CI 4 新 jobs。视觉基线= design-draft/stitch-references/dashboard.png。F007/F008 相当于'补打 B0 自动化覆盖'(B0 §7 严格手工验收的自动化版本); 测试跑不通时区分 BI1 测试错 vs B0 代码错(起 B0-hotfix 独立批次)。pre-impl 审计 → Planner 裁决模式继续适用, johnsong 如遇 spec 歧义先发审计请求。B0 sprint 历史见 commit 0ddd72e 之前所有 B0-* commits。",
-    "johnsong": "BI1 F001+F002 done。F001：Vitest 4.1.4 + coverage-v8 + jsdom + testing-library；vitest.config.ts（jsdom/setupFiles/coverage 80%）；scripts test / test:unit / test:watch / test:coverage / test:ui。coverage.include 临时缩到 src/lib/utils.ts — F006 接手务必扩回 src/lib/** + src/components/**。F002：testcontainers 11.14 + @testcontainers/postgresql 安装；vitest.integration.config.ts（node env / fileParallelism=false / hookTimeout 180s）；scripts test:integration；tests/helpers/db.ts 实现 setupTestDb/teardownTestDb/cleanDb/withTestTenant/getAdminPrisma/getAppPrisma（admin = postgres 超级用户运行 migrate + 清库，app = kolmatrix_app 走 RLS）；tests/integration/db-setup.test.ts 3 cases 全 PASS（container boot + migrate + Tenant CRUD；unscoped kol.findMany() = 0 行；withTestTenant 跨租户隔离）。容器启停 ~10s + migrate ~15s，总 ~41s，可接受。注意 schema 字段名是 audienceGeoDist/AgeDist/GenderDist（Dist 后缀），不是 audienceGeo/Age/Gender。下一棒 F003 Playwright。",
+    "johnsong": "BI1 F001+F002+F003 done。F001 Vitest 4.1.4 + coverage-v8 + jsdom + testing-library；coverage.include 临时缩到 src/lib/utils.ts — F006 必须扩回 src/lib/** + src/components/**。F002 testcontainers 11.14 + tests/helpers/db.ts（admin=postgres 超级用户 + app=kolmatrix_app 走 RLS 双 Prisma client）。F003 Playwright 1.59 + chromium-headless-shell；playwright.config.ts（testDir tests/e2e/baseURL 3000 / viewport 1440x900 / screenshot+trace on failure / webServer npm run dev reuseExistingServer 本地 + timeout 180s / html+list reporter always）；scripts test:e2e / test:e2e:ui / test:e2e:debug；tests/e2e/landing.spec.ts 访问 / → redirect 链 → 断言 title /KOLMatrix/ 通过。.gitignore 加 playwright-report/ / test-results/ / blob-report/ / playwright/.cache/。WSL 首次跑需 sudo npx playwright install-deps chromium 补 libnspr4/libnss3 等系统库（用户已装）。Next 16 dev 首次冷启动 ~3 分钟（deprecation warning: middleware→proxy 迁移留给后续批次，非本批次范围）。schema 字段名陷阱：audienceGeoDist/AgeDist/GenderDist（Dist 后缀）。下一棒 F004 MSW。",
     "Reviewer": null
   },
   "features": []

@@ -22,7 +22,7 @@
       "title": "Playwright 安装 + 浏览器 + 配置 + 首个 E2E test",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "安装 @playwright/test + npx playwright install --with-deps chromium；playwright.config.ts 配置 testDir ./tests/e2e + baseURL localhost:3000 + screenshot only-on-failure + trace retain-on-failure + viewport 1440x900 + webServer auto-start；scripts: test:e2e / test:e2e:ui / test:e2e:debug；占位 E2E tests/e2e/landing.spec.ts 访问 / 看到 KOLMatrix 文字；npm run test:e2e 启动 dev 跑测试关闭；失败时 playwright-report/ 含截图"
     },
     {
