@@ -4,10 +4,11 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BI1-test-infrastructure** — status=fixing（Reviewer round 1 判 F002/F007/F008/F010 有问题）
-  - F008 裁决已下发 `#方案:A`（NULLIF 兜底），用户已书面确认，等 Generator 执行
-  - F010 裁决已下发 `#方案:A`（acceptance 文案改 Testcontainers），代码无需改，等 Reviewer 按新口径复验
-  - F002/F007 等 Generator 按 Reviewer feedback 修
+- **BI1-test-infrastructure** — fixing round 1 完成，status=reverifying，等 Reviewer
+  - F008 commit d438777（NULLIF RLS migration，5× marketer E2E 稳定 flaky 消除）
+  - F002/F007 commit ad00973（Colima auto-detect）+ F009 同 commit Linux-only gate
+  - F010 无代码改动（Planner commit 63fb129 修订 acceptance 文案）
+  - 117 tests 全绿 + CI 7/7 jobs green
 - **B0-foundation** ✅ 已完成签收（10/10 + 12 PASS 0 FAIL，Round 3 reverify 通过）
 
 ## 角色分配（BI1，沿用 B0）
