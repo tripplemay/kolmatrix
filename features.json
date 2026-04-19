@@ -22,7 +22,7 @@
       "title": "Health check 脚本（重试 + 容错）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "scripts/healthcheck.sh 接受可选 endpoint 参数（默认 https://kol.guangai.ai/api/health），5 次重试 × 3 秒间隔；只有 HTTP 200 且 .status=='healthy' 才 exit 0；失败 exit 1 并 cat 最后一次响应 JSON；依赖 jq（VPS 预装）；shellcheck 通过；单元自测：本地停掉 dev server 后跑脚本应 exit 1"
     },
     {
