@@ -66,9 +66,9 @@ Neural Velocity 同时满足：
 | V3 | KOL Database | `c10b685955b74e4699992687fabc6647` | ✅（手动） |
 | V3 | Email Center | `337c7721553644d580d892de0cd58524` | ✅（手动） |
 | V4 | Client Review（客户协同筛选）| `00ea6b4cd4b342e8ad0cd04679b781e2` | ✅（手动，4226px）|
-| V4 | Email Tracking 详情 | `46df7ce5b16c415ab2f61ded33efc374` | ✅（手动，2048px）|
+| V4 | Email Tracking 详情 | `a654800b865d4680818750b003519e33` | ✅（手动，4414px）|
 
-> **V4 已知重复（2026-04-19）：** Stitch 项目中还存在 2 个应删除的重复 screen — 短版 Client Review `219e3547...`（自动生成压缩内容）与重复 Email Center `d3f92c57...`。由用户在 Stitch UI 手动隐藏/删除。
+> **V4 已知 MCP 冗余（2026-04-19）：** Stitch 项目中还存在 3 个应删除的压缩/重复 screen — 短版 Client Review `219e3547...`（2516px，自动压缩）、短版 Email Tracking `46df7ce5...`（2048px，自动压缩）、重复 Email Center `d3f92c57...`（2048px，与 V3 `337c7721...` 重复）。由用户在 Stitch UI 手动隐藏/删除。
 
 > **手动 vs 自动生成：** 自动生成（MCP `generate_screen_from_text`）会压缩长 prompt 内容，导致章节缺失。从 V3 起改为用户手动在 Stitch 网页端粘贴 prompt 生成，内容完整度显著提升（HTML 行数 463-632，对比自动生成的 165-365）。
 
