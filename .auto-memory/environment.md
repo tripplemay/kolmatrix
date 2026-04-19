@@ -6,8 +6,12 @@ type: reference
 
 ## 生产环境
 
-- 控制台：`https://kol.guangai.ai`
-- API：`https://kol.guangai.ai/api/v1/`
+- 主应用控制台：`https://kol.guangai.ai`
+- 主应用 API：`https://kol.guangai.ai/api/v1/`
+- **品牌域（2026-04-19 注册）：** `kolquest.com`
+  - 用途：301 redirect 到主站 + 根域发件（`marketer@kolquest.com`）
+  - 主站暂不迁移（BI3 B 方案）；未来业务稳定后再评估迁移
+  - DNS + Nginx 配置见 BI3 F006
 - Stitch 视觉基调基准项目（Neural Velocity，已定稿 2026-04-18）：`9338165817879839093`
   - URL: https://stitch.withgoogle.com/projects/9338165817879839093
   - 设计系统 Asset: `18406648320972948834`（已含 canonical App Shell 强制规范）

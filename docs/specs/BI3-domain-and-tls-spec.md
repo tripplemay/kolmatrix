@@ -14,13 +14,13 @@
 本批次（BI3）目标：
 1. **生产 HTTPS 落地**——Let's Encrypt 申请 + Nginx HTTPS config + 自动续期 + 续期失败告警
 2. **Staging 环境搭建**——`staging.kol.guangai.ai` 子域 + Nginx vhost + 独立 PM2 进程 + 独立 PG schema
-3. **Mail 域 DNS 准备**——`mail.kolmatrix.com` 子域的 SPF/DKIM/DMARC 占位记录（B4 实际接入 Resend 时无需补 DNS）
+3. **`kolquest.com` 品牌域落地**——301 redirect 到主站 + 根域发件配置（SPF/DKIM/DMARC）
 
 **Definition of Done：**
 - `https://kol.guangai.ai` 浏览器小绿锁，A+ 评级（Qualys SSL Labs）
 - `https://staging.kol.guangai.ai` 可访问独立 staging 应用（独立 DB schema / 独立 PM2 进程）
 - 证书 < 30 天到期自动告警（cron + email）
-- `mail.kolmatrix.com` DNS SPF/DKIM/DMARC 记录就位（Resend 验证可立即通过）
+- `kolquest.com` 品牌域 301 redirect 到 `kol.guangai.ai` + 根域 SPF/DKIM/DMARC 就位（Resend 验证可立即通过）
 - TLS runbook 文档完整
 
 **Out of Scope：**
@@ -61,7 +61,9 @@
 | Staging 子域 | `staging.kol.guangai.ai`（同 VM 不同端口） | 成本最低；DNS 子域走同 IP |
 | Staging DB | 同 PG 实例 + database `kolmatrix_staging` | 隔离 + 共享底座 |
 | Staging PM2 | 独立进程 `kolmatrix-staging`，端口 3002 | 隔离运行；reload 不影响 prod |
-| Mail 域 | `mail.kolmatrix.com`（独立顶级域，与主站隔离） | 防止 KOL 邮件 reputation 影响主站 |
+| 品牌 / 发件域 | `kolquest.com`（已注册，2026-04-19） | 主站仍是 kol.guangai.ai；kolquest.com 做 301 redirect + 根域直发邮件（`marketer@kolquest.com`） |
+| 主站是否迁移 | ❌ 暂不迁（选项 B） | B1-B5 业务期间保持 kol.guangai.ai；未来业务稳定后再评估迁移 |
+| 发件结构 | 主域直接发件（选项 C：`marketer@kolquest.com`） | 最专业视觉；kolquest.com 无 web 主站流量，reputation 风险可控 |
 | 续期告警 | cron 跑 `openssl x509 -checkend` + `mail` 命令 | 简单；邮件给用户 Gmail |
 | Reviewer 验证 | Qualys SSL Labs A+ 评级 | 业界标准 |
 
@@ -239,24 +241,72 @@
 - cron 正确加载（`crontab -l` 显示）
 - 邮件主题清晰，含域名 + 到期日期
 
-### F006 — Mail 域 DNS 占位（SPF/DKIM/DMARC）
+### F006 — kolquest.com 品牌域配置（301 redirect + 根域发件 DNS）
+
+**背景：** `kolquest.com` 已注册（2026-04-19）。不做主站（暂留 `kol.guangai.ai`），只做两件事：
+1. Web 访问 → 301 redirect 到 `kol.guangai.ai`
+2. 作为发件域（`marketer@kolquest.com`）配置 SPF/DKIM/DMARC
+
 **实现：**
-- **用户操作（DNS 服务商）：** `kolmatrix.com` 域名 DNS 加以下记录：
-  - `mail.kolmatrix.com` A 记录 → 34.180.93.185（如未来发件需要本机）
-    - 或 → Resend 提供的发件 IP（B4 实际接入时确认）
-  - `mail.kolmatrix.com` MX 记录（暂不需，发件不收件）
-  - `mail.kolmatrix.com` TXT (SPF)：`"v=spf1 include:_spf.resend.com ~all"`（B4 用 Resend）
-  - `_dmarc.mail.kolmatrix.com` TXT：`"v=DMARC1; p=quarantine; rua=mailto:dmarc@kolmatrix.com"`
-  - `resend._domainkey.mail.kolmatrix.com` CNAME 记录（DKIM，B4 实际接入时 Resend 提供具体值）
-- **可选预占位：** 用 `kolmatrix.com` 不存在的注释只配主结构，B4 实际再补 DKIM
-- 入库：`docs/dev/mail-dns-records.md` 记录所有应配置的 DNS 记录 + Resend 文档链接
+
+**步骤 1：DNS 记录（用户在域名注册商面板操作）**
+
+```
+kolquest.com            A     → 34.180.93.185    # 指向 Tokyo VM 做 redirect
+www.kolquest.com        CNAME → kolquest.com
+
+# Email (SPF/DMARC, DKIM 在 B4 接 Resend 时补)
+kolquest.com            TXT   → "v=spf1 include:_spf.resend.com ~all"
+_dmarc.kolquest.com     TXT   → "v=DMARC1; p=quarantine; rua=mailto:dmarc@kolquest.com"
+
+# DKIM CNAME: B4 Resend 接入时补
+# resend._domainkey.kolquest.com  CNAME → {Resend 提供的具体值}
+```
+
+**步骤 2：Nginx server block 做 301 redirect（入库 `infrastructure/nginx/kolquest.com.conf`）**
+
+```nginx
+# 80: HTTP 跳 HTTPS
+server {
+    listen 80;
+    server_name kolquest.com www.kolquest.com;
+    return 301 https://$host$request_uri;
+}
+
+# 443: 永久 redirect 到主站
+server {
+    listen 443 ssl http2;
+    server_name kolquest.com www.kolquest.com;
+
+    ssl_certificate /etc/letsencrypt/live/kolquest.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/kolquest.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+    # 永久重定向到主站（带 request URI 保留路径）
+    return 301 https://kol.guangai.ai$request_uri;
+}
+```
+
+**步骤 3：Let's Encrypt 申请证书（VPS 上）**
+
+```bash
+sudo certbot --nginx -d kolquest.com -d www.kolquest.com \
+  --non-interactive --agree-tos -m tripplezhou@gmail.com
+```
+
+**步骤 4：入库文档 `docs/dev/mail-dns-records.md`**
+
+记录完整 DNS 配置（含 DKIM 占位）+ Resend 文档链接 + 验证步骤。
 
 **Acceptance：**
-- `dig mail.kolmatrix.com TXT` 返回 SPF 记录
-- `dig _dmarc.mail.kolmatrix.com TXT` 返回 DMARC 记录
-- B4 启动时 Resend 域名验证可一次通过（无需补 DNS）
-
-> 如果用户尚未购买 `kolmatrix.com` 域名，本 feature 可降级为"准备 DNS 记录清单文档，待域名就绪后用户操作"。
+- `dig kolquest.com A` 返回 `34.180.93.185`
+- `dig kolquest.com TXT` 返回 SPF 记录
+- `dig _dmarc.kolquest.com TXT` 返回 DMARC 记录
+- `curl -I https://kolquest.com` 返回 301 + Location: https://kol.guangai.ai
+- `curl -I https://www.kolquest.com` 同样 301
+- Qualys SSL Labs 测试 `kolquest.com` 评级 **A+**
+- B4 启动时 Resend 只需补 DKIM CNAME 即可通过验证
 
 ### F007 — TLS / Staging Runbook + 入库 Nginx config
 **实现：**
@@ -299,7 +349,7 @@ F007 (Runbook) 跨阶段，最后写
 | certbot 自动改 nginx config 失败 | 备份 config + nginx -t 验证 + 必要时手动恢复 |
 | 80 端口被其他服务占用 | F001 前 `lsof -i :80` 检查；常见冲突：apache、其他 nginx vhost |
 | Mail SMTP relay 配置复杂（F005） | 推荐用 msmtp + Gmail SMTP；或者 BI4 后改用 Sentry 通知（不依赖邮件） |
-| 用户没买 mail.kolmatrix.com 域名 | F006 降级为文档准备；DNS 操作延后到购买后 |
+| kolquest.com DNS 传播慢 | 提前 24-48 小时开始配置 DNS；验证用 `dig @8.8.8.8` 替代本地缓存 |
 | Staging 与 prod 共用 PG 风险 | RLS 策略防 cross-tenant；staging 用 ROLE 严格只能访问 kolmatrix_staging schema |
 | Cert 续期 hook 失败但 timer 显示成功 | F005 告警兜底；同时 logs 里看 `journalctl -u certbot` |
 | Generator 缺 SSH 权限 | 用户提前给 generator 的 agent SSH 公钥 authorize；或用户协助跑 VPS 命令 |
@@ -313,14 +363,14 @@ F007 (Runbook) 跨阶段，最后写
 - `curl -I https://staging.kol.guangai.ai` 返回 200（应用就位）或 502（应用未起但 nginx 工作）
 - `curl -I http://kol.guangai.ai` 返回 301
 - `dig staging.kol.guangai.ai` 解析正确
-- `dig mail.kolmatrix.com TXT` 返回 SPF（如 F006 完成）
+- `dig kolquest.com TXT` 返回 SPF（如 F006 完成）
 - `sudo certbot renew --dry-run` 通过
 - `systemctl status certbot.timer` active
 
 ### L2 — 手工验证
 - Qualys SSL Labs 测试 https://www.ssllabs.com/ssltest/ → 评级 A+
 - 浏览器（Chrome/Safari）小绿锁正常，无 mixed content
-- mail-tester.com 测试 mail.kolmatrix.com 配置（用 Resend 发一封测试邮件）→ 评分 ≥ 8/10
+- mail-tester.com 测试 kolquest.com 配置（用 Resend 发一封测试邮件）→ 评分 ≥ 8/10
 - Staging 上跑 marketer 登录流程，看到独立 staging 数据
 - 故意停 staging PM2 进程，prod 仍正常
 
@@ -345,7 +395,7 @@ F007 (Runbook) 跨阶段，最后写
 
 - [ ] BI2 完成（部署自动化已就位，HTTPS 端点 `/api/health` 已实现）
 - [ ] 用户域名管理面板有 `kol.guangai.ai` 控制权（可加 staging 子域 A 记录）
-- [ ] 用户有 `kolmatrix.com` 域名（F006 mail 域；如未购买，F006 降级为文档）
+- [x] 用户已注册 `kolquest.com`（2026-04-19）
 - [ ] VPS 已安装：`certbot`、`python3-certbot-nginx`、`mailutils` 或 `msmtp`、`openssl`
 - [ ] VPS 80/443 端口对外开放（云防火墙 + iptables 检查）
 - [ ] Generator 有 VPS SSH 权限（公钥 authorize）
@@ -368,7 +418,7 @@ BI3 后，KOLMatrix 拥有：
 - ✅ noindex 防 SEO 抓取
 - ✅ 用于 BI2 deploy workflow 预生产验证（后续可加 deploy-staging.yml）
 
-**邮件域（mail.kolmatrix.com）**
+**品牌域（kolquest.com）**
 - ✅ SPF/DKIM/DMARC DNS 记录就位
 - ✅ B4 启动时 Resend 验证可一次通过
 

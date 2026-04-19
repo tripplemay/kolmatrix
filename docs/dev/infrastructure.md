@@ -273,10 +273,10 @@ sudo certbot renew --dry-run
 |---|---|---|
 | `kol.guangai.ai` | 生产应用 | 已有 |
 | `staging.kol.guangai.ai` | Staging 环境 | BI3 |
-| `mail.kolmatrix.com` | 邮件发件域 | B4（独立域名 + 自管 SPF/DKIM） |
+| `kolquest.com` | 品牌域 + 301 redirect 到主站 + 根域发件（marketer@kolquest.com） | BI3（DNS + redirect + TLS）/ B4（接 Resend 补 DKIM） |
 | `api.kol.guangai.ai` | 公开 API（如开放） | 远期 |
 
-**邮件域名特殊：** 要避开主域名（防止 KOL 邮件 spam 影响主站 reputation），用独立 `kolmatrix.com` 或 `mail.kolmatrix.com` 子域。
+**发件域策略（2026-04-19 定稿）：** 已注册独立品牌域 `kolquest.com`。主站仍留 `kol.guangai.ai`，`kolquest.com` 作 301 redirect + 根域直接发件（`marketer@kolquest.com`）。因 kolquest.com 没有 web 主站流量，reputation 风险可控。详见 ADR-009 + BI3 F006。
 
 ## 5. 推荐基建批次（BI 系列）
 
