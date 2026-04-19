@@ -15,6 +15,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **规格文档分级：** 新功能批次须有 `docs/specs/` 下的规格文档（硬性）；Bug 修复批次可省略（软性）。
 
+**架构决策记录（ADR）：** 关键决策沉淀在 `docs/adr/`（跨批次影响 / 不可逆 / 当时辩论过的）。做新决策前读 `docs/adr/README.md` 索引核对一致性，避免违反已有 ADR。新决策 ADR-worthy 时加新编号文件。
+
 ---
 
 ## Project Overview

@@ -15,12 +15,10 @@ F001 Vitest → F002 Testcontainers → F003 Playwright → F004 MSW → F005 Fi
 F006 B0 unit tests → F007 B0 RLS+Auth integration → F008 marketer E2E →
 F009 视觉回归基线 → F010 CI 4 新 jobs
 
-## 关键决策沉淀（B0 遗产，BI1 沿用）
-- pre-impl 审计 → Planner 裁决模式（F005/F010/F007/F006 共 25 决策点 0 返工）
-- 像素级还原标准 间距 ±2px / ΔE<2 / 字号 100%（BI1 F009 视觉回归基线）
-- 色彩 token 边界政策（设计 token + Tailwind 预设色双轨）
-- HEX 硬编码扫描铁律（除 globals.css）
-- 技术栈 Next 16 + React 19 + Tailwind v4 + Prisma 7 + NextAuth v5
+## 关键决策（详见 docs/adr/）
+- ADR-001 Option α infra-first / ADR-002 技术栈最新版 / ADR-003 像素级还原 ±2px/ΔE<2
+- ADR-004 F010 12 组件锁定 / ADR-005 §11.2 组件接入口径 / ADR-006 pre-impl 审计模式
+- ADR-007 多租户 RLS 策略 / ADR-008 严格手工验收（BI1 后作废）
 
 ## 后续顺序（已锁定 Option α）
 BI1 → BI2 部署自动化 → BI3 域名 TLS + Staging → B1 KOL Database → B2+
