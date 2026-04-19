@@ -16,11 +16,17 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html", "lcov"],
       reportsDirectory: "coverage",
-      // NOTE: coverage scope intentionally narrow in F001 — placeholder batch.
-      // F006 will expand `include` to `src/lib/**` and `src/components/**` once
-      // the first real unit tests land, so the 80% threshold stays meaningful.
-      include: ["src/lib/utils.ts"],
-      exclude: ["src/**/*.d.ts", "src/**/__tests__/**", "src/**/*.stories.{ts,tsx}"],
+      // BI1-F006 expanded scope: first B0 unit tests land, so coverage
+      // now tracks the lib utilities and the App Shell / common component
+      // libraries. App-router server components (app/**/{layout,page}.tsx)
+      // stay out because they're validated via E2E + integration.
+      include: ["src/lib/**/*.{ts,tsx}", "src/components/**/*.{ts,tsx}"],
+      exclude: [
+        "src/**/*.d.ts",
+        "src/**/__tests__/**",
+        "src/**/*.stories.{ts,tsx}",
+        "src/components/ui/**", // shadcn scaffolding, covered via consumer specs
+      ],
       thresholds: {
         lines: 80,
         functions: 80,

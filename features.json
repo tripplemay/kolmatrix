@@ -46,7 +46,7 @@
       "title": "B0 代码 unit tests（lib + 12 公共组件覆盖）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "src/lib/__tests__/db.test.ts 测 withTenant 包装行为（mocked Prisma）；src/lib/__tests__/utils.test.ts 测 cn 等 utils；src/components/layout/__tests__/Sidebar.test.tsx + Topbar.test.tsx 含渲染 + 激活态切换；src/components/common/__tests__/ 下 12 组件每个 ≥2 test case（基础渲染 + 关键 props）；npm run test:unit -- src/lib 覆盖率 ≥80%；npm run test:unit -- src/components 覆盖率 ≥80%"
     },
     {
