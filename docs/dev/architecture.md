@@ -201,13 +201,14 @@ queue: data-refresh    — 定时刷新 KOL 数据（cron-like）
 
 降级由 aigcgateway 自动触发（provider 健康检查机制），应用层无感。
 
-### 6.3 Prompt 管理（aigcgateway Action）
+### 6.3 Prompt 管理（aigcgateway Action + MCP 驱动）
 
-**决策（ADR-009）：** 不自管 `prompts/*.md` 文件，改用 aigcgateway **Action** 机制。
+**决策（ADR-009）：** 不自管 `prompts/*.md` 文件，改用 aigcgateway **Action** 机制。**Planner 用 MCP 工具直接创建 / 迭代 Actions**（`mcp__aigc-gateway__create_action` / `create_action_version` / `run_action` / `activate_version`）—— 不需要用户登控制台。
 
-- Prompt 模板在 aigcgateway 控制台创建 Action（含变量声明）
+- Prompt 模板通过 MCP create_action 建立（含变量声明）
 - KOLMatrix 按 Action ID 调用：`gw.runAction({ actionId, variables, version_id })`
 - 版本切换不用重新 deploy KOLMatrix
+- 独立 "kolmatrix" project（MCP create_project）隔离与 aigcgateway 其他 Actions 的命名冲突
 
 **初始 Action 清单（B2 spec 阶段创建）：**
 
