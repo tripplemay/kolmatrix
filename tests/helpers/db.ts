@@ -26,6 +26,10 @@
  *     which matches src/lib/db.ts. RLS policies actually kick in on this
  *     client — it is the one that exercises the production auth surface.
  */
+// Must import before @testcontainers/postgresql so Colima env is
+// configured before the container runtime probe fires.
+import "./_colima-detect";
+
 import { execSync } from "node:child_process";
 
 import { PrismaPg } from "@prisma/adapter-pg";
