@@ -4,33 +4,10 @@ import { NextResponse } from "next/server";
 
 import { authConfig } from "@/auth.config";
 import { isLocale, routing } from "@/i18n/routing";
-
-const PROTECTED_PREFIXES = [
-  "/dashboard",
-  "/kols",
-  "/campaigns",
-  "/emails",
-  "/products",
-  "/analytics",
-  "/settings",
-];
+import { isProtected, stripLocale } from "@/middleware-helpers";
 
 const handleI18nRouting = createMiddleware(routing);
 const { auth } = NextAuth(authConfig);
-
-function stripLocale(pathname: string): string {
-  const match = pathname.match(/^\/([a-z]{2})(\/.*)?$/);
-  if (match && isLocale(match[1])) {
-    return match[2] ?? "/";
-  }
-  return pathname;
-}
-
-function isProtected(pathname: string): boolean {
-  return PROTECTED_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
-  );
-}
 
 export default auth((req) => {
   const { nextUrl } = req;

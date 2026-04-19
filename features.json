@@ -54,7 +54,7 @@
       "title": "B0 RLS + Auth integration tests",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "tests/integration/rls-isolation.test.ts 覆盖 6 张多租户表（user/kol/campaign/kol_campaign/email_template/email_log）cross-tenant 查询返回 0 + 不带上下文 raw 查询返回 0；tests/integration/auth-flow.test.ts 测 CredentialsProvider 登录成功 JWT 含 tenantId/role + 错误密码 401 + JWT 解码恢复 session；tests/integration/middleware.test.ts 未登录 /dashboard 重定向 /login + 登录后通过；全部通过"
     },
     {

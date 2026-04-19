@@ -175,3 +175,19 @@ export async function withTestTenant<T>(
     return fn(tenant.id, tx);
   });
 }
+
+/**
+ * Run `fn` against the app client (kolmatrix_app role) inside a transaction
+ * pinned to an *existing* tenant id. Used by tests that pre-seed data under
+ * multiple tenants and need to prove RLS isolation across them.
+ */
+export async function asTenant<T>(
+  tenantId: string,
+  fn: (tx: Prisma.TransactionClient) => Promise<T>
+): Promise<T> {
+  const app = getAppPrisma();
+  return app.$transaction(async (tx) => {
+    await tx.$executeRawUnsafe(`SET LOCAL app.tenant_id = '${tenantId}'`);
+    return fn(tx);
+  });
+}
