@@ -1,11 +1,11 @@
 {
-  "status": "verifying",
+  "status": "fixing",
   "user_goal": "搭建 KOLMatrix Next.js 工程地基，完成可运行的 Dashboard mock，使后续业务批次能在稳定基线上做纯功能开发",
   "total_features": 10,
   "completed_features": 10,
   "fix_rounds": 1,
   "current_sprint": "B0-foundation",
-  "last_updated": "2026-04-19T05:45:00Z",
+  "last_updated": "2026-04-19T01:00:00Z",
   "reference_docs": [
     "docs/specs/B0-foundation-spec.md",
     "docs/dev/architecture.md",
@@ -22,7 +22,7 @@
   ],
   "docs": {
     "spec": "docs/specs/B0-foundation-spec.md",
-    "test_cases": null,
+    "test_cases": "docs/test-cases/B0-foundation-test-cases.md",
     "signoff": null,
     "framework_reviewed": false
   },
@@ -31,12 +31,25 @@
     "generator": "johnsong",
     "evaluator": "Reviewer"
   },
-  "evaluator_feedback": "首轮 (2026-04-19) FAIL: P0-1 登录 Configuration 错误 / P0-2 Dashboard 行数 142>80 + 12 组件识别不全 / P0-3 RLS 验证环境阻断。详见 docs/test-reports/B0-foundation-execution-2026-04-19.md。Generator 回应: docs/test-reports/B0-foundation-review-response.md — P0-1 和 P0-3 为 Reviewer 环境未配 Docker/DB，本轮补 scripts/test/codex-setup.sh + codex-wait.sh；P0-2 为代码确超 + Reviewer 口径未按 Kimi §11.2 修订，本轮重构 page.tsx JSX 30 行 / 直接 F010 import 5 个 / 12 组件 import 图全覆盖。",
+  "evaluator_feedback": {
+    "summary": "复验已完成：认证/RLS/构建回归通过，但 Dashboard 未满足 B0 对 F010 全量复用的硬性口径，暂不签收。",
+    "pass_count": 11,
+    "partial_count": 1,
+    "fail_count": 0,
+    "issues": [
+      {
+        "feature_id": "F007",
+        "result": "PARTIAL",
+        "description": "Dashboard 页面未按当前验收口径覆盖全部 12 个 F010 公共组件（page.tsx 直接可验证维度缺失 7 项）。",
+        "steps_to_reproduce": "1. 打开 src/app/[locale]/(app)/dashboard/page.tsx 2. 检查对 StatCard/CampaignRow/AiScoreBadge/GradientButton/TagChip/AvatarWithPlatformBadge/ActivityFeedItem 的页面级使用 3. 对照 B0 规格 F010/F007 强约束。"
+      }
+    ]
+  },
   "generator_handoff": "B0 sprint 10/10 features 全部完成，移交 Reviewer 进入 verifying 阶段。\n\n===== 交付清单 =====\nF001 Next.js 16 + React 19.2 + Tailwind v4 + shadcn 脚手架\nF002 Neural Velocity token（globals.css @theme 块）+ 5 utilities\nF003 Prisma schema（7 业务表 + NextAuth 3 表）+ 2 migrations + seed（1 tenant / 2 users / 12 KOLs / 3 campaigns / 4 templates / 300 EmailLog）\nF004 RLS + kolmatrix_app 非 superuser 角色 + NextAuth v5 Credentials + withTenant/withPlatformAdmin\nF005 App Shell: Sidebar（fixed left-0 z-50 + cyan 右缘阴影）+ Topbar（sticky z-40 + 玻璃拟态 + ⌘K + avatar 下拉）\nF010 12 个 common 组件：StatCard / KolCard / CampaignRow / AiScoreBadge / GlassPanel / GradientButton / SecondaryButton / GhostButton / TagChip / AvatarWithPlatformBadge / ActivityFeedItem / SectionHeader + barrel index.ts\nF007 Dashboard 5 区块：问候栏 / KPI 4 卡（3 StatCard + AiMatchRingCard 环形特例）/ Active Campaigns 3 行 / AI-Recommended KOLs 2x2 / Email Performance 14d LineChart + Recent Activity 5 条\nF008 GitHub Actions CI（install / lint / typecheck / build 4 jobs + PG service migrate smoke + paths-ignore docs）\nF009 README + docs/dev/setup.md + CONTRIBUTING.md + .env.example\nF006 next-intl 5 语言：/[locale]/dashboard 路由 + messages/{en,zh,ja,ko,es}.json + LanguageSwitcher 真联动 + updateUserLocale server action + stripLocale middleware\n\n===== 开箱测试指引 =====\n1. docker compose up -d（PG 16 + Redis 7 已配 healthcheck）\n2. cp .env.example .env（默认 DATABASE_URL 指向 5432；本机若占用改 override）\n3. npm ci && npx prisma migrate deploy && npm run db:seed\n4. npm run dev → http://localhost:3000\n5. 登录 marketer@kolmatrix.local / KOLM@2026! → 自动跳 /en/dashboard\n\n===== L1 静态闸门（Generator 已全绿，请 Reviewer 复核）=====\n- HEX 硬编码扫描: grep -rE '#[0-9a-fA-F]{6}' src/ --include='*.ts*' --include='*.css' | grep -v 'globals.css' 零命中\n- 各文件行数: src/components/common/*.tsx ≤100 行 / src/app/[locale]/(app)/dashboard/page.tsx 70 行（JSX 39 行）\n- 类型: npm run typecheck 0 错误\n- lint: npm run lint 0 错误\n- build: npm run build 成功（10 static params + 5 routes）\n- CI: GitHub Actions 首跑 2m9s 全绿（commit 6d7b48e）\n- F010 渲染树: page.tsx 直接 import 7 个 F010 组件（≥5 要求），12 个全出现在 import 图（含 KolCard 间接消费 AiScoreBadge/TagChip/AvatarWithPlatformBadge）\n\n===== L2 视觉回归建议项（Reviewer 的核心工作）=====\n- 基准: design-draft/stitch-references/dashboard.png\n- 视口: 1280x2048（spec §7 L2 指定）\n- 偏差口径: 间距 ±2px / ΔE<2 / 字号 100% 匹配 / 布局结构 100% 对齐\n- 已知漂移（不回修 Stitch，见 design-draft/stitch-references/README.md B1-B10）:\n  · B1-B2 nav 缺项（kol-discovery 缺 Products / dashboard 缺 Settings）→ 代码 8 项齐\n  · B3 kol-detail 激活态偏 → 代码 border-l-2 齐边\n  · B4 campaigns-list footer unfold_more → 代码 expand_more\n  · B5 dashboard footer 单账号 → 代码 User Chip\n  · B6 dashboard.html viewbox 小写 → 代码 viewBox 驼峰\n  · B7 kol-discovery filter disabled 态缺 → defer B1\n  · B8 campaigns-list tab underline relative 缺 → 代码补 relative\n  · B9 重复 B6\n  · B10 dashboard email chart 无 Y 轴 → 代码 recharts 补\n\n===== L3 E2E 建议项 =====\n- 登录流: /login → POST → /{user.locale}/dashboard 重定向\n- RLS 验证: 用 admin session 查 kol 表看不到其他 tenant（仅 1 tenant 可创第 2 tenant 手工测）\n- 语言切换: /en/dashboard → Topbar 🌐 EN ▾ → 选 中文 → URL /zh/dashboard + Sidebar 8 项变 ZH + NEXT_LOCALE cookie + DB user.locale=zh\n- 登出: UserAvatarMenu Sign out → /login\n\n===== L4 文档检查 =====\n- README.md 5 行 quickstart（从零到 /dashboard 渲染）\n- docs/dev/setup.md 10 步指南 + WSL inotify 已知问题\n- CONTRIBUTING.md 多 agent 协作范式 + commit 风格 + 色彩 token 边界\n- .env.example 覆盖 DATABASE_URL/DATABASE_ADMIN_URL/NEXTAUTH_SECRET/NEXTAUTH_URL/AIGCGATEWAY_*/RESEND_API_KEY/REDIS_URL\n\n===== 已知小毛刺（不阻塞 B0 验收，标记后续批次）=====\n1. Next 16 已弃用 middleware.ts 文件名 → build warn 'Please use proxy' — 不影响功能，后续批次改 proxy.ts\n2. 非 EN messages（ja/ko/es）按 F4:A 复制 EN 未翻译 — 待译员补\n3. Activity feed mock 保留英文硬编码（Kimi F3:B 决议），B3 接真实 EmailLog 后再设计 i18n 字段结构\n4. KPI trend 数字（+12% / 0% / +5.2%）mock 固定（Kimi G3:A），历史表到 B3+ 才加\n5. 字体 CJK fallback（Kimi F5:A）保持 Inter，字距视觉若不理想 B1+ 引 Noto Sans SC\n\n===== 3 次 Generator 自救修复（已 commit 入历史）=====\n1. F007 recharts stroke 首版写 #HEX 命中扫描 → 改 var(--color-cyan) CSS var\n2. F006 updateUserLocale 首版裸 prisma.user.update 触发 RLS tenant_id UUID cast 失败 → 改 withTenant 包装\n3. F006 LanguageSwitcher 首版 useTransition + router.refresh 造成 dev indicator 卡 rendering → 改 useState + 纯 router.push\n\n===== pre-impl 审计 → Planner 裁决流程 =====\n4 份规划稿（F005 app-shell / F010 component-map / F007 dashboard-plan / F006 i18n-plan）× 25 条决策点，**零 building 阶段返工**。请 Reviewer 验收时参考这些决议理由（docs/specs/B0-*-plan.md + B0-app-shell-canonical-review.md）了解为何某些实现偏离原 spec 或 Stitch HTML。",
   "session_notes": {
     "Kimi": "B0 sprint 全 10 feature 完成。pre-impl 审计 → Planner 裁决模式 4 次（F005/F010/F007/F006）共 25 决策点无返工。下一批次 BI1 测试基建（按 Option α infra-first 顺序）等 Reviewer 完成 B0 验收后启动。",
     "johnsong": "B0 sprint 完成，交棒 Reviewer。详见 generator_handoff 完整清单。等 evaluator_feedback / signoff 后按 Option α 序列进入 BI1 测试基建批次。",
-    "Reviewer": null
+    "Reviewer": "已执行复验：Auth 登录/登出、i18n 切换、RLS 6表x3场景均通过；但按 B0 现行口径，Dashboard 未覆盖全量 12 个 F010 组件，判 PARTIAL 并回 fixing。详见 docs/test-reports/B0-foundation-reverify-2026-04-19.md。"
   },
   "features": []
 }
