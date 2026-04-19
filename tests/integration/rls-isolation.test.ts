@@ -139,31 +139,18 @@ describe("RLS — cross-tenant isolation across all 6 tenant-scoped tables", () 
     expect(aSees.map((l) => l.id)).toEqual([A.emailLogId]);
   });
 
-  it("unscoped queries (no app.tenant_id) never leak any tenant data", async () => {
-    // The RLS USING clause casts `current_setting('app.tenant_id', true)`
-    // to uuid. Depending on whether the session has ever seen a SET LOCAL
-    // (i.e. the custom GUC is "touched" or still "missing"), Postgres
-    // either returns '' or NULL. `''::uuid` throws; `NULL::uuid` is NULL
-    // and the predicate becomes `tenant_id = NULL` (filter to 0 rows).
-    // Both outcomes are valid default-deny — the invariant is "no rows
-    // of another tenant are visible". Accept either shape and assert
-    // the property that matters.
+  it("unscoped queries (no app.tenant_id) return 0 rows across every table", async () => {
+    // Post-F008 RLS fix: NULLIF(current_setting(...), '')::uuid degrades
+    // the empty-string / missing-GUC cases to NULL, and `tenant_id = NULL`
+    // is NULL (filtered). Default-deny is now STABLE — no try/catch
+    // needed, no dependency on whether the session has ever touched the
+    // custom GUC.
     const app = getAppPrisma();
-    const tables: Array<() => Promise<{ id: string }[]>> = [
-      () => app.user.findMany({ select: { id: true } }),
-      () => app.kol.findMany({ select: { id: true } }),
-      () => app.campaign.findMany({ select: { id: true } }),
-      () => app.kolCampaign.findMany({ select: { id: true } }),
-      () => app.emailTemplate.findMany({ select: { id: true } }),
-      () => app.emailLog.findMany({ select: { id: true } }),
-    ];
-    for (const fetch of tables) {
-      try {
-        const rows = await fetch();
-        expect(rows).toHaveLength(0);
-      } catch (err) {
-        expect(String(err)).toMatch(/uuid|permission|tenant/i);
-      }
-    }
+    expect(await app.user.findMany({ select: { id: true } })).toHaveLength(0);
+    expect(await app.kol.findMany({ select: { id: true } })).toHaveLength(0);
+    expect(await app.campaign.findMany({ select: { id: true } })).toHaveLength(0);
+    expect(await app.kolCampaign.findMany({ select: { id: true } })).toHaveLength(0);
+    expect(await app.emailTemplate.findMany({ select: { id: true } })).toHaveLength(0);
+    expect(await app.emailLog.findMany({ select: { id: true } })).toHaveLength(0);
   });
 });
