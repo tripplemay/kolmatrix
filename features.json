@@ -14,7 +14,7 @@
       "title": "Testcontainers PostgreSQL helper + 首个 integration test",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "安装 testcontainers + @testcontainers/postgresql；tests/helpers/db.ts 提供 setupTestDb/teardownTestDb/withTestTenant/cleanDb helpers；tests/integration/db-setup.test.ts 占位测试启动 PG 容器 + migrate + 简单 CRUD；npm run test:integration 跑通；多测试并行用唯一 DB 名无冲突；beforeAll 共享容器（启动 ~10s 可接受）"
     },
     {
