@@ -14,7 +14,7 @@
       "title": "Testcontainers PostgreSQL helper + 首个 integration test",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
+      "status": "pending",
       "acceptance": "安装 testcontainers + @testcontainers/postgresql；tests/helpers/db.ts 提供 setupTestDb/teardownTestDb/withTestTenant/cleanDb helpers；tests/integration/db-setup.test.ts 占位测试启动 PG 容器 + migrate + 简单 CRUD；npm run test:integration 跑通；多测试并行用唯一 DB 名无冲突；beforeAll 共享容器（启动 ~10s 可接受）"
     },
     {
@@ -54,7 +54,7 @@
       "title": "B0 RLS + Auth integration tests",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
+      "status": "pending",
       "acceptance": "tests/integration/rls-isolation.test.ts 覆盖 6 张多租户表（user/kol/campaign/kol_campaign/email_template/email_log）cross-tenant 查询返回 0 + 不带上下文 raw 查询返回 0；tests/integration/auth-flow.test.ts 测 CredentialsProvider 登录成功 JWT 含 tenantId/role + 错误密码 401 + JWT 解码恢复 session；tests/integration/middleware.test.ts 未登录 /dashboard 重定向 /login + 登录后通过；全部通过"
     },
     {
@@ -62,7 +62,7 @@
       "title": "Marketer 登录 + Dashboard E2E flow test",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
+      "status": "pending",
       "acceptance": "tests/e2e/marketer-dashboard.spec.ts 4 test case：访问 /login 输入 marketer@kolmatrix.local/KOLM@2026! 跳 /dashboard；dashboard 看到 Welcome back Sarah + 12,847 总 KOL 数；切换语言 EN→ZH nav 文案变化；点 sidebar nav 跳路由（如 KOL Database 链接 → /kols）；失败自动截图 + trace；npm run test:e2e 全绿"
     },
     {
@@ -70,7 +70,7 @@
       "title": "视觉回归基线 + Dashboard 截图对比",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
+      "status": "pending",
       "acceptance": "tests/e2e/visual-regression.spec.ts 含 /dashboard toHaveScreenshot('dashboard.png', { threshold: 0.02, maxDiffPixels: 1000 })；首次 --update-snapshots 创建 baseline 存 tests/screenshots/baseline/ 并 commit 入库；后续跑测试 dashboard 截图与 baseline diff < 2%；故意改 Dashboard CSS 触发 diff 测试失败 + 生成 diff 图"
     },
     {
@@ -78,7 +78,7 @@
       "title": "CI workflow 集成 4 个新 jobs",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
+      "status": "pending",
       "acceptance": ".github/workflows/ci.yml 在原有 lint+tsc+build 基础上加 unit-tests job (coverage + Codecov 上传) + integration-tests job (PG + Redis service container) + e2e-tests job (playwright install chromium + webServer + 失败上传 playwright-report artifact)；tests/screenshots/baseline/ 入库；tests/screenshots/actual/ + diff/ + playwright-report/ 入 .gitignore；CODECOV_TOKEN secret 由用户配置；PR 触发 4 jobs 全绿；故意 break test CI fail"
     }
   ]
