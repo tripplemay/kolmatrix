@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "落地测试基建（Vitest + Testcontainers + Playwright + MSW + Faker），覆盖 B0 核心代码 80%+，CI 集成 4 个新 jobs，为后续业务批次提供可重复的自动化验证能力",
   "total_features": 10,
-  "completed_features": 3,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "BI1-test-infrastructure",
-  "last_updated": "2026-04-19T16:35+0900",
+  "last_updated": "2026-04-19T17:05+0900",
   "reference_docs": [
     "docs/specs/BI1-test-infrastructure-spec.md",
     "docs/dev/testing.md",
@@ -32,7 +32,7 @@
   "generator_handoff": null,
   "session_notes": {
     "Kimi": "BI1 测试基建 planning 完成（Option α infra-first 序列第二棒）。10 features 按依赖顺序强制执行: F001 Vitest → F002 Testcontainers → F003 Playwright → F004 MSW → F005 Fixtures → F006 B0 unit tests → F007 B0 RLS+Auth integration → F008 marketer E2E → F009 视觉回归基线 → F010 CI 4 新 jobs。视觉基线= design-draft/stitch-references/dashboard.png。F007/F008 相当于'补打 B0 自动化覆盖'(B0 §7 严格手工验收的自动化版本); 测试跑不通时区分 BI1 测试错 vs B0 代码错(起 B0-hotfix 独立批次)。pre-impl 审计 → Planner 裁决模式继续适用, johnsong 如遇 spec 歧义先发审计请求。B0 sprint 历史见 commit 0ddd72e 之前所有 B0-* commits。",
-    "johnsong": "BI1 F001+F002+F003 done。F001 Vitest 4.1.4 + coverage-v8 + jsdom + testing-library；coverage.include 临时缩到 src/lib/utils.ts — F006 必须扩回 src/lib/** + src/components/**。F002 testcontainers 11.14 + tests/helpers/db.ts（admin=postgres 超级用户 + app=kolmatrix_app 走 RLS 双 Prisma client）。F003 Playwright 1.59 + chromium-headless-shell；playwright.config.ts（testDir tests/e2e/baseURL 3000 / viewport 1440x900 / screenshot+trace on failure / webServer npm run dev reuseExistingServer 本地 + timeout 180s / html+list reporter always）；scripts test:e2e / test:e2e:ui / test:e2e:debug；tests/e2e/landing.spec.ts 访问 / → redirect 链 → 断言 title /KOLMatrix/ 通过。.gitignore 加 playwright-report/ / test-results/ / blob-report/ / playwright/.cache/。WSL 首次跑需 sudo npx playwright install-deps chromium 补 libnspr4/libnss3 等系统库（用户已装）。Next 16 dev 首次冷启动 ~3 分钟（deprecation warning: middleware→proxy 迁移留给后续批次，非本批次范围）。schema 字段名陷阱：audienceGeoDist/AgeDist/GenderDist（Dist 后缀）。下一棒 F004 MSW。",
+    "johnsong": "BI1 F001+F002+F003 done。F001 Vitest 4.1.4 + coverage-v8 + jsdom + testing-library；coverage.include 临时缩到 src/lib/utils.ts — F006 必须扩回 src/lib/** + src/components/**。F002 testcontainers 11.14 + tests/helpers/db.ts（admin=postgres 超级用户 + app=kolmatrix_app 走 RLS 双 Prisma client）。F003 Playwright 1.59 + chromium-headless-shell；playwright.config.ts（testDir tests/e2e/baseURL 3000 / viewport 1440x900 / screenshot+trace on failure / webServer npm run dev reuseExistingServer 本地 + timeout 180s / html+list reporter always）；scripts test:e2e / test:e2e:ui / test:e2e:debug；tests/e2e/landing.spec.ts 访问 / → redirect 链 → 断言 title /KOLMatrix/ 通过。.gitignore 加 playwright-report/ / test-results/ / blob-report/ / playwright/.cache/。WSL 首次跑需 sudo npx playwright install-deps chromium 补 libnspr4/libnss3 等系统库（用户已装）。Next 16 dev 首次冷启动 ~3 分钟（deprecation warning: middleware→proxy 迁移留给后续批次，非本批次范围）。schema 字段名陷阱：audienceGeoDist/AgeDist/GenderDist（Dist 后缀）。F004 MSW 2.13 装好；tests/mocks/handlers.ts 含 aigcgateway POST /v1/evaluate（默认 score 87 + breakdown）+ Resend POST /emails（默认 msg_mock_ 前缀 id）；MOCK_BASE_URLS 导出 aigcgateway.test / api.resend.com 作为测试契约 URL；tests/mocks/server.ts + browser.ts（setupWorker 预留给 F008/F009）；tests/setup.ts 接入 server.listen/resetHandlers/close，onUnhandledRequest=warn；tests/__example/msw-usage.test.ts 3 cases 示范默认 handler + once 覆盖 500 + 重置回默认。test:unit 10/10 PASS（F001 7 + F004 3），test:integration 3/3 + E2E 1/1 无回归。业务代码未来调 aigcgateway 时需 process.env.AIGCGATEWAY_BASE_URL = MOCK_BASE_URLS.aigcgateway 后 import。下一棒 F005 Fixtures。",
     "Reviewer": null
   },
   "features": []

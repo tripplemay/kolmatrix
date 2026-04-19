@@ -30,7 +30,7 @@
       "title": "MSW 配置 + aigcgateway / Resend mock 框架",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "安装 msw 2.x；tests/mocks/handlers.ts 含 aigcgateway POST /v1/evaluate 默认 mock score + Resend POST /emails 默认 mock message ID；tests/mocks/server.ts Node 端 setupServer + tests/mocks/browser.ts 浏览器端 setupWorker；tests/setup.ts 集成 server.listen/resetHandlers/close 生命周期；示例 test tests/__example/msw-usage.test.ts 展示 handler override 模拟 500 错误"
     },
     {
