@@ -5,7 +5,7 @@
 >
 > 目的：给开发者（johnsong）一个可在浏览器直接打开的视觉参考，避免每次都要登 Stitch 网页端。
 
-## 文件清单（7 张 P0 页面）
+## 文件清单（9 张页面）
 
 | 文件 | 来源 Stitch screen | 对应业务 | 批次 |
 |---|---|---|---|
@@ -16,6 +16,8 @@
 | `campaign-detail.html` + `.png` | `351a1ae59c7a4b7fa268b29acd49b759` | Campaign 详情看板 | B1 |
 | `kol-database.html` + `.png` | `c10b685955b74e4699992687fabc6647` | KOL 数据库管理 | B1 |
 | `email-center.html` + `.png` | `337c7721553644d580d892de0cd58524` | 邮件触达中心 | B3 |
+| `client-review.html` + `.png` | `00ea6b4cd4b342e8ad0cd04679b781e2` | 客户协同筛选（客户视角简化视图）| B3 |
+| `email-tracking.html` + `.png` | `46df7ce5b16c415ab2f61ded33efc374` | Email Tracking 详情（邮件线程追踪）| B4 |
 
 ## 使用方式
 
@@ -39,7 +41,12 @@ cd design-draft/stitch-references && python3 -m http.server 8088
 ### 3. 自动生成 vs 手动生成
 - **B0 三页（Dashboard / Discovery / Detail）** 由 MCP 自动生成 + edit_screens 对齐 shell
 - **V3 四页（Campaigns 列表 / Campaign 详情 / KOL Database / Email Center）** 用户手动在 Stitch 网页端粘贴 prompt 生成（自动生成有内容压缩问题）
+- **V4 两页（Client Review / Email Tracking）** 用户手动生成（`00ea6b4c` 4226px / `46df7ce5` 2048px），内容完整
 - **kol-detail.html v3** 也是手动重生成版本（v1 完整 → v2 edit_screens 压缩到 165 行 → v3 手动恢复到 632 行）
+
+### 3.1 V4 已知重复（待用户手动在 Stitch UI 隐藏/删除）
+- 短版 Client Review：screen `219e3547...`（MCP 自动生成，内容压缩）
+- 重复 Email Center：screen `d3f92c57...`（与 V3 的 `337c7721...` 重复）
 
 ### 4. App Shell 一致性
 所有页面共享 canonical App Shell（sidebar 8 项 + topbar 三段式），由设计系统 `designMd` 强制注入。开发实现时，shell 抽取为 `<AppShellLayout>` 单一组件复用，不在每页重写。

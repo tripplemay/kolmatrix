@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOLMatrix | Client Review</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed": "#251a00",
+                        "on-error": "#690005",
+                        "surface-container-highest": "#2d3449",
+                        "on-secondary-fixed-variant": "#6200bc",
+                        "primary-fixed": "#9cf0ff",
+                        "on-primary": "#00363d",
+                        "outline-variant": "#3b494c",
+                        "on-primary-container": "#00626e",
+                        "inverse-primary": "#006875",
+                        "primary": "#c3f5ff",
+                        "secondary-fixed-dim": "#d8b9ff",
+                        "secondary-container": "#6e06d0",
+                        "on-secondary-container": "#d5b5ff",
+                        "surface-container": "#171f33",
+                        "surface": "#0b1326",
+                        "error-container": "#93000a",
+                        "surface-container-low": "#131b2e",
+                        "primary-container": "#00e5ff",
+                        "on-secondary-fixed": "#290055",
+                        "on-surface": "#dbe2fd",
+                        "on-secondary": "#450086",
+                        "surface-variant": "#2d3449",
+                        "on-tertiary-container": "#6f5500",
+                        "on-background": "#dbe2fd",
+                        "tertiary-container": "#fec931",
+                        "secondary-fixed": "#eddcff",
+                        "surface-container-high": "#222a3e",
+                        "on-primary-fixed-variant": "#004f58",
+                        "on-primary-fixed": "#001f24",
+                        "on-error-container": "#ffdad6",
+                        "tertiary": "#ffeac0",
+                        "surface-container-lowest": "#060d20",
+                        "surface-dim": "#0b1326",
+                        "secondary": "#d8b9ff",
+                        "on-tertiary": "#3e2e00",
+                        "surface-tint": "#00daf3",
+                        "background": "#0b1326",
+                        "surface-bright": "#31394e",
+                        "primary-fixed-dim": "#00daf3",
+                        "inverse-surface": "#dbe2fd",
+                        "inverse-on-surface": "#283044",
+                        "tertiary-fixed": "#ffdf96",
+                        "outline": "#849396",
+                        "tertiary-fixed-dim": "#f3bf26",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "error": "#ffb4ab",
+                        "on-surface-variant": "#bac9cc"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "12px",
+                        "2xl": "16px",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b1326; color: #dbe2fd; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .bg-glass { background: rgba(19, 27, 46, 0.7); backdrop-filter: blur(24px); }
+        .primary-gradient { background: linear-gradient(135deg, #00daf3 0%, #c3f5ff 100%); }
+        .cyan-glow { box-shadow: 0 0 30px -10px rgba(0, 229, 255, 0.2); }
+        .cyan-glow-intense { box-shadow: 0 0 40px -5px rgba(0, 229, 255, 0.15); }
+    </style>
+</head>
+<body class="antialiased selection:bg-primary-container selection:text-on-primary">
+<!-- TOP HEADER -->
+<header class="h-20 bg-[#131b2e] flex items-center px-8 sticky top-0 z-[60] border-b border-white/5 shadow-xl">
+<div class="max-w-[1200px] w-full mx-auto flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl primary-gradient flex items-center justify-center shadow-lg shadow-cyan-500/20">
+<span class="text-[#0b1326] font-bold text-xl tracking-tighter">KM</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-[#bac9cc] bg-clip-text text-transparent">KOLMatrix</span>
+<span class="text-[9px] font-bold tracking-[0.2em] text-[#6B7280]">NEURAL VELOCITY</span>
+</div>
+</div>
+<div class="text-on-surface-variant text-xs font-medium tracking-widest uppercase opacity-60">
+                Powered by KOLMatrix
+            </div>
+</div>
+</header>
+<main class="max-w-[1200px] mx-auto px-6 pt-12 pb-32">
+<!-- CAMPAIGN HERO CARD -->
+<section class="max-w-[960px] mx-auto mb-16 relative">
+<div class="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 blur-3xl opacity-30 rounded-full"></div>
+<div class="relative bg-surface-container-low p-10 rounded-2xl border border-white/5 cyan-glow-intense overflow-hidden">
+<div class="absolute top-0 right-0 p-8 opacity-5">
+<span class="material-symbols-outlined text-9xl">rocket_launch</span>
+</div>
+<div class="mb-6 flex flex-col gap-1">
+<span class="text-primary-fixed text-xs font-bold tracking-[0.2em] uppercase">Candidate Review</span>
+<h1 class="text-4xl font-bold text-white tracking-tight">Honor of Kings — Global Launch</h1>
+<p class="text-on-surface-variant text-sm mt-2">
+                        Presented by <span class="text-white font-semibold">Sarah Chen</span> · Operator Team for <span class="text-white font-semibold">BrightSparks Marketing Inc.</span>
+</p>
+</div>
+<div class="grid grid-cols-3 gap-8 mb-8">
+<div class="flex flex-col">
+<span class="text-[#6B7280] text-[10px] font-bold uppercase tracking-wider">KOLs Proposed</span>
+<span class="text-white text-lg font-semibold">45 Candidates</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[#6B7280] text-[10px] font-bold uppercase tracking-wider">Deadline</span>
+<span class="text-white text-lg font-semibold">Apr 26 <span class="text-primary-fixed text-sm font-normal ml-2">(7 days left)</span></span>
+</div>
+<div class="flex flex-col">
+<span class="text-[#6B7280] text-[10px] font-bold uppercase tracking-wider">Estimated Review</span>
+<span class="text-white text-lg font-semibold">15-20 Minutes</span>
+</div>
+</div>
+<div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-5 flex items-start gap-4">
+<span class="material-symbols-outlined text-primary-fixed mt-0.5">info</span>
+<div class="text-sm text-on-surface leading-relaxed">
+                        Please review the selected talent pool for the upcoming Q2 Global Launch. Your feedback will be synced in real-time with the campaign management team. Use the sliders for sentiment scoring.
+                    </div>
+</div>
+</div>
+</section>
+<!-- STICKY PROGRESS -->
+<div class="sticky top-20 z-50 mb-8 max-w-[960px] mx-auto">
+<div class="bg-surface-container-high/90 backdrop-blur-2xl rounded-2xl p-4 px-6 border border-white/5 shadow-2xl flex items-center gap-6">
+<div class="flex flex-col flex-1 gap-2">
+<div class="flex justify-between items-center text-xs font-bold uppercase tracking-widest text-[#bac9cc]">
+<span>Reviewed: 12 of 45</span>
+<span class="text-primary-fixed">27% Complete</span>
+</div>
+<div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
+<div class="h-full primary-gradient w-[27%] rounded-full shadow-[0_0_12px_rgba(0,229,255,0.6)]"></div>
+</div>
+</div>
+<button class="px-6 py-2.5 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-all">
+                    Save Draft
+                </button>
+</div>
+</div>
+<!-- FILTER ROW -->
+<div class="flex justify-between items-center mb-8 border-b border-white/5 pb-6">
+<div class="flex gap-2">
+<button class="px-5 py-2 rounded-full bg-white/5 text-xs font-bold text-white border border-white/5 transition-all">All (45)</button>
+<button class="px-5 py-2 rounded-full text-xs font-bold text-on-surface-variant hover:text-white transition-all">Pending (33)</button>
+<button class="px-5 py-2 rounded-full bg-primary-container/10 text-xs font-bold text-primary-container border border-primary-container/20 transition-all">Approved (8)</button>
+<button class="px-5 py-2 rounded-full bg-secondary-container/10 text-xs font-bold text-secondary-container border border-secondary-container/20 transition-all">Maybe (3)</button>
+<button class="px-5 py-2 rounded-full text-xs font-bold text-[#6B7280] hover:text-white transition-all">Rejected (1)</button>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-[10px] uppercase font-bold text-[#6B7280] tracking-widest">Sort By</span>
+<div class="bg-surface-container-high px-4 py-2 rounded-lg text-sm text-white flex items-center gap-2 cursor-pointer border border-white/5">
+                    AI Score: High to Low
+                    <span class="material-symbols-outlined text-sm">expand_more</span>
+</div>
+</div>
+</div>
+<!-- KOL CARDS LIST -->
+<div class="space-y-8">
+<!-- CARD 1 -->
+<article class="bg-surface-container-low rounded-2xl border border-white/5 overflow-hidden flex cyan-glow-intense">
+<div class="flex-1 p-8">
+<div class="flex justify-between items-start mb-8">
+<div class="flex items-center gap-5">
+<div class="relative">
+<img class="w-20 h-20 rounded-2xl object-cover shadow-2xl border border-white/10" data-alt="portrait of a young charismatic male influencer with trendy glasses and modern haircut in studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZBWe5vkz4nJzmPruqa57Yvpf36QzG2P68LTeJpJmKkwajZxOo0iVA6og58Om4qPYRD5yfn5nCjCCFX--BqbhuNXRN7yEqyi36kPCNot6_bCc4K6BWGSMbZ3nGZMmBapMrBjNmpP0qFslbyumSulwOOk04dGuH9mkMhQuFNYfi3ZyPupjsa08jECRJ5lnKYS61BE_DQABXmS9u0mNLuQXP0GmS5gcTIfWz4PXMNZZFNqoXzpQqyWkBgIMKS1GJehMHThiA8I_RxWk"/>
+<div class="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-red-600 flex items-center justify-center border-2 border-[#131b2e]">
+<span class="material-symbols-outlined text-white text-base">video_library</span>
+</div>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<h3 class="text-xl font-bold text-white tracking-tight">Kaelen Vance</h3>
+<img alt="USA Flag" class="h-3 w-5 opacity-80 rounded-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQY0QrySe2yyJpmnz20Usz3MeifewtAK0_tF4E6_CnDlE7akrO1aZKp_HzEiug9YCGFr04iEboUoFVZgrSGlwg7WVuNfvOliZHbPmkvHD202AVJB_t36nYKpBSnQ4nyXPleGElGntq-e1-eMolG6M2O-lPG8p-lR-k-jFBZtiWeWZS-RA7g1KjDeOVn8eFWmHhX8GxL24EFAhzHaak8Yl4guqdYex91iQKp6csF8jbt1LJBCNz4VR4LzLnSP8AoJBbmNuqzF9czGQ"/>
+</div>
+<p class="text-on-surface-variant text-sm font-medium mb-3">@kaelen_vance • 1.2M Followers</p>
+<a class="text-primary-fixed text-xs font-bold uppercase tracking-wider flex items-center gap-1 hover:underline" href="#">
+                                    View Full Profile <span class="material-symbols-outlined text-sm">open_in_new</span>
+</a>
+</div>
+</div>
+<div class="px-4 py-1.5 rounded-lg border border-primary-container/30 bg-primary-container/5 text-[10px] font-bold uppercase tracking-widest text-primary-container">
+                            Pending Review
+                        </div>
+</div>
+<div class="grid grid-cols-12 gap-8">
+<div class="col-span-4 flex flex-col items-center justify-center bg-white/5 rounded-2xl py-6 border border-white/5">
+<div class="relative w-24 h-24 flex items-center justify-center">
+<svg class="absolute inset-0 w-full h-full -rotate-90">
+<circle class="text-white/5" cx="48" cy="48" fill="transparent" r="44" stroke="currentColor" stroke-width="4"></circle>
+<circle class="text-primary-container" cx="48" cy="48" fill="transparent" r="44" stroke="currentColor" stroke-dasharray="276" stroke-dashoffset="16" stroke-width="6"></circle>
+</svg>
+<span class="text-3xl font-extrabold text-white">94</span>
+</div>
+<span class="mt-4 text-[10px] font-bold text-primary-fixed tracking-[0.2em] uppercase">Neural Score</span>
+</div>
+<div class="col-span-8 flex flex-col justify-between">
+<div class="space-y-4">
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 rounded-full bg-white/5 text-[10px] font-bold text-on-surface-variant uppercase">MOBA Pro</span>
+<span class="px-3 py-1 rounded-full bg-white/5 text-[10px] font-bold text-on-surface-variant uppercase">Tutorial Specialist</span>
+<span class="px-3 py-1 rounded-full bg-white/5 text-[10px] font-bold text-on-surface-variant uppercase">High Engagement</span>
+</div>
+<div class="grid grid-cols-3 gap-4 border-t border-white/5 pt-4">
+<div class="flex flex-col">
+<span class="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Avg Views</span>
+<span class="text-white font-semibold">245k</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Eng. Rate</span>
+<span class="text-white font-semibold">8.2%</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Audience</span>
+<span class="text-white font-semibold">Gamer/Tech</span>
+</div>
+</div>
+</div>
+<div class="mt-4 p-4 bg-primary-container/5 rounded-xl border-l-2 border-primary-container italic text-sm text-on-surface-variant leading-relaxed">
+                                "Exceptional match for Honor of Kings tutorial segments. Historically high retention on MOBA content with core competitive audience."
+                            </div>
+</div>
+</div>
+</div>
+<!-- ACTIONS PANEL -->
+<aside class="w-[360px] bg-white/5 border-l border-white/5 p-8 flex flex-col">
+<div class="space-y-3 mb-6">
+<button class="w-full py-4 rounded-xl primary-gradient text-[#0b1326] font-extrabold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/10 hover:scale-[1.02] active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined font-bold">check_circle</span> Approve
+                        </button>
+<button class="w-full py-4 rounded-xl border border-secondary-container bg-secondary-container/10 text-secondary-container font-extrabold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-secondary-container/20 transition-all">
+<span class="material-symbols-outlined font-bold">priority_high</span> Maybe
+                        </button>
+<button class="w-full py-4 rounded-xl border border-white/10 text-on-surface-variant font-extrabold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400 transition-all">
+<span class="material-symbols-outlined font-bold">close</span> Reject
+                        </button>
+</div>
+<div class="flex flex-col gap-4">
+<div>
+<div class="flex justify-between mb-2">
+<label class="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">Priority Rating</label>
+<span class="text-xs font-bold text-primary-fixed">8/10</span>
+</div>
+<input class="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary-fixed" max="10" min="1" step="1" type="range"/>
+</div>
+<textarea class="w-full bg-[#0b1326] border border-white/10 rounded-xl p-4 text-sm text-white focus:ring-1 focus:ring-primary-container focus:border-primary-container transition-all resize-none h-24" placeholder="Add private feedback for the team..."></textarea>
+</div>
+</aside>
+</article>
+<!-- CARD 2 -->
+<article class="bg-surface-container-low rounded-2xl border border-white/5 overflow-hidden flex opacity-90 grayscale-[0.3]">
+<div class="flex-1 p-8">
+<div class="flex justify-between items-start mb-8">
+<div class="flex items-center gap-5">
+<div class="relative">
+<img class="w-20 h-20 rounded-2xl object-cover shadow-2xl border border-white/10" data-alt="close-up of a stylish woman with a creative professional look, soft natural lighting and minimalist background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2h07hLN9di-Rb8ZxWQXhBbHp0l9yWH1xsdb_lbqIgxfmwRvXsojq2Kah_OeZ-cjM2vtru6Hl9my_FIlSLpLaASmTi5wE-0hnLcbH8imD6aokZMuQB9FTp0H_nU432S1zq7hkSWZeMlF0hCuzN3b-heMqI0gTMOB538heus3-Dw6WBEb03j-UN2t8NlndqpVy-KZF73gltV7tqG3XTcfDkOqRfizgX_yBO65bEC8l6csBGfdskla0VhK84K_lgVKl1KXhN9_SJBLs"/>
+<div class="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center border-2 border-[#131b2e]">
+<span class="material-symbols-outlined text-white text-base">person</span>
+</div>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<h3 class="text-xl font-bold text-white tracking-tight">Emi Hashimoto</h3>
+<img alt="Japan Flag" class="h-3 w-5 opacity-80 rounded-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALAS4PO2IFfZIffm3CvMJRXO6FPt076roORWnvTp02WWKT9s9zrPcjA5F8UIX5dCSZv60jNHTFB8U4fcSLTBKoqB0rgkmbGysGCtbDN9-Znzp7YPbDu4AW8jho_Xd3uCwOZHCD7VVoa8Y-qkEMiMwxjZsOgPHitF1TE4UOOXJSuXkfvKeF9Zv4iIY9u134tc2ioLc3PLOZT7G5aXgKvhE6uRK4LUV99cunLXMxwp6zfkyDVId441QMujKUpZ1xS42015jTQsz3Wmo"/>
+</div>
+<p class="text-on-surface-variant text-sm font-medium mb-3">@emi_gg • 840K Followers</p>
+<a class="text-primary-fixed text-xs font-bold uppercase tracking-wider flex items-center gap-1 hover:underline" href="#">
+                                    View Full Profile <span class="material-symbols-outlined text-sm">open_in_new</span>
+</a>
+</div>
+</div>
+<div class="px-4 py-1.5 rounded-lg border border-secondary-container bg-secondary-container/10 text-[10px] font-bold uppercase tracking-widest text-secondary-container">
+                            Marked as Maybe
+                        </div>
+</div>
+<div class="grid grid-cols-12 gap-8">
+<div class="col-span-4 flex flex-col items-center justify-center bg-white/5 rounded-2xl py-6 border border-white/5">
+<div class="relative w-24 h-24 flex items-center justify-center">
+<svg class="absolute inset-0 w-full h-full -rotate-90">
+<circle class="text-white/5" cx="48" cy="48" fill="transparent" r="44" stroke="currentColor" stroke-width="4"></circle>
+<circle class="text-secondary-container" cx="48" cy="48" fill="transparent" r="44" stroke="currentColor" stroke-dasharray="276" stroke-dashoffset="64" stroke-width="6"></circle>
+</svg>
+<span class="text-3xl font-extrabold text-white">78</span>
+</div>
+<span class="mt-4 text-[10px] font-bold text-secondary-fixed tracking-[0.2em] uppercase">Neural Score</span>
+</div>
+<div class="col-span-8 flex flex-col justify-between">
+<div class="space-y-4">
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 rounded-full bg-white/5 text-[10px] font-bold text-on-surface-variant uppercase">Variety Gamer</span>
+<span class="px-3 py-1 rounded-full bg-white/5 text-[10px] font-bold text-on-surface-variant uppercase">Lifestyle</span>
+<span class="px-3 py-1 rounded-full bg-white/5 text-[10px] font-bold text-on-surface-variant uppercase">JP Core</span>
+</div>
+<div class="grid grid-cols-3 gap-4 border-t border-white/5 pt-4">
+<div class="flex flex-col">
+<span class="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Avg Views</span>
+<span class="text-white font-semibold">112k</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Eng. Rate</span>
+<span class="text-white font-semibold">5.4%</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Audience</span>
+<span class="text-white font-semibold">Lifestyle</span>
+</div>
+</div>
+</div>
+<div class="mt-4 p-4 bg-white/5 rounded-xl border-l-2 border-secondary-container italic text-sm text-on-surface-variant leading-relaxed">
+                                "Strong aesthetic alignment for brand lifestyle integration, but lower direct MOBA gaming conversion scores."
+                            </div>
+</div>
+</div>
+</div>
+<aside class="w-[360px] bg-white/5 border-l border-white/5 p-8 flex flex-col">
+<div class="space-y-3 mb-6">
+<button class="w-full py-4 rounded-xl border border-white/10 text-on-surface-variant font-extrabold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:border-primary-container hover:text-primary-container transition-all">
+<span class="material-symbols-outlined font-bold">check_circle</span> Approve
+                        </button>
+<button class="w-full py-4 rounded-xl bg-secondary-container text-white font-extrabold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20">
+<span class="material-symbols-outlined font-bold" style="font-variation-settings: 'FILL' 1;">priority_high</span> Maybe
+                        </button>
+<button class="w-full py-4 rounded-xl border border-white/10 text-on-surface-variant font-extrabold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400 transition-all">
+<span class="material-symbols-outlined font-bold">close</span> Reject
+                        </button>
+</div>
+<div class="flex flex-col gap-4">
+<div>
+<div class="flex justify-between mb-2">
+<label class="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">Priority Rating</label>
+<span class="text-xs font-bold text-secondary-fixed">5/10</span>
+</div>
+<input class="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-secondary-container" max="10" min="1" step="1" type="range" value="5"/>
+</div>
+<textarea class="w-full bg-[#0b1326] border border-white/10 rounded-xl p-4 text-sm text-white focus:ring-1 focus:ring-secondary-container focus:border-secondary-container transition-all resize-none h-24" placeholder="Add private feedback...">I'm concerned about the lack of MOBA content on her feed recently.</textarea>
+</div>
+</aside>
+</article>
+<!-- CARD 3 (Shorter variation for list demo) -->
+<article class="bg-surface-container-low rounded-2xl border border-white/5 overflow-hidden flex cyan-glow opacity-80">
+<div class="flex-1 p-8">
+<div class="flex justify-between items-start mb-8">
+<div class="flex items-center gap-5">
+<div class="relative">
+<img class="w-20 h-20 rounded-2xl object-cover shadow-2xl border border-white/10" data-alt="professional male streamer in a high-tech gaming setup with neon ambient lights, sharp cinematic portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD55xSfNrvUcz3BjIXhM2mgYfNq8p38DfMTanYY76_0ZHyRztJ9yi0mmJreVIlYfQzYPrS00y7cLlrUeZUXEmkaCIFH8dJsaitIroV6jPpsGKKHb9m8D1ndcayehEGGnpJxIsCwrxgyuQsIcnwZToac0pn5VQQ7G6CqIpefQAhYX-pv5S0MAiLZGCtPY-Az3VpdX10WXa3AJcqXATc2FWDbtw38bxmDvAISBohUI0TFr-Lmr_aFuf2miwxdx7t12NApGTdwvEJ4n0Y"/>
+<div class="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center border-2 border-[#131b2e]">
+<span class="material-symbols-outlined text-white text-base">bolt</span>
+</div>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<h3 class="text-xl font-bold text-white tracking-tight">Tyler 'T-Bolt' Cross</h3>
+<img alt="Canada Flag" class="h-3 w-5 opacity-80 rounded-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRtJg8CYrZ5BmN6F8pgJaHdm5umDLkOMZ2_Uz_DUKwHGEzqHYvNx80vy2aFFFRrV1IGfmynwGEejS-asqzZHLnL03ig4Rs35jAC0ZGeasbebjBZcZpYtjJDFZKzPgc9j3-pTr7WB8Lje3VQwj1yrJsVpjVNTWDVEPaEIsRpJHYyx-ph_TX_gt6_iXl08D8oSKpNZz5bRufa86uC43VthHAScCnzOM_a3jkNCl1IOfQg5LY4nA0xx3k3YxRMyoqnQd9owi87NisWu0"/>
+</div>
+<p class="text-on-surface-variant text-sm font-medium mb-3">@tbolt_live • 2.4M Followers</p>
+<a class="text-primary-fixed text-xs font-bold uppercase tracking-wider flex items-center gap-1 hover:underline" href="#">
+                                    View Full Profile <span class="material-symbols-outlined text-sm">open_in_new</span>
+</a>
+</div>
+</div>
+<div class="px-4 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                            Pending Review
+                        </div>
+</div>
+<!-- Detailed scores hidden for shorter view in this prototype -->
+<div class="p-6 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-between">
+<div class="flex gap-12">
+<div class="flex flex-col gap-1">
+<span class="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">AI Match</span>
+<span class="text-white text-xl font-bold">88%</span>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest">Engagement</span>
+<span class="text-white text-xl font-bold">12.4%</span>
+</div>
+</div>
+<div class="text-sm text-on-surface-variant max-w-[400px] text-right italic">
+                            "High performance on sponsored content. Consistently beats KPIs for game launch promotions."
+                        </div>
+</div>
+</div>
+<aside class="w-[360px] bg-white/5 border-l border-white/5 p-8 flex flex-col justify-center gap-3">
+<div class="grid grid-cols-3 gap-2">
+<button class="flex flex-col items-center gap-2 py-4 rounded-xl border border-white/10 hover:border-primary-container hover:bg-primary-container/10 transition-all group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary-container">check_circle</span>
+<span class="text-[9px] font-extrabold uppercase tracking-widest text-[#6B7280] group-hover:text-primary-container">Approve</span>
+</button>
+<button class="flex flex-col items-center gap-2 py-4 rounded-xl border border-white/10 hover:border-secondary-container hover:bg-secondary-container/10 transition-all group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary-container">priority_high</span>
+<span class="text-[9px] font-extrabold uppercase tracking-widest text-[#6B7280] group-hover:text-secondary-container">Maybe</span>
+</button>
+<button class="flex flex-col items-center gap-2 py-4 rounded-xl border border-white/10 hover:border-red-500 hover:bg-red-500/10 transition-all group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-red-400">close</span>
+<span class="text-[9px] font-extrabold uppercase tracking-widest text-[#6B7280] group-hover:text-red-400">Reject</span>
+</button>
+</div>
+</aside>
+</article>
+</div>
+</main>
+<!-- STICKY FOOTER -->
+<footer class="fixed bottom-0 left-0 w-full z-[100]">
+<div class="bg-glass border-t border-white/5 px-12 py-6 flex items-center justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+<div class="flex flex-col">
+<span class="text-white font-bold text-base tracking-tight">Q2 Global Launch Review</span>
+<span class="text-[10px] font-medium text-on-surface-variant uppercase tracking-widest">Collaborative Filter Active</span>
+</div>
+<div class="flex items-center gap-2 px-6 py-2 rounded-full bg-red-500/10 border border-red-500/20">
+<span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+<span class="text-xs font-bold text-red-400 uppercase tracking-widest">33 KOLs Pending Approval</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-8 py-3 rounded-xl border border-white/10 text-xs font-extrabold uppercase tracking-widest text-on-surface hover:bg-white/5 transition-all">
+                    Save Progress
+                </button>
+<button class="px-8 py-3 rounded-xl primary-gradient text-[#0b1326] text-xs font-extrabold uppercase tracking-widest shadow-lg shadow-cyan-500/20 hover:scale-105 transition-all">
+                    Submit Final Review
+                </button>
+</div>
+</div>
+</footer>
+<!-- FLOATING HELP -->
+<button class="fixed bottom-28 right-8 w-14 h-14 rounded-full bg-surface-container-high border border-white/10 flex items-center justify-center text-white shadow-2xl hover:bg-surface-bright transition-all z-50 group">
+<span class="material-symbols-outlined">help</span>
+<div class="absolute right-full mr-4 bg-surface-container-highest px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity border border-white/10">
+            Guide &amp; Support
+        </div>
+</button>
+</body></html>

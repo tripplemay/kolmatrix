@@ -27,9 +27,10 @@ F009 视觉回归基线 → F010 CI 4 新 jobs
 ## 后续顺序（已锁定 Option α）
 BI1 → BI2 部署自动化 → BI3 域名 TLS + Staging → B1 KOL Database → B2+
 
-## 设计稿状态（7 张 P0 就绪）
-Dashboard / KOL Discovery / KOL Detail / Campaigns 列表 / Campaign 详情 / KOL Database / Email Center
-design-draft/stitch-references/ HTML + PNG 全部入库
+## 设计稿状态（9 张就绪：V1-V4）
+V1-V3：Dashboard / KOL Discovery / KOL Detail / Campaigns 列表 / Campaign 详情 / KOL Database / Email Center
+V4：Client Review（客户协同筛选，B3）+ Email Tracking 详情（B4）
+产品知识库推迟至 V5；design-draft/stitch-references/ HTML + PNG 全部入库
 
 ## 待团队决策（不阻塞 BI1-BI3）
 - **KOL Discovery 产品定义** —— 澄清文档 `docs/product/kol-discovery-clarification.md` 23 题待团队会议决定（B5 前必须完成；决策后触发 B1/B3/B5 spec 调整 + ADR-011 AI Match）
