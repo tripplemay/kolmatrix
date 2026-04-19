@@ -61,9 +61,10 @@
 | Staging 子域 | `staging.kol.guangai.ai`（同 VM 不同端口） | 成本最低；DNS 子域走同 IP |
 | Staging DB | 同 PG 实例 + database `kolmatrix_staging` | 隔离 + 共享底座 |
 | Staging PM2 | 独立进程 `kolmatrix-staging`，端口 3002 | 隔离运行；reload 不影响 prod |
-| 品牌 / 发件域 | `kolquest.com`（已注册，2026-04-19） | 主站仍是 kol.guangai.ai；kolquest.com 做 301 redirect + 根域直发邮件（`marketer@kolquest.com`） |
+| 品牌 / 发件域 | `kolquest.com`（已注册并配置，2026-04-19） | 主站仍是 kol.guangai.ai；kolquest.com 做 301 redirect + `send` 子域发件 |
 | 主站是否迁移 | ❌ 暂不迁（选项 B） | B1-B5 业务期间保持 kol.guangai.ai；未来业务稳定后再评估迁移 |
-| 发件结构 | 主域直接发件（选项 C：`marketer@kolquest.com`） | 最专业视觉；kolquest.com 无 web 主站流量，reputation 风险可控 |
+| 发件结构 | **`send` 子域发件**（`marketer@send.kolquest.com`） | Resend 强制要求（AWS SES 架构），实际比根域更好—双重 reputation 隔离 |
+| DNS 管理 | Cloudflare（kolquest.com zone） | 已通过 API 配完 6 条记录（2026-04-19 11:01 UTC） |
 | 续期告警 | cron 跑 `openssl x509 -checkend` + `mail` 命令 | 简单；邮件给用户 Gmail |
 | Reviewer 验证 | Qualys SSL Labs A+ 评级 | 业界标准 |
 
@@ -241,26 +242,34 @@
 - cron 正确加载（`crontab -l` 显示）
 - 邮件主题清晰，含域名 + 到期日期
 
-### F006 — kolquest.com 品牌域配置（301 redirect + 根域发件 DNS）
+### F006 — kolquest.com 品牌域配置（301 redirect + Nginx + TLS）
 
-**背景：** `kolquest.com` 已注册（2026-04-19）。不做主站（暂留 `kol.guangai.ai`），只做两件事：
-1. Web 访问 → 301 redirect 到 `kol.guangai.ai`
-2. 作为发件域（`marketer@kolquest.com`）配置 SPF/DKIM/DMARC
+**背景：** `kolquest.com` 已注册（2026-04-19，Cloudflare），DNS 记录已通过 Cloudflare API 一次性配完（2026-04-19 11:01 UTC）。本 feature 剩下只做 2 件事：
+1. Web 访问 → 301 redirect 到 `kol.guangai.ai`（Nginx server block）
+2. Let's Encrypt TLS 证书申请（HTTPS）
+
+Resend 已准备好 DNS + Domain 验证，B4 直接接入。
 
 **实现：**
 
-**步骤 1：DNS 记录（用户在域名注册商面板操作）**
+**步骤 1 ✅ 已完成：DNS 记录（Cloudflare，2026-04-19）**
 
-```
-kolquest.com            A     → 34.180.93.185    # 指向 Tokyo VM 做 redirect
-www.kolquest.com        CNAME → kolquest.com
+6 条记录通过 Cloudflare API 配置：
 
-# Email (SPF/DMARC, DKIM 在 B4 接 Resend 时补)
-kolquest.com            TXT   → "v=spf1 include:_spf.resend.com ~all"
-_dmarc.kolquest.com     TXT   → "v=DMARC1; p=quarantine; rua=mailto:dmarc@kolquest.com"
+| Type | Name | Content | Status |
+|---|---|---|---|
+| A | kolquest.com | 34.180.93.185 | ✅ DNS-only |
+| CNAME | www.kolquest.com | kolquest.com | ✅ DNS-only |
+| MX | send.kolquest.com | feedback-smtp.ap-northeast-1.amazonses.com (pri 10) | ✅ Resend |
+| TXT | send.kolquest.com | v=spf1 include:amazonses.com ~all | ✅ SPF |
+| TXT | resend._domainkey.kolquest.com | p=MIGf...DQAB | ✅ DKIM |
+| TXT | _dmarc.kolquest.com | v=DMARC1; p=none; | ✅ DMARC 监听模式 |
 
-# DKIM CNAME: B4 Resend 接入时补
-# resend._domainkey.kolquest.com  CNAME → {Resend 提供的具体值}
+验证方式：用 DoH 查询全部命中（本地 ISP 有 DNS 劫持，dig 会返回假 `198.18.x.x`）：
+
+```bash
+curl -s "https://1.1.1.1/dns-query?name=kolquest.com&type=A" -H "accept: application/dns-json"
+# 应返回 "data": "34.180.93.185"
 ```
 
 **步骤 2：Nginx server block 做 301 redirect（入库 `infrastructure/nginx/kolquest.com.conf`）**

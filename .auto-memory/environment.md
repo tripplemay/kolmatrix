@@ -8,10 +8,15 @@ type: reference
 
 - 主应用控制台：`https://kol.guangai.ai`
 - 主应用 API：`https://kol.guangai.ai/api/v1/`
-- **品牌域（2026-04-19 注册）：** `kolquest.com`
-  - 用途：301 redirect 到主站 + 根域发件（`marketer@kolquest.com`）
-  - 主站暂不迁移（BI3 B 方案）；未来业务稳定后再评估迁移
-  - DNS + Nginx 配置见 BI3 F006
+- **品牌域（2026-04-19 注册 + DNS 配完）：** `kolquest.com`
+  - DNS 管理：Cloudflare zone `kolquest.com`（Free plan）
+  - 用途：301 redirect 到主站 + `send` 子域发件
+  - 发件地址：`marketer@send.kolquest.com`（Resend 默认 AWS SES 架构）
+  - Resend region: `ap-northeast-1`（Tokyo，与 KOLMatrix VM 同区）
+  - 6 条 DNS 记录已通过 Cloudflare API 配完（2026-04-19 11:01 UTC）
+  - Resend Dashboard 已含 kolquest.com domain（B4 接入时直接用）
+  - Nginx 301 redirect + Let's Encrypt 证书：BI3 F006 落地
+  - 主站暂不迁移（ADR-010 B 方案）；未来业务稳定后再评估
 - Stitch 视觉基调基准项目（Neural Velocity，已定稿 2026-04-18）：`9338165817879839093`
   - URL: https://stitch.withgoogle.com/projects/9338165817879839093
   - 设计系统 Asset: `18406648320972948834`（已含 canonical App Shell 强制规范）
