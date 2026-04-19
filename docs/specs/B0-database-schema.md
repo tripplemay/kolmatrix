@@ -62,8 +62,12 @@ RLS：
 ```sql
 ALTER TABLE "user" ENABLE ROW LEVEL SECURITY;
 CREATE POLICY user_tenant_isolation ON "user"
-  USING (tenant_id = current_setting('app.tenant_id', true)::uuid
+  USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid
          OR current_setting('app.is_platform_admin', true)::bool = true);
+-- NULLIF 兜底：current_setting 在 session 触达过该 GUC 后会返回 '' 而非
+-- NULL，直接 ::uuid 会 raise "invalid input syntax for type uuid: \"\""。
+-- NULLIF('', '') → NULL，使 `tenant_id = NULL::uuid` 为 NULL（默认拒），
+-- 修复 2026-04-19 F008 marketer E2E flaky 的根因（见 BI1-f008-rls-nullif-fix.md）。
 ```
 
 ### 3.3 NextAuth 三个辅助表
@@ -439,25 +443,28 @@ ALTER TABLE "email_template" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "email_log"     ENABLE ROW LEVEL SECURITY;
 
 -- 通用 tenant_id 隔离 policy（应用于所有多租户表）
+-- NULLIF 兜底：current_setting 在 session 触达过该 GUC 后会返回 '' 而非 NULL，
+-- 直接 ::uuid 会 raise "invalid input syntax"。NULLIF('', '') → NULL，
+-- 使 `tenant_id = NULL` 为 NULL（默认拒）。修复 F008 flaky 根因。
 CREATE POLICY tenant_isolation ON "kol"
-  USING (tenant_id = current_setting('app.tenant_id', true)::uuid);
+  USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
 
 CREATE POLICY tenant_isolation ON "campaign"
-  USING (tenant_id = current_setting('app.tenant_id', true)::uuid);
+  USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
 
 CREATE POLICY tenant_isolation ON "kol_campaign"
-  USING (tenant_id = current_setting('app.tenant_id', true)::uuid);
+  USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
 
 CREATE POLICY tenant_isolation ON "email_template"
-  USING (tenant_id = current_setting('app.tenant_id', true)::uuid);
+  USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
 
 CREATE POLICY tenant_isolation ON "email_log"
-  USING (tenant_id = current_setting('app.tenant_id', true)::uuid);
+  USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
 
 -- user 表特殊：platform_admin 全可见
 CREATE POLICY user_isolation ON "user"
   USING (
-    tenant_id = current_setting('app.tenant_id', true)::uuid
+    tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid
     OR current_setting('app.is_platform_admin', true)::bool = true
   );
 

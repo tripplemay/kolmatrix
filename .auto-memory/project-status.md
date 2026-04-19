@@ -4,9 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BI1-test-infrastructure** — 10/10 features building 完成，status=verifying，等 Reviewer
-  - 117 tests 全绿（83 unit + 28 integration + 6 E2E），lines 96.36%
-  - CI 7/7 jobs green；tests/screenshots/baseline/dashboard.png 入库
+- **BI1-test-infrastructure** — status=fixing（Reviewer round 1 判 F002/F007/F008/F010 有问题）
+  - F008 裁决已下发 `#方案:A`（NULLIF 兜底），用户已书面确认，等 Generator 执行
+  - F010 acceptance 偏离裁决请求待 Planner 回复（用户未决）
+  - F002/F007 等 Generator 按 Reviewer feedback 修
 - **B0-foundation** ✅ 已完成签收（10/10 + 12 PASS 0 FAIL，Round 3 reverify 通过）
 
 ## 角色分配（BI1，沿用 B0）

@@ -200,3 +200,40 @@ CREATE POLICY tenant_isolation ON "kol"
 - `tests/integration/rls-isolation.test.ts` 最后一条 — 伪装该 bug 的 try/catch
 - `docs/test-reports/BI1-test-infrastructure-verifying-2026-04-19.md` P0-2 — Reviewer 首次记录该错误
 - `docs/test-reports/BI1-test-infrastructure-verifying-no-proxy-rerun-2026-04-19.md` §2 — Reviewer 无代理重判仍 FAIL
+
+---
+
+## 7. Planner 裁决（2026-04-19）
+
+**仲裁：** `#方案:A`（NULLIF 兜底，所有 6 条 RLS 策略）
+
+**用户书面确认（铁律 §9）：** ✅ 已获 —— 用户消息 "F008 方案 A"（2026-04-19）
+
+### 7.1 采纳理由
+- 根因分析清晰：`current_setting(..., true)` 三态 + 空串 cast → 生产期语义不稳
+- 方案 A 是最小面积、语义正确的修复（默认拒稳定 / tenant 匹配稳定 / admin 绕过稳定）
+- 备选 B/C/D 都是遮蔽症状或引入魔数，技术债更大
+- Generator 已提供完整触发链证据（§2.1-2.6）与影响面评估（§3.3），裁决信息充分
+
+### 7.2 确认事项（对齐 Generator §5 问询）
+
+1. **Migration 命名：** 采纳 `prisma/migrations/20260420000000_rls_nullif_empty_tenant/migration.sql`
+2. **B0-database-schema.md 同步：** Planner 在本批次裁决 commit 中已同步更新 3 处 RLS 示例（§3.2 + §5 两处），Generator 无需重复改
+3. **执行许可：** 已获用户书面确认，Generator 可立即执行
+
+### 7.3 Generator 执行清单（按 §4 照抄）
+
+1. 新 migration `20260420000000_rls_nullif_empty_tenant/migration.sql` —— 6 条策略 DROP + CREATE，每条 USING 改用 `NULLIF(current_setting('app.tenant_id', true), '')::uuid`
+2. Rollback 段（down.sql 或 SQL 注释）保留可回滚路径
+3. `tests/integration/rls-isolation.test.ts` 最后一条去掉 try/catch 补丁，改回 `expect(rows).toHaveLength(0)` 稳定断言
+4. `npm run test:integration` 全绿
+5. Playwright 重跑 `tests/e2e/marketer-dashboard.spec.ts`，连续 5 次 `workers=1` 全绿（证明 flaky 消除）
+6. Commit：`fix(BI1-F008): RLS policy nullif empty-string tenant_id GUC`
+
+### 7.4 状态流转
+- 当前 status: `fixing`（BI1 sprint）
+- F008 修复推送后 Generator 继续处理其余 fixing 项（F002/F007 + F010 待单独裁决）
+- 全部修复完成后 status → `reverifying`，Reviewer 复验
+
+### 7.5 复盘（framework proposal 队列）
+`framework/proposed-learnings.md` 建议追加：RLS 策略写作 template 内置 `NULLIF(..., '')` 兜底，避免未来再踩此坑。done 阶段统一处理。
