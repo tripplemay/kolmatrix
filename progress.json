@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "落地测试基建（Vitest + Testcontainers + Playwright + MSW + Faker），覆盖 B0 核心代码 80%+，CI 集成 4 个新 jobs，为后续业务批次提供可重复的自动化验证能力",
   "total_features": 10,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
   "current_sprint": "BI1-test-infrastructure",
-  "last_updated": "2026-04-19",
+  "last_updated": "2026-04-19T15:45+0900",
   "reference_docs": [
     "docs/specs/BI1-test-infrastructure-spec.md",
     "docs/dev/testing.md",
@@ -32,7 +32,7 @@
   "generator_handoff": null,
   "session_notes": {
     "Kimi": "BI1 测试基建 planning 完成（Option α infra-first 序列第二棒）。10 features 按依赖顺序强制执行: F001 Vitest → F002 Testcontainers → F003 Playwright → F004 MSW → F005 Fixtures → F006 B0 unit tests → F007 B0 RLS+Auth integration → F008 marketer E2E → F009 视觉回归基线 → F010 CI 4 新 jobs。视觉基线= design-draft/stitch-references/dashboard.png。F007/F008 相当于'补打 B0 自动化覆盖'(B0 §7 严格手工验收的自动化版本); 测试跑不通时区分 BI1 测试错 vs B0 代码错(起 B0-hotfix 独立批次)。pre-impl 审计 → Planner 裁决模式继续适用, johnsong 如遇 spec 歧义先发审计请求。B0 sprint 历史见 commit 0ddd72e 之前所有 B0-* commits。",
-    "johnsong": null,
+    "johnsong": "BI1 F001 done — Vitest 4.1.4 + coverage-v8 + @vitest/ui + jsdom + testing-library 装好；vitest.config.ts 已配 jsdom/setupFiles/coverage 80% 阈值；scripts test / test:unit / test:watch / test:coverage / test:ui 就位；src/lib/__tests__/utils.test.ts 7 cases 全 PASS；test:coverage 100%/100%/100% PASS；test:ui 开 http://localhost:51204/__vitest__/ HTTP 200。为保 F001 阶段 80% 阈值可过，coverage.include 暂缩到 src/lib/utils.ts 单文件 + 代码注释声明 F006 扩 src/lib/** + src/components/** —— 注意 F006 接手时务必把 include 扩回去否则阈值失效。prisma postinstall 不受影响（npm run 时只触发 vitest）。下一棒 F002 Testcontainers PG。",
     "Reviewer": null
   },
   "features": []

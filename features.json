@@ -6,7 +6,7 @@
       "title": "Vitest 安装配置 + 首个 unit test 跑通",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "安装 vitest + @vitest/coverage-v8 + @vitest/ui + jsdom + @testing-library/react + @testing-library/jest-dom + @testing-library/user-event；vitest.config.ts 配置 jsdom + setupFiles + coverage 80% 阈值；tests/setup.ts 含 @testing-library/jest-dom matchers；package.json 加 scripts: test / test:unit / test:watch / test:coverage / test:ui；占位 unit test src/lib/__tests__/utils.test.ts 测 cn() 函数；npm run test:unit 跑通占位 + npm run test:coverage 输出报告到 coverage/ + npm run test:ui 起 Vitest UI"
     },
     {
