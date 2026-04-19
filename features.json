@@ -6,7 +6,7 @@
       "title": "/api/health 端点（DB + Redis + version check）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "src/app/api/health/route.ts 返回 JSON {status,version,git_sha,uptime_seconds,checks:{database,redis},timestamp}；DB check = Prisma SELECT 1；Redis check = 预留 stub（B2 启用 BullMQ 后才真实 PING）；middleware.ts 对 /api/health 跳过 auth；任何 check 失败返回 HTTP 503 + status:unhealthy；response time < 200ms；curl localhost:3000/api/health 本地返回 200；停掉 PG 后返回 503"
     },
     {
