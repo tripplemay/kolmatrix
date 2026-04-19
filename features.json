@@ -1,85 +1,85 @@
 {
-  "sprint": "B0-foundation",
+  "sprint": "BI1-test-infrastructure",
   "features": [
     {
       "id": "F001",
-      "title": "Next.js 16 项目脚手架（TypeScript / App Router / Tailwind v4 / 关键依赖）",
+      "title": "Vitest 安装配置 + 首个 unit test 跑通",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "npx create-next-app@latest 自然得到 Next 16 + React 19.2 + Tailwind v4；npm install 成功；npm run dev 启动到 :3000；npm run build 通过；npx tsc --noEmit 0 错误；npm run lint 0 错误；package.json 含 prisma/next-auth@beta/next-intl/@tanstack/react-query/react-hook-form/zod/recharts/bcrypt + npx shadcn@latest init 完成"
+      "status": "pending",
+      "acceptance": "安装 vitest + @vitest/coverage-v8 + @vitest/ui + jsdom + @testing-library/react + @testing-library/jest-dom + @testing-library/user-event；vitest.config.ts 配置 jsdom + setupFiles + coverage 80% 阈值；tests/setup.ts 含 @testing-library/jest-dom matchers；package.json 加 scripts: test / test:unit / test:watch / test:coverage / test:ui；占位 unit test src/lib/__tests__/utils.test.ts 测 cn() 函数；npm run test:unit 跑通占位 + npm run test:coverage 输出报告到 coverage/ + npm run test:ui 起 Vitest UI"
     },
     {
       "id": "F002",
-      "title": "Neural Velocity 设计 token → Tailwind v4 @theme 映射",
+      "title": "Testcontainers PostgreSQL helper + 首个 integration test",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "src/styles/globals.css 含 @theme 块定义 navy/cyan/purple 全部色阶 + radius-md(12px)/lg(16px) + font-sans Inter；不再使用 tailwind.config.ts；自定义 utilities .glass-panel/.ambient-glow/.ai-glow/.gradient-text/.gradient-cta；任意组件用 token 渲染颜色与 design-system.md §2 完全一致；代码 grep '#[0-9a-fA-F]{6}' 在 globals.css 之外命中数为 0"
+      "status": "pending",
+      "acceptance": "安装 testcontainers + @testcontainers/postgresql；tests/helpers/db.ts 提供 setupTestDb/teardownTestDb/withTestTenant/cleanDb helpers；tests/integration/db-setup.test.ts 占位测试启动 PG 容器 + migrate + 简单 CRUD；npm run test:integration 跑通；多测试并行用唯一 DB 名无冲突；beforeAll 共享容器（启动 ~10s 可接受）"
     },
     {
       "id": "F003",
-      "title": "Prisma Schema + 初始 Migration + Seed",
+      "title": "Playwright 安装 + 浏览器 + 配置 + 首个 E2E test",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "prisma/schema.prisma 含 B0-database-schema.md §4 全部 7 表 + NextAuth 3 表；docker-compose.yml 起 PG16+Redis7；npx prisma migrate dev 通过；prisma/seed.ts 注入 1 tenant + 2 users + 12 KOLs + 3 campaigns + 4 templates；npx prisma studio 能浏览数据"
+      "status": "pending",
+      "acceptance": "安装 @playwright/test + npx playwright install --with-deps chromium；playwright.config.ts 配置 testDir ./tests/e2e + baseURL localhost:3000 + screenshot only-on-failure + trace retain-on-failure + viewport 1440x900 + webServer auto-start；scripts: test:e2e / test:e2e:ui / test:e2e:debug；占位 E2E tests/e2e/landing.spec.ts 访问 / 看到 KOLMatrix 文字；npm run test:e2e 启动 dev 跑测试关闭；失败时 playwright-report/ 含截图"
     },
     {
       "id": "F004",
-      "title": "PostgreSQL RLS 策略 + tenant 上下文中间件 + NextAuth v5 认证 + 登录页",
+      "title": "MSW 配置 + aigcgateway / Resend mock 框架",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "migration 含 6 张多租户表的 RLS policies；src/lib/db.ts 提供 withTenant(tenantId, fn) 包装；src/auth.ts 配置 NextAuth v5 CredentialsProvider+Prisma adapter+JWT；middleware 拦截 /(app)/*；/login 渲染表单（功能向）；marketer 登录后查 kol 表只见自己 tenant 数据；不带上下文 raw 查询返回 0 行"
+      "status": "pending",
+      "acceptance": "安装 msw 2.x；tests/mocks/handlers.ts 含 aigcgateway POST /v1/evaluate 默认 mock score + Resend POST /emails 默认 mock message ID；tests/mocks/server.ts Node 端 setupServer + tests/mocks/browser.ts 浏览器端 setupWorker；tests/setup.ts 集成 server.listen/resetHandlers/close 生命周期；示例 test tests/__example/msw-usage.test.ts 展示 handler override 模拟 500 错误"
     },
     {
       "id": "F005",
-      "title": "App Shell 组件实现（Sidebar + Topbar + Layout）",
+      "title": "Test fixtures（faker factory 函数）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "8 nav 项顺序与图标完全匹配 B0-app-shell-component.md §4；激活态 cyan 文字 + 左侧 2px 竖条 + 渐变背景；topbar 三段式 + 玻璃拟态背景 + 搜索 Cmd+K hint；user chip 显示 Sarah Chen / Ops Lead；无 Help Center / Connect Wallet / 横向 nav 链接；像素级还原 design-draft/stitch-references/dashboard.png：色彩 100% 走 token、字体/字号/字距/行高/间距/圆角/阴影/渐变与设计稿一致、布局结构 100% 对齐（间距 ±2px / ΔE<2 / 字号 100%）"
+      "status": "pending",
+      "acceptance": "安装 @faker-js/faker；tests/fixtures/{tenant,user,kol,campaign}.ts 各自 make* factory 函数接受 overrides 返回完整对象；tests/fixtures/index.ts barrel export；工厂生成的对象可直接 prisma.kol.create({ data: makeKol() }) 入库；random data 不触发 DB 约束；每个工厂含文件头注释说明字段语义"
     },
     {
       "id": "F006",
-      "title": "next-intl 国际化基础（5 语言路由 + Topbar 切换器联动）",
+      "title": "B0 代码 unit tests（lib + 12 公共组件覆盖）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "/[locale]/dashboard 路由结构生效；messages/{en,zh,ja,ko,es}.json 完整文件；EN 全翻译，其他语言占位；topbar EN 切换器点 ZH 后 sidebar 8 项文案变 ZH；缺 key fallback EN 不报错；user.locale 持久化到 cookie"
+      "status": "pending",
+      "acceptance": "src/lib/__tests__/db.test.ts 测 withTenant 包装行为（mocked Prisma）；src/lib/__tests__/utils.test.ts 测 cn 等 utils；src/components/layout/__tests__/Sidebar.test.tsx + Topbar.test.tsx 含渲染 + 激活态切换；src/components/common/__tests__/ 下 12 组件每个 ≥2 test case（基础渲染 + 关键 props）；npm run test:unit -- src/lib 覆盖率 ≥80%；npm run test:unit -- src/components 覆盖率 ≥80%"
     },
     {
       "id": "F007",
-      "title": "Dashboard 页面（mock + 真组件，对照 Stitch 视觉）",
+      "title": "B0 RLS + Auth integration tests",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "/dashboard 渲染 5 区块（greeting / KPI 4 卡 / Active Campaigns 3 行 / AI-Recommended KOLs 2x2 / Email Performance LineChart + Activity Feed）；KPI 数字来自 Prisma seed（删除 seed 后变 0）；像素级还原 design-draft/stitch-references/dashboard.png（标准同 F005）；page.tsx JSX 总长度 ≤80 行；F010 12 组件接入口径（F007 裁决 §11.2 修订）: (1) page.tsx 直接 import ≥5 个真实顶层使用的 F010 组件 (2) Dashboard 渲染树中 12 个 F010 组件全部出现（直接或间接经 KolCard 等封装都算，import 图静态分析验证）(3) page.tsx 不允许 inline 写 card/button/chip/header 视觉片段；任何硬编码 HEX 直接 fail；F007 sprint 内可补 Campaign.openRate migration + EmailLog seed（G1/G2 允许合进 PR）"
+      "status": "pending",
+      "acceptance": "tests/integration/rls-isolation.test.ts 覆盖 6 张多租户表（user/kol/campaign/kol_campaign/email_template/email_log）cross-tenant 查询返回 0 + 不带上下文 raw 查询返回 0；tests/integration/auth-flow.test.ts 测 CredentialsProvider 登录成功 JWT 含 tenantId/role + 错误密码 401 + JWT 解码恢复 session；tests/integration/middleware.test.ts 未登录 /dashboard 重定向 /login + 登录后通过；全部通过"
     },
     {
       "id": "F008",
-      "title": "GitHub Actions CI Workflow",
-      "priority": "medium",
+      "title": "Marketer 登录 + Dashboard E2E flow test",
+      "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": ".github/workflows/ci.yml 配置 install/lint/typecheck/build 4 jobs；PostgreSQL service for migrate smoke；Node 20 LTS + npm cache；paths-ignore 配置 .auto-memory/**/progress.json/features.json/backlog.json/docs/**/design-draft/**/framework/**/*.md/harness-rules.md；修改 docs 不触发 CI；PR 合入触发 CI 全绿"
+      "status": "pending",
+      "acceptance": "tests/e2e/marketer-dashboard.spec.ts 4 test case：访问 /login 输入 marketer@kolmatrix.local/KOLM@2026! 跳 /dashboard；dashboard 看到 Welcome back Sarah + 12,847 总 KOL 数；切换语言 EN→ZH nav 文案变化；点 sidebar nav 跳路由（如 KOL Database 链接 → /kols）；失败自动截图 + trace；npm run test:e2e 全绿"
     },
     {
       "id": "F009",
-      "title": "README + 本地搭建文档 + .env.example",
-      "priority": "medium",
+      "title": "视觉回归基线 + Dashboard 截图对比",
+      "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "README.md 含项目介绍 + 5 行 quickstart；docs/dev/setup.md 详细环境搭建（Node 20/Docker/env vars/seed）；.env.example 列全所需环境变量（DATABASE_URL/NEXTAUTH_SECRET/NEXTAUTH_URL/AIGCGATEWAY_*/RESEND_API_KEY 占位）；CONTRIBUTING.md 引用 harness-rules；新 dev fork 后 30 分钟内本地能起服务看到 Dashboard"
+      "status": "pending",
+      "acceptance": "tests/e2e/visual-regression.spec.ts 含 /dashboard toHaveScreenshot('dashboard.png', { threshold: 0.02, maxDiffPixels: 1000 })；首次 --update-snapshots 创建 baseline 存 tests/screenshots/baseline/ 并 commit 入库；后续跑测试 dashboard 截图与 baseline diff < 2%；故意改 Dashboard CSS 触发 diff 测试失败 + 生成 diff 图"
     },
     {
       "id": "F010",
-      "title": "公共组件库抽取（src/components/common/ 12 个组件，强制 Dashboard 复用）",
+      "title": "CI workflow 集成 4 个新 jobs",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "src/components/common/ 下 12 个组件文件全部存在并导出（StatCard/KolCard/CampaignRow/AiScoreBadge/GlassPanel/GradientButton/SecondaryButton/GhostButton/TagChip/AvatarWithPlatformBadge/ActivityFeedItem/SectionHeader）；每个文件 props interface 完整 + 文件头说明注释；每个文件 ≤100 行；色彩走 Tailwind token 禁止硬编码 HEX；F007 Dashboard 渲染树接入 12 个组件（F007 裁决 §11.2 修订，接受间接使用）；视觉对照 design-draft/stitch-references/dashboard.png 一致；执行顺序在 F005 之后 F007 之前"
+      "status": "pending",
+      "acceptance": ".github/workflows/ci.yml 在原有 lint+tsc+build 基础上加 unit-tests job (coverage + Codecov 上传) + integration-tests job (PG + Redis service container) + e2e-tests job (playwright install chromium + webServer + 失败上传 playwright-report artifact)；tests/screenshots/baseline/ 入库；tests/screenshots/actual/ + diff/ + playwright-report/ 入 .gitignore；CODECOV_TOKEN secret 由用户配置；PR 触发 4 jobs 全绿；故意 break test CI fail"
     }
   ]
 }
