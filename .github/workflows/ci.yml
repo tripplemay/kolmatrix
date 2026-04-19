@@ -32,7 +32,7 @@ concurrency:
 
 env:
   NODE_VERSION: "20"
-  # CI-only DB URLs (overridden in build job by service container coordinates).
+  # CI-only DB URLs (overridden in jobs that use service containers below).
   DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/kolmatrix?schema=public"
   DATABASE_ADMIN_URL: "postgresql://postgres:postgres@localhost:5432/kolmatrix?schema=public"
   NEXTAUTH_SECRET: "ci-placeholder-secret-do-not-use-in-prod"
@@ -105,3 +105,97 @@ jobs:
       - name: Prisma migrate smoke
         run: npx prisma migrate deploy
       - run: npm run build
+
+  unit-tests:
+    name: Unit tests + coverage
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - name: Run Vitest unit + coverage
+        run: npm run test:coverage
+      # Codecov upload is best-effort; a missing CODECOV_TOKEN (private repo,
+      # secret not yet configured) must not fail the job.
+      - name: Upload coverage to Codecov
+        if: always()
+        continue-on-error: true
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+
+  integration-tests:
+    name: Integration tests (Testcontainers)
+    runs-on: ubuntu-latest
+    needs: install
+    # NOTE: we rely on Testcontainers (via `npm run test:integration`) to
+    # boot its own postgres:16-alpine per test file on random ports, so
+    # GitHub service containers would only duplicate work. Docker is
+    # pre-installed on ubuntu-latest runners, which is all Testcontainers
+    # needs.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - name: Run integration suite
+        run: npm run test:integration
+
+  e2e-tests:
+    name: E2E tests (Playwright)
+    runs-on: ubuntu-latest
+    needs: build
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: kolmatrix
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - name: Apply migrations + seed dev data
+        run: |
+          npx prisma migrate deploy
+          npm run db:seed
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+      - name: Install Playwright Chromium + system deps
+        run: npx playwright install --with-deps chromium
+      - name: Run Playwright E2E
+        run: npm run test:e2e
+      - name: Upload playwright-report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 14

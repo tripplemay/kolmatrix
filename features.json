@@ -78,7 +78,7 @@
       "title": "CI workflow 集成 4 个新 jobs",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": ".github/workflows/ci.yml 在原有 lint+tsc+build 基础上加 unit-tests job (coverage + Codecov 上传) + integration-tests job (PG + Redis service container) + e2e-tests job (playwright install chromium + webServer + 失败上传 playwright-report artifact)；tests/screenshots/baseline/ 入库；tests/screenshots/actual/ + diff/ + playwright-report/ 入 .gitignore；CODECOV_TOKEN secret 由用户配置；PR 触发 4 jobs 全绿；故意 break test CI fail"
     }
   ]
