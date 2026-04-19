@@ -1,11 +1,11 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "搭建 KOLMatrix Next.js 工程地基，完成可运行的 Dashboard mock，使后续业务批次能在稳定基线上做纯功能开发",
   "total_features": 10,
   "completed_features": 10,
   "fix_rounds": 0,
   "current_sprint": "B0-foundation",
-  "last_updated": "2026-04-19T04:30:00Z",
+  "last_updated": "2026-04-19T05:00:00Z",
   "reference_docs": [
     "docs/specs/B0-foundation-spec.md",
     "docs/dev/architecture.md",
@@ -14,7 +14,11 @@
     "docs/specs/PRD.md",
     "docs/specs/visual-baseline.md",
     "design-draft/design-system.md",
-    "design-draft/stitch-references/README.md"
+    "design-draft/stitch-references/README.md",
+    "docs/specs/B0-app-shell-canonical-review.md",
+    "docs/specs/B0-f010-component-map.md",
+    "docs/specs/B0-f007-dashboard-plan.md",
+    "docs/specs/B0-f006-i18n-plan.md"
   ],
   "docs": {
     "spec": "docs/specs/B0-foundation-spec.md",
@@ -28,10 +32,11 @@
     "evaluator": "Reviewer"
   },
   "evaluator_feedback": null,
-  "generator_handoff": null,
+  "generator_handoff": "B0 sprint 10/10 features 全部完成，移交 Reviewer 进入 verifying 阶段。\n\n===== 交付清单 =====\nF001 Next.js 16 + React 19.2 + Tailwind v4 + shadcn 脚手架\nF002 Neural Velocity token（globals.css @theme 块）+ 5 utilities\nF003 Prisma schema（7 业务表 + NextAuth 3 表）+ 2 migrations + seed（1 tenant / 2 users / 12 KOLs / 3 campaigns / 4 templates / 300 EmailLog）\nF004 RLS + kolmatrix_app 非 superuser 角色 + NextAuth v5 Credentials + withTenant/withPlatformAdmin\nF005 App Shell: Sidebar（fixed left-0 z-50 + cyan 右缘阴影）+ Topbar（sticky z-40 + 玻璃拟态 + ⌘K + avatar 下拉）\nF010 12 个 common 组件：StatCard / KolCard / CampaignRow / AiScoreBadge / GlassPanel / GradientButton / SecondaryButton / GhostButton / TagChip / AvatarWithPlatformBadge / ActivityFeedItem / SectionHeader + barrel index.ts\nF007 Dashboard 5 区块：问候栏 / KPI 4 卡（3 StatCard + AiMatchRingCard 环形特例）/ Active Campaigns 3 行 / AI-Recommended KOLs 2x2 / Email Performance 14d LineChart + Recent Activity 5 条\nF008 GitHub Actions CI（install / lint / typecheck / build 4 jobs + PG service migrate smoke + paths-ignore docs）\nF009 README + docs/dev/setup.md + CONTRIBUTING.md + .env.example\nF006 next-intl 5 语言：/[locale]/dashboard 路由 + messages/{en,zh,ja,ko,es}.json + LanguageSwitcher 真联动 + updateUserLocale server action + stripLocale middleware\n\n===== 开箱测试指引 =====\n1. docker compose up -d（PG 16 + Redis 7 已配 healthcheck）\n2. cp .env.example .env（默认 DATABASE_URL 指向 5432；本机若占用改 override）\n3. npm ci && npx prisma migrate deploy && npm run db:seed\n4. npm run dev → http://localhost:3000\n5. 登录 marketer@kolmatrix.local / KOLM@2026! → 自动跳 /en/dashboard\n\n===== L1 静态闸门（Generator 已全绿，请 Reviewer 复核）=====\n- HEX 硬编码扫描: grep -rE '#[0-9a-fA-F]{6}' src/ --include='*.ts*' --include='*.css' | grep -v 'globals.css' 零命中\n- 各文件行数: src/components/common/*.tsx ≤100 行 / src/app/[locale]/(app)/dashboard/page.tsx 70 行（JSX 39 行）\n- 类型: npm run typecheck 0 错误\n- lint: npm run lint 0 错误\n- build: npm run build 成功（10 static params + 5 routes）\n- CI: GitHub Actions 首跑 2m9s 全绿（commit 6d7b48e）\n- F010 渲染树: page.tsx 直接 import 7 个 F010 组件（≥5 要求），12 个全出现在 import 图（含 KolCard 间接消费 AiScoreBadge/TagChip/AvatarWithPlatformBadge）\n\n===== L2 视觉回归建议项（Reviewer 的核心工作）=====\n- 基准: design-draft/stitch-references/dashboard.png\n- 视口: 1280x2048（spec §7 L2 指定）\n- 偏差口径: 间距 ±2px / ΔE<2 / 字号 100% 匹配 / 布局结构 100% 对齐\n- 已知漂移（不回修 Stitch，见 design-draft/stitch-references/README.md B1-B10）:\n  · B1-B2 nav 缺项（kol-discovery 缺 Products / dashboard 缺 Settings）→ 代码 8 项齐\n  · B3 kol-detail 激活态偏 → 代码 border-l-2 齐边\n  · B4 campaigns-list footer unfold_more → 代码 expand_more\n  · B5 dashboard footer 单账号 → 代码 User Chip\n  · B6 dashboard.html viewbox 小写 → 代码 viewBox 驼峰\n  · B7 kol-discovery filter disabled 态缺 → defer B1\n  · B8 campaigns-list tab underline relative 缺 → 代码补 relative\n  · B9 重复 B6\n  · B10 dashboard email chart 无 Y 轴 → 代码 recharts 补\n\n===== L3 E2E 建议项 =====\n- 登录流: /login → POST → /{user.locale}/dashboard 重定向\n- RLS 验证: 用 admin session 查 kol 表看不到其他 tenant（仅 1 tenant 可创第 2 tenant 手工测）\n- 语言切换: /en/dashboard → Topbar 🌐 EN ▾ → 选 中文 → URL /zh/dashboard + Sidebar 8 项变 ZH + NEXT_LOCALE cookie + DB user.locale=zh\n- 登出: UserAvatarMenu Sign out → /login\n\n===== L4 文档检查 =====\n- README.md 5 行 quickstart（从零到 /dashboard 渲染）\n- docs/dev/setup.md 10 步指南 + WSL inotify 已知问题\n- CONTRIBUTING.md 多 agent 协作范式 + commit 风格 + 色彩 token 边界\n- .env.example 覆盖 DATABASE_URL/DATABASE_ADMIN_URL/NEXTAUTH_SECRET/NEXTAUTH_URL/AIGCGATEWAY_*/RESEND_API_KEY/REDIS_URL\n\n===== 已知小毛刺（不阻塞 B0 验收，标记后续批次）=====\n1. Next 16 已弃用 middleware.ts 文件名 → build warn 'Please use proxy' — 不影响功能，后续批次改 proxy.ts\n2. 非 EN messages（ja/ko/es）按 F4:A 复制 EN 未翻译 — 待译员补\n3. Activity feed mock 保留英文硬编码（Kimi F3:B 决议），B3 接真实 EmailLog 后再设计 i18n 字段结构\n4. KPI trend 数字（+12% / 0% / +5.2%）mock 固定（Kimi G3:A），历史表到 B3+ 才加\n5. 字体 CJK fallback（Kimi F5:A）保持 Inter，字距视觉若不理想 B1+ 引 Noto Sans SC\n\n===== 3 次 Generator 自救修复（已 commit 入历史）=====\n1. F007 recharts stroke 首版写 #HEX 命中扫描 → 改 var(--color-cyan) CSS var\n2. F006 updateUserLocale 首版裸 prisma.user.update 触发 RLS tenant_id UUID cast 失败 → 改 withTenant 包装\n3. F006 LanguageSwitcher 首版 useTransition + router.refresh 造成 dev indicator 卡 rendering → 改 useState + 纯 router.push\n\n===== pre-impl 审计 → Planner 裁决流程 =====\n4 份规划稿（F005 app-shell / F010 component-map / F007 dashboard-plan / F006 i18n-plan）× 25 条决策点，**零 building 阶段返工**。请 Reviewer 验收时参考这些决议理由（docs/specs/B0-*-plan.md + B0-app-shell-canonical-review.md）了解为何某些实现偏离原 spec 或 Stitch HTML。",
   "session_notes": {
-    "Kimi": "B0 spec v3 已修订（响应 johnsong 规格偏差报告）。技术栈升级 = Next.js 16 + React 19.2 + Tailwind v4 (CSS-first @theme, 不再用 tailwind.config.ts) + shadcn 最新版（已原生支持 v4）。其他要求保持 v2: (1) 像素级还原 design-draft/stitch-references/dashboard.png（间距 ±2px / ΔE<2 / 字号 100%）。(2) F010 公共组件库 12 个 common/ 组件必须先抽好，Dashboard 强制复用，page.tsx ≤80 行。强制执行顺序 F001→F002→F003→F004→F005→F010→F007→F006→F008→F009。任何硬编码 HEX 验收直接 fail（除 globals.css 唯一 token 文件）。如规格存在偏差，开工前请先反馈。",
-    "johnsong": "F001-F005 完成。F005 产出 src/components/layout/ 下 12 个文件 (AppShellLayout + Sidebar/SidebarLogo/SidebarNav/SidebarUserChip + Topbar/TopbarSearch/TopbarActions/LanguageSwitcher/NotificationBell/UserAvatarMenu + nav-config)。(app)/layout.tsx 已接入 AppShellLayout, dashboard/page.tsx 改为不含自己 chrome 的 stub。验收全绿: HEX 扫描 0 命中 / tsc --noEmit 0 错误 / eslint 0 错误 / next build 成功 (5 routes)。实现要点: (A) Material Symbols 图标通过 root layout 已加载的 Google Fonts CDN, 组件内用 <span className='material-symbols-outlined'> 消费。(B) AppShellLayout 是 client component ('use client'), 从 usePathname() 推 activeNavId + pageTitle; (app)/layout.tsx 是 server component, 调 auth() 取 session 并把 server action handleSignOut 作为 prop 传入 client component。(C) Sidebar 240px 宽 bg-surface-lowest + Create Campaign gradient-cta + 8 nav + 底部 user chip; 激活态用绝对定位 2px cyan 竖条 + from-cyan/12 渐变背景。(D) Topbar 64px sticky + bg-navy-base/85 + backdrop-blur-[24px] + 阴影; 三段式: 左 page title, 中 TopbarSearch (max-480px + ⌘K hint + focus ring cyan), 右 TopbarActions (Language EN / Bell 带红点 / divider / UserAvatarMenu)。(E) 所有色彩走 Tailwind v4 token (text-cyan / bg-surface-* / text-on-surface* / gradient-cta 等), globals.css 外 HEX 零命中。下一个任务 F010: 12 个 common/ 组件 (StatCard / KolCard / CampaignRow / AiScoreBadge / GlassPanel / GradientButton / TagChip / AvatarWithPlatformBadge / ActivityFeedItem / SectionHeader + 2 个), 为 F007 Dashboard 强制复用做准备。F006 国际化先不做 (顺序锁 F010 在前)。已知待办: Next 16 弃用 middleware.ts 文件名, 建议后续批次改 proxy.ts (build 时 warn 但不 block)。L2 视觉回归 (截屏对比 dashboard.png) 是 Codex/Reviewer 的验收阶段任务, 生成器已做完实现。"
+    "Kimi": "B0 sprint 全 10 feature 完成。pre-impl 审计 → Planner 裁决模式 4 次（F005/F010/F007/F006）共 25 决策点无返工。下一批次 BI1 测试基建（按 Option α infra-first 顺序）等 Reviewer 完成 B0 验收后启动。",
+    "johnsong": "B0 sprint 完成，交棒 Reviewer。详见 generator_handoff 完整清单。等 evaluator_feedback / signoff 后按 Option α 序列进入 BI1 测试基建批次。",
+    "Reviewer": null
   },
   "features": []
 }
