@@ -79,7 +79,7 @@
       "priority": "high",
       "executor": "generator",
       "status": "pending",
-      "acceptance": ".github/workflows/ci.yml 在原有 lint+tsc+build 基础上加 unit-tests job (coverage + Codecov 上传) + integration-tests job (PG + Redis service container) + e2e-tests job (playwright install chromium + webServer + 失败上传 playwright-report artifact)；tests/screenshots/baseline/ 入库；tests/screenshots/actual/ + diff/ + playwright-report/ 入 .gitignore；CODECOV_TOKEN secret 由用户配置；PR 触发 4 jobs 全绿；故意 break test CI fail"
+      "acceptance": ".github/workflows/ci.yml 在原有 lint+tsc+build 基础上加 unit-tests job (coverage + Codecov 上传) + integration-tests job (Testcontainers / Docker-in-runner — ubuntu-latest 已预装 Docker，测试代码用 @testcontainers/postgresql 自启 PG 容器，不挂 GHA service container；Redis 本批次未用) + e2e-tests job (playwright install chromium + webServer + PG service container 提供 localhost:5432 给 Next dev server + 失败上传 playwright-report artifact)；tests/screenshots/baseline/ 入库；tests/screenshots/actual/ + diff/ + playwright-report/ 入 .gitignore；CODECOV_TOKEN secret 由用户配置；PR 触发 4 jobs 全绿；故意 break test CI fail"
     }
   ]
 }

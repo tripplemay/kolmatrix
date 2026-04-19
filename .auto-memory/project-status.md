@@ -6,7 +6,7 @@ type: project
 ## 当前批次
 - **BI1-test-infrastructure** — status=fixing（Reviewer round 1 判 F002/F007/F008/F010 有问题）
   - F008 裁决已下发 `#方案:A`（NULLIF 兜底），用户已书面确认，等 Generator 执行
-  - F010 acceptance 偏离裁决请求待 Planner 回复（用户未决）
+  - F010 裁决已下发 `#方案:A`（acceptance 文案改 Testcontainers），代码无需改，等 Reviewer 按新口径复验
   - F002/F007 等 Generator 按 Reviewer feedback 修
 - **B0-foundation** ✅ 已完成签收（10/10 + 12 PASS 0 FAIL，Round 3 reverify 通过）
 

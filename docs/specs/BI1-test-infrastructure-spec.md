@@ -206,12 +206,14 @@ B0 完成后项目跑得起来，但**没有任何自动化测试**。Reviewer �
 **实现：**
 - 修改 `.github/workflows/ci.yml`：在原有 lint + tsc + build 基础上加：
   - `unit-tests` job（依赖 lint）：`npm run test:unit -- --coverage` + 上传 coverage 到 Codecov
-  - `integration-tests` job（依赖 lint，加 PG service container + Redis service container）：`npm run test:integration`
-  - `e2e-tests` job（依赖 build）：`npx playwright install chromium` + `npm run test:e2e` + 失败上传 playwright-report artifact
+  - `integration-tests` job（依赖 lint）：直接跑 `npm run test:integration`。**不挂 GHA service container** —— `tests/helpers/db.ts` 用 Testcontainers 自启 `postgres:16-alpine`（ubuntu-latest runner 已预装 Docker）。Redis 本批次未用，future B5+ BullMQ 启用时再议。
+  - `e2e-tests` job（依赖 build）：`npx playwright install chromium` + `npm run test:e2e` + 失败上传 playwright-report artifact。**此 job 挂 PG service container** —— Next dev server 需要固定 `localhost:5432` 连接点，Testcontainers 随机端口不适用。
 - `tests/screenshots/baseline/` 入库（git tracked，确保 CI 与本地基线一致）
 - `tests/screenshots/actual/` 和 `diff/` 加入 `.gitignore`
 - `playwright-report/` 加入 `.gitignore`
 - 注册 CODECOV_TOKEN secret（用户操作）
+
+> **口径注释（2026-04-19 裁决，方案 A）：** integration-tests job 最初 acceptance 写"PG + Redis service container"，与 F002 Testcontainers 设计冲突。裁决改为 Testcontainers 模式，详见 `BI1-f010-acceptance-deviation.md` §7。
 
 **Acceptance：**
 - PR 触发 CI 时 4 个 jobs 全绿

@@ -131,3 +131,37 @@ Reviewer 判断合规——字面不符就是不符。
 - `docs/specs/BI1-test-infrastructure-spec.md` §F010
 - `docs/test-reports/BI1-test-infrastructure-verifying-2026-04-19.md` P2-1 — Reviewer 标记
 - `tests/helpers/db.ts` — Testcontainers 双 Prisma client 设计
+
+---
+
+## 7. Planner 裁决（2026-04-19）
+
+**仲裁：** `#方案:A`（修订 acceptance 文案，承认 Testcontainers 是更优实现）
+
+**用户确认：** ✅ 已获 —— 用户消息 "A"（2026-04-19，针对 F010 选项讨论）
+
+### 7.1 采纳理由
+1. Testcontainers 是 BI1 测试基建的既定策略（F002 `tests/helpers/db.ts` 就是这么设计的），F010 acceptance 原文"PG + Redis service container"是 Planner spec 阶段的笔误，未与 F002 决策对齐。
+2. Redis service container 是死代码：整个 BI1 批次 28 个 integration tests 无一使用 Redis（BullMQ 为 B5+ 范围）。
+3. Generator 的判断（§2.3）技术正确：两套容器方案并存会制造维护困惑与潜在 bug 面（若测试误连 GHA service container，两套 PG 数据混用）。
+4. Pre-Impl Audit → Planner Adjudication 模式（ADR-006）的精神就是允许 Generator 上报 spec 问题，由 Planner 修订。
+
+### 7.2 本裁决同步动作（Planner 在裁决 commit 中完成）
+
+1. **`features.json` F010 acceptance** 改为 "integration-tests job (Testcontainers / Docker-in-runner — ubuntu-latest 已预装 Docker，测试代码自启 PG 容器，不挂 GHA service container；Redis 本批次未用)"
+2. **`docs/specs/BI1-test-infrastructure-spec.md` §F010** 同步修订（注明 e2e-tests job 仍保留 PG service container，因 Next dev server 需固定端口）
+3. **`.auto-memory/project-status.md`** 记录 F010 裁决完成
+
+### 7.3 Reviewer 复验指引
+按新 acceptance 口径：
+- integration-tests job：不应出现 `services:` 块；测试代码通过 Testcontainers 自启 PG 容器；`npm run test:integration` 全绿
+- e2e-tests job：仍有 `services: postgres` 块，Next dev server 连 `localhost:5432`
+
+当前 `ci.yml` 实现（commit a9172c1）与新 acceptance 完全一致，F010 可直接 PASS。
+
+### 7.4 F010 后续状态
+- F010 本项 fixing 结束（无需代码改动，仅文案修订）
+- BI1 sprint 剩余 fixing 项：F002/F007/F008，等 Generator 按各自 feedback 修完后 → `reverifying`
+
+### 7.5 复盘（framework proposal 队列）
+`framework/proposed-learnings.md` 建议追加：Planner 写 CI job acceptance 时，必须先核对 integration 测试策略（Testcontainers vs service container），避免 acceptance 与 helper 设计冲突。done 阶段统一处理。
