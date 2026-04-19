@@ -38,7 +38,7 @@
       "title": "Test fixtures（faker factory 函数）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "安装 @faker-js/faker；tests/fixtures/{tenant,user,kol,campaign}.ts 各自 make* factory 函数接受 overrides 返回完整对象；tests/fixtures/index.ts barrel export；工厂生成的对象可直接 prisma.kol.create({ data: makeKol() }) 入库；random data 不触发 DB 约束；每个工厂含文件头注释说明字段语义"
     },
     {
