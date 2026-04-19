@@ -1,85 +1,69 @@
 {
-  "sprint": "BI1-test-infrastructure",
+  "sprint": "BI2-deployment-automation",
   "features": [
     {
       "id": "F001",
-      "title": "Vitest 安装配置 + 首个 unit test 跑通",
+      "title": "/api/health 端点（DB + Redis + version check）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "安装 vitest + @vitest/coverage-v8 + @vitest/ui + jsdom + @testing-library/react + @testing-library/jest-dom + @testing-library/user-event；vitest.config.ts 配置 jsdom + setupFiles + coverage 80% 阈值；tests/setup.ts 含 @testing-library/jest-dom matchers；package.json 加 scripts: test / test:unit / test:watch / test:coverage / test:ui；占位 unit test src/lib/__tests__/utils.test.ts 测 cn() 函数；npm run test:unit 跑通占位 + npm run test:coverage 输出报告到 coverage/ + npm run test:ui 起 Vitest UI"
+      "status": "pending",
+      "acceptance": "src/app/api/health/route.ts 返回 JSON {status,version,git_sha,uptime_seconds,checks:{database,redis},timestamp}；DB check = Prisma SELECT 1；Redis check = 预留 stub（B2 启用 BullMQ 后才真实 PING）；middleware.ts 对 /api/health 跳过 auth；任何 check 失败返回 HTTP 503 + status:unhealthy；response time < 200ms；curl localhost:3000/api/health 本地返回 200；停掉 PG 后返回 503"
     },
     {
       "id": "F002",
-      "title": "Testcontainers PostgreSQL helper + 首个 integration test",
+      "title": "PM2 ecosystem.config.js",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "安装 testcontainers + @testcontainers/postgresql；tests/helpers/db.ts 提供 setupTestDb/teardownTestDb/withTestTenant/cleanDb helpers；tests/integration/db-setup.test.ts 占位测试启动 PG 容器 + migrate + 简单 CRUD；npm run test:integration 跑通；多测试并行用唯一 DB 名无冲突；beforeAll 共享容器（启动 ~10s 可接受）"
-    },
-    {
-      "id": "F003",
-      "title": "Playwright 安装 + 浏览器 + 配置 + 首个 E2E test",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "安装 @playwright/test + npx playwright install --with-deps chromium；playwright.config.ts 配置 testDir ./tests/e2e + baseURL localhost:3000 + screenshot only-on-failure + trace retain-on-failure + viewport 1440x900 + webServer auto-start；scripts: test:e2e / test:e2e:ui / test:e2e:debug；占位 E2E tests/e2e/landing.spec.ts 访问 / 看到 KOLMatrix 文字；npm run test:e2e 启动 dev 跑测试关闭；失败时 playwright-report/ 含截图"
-    },
-    {
-      "id": "F004",
-      "title": "MSW 配置 + aigcgateway / Resend mock 框架",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "安装 msw 2.x；tests/mocks/handlers.ts 含 aigcgateway POST /v1/evaluate 默认 mock score + Resend POST /emails 默认 mock message ID；tests/mocks/server.ts Node 端 setupServer + tests/mocks/browser.ts 浏览器端 setupWorker；tests/setup.ts 集成 server.listen/resetHandlers/close 生命周期；示例 test tests/__example/msw-usage.test.ts 展示 handler override 模拟 500 错误"
+      "status": "pending",
+      "acceptance": "项目根 ecosystem.config.js 声明 kolmatrix app（script:npm / args:start / cwd:/opt/kolmatrix / instances:1 / exec_mode:cluster / max_memory_restart:1G / env.NODE_ENV=production / env.PORT=3001 / env_file:/opt/kolmatrix/.env.production / log_date_format / out_file+error_file:/var/log/pm2/ / merge_logs:true）；worker 进程声明注释预留（B5+ 启用）；README（或 deployment-runbook）说明 pm2 start/save/startup + reload/logs/status 常用命令；pm2 reload kolmatrix --update-env 不丢请求（手动验证用 curl 循环）"
     },
     {
       "id": "F005",
-      "title": "Test fixtures（faker factory 函数）",
+      "title": "Health check 脚本（重试 + 容错）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "安装 @faker-js/faker；tests/fixtures/{tenant,user,kol,campaign}.ts 各自 make* factory 函数接受 overrides 返回完整对象；tests/fixtures/index.ts barrel export；工厂生成的对象可直接 prisma.kol.create({ data: makeKol() }) 入库；random data 不触发 DB 约束；每个工厂含文件头注释说明字段语义"
+      "status": "pending",
+      "acceptance": "scripts/healthcheck.sh 接受可选 endpoint 参数（默认 https://kol.guangai.ai/api/health），5 次重试 × 3 秒间隔；只有 HTTP 200 且 .status=='healthy' 才 exit 0；失败 exit 1 并 cat 最后一次响应 JSON；依赖 jq（VPS 预装）；shellcheck 通过；单元自测：本地停掉 dev server 后跑脚本应 exit 1"
+    },
+    {
+      "id": "F004",
+      "title": "DB 备份脚本 + 30 天 cron 清理",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "scripts/backup-db.sh set -e；TIMESTAMP=date +%Y%m%d-%H%M%S；pg_dump -U postgres kolmatrix_prod | gzip > /opt/kolmatrix-backups/db-$TIMESTAMP.sql.gz；追加 manifest.log（timestamp + git SHA）；输出文件大小；文档说明 VPS 首次部署时 crontab -e 加 `0 4 * * * find /opt/kolmatrix-backups -name 'db-*.sql.gz' -mtime +30 -delete`；shellcheck 通过；本地模拟 pg_dump 可解压验证 head 输出 SQL"
     },
     {
       "id": "F006",
-      "title": "B0 代码 unit tests（lib + 12 公共组件覆盖）",
+      "title": "自动回滚脚本（应用层 only）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "src/lib/__tests__/db.test.ts 测 withTenant 包装行为（mocked Prisma）；src/lib/__tests__/utils.test.ts 测 cn 等 utils；src/components/layout/__tests__/Sidebar.test.tsx + Topbar.test.tsx 含渲染 + 激活态切换；src/components/common/__tests__/ 下 12 组件每个 ≥2 test case（基础渲染 + 关键 props）；npm run test:unit -- src/lib 覆盖率 ≥80%；npm run test:unit -- src/components 覆盖率 ≥80%"
+      "status": "pending",
+      "acceptance": "scripts/rollback.sh set -e；从 /tmp/prev-sha 读取上一 SHA（不存在则 exit 1 报错）；git checkout $PREV_SHA + npm ci + npm run build + pm2 reload kolmatrix --update-env；sleep 3 后再跑 healthcheck.sh；二次成功 exit 0，二次失败 exit 2 并打印 MANUAL INTERVENTION REQUIRED；明确不回滚 DB（注释说明）；shellcheck 通过"
     },
     {
       "id": "F007",
-      "title": "B0 RLS + Auth integration tests",
+      "title": "Migration ROLLBACK SQL 校验脚本 + CI 集成",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "tests/integration/rls-isolation.test.ts 覆盖 6 张多租户表（user/kol/campaign/kol_campaign/email_template/email_log）cross-tenant 查询返回 0 + 不带上下文 raw 查询返回 0；tests/integration/auth-flow.test.ts 测 CredentialsProvider 登录成功 JWT 含 tenantId/role + 错误密码 401 + JWT 解码恢复 session；tests/integration/middleware.test.ts 未登录 /dashboard 重定向 /login + 登录后通过；全部通过"
+      "status": "pending",
+      "acceptance": "scripts/validate-rollback-sql.sh 扫 prisma/migrations/*/migration.sql，每个必须含 `-- ROLLBACK:` 注释段，缺失 exit 1；.github/workflows/ci.yml 新增 validate-rollback-sql job（paths-ignore 与其他 job 一致）；所有现存 migration（含 20260418000000_init + 20260420000000_rls_nullif_empty_tenant）补全 ROLLBACK SQL 注释后 CI 通过；故意删一条 ROLLBACK 注释 CI 立即 fail；shellcheck + actionlint 通过"
+    },
+    {
+      "id": "F003",
+      "title": "Deploy production workflow + deploy-prod.sh",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": ".github/workflows/deploy-prod.yml 用 workflow_dispatch（inputs:ref default main + skip_backup boolean default false），environment:production（需用户配 required reviewer），steps: checkout + validate-rollback-sql + appleboy/ssh-action@v1 跑 deploy-prod.sh + failure notify；scripts/deploy-prod.sh 按 spec §F003 顺序（记 prev-sha → backup → git fetch+checkout → npm ci → prisma migrate deploy → npm run build → pm2 reload → healthcheck.sh；健康失败触发 rollback.sh）；actionlint + shellcheck 通过；workflow 首次手动触发 → GitHub Environments 批准 → 5-10 分钟内 kol.guangai.ai 新版可访问"
     },
     {
       "id": "F008",
-      "title": "Marketer 登录 + Dashboard E2E flow test",
-      "priority": "high",
+      "title": "Deployment runbook（手动 fallback 文档）",
+      "priority": "medium",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "tests/e2e/marketer-dashboard.spec.ts 4 test case：访问 /login 输入 marketer@kolmatrix.local/KOLM@2026! 跳 /dashboard；dashboard 看到 Welcome back Sarah + 12,847 总 KOL 数；切换语言 EN→ZH nav 文案变化；点 sidebar nav 跳路由（如 KOL Database 链接 → /kols）；失败自动截图 + trace；npm run test:e2e 全绿"
-    },
-    {
-      "id": "F009",
-      "title": "视觉回归基线 + Dashboard 截图对比",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "tests/e2e/visual-regression.spec.ts 含 /dashboard toHaveScreenshot('dashboard.png', { threshold: 0.02, maxDiffPixels: 1000 })；首次 --update-snapshots 创建 baseline 存 tests/screenshots/baseline/ 并 commit 入库；后续跑测试 dashboard 截图与 baseline diff < 2%；故意改 Dashboard CSS 触发 diff 测试失败 + 生成 diff 图"
-    },
-    {
-      "id": "F010",
-      "title": "CI workflow 集成 4 个新 jobs",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": ".github/workflows/ci.yml 在原有 lint+tsc+build 基础上加 unit-tests job (coverage + Codecov 上传) + integration-tests job (Testcontainers / Docker-in-runner — ubuntu-latest 已预装 Docker，测试代码用 @testcontainers/postgresql 自启 PG 容器，不挂 GHA service container；Redis 本批次未用) + e2e-tests job (playwright install chromium + webServer + PG service container 提供 localhost:5432 给 Next dev server + 失败上传 playwright-report artifact)；tests/screenshots/baseline/ 入库；tests/screenshots/actual/ + diff/ + playwright-report/ 入 .gitignore；CODECOV_TOKEN secret 由用户配置；PR 触发 4 jobs 全绿；故意 break test CI fail"
+      "status": "pending",
+      "acceptance": "docs/dev/deployment-runbook.md 含：完整手动部署流程（GitHub Actions 失败时的 fallback）/ Health check 失败 debug / Rollback 手动步骤 / DB pg_restore 恢复步骤 / Common errors 表 ≥5 类（OOM、端口冲突、Prisma generate 失败、migration deploy 失败、PM2 进程挂）/ PM2 命令速查 / SSH 应急入口；Reviewer 在 L3 验收阶段按 runbook 在 prod 测试时段执行一次手动部署验证可重现"
     }
   ]
 }

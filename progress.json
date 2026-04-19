@@ -1,42 +1,37 @@
 {
-  "status": "done",
-  "user_goal": "落地测试基建（Vitest + Testcontainers + Playwright + MSW + Faker），覆盖 B0 核心代码 80%+，CI 集成 4 个新 jobs，为后续业务批次提供可重复的自动化验证能力",
-  "total_features": 10,
-  "completed_features": 10,
-  "fix_rounds": 1,
-  "current_sprint": "BI1-test-infrastructure",
-  "last_updated": "2026-04-19T15:25:00Z",
+  "status": "building",
+  "user_goal": "部署自动化：GitHub Actions workflow 手动触发 prod 部署，含 pre-deploy DB 备份 / migration deploy / PM2 zero-downtime reload / health check 重试 / 失败自动回滚；Definition of Done = 用户在 GitHub UI 点 Run workflow 5-10 分钟内 kol.guangai.ai 跑新版",
+  "total_features": 8,
+  "completed_features": 0,
+  "fix_rounds": 0,
+  "current_sprint": "BI2-deployment-automation",
+  "last_updated": "2026-04-20T00:00:00Z",
   "reference_docs": [
-    "docs/specs/BI1-test-infrastructure-spec.md",
-    "docs/dev/testing.md",
+    "docs/specs/BI2-deployment-automation-spec.md",
     "docs/dev/infrastructure.md",
     "docs/dev/architecture.md",
-    "docs/specs/B0-foundation-spec.md",
     "docs/specs/B0-database-schema.md",
-    "docs/specs/B0-app-shell-component.md",
     "docs/specs/roadmap.md",
-    "evaluator.md"
+    ".auto-memory/environment.md",
+    "harness-rules.md"
   ],
   "docs": {
-    "spec": "docs/specs/BI1-test-infrastructure-spec.md",
+    "spec": "docs/specs/BI2-deployment-automation-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/BI1-test-infrastructure-signoff-2026-04-19.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
-  "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "BI1 fixing round 1 复验通过：coverage/integration/e2e 达标，批准签收。",
-    "pass_count": 10,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": []
+  "role_assignments": {
+    "planner": "Kimi",
+    "generator": "johnsong",
+    "evaluator": "Reviewer"
   },
+  "evaluator_feedback": null,
   "generator_handoff": null,
   "session_notes": {
-    "Kimi": "BI1 测试基建 planning 完成（Option α infra-first 序列第二棒）。10 features 按依赖顺序强制执行: F001 Vitest → F002 Testcontainers → F003 Playwright → F004 MSW → F005 Fixtures → F006 B0 unit tests → F007 B0 RLS+Auth integration → F008 marketer E2E → F009 视觉回归基线 → F010 CI 4 新 jobs。视觉基线= design-draft/stitch-references/dashboard.png。F007/F008 相当于'补打 B0 自动化覆盖'(B0 §7 严格手工验收的自动化版本); 测试跑不通时区分 BI1 测试错 vs B0 代码错(起 B0-hotfix 独立批次)。pre-impl 审计 → Planner 裁决模式继续适用, johnsong 如遇 spec 歧义先发审计请求。B0 sprint 历史见 commit 0ddd72e 之前所有 B0-* commits。",
-    "johnsong": "BI1 F001+F002+F003 done。F001 Vitest 4.1.4 + coverage-v8 + jsdom + testing-library；coverage.include 临时缩到 src/lib/utils.ts — F006 必须扩回 src/lib/** + src/components/**。F002 testcontainers 11.14 + tests/helpers/db.ts（admin=postgres 超级用户 + app=kolmatrix_app 走 RLS 双 Prisma client）。F003 Playwright 1.59 + chromium-headless-shell；playwright.config.ts（testDir tests/e2e/baseURL 3000 / viewport 1440x900 / screenshot+trace on failure / webServer npm run dev reuseExistingServer 本地 + timeout 180s / html+list reporter always）；scripts test:e2e / test:e2e:ui / test:e2e:debug；tests/e2e/landing.spec.ts 访问 / → redirect 链 → 断言 title /KOLMatrix/ 通过。.gitignore 加 playwright-report/ / test-results/ / blob-report/ / playwright/.cache/。WSL 首次跑需 sudo npx playwright install-deps chromium 补 libnspr4/libnss3 等系统库（用户已装）。Next 16 dev 首次冷启动 ~3 分钟（deprecation warning: middleware→proxy 迁移留给后续批次，非本批次范围）。schema 字段名陷阱：audienceGeoDist/AgeDist/GenderDist（Dist 后缀）。F004 MSW 2.13 装好；tests/mocks/handlers.ts 含 aigcgateway POST /v1/evaluate（默认 score 87 + breakdown）+ Resend POST /emails（默认 msg_mock_ 前缀 id）；MOCK_BASE_URLS 导出 aigcgateway.test / api.resend.com 作为测试契约 URL；tests/mocks/server.ts + browser.ts（setupWorker 预留给 F008/F009）；tests/setup.ts 接入 server.listen/resetHandlers/close，onUnhandledRequest=warn；tests/__example/msw-usage.test.ts 3 cases 示范默认 handler + once 覆盖 500 + 重置回默认。test:unit 10/10 PASS（F001 7 + F004 3），test:integration 3/3 + E2E 1/1 无回归。业务代码未来调 aigcgateway 时需 process.env.AIGCGATEWAY_BASE_URL = MOCK_BASE_URLS.aigcgateway 后 import。F005 @faker-js/faker 10.4 装好；tests/fixtures/{_counter,tenant,user,kol,campaign}.ts + index.ts barrel 就位，每文件有语义头注释；makeTenant/makeUser/makeKol/makeCampaign 都支持 overrides；FK 字段（tenantId / ownerUserId）默认是随机 UUID — 真实 DB 插入时 caller 必须 override 成已存在的实体 id（例：admin.user.create({ data: makeUser({ tenantId }) })）；user.hashedPassword 默认是 bcrypt('password123', cost=4) 一次算缓存到模块级常量（生产用 KOLM@2026! cost=10，仅测试用）；kol 随机 engagementRate 0.80–7.50（合 Decimal(5,2)）、aiScore 40–95、followerCount 10k–5M、handle 加 6 字符随机后缀 + counter 保 (tenantId,platform,handle) 唯一约束；campaign.kpiTarget JSONB shape {impressions,ctr,cvr}。tests/integration/fixtures-smoke.test.ts 3 cases round-trip 全 PASS。test:unit 10/10 + test:integration 6/6 无回归。F006 done — vitest.config.ts coverage.include 已扩回 src/lib/** + src/components/**（F001 留的坑填了）；tests/utils/render-intl.tsx 封装 NextIntlClientProvider + en messages 供客户端组件测试；src/lib/__tests__/db.test.ts 6 cases mock @prisma/client（class PrismaClient with $transaction stub）覆盖 withTenant/withPlatformAdmin UUID 校验 + SET LOCAL SQL + 回值透传；12 个 common 组件每个 2–3 cases 共 37 tests（含 onClick/disabled/tone/variant/icon 切换）；9 个 layout 测试含 SidebarNav active state 切换（必须 unmount+重挂新 renderIntl 保 context）、LanguageSwitcher 5 locale 列表 + 选中 disabled + router.push+updateUserLocale mock 联动、UserAvatarMenu Escape 关闭 + initial fallback、TopbarSearch Cmd/Ctrl+K 聚焦、AppShellLayout usePathname=/en/campaigns 激活 Campaigns、nav-config.ts deriveActiveNav 5 locale 前缀剥离。客户端组件依赖 next/link + next/navigation + @/app/[locale]/(app)/actions 统一 vi.mock。test:unit 最终 83/83 PASS（27 文件），test:coverage lines 96.36% / statements 93.54% / functions 96.36% / branches 85.71%，远超 80% 阈值。components/common lines 95.91%、components/layout lines 96.93%、lib lines 94.44%。jsdom 冷启动每文件 ~30s 导致全量跑 ~2.5min，可接受；StatCard 分支 77.77% 是 defaultAccent 未走到 flat/down，非硬性要求。F007 RLS+Auth 整合测试 3 文件 + tests/helpers/db.ts 加 asTenant(tenantId, fn) 辅助 + src/middleware-helpers.ts 抽 PROTECTED_PREFIXES/stripLocale/isProtected 供测试用（Vitest 不能 import src/middleware 因为 NextAuth 拉 next/server 触发 ESM 解析挂掉）。rls-isolation.test.ts 7 cases 覆盖 6 张多租户表（user/kol/campaign/kol_campaign/email_template/email_log）cross-tenant 隔离 + unscoped 默认拒。关键发现：unscoped 行为取决于 session 是否触发过 SET LOCAL — 触发过则 `''::uuid` throw，未触发则 `NULL::uuid` 过滤到 0 行（Postgres 自定义 GUC 语义），都是合法 default-deny，测试 try/catch 接受两种。auth-flow.test.ts 5 cases 测 CredentialsProvider 数据路径（fetch user + bcrypt compare + shape）+ jwt/session 回调串联（tenantId/role/locale 透传）+ wrong password/unknown email → null。测试内重写 withPlatformAdmin 避开 src/lib/db 模块级 DATABASE_URL 检查（import 时机早于 setupTestDb）。middleware.test.ts 9 cases 覆盖 PROTECTED_PREFIXES 内容 + stripLocale 5 locale 前缀剥离 + isProtected 嵌套/exact/近似前缀（/dashboarding 不匹配）+ 组合决策「unauth /dashboard → redirect」。test:integration 28/28 PASS（5 文件，~3min），test:unit 83/83 无回归。F008 tests/e2e/marketer-dashboard.spec.ts 4 cases + 原 landing.spec 共 5/5 PASS（~3min）。覆盖：登录 → redirect /dashboard（签到后 URL 可能保留 /dashboard 无 locale 前缀，无 /<locale>/ 前缀，需用宽松 regex /\\/dashboard(\\/|$)/ 兼容）、Welcome back Sarah + Total KOLs 显示、LanguageSwitcher 选中文后 nav link '仪表盘' 可见、点 KOL Database → /kols（B0 还没有 /kols 页面，仅断言 URL 跳转）。spec 中 '12,847 总 KOL 数' 是 Stitch 设计 mock 非真实 seed 值（seed 12 KOLs），测试改成断言 'Total KOLs' 标签 + 实际 count 12，已在注释和 session_notes 标注。依赖 dev DB 已 seed（docker PG 5433 + marketer@kolmatrix.local/KOLM@2026! + Sarah Chen）。F009 playwright.config.ts 加 snapshotPathTemplate 'tests/screenshots/baseline/{arg}{ext}' 让 baseline 入库可视路径；tests/e2e/visual-regression.spec.ts 登录 → /dashboard → networkidle → toHaveScreenshot('dashboard.png', fullPage + animations disabled + mask 动态 dateSubtitle + threshold 0.02 + maxDiffPixels 1000)；首次 --update-snapshots 生成 tests/screenshots/baseline/dashboard.png（1280×1192, 220KB）入库；stable re-run 0 diff；全量 E2E 6/6 PASS（landing + 4 marketer + 1 visual）。dateSubtitle 被 mask 以免每日漂移；emailsSent7d/avgAiScore 依赖 seed 时间戳，2%/1000px 容忍吸收自然噪声。regen baseline 命令：npx playwright test tests/e2e/visual-regression.spec.ts --update-snapshots。F010 CI workflow 3 新 jobs（unit-tests + coverage / integration-tests / e2e-tests），原 install+lint+typecheck+build 保留共 7 jobs。unit-tests: npm run test:coverage + codecov-action@v4 上传 lcov.info（CODECOV_TOKEN 缺失时 continue-on-error=true 不阻塞）。integration-tests: Testcontainers 自启 postgres:16-alpine 随机端口，不加 GHA service container（Docker 已在 ubuntu-latest 上 preinstalled）——这是对 spec 『PG + Redis service container』的合理偏离（Testcontainers 不需要外部服务）。e2e-tests: 含 PG service container（dev server 指向 localhost:5432）+ migrate deploy + db:seed + ms-playwright 缓存 + playwright install --with-deps chromium + npm run test:e2e + 失败上传 playwright-report artifact (retention 14d)。所有 jobs 跳过 docs/.md/进度类文件变更（paths-ignore 已配）。故意 break test → CI fail 留给用户/Evaluator 验证。下一棒：批次收尾交 Evaluator。",
-    "Reviewer": "BI1 reverifying 完成：npm run test:coverage 83/83 PASS；npm run test:integration 28/28 PASS；无代理 npm run test:e2e 为 5 passed + 1 skipped（visual 非 Linux 跳过策略）。已写 signoff 并置 done。",
-    "johnsong_fixing": "fixing round 1 完成 — 交 reverifying。(1) F008 commit d438777：新 migration 20260420000000_rls_nullif_empty_tenant 改 6 条 RLS 策略用 NULLIF(current_setting(...), '')::uuid 兜底；tests/integration/rls-isolation.test.ts 去掉 try/catch 补丁改稳定 toHaveLength(0)；5×marketer E2E workers=1 连续 20/20 PASS 证明 flaky 消除。(2) F002/F007 commit ad00973：新 tests/helpers/_colima-detect.ts import-for-side-effect 自动检测 Colima socket + 设置 DOCKER_HOST/RYUK_DISABLED，Reviewer 免手动 export。(3) F009 同 commit：test.skip(process.platform !== 'linux') 锁 Linux（CI+WSL 为 canonical baseline），macOS 跨平台渲染差异自动跳过。(4) F010 无代码改动（Planner 已在 commit 63fb129 修订 acceptance 文案）。全量验收本地：test:unit 83/83 / test:integration 28/28 / test:e2e 6/6 / CI 7/7 green（d438777 + ad00973 两轮）。交 Reviewer 复验。"
+    "Kimi": "BI2 部署自动化 planning 完成（Option α infra-first 序列第三棒）。8 features 按依赖顺序强制执行：F001 /api/health → F002 PM2 → F005 healthcheck → F004 backup → F006 rollback → F007 ROLLBACK SQL 校验 → F003 deploy workflow → F008 runbook。spec 已完整（docs/specs/BI2-deployment-automation-spec.md，2026-04-18 起草 + 2026-04-20 确认范围）。Planner 在 Generator 开工同时并行准备前置条件：VPS 工具安装（jq/pg_dump/certbot）+ 生成 deploy 专用 SSH key + GitHub Environment production + required reviewer + 3 个 Secrets（PROD_HOST/PROD_USER/PROD_SSH_KEY）。前置条件仅阻塞 F003 真实 deploy 验收，F001-F002/F005/F004/F006/F007/F008 可不等。BI1 sprint 历史见 commit 361e14a 之前所有 BI1-* commits；Framework v0.9.1 新增 database-patterns.md + pre-impl-adjudication.md §9.1 Planner 写 spec 自检清单。pre-impl 审计 → Planner 裁决模式继续适用，johnsong 如遇 spec 歧义先发审计请求。",
+    "johnsong": null,
+    "Reviewer": null
   },
   "features": []
 }
