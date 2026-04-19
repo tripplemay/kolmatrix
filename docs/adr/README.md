@@ -64,6 +64,7 @@ Proposed ──► Accepted ──► [Deprecated | Superseded by ADR-YYY]
 | [006](./ADR-006-pre-impl-audit-pattern.md) | Pre-Impl Audit → Planner Adjudication | Generator 主动审计 + Planner 裁决后开工 | Accepted | 2026-04-19 |
 | [007](./ADR-007-multi-tenant-rls-strategy.md) | Multi-Tenant RLS Strategy | 共享 DB + PostgreSQL RLS + tenant_id current_setting | Accepted | 2026-04-18 |
 | [008](./ADR-008-strict-manual-verification-mode.md) | Strict Manual Verification Mode | BI1 前 B0 用严格手工替代自动化测试 | Accepted | 2026-04-19 |
+| [009](./ADR-009-aigcgateway-integration.md) | AI Gateway Integration Strategy | @guangai/aigc-sdk + 同 VM 内网 + 3 档模型 + Action prompt + $100/月 | Accepted | 2026-04-19 |
 
 ## 按主题索引
 
@@ -82,6 +83,9 @@ Proposed ──► Accepted ──► [Deprecated | Superseded by ADR-YYY]
 
 ### 数据与安全
 - [ADR-007](./ADR-007-multi-tenant-rls-strategy.md) 多租户隔离
+
+### 外部服务集成
+- [ADR-009](./ADR-009-aigcgateway-integration.md) AI 网关集成（B2 前置）
 
 ---
 

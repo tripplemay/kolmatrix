@@ -19,6 +19,7 @@ F009 视觉回归基线 → F010 CI 4 新 jobs
 - ADR-001 Option α infra-first / ADR-002 技术栈最新版 / ADR-003 像素级还原 ±2px/ΔE<2
 - ADR-004 F010 12 组件锁定 / ADR-005 §11.2 组件接入口径 / ADR-006 pre-impl 审计模式
 - ADR-007 多租户 RLS 策略 / ADR-008 严格手工验收（BI1 后作废）
+- ADR-009 aigcgateway 集成（@guangai/aigc-sdk + 3 档模型 + Action prompt + $100/月）
 
 ## 后续顺序（已锁定 Option α）
 BI1 → BI2 部署自动化 → BI3 域名 TLS + Staging → B1 KOL Database → B2+

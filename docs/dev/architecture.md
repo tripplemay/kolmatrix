@@ -179,23 +179,68 @@ queue: data-refresh    — 定时刷新 KOL 数据（cron-like）
 
 ## 6. AI 调用（aigcgateway）
 
-> B0 不实现，留架构占位。
+> B0 不实现，B2 落地。完整决策见 ADR-009（AI Gateway Integration Strategy）。
 
 ### 6.1 客户端封装
 
-- `src/lib/aigc.ts` 包装 aigcgateway HTTP API
-- 所有 prompt 模板存 `prompts/{lang}/{purpose}.md`，运行时填变量
-- 模型选择：评分用 GPT-4o，文案生成用 Claude Sonnet 4.6
-- 全部调用记录到 `ai_call_log` 表（cost / token / latency）
+- **SDK：** `@guangai/aigc-sdk`（aigcgateway 官方 SDK，零依赖，Node 18+）
+- **入口：** `src/lib/aigc.ts` 单例包装 + `withTenantAudit` 统一写 `ai_call_log`
+- **baseUrl：**
+  - 生产：`http://localhost:3099/v1/`（同 Tokyo VM 走内网，零公网延迟）
+  - 本地开发：`https://aigc.guangai.ai/v1/`（直连生产 aigcgateway）
+  - 测试：MSW mock（不真调）
+- **认证：** API Key `pk_xxx`（aigcgateway 控制台生成，KOLMatrix 独立 key）
 
-### 6.2 KOL AI 评分管道
+### 6.2 模型分级策略（ADR-009）
+
+| 档位 | 用途 | 首选模型 | 降级 |
+|---|---|---|---|
+| L1 批量档 | KOL crawler 入库粗筛 | `deepseek-v3` | Qwen-Max |
+| L2 精评档 | 客户候选名单精评、品牌安全审查 | `claude-sonnet-4` | `gpt-4o` |
+| L3 匹配档 | Campaign × KOL 匹配、邮件个性化 | `gemini-2.5-pro` | `deepseek-v3` |
+
+降级由 aigcgateway 自动触发（provider 健康检查机制），应用层无感。
+
+### 6.3 Prompt 管理（aigcgateway Action）
+
+**决策（ADR-009）：** 不自管 `prompts/*.md` 文件，改用 aigcgateway **Action** 机制。
+
+- Prompt 模板在 aigcgateway 控制台创建 Action（含变量声明）
+- KOLMatrix 按 Action ID 调用：`gw.runAction({ actionId, variables, version_id })`
+- 版本切换不用重新 deploy KOLMatrix
+
+**初始 Action 清单（B2 spec 阶段创建）：**
+
+| Action ID | 用途 | 默认模型档 |
+|---|---|---|
+| `kol-eval-bulk` | 批量评分 | L1 |
+| `kol-eval-precision` | 精评 | L2 |
+| `kol-campaign-match` | 匹配度评分 | L3 |
+| `email-personalize` | 邮件个性化（B4） | L2 |
+
+Prompt 模板初版由 Planner 起草，用户 review 迭代。
+
+### 6.4 KOL AI 评分管道
 
 ```
-new_kol → ai-evaluate queue → aigcgateway (GPT-4o)
-  → 解析 KOL 内容 + 受众数据
-  → 输出 score (0-100) + tags + audience_estimate
-  → 写回 kol 表 + ai_eval_log
+new_kol → ai-evaluate queue (BullMQ)
+  ↓ worker 拉取
+src/features/kol-eval/evaluator.ts
+  ↓ 组装变量
+gw.runAction({ actionId: 'kol-eval-bulk', variables: {...} })
+  ↓ aigcgateway 路由到 DeepSeek V3
+返回 JSON { score: 0-100, breakdown: {4 维}, tags: [...] }
+  ↓ 写回
+kol 表 (ai_score / ai_score_breakdown / ai_evaluated_at)
++ ai_call_log 表 (tenant_id / cost / latency / trace_id)
 ```
+
+### 6.5 成本控制（ADR-009）
+
+- **月度预算：** $100 USD（B2-B4 初期分配：L1 $20 + L2 $30 + L3 $20 + 邮件 $30）
+- **硬防线：** aigcgateway 预充值机制，余额用完自动停调用
+- **软防线：** `ai_call_log` 月度聚合，超 80% 告警（cron 实现）
+- **审计：** 每次调用 traceId 可追溯到 aigcgateway audit 日志
 
 ### 6.3 邮件个性化
 

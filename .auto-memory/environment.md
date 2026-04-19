@@ -17,6 +17,19 @@ type: reference
 - Stitch 早期探索项目（已淘汰）：`5540715662009406892`（scratch screens，不作参考）
 - 视觉规范完整文档：`design-draft/design-system.md` + `docs/specs/visual-baseline.md`
 
+## aigcgateway 姊妹项目（同 VM 部署）
+
+- **项目位置：** `~/project/aigcgateway`
+- **生产 API：** `https://aigc.guangai.ai/v1/`（OpenAI 兼容格式）
+- **控制台：** `https://aigc.guangai.ai`（生成 API Key、创建 Action / Template）
+- **MCP 端点：** `https://aigc.guangai.ai/mcp`（25 tools）
+- **SDK：** `@guangai/aigc-sdk`（零依赖，Node 18+）
+- **内网 URL：** `http://localhost:3099/v1/`（同 VM 走内网，生产用，零公网延迟）
+- **KOLMatrix API Key：** `TBD`（B2 启动前由用户在 aigcgateway 控制台生成 pk_xxx，分 dev/prod 两份）
+- **月预算：** $100 USD（B2-B4 初期）
+- **Actions 清单（B2 spec 阶段创建）：** `kol-eval-bulk` / `kol-eval-precision` / `kol-campaign-match` / `email-personalize`
+- **集成决策：** 见 ADR-009
+
 ## 生产服务器（与 aigcgateway 共机）
 
 | 项目 | 值 |
