@@ -14,7 +14,7 @@
       "title": "PM2 ecosystem.config.js",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "项目根 ecosystem.config.js 声明 kolmatrix app（script:npm / args:start / cwd:/opt/kolmatrix / instances:1 / exec_mode:cluster / max_memory_restart:1G / env.NODE_ENV=production / env.PORT=3001 / env_file:/opt/kolmatrix/.env.production / log_date_format / out_file+error_file:/var/log/pm2/ / merge_logs:true）；worker 进程声明注释预留（B5+ 启用）；README（或 deployment-runbook）说明 pm2 start/save/startup + reload/logs/status 常用命令；pm2 reload kolmatrix --update-env 不丢请求（手动验证用 curl 循环）"
     },
     {
