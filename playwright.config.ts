@@ -12,6 +12,10 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./tests/e2e",
+  // F009 visual regression baselines live at a predictable repo-tracked
+  // path instead of the Playwright default ({testFilePath}-snapshots/)
+  // so the team can review and diff them directly in git.
+  snapshotPathTemplate: "tests/screenshots/baseline/{arg}{ext}",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

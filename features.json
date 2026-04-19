@@ -70,7 +70,7 @@
       "title": "视觉回归基线 + Dashboard 截图对比",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "tests/e2e/visual-regression.spec.ts 含 /dashboard toHaveScreenshot('dashboard.png', { threshold: 0.02, maxDiffPixels: 1000 })；首次 --update-snapshots 创建 baseline 存 tests/screenshots/baseline/ 并 commit 入库；后续跑测试 dashboard 截图与 baseline diff < 2%；故意改 Dashboard CSS 触发 diff 测试失败 + 生成 diff 图"
     },
     {
