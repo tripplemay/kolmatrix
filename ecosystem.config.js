@@ -65,6 +65,33 @@ module.exports = {
       merge_logs: true,
     },
 
+    // BI3 F003 — Staging sibling process. Same codebase, independent DB
+    // (kolmatrix_staging), independent port (3002), behind Nginx vhost
+    // staging.kol.guangai.ai. Single fork instance: staging load is
+    // trivial and zero-downtime reload isn't needed — preview branches
+    // will simply `pm2 restart kolmatrix-staging`.
+    {
+      name: "kolmatrix-staging",
+      script: "server.js",
+      cwd: "/opt/kolmatrix-staging",
+      instances: 1,
+      exec_mode: "fork",
+      wait_ready: true,
+      listen_timeout: 10000,
+      kill_timeout: 5000,
+      max_memory_restart: "1G",
+      env: {
+        NODE_ENV: "production",
+        PORT: 3002,
+        APP_ENV: "staging",
+      },
+      env_file: "/opt/kolmatrix-staging/.env.staging",
+      out_file: "/var/log/pm2/kolmatrix-staging-out.log",
+      error_file: "/var/log/pm2/kolmatrix-staging-error.log",
+      log_date_format: "YYYY-MM-DD HH:mm:ss Z",
+      merge_logs: true,
+    },
+
     // B5 — BullMQ worker. Kept in-manifest (commented) so reviewers
     // see the intended shape when we flip it on.
     //
