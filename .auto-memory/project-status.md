@@ -4,12 +4,12 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BI2-deployment-automation** — status=fixing（Reviewer round 2 复验 5 PASS / 2 PARTIAL / 1 FAIL）。Planner 已下发 F002 方案 A 裁决（双实例 + kill_timeout），待 Generator 执行；F006/F008 仍待 Reviewer 专项演练。
-  - 实测 VPS：/api/health 200 healthy，/login 200 Sign in，未登录 /en/dashboard 307→/login ✓
-  - Prod DB seed 已跑（2026-04-20 Planner 执行）：1 tenant + admin/Sarah Chen + 12 KOLs + 3 campaigns + 4 templates + 300 emailLogs
-  - DB 命名 spec 坑 Planner 裁决方案 A（接受固定名 `kolmatrix`）：environment.md / architecture.md / BI2 spec / infrastructure.md / runbook 文案全对齐
-  - 仍 TBD：用户再触发 1 次 deploy-prod.yml 让 .git_sha 从 'unknown' 变真；AIGCGATEWAY_API_KEY / RESEND_API_KEY 填真值（B2/B4 前）
-  - VPS 详细快照见 .auto-memory/environment.md；Reviewer round 2 执行清单见 progress.json.generator_handoff
+- **BI2-deployment-automation** — status=fixing（F002 等 Planner 重裁决 B1/B2/C；F006/F008 待 Reviewer 演练）
+  - F002 方案 A（spec §2.1 instances=2 + `npm start`）2026-04-20 下午上 VPS 实测两轮：Round A EADDRINUSE crash loop 116×；Round A'（script: next 直连）56/60（93%）仍差 4×000。详见 `docs/specs/BI2-f002-round2-adjudication.md`，Kimi 以短格式回 #1:B1/B2/C 裁决。
+  - VPS 此刻：两 worker id 8/9 restart=2 均 online；公网 non-reload 100% 200；pm2 save 已锁双实例态。**不要手动 `pm2 start ecosystem.config.js`**，reload 仍有丢包窗口。
+  - Prod DB seed 已跑：1 tenant + admin/Sarah + 12 KOL + 3 campaigns + 4 templates + 300 emailLogs
+  - DB 命名方案 A 对齐完毕（`kolmatrix`）
+  - 仍 TBD：AIGCGATEWAY_API_KEY / RESEND_API_KEY（B2/B4 前）
 - **BI1-test-infrastructure** ✅ 已完成签收（10/10 + Round 1 fix + reverify 通过，framework v0.9.1 沉淀）
 - **B0-foundation** ✅ 已完成签收（10/10 + 12 PASS 0 FAIL，Round 3 reverify 通过）
 
