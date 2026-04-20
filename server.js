@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-require-imports --
+   server.js is a CommonJS entry point executed by Node directly (PM2
+   cluster worker). Next.js app code is still TypeScript/ESM; this file
+   just mounts it. */
 // server.js — Next.js production server with PM2 wait_ready integration.
 //
 // PM2 cluster mode needs to know the exact moment a new worker starts
