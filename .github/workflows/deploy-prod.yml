@@ -43,8 +43,9 @@ jobs:
           host: ${{ secrets.PROD_HOST }}
           username: ${{ secrets.PROD_USER }}
           key: ${{ secrets.PROD_SSH_KEY }}
-          script_stop: true
           envs: GIT_SHA,SKIP_BACKUP
+          # deploy-prod.sh itself has `set -euo pipefail`, so any step's
+          # non-zero exit halts the deploy before PM2 touches new code.
           script: |
             cd /opt/kolmatrix && ./scripts/deploy-prod.sh
         env:
