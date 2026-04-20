@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "域名 TLS + Staging 环境：生产 HTTPS 审计到 SSL Labs A+、staging.kol.guangai.ai 独立子域 + 独立 DB + 独立 PM2 进程、证书自动续期 + 失败告警、kolquest.com 品牌域 301 redirect 到主站、TLS/Staging runbook 入库。完成后 Option α infra-first 收官，进入 B1 业务批次。",
   "total_features": 7,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
   "current_sprint": "BI3-domain-and-tls",
-  "last_updated": "2026-04-20T10:45+0900",
+  "last_updated": "2026-04-20T10:55+0900",
   "reference_docs": [
     "docs/specs/BI3-domain-and-tls-spec.md",
     "docs/specs/BI2-deployment-automation-spec.md",

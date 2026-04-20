@@ -14,7 +14,7 @@
       "title": "Staging 子域 DNS + Nginx vhost + 证书",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "用户操作：DNS 加 A 记录 staging.kol.guangai.ai → 34.180.93.185；Nginx vhost /etc/nginx/sites-available/staging.kolmatrix（80→301 https / 443 ssl http2 / proxy_pass http://localhost:3002 / X-Robots-Tag noindex / HSTS / TLSv1.2+1.3）；certbot --nginx 签发 staging.kol.guangai.ai 证书（独立证书非主域）；enable + nginx -t + systemctl reload；infrastructure/nginx/staging.kol.guangai.ai.conf 入库。Acceptance: dig 解析 34.180.93.185；curl -I https://staging.kol.guangai.ai 200（后端未起时至少 502 证明 nginx 工作）；X-Robots-Tag noindex 头存在"
     },
     {
