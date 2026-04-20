@@ -92,37 +92,94 @@ Overall finishing notes:
 
 ---
 
-## Prompt 2 — 注册 / Request Access（Sign up · KOLMatrix）
+## Prompt 2 — 注册 / Request Access v2（Sign up · KOLMatrix · 游戏氛围版）
+
+> **重写版本（2026-04-20）**：与登录页 v2 视觉配对 —— 同 58/42 split，但左图换成"作战控制室"场景（与登录的"场馆外观"形成叙事反差：登录看向舞台，注册走进后场）。文案也做呼应："like a launch day" ↔ "Every launch has a war room"。
 
 ```
-Generate a desktop sign-up / access request screen for "KOLMatrix". Use the same Neural Velocity visual language and the same no-sidebar pre-auth layout as the sign-in screen. Make this feel like the sister page — same card frame, same ambient cyan glow, but a longer form.
+Generate a desktop sign-up / "Request workspace access" screen for "KOLMatrix" — a gaming-vertical KOL marketing platform. Visual tone = Neural Velocity (deep navy #0b1326 base, electric cyan #00E5FF accents, glassmorphism). This page is the sister of the sign-in screen: same 58/42 split, same underline-only form grammar, same cyan glow — but a different cinematic image and a longer form, because this is the "join the operators" flow, not the daily-return flow.
 
-Product positioning note: KOLMatrix is invite-oriented for B2B gaming studios. This page is framed as "Request access" not open self-serve, but behaves like a signup form.
+Product positioning: KOLMatrix is invite-gated B2B for gaming studios and agencies. This page is framed as "Request workspace access" — submitted forms are reviewed within one business day.
 
-Layout:
-- 1440×900 viewport, navy bg, subtle cyan radial glow at top-center.
-- Centered card, ~480px wide (slightly wider than login), same surface color #14213b, 16px rounded, 40px padding.
+Overall layout — hard 58/42 vertical split at 1440×900:
+- LEFT column 58% (840px wide) = cinematic hero image with overlay.
+- RIGHT column 42% (600px wide) = signup form on navy #0b1326 base, no card frame.
+- Between columns: the rightmost ~40px of the left image fades via a cyan radial glow (#00E5FF 12% opacity) into the form column — same continuous treatment as the sign-in page.
 
-Card content top-to-bottom:
-1. KOLMatrix wordmark (cyan dot + Inter 700 24px white).
-2. Header "Request workspace access" (Inter 600 22px white) + 4px subtitle "We'll review your request within one business day" (slate-400 Inter 400 13px).
-3. 28px gap.
-4. Two-column row (side by side, 16px gap): "First name" input + "Last name" input. Both 44px tall, same input styling as sign-in.
-5. 18px gap. Full-width "Work email" input (placeholder "you@studio.com"), with a subtle hint line below in slate-500 Inter 400 12px: "Use your company email. Personal emails (@gmail, @outlook) will be flagged for manual review."
-6. 18px gap. Full-width "Company / studio name" input (placeholder "e.g. Lightning Games").
-7. 18px gap. Full-width "Role" dropdown select (placeholder "Select your role"): options Marketing Manager / Influencer Relations / Growth Lead / Founder / Other. Dropdown styling same as input; chevron icon on right (slate-400).
-8. 18px gap. Full-width "How many KOL campaigns per quarter?" dropdown: 0–5 / 6–20 / 21–50 / 50+.
-9. 18px gap. Multi-line textarea (96px tall, same styling as inputs) with label "What games are you working on?" and placeholder "e.g. Honor of Kings, Genshin Impact, Valorant — or leave blank if not applicable".
-10. 16px gap. Full-width checkbox row: "I agree to the <cyan link>Terms of Service</cyan link> and <cyan link>Privacy Policy</cyan link>" (Inter 400 13px slate-300, cyan check when active).
-11. 24px gap. Primary button "Submit request" (full width, cyan solid, navy text, 48px, 12px rounded, right arrow icon). Hover cyan glow.
-12. 20px gap. Secondary text "Already have access? <cyan link>Sign in</cyan link>" (Inter 400 13px slate-400, centered).
+LEFT column (cinematic hero, 840×900, full bleed):
 
-Right-side helper strip (subtle, inside the card viewport or as a smaller secondary panel above the footer): Three tiny bullets "Used by 200+ studios · 800K KOL library · 9 supported languages" (Inter 400 11px slate-500, separated by cyan dots, centered row).
+Render a dark moody scene that reads as "the operations war room behind every campaign" — intentionally contrasting with sign-in's "esports arena from the stands" scene:
 
-Footer: same as sign-in.
+Scene: a dimly lit control room / broadcast ops room seen from a mid-corner angle. A large curved wall of monitors fills the back wall, each monitor showing abstract data — scrolling KOL roster tables, a world map with cyan activity blips across APAC / SEA / EU / Americas, stream health dashboards with waveforms, a Gantt-style campaign timeline. Foreground: backs of two operators' chairs (silhouettes only, not faces), their headsets catching cyan rim-light from the monitors. Low-contrast cyan and teal color grade, crushed blacks, subtle film grain. Composition: monitor wall occupies roughly upper-right 60%, operator silhouettes lower-left. Keep the upper-left quadrant largely empty (negative space for overlay text — mirror of the sign-in layout so the pages feel paired).
 
-Typography & tokens: Inter, Neural Velocity palette. No App Shell. No success-state variation (just the empty form). All form fields default empty.
+Overlay elements (floating HUD-style UI, matching sign-in's language):
+
+1. Top-left corner (40px padding): KOLMatrix wordmark (8px cyan dot with outer glow + "KOLMatrix" Inter 700 20px white). Tagline line underneath in Inter 400 11px uppercase letter-spacing 0.5px slate-300: "OPERATOR PROGRAM · BY INVITE".
+
+2. Mid-left positioned main headline (approximately 42% from viewport top, 40px left padding):
+   Line 1: "Every launch has a war room." (Inter 700, 40px, white, tight tracking)
+   Line 2: "This is yours." (Inter 700, 40px, cyan-300 with subtle cyan glow)
+   Subtitle beneath (Inter 400, 16px, slate-300, max-width 440px): "KOLMatrix is invite-only. Tell us who you are and what you ship — we review every request within one business day."
+
+3. Floating HUD "data chips" placed across the scene, each with a colored dot + Inter 500 12px white text inside glass pill (rgba(255,255,255,0.08) + backdrop blur, 24px tall, 8px rounded). Place them so they feel like annotations overlaid on the monitor wall content:
+   - Upper-right (approx 65% from left, 22% from top): "48h median response time" (cyan dot).
+   - Mid-right (approx 75% from left, 48% from top): "6,200 campaigns shipped" (emerald dot).
+   - Lower-right (approx 68% from left, 70% from top): "Live ops in 9 timezones" (cyan dot).
+   - Lower-center (approx 38% from left, 82% from top): "Zero churn in year one" (emerald dot).
+
+4. Bottom-left corner (40px padding): three-row "who applied last" social proof stack (distinct from sign-in's logo strip so the two pages don't repeat):
+   Row 1 (Inter 400, 11px, uppercase, slate-500, letter-spacing 0.8px): "RECENTLY JOINED"
+   Row 2: horizontal stack of 3 mini cards (each ~140px wide, 44px tall, bg rgba(255,255,255,0.04), 8px rounded, 8px padding, 12px gap). Inside each: a circular avatar placeholder (28px, cyan-tinted initials "LG" / "VN" / "ST" respectively in Inter 600 11px slate-200) + two lines of Inter 500 11px white name + Inter 400 10px slate-400 subline:
+   - "Lightning Games" / "Marketing · Tokyo"
+   - "Voidpeak Studios" / "Growth · LA"
+   - "Starforge" / "Influencer Ops · Seoul"
+
+5. Very subtle cyan particle / light drift overlay from bottom of image upward (6% opacity, same as sign-in).
+
+RIGHT column (signup form, 600×900, navy base, no card frame):
+
+Form horizontally centered in the right column, max-width 420px. The signup form is longer than login, so use a tighter vertical rhythm (gaps 16-18px instead of 20-24px). Top padding 88px so wordmark isn't the very first thing — the form breathes at its own pace and matches the left image vertically.
+
+Content top-to-bottom:
+
+1. Header "Request workspace access" (Inter 600, 24px, white) + subtitle "We'll review your application within one business day" (Inter 400, 13px, slate-400). 28px gap.
+
+2. Two-column row (8px gap between columns, 204px each):
+   - Label "FIRST NAME" (Inter 500, 11px, slate-400, uppercase, letter-spacing 0.6px). 6px gap.
+   - Input: 44px tall, bg rgba(255,255,255,0.03), bottom underline 1px slate-700 (2px cyan on focus), placeholder "Sarah" (slate-500).
+   - Right column: "LAST NAME" / "Chen".
+   16px gap below row.
+
+3. Full-width "WORK EMAIL" label + input (same underline-only style), placeholder "you@studio.com". Small hint line below in slate-500 Inter 400 11px: "Personal emails (@gmail, @outlook) will be flagged for manual review." 18px gap.
+
+4. Full-width "COMPANY / STUDIO" label + input, placeholder "e.g. Lightning Games". 18px gap.
+
+5. Full-width "YOUR ROLE" label + dropdown select (same underline grammar, chevron right in slate-400), placeholder "Select your role". Showing options as list when open: Marketing Manager / Influencer Relations / Growth Lead / Founder / Agency PM / Other. 18px gap.
+
+6. Full-width "KOL CAMPAIGNS PER QUARTER" label + dropdown, placeholder "Select range", options 0–5 / 6–20 / 21–50 / 50+. 18px gap.
+
+7. Full-width "GAMES YOU SHIP" label + textarea (80px tall, same underline grammar — treat the textarea's bottom edge as the underline; no side borders). Placeholder "Honor of Kings, Valorant, Dota 2... or paste your Steam / App Store URLs". 16px gap.
+
+8. Full-width checkbox row: "I agree to the <cyan link>Terms of Service</cyan link> and <cyan link>Privacy Policy</cyan link>" (Inter 400, 12px, slate-300, cyan check when ticked, 16px checkbox). 20px gap.
+
+9. Primary button "Submit request" — full width 420px, 52px tall, 12px rounded, solid cyan #00E5FF with navy #0b1326 text, Inter 600 15px, right arrow icon, cyan outer glow (rgba(0,229,255,0.25) 0 0 24px). 16px gap.
+
+10. Secondary text (centered): "Already have access? <cyan link>Sign in</cyan link>" (Inter 400 12px slate-400, right arrow icon). 
+
+11. Far bottom-right of the right column (40px padding from bottom), small text: "© 2026 KOLMatrix · Tokyo" (Inter 400 11px slate-500).
+
+Overall finishing notes:
+- Inter font everywhere. Material Symbols Outlined for icons.
+- No serif. No card/box around the form. All inputs are underline-only.
+- The visual grammar on the right MUST match sign-in exactly (same underline styling, same cyan focus glow, same primary button treatment, same bottom switch-link text pattern). Pages should feel like two views of the same product.
+- The left image MUST differ from sign-in's arena scene — this one is control-room / inside-the-operation, matching the "join us" narrative.
+- Use Neural Velocity tokens from the project Design System Asset 18406648320972948834.
+- Do NOT add sidebar, topbar, or any other App Shell chrome. This is pre-auth.
+- Do NOT render success state — form is empty awaiting input.
+- Keep the left-image overlay copy in English to match sign-in.
 ```
+
+> **备选（未采用）**：注册页保持 v1 居中卡，让登录做主视觉、注册做功能页。此方案视觉一致性最弱，用户选择"统一风格"后放弃。
 
 ---
 
