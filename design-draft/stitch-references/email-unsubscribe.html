@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Unsubscribe &amp; Suppression | KOLMatrix</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-on-surface": "#283044",
+                        "secondary": "#d8b9ff",
+                        "tertiary-container": "#fec931",
+                        "inverse-primary": "#006875",
+                        "on-tertiary-fixed": "#251a00",
+                        "on-secondary-fixed-variant": "#6200bc",
+                        "surface-container-high": "#222a3e",
+                        "on-secondary": "#450086",
+                        "on-error-container": "#ffdad6",
+                        "on-surface-variant": "#bac9cc",
+                        "primary-fixed-dim": "#00daf3",
+                        "tertiary-fixed": "#ffdf96",
+                        "surface-container-low": "#131b2e",
+                        "surface-bright": "#31394e",
+                        "secondary-fixed": "#eddcff",
+                        "surface-container-lowest": "#060d20",
+                        "surface": "#0b1326",
+                        "on-secondary-container": "#d5b5ff",
+                        "tertiary-fixed-dim": "#f3bf26",
+                        "tertiary": "#ffeac0",
+                        "secondary-fixed-dim": "#d8b9ff",
+                        "on-primary-fixed": "#001f24",
+                        "primary-fixed": "#9cf0ff",
+                        "on-secondary-fixed": "#290055",
+                        "error": "#ffb4ab",
+                        "on-background": "#dbe2fd",
+                        "on-tertiary-container": "#6f5500",
+                        "on-primary-container": "#00626e",
+                        "on-surface": "#dbe2fd",
+                        "on-error": "#690005",
+                        "surface-container": "#171f33",
+                        "on-tertiary": "#3e2e00",
+                        "background": "#0b1326",
+                        "surface-dim": "#0b1326",
+                        "on-primary-fixed-variant": "#004f58",
+                        "on-primary": "#00363d",
+                        "secondary-container": "#6e06d0",
+                        "outline-variant": "#3b494c",
+                        "outline": "#849396",
+                        "inverse-surface": "#dbe2fd",
+                        "surface-container-highest": "#2d3449",
+                        "surface-variant": "#2d3449",
+                        "primary": "#c3f5ff",
+                        "error-container": "#93000a",
+                        "primary-container": "#00e5ff",
+                        "surface-tint": "#00daf3",
+                        "on-tertiary-fixed-variant": "#594400"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "16": "16px",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(23, 31, 51, 0.4);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(156, 240, 255, 0.05);
+        }
+        .text-gradient-cyan {
+            background: linear-gradient(135deg, #00daf3 0%, #c3f5ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-container/30">
+<!-- SIDEBAR -->
+<aside class="fixed left-0 top-0 h-screen w-[240px] flex flex-col bg-surface-container-lowest shadow-[20px_0_20px_rgba(0,229,255,0.03)] p-6 z-50">
+<!-- Logo Block -->
+<div class="flex items-center gap-3 mb-8 h-14">
+<div class="bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] text-[#0b1326] font-bold rounded-[10px] p-2 w-10 h-10 flex items-center justify-center">
+<span class="text-lg leading-none">K</span>
+</div>
+<div>
+<h1 class="text-white font-bold text-lg leading-none tracking-tight">KOLMatrix</h1>
+<p class="text-[9px] font-semibold text-outline tracking-[0.15em] mt-1 uppercase">Neural Velocity</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex-grow flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-on-surface-variant font-medium hover:bg-surface-container-high/50 hover:text-on-surface transition-all group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-primary-container" data-icon="dashboard">dashboard</span>
+<span class="text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-on-surface-variant font-medium hover:bg-surface-container-high/50 hover:text-on-surface transition-all group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-primary-container" data-icon="travel_explore">travel_explore</span>
+<span class="text-sm">KOL Discovery</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-on-surface-variant font-medium hover:bg-surface-container-high/50 hover:text-on-surface transition-all group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-primary-container" data-icon="groups">groups</span>
+<span class="text-sm">KOL Database</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-on-surface-variant font-medium hover:bg-surface-container-high/50 hover:text-on-surface transition-all group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-primary-container" data-icon="rocket_launch">rocket_launch</span>
+<span class="text-sm">Campaigns</span>
+</a>
+<!-- Active State -->
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-primary-container font-semibold border-l-2 border-primary-container bg-gradient-to-r from-[rgba(0,229,255,0.1)] to-transparent" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="forward_to_inbox">forward_to_inbox</span>
+<span class="text-sm">Email Center</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-on-surface-variant font-medium hover:bg-surface-container-high/50 hover:text-on-surface transition-all group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-primary-container" data-icon="inventory_2">inventory_2</span>
+<span class="text-sm">Products</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-on-surface-variant font-medium hover:bg-surface-container-high/50 hover:text-on-surface transition-all group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-primary-container" data-icon="query_stats">query_stats</span>
+<span class="text-sm">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-on-surface-variant font-medium hover:bg-surface-container-high/50 hover:text-on-surface transition-all group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-primary-container" data-icon="settings">settings</span>
+<span class="text-sm">Settings</span>
+</a>
+</nav>
+<!-- User Chip -->
+<div class="mt-auto pt-6">
+<div class="flex items-center gap-3 p-3 rounded-[10px] hover:bg-surface-container-high/40 transition-colors cursor-pointer group">
+<div class="w-9 h-9 rounded-full overflow-hidden border border-transparent group-hover:border-primary-container/50 transition-all">
+<img alt="Sarah Chen Avatar" class="w-full h-full object-cover" data-alt="professional headshot of a smiling asian woman with short dark hair in a modern studio setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRRgy8kleDLkSLrRXZuxO0pZjssLM7FtStB3sKjC-oUFwSeIReuxGWr-YxbwhYVXto3KkBZfXFbFLo6GhSkj2TpDTsT__dyo7-jhOaWySvMBicg2j2Zj8m4DN_2x3fTDefb6xH1a9BPYtP3gKxUJW3B_UNQb5pHzTnM1Z9vCFXcOphpTlmqbuTVYvKD7aekr0LkVj7wTLOQSgTOTVik9Qwje8DPJetQg0qbq1zQhwoGwRycRpwbKhNGFayMH2qoP9tt6D1V9ZCTzI"/>
+</div>
+<div class="flex-grow">
+<p class="text-white text-sm font-semibold leading-none">Sarah Chen</p>
+<p class="text-outline text-[11px] mt-1 leading-none">Ops Lead</p>
+</div>
+<span class="material-symbols-outlined text-outline text-lg" data-icon="unfold_more">unfold_more</span>
+</div>
+</div>
+</aside>
+<!-- TOP BAR -->
+<header class="fixed top-0 left-[240px] right-0 h-16 bg-surface/85 backdrop-blur-[24px] flex items-center justify-between px-8 z-40 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+<div class="flex items-center gap-2">
+<span class="text-white font-semibold text-base">Email Center</span>
+</div>
+<div class="flex-1 max-w-[480px] mx-8">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-lg" data-icon="search">search</span>
+<input class="w-full h-10 bg-surface-container-highest rounded-full pl-11 pr-16 text-sm border-none focus:ring-1 focus:ring-primary-container/40 focus:bg-surface-container-highest transition-all placeholder:text-outline/70" placeholder="Search KOLs, campaigns, emails..." type="text"/>
+<div class="absolute right-3.5 top-1/2 -translate-y-1/2 border border-outline/20 rounded px-1.5 py-0.5 bg-surface/50">
+<span class="text-[10px] font-medium text-outline">Cmd+K</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="flex items-center gap-1.5 text-on-surface-variant hover:text-primary-container transition-colors">
+<span class="text-[13px] font-semibold">EN</span>
+<span class="material-symbols-outlined text-lg" data-icon="expand_more">expand_more</span>
+</button>
+<div class="relative cursor-pointer group">
+<span class="material-symbols-outlined text-[22px] text-on-surface-variant group-hover:text-primary-container transition-colors" data-icon="notifications">notifications</span>
+<span class="absolute top-0 right-0 w-1.5 h-1.5 bg-error rounded-full"></span>
+</div>
+<div class="w-px h-6 bg-outline/15"></div>
+<div class="flex items-center gap-2 cursor-pointer group">
+<div class="w-8 h-8 rounded-full overflow-hidden border border-transparent group-hover:border-primary-container transition-all">
+<img alt="Sarah Chen" class="w-full h-full object-cover" data-alt="professional headshot of a smiling asian woman with short dark hair in a modern studio setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDftN3jCFXMAPwKYSnY7LM-uXzkQF4qa2lzU-4YZrgxU2mtPknmKQh7EVDEaf2qCsFPETjVtmzjgc9rIrYvsIj6HwelZaH253OKjC-_0p2bgwKh0IwrrXSui0KBtp1PBIKYu_qIogcR3X5Ge9PfZF13lgQKr5JLdsRdKXack_sc31JsLIAIfeJs_pu0CRxfhO6xd1vMLHYjLq66bh5sYVS9WxbzxJejuYkEDYedZzxnyC9YqDkQsZXJcWx0Sg-mRVJp05A5XK9mS6o"/>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary-container" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+</header>
+<!-- MAIN CONTENT -->
+<main class="ml-[240px] pt-24 px-8 pb-12 min-h-screen">
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-6">
+<span class="hover:text-primary-container cursor-pointer transition-colors">Email Center</span>
+<span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+<span class="text-white font-medium">Unsubscribe</span>
+</nav>
+<!-- Page Header -->
+<div class="flex justify-between items-start mb-8">
+<div>
+<h1 class="text-3xl font-bold text-white tracking-tight mb-2">Unsubscribe &amp; suppression</h1>
+<p class="text-on-surface-variant max-w-2xl leading-relaxed">
+                    Compliance-critical. Entries here are globally enforced and cannot be overridden without reauthorization.
+                </p>
+</div>
+<div class="flex gap-3">
+<button class="px-5 py-2.5 rounded-lg border border-outline/30 text-on-surface hover:bg-surface-container transition-colors text-sm font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-lg" data-icon="download">download</span>
+                    Export CSV
+                </button>
+<button class="px-5 py-2.5 rounded-lg bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] text-[#0b1326] font-bold hover:scale-[1.02] active:scale-95 transition-all text-sm flex items-center gap-2 shadow-[0_0_20px_rgba(0,229,255,0.2)]">
+<span class="material-symbols-outlined text-lg" data-icon="upload_file">upload_file</span>
+                    Import suppression list
+                </button>
+</div>
+</div>
+<!-- Tab Bar -->
+<div class="flex border-b border-outline/10 mb-8">
+<button class="px-6 py-3 text-sm font-semibold text-primary-container border-b-2 border-primary-container">
+                Suppression list · 1,284
+            </button>
+<button class="px-6 py-3 text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">
+                Public page preview
+            </button>
+</div>
+<!-- Tab Content 1 -->
+<div class="space-y-6">
+<!-- Filter Row -->
+<div class="bg-surface-container-low rounded-16 p-5 flex flex-wrap gap-4 items-center border border-outline/5">
+<div class="relative w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg" data-icon="search">search</span>
+<input class="w-full h-11 bg-surface-container-highest border-none rounded-xl pl-10 pr-4 text-sm focus:ring-1 focus:ring-primary-container/30" placeholder="Search by email or domain..." type="text"/>
+</div>
+<select class="h-11 bg-surface-container-highest border-none rounded-xl px-4 text-sm focus:ring-1 focus:ring-primary-container/30 text-on-surface cursor-pointer min-w-[140px]">
+<option>Reason: All</option>
+<option>Unsubscribed</option>
+<option>Hard bounce</option>
+<option>Soft bounce</option>
+<option>Spam complaint</option>
+</select>
+<select class="h-11 bg-surface-container-highest border-none rounded-xl px-4 text-sm focus:ring-1 focus:ring-primary-container/30 text-on-surface cursor-pointer min-w-[140px]">
+<option>Last 30 days</option>
+<option>Last 90 days</option>
+<option>Year to date</option>
+<option>All time</option>
+</select>
+<select class="h-11 bg-surface-container-highest border-none rounded-xl px-4 text-sm focus:ring-1 focus:ring-primary-container/30 text-on-surface cursor-pointer min-w-[180px]">
+<option>Source campaign: All</option>
+<option>Spring — HoK Q2</option>
+<option>Valorant Ep. 9 Launch</option>
+<option>Dota 2 EG</option>
+</select>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant text-xs font-medium hover:text-white transition-colors ml-auto">
+<span class="material-symbols-outlined text-sm" data-icon="restart_alt">restart_alt</span>
+                    Reset filters
+                </button>
+</div>
+<!-- KPI Row -->
+<div class="grid grid-cols-4 gap-4">
+<div class="glass-panel p-6 rounded-16 relative overflow-hidden group">
+<div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary-container/20 to-transparent"></div>
+<div class="flex justify-between items-start mb-4">
+<span class="text-primary-fixed text-xs font-semibold tracking-wider uppercase">Total suppressed</span>
+<span class="material-symbols-outlined text-primary-container text-xl" data-icon="person_off">person_off</span>
+</div>
+<div class="flex items-end gap-3">
+<span class="text-3xl font-bold text-white">1,284</span>
+<div class="h-10 w-24 mb-1">
+<!-- SVG Sparkline Mockup -->
+<svg class="w-full h-full" viewbox="0 0 100 40">
+<path d="M0 35 Q 25 35, 50 15 T 100 5" fill="none" stroke="#00E5FF" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+</div>
+<div class="glass-panel p-6 rounded-16 group">
+<div class="flex justify-between items-start mb-4">
+<span class="text-primary-fixed text-xs font-semibold tracking-wider uppercase">Unsubscribed</span>
+<span class="material-symbols-outlined text-outline text-xl" data-icon="unsubscribe">unsubscribe</span>
+</div>
+<div class="flex items-end gap-3">
+<span class="text-3xl font-bold text-white">843</span>
+<span class="text-primary-container text-sm font-medium mb-1">65.7%</span>
+</div>
+<div class="h-6 w-full mt-2">
+<svg class="w-full h-full opacity-50" viewbox="0 0 100 20">
+<path d="M0 15 L 10 12 L 20 18 L 30 10 L 40 15 L 50 5 L 60 12 L 70 8 L 80 15 L 90 10 L 100 12" fill="none" stroke="#00E5FF" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+<div class="glass-panel p-6 rounded-16">
+<div class="flex justify-between items-start mb-4">
+<span class="text-primary-fixed text-xs font-semibold tracking-wider uppercase">Bounces (hard)</span>
+<span class="material-symbols-outlined text-outline text-xl" data-icon="error">error</span>
+</div>
+<div class="flex items-end gap-3">
+<span class="text-3xl font-bold text-white">287</span>
+<span class="text-primary-container text-sm font-medium mb-1">22.4%</span>
+</div>
+<div class="h-6 w-full mt-2">
+<svg class="w-full h-full opacity-50" viewbox="0 0 100 20">
+<path d="M0 5 L 10 15 L 20 10 L 30 18 L 40 12 L 50 15 L 60 5 L 70 12 L 80 18 L 90 8 L 100 15" fill="none" stroke="#00E5FF" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+<div class="glass-panel p-6 rounded-16">
+<div class="flex justify-between items-start mb-4">
+<span class="text-primary-fixed text-xs font-semibold tracking-wider uppercase">Complaints</span>
+<span class="material-symbols-outlined text-outline text-xl" data-icon="report">report</span>
+</div>
+<div class="flex items-end gap-3">
+<span class="text-3xl font-bold text-white">154</span>
+<span class="text-primary-container text-sm font-medium mb-1">12.0%</span>
+</div>
+<div class="h-6 w-full mt-2">
+<svg class="w-full h-full opacity-50" viewbox="0 0 100 20">
+<path d="M0 18 L 20 15 L 40 18 L 60 12 L 80 15 L 100 10" fill="none" stroke="#00E5FF" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- Table Container -->
+<div class="bg-surface-container rounded-16 border border-outline/5 overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high/60">
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-widest">Email</th>
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-widest">Reason</th>
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-widest">Source Campaign</th>
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-widest">Added</th>
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-widest">Last Attempt</th>
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-widest">Note</th>
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-widest text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline/5">
+<tr class="hover:bg-surface-bright/20 transition-colors">
+<td class="px-6 py-4 text-sm font-medium text-white">GamerXia@outreach.example</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 rounded-full bg-surface-container-highest text-on-surface-variant text-[11px] font-bold uppercase tracking-wider border border-outline/10">Unsubscribed</span>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">Spring — HoK Q2</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-19</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-18 17:12</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant italic">'Preferred LINE instead of email'</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant hover:text-primary-container"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-bright/20 transition-colors">
+<td class="px-6 py-4 text-sm font-medium text-white">noreply@bouncer.test</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 rounded-full border border-tertiary-container/30 text-tertiary-container text-[11px] font-bold uppercase tracking-wider">Hard bounce</span>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">Valorant Ep. 9 Launch</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-19</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-19 02:01</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant italic">'550 no such user'</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant hover:text-primary-container"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-bright/20 transition-colors">
+<td class="px-6 py-4 text-sm font-medium text-white">fan@community.kr</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 rounded-full border border-error/30 text-error text-[11px] font-bold uppercase tracking-wider">Spam complaint</span>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">Dota 2 EG</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-18</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-17 09:44</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant italic">'Marked as spam via Gmail'</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant hover:text-primary-container"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button>
+</td>
+</tr>
+<!-- Repeat Mock Rows -->
+<tr class="hover:bg-surface-bright/20 transition-colors">
+<td class="px-6 py-4 text-sm font-medium text-white">leo_gaming@gmail.com</td>
+<td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full bg-surface-container-highest text-on-surface-variant text-[11px] font-bold uppercase tracking-wider border border-outline/10">Unsubscribed</span></td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">Cyberpunk DLC Promo</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-18</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-18 11:20</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant italic">'Not interested in RPGs'</td>
+<td class="px-6 py-4 text-right"><button class="text-on-surface-variant hover:text-primary-container"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button></td>
+</tr>
+<tr class="hover:bg-surface-bright/20 transition-colors">
+<td class="px-6 py-4 text-sm font-medium text-white">dev@indie-quest.net</td>
+<td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full border border-tertiary-container/30 text-tertiary-container text-[11px] font-bold uppercase tracking-wider">Hard bounce</span></td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">Indie Showcase Q1</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-17</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-17 08:00</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant italic">'Domain expired'</td>
+<td class="px-6 py-4 text-right"><button class="text-on-surface-variant hover:text-primary-container"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button></td>
+</tr>
+<tr class="hover:bg-surface-bright/20 transition-colors">
+<td class="px-6 py-4 text-sm font-medium text-white">streamer_god@twitch.tv.example</td>
+<td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full border border-error/30 text-error text-[11px] font-bold uppercase tracking-wider">Spam complaint</span></td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">ESL Global Masters</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-16</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-15 22:15</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant italic">'Unsolicited outreach'</td>
+<td class="px-6 py-4 text-right"><button class="text-on-surface-variant hover:text-primary-container"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button></td>
+</tr>
+<tr class="hover:bg-surface-bright/20 transition-colors">
+<td class="px-6 py-4 text-sm font-medium text-white">marketing@blizzard.com.fake</td>
+<td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full bg-surface-container-highest text-on-surface-variant text-[11px] font-bold uppercase tracking-wider border border-outline/10">Unsubscribed</span></td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">Overwatch 2 Collab</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-16</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-15 14:30</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant italic">'Use corporate portal'</td>
+<td class="px-6 py-4 text-right"><button class="text-on-surface-variant hover:text-primary-container"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button></td>
+</tr>
+<tr class="hover:bg-surface-bright/20 transition-colors">
+<td class="px-6 py-4 text-sm font-medium text-white">contact@esports.eu</td>
+<td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full border border-tertiary-container/30 text-tertiary-container text-[11px] font-bold uppercase tracking-wider">Hard bounce</span></td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">Global Reach 2026</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-15</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-15 03:00</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant italic">'Account disabled'</td>
+<td class="px-6 py-4 text-right"><button class="text-on-surface-variant hover:text-primary-container"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button></td>
+</tr>
+<tr class="hover:bg-surface-bright/20 transition-colors">
+<td class="px-6 py-4 text-sm font-medium text-white">pro_player7@rog.example</td>
+<td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full bg-surface-container-highest text-on-surface-variant text-[11px] font-bold uppercase tracking-wider border border-outline/10">Unsubscribed</span></td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">ROG Hardware Drop</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-14</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-14 09:12</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant italic">'Leaving for military service'</td>
+<td class="px-6 py-4 text-right"><button class="text-on-surface-variant hover:text-primary-container"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button></td>
+</tr>
+<tr class="hover:bg-surface-bright/20 transition-colors">
+<td class="px-6 py-4 text-sm font-medium text-white">media@sony.jp.test</td>
+<td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full bg-surface-container-highest text-on-surface-variant text-[11px] font-bold uppercase tracking-wider border border-outline/10">Unsubscribed</span></td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">PS6 Teaser Alpha</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-14</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2026-04-13 18:45</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant italic">'Duplicate contact'</td>
+<td class="px-6 py-4 text-right"><button class="text-on-surface-variant hover:text-primary-container"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button></td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="px-6 py-4 bg-surface-container-high/40 flex justify-between items-center border-t border-outline/5">
+<div class="flex items-center gap-4">
+<span class="text-xs text-on-surface-variant">Items per page:</span>
+<select class="bg-surface-container border-none text-xs rounded px-2 py-1 focus:ring-0 text-on-surface">
+<option>25</option>
+<option>50</option>
+<option>100</option>
+</select>
+</div>
+<div class="flex items-center gap-6">
+<span class="text-xs text-on-surface-variant font-medium">1-10 of 1,284 items</span>
+<div class="flex gap-1">
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container-highest text-on-surface-variant"><span class="material-symbols-outlined text-sm" data-icon="first_page">first_page</span></button>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container-highest text-on-surface-variant"><span class="material-symbols-outlined text-sm" data-icon="chevron_left">chevron_left</span></button>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container-highest text-on-surface-variant"><span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span></button>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container-highest text-on-surface-variant"><span class="material-symbols-outlined text-sm" data-icon="last_page">last_page</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Preview Section -->
+<div class="pt-12 mt-12 border-t border-outline/10">
+<div class="mb-8 flex items-center gap-4">
+<div class="w-1.5 h-6 bg-primary-container rounded-full"></div>
+<h3 class="text-xl font-bold text-white tracking-tight">What recipients see at /unsubscribe/:token</h3>
+</div>
+<div class="flex justify-center">
+<div class="glass-panel w-full max-w-[640px] rounded-16 p-10 border border-outline/10 shadow-2xl relative">
+<!-- Preview Badge -->
+<div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary-container text-[#0b1326] text-[10px] font-bold uppercase tracking-widest rounded-full">Recipients View</div>
+<div class="flex flex-col items-center text-center mb-8">
+<div class="bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] text-[#0b1326] font-bold rounded-[8px] p-1.5 w-8 h-8 flex items-center justify-center mb-4">
+<span class="text-sm">K</span>
+</div>
+<h2 class="text-2xl font-bold text-white mb-2">Unsubscribe from KOLMatrix × Lightning Games</h2>
+<p class="text-on-surface-variant text-sm max-w-sm">We're sorry to see you go. Adjust your preferences below to control how you hear from us.</p>
+</div>
+<div class="space-y-6">
+<div class="space-y-3">
+<label class="flex items-center gap-3 p-4 rounded-xl border border-outline/10 hover:bg-surface-container-high/30 cursor-pointer transition-colors group">
+<input class="w-4 h-4 text-primary-container bg-surface-container-highest border-outline/20 focus:ring-offset-0 focus:ring-primary-container/30" name="unsub" type="radio"/>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-white">Current campaign only</span>
+<span class="text-xs text-on-surface-variant">Stop receiving updates for Spring — HoK Q2</span>
+</div>
+</label>
+<label class="flex items-center gap-3 p-4 rounded-xl border border-outline/10 hover:bg-surface-container-high/30 cursor-pointer transition-colors">
+<input class="w-4 h-4 text-primary-container bg-surface-container-highest border-outline/20 focus:ring-offset-0 focus:ring-primary-container/30" name="unsub" type="radio"/>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-white">All Lightning Games updates</span>
+<span class="text-xs text-on-surface-variant">Opt-out from this specific publisher ecosystem</span>
+</div>
+</label>
+<label class="flex items-center gap-3 p-4 rounded-xl border border-primary-container/30 bg-primary-container/5 cursor-pointer transition-colors">
+<input checked="" class="w-4 h-4 text-primary-container bg-surface-container-highest border-outline/20 focus:ring-offset-0 focus:ring-primary-container/30" name="unsub" type="radio"/>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-white">Global unsubscribe</span>
+<span class="text-xs text-on-surface-variant">Remove me from all future KOLMatrix outreach</span>
+</div>
+</label>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Tell us why (optional)</label>
+<textarea class="w-full bg-surface-container-high border-none rounded-xl p-4 text-sm text-on-surface focus:ring-1 focus:ring-primary-container/30 min-h-[100px] placeholder:text-outline/40" placeholder="Too many emails, content not relevant, etc..."></textarea>
+</div>
+<div class="flex flex-col gap-3 pt-4">
+<button class="w-full py-4 rounded-xl bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] text-[#0b1326] font-extrabold text-sm hover:scale-[1.01] transition-all shadow-[0_4px_24px_rgba(0,229,255,0.15)]">
+                                    Confirm unsubscribe
+                                </button>
+<button class="w-full py-4 rounded-xl text-on-surface-variant text-sm font-semibold hover:text-white transition-colors">
+                                    Never mind, keep me subscribed
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed": "#290055",
+                      "on-error-container": "#ffdad6",
+                      "secondary-container": "#6e06d0",
+                      "on-surface-variant": "#bac9cc",
+                      "on-error": "#690005",
+                      "error-container": "#93000a",
+                      "primary-fixed-dim": "#00daf3",
+                      "primary": "#c3f5ff",
+                      "error": "#ffb4ab",
+                      "surface-variant": "#2d3449",
+                      "primary-fixed": "#9cf0ff",
+                      "on-secondary": "#450086",
+                      "surface-tint": "#00daf3",
+                      "tertiary-fixed": "#ffdf96",
+                      "secondary": "#d8b9ff",
+                      "surface-container-highest": "#2d3449",
+                      "on-tertiary": "#3e2e00",
+                      "on-primary-fixed": "#001f24",
+                      "surface-container-low": "#131b2e",
+                      "on-tertiary-container": "#6f5500",
+                      "outline": "#849396",
+                      "surface-dim": "#0b1326",
+                      "on-primary": "#00363d",
+                      "outline-variant": "#3b494c",
+                      "on-tertiary-fixed": "#251a00",
+                      "surface-container-lowest": "#060d20",
+                      "on-tertiary-fixed-variant": "#594400",
+                      "tertiary-container": "#fec931",
+                      "secondary-fixed": "#eddcff",
+                      "background": "#0b1326",
+                      "surface-container-high": "#222a3e",
+                      "surface-container": "#171f33",
+                      "surface-bright": "#31394e",
+                      "primary-container": "#00e5ff",
+                      "on-secondary-container": "#d5b5ff",
+                      "inverse-primary": "#006875",
+                      "secondary-fixed-dim": "#d8b9ff",
+                      "on-surface": "#dbe2fd",
+                      "surface": "#0b1326",
+                      "tertiary-fixed-dim": "#f3bf26",
+                      "on-primary-container": "#00626e",
+                      "on-primary-fixed-variant": "#004f58",
+                      "on-background": "#dbe2fd",
+                      "on-secondary-fixed-variant": "#6200bc",
+                      "inverse-surface": "#dbe2fd",
+                      "tertiary": "#ffeac0",
+                      "inverse-on-surface": "#283044"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "fontFamily": {
+                      "headline": ["Inter"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ambient-glow-sidebar {
+            box-shadow: 20px 0 20px 0px rgba(0, 229, 255, 0.03);
+        }
+        .glass-panel {
+            background: rgba(45, 52, 73, 0.2);
+            backdrop-filter: blur(20px);
+        }
+        .text-gradient-cyan {
+            background: linear-gradient(135deg, #00daf3, #c3f5ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #00daf3, #c3f5ff);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface antialiased selection:bg-primary-container/30">
+<!-- SIDEBAR -->
+<aside class="w-[240px] fixed left-0 top-0 h-full flex flex-col bg-surface-container-lowest p-6 ambient-glow-sidebar z-50">
+<!-- Logo Block -->
+<div class="flex items-center gap-3 h-14 mb-8">
+<div class="w-10 h-10 rounded-[10px] bg-gradient-primary flex items-center justify-center">
+<span class="text-surface-dim font-bold text-lg">K</span>
+</div>
+<div class="flex flex-col">
+<span class="text-white font-bold text-lg tracking-tight leading-none">KOLMatrix</span>
+<span class="text-[9px] font-semibold text-outline tracking-[0.15em] uppercase mt-1">Neural Velocity</span>
+</div>
+</div>
+<!-- Navigation List -->
+<nav class="flex flex-col gap-1 flex-grow">
+<div class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-on-surface-variant hover:bg-surface-variant/50 hover:text-on-surface transition-all group">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary-container">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</div>
+<div class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-on-surface-variant hover:bg-surface-variant/50 hover:text-on-surface transition-all group">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary-container">travel_explore</span>
+<span class="text-sm font-medium">KOL Discovery</span>
+</div>
+<div class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-on-surface-variant hover:bg-surface-variant/50 hover:text-on-surface transition-all group">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary-container">groups</span>
+<span class="text-sm font-medium">KOL Database</span>
+</div>
+<div class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-on-surface-variant hover:bg-surface-variant/50 hover:text-on-surface transition-all group">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary-container">rocket_launch</span>
+<span class="text-sm font-medium">Campaigns</span>
+</div>
+<!-- Active: Email Center -->
+<div class="flex items-center gap-3 px-3.5 py-2.5 rounded-none text-primary-container font-semibold bg-gradient-to-r from-[rgba(0,229,255,0.1)] to-transparent border-l-2 border-primary-container">
+<span class="material-symbols-outlined text-[20px]">forward_to_inbox</span>
+<span class="text-sm">Email Center</span>
+</div>
+<div class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-on-surface-variant hover:bg-surface-variant/50 hover:text-on-surface transition-all group">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary-container">inventory_2</span>
+<span class="text-sm font-medium">Products</span>
+</div>
+<div class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-on-surface-variant hover:bg-surface-variant/50 hover:text-on-surface transition-all group">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary-container">query_stats</span>
+<span class="text-sm font-medium">Analytics</span>
+</div>
+<div class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-on-surface-variant hover:bg-surface-variant/50 hover:text-on-surface transition-all group">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary-container">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</div>
+</nav>
+<!-- User Chip -->
+<div class="mt-auto pt-4 flex items-center gap-3 px-3 py-3 rounded-[10px] hover:bg-surface-variant/40 cursor-pointer group">
+<div class="w-9 h-9 rounded-full overflow-hidden border border-outline-variant group-hover:border-primary-container transition-colors">
+<img class="w-full h-full object-cover" data-alt="professional portrait of Sarah Chen, Ops Lead with a focused expression, high-end corporate headshot with soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrUI_wMLM4PoyPnxJdE_xCC0sIWHQLbwkwMp28bCgi3FFvEX2CmtCLV4XjXLr48RbI4JD1yOHAQUvpy2Z1Bo3bdhLHwn1c46SiZEhRiZsA07nN4VxwZ6JqXwqpBDpFMiOx-HfDGIy1TOX9nRPI-ZIcwD1F-x_Gn5Vsk577yPP_d5fSlMiEJz6Qxx1tciZxHMuH28yt-FagDxqKNHSIiNzq-w4e6pjP5oE8Bj8WDKDATY_1-wjIBR9pB0MStByEq3R-YX5uComg5bk"/>
+</div>
+<div class="flex flex-col">
+<span class="text-white text-sm font-semibold">Sarah Chen</span>
+<span class="text-[11px] text-outline">Ops Lead</span>
+</div>
+<span class="material-symbols-outlined text-outline text-sm ml-auto">expand_more</span>
+</div>
+</aside>
+<!-- TOP BAR -->
+<header class="h-16 sticky top-0 z-40 ml-[240px] bg-surface/85 backdrop-blur-[24px] flex items-center justify-between px-8 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+<div class="flex items-center">
+<h1 class="text-white font-semibold text-base">Email Center</h1>
+</div>
+<div class="flex-1 mx-auto max-w-[480px]">
+<div class="h-10 bg-surface-container-highest rounded-full flex items-center px-4 group focus-within:ring-2 focus-within:ring-primary-container/20 transition-all">
+<span class="material-symbols-outlined text-[18px] text-outline">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm text-on-surface placeholder:text-outline w-full px-3" placeholder="Search KOLs, campaigns, emails..." type="text"/>
+<div class="px-1.5 py-0.5 rounded border border-outline-variant flex items-center">
+<span class="text-[10px] font-medium text-outline">Cmd+K</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-surface-variant/50 cursor-pointer group">
+<span class="text-[13px] font-medium text-on-surface-variant group-hover:text-primary-container">EN</span>
+<span class="material-symbols-outlined text-sm text-on-surface-variant group-hover:text-primary-container">expand_more</span>
+</div>
+<div class="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 cursor-pointer group">
+<span class="material-symbols-outlined text-[22px] text-on-surface-variant group-hover:text-primary-container">notifications</span>
+<div class="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-error rounded-full"></div>
+</div>
+<div class="w-px h-6 bg-outline-variant/30"></div>
+<div class="flex items-center gap-2 cursor-pointer">
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="professional portrait of Sarah Chen, Ops Lead with a focused expression, high-end corporate headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWoyJhGqIMI8SyoKc5hRWS8OkRLbT_KficVqNhje0mjYMvdI0qUlvJLWKzhfieCZG9iJRrE-PI9Izm34w0-_k8943mfQ2CIVZZzVC_wfKN_asMnT3GLcoJq66R5yzpM2mQVShfGKr0VzUW9SRGdMRkFKusmA9wlYItHgH2wEUwyBewBaxVCA7SZEiQE5rMzCTc52TskXcl_41PMdUB5TCcE2x5QLAa9QP8rHz10wIjmGL276GCOV4h6GmwBqflxFFjaouDIpNd__s"/>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">expand_more</span>
+</div>
+</div>
+</header>
+<!-- MAIN CONTENT -->
+<main class="ml-[240px] p-8 min-h-[calc(100vh-64px)] bg-surface-dim">
+<!-- Breadcrumb & Header -->
+<div class="mb-8">
+<nav class="flex items-center gap-2 text-xs text-outline mb-3 font-medium">
+<span>Email Center</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span>Templates</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary-container">Brand intro — Honor of Kings draft</span>
+</nav>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-4">
+<h2 class="text-white text-3xl font-bold tracking-[-0.02em]">Brand intro — Honor of Kings</h2>
+<div class="px-2.5 py-0.5 bg-tertiary-container/10 border border-tertiary-container/30 text-tertiary-container text-[11px] font-bold uppercase tracking-wider rounded">Draft</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-5 py-2.5 rounded-xl text-sm font-semibold text-on-surface-variant hover:text-white hover:bg-surface-variant/50 transition-all">Save draft</button>
+<button class="px-5 py-2.5 rounded-xl text-sm font-semibold text-primary-container border border-primary-container/30 hover:bg-primary-container/10 transition-all">Preview</button>
+<button class="px-6 py-2.5 rounded-xl text-sm font-bold text-surface-dim bg-gradient-primary shadow-[0_0_15px_rgba(0,229,255,0.2)] hover:shadow-[0_0_25px_rgba(0,229,255,0.3)] transition-all">Send test</button>
+</div>
+</div>
+</div>
+<!-- Content Grid -->
+<div class="grid grid-cols-10 gap-8">
+<!-- LEFT: Editor (62%) -->
+<div class="col-span-6 flex flex-col gap-6">
+<!-- Recipient Context -->
+<div class="p-6 rounded-2xl glass-panel bg-surface-container shadow-xl">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary-container">hub</span>
+<h3 class="text-white font-semibold text-sm">Recipient context</h3>
+</div>
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div class="space-y-1.5">
+<label class="text-[11px] font-bold text-outline uppercase tracking-wider">Target Campaign</label>
+<div class="h-11 bg-surface-container-high rounded-xl flex items-center justify-between px-4 cursor-pointer hover:bg-surface-container-highest transition-colors">
+<span class="text-sm text-on-surface">Spring — Honor of Kings Preseason Q2</span>
+<span class="material-symbols-outlined text-outline">expand_more</span>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-[11px] font-bold text-outline uppercase tracking-wider">KOL Segment</label>
+<div class="h-11 bg-surface-container-high rounded-xl flex items-center justify-between px-4 cursor-pointer hover:bg-surface-container-highest transition-colors">
+<span class="text-sm text-on-surface">Tier 1 Gaming Creators</span>
+<span class="material-symbols-outlined text-outline">expand_more</span>
+</div>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-[11px] font-bold text-outline uppercase tracking-wider">Personalization Chips</label>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1.5 bg-primary-container/10 border border-primary-container/20 rounded-lg text-primary-container text-xs font-semibold cursor-pointer hover:bg-primary-container/20 transition-all">{% verbatim %}{{kol.name}}{% endverbatim %}</span>
+<span class="px-3 py-1.5 bg-primary-container/10 border border-primary-container/20 rounded-lg text-primary-container text-xs font-semibold cursor-pointer hover:bg-primary-container/20 transition-all">{% verbatim %}{{kol.handle}}{% endverbatim %}</span>
+<span class="px-3 py-1.5 bg-primary-container/10 border border-primary-container/20 rounded-lg text-primary-container text-xs font-semibold cursor-pointer hover:bg-primary-container/20 transition-all">{% verbatim %}{{kol.platform}}{% endverbatim %}</span>
+<span class="px-3 py-1.5 bg-secondary-container/20 border border-secondary/30 rounded-lg text-secondary text-xs font-semibold cursor-pointer hover:bg-secondary/20 transition-all">{% verbatim %}{{campaign.title}}{% endverbatim %}</span>
+<span class="px-3 py-1.5 bg-secondary-container/20 border border-secondary/30 rounded-lg text-secondary text-xs font-semibold cursor-pointer hover:bg-secondary/20 transition-all">{% verbatim %}{{brand.name}}{% endverbatim %}</span>
+</div>
+</div>
+</div>
+<!-- Subject Line -->
+<div class="p-6 rounded-2xl glass-panel bg-surface-container shadow-xl">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container">subject</span>
+<h3 class="text-white font-semibold text-sm">Subject line</h3>
+</div>
+<span class="text-[11px] font-medium text-outline">64/80 chars</span>
+</div>
+<div class="relative">
+<input class="w-full bg-surface-container-high border-none rounded-xl py-3.5 px-4 text-sm text-on-surface focus:ring-2 focus:ring-primary-container/20 placeholder:text-outline/50" type="text" value="Let's make your next {{campaign.title}} campaign legendary, {{kol.name}}"/>
+</div>
+<div class="mt-3 flex items-center gap-2 group cursor-pointer">
+<span class="material-symbols-outlined text-primary-container text-sm group-hover:animate-pulse">auto_awesome</span>
+<span class="text-xs text-primary-container font-medium">AI Subject Suggest: "Elevate your game with..."</span>
+</div>
+</div>
+<!-- Body Editor -->
+<div class="flex-grow flex flex-col p-6 rounded-2xl glass-panel bg-surface-container shadow-xl min-h-[500px]">
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container">edit_document</span>
+<h3 class="text-white font-semibold text-sm">Email Body</h3>
+</div>
+<!-- Formatting Toolbar -->
+<div class="flex items-center gap-1 bg-surface-container-high/50 p-1 rounded-lg">
+<button class="w-8 h-8 flex items-center justify-center text-outline hover:text-white hover:bg-surface-variant transition-all rounded"><span class="material-symbols-outlined text-lg">format_bold</span></button>
+<button class="w-8 h-8 flex items-center justify-center text-outline hover:text-white hover:bg-surface-variant transition-all rounded"><span class="material-symbols-outlined text-lg">format_italic</span></button>
+<button class="w-8 h-8 flex items-center justify-center text-outline hover:text-white hover:bg-surface-variant transition-all rounded"><span class="material-symbols-outlined text-lg">link</span></button>
+<button class="w-8 h-8 flex items-center justify-center text-outline hover:text-white hover:bg-surface-variant transition-all rounded"><span class="material-symbols-outlined text-lg">format_list_bulleted</span></button>
+<div class="w-px h-4 bg-outline-variant/30 mx-1"></div>
+<button class="px-2 h-8 flex items-center gap-1 text-primary-container hover:bg-primary-container/10 transition-all rounded">
+<span class="material-symbols-outlined text-lg">auto_fix_high</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">AI Rewrite</span>
+</button>
+</div>
+</div>
+<div class="flex-grow bg-surface-container-high/30 rounded-xl p-6 text-on-surface leading-relaxed text-sm focus-within:ring-1 focus-within:ring-primary-container/20">
+<p class="mb-4">Hey <span class="text-primary-container font-semibold">{% verbatim %}{{kol.name}}{% endverbatim %}</span>,</p>
+<p class="mb-4">Huge fan of your recent gameplay deep-dives on YouTube. Your technical analysis of mobility mechanics is exactly why we want you for the upcoming <span class="text-secondary font-semibold">{% verbatim %}{{campaign.title}}{% endverbatim %}</span> launch.</p>
+<p class="mb-4">We're looking to co-create a high-production 3-video series for <strong>Honor of Kings</strong> that focuses on high-level jungle rotations. Given your expertise, <span class="text-secondary font-semibold">{% verbatim %}{{brand.name}}{% endverbatim %}</span> is eager to provide early access to the new hero pool and provide exclusive assets for your community.</p>
+<p class="mb-4">Would you be open to a quick chat this week to discuss the creative direction and deliverables?</p>
+<p>Best,<br/>Sarah Chen</p>
+</div>
+<div class="mt-6 pt-4 border-t border-outline-variant/10 flex items-center justify-between text-[11px] text-outline font-medium">
+<div class="flex items-center gap-4">
+<span>152 words</span>
+<span>844 characters</span>
+</div>
+<span>Last edited: 2 minutes ago</span>
+</div>
+</div>
+</div>
+<!-- RIGHT: Live Preview (38%) -->
+<div class="col-span-4 flex flex-col gap-6">
+<!-- Preview Control -->
+<div class="flex flex-col rounded-2xl bg-surface-container-high/40 border border-outline-variant/10 overflow-hidden shadow-2xl">
+<div class="p-5 flex items-center justify-between bg-surface-container-high/80">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
+<h3 class="text-white font-semibold text-sm">Preview · <span class="text-on-surface-variant font-normal">as GamerXia</span></h3>
+</div>
+<div class="flex bg-surface-container-highest p-1 rounded-lg">
+<button class="px-3 py-1 rounded-md bg-surface-variant text-primary-container text-xs font-semibold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">desktop_windows</span>
+                                Desktop
+                            </button>
+<button class="px-3 py-1 rounded-md text-outline hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all">
+<span class="material-symbols-outlined text-[16px]">smartphone</span>
+                                Mobile
+                            </button>
+</div>
+</div>
+<!-- Email Client Frame -->
+<div class="p-8 bg-white min-h-[600px] flex flex-col">
+<div class="border-b border-gray-100 pb-4 mb-6">
+<div class="flex flex-col gap-1.5">
+<div class="text-[13px] text-gray-500 flex items-center gap-2">
+<span class="font-bold text-gray-800">From:</span> Sarah Chen &lt;sarah@lightninggames.com&gt;
+                                </div>
+<div class="text-[13px] text-gray-500 flex items-center gap-2">
+<span class="font-bold text-gray-800">To:</span> GamerXia &lt;xia@creator.net&gt;
+                                </div>
+<div class="text-[14px] font-bold text-gray-900 mt-2">
+                                    Let's make your next Spring — Honor of Kings Preseason Q2 campaign legendary, GamerXia
+                                </div>
+</div>
+</div>
+<div class="text-[15px] text-gray-700 leading-relaxed font-[Inter]">
+<p class="mb-5">Hey GamerXia,</p>
+<p class="mb-5">Huge fan of your recent gameplay deep-dives on YouTube. Your technical analysis of mobility mechanics is exactly why we want you for the upcoming Spring — Honor of Kings Preseason Q2 launch.</p>
+<p class="mb-5">We're looking to co-create a high-production 3-video series for <strong>Honor of Kings</strong> that focuses on high-level jungle rotations. Given your expertise, Lightning Games is eager to provide early access to the new hero pool and provide exclusive assets for your community.</p>
+<p class="mb-5">Would you be open to a quick chat this week to discuss the creative direction and deliverables?</p>
+<p class="mb-8">Best,<br/>Sarah Chen</p>
+<div class="pt-8 border-t border-gray-100 mt-12">
+<p class="text-[11px] text-gray-400 text-center italic">
+                                    Lightning Games, 123 Tech Blvd, San Francisco, CA<br/>
+<a class="underline" href="#">Unsubscribe</a> from this campaign
+                                </p>
+</div>
+</div>
+</div>
+<!-- Mini Stat Ribbon -->
+<div class="p-4 bg-surface-container-high/60 flex items-center justify-around border-t border-outline-variant/10">
+<div class="flex flex-col items-center gap-1">
+<span class="text-[9px] font-bold text-outline uppercase tracking-widest">Spam Score</span>
+<div class="flex items-center gap-1.5 text-emerald-400">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span class="text-xs font-bold">Good</span>
+</div>
+</div>
+<div class="w-px h-6 bg-outline-variant/20"></div>
+<div class="flex flex-col items-center gap-1">
+<span class="text-[9px] font-bold text-outline uppercase tracking-widest">Readability</span>
+<div class="flex items-center gap-1.5 text-primary-container">
+<span class="text-xs font-bold">Grade 9</span>
+</div>
+</div>
+<div class="w-px h-6 bg-outline-variant/20"></div>
+<div class="flex flex-col items-center gap-1">
+<span class="text-[9px] font-bold text-outline uppercase tracking-widest">Tone</span>
+<div class="flex items-center gap-1.5 text-primary-container">
+<span class="text-xs font-bold">Professional</span>
+</div>
+</div>
+</div>
+</div>
+<!-- AI Optimization Tip -->
+<div class="p-5 rounded-2xl bg-primary-container/5 border border-primary-container/20 flex gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary-container">tips_and_updates</span>
+</div>
+<div>
+<h4 class="text-sm font-bold text-primary-container mb-1">Optimization Suggestion</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed">Based on GamerXia's engagement history, mentioning "exclusive esports access" in the first paragraph increases response rate by 24%.</p>
+<button class="mt-3 text-[11px] font-bold text-primary-container uppercase tracking-wider hover:underline">Apply Optimization</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

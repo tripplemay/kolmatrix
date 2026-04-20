@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOLMatrix | Request Workspace Access</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-secondary-fixed-variant": "#6200bc",
+                        "on-tertiary": "#3e2e00",
+                        "on-secondary-container": "#d5b5ff",
+                        "secondary-fixed-dim": "#d8b9ff",
+                        "primary-fixed-dim": "#00daf3",
+                        "surface-container": "#171f33",
+                        "secondary-fixed": "#eddcff",
+                        "primary-fixed": "#9cf0ff",
+                        "outline-variant": "#3b494c",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "on-primary-fixed": "#001f24",
+                        "on-primary-container": "#00626e",
+                        "secondary": "#d8b9ff",
+                        "on-primary": "#00363d",
+                        "tertiary-fixed-dim": "#f3bf26",
+                        "surface-tint": "#00daf3",
+                        "on-tertiary-container": "#6f5500",
+                        "inverse-primary": "#006875",
+                        "surface": "#0b1326",
+                        "tertiary-fixed": "#ffdf96",
+                        "on-tertiary-fixed": "#251a00",
+                        "on-secondary-fixed": "#290055",
+                        "surface-container-highest": "#2d3449",
+                        "error": "#ffb4ab",
+                        "surface-container-lowest": "#060d20",
+                        "secondary-container": "#6e06d0",
+                        "on-surface": "#dbe2fd",
+                        "on-error": "#690005",
+                        "surface-container-high": "#222a3e",
+                        "tertiary": "#ffeac0",
+                        "outline": "#849396",
+                        "inverse-on-surface": "#283044",
+                        "primary-container": "#00e5ff",
+                        "surface-bright": "#31394e",
+                        "on-primary-fixed-variant": "#004f58",
+                        "primary": "#c3f5ff",
+                        "inverse-surface": "#dbe2fd",
+                        "surface-variant": "#2d3449",
+                        "error-container": "#93000a",
+                        "on-secondary": "#450086",
+                        "tertiary-container": "#fec931",
+                        "surface-container-low": "#131b2e",
+                        "on-surface-variant": "#bac9cc",
+                        "surface-dim": "#0b1326",
+                        "on-error-container": "#ffdad6",
+                        "background": "#0b1326",
+                        "on-background": "#dbe2fd"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "12px",
+                        "xl": "16px",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b1326; overflow-x: hidden; }
+        .glass-hud { background: rgba(0, 229, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(0, 229, 255, 0.1); }
+        .cyan-glow-text { text-shadow: 0 0 15px rgba(0, 229, 255, 0.6); }
+        .hero-gradient { background: linear-gradient(to right, rgba(11, 19, 38, 0.8), rgba(11, 19, 38, 0.1) 40%, transparent); }
+        .edge-fade { background: radial-gradient(circle at right, rgba(0, 229, 255, 0.15), transparent 70%); }
+        .input-underline { border-bottom: 1px solid #3b494c; }
+        .input-underline:focus { border-bottom: 1px solid #00E5FF; outline: none; box-shadow: 0 4px 12px -2px rgba(0, 229, 255, 0.1); }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; }
+    </style>
+</head>
+<body class="text-on-surface antialiased">
+<main class="flex h-screen w-full overflow-hidden">
+<!-- LEFT COLUMN: 58% CINEMATIC HERO -->
+<section class="relative w-[58%] h-full bg-surface-container-lowest overflow-hidden">
+<!-- Background Image -->
+<div class="absolute inset-0 z-0">
+<img alt="Cinematic broadcast ops room with curved monitors showing data maps and silhouettes of operator chairs in cyan light" class="w-full h-full object-cover opacity-60 grayscale-[0.5] scale-105 brightness-75" data-alt="cinematic dimly lit broadcast control room with large curved monitor walls displaying global data maps and gann charts with cyan rim lighting on silhouettes" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmQmX_30Z1Y-iKe1vbGyVawqEUvRba72ipoFOBEJAnkxv50IJ-C6J72q1KBLppI3EWoL0NSDAxRYdUAxsvB2sKpRc57yrrsDBJTavFo2Db0-I6MJeOY2Z0ynHpBuV0vueVYokJ6YpTC7oYi9tABifwlC8NxzaX5FXD4DzuNNr5B-ptY7du2zEttFpsbfGBWntsIecLbeaFYLCQ_Zy2oskaVH37Sx4u-osQQdC1o9s5834gdsPqfs6mLAaAyfOqdXWTpaORSEX4DPM"/>
+<div class="absolute inset-0 hero-gradient"></div>
+<!-- Edge Cyan Glow -->
+<div class="absolute right-0 top-0 bottom-0 w-[80px] edge-fade z-10"></div>
+</div>
+<!-- UI Overlay Content -->
+<div class="relative z-20 h-full flex flex-col p-12 justify-between">
+<!-- Top Brand -->
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] flex items-center justify-center shadow-[0_0_20px_rgba(0,229,255,0.3)]">
+<span class="text-surface font-bold text-lg">K</span>
+</div>
+<div>
+<h1 class="text-white font-bold text-xl tracking-tight">KOLMatrix</h1>
+<p class="text-[9px] font-semibold text-outline tracking-[0.2em] uppercase">Operator Program · By Invite</p>
+</div>
+</div>
+<!-- Center Text -->
+<div class="max-w-xl">
+<h2 class="text-5xl font-extrabold text-white tracking-tight leading-tight">
+                        Every launch has a <br/>
+<span class="text-primary-container cyan-glow-text">war room.</span>
+</h2>
+<p class="text-2xl font-bold text-white mt-4 opacity-90">This is yours.</p>
+<p class="text-on-surface-variant mt-6 text-lg max-w-md leading-relaxed">
+                        KOLMatrix is invite-only. Request access for your studio. We review every application within one business day.
+                    </p>
+<!-- HUD Chips -->
+<div class="grid grid-cols-2 gap-4 mt-12">
+<div class="glass-hud p-4 rounded-xl flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container">speed</span>
+<div>
+<p class="text-[10px] text-primary-fixed uppercase tracking-wider font-bold">Latency</p>
+<p class="text-sm font-semibold text-white">48h median response</p>
+</div>
+</div>
+<div class="glass-hud p-4 rounded-xl flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container">rocket_launch</span>
+<div>
+<p class="text-[10px] text-primary-fixed uppercase tracking-wider font-bold">Volume</p>
+<p class="text-sm font-semibold text-white">6,200 campaigns shipped</p>
+</div>
+</div>
+<div class="glass-hud p-4 rounded-xl flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container">public</span>
+<div>
+<p class="text-[10px] text-primary-fixed uppercase tracking-wider font-bold">Coverage</p>
+<p class="text-sm font-semibold text-white">Live ops in 9 timezones</p>
+</div>
+</div>
+<div class="glass-hud p-4 rounded-xl flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container">verified</span>
+<div>
+<p class="text-[10px] text-primary-fixed uppercase tracking-wider font-bold">Retention</p>
+<p class="text-sm font-semibold text-white">Zero churn in year one</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Social Proof -->
+<div class="mt-auto">
+<p class="text-[11px] font-bold text-outline tracking-[0.1em] uppercase mb-4">Recently Joined</p>
+<div class="flex gap-4">
+<div class="glass-hud px-4 py-3 rounded-lg border-l-2 border-primary-container">
+<p class="text-xs font-bold text-white">Lightning Games</p>
+<p class="text-[10px] text-on-surface-variant">Global Publishing</p>
+</div>
+<div class="glass-hud px-4 py-3 rounded-lg border-l-2 border-primary-container/40">
+<p class="text-xs font-bold text-white">Voidpeak Studios</p>
+<p class="text-[10px] text-on-surface-variant">AAA Creative</p>
+</div>
+<div class="glass-hud px-4 py-3 rounded-lg border-l-2 border-primary-container/20">
+<p class="text-xs font-bold text-white">Starforge</p>
+<p class="text-[10px] text-on-surface-variant">Indie Cluster</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- RIGHT COLUMN: 42% SIGNUP FORM -->
+<section class="w-[42%] h-full bg-surface relative flex flex-col justify-center items-center px-12">
+<div class="w-full max-w-[420px]">
+<div class="mb-10 text-left">
+<h3 class="text-3xl font-bold text-white tracking-tight">Request workspace access</h3>
+<p class="text-on-surface-variant mt-2 text-sm">Fill in your studio details to join the priority queue.</p>
+</div>
+<form class="space-y-6">
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="text-[11px] font-bold text-primary-fixed uppercase tracking-wider">First Name</label>
+<input class="w-full bg-transparent border-none p-0 pb-2 text-white placeholder:text-outline-variant focus:ring-0 input-underline" placeholder="Sarah" type="text"/>
+</div>
+<div class="space-y-1">
+<label class="text-[11px] font-bold text-primary-fixed uppercase tracking-wider">Last Name</label>
+<input class="w-full bg-transparent border-none p-0 pb-2 text-white placeholder:text-outline-variant focus:ring-0 input-underline" placeholder="Chen" type="text"/>
+</div>
+</div>
+<div class="space-y-1">
+<label class="text-[11px] font-bold text-primary-fixed uppercase tracking-wider">Work Email</label>
+<input class="w-full bg-transparent border-none p-0 pb-2 text-white placeholder:text-outline-variant focus:ring-0 input-underline" placeholder="sarah@studio.com" type="email"/>
+<p class="text-[10px] text-outline mt-1">Please use your company domain for faster verification.</p>
+</div>
+<div class="space-y-1">
+<label class="text-[11px] font-bold text-primary-fixed uppercase tracking-wider">Company</label>
+<input class="w-full bg-transparent border-none p-0 pb-2 text-white placeholder:text-outline-variant focus:ring-0 input-underline" placeholder="Company Name" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1 relative">
+<label class="text-[11px] font-bold text-primary-fixed uppercase tracking-wider">Role</label>
+<select class="w-full bg-transparent border-none p-0 pb-2 text-white focus:ring-0 input-underline appearance-none">
+<option class="bg-surface-container-high">Ops Lead</option>
+<option class="bg-surface-container-high">Marketing Director</option>
+<option class="bg-surface-container-high">Producer</option>
+<option class="bg-surface-container-high">Influencer Manager</option>
+</select>
+<span class="material-symbols-outlined absolute right-0 bottom-2 text-outline pointer-events-none">expand_more</span>
+</div>
+<div class="space-y-1 relative">
+<label class="text-[11px] font-bold text-primary-fixed uppercase tracking-wider">Campaigns / Quarter</label>
+<select class="w-full bg-transparent border-none p-0 pb-2 text-white focus:ring-0 input-underline appearance-none">
+<option class="bg-surface-container-high">1-5</option>
+<option class="bg-surface-container-high">5-15</option>
+<option class="bg-surface-container-high">15-50</option>
+<option class="bg-surface-container-high">50+</option>
+</select>
+<span class="material-symbols-outlined absolute right-0 bottom-2 text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="space-y-1">
+<label class="text-[11px] font-bold text-primary-fixed uppercase tracking-wider">Games you Ship</label>
+<textarea class="w-full bg-transparent border-none p-0 pb-2 text-white placeholder:text-outline-variant focus:ring-0 input-underline resize-none" placeholder="Tell us about your current portfolio..." rows="2"></textarea>
+</div>
+<div class="flex items-start gap-3 pt-2">
+<div class="flex items-center h-5">
+<input class="w-4 h-4 rounded border-outline-variant bg-surface-container-high text-primary-container focus:ring-primary-container/20" type="checkbox"/>
+</div>
+<label class="text-xs text-on-surface-variant leading-tight">
+                            I agree to the <a class="text-primary-container hover:underline" href="#">Terms of Service</a> and <a class="text-primary-container hover:underline" href="#">Privacy Policy</a>.
+                        </label>
+</div>
+<button class="w-full py-4 rounded-xl bg-primary-container text-surface-container-lowest font-bold text-sm uppercase tracking-widest shadow-[0_0_30px_rgba(0,229,255,0.25)] hover:shadow-[0_0_40px_rgba(0,229,255,0.4)] transition-all active:scale-[0.98]" type="submit">
+                        Submit request
+                    </button>
+</form>
+<div class="mt-8 text-center">
+<p class="text-xs text-on-surface-variant">
+                        Already have access? <a class="text-primary-container font-semibold hover:underline" href="#">Sign in</a>
+</p>
+</div>
+</div>
+<!-- Footer -->
+<div class="absolute bottom-8 right-8 text-[10px] text-outline-variant font-medium tracking-widest flex items-center gap-4">
+<span>© 2026 KOLMATRIX</span>
+<span class="w-1 h-1 bg-outline-variant rounded-full"></span>
+<span>TOKYO</span>
+</div>
+</section>
+</main>
+</body></html>

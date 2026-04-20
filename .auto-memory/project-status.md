@@ -27,9 +27,10 @@ BI3 → B1 KOL Database → B2 AI 评分 + BullMQ → B3 Campaigns → B4 邮件
 ## Framework 版本
 v0.9.2 — BI2 done 沉淀 2 条 learnings：database-patterns §2 DB 命名 migration-consistency + deploy-patterns §1 PM2 zero-downtime 3 条件
 
-## 设计稿状态（9 张就绪 V1-V4）
-Dashboard / KOL Discovery / KOL Detail / Campaigns 列表+详情 / KOL Database / Email Center / Client Review / Email Tracking
-V5 批次 5 张待生成（登录 v2 游戏氛围版 / 注册 v2 / 邮件模板编辑器 / 发送队列 / 退订管理），prompt 就绪 `design-draft/stitch-references/V5-prompts.md`
+## 设计稿状态（14 张就绪 V1-V5）
+V1-V4 9 张：Dashboard / KOL Discovery / KOL Detail / Campaigns 列表+详情 / KOL Database / Email Center / Client Review / Email Tracking
+V5 5 张（2026-04-20 入库）：Login v2 游戏氛围版 / Signup v2 / Email Template Editor / Send Queue / Unsubscribe management
+待 V6+：产品知识库 / 设置 / 团队管理 / YouTube-TikTok 数据源配置 / 竞品分析
 
 ## 关键环境提醒
 - 生产数据库固定名 `kolmatrix`（不是 `kolmatrix_prod` —— BI2 DB 命名裁决方案 A）

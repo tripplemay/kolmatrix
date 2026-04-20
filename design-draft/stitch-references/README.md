@@ -5,7 +5,7 @@
 >
 > 目的：给开发者（johnsong）一个可在浏览器直接打开的视觉参考，避免每次都要登 Stitch 网页端。
 
-## 文件清单（9 张页面）
+## 文件清单（14 张页面）
 
 | 文件 | 来源 Stitch screen | 对应业务 | 批次 |
 |---|---|---|---|
@@ -18,6 +18,11 @@
 | `email-center.html` + `.png` | `337c7721553644d580d892de0cd58524` | 邮件触达中心 | B3 |
 | `client-review.html` + `.png` | `00ea6b4cd4b342e8ad0cd04679b781e2` | 客户协同筛选（客户视角简化视图）| B3 |
 | `email-tracking.html` + `.png` | `a654800b865d4680818750b003519e33` | Email Tracking 详情（邮件线程追踪）| B4 |
+| `login.html` + `.png` | `601539f07eaf436f8a8fb151ee88384e` | 登录页（58/42 cinematic split，游戏氛围版）| B0 Auth |
+| `signup.html` + `.png` | `7fa095c8ec33476995b97fe241af697a` | Request workspace access 注册页（58/42 war-room 配对）| B0/B9 |
+| `email-template-editor.html` + `.png` | `e4515ced3d414b289979ba2a06a31e89` | 邮件模板编辑器（左编辑 62% / 右预览 38%）| B4 |
+| `email-send-queue.html` + `.png` | `9e9b4789fe7f430683e4ac22fe1e9271` | 发送队列 + 频控配置 | B4 |
+| `email-unsubscribe.html` + `.png` | `c4aed4b89ce24fb09a4df10bfe0a98bf` | 退订管理 + 公开退订页预览 | B4 合规 |
 
 ## 使用方式
 
@@ -42,6 +47,7 @@ cd design-draft/stitch-references && python3 -m http.server 8088
 - **B0 三页（Dashboard / Discovery / Detail）** 由 MCP 自动生成 + edit_screens 对齐 shell
 - **V3 四页（Campaigns 列表 / Campaign 详情 / KOL Database / Email Center）** 用户手动在 Stitch 网页端粘贴 prompt 生成（自动生成有内容压缩问题）
 - **V4 两页（Client Review / Email Tracking）** 用户手动生成（`00ea6b4c` 4226px / `a654800b` 4414px），内容完整
+- **V5 五页（Login v2 / Signup v2 / Email Template Editor / Send Queue / Unsubscribe）** 用户手动生成，prompt 见 `V5-prompts.md`；登录/注册为 58/42 split 游戏氛围版（v1 居中卡作废），邮件 3 张为 App Shell 内页
 - **kol-detail.html v3** 也是手动重生成版本（v1 完整 → v2 edit_screens 压缩到 165 行 → v3 手动恢复到 632 行）
 
 ### 3.1 V4 已知 MCP 冗余（待用户手动在 Stitch UI 隐藏/删除）

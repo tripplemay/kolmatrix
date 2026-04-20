@@ -43,8 +43,9 @@ Neural Velocity 同时满足：
 - **批次 V1（已完成）：** Dashboard 视觉基调定稿
 - **批次 V2（已完成）：** KOL 发现引擎 + KOL 详情页
 - **批次 V3（已完成）：** Campaigns 列表 + Campaign 详情 + KOL Database + Email Center
-- **批次 V4（部分完成）：** 客户协同筛选 ✅ + Email Tracking 详情 ✅；产品知识库推迟至 V5
-- **批次 V5（待启动）：** 产品知识库 + 登录 / 注册 / 设置 / 团队管理等辅助页
+- **批次 V4（部分完成）：** 客户协同筛选 ✅ + Email Tracking 详情 ✅；产品知识库推迟至 V6+
+- **批次 V5（已完成 2026-04-20）：** 登录 v2 ✅ + 注册 v2 ✅ + 邮件模板编辑器 ✅ + 发送队列 ✅ + 退订管理 ✅
+- **批次 V6+（待启动）：** 产品知识库 + 设置 / 团队管理 + YouTube/TikTok 数据源配置 + 竞品分析等远期辅助页
 
 每个批次生成完毕后更新本文档的"Stitch 基准页面"附录。
 
@@ -67,6 +68,11 @@ Neural Velocity 同时满足：
 | V3 | Email Center | `337c7721553644d580d892de0cd58524` | ✅（手动） |
 | V4 | Client Review（客户协同筛选）| `00ea6b4cd4b342e8ad0cd04679b781e2` | ✅（手动，4226px）|
 | V4 | Email Tracking 详情 | `a654800b865d4680818750b003519e33` | ✅（手动，4414px）|
+| V5 | 登录 Sign In Cinematic v2 | `601539f07eaf436f8a8fb151ee88384e` | ✅（手动，2048px，58/42 split 游戏氛围版）|
+| V5 | Request workspace access v2 | `7fa095c8ec33476995b97fe241af697a` | ✅（手动，2048px，58/42 war-room 配对）|
+| V5 | Email Template Editor | `e4515ced3d414b289979ba2a06a31e89` | ✅（手动，2908px，左编辑右预览）|
+| V5 | Send Queue & Rate Limits | `9e9b4789fe7f430683e4ac22fe1e9271` | ✅（手动，2176px）|
+| V5 | Unsubscribe management | `c4aed4b89ce24fb09a4df10bfe0a98bf` | ✅（手动，5492px）|
 
 > **V4 已知 MCP 冗余（2026-04-19）：** Stitch 项目中还存在 3 个应删除的压缩/重复 screen — 短版 Client Review `219e3547...`（2516px，自动压缩）、短版 Email Tracking `46df7ce5...`（2048px，自动压缩）、重复 Email Center `d3f92c57...`（2048px，与 V3 `337c7721...` 重复）。由用户在 Stitch UI 手动隐藏/删除。
 

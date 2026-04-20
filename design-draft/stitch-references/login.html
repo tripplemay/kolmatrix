@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sign In | KOLMatrix Neural Velocity</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed": "#251a00",
+                      "secondary-fixed": "#eddcff",
+                      "inverse-on-surface": "#283044",
+                      "on-surface": "#dbe2fd",
+                      "surface": "#0b1326",
+                      "on-primary-fixed-variant": "#004f58",
+                      "primary": "#c3f5ff",
+                      "on-primary-fixed": "#001f24",
+                      "secondary-fixed-dim": "#d8b9ff",
+                      "primary-fixed-dim": "#00daf3",
+                      "primary-fixed": "#9cf0ff",
+                      "on-error": "#690005",
+                      "tertiary-fixed-dim": "#f3bf26",
+                      "surface-container-low": "#131b2e",
+                      "on-tertiary": "#3e2e00",
+                      "tertiary": "#ffeac0",
+                      "surface-container": "#171f33",
+                      "error": "#ffb4ab",
+                      "surface-tint": "#00daf3",
+                      "on-secondary-fixed-variant": "#6200bc",
+                      "secondary-container": "#6e06d0",
+                      "on-primary-container": "#00626e",
+                      "surface-variant": "#2d3449",
+                      "secondary": "#d8b9ff",
+                      "on-tertiary-fixed-variant": "#594400",
+                      "on-background": "#dbe2fd",
+                      "inverse-surface": "#dbe2fd",
+                      "on-secondary": "#450086",
+                      "outline": "#849396",
+                      "surface-container-highest": "#2d3449",
+                      "on-tertiary-container": "#6f5500",
+                      "surface-bright": "#31394e",
+                      "surface-dim": "#0b1326",
+                      "on-error-container": "#ffdad6",
+                      "inverse-primary": "#006875",
+                      "on-surface-variant": "#bac9cc",
+                      "tertiary-fixed": "#ffdf96",
+                      "tertiary-container": "#fec931",
+                      "primary-container": "#00e5ff",
+                      "on-secondary-container": "#d5b5ff",
+                      "error-container": "#93000a",
+                      "background": "#0b1326",
+                      "on-primary": "#00363d",
+                      "surface-container-lowest": "#060d20",
+                      "surface-container-high": "#222a3e",
+                      "outline-variant": "#3b494c",
+                      "on-secondary-fixed": "#290055"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "fontFamily": {
+                      "headline": ["Inter"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #0b1326; overflow: hidden; }
+        .hero-overlay { background: linear-gradient(to right, rgba(6, 13, 32, 0.9) 0%, rgba(6, 13, 32, 0.4) 100%); }
+        .glow-cyan { text-shadow: 0 0 15px rgba(0, 229, 255, 0.4); }
+        .button-glow:hover { box-shadow: 0 0 20px rgba(0, 229, 255, 0.3); }
+        .input-underline { border-bottom: 1px solid #3b494c; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .input-underline:focus { border-bottom-color: #00e5ff; box-shadow: 0 4px 12px -4px rgba(0, 229, 255, 0.15); outline: none; }
+        .cyan-bleed { background: radial-gradient(circle at center, rgba(0, 229, 255, 0.08) 0%, transparent 70%); }
+    </style>
+</head>
+<body class="flex min-h-screen text-on-surface">
+<!-- LEFT COLUMN: CINEMATIC HERO (58%) -->
+<section class="relative hidden lg:flex flex-[0.58] h-screen overflow-hidden items-center p-16">
+<div class="absolute inset-0 z-0">
+<img alt="Cinematic Esports Arena Night" class="w-full h-full object-cover filter brightness-50" data-alt="Cinematic wide shot of a dimly lit esports arena at night from the back of the crowd, deep teal stage lighting, futuristic digital assets on LED walls, silhouettes of audience members in a misty atmosphere with subtle film grain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDu4cxgALtGF1Ib8GUB4MhlkGKaAnezN3TGNe3GTe8KEIgMWaRg3RER9HDyUXIv4vkH2-LEBYgwCe0kp47KzViBjvoOeqTMCRHIngKWCkhQvdsxIa1ljUdqQPAUYsPzbBkv5LO8L7dLVLArQlCqksDThDeDU_kYZMo6_yCBUo6QCvdlxdG7q1re1Bd6s9ezQUHgvs5QqPC23s58dg29xVQS3pshdKvKZc4jlm_PvNjHpwBbPk2TbFuBFyjmtlMdsg-yZnQTB_VI784"/>
+<div class="absolute inset-0 hero-overlay"></div>
+<!-- Subtle cyan gradient bleed for continuity -->
+<div class="absolute top-0 -right-48 bottom-0 w-96 cyan-bleed pointer-events-none"></div>
+</div>
+<div class="relative z-10 flex flex-col h-full w-full max-w-2xl">
+<!-- Brand -->
+<div class="flex flex-col gap-1 mb-auto">
+<div class="flex items-center gap-3">
+<div class="w-2.5 h-2.5 rounded-full bg-primary-container shadow-[0_0_12px_rgba(0,229,255,0.8)]"></div>
+<span class="text-xl font-bold tracking-tight text-white uppercase">KOLMatrix</span>
+</div>
+<span class="text-[10px] font-semibold tracking-[0.2em] text-on-surface-variant/60 ml-5.5">CREATOR OPERATIONS · 2026</span>
+</div>
+<!-- Content Section -->
+<div class="mb-16">
+<h1 class="text-5xl font-extrabold tracking-[-0.02em] leading-[1.1] mb-6 text-white">
+                    Run global KOL campaigns <br/>
+<span class="text-primary-container glow-cyan">like a launch day.</span>
+</h1>
+<p class="text-lg text-on-surface-variant font-medium leading-relaxed max-w-xl">
+                    Discover, score, and coordinate with 800K+ verified creators across YouTube, TikTok, Twitch, and Bilibili — from one command center.
+                </p>
+<!-- Floating HUD chips -->
+<div class="mt-10 flex flex-wrap gap-3">
+<div class="backdrop-blur-xl bg-surface-variant/20 border border-outline-variant/30 px-4 py-2 rounded-full text-xs font-semibold text-primary-fixed flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="groups">groups</span>
+                        850K+ creators indexed
+                    </div>
+<div class="backdrop-blur-xl bg-surface-variant/20 border border-outline-variant/30 px-4 py-2 rounded-full text-xs font-semibold text-primary-fixed flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="auto_awesome">auto_awesome</span>
+                        AI match precision 94%
+                    </div>
+<div class="backdrop-blur-xl bg-surface-variant/20 border border-outline-variant/30 px-4 py-2 rounded-full text-xs font-semibold text-primary-fixed flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="public">public</span>
+                        9 locales · 24/7 ops
+                    </div>
+<div class="backdrop-blur-xl bg-surface-variant/20 border border-outline-variant/30 px-4 py-2 rounded-full text-xs font-semibold text-primary-fixed flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="verified">verified</span>
+                        200+ studios trust us
+                    </div>
+</div>
+</div>
+<!-- Trust Footer -->
+<div class="mt-auto">
+<span class="text-[10px] font-bold tracking-[0.15em] text-on-surface-variant/40 uppercase mb-4 block">TRUSTED BY CREATORS WORKING WITH</span>
+<div class="flex items-center gap-8 grayscale opacity-30">
+<img alt="Partner 1" class="h-5" data-alt="Minimalist grayscale corporate logo of a gaming studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDz7duhSrwfS_gLfjz6QtB1XeQxf-0LqG48D5vTm01FTn0XuSdc5Aur7actuw4t_yb7RVqTABvR0yGypNDtyi6PDuI-aId7BFnJb9Gf2e1-vZyrgHY7n27t9VQiQzOOr1v1albgV487SN6ser3uifTOtwXFqY54X7Bd2AnDWie5BMUKaK6NcugsO9yotA7RPBNiiCiAFlGZdetJut_5xqUtp3ShddNd0PyHVcLYXw85P_YPOICPubbbYdp_bH2ICBuGjXPs0S-vpVk"/>
+<img alt="Partner 2" class="h-5" data-alt="Modern geometric vector logo for a tech entertainment company in grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLmrjFeHql0zymmcMn16Rl58hfQo5gqIV9q33nfzJV-yAJdX_joKEBxPNR6aUVYwMnaVzyoVXFbC16fDLthXw0pC7EGoV4Gqh03Oy3nxAAwt3pBCkgtIA0ii0NDFm_NiLZpb1IIklUjgMr-oDfsfjdVKM6t7PIPSBv-ZtkgofiuktnPXi3wyAes6pCN0lkPmgSVhPiqk76gt1d96oSSc-MxxitwDy6_cXy8iJEPL_srlevWoclZYOqa72IZGKERZWEjx49VLWDWa0"/>
+<img alt="Partner 3" class="h-5" data-alt="Sleek sans-serif typography logo for a global digital agency in grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9stXLGvjW_32P29Lqu3qfiADaA5pAQgfiEShMx-Z6ZCP8D4aYS_gWuAFI-40AhFuhoyrpJwlFSn1FlSs3k6Oq0a2HV4VAmBufOkijOeJmVil-3CjHTTaxJK2BUcFzGCVPINCPgHEx1dpxTE2D2xeUPQDnf7ccG1UeEM5_t1eHG16pd_-eof2fGLAj5sbPx79kkCG6HDXV4cRZwZ9qTS2iTAlO9GkGlHHtVyl4yHg5wZRmfjo6fcezb_MSHHL6ZYtxKT_VgDjw_qQ"/>
+<img alt="Partner 4" class="h-5" data-alt="Abstract icon and wordmark for a creative production house in grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHX3KsFLPf3U_t9QX883BOLhr7nC-dgufyq4uGfd3YQjpQ4y4p7dSKnAgoxUoPrHe8K5F1jyKxMaAl8Y0224TAidnl7Ir4vykiiWV9NFi4HJjfw6I_fWrMeXRmZtBt47qoGyrHcVYzZj9XfWDNRIRjBWq2qVbwMBPKGkIBfwD57InEXlX1qHUSPAQD0IoXYjecL9wisq6A6Vzo-RpSypN6G1sRx6voQWqfYQszTo2Qc_VF0GAh6fbA8_xeR0w0IW8t1TtpET_foBY"/>
+<img alt="Partner 5" class="h-5" data-alt="Bold minimalist logo for an e-sports organization in grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc1-MYPu88ah3pFX6NspWiYPA_OL9E0__zGeq_4nuHtnncmYUAod-DtInFCpP8x4FZ5_Rjia3dyuW-SxaPxBhqDYXMJ2zrOr8fL5ACk5FB4w4DzuHWGKteuSExki0d-gXItkqJDHkuj4i2RMJtrpmCPmC8jkU3ZMXAoiyp2h6gDNExLZxScjLBXF8NGCtQB7kqEDjZfhQ6qfiKThqxDZvUf3bICMf68_9cI6sI_2vSVc35mucFi4_VFNQQ9lASpVIAk89RVWM66-I"/>
+</div>
+</div>
+</div>
+</section>
+<!-- RIGHT COLUMN: SIGN-IN FORM (42%) -->
+<main class="flex-1 lg:flex-[0.42] h-screen bg-surface relative flex flex-col items-center justify-center p-8 sm:p-12 overflow-y-auto">
+<div class="w-full max-w-[400px] flex flex-col space-y-10">
+<!-- Header -->
+<div class="space-y-2">
+<h2 class="text-[26px] font-bold tracking-tight text-white">Welcome back</h2>
+<p class="text-sm text-on-surface-variant font-medium">Sign in to continue your outreach</p>
+</div>
+<!-- Sign In Form -->
+<form class="flex flex-col space-y-8">
+<div class="space-y-6">
+<!-- Email Field -->
+<div class="group">
+<label class="block text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/60 mb-2 transition-colors group-focus-within:text-primary-container" for="email">Email Address</label>
+<input class="w-full bg-white/5 px-0 py-3 text-sm text-white input-underline border-0 rounded-none placeholder-on-surface-variant/30" id="email" placeholder="name@studio.com" type="email"/>
+</div>
+<!-- Password Field -->
+<div class="group relative">
+<label class="block text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/60 mb-2 transition-colors group-focus-within:text-primary-container" for="password">Password</label>
+<div class="relative">
+<input class="w-full bg-white/5 px-0 py-3 text-sm text-white input-underline border-0 rounded-none placeholder-on-surface-variant/30" id="password" placeholder="••••••••••••" type="password"/>
+<button class="absolute right-0 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-white transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Utilities -->
+<div class="flex items-center justify-between text-xs font-medium">
+<label class="flex items-center gap-2 cursor-pointer group">
+<input class="w-4 h-4 rounded border-outline-variant bg-surface-variant/40 text-primary-container focus:ring-primary-container/20 focus:ring-offset-0" type="checkbox"/>
+<span class="text-on-surface-variant group-hover:text-on-surface transition-colors">Remember this device</span>
+</label>
+<a class="text-primary-fixed hover:text-primary-container transition-colors" href="#">Forgot password?</a>
+</div>
+<!-- CTA -->
+<button class="w-full bg-primary-container text-on-primary font-bold py-4 rounded-lg button-glow transition-all active:scale-[0.98] tracking-tight" type="submit">
+                    Sign in
+                </button>
+</form>
+<!-- Social/Divider -->
+<div class="space-y-6">
+<div class="relative flex items-center justify-center">
+<div class="flex-grow border-t border-outline-variant/30"></div>
+<span class="flex-shrink mx-4 text-[10px] font-bold text-on-surface-variant/40 tracking-widest">OR</span>
+<div class="flex-grow border-t border-outline-variant/30"></div>
+</div>
+<button class="w-full flex items-center justify-center gap-3 bg-surface-variant/30 hover:bg-surface-variant/50 border border-outline-variant/20 text-white font-semibold py-3.5 rounded-lg transition-all">
+<svg class="w-5 h-5" viewbox="0 0 24 24">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+</svg>
+                    Continue with Google
+                </button>
+</div>
+<!-- Footer -->
+<p class="text-center text-xs font-medium text-on-surface-variant">
+                New to KOLMatrix? <a class="text-primary-fixed hover:text-primary-container transition-colors ml-1" href="#">Request access</a>
+</p>
+</div>
+<!-- Far Bottom Context -->
+<div class="absolute bottom-8 left-0 right-0 px-12 flex justify-between items-center text-[11px] font-bold tracking-widest text-on-surface-variant/30 uppercase">
+<span>© 2026 KOLMatrix · Tokyo</span>
+<div class="flex items-center gap-2">
+<span class="bg-surface-variant/40 px-1.5 py-0.5 rounded border border-outline-variant/30">⌘ K</span>
+<span>to search</span>
+</div>
+</div>
+</main>
+</body></html>
