@@ -14,7 +14,7 @@
       "title": "PM2 ecosystem.config.js",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "项目根 server.js（~22 行 custom server 用 node:http + next({dev:false}) + process.send('ready') + SIGTERM/SIGINT graceful close）；ecosystem.config.js 声明 kolmatrix app（script:server.js / cwd:/opt/kolmatrix / instances:2 / exec_mode:cluster / max_memory_restart:1G / kill_timeout:5000 / wait_ready:true / listen_timeout:10000 / env.NODE_ENV=production / env.PORT=3001 / env_file:/opt/kolmatrix/.env.production / merge_logs:true）；2026-04-20 两轮实测证伪 v1 方案（npm start cluster crash loop / next 直连无 ready 信号 93%）后按 spec §2.2 预案升级到方案 B1（custom server + wait_ready，详见 docs/specs/BI2-f002-zero-downtime-fix.md v2）；VPS 切换架构一次性 pm2 delete + pm2 start（低谷时段）；pm2 describe 显示 instances=2 两 worker online + wait_ready 生效；60× 公网 curl 叠加 pm2 reload --update-env 全 200；60× VPS 本地 curl 叠加 reload 全 200；两 worker uptime 有明显交错（证明 PM2 严格等 ready 才杀 old）"
     },
     {
@@ -62,7 +62,7 @@
       "title": "Deployment runbook（手动 fallback 文档）",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "docs/dev/deployment-runbook.md 含：完整手动部署流程（GitHub Actions 失败时的 fallback）/ Health check 失败 debug / Rollback 手动步骤 / DB pg_restore 恢复步骤 / Common errors 表 ≥5 类（OOM、端口冲突、Prisma generate 失败、migration deploy 失败、PM2 进程挂）/ PM2 命令速查 / SSH 应急入口；Reviewer 在 L3 验收阶段按 runbook 在 prod 测试时段执行一次手动部署验证可重现"
     }
   ]
