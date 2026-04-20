@@ -4,10 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BI2-deployment-automation** — status=building，8 features 等 Generator 开工
-  - 执行顺序：F001 /api/health → F002 PM2 → F005 healthcheck → F004 backup → F006 rollback → F007 ROLLBACK SQL 校验 → F003 deploy workflow → F008 runbook
-  - 前置条件全部就位（Planner 2026-04-20 完成）：VPS 工具齐（jq/pg_dump/certbot/pm2-6.0.14/node-22）+ deploy SSH key（~/.ssh/kolmatrix_deploy ed25519，VPS 已 authorize，登录验证通过）+ GitHub `production` env + 3 Secrets（PROD_HOST/USER/SSH_KEY）
-  - Free 私有 repo 无 required reviewer（用户 2026-04-20 选暂不升级；workflow_dispatch + admin 单人权限双重防护）
+- **BI2-deployment-automation** — 8/8 done，status=verifying，等 Reviewer
+  - 交付物：/api/health（F001）+ ecosystem.config.js（F002）+ 4 shell 脚本（healthcheck/backup-db/rollback/validate-rollback-sql，F004-F007）+ deploy-prod.yml+deploy-prod.sh（F003）+ runbook（F008）
+  - CI 新增 validate-rollback-sql job；所有 5 脚本 shellcheck clean + 2 workflow actionlint clean
+  - L2/L3 需真 VPS deploy 测试（Reviewer 触发 deploy workflow）；前置条件（VPS 工具 + SSH key + Env + Secrets）Planner 2026-04-20 已全部就位
 - **BI1-test-infrastructure** ✅ 已完成签收（10/10 + Round 1 fix + reverify 通过，framework v0.9.1 沉淀）
 - **B0-foundation** ✅ 已完成签收（10/10 + 12 PASS 0 FAIL，Round 3 reverify 通过）
 

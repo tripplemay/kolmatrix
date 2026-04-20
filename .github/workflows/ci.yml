@@ -63,6 +63,13 @@ jobs:
       - run: npm ci
       - run: npm run lint
 
+  validate-rollback-sql:
+    name: Validate migration ROLLBACK SQL
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./scripts/validate-rollback-sql.sh
+
   typecheck:
     name: Typecheck
     runs-on: ubuntu-latest

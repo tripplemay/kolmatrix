@@ -1,0 +1,61 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch / tag / SHA to deploy"
+        default: "main"
+        required: true
+        type: string
+      skip_backup:
+        description: "Skip pre-deploy DB backup (NOT recommended)"
+        default: false
+        type: boolean
+
+concurrency:
+  # Never let two deploys overlap — second click queues behind the first.
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.ref }} to kol.guangai.ai
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      # Free private repo can't gate on required reviewers, but using
+      # the `production` environment still scopes secrets + shows up in
+      # the Deployments tab so the audit trail is preserved.
+      name: production
+      url: https://kol.guangai.ai
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Validate migration ROLLBACK SQL
+        run: ./scripts/validate-rollback-sql.sh
+
+      - name: SSH + run deploy-prod.sh on VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script_stop: true
+          envs: GIT_SHA,SKIP_BACKUP
+          script: |
+            cd /opt/kolmatrix && ./scripts/deploy-prod.sh
+        env:
+          GIT_SHA: ${{ github.sha }}
+          SKIP_BACKUP: ${{ inputs.skip_backup }}
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Production deploy of ${{ inputs.ref }} failed."
+          echo "See the deploy-prod.sh log above for the offending step."
+          echo "If the reload stage failed, rollback.sh should have brought"
+          echo "traffic back to the prior SHA. If rollback ALSO failed, follow"
+          echo "docs/dev/deployment-runbook.md §Manual rollback."

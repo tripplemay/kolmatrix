@@ -53,7 +53,7 @@ DROP POLICY IF EXISTS tenant_isolation ON "email_log";
 CREATE POLICY tenant_isolation ON "email_log"
   USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
 
--- ROLLBACK (restore original un-NULLIF'd USING clauses):
+-- ROLLBACK: restore original un-NULLIF'd USING clauses
 --
 -- DROP POLICY IF EXISTS tenant_isolation ON "email_log";
 -- DROP POLICY IF EXISTS tenant_isolation ON "email_template";
