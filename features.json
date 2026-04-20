@@ -30,7 +30,7 @@
       "title": "证书自动续期 + 验证",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "certbot 自动 systemd timer（certbot.timer）enabled 在 VPS（apt 装 certbot 自带；systemctl list-timers 确认 certbot.timer active）；certbot renew --dry-run 无错误（两个域 kol.guangai.ai + staging.kol.guangai.ai 都显示 'Simulating renewal ... success'）；certbot 续期钩子 --deploy-hook 触发 nginx reload（/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh）。Acceptance: certbot renew --dry-run 两证书全绿；deploy-hook 脚本 +x 权限；新证书写入 /etc/letsencrypt/live/ 后 nginx 自动 reload"
     },
     {
