@@ -41,19 +41,31 @@ KOLMatrix 初期只有 `kol.guangai.ai` 主应用域名（公司根域 `guangai.
   - 根域发件（`marketer@kolquest.com`）
 - **未来迁移触发：** 业务稳定 / 商业化 / 融资节点时评估
 
-### 3. 发件用 `send` 子域（Resend 要求，2026-04-19 实操修订）
+### 3. 发件地址（2026-04-20 BI3-F005 实测再修订，根域为终态）
 
-- **最终方案：** `marketer@send.kolquest.com`（不是原计划的根域 `marketer@kolquest.com`）
-- **修订原因：** Resend 配置时强制使用 `send` 子域作为发件子域（基于 AWS SES 架构）。这其实是更好的实践——即便在 `kolquest.com` 内部，`send.` 子域也与根域做 reputation 隔离，万一 send 子域被 spam 标记也不影响 kolquest.com 根域
-- **Resend 生成的 DNS 记录格式（实际落地）：**
-  - MX on `send.kolquest.com` → `feedback-smtp.ap-northeast-1.amazonses.com` (Tokyo region)
-  - TXT SPF on `send.kolquest.com` → `v=spf1 include:amazonses.com ~all`
-  - TXT DKIM on `resend._domainkey.kolquest.com` → (Resend 生成的公钥)
-  - TXT DMARC on `_dmarc.kolquest.com` → `v=DMARC1; p=none;`（监听模式起步）
-- **视觉对比：**
-  - 原计划：`marketer@kolquest.com`
-  - 实际：`marketer@send.kolquest.com`（仍然清晰 KOLQuest 品牌）
-- **对比放弃的选项：**
+> **2026-04-20 修订（BI3-F005 实测）：** 原 §3 认为 "Resend 强制 send 子域作为发件地址"系对 Resend 架构的误读。实测结果：
+> - Resend API 注册的 domain 是 **`kolquest.com` 根域**（不是 send 子域），status=verified + sending enabled
+> - 从 `marketer@kolquest.com` 发件 → 成功
+> - 从 `marketer@send.kolquest.com` 发件 → **403 validation_error**（Resend 不承认 send 子域作为 sender）
+> - `send.kolquest.com` 子域只是 Resend bounce 基础设施（bounce MX / SPF 挂在那里让 AWS SES 退信路径正确），**不是发件地址**
+>
+> **当前生效的最终方案（override 原 §3）：**
+> - 发件地址：**`marketer@kolquest.com`**（根域）
+> - DNS 记录布局保持 §4 表格不变（DKIM 在根域 / MX+SPF 在 send 子域 / DMARC 在根域 —— 这是 Resend 要求的记录**位置**，与发件地址用哪个无关）
+> - 修订原因澄清：Resend 把「发件 reputation」算在注册的 domain 上（= kolquest.com 根域），send 子域的 MX 只是退信路径，不影响 reputation 统计维度。原 §3 "send 子域与根域 reputation 隔离" 的说法技术上不准确。
+
+---
+
+**原 §3 内容保留作历史记录（已作废，仅供溯源）：**
+
+- ~~最终方案：`marketer@send.kolquest.com`（不是原计划的根域 `marketer@kolquest.com`）~~
+- ~~修订原因：Resend 配置时强制使用 `send` 子域作为发件子域（基于 AWS SES 架构）。这其实是更好的实践——即便在 `kolquest.com` 内部，`send.` 子域也与根域做 reputation 隔离，万一 send 子域被 spam 标记也不影响 kolquest.com 根域~~
+- Resend 生成的 DNS 记录格式（§4 表格仍然准确）：
+  - MX on `send.kolquest.com` → `feedback-smtp.ap-northeast-1.amazonses.com` (Tokyo region) — **bounce 路径，非发件**
+  - TXT SPF on `send.kolquest.com` → `v=spf1 include:amazonses.com ~all` — **bounce 路径的 SPF，非发件**
+  - TXT DKIM on `resend._domainkey.kolquest.com` → Resend 生成的公钥 — **给根域 `kolquest.com` 发件签名**
+  - TXT DMARC on `_dmarc.kolquest.com` → `v=DMARC1; p=none;` — **根域的 DMARC**
+- 对比放弃的选项：
   - A 子域 `mail.kolquest.com` / `outreach.kolquest.com`：Resend 不提供选择
   - 主站直发 `marketer@kol.guangai.ai`：污染主站 reputation，风险大
 

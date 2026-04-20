@@ -8,14 +8,14 @@ type: reference
 
 - 主应用控制台：`https://kol.guangai.ai`
 - 主应用 API：`https://kol.guangai.ai/api/v1/`
-- **品牌域（2026-04-19 注册 + DNS 配完）：** `kolquest.com`
+- **品牌域（2026-04-19 注册 + DNS 配完 + BI3-F006 Nginx 301 落地）：** `kolquest.com`
   - DNS 管理：Cloudflare zone `kolquest.com`（Free plan）
-  - 用途：301 redirect 到主站 + `send` 子域发件
-  - 发件地址：`marketer@send.kolquest.com`（Resend 默认 AWS SES 架构）
+  - 用途：301 redirect 到主站 + 邮件发件
+  - **发件地址：`marketer@kolquest.com`（根域，2026-04-20 BI3-F005 实测修正）** —— Resend API 只接受根域作为 sender；`marketer@send.kolquest.com` 返回 403 validation_error（原 ADR-010 §3 对 send 子域的理解误读，实际 send.* 只是 bounce 基础设施）
   - Resend region: `ap-northeast-1`（Tokyo，与 KOLMatrix VM 同区）
-  - 6 条 DNS 记录已通过 Cloudflare API 配完（2026-04-19 11:01 UTC）
-  - Resend Dashboard 已含 kolquest.com domain（B4 接入时直接用）
-  - Nginx 301 redirect + Let's Encrypt 证书：BI3 F006 落地
+  - Resend Dashboard 注册 domain = `kolquest.com`（根域），status=verified + sending enabled
+  - DNS 记录分布（6 条 2026-04-19 Cloudflare API 配完）：A/CNAME 给主站 redirect；DKIM 在根域 `resend._domainkey.kolquest.com`；MX/SPF 在 `send.kolquest.com` 子域（Resend bounce 基础设施，不是发件地址）；DMARC 在 `_dmarc.kolquest.com` 根域
+  - Nginx 301 redirect + Let's Encrypt 证书：BI3-F006 已落地 ✅
   - 主站暂不迁移（ADR-010 B 方案）；未来业务稳定后再评估
 - Stitch 视觉基调基准项目（Neural Velocity，已定稿 2026-04-18）：`9338165817879839093`
   - URL: https://stitch.withgoogle.com/projects/9338165817879839093

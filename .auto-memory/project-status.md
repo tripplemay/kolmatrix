@@ -4,18 +4,18 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BI3-domain-and-tls** ✅ 已完成签收（status=done，7/7 PASS）
+- **Option α infra-first 已收官** ✅ 下一棒 B1 KOL Database 待用户确认启动
+- **BI3-domain-and-tls** ✅ 已完成签收（7/7 PASS, fix_rounds=0 一轮过）
   - 生产/品牌域 SSL Labs A+（kol.guangai.ai / kolquest.com）
-  - staging HTTPS + 独立 PM2 fork（3002）+ 独立 DB `kolmatrix_staging`
-  - certbot.timer + deploy hook + 到期告警 cron 脚本验证完成
+  - staging HTTPS + 独立 PM2 fork(3002) + 独立 DB `kolmatrix_staging`
+  - certbot.timer + deploy hook + 到期告警 cron 全验证通过
   - runbook staging DB reset 实操通过（kols=12, users=2）
-  - signoff: `docs/test-reports/BI3-domain-and-tls-signoff-2026-04-20.md`
-- **BI2-deployment-automation** ✅ 已签收
-- **BI1-test-infrastructure** ✅ 已签收
+- **BI2-deployment-automation** ✅ 已签收（8/8 zero-downtime + 自动回滚 + prod bootstrap）
+- **BI1-test-infrastructure** ✅ 已签收（framework v0.9.1 沉淀）
 - **B0-foundation** ✅ 已签收
 
-## 角色分配（BI3）
-- Planner: Kimi / Generator: johnsong / Evaluator: Reviewer
+## 角色分配
+- BI3 已清除；下一批次由用户指派（默认沿用 Planner: Kimi / Generator: johnsong / Evaluator: Reviewer）
 
 ## 后续顺序（Option α）
 - B1 KOL Database → B2 AI 评分 + BullMQ → B3 Campaigns → B4 邮件触达 → B5 KOL Discovery

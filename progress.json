@@ -20,13 +20,9 @@
     "spec": "docs/specs/BI3-domain-and-tls-spec.md",
     "test_cases": null,
     "signoff": "docs/test-reports/BI3-domain-and-tls-signoff-2026-04-20.md",
-    "framework_reviewed": false
+    "framework_reviewed": true
   },
-  "role_assignments": {
-    "planner": "Kimi",
-    "generator": "johnsong",
-    "evaluator": "Reviewer"
-  },
+  "role_assignments": null,
   "evaluator_feedback": {
     "summary": "BI3 首轮验收通过：7/7 全 PASS（TLS/Staging/续期告警/品牌域/runbook 实操均达标）。",
     "pass_count": 7,
