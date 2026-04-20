@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BI2-deployment-automation** — status=reverifying, fix_rounds=1。8/8 代码 + VPS bootstrap + 3 个 runtime fix（3c418bc/a6b1fd0/0a382f4）全部就位。
+- **BI2-deployment-automation** — status=fixing（Reviewer round 2 复验 5 PASS / 2 PARTIAL / 1 FAIL）。Planner 已下发 F002 方案 A 裁决（双实例 + kill_timeout），待 Generator 执行；F006/F008 仍待 Reviewer 专项演练。
   - 实测 VPS：/api/health 200 healthy，/login 200 Sign in，未登录 /en/dashboard 307→/login ✓
   - Prod DB seed 已跑（2026-04-20 Planner 执行）：1 tenant + admin/Sarah Chen + 12 KOLs + 3 campaigns + 4 templates + 300 emailLogs
   - DB 命名 spec 坑 Planner 裁决方案 A（接受固定名 `kolmatrix`）：environment.md / architecture.md / BI2 spec / infrastructure.md / runbook 文案全对齐

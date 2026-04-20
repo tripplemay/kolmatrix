@@ -50,7 +50,7 @@
 |---|---|---|
 | Deploy 触发方式 | `workflow_dispatch`（手动触发） | 符合 CLAUDE.md "部署由用户手动触发"；防止误推 |
 | SSH action | `appleboy/ssh-action@v1` | 维护活跃，社区标准 |
-| Reload 方式 | `pm2 reload`（不是 restart） | zero-downtime，保留连接 |
+| Reload 方式 | `pm2 reload` + `instances: 2` + `kill_timeout: 5000`（cluster 模式滚动替换）| 真正 zero-downtime；单实例 reload 有 200-500ms 端口空窗（2026-04-20 BI2-F002 reverify 印证 + 裁决方案 A，见 `BI2-f002-zero-downtime-fix.md`）|
 | DB 备份 | pg_dump → `/opt/kolmatrix-backups/db-{timestamp}.sql` | 简单可靠；保留 30 天 |
 | 备份清理 | crontab `find ... -mtime +30 -delete` | 防磁盘满 |
 | Health check 端点 | `/api/health`（无 auth） | 简单；返回 JSON 含 db/redis/version |
@@ -100,9 +100,10 @@
         script: 'npm',
         args: 'start',
         cwd: '/opt/kolmatrix',
-        instances: 1,
-        exec_mode: 'cluster',     // 后续可加 instances: 'max'
+        instances: 2,              // 滚动替换基准；'max' 在未来加 vCPU 时再评
+        exec_mode: 'cluster',
         max_memory_restart: '1G',
+        kill_timeout: 5000,        // 让 Next.js 处理完 in-flight 请求再强杀（default 1.6s）
         env: {
           NODE_ENV: 'production',
           PORT: 3001,
@@ -129,10 +130,15 @@
 - README 说明 PM2 命令（`pm2 status` / `pm2 logs kolmatrix` / `pm2 reload kolmatrix`）
 
 **Acceptance：**
-- `pm2 reload kolmatrix --update-env` 不丢请求
+- `pm2 describe kolmatrix` 显示 `instances=2` / `exec_mode=cluster` / 两 worker 均 online
+- 连续 60 次公网 curl（间隔 500ms）叠加 `pm2 reload kolmatrix --update-env`：全 HTTP 200（0 个 502/000）
+- 连续 60 次 VPS 本地 curl（`http://127.0.0.1:3001/api/health`）叠加 reload：全 HTTP 200（0 连接失败）
+- 两 worker uptime 交错（证明滚动替换而非同时重启）
 - Out/error log 写入 `/var/log/pm2/`
 - 进程 RAM > 1G 自动重启
 - 重启 VM 后 PM2 自动恢复（pm2 startup 完成）
+
+> **2026-04-20 裁决：** Reviewer round 1 judged F002 FAIL（单实例 reload 空窗导致 2×502 + 4× 本地连接失败）。Planner 方案 A（双实例）已下发，详见 `docs/specs/BI2-f002-zero-downtime-fix.md`。
 
 ### F003 — Deploy production workflow
 **实现：**
