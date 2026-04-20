@@ -4,10 +4,11 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BI2-deployment-automation** — status=reverifying round 2（F002 B1 落地；F006/F008 待 Reviewer 演练）
-  - F002 B1 生效（commit ba11e6b + bc1de3b）：server.js custom server + `wait_ready:true` + `listen_timeout:10000`；VPS 跑 pm2 ecosystem.config.js；两 worker id 10/11 online restart=0。
-  - Smoke 证据：VPS 本地 60/60 全 200 ✅；公网 59/60 (1×000 = WSL→东京网络噪音，对照基线 60× 无 reload 也是 59/60 同频率)。pm2 logs 抓到先 ready 后 kill 的滚动序列。
-  - VPS 此刻：两 worker online；非 reload 公网 100% 200；pm2 save 已锁 2 实例 + wait_ready 态
+- **BI2-deployment-automation** — status=fixing（Round 2 reverify 7 PASS / 1 PARTIAL F006）
+  - F002 B1 **PASS**（commit ba11e6b + bc1de3b）：server.js + wait_ready；Reviewer 本地 60/60 + 公网 60/60 全 200
+  - F008 **PASS**：Reviewer 在 VPS 手动跑完整 runbook fallback（backup→pull→npm ci→migrate→build→pm2 reload→healthcheck），新 backup db-20260420-100204.sql.gz
+  - F006 **PARTIAL**：exit 1 + exit 0 分支已验，仅 exit 2（healthcheck 二次失败 MANUAL INTERVENTION）未受控演练。Planner 下发 `docs/specs/BI2-f006-exit2-drill.md`（stub healthcheck + trap 恢复，对 prod 零影响，~3min）
+  - F006 演练通过即可签收 BI2 done
   - Prod DB seed 已跑：1 tenant + admin/Sarah + 12 KOL + 3 campaigns + 4 templates + 300 emailLogs
   - DB 命名方案 A 对齐完毕（`kolmatrix`）
   - 仍 TBD：AIGCGATEWAY_API_KEY / RESEND_API_KEY（B2/B4 前）

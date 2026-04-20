@@ -39,7 +39,7 @@
       "priority": "high",
       "executor": "generator",
       "status": "pending",
-      "acceptance": "scripts/rollback.sh set -e；从 /tmp/prev-sha 读取上一 SHA（不存在则 exit 1 报错）；git checkout $PREV_SHA + npm ci + npm run build + pm2 reload kolmatrix --update-env；sleep 3 后再跑 healthcheck.sh；二次成功 exit 0，二次失败 exit 2 并打印 MANUAL INTERVENTION REQUIRED；明确不回滚 DB（注释说明）；shellcheck 通过"
+      "acceptance": "scripts/rollback.sh set -e；从 /tmp/prev-sha 读取上一 SHA（不存在则 exit 1 报错）；git checkout $PREV_SHA + npm ci + npm run build + pm2 reload kolmatrix --update-env；sleep 3 后再跑 healthcheck.sh；二次成功 exit 0，二次失败 exit 2 并打印 MANUAL INTERVENTION REQUIRED；明确不回滚 DB（注释说明）；shellcheck 通过；三分支受控实证：exit 1（prev-sha 缺失）+ exit 0（回滚成功）Round 1/2 已验，exit 2（healthcheck 二次失败）按 `docs/specs/BI2-f006-exit2-drill.md` 演练（stub healthcheck + trap 恢复，对 prod 零影响）"
     },
     {
       "id": "F007",
