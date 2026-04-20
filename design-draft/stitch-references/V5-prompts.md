@@ -13,31 +13,82 @@
 
 ---
 
-## Prompt 1 — 登录页（Sign in · KOLMatrix）
+## Prompt 1 — 登录页 v2（Sign in · KOLMatrix · 游戏氛围版）
+
+> **重写版本（2026-04-20）**：v1 居中卡过于通用，缺游戏行业沉浸感。v2 采用 58/42 split layout，左侧大图承载叙事，右侧表单无卡框贴底，像 AAA 游戏启动器。
 
 ```
-Generate a desktop sign-in screen for "KOLMatrix" — a gaming-vertical KOL marketing platform. Visual tone = Neural Velocity (deep navy #0b1326 base, electric cyan #00E5FF accents, subtle glassmorphism). No sidebar, no topbar — this is a pre-authentication page.
+Generate a desktop sign-in screen for "KOLMatrix" — a gaming-vertical KOL marketing platform built for studios running global influencer campaigns. The target aesthetic is a cross between a AAA game launcher (Valorant / Destiny 2 account page) and a modern B2B SaaS login (Linear / Framer). Neural Velocity visual tone: deep navy #0b1326 base, electric cyan #00E5FF accents, glassmorphism. No sidebar. No topbar. Pre-authentication layout.
 
-Layout:
-- 1440×900 viewport, full-height dark navy background with a very subtle radial cyan glow behind the card (top-center, feels like aurora / ambient).
-- Horizontally centered single-column card, ~440px wide, surface color #14213b with 1px subtle inner border (rgba(255,255,255,0.06)), 16px rounded corners, soft shadow.
-- Card padding 40px.
+Overall layout — a hard 58/42 vertical split at 1440×900 viewport:
+- LEFT column 58% (840px wide) = full-bleed cinematic hero.
+- RIGHT column 42% (600px wide) = form area on a navy #0b1326 base.
+- Between the two columns, a subtle cyan gradient bleed: the rightmost ~40px of the left image fades into the form column via a radial cyan glow (#00E5FF at 12% opacity), making the whole page feel continuous, not two boxes side-by-side.
 
-Card content top-to-bottom:
-1. KOLMatrix wordmark (Inter 700, 24px, color white) with a tiny cyan dot preceding it (8px circle, #00E5FF with outer glow). Subtitle below: "Sign in to your workspace" (Inter 400, 14px, slate-400).
-2. 32px gap.
-3. Email label (slate-300 Inter 500 12px, letter-spacing 0.4px uppercase) + email input (bg #0b1326, 1px border rgba(255,255,255,0.08), 12px rounded, height 44px, placeholder "you@company.com" slate-500). Focus state: border shifts to cyan glow.
-4. 20px gap. Password label + password input (same styling, placeholder "••••••••"), with a right-side reveal eye icon (Material Symbols Outlined, slate-400).
-5. 12px gap. One-row utility area: "Remember me" checkbox (cyan check when active, small Inter 400 13px slate-300) on the left, "Forgot password?" cyan-400 link on the right.
-6. 24px gap. Primary button "Sign in" — full width, 48px tall, 12px rounded, background solid #00E5FF with navy text (#0b1326), Inter 600 15px, with a right-pointing arrow icon. Hover state: faint outer cyan glow.
-7. 16px gap. Thin divider line (rgba(255,255,255,0.08)) with "or continue with" (slate-500 Inter 400 12px) centered on it.
-8. 16px gap. Single "Continue with Google" secondary button, 48px tall, 12px rounded, bg rgba(255,255,255,0.04), 1px border rgba(255,255,255,0.08), Inter 500 14px white text, Google "G" logo icon on the left.
-9. 28px gap. Bottom center text "New to KOLMatrix? <cyan link>Request access</cyan link>" (Inter 400 13px slate-400).
+LEFT column (cinematic hero, full bleed edge-to-edge, 840×900):
 
-Footer strip at viewport bottom (32px tall, slate-500 Inter 400 11px, centered): "© 2026 KOLMatrix · Tokyo · support@kolmatrix.local" with a faint cyan dot separator.
+Render a moody, dark, cinematic scene that evokes "the global gaming creator economy" without being a literal photo of a gamer at a PC. Visual mood: a wide elevated shot of a dimly lit esports arena at night, seen from the back of the stands looking toward the stage. The stage has deep cyan stage-lights fanning upward into haze, a gigantic out-of-focus LED wall showing abstract 3D game assets (no specific IP), silhouettes of a sparse crowd. Color grade: teal shadows, cyan highlights, crushed blacks, slight film grain. Composition leaves the top third mostly empty (negative space for overlay text).
 
-Typography: Inter everywhere. No unnecessary icons. No serif font. Stay within Neural Velocity tokens from the project's Design System. Do NOT add a sidebar or topbar.
+On top of this image, layer the following overlay elements (treat them as floating HUD-style UI, like a game launcher):
+
+1. Top-left corner (40px padding from top/left): small KOLMatrix wordmark. 8px cyan dot with outer glow + "KOLMatrix" (Inter 700, 20px, white). Underneath in Inter 400 11px uppercase letter-spacing 0.5px slate-300: "CREATOR OPERATIONS · 2026".
+
+2. Mid-left positioning, large: main tagline. Two-line headline, left-aligned, positioned at approximately 45% from viewport top, 40px left padding:
+   Line 1: "Run global KOL campaigns" (Inter 700, 44px, white, tight tracking)
+   Line 2: "like a launch day." (Inter 700, 44px, cyan-300 with subtle cyan glow)
+   Beneath: a single-line subtitle (Inter 400, 16px, slate-300, max-width 480px): "Discover, score, and coordinate with 800K+ verified creators across YouTube, TikTok, Twitch, and Bilibili — from one command center."
+
+3. Floating HUD "data chips" scattered in mid-image, giving game-launcher vibes. Four small semi-transparent pill cards, each with a colored dot + metric + label, positioned like drifting UI:
+   - Upper-right area (roughly 60% from left, 25% from top): glass pill "850K+ creators indexed" (cyan dot, Inter 500 12px white text on rgba(255,255,255,0.08) with backdrop blur, 24px tall, 8px rounded).
+   - Mid-right (roughly 70% from left, 50% from top): glass pill "AI match precision 94%" (emerald dot).
+   - Lower-left (roughly 15% from left, 75% from top): glass pill "9 locales · 24/7 ops" (slate dot).
+   - Lower-center (roughly 45% from left, 85% from top): glass pill "200+ studios trust us" (cyan dot).
+   Each chip looks like a faint transparent tooltip hovering in 3D space above the scene.
+
+4. Bottom-left corner (40px padding from bottom/left): three-row social proof stack.
+   Row 1 (Inter 400, 11px, uppercase, slate-500, letter-spacing 0.8px): "TRUSTED BY CREATORS WORKING WITH"
+   Row 2: a grayscale horizontal logo strip (5 placeholder studio logos, each ~80px wide 24px tall, bg rgba(255,255,255,0.06), Inter 600 12px slate-300 inside each showing "STUDIO A" "STUDIO B" "STUDIO C" "STUDIO D" "STUDIO E"). Logos all low-contrast so they read as ambient, not CTA.
+   Row 3 blank gap.
+
+5. Very subtle vertical light rays / particle drift overlay (implied by soft gradient streaks from bottom-up, cyan at 6% opacity). Don't overdo — just a hint of "something is happening" in the scene.
+
+RIGHT column (form area, 600×900 on the navy base, no card frame — inputs sit directly on the navy bg like a game launcher HUD):
+
+Positioned at viewport horizontal center of the right column, vertically centered (~200px top padding). Max form width 384px.
+
+Content top-to-bottom:
+
+1. Small header row: "Welcome back" (Inter 600, 26px, white) + subtitle "Sign in to continue your outreach" (Inter 400, 14px, slate-400). 36px gap below.
+
+2. Email field:
+   - Label "EMAIL" (Inter 500, 11px, slate-400, uppercase, letter-spacing 0.6px). 8px below label:
+   - Input: 48px tall, no card surface — uses a transparent bg (rgba(255,255,255,0.03)) with a 1px slate-700 underline (bottom border only, 2px cyan when focused — like a game settings input). 12px horizontal padding. Placeholder "you@studio.com" (slate-500 Inter 400 14px). 20px gap below.
+
+3. Password field: same underline-only style, placeholder "••••••••", right-side reveal eye icon (Material Symbols Outlined, slate-400, click target 24px). 12px gap below.
+
+4. Utility row: "Remember this device" checkbox (left, cyan check, Inter 400 12px slate-300) + "Forgot password?" cyan-400 link on right (Inter 500 12px). 28px gap.
+
+5. Primary button "Sign in" — full width 384px, 52px tall, 12px rounded, solid cyan #00E5FF bg with navy #0b1326 text, Inter 600 15px, right arrow icon. The button has a subtle cyan outer glow (outer shadow rgba(0,229,255,0.25) 0 0 24px). Hover state: stronger glow. 20px gap below.
+
+6. Divider: thin line rgba(255,255,255,0.08) with "OR" (slate-500 Inter 500 11px uppercase letter-spacing 0.6px) centered. 20px gap below.
+
+7. Secondary button "Continue with Google" — full width 52px, 12px rounded, bg rgba(255,255,255,0.04), 1px border rgba(255,255,255,0.08), Inter 500 14px white, Google "G" logo on left. 20px gap below.
+
+8. Bottom text (centered): "New to KOLMatrix? <cyan link>Request access</cyan link>" (Inter 400, 13px, slate-400). The link has a tiny right arrow.
+
+9. Far bottom of right column (40px padding from bottom-right), small text row: "© 2026 KOLMatrix · Tokyo" (slate-500 Inter 400 11px) + on the right (bottom-right corner): keyboard shortcut hint "⌘ K to search" (slate-500 Inter 400 11px) — a tiny nod to power-user game launcher UX. Only render if it doesn't crowd; fine to drop if tight.
+
+Overall finishing notes:
+- Inter font everywhere. Material Symbols Outlined for any icons.
+- Absolutely no serif font.
+- Do NOT draw a card/box around the form. Inputs are underline-only. Everything on the right sits directly on the navy base.
+- The left image is the atmosphere. The right side is pure function. The visual cyan bleed between them unifies the two sides.
+- Stay within Neural Velocity tokens from the project's Design System (Asset 18406648320972948834).
+- Do NOT add sidebar, topbar, or any pre-auth chrome.
+- The scene on the left should feel cinematic and slightly film-grained — avoid cartoony, avoid generic "man at gaming PC" stock photo. Think game-launcher hero, not marketing brochure.
 ```
+
+> 备选方案（未采纳，保留记录）：全出血背景 + 浮动玻璃卡 pattern —— 背景图占满整屏，登录卡居中用 glassmorphism 浮在上面。这个方案氛围更强但表单易读性差，适合纯 toC 游戏（Riot / HoYoLAB），不适合 B2B 高频操作。如 v2 仍觉不够游戏，用户告知后 Planner 再出 v3。
 
 ---
 
