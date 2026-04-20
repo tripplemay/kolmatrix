@@ -60,10 +60,14 @@ mkdir -p "$BACKUP_DIR"
 GIT_SHA=$(git -C "$REPO_DIR" rev-parse HEAD 2>/dev/null || echo "unknown")
 
 if [[ -n "${DATABASE_ADMIN_URL:-}" ]]; then
+  # Prisma's URL tacks on a ?schema=public query param that pg_dump
+  # rejects ("invalid URI query parameter"). Strip the query string —
+  # we always dump the whole DB, so the schema selector is moot.
+  DUMP_URL=${DATABASE_ADMIN_URL%%\?*}
   # Mask the password for the log line.
-  SAFE_URL=$(printf '%s' "$DATABASE_ADMIN_URL" | sed -E 's#(://[^:]+:)[^@]+(@)#\1***\2#')
+  SAFE_URL=$(printf '%s' "$DUMP_URL" | sed -E 's#(://[^:]+:)[^@]+(@)#\1***\2#')
   echo "📦 pg_dump ${SAFE_URL} → ${BACKUP_DIR}/${FILENAME}"
-  pg_dump "$DATABASE_ADMIN_URL" | gzip > "${BACKUP_DIR}/${FILENAME}"
+  pg_dump "$DUMP_URL" | gzip > "${BACKUP_DIR}/${FILENAME}"
 else
   PGUSER_EFFECTIVE=${PGUSER:-postgres}
   PGDATABASE_EFFECTIVE=${PGDATABASE:-kolmatrix}
