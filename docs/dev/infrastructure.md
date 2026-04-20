@@ -11,7 +11,7 @@
 | **Local** | 开发 | `http://localhost:3000` | docker-compose PG16（5432，本机冲突走 5433） | docker Redis7 | ✅ B0 完成 |
 | **CI** | 自动化测试 | GitHub Actions runner | service container PG | service container Redis | ⚠️ B0 F008 仅起 PG，无 Redis |
 | **Staging** | 预生产验证 | `staging.kol.guangai.ai`（待申请 DNS） | `kolmatrix_staging` on Tokyo VM 共享 PG | 共享 db index `2` | ❌ 未搭建 |
-| **Prod** | 线上 | `https://kol.guangai.ai` | `kolmatrix_prod` on Tokyo VM 共享 PG | 共享 db index `1` | ✅ 域名 + VM 已就绪，应用未部署 |
+| **Prod** | 线上 | `https://kol.guangai.ai` | `kolmatrix` on Tokyo VM 共享 PG（init migration 硬编码此名） | 共享 db index `1` | ✅ BI2 2026-04-20 bootstrap 完成，prod 真跑 |
 
 **Staging 设计原则：** 同 Tokyo VM 子域名 + 不同 DB schema，控制成本。如未来流量大需要拆分，再独立 VPS。
 
@@ -127,7 +127,8 @@ jobs:
             BACKUP=$(mktemp -d)
             
             # 1. DB 快照（pg_dump）
-            pg_dump -U postgres kolmatrix_prod > $BACKUP/db-$(date +%s).sql
+            # 通过 DATABASE_ADMIN_URL 连接（URL 形式，剥离 ?schema）；DB 名 = kolmatrix
+            pg_dump "${DATABASE_ADMIN_URL%%\?*}" > $BACKUP/db-$(date +%s).sql
             
             # 2. Git 拉新代码（记录上一个 SHA 用于回滚）
             PREV_SHA=$(git rev-parse HEAD)
@@ -200,8 +201,8 @@ pm2 reload kolmatrix
 
 **DB 回滚（破坏性，慎用）：**
 ```bash
-# 从 BI2 自动备份的 pg_dump 恢复
-psql kolmatrix_prod < /tmp/db-XXXX.sql
+# 从 BI2 自动备份的 pg_dump 恢复（DB 名固定 kolmatrix；强烈建议恢复到临时库再 rename，勿直接覆盖 prod）
+psql "$DATABASE_ADMIN_URL" < /tmp/db-XXXX.sql
 # 或手动跑 migration 文件里的 ROLLBACK SQL
 ```
 

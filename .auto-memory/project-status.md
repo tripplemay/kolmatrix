@@ -4,11 +4,12 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BI2-deployment-automation** — status=reverifying, fix_rounds=1。8/8 代码已就位，VPS 首次 bootstrap 完成（commit c539e98）+ 3 个 runtime bug 修完（commits 3c418bc/a6b1fd0/0a382f4）。
-  - 实测 VPS：https://kol.guangai.ai/api/health 200 healthy，/login 200 渲染 Sign in，未登录 /en/dashboard 307→/login ✓
-  - 仍 TBD：用户需再触发一次 deploy-prod.yml 让 .git_sha 从 'unknown' 变真；prod DB 空壳，登录 flow 前需 `npm run db:seed`；AIGCGATEWAY_API_KEY / RESEND_API_KEY 仍是 TBD 占位
-  - spec 坑待 Planner：20260418010000_app_role 硬编码 `GRANT CONNECT ON DATABASE kolmatrix`，prod 只能用 `kolmatrix` 名（不是 kolmatrix_prod）；需要新 migration parameterize 或 spec 明确命名惯例
-  - VPS 详细快照 .auto-memory/environment.md；交接要点 progress.json.generator_handoff
+- **BI2-deployment-automation** — status=reverifying, fix_rounds=1。8/8 代码 + VPS bootstrap + 3 个 runtime fix（3c418bc/a6b1fd0/0a382f4）全部就位。
+  - 实测 VPS：/api/health 200 healthy，/login 200 Sign in，未登录 /en/dashboard 307→/login ✓
+  - Prod DB seed 已跑（2026-04-20 Planner 执行）：1 tenant + admin/Sarah Chen + 12 KOLs + 3 campaigns + 4 templates + 300 emailLogs
+  - DB 命名 spec 坑 Planner 裁决方案 A（接受固定名 `kolmatrix`）：environment.md / architecture.md / BI2 spec / infrastructure.md / runbook 文案全对齐
+  - 仍 TBD：用户再触发 1 次 deploy-prod.yml 让 .git_sha 从 'unknown' 变真；AIGCGATEWAY_API_KEY / RESEND_API_KEY 填真值（B2/B4 前）
+  - VPS 详细快照见 .auto-memory/environment.md；Reviewer round 2 执行清单见 progress.json.generator_handoff
 - **BI1-test-infrastructure** ✅ 已完成签收（10/10 + Round 1 fix + reverify 通过，framework v0.9.1 沉淀）
 - **B0-foundation** ✅ 已完成签收（10/10 + 12 PASS 0 FAIL，Round 3 reverify 通过）
 

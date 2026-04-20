@@ -229,19 +229,26 @@
 - `scripts/backup-db.sh`（VPS 上）：
   ```bash
   #!/bin/bash
-  set -e
+  set -euo pipefail
   BACKUP_DIR=/opt/kolmatrix-backups
   TIMESTAMP=$(date +%Y%m%d-%H%M%S)
   FILENAME=db-$TIMESTAMP.sql.gz
-  
-  mkdir -p $BACKUP_DIR
-  pg_dump -U postgres kolmatrix_prod | gzip > $BACKUP_DIR/$FILENAME
-  
-  # 元数据记录
-  echo "$TIMESTAMP $(git -C /opt/kolmatrix rev-parse HEAD)" >> $BACKUP_DIR/manifest.log
-  
-  echo "✅ Backup: $BACKUP_DIR/$FILENAME ($(du -h $BACKUP_DIR/$FILENAME | cut -f1))"
+
+  # 读 .env.production 拿 DATABASE_ADMIN_URL（superuser 角色 kolmatrix）
+  set -a; source "${REPO_DIR:-/opt/kolmatrix}/.env.production"; set +a
+  # 剥离 Prisma 加的 ?schema=public 后缀，pg_dump 不认 URI query param
+  ADMIN_URL="${DATABASE_ADMIN_URL%%\?*}"
+
+  mkdir -p "$BACKUP_DIR"
+  pg_dump "$ADMIN_URL" | gzip > "$BACKUP_DIR/$FILENAME"
+
+  # 元数据：timestamp / git SHA / filename
+  echo "$TIMESTAMP $(git -C "${REPO_DIR:-/opt/kolmatrix}" rev-parse HEAD) $FILENAME" >> "$BACKUP_DIR/manifest.log"
+
+  echo "✅ Backup: $BACKUP_DIR/$FILENAME ($(du -h "$BACKUP_DIR/$FILENAME" | cut -f1))"
   ```
+
+> **DB 命名约定（2026-04-20 确认）：** prod PG 数据库名固定为 **`kolmatrix`**（不是 `kolmatrix_prod`）—— init migration `20260418010000_app_role` 硬编码 `GRANT CONNECT ON DATABASE kolmatrix`，故 prod 实际创建的 DB 名即 `kolmatrix`。Planner 裁决接受固定名约定（方案 A，不起新 parameterize migration），全项目文档（environment.md / architecture.md / runbook / infrastructure.md）统一对齐。
 - VPS crontab：
   ```
   # 清理 30 天前备份

@@ -132,9 +132,9 @@ export async function withTenant<T>(tenantId: string, fn: () => Promise<T>) {
 
 ### 4.1 实例
 
-- 生产：与 aigcgateway 共用 PostgreSQL 16 实例，database `kolmatrix_prod`
+- 生产：与 aigcgateway 共用 PostgreSQL 16 实例，database **`kolmatrix`**（init migration `GRANT CONNECT ON DATABASE kolmatrix` 硬编码）
 - Staging：同实例 database `kolmatrix_staging`（B1 后启用）
-- 本地：Docker `postgres:16-alpine`
+- 本地：Docker `postgres:16-alpine`，database `kolmatrix`（对齐 prod 命名）
 
 ### 4.2 Schema 演进
 

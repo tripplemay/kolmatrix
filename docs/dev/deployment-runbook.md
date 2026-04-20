@@ -103,9 +103,13 @@ past the backup retention window.
 Manual restore (from any surviving `db-*.sql.gz`):
 
 ```bash
+# DB 名固定为 kolmatrix（init migration 硬编码）
+# 强烈建议先恢复到临时库 kolmatrix_restore_smoke 核对数据后再 rename，
+# 禁止直接覆盖 prod 库（见 §DB restore 段落）
 sudo systemctl stop kolmatrix        # or `pm2 stop kolmatrix`
+set -a; source /opt/kolmatrix/.env.production; set +a
 gzip -dc /opt/kolmatrix-backups/db-<timestamp>.sql.gz \
-  | psql -U postgres kolmatrix_prod
+  | psql "${DATABASE_ADMIN_URL%%\?*}"
 sudo systemctl start kolmatrix       # or `pm2 start ecosystem.config.js`
 ```
 
@@ -225,23 +229,38 @@ can't understand. Decide between:
 
 ## DB restore from backup (`pg_restore`)
 
+> **DB 名固定：`kolmatrix`**（init migration `20260418010000_app_role` 硬编码
+> `GRANT CONNECT ON DATABASE kolmatrix`；勿用 `kolmatrix_prod`）。
+> **安全第一：** 先恢复到临时库 `kolmatrix_restore_smoke` 验证，再手动 rename。
+> 直接 pipe 到 prod 库会覆盖未备份的写入，失职。
+
 ```bash
-ssh deploy@kol.guangai.ai
+ssh tripplezhou@34.180.93.185
 
 # Find the right backup (manifest.log is append-only):
 tail /opt/kolmatrix-backups/manifest.log
 ls -lh /opt/kolmatrix-backups/db-*.sql.gz
 
-# Stop the app so it doesn't fight us mid-restore:
+# 1. Load admin URL from env
+set -a; source /opt/kolmatrix/.env.production; set +a
+ADMIN_URL="${DATABASE_ADMIN_URL%%\?*}"
+
+# 2. Smoke-restore to a throwaway DB first
+createdb -T template0 kolmatrix_restore_smoke
+SMOKE_URL="${ADMIN_URL/\/kolmatrix/\/kolmatrix_restore_smoke}"
+gzip -dc /opt/kolmatrix-backups/db-<timestamp>.sql.gz | psql "$SMOKE_URL"
+psql "$SMOKE_URL" -c 'SELECT COUNT(*) FROM tenant;'   # 非零即数据回来了
+
+# 3. 决定了再覆盖 prod（只有确认 smoke 正常后）
 pm2 stop kolmatrix
-
-# Our dumps are plain SQL (pg_dump | gzip), so pipe into psql:
-gzip -dc /opt/kolmatrix-backups/db-<timestamp>.sql.gz \
-  | psql -U postgres kolmatrix_prod
-
-# Bring the app back:
+psql "$ADMIN_URL" -c 'DROP DATABASE IF EXISTS kolmatrix_old;'
+psql "$ADMIN_URL" -c 'ALTER DATABASE kolmatrix RENAME TO kolmatrix_old;'
+psql "$ADMIN_URL" -c 'ALTER DATABASE kolmatrix_restore_smoke RENAME TO kolmatrix;'
 pm2 start ecosystem.config.js
 ./scripts/healthcheck.sh
+
+# 4. 旧库留 48h 再删（留二次后悔窗口）
+# psql "$ADMIN_URL" -c 'DROP DATABASE kolmatrix_old;'
 ```
 
 If the dump is huge and `psql` is slow, consider `pg_restore -j 4`
@@ -324,7 +343,8 @@ Why: migration SQL errored (constraint conflict, missing table, etc.).
 **Do not retry migrate deploy blindly.** First:
 
 ```bash
-psql -U postgres kolmatrix_prod \
+set -a; source /opt/kolmatrix/.env.production; set +a
+psql "${DATABASE_ADMIN_URL%%\?*}" \
   -c 'SELECT * FROM _prisma_migrations ORDER BY started_at DESC LIMIT 3;'
 ```
 
