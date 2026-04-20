@@ -38,7 +38,7 @@
       "title": "续期失败告警（cron + email）",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "/opt/kolmatrix/scripts/cert-expiry-check.sh 脚本（Bash set -e；openssl s_client 取两个域名证书 notAfter；计算 days_to_expire；< 14 天发告警邮件给 tripplezhou@gmail.com 经 Resend API，subject 含域名和剩余天数）；crontab root 每日 08:00 UTC+9 跑（`0 8 * * * /opt/kolmatrix/scripts/cert-expiry-check.sh`）；shellcheck 通过。Acceptance: 手动跑脚本并 env 伪造 notAfter=5days 后收到告警邮件；正常时静默无输出；cron log /var/log/syslog 有执行记录"
     },
     {

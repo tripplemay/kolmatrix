@@ -1,0 +1,10 @@
+# BI3 F005 — daily TLS cert expiry check (sends Resend alert when < 14 days)
+# Fires at 08:00 JST = 23:00 UTC previous day, ~9h after certbot.timer (22:42 UTC)
+# so any renewal failure surfaces before the user starts their business day.
+# Script path is managed via /opt/kolmatrix/scripts/ and refreshed on deploy.
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+CRON_TZ=Asia/Tokyo
+MAILTO=""
+# m  h dom mon dow user  command
+  0  8  *   *   *  root  /opt/kolmatrix/scripts/cert-expiry-check.sh
