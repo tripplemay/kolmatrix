@@ -26,8 +26,14 @@ module.exports = {
       script: "npm",
       args: "start",
       cwd: "/opt/kolmatrix",
-      instances: 1,
+      // Cluster needs ≥2 workers for true zero-downtime reload — single
+      // instance leaves a 200-500ms port-close window during reload.
+      // See docs/specs/BI2-f002-zero-downtime-fix.md.
+      instances: 2,
       exec_mode: "cluster",
+      // Give Next.js up to 5s to drain in-flight requests before SIGKILL
+      // (PM2 default is 1.6s, too tight for SSR with DB round-trips).
+      kill_timeout: 5000,
       // Restart the process if RSS grows past 1 GiB — Next.js in prod
       // should sit comfortably below this; crossing it almost always
       // means a leak.
