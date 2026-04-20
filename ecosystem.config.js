@@ -23,20 +23,26 @@ module.exports = {
   apps: [
     {
       name: "kolmatrix",
-      // Point PM2 at Next.js's own binary (a JS file), NOT `npm start`.
-      // `npm start` double-forks (npm → next), so Node's cluster module
-      // can't hook the grandchild's `server.listen`, and the second
-      // worker EADDRINUSE-crashes on 3001. Running `next` directly makes
-      // it the actual cluster worker, so PM2's port-sharing works.
-      // See docs/specs/BI2-f002-zero-downtime-fix.md §2.1 (fix-up after
-      // 2026-04-20 live reverify caught 116× crash-loop on id 7).
-      script: "node_modules/next/dist/bin/next",
-      args: "start",
+      // Custom server.js mounts Next inside an http server we own, so we
+      // can emit `process.send('ready')` the instant listen fires. PM2
+      // then waits for that signal (wait_ready) before killing the old
+      // worker — true rolling replacement, no overlap gap. Running
+      // `npm start` double-forks and breaks cluster hooks (id 7 crash
+      // loop); running `next` directly avoids the crash but has no ready
+      // signal (56/60 reload drops). See docs/specs/BI2-f002-zero-downtime-fix.md §2.1.
+      script: "server.js",
       cwd: "/opt/kolmatrix",
       // Cluster needs ≥2 workers for true zero-downtime reload — single
       // instance leaves a 200-500ms port-close window during reload.
       instances: 2,
       exec_mode: "cluster",
+      // Wait for server.js to call process.send('ready') before declaring
+      // the new worker live and killing the old one.
+      wait_ready: true,
+      // Cap on how long PM2 waits for that ready signal. Next.js cold
+      // start is ~400-450ms; 10s gives plenty of headroom for cold cache
+      // or brief GC pauses without ever being the bottleneck.
+      listen_timeout: 10000,
       // Give Next.js up to 5s to drain in-flight requests before SIGKILL
       // (PM2 default is 1.6s, too tight for SSR with DB round-trips).
       kill_timeout: 5000,
