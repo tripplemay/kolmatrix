@@ -46,7 +46,7 @@
       "title": "kolquest.com 品牌域（301 redirect + Nginx + TLS）",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "DNS 已配（2026-04-19 Cloudflare API 完成，见 ADR-010）。本 feature 聚焦 Nginx 落地：vhost kolquest.com + www.kolquest.com（80 ACME + 301 → https；443 ssl 301 → https://kol.guangai.ai$request_uri）；certbot --nginx 签发 kolquest.com + www.kolquest.com 证书；infrastructure/nginx/kolquest.com.conf 入库。**send.kolquest.com 子域不需 Nginx vhost**（Resend 直接用 DNS MX/SPF/DKIM，BI2 已完成）。Acceptance: curl -I https://kolquest.com 301 → https://kol.guangai.ai；curl -I http://kolquest.com 301 → https；证书有效；浏览器访问 kolquest.com 跳转 kol.guangai.ai"
     },
     {
