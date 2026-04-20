@@ -46,13 +46,20 @@ type: reference
 | 机型 | e2-highmem-2（2 vCPU，16GB RAM） |
 | 地区 | asia-northeast1-b（东京） |
 | 外网 IP | `34.180.93.185` |
-| SSH | `ssh tripplezhou@34.180.93.185` |
-| 部署路径 | `/opt/kolmatrix` |
-| 启动 | PM2（app 名 `kolmatrix`，监听 localhost:3001） |
-| Nginx | `kol.guangai.ai` → `localhost:3001` |
-| Postgres | 共用实例，database `kolmatrix_prod` |
+| 主机名 | `instance-20260403-154049` |
+| SSH | `ssh tripplezhou@34.180.93.185`（sudo passwordless） |
+| 部署路径 | `/opt/kolmatrix`（git clone from GitHub，`core.sshCommand` 锁 `~/.ssh/id_ed25519_github`） |
+| 备份路径 | `/opt/kolmatrix-backups`（tripplezhou:tripplezhou 0755） |
+| 日志路径 | `/var/log/pm2/kolmatrix-{out,error}.log` |
+| Env 文件 | `/opt/kolmatrix/.env.production`（root:tripplezhou 0640），`.env` symlink 至此以便 `prisma.config.ts` 的 `dotenv/config` 默认读取 |
+| PM2 | app 名 `kolmatrix`，instances=1 cluster，listen `localhost:3001`；systemd unit `pm2-tripplezhou.service`（enabled） |
+| Nginx | `/etc/nginx/conf.d/kolmatrix.conf` — `kol.guangai.ai:443` → `upstream kolmatrix_backend (127.0.0.1:3001)`；HTTP 80 走 ACME + 301 redirect |
+| TLS 证书 | Let's Encrypt `kol.guangai.ai`（`/etc/letsencrypt/live/kol.guangai.ai/`），certbot auto-renew 已装，到期 2026-07-19 |
+| Postgres | 共用实例；DB 名 `kolmatrix`（**不是** `kolmatrix_prod` —— init migration `GRANT CONNECT ON DATABASE kolmatrix` 硬编码该名），角色 `kolmatrix`（superuser for migrate）+ `kolmatrix_app`（app role，RLS 生效），密码随机生成仅存 `.env.production` |
 | Redis | 共用实例，db index `1`（aigcgateway 用 0） |
-| CI/CD | GitHub Actions → SSH → `git pull + npm ci + build + pm2 restart kolmatrix` |
+| GitHub Read | VPS 用 `~/.ssh/id_ed25519_github` 作 GitHub repo deploy key（id 149079790，read-only） |
+| CI/CD | GitHub Actions `deploy-prod.yml` → SSH（`PROD_SSH_KEY` secret）→ `cd /opt/kolmatrix && ./scripts/deploy-prod.sh` |
+| 首次 bootstrap | 2026-04-20 完成（Generator 手动 clone + npm ci + migrate + build + nginx + certbot + pm2 save + pm2 startup systemd） |
 
 ## 扩容信号
 
@@ -62,5 +69,22 @@ type: reference
 
 - **Admin:** `admin@kolmatrix.local` / `KOLM@2026!` / API Key: `TBD`
 - **Marketer:** `marketer@kolmatrix.local` / `KOLM@2026!` / API Key: `TBD`
+
+## VPS `.env.production` 待补 secrets（bootstrap 时占位 `TBD-set-later-via-pm2-reload`）
+
+- `AIGCGATEWAY_API_KEY` — B2 启用 aigcgateway 调用前由用户从 aigcgateway 控制台生成 `pk_xxx`，`ssh + sudo vi .env.production` 改完 `pm2 reload kolmatrix --update-env` 即生效
+- `RESEND_API_KEY` — B4 启用邮件前同上流程
+
+DB 已 seed？**未**。prod DB 是空壳（迁移已 apply，无业务数据）。首次登录 flow 依赖 Sarah Chen / Admin 种子；真正上线时：
+```bash
+ssh tripplezhou@34.180.93.185 'cd /opt/kolmatrix && npm run db:seed'
+```
+（幂等：用 upsert + 自然键）
+
+## 部署触发方式（F003 DoD）
+
+- **workflow**：`.github/workflows/deploy-prod.yml`（workflow_dispatch，inputs: `ref` / `skip_backup`）
+- **首次 DoD 验证步骤**：GitHub UI → Actions → "Deploy to Production" → Run workflow → 5-10 分钟内 `curl https://kol.guangai.ai/api/health` 的 `git_sha` 等于 `github.sha`
+- 手动 fallback + 回滚：见 `docs/dev/deployment-runbook.md`
 
 <!-- 写入规则：由 Planner 统一维护，环境变更后及时更新。账号密码避免明文，必要时引用 secret manager。 -->
