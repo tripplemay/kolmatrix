@@ -17,7 +17,7 @@
   ],
   "docs": {
     "spec": "docs/specs/BI2-deployment-automation-spec.md",
-    "test_cases": null,
+    "test_cases": "docs/test-cases/BI2-deployment-automation-test-plan.md",
     "signoff": null,
     "framework_reviewed": false
   },
