@@ -4,10 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BI2-deployment-automation** — status=fixing（F002 round 2 裁决已下发 B1；F006/F008 待 Reviewer 演练）
-  - F002 v1 方案 A（npm start + instances=2）2026-04-20 两轮实测证伪 → Planner round 2 裁决 **B1 custom `server.js` + `wait_ready:true` + listen_timeout=10000**（spec §2.2 预案触发）。待 Generator 实施。
-  - 裁决回复：`#1:B1 #2:root #3:10000 #4:N/A-not-B2 #5:yes-Planner-update`（spec v2 已同步）。详见 `docs/specs/BI2-f002-zero-downtime-fix.md` v2
-  - VPS 此刻：两 worker id 8/9 online，Round A' 方案在跑；公网 non-reload 100% 200；reload 仍有 2-3s 丢包窗口。Generator SSH 切换到 B1 时选业务低谷（04:00-06:00 UTC+9）
+- **BI2-deployment-automation** — status=reverifying round 2（F002 B1 落地；F006/F008 待 Reviewer 演练）
+  - F002 B1 生效（commit ba11e6b + bc1de3b）：server.js custom server + `wait_ready:true` + `listen_timeout:10000`；VPS 跑 pm2 ecosystem.config.js；两 worker id 10/11 online restart=0。
+  - Smoke 证据：VPS 本地 60/60 全 200 ✅；公网 59/60 (1×000 = WSL→东京网络噪音，对照基线 60× 无 reload 也是 59/60 同频率)。pm2 logs 抓到先 ready 后 kill 的滚动序列。
+  - VPS 此刻：两 worker online；非 reload 公网 100% 200；pm2 save 已锁 2 实例 + wait_ready 态
   - Prod DB seed 已跑：1 tenant + admin/Sarah + 12 KOL + 3 campaigns + 4 templates + 300 emailLogs
   - DB 命名方案 A 对齐完毕（`kolmatrix`）
   - 仍 TBD：AIGCGATEWAY_API_KEY / RESEND_API_KEY（B2/B4 前）
