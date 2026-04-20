@@ -15,6 +15,16 @@ import type { NextAuthConfig } from "next-auth";
 export const authConfig = {
   pages: { signIn: "/login" },
   session: { strategy: "jwt" },
+  // NextAuth v5 refuses to decrypt sessions when the incoming Host
+  // doesn't match a trusted origin. In prod, all traffic flows through
+  // nginx that sets `Host: kol.guangai.ai` (per `proxy_set_header Host
+  // $host` in /etc/nginx/conf.d/kolmatrix.conf). Without `trustHost`,
+  // the auth wrapper throws `UntrustedHost`, and its error object ends
+  // up in `req.auth` inside middleware — truthy enough to accidentally
+  // trip the "authed user on /login → redirect to dashboard" branch.
+  // This VPS has a single hostname behind nginx; trusting the header
+  // is safe and preferred over hard-coding AUTH_URL.
+  trustHost: true,
   providers: [],
   callbacks: {
     authorized() {
