@@ -54,7 +54,7 @@
       "title": "TLS / Staging Runbook + 入库 Nginx config",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "docs/dev/tls-staging-runbook.md 新建（或合并 deployment-runbook.md §TLS 段）含：证书手动续期步骤（certbot renew / --force-renewal）/ 证书过期应急恢复 / 新增域名流程 / Nginx config 修改后验证清单（nginx -t / systemctl reload / curl 自证）/ Staging 环境部署 & 重启 / Staging DB reset 流程（drop + create + migrate + seed）/ 品牌域 301 redirect 验证 / Common errors ≥3 类（cert 过期、DNS 未生效、nginx config 语法错）；infrastructure/nginx/*.conf 3 个文件入库（kol.guangai.ai + staging.kol.guangai.ai + kolquest.com）。Acceptance: runbook 步骤清晰 + 3 个 nginx conf 文件完整入库 + Reviewer 按 runbook 手动做一次 staging reset 成功"
     }
   ]
