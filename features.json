@@ -22,7 +22,7 @@
       "title": "Staging 应用进程（PM2 + 独立 DB）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "VPS /opt/kolmatrix-staging/ git clone（同仓库 main 分支）；createdb kolmatrix_staging owner kolmatrix + GRANT CONNECT；prisma migrate deploy + db seed；.env.staging 由用户手动维护不入 git（含 DATABASE_URL / DATABASE_ADMIN_URL / NEXTAUTH_URL=https://staging.kol.guangai.ai / NEXTAUTH_SECRET / AIGCGATEWAY_API_KEY / RESEND_API_KEY）；ecosystem.config.js 追加 kolmatrix-staging app（script:server.js [沿用 BI2-F002 B1 模式] / cwd:/opt/kolmatrix-staging / instances:1 [单实例够用 staging 不需 zero-downtime] / exec_mode:fork [单实例用 fork 避免 cluster 开销] / env.PORT=3002 / wait_ready:true / listen_timeout:10000 / env_file:.env.staging）；pm2 start + save；pm2 describe 两 app 均 online。Acceptance: curl https://staging.kol.guangai.ai/api/health 200 healthy + .version + .git_sha；DB 与 prod 物理隔离（不同 database）"
     },
     {
