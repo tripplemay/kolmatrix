@@ -23,12 +23,18 @@ module.exports = {
   apps: [
     {
       name: "kolmatrix",
-      script: "npm",
+      // Point PM2 at Next.js's own binary (a JS file), NOT `npm start`.
+      // `npm start` double-forks (npm → next), so Node's cluster module
+      // can't hook the grandchild's `server.listen`, and the second
+      // worker EADDRINUSE-crashes on 3001. Running `next` directly makes
+      // it the actual cluster worker, so PM2's port-sharing works.
+      // See docs/specs/BI2-f002-zero-downtime-fix.md §2.1 (fix-up after
+      // 2026-04-20 live reverify caught 116× crash-loop on id 7).
+      script: "node_modules/next/dist/bin/next",
       args: "start",
       cwd: "/opt/kolmatrix",
       // Cluster needs ≥2 workers for true zero-downtime reload — single
       // instance leaves a 200-500ms port-close window during reload.
-      // See docs/specs/BI2-f002-zero-downtime-fix.md.
       instances: 2,
       exec_mode: "cluster",
       // Give Next.js up to 5s to drain in-flight requests before SIGKILL
