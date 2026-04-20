@@ -15,7 +15,7 @@
       "priority": "high",
       "executor": "generator",
       "status": "pending",
-      "acceptance": "项目根 ecosystem.config.js 声明 kolmatrix app（script:npm / args:start / cwd:/opt/kolmatrix / instances:2 [2026-04-20 方案 A 裁决，cluster 滚动替换] / exec_mode:cluster / max_memory_restart:1G / kill_timeout:5000 [Next.js in-flight 请求预算] / env.NODE_ENV=production / env.PORT=3001 / env_file:/opt/kolmatrix/.env.production / log_date_format / out_file+error_file:/var/log/pm2/ / merge_logs:true）；worker 进程声明注释预留（B5+ 启用）；VPS 切换架构一次性 pm2 delete + pm2 start（低谷时段）；pm2 describe kolmatrix 显示 instances=2 两 worker online；60× 公网 curl 叠加 pm2 reload --update-env 全 200（0 个 502/000）；60× VPS 本地 curl 叠加 reload 全 200（0 连接失败）；两 worker uptime 交错验证滚动替换；详见 docs/specs/BI2-f002-zero-downtime-fix.md"
+      "acceptance": "项目根 server.js（~22 行 custom server 用 node:http + next({dev:false}) + process.send('ready') + SIGTERM/SIGINT graceful close）；ecosystem.config.js 声明 kolmatrix app（script:server.js / cwd:/opt/kolmatrix / instances:2 / exec_mode:cluster / max_memory_restart:1G / kill_timeout:5000 / wait_ready:true / listen_timeout:10000 / env.NODE_ENV=production / env.PORT=3001 / env_file:/opt/kolmatrix/.env.production / merge_logs:true）；2026-04-20 两轮实测证伪 v1 方案（npm start cluster crash loop / next 直连无 ready 信号 93%）后按 spec §2.2 预案升级到方案 B1（custom server + wait_ready，详见 docs/specs/BI2-f002-zero-downtime-fix.md v2）；VPS 切换架构一次性 pm2 delete + pm2 start（低谷时段）；pm2 describe 显示 instances=2 两 worker online + wait_ready 生效；60× 公网 curl 叠加 pm2 reload --update-env 全 200；60× VPS 本地 curl 叠加 reload 全 200；两 worker uptime 有明显交错（证明 PM2 严格等 ready 才杀 old）"
     },
     {
       "id": "F005",

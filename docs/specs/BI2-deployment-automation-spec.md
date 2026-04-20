@@ -91,19 +91,21 @@
 
 ### F002 — PM2 ecosystem.config.js
 **实现：**
+- 项目根新增 `server.js`（~22 行 custom server + `process.send('ready')`，详见 `BI2-f002-zero-downtime-fix.md` §2.1.1）
 - 项目根 `ecosystem.config.js`：
   ```js
   module.exports = {
     apps: [
       {
         name: 'kolmatrix',
-        script: 'npm',
-        args: 'start',
+        script: 'server.js',       // custom server（wait_ready 必需）
         cwd: '/opt/kolmatrix',
         instances: 2,              // 滚动替换基准；'max' 在未来加 vCPU 时再评
         exec_mode: 'cluster',
         max_memory_restart: '1G',
         kill_timeout: 5000,        // 让 Next.js 处理完 in-flight 请求再强杀（default 1.6s）
+        wait_ready: true,          // PM2 等 process.send('ready') 才切流量到 new worker
+        listen_timeout: 10000,     // 10s 上限，Next cold start ~450ms 绰绰有余
         env: {
           NODE_ENV: 'production',
           PORT: 3001,
@@ -138,7 +140,11 @@
 - 进程 RAM > 1G 自动重启
 - 重启 VM 后 PM2 自动恢复（pm2 startup 完成）
 
-> **2026-04-20 裁决：** Reviewer round 1 judged F002 FAIL（单实例 reload 空窗导致 2×502 + 4× 本地连接失败）。Planner 方案 A（双实例）已下发，详见 `docs/specs/BI2-f002-zero-downtime-fix.md`。
+> **2026-04-20 裁决链：**
+> - Reviewer round 1 judged F002 FAIL（单实例 reload 空窗导致 2×502 + 4× 本地连接失败）
+> - Planner round 1 裁决：方案 A（`npm start` + `instances:2`）—— v1 假设 cluster 自动 zero-downtime
+> - Generator round 2 两轮 VPS 实测证伪：npm start 下 cluster crash loop（EADDRINUSE）；next 直连无 ready 信号 → 93% 通过（4×000 超时）
+> - **Planner round 2 重裁决：方案 B1（custom `server.js` + `wait_ready:true`）** —— spec §2.2 预案触发，详见 `docs/specs/BI2-f002-zero-downtime-fix.md` v2 + `BI2-f002-round2-adjudication.md`
 
 ### F003 — Deploy production workflow
 **实现：**
