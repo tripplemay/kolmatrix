@@ -6,7 +6,7 @@
       "title": "生产 HTTPS（Let's Encrypt + Nginx 配置入库）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "VPS 上 kol.guangai.ai 已有 Let's Encrypt 证书（2026-04-19 BI2 bootstrap 期间 certbot --nginx 签发，auto-renew 到 2026-07-19）。本 feature 聚焦审计与规范落地：验证 Nginx 443 监听 + HTTP→HTTPS 301 + SSL 协议 TLSv1.2+TLSv1.3（禁 1.0/1.1）+ HSTS 头（max-age=31536000 includeSubDomains）；Qualys SSL Labs 评级 A+；`infrastructure/nginx/kol.guangai.ai.conf` 入库项目 git（VPS 现状导出 + 项目同步副本）。Acceptance: curl -I https://kol.guangai.ai 200 + HSTS 头；curl -I http://kol.guangai.ai 301→https；SSL Labs A+；浏览器绿锁"
     },
     {
