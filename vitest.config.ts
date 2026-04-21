@@ -26,6 +26,12 @@ export default defineConfig({
         "src/**/__tests__/**",
         "src/**/*.stories.{ts,tsx}",
         "src/components/ui/**", // shadcn scaffolding, covered via consumer specs
+        // Server-only components that call `next-intl/server` are validated
+        // via E2E (tests/e2e/login-cinematic.spec.ts +
+        // request-access.spec.ts). They can't execute under jsdom because
+        // `getTranslations()` lives in the server runtime.
+        "src/components/auth/LoginBrandOverlay.tsx",
+        "src/components/auth/RequestAccessBrandOverlay.tsx",
       ],
       thresholds: {
         lines: 80,

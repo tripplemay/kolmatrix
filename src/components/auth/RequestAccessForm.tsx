@@ -6,11 +6,13 @@ import { useRouter } from "next/navigation";
 import { useActionState, useEffect } from "react";
 
 import {
-  CAMPAIGNS_OPTIONS,
-  ROLE_OPTIONS,
   submitAccessRequest,
   type SubmitAccessRequestState,
 } from "@/app/[locale]/request-access/actions";
+import {
+  CAMPAIGNS_OPTIONS,
+  ROLE_OPTIONS,
+} from "@/app/[locale]/request-access/form-options";
 
 const initial: SubmitAccessRequestState = { ok: false };
 

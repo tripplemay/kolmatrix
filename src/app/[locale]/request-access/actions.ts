@@ -8,27 +8,15 @@ import {
   type AccessRequestNotificationPayload,
 } from "@/lib/email/access-request";
 
-const ROLE_VALUES = [
-  "marketing-manager",
-  "influencer-relations",
-  "growth-lead",
-  "founder",
-  "agency-pm",
-  "other",
-] as const;
-
-const CAMPAIGNS_VALUES = ["0-5", "6-20", "21-50", "50+"] as const;
-
-export const ROLE_OPTIONS = ROLE_VALUES;
-export const CAMPAIGNS_OPTIONS = CAMPAIGNS_VALUES;
+import { CAMPAIGNS_OPTIONS, ROLE_OPTIONS } from "./form-options";
 
 const AccessRequestSchema = z.object({
   firstName: z.string().trim().min(1).max(64),
   lastName: z.string().trim().min(1).max(64),
   email: z.string().trim().email().max(320),
   company: z.string().trim().min(1).max(128),
-  role: z.enum(ROLE_VALUES),
-  campaignsPerQuarter: z.enum(CAMPAIGNS_VALUES),
+  role: z.enum(ROLE_OPTIONS),
+  campaignsPerQuarter: z.enum(CAMPAIGNS_OPTIONS),
   games: z
     .string()
     .trim()
