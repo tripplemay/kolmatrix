@@ -4,31 +4,26 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BAux1-auth-pages** — status=verifying，Generator 实现完成 4/4，等 Evaluator 首轮验收
-  - F001 AccessRequest DB + F002 登录页 58/42 cinematic（[locale]/login）+ F003 /request-access + Resend + F004 完整测试覆盖
-  - 关键修复：ROLE_OPTIONS 从 "use server" 拆到 form-options.ts（prerender 修）
-  - Hero 图 `public/brand/login-hero.png` + `signup-hero.png` 已用，visual baseline 待 Evaluator 跑 `--update-snapshots` 生成
-- **Option α infra-first 已收官** ✅ BAux1 后进 B1 KOL Database 业务批次
-- **BI3-domain-and-tls** ✅ 已完成签收（7/7 PASS, fix_rounds=0 一轮过）
-  - 生产/品牌域 SSL Labs A+（kol.guangai.ai / kolquest.com）
-  - staging HTTPS + 独立 PM2 fork(3002) + 独立 DB `kolmatrix_staging`
-  - certbot.timer + deploy hook + 到期告警 cron 全验证通过
-  - runbook staging DB reset 实操通过（kols=12, users=2）
-- **BI2-deployment-automation** ✅ 已签收（8/8 zero-downtime + 自动回滚 + prod bootstrap）
-- **BI1-test-infrastructure** ✅ 已签收（framework v0.9.1 沉淀）
-- **B0-foundation** ✅ 已签收
+- **BAux1-auth-pages** — status=fixing（Evaluator 2026-04-21 首轮复验未通过）
+  - F001-F004 已全部回退 pending，等待 Generator 修复后进入 reverifying
+  - 关键失败：
+    - `/en/request-access` = 500（`resend` 依赖缺失）
+    - integration `admin.accessRequest` 为 undefined（access_request 用例 3/3 fail）
+    - `/login` 错误 307 到 `http://localhost:3000/en/login`
+    - `playwright.config.ts` 固定 `3000` 与 Codex `3099` 测试流程冲突
 
-## 角色分配（BAux1，沿用）
+## 角色分配（BAux1）
 - Planner: Kimi / Generator: johnsong / Evaluator: Reviewer
 
 ## 后续顺序（Option α）
-- B1 KOL Database → B2 AI 评分 + BullMQ → B3 Campaigns → B4 邮件触达 → B5 KOL Discovery
+- BAux1 修复完成并签收后进入 B1 KOL Database
 
-## 关键环境提醒
-- 生产 DB 固定名：`kolmatrix`
+## 已完成批次
+- BI3-domain-and-tls ✅
+- BI2-deployment-automation ✅
+- BI1-test-infrastructure ✅
+- B0-foundation ✅
+
+## 环境提醒
+- 生产 DB：`kolmatrix`
 - staging DB：`kolmatrix_staging`
-- 待用户补全：`AIGCGATEWAY_API_KEY`（B2 前）、`RESEND_API_KEY`（B4 前）
-
-## 已知非阻塞项
-- Next 16 `middleware.ts` → `proxy.ts` 迁移待后续
-- ja/ko/es 文案待翻译
