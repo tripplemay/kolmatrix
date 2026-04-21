@@ -13,7 +13,7 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
   const password = String(formData.get("password") ?? "");
 
   if (!email || !password) {
-    return { error: "Email and password are required." };
+    return { error: "missing_fields" };
   }
 
   try {
@@ -25,9 +25,9 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
   } catch (error) {
     if (error instanceof AuthError) {
       if (error.type === "CredentialsSignin") {
-        return { error: "Invalid email or password." };
+        return { error: "invalid_credentials" };
       }
-      return { error: "Authentication failed. Please try again." };
+      return { error: "generic" };
     }
     throw error;
   }

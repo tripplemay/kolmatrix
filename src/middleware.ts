@@ -24,7 +24,11 @@ export default auth((req) => {
     return NextResponse.redirect(new URL(`/${locale}/dashboard`, nextUrl));
   }
 
-  if (pathname.startsWith("/login") || pathname === "/") {
+  // `/login` is now a localized route (src/app/[locale]/login/page.tsx);
+  // let next-intl routing prepend the correct locale prefix so that
+  // NextAuth's `pages.signIn: "/login"` and sign-out redirects land on
+  // /{locale}/login after the middleware rewrite.
+  if (pathname === "/") {
     return NextResponse.next();
   }
 
