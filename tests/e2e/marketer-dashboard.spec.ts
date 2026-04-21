@@ -22,8 +22,10 @@ const MARKETER = {
 
 async function login(page: import("@playwright/test").Page) {
   await page.goto("/login");
-  await page.getByPlaceholder("marketer@kolmatrix.local").fill(MARKETER.email);
-  // Password input has no placeholder; locate by name attribute instead.
+  // Address fields by `name` attribute — stable across placeholder
+  // copy changes (BAux1-F002 replaced the old "marketer@kolmatrix.local"
+  // placeholder with a generic "name@studio.com" per the cinematic copy).
+  await page.locator('input[name="email"]').fill(MARKETER.email);
   await page.locator('input[name="password"]').fill(MARKETER.password);
   await page.getByRole("button", { name: /Sign in/ }).click();
   // Accept both `/dashboard` (before next-intl locale rewrite) and

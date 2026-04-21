@@ -37,7 +37,10 @@ const MARKETER = {
 
 async function login(page: import("@playwright/test").Page) {
   await page.goto("/login");
-  await page.getByPlaceholder("marketer@kolmatrix.local").fill(MARKETER.email);
+  // See tests/e2e/marketer-dashboard.spec.ts — BAux1-F002 changed the
+  // email placeholder copy; targeting by `name` attribute keeps the
+  // locator stable across future redesigns.
+  await page.locator('input[name="email"]').fill(MARKETER.email);
   await page.locator('input[name="password"]').fill(MARKETER.password);
   await page.getByRole("button", { name: /Sign in/ }).click();
   await page.waitForURL(/\/dashboard(\/|$)/);
