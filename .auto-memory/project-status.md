@@ -4,10 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BAux1-auth-pages** — status=building，4 features 等 Generator 开工（B1 前辅助批次）
-  - F001 AccessRequest DB + F002 登录页 UI 重写（可并行）→ F003 请求访问页面 → F004 测试
-  - Hero 图已入库 `public/brand/login-hero.png` + `signup-hero.png`（gpt-image 1024×1024 无水印）
-  - Planner 同步进 B1 planning 准备
+- **BAux1-auth-pages** — status=verifying，Generator 实现完成 4/4，等 Evaluator 首轮验收
+  - F001 AccessRequest DB + F002 登录页 58/42 cinematic（[locale]/login）+ F003 /request-access + Resend + F004 完整测试覆盖
+  - 关键修复：ROLE_OPTIONS 从 "use server" 拆到 form-options.ts（prerender 修）
+  - Hero 图 `public/brand/login-hero.png` + `signup-hero.png` 已用，visual baseline 待 Evaluator 跑 `--update-snapshots` 生成
 - **Option α infra-first 已收官** ✅ BAux1 后进 B1 KOL Database 业务批次
 - **BI3-domain-and-tls** ✅ 已完成签收（7/7 PASS, fix_rounds=0 一轮过）
   - 生产/品牌域 SSL Labs A+（kol.guangai.ai / kolquest.com）
