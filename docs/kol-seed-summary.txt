@@ -1,0 +1,26 @@
+=== AI Tag Summary ===
+generated_at:   2026-04-21T08:26:28Z
+total:          2524
+gaming:         386 (15.3%)
+non_gaming:     2138
+cost_usd:       $0.6297
+tokens:         110502 in + 103845 out
+wall_time:      689s
+
+confidence distribution:
+  high: 920
+  medium: 543
+  low: 1061
+
+category distribution:
+  Other: 2138
+  Casual: 187
+  FPS: 76
+  Retro: 33
+  Simulation: 28
+  Esports: 25
+  RPG: 20
+  手游: 15
+  MOBA: 9
+  二次元: 7
+  沙盒: 7
