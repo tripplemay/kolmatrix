@@ -35,15 +35,17 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-vi.mock("@/app/[locale]/request-access/actions", async () => {
-  const actual = await vi.importActual<
-    typeof import("@/app/[locale]/request-access/actions")
-  >("@/app/[locale]/request-access/actions");
-  return {
-    ...actual,
-    submitAccessRequest: vi.fn(async () => ({ ok: true })),
-  };
-});
+// Flat mock — we must NOT use `vi.importActual` here. The real module is
+// marked `"use server"` and imports `@/lib/db` (which throws at module
+// init when DATABASE_URL is unset — true for the unit vitest run) plus
+// `@/lib/email/access-request` (which imports `resend`). Loading it just
+// to spread `{...actual}` crashes the whole suite. The component only
+// consumes `submitAccessRequest` at runtime and `SubmitAccessRequestState`
+// as a type (types aren't present at runtime), so a flat fn mock is
+// sufficient.
+vi.mock("@/app/[locale]/request-access/actions", () => ({
+  submitAccessRequest: vi.fn(async () => ({ ok: true })),
+}));
 
 import { renderIntl } from "../../../../tests/utils/render-intl";
 import { RequestAccessForm } from "../RequestAccessForm";

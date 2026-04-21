@@ -67,4 +67,26 @@ test.describe("Login — cinematic layout + credentials flow", () => {
     await expect(link).toBeVisible();
     await expect(link).toHaveAttribute("href", /\/request-access$/);
   });
+
+  // Regression for BAux1 reverifying (2026-04-21): with NEXTAUTH_URL set
+  // in .env, next-auth's reqWithEnvURL() used to rewrite the request
+  // origin, so /login redirected to http://localhost:3000/en/login even
+  // when the dev server ran on :3099. Fix removes NEXTAUTH_URL from
+  // .env.example so trustHost sees the real Host header.
+  test("bare /login redirects to /{defaultLocale}/login on the SAME origin", async ({
+    page,
+    baseURL,
+  }) => {
+    expect(baseURL).toBeTruthy();
+    const origin = new URL(baseURL!).origin;
+
+    const response = await page.goto("/login");
+    expect(response).not.toBeNull();
+
+    // Landed URL must share origin with the caller — previously the
+    // regression produced http://localhost:3000/en/login regardless of
+    // where the E2E server ran.
+    expect(page.url().startsWith(`${origin}/`)).toBe(true);
+    expect(page.url()).toMatch(/\/en\/login$/);
+  });
 });

@@ -2,10 +2,11 @@
 # Codex 测试环境启动脚本（前台运行于持久 PTY）
 #
 # 步骤：
-#   1. docker compose up -d → PG16 + Redis7 healthcheck
-#   2. 等待 PG 可连
-#   3. prisma migrate deploy + db seed（幂等）
-#   4. 前台启动 Next.js dev 在端口 3099（AGENTS.md 规范端口）
+#   1. npm ci（同步 node_modules + postinstall prisma generate）
+#   2. docker compose up -d → PG16 + Redis7 healthcheck
+#   3. 等待 PG 可连
+#   4. prisma migrate deploy + db seed（幂等）
+#   5. 前台启动 Next.js dev 在端口 3099（AGENTS.md 规范端口）
 #
 # 用法（在持久 PTY session 中前台执行）：
 #   bash scripts/test/codex-setup.sh
@@ -23,6 +24,16 @@ if [ ! -f .env ]; then
   echo "[codex-setup] .env 不存在，从 .env.example 复制"
   cp .env.example .env
 fi
+
+# Dependency sync: must run before prisma/dev because
+# (1) new runtime deps like `resend` can land in package.json between
+#     Evaluator runs and the old node_modules won't have them, and
+# (2) `postinstall: prisma generate` regenerates @prisma/client against
+#     prisma/schema.prisma — new models (e.g. AccessRequest) are only
+#     visible on the client after this step, otherwise
+#     `prisma.accessRequest` is undefined at runtime.
+echo "[codex-setup] npm ci（同步 deps + prisma generate via postinstall）"
+npm ci --no-audit --no-fund
 
 echo "[codex-setup] docker compose up -d (PG16 + Redis7)"
 docker compose up -d
