@@ -72,11 +72,13 @@ test.describe("Request access — intake flow", () => {
     // Intentionally skip tosAccepted.check()
 
     await page.getByRole("button", { name: /Submit request/i }).click();
-    // We never leave /request-access — alert shows up.
+    // We never leave /request-access — alert shows up. Use the text copy
+    // directly to avoid Playwright strict mode matching Next's dev-mode
+    // error overlay (which also carries role="alert" on failures).
     await expect(page).toHaveURL(/\/request-access$/);
-    await expect(page.getByRole("alert")).toHaveText(
-      /accept the Terms of Service/i
-    );
+    await expect(
+      page.getByText(/accept the Terms of Service/i)
+    ).toBeVisible();
   });
 
   test("sign-in anchor points at the same-locale /login", async ({ page }) => {

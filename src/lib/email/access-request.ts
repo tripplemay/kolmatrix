@@ -11,18 +11,23 @@
  */
 import { Resend } from "resend";
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_ADDRESS = "KOLMatrix Access <marketer@kolquest.com>";
 const ADMIN_INBOX = "tripplezhou@gmail.com";
 
+// NOTE: do NOT snapshot RESEND_API_KEY at module load — Vitest sets
+// `process.env.RESEND_API_KEY` inside `it()` blocks after module
+// initialization, so we must read it lazily each call.
 let cachedClient: Resend | null = null;
+let cachedKey: string | null = null;
 
 function getClient(): Resend {
-  if (!RESEND_API_KEY) {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) {
     throw new Error("RESEND_API_KEY is not configured");
   }
-  if (!cachedClient) {
-    cachedClient = new Resend(RESEND_API_KEY);
+  if (!cachedClient || cachedKey !== key) {
+    cachedClient = new Resend(key);
+    cachedKey = key;
   }
   return cachedClient;
 }
@@ -87,12 +92,19 @@ export async function sendAccessRequestNotification(
   const subject = `[KOLMatrix] New access request: ${req.company}`;
   try {
     const client = getClient();
-    await client.emails.send({
+    const res = await client.emails.send({
       from: FROM_ADDRESS,
       to: [ADMIN_INBOX],
       subject,
       html: buildBodyHtml(req),
     });
+    // Resend SDK 6.x returns { data, error } without throwing on 4xx/5xx.
+    if (res && "error" in res && res.error) {
+      const message =
+        (res.error as { message?: string }).message ?? "resend_error";
+      console.error("[access-request] Resend notification failed:", message);
+      return { ok: false, error: message };
+    }
     return { ok: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown";

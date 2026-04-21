@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect } from "react";
+import { cloneElement, useActionState, useEffect } from "react";
 
 import {
   submitAccessRequest,
@@ -227,6 +227,15 @@ export function RequestAccessForm({ locale }: Props) {
   );
 }
 
+/**
+ * FieldWrapper renders a `<label>` above the child control and wires
+ * `htmlFor` → child `id` so the control has an accessible name
+ * (Testing Library's `getByRole("combobox", { name: /Role/ })` relies
+ * on this association, as do screen readers).
+ *
+ * The child is expected to own its `name` attribute; we derive the id
+ * from `name`, but honour an explicit `id` if present.
+ */
 function FieldWrapper({
   label,
   hint,
@@ -234,14 +243,20 @@ function FieldWrapper({
 }: {
   label: string;
   hint?: string;
-  children: React.ReactNode;
+  children: React.ReactElement<{ id?: string; name?: string }>;
 }) {
+  const baseName = children.props.id ?? children.props.name;
+  const id = baseName ? `request-access-${baseName}` : undefined;
+  const child = id ? cloneElement(children, { id }) : children;
   return (
     <div className="space-y-1">
-      <label className="text-[11px] font-bold tracking-wider text-cyan-fixed uppercase">
+      <label
+        htmlFor={id}
+        className="text-[11px] font-bold tracking-wider text-cyan-fixed uppercase"
+      >
         {label}
       </label>
-      {children}
+      {child}
       {hint ? <p className="mt-1 text-[10px] text-outline">{hint}</p> : null}
     </div>
   );
