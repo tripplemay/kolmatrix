@@ -1,0 +1,35 @@
+=== Stage B Summary ===
+generated_at:            2026-04-21T09:10:54Z
+low_conf_non_gaming_in:  994
+recovered_as_gaming:     29 (2.9%)
+still_non_gaming:        965
+stage_b_cost_usd:        $0.281
+total_cost_a+b_usd:      $0.9107
+wall_time:               492.4s
+
+=== Final (Stage A + B) ===
+total_kols:              2524
+gaming_count_final:      415
+gaming_stage_a:          386
+gaming_recovered_by_b:   29
+
+new categories recovered by B:
+  Casual: 18
+  RPG: 6
+  Simulation: 4
+  手游: 1
+  FPS: 1
+  MOBA: 1
+
+final category distribution:
+  Other: 2109
+  Casual: 205
+  FPS: 77
+  Retro: 33
+  Simulation: 32
+  RPG: 26
+  Esports: 25
+  手游: 16
+  MOBA: 10
+  二次元: 7
+  沙盒: 7
