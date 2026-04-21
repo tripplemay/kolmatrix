@@ -1,40 +1,39 @@
 {
-  "status": "done",
-  "user_goal": "域名 TLS + Staging 环境：生产 HTTPS 审计到 SSL Labs A+、staging.kol.guangai.ai 独立子域 + 独立 DB + 独立 PM2 进程、证书自动续期 + 失败告警、kolquest.com 品牌域 301 redirect 到主站、TLS/Staging runbook 入库。完成后 Option α infra-first 收官，进入 B1 业务批次。",
-  "total_features": 7,
-  "completed_features": 7,
+  "status": "building",
+  "user_goal": "登录页 UI 重写为 V5 cinematic 设计（58/42 split，world-map 左图，下划线输入右表单）+ 新增 /request-access 请求访问页面（war-room 左图，长表单 + Server Action + admin 邮件通知）+ AccessRequest DB 模型 + en/zh i18n + 测试覆盖。B1 业务批次前的最后一块 UX 基建补齐。",
+  "total_features": 4,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "BI3-domain-and-tls",
-  "last_updated": "2026-04-20T11:36+0900",
+  "current_sprint": "BAux1-auth-pages",
+  "last_updated": "2026-04-21T11:45+0900",
   "reference_docs": [
-    "docs/specs/BI3-domain-and-tls-spec.md",
-    "docs/specs/BI2-deployment-automation-spec.md",
-    "docs/dev/infrastructure.md",
-    "docs/dev/deployment-runbook.md",
-    ".auto-memory/environment.md",
-    "framework/harness/deploy-patterns.md",
+    "docs/specs/BAux1-auth-pages-spec.md",
+    "design-draft/stitch-references/login.html",
+    "design-draft/stitch-references/signup.html",
+    "design-draft/stitch-references/V5-prompts.md",
+    "design-draft/design-system.md",
+    "docs/specs/visual-baseline.md",
+    "src/auth.config.ts",
     "framework/harness/database-patterns.md",
     "harness-rules.md"
   ],
   "docs": {
-    "spec": "docs/specs/BI3-domain-and-tls-spec.md",
+    "spec": "docs/specs/BAux1-auth-pages-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/BI3-domain-and-tls-signoff-2026-04-20.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
-  "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "BI3 首轮验收通过：7/7 全 PASS（TLS/Staging/续期告警/品牌域/runbook 实操均达标）。",
-    "pass_count": 7,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": []
+  "role_assignments": {
+    "planner": "Kimi",
+    "generator": "johnsong",
+    "evaluator": "Reviewer"
   },
-  "generator_handoff": "[Planner 2026-04-20 并行预备完成] .env.staging 已生成在 VPS /opt/kolmatrix-staging-init/.env.staging（root:tripplezhou 640）：内容含 DATABASE_URL/ADMIN_URL 指 kolmatrix_staging DB（与 prod 共 PG role 密码，DB 名物理隔离）+ NEXTAUTH_SECRET 新随机 32 字节 + NEXTAUTH_URL=https://staging.kol.guangai.ai + PORT=3002 + HOSTNAME=0.0.0.0 + APP_ENV=staging + AIGC/RESEND key 复用 prod（B4 启用前如改 Resend sandbox 再 rotate）。F003 开工顺序建议：(1) createdb kolmatrix_staging + GRANT CONNECT；(2) /opt/kolmatrix-staging 建目录 + git clone（因为目录需空，先 clone 到 /opt/kolmatrix-staging-tmp 再 mv 进来 OR 直接 git init + pull，自选）；(3) mv /opt/kolmatrix-staging-init/.env.staging 到 /opt/kolmatrix-staging/；(4) set -a; source .env.staging; set +a; npx prisma migrate deploy + npx prisma db seed；(5) 改 ecosystem.config.js 追加 kolmatrix-staging app（script:server.js 复用 BI2-F002 B1 模式 / instances:1 / exec_mode:fork / PORT=3002 / wait_ready:true / listen_timeout:10000 / env_file:/opt/kolmatrix-staging/.env.staging）；(6) pm2 start + save。F002 前置：用户已在 DNS 加 staging.kol.guangai.ai A 记录到 34.180.93.185（2026-04-20 用户动作），Generator 到时 dig 验证即可。F001 多数是审计 + git 入库项（conf 文件从 VPS 导出到 infrastructure/nginx/）。F005 Resend email 告警脚本依赖 RESEND_API_KEY（已在 prod .env.production 就绪，F005 脚本可直接用 curl -H Authorization Resend API）。F006 DNS 已配完无需用户动作，只做 Nginx 落地。全程 VPS SSH 走 ~/.ssh/kolmatrix_deploy 专用 key；passwordless sudo 已就绪。\n\n---\n\n[Generator johnsong 2026-04-20 完成 7/7] F001-F007 端到端可验。\n\nF001 生产 HTTPS：/etc/nginx/conf.d/kolmatrix.conf 补 HSTS（add_header Strict-Transport-Security max-age=31536000 includeSubDomains always；server-level + always 覆盖 4xx/5xx）+ 引入 ssl_dhparam（certbot 预置 /etc/letsencrypt/ssl-dhparams.pem）。Qualys SSL Labs v3 API 实测 A+（hasWarnings=false / HSTS present / forwardSecrecy=4 / 无 RC4/POODLE/HEARTBLEED/LOGJAM/FREAK）。TLSv1.2+1.3 由 /etc/letsencrypt/options-ssl-nginx.conf 强制。项目副本 infrastructure/nginx/kol.guangai.ai.conf。\n\nF002 Staging 子域：DNS 已解析 staging.kol.guangai.ai → 34.180.93.185。两阶段建 vhost：HTTP-only for ACME → certbot certonly --webroot 签 LE R13 证书（到期 2026-07-19）→ 完整 443 ssl http2 vhost（HSTS + X-Robots-Tag noindex,nofollow + proxy_pass localhost:3002 upstream kolmatrix_staging_backend）。curl 验证：http 80→301，https 200（F003 起后端后），HSTS/noindex 在 502 页也有（always）。VPS 路径 /etc/nginx/sites-available/staging.kolmatrix + sites-enabled symlink。项目副本 infrastructure/nginx/staging.kol.guangai.ai.conf。\n\nF003 Staging 应用：createdb kolmatrix_staging owner=kolmatrix + GRANT CONNECT kolmatrix_app。/opt/kolmatrix-staging clone（git sshCommand 锁 id_ed25519_github）。Planner .env.staging 就位（root:tripplezhou 640）+ .env symlink（prisma dotenv/config）。4 migrations applied + seed OK（1 tenant / 2 users / 12 kols / 3 campaigns / 4 templates / 300 emails）。npm ci + build OK。ecosystem.config.js 追加 kolmatrix-staging app（server.js / cwd /opt/kolmatrix-staging / instances:1 fork / wait_ready 10s / PORT 3002 / env_file absolute）。pm2 start + save。PM2 现 7 进程（aigc ×4 + kolmatrix ×2 + kolmatrix-staging ×1）全 online。curl https://staging.kol.guangai.ai/api/health 200 healthy / version 0.1.0 / DB latency 38ms / current_database=kolmatrix_staging（物理隔离）/ kol_count=12。prod uptime 未抖动。\n\nF004 自动续期：certbot.timer enabled active（twice daily 01:59+22:42 UTC）。新建 /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh（set -euo pipefail + nginx -t 前置守门 + systemctl reload，0755 root:root）。certbot renew --dry-run: 3 张证书（aigc+cdn / kol / staging）全 Simulating + Congratulations all succeeded。手动触发 hook：nginx -t OK + journalctl 记录 reload。项目副本 infrastructure/certbot/renewal-hooks/deploy/reload-nginx.sh。\n\nF005 续期失败告警：scripts/cert-expiry-check.sh（set -euo pipefail / openssl s_client 取 notAfter / days < 14 发 Resend / FAKE_DAYS=N 测试钩子 / shellcheck 0.8.0 pass / 正常路径 silent）。/etc/cron.d/kolmatrix-cert-expiry（CRON_TZ=Asia/Tokyo / 0 8 * * * root = 每日 08:00 JST = 23:00 UTC 前日）。端到端：FAKE_DAYS=5 发 2 封告警到 tripplezhou@gmail.com（Resend id 返回）+ smoke cron 11:28 UTC 触发 journalctl + 本地 log 确认。⚠️ 踩坑：Resend 实际 verified 是 kolquest.com 根域不是 send. 子域（environment.md 记录有误），ALERT_FROM 已改 marketer@kolquest.com。framework/proposed-learnings.md 新增一条，Planner done 阶段请更新 environment.md。项目副本 infrastructure/cron/kolmatrix-cert-expiry。\n\nF006 kolquest.com 301：DNS 已配（Cloudflare 2026-04-19）。两阶段：HTTP ACME → certbot certonly 签 kolquest.com + www.kolquest.com 多域证书（LE R13）→ 完整 vhost（80→301 https://$host / 443 ssl http2 HSTS + return 301 https://kol.guangai.ai$request_uri 保留 path/query）。验证：http/https kolquest + www 全 301 → https://kol.guangai.ai，/foo?bar=1 path 透传。send.kolquest.com 按 spec 无 vhost。VPS /etc/nginx/sites-available/kolquest.com + sites-enabled。项目副本 infrastructure/nginx/kolquest.com.conf。\n\nF007 Runbook + Nginx conf 入库：docs/dev/tls-staging-runbook.md 新建（268 行 9 段）：证书手动续期 / 过期应急恢复 / 新增域名 / Nginx 验证清单 / Staging 部署 / Staging DB reset / 品牌域验证 / common errors / source-of-truth 纪律。3 nginx conf 已在 F001/F002/F006 入 infrastructure/nginx/。\n\n=== Evaluator 关键验收路径 ===\n1) curl/openssl 矩阵 prod+staging+kolquest+www 的 http→301 / https 响应 / HSTS / TLS / cert CN\n2) SSL Labs A+（F001 acceptance 明确要求，api.ssllabs.com v3 无需注册；v4 需先 register email）\n3) pm2 list 3 个 kolmatrix* online，kolmatrix-staging mode=fork instances=1\n4) staging /api/health 200 + version + DB 连通 + git_sha key 存在（值 unknown 与 prod 一致）\n5) psql kolmatrix_staging current_database 确认独立名\n6) certbot renew --dry-run 3 张全 Simulating success\n7) reload-nginx.sh +x；cron.d/kolmatrix-cert-expiry 0644；FAKE_DAYS=5 触发告警（可选，Generator 已验）\n8) kolquest.com 301 链路末端 https://kol.guangai.ai/ + path/query 保留\n9) Runbook §6 staging DB reset 实操一次（spec 点名要求 Reviewer 手动做）\n\n不要碰：prod kolmatrix（uptime 稳定，无 reload 必要）。\n\n=== 已知 gap（非阻塞）===\nscripts/cert-expiry-check.sh 现手动 install 到 /opt/kolmatrix/scripts/，下次 prod deploy rsync 刷新即合入。",
+  "evaluator_feedback": null,
+  "generator_handoff": "[Planner 2026-04-21 批次启动说明] Hero 图已入库：public/brand/login-hero.png + signup-hero.png（各 1024×1024 PNG 约 1.2MB，gpt-image 生成无水印，trace trc_p1bgn90814sqmnh02m97xz49 / trc_e576uaw4pk09k7a9lltfpzsk）。原请求 1792×1024 被 OpenAI 侧 clamp 到 1024×1024，58/42 左区用 object-fit:cover + object-position:center 适配；不做 .jpg 回退（PNG 全浏览器兼容）。执行顺序：F001 (DB schema) 与 F002 (Login UI) 可并行 → F003 (Register) 依赖 F001 → F004 (tests) 依赖 F002+F003。开工前读 docs/specs/BAux1-auth-pages-spec.md 全文 + framework/harness/database-patterns.md §2 (migration 硬编码 DB 命名一致性) + V5 Stitch 参考 design-draft/stitch-references/login.html + signup.html。语义约束：1) Login 'Continue with Google' 按钮 disabled + Coming soon tooltip（不接真 OAuth，未来 B5+ 评估）；2) Register 走邀请制，AccessRequest pending 状态 + admin 邮件通知，审批 UI 留到 B9；3) i18n en+zh 双语必出，ja/ko/es 留 stub 回退 en；4) 移动端 < 768px 左图隐藏表单居中；5) 防刷：同 email 24h 内 upsert 但静默返回 success（不泄漏 enum）。Resend 发件地址固定 marketer@kolquest.com（根域，BI3-F005 已实测；ADR-010 v2 修正）。pre-impl 审计 → Planner 裁决模式继续适用，spec 有歧义先发审计请求不要凭印象。Planner 在 Generator 开工同时并行进入 B1 planning（spec 基于 docs/specs/B1-kol-database-spec.md 起草 features.json + 前置条件分析）。",
   "session_notes": {
-    "Kimi": "BI2 done 收尾完成 → BI3 启动（Option α infra-first 序列第四棒，最后一棒 infra，完成后进 B1 业务批次）。7 features 按依赖顺序执行：F001 prod HTTPS 审计 + conf 入库 → F002 staging 子域 DNS+Nginx+证书 → F003 staging app 进程（PM2 fork + 独立 DB kolmatrix_staging）→ F004 certbot auto-renew 验证 → F005 续期失败告警（cron + Resend email）→ F006 kolquest.com 品牌域 301 → F007 TLS/Staging runbook + Nginx conf 入库。spec 已完整（docs/specs/BI3-domain-and-tls-spec.md，2026-04-18 起草 + 2026-04-20 确认范围）。前置条件：用户去加 staging.kol.guangai.ai DNS A 记录（与 BI3 planning 同时），Planner 已生成 .env.staging 在 VPS /opt/kolmatrix-staging-init/ 待 F003 使用。Framework v0.9.2 已沉淀两条 learnings：database-patterns.md §2 DB 命名 migration-consistency + deploy-patterns.md §1 PM2 zero-downtime 3 条件（未来涉及 DB/PM2 的 spec 必读）。pre-impl 审计 → Planner 裁决模式继续适用，johnsong 如遇 spec 歧义先发审计请求。BI1 / BI2 / B0 都已签收。",
-    "johnsong": "BI3 batch full 7/7 完成，verifying 移交 Reviewer。按依赖顺序做：F001 audit HSTS+SSL Labs A+ → F002 staging vhost+cert → F003 staging app（clone+DB+migrate+seed+build+PM2 fork 3002 wait_ready，端到端 /api/health 38ms）→ F004 hook 脚本+dry-run 3 张全绿 → F005 expiry 脚本 FAKE_DAYS 测发 2 封+smoke cron 验触发 → F006 kolquest 两阶段 301 redirect → F007 268 行 runbook。每个 feature 独立 commit + push + CI 绿后再动下一个。一共 7 个 feat commit + 1 chore commit（F003 状态单独推）。关键坑：Resend 发件域 send.kolquest.com 子域未 verify，实际 verified 是 kolquest.com 根域，改 ALERT_FROM=marketer@kolquest.com 才通；已写 framework/proposed-learnings.md。其他 gap：git identity 本仓库原为空，本地配 tripplemay / tripllezhou@gmail.com 继承前人风格；deploy-prod workflow 未被触发（所有变更是 VPS 手工 + 项目 git 镜像）。Evaluator 建议按 generator_handoff §关键验收路径执行 L1/L2；staging DB reset 实操点名要求在 Reviewer。",
-    "Reviewer": "2026-04-20 BI3 verifying：完成 prod/staging TLS、PM2/DB 隔离、certbot timer+hook、cron+expiry script、kolquest 301、runbook staging reset 全链路复验；7/7 PASS，signoff 已写，状态置 done。"
+    "Kimi": "BAux1 辅助批次启动（B1 前补做登录+注册 UI）。背景：B0 的 /login 已工具化实现但视觉与 V5 Stitch 设计（cinematic 58/42 split 游戏氛围版）不配；注册页完全缺失。本批次补齐到 V5 视觉基调 + 带 AccessRequest DB 模型的 request-access 流程。用户 2026-04-21 确认范围：Google disabled / AccessRequest 审核流 / en+zh / PNG hero 无需 .jpg 回退 / world-map 主题（电竞场馆太窄被否，world map 全球网络更贴合 'Run global KOL campaigns' 叙事）。2 张 1024×1024 PNG 由 Planner gpt-image 生成入库（aigcgateway 经历 3 轮 '修复-复测-仍 fail' 才拿到，详见 aigcgateway-bug-report-gpt-image-2026-04-20.md v3）。完成后 Option α 最后一块 UX 基建就位，进 B1 业务批次。",
+    "johnsong": null,
+    "Reviewer": null
   },
   "features": []
 }
