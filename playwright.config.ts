@@ -13,15 +13,25 @@ import { defineConfig, devices } from "@playwright/test";
  * Port/baseURL resolution order (lets Codex reuse its 3099 dev server
  * without editing this file):
  *   1. E2E_BASE_URL — full URL override (e.g. http://127.0.0.1:3099)
- *   2. E2E_PORT     — port-only override; host defaults to 127.0.0.1
+ *   2. E2E_PORT     — port-only override; host stays `localhost`
  *   3. PORT         — fallback, matches Next dev server convention
  *   4. 3000         — historical default, kept for CI + local dev
  *
+ * Host MUST default to `localhost` (not 127.0.0.1). CI sets
+ * NEXTAUTH_URL=http://localhost:3000 and next-auth's reqWithEnvURL()
+ * rewrites req origin to that value on every request — if Playwright
+ * visits 127.0.0.1 the origin mismatch breaks credentials POST CSRF +
+ * session cookie scoping, and every login-gated test times out on
+ * waitForURL('/dashboard'). Next 16 dev also blocks cross-origin
+ * `_next/webpack-hmr` from 127.0.0.1 unless it's in `allowedDevOrigins`.
+ *
  * Codex flow: `scripts/test/codex-setup.sh` starts Next on :3099, then
  * `E2E_BASE_URL=http://127.0.0.1:3099 npm run test:e2e` reuses it.
+ * (Codex .env has NEXTAUTH_URL unset — see .env.example — so there is
+ * no origin-rewrite conflict on 127.0.0.1 for that environment.)
  */
 const E2E_PORT = process.env.E2E_PORT ?? process.env.PORT ?? "3000";
-const E2E_BASE_URL = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${E2E_PORT}`;
+const E2E_BASE_URL = process.env.E2E_BASE_URL ?? `http://localhost:${E2E_PORT}`;
 
 export default defineConfig({
   testDir: "./tests/e2e",
