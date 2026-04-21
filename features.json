@@ -22,7 +22,7 @@
       "title": "请求访问页面 + Server Action + admin 邮件通知",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "src/app/[locale]/request-access/page.tsx 新建 58/42 split（同 F002 结构）；左图 public/brand/signup-hero.png（1024×1024 PNG 已入库 trace trc_e576uaw4pk09k7a9lltfpzsk）；RequestAccessBrandOverlay 含 wordmark + 'OPERATOR PROGRAM · BY INVITE' + 主标 'Every launch has a war room. / This is yours.' + 副标 + 4 HUD chips operator 数据 + 底部 3 张 Recently Joined 迷你 studio 卡；右列长表单 8 字段（firstName/lastName 2 列 / workEmail / company / role dropdown 6 enum / campaignsPerQuarter dropdown 4 enum / games textarea / ToS checkbox）；Server Action submitAccessRequest 用 zod 校验；prisma.accessRequest.upsert 写入；防刷：同 email 24h 内已有 pending 则静默成功（返回 ok:true，不泄漏该邮箱是否在库）；src/lib/email/access-request.ts 调 resend.emails.send from='KOLMatrix Access <marketer@kolquest.com>' to=['tripplezhou@gmail.com'] subject='[KOLMatrix] New access request: {company}' HTML body 列字段；成功后跳 /request-access/success 显示 'We'll get back to you within 1 business day'；i18n auth.requestAccess.* en+zh 全翻译"
     },
     {
@@ -30,7 +30,7 @@
       "title": "测试覆盖 + i18n 键补齐 + visual regression baseline",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "Unit: LoginForm（render+email/password 输入+Google disabled+error state+forgot link）/ RequestAccessForm（render 8 字段+ToS 必须勾+role dropdown 6 option+submit 调 Server Action）/ email/access-request.test（Resend mock 验证 from+to+subject+body 含 company+email）；Integration: tests/integration/access-request-flow.test.ts 覆盖 valid FormData → DB+Resend mock / invalid → 不写 DB / 重复 email 24h 内幂等 / Zod 边界；E2E: tests/e2e/login-cinematic.spec.ts（/en/login 看到 world-map+表单，Sarah Chen 登录跳 /dashboard，/zh/login 中文，Google disabled）+ tests/e2e/request-access.spec.ts（填 8 字段提交 → 成功页 + DB 写入验证 + Resend MSW mock 邮件）；Visual: /en/login + /en/request-access 新增 screenshot baseline（F009 机制）；messages/en.json+zh.json 补全 auth.login.* 和 auth.requestAccess.* 键；ja/ko/es.json 添加 key stub（值为 en 原文或空）；test:unit 新增 ~15 全绿；test:integration 新增 ~6 全绿；test:e2e 新增 2 文件 ~6 全绿；coverage lines ≥ 80% 维持；lint + tsc 无错；CI 8 jobs 全绿"
     }
   ]
