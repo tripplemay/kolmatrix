@@ -272,3 +272,32 @@ model AuditLog {
   @@index([tenantId, resourceType, resourceId])
   @@map("audit_log")
 }
+
+// ============================================================
+//  Access requests (BAux1-F001)
+//
+//  Public intake for invite-only signup. Not tenant-scoped — rows are
+//  created by anonymous visitors before any tenant/user exists, and are
+//  only read by platform-admin tooling (see spec §F001). RLS therefore
+//  does NOT apply here; read/write access is gated in application code.
+// ============================================================
+
+model AccessRequest {
+  id                  String    @id @default(cuid())
+  email               String    @unique @db.VarChar(320)
+  firstName           String    @db.VarChar(64)
+  lastName            String    @db.VarChar(64)
+  company             String    @db.VarChar(128)
+  role                String    @db.VarChar(64)
+  campaignsPerQuarter String    @db.VarChar(32)
+  games               String?   @db.Text
+  status              String    @default("pending") @db.VarChar(16)
+  reviewedBy          String?   @db.VarChar(320)
+  reviewedAt          DateTime?
+  notes               String?   @db.Text
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([status, createdAt])
+  @@map("access_request")
+}

@@ -145,7 +145,8 @@ export async function cleanDb(): Promise<void> {
        "kol_campaign", "campaign",
        "kol",
        "account", "session", "user",
-       "tenant"
+       "tenant",
+       "access_request"
      RESTART IDENTITY CASCADE`
   );
 }
