@@ -117,10 +117,13 @@ test.describe("BM1 — full marketer journey (F009 E2E)", () => {
       expect(savedKolId).toBeTruthy();
 
       // 7. Save the first KOL — the toggle flips aria-pressed=true on
-      // the server round-trip. Scoped to the chosen card and its
-      // button started as aria-pressed="false", so we wait for the
-      // concrete transition rather than a no-op poll.
-      const saveButton = unsavedCard.getByTestId("kol-save-button");
+      // the server round-trip. Pin the card by data-kol-id so the
+      // assertion doesn't drift onto a different "still-unsaved" card
+      // after our click succeeds and the filter re-resolves.
+      const pinnedCard = page.locator(
+        `[data-testid="kol-card"][data-kol-id="${savedKolId}"]`
+      );
+      const saveButton = pinnedCard.getByTestId("kol-save-button");
       await saveButton.click();
       await expect(saveButton).toHaveAttribute("aria-pressed", "true", {
         timeout: 10_000,
