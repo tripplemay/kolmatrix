@@ -96,14 +96,31 @@ test.describe("BM1 — full marketer journey (F009 E2E)", () => {
         .click();
       await page.waitForURL(/\/discovery(\/|\?|$)/);
 
-      const firstCard = page.getByTestId("kol-card").first();
-      await expect(firstCard).toBeVisible();
-      const savedKolId = await firstCard.getAttribute("data-kol-id");
+      // Pick the first card whose save button is NOT already pressed.
+      // Staging accumulates state across test runs (the toggle
+      // action persists), so `kol-card >> nth=0` can point to a KOL
+      // that prior runs already saved — clicking it would unsave and
+      // aria-pressed="true" would pass trivially (the initial state
+      // was already true) while /database ends up empty. Filtering
+      // by the unsaved state gives the test a clean "save it fresh"
+      // path that's idempotent across reruns.
+      const unsavedCard = page
+        .getByTestId("kol-card")
+        .filter({
+          has: page.locator(
+            '[data-testid="kol-save-button"][aria-pressed="false"]'
+          ),
+        })
+        .first();
+      await expect(unsavedCard).toBeVisible();
+      const savedKolId = await unsavedCard.getAttribute("data-kol-id");
       expect(savedKolId).toBeTruthy();
 
       // 7. Save the first KOL — the toggle flips aria-pressed=true on
-      // the server round-trip.
-      const saveButton = firstCard.getByTestId("kol-save-button");
+      // the server round-trip. Scoped to the chosen card and its
+      // button started as aria-pressed="false", so we wait for the
+      // concrete transition rather than a no-op poll.
+      const saveButton = unsavedCard.getByTestId("kol-save-button");
       await saveButton.click();
       await expect(saveButton).toHaveAttribute("aria-pressed", "true", {
         timeout: 10_000,
