@@ -1,11 +1,11 @@
 {
-  "status": "fixing",
+  "status": "reverifying",
   "user_goal": "登录页 UI 重写为 V5 cinematic 设计（58/42 split，world-map 左图，下划线输入右表单）+ 新增 /request-access 请求访问页面（war-room 左图，长表单 + Server Action + admin 邮件通知）+ AccessRequest DB 模型 + en/zh i18n + 测试覆盖。B1 业务批次前的最后一块 UX 基建补齐。",
   "total_features": 4,
   "completed_features": 2,
-  "fix_rounds": 1,
+  "fix_rounds": 2,
   "current_sprint": "BAux1-auth-pages",
-  "last_updated": "2026-04-23T09:50+0800",
+  "last_updated": "2026-04-23T10:22+0800",
   "reference_docs": [
     "docs/specs/BAux1-auth-pages-spec.md",
     "design-draft/stitch-references/login.html",
@@ -28,30 +28,11 @@
     "generator": "johnsong",
     "evaluator": "Reviewer"
   },
-  "evaluator_feedback": {
-    "summary": "BAux1 第1轮复验：F001/F003 已通过；F002 仍因 /login 重定向到 localhost:3000 失败；F004 因 E2E webServer 启动/就绪策略导致无法执行完成，判 PARTIAL。",
-    "pass_count": 2,
-    "partial_count": 1,
-    "fail_count": 1,
-    "issues": [
-      {
-        "feature_id": "F002",
-        "result": "FAIL",
-        "description": "/login 在 3099 L1 环境仍 307 到 http://localhost:3000/en/login，主机/端口不一致导致验收失败。",
-        "steps_to_reproduce": "1) bash scripts/test/codex-setup.sh 2) curl --noproxy '*' -I http://127.0.0.1:3099/login 3) 观察 Location 指向 http://localhost:3000/en/login"
-      },
-      {
-        "feature_id": "F004",
-        "result": "PARTIAL",
-        "description": "coverage 与 integration 已全绿，但 e2e 无法在当前配置下执行完毕（webServer 启动冲突/ready 超时）。",
-        "steps_to_reproduce": "1) env -u all_proxy -u http_proxy -u https_proxy npm run test:e2e 2) 报 Another next dev server is already running 或 webServer ready timeout 180000ms"
-      }
-    ]
-  },
+  "evaluator_feedback": null,
   "generator_handoff": "[Planner 2026-04-21 批次启动说明] Hero 图已入库：public/brand/login-hero.png + signup-hero.png（各 1024×1024 PNG 约 1.2MB，gpt-image 生成无水印，trace trc_p1bgn90814sqmnh02m97xz49 / trc_e576uaw4pk09k7a9lltfpzsk）。原请求 1792×1024 被 OpenAI 侧 clamp 到 1024×1024，58/42 左区用 object-fit:cover + object-position:center 适配；不做 .jpg 回退（PNG 全浏览器兼容）。执行顺序：F001 (DB schema) 与 F002 (Login UI) 可并行 → F003 (Register) 依赖 F001 → F004 (tests) 依赖 F002+F003。开工前读 docs/specs/BAux1-auth-pages-spec.md 全文 + framework/harness/database-patterns.md §2 (migration 硬编码 DB 命名一致性) + V5 Stitch 参考 design-draft/stitch-references/login.html + signup.html。语义约束：1) Login 'Continue with Google' 按钮 disabled + Coming soon tooltip（不接真 OAuth，未来 B5+ 评估）；2) Register 走邀请制，AccessRequest pending 状态 + admin 邮件通知，审批 UI 留到 B9；3) i18n en+zh 双语必出，ja/ko/es 留 stub 回退 en；4) 移动端 < 768px 左图隐藏表单居中；5) 防刷：同 email 24h 内 upsert 但静默返回 success（不泄漏 enum）。Resend 发件地址固定 marketer@kolquest.com（根域，BI3-F005 已实测；ADR-010 v2 修正）。pre-impl 审计 → Planner 裁决模式继续适用，spec 有歧义先发审计请求不要凭印象。Planner 在 Generator 开工同时并行进入 B1 planning（spec 基于 docs/specs/B1-kol-database-spec.md 起草 features.json + 前置条件分析）。",
   "session_notes": {
     "Kimi": "BAux1 辅助批次启动（B1 前补做登录+注册 UI）。背景：B0 的 /login 已工具化实现但视觉与 V5 Stitch 设计（cinematic 58/42 split 游戏氛围版）不配；注册页完全缺失。本批次补齐到 V5 视觉基调 + 带 AccessRequest DB 模型的 request-access 流程。用户 2026-04-21 确认范围：Google disabled / AccessRequest 审核流 / en+zh / PNG hero 无需 .jpg 回退 / world-map 主题（电竞场馆太窄被否，world map 全球网络更贴合 'Run global KOL campaigns' 叙事）。2 张 1024×1024 PNG 由 Planner gpt-image 生成入库（aigcgateway 经历 3 轮 '修复-复测-仍 fail' 才拿到，详见 aigcgateway-bug-report-gpt-image-2026-04-20.md v3）。完成后 Option α 最后一块 UX 基建就位，进 B1 业务批次。",
-    "johnsong": "BAux1 fix_rounds=1 完成，移交 reverifying。四个 FAIL 全部定位到**环境/配置**根因（非产品代码 bug），共改 5 个文件，81 行增 / 18 行删：\n\n1) **F001+F003 共因 — scripts/test/codex-setup.sh 缺 npm ci：** Evaluator 每次 pull 后只 docker compose + prisma migrate deploy + npm run dev，从未同步 node_modules。结果：resend（commit ed3d440 新加的 dep）未装 → /request-access 500；postinstall 的 prisma generate 未触发 → @prisma/client 无 AccessRequest model → admin.accessRequest undefined。修复：setup 脚本开头加 `npm ci --no-audit --no-fund`，postinstall 自动 regenerate prisma client。\n\n2) **F002 前半 — .env.example 硬编码 NEXTAUTH_URL：** 读了 node_modules/next-auth/lib/env.js：`reqWithEnvURL()` 只要 NEXTAUTH_URL/AUTH_URL 非空就**无条件**把 req.nextUrl.origin 改写成 env URL origin，和 auth.config.ts 的 `trustHost: true` 完全无关（trustHost 只影响 session decryption 的 UntrustedHost 检查）。Codex setup cp .env.example → .env 继承 NEXTAUTH_URL=localhost:3000 → next-intl 的 /login→/en/login 重定向 Location 被钉死到 localhost:3000。修复：.env.example 注释该行 + 附 15 行 WHY 注释解释根因；CI 在 workflow env 块独立设置不受影响；生产用 .env.production 独立设置。\n\n3) **F002 后半 — playwright.config.ts 硬编码 baseURL=localhost:3000：** 改读 env 优先级 `E2E_BASE_URL > E2E_PORT > PORT > 3000`；webServer.command 注入 `--port ${E2E_PORT}`；reuseExistingServer 永远 true（允许 Codex 3099 已开 dev server 复用）。\n\n4) **F004 RequestAccessForm.test.tsx — vi.importActual：** 原 mock 用 `importActual(actions)` 触发 \"use server\" 模块加载链 → 单测 env 没 DATABASE_URL/resend → 整个 suite 挂。改为扁平 mock（只 mock submitAccessRequest 函数，type 不需要 runtime 提供）。\n\n5) **回归测试 tests/e2e/login-cinematic.spec.ts：** 新增 \"bare /login redirects on SAME origin\" 用例，直接验证 Host header 正确，防止未来再 reintroduce NEXTAUTH_URL / hardcoded host。\n\n本机验证：tsc --noEmit 无错 + lint 无错 + test:unit 99/99 全绿（Topbar WSL vitest forks 环境异常已知，不影响 CI/Linux）。integration + e2e 因 WSL vitest/playwright WSL 兼容问题本机没跑，留给 Evaluator 在 Codex Linux 环境复验。\n\n关键排查链路：先看 F003 报错（Module not found resend）以为是依赖漏 pin，但 package.json 已 pinned → package-lock.json 也有 → 我本地 node_modules 也装了 → 才想到 Evaluator 环境差异 → 找 codex-setup.sh 发现缺 npm ci。F002 看到 Location: localhost:3000 以为 middleware 硬编码，grep 全项目无结果 → 读 next-auth/lib/env.js 找到 reqWithEnvURL 真凶。",
+    "johnsong": "BAux1 fix_rounds=2 完成（commits cb39033 + a792dcc），CI 全绿，移交 reverifying。\n\n**round-1 的盲点：** 我上轮修 .env.example 注释 NEXTAUTH_URL 时，只改了**模板**，没想到 codex-setup.sh 的 `if [ ! -f .env ]` 守卫让 Evaluator 机器上那份陈旧 .env（几周前 cp 自未注释版本的 .env.example）永远保留 NEXTAUTH_URL=localhost:3000。F002 和 F004 同根（后者的 Playwright webServer probe 也踩 reqWithEnvURL 重写出的错 origin）。\n\n**round-2 修复（三层防护）：**\n\n1) **scripts/test/codex-setup.sh +sanitize + unset（防老 .env 复活）：**\n   - `if [ -f .env ] && grep -qE '^[[:space:]]*(NEXTAUTH_URL|AUTH_URL)=' .env; then sed -i -E 's@^([[:space:]]*)(NEXTAUTH_URL|AUTH_URL)=@\\1# \\2=@' .env`（sed 分隔符用 `@`，`|` 留给 ERE 替换，踩过一次 sed unknown option 坑）\n   - exec npm run dev 前 `unset NEXTAUTH_URL AUTH_URL` 防 shell export 泄漏\n\n2) **scripts/test/codex-e2e.sh (NEW) — Playwright 一键包装：** unset NEXTAUTH_URL/AUTH_URL + all_proxy/http_proxy/https_proxy；export E2E_PORT=3099、E2E_BASE_URL=http://localhost:3099；exec npx playwright test \"$@\"。Evaluator 改用 `bash scripts/test/codex-e2e.sh` 而非裸 `npm run test:e2e`。AGENTS.md §3 已加入清单。\n\n3) **tests/integration/env-hygiene.test.ts (NEW) — 11 断言回归：** .env.example 不反弹、codex-setup.sh 保 sanitize + unset、codex-e2e.sh 存在+执行位+env 契约。纯文件 I/O，跟 test:integration 套件跑。\n\n**踩过的坑：**\n- sed 分隔符：第一版用 `|`，在 CI 外提前本机 dry-run 时报 `sed: -e expression #1, char 43: unknown option to s'`。改 `@` 后，fixture .env 实测 NEXTAUTH_URL/AUTH_URL/indented 三种情形都正确 comment，NEXTAUTH_SECRET 不误伤。\n- Git 执行位：chmod +x scripts/test/codex-e2e.sh 后 git 不认（WSL core.fileMode=false），env-hygiene.test.ts 的 `stat.mode & 0o100` 在 CI Linux 上 expect 64 得到 0 → 失败。用 `git update-index --chmod=+x` 强改 100755，a792dcc 一行搞定。\n\n**本机验证链：**\n- tsc --noEmit 无错\n- npm run lint exit 0\n- npm run test:unit 101/101 全绿（上次 99，增 2 因为……其实新测试在 integration 不是 unit，101 是稳态）\n- env-hygiene 单文件 integration 11/11\n- fixture .env sanitize 实测通过\n- CI cb39033 integration fail（exec 位） → a792dcc 全绿（Install/ROLLBACK/Build/Unit/Typecheck/Lint/Integration/E2E 8 jobs）\n\n**留给 Evaluator 的复验建议：**\n- `git pull` → `bash scripts/test/codex-setup.sh`（会自动 sanitize 老 .env）\n- L1 smoke: `curl --noproxy '*' -I http://127.0.0.1:3099/login` 应返回 307 Location 同源 :3099（不再 localhost:3000）\n- E2E: `bash scripts/test/codex-e2e.sh` 而不是 `npm run test:e2e`（封装了所有 env 契约）\n- integration 应该全绿包括新的 env-hygiene 11 项\n\n如仍有问题，可能是 .env 里有我没预料到的第三个变量（如 AUTH_TRUST_HOST 之类），请附 `grep -E '(NEXTAUTH|AUTH)_' .env` 的输出。",
     "Reviewer": "2026-04-23 reverifying：去代理后复验，coverage(31/31,101)与integration(7/7,38)全通过，request-access 从500修复到200；但 /login 仍重定向 localhost:3000，且 e2e 在 3099 流程下仍因 webServer 启动/ready 策略失败。已出 BAux1-auth-pages-reverifying-2026-04-23.md，回退 fixing，待修 F002/F004。"
   },
   "features": []
