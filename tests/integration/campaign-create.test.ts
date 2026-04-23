@@ -135,31 +135,24 @@ describe("createCampaignRecord()", () => {
       ownerUserId: OWNER_A,
     });
     const { id } = await createCampaignRecord(TENANT_A, input);
-    // logEvent is fire-and-forget but awaits inside the insert path; a
-    // short poll keeps the test robust against the promise settling a
-    // tick later.
+    // logEvent is fire-and-forget, so poll briefly for the row to
+    // appear instead of relying on the microtask ordering.
     const deadline = Date.now() + 2000;
-    let rows: Awaited<
-      ReturnType<typeof getAdminPrisma>["eventLog"]["findMany"]
-    > extends infer T
-      ? T
-      : never = [] as never;
-    while (Date.now() < deadline) {
-      rows = (await getAdminPrisma().eventLog.findMany({
-        where: { type: "campaign.created", resourceId: id },
-      })) as never;
-      if ((rows as unknown[]).length > 0) break;
-      await new Promise((r) => setTimeout(r, 50));
-    }
-    const list = rows as unknown as Array<{
-      type: string;
-      resourceId: string | null;
+    let rows: Array<{
       tenantId: string | null;
       actorId: string | null;
-    }>;
-    expect(list).toHaveLength(1);
-    expect(list[0]!.tenantId).toBe(TENANT_A);
-    expect(list[0]!.actorId).toBe(OWNER_A);
+    }> = [];
+    while (Date.now() < deadline) {
+      rows = await getAdminPrisma().eventLog.findMany({
+        where: { type: "campaign.created", resourceId: id },
+        select: { tenantId: true, actorId: true },
+      });
+      if (rows.length > 0) break;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.tenantId).toBe(TENANT_A);
+    expect(rows[0]!.actorId).toBe(OWNER_A);
   });
 
   it("throws product_not_found when the productId is outside the tenant (cross-tenant RLS)", async () => {
