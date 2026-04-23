@@ -4,9 +4,11 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BM1-console-kol-core** — status=building，9 features 等 Generator 开工（MVP 业务批次 1/2）
-  - F001 schema → F002 seed → F003 知识库 / F004 Discovery 并行 → F005 Database → F006 画像 → F007 Dashboard → F008 locale → F009 tests
-  - 估 7-10 天，完成后 MVP 4 功能达成 2 个（控制台 + 筛选）
+- **BM1-console-kol-core** — status=building，2/9 features 完成（F001 schema + F002 seed），F003 开工前停
+  - ✅ F001 schema extension（Product + Kol 13 列 + kolFee + 2 indexes + RLS NULLIF）commit `f7971c7`
+  - ✅ F002 seed script 2,524 rows + valueScore util + platform normalize commit `7142929`
+  - ⏳ F003 知识库 / F004 Discovery 并行 → F005 Database → F006 画像 → F007 Dashboard → F008 locale → F009 tests
+  - pre-impl 审计 `docs/specs/BM1-f001-schema-preimpl-audit.md` 裁决 #A:A #B:A #C:A #D:A+C #E:C #F:A（#E 偏离 Gen，归一化 0-100）
 - **BI4** ✅ done 一轮过（5/5 PASS fix_rounds=0，framework v0.9.3 沉淀 VPS artifact in-git 硬要求）
 - 所有前置批次 ✅：B0 / BI1 / BI2 / BI3 / BAux1 / BI4
 
