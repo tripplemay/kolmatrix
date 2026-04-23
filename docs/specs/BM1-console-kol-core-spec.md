@@ -33,7 +33,7 @@ MVP 纵向路线的**第一棒业务批次**。基于完整基建（B0-BI3+BAux1
 
 ### In Scope
 
-1. **F001** — Prisma schema 扩展：Product 新表 + Kol 扩展（价值分 / 标签 / relationshipStatus / 15 维 filter 字段 nullable）+ CampaignKol.kolFee（BM2 用但 schema 一起做）
+1. **F001** — Prisma schema 扩展：Product 新表 + Kol 扩展（价值分 / 标签 / relationshipStatus / isSaved / 15 维 filter 字段 nullable，实际 ADD 13 列，4 维沿用 B0）+ KolCampaign.kolFee（BM2 用但 schema 一起做，matchScore 已在 B0）
 2. **F002** — KOL seed 脚本：`docs/kol-seed-enriched-final.json`（415 gaming + 2109 non-gaming）入库 demo tenant
 3. **F003** — Product 知识库页（`/knowledge-base`）：录入表单 + 卡片网格 + AI 生成推广素材（调 aigcgateway）
 4. **F004** — KOL Discovery 筛选页（`/discovery`）：15 维 filter UI + 价值分 AI 计算 + 保存到候选
@@ -51,8 +51,8 @@ MVP 纵向路线的**第一棒业务批次**。基于完整基建（B0-BI3+BAux1
 | 决策 | 选定方案 | 理由 |
 |---|---|---|
 | KOL 价值分公式 | MVP 用**加权简单公式**，aigcgateway 只做标签生成不算价值分 | MVP 数据稀疏，AI 算价值分意义不大；公式透明可解释 |
-| 价值分算法 | `normalizedFollowers * 0.5 + engagementPlaceholder * 0.3 + categoryRichness * 0.2`（0-100）| followerCount 归一（log 缩放到 0-100）+ 默认 engagement 50 + 多分类奖励 |
-| AI 匹配分 | **不做 MVP**（保留 CampaignKol.matchScore 字段但不计算）| MVP PRD §11 已定，留 B2 embedding |
+| 价值分算法 | `raw = followerScore(log10×15, cap 50) + engagementScore(固定 15) + categoryScore(count×8, cap 20)` → `total = round(raw × 100 / 85)`（归一化 0-100，落 `value_score` 列）| log 缩放 + 固定 engagement + 多分类奖励；归一化对齐 §7.2 决议 E + 行业惯例（Modash/HypeAuditor 0-100） |
+| AI 匹配分 | **不做 MVP**（保留 KolCampaign.matchScore 字段但不计算）| MVP PRD §11 已定，留 B2 embedding |
 | Product 字段必填 | `uniqueSellingPoints` **强制必填**（zod required）| MVP PRD §13 Q5 决策 |
 | AI 素材生成 | 用 aigcgateway `chat` API 直连（非 Action，避免前置依赖）| BM1 不等 Planner 建 Action；BM2 统一改为 Action 调用 |
 | AI 生成产物 | 3 套 email template + 2 套 video script（文本）；不生成图片（远期）| Product USP 录完即可一键生成；存 `Product.aiAssets` JSON |
@@ -104,10 +104,9 @@ model Kol {
   relationshipStatus    String     @default("prospect") @map("relationship_status") @db.VarChar(20)
   // enum app-level: prospect / first_contact / negotiating / long_term / paused / terminated
 
-  // 15 维 filter nullable 预留字段（MVP 数据没有但 schema 前置）：
-  language              String?    @db.VarChar(5)
-  engagementRate        Decimal?   @map("engagement_rate") @db.Decimal(5,2)
-  avgViewsPerVideo      Int?       @map("avg_views_per_video")
+  // 15 维 filter：其中 4 维沿用 B0 已有列（language / engagement_rate / avg_views /
+  // audience_age_dist+geo_dist+gender_dist 三字段），本次只 ADD 11 个 nullable 预留列：
+  // （Planner 裁决 #A/#B/#C：skip 已存列 + 沿用 avgViews + 沿用 3 个 audience_*_dist Json 列）
   uploadsPerMonth       Int?       @map("uploads_per_month")
   lastUploadAt          DateTime?  @map("last_upload_at")
   monetizationStatus    String?    @map("monetization_status") @db.VarChar(20)
@@ -115,9 +114,10 @@ model Kol {
   brandSafetyRating     String?    @map("brand_safety_rating") @db.VarChar(8)
   // enum: G / PG / PG13 / R
   knownBrandCollabs     String[]   @default([]) @map("known_brand_collabs")
-  audienceDemographics  Json?      @map("audience_demographics") @db.JsonB
   engagementAuthenticity Int?      @map("engagement_authenticity")
   isGaming              Boolean    @default(true) @map("is_gaming")
+  isSaved               Boolean    @default(false) @map("is_saved")
+  // isSaved：/discovery 勾保存 → true；/database 只显示 true 的
 
   // AI 打标 metadata（用于未来 B1 re-tagging）
   aiTaggedAt            DateTime?  @map("ai_tagged_at")
@@ -125,19 +125,21 @@ model Kol {
   // enum: high / medium / low
 }
 
-// CampaignKol 扩展（BM1 不用但 schema 一起做，BM2 F001 不用再改表）
-model CampaignKol {
-  // ...existing fields
+// KolCampaign 扩展（BM1 不用但 schema 一起做，BM2 F001 不用再改表）
+// 注：model 名为 KolCampaign（对齐 B0 schema，spec 旧稿笔误 "CampaignKol"）
+model KolCampaign {
+  // ...existing fields（含 match_score 已有，裁决 #A skip）
   kolFee                Decimal?   @map("kol_fee") @db.Decimal(10,2)
-  matchScore            Int?       @map("match_score")
-  // contactStatus 现有（pending/contacted 等），BM2 F001 按需扩
+  // status 现有（pending/contacted 等），BM2 F001 按需扩
 }
 ```
 
 Migration `prisma/migrations/20260424100000_bm1_schema/migration.sql`：
-- CREATE TABLE product + 索引
-- ALTER TABLE kol ADD COLUMN 15 个 nullable fields + default values
-- ALTER TABLE campaign_kol ADD COLUMN kol_fee, match_score
+- CREATE TABLE product + 索引 + RLS policy（NULLIF 兜底）
+- ALTER TABLE kol ADD COLUMN 13 个 nullable fields + default values（11 个 15 维 filter 预留 + `valueScore/tags/relationshipStatus/isSaved`，其中 isSaved/isGaming 有默认值）
+- ALTER TABLE kol_campaign ADD COLUMN `kol_fee` Decimal(10,2) NULL（`match_score` 已存，裁决 #A skip）
+- CREATE INDEX `kol_tenant_gaming_value_idx` (tenant_id, is_gaming, value_score DESC) + `kol_tenant_saved_idx` (tenant_id, is_saved)（裁决 #F）
+- Migration 头部加注释说明裁决 #A/#B/#C 跳过 / 沿用已有列（见 audit §7.4 #1）
 - **ROLLBACK SQL** 完整（F007 CI 校验强制）
 - 对 kol 的 tsvector trigger function（BI4-F005 定义）**无需改**，只涉及新增字段不影响 trigger 的 NEW.display_name/handle/categories/bio 字段（保持不变）
 
@@ -152,7 +154,7 @@ CREATE POLICY tenant_isolation ON "product"
 **Acceptance：**
 - `npx prisma migrate dev` 本地 + `migrate deploy` Testcontainers 通过
 - F007 CI ROLLBACK 校验通过
-- `tests/integration/bm1-schema.test.ts` 覆盖：Product CRUD + RLS 跨租户隔离 / Kol 新字段读写 / CampaignKol.kolFee 读写
+- `tests/integration/bm1-schema.test.ts` 覆盖：Product CRUD + RLS 跨租户隔离 / Kol 新字段读写（核心 5 点：valueScore + isGaming + isSaved + relationshipStatus + tags[]，其他 11 维 nullable filter 字段通用循环）/ KolCampaign.kolFee 读写
 
 ### F002 — KOL seed 脚本入库 415 gaming + 2109 non-gaming
 
@@ -162,7 +164,7 @@ CREATE POLICY tenant_isolation ON "product"
 - 读 `docs/kol-seed-enriched-final.json`
 - 对每条 KOL 做 upsert（唯一键 `tenantId + platform + handle`）
 - 字段映射：
-  - `platform: "Youtube"` → Prisma enum `YOUTUBE`
+  - `platform: "Youtube"` → normalize 到 lowercase `"youtube"` 存入 `Kol.platform String` 列（裁决 #D：DB 保持 String，应用层 `src/lib/kol/platform.ts` 定义 `KolPlatform` union + Zod enum 做静态 + 运行时校验）
   - `name` → `display_name`
   - `url` → parse 出 handle（`@xxx` 部分）
   - `region` → 中文国名 map 到 ISO 2-letter（美国→US，英国→GB，巴基斯坦→PK，加拿大→CA，德国→DE，越南→VN，台湾→TW，乌克兰→UA，日本→JP，伊拉克→IQ，多米尼加→DO）
@@ -177,19 +179,42 @@ CREATE POLICY tenant_isolation ON "product"
 - 在 prisma.config.ts 注册为 `seedKolCommand`
 - `package.json` 加 script：`"seed:kol": "tsx scripts/seed-kol-from-enriched.ts"`
 
-价值分公式实现（§3 选项）：
+价值分公式实现（§3 选项，裁决 #E 归一化 0-100）：
 
 ```typescript
-function computeKolValueScore(kol: { followerCount: number; categories: string[] }): number {
+// src/lib/kol/value-score.ts — pure function，F002 seed + 未来 UI breakdown 复用
+export interface KolValueScoreResult {
+  total: number;                      // 归一化 0-100，落 value_score 列
+  rawBreakdown: {
+    follower: number;                 // raw 0-50（UI hover tooltip 用）
+    engagement: number;               // raw 15 固定
+    category: number;                 // raw 0-20
+  };
+}
+
+export function computeKolValueScore(kol: {
+  followerCount: number;
+  categories: string[];
+}): KolValueScoreResult {
   // followerCount log 缩放到 0-50 分
   const followerScore = Math.min(50, Math.log10(Math.max(kol.followerCount, 100)) * 15);
-  // 默认 engagement 50（真实数据从 YouTube API 来，MVP nullable）
+  // engagement 固定占位（真实数据从 YouTube API 来，MVP nullable）
   const engagementScore = 15;
-  // categories 多样性奖励（1 类 10 分，2-3 类 20 分）
+  // categories 多样性奖励（1 类 8，2 类 16，3+ 类封顶 20）
   const categoryScore = Math.min(20, kol.categories.length * 8);
-  return Math.round(followerScore + engagementScore + categoryScore);
+  const raw = followerScore + engagementScore + categoryScore; // max 85
+  return {
+    total: Math.round((raw * 100) / 85),                        // 归一化 0-100
+    rawBreakdown: {
+      follower: Math.round(followerScore),
+      engagement: engagementScore,
+      category: categoryScore,
+    },
+  };
 }
 ```
+
+F002 seed 写库调用：`const { total } = computeKolValueScore({ followerCount, categories }); row.valueScore = total;`
 
 **Acceptance：**
 - `npm run seed:kol` 跑完后 `prisma.kol.count()` = 2524
