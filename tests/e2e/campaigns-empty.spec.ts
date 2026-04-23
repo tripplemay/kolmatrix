@@ -46,10 +46,11 @@ test.describe("BM2-F003 · Campaigns list", () => {
       .click();
     await page.waitForURL(/\/campaigns(\/|\?|$)/);
 
-    // Title always renders regardless of row count.
-    await expect(
-      page.getByRole("heading", { name: /^Campaigns$/ })
-    ).toBeVisible();
+    // Title always renders regardless of row count. AppShell's Topbar
+    // also renders a "Campaigns" heading, so we scope to the page-
+    // specific testid instead of getByRole to avoid strict-mode
+    // double-match.
+    await expect(page.getByTestId("campaigns-page-title")).toBeVisible();
 
     // CTA always renders too — it's the single path to F004.
     await expect(page.getByTestId("campaigns-new-button")).toBeVisible();
