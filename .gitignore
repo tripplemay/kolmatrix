@@ -23,7 +23,7 @@ coverage/
 .env.local
 .env.*.local
 .env.production
-.env.production.*        # 包括 .env.production.bak.20260420-* 备份（VPS 上 sudo root 改动时自动生成）
+.env.production.*
 .env.staging
 .env.staging.*
 
