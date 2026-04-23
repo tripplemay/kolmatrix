@@ -6,7 +6,7 @@
       "title": "Async Job Queue interface + in-memory stub executor",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/lib/jobs/queue.ts 定义 JobQueue interface + JobPayload/JobOptions/JobHandler 类型 + InMemoryJobQueue 实现类（同步执行 handler，支持 idempotencyKey 去重、delay 延迟、tenantId scope）；导出全局单例 jobQueue；register<P>(name, handler) / add<P>(name, payload, options) / stats() 三 API；src/lib/jobs/handlers/register.ts 作为 handler 注册中心（MVP 为空留给 BM2）；instrumentation.ts import handlers/register 确保注册；tests/unit/jobs/queue.test.ts ≥ 5 cases 覆盖 register+add+handler 执行 / idempotencyKey 去重 / stats 准确 / handler throws 不崩主流程 / 未注册 name 给 warn log；TypeScript 泛型推导正确（jobQueue.add<SendEmailPayload> 推 payload type）"
     },
     {
@@ -14,7 +14,7 @@
       "title": "event_log 表 + logEvent() helper",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "prisma/schema.prisma 追加 model EventLog（id cuid / tenantId? / actorId? / type 64 / resourceId? 64 / payload Json / createdAt；@@index([tenantId,type,createdAt]) + @@index([resourceId]); @@map event_log）；migration 20260424000000_event_log 含完整 ROLLBACK SQL（F007 校验）；无 RLS（平台级记录）；src/lib/events/log.ts 导出 logEvent(data: EventData) fire-and-forget helper（失败 console.error 不抛）；tests/integration/event-log.test.ts ≥ 3 cases：logEvent → DB 记录 / DB 不可达时主流程不崩 / 查询 by tenant+type+时间范围；prisma.eventLog Client 生成后 TS 可用"
     },
     {
@@ -30,7 +30,7 @@
       "title": "Cursor pagination util createCursorPaginator<T>()",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/lib/pagination/cursor.ts 导出 CursorPaginationParams + CursorPaginationResult<T> 类型 + createCursorPaginator<TModel, TWhere>(config) factory；封装 Prisma cursor + pageSize + orderBy + direction；cursor 用 URL-safe base64 包装 {id, sortField, sortValue}；defaultLimit 20 / maxLimit 100 可配置；tests/unit/pagination/cursor.test.ts ≥ 4 cases：分页前 3 条 / cursor 解出并继续 / hasMore false at end / limit cap 到 maxLimit / orderBy asc+desc / where filter 叠加；TypeScript 使用时泛型推导 items 为 TModel[]"
     },
     {
