@@ -66,8 +66,13 @@ test.describe("Marketer — login + dashboard flow", () => {
 
   test("clicking 'KOL Database' in the sidebar routes to /database", async ({ page }) => {
     await login(page);
-    await page.getByRole("link", { name: "KOL Database" }).click();
-    // BM1-F005 shipped /database; before that B0 stub routed to /kols.
+    // BM1-F007 added a Quick Actions row with an identically-labelled
+    // button; scope to the sidebar nav so we only match the canonical
+    // sidebar link.
+    await page
+      .locator("aside")
+      .getByRole("link", { name: "KOL Database" })
+      .click();
     await page.waitForURL(/\/database(\/|$)/);
     expect(page.url()).toMatch(/\/database(\/|$)/);
   });
