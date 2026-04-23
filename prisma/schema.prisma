@@ -25,14 +25,17 @@ model Tenant {
   name      String
   slug      String   @unique
   plan      String   @default("free")
+  logoUrl   String?  @map("logo_url")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  users     User[]
-  kols      Kol[]
-  campaigns Campaign[]
-  templates EmailTemplate[]
-  products  Product[]
+  users           User[]
+  kols            Kol[]
+  campaigns       Campaign[]
+  templates       EmailTemplate[]
+  products        Product[]
+  campaignMetrics CampaignMetric[]
+  weeklyReports   WeeklyReport[]
 
   @@map("tenant")
 }
@@ -50,11 +53,11 @@ model User {
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
-  tenant             Tenant          @relation(fields: [tenantId], references: [id])
-  accounts           Account[]
-  sessions           Session[]
-  campaignsOwned     Campaign[]      @relation("CampaignOwner")
-  templatesAuthored  EmailTemplate[] @relation("TemplateAuthor")
+  tenant         Tenant         @relation(fields: [tenantId], references: [id])
+  accounts       Account[]
+  sessions       Session[]
+  campaignsOwned Campaign[]     @relation("CampaignOwner")
+  weeklyReports  WeeklyReport[] @relation("WeeklyReportCreator")
 
   @@index([tenantId])
   @@map("user")
@@ -110,31 +113,31 @@ model VerificationToken {
 // ============================================================
 
 model Kol {
-  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId           String    @map("tenant_id") @db.Uuid
+  id                 String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String                   @map("tenant_id") @db.Uuid
   platform           String
   handle             String
-  displayName        String    @map("display_name")
+  displayName        String                   @map("display_name")
   bio                String?
-  avatarUrl          String?   @map("avatar_url")
-  countryCode        String?   @map("country_code")
+  avatarUrl          String?                  @map("avatar_url")
+  countryCode        String?                  @map("country_code")
   language           String?
-  followerCount      Int       @default(0) @map("follower_count")
-  engagementRate    Decimal?   @map("engagement_rate") @db.Decimal(5, 2)
-  avgViews           Int?      @map("avg_views")
+  followerCount      Int                      @default(0) @map("follower_count")
+  engagementRate     Decimal?                 @map("engagement_rate") @db.Decimal(5, 2)
+  avgViews           Int?                     @map("avg_views")
   categories         String[]
-  audienceAgeDist    Json?     @map("audience_age_dist") @db.JsonB
-  audienceGeoDist    Json?     @map("audience_geo_dist") @db.JsonB
-  audienceGenderDist Json?     @map("audience_gender_dist") @db.JsonB
-  aiScore            Int?      @map("ai_score")
-  aiScoreBreakdown   Json?     @map("ai_score_breakdown") @db.JsonB
-  aiEvaluatedAt      DateTime? @map("ai_evaluated_at") @db.Timestamptz
-  status             String    @default("active")
-  externalId         String?   @map("external_id")
-  lastSyncedAt       DateTime? @map("last_synced_at") @db.Timestamptz
-  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz
-  deletedAt          DateTime? @map("deleted_at") @db.Timestamptz
+  audienceAgeDist    Json?                    @map("audience_age_dist") @db.JsonB
+  audienceGeoDist    Json?                    @map("audience_geo_dist") @db.JsonB
+  audienceGenderDist Json?                    @map("audience_gender_dist") @db.JsonB
+  aiScore            Int?                     @map("ai_score")
+  aiScoreBreakdown   Json?                    @map("ai_score_breakdown") @db.JsonB
+  aiEvaluatedAt      DateTime?                @map("ai_evaluated_at") @db.Timestamptz
+  status             String                   @default("active")
+  externalId         String?                  @map("external_id")
+  lastSyncedAt       DateTime?                @map("last_synced_at") @db.Timestamptz
+  createdAt          DateTime                 @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime                 @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt          DateTime?                @map("deleted_at") @db.Timestamptz
   // BI4-F005: maintained by DB trigger kol_search_vector_trigger.
   // Declared so Prisma db pull does not drop the column; app code
   // never reads/writes it through the ORM — see
@@ -159,6 +162,10 @@ model Kol {
   aiTaggedAt             DateTime? @map("ai_tagged_at") @db.Timestamptz
   aiTagConfidence        String?   @map("ai_tag_confidence") @db.VarChar(8)
 
+  // BM2-F001 extensions per audit #D/#E context (email outreach).
+  email       String? @db.VarChar(320)
+  emailSource String? @default("manual") @map("email_source") @db.VarChar(20)
+
   tenant       Tenant        @relation(fields: [tenantId], references: [id])
   kolCampaigns KolCampaign[]
   emailLogs    EmailLog[]
@@ -176,29 +183,39 @@ model Kol {
 // ============================================================
 
 model Campaign {
-  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId       String    @map("tenant_id") @db.Uuid
-  name           String
-  game           String?
-  markets        String[]
-  status         String    @default("draft")
-  budgetAmount   Decimal?  @map("budget_amount") @db.Decimal(12, 2)
-  budgetCurrency String    @default("USD") @map("budget_currency")
-  kpiTarget      Json?     @map("kpi_target") @db.JsonB
-  startDate      DateTime? @map("start_date") @db.Date
-  endDate        DateTime? @map("end_date") @db.Date
-  ownerUserId    String    @map("owner_user_id") @db.Uuid
-  openRate       Decimal?  @map("open_rate") @db.Decimal(5, 4)
-  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
-  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId        String    @map("tenant_id") @db.Uuid
+  name            String
+  game            String?
+  markets         String[]
+  status          String    @default("draft")
+  budgetAmount    Decimal?  @map("budget_amount") @db.Decimal(12, 2)
+  budgetCurrency  String    @default("USD") @map("budget_currency")
+  kpiTarget       Json?     @map("kpi_target") @db.JsonB
+  startDate       DateTime? @map("start_date") @db.Date
+  endDate         DateTime? @map("end_date") @db.Date
+  ownerUserId     String    @map("owner_user_id") @db.Uuid
+  openRate        Decimal?  @map("open_rate") @db.Decimal(5, 4)
+  // BM2-F001 extensions per audit #D (product_id TEXT, not UUID, to match Product.id cuid).
+  productId       String?   @map("product_id") // FK product(id); matches cuid column type
+  spendTotal      Decimal   @default(0) @map("spend_total") @db.Decimal(12, 2) // Σ kolCampaign.kolFee, maintained in app
+  revenueRecorded Decimal?  @map("revenue_recorded") @db.Decimal(12, 2)
+  startedAt       DateTime? @map("started_at") @db.Timestamptz
+  closedAt        DateTime? @map("closed_at") @db.Timestamptz
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz
 
-  tenant       Tenant        @relation(fields: [tenantId], references: [id])
-  owner        User          @relation("CampaignOwner", fields: [ownerUserId], references: [id])
-  kolCampaigns KolCampaign[]
-  emailLogs    EmailLog[]
+  tenant          Tenant           @relation(fields: [tenantId], references: [id])
+  owner           User             @relation("CampaignOwner", fields: [ownerUserId], references: [id])
+  product         Product?         @relation(fields: [productId], references: [id])
+  kolCampaigns    KolCampaign[]
+  emailLogs       EmailLog[]
+  campaignMetrics CampaignMetric[]
 
   @@index([tenantId, status, startDate])
+  @@index([tenantId, productId])
+  @@index([tenantId, status, closedAt(sort: Desc)])
   @@map("campaign")
 }
 
@@ -207,7 +224,10 @@ model KolCampaign {
   tenantId       String    @map("tenant_id") @db.Uuid
   kolId          String    @map("kol_id") @db.Uuid
   campaignId     String    @map("campaign_id") @db.Uuid
-  status         String    @default("candidate")
+  // BM2-F001 audit #E: default was "candidate" (B0); changed to "pending"
+  // for the new 6-value contact lifecycle (pending/contacted/quoted/
+  // signed/delivered/paid). Validated at zod level, not DB CHECK.
+  status         String    @default("pending")
   matchScore     Int?      @map("match_score")
   matchReasoning Json?     @map("match_reasoning") @db.JsonB
   contactedAt    DateTime? @map("contacted_at") @db.Timestamptz
@@ -231,25 +251,27 @@ model KolCampaign {
 //  Email
 // ============================================================
 
+// BM2-F001 audit #A+#B: EmailTemplate table rebuilt (B0 shape dropped).
+// Key change: tenantId is now nullable — rows with tenantId=null are
+// "system" templates visible across tenants. App code reads via a union
+// filter (tenantId=:tenant OR tenantId IS NULL).
 model EmailTemplate {
-  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId  String    @map("tenant_id") @db.Uuid
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String?  @map("tenant_id") @db.Uuid
   name      String
   subject   String
-  bodyHtml  String    @map("body_html")
-  bodyText  String    @map("body_text")
-  variables Json?     @db.JsonB
-  locale    String    @default("en")
-  category  String    @default("outreach")
-  createdBy String    @map("created_by") @db.Uuid
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+  body      String   @db.Text
+  variables Json     @db.JsonB
+  locale    String   @default("en") @db.VarChar(5)
+  type      String   @default("system") @db.VarChar(20)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  tenant  Tenant @relation(fields: [tenantId], references: [id])
-  creator User   @relation("TemplateAuthor", fields: [createdBy], references: [id])
+  tenant    Tenant?    @relation(fields: [tenantId], references: [id])
+  emailLogs EmailLog[]
 
-  @@index([tenantId, locale, category])
+  @@index([tenantId, type])
+  @@index([type, locale])
   @@map("email_template")
 }
 
@@ -271,10 +293,13 @@ model EmailLog {
   openedAt          DateTime? @map("opened_at") @db.Timestamptz
   repliedAt         DateTime? @map("replied_at") @db.Timestamptz
   bounceReason      String?   @map("bounce_reason")
+  // BM2-F001 audit #F3: flag AI-customized sends for PRD §2.2 adoption metric.
+  aiCustomized      Boolean   @default(false) @map("ai_customized")
   createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
 
-  campaign Campaign? @relation(fields: [campaignId], references: [id])
-  kol      Kol?      @relation(fields: [kolId], references: [id])
+  campaign Campaign?      @relation(fields: [campaignId], references: [id])
+  kol      Kol?           @relation(fields: [kolId], references: [id])
+  template EmailTemplate? @relation(fields: [templateId], references: [id])
 
   @@index([tenantId, campaignId, status])
   @@index([tenantId, kolId])
@@ -380,8 +405,68 @@ model Product {
   createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  campaigns Campaign[]
 
   @@index([tenantId])
   @@map("product")
+}
+
+// ============================================================
+//  Campaign metrics (BM2-F001)
+//
+//  Time-series ROI input. MVP accepts manual entries; B2 will layer
+//  automated sources (youtube-api / ga4). Tenant-scoped with the
+//  NULLIF-guarded RLS policy; attributed revenue is signed decimal so
+//  corrections can be recorded as negative rows.
+// ============================================================
+
+model CampaignMetric {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId          String   @map("tenant_id") @db.Uuid
+  campaignId        String   @map("campaign_id") @db.Uuid
+  recordedAt        DateTime @default(now()) @map("recorded_at") @db.Timestamptz
+  impressions       Int?
+  clicks            Int?
+  conversions       Int?
+  attributedRevenue Decimal? @map("attributed_revenue") @db.Decimal(12, 2)
+  source            String   @default("manual") @db.VarChar(20)
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, campaignId, recordedAt(sort: Desc)])
+  @@map("campaign_metric")
+}
+
+// ============================================================
+//  Weekly reports (BM2-F001)
+//
+//  Snapshot of the AI-generated weekly brief. Stored as rendered
+//  markdown plus the structured input used to build it (so the same
+//  report can be re-rendered without calling the AI again). Share
+//  tokens are opaque 32-char strings; BM2-F010's anonymous /shared/
+//  route queries via a superuser connection that bypasses RLS, so the
+//  standard NULLIF-guarded tenant policy still holds for in-app reads.
+// ============================================================
+
+model WeeklyReport {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId            String    @map("tenant_id") @db.Uuid
+  weekStart           DateTime  @map("week_start") @db.Date
+  weekEnd             DateTime  @map("week_end") @db.Date
+  locale              String    @default("en") @db.VarChar(5)
+  contentMd           String    @map("content_md") @db.Text
+  summaryJson         Json?     @map("summary_json") @db.JsonB
+  shareToken          String?   @unique @map("share_token") @db.VarChar(32)
+  shareTokenExpiresAt DateTime? @map("share_token_expires_at") @db.Timestamptz
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  createdByUserId     String    @map("created_by_user_id") @db.Uuid
+
+  tenant    Tenant @relation(fields: [tenantId], references: [id])
+  createdBy User   @relation("WeeklyReportCreator", fields: [createdByUserId], references: [id])
+
+  @@index([tenantId, weekEnd(sort: Desc)])
+  @@map("weekly_report")
 }

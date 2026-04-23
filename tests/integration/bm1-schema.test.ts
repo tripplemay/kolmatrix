@@ -31,7 +31,7 @@ afterAll(async () => {
 beforeEach(async () => {
   await cleanDb();
   // cleanDb() sweeps business tables but not product/event_log/audit_log.
-  await getAdminPrisma().$executeRawUnsafe(`TRUNCATE TABLE "product"`);
+  await getAdminPrisma().$executeRawUnsafe(`TRUNCATE TABLE "product" CASCADE`);
 });
 
 describe("product table", () => {

@@ -53,9 +53,9 @@ async function seedTenant(label: string): Promise<SeedResult> {
       tenantId: tenant.id,
       name: `template-${label}`,
       subject: "Hi",
-      bodyHtml: "<p>Hi</p>",
-      bodyText: "Hi",
-      createdBy: user.id,
+      body: "Hi",
+      variables: [],
+      type: "user",
     },
   });
   const emailLog = await admin.emailLog.create({

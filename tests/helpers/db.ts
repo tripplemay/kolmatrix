@@ -141,8 +141,10 @@ export async function cleanDb(): Promise<void> {
   const admin = getAdminPrisma();
   await admin.$executeRawUnsafe(
     `TRUNCATE TABLE
+       "weekly_report", "campaign_metric",
        "email_log", "email_template",
        "kol_campaign", "campaign",
+       "product",
        "kol",
        "account", "session", "user",
        "tenant",

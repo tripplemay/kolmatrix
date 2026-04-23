@@ -359,83 +359,13 @@ async function main() {
     }
   }
 
-  const templateSeeds = [
-    {
-      name: "Outreach — gaming launch",
-      subject: "Partner with {{campaign_name}} — exclusive early access",
-      bodyHtml:
-        "<p>Hi {{kol_name}},</p><p>We're launching <strong>{{campaign_name}}</strong> and your audience in {{kol_market}} is a perfect match.</p><p>Reply if interested — full brief attached.</p>",
-      bodyText:
-        "Hi {{kol_name}},\n\nWe're launching {{campaign_name}} and your audience in {{kol_market}} is a perfect match.\n\nReply if interested — full brief attached.",
-      variables: [
-        { key: "kol_name", type: "string" },
-        { key: "campaign_name", type: "string" },
-        { key: "kol_market", type: "string" },
-      ],
-      category: "outreach",
-      locale: "en",
-    },
-    {
-      name: "Follow-up — 72h nudge",
-      subject: "Quick follow-up on {{campaign_name}}",
-      bodyHtml:
-        "<p>Hi {{kol_name}}, circling back on our note about {{campaign_name}}. Happy to adjust the deliverables — just let us know.</p>",
-      bodyText:
-        "Hi {{kol_name}}, circling back on our note about {{campaign_name}}. Happy to adjust the deliverables — just let us know.",
-      variables: [
-        { key: "kol_name", type: "string" },
-        { key: "campaign_name", type: "string" },
-      ],
-      category: "followup",
-      locale: "en",
-    },
-    {
-      name: "Accept — partnership confirmed",
-      subject: "Welcome aboard for {{campaign_name}}",
-      bodyHtml:
-        "<p>Hi {{kol_name}},</p><p>Excited to have you on the <strong>{{campaign_name}}</strong> roster. Contract and brief are attached — kickoff call scheduled {{kickoff_date}}.</p>",
-      bodyText:
-        "Hi {{kol_name}},\n\nExcited to have you on the {{campaign_name}} roster. Contract and brief are attached — kickoff call scheduled {{kickoff_date}}.",
-      variables: [
-        { key: "kol_name", type: "string" },
-        { key: "campaign_name", type: "string" },
-        { key: "kickoff_date", type: "string" },
-      ],
-      category: "accept",
-      locale: "en",
-    },
-    {
-      name: "Decline — not a fit this cycle",
-      subject: "Appreciate the look at {{campaign_name}}",
-      bodyHtml:
-        "<p>Hi {{kol_name}}, thanks for reviewing <strong>{{campaign_name}}</strong>. We'll keep your profile close for the next cycle.</p>",
-      bodyText:
-        "Hi {{kol_name}}, thanks for reviewing {{campaign_name}}. We'll keep your profile close for the next cycle.",
-      variables: [
-        { key: "kol_name", type: "string" },
-        { key: "campaign_name", type: "string" },
-      ],
-      category: "decline",
-      locale: "en",
-    },
-  ];
-
-  for (const template of templateSeeds) {
-    const existing = await prisma.emailTemplate.findFirst({
-      where: { tenantId: tenant.id, name: template.name },
-      select: { id: true },
-    });
-    if (existing) {
-      await prisma.emailTemplate.update({
-        where: { id: existing.id },
-        data: template,
-      });
-    } else {
-      await prisma.emailTemplate.create({
-        data: { ...template, tenantId: tenant.id, createdBy: marketer.id },
-      });
-    }
-  }
+  // BM2-F001: email_template table was rebuilt (DROP + CREATE) with a
+  // new shape (tenantId nullable → system/user split, single `body`
+  // column, `type` column instead of `category`). The B0 tenant-scoped
+  // seed rows that used to live here are superseded by the dedicated
+  // BM2-F002 seed (scripts/seed-email-templates.ts) that plants 10
+  // system templates (5 × en/zh). Nothing to seed from this script.
+  const seededTemplateCount = 0;
 
   // ----- Email logs (F007 Dashboard KPI + chart) -----
   // Idempotent: clear prior seeded logs for this tenant before repopulating so
@@ -487,7 +417,7 @@ async function main() {
     users: [admin.email, marketer.email],
     kols: KOLS.length,
     campaigns: campaignSeeds.length,
-    templates: templateSeeds.length,
+    templates: seededTemplateCount,
     emailLogs: EMAIL_LOG_COUNT,
   });
 }

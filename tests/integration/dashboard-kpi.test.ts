@@ -42,7 +42,7 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await cleanDb();
-  await getAdminPrisma().$executeRawUnsafe(`TRUNCATE TABLE "product"`);
+  await getAdminPrisma().$executeRawUnsafe(`TRUNCATE TABLE "product" CASCADE`);
 });
 
 describe("fetchDashboardData()", () => {
