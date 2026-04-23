@@ -62,7 +62,7 @@
       "title": "Browser locale auto-detection + i18n 键补齐",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "next-intl routing 配置 localeDetection: true（响应 MVP PRD §13 Q7 自动按浏览器语言跳）；根路径 / 未命中 locale 时检测 Accept-Language 匹配 en/zh 跳对应 /en/ 或 /zh/，其他 locale 回退 en；messages/en.json + zh.json BM1 所有新 keys 齐（knowledge-base.*/discovery.*/database.*/kol-profile.*/dashboard.*）；messages/{ja,ko,es}.json 加 key stub（值 = en 原文 + TODO 标记防 MISSING_MESSAGE）；cookie 记住用户手动切换；tests/e2e/locale-detection.spec.ts Chrome 语言 zh-CN → 访问 / → 跳 /zh/；语言 ja → 回退 /en/；手动切换 cookie 记住"
     },
     {

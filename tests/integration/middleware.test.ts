@@ -18,7 +18,13 @@ import { describe, expect, it } from "vitest";
 // Pure helpers live in @/middleware-helpers so the test doesn't have to
 // boot NextAuth (which needs `next/server` and a runtime env that Vitest
 // cannot provide outside a full Next build).
-const { PROTECTED_PREFIXES, isProtected, stripLocale } = await import("@/middleware-helpers");
+const {
+  PROTECTED_PREFIXES,
+  isProtected,
+  stripLocale,
+  detectLocaleFromAcceptLanguage,
+  DETECTABLE_LOCALES,
+} = await import("@/middleware-helpers");
 
 describe("PROTECTED_PREFIXES", () => {
   it("contains every authed top-level route in B0 + is alphabet-stable", () => {
@@ -95,5 +101,57 @@ describe("dashboard gate — composed decision", () => {
     const bare = stripLocale("/en/dashboard");
     const authed = true;
     expect(isProtected(bare) && !authed).toBe(false);
+  });
+});
+
+describe("detectLocaleFromAcceptLanguage (BM1-F008)", () => {
+  it("exposes the en/zh allowlist (ja/ko/es stay manual-only)", () => {
+    expect([...DETECTABLE_LOCALES]).toEqual(["zh", "en"]);
+  });
+
+  it("picks zh for zh-CN header", () => {
+    expect(detectLocaleFromAcceptLanguage("zh-CN,zh;q=0.9")).toBe("zh");
+  });
+
+  it("picks en for en-US header", () => {
+    expect(detectLocaleFromAcceptLanguage("en-US,en;q=0.9")).toBe("en");
+  });
+
+  it("honors q-weights even when an allowlist locale is listed later", () => {
+    // fr is highest but not allowlisted; zh wins because q > en's q.
+    expect(
+      detectLocaleFromAcceptLanguage("fr-FR;q=0.9,zh-CN;q=0.8,en;q=0.6")
+    ).toBe("zh");
+  });
+
+  it("falls back to en when Accept-Language lists only non-allowlisted locales", () => {
+    // ja/ko/es are declared locales but auto-detection funnels unseeded
+    // users to en until those translations land.
+    expect(detectLocaleFromAcceptLanguage("ja-JP,ja;q=0.9")).toBe("en");
+    expect(detectLocaleFromAcceptLanguage("ko-KR,ko;q=0.9")).toBe("en");
+    expect(detectLocaleFromAcceptLanguage("es-ES,es;q=0.9")).toBe("en");
+  });
+
+  it("falls back to en for missing / empty / malformed headers", () => {
+    expect(detectLocaleFromAcceptLanguage(null)).toBe("en");
+    expect(detectLocaleFromAcceptLanguage(undefined)).toBe("en");
+    expect(detectLocaleFromAcceptLanguage("")).toBe("en");
+    expect(detectLocaleFromAcceptLanguage(",,,")).toBe("en");
+  });
+
+  it("treats a broken q-value as q=1 without throwing", () => {
+    // Defensive: a malformed client header must not 500 the middleware.
+    expect(detectLocaleFromAcceptLanguage("zh;q=notanumber")).toBe("zh");
+  });
+
+  it("collapses regional variants to the base tag before matching", () => {
+    expect(detectLocaleFromAcceptLanguage("zh-TW")).toBe("zh");
+    expect(detectLocaleFromAcceptLanguage("en-GB")).toBe("en");
+  });
+
+  it("breaks q-ties by header order", () => {
+    // en and zh both q=1 (implicit) — first entry wins.
+    expect(detectLocaleFromAcceptLanguage("en-US,zh-CN")).toBe("en");
+    expect(detectLocaleFromAcceptLanguage("zh-CN,en-US")).toBe("zh");
   });
 });
