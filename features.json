@@ -22,7 +22,7 @@
       "title": "Campaigns 列表页 /campaigns",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/app/[locale]/(app)/campaigns/page.tsx 对齐 Stitch campaigns-list.html；canonical App Shell active=Campaigns；顶部 title + '新建 Campaign' 主按钮跳 F004；filter 栏 status (all/draft/active/completed) + search by name；列表卡片（name / product / status badge 颜色区分 draft=灰 active=cyan completed=绿 / KOL 数 / spendTotal / ROI% 仅 completed 显示 / 起止日 / 点卡进详情）；空态插画 + '还没有 Campaign' 引导；API GET /api/campaigns?status=&cursor=&limit=20 用 BI4-F004 cursor util；i18n campaigns.* 全译；tests/integration/campaigns-list.test.ts cursor + filter + RLS；visual /en/campaigns baseline"
     },
     {
