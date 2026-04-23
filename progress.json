@@ -1,33 +1,42 @@
 {
-  "status": "done",
-  "user_goal": "MVP 前最后一棒架构护栏（5 features 独立 infra）：Async Job Queue interface + in-memory stub / event_log 表 + helper / audit_log 表 + helper / Cursor pagination util / KOL tsvector 全文搜索索引 migration。完成后 BM1/BM2 业务批次可直接调用这些基建，零架构返工。",
-  "total_features": 5,
-  "completed_features": 5,
+  "status": "building",
+  "user_goal": "MVP 业务批次 1/2 - 控制台 + KOL 核心：Product 知识库页（含 AI 素材生成）+ KOL Discovery 15 维筛选页 + KOL Database 列表 + KOL 画像页 + Dashboard 真数据对接 + browser locale auto-detection。完成后 MVP 4 功能中 2 个（控制台 + 筛选 KOL）达成，剩下联系 + ROI 留 BM2。9 features，估 7-10 天。",
+  "total_features": 9,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "BI4-architectural-guardrails",
-  "last_updated": "2026-04-23T12:55+0800",
+  "current_sprint": "BM1-console-kol-core",
+  "last_updated": "2026-04-23T13:00+0800",
   "reference_docs": [
-    "docs/specs/BI4-architectural-guardrails-spec.md",
+    "docs/specs/BM1-console-kol-core-spec.md",
     "docs/product/KOLMatrix-MVP-PRD.md",
+    "docs/specs/BI4-architectural-guardrails-spec.md",
+    "docs/kol-seed-enriched-final.json",
+    "design-draft/stitch-references/dashboard.html",
+    "design-draft/stitch-references/kol-discovery.html",
+    "design-draft/stitch-references/kol-database.html",
+    "design-draft/stitch-references/kol-detail.html",
+    "design-draft/stitch-references/knowledge-base.html",
     "framework/harness/database-patterns.md",
     "framework/harness/deploy-patterns.md",
-    "docs/specs/B0-database-schema.md",
-    "docs/specs/BI1-test-infrastructure-spec.md",
     "harness-rules.md"
   ],
   "docs": {
-    "spec": "docs/specs/BI4-architectural-guardrails-spec.md",
+    "spec": "docs/specs/BM1-console-kol-core-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/BI4-architectural-guardrails-signoff-2026-04-23.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
-  "role_assignments": null,
+  "role_assignments": {
+    "planner": "Kimi",
+    "generator": "johnsong",
+    "evaluator": "Reviewer"
+  },
   "evaluator_feedback": null,
-  "generator_handoff": "[Planner 2026-04-23 批次启动说明] BI4 架构护栏批次，5 个独立 infra features，无业务逻辑，全后端+helper+migration。全部互相独立（F005 只依赖 F007 ROLLBACK SQL 校验机制，已在 BI2 建立），Generator 可线性按 F001→F005 做。开工前必读：docs/specs/BI4-architectural-guardrails-spec.md 全文 + framework/harness/database-patterns.md（§2 migration 命名 / §1 RLS NULLIF — 本批 event_log/audit_log 无 RLS，不适用 §1）+ framework/harness/deploy-patterns.md（staging 部署 验证机制）。语义约束：1) 日志 helper（event/audit）都用 fire-and-forget 失败 swallow，主流程不阻塞（audit log 失败仍打 stderr）；2) Job Queue interface 设计要保证 B5 换 BullMQ 时零调用点改动 —— payload 必须 JSON-safe，handler 异步签名；3) Cursor pagination 是 base64 URL-safe，前端不解析只透明传递；4) tsvector trigger 维护，不靠 app 层（防一致性漂移）；5) 所有新 migration 严格走 F007 ROLLBACK SQL 校验；所有新 table 无 RLS（event/audit 是平台级记录）。pre-impl 审计 → Planner 裁决模式继续适用，spec 有歧义先发审计请求不要凭印象。Planner 在 Generator 开工同时并行写 BM1 spec。",
+  "generator_handoff": "[Planner 2026-04-23 批次启动] BM1 是 MVP 第一个业务批次（9 features），依赖 BI4 基建 helper（cursor pagination / event_log / audit_log / Job Queue / tsvector helper）。执行顺序：F001 schema 先 → F002 seed → F003/F004 并行 → F005 → F006 → F007 → F008 → F009 测试聚合。\n\n**关键语义约束（响应 MVP PRD §11 & §13）：**\n1. Product.uniqueSellingPoints **强制必填**（zod required + UI cyan 星号），没 USP AI 素材生成质量差\n2. 登录 'Continue with Google' 按钮 BAux1 已 disabled，本批次不动\n3. Google OAuth 不接真后端（§11 决策）\n4. i18n en+zh 必出译，ja/ko/es stub 防 MISSING_MESSAGE\n5. 15 维 filter schema 前置完整，UI 暴露全量，缺数据维度返回 0 结果 + 空态友好提示（不是隐藏 filter，让用户感知产品规划）\n6. Browser locale detection 响应 §13 Q7 automatic\n7. KOL 价值分 MVP 用简单公式（不调 AI），aigcgateway 只在 Product AI 素材生成用\n8. AI 匹配分（KOL×Product）**不做 MVP**，Kol.matchScore 字段留空\n9. isSaved 字段控制 KOL 是否出现在 /database（/discovery 勾保存→isSaved=true）\n10. 中国大陆 region 映射：'美国'→US / '英国'→GB / '巴基斯坦'→PK 等（F002 spec 完整映射表）\n\n**BI4 基建复用（感恩）：**\n- cursor pagination util（F004/F005）\n- event_log helper（F003 product 创建事件 / F004 KOL 保存事件埋点）\n- audit_log helper（F006 关系状态变更埋点）\n- tsvector searchKols helper（F004 搜索用）\n- Job Queue interface（F003 AI 生成异步 register 'generate-ai-assets' handler，同步执行 MVP 够用）\n\n**VPS artifact in-git 核对（framework v0.9.3 §2.4 新要求）：** Generator 创建的脚本 / config 必须 push 回 git；签收时 Reviewer 会 ssh 跑 `git ls-files <path>` 核对，空输出不签收。\n\n**Planner 并行动作：** BM1 building 期间 Planner 起草 BM2 spec + 创建 aigcgateway 3 个 Action（kol-email-customize / roi-insights / weekly-report-for-client）；BM2 启动时零前置阻塞。",
   "session_notes": {
-    "Kimi": "BI4 架构护栏批次启动（MVP 前最后一棒 infra，之后直接进业务批次 BM1/BM2）。用户 2026-04-23 确认启动。5 features 全独立 infra，2-3 天 Generator 工作量。本批次通过 session 讨论明确拆分：7 条总 guard rails 中 5 条（Job Queue / event_log / audit_log / Cursor / tsvector）独立做，另 2 条（EmailTemplate 表化 / Source adapter）因需业务上下文嵌入 MVP 批次。完成后 BM1/BM2 直接调用这些基建，业务 spec 不需重复定义基础设施。MVP 总时间线 32-37 天目标，BI4 完成后进 BM1（9 features）再 BM2（13 features）。Planner 并行进入 BM1 spec 起草。",
-    "johnsong": "BI4 building 全部完成（5/5 features）。F001 job queue + F002 event_log + F003 audit helper（按裁决 #A:D 沿用 B0 AuditLog 表）+ F004 cursor paginator + F005 KOL tsvector。开工发现 F003/F005 spec 冲突，发 pre-impl 审计（docs/specs/BI4-f003-f005-preimpl-audit.md），Planner Kimi 同意 Generator 全部建议。测试统计：F001 6 unit / F002 4 integration / F003 5 integration / F004 8 unit / F005 6 integration = 29 新增测试全绿。进入 verifying 交 Reviewer。注意点：F005 EXPLAIN ANALYZE 验证 GIN 索引使用必须在事务中 SET LOCAL enable_seqscan=off 强制（小数据集 planner 偏 seq scan）；生产大表会自然走 GIN。",
-    "Reviewer": "2026-04-23 BI4 verifying：L1 smoke 通过；coverage(33/33,115) + integration(11/11,64) + codex-e2e(15 pass,3 skip) 全通过；新增 BI4 integration 用例 audit-log/kol-tsvector 通过。已输出 signoff 并收敛 done。"
+    "Kimi": "BM1 业务批次启动。前置（基建 + 数据 + 设计）零阻塞：B0/BI1/BI2/BI3/BAux1/BI4 全 done / KOL seed 415 gaming 入库 / Stitch 18 张设计稿全就绪 / MVP PRD v1.0 + §13 8 答复全锁定 / framework v0.9.3 最新规则（deploy-patterns §2 VPS artifact in-git 必检）。本批次 9 features 估 7-10 天。完成后 MVP 4 功能达成 2 个（控制台 + 筛选），剩下联系+ROI 留 BM2。AI 匹配分不做 MVP（字段保留），KOL 价值分用简单公式（不调 AI），只 Product AI 素材生成用 aigcgateway。Planner 并行起草 BM2 spec + 建 aigcgateway 3 个 Action。",
+    "johnsong": null,
+    "Reviewer": null
   },
   "features": []
 }

@@ -1,45 +1,77 @@
 {
-  "sprint": "BI4-architectural-guardrails",
+  "sprint": "BM1-console-kol-core",
   "features": [
     {
       "id": "F001",
-      "title": "Async Job Queue interface + in-memory stub executor",
+      "title": "Prisma schema 扩展：Product + Kol 15 维 + CampaignKol.kolFee",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "src/lib/jobs/queue.ts 定义 JobQueue interface + JobPayload/JobOptions/JobHandler 类型 + InMemoryJobQueue 实现类（同步执行 handler，支持 idempotencyKey 去重、delay 延迟、tenantId scope）；导出全局单例 jobQueue；register<P>(name, handler) / add<P>(name, payload, options) / stats() 三 API；src/lib/jobs/handlers/register.ts 作为 handler 注册中心（MVP 为空留给 BM2）；instrumentation.ts import handlers/register 确保注册；tests/unit/jobs/queue.test.ts ≥ 5 cases 覆盖 register+add+handler 执行 / idempotencyKey 去重 / stats 准确 / handler throws 不崩主流程 / 未注册 name 给 warn log；TypeScript 泛型推导正确（jobQueue.add<SendEmailPayload> 推 payload type）"
+      "status": "pending",
+      "acceptance": "新增 model Product（id cuid / tenantId @db.Uuid / name / category / targetAudience? Text / uniqueSellingPoints Text 必填 / downloadUrl? / launchDate? Date / aiAssets? Json / timestamps；@@index([tenantId]); @@map product）+ RLS tenant_isolation policy 用 NULLIF 兜底；Kol 扩展 15 维 filter nullable 字段（language/engagementRate/avgViewsPerVideo/uploadsPerMonth/lastUploadAt/monetizationStatus/brandSafetyRating/knownBrandCollabs String[]/audienceDemographics Json/engagementAuthenticity）+ 核心字段（valueScore/tags/relationshipStatus default 'prospect'/isGaming default true/isSaved default false/aiTaggedAt/aiTagConfidence）；CampaignKol 加 kolFee Decimal?/matchScore Int?（BM1 不用但 schema 一起做）；migration 20260424100000_bm1_schema 含 CREATE TABLE product + RLS + ALTER TABLE kol ADD COLUMN × 15 + ALTER TABLE campaign_kol ADD COLUMN × 2 + 完整 ROLLBACK SQL（F007 校验通过）；tsvector trigger 不改（BI4-F005 的 display_name/handle/categories/bio 已够）；tests/integration/bm1-schema.test.ts Product CRUD + RLS 跨租户隔离 / Kol 新字段读写 / CampaignKol.kolFee 读写"
     },
     {
       "id": "F002",
-      "title": "event_log 表 + logEvent() helper",
+      "title": "KOL seed 脚本入库 415 gaming + 2109 non-gaming",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "prisma/schema.prisma 追加 model EventLog（id cuid / tenantId? / actorId? / type 64 / resourceId? 64 / payload Json / createdAt；@@index([tenantId,type,createdAt]) + @@index([resourceId]); @@map event_log）；migration 20260424000000_event_log 含完整 ROLLBACK SQL（F007 校验）；无 RLS（平台级记录）；src/lib/events/log.ts 导出 logEvent(data: EventData) fire-and-forget helper（失败 console.error 不抛）；tests/integration/event-log.test.ts ≥ 3 cases：logEvent → DB 记录 / DB 不可达时主流程不崩 / 查询 by tenant+type+时间范围；prisma.eventLog Client 生成后 TS 可用"
+      "status": "pending",
+      "acceptance": "scripts/seed-kol-from-enriched.ts 读 docs/kol-seed-enriched-final.json 逐条 upsert（unique: tenantId+platform+handle）；字段映射 platform 'Youtube'→YOUTUBE enum / name→display_name / url 提取 @handle / region 中文→ISO 2-letter（美国 US / 英国 GB / 巴基斯坦 PK / 加拿大 CA / 德国 DE / 越南 VN / 台湾 TW / 乌克兰 UA / 日本 JP / 伊拉克 IQ / 多米尼加 DO）/ followers→follower_count / is_gaming→isGaming / categories→Kol.categories String[] / confidence→aiTagConfidence / aiTaggedAt=now；固定 tenantId=demo tenant UUID；valueScore 按公式计算（log10(followers)*15 cap 50 + engagementScore 15 + categoryScore min(20, count*8) → 0-100）；src/lib/kol/valueScore.ts 公式 + 单测 5 cases；package.json 加 seed:kol script；prisma.config.ts 注册；idempotent（再跑不重复）；tests/integration/kol-seed.test.ts: count=2524, gaming=415, non_gaming=2109, valueScore 非 null, 粉丝数大的分数高"
     },
     {
       "id": "F003",
-      "title": "audit_log 表 + logAudit() helper",
+      "title": "Product 知识库页 /knowledge-base + AI 素材生成",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "【2026-04-23 裁决 #A:D 修订】沿用 B0 init 已创建的 audit_log 表（prisma schema.prisma:259-274 AuditLog model，resource_type/resource_id/payload/actor_user_id），**不新建 migration**；src/lib/audit/log.ts 新建 logAudit(data: AuditData) helper（AuditData 接口 actorId TS 强制必填 string，映射到 actor_user_id；targetType/targetId → resource_type/resource_id；before+after 合并存 payload Json 如 {before,after,sanitizedFields?}；ipAddress/userAgent 直落 B0 同名列；失败 console.error 不抛主流程）；tests/integration/audit-log.test.ts ≥ 3 cases：logAudit 成功 → 查 audit_log payload 含 before+after / actorId 缺失 TS 编译报错 / 查询 by actor_user_id+时间 / 查询 by resource_type+resource_id；F007 CI 不涉及新 migration 校验（无新 migration）"
+      "status": "pending",
+      "acceptance": "src/app/[locale]/(app)/knowledge-base/page.tsx 对齐 Stitch knowledge-base.html（canonical App Shell active=Knowledge Base / 3-col product 卡网格 + 1 empty-state 卡 + Recent AI activity timeline + Create/Edit modal）；modal 8 字段表单（name*/category*/targetAudience?/**uniqueSellingPoints* cyan 星号强制必填 zod required 响应 MVP PRD §13 Q5**/downloadUrl?/launchDate?/platforms multi-select/generateImmediately checkbox）；Server Action createProduct(formData) zod 校验 + prisma.product.create + 如勾 generate 则调 aigcgateway chat (model=claude-haiku-4.5) 生成 3 emailTemplates + 2 videoScripts 存 Product.aiAssets Json；src/lib/products/generateAiAssets.ts 封装（fire-and-forget，失败 log 不阻塞产品保存）；i18n knowledge-base.* en+zh 全译；RLS 跨租户隔离验证；tests/integration/product-flow.test.ts（create → AI assets 写入 / USP 缺失报错 / generate 失败 fallback）；visual regression /en/knowledge-base 新 baseline"
     },
     {
       "id": "F004",
-      "title": "Cursor pagination util createCursorPaginator<T>()",
+      "title": "KOL Discovery 筛选页 /discovery + 15 维 filter",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "src/lib/pagination/cursor.ts 导出 CursorPaginationParams + CursorPaginationResult<T> 类型 + createCursorPaginator<TModel, TWhere>(config) factory；封装 Prisma cursor + pageSize + orderBy + direction；cursor 用 URL-safe base64 包装 {id, sortField, sortValue}；defaultLimit 20 / maxLimit 100 可配置；tests/unit/pagination/cursor.test.ts ≥ 4 cases：分页前 3 条 / cursor 解出并继续 / hasMore false at end / limit cap 到 maxLimit / orderBy asc+desc / where filter 叠加；TypeScript 使用时泛型推导 items 为 TModel[]"
+      "status": "pending",
+      "acceptance": "src/app/[locale]/(app)/discovery/page.tsx 对齐 Stitch kol-discovery.html（canonical App Shell active=Discovery）；左 260px filter sidebar：基础 4 维平铺（粉丝数 range slider / 地区 multi-select 11 国 / 类目 multi-select 10 / 搜索 input）+ Advanced 折叠面板 11 维（language/engagementRate/avgViews/uploadsPerMonth/lastUploadRecency/monetizationStatus/brandSafetyRating/knownBrandCollabs/tags/platform/isGaming toggle 默认 true）；右 content 区：结果卡 2-3 col 网格（头像 placeholder + 名字 + 平台·粉丝·地区 + **价值分 cyan 大字** + 标签 chips + 保存按钮）；cursor pagination 用 BI4-F004 util（limit 20）；排序 dropdown（粉丝/价值分/最近添加）；Server Action searchKols(filters, cursor) Prisma where 组合 + paginator.query；空态友好提示 '选了 nullable filter 返回 0 时给 B6 YouTube API 集成提示'；i18n discovery.* 全译；tests/integration/kol-discovery.test.ts 15 维组合查询 + cursor next/prev；visual /en/discovery baseline"
     },
     {
       "id": "F005",
-      "title": "KOL tsvector 搜索索引 migration + helper",
+      "title": "KOL Database 列表 /database",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "【2026-04-23 裁决 #B:A + #C:A 修订】migration 20260424000200_kol_tsvector 含 ALTER TABLE kol ADD COLUMN search_vector tsvector + UPDATE 填充现有行 + CREATE GIN INDEX + trigger function kol_search_vector_update + BEFORE INSERT OR UPDATE trigger；**权重映射 B0 kol 实际列**：A=display_name / B=handle / C=array_to_string(categories, ' ') / D=coalesce(bio, '')；**不引用 name/tags/knownBrandCollabs（不存在于 B0 kol schema）**；country_code 不入 tsvector（裁决 #C）；ROLLBACK SQL 含 drop trigger + function + index + column（F007 校验通过）；prisma schema 加 searchVector Unsupported('tsvector')? 字段声明；src/lib/search/tsvector.ts 导出 buildKolSearchQuery(userInput) + searchKols(tenantId, query, limit?) helper（后者用 prisma.$queryRaw）；tests/integration/kol-tsvector.test.ts ≥ 3 cases：insert KOL → search_vector 自动填充 / update display_name → 自动更新 / searchKols('dota') 命中 / 空 query 不报错 / EXPLAIN ANALYZE 验证 GIN 索引被用（不顺序扫描）"
+      "status": "pending",
+      "acceptance": "src/app/[locale]/(app)/database/page.tsx 对齐 Stitch kol-database.html（canonical App Shell active=Database）；只列 isSaved=true 的 KOL；4 维简化 filter（类目/地区/relationshipStatus/搜索）；表格 | 头像名字 | 平台 | 粉丝 | 类目 | 地区 | 价值 | 关系状态 | 添加时间 | actions；行点击跳 /kols/:id；cursor pagination 用 BI4-F004；批量操作 dropdown（标签/状态/删除）MVP 只做 UI disabled + 'Coming soon' tooltip；i18n database.* 全译；tests/integration/kol-database.test.ts isSaved 保存流 + filter；visual /en/database baseline"
+    },
+    {
+      "id": "F006",
+      "title": "KOL 画像页 /kols/:id",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "src/app/[locale]/(app)/kols/[id]/page.tsx 对齐 Stitch kol-detail.html（canonical App Shell）；顶部头部 + 头像 + 名字 + 平台·粉丝·地区；Tab bar: Overview / 合作历史（BM1 empty state 'Campaign 创建后展示 (BM2)'）/ 沟通记录（empty）/ AI 价值分析（empty BM2）；Overview tab：基础信息卡（15 字段）+ 价值分大块（cyan 大字 + breakdown hover 显示 followers 50+engagement 15+categories 20=85 公式解释）+ 关系状态 dropdown 6 enum（prospect/first_contact/negotiating/long_term/paused/terminated 手动改）+ 保存 toggle（isSaved）；Server Action updateKolRelationshipStatus / toggleKolSaved；空 id→404；i18n kol-profile.* 全译；tests/integration/kol-profile.test.ts status 改动持久化 / toggle 保存；visual /en/kols/{demo-id} baseline"
+    },
+    {
+      "id": "F007",
+      "title": "控制台 / 真数据对接",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "src/app/[locale]/(app)/page.tsx 修改 B0 F007 原 dashboard 5 KPI 区块从 DB 拉真数据：1) KOL 总数 = count(kol where isGaming=true) 2) 活跃 campaigns = 0 或 '—'（BM1 无 campaigns）3) 邮件触达 = 0 或 '—' 4) Product 数 = count(product by tenant) 5) 平均 KOL 价值分 = AVG(valueScore) where isGaming=true；TOP KOL 合作概览 = top 5 by valueScore（MVP '合作次数' 显示 0 次）；快捷操作 4 按钮跳转保持；平台工作流 6 步图 + 核心能力 6 条保持；i18n dashboard.* 新 keys 齐；tests/integration/dashboard-kpi.test.ts KPI 数字准确；visual /en/dashboard baseline 更新"
+    },
+    {
+      "id": "F008",
+      "title": "Browser locale auto-detection + i18n 键补齐",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "next-intl routing 配置 localeDetection: true（响应 MVP PRD §13 Q7 自动按浏览器语言跳）；根路径 / 未命中 locale 时检测 Accept-Language 匹配 en/zh 跳对应 /en/ 或 /zh/，其他 locale 回退 en；messages/en.json + zh.json BM1 所有新 keys 齐（knowledge-base.*/discovery.*/database.*/kol-profile.*/dashboard.*）；messages/{ja,ko,es}.json 加 key stub（值 = en 原文 + TODO 标记防 MISSING_MESSAGE）；cookie 记住用户手动切换；tests/e2e/locale-detection.spec.ts Chrome 语言 zh-CN → 访问 / → 跳 /zh/；语言 ja → 回退 /en/；手动切换 cookie 记住"
+    },
+    {
+      "id": "F009",
+      "title": "Tests + Visual regression baselines + CI 8 jobs 全绿",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "test:unit ≥ 25 新 cases（valueScore 公式 / Product form / Filter / card / pagination / Dashboard KPI components）；test:integration ≥ 8 新 cases（F001/F002/F003/F004/F005/F006/F007 各覆盖）；test:e2e 新 1 文件 bm1-flow.spec.ts 8-10 步完整 flow（登录→录入 Product→发现 KOL→保存→Database→KOL 画像）；visual regression 5 张新 baseline（knowledge-base/discovery/database/kols[id]/dashboard 更新）；test:coverage lines ≥ 80% 维持；lint + tsc 无错；CI 8 jobs 全绿；VPS artifact in-git 核对（framework v0.9.3 §2.4）：git ls-files scripts/seed-kol-from-enriched.ts 非空 + src/app/[locale]/(app)/knowledge-base/page.tsx 非空"
     }
   ]
 }
