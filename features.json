@@ -14,7 +14,7 @@
       "title": "EmailTemplate seed 5 套系统模板 × en/zh",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "scripts/seed-email-templates.ts（开头加 import 'dotenv/config'; 借鉴 BL-001 教训）tenantId=null / type='system'；5 套 × en+zh=10 行：初次询价 Initial Outreach / 跟进提醒 Follow-up / 签约邀请 Partnership Invitation / 拒绝跟进 Polite Decline / 已合作回访 Post-Collab Check-in；variables JSON 含 {{kol.name}} {{kol.handle}} {{product.name}} {{product.category}} {{product.usp}} {{marketer.name}}；模板正文 en 100-180 词 / zh 100-180 字；package.json 加 seed:email-templates；prisma.config.ts 接入；幂等（upsert by tenantId+name+locale 或 type+name+locale）；tests/integration/email-template-seed.test.ts count=10 / 双语对齐 / variables 非空"
     },
     {
