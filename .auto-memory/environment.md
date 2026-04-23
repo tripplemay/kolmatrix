@@ -34,9 +34,9 @@ type: reference
 - **MCP 端点：** `https://aigc.guangai.ai/mcp`（25 tools）
 - **SDK：** `@guangai/aigc-sdk`（零依赖，Node 18+）
 - **内网 URL：** `http://localhost:3099/v1/`（同 VM 走内网，生产用，零公网延迟）
-- **KOLMatrix API Key：** `TBD`（B2 启动前由用户在 aigcgateway 控制台生成 pk_xxx，分 dev/prod 两份）
-- **月预算：** $100 USD（B2-B4 初期）
-- **Actions 清单（B2 spec 阶段创建）：** `kol-eval-bulk` / `kol-eval-precision` / `kol-campaign-match` / `email-personalize`
+- **KOLMatrix API Key：** `pk_babac...` (name: admintest, active, 2026-04-23 跨 staging + prod 共用单 key；长期建议拆 dev/prod 两份但当前足够)
+- **月预算：** $100 USD（B2-B4 初期；当前余额 $49.60 @ 2026-04-23）
+- **Actions 清单：** BM2 使用 `kol-email-customize` / `roi-insights` / `weekly-report-for-client`（2026-04-23 Planner 创建 + 验证通过）；早期 B2 设想的 kol-eval-bulk/precision/campaign-match/email-personalize 未启用（MVP 未走 AI 匹配路线）
 - **集成决策：** 见 ADR-009
 
 ## 生产服务器（与 aigcgateway 共机）
@@ -70,10 +70,19 @@ type: reference
 - **Admin:** `admin@kolmatrix.local` / `KOLM@2026!` / API Key: `TBD`
 - **Marketer:** `marketer@kolmatrix.local` / `KOLM@2026!` / API Key: `TBD`
 
-## VPS `.env.production` 待补 secrets（bootstrap 时占位 `TBD-set-later-via-pm2-reload`）
+## VPS env 文件当前 secrets 状态（2026-04-23 Planner 验证）
 
-- `AIGCGATEWAY_API_KEY` — B2 启用 aigcgateway 调用前由用户从 aigcgateway 控制台生成 `pk_xxx`，`ssh + sudo vi .env.production` 改完 `pm2 reload kolmatrix --update-env` 即生效
-- `RESEND_API_KEY` — B4 启用邮件前同上流程
+| Key | `/opt/kolmatrix/.env.production` | `/opt/kolmatrix-staging/.env.staging` | 备注 |
+|---|---|---|---|
+| `AIGCGATEWAY_API_KEY` | ✅ 已配（`pk_bab...` 67 chars） | ✅ 已配（同 key） | 共用 "admintest" key；2026-04-23 从 staging VM 直 curl `/v1/models` 200 OK |
+| `RESEND_API_KEY` | ✅ 已配（`re_QEA...` 36 chars） | ✅ 已配（同 key） | 未在本次验证真发邮件，仅确认非 placeholder |
+
+**修改流程（如未来需要换 key）：**
+```bash
+ssh tripplezhou@34.180.93.185
+sudo vi /opt/kolmatrix-staging/.env.staging   # 或 /opt/kolmatrix/.env.production
+pm2 reload kolmatrix-staging --update-env     # 或 pm2 reload kolmatrix --update-env
+```
 
 DB 已 seed？**未**。prod DB 是空壳（迁移已 apply，无业务数据）。首次登录 flow 依赖 Sarah Chen / Admin 种子；真正上线时：
 ```bash
