@@ -14,7 +14,7 @@
       "title": "登录页 UI 重写（58/42 cinematic + world map）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "src/app/[locale]/login/page.tsx 重写为 58/42 split（lg+ 显示左图，< 768px 左图隐藏表单居中全宽）；左列 next/image 用 public/brand/login-hero.png（1024×1024 PNG 已入库 trace trc_p1bgn90814sqmnh02m97xz49）+ object-fit:cover + priority；左覆盖 LoginBrandOverlay（wordmark + CREATOR OPERATIONS · 2026 + 主标题 'Run global KOL campaigns like a launch day.' + 副标题 + 4 HUD chips '850K+ creators indexed / AI match 94% / 9 locales / 200+ studios trust us' + 底部 5 placeholder studio logos）；右列 LoginForm（email+password 下划线输入 bg-transparent + border-b border-slate-700 focus:border-cyan-400 / 'Sign in' 按钮 cyan 实心 navy text + outer cyan glow / 'Continue with Google' disabled + title='Coming soon' + 灰 G 图 / Remember device + Forgot password + 底部 'New to KOLMatrix? Request access' 跳 /request-access）；NextAuth signIn('credentials') 流程不动；错误态 401 显红字；i18n auth.login.* 键 en+zh 全翻译（ja/ko/es stub 回退 en）；/en/login 视觉 ±2px 对齐 design-draft/stitch-references/login.png；/zh/login 中文文案正确；Google 按钮禁用有 aria-disabled；visual regression 新增 baseline"
     },
     {
