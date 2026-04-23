@@ -10,7 +10,7 @@ describe("NAV_ITEMS", () => {
       "kol-database",
       "campaigns",
       "email-center",
-      "products",
+      "knowledge-base",
       "analytics",
       "settings",
     ]);
@@ -35,5 +35,10 @@ describe("deriveActiveNav", () => {
     expect(deriveActiveNav("/ja/analytics")).toBe("analytics");
     expect(deriveActiveNav("/ko/emails")).toBe("email-center");
     expect(deriveActiveNav("/es/settings")).toBe("settings");
+  });
+
+  it("resolves /knowledge-base to the Knowledge Base nav", () => {
+    expect(deriveActiveNav("/en/knowledge-base")).toBe("knowledge-base");
+    expect(deriveActiveNav("/zh/knowledge-base")).toBe("knowledge-base");
   });
 });

@@ -5,7 +5,7 @@
     "kolDatabase": "KOL 数据库",
     "campaigns": "投放活动",
     "emailCenter": "邮件中心",
-    "products": "产品",
+    "knowledgeBase": "知识库",
     "analytics": "分析",
     "settings": "设置"
   },
@@ -143,5 +143,77 @@
   "common": {
     "openRate": "Open Rate",
     "progress": "Progress"
+  },
+  "knowledgeBase": {
+    "breadcrumbRoot": "产品",
+    "breadcrumbCurrent": "知识库",
+    "title": "产品知识库",
+    "subtitle": "录入游戏产品资料，AI 自动为 KOL 触达生成营销素材。",
+    "importCsv": "批量导入 CSV",
+    "importCsvDisabled": "即将上线",
+    "addButton": "录入新产品",
+    "recentActivityTitle": "最近 AI 活动",
+    "emptyStateTitle": "尚未录入任何产品",
+    "emptyStateDescription": "录入第一个游戏产品后，AI 将自动生成 KOL 触达素材。",
+    "emptyCardLabel": "录入新产品",
+    "card": {
+      "lastUpdated": "更新于 {date}",
+      "emailTemplates": "{count} 套邮件模板",
+      "videoScripts": "{count} 套视频脚本",
+      "assetsReady": "素材已就绪",
+      "generating": "正在生成素材…",
+      "generationFailed": "生成失败 — 请编辑后重试",
+      "noAssetsYet": "尚未生成素材",
+      "editAction": "编辑产品"
+    },
+    "modal": {
+      "titleCreate": "录入新产品",
+      "titleEdit": "编辑产品",
+      "close": "关闭",
+      "nameLabel": "产品名",
+      "namePlaceholder": "例如：英雄联盟全球总决赛 2024",
+      "categoryLabel": "品类",
+      "categoryPlaceholder": "例如：MOBA、RPG、FPS",
+      "platformLabel": "平台",
+      "platformMobile": "移动端",
+      "platformPc": "PC",
+      "platformConsole": "主机",
+      "platformWeb3": "Web3",
+      "targetAudienceLabel": "目标受众",
+      "targetAudiencePlaceholder": "描述你的目标受众（例如：18–25 岁东南亚竞技游戏爱好者）。",
+      "uspLabel": "USP（独特卖点）",
+      "uspHelper": "必填 — AI 素材生成器将基于此撰写邮件与脚本。",
+      "uspPlaceholder": "这款产品的独特之处在于？高画质、低延迟、开放世界……",
+      "downloadUrlLabel": "官方链接",
+      "downloadUrlPlaceholder": "https://example.com",
+      "launchDateLabel": "上线日期",
+      "generateToggle": "保存后立即生成素材",
+      "submit": "保存并生成",
+      "submitWithoutAi": "仅保存产品",
+      "submitting": "保存中…",
+      "cancel": "取消",
+      "requiredNote": "带 * 的为必填项"
+    },
+    "errors": {
+      "nameRequired": "产品名为必填项。",
+      "categoryRequired": "品类为必填项。",
+      "uspRequired": "独特卖点（USP）为必填项。",
+      "downloadUrlInvalid": "请填写以 http:// 或 https:// 开头的有效链接。",
+      "launchDateInvalid": "上线日期无效。",
+      "platformsInvalid": "请至少选择一个平台。",
+      "generic": "保存失败，请稍后重试。"
+    },
+    "mockActivity": {
+      "heading1": "王者荣耀 Q2",
+      "heading2": "Valorant Ep. 9",
+      "heading3": "MobileRush 日服",
+      "heading4": "原神版本更新",
+      "heading5": "Project X",
+      "time1": "2 分钟前",
+      "time2": "15 分钟前",
+      "time3": "1 小时前",
+      "time4": "3 小时前",
+      "time5": "昨天"
+    }
   }
 }

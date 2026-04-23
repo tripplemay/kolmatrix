@@ -27,7 +27,7 @@ describe("PROTECTED_PREFIXES", () => {
       "/kols",
       "/campaigns",
       "/emails",
-      "/products",
+      "/knowledge-base",
       "/analytics",
       "/settings",
     ]);

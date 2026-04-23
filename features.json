@@ -22,7 +22,7 @@
       "title": "Product 知识库页 /knowledge-base + AI 素材生成",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/app/[locale]/(app)/knowledge-base/page.tsx 对齐 Stitch knowledge-base.html（canonical App Shell active=Knowledge Base / 3-col product 卡网格 + 1 empty-state 卡 + Recent AI activity timeline + Create/Edit modal）；modal 8 字段表单（name*/category*/targetAudience?/**uniqueSellingPoints* cyan 星号强制必填 zod required 响应 MVP PRD §13 Q5**/downloadUrl?/launchDate?/platforms multi-select/generateImmediately checkbox）；Server Action createProduct(formData) zod 校验 + prisma.product.create + 如勾 generate 则调 aigcgateway chat (model=claude-haiku-4.5) 生成 3 emailTemplates + 2 videoScripts 存 Product.aiAssets Json；src/lib/products/generateAiAssets.ts 封装（fire-and-forget，失败 log 不阻塞产品保存）；i18n knowledge-base.* en+zh 全译；RLS 跨租户隔离验证；tests/integration/product-flow.test.ts（create → AI assets 写入 / USP 缺失报错 / generate 失败 fallback）；visual regression /en/knowledge-base 新 baseline"
     },
     {

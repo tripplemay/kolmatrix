@@ -5,7 +5,7 @@
     "kolDatabase": "KOL Database",
     "campaigns": "Campaigns",
     "emailCenter": "Email Center",
-    "products": "Products",
+    "knowledgeBase": "Knowledge Base",
     "analytics": "Analytics",
     "settings": "Settings"
   },
@@ -143,5 +143,77 @@
   "common": {
     "openRate": "Open Rate",
     "progress": "Progress"
+  },
+  "knowledgeBase": {
+    "breadcrumbRoot": "Products",
+    "breadcrumbCurrent": "Knowledge Base",
+    "title": "Product Knowledge Base",
+    "subtitle": "Capture each game product; AI drafts KOL outreach assets automatically.",
+    "importCsv": "Import CSV",
+    "importCsvDisabled": "Coming soon",
+    "addButton": "Add new product",
+    "recentActivityTitle": "RECENT AI ACTIVITY",
+    "emptyStateTitle": "No products yet",
+    "emptyStateDescription": "Add your first game product to generate KOL outreach assets.",
+    "emptyCardLabel": "Add new product",
+    "card": {
+      "lastUpdated": "Updated {date}",
+      "emailTemplates": "{count, plural, one {# email template} other {# email templates}}",
+      "videoScripts": "{count, plural, one {# video script} other {# video scripts}}",
+      "assetsReady": "Assets ready",
+      "generating": "Generating assets…",
+      "generationFailed": "Generation failed — edit to retry",
+      "noAssetsYet": "No assets yet",
+      "editAction": "Edit product"
+    },
+    "modal": {
+      "titleCreate": "Add new product",
+      "titleEdit": "Edit product",
+      "close": "Close",
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. League of Legends Worlds 2024",
+      "categoryLabel": "Category",
+      "categoryPlaceholder": "e.g. MOBA, RPG, FPS",
+      "platformLabel": "Platform",
+      "platformMobile": "Mobile",
+      "platformPc": "PC",
+      "platformConsole": "Console",
+      "platformWeb3": "Web3",
+      "targetAudienceLabel": "Target Audience",
+      "targetAudiencePlaceholder": "Describe your demographic (e.g. Competitive gamers age 18–25 in Southeast Asia interested in esports).",
+      "uspLabel": "USP (Unique Selling Point)",
+      "uspHelper": "Required — the AI asset generator uses this to draft email templates and scripts.",
+      "uspPlaceholder": "What makes this product special? High-fidelity graphics, low latency, expansive world…",
+      "downloadUrlLabel": "Official URL",
+      "downloadUrlPlaceholder": "https://example.com",
+      "launchDateLabel": "Launch Date",
+      "generateToggle": "Generate assets immediately",
+      "submit": "Save & Generate",
+      "submitWithoutAi": "Save product",
+      "submitting": "Saving…",
+      "cancel": "Cancel",
+      "requiredNote": "Required fields are marked with *"
+    },
+    "errors": {
+      "nameRequired": "Product name is required.",
+      "categoryRequired": "Category is required.",
+      "uspRequired": "Unique Selling Point is required.",
+      "downloadUrlInvalid": "Enter a valid URL starting with http:// or https://",
+      "launchDateInvalid": "Launch date is invalid.",
+      "platformsInvalid": "Select at least one platform.",
+      "generic": "Could not save the product. Please retry."
+    },
+    "mockActivity": {
+      "heading1": "Honor of Kings Q2",
+      "heading2": "Valorant Ep. 9",
+      "heading3": "MobileRush JP",
+      "heading4": "Genshin Update",
+      "heading5": "Project X",
+      "time1": "2m ago",
+      "time2": "15m ago",
+      "time3": "1h ago",
+      "time4": "3h ago",
+      "time5": "Yesterday"
+    }
   }
 }

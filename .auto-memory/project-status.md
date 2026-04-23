@@ -4,10 +4,11 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BM1-console-kol-core** — status=building，2/9 features 完成（F001 schema + F002 seed），F003 开工前停
+- **BM1-console-kol-core** — status=building，3/9 features 完成（F001 + F002 + F003），下一步 F004 Discovery
   - ✅ F001 schema extension（Product + Kol 13 列 + kolFee + 2 indexes + RLS NULLIF）commit `f7971c7`
   - ✅ F002 seed script 2,524 rows + valueScore util + platform normalize commit `7142929`
-  - ⏳ F003 知识库 / F004 Discovery 并行 → F005 Database → F006 画像 → F007 Dashboard → F008 locale → F009 tests
+  - ✅ F003 `/knowledge-base` page + Modal + aigcgateway 素材 fire-and-forget；nav `products`→`knowledge-base` 改名；i18n 5 份齐
+  - ⏳ F004 Discovery → F005 Database → F006 画像 → F007 Dashboard → F008 locale → F009 tests
   - pre-impl 审计 `docs/specs/BM1-f001-schema-preimpl-audit.md` 裁决 #A:A #B:A #C:A #D:A+C #E:C #F:A（#E 偏离 Gen，归一化 0-100）
 - **BI4** ✅ done 一轮过（5/5 PASS fix_rounds=0，framework v0.9.3 沉淀 VPS artifact in-git 硬要求）
 - 所有前置批次 ✅：B0 / BI1 / BI2 / BI3 / BAux1 / BI4
@@ -37,7 +38,7 @@ BAux1 ✅ → BI4 ✅ → **BM1（9f 7-10 天）** → BM2（~13f 10-14 天）�
   - `kol-email-customize` cmob2z6j00001bnole7i8lg9h (claude-haiku-4.5)
   - `roi-insights` cmob2zgae000jbnnuue2i7uaf (gemini-3-flash)
   - `weekly-report-for-client` cmob2zqkp0001bnnvel4vjapu (gemini-3-flash)
-- ⏳ 待命处理 Generator F003+ pre-impl 审计请求
+- ⏳ 待命处理 Generator F004+ pre-impl 审计请求（F003 一轮落地无审计）
 
 ## 环境
 - 生产 DB `kolmatrix` / staging `kolmatrix_staging`

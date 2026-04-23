@@ -4,7 +4,7 @@ export type NavItemId =
   | "kol-database"
   | "campaigns"
   | "email-center"
-  | "products"
+  | "knowledge-base"
   | "analytics"
   | "settings";
 
@@ -53,10 +53,10 @@ export const NAV_ITEMS: NavItem[] = [
     icon: "forward_to_inbox",
   },
   {
-    id: "products",
-    href: "/products",
-    label: "Products",
-    i18nKey: "nav.products",
+    id: "knowledge-base",
+    href: "/knowledge-base",
+    label: "Knowledge Base",
+    i18nKey: "nav.knowledgeBase",
     icon: "inventory_2",
   },
   {
@@ -81,7 +81,7 @@ export function deriveActiveNav(pathname: string): NavItemId {
   if (path.startsWith("/kols")) return "kol-database";
   if (path.startsWith("/campaigns")) return "campaigns";
   if (path.startsWith("/emails")) return "email-center";
-  if (path.startsWith("/products")) return "products";
+  if (path.startsWith("/knowledge-base")) return "knowledge-base";
   if (path.startsWith("/analytics")) return "analytics";
   if (path.startsWith("/settings")) return "settings";
   return "dashboard";
