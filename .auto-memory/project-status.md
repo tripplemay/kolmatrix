@@ -4,23 +4,34 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BAux1-auth-pages** — status=done（Evaluator 2026-04-23 round3 签收）
-  - F001/F002/F003/F004 全部 PASS
+- **BAux1-auth-pages** ✅ 已签收（4/4 PASS, fix_rounds=3, 2026-04-23）
   - signoff: `docs/test-reports/BAux1-auth-pages-signoff-2026-04-23.md`
+  - Round 3 修复链：env 卫生 / Playwright baseURL / git chmod +x / WSL↔GHA visual 容差
+  - Visual baselines 入库：dashboard / en-login / en-request-access
+- 所有前置批次 ✅：B0 · BI1 · BI2 · BI3 · BAux1
+
+## 当前阶段：MVP 纵向路线（2026-04-21 pivot）
+- MVP PRD v1.0 已写 + 用户答 §13 8 问（`docs/product/KOLMatrix-MVP-PRD.md`）
+- KOL seed 415 gaming 入库（$0.91 两阶段 AI 打标）
+- Stitch 设计稿：14 张入库 + V6 ROI / V7 (知识库+CRM+周报) prompts 就绪待用户生成
 
 ## 角色分配
-- BAux1 已收敛 done，`progress.json.role_assignments` 已清空
+- BAux1 已清；下一批次待用户启动（默认沿用 Planner: Kimi / Generator: johnsong / Evaluator: Reviewer）
 
-## 后续顺序（Option α）
-- 下一批次：B1 KOL Database
+## 后续 MVP 路线（32-37 天总目标）
+BAux1 ✅ → **BI4 架构护栏**（5 features, 2-3 天）→ BM1 控制台+KOL核心(~9f, 7-10 天) → BM2 Campaign+联系+CRM+ROI+周报(~13f, 10-14 天) → MVP 上线 → 种子用户反馈
 
-## 已完成批次
-- BAux1-auth-pages ✅
-- BI3-domain-and-tls ✅
-- BI2-deployment-automation ✅
-- BI1-test-infrastructure ✅
-- B0-foundation ✅
+## 关键决策（详见 docs/adr/ 和 MVP PRD §11）
+- ADR-001~010 基建；MVP §11 8 条业务决策（Google OAuth disabled / AI 走 aigcgateway Action / AI 周报给客户看 / Product USP 必填 / 浏览器语言自动跳 等）
 
-## 环境提醒
-- 生产 DB：`kolmatrix`
-- staging DB：`kolmatrix_staging`
+## Framework
+v0.9.2（BI2 DB 命名 + PM2 zero-downtime 3 条件）；BAux1 round 3 经验暂未沉淀（无新通用规律）
+
+## 待补（非阻塞）
+- MOBA/二次元/沙盒 KOL 数据（MVP demo 类目稀疏）
+- V6 + V7 共 4 张 Stitch 设计稿用户手动生成
+- aigcgateway 3 个 Action 待建：kol-email-customize / roi-insights / weekly-report-for-client（Planner 在 BM1 期间做）
+
+## 环境
+- 生产 DB `kolmatrix`（非 kolmatrix_prod）/ staging DB `kolmatrix_staging`
+- Resend 发件 `marketer@kolquest.com` 根域

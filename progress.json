@@ -21,7 +21,7 @@
     "spec": "docs/specs/BAux1-auth-pages-spec.md",
     "test_cases": null,
     "signoff": "docs/test-reports/BAux1-auth-pages-signoff-2026-04-23.md",
-    "framework_reviewed": false
+    "framework_reviewed": true
   },
   "role_assignments": null,
   "evaluator_feedback": null,
