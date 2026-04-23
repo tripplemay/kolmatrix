@@ -6,7 +6,7 @@
       "title": "Prisma schema 扩展：Campaign + KolCampaign + CampaignMetric + EmailTemplate + WeeklyReport + Tenant.logoUrl + Kol.email",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "migration 20260504100000_bm2_schema 含：ALTER TABLE tenant ADD COLUMN logo_url（nullable）；ALTER TABLE kol ADD COLUMN email VarChar(320) + email_source default 'manual'；ALTER TABLE campaign ADD COLUMN product_id Uuid FK product / spend_total Decimal(12,2) default 0 / revenue_recorded Decimal(12,2) / started_at Timestamptz / closed_at Timestamptz + 2 新复合索引 (tenantId, productId) + (tenantId, status, closedAt DESC)；ALTER TABLE kol_campaign ALTER COLUMN status SET DEFAULT 'pending'（6 值 enum: pending/contacted/quoted/signed/delivered/paid）；CREATE TABLE campaign_metric（id/tenantId/campaignId/recordedAt/impressions/clicks/conversions/attributedRevenue/source default 'manual'）+ 索引 + RLS NULLIF；CREATE TABLE email_template（id/tenantId?（null=system）/name/subject/body Text/variables Json/locale VarChar(5)/type default 'system'）+ 索引 (tenantId, type) + (type, locale)；CREATE TABLE weekly_report（id/tenantId/weekStart/weekEnd/locale/contentMd Text/summaryJson Json?/shareToken unique VarChar(32)/shareTokenExpiresAt/createdByUserId FK user）+ 索引 (tenantId, weekEnd DESC) + RLS NULLIF + 匿名查询走 superuser 连接绕 RLS；ALTER TABLE email_log ADD COLUMN template_id Uuid FK / ai_customized Boolean default false；完整 ROLLBACK SQL；tests/integration/bm2-schema.test.ts 覆盖 Campaign 新字段 / KolCampaign enum 6 值 / CampaignMetric CRUD + RLS / EmailTemplate 跨租户 system 读 + 单租户 user 写 / WeeklyReport 匿名 token 查询"
     },
     {
