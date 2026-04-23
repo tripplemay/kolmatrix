@@ -372,6 +372,43 @@
       "count": "{count, plural, =0 {No saved KOLs} one {# saved KOL} other {# saved KOLs}}"
     }
   },
+  "campaigns": {
+    "title": "Campaigns",
+    "subtitle": "Plan, run, and measure every outreach push.",
+    "newCampaign": "New Campaign",
+    "summary": "{count, plural, =0 {No campaigns match} one {# campaign} other {# campaigns}}",
+    "filters": {
+      "search": "Search",
+      "searchPlaceholder": "Search by campaign name…",
+      "status": "Status",
+      "apply": "Apply",
+      "clearAll": "Clear all"
+    },
+    "status": {
+      "all": "All",
+      "draft": "Draft",
+      "active": "Active",
+      "completed": "Completed"
+    },
+    "table": {
+      "name": "Campaign",
+      "status": "Status",
+      "kols": "KOLs",
+      "spend": "Spend",
+      "roi": "ROI",
+      "dates": "Dates",
+      "openAria": "Open campaign {name}"
+    },
+    "emptyState": {
+      "title": "No campaigns yet",
+      "body": "Wire your first KOL launch. Pick a product, invite creators, track spend and ROI from one place.",
+      "cta": "Create your first campaign"
+    },
+    "noMatches": {
+      "title": "No campaigns match those filters",
+      "body": "Try clearing the filters or widening the search."
+    }
+  },
   "relationshipStatus": {
     "prospect": "Prospect",
     "first_contact": "First contact",
