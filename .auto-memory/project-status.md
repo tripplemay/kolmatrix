@@ -4,10 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
+- **BI4-architectural-guardrails** — status=building，5 features 等 Generator 开工
+  - F001 Job Queue interface / F002 event_log / F003 audit_log / F004 Cursor pagination / F005 KOL tsvector
+  - 全独立 infra，~2-3 天；完成后 BM1/BM2 直接调用这些基建
 - **BAux1-auth-pages** ✅ 已签收（4/4 PASS, fix_rounds=3, 2026-04-23）
-  - signoff: `docs/test-reports/BAux1-auth-pages-signoff-2026-04-23.md`
-  - Round 3 修复链：env 卫生 / Playwright baseURL / git chmod +x / WSL↔GHA visual 容差
-  - Visual baselines 入库：dashboard / en-login / en-request-access
 - 所有前置批次 ✅：B0 · BI1 · BI2 · BI3 · BAux1
 
 ## 当前阶段：MVP 纵向路线（2026-04-21 pivot）
@@ -15,8 +15,8 @@ type: project
 - KOL seed 415 gaming 入库（$0.91 两阶段 AI 打标）
 - Stitch 设计稿 18 张入库（V1-V7 全就绪；2026-04-23 V6 ROI + V7 3 张新入库）
 
-## 角色分配
-- BAux1 已清；下一批次待用户启动（默认沿用 Planner: Kimi / Generator: johnsong / Evaluator: Reviewer）
+## 角色分配（BI4，沿用）
+- Planner: Kimi / Generator: johnsong / Evaluator: Reviewer
 
 ## 后续 MVP 路线（32-37 天总目标）
 BAux1 ✅ → **BI4 架构护栏**（5 features, 2-3 天）→ BM1 控制台+KOL核心(~9f, 7-10 天) → BM2 Campaign+联系+CRM+ROI+周报(~13f, 10-14 天) → MVP 上线 → 种子用户反馈
