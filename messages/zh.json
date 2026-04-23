@@ -215,5 +215,111 @@
       "time4": "3 小时前",
       "time5": "昨天"
     }
+  },
+  "discovery": {
+    "title": "KOL 发现",
+    "subtitle": "AI 智能搜索，基于 15 个维度在 11 个地区匹配最适合你游戏的 KOL / KOC。",
+    "filters": {
+      "heading": "筛选",
+      "clearAll": "清空",
+      "search": "搜索",
+      "searchPlaceholder": "按名称或账号搜索…",
+      "followers": "粉丝数",
+      "followersMin": "最小",
+      "followersMax": "最大",
+      "region": "地区",
+      "category": "品类",
+      "advancedToggle": "高级筛选",
+      "language": "语言",
+      "engagement": "互动率（%）",
+      "engagementPlaceholder": "例如 5",
+      "avgViews": "平均播放 / 视频",
+      "uploads": "每月上传数",
+      "lastUpload": "最近上传",
+      "lastUploadAny": "不限时间",
+      "lastUpload30": "30 天内",
+      "lastUpload90": "90 天内",
+      "lastUpload180": "180 天内",
+      "monetization": "变现状态",
+      "monetizationVerified": "已认证",
+      "monetizationMonetized": "已变现",
+      "monetizationNone": "未开启",
+      "brandSafety": "品牌安全分级",
+      "brandSafetyG": "G",
+      "brandSafetyPG": "PG",
+      "brandSafetyPG13": "PG-13",
+      "brandSafetyR": "R",
+      "knownCollabs": "历史品牌合作",
+      "knownCollabsPlaceholder": "用英文逗号分隔多个品牌",
+      "tags": "标签",
+      "tagsPlaceholder": "用英文逗号分隔多个标签",
+      "platform": "平台",
+      "includeNonGaming": "包含非游戏创作者",
+      "includeNonGamingHelper": "MVP 默认仅显示游戏创作者。",
+      "apply": "应用筛选",
+      "applyWithCount": "应用筛选（{count}）"
+    },
+    "sort": {
+      "label": "排序",
+      "value": "价值分",
+      "followers": "粉丝数",
+      "recent": "最近添加"
+    },
+    "summary": {
+      "count": "{count, plural, =0 {未匹配到 KOL} other {匹配到 # 位 KOL}}",
+      "saveAll": "全部保存为候选组",
+      "saveAllComingSoon": "即将上线 — BM2"
+    },
+    "pagination": {
+      "previous": "上一页",
+      "next": "下一页",
+      "page": "第"
+    },
+    "card": {
+      "scoreLabel": "价值",
+      "followers": "粉丝",
+      "engagement": "互动",
+      "save": "保存",
+      "saved": "已保存",
+      "unavailableMetric": "—"
+    },
+    "emptyState": {
+      "title": "未找到符合的 KOL",
+      "tipHeading": "提示",
+      "tipBody": "互动率、变现状态等维度数据将在 YouTube API 集成（计划 MVP 后批次 B6）后填充。"
+    },
+    "regions": {
+      "US": "美国",
+      "GB": "英国",
+      "CA": "加拿大",
+      "DE": "德国",
+      "JP": "日本",
+      "VN": "越南",
+      "TW": "台湾",
+      "UA": "乌克兰",
+      "IQ": "伊拉克",
+      "DO": "多米尼加共和国",
+      "PK": "巴基斯坦"
+    },
+    "categories": {
+      "MOBA": "MOBA",
+      "RPG": "RPG",
+      "FPS": "FPS",
+      "Mobile": "手游",
+      "Casual": "休闲",
+      "Shooter": "射击",
+      "Sandbox": "沙盒",
+      "Racing": "竞速",
+      "Simulation": "模拟",
+      "Fighting": "格斗"
+    },
+    "platforms": {
+      "youtube": "YouTube",
+      "tiktok": "TikTok",
+      "twitch": "Twitch",
+      "bilibili": "哔哩哔哩",
+      "twitter": "Twitter",
+      "instagram": "Instagram"
+    }
   }
 }

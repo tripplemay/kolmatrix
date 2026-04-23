@@ -30,7 +30,7 @@
       "title": "KOL Discovery 筛选页 /discovery + 15 维 filter",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/app/[locale]/(app)/discovery/page.tsx 对齐 Stitch kol-discovery.html（canonical App Shell active=Discovery）；左 260px filter sidebar：基础 4 维平铺（粉丝数 range slider / 地区 multi-select 11 国 / 类目 multi-select 10 / 搜索 input）+ Advanced 折叠面板 11 维（language/engagementRate/avgViews/uploadsPerMonth/lastUploadRecency/monetizationStatus/brandSafetyRating/knownBrandCollabs/tags/platform/isGaming toggle 默认 true）；右 content 区：结果卡 2-3 col 网格（头像 placeholder + 名字 + 平台·粉丝·地区 + **价值分 cyan 大字** + 标签 chips + 保存按钮）；cursor pagination 用 BI4-F004 util（limit 20）；排序 dropdown（粉丝/价值分/最近添加）；Server Action searchKols(filters, cursor) Prisma where 组合 + paginator.query；空态友好提示 '选了 nullable filter 返回 0 时给 B6 YouTube API 集成提示'；i18n discovery.* 全译；tests/integration/kol-discovery.test.ts 15 维组合查询 + cursor next/prev；visual /en/discovery baseline"
     },
     {

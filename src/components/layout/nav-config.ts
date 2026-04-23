@@ -26,7 +26,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     id: "kol-discovery",
-    href: "/kols/discover",
+    href: "/discovery",
     label: "KOL Discovery",
     i18nKey: "nav.kolDiscovery",
     icon: "travel_explore",
@@ -77,7 +77,7 @@ export const NAV_ITEMS: NavItem[] = [
 
 export function deriveActiveNav(pathname: string): NavItemId {
   const path = pathname.replace(/^\/(en|zh|ja|ko|es)(?=\/|$)/, "") || "/";
-  if (path.startsWith("/kols/discover")) return "kol-discovery";
+  if (path.startsWith("/discovery")) return "kol-discovery";
   if (path.startsWith("/kols")) return "kol-database";
   if (path.startsWith("/campaigns")) return "campaigns";
   if (path.startsWith("/emails")) return "email-center";

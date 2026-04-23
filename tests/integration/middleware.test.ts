@@ -24,6 +24,7 @@ describe("PROTECTED_PREFIXES", () => {
   it("contains every authed top-level route in B0 + is alphabet-stable", () => {
     expect(PROTECTED_PREFIXES).toEqual([
       "/dashboard",
+      "/discovery",
       "/kols",
       "/campaigns",
       "/emails",

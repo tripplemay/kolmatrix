@@ -24,8 +24,9 @@ describe("deriveActiveNav", () => {
     expect(deriveActiveNav("/en/dashboard")).toBe("dashboard");
   });
 
-  it("resolves nested KOL routes correctly", () => {
-    expect(deriveActiveNav("/en/kols/discover")).toBe("kol-discovery");
+  it("resolves discovery + database routes distinctly", () => {
+    expect(deriveActiveNav("/en/discovery")).toBe("kol-discovery");
+    expect(deriveActiveNav("/zh/discovery")).toBe("kol-discovery");
     expect(deriveActiveNav("/en/kols")).toBe("kol-database");
     expect(deriveActiveNav("/en/kols/abc123")).toBe("kol-database");
   });
