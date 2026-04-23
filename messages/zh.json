@@ -321,5 +321,49 @@
       "twitter": "Twitter",
       "instagram": "Instagram"
     }
+  },
+  "database": {
+    "title": "KOL 数据库",
+    "subtitle": "已保存的 KOL 候选，随时可触达。",
+    "bulkActions": "批量操作",
+    "bulkActionsDisabled": "批量操作将在 BM2 开放，本按钮为预留。",
+    "filters": {
+      "search": "搜索",
+      "searchPlaceholder": "在已保存 KOL 中搜索…",
+      "region": "地区",
+      "category": "品类",
+      "status": "关系状态",
+      "statusAny": "全部",
+      "apply": "应用",
+      "clearAll": "清空"
+    },
+    "table": {
+      "creator": "创作者",
+      "platform": "平台",
+      "followers": "粉丝",
+      "category": "品类",
+      "region": "地区",
+      "value": "价值",
+      "status": "状态",
+      "addedAt": "添加时间",
+      "actions": "操作",
+      "open": "打开画像",
+      "ariaRow": "打开 KOL 画像"
+    },
+    "emptyState": {
+      "title": "尚未保存任何 KOL",
+      "body": "前往 KOL 发现，在喜欢的创作者卡片点击「保存」即可出现在此处。"
+    },
+    "summary": {
+      "count": "{count, plural, =0 {未保存任何 KOL} other {已保存 # 位 KOL}}"
+    }
+  },
+  "relationshipStatus": {
+    "prospect": "潜在",
+    "first_contact": "初次联系",
+    "negotiating": "洽谈中",
+    "long_term": "长期合作",
+    "paused": "已暂停",
+    "terminated": "已终止"
   }
 }

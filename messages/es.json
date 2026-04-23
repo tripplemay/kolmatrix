@@ -321,5 +321,49 @@
       "twitter": "Twitter",
       "instagram": "Instagram"
     }
+  },
+  "database": {
+    "title": "KOL Database",
+    "subtitle": "Saved candidates ready for outreach.",
+    "bulkActions": "Bulk actions",
+    "bulkActionsDisabled": "Bulk edit lands in BM2 — this button is a placeholder.",
+    "filters": {
+      "search": "Search",
+      "searchPlaceholder": "Search saved KOLs…",
+      "region": "Region",
+      "category": "Category",
+      "status": "Relationship status",
+      "statusAny": "Any",
+      "apply": "Apply",
+      "clearAll": "Clear all"
+    },
+    "table": {
+      "creator": "Creator",
+      "platform": "Platform",
+      "followers": "Followers",
+      "category": "Category",
+      "region": "Region",
+      "value": "Value",
+      "status": "Status",
+      "addedAt": "Added",
+      "actions": "Actions",
+      "open": "Open profile",
+      "ariaRow": "Open KOL profile"
+    },
+    "emptyState": {
+      "title": "No saved KOLs yet",
+      "body": "Head to Discovery, tap Save on a creator you like, and they will appear here."
+    },
+    "summary": {
+      "count": "{count, plural, =0 {No saved KOLs} one {# saved KOL} other {# saved KOLs}}"
+    }
+  },
+  "relationshipStatus": {
+    "prospect": "Prospect",
+    "first_contact": "First contact",
+    "negotiating": "Negotiating",
+    "long_term": "Long-term",
+    "paused": "Paused",
+    "terminated": "Terminated"
   }
 }

@@ -41,6 +41,7 @@ beforeAll(async () => {
     platforms: [],
     monetizationStatuses: [],
     brandSafety: [],
+    relationshipStatuses: [],
     knownCollabs: [],
     tags: [],
     includeNonGaming: false,

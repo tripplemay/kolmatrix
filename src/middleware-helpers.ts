@@ -10,6 +10,7 @@ import { isLocale } from "@/i18n/routing";
 export const PROTECTED_PREFIXES = [
   "/dashboard",
   "/discovery",
+  "/database",
   "/kols",
   "/campaigns",
   "/emails",

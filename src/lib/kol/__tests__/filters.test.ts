@@ -8,6 +8,7 @@ import {
   LAST_UPLOAD_WINDOWS,
   MONETIZATION_STATUSES,
   parseFilters,
+  RELATIONSHIP_STATUSES,
   serializeFilters,
   sortToOrderBy,
   type DiscoveryFilters,
@@ -20,6 +21,7 @@ const empty: DiscoveryFilters = {
   platforms: [],
   monetizationStatuses: [],
   brandSafety: [],
+  relationshipStatuses: [],
   knownCollabs: [],
   tags: [],
   includeNonGaming: false,
@@ -77,6 +79,15 @@ describe("parseFilters()", () => {
     expect(
       parseFilters(new URLSearchParams({ lastUpload: "7" })).lastUploadWithinDays
     ).toBeUndefined();
+  });
+
+  it("filters relationshipStatus against the 6-value enum", () => {
+    const u = new URLSearchParams();
+    u.append("relationshipStatus", "prospect");
+    u.append("relationshipStatus", "long_term");
+    u.append("relationshipStatus", "ghost_status");
+    const p = parseFilters(u);
+    expect(p.relationshipStatuses).toEqual(["prospect", "long_term"]);
   });
 
   it("filters monetization + brandSafety arrays against the enum", () => {
@@ -144,6 +155,7 @@ describe("serializeFilters()", () => {
       lastUploadWithinDays: 90,
       monetizationStatuses: ["VERIFIED"],
       brandSafety: ["PG13"],
+      relationshipStatuses: ["negotiating", "long_term"],
       knownCollabs: ["Razer"],
       tags: ["esports"],
       includeNonGaming: true,
@@ -214,6 +226,7 @@ describe("buildKolWhere()", () => {
       lastUploadWithinDays: 30,
       monetizationStatuses: ["VERIFIED"],
       brandSafety: ["PG13"],
+      relationshipStatuses: ["negotiating"],
       knownCollabs: ["Razer"],
       tags: ["esports"],
     });
@@ -236,6 +249,9 @@ describe("buildKolWhere()", () => {
     });
     expect(findOne("brandSafetyRating")).toEqual({
       brandSafetyRating: { in: ["PG13"] },
+    });
+    expect(findOne("relationshipStatus")).toEqual({
+      relationshipStatus: { in: ["negotiating"] },
     });
     expect(findOne("knownBrandCollabs")).toEqual({
       knownBrandCollabs: { hasSome: ["Razer"] },
@@ -260,5 +276,6 @@ describe("discovery enum constants", () => {
     expect(MONETIZATION_STATUSES.length).toBe(3);
     expect(BRAND_SAFETY_RATINGS.length).toBe(4);
     expect(LAST_UPLOAD_WINDOWS).toEqual([30, 90, 180]);
+    expect(RELATIONSHIP_STATUSES.length).toBe(6);
   });
 });

@@ -25,6 +25,7 @@ describe("PROTECTED_PREFIXES", () => {
     expect(PROTECTED_PREFIXES).toEqual([
       "/dashboard",
       "/discovery",
+      "/database",
       "/kols",
       "/campaigns",
       "/emails",

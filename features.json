@@ -38,7 +38,7 @@
       "title": "KOL Database 列表 /database",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/app/[locale]/(app)/database/page.tsx 对齐 Stitch kol-database.html（canonical App Shell active=Database）；只列 isSaved=true 的 KOL；4 维简化 filter（类目/地区/relationshipStatus/搜索）；表格 | 头像名字 | 平台 | 粉丝 | 类目 | 地区 | 价值 | 关系状态 | 添加时间 | actions；行点击跳 /kols/:id；cursor pagination 用 BI4-F004；批量操作 dropdown（标签/状态/删除）MVP 只做 UI disabled + 'Coming soon' tooltip；i18n database.* 全译；tests/integration/kol-database.test.ts isSaved 保存流 + filter；visual /en/database baseline"
     },
     {

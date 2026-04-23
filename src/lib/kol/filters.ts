@@ -34,10 +34,24 @@ export const BRAND_SAFETY_RATINGS = ["G", "PG", "PG13", "R"] as const;
 export const LAST_UPLOAD_WINDOWS = [30, 90, 180] as const;
 export const SORT_OPTIONS = ["value", "followers", "recent"] as const;
 
+// BM1-F005/F006 relationship lifecycle. Default for newly-seeded KOLs is
+// "prospect"; /database surfaces the dropdown so marketers can move a
+// creator through the funnel. BM2 will upgrade this to an event-sourced
+// CRM timeline, but the enum stays identical.
+export const RELATIONSHIP_STATUSES = [
+  "prospect",
+  "first_contact",
+  "negotiating",
+  "long_term",
+  "paused",
+  "terminated",
+] as const;
+
 export type MonetizationStatus = (typeof MONETIZATION_STATUSES)[number];
 export type BrandSafetyRating = (typeof BRAND_SAFETY_RATINGS)[number];
 export type LastUploadWindow = (typeof LAST_UPLOAD_WINDOWS)[number];
 export type SortOption = (typeof SORT_OPTIONS)[number];
+export type RelationshipStatus = (typeof RELATIONSHIP_STATUSES)[number];
 
 /** The full filter state, after parsing + defaulting. */
 export interface DiscoveryFilters {
@@ -56,6 +70,13 @@ export interface DiscoveryFilters {
   brandSafety: BrandSafetyRating[];
   knownCollabs: string[];
   tags: string[];
+  /**
+   * BM1-F005: /database uses this for the "Relationship status" column
+   * filter. /discovery does not expose the dim in the UI but the schema
+   * tolerates it arriving via URL so filter links stay portable across
+   * the two pages.
+   */
+  relationshipStatuses: RelationshipStatus[];
   includeNonGaming: boolean;
   sort: SortOption;
   cursor?: string;
@@ -124,6 +145,10 @@ export function parseFilters(
     (v): v is BrandSafetyRating =>
       (BRAND_SAFETY_RATINGS as readonly string[]).includes(v)
   );
+  const relationshipStatuses = getAll("relationshipStatus").filter(
+    (v): v is RelationshipStatus =>
+      (RELATIONSHIP_STATUSES as readonly string[]).includes(v)
+  );
 
   const searchRaw = get("search");
   const search = searchRaw && searchRaw.trim() ? searchRaw.trim() : undefined;
@@ -142,6 +167,7 @@ export function parseFilters(
     lastUploadWithinDays: lastParsed,
     monetizationStatuses,
     brandSafety,
+    relationshipStatuses,
     knownCollabs: getAll("knownCollabs"),
     tags: getAll("tags"),
     includeNonGaming: get("includeNonGaming") === "on" || get("includeNonGaming") === "true",
@@ -176,6 +202,8 @@ export function serializeFilters(
     params.set("lastUpload", String(merged.lastUploadWithinDays));
   for (const v of merged.monetizationStatuses) params.append("monetization", v);
   for (const v of merged.brandSafety) params.append("brandSafety", v);
+  for (const v of merged.relationshipStatuses)
+    params.append("relationshipStatus", v);
   for (const v of merged.knownCollabs) params.append("knownCollabs", v);
   for (const v of merged.tags) params.append("tags", v);
   if (merged.includeNonGaming) params.set("includeNonGaming", "on");
@@ -257,6 +285,10 @@ export function buildKolWhere(filters: DiscoveryFilters): Prisma.KolWhereInput {
   }
   if (filters.brandSafety.length > 0) {
     and.push({ brandSafetyRating: { in: filters.brandSafety } });
+  }
+
+  if (filters.relationshipStatuses.length > 0) {
+    and.push({ relationshipStatus: { in: filters.relationshipStatuses } });
   }
 
   if (filters.knownCollabs.length > 0) {

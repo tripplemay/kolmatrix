@@ -27,7 +27,9 @@ describe("deriveActiveNav", () => {
   it("resolves discovery + database routes distinctly", () => {
     expect(deriveActiveNav("/en/discovery")).toBe("kol-discovery");
     expect(deriveActiveNav("/zh/discovery")).toBe("kol-discovery");
-    expect(deriveActiveNav("/en/kols")).toBe("kol-database");
+    expect(deriveActiveNav("/en/database")).toBe("kol-database");
+    expect(deriveActiveNav("/zh/database")).toBe("kol-database");
+    // /kols/:id (KOL profile page, F006) still highlights the Database nav
     expect(deriveActiveNav("/en/kols/abc123")).toBe("kol-database");
   });
 
