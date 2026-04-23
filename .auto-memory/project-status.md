@@ -4,9 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BM1-console-kol-core** — status=**reverifying**（fix_rounds=1 done，交 Reviewer 复验 L1+L2）
-  - Round 1 fix: loginAction locale-prefixed redirect + 去 `networkidle` 等待 + KPI 断言放宽 + saved row 15s timeout
-  - Staging E2E 5/5 已过 + CI 全 8 job 绿
+- **BM1-console-kol-core** — status=**reverifying**（fix_rounds=2 done，交 Reviewer 复验 L1+L2）
+  - Round 2 fix: 真产品 bug — toggleKolSaved 漏 revalidate /[locale]/database + E2E 挑未保存首卡（staging state 累计问题） + locator 用 kol-id 固定避免 aria-pressed 翻转漂移
+  - Staging E2E bm1-flow 3/3 连续 PASS + marketer-dashboard 4/4（默认 timeout 内 <10s）
+  - Round 1 fix（保留）: loginAction locale-prefixed redirect + 去 `networkidle` + KPI 断言放宽 + saved row 15s timeout
   - F009 visual baseline 仍留 Reviewer 在 linux runner 上 `--update-snapshots` 解锁
   - pre-impl 审计 `docs/specs/BM1-f001-schema-preimpl-audit.md` 裁决 #A:A #B:A #C:A #D:A+C #E:C #F:A（#E 偏离 Gen，归一化 0-100）
 - **BI4** ✅ done 一轮过（5/5 PASS fix_rounds=0，framework v0.9.3 沉淀 VPS artifact in-git 硬要求）
