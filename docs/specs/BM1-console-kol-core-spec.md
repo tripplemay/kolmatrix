@@ -487,14 +487,47 @@ Reviewer 执行：
 - CI 8 jobs 全绿
 - Visual regression 5 张新 baseline 对齐
 
-### L2 功能验证（staging）
-- `/en/knowledge-base` 录入 test Product "Honor of Kings" → AI 素材生成成功
-- `/en/discovery` 15 维 filter 各走一遍
-- `/en/database` 保存流 + 批量按钮 disabled
-- `/en/kols/{id}` 画像页
-- `/en/dashboard` 真 KPI
-- 浏览器中文切 → 自动跳 /zh/
-- **VPS artifact in-git check（framework v0.9.3 新要求）**：`git ls-files scripts/seed-kol-from-enriched.ts` 非空
+### L2 功能验证（staging — 2026-04-23 用户决议必走）
+
+**前置准备（Reviewer 启动 L2 前用户 + Reviewer 协同完成）：**
+
+1. **staging `.env.staging` 需含 `AIGCGATEWAY_API_KEY`**（F003 知识库 AI 素材真调用依赖）
+   - 若 TBD → 用户先 ssh + `sudo vi /opt/kolmatrix-staging/.env.staging` 填上 → `pm2 reload kolmatrix-staging --update-env`
+2. **staging deploy 最新 main**（按 `docs/dev/tls-staging-runbook.md §5`）：
+   ```bash
+   ssh kolmatrix-vps
+   cd /opt/kolmatrix-staging && git pull --ff-only origin main && npm ci && npm run build
+   pm2 restart kolmatrix-staging --update-env
+   curl -sS https://staging.kol.guangai.ai/api/health | python3 -m json.tool   # 确认 git_sha = 当前 main HEAD
+   ```
+3. **staging DB 重 seed + BM1 F002 KOL seed**（runbook §6 + BM1 F002 新增步骤）：
+   ```bash
+   # runbook §6 drop + recreate + migrate deploy + db seed（基础 12 KOL + admin/marketer）
+   # 然后追加 BM1 F002：
+   cd /opt/kolmatrix-staging && npm run seed:kol
+   # 校验：psql 查 prisma.kol.count() = 2524 且 is_gaming=true count = 415
+   ```
+
+**L2 验收用例（按 Journey A + C 顺序执行）：**
+- `https://staging.kol.guangai.ai/en/knowledge-base` 录入 test Product "Honor of Kings"（category=MOBA / USP 必填）→ AI 素材生成 3 套 email + 2 套 video script 成功（F003）
+- `https://staging.kol.guangai.ai/en/discovery` 15 维 filter 分组走：
+  - 基础 4 维（粉丝区间 / 地区 / 类目 / 搜索）各触发 1 次
+  - Advanced 11 维折叠展开：每个 filter 选一个值 → 确认即使数据稀疏也返回空态友好提示（不隐藏 filter）
+  - 勾保存 3 个 KOL → `Kol.isSaved=true`（F004）
+- `https://staging.kol.guangai.ai/en/database` 显示上一步保存的 3 个 KOL + 批量按钮 UX 对齐 Stitch（F005）
+- `https://staging.kol.guangai.ai/en/kols/{id}` 画像页渲染（F006）
+- `https://staging.kol.guangai.ai/en/` 控制台 4 KPI 反射真数据（KOL 总数 = 2524 / products = 1 / 其他 0）（F007）
+- **Browser locale 自动跳**：匿名浏览器 Accept-Language=zh-CN 访问 `https://staging.kol.guangai.ai/` → 跳 `/zh/`（F008）
+- **VPS artifact in-git check（framework v0.9.3 §2.4 硬要求）**：
+  ```bash
+  ssh kolmatrix-vps 'cd /opt/kolmatrix-staging && git ls-files scripts/seed-kol-from-enriched.ts'
+  # 空输出不签收
+  ```
+
+**L2 预期观测事件埋点（event_log 表在 staging DB 查）：**
+- `product.created` 1 条（F003 录入）
+- `kol.saved_to_database` 3 条（F004 勾保存）
+- `ai.asset_generation_completed` 1 条（F003 素材生成）
 
 ### L3 视觉
 - 5 张新 page 对照 Stitch 设计 ±5px

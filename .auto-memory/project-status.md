@@ -31,6 +31,7 @@ BAux1 ✅ → BI4 ✅ → **BM1（9f 7-10 天）** → BM2（~13f 10-14 天）�
 - AI 匹配分不做 MVP（字段保留）/ KOL 价值分用简单公式
 - 15 维 filter schema 前置 + UI 空态友好提示
 - Browser locale detection auto / AI 周报给客户看 PDF+share link
+- **BM1/BM2 L2 验收强制走 staging**（2026-04-23 用户决议，偏离 BAux1/BI4 L1-only 实践）
 
 ## Planner 并行动作（BM1 building 期间）
 - ✅ BM2 spec 起草完（11 features，commit `cbdc7ec`，`docs/specs/BM2-campaign-outreach-roi-spec.md`）

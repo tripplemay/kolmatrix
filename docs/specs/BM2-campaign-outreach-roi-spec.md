@@ -624,9 +624,29 @@ F001 (schema + migration)
 - Prisma migration: `migrate dev` + `migrate deploy` 双绿
 - ROLLBACK SQL 校验通过（`scripts/verify-rollback.sh` BI1-F010 既有）
 
-### L2 功能验证（staging）
+### L2 功能验证（staging — 强制走 staging，对齐 BM1 2026-04-23 用户决议）
 
-按 **Journey A + B 各跑一遍**：
+**前置准备（Reviewer 启动 L2 前用户 + Reviewer 协同完成）：**
+
+1. **staging `.env.staging` 需含 `AIGCGATEWAY_API_KEY` + `RESEND_API_KEY`**
+   - `RESEND_API_KEY` 缺时 F006 会走 mock fallback；如要验真发邮件（推荐）须配 prod 同 key 或 dev key
+   - 配完 `pm2 reload kolmatrix-staging --update-env`
+2. **staging deploy 最新 main**（`docs/dev/tls-staging-runbook.md §5`）+ **BM2 migration 跑一次**：
+   ```bash
+   ssh kolmatrix-vps
+   cd /opt/kolmatrix-staging && git pull --ff-only origin main && npm ci && npm run build
+   npx prisma migrate deploy      # 执行 BM2 F001 migration
+   pm2 restart kolmatrix-staging --update-env
+   ```
+3. **staging DB 准备数据**（沿用 BM1 staging 结果 + BM2 F002 新增）：
+   ```bash
+   # 假设 BM1 已在 staging 跑过 seed（kol.count=2524 / product.count≥1）
+   cd /opt/kolmatrix-staging && npm run seed:email-templates    # BM2 F002 新增
+   # 校验：prisma.emailTemplate.count({where:{type:'system'}}) = 10（5 模板 × 2 语言）
+   ```
+4. **aigcgateway 3 Action 可达性 smoke**（Reviewer 启动 L2 前跑一次 dry_run 确认 staging API key 有效）
+
+按 **Journey A + B 各跑一遍**（URL 以 `https://staging.kol.guangai.ai` 为前缀）：
 
 **Journey A（KOL 筛选 + 触达）：**
 1. `/discovery` 筛选 3 个 KOL → 保存（BM1 F004 流程）
@@ -651,6 +671,13 @@ F001 (schema + migration)
 8. 点分享 → 获取 `/shared/weekly-report/:token` URL
 9. 匿名浏览器打开 → 同样内容渲染 + 无 nav/sidebar
 10. 改系统时间 +8 天 → 刷新 → 404（token 过期）
+
+**VPS artifact in-git check（framework v0.9.3 §2.4 硬要求）：**
+```bash
+ssh kolmatrix-vps 'cd /opt/kolmatrix-staging && \
+  git ls-files scripts/seed-email-templates.ts prisma/migrations/*bm2*/migration.sql'
+# 空输出不签收
+```
 
 ### L3 视觉（Playwright baseline）
 
