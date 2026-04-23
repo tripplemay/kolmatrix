@@ -274,6 +274,29 @@ model AuditLog {
 }
 
 // ============================================================
+//  Event log (BI4-F002)
+//
+//  Platform-level record of business events (kol.created,
+//  campaign.email_sent, etc). Not tenant-scoped at the RLS layer:
+//  readers are admin tooling and (future) webhook dispatchers. Writes
+//  go through src/lib/events/log.ts which is fire-and-forget.
+// ============================================================
+
+model EventLog {
+  id         String   @id @default(cuid())
+  tenantId   String?  @map("tenant_id") @db.Uuid
+  actorId    String?  @map("actor_id") @db.Uuid
+  type       String   @db.VarChar(64)
+  resourceId String?  @map("resource_id") @db.VarChar(64)
+  payload    Json     @db.JsonB
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([tenantId, type, createdAt])
+  @@index([resourceId])
+  @@map("event_log")
+}
+
+// ============================================================
 //  Access requests (BAux1-F001)
 //
 //  Public intake for invite-only signup. Not tenant-scoped — rows are
