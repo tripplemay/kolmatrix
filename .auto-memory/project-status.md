@@ -17,8 +17,8 @@ type: project
 - Prod 已上 `4b05cb6`（BAux1 + BI4 F001/F002/F004）
 - Framework v0.9.3（deploy-patterns §2 VPS artifact in-git 必检）
 
-## 角色分配（BM1，沿用）
-- Planner: Kimi / Generator: johnsong / Evaluator: Reviewer
+## 角色分配（BM1）
+- Planner: johnsong（2026-04-23 接手 Kimi）/ Generator: johnsong / Evaluator: Reviewer
 
 ## MVP 路线（32-37 天总目标）
 BAux1 ✅ → BI4 ✅ → **BM1（9f 7-10 天）** → BM2（~13f 10-14 天）→ MVP demo → 种子用户反馈
