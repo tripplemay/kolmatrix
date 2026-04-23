@@ -54,9 +54,14 @@ test.describe("Marketer — login + dashboard flow", () => {
     await login(page);
     await expect(page.getByRole("heading", { name: /Welcome back, Sarah/ })).toBeVisible();
     await expect(page.getByText(/Total KOLs/i)).toBeVisible();
-    // Proof the KPI card is wired to real DB rows — 12 KOLs live in the
-    // seed, spec's "12,847" comes from the design mock and is skipped.
-    await expect(page.locator("text=/^12$/").first()).toBeVisible();
+    // Proof the KPI card is wired to real DB rows: assert the tile
+    // shows a non-zero integer. BM1-F007 filters the count to
+    // isGaming=true, so the exact number depends on seed flavor (12
+    // from db:seed, 415 when seed:kol has been run against the same
+    // tenant). Pattern matches any comma-grouped positive integer.
+    await expect(
+      page.getByTestId("dashboard-kpi-row").getByText(/^[1-9][0-9,]*$/).first()
+    ).toBeVisible();
   });
 
   test("switching locale EN → ZH updates nav labels from 'Dashboard' to '仪表盘'", async ({

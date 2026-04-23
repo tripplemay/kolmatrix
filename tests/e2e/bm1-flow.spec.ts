@@ -118,7 +118,9 @@ test.describe("BM1 — full marketer journey (F009 E2E)", () => {
       const savedRow = page.locator(
         `[data-testid="database-row"][data-kol-id="${savedKolId}"]`
       );
-      await expect(savedRow).toBeVisible();
+      // Staging revalidatePath round-trip is slower than local dev;
+      // allow up to 15s for the newly-saved row to land in /database.
+      await expect(savedRow).toBeVisible({ timeout: 15_000 });
 
       // 9. Click the row → /kols/:id profile
       await savedRow.getByRole("link").first().click();
