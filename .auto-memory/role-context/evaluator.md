@@ -28,3 +28,14 @@ type: feedback
 - reverifying → done 前必须写 `docs/test-reports/[批次名]-signoff-YYYY-MM-DD.md`
 - 使用 `framework/templates/signoff-report.md` 模板
 - progress.json 的 `docs.signoff` 为空不得置 done
+
+## VPS artifact in-git 核对（硬性）
+
+任何 acceptance 写"在 VPS 上产出 X"（脚本 / config / cron / 证书等）的 feature，签收时**必须**核对该 artifact 已 in git：
+
+```bash
+ssh tripplezhou@34.180.93.185 "cd /opt/kolmatrix && git ls-files <artifact-path>"
+# 应该输出该路径；空输出 = artifact 只活在 VPS 单点，拒绝签收
+```
+
+仅核对"文件存在 VPS 上"（`ls -la`）是不够的 —— 这会让脚本 / 配置文件活在单点，未来 re-deploy / 迁机器 / 灾后恢复会丢失。详见 `framework/harness/deploy-patterns.md` §2。
