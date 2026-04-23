@@ -407,6 +407,54 @@
     "noMatches": {
       "title": "No campaigns match those filters",
       "body": "Try clearing the filters or widening the search."
+    },
+    "new": {
+      "title": "New Campaign",
+      "subtitle": "Register a launch so you can invite creators and track its ROI.",
+      "backToList": "Back to Campaigns",
+      "submit": "Create Campaign",
+      "submitting": "Creating…",
+      "fields": {
+        "name": "Campaign name",
+        "nameHint": "A short, recognisable label — max 80 chars.",
+        "product": "Product",
+        "budget": "Total budget (USD)",
+        "budgetHint": "Optional. Used to compute Spend vs. Budget on the list page.",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "game": "Game / title (optional)",
+        "gameHint": "Fill when different from the product name.",
+        "markets": "Target markets",
+        "kpiTarget": "KPI target (optional)",
+        "kpiTargetHint": "Free-text brief — e.g., '2M views in 30 days'."
+      },
+      "markets": {
+        "global": "Global",
+        "us": "US",
+        "eu": "EU",
+        "jp": "Japan",
+        "kr": "Korea",
+        "sea": "Southeast Asia",
+        "cn": "Mainland China",
+        "latam": "LATAM"
+      },
+      "noProducts": {
+        "title": "No products yet",
+        "body": "Campaigns run against a product. Register your first one in Knowledge Base, then come back.",
+        "cta": "Go to Knowledge Base"
+      },
+      "errors": {
+        "nameRequired": "Give the campaign a name.",
+        "productIdRequired": "Pick a product.",
+        "productNotFound": "That product is no longer available.",
+        "budgetInvalid": "Budget must be a number (e.g., 10000.00).",
+        "budgetOverflow": "Budget is too large for our records.",
+        "dateInvalid": "Invalid date.",
+        "endBeforeStart": "End date cannot be before the start date.",
+        "ownerInvalid": "Owner session looks invalid — please sign in again.",
+        "generic": "Something went wrong. Please try again.",
+        "unauthorized": "Please sign in to create campaigns."
+      }
     }
   },
   "relationshipStatus": {

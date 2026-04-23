@@ -407,6 +407,54 @@
     "noMatches": {
       "title": "没有符合筛选的活动",
       "body": "试试清空筛选条件或扩大搜索范围。"
+    },
+    "new": {
+      "title": "新建活动",
+      "subtitle": "登记一次推广后即可邀请创作者并追踪 ROI。",
+      "backToList": "返回活动列表",
+      "submit": "创建活动",
+      "submitting": "创建中…",
+      "fields": {
+        "name": "活动名称",
+        "nameHint": "简短、易辨识的名称 — 最多 80 字。",
+        "product": "关联产品",
+        "budget": "总预算（美元）",
+        "budgetHint": "选填。用于列表页展示 花费 vs. 预算。",
+        "startDate": "开始日期",
+        "endDate": "结束日期",
+        "game": "游戏标题（选填）",
+        "gameHint": "若与产品名不同则填写。",
+        "markets": "目标市场",
+        "kpiTarget": "KPI 目标（选填）",
+        "kpiTargetHint": "自由文本简报 —— 例如「30 天 200 万播放」。"
+      },
+      "markets": {
+        "global": "全球",
+        "us": "美国",
+        "eu": "欧洲",
+        "jp": "日本",
+        "kr": "韩国",
+        "sea": "东南亚",
+        "cn": "中国大陆",
+        "latam": "拉美"
+      },
+      "noProducts": {
+        "title": "还没有产品",
+        "body": "活动必须关联一个产品。请先去知识库录入一个，再回来新建活动。",
+        "cta": "去知识库"
+      },
+      "errors": {
+        "nameRequired": "请填写活动名称。",
+        "productIdRequired": "请选择一个产品。",
+        "productNotFound": "该产品已不存在。",
+        "budgetInvalid": "预算需为数字（如 10000.00）。",
+        "budgetOverflow": "预算超出系统可记录的上限。",
+        "dateInvalid": "日期格式无效。",
+        "endBeforeStart": "结束日期不能早于开始日期。",
+        "ownerInvalid": "登录状态异常，请重新登录。",
+        "generic": "出错啦，请稍后再试。",
+        "unauthorized": "请先登录后再创建活动。"
+      }
     }
   },
   "relationshipStatus": {
