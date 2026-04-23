@@ -365,5 +365,69 @@
     "long_term": "长期合作",
     "paused": "已暂停",
     "terminated": "已终止"
+  },
+  "kolProfile": {
+    "backToDatabase": "返回数据库",
+    "backToDiscovery": "返回 KOL 发现",
+    "notFoundTitle": "未找到该 KOL",
+    "notFoundBody": "该创作者不在你的工作区中，可能已被移除或属于其他租户。",
+    "tabs": {
+      "overview": "概览",
+      "collabs": "合作历史",
+      "contacts": "沟通记录",
+      "ai": "AI 价值分析"
+    },
+    "hero": {
+      "platform": "平台",
+      "followers": "粉丝",
+      "country": "国家",
+      "language": "语言",
+      "unknown": "—"
+    },
+    "overview": {
+      "sectionInfo": "基础信息",
+      "sectionValue": "AI 价值分",
+      "sectionActions": "关系管理",
+      "fieldPlatform": "平台",
+      "fieldHandle": "账号",
+      "fieldCountry": "国家",
+      "fieldLanguage": "语言",
+      "fieldFollowers": "粉丝数",
+      "fieldEngagement": "互动率",
+      "fieldAvgViews": "平均播放",
+      "fieldLastUpload": "最近上传",
+      "fieldMonetization": "变现状态",
+      "fieldBrandSafety": "品牌安全分级",
+      "fieldUploadsPerMonth": "月均上传数",
+      "fieldTags": "标签",
+      "fieldBio": "简介",
+      "valueScoreLabel": "价值",
+      "valueScoreCaption": "基于粉丝量 + 互动率 + 内容多样性计算。",
+      "valueBreakdownTitle": "公式拆解",
+      "valueBreakdownFollowers": "log₁₀(粉丝) × 15，上限 50",
+      "valueBreakdownEngagement": "互动率固定加分 = 15",
+      "valueBreakdownCategories": "品类数 × 8，上限 20",
+      "valueBreakdownNormalize": "归一化到 0–100 分",
+      "valueEmpty": "尚未生成价值分 — 下次数据刷新后自动计算。",
+      "bioEmpty": "暂无简介。",
+      "tagsEmpty": "暂无标签。",
+      "status": "关系状态",
+      "statusHelper": "在 CRM 生命周期中推进该创作者，所有变更入审计日志。",
+      "save": "保存到候选组",
+      "saved": "已加入候选组",
+      "unsave": "从候选组移除",
+      "saveHelper": "已保存的创作者会出现在数据库页，便于后续触达。"
+    },
+    "emptyTab": {
+      "collabs": "创建首个活动后（BM2）将在此显示合作历史。",
+      "contacts": "首次触达后（BM2）将在此显示邮件与消息记录。",
+      "ai": "基于单次活动的深度 AI 价值分析将在 BM2 上线。"
+    },
+    "errors": {
+      "invalid_input": "输入有误，请刷新后重试。",
+      "unauthorized": "未登录。",
+      "not_found": "该创作者已不存在。",
+      "generic": "更新失败，请稍后重试。"
+    }
   }
 }

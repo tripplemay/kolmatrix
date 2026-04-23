@@ -365,5 +365,69 @@
     "long_term": "Long-term",
     "paused": "Paused",
     "terminated": "Terminated"
+  },
+  "kolProfile": {
+    "backToDatabase": "Back to Database",
+    "backToDiscovery": "Back to Discovery",
+    "notFoundTitle": "KOL not found",
+    "notFoundBody": "This creator is not in your workspace. They may have been removed or belong to another tenant.",
+    "tabs": {
+      "overview": "Overview",
+      "collabs": "Collaboration history",
+      "contacts": "Contact log",
+      "ai": "AI value analysis"
+    },
+    "hero": {
+      "platform": "Platform",
+      "followers": "Followers",
+      "country": "Country",
+      "language": "Language",
+      "unknown": "—"
+    },
+    "overview": {
+      "sectionInfo": "Basic information",
+      "sectionValue": "AI value score",
+      "sectionActions": "Relationship",
+      "fieldPlatform": "Platform",
+      "fieldHandle": "Handle",
+      "fieldCountry": "Country",
+      "fieldLanguage": "Language",
+      "fieldFollowers": "Followers",
+      "fieldEngagement": "Engagement rate",
+      "fieldAvgViews": "Avg views",
+      "fieldLastUpload": "Last upload",
+      "fieldMonetization": "Monetization",
+      "fieldBrandSafety": "Brand safety",
+      "fieldUploadsPerMonth": "Uploads / month",
+      "fieldTags": "Tags",
+      "fieldBio": "Bio",
+      "valueScoreLabel": "Value",
+      "valueScoreCaption": "Based on follower size + engagement + content diversity.",
+      "valueBreakdownTitle": "Formula breakdown",
+      "valueBreakdownFollowers": "log₁₀(followers) × 15, capped at 50",
+      "valueBreakdownEngagement": "Fixed engagement bonus = 15",
+      "valueBreakdownCategories": "count(categories) × 8, capped at 20",
+      "valueBreakdownNormalize": "Normalised to 0–100 scale",
+      "valueEmpty": "No value score yet — score will populate after seed refresh.",
+      "bioEmpty": "No bio available yet.",
+      "tagsEmpty": "No tags yet.",
+      "status": "Relationship status",
+      "statusHelper": "Move this creator through your CRM lifecycle. Audit-logged.",
+      "save": "Save to shortlist",
+      "saved": "Saved to shortlist",
+      "unsave": "Remove from shortlist",
+      "saveHelper": "Saved creators appear in /database for outreach follow-up."
+    },
+    "emptyTab": {
+      "collabs": "Campaign collaborations will appear here once you launch your first campaign (BM2).",
+      "contacts": "Email and message history will appear here after your first outreach (BM2).",
+      "ai": "Deep AI value analysis with per-campaign fit scoring ships with BM2."
+    },
+    "errors": {
+      "invalid_input": "Invalid input. Please refresh and retry.",
+      "unauthorized": "You are not signed in.",
+      "not_found": "Creator no longer exists.",
+      "generic": "Could not update. Please retry."
+    }
   }
 }

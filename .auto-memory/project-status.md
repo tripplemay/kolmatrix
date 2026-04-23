@@ -4,13 +4,14 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BM1-console-kol-core** — status=building，5/9 features 完成（F001–F005），下一步 F006 KOL 画像
+- **BM1-console-kol-core** — status=building，6/9 features 完成（F001–F006），下一步 F007 Dashboard 真数据
   - ✅ F001 schema extension（Product + Kol 13 列 + kolFee + 2 indexes + RLS NULLIF）commit `f7971c7`
   - ✅ F002 seed script 2,524 rows + valueScore util + platform normalize commit `7142929`
   - ✅ F003 `/knowledge-base` page + Modal + aigcgateway 素材 fire-and-forget
-  - ✅ F004 `/discovery` 15 维 filter + cursor 分页 + toggleKolSaved；URL-driven GET form
-  - ✅ F005 `/database` saved-KOL 表格 + 4 维简化 filter（含 relationshipStatus）；复用 F004 filters.ts 架构；nav `kol-database` href `/kols`→`/database`（`/kols/:id` 留给 F006）
-  - ⏳ F006 画像 → F007 Dashboard → F008 locale → F009 tests
+  - ✅ F004 `/discovery` 15 维 filter + cursor 分页 + toggleKolSaved
+  - ✅ F005 `/database` saved-KOL 表格 + 4 维简化 filter（含 relationshipStatus）
+  - ✅ F006 `/kols/[id]` 画像页 + 4 tabs + Overview + updateKolRelationshipStatus + audit_log
+  - ⏳ F007 Dashboard 真数据 → F008 locale → F009 tests
   - pre-impl 审计 `docs/specs/BM1-f001-schema-preimpl-audit.md` 裁决 #A:A #B:A #C:A #D:A+C #E:C #F:A（#E 偏离 Gen，归一化 0-100）
 - **BI4** ✅ done 一轮过（5/5 PASS fix_rounds=0，framework v0.9.3 沉淀 VPS artifact in-git 硬要求）
 - 所有前置批次 ✅：B0 / BI1 / BI2 / BI3 / BAux1 / BI4

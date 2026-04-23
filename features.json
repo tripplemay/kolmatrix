@@ -46,7 +46,7 @@
       "title": "KOL 画像页 /kols/:id",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/app/[locale]/(app)/kols/[id]/page.tsx 对齐 Stitch kol-detail.html（canonical App Shell）；顶部头部 + 头像 + 名字 + 平台·粉丝·地区；Tab bar: Overview / 合作历史（BM1 empty state 'Campaign 创建后展示 (BM2)'）/ 沟通记录（empty）/ AI 价值分析（empty BM2）；Overview tab：基础信息卡（15 字段）+ 价值分大块（cyan 大字 + breakdown hover 显示 followers 50+engagement 15+categories 20=85 公式解释）+ 关系状态 dropdown 6 enum（prospect/first_contact/negotiating/long_term/paused/terminated 手动改）+ 保存 toggle（isSaved）；Server Action updateKolRelationshipStatus / toggleKolSaved；空 id→404；i18n kol-profile.* 全译；tests/integration/kol-profile.test.ts status 改动持久化 / toggle 保存；visual /en/kols/{demo-id} baseline"
     },
     {
