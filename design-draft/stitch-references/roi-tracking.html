@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOLMatrix - ROI Tracking</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "tertiary-fixed-dim": "#f3bf26",
+                "surface-bright": "#31394e",
+                "on-primary-fixed-variant": "#004f58",
+                "surface": "#0b1326",
+                "on-secondary-fixed": "#290055",
+                "primary-fixed-dim": "#00daf3",
+                "surface-tint": "#00daf3",
+                "error-container": "#93000a",
+                "primary-container": "#00e5ff",
+                "surface-container-low": "#131b2e",
+                "surface-dim": "#0b1326",
+                "secondary": "#d8b9ff",
+                "tertiary-container": "#fec931",
+                "on-primary-container": "#00626e",
+                "on-tertiary-fixed": "#251a00",
+                "on-surface": "#dbe2fd",
+                "on-tertiary-container": "#6f5500",
+                "on-surface-variant": "#bac9cc",
+                "on-background": "#dbe2fd",
+                "on-primary": "#00363d",
+                "on-tertiary": "#3e2e00",
+                "inverse-surface": "#dbe2fd",
+                "error": "#ffb4ab",
+                "on-error": "#690005",
+                "background": "#0b1326",
+                "inverse-on-surface": "#283044",
+                "outline": "#849396",
+                "tertiary": "#ffeac0",
+                "primary-fixed": "#9cf0ff",
+                "on-secondary-fixed-variant": "#6200bc",
+                "surface-container-high": "#222a3e",
+                "secondary-fixed-dim": "#d8b9ff",
+                "outline-variant": "#3b494c",
+                "inverse-primary": "#006875",
+                "on-primary-fixed": "#001f24",
+                "primary": "#c3f5ff",
+                "surface-container": "#171f33",
+                "secondary-container": "#6e06d0",
+                "surface-container-lowest": "#060d20",
+                "surface-variant": "#2d3449",
+                "tertiary-fixed": "#ffdf96",
+                "on-secondary": "#450086",
+                "secondary-fixed": "#eddcff",
+                "on-tertiary-fixed-variant": "#594400",
+                "surface-container-highest": "#2d3449",
+                "on-secondary-container": "#d5b5ff",
+                "on-error-container": "#ffdad6"
+            },
+            "fontFamily": {
+                "headline": ["Inter"],
+                "body": ["Inter"],
+                "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b1326; color: #dbe2fd; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; }
+        .glass-card { background: rgba(23, 31, 51, 0.4); backdrop-filter: blur(24px); border: none; }
+        .cyan-glow { box-shadow: 0 0 20px rgba(0, 229, 255, 0.15); }
+        .text-gradient-cyan { background: linear-gradient(135deg, #00daf3, #c3f5ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(186, 201, 204, 0.2); border-radius: 10px; }
+    </style>
+</head>
+<body class="antialiased select-none">
+<!-- CANONICAL SIDEBAR -->
+<aside class="fixed left-0 top-0 w-[240px] h-full z-50 bg-[#060e20] flex flex-col py-6 px-6 shadow-[20px_0_20px_-20px_rgba(0,229,255,0.03)] font-['Inter'] tracking-tight antialiased">
+<div class="flex items-center gap-3 mb-8 h-14">
+<div class="w-10 h-10 rounded-[10px] bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] flex items-center justify-center text-[#0b1326] font-bold text-lg">K</div>
+<div>
+<div class="text-white font-bold text-lg leading-tight tracking-tight bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] text-transparent bg-clip-text">KOLMatrix</div>
+<div class="text-[9px] font-semibold text-gray-500 tracking-[0.15em] uppercase">NEURAL VELOCITY</div>
+</div>
+</div>
+<nav class="flex-grow flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-max text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-[#00E5FF]">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-max text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-[#00E5FF]">travel_explore</span>
+<span class="text-sm font-medium">KOL Discovery</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-max text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-[#00E5FF]">groups</span>
+<span class="text-sm font-medium">KOL Database</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-max text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-[#00E5FF]">rocket_launch</span>
+<span class="text-sm font-medium">Campaigns</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-max text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-[#00E5FF]">forward_to_inbox</span>
+<span class="text-sm font-medium">Email Center</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-max text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-[#00E5FF]">inventory_2</span>
+<span class="text-sm font-medium">Products</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#00E5FF] font-semibold border-l-2 border-[#00E5FF] bg-gradient-to-r from-[rgba(0,229,255,0.10)] to-transparent transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-xl">query_stats</span>
+<span class="text-sm font-medium">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-max text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-[#00E5FF]">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-white/5">
+<div class="flex items-center gap-3 p-3 rounded-[10px] hover:bg-[#222a3d]/40 transition-all cursor-pointer group">
+<div class="w-9 h-9 rounded-full overflow-hidden border border-transparent group-hover:border-[#00E5FF]/50 transition-all">
+<img class="w-full h-full object-cover" data-alt="professional woman Sarah Chen with direct eye contact smiling in business environment studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAL58bx5wzmyPF9qAyqsoBv8L-1sqiDyMvAfbBYcTAwua4AxwbLafEI-pKH0rTSHegLBeiVmFZEKu-WS993QBlir9sDYyGUOuREN30hl1q6mNeaARZKF6UTW3NjZJUZ4EbcO67kzk_7OJWLA3Sml3KePKz3idht2Q5aLQ3ZJzLLhOjZDFT_jUR35T1X9Y97bnJLZSu3ZQqFyJNT-tvfz__q1mv2lTrCw_vFrwFEZk79-IQzRQppfSHQnd69-uyo6kIUqtAnHKPchQg"/>
+</div>
+<div class="flex-grow">
+<div class="text-sm font-semibold text-white">Sarah Chen</div>
+<div class="text-[11px] text-gray-500">Ops Lead</div>
+</div>
+<span class="material-symbols-outlined text-gray-500 text-lg">unfold_more</span>
+</div>
+</div>
+</aside>
+<!-- CANONICAL TOPBAR -->
+<header class="fixed top-0 right-0 w-[calc(100%-240px)] h-16 z-40 bg-[#0b1326]/85 backdrop-blur-2xl flex justify-between items-center px-8 shadow-[0_4px_20px_rgba(0,0,0,0.3)] font-['Inter']">
+<div class="flex items-center">
+<h2 class="text-white font-semibold text-base">ROI Tracking</h2>
+</div>
+<div class="flex-1 max-w-[480px] mx-auto">
+<div class="relative flex items-center h-10 px-4 rounded-full bg-[#2d3449] focus-within:ring-1 focus-within:ring-[#00E5FF]/20 transition-all">
+<span class="material-symbols-outlined text-gray-500 text-lg">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm text-on-surface-variant w-full px-2 placeholder-gray-500" placeholder="Search KOLs, campaigns, emails..." type="text"/>
+<div class="flex items-center gap-1 bg-[#131b2e] px-1.5 py-0.5 rounded border border-white/5">
+<span class="text-[10px] font-medium text-gray-500">Cmd+K</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-1 cursor-pointer hover:text-[#00E5FF] transition-colors text-[#bac9cc]">
+<span class="text-[13px] font-medium">EN</span>
+<span class="material-symbols-outlined text-base">expand_more</span>
+</div>
+<div class="relative cursor-pointer hover:text-[#00E5FF] transition-colors text-[#bac9cc]">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<div class="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+</div>
+<div class="h-6 w-px bg-white/10"></div>
+<div class="flex items-center gap-2 cursor-pointer group">
+<div class="w-8 h-8 rounded-full overflow-hidden border border-transparent group-hover:border-[#00E5FF]/30 transition-all">
+<img class="w-full h-full object-cover" data-alt="professional headshot profile icon for Sarah Chen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuANw188nraEnTLRQreXTlFVm1jfle9i-u_eHQYJ4S3aoZG1z-T3-z405xfWaCqDK2mjgHKUkbVmL8T-kq7ORHvhVhPBH8E1PCoYmFFypOGQS-W8kBwVlM2a9LzR1BBnGWvdXME75sEmxX8I-S5CJ4zQXetUGiComgPrjPNY03UiLBKxIi5t0q34jRC9Ulisc0bybcS-yw7V_KnxFICTuT2S1XnBEq8wkmDXBsfe960nDnkCqYoHRFv2A-5X_8Iezm1aU1nxjfE-8DQ"/>
+</div>
+<span class="material-symbols-outlined text-[#bac9cc] group-hover:text-[#00E5FF] transition-colors">expand_more</span>
+</div>
+</div>
+</header>
+<!-- MAIN CONTENT AREA -->
+<main class="ml-[240px] mt-16 p-8 min-h-screen">
+<!-- Breadcrumb & Header -->
+<nav class="flex items-center gap-2 mb-2 text-xs font-medium text-[#9cf0ff]/60 uppercase tracking-widest">
+<span>Analytics</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-[#9cf0ff]">ROI Tracking</span>
+</nav>
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
+<div>
+<h1 class="text-4xl font-extrabold text-white tracking-tight leading-none mb-2">ROI Tracking</h1>
+<p class="text-on-surface-variant text-sm font-medium">Real-time neural tracking of capital velocity across marketing pipelines.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex bg-[#2d3449]/50 p-1 rounded-lg">
+<button class="px-4 py-1.5 text-xs font-semibold text-[#bac9cc] hover:text-white transition-all">7D</button>
+<button class="px-4 py-1.5 text-xs font-semibold bg-[#00E5FF] text-[#0b1326] rounded-md shadow-lg shadow-[#00E5FF]/20">30D</button>
+<button class="px-4 py-1.5 text-xs font-semibold text-[#bac9cc] hover:text-white transition-all">90D</button>
+<button class="px-4 py-1.5 text-xs font-semibold text-[#bac9cc] hover:text-white transition-all">All-time</button>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-[#bac9cc] hover:text-[#00E5FF] bg-white/5 hover:bg-white/10 transition-all rounded-lg">
+<span class="material-symbols-outlined text-lg">sync</span>
+                    Sync
+                </button>
+<button class="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-[#9D50FF] hover:text-[#ba89ff] bg-[#9D50FF]/10 hover:bg-[#9D50FF]/20 transition-all rounded-lg border border-[#9D50FF]/20">
+<span class="material-symbols-outlined text-lg">auto_awesome</span>
+                    AI Insights
+                </button>
+<button class="flex items-center gap-2 px-6 py-2.5 text-sm font-bold bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] text-[#0b1326] hover:scale-[1.02] active:scale-[0.98] transition-all rounded-lg shadow-[0_0_20px_rgba(0,229,255,0.2)]">
+<span class="material-symbols-outlined text-xl">add_circle</span>
+                    Record revenue
+                </button>
+</div>
+</div>
+<!-- KPI Row -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="glass-card rounded-2xl p-6 flex flex-col justify-between h-[160px] relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4">
+<div class="w-16 h-8 flex items-end gap-0.5">
+<div class="w-1 bg-red-500/30 rounded-full h-3"></div>
+<div class="w-1 bg-red-500/30 rounded-full h-5"></div>
+<div class="w-1 bg-red-500/30 rounded-full h-2"></div>
+<div class="w-1 bg-red-500/60 rounded-full h-4"></div>
+<div class="w-1 bg-red-500 rounded-full h-7"></div>
+</div>
+</div>
+<div>
+<div class="text-[#bac9cc] text-xs font-semibold uppercase tracking-widest mb-1">Total Spend</div>
+<div class="text-3xl font-bold text-white tracking-tight">$269,400</div>
+</div>
+<div class="flex items-center gap-1.5 text-red-400 font-bold text-xs">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>+12.4% vs last period</span>
+</div>
+</div>
+<div class="glass-card rounded-2xl p-6 flex flex-col justify-between h-[160px] relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4">
+<div class="w-16 h-8 flex items-end gap-0.5">
+<div class="w-1 bg-[#00E5FF]/30 rounded-full h-2"></div>
+<div class="w-1 bg-[#00E5FF]/30 rounded-full h-4"></div>
+<div class="w-1 bg-[#00E5FF]/60 rounded-full h-6"></div>
+<div class="w-1 bg-[#00E5FF]/80 rounded-full h-5"></div>
+<div class="w-1 bg-[#00E5FF] rounded-full h-8"></div>
+</div>
+</div>
+<div>
+<div class="text-[#bac9cc] text-xs font-semibold uppercase tracking-widest mb-1">Total Revenue</div>
+<div class="text-3xl font-bold text-white tracking-tight">$1,437,800</div>
+</div>
+<div class="flex items-center gap-1.5 text-[#00E5FF] font-bold text-xs">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>+28.1% vs last period</span>
+</div>
+</div>
+<div class="glass-card rounded-2xl p-6 flex flex-col justify-between h-[160px] relative overflow-hidden group border border-[#00E5FF]/10">
+<div class="absolute inset-0 bg-gradient-to-br from-[#00E5FF]/5 to-transparent pointer-events-none"></div>
+<div>
+<div class="text-[#9cf0ff] text-xs font-semibold uppercase tracking-widest mb-1">Average ROI</div>
+<div class="text-3xl font-extrabold text-gradient-cyan tracking-tight">+434%</div>
+</div>
+<div class="flex items-center gap-1.5 text-[#00E5FF] font-bold text-xs">
+<span class="material-symbols-outlined text-sm">bolt</span>
+<span>High Velocity detected</span>
+</div>
+</div>
+<div class="glass-card rounded-2xl p-6 flex flex-col justify-between h-[160px] relative overflow-hidden group">
+<div>
+<div class="text-[#bac9cc] text-xs font-semibold uppercase tracking-widest mb-1">Active Campaigns</div>
+<div class="text-3xl font-bold text-white tracking-tight">8</div>
+</div>
+<div class="flex items-center gap-1.5 text-gray-500 font-bold text-xs">
+<span class="material-symbols-outlined text-sm">task_alt</span>
+<span>3 ending in &lt; 48h</span>
+</div>
+</div>
+</div>
+<!-- Budget vs Actual & Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-10 gap-8 mb-10">
+<!-- Left: Chart & Budget (60%) -->
+<div class="lg:col-span-6 space-y-8">
+<!-- Budget Card -->
+<div class="glass-card rounded-2xl p-8 border border-white/5">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h3 class="text-white font-bold text-lg">Quarterly Budget Q2 2026</h3>
+<p class="text-on-surface-variant text-xs">Allocation across all active KOL clusters</p>
+</div>
+<div class="text-right">
+<div class="text-2xl font-bold text-white">$500,000</div>
+<div class="text-[10px] text-gray-500 font-bold tracking-widest uppercase">Total Cap</div>
+</div>
+</div>
+<div class="space-y-3">
+<div class="h-4 w-full rounded-full bg-white/5 flex overflow-hidden">
+<div class="bg-[#00E5FF] h-full" style="width: 54%"></div>
+<div class="bg-[#9D50FF] h-full" style="width: 22%"></div>
+<div class="bg-white/10 h-full" style="width: 24%"></div>
+</div>
+<div class="flex justify-between items-center text-xs font-medium">
+<div class="flex items-center gap-2">
+<div class="w-2.5 h-2.5 rounded-full bg-[#00E5FF]"></div>
+<span class="text-white">$269,400 <span class="text-gray-500 font-normal ml-1">Spent</span></span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-2.5 h-2.5 rounded-full bg-[#9D50FF]"></div>
+<span class="text-white">$110,000 <span class="text-gray-500 font-normal ml-1">Committed</span></span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-2.5 h-2.5 rounded-full bg-gray-600"></div>
+<span class="text-white">$120,600 <span class="text-gray-500 font-normal ml-1">Remaining</span></span>
+</div>
+</div>
+</div>
+</div>
+<!-- Spend & Revenue Trend -->
+<div class="glass-card rounded-2xl p-8 border border-white/5 h-[400px] flex flex-col">
+<div class="flex items-center justify-between mb-10">
+<h3 class="text-white font-bold text-lg">Spend &amp; Revenue Trend</h3>
+<div class="flex items-center gap-4 text-xs font-semibold text-[#bac9cc]">
+<div class="flex items-center gap-2"><div class="w-3 h-3 bg-[#00E5FF] rounded-sm"></div> Revenue</div>
+<div class="flex items-center gap-2"><div class="w-3 h-3 bg-white/10 rounded-sm"></div> Spend</div>
+<div class="flex items-center gap-2"><div class="w-3 h-1 bg-[#9D50FF]"></div> ROI %</div>
+</div>
+</div>
+<!-- Mock Chart Visualization -->
+<div class="flex-grow flex items-end gap-6 relative px-4">
+<div class="absolute inset-x-0 bottom-10 h-px bg-white/5"></div>
+<div class="absolute inset-x-0 bottom-1/2 h-px bg-white/5"></div>
+<div class="absolute inset-x-0 top-1/4 h-px bg-white/5"></div>
+<!-- ROI Line Overlay Mock -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" preserveaspectratio="none">
+<path d="M 50 250 L 150 200 L 250 120 L 350 150 L 450 80 L 550 40" fill="none" stroke="#9D50FF" stroke-width="3"></path>
+</svg>
+<!-- Bars -->
+<div class="flex-1 flex flex-col justify-end gap-1 group relative">
+<div class="w-full bg-[#00E5FF]/80 rounded-t-sm h-[80px]"></div>
+<div class="w-full bg-white/10 rounded-b-sm h-[30px]"></div>
+<div class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] text-gray-500 font-bold">JAN</div>
+</div>
+<div class="flex-1 flex flex-col justify-end gap-1 group relative">
+<div class="w-full bg-[#00E5FF]/80 rounded-t-sm h-[120px]"></div>
+<div class="w-full bg-white/10 rounded-b-sm h-[40px]"></div>
+<div class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] text-gray-500 font-bold">FEB</div>
+</div>
+<div class="flex-1 flex flex-col justify-end gap-1 group relative">
+<div class="w-full bg-[#00E5FF]/80 rounded-t-sm h-[180px]"></div>
+<div class="w-full bg-white/10 rounded-b-sm h-[50px]"></div>
+<div class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] text-[#00E5FF] font-bold">MAR</div>
+</div>
+<div class="flex-1 flex flex-col justify-end gap-1 group relative">
+<div class="w-full bg-[#00E5FF]/80 rounded-t-sm h-[150px]"></div>
+<div class="w-full bg-white/10 rounded-b-sm h-[45px]"></div>
+<div class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] text-gray-500 font-bold">APR</div>
+</div>
+<div class="flex-1 flex flex-col justify-end gap-1 group relative">
+<div class="w-full bg-[#00E5FF]/80 rounded-t-sm h-[210px]"></div>
+<div class="w-full bg-white/10 rounded-b-sm h-[60px]"></div>
+<div class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] text-gray-500 font-bold">MAY</div>
+</div>
+<div class="flex-1 flex flex-col justify-end gap-1 group relative">
+<div class="w-full bg-[#00E5FF]/80 rounded-t-sm h-[260px]"></div>
+<div class="w-full bg-white/10 rounded-b-sm h-[70px]"></div>
+<div class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] text-gray-500 font-bold">JUN</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: AI Insights (40%) -->
+<div class="lg:col-span-4 glass-card rounded-2xl p-8 border border-white/5 flex flex-col">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-[#9D50FF]">auto_awesome</span>
+<h3 class="text-white font-bold text-lg">AI Insights</h3>
+</div>
+<div class="space-y-4 flex-grow">
+<div class="p-5 rounded-xl bg-[#2d3449]/30 border border-white/5 hover:border-[#00E5FF]/20 transition-all cursor-pointer">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-emerald-400">trending_up</span>
+</div>
+<div>
+<div class="text-white font-bold text-sm mb-1">TikTok is outperforming</div>
+<p class="text-on-surface-variant text-xs leading-relaxed">Engagement-to-purchase velocity on TikTok is 4.2x higher than Instagram in the current 30D window.</p>
+<div class="mt-3 flex items-center gap-2">
+<span class="text-[10px] font-bold text-emerald-400 uppercase">Recommendation:</span>
+<span class="text-[10px] text-white">Shift 15% budget to short-form</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-5 rounded-xl bg-[#2d3449]/30 border border-white/5 hover:border-red-500/20 transition-all cursor-pointer">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-red-400">warning</span>
+</div>
+<div>
+<div class="text-white font-bold text-sm mb-1">Underperforming campaigns</div>
+<p class="text-on-surface-variant text-xs leading-relaxed">"Retro Vibes - Streetwear" shows negative ROI (-12%). High acquisition cost detected on mid-tier KOLs.</p>
+<div class="mt-3 flex items-center gap-2">
+<span class="text-[10px] font-bold text-red-400 uppercase">Alert:</span>
+<span class="text-[10px] text-white">Audit KOL selection criteria</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-5 rounded-xl bg-[#2d3449]/30 border border-[#00E5FF]/10 hover:border-[#00E5FF]/40 transition-all cursor-pointer shadow-[inset_0_0_20px_rgba(0,229,255,0.05)]">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-lg bg-[#00E5FF]/10 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[#00E5FF]">stars</span>
+</div>
+<div>
+<div class="text-white font-bold text-sm mb-1">Best performing KOL tier</div>
+<p class="text-on-surface-variant text-xs leading-relaxed">Micro-KOLs (10k-50k) are driving the highest net revenue margins this quarter.</p>
+<div class="mt-3 flex items-center gap-2 text-[#00E5FF]">
+<span class="text-[10px] font-bold uppercase">ROI Multiplier:</span>
+<span class="text-[10px] font-bold">8.4x</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<button class="mt-8 w-full py-3 rounded-xl border border-[#9D50FF]/30 text-[#9D50FF] font-bold text-xs uppercase tracking-widest hover:bg-[#9D50FF]/10 transition-all">Generate Full Report</button>
+</div>
+</div>
+<!-- Campaign ROI Table -->
+<div class="mt-12">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-xl font-extrabold text-white">Campaign ROI Analysis</h3>
+<div class="flex items-center gap-4">
+<div class="relative">
+<input class="bg-[#2d3449]/50 border-none rounded-lg text-xs py-2 pl-8 pr-4 text-white focus:ring-1 focus:ring-[#00E5FF]/30 w-48" placeholder="Filter by name..." type="text"/>
+<span class="material-symbols-outlined absolute left-2.5 top-2 text-gray-500 text-sm">filter_list</span>
+</div>
+</div>
+</div>
+<div class="overflow-x-auto custom-scrollbar">
+<table class="w-full text-left border-separate border-spacing-y-2">
+<thead>
+<tr class="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">
+<th class="px-6 py-4">Campaign</th>
+<th class="px-6 py-4">Product</th>
+<th class="px-6 py-4">Period</th>
+<th class="px-6 py-4 text-right">Spend</th>
+<th class="px-6 py-4 text-right">Revenue</th>
+<th class="px-6 py-4 text-center">ROI</th>
+<th class="px-6 py-4">Status</th>
+</tr>
+</thead>
+<tbody class="text-sm">
+<tr class="glass-card hover:bg-[#2d3449]/40 transition-colors group">
+<td class="px-6 py-5 rounded-l-xl font-bold text-white">Spring — Honor of Kings</td>
+<td class="px-6 py-5 text-[#bac9cc]">Game Expansion</td>
+<td class="px-6 py-5 text-gray-500 font-medium">Apr 01 - Apr 30</td>
+<td class="px-6 py-5 text-right font-medium text-white">$45,000</td>
+<td class="px-6 py-5 text-right font-bold text-[#00E5FF]">$270,450</td>
+<td class="px-6 py-5 text-center">
+<span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-500/20">+501%</span>
+</td>
+<td class="px-6 py-5 rounded-r-xl">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-[#00E5FF]"></div>
+<span class="text-xs font-semibold text-white">Live</span>
+</div>
+</td>
+</tr>
+<tr class="glass-card hover:bg-[#2d3449]/40 transition-colors">
+<td class="px-6 py-5 rounded-l-xl font-bold text-white">Valorant Ep. 9</td>
+<td class="px-6 py-5 text-[#bac9cc]">Skin Pack</td>
+<td class="px-6 py-5 text-gray-500 font-medium">May 10 - Jun 05</td>
+<td class="px-6 py-5 text-right font-medium text-white">$12,000</td>
+<td class="px-6 py-5 text-right font-bold text-white">$7,440</td>
+<td class="px-6 py-5 text-center">
+<span class="px-3 py-1 bg-red-500/10 text-red-400 text-[10px] font-bold rounded-full border border-red-500/20">-38%</span>
+</td>
+<td class="px-6 py-5 rounded-r-xl">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+<span class="text-xs font-semibold text-white">Paused</span>
+</div>
+</td>
+</tr>
+<tr class="glass-card hover:bg-[#2d3449]/40 transition-colors">
+<td class="px-6 py-5 rounded-l-xl font-bold text-white">Mobile Legends 515</td>
+<td class="px-6 py-5 text-[#bac9cc]">Event Promo</td>
+<td class="px-6 py-5 text-gray-500 font-medium">May 01 - May 20</td>
+<td class="px-6 py-5 text-right font-medium text-white">$88,000</td>
+<td class="px-6 py-5 text-right font-bold text-[#00E5FF]">$396,000</td>
+<td class="px-6 py-5 text-center">
+<span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-500/20">+350%</span>
+</td>
+<td class="px-6 py-5 rounded-r-xl">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-gray-500"></div>
+<span class="text-xs font-semibold text-gray-500">Completed</span>
+</div>
+</td>
+</tr>
+<tr class="glass-card hover:bg-[#2d3449]/40 transition-colors">
+<td class="px-6 py-5 rounded-l-xl font-bold text-white">Nike Tech Fleece Alpha</td>
+<td class="px-6 py-5 text-[#bac9cc]">Apparel</td>
+<td class="px-6 py-5 text-gray-500 font-medium">Jun 12 - Jul 12</td>
+<td class="px-6 py-5 text-right font-medium text-white">$24,500</td>
+<td class="px-6 py-5 text-right font-bold text-[#00E5FF]">$112,700</td>
+<td class="px-6 py-5 text-center">
+<span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-500/20">+360%</span>
+</td>
+<td class="px-6 py-5 rounded-r-xl">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-[#00E5FF]"></div>
+<span class="text-xs font-semibold text-white">Live</span>
+</div>
+</td>
+</tr>
+<tr class="glass-card hover:bg-[#2d3449]/40 transition-colors">
+<td class="px-6 py-5 rounded-l-xl font-bold text-white">Cyberpunk 2077 Update</td>
+<td class="px-6 py-5 text-[#bac9cc]">DLC Launch</td>
+<td class="px-6 py-5 text-gray-500 font-medium">May 15 - Jun 15</td>
+<td class="px-6 py-5 text-right font-medium text-white">$65,000</td>
+<td class="px-6 py-5 text-right font-bold text-[#00E5FF]">$208,000</td>
+<td class="px-6 py-5 text-center">
+<span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-500/20">+220%</span>
+</td>
+<td class="px-6 py-5 rounded-r-xl">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-[#00E5FF]"></div>
+<span class="text-xs font-semibold text-white">Live</span>
+</div>
+</td>
+</tr>
+<tr class="glass-card hover:bg-[#2d3449]/40 transition-colors">
+<td class="px-6 py-5 rounded-l-xl font-bold text-white">Razer Viper V3 Intro</td>
+<td class="px-6 py-5 text-[#bac9cc]">Hardware</td>
+<td class="px-6 py-5 text-gray-500 font-medium">Jun 01 - Jun 30</td>
+<td class="px-6 py-5 text-right font-medium text-white">$15,000</td>
+<td class="px-6 py-5 text-right font-bold text-[#00E5FF]">$58,500</td>
+<td class="px-6 py-5 text-center">
+<span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-500/20">+290%</span>
+</td>
+<td class="px-6 py-5 rounded-r-xl">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-[#00E5FF]"></div>
+<span class="text-xs font-semibold text-white">Live</span>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer -->
+<div class="flex flex-col md:flex-row items-center justify-between mt-8 text-sm">
+<div class="text-gray-500 font-medium mb-4 md:mb-0">Showing 1-12 of 34 campaigns</div>
+<div class="flex items-center gap-6">
+<button class="flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 rounded-lg text-white font-bold text-xs transition-all border border-white/5">
+<span class="material-symbols-outlined text-lg">download</span>
+                        Export CSV
+                    </button>
+<div class="flex items-center gap-2">
+<button class="w-9 h-9 rounded-lg flex items-center justify-center bg-[#2d3449]/50 text-gray-500 hover:text-white transition-all">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-9 h-9 rounded-lg flex items-center justify-center bg-[#00E5FF] text-[#0b1326] font-bold">1</button>
+<button class="w-9 h-9 rounded-lg flex items-center justify-center bg-[#2d3449]/50 text-gray-500 hover:text-white font-bold transition-all">2</button>
+<button class="w-9 h-9 rounded-lg flex items-center justify-center bg-[#2d3449]/50 text-gray-500 hover:text-white font-bold transition-all">3</button>
+<button class="w-9 h-9 rounded-lg flex items-center justify-center bg-[#2d3449]/50 text-gray-500 hover:text-white transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

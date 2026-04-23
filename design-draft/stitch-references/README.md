@@ -5,24 +5,28 @@
 >
 > 目的：给开发者（johnsong）一个可在浏览器直接打开的视觉参考，避免每次都要登 Stitch 网页端。
 
-## 文件清单（14 张页面）
+## 文件清单（18 张页面）
 
 | 文件 | 来源 Stitch screen | 对应业务 | 批次 |
 |---|---|---|---|
-| `dashboard.html` + `.png` | `8b4aa02ae47c4da181239399c6ef4658` | Dashboard 首页 | B0 (F005/F007) |
-| `kol-discovery.html` + `.png` | `a1771401c71140e49e20ebc559782dc3` | KOL 发现引擎 | B1 |
-| `kol-detail.html` + `.png` | `31db0441f2c54852a0a326c82142ed64` | KOL 详情/画像页 | B1 |
-| `campaigns-list.html` + `.png` | `cdbe3c188fa14c1181d73148e8839ca0` | Campaigns 列表 | B1 |
-| `campaign-detail.html` + `.png` | `351a1ae59c7a4b7fa268b29acd49b759` | Campaign 详情看板 | B1 |
-| `kol-database.html` + `.png` | `c10b685955b74e4699992687fabc6647` | KOL 数据库管理 | B1 |
-| `email-center.html` + `.png` | `337c7721553644d580d892de0cd58524` | 邮件触达中心 | B3 |
-| `client-review.html` + `.png` | `00ea6b4cd4b342e8ad0cd04679b781e2` | 客户协同筛选（客户视角简化视图）| B3 |
+| `dashboard.html` + `.png` | `8b4aa02ae47c4da181239399c6ef4658` | Dashboard 首页 | B0/BM1 |
+| `kol-discovery.html` + `.png` | `a1771401c71140e49e20ebc559782dc3` | KOL 发现引擎 | BM1 |
+| `kol-detail.html` + `.png` | `31db0441f2c54852a0a326c82142ed64` | KOL 详情/画像页 | BM1 |
+| `campaigns-list.html` + `.png` | `cdbe3c188fa14c1181d73148e8839ca0` | Campaigns 列表 | BM2 |
+| `campaign-detail.html` + `.png` | `351a1ae59c7a4b7fa268b29acd49b759` | Campaign 详情看板 | BM2 |
+| `kol-database.html` + `.png` | `c10b685955b74e4699992687fabc6647` | KOL 数据库管理 | BM1 |
+| `email-center.html` + `.png` | `337c7721553644d580d892de0cd58524` | 邮件触达中心 | BM2 |
+| `client-review.html` + `.png` | `00ea6b4cd4b342e8ad0cd04679b781e2` | 客户协同筛选（客户视角简化视图）| B7 远期 |
 | `email-tracking.html` + `.png` | `a654800b865d4680818750b003519e33` | Email Tracking 详情（邮件线程追踪）| B4 |
-| `login.html` + `.png` | `601539f07eaf436f8a8fb151ee88384e` | 登录页（58/42 cinematic split，游戏氛围版）| B0 Auth |
-| `signup.html` + `.png` | `7fa095c8ec33476995b97fe241af697a` | Request workspace access 注册页（58/42 war-room 配对）| B0/B9 |
+| `login.html` + `.png` | `601539f07eaf436f8a8fb151ee88384e` | 登录页（58/42 cinematic split，游戏氛围版）| BAux1 ✅|
+| `signup.html` + `.png` | `7fa095c8ec33476995b97fe241af697a` | Request workspace access 注册页（58/42 war-room）| BAux1 ✅|
 | `email-template-editor.html` + `.png` | `e4515ced3d414b289979ba2a06a31e89` | 邮件模板编辑器（左编辑 62% / 右预览 38%）| B4 |
 | `email-send-queue.html` + `.png` | `9e9b4789fe7f430683e4ac22fe1e9271` | 发送队列 + 频控配置 | B4 |
 | `email-unsubscribe.html` + `.png` | `c4aed4b89ce24fb09a4df10bfe0a98bf` | 退订管理 + 公开退订页预览 | B4 合规 |
+| `roi-tracking.html` + `.png` | `5a655b9312c8430c83adfea2b78d6be3` | ROI 追踪（4 KPI + 预算 + 趋势 + Campaign 表 + AI Insights）| **BM2 F009** |
+| `knowledge-base.html` + `.png` | `12dafe39c3414d23bb674df95db140b7` | 产品知识库（录入 + AI 生成素材）| **BM1 F003** |
+| `crm-relationship.html` + `.png` | `2a1b5f8b059e4dd2b842268a88a03067` | KOL 关系管理 CRM（6 阶段 + 漏斗，MVP 简化版）| **BM2 F007** |
+| `weekly-report.html` + `.png` | `739c35deff2c43ebb00e3cc04f582462` | AI 周报（给客户看，PDF + 分享链接）| **BM2 F010** |
 
 ## 使用方式
 
@@ -48,6 +52,8 @@ cd design-draft/stitch-references && python3 -m http.server 8088
 - **V3 四页（Campaigns 列表 / Campaign 详情 / KOL Database / Email Center）** 用户手动在 Stitch 网页端粘贴 prompt 生成（自动生成有内容压缩问题）
 - **V4 两页（Client Review / Email Tracking）** 用户手动生成（`00ea6b4c` 4226px / `a654800b` 4414px），内容完整
 - **V5 五页（Login v2 / Signup v2 / Email Template Editor / Send Queue / Unsubscribe）** 用户手动生成，prompt 见 `V5-prompts.md`；登录/注册为 58/42 split 游戏氛围版（v1 居中卡作废），邮件 3 张为 App Shell 内页
+- **V6 一页（ROI Tracking）** 用户手动生成（2026-04-23），prompt 见 `V6-prompts.md`；3814px，BM2 F009 用
+- **V7 三页（Product Knowledge Base / Relationship CRM / AI Weekly Report）** 用户手动生成（2026-04-23），prompt 见 `V7-prompts.md`；分别对应 BM1 F003 / BM2 F007 / BM2 F010。AI Weekly Report 特别强调"给客户看"，含品牌 header + PDF 导出 + 分享链接
 - **kol-detail.html v3** 也是手动重生成版本（v1 完整 → v2 edit_screens 压缩到 165 行 → v3 手动恢复到 632 行）
 
 ### 3.1 V4 已知 MCP 冗余（待用户手动在 Stitch UI 隐藏/删除）

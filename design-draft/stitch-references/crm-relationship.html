@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOLMatrix - Relationship CRM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#131b2e",
+                        "outline-variant": "#3b494c",
+                        "primary-container": "#00e5ff",
+                        "surface-dim": "#0b1326",
+                        "primary": "#c3f5ff",
+                        "surface-container-high": "#222a3e",
+                        "on-surface": "#dbe2fd",
+                        "on-primary": "#00363d",
+                        "error-container": "#93000a",
+                        "surface-tint": "#00daf3",
+                        "on-secondary-fixed-variant": "#6200bc",
+                        "inverse-primary": "#006875",
+                        "tertiary-fixed-dim": "#f3bf26",
+                        "on-background": "#dbe2fd",
+                        "on-secondary-fixed": "#290055",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed": "#ffdf96",
+                        "surface-bright": "#31394e",
+                        "secondary-container": "#6e06d0",
+                        "inverse-surface": "#dbe2fd",
+                        "on-secondary-container": "#d5b5ff",
+                        "on-surface-variant": "#bac9cc",
+                        "error": "#ffb4ab",
+                        "tertiary-container": "#fec931",
+                        "surface-variant": "#2d3449",
+                        "on-error": "#690005",
+                        "secondary": "#d8b9ff",
+                        "secondary-fixed-dim": "#d8b9ff",
+                        "on-secondary": "#450086",
+                        "surface-container-highest": "#2d3449",
+                        "on-tertiary": "#3e2e00",
+                        "surface-container": "#171f33",
+                        "surface-container-lowest": "#060d20",
+                        "inverse-on-surface": "#283044",
+                        "background": "#0b1326",
+                        "on-primary-fixed": "#001f24",
+                        "tertiary": "#ffeac0",
+                        "primary-fixed-dim": "#00daf3",
+                        "surface": "#0b1326",
+                        "on-tertiary-fixed": "#251a00",
+                        "on-primary-fixed-variant": "#004f58",
+                        "outline": "#849396",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "on-primary-container": "#00626e",
+                        "primary-fixed": "#9cf0ff",
+                        "secondary-fixed": "#eddcff",
+                        "on-tertiary-container": "#6f5500"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "display": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b1326; color: #dbe2fd; -webkit-font-smoothing: antialiased; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+        .active-glow { box-shadow: 0 0 20px rgba(0, 229, 255, 0.15); }
+        .headline-tracking { letter-spacing: -0.02em; }
+        .sidebar-separation { shadow-[20px_0_20px_rgba(0,229,255,0.03)]; }
+        .glass-card { background: rgba(34, 42, 62, 0.4); backdrop-filter: blur(24px); }
+        .pipeline-bar { transition: width 1s ease-in-out; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #2d3449; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3b494c; }
+    </style>
+</head>
+<body class="flex min-h-screen overflow-hidden">
+<!-- SIDEBAR - LEFT (240px wide, fixed) -->
+<aside class="fixed left-0 top-0 h-full w-[240px] bg-[#060e20] p-6 flex flex-col z-50 shadow-[20px_0_20px_rgba(0,229,255,0.03)]">
+<!-- Logo Block -->
+<div class="h-14 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 rounded-[10px] bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] flex items-center justify-center shadow-[0_0_15px_rgba(0,218,243,0.3)]">
+<span class="text-[#060e20] font-bold text-lg">K</span>
+</div>
+<div>
+<h1 class="text-white font-bold text-lg leading-tight bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] bg-clip-text text-transparent">KOLMatrix</h1>
+<p class="text-[9px] font-semibold text-gray-500 tracking-[0.15em] uppercase">Neural Velocity</p>
+</div>
+</div>
+<!-- Navigation List -->
+<nav class="flex-grow space-y-1">
+<div class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all group cursor-pointer">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</div>
+<div class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all group cursor-pointer">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">travel_explore</span>
+<span class="text-sm font-medium">KOL Discovery</span>
+</div>
+<div class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all group cursor-pointer">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">groups</span>
+<span class="text-sm font-medium">KOL Database</span>
+</div>
+<!-- ACTIVE ITEM: Relationships/CRM (Contextual Addition) -->
+<div class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#00E5FF] font-semibold bg-gradient-to-r from-[rgba(0,229,255,0.1)] to-transparent border-l-2 border-[#00E5FF] cursor-pointer">
+<span class="material-symbols-outlined text-[20px]">handshake</span>
+<span class="text-sm">Relationships</span>
+</div>
+<div class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all group cursor-pointer">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">rocket_launch</span>
+<span class="text-sm font-medium">Campaigns</span>
+</div>
+<div class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all group cursor-pointer">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">forward_to_inbox</span>
+<span class="text-sm font-medium">Email Center</span>
+</div>
+<div class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all group cursor-pointer">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">inventory_2</span>
+<span class="text-sm font-medium">Products</span>
+</div>
+<div class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all group cursor-pointer">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">query_stats</span>
+<span class="text-sm font-medium">Analytics</span>
+</div>
+<div class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all group cursor-pointer">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</div>
+</nav>
+<!-- User Chip -->
+<div class="mt-auto pt-6 border-t border-[#222a3d]/30">
+<div class="flex items-center gap-3 p-3 rounded-xl hover:bg-[#222a3d]/40 transition-colors cursor-pointer">
+<img alt="Sarah Chen" class="w-9 h-9 rounded-full ring-2 ring-[#00E5FF]/20" data-alt="Close-up professional portrait of a young woman with a friendly expression, soft office lighting, modern executive tech style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpnpP6oyioBLn3j00c9vY2WSkHLV4-cYSCxSiK9zGjf5cN3gxZdCgFYSTLYr2uTWNgUqsjrVI37nxdz5IxC1i-uj49x00FvfoMujCsXDe5ShMXEVKfpgvt8bHozLve40dgORWgoJivN4Yyk64_oYh9A9ntUMldJiva7yuq9mcMeOyKnZye25jiAsNDZwoSbLHNh8JXAu4XeK9D9z2mLeHb8QQyXe2KoxkvFC9k3WYy2b4RjV769-ZXbTWvJizMUL2_W5oLVgvDxHM"/>
+<div class="flex-grow min-w-0">
+<p class="text-sm font-semibold text-white truncate">Sarah Chen</p>
+<p class="text-[11px] text-gray-500 font-medium">Ops Lead</p>
+</div>
+<span class="material-symbols-outlined text-gray-500 text-lg">unfold_more</span>
+</div>
+</div>
+</aside>
+<!-- MAIN CONTENT WRAPPER -->
+<main class="ml-[240px] flex-grow flex flex-col h-screen overflow-y-auto">
+<!-- TOP BAR -->
+<header class="sticky top-0 h-16 bg-[#0b1326]/85 backdrop-blur-3xl flex items-center justify-between px-8 z-40 shadow-lg">
+<div class="flex flex-col">
+<h2 class="text-white font-semibold text-base">KOL 关系管理 Relationship CRM</h2>
+<nav class="flex items-center gap-2 text-[11px] text-slate-500 uppercase tracking-wider font-semibold">
+<span>Marketing</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-[#00E5FF]">CRM · KOL Relationships</span>
+</nav>
+</div>
+<!-- Global Search -->
+<div class="flex-1 max-w-md mx-auto relative group">
+<div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-lg text-slate-500 group-focus-within:text-[#00E5FF] transition-colors">search</span>
+</div>
+<input class="w-full h-10 bg-[#2d3449] border-none rounded-full pl-10 pr-16 text-sm text-[#dbe2fd] placeholder-slate-500 focus:ring-1 focus:ring-[#00E5FF]/30 transition-all" placeholder="Search KOLs, campaigns, emails..." type="text"/>
+<div class="absolute inset-y-0 right-3 flex items-center">
+<span class="px-1.5 py-0.5 rounded-md border border-slate-600/50 text-[10px] font-medium text-slate-500">⌘K</span>
+</div>
+</div>
+<!-- Action Cluster -->
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-400 hover:text-[#00E5FF] transition-colors cursor-pointer bg-[#222a3d]/40">
+<span class="text-xs font-bold uppercase">EN</span>
+<span class="material-symbols-outlined text-base">expand_more</span>
+</div>
+<div class="relative p-2 text-slate-400 hover:text-[#00E5FF] transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-xl">notifications</span>
+<span class="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+</div>
+<div class="w-px h-6 bg-slate-400/10"></div>
+<div class="flex items-center gap-2 cursor-pointer group">
+<img alt="Sarah Chen" class="w-8 h-8 rounded-full border border-slate-400/20 group-hover:border-[#00E5FF]/40 transition-all" data-alt="Professional user avatar, small circular portrait of a woman in a tech environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVkidrWHXoUMK9jLL2Ap_UHScglm8dcxZ8LP_Y1UCyFAyj6da9Gm1I6wvlYrVzC_rpEyDk_rPAzVJyYaPxZd2mfTUfFNs2OFlYe5lEJRK1cNuFnMKrDPL0M5sSy0i20QEebv3RqDDdXzWq3PySCb1A8b4nHgMcnaUaJdnRhkZ91mL4odhh3rDEwDckh1mt7JA5xkHXAWPD4BbHz2OEKxo5UyhyTHbJFku78CcGrtFAgqYNWorRd5wd9YsdFu12SCOMzN1hBKO_jok"/>
+<span class="material-symbols-outlined text-slate-400 group-hover:text-[#00E5FF]">expand_more</span>
+</div>
+</div>
+</header>
+<!-- PAGE BODY -->
+<div class="p-8 space-y-8 pb-12">
+<!-- Header Row -->
+<div class="flex items-end justify-between">
+<div>
+<h1 class="text-3xl font-bold text-white headline-tracking">KOL 关系管理 Relationship CRM</h1>
+<p class="text-slate-400 mt-1">跨活动的 KOL 长期关系与漏斗概览</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex bg-surface-container p-1 rounded-xl">
+<button class="px-4 py-1.5 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition-all">本季度</button>
+<button class="px-4 py-1.5 text-xs font-semibold bg-[#2d3449] text-[#00E5FF] rounded-lg shadow-sm">近 90 天</button>
+<button class="px-4 py-1.5 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition-all">全部时间</button>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-300 bg-surface-container-high/50 rounded-xl hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-sm">download</span>
+                        Export CSV
+                    </button>
+<button class="flex items-center gap-2 px-5 py-2 text-xs font-bold text-[#060e20] bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] rounded-xl hover:scale-[1.02] transition-all shadow-[0_0_20px_rgba(0,229,255,0.2)]">
+<span class="material-symbols-outlined text-sm">add_circle</span>
+                        + Manual log
+                    </button>
+</div>
+</div>
+<!-- Section A: KPI Row -->
+<div class="grid grid-cols-4 gap-6">
+<!-- KPI 1 -->
+<div class="h-[120px] bg-surface-container-low rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
+<div class="flex justify-between items-start z-10">
+<span class="text-[11px] font-bold text-primary-fixed uppercase tracking-widest">Total KOL in Pipeline</span>
+<span class="material-symbols-outlined text-primary-fixed opacity-50">data_exploration</span>
+</div>
+<div class="flex items-baseline gap-3 z-10">
+<span class="text-4xl font-bold text-white headline-tracking leading-none">127</span>
+<div class="flex items-center text-emerald-400 text-[11px] font-bold">
+<span class="material-symbols-outlined text-xs">arrow_upward</span>
+                            18 新增本月
+                        </div>
+</div>
+<div class="absolute bottom-0 right-0 left-0 h-10 overflow-hidden opacity-30">
+<svg class="w-full h-full stroke-[#00E5FF] fill-none stroke-2" viewbox="0 0 400 100">
+<path d="M0,80 Q50,70 100,50 T200,60 T300,30 T400,10"></path>
+</svg>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="h-[120px] bg-surface-container-low rounded-2xl p-5 flex flex-col justify-between relative">
+<div class="flex justify-between items-start">
+<span class="text-[11px] font-bold text-primary-fixed uppercase tracking-widest">Long-Term Partners</span>
+<span class="material-symbols-outlined text-primary-fixed opacity-50">verified</span>
+</div>
+<div class="flex items-center gap-6">
+<span class="text-4xl font-bold text-white headline-tracking leading-none">34</span>
+<div class="relative w-14 h-14">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-surface-variant" cx="28" cy="28" fill="transparent" r="24" stroke="currentColor" stroke-width="4"></circle>
+<circle class="text-primary-container" cx="28" cy="28" fill="transparent" r="24" stroke="currentColor" stroke-dasharray="150" stroke-dashoffset="110" stroke-width="4"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-primary-fixed">26.8%</div>
+</div>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="h-[120px] bg-surface-container-low rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
+<div class="flex justify-between items-start z-10">
+<span class="text-[11px] font-bold text-primary-fixed uppercase tracking-widest">Cumulative Spend</span>
+<span class="material-symbols-outlined text-primary-fixed opacity-50">payments</span>
+</div>
+<div class="z-10">
+<span class="text-3xl font-bold text-white headline-tracking">$382,600</span>
+<p class="text-[11px] text-slate-500 mt-1 font-semibold">across 18 campaigns</p>
+</div>
+<div class="absolute bottom-0 right-0 left-0 h-10 overflow-hidden opacity-30">
+<svg class="w-full h-full stroke-secondary fill-none stroke-2" viewbox="0 0 400 100">
+<path d="M0,50 Q100,20 200,70 T400,30"></path>
+</svg>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="h-[120px] bg-surface-container-low rounded-2xl p-5 flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="text-[11px] font-bold text-primary-fixed uppercase tracking-widest">Avg ROI</span>
+<span class="material-symbols-outlined text-primary-fixed opacity-50">trending_up</span>
+</div>
+<div>
+<span class="text-4xl font-bold text-white headline-tracking">+426%</span>
+<p class="text-[11px] text-slate-500 mt-1 font-semibold">12 closed campaigns</p>
+</div>
+</div>
+</div>
+<!-- Section B: 60/40 Split -->
+<div class="grid grid-cols-10 gap-6">
+<!-- Pipeline Chart (60%) -->
+<div class="col-span-6 bg-surface-container-low rounded-2xl p-6">
+<div class="flex justify-between items-center mb-8">
+<h3 class="text-lg font-bold text-white flex items-center gap-2 headline-tracking">
+                            Pipeline by stage
+                            <span class="text-[10px] font-medium text-slate-500 px-1.5 py-0.5 bg-surface-variant rounded">LIVE DATA</span>
+</h3>
+<span class="material-symbols-outlined text-slate-500 cursor-pointer">more_horiz</span>
+</div>
+<div class="space-y-6">
+<!-- Stage Bars -->
+<div class="space-y-2">
+<div class="flex justify-between text-xs font-bold">
+<span class="text-slate-400">Prospect</span>
+<span class="text-white">28 KOLs (22%)</span>
+</div>
+<div class="w-full h-3 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full w-[22%] bg-gradient-to-r from-slate-600 to-slate-400 rounded-full"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-xs font-bold">
+<span class="text-slate-400">First contact</span>
+<span class="text-white">23 KOLs (18%)</span>
+</div>
+<div class="w-full h-3 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full w-[18%] bg-[#00E5FF]/40 rounded-full"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-xs font-bold">
+<span class="text-slate-400">Negotiating</span>
+<span class="text-white">18 KOLs (14%)</span>
+</div>
+<div class="w-full h-3 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full w-[14%] bg-[#00E5FF]/70 rounded-full"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-xs font-bold">
+<span class="text-primary-container">Signed/Long-term</span>
+<span class="text-white">34 KOLs (27%)</span>
+</div>
+<div class="w-full h-4 bg-surface-variant rounded-full overflow-hidden shadow-[0_0_15px_rgba(0,229,255,0.1)]">
+<div class="h-full w-[27%] bg-[#00E5FF] rounded-full relative">
+<div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-6">
+<div class="space-y-2">
+<div class="flex justify-between text-[11px] font-bold">
+<span class="text-slate-500">Paused</span>
+<span class="text-slate-300">15 (12%)</span>
+</div>
+<div class="w-full h-2 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full w-[40%] bg-amber-400/40 rounded-full"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-[11px] font-bold">
+<span class="text-slate-500">Terminated</span>
+<span class="text-slate-300">9 (7%)</span>
+</div>
+<div class="w-full h-2 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full w-[30%] bg-red-400/30 rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Funnel Conversion (40%) -->
+<div class="col-span-4 bg-surface-container-low rounded-2xl p-6 flex flex-col">
+<h3 class="text-lg font-bold text-white mb-8 headline-tracking">转化漏斗 Funnel Conversion</h3>
+<div class="flex-grow flex flex-col justify-center items-center gap-1">
+<!-- Funnel Steps -->
+<div class="w-[85%] h-14 bg-surface-variant/40 rounded-t-xl flex items-center justify-between px-6 relative">
+<span class="text-xs font-bold text-slate-400">Total Pipeline</span>
+<span class="text-sm font-bold text-white">127</span>
+</div>
+<div class="w-[75%] h-16 bg-[#00E5FF]/20 flex items-center justify-between px-6 relative border-y border-[#00E5FF]/10">
+<div class="absolute -right-16 flex flex-col items-start">
+<span class="text-[10px] text-primary-fixed font-bold">68.5%</span>
+<span class="material-symbols-outlined text-xs text-primary-fixed">subdirectory_arrow_right</span>
+</div>
+<span class="text-xs font-bold text-primary-fixed">Contacted</span>
+<span class="text-sm font-bold text-white">87</span>
+</div>
+<div class="w-[60%] h-16 bg-[#00E5FF]/40 flex items-center justify-between px-6 relative">
+<div class="absolute -right-16 flex flex-col items-start">
+<span class="text-[10px] text-primary-fixed font-bold">59.8%</span>
+<span class="material-symbols-outlined text-xs text-primary-fixed">subdirectory_arrow_right</span>
+</div>
+<span class="text-xs font-bold text-primary-fixed">Negotiated</span>
+<span class="text-sm font-bold text-white">52</span>
+</div>
+<div class="w-[45%] h-18 bg-[#00E5FF] rounded-b-xl flex items-center justify-between px-4 relative shadow-[0_10px_30px_rgba(0,229,255,0.2)]">
+<div class="absolute -right-16 flex flex-col items-start">
+<span class="text-[10px] text-primary-container font-extrabold">65.4%</span>
+<span class="material-symbols-outlined text-xs text-primary-container">done_all</span>
+</div>
+<span class="text-[11px] font-extrabold text-[#00363d] uppercase tracking-tighter leading-tight">Long-term<br/>Partners</span>
+<span class="text-xl font-black text-[#00363d]">34</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Section C: Recent Activity Table -->
+<div class="bg-surface-container-low rounded-2xl overflow-hidden">
+<div class="p-6 flex justify-between items-center border-b border-[#2d3449]">
+<h3 class="text-lg font-bold text-white headline-tracking">Recent Activity</h3>
+<div class="flex gap-4">
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-400 cursor-pointer hover:text-white">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+                            Filter
+                        </div>
+<div class="flex items-center gap-2 text-xs font-semibold text-slate-400 cursor-pointer hover:text-white">
+<span class="material-symbols-outlined text-sm">sort</span>
+                            Sort
+                        </div>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="text-[11px] font-extrabold text-slate-500 uppercase tracking-widest border-b border-[#2d3449]">
+<th class="px-8 py-4">KOL Profile</th>
+<th class="px-6 py-4">Stage</th>
+<th class="px-6 py-4">Active Campaign</th>
+<th class="px-6 py-4">Last Touch</th>
+<th class="px-6 py-4">Owner</th>
+<th class="px-8 py-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#2d3449]/50">
+<!-- Row 1 -->
+<tr class="hover:bg-[#222a3d]/30 transition-colors group">
+<td class="px-8 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-variant overflow-hidden">
+<img alt="GameMaster Pro" class="w-full h-full object-cover" data-alt="Close-up of a professional male gamer with headset, neon blue ambient lighting, high-end stream setup background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4nAgB1AdEET1nYEvU90Qtm_Q-0Yk73CcJoAgrQJIdl67s1N8_5Q4VbBgcPTv-GNlGz6zI6dDP0Vv60Hs0YH0OtDkV2f8EMVd0TzvIEwdrdo-Q0qCBV1mrlr0Lzh_o5Je4UgsamnHoQpWxroUo0MHm94knyeH15c3Bekr-C_pnJ0dCNsPLUcmVV0Ul9pKHMHoO2wyHeInQ1YHuXrie68hnT0ZbhV6vVZ5TCS1g2bbe8fN_9WRDEx5wIKAtUr3Q9WiMdqGaWSYV20s"/>
+</div>
+<div>
+<p class="text-sm font-bold text-white">GameMaster Pro</p>
+<p class="text-[11px] text-slate-500">2.4M followers · Twitch</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 text-[10px] font-black uppercase rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Long-term</span>
+</td>
+<td class="px-6 py-4 text-xs font-medium text-slate-300">Cyberpunk Seasonal v4</td>
+<td class="px-6 py-4 text-xs text-slate-500">2 hours ago</td>
+<td class="px-6 py-4">
+<div class="w-6 h-6 rounded-full bg-blue-500 border border-slate-700 flex items-center justify-center text-[10px] text-white font-bold">SC</div>
+</td>
+<td class="px-8 py-4 text-right">
+<button class="material-symbols-outlined text-slate-500 hover:text-[#00E5FF]">more_vert</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-[#222a3d]/30 transition-colors">
+<td class="px-8 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-variant overflow-hidden">
+<img alt="TikTokGamer_SEA" class="w-full h-full object-cover" data-alt="Vibrant portrait of a Southeast Asian woman gamer, colorful studio lighting, energetic expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPra0qbxkXYVx0aXA3KWRu0Pb2FXbCCorAfk0kMfx8FWV3SNPNbUVV5Qqp3LJYudk5Y0AjQL4gISLTbmWzykuF0IqeVQ_x1WXAwyBGW2sckrE7RdGCDPLKGF9N9AwiUDJnId92--8FWzz5YXCvc0o7owdqLT21a9nz7e1Uz0m3l7n7iScf1BoAz2PgtoD0xlVGEt5joFs2VN7mQcF8JD82PknEKEkd7XDNe2LogsHXlMcNgDJMqHR-7azLaXfXdAkmG_0ugBIKKu4"/>
+</div>
+<div>
+<p class="text-sm font-bold text-white">TikTokGamer_SEA</p>
+<p class="text-[11px] text-slate-500">890K followers · TikTok</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 text-[10px] font-black uppercase rounded-full bg-[#00E5FF]/10 text-[#00E5FF] border border-[#00E5FF]/20">Negotiating</span>
+</td>
+<td class="px-6 py-4 text-xs font-medium text-slate-300">Mobile Arena Launch</td>
+<td class="px-6 py-4 text-xs text-slate-500">Yesterday, 14:20</td>
+<td class="px-6 py-4">
+<div class="w-6 h-6 rounded-full bg-purple-500 border border-slate-700 flex items-center justify-center text-[10px] text-white font-bold">AL</div>
+</td>
+<td class="px-8 py-4 text-right">
+<button class="material-symbols-outlined text-slate-500 hover:text-[#00E5FF]">more_vert</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-[#222a3d]/30 transition-colors">
+<td class="px-8 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-variant overflow-hidden">
+<img alt="RPG_Kings" class="w-full h-full object-cover" data-alt="Portrait of a young male influencer in a gaming studio, cinematic lighting, futuristic aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmTI5QAAgPvKQ2uF2crRqT9thSqXVXimqFGNVYF1qAIS7i4PuPI7ePJtY54qFQi4PNHAAgFRwIBZ-Zkf6pKIsFvxbUCe2Rt3otuvePiHClTZFS_3CbOoe6Ns9v4jV4215FcQEhyx-l2yQbO2qxiNCw07zyq4HPOfTzziiX3_yWXZllMCx2dfB1rH8qaAuntrsKidh-v00uYgc6t00HNuVQQMveGFFo-HOI1DGMteNhTH_UTkBXTvqKyU5IlMID8G6CmQelJG0VHzI"/>
+</div>
+<div>
+<p class="text-sm font-bold text-white">RPG_Kings</p>
+<p class="text-[11px] text-slate-500">1.2M followers · YouTube</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 text-[10px] font-black uppercase rounded-full bg-slate-500/10 text-slate-400 border border-slate-500/20">First contact</span>
+</td>
+<td class="px-6 py-4 text-xs font-medium text-slate-300">Quest Master Alpha</td>
+<td class="px-6 py-4 text-xs text-slate-500">Oct 24, 2023</td>
+<td class="px-6 py-4">
+<div class="w-6 h-6 rounded-full bg-orange-500 border border-slate-700 flex items-center justify-center text-[10px] text-white font-bold">MK</div>
+</td>
+<td class="px-8 py-4 text-right">
+<button class="material-symbols-outlined text-slate-500 hover:text-[#00E5FF]">more_vert</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-[#222a3d]/30 transition-colors">
+<td class="px-8 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-variant overflow-hidden">
+<img alt="CasualGameQueen" class="w-full h-full object-cover" data-alt="Fashionable woman holding a mobile phone, bright studio lighting, influencer marketing style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDs4In5VZwVHynZMrsSmXJLAV6pgvFqKEiBh6_-YcyLP6rq3D9cSuxfH4nNMwkmEKTbCocOdQ099Jbv1K-_zxqsAgbKBKR_7F1cncEsxHc38BXE-63fofsj89kV_Op5exYGCDTbUlZCqP9K-Hje1hN9Y41ExNMhhMrFJHnqSsLy9o2RRw0CrR-GpxfJtiu6uczgAusPTr3AdmJXXawaE14Y6_b3nLG4E44KzGjr3MH8_H_4k4zYO_r35LBtziPinoAe1kf5gAiDjCQ"/>
+</div>
+<div>
+<p class="text-sm font-bold text-white">CasualGameQueen</p>
+<p class="text-[11px] text-slate-500">540K followers · IG</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 text-[10px] font-black uppercase rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Paused</span>
+</td>
+<td class="px-6 py-4 text-xs font-medium text-slate-500">---</td>
+<td class="px-6 py-4 text-xs text-slate-500">Oct 21, 2023</td>
+<td class="px-6 py-4">
+<div class="w-6 h-6 rounded-full bg-blue-500 border border-slate-700 flex items-center justify-center text-[10px] text-white font-bold">SC</div>
+</td>
+<td class="px-8 py-4 text-right">
+<button class="material-symbols-outlined text-slate-500 hover:text-[#00E5FF]">more_vert</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-[#222a3d]/30 transition-colors">
+<td class="px-8 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-variant overflow-hidden">
+<img alt="StreamKing_BR" class="w-full h-full object-cover" data-alt="Energetic male gamer streaming with multi-monitor setup, colorful background lighting, Brazil flag in background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVmQKA8DTLgRNUhy-acqsKbDNZ89x6oFlCMYMfRCc3sV1LDfNLnU5eq2E8ZLte-XTnTM3BEHkVTQeu9lNlac7_buBldhdoRbPb-GLT_5TG6_P3Jq97ln5xPb1wwMgh9Mvwt64IKPnGXMQcbBJXt79eq0tVggIvPPGvtkFhdu9AKfVeyWcokRPKBZfdIu4DRqixwx4DDKbNt_zCiZZQGonrk-cy29wxiVJd11ogvoI6cpLdUlMK4x3OiVdeJEIiQiaiTtCnbYunFwA"/>
+</div>
+<div>
+<p class="text-sm font-bold text-white">StreamKing_BR</p>
+<p class="text-[11px] text-slate-500">3.1M followers · Twitch</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 text-[10px] font-black uppercase rounded-full bg-red-500/10 text-red-400 border border-red-500/20">Terminated</span>
+</td>
+<td class="px-6 py-4 text-xs font-medium text-slate-500">---</td>
+<td class="px-6 py-4 text-xs text-slate-500">Oct 15, 2023</td>
+<td class="px-6 py-4">
+<div class="w-6 h-6 rounded-full bg-purple-500 border border-slate-700 flex items-center justify-center text-[10px] text-white font-bold">AL</div>
+</td>
+<td class="px-8 py-4 text-right">
+<button class="material-symbols-outlined text-slate-500 hover:text-[#00E5FF]">more_vert</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-6 text-center">
+<button class="text-xs font-bold text-[#00E5FF] hover:underline">View all 127 relationships</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

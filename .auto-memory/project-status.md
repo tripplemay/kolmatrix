@@ -13,7 +13,7 @@ type: project
 ## 当前阶段：MVP 纵向路线（2026-04-21 pivot）
 - MVP PRD v1.0 已写 + 用户答 §13 8 问（`docs/product/KOLMatrix-MVP-PRD.md`）
 - KOL seed 415 gaming 入库（$0.91 两阶段 AI 打标）
-- Stitch 设计稿：14 张入库 + V6 ROI / V7 (知识库+CRM+周报) prompts 就绪待用户生成
+- Stitch 设计稿 18 张入库（V1-V7 全就绪；2026-04-23 V6 ROI + V7 3 张新入库）
 
 ## 角色分配
 - BAux1 已清；下一批次待用户启动（默认沿用 Planner: Kimi / Generator: johnsong / Evaluator: Reviewer）
@@ -29,7 +29,6 @@ v0.9.2（BI2 DB 命名 + PM2 zero-downtime 3 条件）；BAux1 round 3 经验暂
 
 ## 待补（非阻塞）
 - MOBA/二次元/沙盒 KOL 数据（MVP demo 类目稀疏）
-- V6 + V7 共 4 张 Stitch 设计稿用户手动生成
 - aigcgateway 3 个 Action 待建：kol-email-customize / roi-insights / weekly-report-for-client（Planner 在 BM1 期间做）
 
 ## 环境

@@ -43,9 +43,11 @@ Neural Velocity 同时满足：
 - **批次 V1（已完成）：** Dashboard 视觉基调定稿
 - **批次 V2（已完成）：** KOL 发现引擎 + KOL 详情页
 - **批次 V3（已完成）：** Campaigns 列表 + Campaign 详情 + KOL Database + Email Center
-- **批次 V4（部分完成）：** 客户协同筛选 ✅ + Email Tracking 详情 ✅；产品知识库推迟至 V6+
+- **批次 V4（部分完成）：** 客户协同筛选 ✅ + Email Tracking 详情 ✅；产品知识库推迟至 V7
 - **批次 V5（已完成 2026-04-20）：** 登录 v2 ✅ + 注册 v2 ✅ + 邮件模板编辑器 ✅ + 发送队列 ✅ + 退订管理 ✅
-- **批次 V6+（待启动）：** 产品知识库 + 设置 / 团队管理 + YouTube/TikTok 数据源配置 + 竞品分析等远期辅助页
+- **批次 V6（已完成 2026-04-23）：** ROI Tracking ✅
+- **批次 V7（已完成 2026-04-23）：** Product Knowledge Base ✅ + Relationship CRM ✅ + AI Weekly Report ✅
+- **批次 V8+（待启动）：** 设置 / 团队管理 / 客户审批 UI / YouTube/TikTok 数据源配置 / 竞品分析 / 订阅定价等远期辅助页
 
 每个批次生成完毕后更新本文档的"Stitch 基准页面"附录。
 
@@ -73,6 +75,10 @@ Neural Velocity 同时满足：
 | V5 | Email Template Editor | `e4515ced3d414b289979ba2a06a31e89` | ✅（手动，2908px，左编辑右预览）|
 | V5 | Send Queue & Rate Limits | `9e9b4789fe7f430683e4ac22fe1e9271` | ✅（手动，2176px）|
 | V5 | Unsubscribe management | `c4aed4b89ce24fb09a4df10bfe0a98bf` | ✅（手动，5492px）|
+| V6 | ROI Tracking（MVP BM2 F009）| `5a655b9312c8430c83adfea2b78d6be3` | ✅（手动，3814px）|
+| V7 | Product Knowledge Base（MVP BM1 F003）| `12dafe39c3414d23bb674df95db140b7` | ✅（手动，2048px）|
+| V7 | Relationship CRM 简化版（MVP BM2 F007）| `2a1b5f8b059e4dd2b842268a88a03067` | ✅（手动，2048px）|
+| V7 | AI Weekly Report for Client（MVP BM2 F010）| `739c35deff2c43ebb00e3cc04f582462` | ✅（手动，3998px，含品牌 header + PDF 导出 + 分享链接）|
 
 > **V4 已知 MCP 冗余（2026-04-19）：** Stitch 项目中还存在 3 个应删除的压缩/重复 screen — 短版 Client Review `219e3547...`（2516px，自动压缩）、短版 Email Tracking `46df7ce5...`（2048px，自动压缩）、重复 Email Center `d3f92c57...`（2048px，与 V3 `337c7721...` 重复）。由用户在 Stitch UI 手动隐藏/删除。
 

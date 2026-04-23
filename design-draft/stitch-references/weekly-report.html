@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOLMatrix | AI Weekly Report</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary-fixed-variant": "#594400",
+            "surface-container-lowest": "#060d20",
+            "on-primary-container": "#00626e",
+            "background": "#0b1326",
+            "outline": "#849396",
+            "on-error": "#690005",
+            "primary-fixed-dim": "#00daf3",
+            "error": "#ffb4ab",
+            "surface-container-high": "#222a3e",
+            "primary-fixed": "#9cf0ff",
+            "on-secondary": "#450086",
+            "on-primary-fixed-variant": "#004f58",
+            "surface-bright": "#31394e",
+            "primary": "#c3f5ff",
+            "secondary-container": "#6e06d0",
+            "inverse-surface": "#dbe2fd",
+            "on-primary-fixed": "#001f24",
+            "on-background": "#dbe2fd",
+            "surface-container-low": "#131b2e",
+            "inverse-primary": "#006875",
+            "on-secondary-container": "#d5b5ff",
+            "error-container": "#93000a",
+            "secondary": "#d8b9ff",
+            "tertiary-container": "#fec931",
+            "tertiary-fixed": "#ffdf96",
+            "tertiary": "#ffeac0",
+            "outline-variant": "#3b494c",
+            "on-surface-variant": "#bac9cc",
+            "on-surface": "#dbe2fd",
+            "on-tertiary": "#3e2e00",
+            "surface-dim": "#0b1326",
+            "secondary-fixed": "#eddcff",
+            "on-tertiary-fixed": "#251a00",
+            "on-tertiary-container": "#6f5500",
+            "on-error-container": "#ffdad6",
+            "tertiary-fixed-dim": "#f3bf26",
+            "surface-container": "#171f33",
+            "on-primary": "#00363d",
+            "surface-container-highest": "#2d3449",
+            "secondary-fixed-dim": "#d8b9ff",
+            "surface-variant": "#2d3449",
+            "on-secondary-fixed-variant": "#6200bc",
+            "surface-tint": "#00daf3",
+            "primary-container": "#00e5ff",
+            "on-secondary-fixed": "#290055",
+            "surface": "#0b1326",
+            "inverse-on-surface": "#283044"
+          },
+          "fontFamily": {
+            "headline": ["Inter"],
+            "display": ["Inter"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      line-height: 1;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+    }
+    .glass-card {
+      background: rgba(23, 31, 51, 0.4);
+      backdrop-filter: blur(24px);
+      border: none;
+    }
+    .ambient-glow {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    .cyan-glow-hover:hover {
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+    }
+    .sidebar-shadow {
+      box-shadow: 20px 0 20px rgba(0, 229, 255, 0.03);
+    }
+    .text-gradient-cyan {
+      background: linear-gradient(135deg, #00daf3, #c3f5ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    body {
+      background-color: #0b1326;
+      color: #dbe2fd;
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="flex min-h-screen overflow-x-hidden">
+<!-- SIDEBAR - LEFT -->
+<aside class="fixed left-0 top-0 h-screen w-[240px] flex flex-col py-6 px-4 bg-[#060e20] sidebar-shadow z-50">
+<!-- Logo Block -->
+<div class="flex items-center gap-3 mb-8 px-2 h-[56px]">
+<div class="w-10 h-10 bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] rounded-[10px] flex items-center justify-center flex-shrink-0">
+<span class="text-[#060e20] font-bold text-lg">K</span>
+</div>
+<div class="flex flex-col">
+<span class="text-white text-lg font-bold tracking-tight">KOLMatrix</span>
+<span class="text-[9px] font-semibold text-slate-500 uppercase tracking-[0.15em]">NEURAL VELOCITY</span>
+</div>
+</div>
+<!-- Navigation List -->
+<nav class="flex-grow space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-slate-400 font-medium hover:bg-slate-800/50 hover:text-slate-200 transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">dashboard</span>
+<span class="text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-slate-400 font-medium hover:bg-slate-800/50 hover:text-slate-200 transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">travel_explore</span>
+<span class="text-sm">KOL Discovery</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-slate-400 font-medium hover:bg-slate-800/50 hover:text-slate-200 transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">groups</span>
+<span class="text-sm">KOL Database</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-slate-400 font-medium hover:bg-slate-800/50 hover:text-slate-200 transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">rocket_launch</span>
+<span class="text-sm">Campaigns</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-slate-400 font-medium hover:bg-slate-800/50 hover:text-slate-200 transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">forward_to_inbox</span>
+<span class="text-sm">Email Center</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-slate-400 font-medium hover:bg-slate-800/50 hover:text-slate-200 transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">inventory_2</span>
+<span class="text-sm">Products</span>
+</a>
+<!-- Active Item: Analytics/Reports -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-[#00E5FF] font-semibold border-l-2 border-[#00E5FF] bg-gradient-to-r from-[rgba(0,229,255,0.1)] to-transparent group" href="#">
+<span class="material-symbols-outlined text-[20px] fill" style="font-variation-settings: 'FILL' 1;">query_stats</span>
+<span class="text-sm">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-slate-400 font-medium hover:bg-slate-800/50 hover:text-slate-200 transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">settings</span>
+<span class="text-sm">Settings</span>
+</a>
+</nav>
+<!-- User Chip -->
+<div class="mt-auto pt-4 border-t border-slate-800/50">
+<div class="flex items-center gap-3 p-3 rounded-[10px] hover:bg-slate-800/40 cursor-pointer transition-colors group">
+<img class="w-9 h-9 rounded-full object-cover border border-slate-700 group-hover:border-[#00E5FF]" data-alt="professional portrait of Sarah Chen, a modern tech operations lead with a confident smile and sleek business casual attire" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCW7fQkNXqa06koIdnTXHwHrykSO1Eqww3hgmhe74H1mUb0DXyBEYjxXeu9Srnn-Em6c0VnhaLqVWlTw_CWJNyvNtMkCd8EBAjXnLeLljQfmLGwnWn0ADi-ORps-RNc5bi-W_ChcXkOj3PvAVA_nucR9g7fwWLRvLu2dw8kIaW6Bm4uN25mVWjAjhqvCF5cWTXekkfrB-3mRdsdKz7x1bXkX9SiVAm9DXiHwD3hMwKjSuZH1_-KuP9YmqRnuykuApSHgn2iBLOVCpo"/>
+<div class="flex flex-col overflow-hidden">
+<span class="text-sm font-semibold text-white truncate">Sarah Chen</span>
+<span class="text-[11px] text-slate-500 truncate">Ops Lead</span>
+</div>
+<span class="material-symbols-outlined text-slate-500 text-sm ml-auto">expand_more</span>
+</div>
+</div>
+</aside>
+<!-- MAIN CONTENT WRAPPER -->
+<main class="flex-1 ml-[240px] flex flex-col min-w-0">
+<!-- TOP BAR -->
+<header class="sticky top-0 h-16 bg-[#0b1326]/85 backdrop-blur-3xl z-40 flex items-center justify-between px-8 ambient-glow">
+<div class="flex items-center">
+<h1 class="text-white font-semibold text-base">AI 周报 Weekly Report</h1>
+</div>
+<div class="flex-1 mx-auto max-w-[480px]">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[18px]">search</span>
+<input class="w-full h-10 bg-[#2d3449] border-none rounded-full pl-10 pr-16 text-sm text-slate-200 placeholder:text-slate-500 focus:ring-1 focus:ring-[#00E5FF] focus:shadow-[0_0_12px_rgba(0,229,255,0.2)] transition-all" placeholder="Search KOLs, campaigns, emails..." type="text"/>
+<div class="absolute right-3 top-1/2 -translate-y-1/2 bg-slate-800/50 border border-slate-700 px-1.5 py-0.5 rounded text-[10px] text-slate-500 font-medium">Cmd+K</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-1.5 text-[#bac9cc] hover:text-[#00E5FF] transition-colors">
+<span class="text-[13px] font-medium">EN</span>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+<button class="relative text-[#bac9cc] hover:text-[#00E5FF] transition-colors">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<span class="absolute top-0 right-0 w-1.5 h-1.5 bg-red-500 rounded-full border-2 border-[#0b1326]"></span>
+</button>
+<div class="w-[1px] h-6 bg-slate-200/15"></div>
+<button class="flex items-center gap-2 group">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="close up profile of Sarah Chen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYcdcQkobsYW4gsW2hIqzl299fjzf5dgJDaaLXTN32aMkEmnfIg-9RLTPu-5VSpUAot52XJekKnhWWzHqu_GuTcvdBYWWlHM5O5l7GzA-aPB_xsR75kChV03n2D_DSXJkHjzpQlSPeg9s_QMPHlApdCVfuQGD94jDoqypi48t3Wnk-gX8YEvBimcDCPtcyQ-tx-fKzr58wa-6LUYX9fuOzX4ncXnJC5aJ0LVwXEPU4YkD4PbpSOhh7JyDpoApcsYXVDpVGCtkY1FI"/>
+<span class="material-symbols-outlined text-slate-500 text-sm">expand_more</span>
+</button>
+</div>
+</header>
+<!-- CONTENT CANVAS -->
+<div class="max-w-[1440px] w-full p-8 space-y-8 mx-auto">
+<!-- 1. Breadcrumb & 2. Page Header -->
+<section class="space-y-4">
+<nav class="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-[#9cf0ff]">
+<span class="opacity-50">Reports</span>
+<span class="opacity-30">/</span>
+<span>Weekly Report</span>
+</nav>
+<div class="flex items-end justify-between">
+<div>
+<h2 class="text-3xl font-bold text-white tracking-tight">AI 周报 <span class="font-light opacity-50 ml-1">Weekly Report</span></h2>
+<p class="text-slate-400 mt-2 text-sm">一键生成客户向周报，涵盖活动进度、KOL 表现、ROI 亮点</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex bg-surface-container-low p-1 rounded-lg">
+<button class="px-4 py-1.5 text-xs font-semibold rounded-md transition-colors text-slate-400 hover:text-white">Last Month</button>
+<button class="px-4 py-1.5 text-xs font-semibold rounded-md bg-[#00E5FF]/10 text-[#00E5FF]">Last Week</button>
+</div>
+<button class="flex items-center justify-center w-10 h-10 rounded-lg bg-surface-container-low text-slate-400 hover:text-[#00E5FF] transition-colors">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+</div>
+</div>
+</section>
+<!-- 3. Client Brand Header -->
+<section class="bg-surface-container-low rounded-2xl p-6 flex flex-wrap items-center gap-6 border border-white/5">
+<div class="relative">
+<div class="w-16 h-16 rounded-full bg-[#0b1326] flex items-center justify-center border-2 border-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.15)]">
+<span class="text-2xl font-black text-[#00E5FF]">LG</span>
+</div>
+</div>
+<div class="flex-grow">
+<h3 class="text-xl font-bold text-white">Lightning Games Inc.</h3>
+<div class="flex items-center gap-2 text-slate-500 text-sm mt-1">
+<span>Q2 Spring Campaign Program</span>
+<span class="w-1 h-1 rounded-full bg-slate-700"></span>
+<span>Week of Apr 14-20, 2026</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 px-3 py-1 bg-purple-500/10 text-purple-400 rounded-full text-[10px] font-bold uppercase tracking-wider">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+            AI-Generated
+          </div>
+<button class="px-5 py-2.5 bg-gradient-to-r from-[#00daf3] to-[#c3f5ff] text-[#00363d] font-bold text-sm rounded-xl hover:opacity-90 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">download</span>
+            Download PDF
+          </button>
+<button class="p-2.5 rounded-xl bg-surface-container-high text-slate-300 hover:text-[#00E5FF] transition-colors">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</button>
+<button class="p-2.5 rounded-xl bg-surface-container-high text-slate-300 hover:text-[#00E5FF] transition-colors">
+<span class="material-symbols-outlined text-[20px]">autorenew</span>
+</button>
+</div>
+</section>
+<!-- 4. Executive Summary Card -->
+<section class="bg-surface-container rounded-2xl p-8 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00E5FF]/30 to-transparent"></div>
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-[#00E5FF]">auto_awesome</span>
+<h4 class="text-xs font-bold uppercase tracking-[0.2em] text-[#9cf0ff]">Executive Summary</h4>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-slate-300 leading-relaxed text-sm">
+<p>
+            The campaign performance for <strong class="text-white">Lightning Games Inc.</strong> has reached critical mass during the mid-cycle of Q2. Our neural analysis indicates a significant surge in organic mentions following the high-production content release by premium partners. Total engagement rates are trending <strong class="text-emerald-400">18% above benchmark</strong>, primarily driven by long-form tactical gameplay videos in the Southeast Asian region.
+          </p>
+<p>
+            Key highlights include a remarkable <strong class="text-white">ROI of 501%</strong> realized this week, largely attributed to the viral trajectory of the <strong class="text-[#00E5FF]">GamerXia</strong> partnership. Conversion velocity has increased post-patch, suggesting high synergy between game updates and creator timing. We recommend immediate focus on Japanese market scaling for the upcoming week to capture current momentum.
+          </p>
+</div>
+</section>
+<!-- 5. 3-Tile Metric Highlights -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container-low p-6 rounded-2xl flex flex-col justify-between border border-white/5 hover:border-[#00E5FF]/30 transition-all group">
+<div class="flex justify-between items-start">
+<span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">KOL Reach this week</span>
+<span class="material-symbols-outlined text-slate-600 group-hover:text-[#00E5FF]">group</span>
+</div>
+<div class="mt-4 flex items-baseline gap-3">
+<span class="text-4xl font-bold text-white tracking-tight">23</span>
+<span class="text-emerald-400 text-xs font-bold bg-emerald-400/10 px-2 py-0.5 rounded">+4 new</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-2xl flex flex-col justify-between border border-white/5 hover:border-[#00E5FF]/30 transition-all group">
+<div class="flex justify-between items-start">
+<span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Combined Impressions</span>
+<span class="material-symbols-outlined text-slate-600 group-hover:text-[#00E5FF]">visibility</span>
+</div>
+<div class="mt-4 flex items-baseline gap-3">
+<span class="text-4xl font-bold text-white tracking-tight">2.1M</span>
+<span class="text-emerald-400 text-xs font-bold bg-emerald-400/10 px-2 py-0.5 rounded">+23%</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-2xl flex flex-col justify-between border border-white/5 hover:border-[#00E5FF]/30 transition-all group">
+<div class="flex justify-between items-start">
+<span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">ROI Realized</span>
+<span class="material-symbols-outlined text-slate-600 group-hover:text-[#00E5FF]">trending_up</span>
+</div>
+<div class="mt-4 flex items-baseline gap-3">
+<span class="text-4xl font-bold text-gradient-cyan">+501%</span>
+<span class="text-slate-500 text-[10px] font-medium tracking-tighter uppercase">Calculated Value</span>
+</div>
+</div>
+</section>
+<!-- 6. Two-Column Row (60/40) -->
+<section class="grid grid-cols-1 lg:grid-cols-10 gap-8">
+<!-- Left (60%): Top performing partnerships -->
+<div class="lg:col-span-6 bg-surface-container-low rounded-2xl overflow-hidden border border-white/5">
+<div class="p-6 border-b border-white/5 flex justify-between items-center">
+<h4 class="text-sm font-bold text-white uppercase tracking-wider">Top Performing Partnerships</h4>
+<button class="text-[#00E5FF] text-[11px] font-bold hover:underline">VIEW ALL</button>
+</div>
+<div class="p-0">
+<table class="w-full text-left">
+<thead>
+<tr class="text-[10px] font-bold text-slate-500 uppercase border-b border-white/5 bg-white/2">
+<th class="px-6 py-4">KOL Identity</th>
+<th class="px-6 py-4">Platform</th>
+<th class="px-6 py-4">Audience</th>
+<th class="px-6 py-4 text-right">ROI Stats</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/5">
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="vibrant gaming creator avatar, female with neon accents and high quality camera focus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDm9dKF30-tosrXRm9sLvZzGZd8bC0AbzPUqY-zjqGx2jGvGVSKjnj5gq3R4Wo5J_ksxTpU7e-DkQABriUZI_fzqtH9SoSLcgxtbEtTYlNW5T9JpPx3_p8AsZhKhWZ-Uv-Aep_oiy1QsBJCbz94H9fqsbgg4fmY3Di0gobPwCrHJYjDOuJoro9J39Ijv3c4I4sjLQ676XVO6RUh-MOAUK82kGlYd-9-jy6xf_RwxTMSUHkdOJhKnqhFFtM6p08Hdh59OSYwNJWWy9Q"/>
+<div>
+<div class="text-sm font-bold text-white">GamerXia</div>
+<div class="text-[11px] text-slate-500">Tier 1 Elite</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-[11px] bg-red-500/10 text-red-400 px-2 py-0.5 rounded font-bold">YouTube</span>
+</td>
+<td class="px-6 py-4 text-xs text-slate-300">1.2M Subs</td>
+<td class="px-6 py-4 text-right">
+<div class="text-sm font-bold text-emerald-400">812%</div>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="professional male streamer avatar with high end audio equipment in background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnUPsS_9lmvXfFqMBh2PUu_ssy6-_GMybkYpIr2v6nfHsi-VtL_T1e1mRzQcooFupEAmKPBcpkLErkBdx7lwpMgPlEhPsl8EEO5fKb1vntBLfFpveIaLfxa5skGuzjt98gAjMB5MhwESpHPvRC-G7IDIatiBDuyOM5jupIOiPSecvPR1pgwz7bt-u8rI9fvPl07FZ1v-7Yxt_9b_B0dcXaTObgURC8BBaS1g0jwtVaqhKkC3F1eGJyA80FDE7GCc3z_nj2W_IlqHs"/>
+<div>
+<div class="text-sm font-bold text-white">MOBA_Queen</div>
+<div class="text-[11px] text-slate-500">Strategy Focus</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-[11px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded font-bold">Twitch</span>
+</td>
+<td class="px-6 py-4 text-xs text-slate-300">450K Subs</td>
+<td class="px-6 py-4 text-right">
+<div class="text-sm font-bold text-emerald-400">420%</div>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="cool urban creator portrait with dramatic shadow and light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6oz2NuhrG4-JKVW0U2O6-53LzxcnOqW6UcIc_vx2Gl4-IzVfvl2uIk-vozl0F82O6_SYmwRBM_eNN9clJt6wWQyB7IplMUC30aqm2qg3NgAFyX_i6ffmUjIlwl5LPLZJMDXPly-jZeg_7Trjv9gwB9Ec9qq-CgGqd23VgJ68b1RwRp-2bDrDWoKhBcj8a6UCq7vgvXj6ORiu8IkcuTRYcP1dHokybutB8_5daAWj2rI9RZe4X76ZMkvEg4jSsDB_t23WsEtchFwg"/>
+<div>
+<div class="text-sm font-bold text-white">ShadowStrike</div>
+<div class="text-[11px] text-slate-500">Action FPS</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-[11px] bg-slate-800 text-slate-200 px-2 py-0.5 rounded font-bold">TikTok</span>
+</td>
+<td class="px-6 py-4 text-xs text-slate-300">890K Subs</td>
+<td class="px-6 py-4 text-right">
+<div class="text-sm font-bold text-emerald-400">315%</div>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="creative artistic creator avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYKn4qzR1-xXueqaVAN0aBukqoqT6qOtGN0-w-vzLAsaXKObGOR5ghyopEx1Hytiu-k98Ls0tky4hFPSFmMrVrTdX5dXajk2keCRORJwwUWvkmlf1Ryrzwe8QL1flnhMVSGCRKkg8Y_a449pOKT-uK3tfgdPT2r9nnYVa_cGVMRhvtHQlx4sO_AcxvO9xgi4b1Pm3sMxHF_2_mw3uCjzt2u_qjDy-Ypnzn6GsVnP_pbJzuaUWr__-b1u3ZLXk771he4Um2BNvl_Rg"/>
+<div>
+<div class="text-sm font-bold text-white">PixelMaster</div>
+<div class="text-[11px] text-slate-500">Creative Tech</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-[11px] bg-red-500/10 text-red-400 px-2 py-0.5 rounded font-bold">YouTube</span>
+</td>
+<td class="px-6 py-4 text-xs text-slate-300">2.1M Subs</td>
+<td class="px-6 py-4 text-right">
+<div class="text-sm font-bold text-slate-400">198%</div>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors group border-none">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="upbeat social media influencer with cheerful energy" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2oR0ADYiJVruP1gkrqmfBCPEUlzjYCsFMv4JZOa6hT1jKdHn0YNAvs6U5SVrpx68ULNWF2X2UjOZra6Sobl1Z6JEl3nYSuSaBhTxERCYPm9af_8REmGp0Vae1LtLkEXaMh-GjIQT5HZHelz93m9yuasts1eOnFKsYgjCOdlPmwzliGnw0Xf_dwminM8qrzEpajSyRpLINu-n1LBzVWngmVoMVf3S6SX34FH1psLjpNcG2w1-dAR32GI81JCwFguy0APwGCb-P7tM"/>
+<div>
+<div class="text-sm font-bold text-white">NikoPlays</div>
+<div class="text-[11px] text-slate-500">Variety Gamer</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-[11px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded font-bold">Twitch</span>
+</td>
+<td class="px-6 py-4 text-xs text-slate-300">125K Subs</td>
+<td class="px-6 py-4 text-right">
+<div class="text-sm font-bold text-slate-400">145%</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Right (40%): AI Insights & Recommendations -->
+<div class="lg:col-span-4 flex flex-col gap-4">
+<div class="bg-surface-container-low p-6 rounded-2xl border border-white/5">
+<h4 class="text-sm font-bold text-white uppercase tracking-wider mb-6">AI Insights &amp; Recommendations</h4>
+<div class="space-y-4">
+<div class="p-4 rounded-xl bg-white/2 border-l-4 border-emerald-400 group hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-emerald-400 text-sm">trending_up</span>
+<span class="text-xs font-bold text-white">SEA Market Success</span>
+</div>
+<p class="text-[13px] text-slate-400 leading-relaxed">Engagement in Vietnam and Indonesia is 40% higher than expected. Recommend increasing budget by 15% to high-performing local creators.</p>
+</div>
+<div class="p-4 rounded-xl bg-white/2 border-l-4 border-amber-400 group hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-amber-400 text-sm">warning</span>
+<span class="text-xs font-bold text-white">Performance Alert</span>
+</div>
+<p class="text-[13px] text-slate-400 leading-relaxed">Underperforming campaigns identified in the FPS category. Consider pivoting ShadowStrike content to casual gameplay for better alignment.</p>
+</div>
+<div class="p-4 rounded-xl bg-white/2 border-l-4 border-[#00E5FF] group hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-[#00E5FF] text-sm">lightbulb</span>
+<span class="text-xs font-bold text-white">Growth Opportunity</span>
+</div>
+<p class="text-[13px] text-slate-400 leading-relaxed">Japanese market showing high latent demand. Predicted 3x engagement lift if Japanese subtitle assets are prioritized next week.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 7. Budget & Pacing Card -->
+<section class="bg-surface-container-low p-8 rounded-2xl border border-white/5">
+<div class="flex justify-between items-center mb-8">
+<div class="flex items-center gap-3">
+<h4 class="text-sm font-bold text-white uppercase tracking-widest">Budget Pacing Q2</h4>
+<span class="px-2 py-0.5 bg-emerald-400/10 text-emerald-400 text-[10px] font-bold rounded uppercase">On track</span>
+</div>
+<div class="text-xs text-slate-500 font-medium">Total Budget Allocation: <span class="text-white">$240,000</span></div>
+</div>
+<div class="relative w-full h-8 bg-slate-800 rounded-full overflow-hidden flex">
+<div class="h-full bg-[#00E5FF] transition-all duration-1000" style="width: 67%" title="Spent: 67%"></div>
+<div class="h-full bg-tertiary-container transition-all duration-1000" style="width: 15%" title="Committed: 15%"></div>
+<div class="h-full bg-slate-700/50" style="width: 18%" title="Remaining: 18%"></div>
+</div>
+<div class="mt-6 flex flex-wrap gap-12">
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-[#00E5FF]"></div>
+<div>
+<div class="text-[10px] uppercase font-bold text-slate-500">Spent</div>
+<div class="text-lg font-bold text-white">$160,800 <span class="text-xs font-medium text-slate-500">(67%)</span></div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-tertiary-container"></div>
+<div>
+<div class="text-[10px] uppercase font-bold text-slate-500">Committed</div>
+<div class="text-lg font-bold text-white">$36,000 <span class="text-xs font-medium text-slate-500">(15%)</span></div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-slate-700"></div>
+<div>
+<div class="text-[10px] uppercase font-bold text-slate-500">Remaining</div>
+<div class="text-lg font-bold text-white">$43,200 <span class="text-xs font-medium text-slate-500">(18%)</span></div>
+</div>
+</div>
+</div>
+</section>
+<!-- 8. Next Week Outlook -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container-low p-6 rounded-2xl border border-white/5 hover:border-white/10 transition-all">
+<h4 class="text-[11px] font-bold text-[#9cf0ff] uppercase tracking-[0.15em] mb-4">Upcoming Launches</h4>
+<ul class="space-y-3">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-[#00E5FF] text-sm mt-0.5">rocket</span>
+<div class="text-xs text-slate-300">Phase 2: Global Esports Series (5 KOLs)</div>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-[#00E5FF] text-sm mt-0.5">rocket</span>
+<div class="text-xs text-slate-300">Influencer Merch Drop collaboration</div>
+</li>
+</ul>
+</div>
+<div class="bg-surface-container-low p-6 rounded-2xl border border-white/5 hover:border-white/10 transition-all">
+<h4 class="text-[11px] font-bold text-[#9cf0ff] uppercase tracking-[0.15em] mb-4">Follow-ups Needed</h4>
+<ul class="space-y-3">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-amber-400 text-sm mt-0.5">schedule</span>
+<div class="text-xs text-slate-300">Contract signature pending: GamerXia</div>
+</li>
+<li>
+<a class="text-[11px] font-bold text-[#00E5FF] flex items-center gap-1 hover:gap-2 transition-all" href="#">
+                LINK TO CRM <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="bg-surface-container-low p-6 rounded-2xl border border-white/5 hover:border-white/10 transition-all">
+<h4 class="text-[11px] font-bold text-[#9cf0ff] uppercase tracking-[0.15em] mb-4">Reports &amp; Reviews</h4>
+<ul class="space-y-3">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-purple-400 text-sm mt-0.5">assessment</span>
+<div class="text-xs text-slate-300">Deep-dive attribution for Q2 Month 1</div>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-purple-400 text-sm mt-0.5">assessment</span>
+<div class="text-xs text-slate-300">ROI verification for TikTok campaign</div>
+</li>
+</ul>
+</div>
+</section>
+<!-- 9. Footer Strip -->
+<footer class="pt-8 pb-12 border-t border-white/5 flex flex-col items-center justify-center gap-2">
+<div class="text-[10px] text-slate-500 flex items-center gap-4">
+<span>Report ID: KM-WR-2026-0414</span>
+<span class="w-1 h-1 rounded-full bg-slate-800"></span>
+<span>Gen Cost: $0.12</span>
+</div>
+<div class="text-[11px] text-slate-600 font-medium">
+          AI powered by <span class="text-slate-400">KOLMatrix Neural Discovery Engine</span>
+</div>
+</footer>
+</div>
+</main>
+</body></html>
