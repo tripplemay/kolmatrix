@@ -24,6 +24,7 @@
     "db:migrate": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "seed:kol": "tsx scripts/seed-kol-from-enriched.ts",
+    "seed:email-templates": "tsx scripts/seed-email-templates.ts",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate"
   },
