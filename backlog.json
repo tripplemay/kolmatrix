@@ -11,21 +11,25 @@
   },
   {
     "id": "BL-002",
-    "title": "Staging /api/health git_sha 显示 unknown（prod 已修未同步 staging）",
-    "description": "Kimi 交接 notes 明确 'git_sha unknown 已修复（后续 deploy 正常反射 sha）'，但仅 prod 修好。staging 2026-04-23 deploy 后 /api/health 仍 git_sha=unknown。根因推测：deploy-prod.yml 在 build 前注入 GIT_SHA 环境变量，staging 手动 deploy 没这步。修复方案有二：(a) runbook §5 'Deploy new code to staging' 改为 `GIT_SHA=$(git rev-parse --short HEAD) npm run build`；(b) infrastructure/ 下加一个 deploy-staging.sh 脚本入 git 供 Reviewer/用户复用。推荐 b。",
-    "decisions": [],
+    "title": "Staging /api/health git_sha 显示 unknown（根因比初判更深）",
+    "description": "Kimi 交接 notes 明确 'git_sha unknown 已修复（后续 deploy 正常反射 sha）'，但仅 prod 修好。2026-04-23 Planner 第 2 次 deploy staging 时用 `GIT_SHA=9ed5def npm run build` 显式注入 build-time env var 仍无效，health 返回仍为 unknown。**说明 health handler 不读 build-time env**，实际根因是 3 种可能之一：(1) handler 读运行时 process.env.GIT_SHA，PM2 不从 .env.staging 以外拿到；(2) handler 从某个 build 生成文件读（如 .git-sha），staging build 未生成；(3) 专用 next.config.ts env 配置。修复路径已不再是 'deploy script 里 GIT_SHA=xxx' 那么简单；需要 Generator 看 src/app/api/health/route.ts 源码 + deploy-prod.yml 比对来定位。prod 在 4b05cb6 时显示 git_sha=4b05cb60...（全长 sha），staging 始终 unknown。BL-004 实施时必须连带修这个。",
+    "decisions": ["BL-004 实施时 Generator 必须先看 health handler 源码再写脚本，不能只加 GIT_SHA= 前缀"],
     "confirmed_at": "2026-04-23T08:00+0800",
     "priority": "medium",
     "tags": ["BM1-polish", "staging-devx", "observability"],
-    "discovered_in": "staging L2 pre-check by Planner johnsong"
+    "discovered_in": "staging L2 pre-check by Planner johnsong",
+    "investigation_log": [
+      "2026-04-23 Planner 第 1 次 deploy: 假设 build-time env 就行",
+      "2026-04-23 Planner 第 2 次 deploy: `GIT_SHA=9ed5def npm run build` 注入仍 unknown -> 假设不成立"
+    ]
   },
   {
     "id": "BL-003",
-    "title": "/en 和 /en/ 404 / 308 跳回 404（根 locale 路径不落到 dashboard）",
-    "description": "GET /en 返回 404，GET /en/ 308 跳回 /en 再 404。正常用户路径 / → 307 /en/dashboard 工作正常，所以不阻塞 Journey。但若某处硬编码了 /en 作为入口会踩坑，SEO 层面 /en 也应该有内容。Fix：next-intl middleware 或路由 [locale]/page.tsx 默认渲染 dashboard 或 redirect。MVP 低优先级。",
-    "decisions": [],
+    "title": "/en 和 /en/ 404（根 locale 路径不落到 dashboard）— F008 后部分缓解",
+    "description": "初次发现：GET /en 返回 404，GET /en/ 308 跳回 /en 再 404。2026-04-23 BM1 F008 落地后观察到：受保护路由的 307 跳转已正确保留 locale 前缀（/en/dashboard 跳 /en/login 而非裸 /login），说明 locale routing 主干已恢复。残留 bare /en 404 仍在，但正常用户走 / → /en/dashboard 自动补全路径，实操无路径断裂。MVP 可降级为 'deferred'（非 low），Post-MVP 再修。",
+    "decisions": ["F008 落地后优先级从 low 调为 deferred，不入 BL-004 polish 批次"],
     "confirmed_at": "2026-04-23T08:00+0800",
-    "priority": "low",
+    "priority": "deferred",
     "tags": ["routing", "i18n"],
     "discovered_in": "staging L2 pre-check by Planner johnsong"
   },
