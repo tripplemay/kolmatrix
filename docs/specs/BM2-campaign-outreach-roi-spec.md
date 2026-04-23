@@ -710,11 +710,65 @@ BM2 full done 后：
 本 spec 由 johnsong（Planner 身份）起草于 2026-04-23，BM1 building 阶段。
 
 **aigcgateway 3 Action 进度**（BM2 F006/F009/F010 前置）：
-- [ ] `kol-email-customize` — 未建
-- [ ] `roi-insights` — 未建
-- [ ] `weekly-report-for-client` — 未建
+- [x] `kol-email-customize` — ✅ **action_id: `cmob2z6j00001bnole7i8lg9h`**（model: `claude-haiku-4.5`，2026-04-23 created + dry_run + real call 通过；测试 token usage 549+287，~$0.002/call）
+- [x] `roi-insights` — ✅ **action_id: `cmob2zgae000jbnnuue2i7uaf`**（model: `gemini-3-flash`，2026-04-23 created + dry_run + real call 通过；测试 token usage 641+625，~$0.002/call）
+- [x] `weekly-report-for-client` — ✅ **action_id: `cmob2zqkp0001bnnvel4vjapu`**（model: `gemini-3-flash`，2026-04-23 created + dry_run + real call 通过；测试 token usage 586+636，~$0.002/call，产出 450 词 5 段式 markdown）
 
-Action 建立后，Planner 在本 spec §11 更新 action_id，供 BM2 Generator 引用。
+### 11.1 Generator 集成要点（实测产出沉淀）
+
+**claude-haiku-4.5 输出 JSON 时习惯加 code fence 包裹**（即便 system prompt 禁止也会偶发），Generator 在 `src/lib/email/customize.ts` 解析响应时必须先 strip 可能的 ```json / ``` 围栏再 JSON.parse：
+
+```typescript
+function stripCodeFence(s: string): string {
+  return s.trim().replace(/^```(?:json)?\s*\n/, '').replace(/\n```\s*$/, '');
+}
+const parsed = JSON.parse(stripCodeFence(response.output));
+```
+
+`gemini-3-flash` 两个 Action 实测无此习惯（roi-insights / weekly-report-for-client 都干净），但 Generator 解析 `roi-insights` 响应时仍建议套上 stripCodeFence 作为防御性编程（future-proof）。`weekly-report-for-client` 是 raw markdown 直接渲染，无需 JSON parse。
+
+**调用参考实现（F006 / F009 / F010 三处）：**
+
+```typescript
+// F006 src/lib/email/customize.ts
+const result = await aigcGatewayClient.runAction({
+  actionId: 'cmob2z6j00001bnole7i8lg9h',
+  variables: {
+    product_name, product_category, product_usp,
+    kol_name, kol_handle, kol_region: kol_region ?? 'Unknown',
+    kol_categories: JSON.stringify(kol.categories),
+    original_subject, original_body, locale,
+  },
+});
+
+// F009 src/lib/roi/insights.ts  
+const result = await aigcGatewayClient.runAction({
+  actionId: 'cmob2zgae000jbnnuue2i7uaf',
+  variables: {
+    tenant_context: tenant.description ?? 'Gaming studio',
+    campaigns_json: JSON.stringify(campaigns),
+    locale,
+  },
+});
+
+// F010 src/lib/weekly-report/generate.ts
+const result = await aigcGatewayClient.runAction({
+  actionId: 'cmob2zqkp0001bnnvel4vjapu',
+  variables: {
+    tenant_name: tenant.name, report_week_start, report_week_end, locale,
+    kol_activity_json: JSON.stringify(kolActivity),
+    roi_data_json: JSON.stringify(roiData),
+    prev_week_comparison_json: prevWeekComparison ? JSON.stringify(prevWeekComparison) : '',
+  },
+});
+```
+
+**Action ID 环境变量化建议：** 生产/staging 各自可能需要独立 Action（若未来要 A/B test prompt），建议 Generator 把 3 个 action_id 放 `.env.production` / `.env.staging`：
+```
+AIGC_ACTION_KOL_EMAIL_CUSTOMIZE=cmob2z6j00001bnole7i8lg9h
+AIGC_ACTION_ROI_INSIGHTS=cmob2zgae000jbnnuue2i7uaf
+AIGC_ACTION_WEEKLY_REPORT=cmob2zqkp0001bnnvel4vjapu
+```
 
 ---
 

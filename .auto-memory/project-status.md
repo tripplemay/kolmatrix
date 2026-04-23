@@ -32,8 +32,12 @@ BAux1 ✅ → BI4 ✅ → **BM1（9f 7-10 天）** → BM2（~13f 10-14 天）�
 - Browser locale detection auto / AI 周报给客户看 PDF+share link
 
 ## Planner 并行动作（BM1 building 期间）
-- 起草 BM2 spec（Campaign + 联系 + CRM + ROI + AI 周报，~13 features）
-- 创建 aigcgateway 3 Action：kol-email-customize / roi-insights / weekly-report-for-client
+- ✅ BM2 spec 起草完（11 features，commit `cbdc7ec`，`docs/specs/BM2-campaign-outreach-roi-spec.md`）
+- ✅ aigcgateway 3 Action 已建 + dry_run + real call 验证：
+  - `kol-email-customize` cmob2z6j00001bnole7i8lg9h (claude-haiku-4.5)
+  - `roi-insights` cmob2zgae000jbnnuue2i7uaf (gemini-3-flash)
+  - `weekly-report-for-client` cmob2zqkp0001bnnvel4vjapu (gemini-3-flash)
+- ⏳ 待命处理 Generator F003+ pre-impl 审计请求
 
 ## 环境
 - 生产 DB `kolmatrix` / staging `kolmatrix_staging`
