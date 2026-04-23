@@ -255,6 +255,67 @@ F001 / F002 / F004 审计无冲突，Generator 同步开工（独立推进）。
 
 ---
 
-## 8. Planner 裁决区（Kimi 请在此追加）
+## 8. Planner 裁决（Kimi，2026-04-23）
 
-*（等待 Planner 填写）*
+**短格式裁决：** `#A:D  #B:A  #C:A  #D:A  #E:A` — 全部同意 Generator 建议。
+
+### 8.1 逐条裁决理由
+
+**#A = D（F003 沿用 B0 现有 audit_log 表）**
+
+B0 init migration 已创建 `audit_log`（resource_type / resource_id / payload Json / actor_user_id），是 ADR 级别的 platform skeleton，BI4 作为 infra 补丁推翻它不合理。
+
+应用层映射策略（Generator 实施）：
+- F003 spec 的 `action / targetType / targetId / before / after` 语义映射到现有表字段：
+  - `action` → 直接存 `action`
+  - `targetType` → 存 `resource_type`
+  - `targetId` → 存 `resource_id`
+  - `before` + `after` → 合并存 `payload` Json（e.g. `{before: {...}, after: {...}, sanitized_fields: [...]}`）
+  - `actorId` → 存 `actor_user_id`
+- helper TypeScript 接口保持 F003 spec 形态（`logAudit({actorId, action, targetType, targetId, before, after, ...})`）—— 应用层强制 `actorId` 必填靠 TypeScript `string`（非 optional）约束
+- 不跑 DROP/CREATE，零数据丢失
+
+**Prisma schema 不改动 AuditLog model 声明**（保留 B0 字段名），helper 只负责 TS → DB 字段映射。
+
+**#B = A（F005 tsvector 按 kol 实际列）**
+
+Generator 分析正确 —— spec 引用的 `name/tags/knownBrandCollabs` 是我想当然写入"MVP PRD 扩展字段"，但 B0 kol schema 尚未扩展。按实际列调整：
+
+```sql
+setweight(to_tsvector('english', coalesce(NEW.display_name, '')), 'A') ||
+setweight(to_tsvector('english', coalesce(NEW.handle, '')), 'B') ||
+setweight(to_tsvector('english', coalesce(array_to_string(NEW.categories, ' '), '')), 'C') ||
+setweight(to_tsvector('english', coalesce(NEW.bio, '')), 'D');
+```
+
+未来 BM1 F001 扩 kol schema（加 `knownBrandCollabs`、`tags` 等 MVP 字段）时，发新 migration ALTER trigger 追加权重即可。
+
+**#C = A（不加 country_code 到 tsvector）**
+
+ISO 2-letter code（"US"/"JP"/"BR"）对 `english` tsvector dict 无意义。国家筛选走独立 `WHERE country_code = 'BR'` filter，不入全文搜索。
+
+**#D = A（event_log / audit_log 无 RLS）**
+
+平台级记录，按 B0 existing `audit_log` 惯例不 ENABLE RLS。应用层通过 platform_admin role 控制读。
+
+**#E = A（不实现 sanitize util）**
+
+spec §6 原文 "可加字段级 mask 机制" — "可加" 非 "必须加"，YAGNI 原则。BM2 用户管理埋点时根据实际字段需求再评估是否实现。
+
+### 8.2 Planner 自嘲 + 后续动作
+
+本审计暴露：我写 BI4 spec 时违反了 `framework/harness/database-patterns.md §2`（"Planner 起草 DB 相关 spec 前必扫 prisma/migrations/*/migration.sql"）—— 凭印象以为 audit_log 是新建表、kol 有 MVP 扩展字段。**Generator 的 pre-impl 审计刚好覆盖这个漏洞，验证了 pre-impl 审计 → Planner 裁决机制的价值**。
+
+一次性违反不升为新 framework 规则（§2 规则本身已存在且正确），但作为 self-check signal 记录在本文档里。如果后续批次再重复这类错误，Planner 需要反思是否要做 pre-commit checklist 自动化约束。
+
+### 8.3 Planner 本 commit 同步动作
+
+1. BI4 spec §4 F003 / F005 实现描述按本裁决修订 + §3 决策表加一行
+2. features.json F003 / F005 acceptance 同步本裁决
+3. 本审计文档保留完整（作为 pre-impl 审计案例沉淀）
+
+### 8.4 Generator 开工许可
+
+- ✅ **F001 / F002 / F004** 审计无冲突，可立即开工（不阻塞本裁决）
+- ✅ **F003 / F005** 按本裁决 `#A:D / #B:A / #C:A / #D:A / #E:A` 开工
+- 无需再发审计请求；如遇新 ambiguity 再发 pre-impl 审计 v2

@@ -157,40 +157,36 @@ export async function logEvent(data: EventData): Promise<void> { ... }
 - `tests/integration/event-log.test.ts`: logEvent → DB 记录 / 失败 swallow（DB down 时主流程不抛）/ 查询 by tenant+type+时间范围
 - Prisma Client 生成后 TypeScript `prisma.eventLog.findMany(...)` 可用
 
-### F003 — `audit_log` 表 + `logAudit()` helper
+### F003 — `audit_log` helper（沿用 B0 现有表，见 2026-04-23 裁决）
 
-**实现：**
+> **2026-04-23 裁决修订：** Generator pre-impl 审计发现 B0 init migration 已创建 `audit_log` 表。Planner 裁决方案 D —— 沿用现有 schema，helper 负责 TypeScript API → DB 字段映射。无新 migration。详见 `docs/specs/BI4-f003-f005-preimpl-audit.md` §8.1。
 
-Prisma schema:
+**现有 AuditLog schema（B0 init，不变）：**
+
 ```prisma
 model AuditLog {
-  id         String   @id @default(cuid())
-  tenantId   String?
-  actorId    String   // audit 强制要有 actor
-  action     String   @db.VarChar(64)  // e.g. "user.role_changed", "data.exported"
-  targetType String   @db.VarChar(32)  // "user" / "kol" / "campaign"
-  targetId   String   @db.VarChar(64)
-  before     Json?    // 修改前状态
-  after      Json?    // 修改后状态
-  ipAddress  String?  @db.VarChar(45)
-  userAgent  String?  @db.Text
-  createdAt  DateTime @default(now())
-
-  @@index([tenantId, actorId, createdAt])
-  @@index([targetType, targetId])
+  id           BigInt   @id @default(autoincrement())
+  tenantId     String?  @map("tenant_id") @db.Uuid
+  actorUserId  String?  @map("actor_user_id") @db.Uuid
+  action       String
+  resourceType String   @map("resource_type")
+  resourceId   String?  @map("resource_id") @db.Uuid
+  payload      Json?    @db.JsonB
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
   @@map("audit_log")
 }
 ```
 
-Migration `20260424000100_audit_log/migration.sql` + ROLLBACK SQL。
+**Helper `src/lib/audit/log.ts`（新建）：**
 
-Helper `src/lib/audit/log.ts`:
 ```typescript
 export interface AuditData {
-  actorId: string;              // audit 强制要 actorId，不能 null
-  action: string;               // "user.role_changed"
-  targetType: string;
-  targetId: string;
+  actorId: string;               // TypeScript 强制必填，映射到 actor_user_id
+  action: string;                // "user.role_changed" / "data.exported"
+  targetType: string;            // 映射到 resource_type
+  targetId: string;              // 映射到 resource_id
   tenantId?: string;
   before?: Record<string, unknown>;
   after?: Record<string, unknown>;
@@ -198,14 +194,25 @@ export interface AuditData {
   userAgent?: string;
 }
 
-/** 同步落库（audit 比 event 更严格，失败也应 log stderr）*/
+/**
+ * 落库映射：
+ * - before + after 合并存 payload Json（{before, after, sanitizedFields?: []}）
+ * - actorId → actor_user_id
+ * - targetType / targetId → resource_type / resource_id
+ * 失败仅 console.error，不阻塞主流程；audit 层面仍 log stderr 给合规审计留痕
+ */
 export async function logAudit(data: AuditData): Promise<void> { ... }
 ```
 
+**不新建 migration**（表已存在）；helper 层靠 Prisma `auditLog.create({data: {...}})` 落库。
+
 **Acceptance：**
-- Migration 通过 F007 CI
-- `tests/integration/audit-log.test.ts`: logAudit 成功 → DB 记录 / actorId 缺失 TypeScript 编译报错 / before-after diff 保留
-- 查询 by actor + 时间范围 / 查询 by target
+- `tests/integration/audit-log.test.ts` ≥ 3 cases：
+  - logAudit 成功 → 查 audit_log 表可见 payload 含 before/after
+  - actorId 缺失 → TypeScript 编译报错
+  - before-after diff 通过 payload Json 保留，可从 payload 提取
+  - 查询 by actor_user_id + 时间范围 / 查询 by resource_type + resource_id
+- 无新 migration，F007 CI 不会因为本 feature 新增任何 check
 
 ### F004 — Cursor pagination util
 
@@ -255,22 +262,22 @@ export function createCursorPaginator<TModel, TWhere>(
 - Cursor 是 URL-safe base64，前端可透明传递
 - TypeScript 使用时泛型推导：`paginator.query<KolWhereInput>({ where: {...} })` items 类型为 Kol[]
 
-### F005 — KOL tsvector search index migration
+### F005 — KOL tsvector search index migration（2026-04-23 裁决修订）
 
-**实现：**
+> **2026-04-23 裁决修订：** 原 spec 引用 `name/tags/knownBrandCollabs` 不存在于 B0 kol schema。Planner 裁决方案 A —— 按实际列映射：display_name/handle/categories/bio。详见审计 §8.1。
 
-Migration `20260424000200_kol_tsvector/migration.sql`:
+**Migration `20260424000200_kol_tsvector/migration.sql`:**
 
 ```sql
 -- Add tsvector column for full-text search
 ALTER TABLE "kol" ADD COLUMN "search_vector" tsvector;
 
 -- Populate existing rows
-UPDATE "kol" SET "search_vector" = 
-  setweight(to_tsvector('english', coalesce(name, '')), 'A') ||
+UPDATE "kol" SET "search_vector" =
+  setweight(to_tsvector('english', coalesce(display_name, '')), 'A') ||
   setweight(to_tsvector('english', coalesce(handle, '')), 'B') ||
-  setweight(to_tsvector('english', coalesce(array_to_string(tags, ' '), '')), 'C') ||
-  setweight(to_tsvector('english', coalesce(array_to_string("knownBrandCollabs", ' '), '')), 'C');
+  setweight(to_tsvector('english', coalesce(array_to_string(categories, ' '), '')), 'C') ||
+  setweight(to_tsvector('english', coalesce(bio, '')), 'D');
 
 -- GIN index for query speed
 CREATE INDEX "kol_search_vector_idx" ON "kol" USING GIN("search_vector");
@@ -278,11 +285,11 @@ CREATE INDEX "kol_search_vector_idx" ON "kol" USING GIN("search_vector");
 -- Trigger to auto-maintain on insert/update
 CREATE OR REPLACE FUNCTION kol_search_vector_update() RETURNS trigger AS $$
 BEGIN
-  NEW."search_vector" := 
-    setweight(to_tsvector('english', coalesce(NEW.name, '')), 'A') ||
+  NEW."search_vector" :=
+    setweight(to_tsvector('english', coalesce(NEW.display_name, '')), 'A') ||
     setweight(to_tsvector('english', coalesce(NEW.handle, '')), 'B') ||
-    setweight(to_tsvector('english', coalesce(array_to_string(NEW.tags, ' '), '')), 'C') ||
-    setweight(to_tsvector('english', coalesce(array_to_string(NEW."knownBrandCollabs", ' '), '')), 'C');
+    setweight(to_tsvector('english', coalesce(array_to_string(NEW.categories, ' '), '')), 'C') ||
+    setweight(to_tsvector('english', coalesce(NEW.bio, '')), 'D');
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -297,6 +304,8 @@ CREATE TRIGGER kol_search_vector_trigger
 --           DROP INDEX kol_search_vector_idx;
 --           ALTER TABLE "kol" DROP COLUMN search_vector;
 ```
+
+**未来扩展：** BM1 F001 如扩 kol schema（加 `knownBrandCollabs`、`tags` 等 MVP 字段），再发新 migration ALTER trigger 追加权重即可（零破坏性）。
 
 Prisma schema 追加 `searchVector Unsupported("tsvector")?` 字段（读不回写，仅让 Prisma client 知道此列存在，避免 db pull 时丢失）。
 

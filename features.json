@@ -23,7 +23,7 @@
       "priority": "high",
       "executor": "generator",
       "status": "pending",
-      "acceptance": "prisma/schema.prisma 追加 model AuditLog（id cuid / tenantId? / actorId 必填 / action 64 / targetType 32 / targetId 64 / before? Json / after? Json / ipAddress? 45 / userAgent? Text / createdAt；@@index([tenantId,actorId,createdAt]) + @@index([targetType,targetId]); @@map audit_log）；migration 20260424000100_audit_log 含 ROLLBACK SQL；src/lib/audit/log.ts 导出 logAudit(data: AuditData) helper（actorId TypeScript 强制必填；失败仍 log stderr 但不抛主流程）；tests/integration/audit-log.test.ts ≥ 3 cases：成功记录 / actorId 缺失编译报错 / before-after diff 保留 / 查询 by actor+时间+by target"
+      "acceptance": "【2026-04-23 裁决 #A:D 修订】沿用 B0 init 已创建的 audit_log 表（prisma schema.prisma:259-274 AuditLog model，resource_type/resource_id/payload/actor_user_id），**不新建 migration**；src/lib/audit/log.ts 新建 logAudit(data: AuditData) helper（AuditData 接口 actorId TS 强制必填 string，映射到 actor_user_id；targetType/targetId → resource_type/resource_id；before+after 合并存 payload Json 如 {before,after,sanitizedFields?}；ipAddress/userAgent 直落 B0 同名列；失败 console.error 不抛主流程）；tests/integration/audit-log.test.ts ≥ 3 cases：logAudit 成功 → 查 audit_log payload 含 before+after / actorId 缺失 TS 编译报错 / 查询 by actor_user_id+时间 / 查询 by resource_type+resource_id；F007 CI 不涉及新 migration 校验（无新 migration）"
     },
     {
       "id": "F004",
@@ -39,7 +39,7 @@
       "priority": "high",
       "executor": "generator",
       "status": "pending",
-      "acceptance": "migration 20260424000200_kol_tsvector 含 ALTER TABLE kol ADD COLUMN search_vector tsvector + UPDATE 填充现有行 + CREATE GIN INDEX + trigger function kol_search_vector_update + BEFORE INSERT OR UPDATE trigger；权重：name A / handle B / tags+knownBrandCollabs C；ROLLBACK SQL 含 drop trigger + function + index + column（F007 校验通过）；prisma schema 加 searchVector Unsupported('tsvector')? 字段声明；src/lib/search/tsvector.ts 导出 buildKolSearchQuery(userInput) + searchKols(tenantId, query, limit?) helper（后者用 prisma.$queryRaw）；tests/integration/kol-tsvector.test.ts ≥ 3 cases：insert KOL → search_vector 自动填充 / update name → 自动更新 / searchKols('dota') 命中 / 空 query 不报错 / EXPLAIN ANALYZE 验证 GIN 索引被用（不顺序扫描）"
+      "acceptance": "【2026-04-23 裁决 #B:A + #C:A 修订】migration 20260424000200_kol_tsvector 含 ALTER TABLE kol ADD COLUMN search_vector tsvector + UPDATE 填充现有行 + CREATE GIN INDEX + trigger function kol_search_vector_update + BEFORE INSERT OR UPDATE trigger；**权重映射 B0 kol 实际列**：A=display_name / B=handle / C=array_to_string(categories, ' ') / D=coalesce(bio, '')；**不引用 name/tags/knownBrandCollabs（不存在于 B0 kol schema）**；country_code 不入 tsvector（裁决 #C）；ROLLBACK SQL 含 drop trigger + function + index + column（F007 校验通过）；prisma schema 加 searchVector Unsupported('tsvector')? 字段声明；src/lib/search/tsvector.ts 导出 buildKolSearchQuery(userInput) + searchKols(tenantId, query, limit?) helper（后者用 prisma.$queryRaw）；tests/integration/kol-tsvector.test.ts ≥ 3 cases：insert KOL → search_vector 自动填充 / update display_name → 自动更新 / searchKols('dota') 命中 / 空 query 不报错 / EXPLAIN ANALYZE 验证 GIN 索引被用（不顺序扫描）"
     }
   ]
 }
