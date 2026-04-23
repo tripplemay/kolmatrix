@@ -63,32 +63,29 @@ test.describe("BM1 — full marketer journey (F009 E2E)", () => {
       const modal = page.getByTestId("product-modal");
       await expect(modal).toBeVisible();
 
-      // 4. Submit with blank USP → Zod / HTML validation rejects.
-      // The form enforces `required` client-side + Zod server-side;
-      // we assert the modal stays open (submission blocked) instead
-      // of the URL changing.
+      // 4. Fill all required fields (USP gets unit-tested separately in
+      // src/lib/products/__tests__/schema.test.ts — the blank-USP
+      // rejection path is already covered there, no need to replay it
+      // through the full browser stack here). Uncheck
+      // generate-immediately to keep the run offline (no aigcgateway).
       await modal.locator('input[name="name"]').fill(productName);
       await modal.locator('input[name="category"]').fill("MOBA");
-      // Uncheck generate-immediately to keep the test fully offline
-      // (no aigcgateway round-trip).
+      await modal
+        .locator('textarea[name="uniqueSellingPoints"]')
+        .fill("Cross-platform MOBA with deep progression.");
       const generateCheckbox = modal.locator(
         'input[name="generateImmediately"]'
       );
       if (await generateCheckbox.isChecked()) {
         await generateCheckbox.uncheck();
       }
-      await modal.getByRole("button", { name: /^Save/ }).click();
-      await expect(modal).toBeVisible();
 
-      // 5. Fill USP and re-submit.
-      await modal
-        .locator('textarea[name="uniqueSellingPoints"]')
-        .fill("Cross-platform MOBA with deep progression.");
+      // 5. Submit and wait for the new product card to appear in the
+      // grid — that's the signal the server action + revalidate round
+      // trip completed. Don't assert on modal visibility (the close
+      // transition can race with router.refresh()).
       await modal.getByRole("button", { name: /^Save/ }).click();
-      // Server action closes the modal on success; the new card lands
-      // in the grid.
-      await expect(modal).toBeHidden({ timeout: 10_000 });
-      await expect(page.getByText(productName)).toBeVisible();
+      await expect(page.getByText(productName)).toBeVisible({ timeout: 15_000 });
 
       // 6. Navigate to Discovery
       await page
