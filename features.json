@@ -30,7 +30,7 @@
       "title": "Campaign 新建页 /campaigns/new",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/app/[locale]/(app)/campaigns/new/page.tsx 独立页（非 modal）；表单字段 name(required, max 80) / productId(required dropdown from GET /api/products，无 product 时提示引导 /knowledge-base) / budgetAmount(optional Decimal 12,2) / startDate / endDate / ownerUserId(默认当前用户不可改) / game / markets / kpiTarget；src/lib/campaigns/schema.ts zod（F005/F006 复用）；Server Action createCampaign status=draft spendTotal=0 + event_log 'campaign.created' + 返回 id 前端跳 /campaigns/:id；tests/integration/campaign-create.test.ts（zod 校验 / RLS / event_log）；visual baseline"
     },
     {
