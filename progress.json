@@ -2,7 +2,7 @@
   "status": "building",
   "user_goal": "MVP 前最后一棒架构护栏（5 features 独立 infra）：Async Job Queue interface + in-memory stub / event_log 表 + helper / audit_log 表 + helper / Cursor pagination util / KOL tsvector 全文搜索索引 migration。完成后 BM1/BM2 业务批次可直接调用这些基建，零架构返工。",
   "total_features": 5,
-  "completed_features": 3,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "BI4-architectural-guardrails",
   "last_updated": "2026-04-23T12:30+0800",

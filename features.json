@@ -22,7 +22,7 @@
       "title": "audit_log 表 + logAudit() helper",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "【2026-04-23 裁决 #A:D 修订】沿用 B0 init 已创建的 audit_log 表（prisma schema.prisma:259-274 AuditLog model，resource_type/resource_id/payload/actor_user_id），**不新建 migration**；src/lib/audit/log.ts 新建 logAudit(data: AuditData) helper（AuditData 接口 actorId TS 强制必填 string，映射到 actor_user_id；targetType/targetId → resource_type/resource_id；before+after 合并存 payload Json 如 {before,after,sanitizedFields?}；ipAddress/userAgent 直落 B0 同名列；失败 console.error 不抛主流程）；tests/integration/audit-log.test.ts ≥ 3 cases：logAudit 成功 → 查 audit_log payload 含 before+after / actorId 缺失 TS 编译报错 / 查询 by actor_user_id+时间 / 查询 by resource_type+resource_id；F007 CI 不涉及新 migration 校验（无新 migration）"
     },
     {
