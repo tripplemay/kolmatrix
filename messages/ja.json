@@ -455,6 +455,93 @@
         "generic": "Something went wrong. Please try again.",
         "unauthorized": "Please sign in to create campaigns."
       }
+    },
+    "detail": {
+      "breadcrumb": "Campaigns",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "unset": "Not set",
+      "kpi": {
+        "budget": "Budget",
+        "spend": "Spend",
+        "revenue": "Revenue",
+        "roi": "ROI"
+      },
+      "fields": {
+        "name": "Name",
+        "budget": "Budget (USD)",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "game": "Game / title"
+      },
+      "kolPanel": {
+        "title": "KOLs in this campaign",
+        "empty": "No KOLs yet. Add saved creators to kick off outreach.",
+        "addButton": "Add KOLs",
+        "addDialog": {
+          "title": "Add KOL to campaign",
+          "searchPlaceholder": "Search saved creators by name or handle…",
+          "empty": "No saved creators left to add.",
+          "feeLabel": "Fee (USD, optional)",
+          "submit": "Add",
+          "close": "Close"
+        },
+        "columns": {
+          "creator": "Creator",
+          "contactStatus": "Contact status",
+          "fee": "Fee (USD)",
+          "actions": "Actions"
+        },
+        "remove": "Remove",
+        "removeConfirm": "Remove this KOL from the campaign?"
+      },
+      "kolStatus": {
+        "pending": "Pending",
+        "contacted": "Contacted",
+        "quoted": "Quoted",
+        "signed": "Signed",
+        "delivered": "Delivered",
+        "paid": "Paid"
+      },
+      "revenue": {
+        "title": "Revenue",
+        "lockedBody": "This campaign is completed — revenue is locked. Reactivate to edit.",
+        "placeholder": "12000.00",
+        "save": "Save",
+        "saving": "Saving…",
+        "clear": "Clear",
+        "helper": "Record the attributable revenue whenever you have it. Cleared values reset ROI to —."
+      },
+      "statusController": {
+        "title": "Lifecycle",
+        "transitionTo": "Move to {next}",
+        "reactivate": "Reactivate",
+        "currentLabel": "Current status",
+        "startedAtLabel": "Started",
+        "closedAtLabel": "Closed"
+      },
+      "outreach": {
+        "title": "Send outreach emails",
+        "ready": "KOLs with email on file are ready for bulk outreach.",
+        "noEmailable": "Add KOL emails (or invite new creators) to enable bulk outreach.",
+        "cta": "Open Outreach composer"
+      },
+      "errors": {
+        "endBeforeStart": "End date cannot be before the start date.",
+        "validationFailed": "Some fields are invalid. Please check and try again.",
+        "unauthorized": "Your session expired. Please sign in again.",
+        "generic": "Something went wrong. Please try again.",
+        "notFound": "Campaign not found.",
+        "kolNotFound": "KOL not found.",
+        "linkNotFound": "This KOL is not linked to the campaign.",
+        "alreadyLinked": "This KOL is already in the campaign.",
+        "invalidFee": "Fee must be a non-negative number (e.g., 1000.00).",
+        "invalidStatus": "Unknown status value.",
+        "invalidTransition": "That status change is not allowed.",
+        "forbiddenWhenCompleted": "Revenue can only be edited while the campaign is not completed.",
+        "revenueInvalid": "Revenue must be a non-negative number."
+      }
     }
   },
   "relationshipStatus": {

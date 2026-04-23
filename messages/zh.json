@@ -408,6 +408,94 @@
       "title": "没有符合筛选的活动",
       "body": "试试清空筛选条件或扩大搜索范围。"
     },
+    "detail": {
+      "breadcrumb": "活动列表",
+      "edit": "编辑",
+      "save": "保存",
+      "cancel": "取消",
+      "unset": "未设置",
+      "kpi": {
+        "budget": "预算",
+        "spend": "已花费",
+        "revenue": "收入",
+        "roi": "ROI"
+      },
+      "fields": {
+        "name": "名称",
+        "budget": "预算（美元）",
+        "startDate": "开始日期",
+        "endDate": "结束日期",
+        "game": "游戏标题"
+      },
+      "kolPanel": {
+        "title": "活动内 KOL",
+        "empty": "还没有 KOL。添加保存过的创作者开始触达。",
+        "addButton": "添加 KOL",
+        "addDialog": {
+          "title": "向活动添加 KOL",
+          "searchPlaceholder": "按名称或 handle 搜索已保存的创作者…",
+          "empty": "已保存的创作者都在活动中了。",
+          "feeLabel": "费用（美元，选填）",
+          "submit": "添加",
+          "close": "关闭"
+        },
+        "columns": {
+          "creator": "创作者",
+          "contactStatus": "沟通状态",
+          "fee": "费用（美元）",
+          "actions": "操作"
+        },
+        "remove": "移除",
+        "removeConfirm": "确定要将此 KOL 从活动中移除吗？"
+      },
+      "kolStatus": {
+        "pending": "待联系",
+        "contacted": "已联系",
+        "quoted": "已报价",
+        "signed": "已签约",
+        "delivered": "已交付",
+        "paid": "已结算"
+      },
+      "revenue": {
+        "title": "收入",
+        "lockedBody": "活动已完成 — 收入已锁定。重新激活后可再编辑。",
+        "placeholder": "12000.00",
+        "save": "保存",
+        "saving": "保存中…",
+        "clear": "清空",
+        "helper": "有可归因收入时填进来。清空后 ROI 会回到 —。"
+      },
+      "statusController": {
+        "title": "生命周期",
+        "transitionTo": "切至 {next}",
+        "reactivate": "重新激活",
+        "currentLabel": "当前状态",
+        "startedAtLabel": "开始时间",
+        "closedAtLabel": "关闭时间"
+      },
+      "outreach": {
+        "title": "群发触达邮件",
+        "ready": "有邮箱的 KOL 可以进行批量触达。",
+        "noEmailable": "需要先补齐 KOL 邮箱（或邀请新创作者）才能群发。"
+        ,
+        "cta": "打开触达编辑"
+      },
+      "errors": {
+        "endBeforeStart": "结束日期不能早于开始日期。",
+        "validationFailed": "部分字段不合法，请检查后重试。",
+        "unauthorized": "登录已过期，请重新登录。",
+        "generic": "出错啦，请稍后再试。",
+        "notFound": "未找到活动。",
+        "kolNotFound": "未找到 KOL。",
+        "linkNotFound": "该 KOL 未在活动中。",
+        "alreadyLinked": "该 KOL 已在活动中。",
+        "invalidFee": "费用需为非负数字（如 1000.00）。",
+        "invalidStatus": "未知的状态值。",
+        "invalidTransition": "不允许的状态变更。",
+        "forbiddenWhenCompleted": "活动完成后不能修改收入，需先重新激活。",
+        "revenueInvalid": "收入需为非负数字。"
+      }
+    },
     "new": {
       "title": "新建活动",
       "subtitle": "登记一次推广后即可邀请创作者并追踪 ROI。",
