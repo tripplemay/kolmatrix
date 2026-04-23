@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "id": "BL-001",
+    "title": "BM1 F002 seed:kol 脚本缺失 dotenv 自动加载",
+    "description": "scripts/seed-kol-from-enriched.ts line 31+ 直接读 process.env.DATABASE_ADMIN_URL/DATABASE_URL，但脚本开头未 `import 'dotenv/config';`。`npm run seed:kol` 独立跑时环境变量不加载导致抛错 \"DATABASE_ADMIN_URL must be set\"。Workaround：`set -a && source .env && set +a && npm run seed:kol`。Fix：脚本第一行加 `import 'dotenv/config';`（2 行改动）。2026-04-23 Planner staging deploy 时发现。",
+    "decisions": [],
+    "confirmed_at": "2026-04-23T08:00+0800",
+    "priority": "low",
+    "tags": ["BM1-polish", "seed-script", "env-loading"],
+    "discovered_in": "staging L2 pre-check by Planner johnsong"
+  },
+  {
+    "id": "BL-002",
+    "title": "Staging /api/health git_sha 显示 unknown（prod 已修未同步 staging）",
+    "description": "Kimi 交接 notes 明确 'git_sha unknown 已修复（后续 deploy 正常反射 sha）'，但仅 prod 修好。staging 2026-04-23 deploy 后 /api/health 仍 git_sha=unknown。根因推测：deploy-prod.yml 在 build 前注入 GIT_SHA 环境变量，staging 手动 deploy 没这步。修复方案有二：(a) runbook §5 'Deploy new code to staging' 改为 `GIT_SHA=$(git rev-parse --short HEAD) npm run build`；(b) infrastructure/ 下加一个 deploy-staging.sh 脚本入 git 供 Reviewer/用户复用。推荐 b。",
+    "decisions": [],
+    "confirmed_at": "2026-04-23T08:00+0800",
+    "priority": "medium",
+    "tags": ["BM1-polish", "staging-devx", "observability"],
+    "discovered_in": "staging L2 pre-check by Planner johnsong"
+  },
+  {
+    "id": "BL-003",
+    "title": "/en 和 /en/ 404 / 308 跳回 404（根 locale 路径不落到 dashboard）",
+    "description": "GET /en 返回 404，GET /en/ 308 跳回 /en 再 404。正常用户路径 / → 307 /en/dashboard 工作正常，所以不阻塞 Journey。但若某处硬编码了 /en 作为入口会踩坑，SEO 层面 /en 也应该有内容。Fix：next-intl middleware 或路由 [locale]/page.tsx 默认渲染 dashboard 或 redirect。MVP 低优先级。",
+    "decisions": [],
+    "confirmed_at": "2026-04-23T08:00+0800",
+    "priority": "low",
+    "tags": ["routing", "i18n"],
+    "discovered_in": "staging L2 pre-check by Planner johnsong"
+  }
+]
