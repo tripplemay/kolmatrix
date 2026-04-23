@@ -35,6 +35,9 @@
 ```bash
 bash scripts/test/codex-setup.sh   # 步骤 1：持久 PTY 中前台运行
 bash scripts/test/codex-wait.sh    # 步骤 2：另一个 shell 等待就绪
+bash scripts/test/codex-e2e.sh     # 步骤 3（可选）：跑 Playwright E2E —
+                                   # 封装 E2E_PORT=3099 + 清 proxy/NEXTAUTH_URL
+                                   # 直接 `npm run test:e2e` 会踩端口/env 坑
 ```
 
 不要用 `&` 后台启动、`nohup`、`disown` — 在 Codex 沙箱中无效。
