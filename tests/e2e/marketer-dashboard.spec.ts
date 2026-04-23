@@ -64,11 +64,11 @@ test.describe("Marketer — login + dashboard flow", () => {
     await expect(page.getByRole("link", { name: "仪表盘" })).toBeVisible();
   });
 
-  test("clicking 'KOL Database' in the sidebar routes to /kols", async ({ page }) => {
+  test("clicking 'KOL Database' in the sidebar routes to /database", async ({ page }) => {
     await login(page);
     await page.getByRole("link", { name: "KOL Database" }).click();
-    // B0 hasn't shipped /kols yet; we only assert the router navigated.
-    await page.waitForURL(/\/kols(\/|$)/);
-    expect(page.url()).toMatch(/\/kols(\/|$)/);
+    // BM1-F005 shipped /database; before that B0 stub routed to /kols.
+    await page.waitForURL(/\/database(\/|$)/);
+    expect(page.url()).toMatch(/\/database(\/|$)/);
   });
 });
