@@ -36,7 +36,9 @@
     "decisions": [
       "方案 A（shell 脚本）而非 B（GitHub Actions）——1 人团队不匹配 workflow 成本",
       "不加进 BM1/BM2 spec（已锁），作为独立 micro-batch 或 polish 收口",
-      "脚本中带 GIT_SHA 注入 + dotenv source，顺带关闭 BL-001/BL-002"
+      "脚本中带 GIT_SHA 注入 + dotenv source，顺带关闭 BL-001/BL-002",
+      "部署职责分配（2026-04-23 用户确认，BL-004 spec 实施时落地）：building 期间 Generator 自觉 deploy / verifying 前 Evaluator 跑一次保证 SHA 对齐 / ad-hoc 任何人可跑（脚本幂等非破坏）/ prod 部署始终由用户触发 GitHub Actions 不变",
+      "铁律 9 释疑：deploy 不算产品代码修改，Planner/Evaluator/用户均可 ssh 执行 deploy-staging.sh；但脚本本身的创建属 Generator 工作"
     ],
     "confirmed_at": "2026-04-23T08:30+0800",
     "priority": "medium",
