@@ -1,11 +1,11 @@
 {
-  "status": "reverifying",
+  "status": "fixing",
   "user_goal": "MVP 业务批次 1/2 - 控制台 + KOL 核心：Product 知识库页（含 AI 素材生成）+ KOL Discovery 15 维筛选页 + KOL Database 列表 + KOL 画像页 + Dashboard 真数据对接 + browser locale auto-detection。完成后 MVP 4 功能中 2 个（控制台 + 筛选 KOL）达成，剩下联系 + ROI 留 BM2。9 features，估 7-10 天。",
   "total_features": 9,
-  "completed_features": 9,
+  "completed_features": 8,
   "fix_rounds": 1,
   "current_sprint": "BM1-console-kol-core",
-  "last_updated": "2026-04-23T21:25+0800",
+  "last_updated": "2026-04-23T22:02+0800",
   "reference_docs": [
     "docs/specs/BM1-console-kol-core-spec.md",
     "docs/product/KOLMatrix-MVP-PRD.md",
@@ -32,17 +32,17 @@
     "evaluator": "Reviewer"
   },
   "evaluator_feedback": {
-    "summary": "L1 core suites pass, but BM1 L2 staging full flow (F009 bm1-flow) fails reproducibly with timeout/page-closed at sidebar click; BM1 not signoff-ready.",
+    "summary": "Staging reverify shows the old sidebar-click blocker is fixed, but bm1-flow remains flaky (same command one fail then one pass), so BM1 is still not signoff-ready.",
     "pass_count": 8,
-    "partial_count": 0,
-    "fail_count": 1,
+    "partial_count": 1,
+    "fail_count": 0,
     "issues": [
       {
         "feature_id": "F009",
-        "result": "FAIL",
-        "description": "Staging E2E `tests/e2e/bm1-flow.spec.ts` fails consistently at step clicking sidebar Knowledge Base link with `locator.click: Target page, context or browser has been closed` after timeout.",
-        "steps_to_reproduce": "1) env -u http_proxy -u https_proxy -u all_proxy E2E_BASE_URL=https://staging.kol.guangai.ai npx playwright test tests/e2e/bm1-flow.spec.ts --project=chromium --timeout=120000 --workers=1 2) Observe timeout at tests/e2e/bm1-flow.spec.ts:58 3) Re-run with --timeout=300000 and see the same failure.",
-        "evidence": "docs/test-reports/BM1-console-kol-core-verifying-2026-04-23.md; test-results/bm1-flow-BM1-—-full-market-9a794-abase-→-profile-→-dashboard-chromium/"
+        "result": "PARTIAL",
+        "description": "After generator fixes, staging `tests/e2e/bm1-flow.spec.ts` no longer fails at sidebar click, but still shows instability: first run failed at database row visibility (`line 123`), immediate rerun passed.",
+        "steps_to_reproduce": "1) Run env -u http_proxy -u https_proxy -u all_proxy E2E_BASE_URL=https://staging.kol.guangai.ai npx playwright test tests/e2e/bm1-flow.spec.ts --project=chromium --timeout=180000 --workers=1 2) Observe fail at tests/e2e/bm1-flow.spec.ts:123 (`savedRow` not visible within 15s) 3) Re-run same command and observe pass.",
+        "evidence": "docs/test-reports/BM1-console-kol-core-reverifying-2026-04-23.md; test-results/bm1-flow-BM1-—-full-market-9a794-abase-→-profile-→-dashboard-chromium/"
       }
     ]
   },
@@ -50,7 +50,7 @@
   "session_notes": {
     "Kimi": "[2026-04-23 Planner session handoff — 历史保留]\n\nBM1 planning → building 交接。详细批次决策已归档到 git commit 历史（cbdc7ec/e54e887 BM2 spec + aigcgateway 3 actions）。MVP PRD §13 8 个开放问题全锁；framework v0.9.3 VPS artifact in-git 规则生效。",
     "johnsong": "[2026-04-23 Fixing round 1 完成，交 Reviewer 复验]\n\n## 本轮修复的 issue（F009 staging E2E）\n\nReviewer 首轮 FAIL：`tests/e2e/bm1-flow.spec.ts:58` sidebar click timeout on staging。\n\n### 根因（两层）\n1. **Server Action redirect URL 无 locale 前缀**\n   - `signIn('credentials', { redirectTo: '/dashboard' })` 导致 Next RSC navigation 到 `/dashboard`\n   - 服务端 307 重定向到 `/en/dashboard`，但 Next 保留浏览器 URL 在 `/dashboard`（Server Action redirect 语义）\n   - 渲染内容是 /en/dashboard 的 RSC payload → URL vs content 错配 → 随后 sidebar link click 的 router transition 卡死\n\n2. **`waitForLoadState('networkidle')` 在 staging 永不触发**\n   - 实测：pending requests=0 for 30s，但 networkidle event 从不 fire\n   - `.catch(() => {})` 只吞 reject，不缩短等待时间 → 吃 30s 默认 timeout\n   - Reviewer 用 --timeout=120000 能过是因为 30s + 剩余步骤 < 120s；默认 30s timeout 直接超\n\n### 修复（3 commit）\n- `8d24614` loginAction 用 `getLocale()` + 跳 `/${locale}/dashboard` 而不是裸 `/dashboard`\n- `bcedc7b` 3 个 E2E spec 的 login() helper 删 waitForLoadState networkidle；status-change 处改用 500ms fixed wait\n- `c9ef9b4` KPI card 断言放宽（任意正整数，不再硬编 \"12\" — F002 seed:kol 后 staging 有 427 gaming kols）；saved row 等 15s（revalidatePath 在 staging 延迟）\n\n### 回归测试（同 commit）\n- `marketer-dashboard.spec.ts:42` 登录 URL 断言从 `/\\/dashboard(\\/|$)/` 紧到 `/\\/(en|zh|ja|ko|es)\\/dashboard(\\/|$)/` — 锁定 locale 前缀回归\n\n### 验证\n- **Staging E2E**：bm1-flow + marketer-dashboard 共 5 tests 全绿（24.1s，默认 30s timeout）\n- **Local L1**：169 unit + 18 integration 全绿\n- **CI**：24837629321 全 8 job 绿\n\n### 仍未解锁（明确标 skip）\n- Visual regression 4 张新 baseline + dashboard 重捕：test code scaffold 在 visual-regression.spec.ts，但 PNG 未生成（本地 WSL 无 Playwright system libs sudo 权限）；VPS 已装 deps，Reviewer 可跑 `--update-snapshots` 后把 PNG 入库解锁\n\n## 下一步：Codex Reviewer 复验 evaluator.md\n\n- L1 local: 期望全绿（Reviewer 本地已过，修复只加了断言）\n- L2 staging: 期望 bm1-flow + marketer-dashboard 全绿（我这边刚实测 5/5 pass）\n- 复验通过 → 写 signoff，status → done\n- 复验 FAIL → 回 fixing，fix_rounds +=1\n\n## 提交清单（本次 fixing 推 main）\n- 8d24614 fix loginAction locale-prefixed redirect\n- bcedc7b fix drop networkidle in login helpers + regression locale assert\n- c9ef9b4 fix KPI resilient to seed + revalidate latency",
-    "Reviewer": "[2026-04-23 BM1 verifying] 已按 L1→L2 顺序执行复验。L1: tsc/rollback/coverage/integration 通过，bm1-flow 在默认 30s 下偶发超时但 120s 单 worker 可通过。L2(staging): health + locale redirect 正常，但 bm1-flow 在去代理后仍稳定复现超时（120s/300s 两轮均失败，定位到 tests/e2e/bm1-flow.spec.ts:58 sidebar click）。已将 F009 回退 pending，status 置 fixing，并写入报告 docs/test-reports/BM1-console-kol-core-verifying-2026-04-23.md。"
+    "Reviewer": "[2026-04-23 BM1 reverifying on staging] 已拉取 generator fixing round1 后复验。bm1-flow 首轮失败（/database saved row 15s 不可见，line 123），次轮同命令通过；旧的 sidebar click 阻塞点已消失。marketer-dashboard 4/4 通过，staging health + locale redirect 正常。结论：F009 仍为 PARTIAL（波动性），status 回 fixing，报告 docs/test-reports/BM1-console-kol-core-reverifying-2026-04-23.md。"
   },
   "features": []
 }
