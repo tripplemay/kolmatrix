@@ -70,17 +70,20 @@ async function seedProduct() {
   return { tenantId: tenant.id, product };
 }
 
+type FetchArgs = Parameters<typeof fetch>;
+
 function mockFetch(body: unknown, opts: { ok?: boolean; status?: number } = {}) {
   const ok = opts.ok ?? true;
   const status = opts.status ?? (ok ? 200 : 500);
-  return vi.fn(async () =>
-    ({
+  return vi.fn(async (...args: FetchArgs) => {
+    void args;
+    return {
       ok,
       status,
       json: async () => body,
       text: async () => JSON.stringify(body),
-    }) as unknown as Response
-  );
+    } as unknown as Response;
+  });
 }
 
 describe("generateAiAssets()", () => {
@@ -122,10 +125,10 @@ describe("generateAiAssets()", () => {
 
     expect(fetcher).toHaveBeenCalledTimes(1);
     const callArgs = fetcher.mock.calls[0]!;
-    expect(String(callArgs[0])).toContain("/v1/chat/completions");
-    const requestInit = callArgs[1] as RequestInit;
-    expect(requestInit.method).toBe("POST");
-    const reqBody = JSON.parse(String(requestInit.body));
+    const [url, init] = callArgs;
+    expect(String(url)).toContain("/v1/chat/completions");
+    expect(init?.method).toBe("POST");
+    const reqBody = JSON.parse(String(init?.body));
     expect(reqBody.model).toBe("claude-haiku-4.5");
     expect(reqBody.response_format).toEqual({ type: "json_object" });
 
