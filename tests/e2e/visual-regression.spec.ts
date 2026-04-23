@@ -1,13 +1,18 @@
 /**
- * F009 — Dashboard visual regression.
+ * F009 — Visual regression baselines.
  *
- * Captures the authenticated `/dashboard` view and diffs against the
- * committed baseline at `tests/screenshots/baseline/dashboard.png`
- * (path configured via `snapshotPathTemplate` in playwright.config.ts).
+ * Captures full-page screenshots against the baselines committed at
+ * `tests/screenshots/baseline/*.png` (path configured via
+ * `snapshotPathTemplate` in playwright.config.ts).
+ *
+ * Coverage:
+ *   - `dashboard.png`           — authenticated marketer `/dashboard` view (F009)
+ *   - `en-login.png`            — unauthenticated `/en/login` (BAux1-F004)
+ *   - `en-request-access.png`   — unauthenticated `/en/request-access` (BAux1-F004)
  *
  * Tolerances (per BI1 spec §F009):
  *   - threshold: 0.02    — 2% max normalised per-pixel channel diff
- *   - maxDiffPixels: 1000 — at most 1k differing pixels total
+ *   - maxDiffPixels: 2000 — absorbs CI Ubuntu ↔ WSL sub-pixel AA drift
  *
  * Platform policy (fixing round 1, 2026-04-19):
  *   Chromium's headless rendering is NOT byte-stable across Linux and
@@ -18,12 +23,13 @@
  *   per-platform baseline tree. Reviewer can still drive the test
  *   via CI's `e2e-tests` job or a local Linux runner.
  *
- * The GreetingBar subtitle bakes in today's date via
- * `new Date().toLocaleDateString()`, so it WILL drift day-to-day.
- * We mask the subtitle region so the baseline only encodes layout
- * + colour, not the ticking clock.
+ * The GreetingBar subtitle on `/dashboard` bakes in today's date via
+ * `new Date().toLocaleDateString()`, so it WILL drift day-to-day;
+ * we mask the subtitle region so the baseline only encodes layout
+ * + colour, not the ticking clock. The auth pages are fully static
+ * (all copy comes from next-intl) so they need no mask.
  *
- * Regenerate the baseline after intentional UI changes (must run on
+ * Regenerate baselines after intentional UI changes (must run on
  * Linux — WSL is fine):
  *   npx playwright test tests/e2e/visual-regression.spec.ts \
  *     --update-snapshots
@@ -75,6 +81,46 @@ test.describe("Dashboard visual regression", () => {
       // slightly differently from the WSL Linux chromium the baseline
       // was captured on; 2000 absorbs that drift while still catching
       // real design regressions (which move 5k+ pixels).
+      maxDiffPixels: 2000,
+    });
+  });
+});
+
+// BAux1-F004 — Authless visual baselines for the cinematic auth pages.
+// Both pages are server components rendering i18n-sourced static text
+// (LoginBrandOverlay, LoginForm, RequestAccessBrandOverlay,
+// RequestAccessForm). No dynamic copy, no CSRF hidden inputs, no
+// timestamps — so no mask is required.
+test.describe("Auth cinematic — visual regression", () => {
+  test.skip(
+    process.platform !== "linux",
+    "Visual regression baseline is Linux-canonical (CI + WSL). Non-Linux runs skip."
+  );
+
+  test("/en/login full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
+    await page.goto("/en/login");
+    // Hero uses next/image with priority; wait for the load to settle
+    // so font subsetting + image decode don't bleed into the first frame.
+    await page.waitForLoadState("networkidle").catch(() => {});
+    await page.evaluate(() => (document as { fonts?: { ready: Promise<unknown> } }).fonts?.ready);
+
+    await expect(page).toHaveScreenshot("en-login.png", {
+      fullPage: true,
+      animations: "disabled",
+      threshold: 0.02,
+      maxDiffPixels: 2000,
+    });
+  });
+
+  test("/en/request-access full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
+    await page.goto("/en/request-access");
+    await page.waitForLoadState("networkidle").catch(() => {});
+    await page.evaluate(() => (document as { fonts?: { ready: Promise<unknown> } }).fonts?.ready);
+
+    await expect(page).toHaveScreenshot("en-request-access.png", {
+      fullPage: true,
+      animations: "disabled",
+      threshold: 0.02,
       maxDiffPixels: 2000,
     });
   });
