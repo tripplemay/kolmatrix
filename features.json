@@ -1,77 +1,93 @@
 {
-  "sprint": "BM1-console-kol-core",
+  "sprint": "BM2-campaign-outreach-roi",
   "features": [
     {
       "id": "F001",
-      "title": "Prisma schema 扩展：Product + Kol 15 维 + CampaignKol.kolFee",
+      "title": "Prisma schema 扩展：Campaign + KolCampaign + CampaignMetric + EmailTemplate + WeeklyReport + Tenant.logoUrl + Kol.email",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增 model Product（id cuid / tenantId @db.Uuid / name / category / targetAudience? Text / uniqueSellingPoints Text 必填 / downloadUrl? / launchDate? Date / aiAssets? Json / timestamps；@@index([tenantId]); @@map product）+ RLS tenant_isolation policy 用 NULLIF 兜底；Kol 扩展 15 维 filter nullable 字段（language/engagementRate/avgViewsPerVideo/uploadsPerMonth/lastUploadAt/monetizationStatus/brandSafetyRating/knownBrandCollabs String[]/audienceDemographics Json/engagementAuthenticity）+ 核心字段（valueScore/tags/relationshipStatus default 'prospect'/isGaming default true/isSaved default false/aiTaggedAt/aiTagConfidence）；CampaignKol 加 kolFee Decimal?/matchScore Int?（BM1 不用但 schema 一起做）；migration 20260424100000_bm1_schema 含 CREATE TABLE product + RLS + ALTER TABLE kol ADD COLUMN × 15 + ALTER TABLE campaign_kol ADD COLUMN × 2 + 完整 ROLLBACK SQL（F007 校验通过）；tsvector trigger 不改（BI4-F005 的 display_name/handle/categories/bio 已够）；tests/integration/bm1-schema.test.ts Product CRUD + RLS 跨租户隔离 / Kol 新字段读写 / CampaignKol.kolFee 读写"
+      "status": "pending",
+      "acceptance": "migration 20260504100000_bm2_schema 含：ALTER TABLE tenant ADD COLUMN logo_url（nullable）；ALTER TABLE kol ADD COLUMN email VarChar(320) + email_source default 'manual'；ALTER TABLE campaign ADD COLUMN product_id Uuid FK product / spend_total Decimal(12,2) default 0 / revenue_recorded Decimal(12,2) / started_at Timestamptz / closed_at Timestamptz + 2 新复合索引 (tenantId, productId) + (tenantId, status, closedAt DESC)；ALTER TABLE kol_campaign ALTER COLUMN status SET DEFAULT 'pending'（6 值 enum: pending/contacted/quoted/signed/delivered/paid）；CREATE TABLE campaign_metric（id/tenantId/campaignId/recordedAt/impressions/clicks/conversions/attributedRevenue/source default 'manual'）+ 索引 + RLS NULLIF；CREATE TABLE email_template（id/tenantId?（null=system）/name/subject/body Text/variables Json/locale VarChar(5)/type default 'system'）+ 索引 (tenantId, type) + (type, locale)；CREATE TABLE weekly_report（id/tenantId/weekStart/weekEnd/locale/contentMd Text/summaryJson Json?/shareToken unique VarChar(32)/shareTokenExpiresAt/createdByUserId FK user）+ 索引 (tenantId, weekEnd DESC) + RLS NULLIF + 匿名查询走 superuser 连接绕 RLS；ALTER TABLE email_log ADD COLUMN template_id Uuid FK / ai_customized Boolean default false；完整 ROLLBACK SQL；tests/integration/bm2-schema.test.ts 覆盖 Campaign 新字段 / KolCampaign enum 6 值 / CampaignMetric CRUD + RLS / EmailTemplate 跨租户 system 读 + 单租户 user 写 / WeeklyReport 匿名 token 查询"
     },
     {
       "id": "F002",
-      "title": "KOL seed 脚本入库 415 gaming + 2109 non-gaming",
+      "title": "EmailTemplate seed 5 套系统模板 × en/zh",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "scripts/seed-kol-from-enriched.ts 读 docs/kol-seed-enriched-final.json 逐条 upsert（unique: tenantId+platform+handle）；字段映射 platform 'Youtube'→YOUTUBE enum / name→display_name / url 提取 @handle / region 中文→ISO 2-letter（美国 US / 英国 GB / 巴基斯坦 PK / 加拿大 CA / 德国 DE / 越南 VN / 台湾 TW / 乌克兰 UA / 日本 JP / 伊拉克 IQ / 多米尼加 DO）/ followers→follower_count / is_gaming→isGaming / categories→Kol.categories String[] / confidence→aiTagConfidence / aiTaggedAt=now；固定 tenantId=demo tenant UUID；valueScore 按公式计算（log10(followers)*15 cap 50 + engagementScore 15 + categoryScore min(20, count*8) → 0-100）；src/lib/kol/valueScore.ts 公式 + 单测 5 cases；package.json 加 seed:kol script；prisma.config.ts 注册；idempotent（再跑不重复）；tests/integration/kol-seed.test.ts: count=2524, gaming=415, non_gaming=2109, valueScore 非 null, 粉丝数大的分数高"
+      "status": "pending",
+      "acceptance": "scripts/seed-email-templates.ts（开头加 import 'dotenv/config'; 借鉴 BL-001 教训）tenantId=null / type='system'；5 套 × en+zh=10 行：初次询价 Initial Outreach / 跟进提醒 Follow-up / 签约邀请 Partnership Invitation / 拒绝跟进 Polite Decline / 已合作回访 Post-Collab Check-in；variables JSON 含 {{kol.name}} {{kol.handle}} {{product.name}} {{product.category}} {{product.usp}} {{marketer.name}}；模板正文 en 100-180 词 / zh 100-180 字；package.json 加 seed:email-templates；prisma.config.ts 接入；幂等（upsert by tenantId+name+locale 或 type+name+locale）；tests/integration/email-template-seed.test.ts count=10 / 双语对齐 / variables 非空"
     },
     {
       "id": "F003",
-      "title": "Product 知识库页 /knowledge-base + AI 素材生成",
+      "title": "Campaigns 列表页 /campaigns",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "src/app/[locale]/(app)/knowledge-base/page.tsx 对齐 Stitch knowledge-base.html（canonical App Shell active=Knowledge Base / 3-col product 卡网格 + 1 empty-state 卡 + Recent AI activity timeline + Create/Edit modal）；modal 8 字段表单（name*/category*/targetAudience?/**uniqueSellingPoints* cyan 星号强制必填 zod required 响应 MVP PRD §13 Q5**/downloadUrl?/launchDate?/platforms multi-select/generateImmediately checkbox）；Server Action createProduct(formData) zod 校验 + prisma.product.create + 如勾 generate 则调 aigcgateway chat (model=claude-haiku-4.5) 生成 3 emailTemplates + 2 videoScripts 存 Product.aiAssets Json；src/lib/products/generateAiAssets.ts 封装（fire-and-forget，失败 log 不阻塞产品保存）；i18n knowledge-base.* en+zh 全译；RLS 跨租户隔离验证；tests/integration/product-flow.test.ts（create → AI assets 写入 / USP 缺失报错 / generate 失败 fallback）；visual regression /en/knowledge-base 新 baseline"
+      "status": "pending",
+      "acceptance": "src/app/[locale]/(app)/campaigns/page.tsx 对齐 Stitch campaigns-list.html；canonical App Shell active=Campaigns；顶部 title + '新建 Campaign' 主按钮跳 F004；filter 栏 status (all/draft/active/completed) + search by name；列表卡片（name / product / status badge 颜色区分 draft=灰 active=cyan completed=绿 / KOL 数 / spendTotal / ROI% 仅 completed 显示 / 起止日 / 点卡进详情）；空态插画 + '还没有 Campaign' 引导；API GET /api/campaigns?status=&cursor=&limit=20 用 BI4-F004 cursor util；i18n campaigns.* 全译；tests/integration/campaigns-list.test.ts cursor + filter + RLS；visual /en/campaigns baseline"
     },
     {
       "id": "F004",
-      "title": "KOL Discovery 筛选页 /discovery + 15 维 filter",
+      "title": "Campaign 新建页 /campaigns/new",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "src/app/[locale]/(app)/discovery/page.tsx 对齐 Stitch kol-discovery.html（canonical App Shell active=Discovery）；左 260px filter sidebar：基础 4 维平铺（粉丝数 range slider / 地区 multi-select 11 国 / 类目 multi-select 10 / 搜索 input）+ Advanced 折叠面板 11 维（language/engagementRate/avgViews/uploadsPerMonth/lastUploadRecency/monetizationStatus/brandSafetyRating/knownBrandCollabs/tags/platform/isGaming toggle 默认 true）；右 content 区：结果卡 2-3 col 网格（头像 placeholder + 名字 + 平台·粉丝·地区 + **价值分 cyan 大字** + 标签 chips + 保存按钮）；cursor pagination 用 BI4-F004 util（limit 20）；排序 dropdown（粉丝/价值分/最近添加）；Server Action searchKols(filters, cursor) Prisma where 组合 + paginator.query；空态友好提示 '选了 nullable filter 返回 0 时给 B6 YouTube API 集成提示'；i18n discovery.* 全译；tests/integration/kol-discovery.test.ts 15 维组合查询 + cursor next/prev；visual /en/discovery baseline"
+      "status": "pending",
+      "acceptance": "src/app/[locale]/(app)/campaigns/new/page.tsx 独立页（非 modal）；表单字段 name(required, max 80) / productId(required dropdown from GET /api/products，无 product 时提示引导 /knowledge-base) / budgetAmount(optional Decimal 12,2) / startDate / endDate / ownerUserId(默认当前用户不可改) / game / markets / kpiTarget；src/lib/campaigns/schema.ts zod（F005/F006 复用）；Server Action createCampaign status=draft spendTotal=0 + event_log 'campaign.created' + 返回 id 前端跳 /campaigns/:id；tests/integration/campaign-create.test.ts（zod 校验 / RLS / event_log）；visual baseline"
     },
     {
       "id": "F005",
-      "title": "KOL Database 列表 /database",
+      "title": "Campaign 详情页 /campaigns/:id（KOL 面板 + Revenue + Status）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "src/app/[locale]/(app)/database/page.tsx 对齐 Stitch kol-database.html（canonical App Shell active=Database）；只列 isSaved=true 的 KOL；4 维简化 filter（类目/地区/relationshipStatus/搜索）；表格 | 头像名字 | 平台 | 粉丝 | 类目 | 地区 | 价值 | 关系状态 | 添加时间 | actions；行点击跳 /kols/:id；cursor pagination 用 BI4-F004；批量操作 dropdown（标签/状态/删除）MVP 只做 UI disabled + 'Coming soon' tooltip；i18n database.* 全译；tests/integration/kol-database.test.ts isSaved 保存流 + filter；visual /en/database baseline"
+      "status": "pending",
+      "acceptance": "src/app/[locale]/(app)/campaigns/[id]/page.tsx 对齐 Stitch campaign-detail.html；Section 1 Header（name + status badge + inline edit / Product 链接 / 4 KPI Budget/SpendTotal/Revenue/ROI%）；Section 2 KOL 面板（'添加 KOL' modal 从 Kol.isSaved=true 未在本 campaign 选 / 行显 avatar/name/handle/platform badge/contactStatus select 6 值/kolFee input onBlur save 后端事务重算 spendTotal/移除按钮）；Section 3 RevenueRecorder（status=completed 前可改，之后只读 + '重新激活' 切回 active 解锁）+ StatusController（draft→active→completed 按钮链记 startedAt/closedAt）；Section 4 '给所有有 email 的 KOL 发邮件' 跳 /outreach?campaignId=:id；API GET/PATCH /api/campaigns/:id + POST/DELETE/PATCH /api/campaigns/:id/kols/:kolId；每次 kolFee 变更事务内 recompute spendTotal；audit_log（BI4-F003）campaign.kol.status_changed / fee_updated；tests/integration/campaign-detail.test.ts（KOL 增删改 + spendTotal 正确 + audit_log + 重激活）；visual baseline"
     },
     {
       "id": "F006",
-      "title": "KOL 画像页 /kols/:id",
+      "title": "邮件触达页 /outreach（Resend + AI 定制 + mock fallback + 补 email UI）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "src/app/[locale]/(app)/kols/[id]/page.tsx 对齐 Stitch kol-detail.html（canonical App Shell）；顶部头部 + 头像 + 名字 + 平台·粉丝·地区；Tab bar: Overview / 合作历史（BM1 empty state 'Campaign 创建后展示 (BM2)'）/ 沟通记录（empty）/ AI 价值分析（empty BM2）；Overview tab：基础信息卡（15 字段）+ 价值分大块（cyan 大字 + breakdown hover 显示 followers 50+engagement 15+categories 20=85 公式解释）+ 关系状态 dropdown 6 enum（prospect/first_contact/negotiating/long_term/paused/terminated 手动改）+ 保存 toggle（isSaved）；Server Action updateKolRelationshipStatus / toggleKolSaved；空 id→404；i18n kol-profile.* 全译；tests/integration/kol-profile.test.ts status 改动持久化 / toggle 保存；visual /en/kols/{demo-id} baseline"
+      "status": "pending",
+      "acceptance": "src/app/[locale]/(app)/outreach/page.tsx 对齐 Stitch email-center.html；顶部 Campaign selector（?campaignId=:id 预选）；KolCampaign 行勾选（Kol.email 非空启用；无 email 标灰 + tooltip '需手动 YouTube 私信' + '补 email' 行内编辑按钮 → PATCH /api/kols/:id {email, emailSource:'manual'}）；EmailTemplate selector（locale 过滤 system 模板）；预览变量替换；'AI 定制' 按钮 → AiCustomizeDialog 弹层 → 调 aigcgateway Action kol-email-customize（action_id=cmob2z6j00001bnole7i8lg9h model=claude-haiku-4.5）→ 响应 strip code fence 再 JSON.parse（BL-001 实测 Claude Haiku 习惯包 ```json）→ 左右对比原版 vs AI 版 → 可手动编辑 → 确认版本；发送按钮分批调 Resend（10 msg/min 前端节流 + 后端 sleep guard）；src/lib/email/resend.ts fallback：无 RESEND_API_KEY 时 structured log + EmailLog.status='mock_sent'；发件人 marketer@kolquest.com；错误 retry 1 次 30s timeout；EmailLog 记录 + KolCampaign.status 更新到 contacted（若当前 pending/quoted 之前）；event_log email.sent / email.ai_customize_clicked / email.ai_customize_accepted（PRD §2.2 AI 定制采纳率 ≥40% 指标源）；src/lib/email/customize.ts 契约定型；tests/integration/outreach-flow.test.ts（mock aigcgateway + Resend mock + EmailLog 写入）；visual baseline"
     },
     {
       "id": "F007",
-      "title": "控制台 / 真数据对接",
+      "title": "CRM 简化页 /crm（阶段分布 + 漏斗 + 合作总额）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "src/app/[locale]/(app)/page.tsx 修改 B0 F007 原 dashboard 5 KPI 区块从 DB 拉真数据：1) KOL 总数 = count(kol where isGaming=true) 2) 活跃 campaigns = 0 或 '—'（BM1 无 campaigns）3) 邮件触达 = 0 或 '—' 4) Product 数 = count(product by tenant) 5) 平均 KOL 价值分 = AVG(valueScore) where isGaming=true；TOP KOL 合作概览 = top 5 by valueScore（MVP '合作次数' 显示 0 次）；快捷操作 4 按钮跳转保持；平台工作流 6 步图 + 核心能力 6 条保持；i18n dashboard.* 新 keys 齐；tests/integration/dashboard-kpi.test.ts KPI 数字准确；visual /en/dashboard baseline 更新"
+      "status": "pending",
+      "acceptance": "src/app/[locale]/(app)/crm/page.tsx 对齐 Stitch crm-relationship.html；Section 1 阶段分布 6 卡（prospect/first_contact/negotiating/long_term/paused/terminated by Kol.relationshipStatus，点卡跳 /database?status=XXX）；Section 2 漏斗图 prospect→first_contact→negotiating→long_term 显数量 + 每步转化率 %；Section 3 合作总额 KPI（Σ KolCampaign.kolFee where status ∈ signed/delivered/paid）；Section 4 最近关系变化表（audit_log 查 kol.relationship_status_changed 最近 30 条：KOL/谁/何时/A→B）；每行 KOL relationshipStatus dropdown 切换 → PATCH /api/kols/:id/relationship-status + audit_log；API GET /api/crm/overview 返回 4 块数据；按钮切换（不做拖拽）；tests/integration/crm-overview.test.ts；visual baseline"
     },
     {
       "id": "F008",
-      "title": "Browser locale auto-detection + i18n 键补齐",
+      "title": "ROI 引擎（pure compute util + summary/trend API）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "next-intl routing 配置 localeDetection: true（响应 MVP PRD §13 Q7 自动按浏览器语言跳）；根路径 / 未命中 locale 时检测 Accept-Language 匹配 en/zh 跳对应 /en/ 或 /zh/，其他 locale 回退 en；messages/en.json + zh.json BM1 所有新 keys 齐（knowledge-base.*/discovery.*/database.*/kol-profile.*/dashboard.*）；messages/{ja,ko,es}.json 加 key stub（值 = en 原文 + TODO 标记防 MISSING_MESSAGE）；cookie 记住用户手动切换；tests/e2e/locale-detection.spec.ts Chrome 语言 zh-CN → 访问 / → 跳 /zh/；语言 ja → 回退 /en/；手动切换 cookie 记住"
+      "status": "pending",
+      "acceptance": "src/lib/roi/compute.ts pure functions：computeCampaignRoi(spendTotal, revenueRecorded)→{roiPercent, netProfit}（null revenue→null roi；spend=0→null 避 div0）/ computeRoiTrend(tenantId, days)→按 day bucket 聚合 spend/revenue/roi / computeRoiSummary(tenantId)→totalSpend/totalRevenue/avgRoi/topCampaign/campaignCount{active,completed}；API GET /api/roi/summary + trend?days=30 + campaigns；tests/unit/roi-compute.test.ts full branch coverage（0 spend + 非 null / 100→150 / null revenue / trend 聚合 / summary 避 div0）；tests/integration/roi-api.test.ts RLS 隔离"
     },
     {
       "id": "F009",
-      "title": "Tests + Visual regression baselines + CI 8 jobs 全绿",
+      "title": "ROI 追踪页 /roi（4 KPI + 趋势图 + Campaign 表 + AI Insights）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "test:unit ≥ 25 新 cases（valueScore 公式 / Product form / Filter / card / pagination / Dashboard KPI components）；test:integration ≥ 8 新 cases（F001/F002/F003/F004/F005/F006/F007 各覆盖）；test:e2e 新 1 文件 bm1-flow.spec.ts 8-10 步完整 flow（登录→录入 Product→发现 KOL→保存→Database→KOL 画像）；visual regression 5 张新 baseline（knowledge-base/discovery/database/kols[id]/dashboard 更新）；test:coverage lines ≥ 80% 维持；lint + tsc 无错；CI 8 jobs 全绿；VPS artifact in-git 核对（framework v0.9.3 §2.4）：git ls-files scripts/seed-kol-from-enriched.ts 非空 + src/app/[locale]/(app)/knowledge-base/page.tsx 非空"
+      "status": "pending",
+      "acceptance": "src/app/[locale]/(app)/roi/page.tsx 对齐 Stitch roi-tracking.html；Section 1 4 KPI 卡（TotalSpend/TotalRevenue/AvgROI%/TopCampaign ROI from F008 summary）；Section 2 30 天趋势 recharts line chart（spend vs revenue 双线 + ROI% 次轴）；Section 3 Campaign ROI 表按 roiPercent DESC 可点跳详情；Section 4 AI Insights 卡片：默认 'Generate Insights' 按钮 → 调 aigcgateway Action roi-insights（action_id=cmob2zgae000jbnnuue2i7uaf model=gemini-3-flash）→ 返回 3-5 条 bilingual 洞察 match 当前 locale → 缓存 localStorage key=roi-insights-{tenantId}-{YYYYMMDD} 当日有效 + '重新生成' 按钮；src/lib/roi/insights.ts 契约；tests/integration/roi-page.test.ts（insights mock + localStorage）；visual baseline"
+    },
+    {
+      "id": "F010",
+      "title": "AI 周报页 /weekly-report（生成 + PDF 导出 + 分享链接）",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "src/app/[locale]/(app)/weekly-report/page.tsx 对齐 Stitch weekly-report.html；date picker（过去 7 天）+ locale selector；'生成周报' 调 aigcgateway Action weekly-report-for-client（action_id=cmob2zqkp0001bnnvel4vjapu model=gemini-3-flash）输入 tenant(name+logoUrl) + kol_activity_json + roi_data_json + prev_week_comparison_json → markdown；写入 WeeklyReport 表 (tenantId, weekStart, weekEnd, locale, contentMd, summaryJson=tenant snapshot + input data, createdByUserId)；react-markdown 渲染 5 段式（Executive Summary / Top Performers / Key Activity / Key Insights / Looking Ahead）+ branded header（tenant.name + logoUrl）；PDF 导出 window.print() + @media print stylesheet A4 隐藏 nav/sidebar；POST /api/weekly-reports/:id/share-token → 32 字符 token + 7 天过期 写回 WeeklyReport；src/app/shared/weekly-report/[token]/page.tsx 匿名路由 superuser 连接按 token 查 + 过期校验 + 仅 SELECT content_md/summary_json/created_at/share_token_expires_at（不 join tenant 表，logoUrl 从 summary_json 读）+ <meta robots noindex>；历史周报切换 /weekly-report?id=:id（最近 10 份）；tests/integration/weekly-report.test.ts（生成 + token + 过期 + 匿名访问）；visual baseline（登录 + 匿名 2 张）"
+    },
+    {
+      "id": "F011",
+      "title": "Tests + Visual regression baselines（6 页）+ BM1 E2E resilience 教训落地",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "Integration tests 6 files（bm2-schema/email-template-seed/campaigns-api/outreach-api/crm-api/roi-api）+ unit tests 2 files（roi-compute 全 branch / email-customize 变量替换）+ E2E 2 files（journey-a: /discovery 保存→/campaigns/new→加 KOL→/outreach→AI 定制→发 mock；journey-b: 录 revenue→/roi→/weekly-report→PDF→匿名分享访问）+ 6 张 visual baseline（campaigns-list/campaign-detail/outreach/crm/roi/weekly-report）容差 0.1；AI 定制采纳率埋点验证 E2E 里 event_log 3 event 写入；**BM1 F009 教训必须落地**：禁用 waitForLoadState networkidle / 禁硬编 seed count 用 regex 或 >0 / revalidate 后 polling 15s / login redirect 锁 locale regex / saveKol 同时 revalidate 关联路由；fix_rounds 目标 ≤1；CI integration-tests + e2e-tests + visual-regression 三 job 全绿"
     }
   ]
 }

@@ -564,11 +564,19 @@ Page：`src/app/[locale]/(app)/weekly-report/page.tsx` + WeeklyReportGenerator /
    - 容差 0.1（与 BM1 F009 baseline 一致）
 5. **AI 定制采纳率埋点验证**：E2E 里触发一次 AI 定制 → 验证 event_log 3 种 event 都正确写入（clicked / accepted / sent with ai_customized=true）
 
+**BM1 F009 踩坑教训（本批次 E2E 必须遵守，见 §6 新增 4 条风险对策）：**
+- ❌ 不要 `await page.waitForLoadState("networkidle")` — next-intl + RSC 永远有后台请求，用 `waitForURL(...)` 锁定路径代替
+- ❌ 不要硬编 seed-dependent count（staging 真数据 gaming count 随 seed 批次变）— 断言用 `>0` / regex `/\d+/`
+- ✅ revalidate 后的断言用 polling 15s + 显式 wait for selector（staging revalidatePath 延迟大）
+- ✅ login redirect 必须 locale-prefixed URL 断言（回归正则 `/\/(en|zh|ja|ko|es)\/dashboard/`）
+- ✅ saveKol / 状态变更操作必须同时 revalidate 所有关联路由（如 /discovery + /database 都 revalidate）
+
 **Acceptance：**
 - 全部 L1 tests 绿（run in Testcontainers via BI1-F002 helper）
 - 全部 L2 E2E spec 绿（staging 环境）
 - 6 张 visual baseline 入库 `tests/visual-baselines/bm2/`
 - CI `integration-tests` + `e2e-tests` + `visual-regression` 三个 job 全绿
+- **fix_rounds 目标 ≤1**（BM1 经验是 2，折射 E2E resilience 不足；BM2 前置踩坑清单后应显著下降）
 
 ## 5. 依赖关系
 
@@ -615,6 +623,10 @@ F001 (schema + migration)
 | status=completed → active 切回时 revenueRecorded 清零？ | 低 | 切回 active 保留 revenue 值，只是 UI 解锁；完全 reset 用户自己改 |
 | CRM 拖拽需求回潮 | 低 | 按 §3 决策用按钮；拖拽放 Post-MVP B4 或 B7 |
 | 周报生成调 aigcgateway 超时 | 中 | 前端显示 loading + 30s 超时提示 + 重试按钮；aigcgateway Action dry_run 预检能力预调 |
+| **E2E spec 对 seed 数据硬编码**（BM1 F009 踩坑）| 高 | 断言 seed-dependent counts 用"任意正整数 / 存在即可"而非具体值；F011 E2E 必须 resilient to varying gaming count (staging 真数据跟本地不同)；KPI 断言写成 `>0` 或 `match(/\d+/)` |
+| **login helper waitForLoadState("networkidle")**（BM1 F009 踩坑）| 中 | F011 所有 E2E login helper 禁用 `networkidle` 等待（next-intl + RSC 永远有后台请求，networkidle 永不触发）；改用 `waitForURL(/\/(en|zh)\/dashboard/)` 锁 locale 前缀 |
+| **revalidatePath 在 staging 延迟**（BM1 F009 踩坑）| 中 | F011 改变 Kol/Campaign/KolCampaign 状态后的断言用 15s polling 而非 fixed 2-3s；revalidate 在多路由触发（例如 saveKol 必须 revalidate `/discovery` 和 `/database` 两路由）|
+| **login redirect locale prefix**（BM1 F009 踩坑）| 中 | 所有登录后重定向必须 locale-prefixed（`/en/dashboard` 而非裸 `/dashboard`），F011 URL 断言锁 `/\/(en|zh|ja|ko|es)\/...` regex |
 
 ## 7. 验收方式（Evaluator 阶段）
 
