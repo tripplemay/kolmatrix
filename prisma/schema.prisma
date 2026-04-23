@@ -32,6 +32,7 @@ model Tenant {
   kols      Kol[]
   campaigns Campaign[]
   templates EmailTemplate[]
+  products  Product[]
 
   @@map("tenant")
 }
@@ -140,6 +141,24 @@ model Kol {
   // src/lib/search/tsvector.ts for the $queryRaw path.
   searchVector       Unsupported("tsvector")? @map("search_vector")
 
+  // BM1-F001 extensions.
+  // Skipped per adjudication #A: language / engagementRate (already in B0).
+  // Re-used per #B: existing avgViews covers avgViewsPerVideo.
+  // Re-used per #C: existing audienceAgeDist/GeoDist/GenderDist cover demographics.
+  valueScore             Int?      @map("value_score")
+  tags                   String[]  @default([])
+  relationshipStatus     String    @default("prospect") @map("relationship_status") @db.VarChar(20)
+  uploadsPerMonth        Int?      @map("uploads_per_month")
+  lastUploadAt           DateTime? @map("last_upload_at") @db.Timestamptz
+  monetizationStatus     String?   @map("monetization_status") @db.VarChar(20)
+  brandSafetyRating      String?   @map("brand_safety_rating") @db.VarChar(8)
+  knownBrandCollabs      String[]  @default([]) @map("known_brand_collabs")
+  engagementAuthenticity Int?      @map("engagement_authenticity")
+  isGaming               Boolean   @default(true) @map("is_gaming")
+  isSaved                Boolean   @default(false) @map("is_saved")
+  aiTaggedAt             DateTime? @map("ai_tagged_at") @db.Timestamptz
+  aiTagConfidence        String?   @map("ai_tag_confidence") @db.VarChar(8)
+
   tenant       Tenant        @relation(fields: [tenantId], references: [id])
   kolCampaigns KolCampaign[]
   emailLogs    EmailLog[]
@@ -147,6 +166,8 @@ model Kol {
   @@unique([tenantId, platform, handle])
   @@index([tenantId, aiScore(sort: Desc)])
   @@index([tenantId, platform, followerCount])
+  @@index([tenantId, isGaming, valueScore(sort: Desc)], map: "kol_tenant_gaming_value_idx")
+  @@index([tenantId, isSaved], map: "kol_tenant_saved_idx")
   @@map("kol")
 }
 
@@ -194,6 +215,9 @@ model KolCampaign {
   acceptedAt     DateTime? @map("accepted_at") @db.Timestamptz
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  // BM1-F001: BM2 will use this for negotiated KOL fees. match_score
+  // stays as the existing B0 column (adjudication #A skip).
+  kolFee         Decimal?  @map("kol_fee") @db.Decimal(10, 2)
 
   kol      Kol      @relation(fields: [kolId], references: [id])
   campaign Campaign @relation(fields: [campaignId], references: [id])
@@ -328,4 +352,36 @@ model AccessRequest {
 
   @@index([status, createdAt])
   @@map("access_request")
+}
+
+// ============================================================
+//  Products (BM1-F001)
+//
+//  Game products that tenants register in the Knowledge Base. Tenant-
+//  scoped with an RLS policy (NULLIF-guarded, per database-patterns.md
+//  §1). uniqueSellingPoints is required at the application layer (Zod)
+//  because the AI asset generator collapses without it.
+// ============================================================
+
+model Product {
+  id                  String    @id @default(cuid())
+  tenantId            String    @map("tenant_id") @db.Uuid
+  name                String
+  category            String
+  targetAudience      String?   @map("target_audience") @db.Text
+  uniqueSellingPoints String    @map("unique_selling_points") @db.Text
+  downloadUrl         String?   @map("download_url")
+  launchDate          DateTime? @map("launch_date") @db.Date
+  // aiAssets shape:
+  //   { emailTemplates: [{subject, body} × 3],
+  //     videoScripts: [{title, script} × 2],
+  //     generatedAt, cost?, traceId? }
+  aiAssets            Json?     @map("ai_assets") @db.JsonB
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("product")
 }

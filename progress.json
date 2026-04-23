@@ -2,7 +2,7 @@
   "status": "building",
   "user_goal": "MVP 业务批次 1/2 - 控制台 + KOL 核心：Product 知识库页（含 AI 素材生成）+ KOL Discovery 15 维筛选页 + KOL Database 列表 + KOL 画像页 + Dashboard 真数据对接 + browser locale auto-detection。完成后 MVP 4 功能中 2 个（控制台 + 筛选 KOL）达成，剩下联系 + ROI 留 BM2。9 features，估 7-10 天。",
   "total_features": 9,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
   "current_sprint": "BM1-console-kol-core",
   "last_updated": "2026-04-23T14:30+0800",

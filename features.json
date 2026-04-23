@@ -6,7 +6,7 @@
       "title": "Prisma schema 扩展：Product + Kol 15 维 + CampaignKol.kolFee",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增 model Product（id cuid / tenantId @db.Uuid / name / category / targetAudience? Text / uniqueSellingPoints Text 必填 / downloadUrl? / launchDate? Date / aiAssets? Json / timestamps；@@index([tenantId]); @@map product）+ RLS tenant_isolation policy 用 NULLIF 兜底；Kol 扩展 15 维 filter nullable 字段（language/engagementRate/avgViewsPerVideo/uploadsPerMonth/lastUploadAt/monetizationStatus/brandSafetyRating/knownBrandCollabs String[]/audienceDemographics Json/engagementAuthenticity）+ 核心字段（valueScore/tags/relationshipStatus default 'prospect'/isGaming default true/isSaved default false/aiTaggedAt/aiTagConfidence）；CampaignKol 加 kolFee Decimal?/matchScore Int?（BM1 不用但 schema 一起做）；migration 20260424100000_bm1_schema 含 CREATE TABLE product + RLS + ALTER TABLE kol ADD COLUMN × 15 + ALTER TABLE campaign_kol ADD COLUMN × 2 + 完整 ROLLBACK SQL（F007 校验通过）；tsvector trigger 不改（BI4-F005 的 display_name/handle/categories/bio 已够）；tests/integration/bm1-schema.test.ts Product CRUD + RLS 跨租户隔离 / Kol 新字段读写 / CampaignKol.kolFee 读写"
     },
     {
