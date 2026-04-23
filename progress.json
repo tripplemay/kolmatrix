@@ -1,11 +1,11 @@
 {
-  "status": "reverifying",
+  "status": "fixing",
   "user_goal": "登录页 UI 重写为 V5 cinematic 设计（58/42 split，world-map 左图，下划线输入右表单）+ 新增 /request-access 请求访问页面（war-room 左图，长表单 + Server Action + admin 邮件通知）+ AccessRequest DB 模型 + en/zh i18n + 测试覆盖。B1 业务批次前的最后一块 UX 基建补齐。",
   "total_features": 4,
-  "completed_features": 0,
+  "completed_features": 2,
   "fix_rounds": 1,
   "current_sprint": "BAux1-auth-pages",
-  "last_updated": "2026-04-22T07:35+0800",
+  "last_updated": "2026-04-23T09:50+0800",
   "reference_docs": [
     "docs/specs/BAux1-auth-pages-spec.md",
     "design-draft/stitch-references/login.html",
@@ -29,34 +29,22 @@
     "evaluator": "Reviewer"
   },
   "evaluator_feedback": {
-    "summary": "BAux1 本轮 L1 复验失败：request-access 500（resend 依赖缺失）、integration accessRequest 客户端异常、/login 错误重定向到 localhost:3000、coverage/integration/e2e 全部未通过。",
-    "pass_count": 0,
-    "partial_count": 0,
-    "fail_count": 4,
+    "summary": "BAux1 第1轮复验：F001/F003 已通过；F002 仍因 /login 重定向到 localhost:3000 失败；F004 因 E2E webServer 启动/就绪策略导致无法执行完成，判 PARTIAL。",
+    "pass_count": 2,
+    "partial_count": 1,
+    "fail_count": 1,
     "issues": [
-      {
-        "feature_id": "F001",
-        "result": "FAIL",
-        "description": "Integration 验收未通过：tests/integration/access-request.test.ts 中 admin.accessRequest 为 undefined，create/query 3 项断言全部失败。",
-        "steps_to_reproduce": "1) bash scripts/test/codex-setup.sh 2) env -u all_proxy -u http_proxy -u https_proxy npm run test:integration 3) 观察 access-request.test.ts 三个用例均报 Cannot read properties of undefined (reading create)"
-      },
       {
         "feature_id": "F002",
         "result": "FAIL",
-        "description": "登录入口路由不符合验收：/login 307 跳转到 http://localhost:3000/en/login（应保持当前 host/port 下 locale 路由）；同时 E2E 配置写死 3000 与 Codex 3099 环境冲突。",
-        "steps_to_reproduce": "1) curl --noproxy '*' -I http://127.0.0.1:3099/login 2) 观察 Location: http://localhost:3000/en/login 3) 查看 playwright.config.ts 的 baseURL/url=3000"
-      },
-      {
-        "feature_id": "F003",
-        "result": "FAIL",
-        "description": "/en/request-access 页面 500，Server Action 导入链因缺少 resend 包失败（Module not found: Can't resolve resend）。",
-        "steps_to_reproduce": "1) bash scripts/test/codex-setup.sh 2) curl --noproxy '*' -I http://127.0.0.1:3099/en/request-access 3) 返回 500；Next 日志显示 import { Resend } from \"resend\" 无法解析"
+        "description": "/login 在 3099 L1 环境仍 307 到 http://localhost:3000/en/login，主机/端口不一致导致验收失败。",
+        "steps_to_reproduce": "1) bash scripts/test/codex-setup.sh 2) curl --noproxy '*' -I http://127.0.0.1:3099/login 3) 观察 Location 指向 http://localhost:3000/en/login"
       },
       {
         "feature_id": "F004",
-        "result": "FAIL",
-        "description": "测试覆盖目标未达成：coverage/integration/e2e 三套命令均红。核心阻塞为 resend 依赖缺失、RequestAccessForm 测试 mock 链接入 DB 环境错误、E2E webServer 配置冲突。",
-        "steps_to_reproduce": "1) env -u all_proxy -u http_proxy -u https_proxy npm run test:coverage 2) env -u all_proxy -u http_proxy -u https_proxy npm run test:integration 3) env -u all_proxy -u http_proxy -u https_proxy npm run test:e2e"
+        "result": "PARTIAL",
+        "description": "coverage 与 integration 已全绿，但 e2e 无法在当前配置下执行完毕（webServer 启动冲突/ready 超时）。",
+        "steps_to_reproduce": "1) env -u all_proxy -u http_proxy -u https_proxy npm run test:e2e 2) 报 Another next dev server is already running 或 webServer ready timeout 180000ms"
       }
     ]
   },
@@ -64,7 +52,7 @@
   "session_notes": {
     "Kimi": "BAux1 辅助批次启动（B1 前补做登录+注册 UI）。背景：B0 的 /login 已工具化实现但视觉与 V5 Stitch 设计（cinematic 58/42 split 游戏氛围版）不配；注册页完全缺失。本批次补齐到 V5 视觉基调 + 带 AccessRequest DB 模型的 request-access 流程。用户 2026-04-21 确认范围：Google disabled / AccessRequest 审核流 / en+zh / PNG hero 无需 .jpg 回退 / world-map 主题（电竞场馆太窄被否，world map 全球网络更贴合 'Run global KOL campaigns' 叙事）。2 张 1024×1024 PNG 由 Planner gpt-image 生成入库（aigcgateway 经历 3 轮 '修复-复测-仍 fail' 才拿到，详见 aigcgateway-bug-report-gpt-image-2026-04-20.md v3）。完成后 Option α 最后一块 UX 基建就位，进 B1 业务批次。",
     "johnsong": "BAux1 fix_rounds=1 完成，移交 reverifying。四个 FAIL 全部定位到**环境/配置**根因（非产品代码 bug），共改 5 个文件，81 行增 / 18 行删：\n\n1) **F001+F003 共因 — scripts/test/codex-setup.sh 缺 npm ci：** Evaluator 每次 pull 后只 docker compose + prisma migrate deploy + npm run dev，从未同步 node_modules。结果：resend（commit ed3d440 新加的 dep）未装 → /request-access 500；postinstall 的 prisma generate 未触发 → @prisma/client 无 AccessRequest model → admin.accessRequest undefined。修复：setup 脚本开头加 `npm ci --no-audit --no-fund`，postinstall 自动 regenerate prisma client。\n\n2) **F002 前半 — .env.example 硬编码 NEXTAUTH_URL：** 读了 node_modules/next-auth/lib/env.js：`reqWithEnvURL()` 只要 NEXTAUTH_URL/AUTH_URL 非空就**无条件**把 req.nextUrl.origin 改写成 env URL origin，和 auth.config.ts 的 `trustHost: true` 完全无关（trustHost 只影响 session decryption 的 UntrustedHost 检查）。Codex setup cp .env.example → .env 继承 NEXTAUTH_URL=localhost:3000 → next-intl 的 /login→/en/login 重定向 Location 被钉死到 localhost:3000。修复：.env.example 注释该行 + 附 15 行 WHY 注释解释根因；CI 在 workflow env 块独立设置不受影响；生产用 .env.production 独立设置。\n\n3) **F002 后半 — playwright.config.ts 硬编码 baseURL=localhost:3000：** 改读 env 优先级 `E2E_BASE_URL > E2E_PORT > PORT > 3000`；webServer.command 注入 `--port ${E2E_PORT}`；reuseExistingServer 永远 true（允许 Codex 3099 已开 dev server 复用）。\n\n4) **F004 RequestAccessForm.test.tsx — vi.importActual：** 原 mock 用 `importActual(actions)` 触发 \"use server\" 模块加载链 → 单测 env 没 DATABASE_URL/resend → 整个 suite 挂。改为扁平 mock（只 mock submitAccessRequest 函数，type 不需要 runtime 提供）。\n\n5) **回归测试 tests/e2e/login-cinematic.spec.ts：** 新增 \"bare /login redirects on SAME origin\" 用例，直接验证 Host header 正确，防止未来再 reintroduce NEXTAUTH_URL / hardcoded host。\n\n本机验证：tsc --noEmit 无错 + lint 无错 + test:unit 99/99 全绿（Topbar WSL vitest forks 环境异常已知，不影响 CI/Linux）。integration + e2e 因 WSL vitest/playwright WSL 兼容问题本机没跑，留给 Evaluator 在 Codex Linux 环境复验。\n\n关键排查链路：先看 F003 报错（Module not found resend）以为是依赖漏 pin，但 package.json 已 pinned → package-lock.json 也有 → 我本地 node_modules 也装了 → 才想到 Evaluator 环境差异 → 找 codex-setup.sh 发现缺 npm ci。F002 看到 Location: localhost:3000 以为 middleware 硬编码，grep 全项目无结果 → 读 next-auth/lib/env.js 找到 reqWithEnvURL 真凶。",
-    "Reviewer": "已按最新指令执行去代理复验：确认代理变量(all_proxy/http_proxy/https_proxy)会制造 502/协议噪声，已在无代理环境重跑。真实失败仍存在且可稳定复现：①resend 依赖缺失导致 /request-access 500 与多个测试套件失败；②integration helper 中 admin.accessRequest undefined；③/login 错误重定向到 localhost:3000；④Playwright 固定 3000 与 Codex 3099 流程冲突。已产出 docs/test-reports/BAux1-auth-pages-verifying-2026-04-21.md，并将 F001-F004 回退 pending，状态置 fixing。"
+    "Reviewer": "2026-04-23 reverifying：去代理后复验，coverage(31/31,101)与integration(7/7,38)全通过，request-access 从500修复到200；但 /login 仍重定向 localhost:3000，且 e2e 在 3099 流程下仍因 webServer 启动/ready 策略失败。已出 BAux1-auth-pages-reverifying-2026-04-23.md，回退 fixing，待修 F002/F004。"
   },
   "features": []
 }

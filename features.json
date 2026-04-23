@@ -6,7 +6,7 @@
       "title": "AccessRequest Prisma 模型 + migration",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "prisma/schema.prisma 追加 model AccessRequest（id cuid / email String @unique 320字符 / firstName 64 / lastName 64 / company 128 / role 64 / campaignsPerQuarter 32 / games Text? / status @default pending 16 / reviewedBy 320? / reviewedAt DateTime? / notes Text? / createdAt / updatedAt；@@index([status,createdAt]); @@map access_request）；prisma migrate deploy 本地+Testcontainers 通过；新 migration 20260421000000_access_request 含完整 `-- ROLLBACK: DROP TABLE \"access_request\";`；F007 CI 门禁通过；无 RLS（公共 pending 表，应用层 platform-admin 控制读取）；tests/integration/access-request.test.ts 覆盖 insert + unique email 冲突 + 按 status 查询"
     },
     {
@@ -22,7 +22,7 @@
       "title": "请求访问页面 + Server Action + admin 邮件通知",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "src/app/[locale]/request-access/page.tsx 新建 58/42 split（同 F002 结构）；左图 public/brand/signup-hero.png（1024×1024 PNG 已入库 trace trc_e576uaw4pk09k7a9lltfpzsk）；RequestAccessBrandOverlay 含 wordmark + 'OPERATOR PROGRAM · BY INVITE' + 主标 'Every launch has a war room. / This is yours.' + 副标 + 4 HUD chips operator 数据 + 底部 3 张 Recently Joined 迷你 studio 卡；右列长表单 8 字段（firstName/lastName 2 列 / workEmail / company / role dropdown 6 enum / campaignsPerQuarter dropdown 4 enum / games textarea / ToS checkbox）；Server Action submitAccessRequest 用 zod 校验；prisma.accessRequest.upsert 写入；防刷：同 email 24h 内已有 pending 则静默成功（返回 ok:true，不泄漏该邮箱是否在库）；src/lib/email/access-request.ts 调 resend.emails.send from='KOLMatrix Access <marketer@kolquest.com>' to=['tripplezhou@gmail.com'] subject='[KOLMatrix] New access request: {company}' HTML body 列字段；成功后跳 /request-access/success 显示 'We'll get back to you within 1 business day'；i18n auth.requestAccess.* en+zh 全翻译"
     },
     {
