@@ -67,6 +67,11 @@ export async function toggleKolSaved(
 
     revalidatePath("/[locale]/discovery", "page");
     revalidatePath("/[locale]/kols", "page");
+    // /database is gated on isSaved — Next prefetches it from the
+    // sidebar while the user browses Discovery, and without this
+    // invalidation the client Router Cache serves a stale copy that
+    // omits the row we just flipped.
+    revalidatePath("/[locale]/database", "page");
 
     return { ok: true, kolId: updated.id, saved: updated.isSaved };
   } catch (err) {
