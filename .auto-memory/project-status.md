@@ -4,9 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BM1-console-kol-core** — status=building，8/9 features 完成（F001–F008），下一步 F009 tests + visual baselines
-  - ✅ F001 schema / F002 seed / F003 knowledge-base / F004 discovery / F005 database / F006 kol-profile / F007 dashboard 真数据 / F008 locale detection
-  - ⏳ F009 tests + 5 visual baselines（含 F007 dashboard 重新捕）
+- **BM1-console-kol-core** — status=**verifying**（9/9 features landed，交接 Codex Reviewer 首轮 L1+L2）
+  - ✅ F001–F009 全部 generator executor 完成
+  - ⚠️ F009 的 4 张新 visual baseline（knowledge-base/discovery/database + dashboard 重捕）因本地 Playwright 缺 libnspr4 sudo 依赖**未生成 PNG**，测试代码 scaffolded 但标 `test.skip`；Reviewer 或后续 PR 可在 CI linux runner 跑 `--update-snapshots` 后解锁
+  - 其他 F009 交付物齐：bm1-flow.spec.ts E2E 11 步 / coverage lines 92.26% / CI 全绿
   - pre-impl 审计 `docs/specs/BM1-f001-schema-preimpl-audit.md` 裁决 #A:A #B:A #C:A #D:A+C #E:C #F:A（#E 偏离 Gen，归一化 0-100）
 - **BI4** ✅ done 一轮过（5/5 PASS fix_rounds=0，framework v0.9.3 沉淀 VPS artifact in-git 硬要求）
 - 所有前置批次 ✅：B0 / BI1 / BI2 / BI3 / BAux1 / BI4
