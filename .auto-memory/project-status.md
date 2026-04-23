@@ -4,14 +4,15 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BM1-console-kol-core** — status=building，6/9 features 完成（F001–F006），下一步 F007 Dashboard 真数据
+- **BM1-console-kol-core** — status=building，7/9 features 完成（F001–F007），下一步 F008 locale detection
   - ✅ F001 schema extension（Product + Kol 13 列 + kolFee + 2 indexes + RLS NULLIF）commit `f7971c7`
   - ✅ F002 seed script 2,524 rows + valueScore util + platform normalize commit `7142929`
   - ✅ F003 `/knowledge-base` page + Modal + aigcgateway 素材 fire-and-forget
   - ✅ F004 `/discovery` 15 维 filter + cursor 分页 + toggleKolSaved
   - ✅ F005 `/database` saved-KOL 表格 + 4 维简化 filter（含 relationshipStatus）
   - ✅ F006 `/kols/[id]` 画像页 + 4 tabs + Overview + updateKolRelationshipStatus + audit_log
-  - ⏳ F007 Dashboard 真数据 → F008 locale → F009 tests
+  - ✅ F007 Dashboard 5 KPI 真数据（kolCount gaming-only / productCount / activeCampaigns / emailsSent7d / avgValueScore）+ QuickActions 4 按钮 + topKols by valueScore
+  - ⏳ F008 locale detection → F009 tests
   - pre-impl 审计 `docs/specs/BM1-f001-schema-preimpl-audit.md` 裁决 #A:A #B:A #C:A #D:A+C #E:C #F:A（#E 偏离 Gen，归一化 0-100）
 - **BI4** ✅ done 一轮过（5/5 PASS fix_rounds=0，framework v0.9.3 沉淀 VPS artifact in-git 硬要求）
 - 所有前置批次 ✅：B0 / BI1 / BI2 / BI3 / BAux1 / BI4

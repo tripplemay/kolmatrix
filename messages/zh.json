@@ -134,10 +134,24 @@
     "recentActivity": "Recent Activity",
     "mockNote": "Dashboard mock data: 7d rolling window. KPI values reflect current tenant only.",
     "kpi": {
-      "totalKols": "Total KOLs",
-      "activeCampaigns": "Active Campaigns",
-      "emailsSent": "Emails Sent",
-      "avgAiMatch": "Avg AI Match"
+      "totalKols": "KOL 总数",
+      "activeCampaigns": "活跃活动",
+      "emailsSent": "邮件触达",
+      "totalProducts": "游戏产品",
+      "avgValueScore": "平均价值分",
+      "avgAiMatch": "平均 AI 匹配度"
+    },
+    "quickActions": {
+      "knowledgeBase": "录入产品",
+      "knowledgeBaseDescription": "新增游戏条目，AI 自动生成触达素材。",
+      "discovery": "发现 KOL",
+      "discoveryDescription": "基于 15 维筛选 2,500+ 创作者。",
+      "database": "KOL 数据库",
+      "databaseDescription": "查看已保存的候选 KOL。",
+      "campaigns": "新建活动",
+      "campaignsDescription": "启动触达并追踪 ROI。",
+      "comingSoon": "BM2",
+      "comingSoonTooltip": "活动 / 触达 / ROI 将在 BM2 开放。"
     }
   },
   "common": {

@@ -1,9 +1,17 @@
 /**
  * Dashboard server-side data layer.
  *
- * 并行查询 6 项（KPI 4 + campaigns + topKols），以及 Prisma row →
- * Dashboard component props 的 mapper。抽到独立文件以确保 page.tsx JSX
- * ≤ 80 行。所有 mapper 都是纯函数，不直接导入 Prisma client。
+ * BM1-F007: swapped from mock / ai_score → real tenant data:
+ *   - kolCount filtered to isGaming=true (gaming-focused MVP view)
+ *   - valueScoreAvg replaces ai_score-based avg (MVP uses the formula
+ *     from src/lib/kol/value-score.ts, normalised 0–100)
+ *   - topKols sorted by valueScore (not ai_score), returns 5 rows
+ *   - new productCount for the Products KPI tile
+ *   - activeCampaigns / emailsSent7d stay real but will read 0 until
+ *     BM2 ships Campaign / Email flows
+ *
+ * All mapper helpers stay pure — no Prisma imports — so they can be
+ * composed without pulling the client into the test bundle.
  */
 import type { TenantPrisma } from "@/lib/db";
 
@@ -42,29 +50,46 @@ function formatFollowers(count: number, platform: Platform): string {
 
 export async function fetchDashboardData(tx: TenantPrisma) {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  const [kolCount, activeCampaigns, emailsSent7d, aiScoreAgg, campaigns, topKols] =
-    await Promise.all([
-      tx.kol.count(),
-      tx.campaign.count({ where: { status: "active" } }),
-      tx.emailLog.count({ where: { sentAt: { gte: sevenDaysAgo } } }),
-      tx.kol.aggregate({ _avg: { aiScore: true } }),
-      tx.campaign.findMany({
-        where: { status: { in: ["active", "completed"] } },
-        orderBy: { updatedAt: "desc" },
-        take: 3,
-        include: { _count: { select: { kolCampaigns: true } } },
-      }),
-      tx.kol.findMany({
-        where: { status: "active" },
-        orderBy: { aiScore: "desc" },
-        take: 4,
-      }),
-    ]);
-  return {
+  const [
     kolCount,
+    productCount,
     activeCampaigns,
     emailsSent7d,
-    avgAiScore: Number(aiScoreAgg._avg.aiScore ?? 0),
+    valueScoreAgg,
+    campaigns,
+    topKols,
+  ] = await Promise.all([
+    tx.kol.count({ where: { isGaming: true } }),
+    tx.product.count(),
+    tx.campaign.count({ where: { status: "active" } }),
+    tx.emailLog.count({ where: { sentAt: { gte: sevenDaysAgo } } }),
+    tx.kol.aggregate({
+      _avg: { valueScore: true },
+      where: { isGaming: true, valueScore: { not: null } },
+    }),
+    tx.campaign.findMany({
+      where: { status: { in: ["active", "completed"] } },
+      orderBy: { updatedAt: "desc" },
+      take: 3,
+      include: { _count: { select: { kolCampaigns: true } } },
+    }),
+    tx.kol.findMany({
+      where: { isGaming: true },
+      orderBy: [{ valueScore: "desc" }, { id: "desc" }],
+      take: 5,
+    }),
+  ]);
+
+  const avgRaw = valueScoreAgg._avg.valueScore;
+  const avgValueScore =
+    avgRaw == null ? 0 : Math.round(Number(avgRaw.toString()));
+
+  return {
+    kolCount,
+    productCount,
+    activeCampaigns,
+    emailsSent7d,
+    avgValueScore,
     campaigns,
     topKols,
   };
@@ -93,7 +118,7 @@ export function mapKol(k: KolRow): DashboardKol {
     name: k.displayName,
     avatar: null,
     followers: formatFollowers(k.followerCount, platform),
-    aiScore: k.aiScore ?? 0,
+    aiScore: k.valueScore ?? 0,
     platform,
     tags: k.categories.slice(0, 2),
   };

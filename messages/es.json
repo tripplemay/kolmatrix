@@ -137,7 +137,21 @@
       "totalKols": "Total KOLs",
       "activeCampaigns": "Active Campaigns",
       "emailsSent": "Emails Sent",
+      "totalProducts": "Products",
+      "avgValueScore": "Avg Value Score",
       "avgAiMatch": "Avg AI Match"
+    },
+    "quickActions": {
+      "knowledgeBase": "Add product",
+      "knowledgeBaseDescription": "Record a game; AI drafts outreach assets.",
+      "discovery": "Discover KOLs",
+      "discoveryDescription": "Filter 2,500+ creators across 15 signals.",
+      "database": "KOL Database",
+      "databaseDescription": "Review your saved creator shortlist.",
+      "campaigns": "Launch campaign",
+      "campaignsDescription": "Spin up outreach & track ROI.",
+      "comingSoon": "BM2",
+      "comingSoonTooltip": "Campaigns, outreach + ROI ship in BM2."
     }
   },
   "common": {

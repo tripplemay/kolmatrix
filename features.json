@@ -54,7 +54,7 @@
       "title": "控制台 / 真数据对接",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/app/[locale]/(app)/page.tsx 修改 B0 F007 原 dashboard 5 KPI 区块从 DB 拉真数据：1) KOL 总数 = count(kol where isGaming=true) 2) 活跃 campaigns = 0 或 '—'（BM1 无 campaigns）3) 邮件触达 = 0 或 '—' 4) Product 数 = count(product by tenant) 5) 平均 KOL 价值分 = AVG(valueScore) where isGaming=true；TOP KOL 合作概览 = top 5 by valueScore（MVP '合作次数' 显示 0 次）；快捷操作 4 按钮跳转保持；平台工作流 6 步图 + 核心能力 6 条保持；i18n dashboard.* 新 keys 齐；tests/integration/dashboard-kpi.test.ts KPI 数字准确；visual /en/dashboard baseline 更新"
     },
     {

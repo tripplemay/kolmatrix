@@ -1,0 +1,107 @@
+/**
+ * QuickActions — Dashboard 快捷操作 4 按钮（BM1-F007 新增）
+ *
+ * Marketers' first-click launchpad into the 3 BM1 features (Knowledge
+ * Base / Discovery / Database) and a preview of BM2 (Campaigns,
+ * disabled with "Coming soon" tooltip). Kept in /features/dashboard/
+ * alongside KpiRow + ActiveCampaignsSection so imports stay local to
+ * the dashboard tree.
+ */
+import { getTranslations } from "next-intl/server";
+import Link from "next/link";
+
+interface QuickAction {
+  key: "knowledgeBase" | "discovery" | "database" | "campaigns";
+  href: string | null;
+  icon: string;
+  tone: "cyan" | "purple" | "cyan-soft" | "neutral";
+}
+
+const ACTIONS: QuickAction[] = [
+  { key: "knowledgeBase", href: "/knowledge-base", icon: "inventory_2", tone: "cyan" },
+  { key: "discovery", href: "/discovery", icon: "travel_explore", tone: "cyan-soft" },
+  { key: "database", href: "/database", icon: "groups", tone: "purple" },
+  { key: "campaigns", href: null, icon: "rocket_launch", tone: "neutral" },
+];
+
+const TONE_CLASS: Record<QuickAction["tone"], string> = {
+  cyan: "bg-cyan/15 text-cyan border-cyan/30",
+  "cyan-soft": "bg-cyan-fixed/10 text-cyan-fixed border-cyan-fixed/25",
+  purple: "bg-purple/15 text-purple border-purple/25",
+  neutral: "bg-surface-high text-on-surface-variant border-outline-variant",
+};
+
+interface Props {
+  locale: string;
+}
+
+export async function QuickActions({ locale }: Props) {
+  const t = await getTranslations("dashboard.quickActions");
+  return (
+    <section
+      className="grid grid-cols-2 gap-3 sm:grid-cols-4"
+      data-testid="dashboard-quick-actions"
+    >
+      {ACTIONS.map((a) => {
+        const title = t(a.key);
+        const description = t(`${a.key}Description` as
+          | "knowledgeBaseDescription"
+          | "discoveryDescription"
+          | "databaseDescription"
+          | "campaignsDescription");
+        const disabled = a.href === null;
+        const className = `flex items-center gap-3 rounded-xl border p-4 transition-colors ${TONE_CLASS[a.tone]} ${
+          disabled
+            ? "cursor-not-allowed opacity-60"
+            : "hover:brightness-110"
+        }`;
+        const content = (
+          <>
+            <span
+              className="material-symbols-outlined text-2xl shrink-0"
+              aria-hidden
+            >
+              {a.icon}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-white">
+                {title}
+                {disabled ? (
+                  <span className="ml-2 rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-on-surface-variant">
+                    {t("comingSoon")}
+                  </span>
+                ) : null}
+              </span>
+              <span className="block text-[11px] text-on-surface-variant">
+                {description}
+              </span>
+            </span>
+          </>
+        );
+        if (disabled) {
+          return (
+            <div
+              key={a.key}
+              className={className}
+              title={t("comingSoonTooltip")}
+              aria-disabled
+              data-testid={`quick-action-${a.key}`}
+            >
+              {content}
+            </div>
+          );
+        }
+        return (
+          <Link
+            key={a.key}
+            href={`/${locale}${a.href!}`}
+            className={className}
+            data-testid={`quick-action-${a.key}`}
+          >
+            {content}
+          </Link>
+        );
+      })}
+    </section>
+  );
+}
