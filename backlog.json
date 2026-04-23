@@ -28,5 +28,19 @@
     "priority": "low",
     "tags": ["routing", "i18n"],
     "discovered_in": "staging L2 pre-check by Planner johnsong"
+  },
+  {
+    "id": "BL-004",
+    "title": "Staging 部署自动化（infrastructure/deploy-staging.sh 入 git）",
+    "description": "当前 staging deploy 全手动 SSH（见 docs/dev/tls-staging-runbook.md §5），每次 git pull + npm ci + build + migrate + seed + pm2 restart 需 3-5min 输入。Planner 2026-04-23 评估后推荐方案 A（shell 脚本入 git）而非方案 B（GitHub Actions workflow）：1 人团队用不到 workflow 的可观测/权限/CD auto-deploy 价值；shell 脚本 ~1.5h 工时就能覆盖 80% 收益。脚本顺带修 BL-001（set -a source .env）+ BL-002（GIT_SHA=$(git rev-parse --short HEAD) npm run build）。落地时机：BM1 verifying 或 BM2 建中插空；最迟 MVP 上线前基建批次（'BIx-staging-automation'，可与 BL-001/BL-002/BL-003 打包）。方案 B workflow 延后到 MVP 后团队扩员。",
+    "decisions": [
+      "方案 A（shell 脚本）而非 B（GitHub Actions）——1 人团队不匹配 workflow 成本",
+      "不加进 BM1/BM2 spec（已锁），作为独立 micro-batch 或 polish 收口",
+      "脚本中带 GIT_SHA 注入 + dotenv source，顺带关闭 BL-001/BL-002"
+    ],
+    "confirmed_at": "2026-04-23T08:30+0800",
+    "priority": "medium",
+    "tags": ["staging-devx", "infrastructure", "automation"],
+    "discovered_in": "user question 2026-04-23 + Planner Bash 手动 deploy staging 实操经验"
   }
 ]
