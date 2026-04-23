@@ -14,7 +14,7 @@
       "title": "KOL seed 脚本入库 415 gaming + 2109 non-gaming",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "scripts/seed-kol-from-enriched.ts 读 docs/kol-seed-enriched-final.json 逐条 upsert（unique: tenantId+platform+handle）；字段映射 platform 'Youtube'→YOUTUBE enum / name→display_name / url 提取 @handle / region 中文→ISO 2-letter（美国 US / 英国 GB / 巴基斯坦 PK / 加拿大 CA / 德国 DE / 越南 VN / 台湾 TW / 乌克兰 UA / 日本 JP / 伊拉克 IQ / 多米尼加 DO）/ followers→follower_count / is_gaming→isGaming / categories→Kol.categories String[] / confidence→aiTagConfidence / aiTaggedAt=now；固定 tenantId=demo tenant UUID；valueScore 按公式计算（log10(followers)*15 cap 50 + engagementScore 15 + categoryScore min(20, count*8) → 0-100）；src/lib/kol/valueScore.ts 公式 + 单测 5 cases；package.json 加 seed:kol script；prisma.config.ts 注册；idempotent（再跑不重复）；tests/integration/kol-seed.test.ts: count=2524, gaming=415, non_gaming=2109, valueScore 非 null, 粉丝数大的分数高"
     },
     {

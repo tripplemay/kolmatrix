@@ -23,6 +23,7 @@
     "db:down": "docker compose down",
     "db:migrate": "prisma migrate deploy",
     "db:seed": "prisma db seed",
+    "seed:kol": "tsx scripts/seed-kol-from-enriched.ts",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate"
   },
