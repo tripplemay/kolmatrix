@@ -70,7 +70,7 @@
       "title": "Tests + Visual regression baselines + CI 8 jobs 全绿",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
+      "status": "pending",
       "acceptance": "test:unit ≥ 25 新 cases（valueScore 公式 / Product form / Filter / card / pagination / Dashboard KPI components）；test:integration ≥ 8 新 cases（F001/F002/F003/F004/F005/F006/F007 各覆盖）；test:e2e 新 1 文件 bm1-flow.spec.ts 8-10 步完整 flow（登录→录入 Product→发现 KOL→保存→Database→KOL 画像）；visual regression 5 张新 baseline（knowledge-base/discovery/database/kols[id]/dashboard 更新）；test:coverage lines ≥ 80% 维持；lint + tsc 无错；CI 8 jobs 全绿；VPS artifact in-git 核对（framework v0.9.3 §2.4）：git ls-files scripts/seed-kol-from-enriched.ts 非空 + src/app/[locale]/(app)/knowledge-base/page.tsx 非空"
     }
   ]
