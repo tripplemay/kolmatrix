@@ -31,14 +31,23 @@ async function login(page: import("@playwright/test").Page) {
   // Accept both `/dashboard` (before next-intl locale rewrite) and
   // `/<locale>/dashboard` (after). Both prove the redirect worked.
   await page.waitForURL(/\/dashboard(\/|$)/);
-  // Let the locale rewrite finish if it's happening (middleware chain).
-  await page.waitForLoadState("networkidle").catch(() => {});
+  // BM1-F009: do NOT call waitForLoadState("networkidle") here — on the
+  // staging build it never resolves (even with pending=0 for 30s) while
+  // all downstream locators auto-wait for visibility anyway. Previously
+  // this ate the default 30s test timeout and masked real flake as a
+  // "sidebar click timeout".
 }
 
 test.describe("Marketer — login + dashboard flow", () => {
   test("logs in via /login with seed credentials and lands on /dashboard", async ({ page }) => {
     await login(page);
-    expect(page.url()).toMatch(/\/dashboard(\/|$)/);
+    // BM1-F009 regression: assert the URL is locale-prefixed, not bare
+    // `/dashboard`. Before the fix, `signIn(..., redirectTo: "/dashboard")`
+    // left the browser at `/dashboard` while the RSC payload was for
+    // `/en/dashboard`, breaking subsequent client-side navigation on
+    // staging. `resolveTargetLocale()` in the server action now prefixes
+    // the redirect target so URL + content stay in sync.
+    expect(page.url()).toMatch(/\/(en|zh|ja|ko|es)\/dashboard(\/|$)/);
   });
 
   test("dashboard greets Sarah Chen and surfaces KPI cards", async ({ page }) => {

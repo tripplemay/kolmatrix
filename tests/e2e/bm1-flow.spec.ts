@@ -36,7 +36,9 @@ async function login(page: Page) {
   await page.locator('input[name="password"]').fill(MARKETER.password);
   await page.getByRole("button", { name: /Sign in/ }).click();
   await page.waitForURL(/\/dashboard(\/|$)/);
-  await page.waitForLoadState("networkidle").catch(() => {});
+  // BM1-F009: skip waitForLoadState("networkidle") — it does not
+  // resolve on staging even when pending requests are zero, and every
+  // locator we use afterwards auto-waits for visibility anyway.
 }
 
 test.describe("BM1 — full marketer journey (F009 E2E)", () => {
@@ -128,7 +130,9 @@ test.describe("BM1 — full marketer journey (F009 E2E)", () => {
       const statusSelect = page.getByTestId("kol-status-select");
       await statusSelect.selectOption("negotiating");
       await expect(statusSelect).toHaveValue("negotiating");
-      await page.waitForLoadState("networkidle").catch(() => {});
+      // BM1-F009: brief settle for the revalidate; networkidle on
+      // staging does not reliably fire so we just wait fixed-time.
+      await page.waitForTimeout(500);
 
       // 11. Back to the dashboard — Products KPI must be ≥ 1 now that
       // step 5 created a real product row.
