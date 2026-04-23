@@ -134,6 +134,11 @@ model Kol {
   createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz
   deletedAt          DateTime? @map("deleted_at") @db.Timestamptz
+  // BI4-F005: maintained by DB trigger kol_search_vector_trigger.
+  // Declared so Prisma db pull does not drop the column; app code
+  // never reads/writes it through the ORM — see
+  // src/lib/search/tsvector.ts for the $queryRaw path.
+  searchVector       Unsupported("tsvector")? @map("search_vector")
 
   tenant       Tenant        @relation(fields: [tenantId], references: [id])
   kolCampaigns KolCampaign[]

@@ -1,8 +1,8 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "MVP 前最后一棒架构护栏（5 features 独立 infra）：Async Job Queue interface + in-memory stub / event_log 表 + helper / audit_log 表 + helper / Cursor pagination util / KOL tsvector 全文搜索索引 migration。完成后 BM1/BM2 业务批次可直接调用这些基建，零架构返工。",
   "total_features": 5,
-  "completed_features": 4,
+  "completed_features": 5,
   "fix_rounds": 0,
   "current_sprint": "BI4-architectural-guardrails",
   "last_updated": "2026-04-23T12:30+0800",
@@ -30,7 +30,7 @@
   "generator_handoff": "[Planner 2026-04-23 批次启动说明] BI4 架构护栏批次，5 个独立 infra features，无业务逻辑，全后端+helper+migration。全部互相独立（F005 只依赖 F007 ROLLBACK SQL 校验机制，已在 BI2 建立），Generator 可线性按 F001→F005 做。开工前必读：docs/specs/BI4-architectural-guardrails-spec.md 全文 + framework/harness/database-patterns.md（§2 migration 命名 / §1 RLS NULLIF — 本批 event_log/audit_log 无 RLS，不适用 §1）+ framework/harness/deploy-patterns.md（staging 部署 验证机制）。语义约束：1) 日志 helper（event/audit）都用 fire-and-forget 失败 swallow，主流程不阻塞（audit log 失败仍打 stderr）；2) Job Queue interface 设计要保证 B5 换 BullMQ 时零调用点改动 —— payload 必须 JSON-safe，handler 异步签名；3) Cursor pagination 是 base64 URL-safe，前端不解析只透明传递；4) tsvector trigger 维护，不靠 app 层（防一致性漂移）；5) 所有新 migration 严格走 F007 ROLLBACK SQL 校验；所有新 table 无 RLS（event/audit 是平台级记录）。pre-impl 审计 → Planner 裁决模式继续适用，spec 有歧义先发审计请求不要凭印象。Planner 在 Generator 开工同时并行写 BM1 spec。",
   "session_notes": {
     "Kimi": "BI4 架构护栏批次启动（MVP 前最后一棒 infra，之后直接进业务批次 BM1/BM2）。用户 2026-04-23 确认启动。5 features 全独立 infra，2-3 天 Generator 工作量。本批次通过 session 讨论明确拆分：7 条总 guard rails 中 5 条（Job Queue / event_log / audit_log / Cursor / tsvector）独立做，另 2 条（EmailTemplate 表化 / Source adapter）因需业务上下文嵌入 MVP 批次。完成后 BM1/BM2 直接调用这些基建，业务 spec 不需重复定义基础设施。MVP 总时间线 32-37 天目标，BI4 完成后进 BM1（9 features）再 BM2（13 features）。Planner 并行进入 BM1 spec 起草。",
-    "johnsong": null,
+    "johnsong": "BI4 building 全部完成（5/5 features）。F001 job queue + F002 event_log + F003 audit helper（按裁决 #A:D 沿用 B0 AuditLog 表）+ F004 cursor paginator + F005 KOL tsvector。开工发现 F003/F005 spec 冲突，发 pre-impl 审计（docs/specs/BI4-f003-f005-preimpl-audit.md），Planner Kimi 同意 Generator 全部建议。测试统计：F001 6 unit / F002 4 integration / F003 5 integration / F004 8 unit / F005 6 integration = 29 新增测试全绿。进入 verifying 交 Reviewer。注意点：F005 EXPLAIN ANALYZE 验证 GIN 索引使用必须在事务中 SET LOCAL enable_seqscan=off 强制（小数据集 planner 偏 seq scan）；生产大表会自然走 GIN。",
     "Reviewer": null
   },
   "features": []
