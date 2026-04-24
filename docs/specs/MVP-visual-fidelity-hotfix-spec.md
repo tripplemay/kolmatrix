@@ -105,7 +105,7 @@ src/components/common/
 
 重写 `src/app/[locale]/(app)/discovery/page.tsx` + `FilterSidebar.tsx` + `KolResultCard.tsx`，对照 Stitch `kol-discovery.html` 逐元素还原。
 
-**原型参考：** `design-draft/stitch-references/kol-discovery.html`
+**原型参考：** `design-draft/stitch-references/kol-discovery.html`（浏览器打开为主；同目录 .png 仅 512px 缩略索引，不做像素对比）
 
 **必用公共组件：**
 - `<GlassPanel>` for 所有容器
@@ -129,10 +129,10 @@ src/components/common/
 **Visual baseline：** `tests/screenshots/baseline/en-discovery.png` 入 git（F007 统一跑）
 
 **Acceptance：**
-- 所有"不得简化的元素"清单项勾选（Reviewer 并排对比 Stitch PNG 和 staging screenshot）
+- 所有"不得简化的元素"清单项勾选（Reviewer 两浏览器窗口并排：左 `kol-discovery.html` / 右 staging `/en/discovery`；**不用 PNG**，PNG 是 512px 缩略图看不清细节，per `framework/harness/ui-fidelity-guardrail.md` §1.1）
 - 15 维 filter 功能保持（沿用现有 FilterSidebar.tsx 搬到新 Input/Select/ChipButton 组件；不破坏 URL-driven GET form）
 - cursor pagination 不变（沿用现有 runDiscoverySearch）
-- L2 staging 登录后 `/en/discovery` 对照 Stitch PNG 还原度 ≥ 9/10
+- L2 staging 登录后 `/en/discovery` 对照 Stitch HTML（浏览器渲染）还原度 ≥ 9/10
 - `tests/e2e/discovery-fidelity.spec.ts` 新增 case：prototype 标志元素 visible（AI Smart Match button / 主搜索区 / Active Filter chip）
 
 ### F003 — `/database` 重写
@@ -141,7 +141,7 @@ src/components/common/
 
 重写 `src/app/[locale]/(app)/database/page.tsx` + `DatabaseFilterBar.tsx`，对照 Stitch `kol-database.html`。
 
-**原型参考：** `design-draft/stitch-references/kol-database.html`
+**原型参考：** `design-draft/stitch-references/kol-database.html`（浏览器打开为主；同目录 .png 仅 512px 缩略索引，不做像素对比）
 
 **必用公共组件：**
 - `<Table stickyHeader>` + `<TRow>` + `<TCell>`（替代手写 Th/Td inline 函数）
@@ -179,7 +179,7 @@ src/components/common/
 
 重写 `src/app/[locale]/(app)/campaigns/page.tsx` + `CampaignsFilterBar.tsx`。
 
-**原型参考：** `design-draft/stitch-references/campaigns-list.html`
+**原型参考：** `design-draft/stitch-references/campaigns-list.html`（浏览器打开为主；同目录 .png 仅 512px 缩略索引，不做像素对比）
 
 **必用公共组件：**
 - `<StatCard>` × 4 for KPI strip
@@ -211,7 +211,7 @@ src/components/common/
 
 重写 `src/app/[locale]/(app)/campaigns/[id]/page.tsx` + 5 子组件。
 
-**原型参考：** `design-draft/stitch-references/campaign-detail.html`
+**原型参考：** `design-draft/stitch-references/campaign-detail.html`（浏览器打开为主；同目录 .png 仅 512px 缩略索引，不做像素对比）
 
 **必用公共组件：**
 - `<GlassPanel>` + `<SectionHeader>`
@@ -264,7 +264,7 @@ src/components/common/
 - 手写 className 密度 > 20 的部分改用 `<Button>` / `<StatusBadge>` / `<GlassPanel>`
 - 4 tabs 中 Overview 真数据保持；Collabs / Contacts / AI 3 个 tab empty-state 补友好提示（不实现 MVP 外功能）
 
-**原型参考：** `design-draft/stitch-references/kol-detail.html`（未深审，F006 本次只处理公共组件替换不全量重写）
+**原型参考：** `design-draft/stitch-references/kol-detail.html`（浏览器打开为主；同目录 .png 仅 512px 缩略索引，不做像素对比；F006 本次只处理公共组件替换不全量重写）
 
 **必用公共组件：**
 - `<Button>` / `<StatusBadge>` / `<GlassPanel>` / `<SectionHeader>`
@@ -383,7 +383,7 @@ F001 (公共组件库)
 - 6 张 baseline PNG 入 git
 - `ssh vps 'git ls-files tests/screenshots/baseline/*.png' | wc -l` ≥ 6
 - CI visual-regression job 绿（PR diff = 0）
-- Stitch 原型还原度 Reviewer 评级 ≥ 🟢 pixel-perfect 或 ≥ 🟡 可接受
+- Stitch 原型还原度评级 ≥ 🟢 pixel-perfect 或 ≥ 🟡 可接受（Reviewer 两浏览器窗口并排：左 HTML 原型 / 右 staging 登录态，同分辨率对比；**不使用 PNG 做像素判断**）
 
 ### L4 埋点（本批次无新埋点）
 

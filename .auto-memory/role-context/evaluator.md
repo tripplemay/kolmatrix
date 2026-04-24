@@ -35,7 +35,11 @@ ssh tripplezhou@34.180.93.185 "cd /opt/kolmatrix && git ls-files tests/screensho
 **Scaffold（.spec.ts 存在但 PNG 未生成）不算通过。** 这是 BM1 F009 踩坑根因。
 
 ### 2. 原型"不得简化"清单核对
-若 spec §acceptance 中含"不得简化的元素"列表（per `framework/harness/ui-fidelity-guardrail.md` §2.3），签收前 Reviewer 并排对比 Stitch PNG 与实现页 screenshot，逐项核。任一缺失 → 按"区块删除 = FAIL"判。
+若 spec §acceptance 中含"不得简化的元素"列表（per `framework/harness/ui-fidelity-guardrail.md` §2.3），签收前 Reviewer 并排对比：
+- **左窗口**：`design-draft/stitch-references/<page>.html`（浏览器打开；**不是 PNG** — PNG 是 512px 缩略图看不清细节，per guardrail §1.1 参照物铁律）
+- **右窗口**：staging 登录态同路由（如 `https://staging.kol.guangai.ai/en/<page>`）
+
+同分辨率（建议两窗口各占 50% 屏宽，或用浏览器 devtools device mode 统一 1440×900）下逐 section 核对"不得简化清单"每一项。任一缺失 → 按"区块删除 = FAIL"判。
 
 ### 3. 幽灵控件检查
 `grep -rn "type=\"checkbox\"\|<select\|<button" src/app/...` 找出 UI 上 active 的控件，核对每个都有 handler/action。active 但无反应 → FAIL（比完全不渲染更差的 UX）。
@@ -44,7 +48,8 @@ ssh tripplezhou@34.180.93.185 "cd /opt/kolmatrix && git ls-files tests/screensho
 模板 `framework/templates/signoff-report.md` 加节：
 ```markdown
 ## Stitch 还原度评估
-- 原型参考：<path>
+- 原型参考：<html-path>（浏览器打开 HTML，PNG 仅作页面索引不看像素）
+- 对比方法：两浏览器窗口并排（左 Stitch HTML 原型 / 右 staging 登录态），同分辨率
 - 不得简化元素清单核对：
   - [x] 主搜索区 / [x] AI CTA / [x] Insights Panel / ...
 - 总体评级：🟢 pixel-perfect / 🟡 中度差异可接受 / 🔴 重大缺失须回 fixing

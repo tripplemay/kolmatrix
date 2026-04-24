@@ -84,6 +84,20 @@
     "discovered_in": "Planner audit 2026-04-24"
   },
   {
+    "id": "BL-010",
+    "title": "Stitch 参考 PNG 全部 512px 缩略图 — 自动渲染高分辨率大 PNG（render-stitch-previews.ts）",
+    "description": "2026-04-24 用户发现并 Planner 确认：`design-draft/stitch-references/*.png` 18 张全部是 Stitch preview 导出的 512px 封顶缩略图（详细尺寸 239-512 × 410-515，文件 56-152KB）。问题：Planner 读 PNG 起 spec 会漏细节；Generator 看 PNG 只能看大体块导致'装饰性删除'倾向；Reviewer 并排对比 PNG vs staging 时 PNG 看不清无法做像素级 fidelity 判断。guardrail §1.1 临时解法：用 HTML 浏览器渲染作为主参照物（HTML 本身就是 Stitch 精确 DOM 输出）。长期解：脚本自动渲染 HTML 为 1920px 大 PNG。实现：新建 `scripts/render-stitch-previews.ts` 用 Playwright headless chromium 1920×1200 viewport 打开每个 `design-draft/stitch-references/*.html` → 全页截图 → 写 `design-draft/stitch-references/renders/<page>-1920.png`；npm script `render:stitch-previews`；未来 Stitch 设计更新一键重跑。注意 HTML 可能引用外部资源（Tailwind CDN / Material Icons CDN / fonts），script 需确保全部加载完才截图（可用 waitForLoadState 'networkidle' + 额外 delay）。落地时机：并入 MVP-visual-fidelity hotfix F001 附带产出（~1h 额外工时），或独立 BL 执行。",
+    "decisions": [
+      "短期 guardrail 已落实：HTML 是主视觉参照物（2026-04-24 framework/harness/ui-fidelity-guardrail.md §1.1 生效）",
+      "长期自动化：Playwright script 渲染 HTML → 1920px PNG 入 git",
+      "并入 MVP-visual-fidelity F001 附带做（~1h），不独立批次"
+    ],
+    "confirmed_at": "2026-04-24T02:00+0800",
+    "priority": "medium",
+    "tags": ["design-asset", "visual-regression", "automation"],
+    "discovered_in": "user 2026-04-24 观察 + Planner file 命令确认全部 PNG < 512px"
+  },
+  {
     "id": "BL-004",
     "title": "Staging 部署自动化（infrastructure/deploy-staging.sh 入 git）",
     "description": "当前 staging deploy 全手动 SSH（见 docs/dev/tls-staging-runbook.md §5），每次 git pull + npm ci + build + migrate + seed + pm2 restart 需 3-5min 输入。Planner 2026-04-23 评估后推荐方案 A（shell 脚本入 git）而非方案 B（GitHub Actions workflow）：1 人团队用不到 workflow 的可观测/权限/CD auto-deploy 价值；shell 脚本 ~1.5h 工时就能覆盖 80% 收益。脚本顺带修 BL-001（set -a source .env）+ BL-002（GIT_SHA=$(git rev-parse --short HEAD) npm run build）。落地时机：BM1 verifying 或 BM2 建中插空；最迟 MVP 上线前基建批次（'BIx-staging-automation'，可与 BL-001/BL-002/BL-003 打包）。方案 B workflow 延后到 MVP 后团队扩员。",
