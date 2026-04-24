@@ -2,7 +2,7 @@
 title: KOL Data Crawler Team — 交接文档 v1
 audience: external crawler team
 status: v1.0 · 初版
-owner: KOLMatrix Planner (johnsong)
+owner: KOLMatrix Planner
 date: 2026-04-24
 ---
 
