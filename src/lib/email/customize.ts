@@ -1,0 +1,193 @@
+/**
+ * BM2-F006 · aigcgateway `kol-email-customize` Action client.
+ *
+ * Per pre-impl adjudication §12.3 the action run endpoint is
+ *   POST {BASE}/actions/{ACTION_ID}/run
+ * with { variables, dry_run } body + Bearer auth. Model used by the
+ * action is Claude Haiku 4.5 — Claude habitually wraps structured
+ * output in ```json fences, so responses always go through
+ * `parseFencedJson`.
+ */
+import "dotenv/config";
+
+import { parseFencedJson } from "@/lib/ai/json-extract";
+
+export const KOL_EMAIL_CUSTOMIZE_ACTION_ID =
+  "cmob2z6j00001bnole7i8lg9h";
+
+export interface CustomizeEmailInput {
+  product: {
+    name: string;
+    category?: string | null;
+    usp: string;
+  };
+  kol: {
+    name: string;
+    handle?: string | null;
+    region?: string | null;
+    categories?: string[];
+  };
+  template: {
+    subject: string;
+    body: string;
+    locale: "en" | "zh";
+  };
+}
+
+export interface CustomizeEmailResult {
+  subject: string;
+  body: string;
+  rationale?: string;
+  traceId?: string;
+}
+
+export class CustomizeEmailError extends Error {
+  constructor(
+    public readonly code:
+      | "missing_env"
+      | "http_error"
+      | "invalid_response"
+      | "timeout",
+    message: string
+  ) {
+    super(message);
+    this.name = "CustomizeEmailError";
+  }
+}
+
+function baseUrl(): string {
+  return (
+    process.env.AIGCGATEWAY_BASE_URL ??
+    "https://aigc.guangai.ai/v1"
+  ).replace(/\/$/, "");
+}
+
+function toVariables(input: CustomizeEmailInput): Record<string, string> {
+  return {
+    product_name: input.product.name,
+    product_category: input.product.category ?? "",
+    product_usp: input.product.usp,
+    kol_name: input.kol.name,
+    kol_handle: input.kol.handle ?? "",
+    kol_region: input.kol.region ?? "",
+    kol_categories: (input.kol.categories ?? []).join(", "),
+    template_subject: input.template.subject,
+    template_body: input.template.body,
+    locale: input.template.locale,
+  };
+}
+
+async function fetchWithRetry(
+  url: string,
+  init: RequestInit,
+  opts: { retries?: number; timeout?: number } = {}
+): Promise<Response> {
+  const retries = opts.retries ?? 1;
+  const timeout = opts.timeout ?? 30_000;
+
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeout);
+    try {
+      const res = await fetch(url, { ...init, signal: controller.signal });
+      clearTimeout(timer);
+      // 4xx is terminal (bad input); retry only 5xx + 429.
+      if (res.ok) return res;
+      if (res.status < 500 && res.status !== 429) return res;
+      if (attempt === retries) return res;
+    } catch (err) {
+      clearTimeout(timer);
+      if (attempt === retries) throw err;
+    }
+  }
+  // Unreachable — the loop either returns or throws.
+  throw new CustomizeEmailError("http_error", "unreachable");
+}
+
+export async function customizeEmail(
+  input: CustomizeEmailInput
+): Promise<CustomizeEmailResult> {
+  const apiKey = process.env.AIGCGATEWAY_API_KEY;
+  if (!apiKey) {
+    throw new CustomizeEmailError(
+      "missing_env",
+      "AIGCGATEWAY_API_KEY is not set"
+    );
+  }
+
+  const url = `${baseUrl()}/actions/${KOL_EMAIL_CUSTOMIZE_ACTION_ID}/run`;
+
+  let res: Response;
+  try {
+    res = await fetchWithRetry(
+      url,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          variables: toVariables(input),
+          dry_run: false,
+        }),
+      },
+      { retries: 1, timeout: 30_000 }
+    );
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new CustomizeEmailError("timeout", "aigcgateway request timed out");
+    }
+    throw new CustomizeEmailError(
+      "http_error",
+      `aigcgateway fetch failed: ${(err as Error).message}`
+    );
+  }
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new CustomizeEmailError(
+      "http_error",
+      `aigcgateway responded ${res.status}: ${text.slice(0, 200)}`
+    );
+  }
+
+  const body = (await res.json()) as {
+    output?: string;
+    traceId?: string;
+  };
+  if (!body.output) {
+    throw new CustomizeEmailError(
+      "invalid_response",
+      "aigcgateway response missing `output`"
+    );
+  }
+
+  let parsed: { subject?: unknown; body?: unknown; rationale?: unknown };
+  try {
+    parsed = parseFencedJson<typeof parsed>(body.output);
+  } catch (err) {
+    throw new CustomizeEmailError(
+      "invalid_response",
+      `aigcgateway output not parseable JSON: ${(err as Error).message}`
+    );
+  }
+
+  if (
+    typeof parsed.subject !== "string" ||
+    typeof parsed.body !== "string"
+  ) {
+    throw new CustomizeEmailError(
+      "invalid_response",
+      "aigcgateway output missing `subject` or `body` string"
+    );
+  }
+
+  return {
+    subject: parsed.subject,
+    body: parsed.body,
+    rationale:
+      typeof parsed.rationale === "string" ? parsed.rationale : undefined,
+    traceId: body.traceId,
+  };
+}

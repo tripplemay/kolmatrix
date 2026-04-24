@@ -544,6 +544,151 @@
       }
     }
   },
+  "outreach": {
+    "title": "Email Center",
+    "subtitle": "Compose campaigns, track domain health, and watch every reply land — from one console.",
+    "tabs": {
+      "overview": "Overview",
+      "templates": "Templates",
+      "send_queue": "Send Queue",
+      "tracking": "Tracking",
+      "suppression": "Suppression",
+      "comingB4": "Coming in B4"
+    },
+    "quickStats": {
+      "sentToday": "Sent today",
+      "openRate": "Open rate",
+      "replyRate": "Reply rate",
+      "bounceRate": "Bounce rate",
+      "deliverability": "Deliverability",
+      "windowHint": "Last 30 days"
+    },
+    "performance": {
+      "title": "Sending performance",
+      "subtitle": "Daily activity over the last 30 days",
+      "legendSent": "Sent",
+      "legendOpened": "Opened",
+      "ariaLabel": "30-day sending performance chart",
+      "statDelivered": "Delivered",
+      "statOpened": "Opened",
+      "statOpenRate": "Open rate",
+      "statWindow": "Window",
+      "statWindowValue": "30d"
+    },
+    "domainHealth": {
+      "title": "Domain health",
+      "healthy": "All systems healthy",
+      "dkim": "DKIM",
+      "spf": "SPF record",
+      "dmarc": "DMARC policy",
+      "configured": "Configured",
+      "validated": "Validated",
+      "enforced": "Enforced",
+      "reputation": "Reputation"
+    },
+    "topTemplates": {
+      "title": "Top templates",
+      "usedCount": "Used {count} {count, plural, one {time} other {times}}",
+      "noUsage": "No usage yet — send your first outreach",
+      "openRate": "open",
+      "noOpenRate": "No data yet"
+    },
+    "recentReplies": {
+      "title": "Recent replies",
+      "subtitle": "Latest creator responses",
+      "empty": "No replies yet — send your first outreach.",
+      "subjectPrefix": "Re:",
+      "bodyPlaceholderTooltip": "Reply body requires Resend webhook (B4)."
+    },
+    "recentlySent": {
+      "title": "Recently sent",
+      "subtitle": "Last 10 messages",
+      "empty": "No messages sent yet.",
+      "cols": {
+        "kol": "KOL",
+        "campaign": "Campaign",
+        "subject": "Subject",
+        "status": "Status",
+        "sentAt": "Sent"
+      }
+    },
+    "emailStatus": {
+      "queued": "Queued",
+      "sent": "Sent",
+      "opened": "Opened",
+      "replied": "Replied",
+      "bounced": "Bounced",
+      "mock_sent": "Mock sent",
+      "failed": "Failed"
+    },
+    "kolStatus": {
+      "pending": "Pending",
+      "contacted": "Contacted",
+      "quoted": "Quoted",
+      "signed": "Signed",
+      "delivered": "Delivered",
+      "paid": "Paid"
+    },
+    "composer": {
+      "title": "Compose outreach",
+      "subtitle": "Pick a campaign, select KOLs with email on file, pick a template, and send.",
+      "campaignLabel": "Campaign",
+      "campaignPlaceholder": "Choose a campaign…",
+      "templateLabel": "Template",
+      "templatePlaceholder": "Choose a template…",
+      "kolSection": "KOLs in this campaign",
+      "kolSelected": "{count}/{total} selected",
+      "kolHeadSelect": "Select",
+      "kolHeadCreator": "Creator",
+      "kolHeadEmail": "Email",
+      "kolHeadStatus": "Contact status",
+      "selectAllLabel": "Select all eligible KOLs",
+      "noSelectableKols": "No KOL has an email on file yet — add one inline to enable sending.",
+      "noEmail": "No email on file",
+      "noEmailTooltip": "This KOL needs an email before we can send. Add one manually or reach them via YouTube DMs.",
+      "addEmailButton": "Add email",
+      "addEmailSave": "Save",
+      "addEmailCancel": "Cancel",
+      "addEmailInvalid": "Enter a valid email like name@example.com.",
+      "previewTitle": "Preview (first selected KOL)",
+      "previewSubject": "Subject",
+      "previewBody": "Body",
+      "missingTokensWarning": "Missing tokens in this preview: {tokens}",
+      "aiCustomizeButton": "Customize with AI",
+      "aiCustomizePending": "Asking AI…",
+      "aiCustomizeTitle": "AI customize email",
+      "aiCustomizeOriginal": "Original template",
+      "aiCustomizeAi": "AI rewrite",
+      "aiCustomizeUseOriginal": "Use original",
+      "aiCustomizeUseAi": "Use AI version",
+      "aiCustomizeClose": "Close",
+      "sendButton": "Send batch",
+      "sendPending": "Sending…",
+      "resultSentCount": "{count} sent",
+      "resultMockedCount": "{count} mocked",
+      "resultFailedCount": "{count} failed",
+      "resultDismiss": "Dismiss"
+    },
+    "errors": {
+      "unauthorized": "Please sign in again to send outreach.",
+      "invalidInput": "Some inputs were invalid — please check and retry.",
+      "notFound": "Campaign or template not found.",
+      "missingEnv": "Email service credentials are missing. Contact admin.",
+      "aiHttpError": "AI service could not respond. Please retry.",
+      "aiInvalidResponse": "AI response was malformed. Please retry.",
+      "aiTimeout": "AI service timed out. Please retry in a moment.",
+      "emailInvalid": "Enter a valid email like name@example.com.",
+      "dbError": "Database error — please retry.",
+      "generic": "Something went wrong. Please retry."
+    },
+    "footer": {
+      "complianceLabel": "Compliance",
+      "complianceValue": "GDPR compliant",
+      "dailyLimitLabel": "Daily limit",
+      "dailyLimitValue": "{sent} / {limit} sent today",
+      "engineVersion": "KOLMatrix Neural Velocity Engine v4.2.0"
+    }
+  },
   "relationshipStatus": {
     "prospect": "Prospect",
     "first_contact": "First contact",

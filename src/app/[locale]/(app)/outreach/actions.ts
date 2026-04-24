@@ -1,0 +1,286 @@
+"use server";
+
+/**
+ * BM2-F006 · /outreach Server Actions.
+ *
+ * Four entry points that back the composer UI:
+ *   - customizeAction: AI-rewrite a template for a specific KOL
+ *   - updateKolEmailAction: inline fix-up of a KOL's missing email
+ *   - sendBatchAction: actually send the batch via Resend / mock
+ *     fallback with the server-side throttle
+ *   - analyticsAction: used by integration tests to surface cached
+ *     analytics (the RSC already computes these at render time)
+ */
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+
+import { auth } from "@/auth";
+import { withTenant } from "@/lib/db";
+import { logEvent } from "@/lib/events/log";
+import {
+  CustomizeEmailError,
+  customizeEmail,
+  type CustomizeEmailResult,
+} from "@/lib/email/customize";
+import {
+  batchSendOutreach,
+  type BatchSendItem,
+  type BatchSendResult,
+} from "@/lib/email/batch-send";
+import { substituteSubjectAndBody } from "@/lib/email/variable-substitute";
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export type ComposerActionState<T = undefined> = {
+  ok: boolean;
+  error?: string;
+} & (T extends undefined ? { data?: undefined } : { data?: T });
+
+async function requireSession() {
+  const session = await auth();
+  const tenantId = session?.user?.tenantId;
+  const userId = session?.user?.id;
+  if (
+    !tenantId ||
+    !UUID_RE.test(tenantId) ||
+    !userId ||
+    !UUID_RE.test(userId)
+  ) {
+    return null;
+  }
+  return { tenantId, userId, marketerName: session!.user!.name ?? "Marketer" };
+}
+
+// --- AI customize -----------------------------------------------------
+
+const customizeSchema = z.object({
+  campaignId: z.string().regex(UUID_RE),
+  kolId: z.string().regex(UUID_RE),
+  templateId: z.string().regex(UUID_RE),
+});
+
+export async function customizeAction(
+  _prev: ComposerActionState<CustomizeEmailResult>,
+  formData: FormData
+): Promise<ComposerActionState<CustomizeEmailResult>> {
+  const session = await requireSession();
+  if (!session) return { ok: false, error: "unauthorized" };
+
+  const raw = {
+    campaignId: String(formData.get("campaignId") ?? ""),
+    kolId: String(formData.get("kolId") ?? ""),
+    templateId: String(formData.get("templateId") ?? ""),
+  };
+  const parsed = customizeSchema.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: "invalid_input" };
+
+  void logEvent({
+    type: "email.ai_customize_clicked",
+    tenantId: session.tenantId,
+    actorId: session.userId,
+    resourceId: parsed.data.kolId,
+    payload: {
+      campaignId: parsed.data.campaignId,
+      templateId: parsed.data.templateId,
+    },
+  });
+
+  // Resolve the inputs we need to hand to the aigcgateway action.
+  const inputs = await withTenant(session.tenantId, async (tx) => {
+    const [campaign, kol, template] = await Promise.all([
+      tx.campaign.findUnique({
+        where: { id: parsed.data.campaignId },
+        select: {
+          product: {
+            select: {
+              name: true,
+              category: true,
+              uniqueSellingPoints: true,
+            },
+          },
+        },
+      }),
+      tx.kol.findUnique({
+        where: { id: parsed.data.kolId },
+        select: {
+          displayName: true,
+          handle: true,
+          countryCode: true,
+          categories: true,
+        },
+      }),
+      tx.emailTemplate.findUnique({
+        where: { id: parsed.data.templateId },
+        select: { subject: true, body: true, locale: true },
+      }),
+    ]);
+    return { campaign, kol, template };
+  });
+
+  if (!inputs.campaign?.product || !inputs.kol || !inputs.template) {
+    return { ok: false, error: "not_found" };
+  }
+
+  try {
+    const result = await customizeEmail({
+      product: {
+        name: inputs.campaign.product.name,
+        category: inputs.campaign.product.category,
+        usp: inputs.campaign.product.uniqueSellingPoints,
+      },
+      kol: {
+        name: inputs.kol.displayName,
+        handle: inputs.kol.handle,
+        region: inputs.kol.countryCode,
+        categories: inputs.kol.categories,
+      },
+      template: {
+        subject: inputs.template.subject,
+        body: inputs.template.body,
+        locale: (inputs.template.locale === "zh" ? "zh" : "en") as
+          | "en"
+          | "zh",
+      },
+    });
+    return { ok: true, data: result };
+  } catch (err) {
+    if (err instanceof CustomizeEmailError) {
+      return { ok: false, error: err.code };
+    }
+    return { ok: false, error: "generic" };
+  }
+}
+
+// --- Inline "add email" ----------------------------------------------
+
+const patchEmailSchema = z.object({
+  kolId: z.string().regex(UUID_RE),
+  email: z
+    .string()
+    .trim()
+    .max(320)
+    .refine((v) => /^.+@.+\..+$/.test(v), { message: "email_invalid" }),
+});
+
+export async function updateKolEmailAction(
+  _prev: ComposerActionState,
+  formData: FormData
+): Promise<ComposerActionState> {
+  const session = await requireSession();
+  if (!session) return { ok: false, error: "unauthorized" };
+
+  const parsed = patchEmailSchema.safeParse({
+    kolId: String(formData.get("kolId") ?? ""),
+    email: String(formData.get("email") ?? ""),
+  });
+  if (!parsed.success) {
+    const msg = parsed.error.issues[0]?.message ?? "invalid_input";
+    return { ok: false, error: msg };
+  }
+
+  try {
+    const updated = await withTenant(session.tenantId, async (tx) => {
+      return tx.kol.update({
+        where: { id: parsed.data.kolId },
+        data: { email: parsed.data.email, emailSource: "manual" },
+        select: { id: true },
+      });
+    });
+    void logEvent({
+      type: "kol.email_updated",
+      tenantId: session.tenantId,
+      actorId: session.userId,
+      resourceId: updated.id,
+      payload: { email: parsed.data.email, emailSource: "manual" },
+    });
+  } catch {
+    return { ok: false, error: "db_error" };
+  }
+
+  revalidatePath("/[locale]/outreach", "page");
+  return { ok: true };
+}
+
+// --- Batch send ------------------------------------------------------
+
+const sendBatchSchema = z.object({
+  campaignId: z.string().regex(UUID_RE),
+  aiAccepted: z.boolean().default(false),
+  items: z
+    .array(
+      z.object({
+        kolId: z.string().regex(UUID_RE),
+        toAddress: z.string().email(),
+        subject: z.string().min(1),
+        bodyText: z.string().min(1),
+        templateId: z.string().regex(UUID_RE).nullable().optional(),
+        aiCustomized: z.boolean().optional(),
+      })
+    )
+    .min(1)
+    .max(50),
+});
+
+export type SendBatchInput = z.infer<typeof sendBatchSchema>;
+
+export async function sendBatchAction(
+  input: SendBatchInput
+): Promise<ComposerActionState<BatchSendResult>> {
+  const session = await requireSession();
+  if (!session) return { ok: false, error: "unauthorized" };
+
+  const parsed = sendBatchSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "invalid_input" };
+  }
+
+  if (parsed.data.aiAccepted) {
+    void logEvent({
+      type: "email.ai_customize_accepted",
+      tenantId: session.tenantId,
+      actorId: session.userId,
+      resourceId: parsed.data.campaignId,
+      payload: { items: parsed.data.items.length },
+    });
+  }
+
+  const items: BatchSendItem[] = parsed.data.items.map((i) => ({
+    kolCampaignId: "", // resolved inside batch helper; unused in F006
+    kolId: i.kolId,
+    toAddress: i.toAddress,
+    subject: i.subject,
+    bodyText: i.bodyText,
+    templateId: i.templateId ?? null,
+    aiCustomized: i.aiCustomized ?? false,
+  }));
+
+  let result: BatchSendResult;
+  try {
+    result = await batchSendOutreach(
+      session.tenantId,
+      session.userId,
+      parsed.data.campaignId,
+      items,
+      { skipSleep: false }
+    );
+  } catch (err) {
+    console.error("[sendBatchAction] failed:", err);
+    return { ok: false, error: "db_error" };
+  }
+
+  revalidatePath("/[locale]/outreach", "page");
+  revalidatePath(`/[locale]/campaigns/${parsed.data.campaignId}`, "page");
+  return { ok: true, data: result };
+}
+
+// Re-export the pure substituter for client components (they can't
+// import `@/lib/email/variable-substitute` directly because it lives
+// outside the app directory; this wrapper fixes the server/client
+// boundary).
+export async function substitutePreview(
+  template: { subject: string; body: string },
+  variables: Parameters<typeof substituteSubjectAndBody>[1]
+) {
+  return substituteSubjectAndBody(template, variables);
+}

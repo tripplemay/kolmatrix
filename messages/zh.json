@@ -545,6 +545,151 @@
       }
     }
   },
+  "outreach": {
+    "title": "邮件中心",
+    "subtitle": "一个控制台里完成 compose 投放、追踪域健康度、监控回复落地。",
+    "tabs": {
+      "overview": "概览",
+      "templates": "模板",
+      "send_queue": "发送队列",
+      "tracking": "追踪",
+      "suppression": "黑名单",
+      "comingB4": "B4 版本交付"
+    },
+    "quickStats": {
+      "sentToday": "今日已发",
+      "openRate": "打开率",
+      "replyRate": "回复率",
+      "bounceRate": "退信率",
+      "deliverability": "送达率",
+      "windowHint": "近 30 天"
+    },
+    "performance": {
+      "title": "发送表现",
+      "subtitle": "近 30 天每日发送量",
+      "legendSent": "已发",
+      "legendOpened": "已打开",
+      "ariaLabel": "近 30 天发送表现图",
+      "statDelivered": "送达",
+      "statOpened": "打开",
+      "statOpenRate": "打开率",
+      "statWindow": "窗口",
+      "statWindowValue": "30d"
+    },
+    "domainHealth": {
+      "title": "域健康",
+      "healthy": "一切正常",
+      "dkim": "DKIM",
+      "spf": "SPF 记录",
+      "dmarc": "DMARC 策略",
+      "configured": "已配置",
+      "validated": "已校验",
+      "enforced": "已生效",
+      "reputation": "信誉分"
+    },
+    "topTemplates": {
+      "title": "热门模板",
+      "usedCount": "已使用 {count} 次",
+      "noUsage": "还未发送 — 发送第一封后将有数据",
+      "openRate": "开信",
+      "noOpenRate": "暂无数据"
+    },
+    "recentReplies": {
+      "title": "最近回复",
+      "subtitle": "最新的创作者回复",
+      "empty": "还没有回复 — 发第一封邀请试试。",
+      "subjectPrefix": "Re:",
+      "bodyPlaceholderTooltip": "回复正文需要 Resend webhook（B4 交付）。"
+    },
+    "recentlySent": {
+      "title": "最近发送",
+      "subtitle": "最后 10 封",
+      "empty": "还没有发送任何邮件。",
+      "cols": {
+        "kol": "KOL",
+        "campaign": "活动",
+        "subject": "主题",
+        "status": "状态",
+        "sentAt": "发送时间"
+      }
+    },
+    "emailStatus": {
+      "queued": "排队中",
+      "sent": "已发送",
+      "opened": "已打开",
+      "replied": "已回复",
+      "bounced": "退信",
+      "mock_sent": "模拟发送",
+      "failed": "失败"
+    },
+    "kolStatus": {
+      "pending": "待联系",
+      "contacted": "已联系",
+      "quoted": "已报价",
+      "signed": "已签约",
+      "delivered": "已交付",
+      "paid": "已结算"
+    },
+    "composer": {
+      "title": "撰写触达邮件",
+      "subtitle": "选活动 → 挑有邮箱的 KOL → 选模板 → 可用 AI 定制 → 发送。",
+      "campaignLabel": "活动",
+      "campaignPlaceholder": "选一个活动…",
+      "templateLabel": "模板",
+      "templatePlaceholder": "选一个模板…",
+      "kolSection": "活动内 KOL",
+      "kolSelected": "已选 {count}/{total}",
+      "kolHeadSelect": "选择",
+      "kolHeadCreator": "创作者",
+      "kolHeadEmail": "邮箱",
+      "kolHeadStatus": "沟通状态",
+      "selectAllLabel": "全选可触达 KOL",
+      "noSelectableKols": "此活动下暂无可发邮件的 KOL — 行内补邮箱即可启用。",
+      "noEmail": "未登记邮箱",
+      "noEmailTooltip": "需先补登记邮箱才能发送；或通过 YouTube 私信触达。",
+      "addEmailButton": "补邮箱",
+      "addEmailSave": "保存",
+      "addEmailCancel": "取消",
+      "addEmailInvalid": "请输入正确邮箱，如 name@example.com",
+      "previewTitle": "预览（第一位选中的 KOL）",
+      "previewSubject": "主题",
+      "previewBody": "正文",
+      "missingTokensWarning": "预览中缺失变量：{tokens}",
+      "aiCustomizeButton": "AI 定制",
+      "aiCustomizePending": "AI 思考中…",
+      "aiCustomizeTitle": "AI 定制邮件",
+      "aiCustomizeOriginal": "原始模板",
+      "aiCustomizeAi": "AI 重写",
+      "aiCustomizeUseOriginal": "用原始版本",
+      "aiCustomizeUseAi": "用 AI 版本",
+      "aiCustomizeClose": "关闭",
+      "sendButton": "批量发送",
+      "sendPending": "发送中…",
+      "resultSentCount": "发送 {count} 封",
+      "resultMockedCount": "模拟 {count} 封",
+      "resultFailedCount": "失败 {count} 封",
+      "resultDismiss": "关闭"
+    },
+    "errors": {
+      "unauthorized": "会话已过期，请重新登录。",
+      "invalidInput": "部分输入不合法，请检查后重试。",
+      "notFound": "活动或模板不存在。",
+      "missingEnv": "邮件服务凭证缺失，请联系管理员。",
+      "aiHttpError": "AI 服务无响应，请重试。",
+      "aiInvalidResponse": "AI 响应格式异常，请重试。",
+      "aiTimeout": "AI 服务超时，请稍后重试。",
+      "emailInvalid": "请输入正确邮箱。",
+      "dbError": "数据库错误，请重试。",
+      "generic": "出错啦，请稍后再试。"
+    },
+    "footer": {
+      "complianceLabel": "合规",
+      "complianceValue": "GDPR 合规",
+      "dailyLimitLabel": "每日上限",
+      "dailyLimitValue": "今日已发 {sent} / 上限 {limit}",
+      "engineVersion": "KOLMatrix Neural Velocity Engine v4.2.0"
+    }
+  },
   "relationshipStatus": {
     "prospect": "潜在",
     "first_contact": "初次联系",
