@@ -298,46 +298,9 @@ GET  /v1/kols?changed_since=YYYY-MM-DDTHH:MM:SSZ  # 增量同步
 
 ---
 
-## 5. 法律与合规（硬要求）
+## 5. 数据质量与 SLA
 
-### 5.1 爬虫伦理
-
-- **遵守 `robots.txt`**：即使平台 public data，`Disallow` 的路径绕开
-- **遵守 rate limit**：不并发打平台 API 导致对方 block
-- **不爬认证墙后的数据**：比如 Instagram 要登录才能看的 private data，**不许**绕认证
-- **User-Agent 透明**：`KOLMatrixCrawler/1.0 (+https://kolmatrix.ai/crawler-info)`（或你们自己域名；不得伪装浏览器）
-
-### 5.2 隐私与 GDPR
-
-- **personal email ≠ business email**：只爬**公开 business email**（频道 about 页上 KOL 自愿公开，常形如 `business@xxx.com` / `inquiries@xxx.com`；**不爬**搜索引擎偶然能扒到的私人 gmail）
-- 欧盟 KOL（`countryCode` in `[DE, FR, IT, ES, NL, PL, ...]`）：遵守 GDPR
-  - 支持 data deletion request：KOLMatrix 从 KOL 发来删除请求时，你们 API 要能标记 `deleted=true`
-  - 存储时长：建议 ≤ 5 年，超期自动 purge（或按 KOL 要求 purge）
-- 中国 KOL：不存储个人身份证/手机号（别爬）
-- 未成年人（`audienceAgeDist["13-17"] > 0.5`）：打 `audience_minor=true` 标记，KOLMatrix UI 会警告 marketer 选此类 KOL 要慎重
-
-### 5.3 平台 ToS
-
-你们负责阅读并遵守：
-- YouTube Terms of Service + API TOS
-- TikTok Developer Terms
-- Instagram / Meta Platform Terms
-- Twitch Developer Terms
-- X / Twitter API Terms
-
-KOLMatrix **不**替你们承担 ToS 违反责任；若平台方起诉，由你们对接。
-
-### 5.4 数据许可证
-
-- 你们提供的 KOL 数据是否授权我们使用？许可证类型？
-- KOLMatrix 会在产品内展示数据（如 KOL 头像 / 名字 / 视频缩略图）；我们需要**商业使用**授权
-- 具体授权条款在**商务合同**里谈（本文档不谈商务）
-
----
-
-## 6. 数据质量与 SLA
-
-### 6.1 质量指标（你们保障）
+### 5.1 质量指标（你们保障）
 
 | 指标 | 目标 |
 |---|---|
@@ -350,7 +313,7 @@ KOLMatrix **不**替你们承担 ToS 违反责任；若平台方起诉，由你�
 | 重复/错误去重率（same handle 不同 externalId） | 0% |
 | 过期数据保留期（`lastCrawledAt` 超 90 天未更新） | < 5% |
 
-### 6.2 SLA
+### 5.2 SLA
 
 | 指标 | 目标 |
 |---|---|
@@ -361,7 +324,7 @@ KOLMatrix **不**替你们承担 ToS 违反责任；若平台方起诉，由你�
 
 ---
 
-## 7. 样例数据（完整 payload）
+## 6. 样例数据（完整 payload）
 
 ```json
 {
@@ -413,7 +376,7 @@ KOLMatrix **不**替你们承担 ToS 违反责任；若平台方起诉，由你�
 
 ---
 
-## 8. 交接时间线与里程碑
+## 7. 交接时间线与里程碑
 
 | 里程碑 | 目标日期 | 交付物 | 责任方 |
 |---|---|---|---|
@@ -433,7 +396,7 @@ KOLMatrix **不**替你们承担 ToS 违反责任；若平台方起诉，由你�
 
 ---
 
-## 9. 双方职责边界
+## 8. 双方职责边界
 
 ### 爬虫团队 ✅ 负责
 - 数据采集（各平台 API / scraping / 清洗）
@@ -468,7 +431,7 @@ KOLMatrix **不**替你们承担 ToS 违反责任；若平台方起诉，由你�
 
 ---
 
-## 10. 变更管理（schema 改动流程）
+## 9. 变更管理（schema 改动流程）
 
 一旦 M6 上线后，任何 schema 改动走此流程：
 
@@ -485,7 +448,7 @@ KOLMatrix **不**替你们承担 ToS 违反责任；若平台方起诉，由你�
 
 ---
 
-## 11. 开放问题（请爬虫团队在 M1 前答复）
+## 10. 开放问题（请爬虫团队在 M1 前答复）
 
 以下问题需要爬虫团队评估并答复：
 
@@ -502,21 +465,21 @@ KOLMatrix **不**替你们承担 ToS 违反责任；若平台方起诉，由你�
 
 ---
 
-## 12. 通信与对接
+## 11. 通信与对接
 
-### 12.1 技术对接会议
+### 11.1 技术对接会议
 
 - **首次 kickoff**：2026-04-25（或双方方便时）
 - **周会**：M1-M6 期间每周 1 次 1h，Zoom / Google Meet
 - **Slack / Lark channel**：技术讨论，SLA 内回复
 
-### 12.2 对接人
+### 11.2 对接人
 
 - **KOLMatrix 产品 + 技术：** johnsong（Planner，cli）
 - **KOLMatrix 集成工程师：** TBD（M3 前指定）
 - **爬虫团队 产品 + 技术：** TBD（请你们指定）
 
-### 12.3 问题升级路径
+### 11.3 问题升级路径
 
 1. 字段级疑问 → Slack / Lark channel，24h 内答复
 2. Schema 改动 → 周会讨论，文档化共识
@@ -525,7 +488,7 @@ KOLMatrix **不**替你们承担 ToS 违反责任；若平台方起诉，由你�
 
 ---
 
-## 13. 参考资料
+## 12. 参考资料
 
 - **KOLMatrix 当前 Kol schema**（`prisma/schema.prisma` model Kol，见 §3 即为提炼）
 - **KOLMatrix MVP PRD**：产品方向与目标用户（需要请向 KOLMatrix 团队申请）
@@ -536,7 +499,7 @@ KOLMatrix **不**替你们承担 ToS 违反责任；若平台方起诉，由你�
 
 ---
 
-## 14. 文档版本
+## 13. 文档版本
 
 | 版本 | 日期 | 变更 |
 |---|---|---|
