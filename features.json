@@ -46,7 +46,7 @@
       "title": "邮件触达页 /outreach（Resend + AI 定制 + mock fallback + 补 email UI）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/app/[locale]/(app)/outreach/page.tsx 对齐 Stitch email-center.html；顶部 Campaign selector（?campaignId=:id 预选）；KolCampaign 行勾选（Kol.email 非空启用；无 email 标灰 + tooltip '需手动 YouTube 私信' + '补 email' 行内编辑按钮 → PATCH /api/kols/:id {email, emailSource:'manual'}）；EmailTemplate selector（locale 过滤 system 模板）；预览变量替换；'AI 定制' 按钮 → AiCustomizeDialog 弹层 → 调 aigcgateway Action kol-email-customize（action_id=cmob2z6j00001bnole7i8lg9h model=claude-haiku-4.5）→ 响应 strip code fence 再 JSON.parse（BL-001 实测 Claude Haiku 习惯包 ```json）→ 左右对比原版 vs AI 版 → 可手动编辑 → 确认版本；发送按钮分批调 Resend（10 msg/min 前端节流 + 后端 sleep guard）；src/lib/email/resend.ts fallback：无 RESEND_API_KEY 时 structured log + EmailLog.status='mock_sent'；发件人 marketer@kolquest.com；错误 retry 1 次 30s timeout；EmailLog 记录 + KolCampaign.status 更新到 contacted（若当前 pending/quoted 之前）；event_log email.sent / email.ai_customize_clicked / email.ai_customize_accepted（PRD §2.2 AI 定制采纳率 ≥40% 指标源）；src/lib/email/customize.ts 契约定型；tests/integration/outreach-flow.test.ts（mock aigcgateway + Resend mock + EmailLog 写入）；visual baseline"
     },
     {
