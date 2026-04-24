@@ -26,6 +26,8 @@ type: project
 - Browser locale detection auto / AI 周报给客户看 PDF+share link
 - BM1/BM2 L2 验收强制走 staging（2026-04-23 决议）
 - **BM2 Resend mock fallback** / PDF 浏览器 print / 独立 WeeklyReport 快照表
+- **MVP-visual-fidelity hotfix 批次**（2026-04-24 决议）：BM2 done 后启动，覆盖 BM1+BM2 5 页（C 档 pixel-perfect + 公共组件抽取），推迟 MVP 上线 ~1 周到 2026-05-14
+- **Visual baseline PNG 入 git 是 PASS 硬门槛**（role-context/evaluator.md + framework/harness/ui-fidelity-guardrail.md）
 
 ## BM1 F009 教训（BM2 必遵守）
 - 禁用 waitForLoadState("networkidle")

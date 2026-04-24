@@ -582,9 +582,13 @@ Page：`src/app/[locale]/(app)/weekly-report/page.tsx` + WeeklyReportGenerator /
 3. **E2E（Playwright）**：
    - `tests/e2e/journey-a.spec.ts`：完整 Journey A（/discovery 保存 → /campaigns/new → 加 KOL → /outreach → AI 定制 → 发 mock 邮件）
    - `tests/e2e/journey-b.spec.ts`：Journey B（录 revenue → /roi → /weekly-report → PDF 导出 → 分享链接匿名访问）
-4. **Visual regression**（Playwright screenshot）：
+4. **Visual regression**（Playwright screenshot）——**升级为 fix_rounds 前置硬门槛**（2026-04-24 用户决议，响应 BM1 F009 F009 scaffold 入 git 但 PNG 未生成漏洞）：
    - 6 个新页面各一张 baseline：campaigns-list / campaign-detail / outreach / crm / roi / weekly-report
-   - 容差 0.1（与 BM1 F009 baseline 一致）
+   - 容差 0.1
+   - **Generator 进 `verifying` 前必须在 VPS（或 CI Linux runner）跑 `npx playwright test --update-snapshots tests/e2e/visual-regression.spec.ts` + `git add tests/screenshots/baseline/*.png` + push**
+   - **Reviewer L2 启动前核 `ssh vps 'cd /opt/kolmatrix && git ls-files tests/screenshots/baseline/en-campaigns.png en-campaign-detail.png en-outreach.png en-crm.png en-roi.png en-weekly-report.png' | wc -l` = 6**
+   - 不足 6 → Reviewer 拒启 L2，要求 Generator 先补齐（仍在 `building`，不算 verifying）
+   - Scaffold 存在 + PNG 未生成 ≠ PASS（per `framework/harness/ui-fidelity-guardrail.md` §4.1）
 5. **AI 定制采纳率埋点验证**：E2E 里触发一次 AI 定制 → 验证 event_log 3 种 event 都正确写入（clicked / accepted / sent with ai_customized=true）
 
 **BM1 F009 踩坑教训（本批次 E2E 必须遵守，见 §6 新增 4 条风险对策）：**
