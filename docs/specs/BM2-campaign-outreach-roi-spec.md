@@ -421,10 +421,12 @@ Page：`src/app/[locale]/(app)/crm/page.tsx` + StageDistribution / Funnel / Coll
 
 **布局**（对齐 Stitch `crm-relationship.html`）：
 
-- **Section 1 — 阶段分布卡片**：6 个 Kol.relationshipStatus 值分别多少个 KOL（prospect / first_contact / negotiating / long_term / paused / terminated），点卡片跳到对应过滤的 /database 页
-- **Section 2 — 漏斗图**：阶段链 prospect → first_contact → negotiating → long_term，每一步显示数量 + 上一步的转化率 %
+- **Section 1 — 阶段分布**：per F007 pre-impl 裁决 #F:D，改为 Pipeline horizontal bars 6 阶段（prospect / first_contact / negotiating / long_term + paused / terminated 小条），**每条 clickable `<a>` wrap 跳 `/database?status=X`**（替代独立 6 cards，单一视觉块 + Stitch 视觉 + spec click 语义）。同 commit 扩展 `/database` 支持 `?status=X` URL 参数
+- **Section 2 — 漏斗图**：per 裁决 #G:B 采用 Stitch 阶段链 "Total Pipeline → Contacted → Negotiated → Long-term Partners"（4 步，UX 直观），每步显数量 + 上一步转化率（div-by-0 显 "—"）
 - **Section 3 — 合作总额 KPI**：Σ KolCampaign.kolFee where status ∈ {signed, delivered, paid}（本 tenant 所有 campaigns 累加）
-- **Section 4 — 最近关系变化表**：按 audit_log（BI4-F003）过滤 `actor_type=user action='kol.relationship_status_changed'` 最近 30 条，显示 KOL / 谁改 / 何时 / 从 A → B
+- **Section 4 — 最近关系变化表**：按 audit_log（BI4-F003）过滤 `action='kol.relationship_changed'`（沿用 BM1 既有 action 名，per 裁决 #J:A）最近 30 条，显示 KOL / Actor / When / Before → After。**audit_log 无 RLS，查询必须手动 WHERE tenant_id = $currentTenantId + join User/Kol 带 tenant_id 过滤防跨租户 leak**
+- **Section KPI strip（新加 per 裁决 #E:C）**：3 KPI（Total Pipeline / Long-Term Partners + RingProgress 48% 比例 / Cumulative Spend + Sparkline 14d），Avg ROI drop 显 "—" + tooltip "Available after F008 ships"。**spendSparkline 数据源 per 裁决 §4.3 采用 audit_log proxy**——`WHERE action='kol.relationship_changed' AND payload.after IN ('signed','long_term')` 按天聚合 14 点；UI 标题 "14 天新增签约活跃度"避免误认为真 spend timestamp
+- **Section 顶部（Stitch 元素 disabled placeholder，per 裁决 #B/#C/#D）**：时间 toggle 3 段（"近 90 天" active + 其余 disabled+tooltip "Available in B4"）+ Export CSV 按钮 disabled+tooltip + "+ Manual log" 按钮 disabled+tooltip。保视觉还原度 + 明示 B4 路径
 - **操作**：每个 KOL 行有 relationshipStatus dropdown 可切换 → PATCH `/api/kols/:id/relationship-status` → 写 audit_log
 
 API：
@@ -725,7 +727,7 @@ ssh kolmatrix-vps 'cd /opt/kolmatrix-staging && \
 
 ### L4 埋点校验
 
-- `event_log` 查询：`campaign.created` / `email.sent` / `email.ai_customize_clicked` / `email.ai_customize_accepted` / `kol.relationship_status_changed` / `roi.insights_generated` / `weekly_report.generated` 等 event 都能查到
+- `event_log` 查询：`campaign.created` / `email.sent` / `email.ai_customize_clicked` / `email.ai_customize_accepted` / `kol.relationship_updated` (event_log) + `kol.relationship_changed` (audit_log，per F007 裁决 #J) / `roi.insights_generated` / `weekly_report.generated` / `crm.overview_loaded` / `crm.bar_clicked` 等 event 都能查到
 - `audit_log` 查询：KOL 关系状态变更 / Campaign 状态变更 / EmailTemplate 变更 全部记录
 
 ## 8. 引用文档

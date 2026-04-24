@@ -337,26 +337,87 @@ audit_log 不走 RLS（platform table），需 `withTenant` 过滤 tenant_id 列
 
 ---
 
-## 13. Planner 裁决（留白 · 等待）
+## 13. Planner 裁决（johnsong Planner · 2026-04-24）
 
-Generator 不自裁决。Planner 回复后 Generator 立即开工。
-
-回复格式建议：
-
-```
 ### 13.1 短格式裁决
-#A:A?  #B:?  #C:?  #D:?  #E:?  #F:?  #G:B  #H:?  #I:A  #J:A
-#K:✓   #L:audit_log + tenant_id 过滤
-#M:Funnel/HorizontalStageBars inline；Sparkline+RingProgress 抽 common（批准）
-#N:依 #B/#C/#D 决议
 
-### 13.2 同步修订
-- spec §F007 §4 audit action 名 `kol.relationship_status_changed` → `kol.relationship_changed`
-- /database `?status` 支持：批准本 F007 同 commit 微调 OR 单独 followup
-- features.json F007 acceptance: 不动
-
-### 13.3 额外叮嘱
-1. ...
+```
+#A:A3（Hybrid：4→3 KPI + Pipeline horizontal bars 可点 + Funnel + 6 cards click 合一 + audit_log 最近变化表）
+#B:C（默认"近 90 天" active + 其余 disabled+tooltip "B4 time-range filter"）
+#C:C（Export CSV disabled+tooltip "B4 CSV export"）
+#D:C（"+ Manual log" disabled+tooltip "B4 manual relationship log"）
+#E:C（3 KPI：Total Pipeline + Long-Term ring + Cumulative Spend + sparkline；Avg ROI drop 显 "—" + tooltip "Available after F008 ships"）
+#F:D（Pipeline horizontal bars + 每条 clickable wrap <a href="/database?status=X">，单一视觉块满足 Stitch 视觉 + spec click 语义）
+#G:B（Funnel 4 步：Total Pipeline → Contacted → Negotiated → Long-term Partners，UX 更直观）
+#H:A（spec 原版 audit_log 最近 30 条变化；列 KOL / Actor / When / Before → After）
+#I:A（新建 `PATCH /api/kols/[id]/relationship-status` 薄 wrapper + 复用 BM1 existing helper `updateKolRelationshipStatus`；/crm 用 Server Action 调同 helper）
+#J:A（沿用 BM1 既有 `kol.relationship_changed` action 名；修 spec §F007 §4 文字为 `kol.relationship_changed`）
+#K:✓ 数据契约 per §3 #K 采用
+#L:audit_log 手动 tenant_id 过滤（BI4-F002 platform table 无 RLS）+ Prisma multi-join single query
+#M:Funnel + HorizontalStageBars inline 在 page；Sparkline + RingProgress 抽到 `src/components/common/`（批准新抽）
+#N:依 #B/#C/#D 决议，tooltip 文案均注明 "B4"
 ```
 
-**Generator 收到 Planner main commit 后立即开工。本审计 §13 空白期不写任何代码。**
+**spendSparkline 数据源裁决**（§4.3 特殊子决议）：采用 **audit_log proxy**——`audit_log WHERE action='kol.relationship_changed' AND payload.after IN ('signed','long_term')` 按天聚合 14d。理由：`KolCampaign.kolFee` 无 timestamp 无法精确 daily bucket；此 proxy 反映"新增签约节奏"作为 spend 趋势替代，比真 spend 更语义对齐 CRM 页（关系推进 → 收入潜力）。UI 标 "14 天新增签约活跃度" 而非 "Spend"，避免歧义。
+
+**/database ?status=X URL 参数扩展裁决**（§6 特殊子决议）：**批准本 F007 同 commit 做**。理由：(a) 死链不可接受；(b) 仅 parse query param + pre-fill filter，~15 min 零风险改动；(c) 分两 commit 反增复杂度。Generator 在 F007 实现中顺带改 `/database/page.tsx` 读 `searchParams.status` 注入 DatabaseFilterBar 初始值。
+
+### 13.2 逐条裁决理由
+
+| # | 决定 | 理由 |
+|---|---|---|
+| A | **A3 Hybrid** | Generator 建议 A3 成立——A1/A4 丢 spec §1 click 语义；A2 丢 Stitch 视觉还原度；A3 把 6 cards click 融入 Pipeline bars（见 #F:D）避免重复 |
+| B | **C 占位** | 时间 filter 需要贯穿 4 查询逻辑，超 F007 scope；MVP 数据小窗口 filter 价值低；tooltip 指 B4 合理（PRD §4.2 Out of Scope 覆盖 "高级 CRM" 到 B4）|
+| C | **C disabled** | 同理；保视觉还原度；B4 实装 |
+| D | **C disabled** | 同理 |
+| E | **C 3 KPI** | Avg ROI 依赖 F008，F008 尚未 ship（BM2 F008 还 pending），hardcode 假值会误导；drop 更诚实；F008 完成后再加 |
+| F | **D 点击横条** | 视觉 + 语义双赢的最优解；`<a>` wrap 保 a11y；clickable 用 cyan underline on hover 视觉提示 |
+| G | **B Stitch 阶段链** | "Total Pipeline → Contacted → Negotiated → Long-term" 比 "prospect → first_contact → ..." 更直观（漏斗顶 = 所有 KOL 更符合直觉）；spec §F007 §2 也接受此链（文字略异但语义等价）|
+| H | **A spec 原版 audit_log** | Stitch Recent Activity 的"Active Campaign / Last Touch"信息在 /campaigns/:id 已有，不重复；spec §4 audit_log 关系变化流是 CRM **独特价值**（who changed what when）；UX 聚焦"关系演变历史"比"当前状态快照"更契合 CRM 主题。视觉块保留（6-列表 + glass-panel 样式），只是列内容换语义——视觉还原度不丢 |
+| I | **A 新建 REST + Server Action** | spec §F007 §4 字面要求 REST；BM1 已有 helper 可复用（10 LOC wrapper）；未来 mobile/API 客户端受益；Server Action 在 /crm 做 UX 简洁 |
+| J | **A 沿用 BM1 既有** | `kol.relationship_changed` 已写入 ~30 audit_log 行；migration 成本 > 语义精确收益；spec 文字改合理 |
+| K | ✓ 契约采用 | 补充 `spendSparkline` 14 点 + `avgRoi: null` + 子字段 `longTermRatio` 均 OK |
+| L | ✓ tenant_id 手动过滤 | 必须 — audit_log BI4-F002 故意不走 RLS（跨租户 platform-wide 审计需要）；查询前显式 WHERE tenant_id |
+| M | ✓ inline + 抽 2 公共 | Funnel + HorizontalStageBars 仅 CRM 用 → inline；Sparkline + RingProgress 候选复用（F007/F009 dashboard KPI）→ 抽到 common/。**批准新建这两个 common 组件**（UI guardrail §3.3 允许 Planner 批准新组件）|
+| N | ✓ 依 B/C/D | 幽灵控件全 disabled+tooltip 一致化；tooltip 文案用 "Available in B4"（不用 "Coming soon" 避免模糊）|
+
+### 13.3 同步文档修订清单
+
+Planner 本次 commit 同步修订：
+
+1. **BM2 spec §F007 §4 audit action 名**：`kol.relationship_status_changed` → `kol.relationship_changed`（对齐 BM1 既有）
+2. **BM2 spec §F007 acceptance** 不动（11 features acceptance 保持 features.json 口径；实现细节落 spec §4 body 无需 features.json 改）
+3. **docs/specs/BM2-campaign-outreach-roi-spec.md §F007** 补说明：
+   - Funnel 阶段链定为 "Total Pipeline → Contacted → Negotiated → Long-term"（对齐 Stitch 语义）
+   - spendSparkline 数据源 proxy 定为 "audit_log signed/long_term 转入 14d 聚合"
+4. **backlog**：无新增（本批次决议不产生新 BL）
+
+### 13.4 额外叮嘱（非阻塞）
+
+1. **audit_log query 必须 RLS 兜底**：即使 platform table 无 RLS policy，查询语句必须 `WHERE a.tenant_id = $currentTenantId`；多 join 时 `LEFT JOIN "user" u ON u.id = a.actor_user_id AND u.tenant_id = a.tenant_id` 保护跨租户 leak
+2. **funnel 转化率 div-by-0**：step_(n-1) = 0 时显 "—" 而非 "NaN%" 或 "∞%"；pure helper `src/lib/crm/aggregate.ts` 必含 guard
+3. **Pipeline bars 的 0 count stage 仍要渲染**（paused / terminated 通常是 0）：bar 宽度 `max(2px, actual%)` 让 empty stage 可见占位
+4. **long_term RingProgress 动画**：可用 CSS `@keyframes` 或 transition，不引入 framer-motion（新依赖）
+5. **Sparkline 抽出样板**：14 点数组 → inline SVG `<polyline>` + viewBox 归一化；props 签名 `<Sparkline data={number[]} width={120} height={40} color="cyan" />`；无 tooltip（避免 interactivity 复杂度；hover 改 Post-MVP）
+6. **RingProgress props**：`<RingProgress value={0.48} size={80} strokeWidth={6} label="48%" />`；SVG 两圈（bg + fg stroke-dasharray）
+7. **disabled 按钮 tooltip 使用 hotfix-F001 落地的 `<Button variant="ghost">` + `title` attr 或 `aria-disabled`**：不要 hover tooltip library；原生 `title` 属性 MVP 够用
+8. **/database ?status=X 扩展细节**：`page.tsx` 读 `searchParams.status`，若是有效 RelationshipStatus 值（6 值枚举）则注入到 DatabaseFilterBar 的 defaultStatus prop；非法值静默忽略（不跳转 404）；**重要**：保 URL-driven form pattern，不要引入 client state（F004 Discovery 的 pattern）
+9. **PATCH `/api/kols/[id]/relationship-status`**：zod 校验 status 枚举 6 值 + RLS 读 + audit_log 写入 `kol.relationship_changed` action + event_log `kol.relationship_updated`；response 返更新后的 Kol 行（便于 optimistic UI）
+10. **BM1 F009 教训遵守**：点 Pipeline bar → /database?status=X 后 Reviewer 断言用 `await page.waitForURL(/\/database\?status=long_term/)` 锁带 status 的 URL（prefix regex）
+11. **埋点**：`crm.overview_loaded` + `kol.relationship_updated`（existing BM1 audit action 对应）+ `crm.bar_clicked`（新，记录用户从 Pipeline bar 跳去哪个 status 的 /database）
+12. **视觉参照 HTML 主**：Generator 开工前用浏览器打开 `design-draft/stitch-references/crm-relationship.html` 与 staging 并排（不看 .png 缩略图，per `ui-fidelity-guardrail §1.1`）
+
+### 13.5 开工确认
+
+**Planner 本次 commit 推 main 后 Generator 立即开工 F007**。按 §11 顺序 11 步推进（~6-7h）。开工前确认：
+- [x] F006 已 done（依赖 KolCampaign / Kol 现状数据）
+- [x] hotfix-F001 公共组件库就绪（Table/Select/Button/StatusBadge 等）
+- [x] audit_log 已有 `kol.relationship_changed` 真数据（BM1 F006 生成）
+- [x] 批准抽新组件 `Sparkline` + `RingProgress` 到 `src/components/common/`
+- [x] 批准 /database `?status=X` 扩展同 commit 做
+- [x] 批准 spendSparkline audit_log proxy（UI 标"14 天新增签约"）
+- [x] BM1 F009 E2E 教训清单必遵守
+
+---
+
+**Generator 开工。本审计 §13 已裁决。**
