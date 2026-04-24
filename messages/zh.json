@@ -690,6 +690,56 @@
       "engineVersion": "KOLMatrix Neural Velocity Engine v4.2.0"
     }
   },
+  "crm": {
+    "title": "KOL 关系管理",
+    "subtitle": "跨活动追踪 KOL 长期关系与漏斗。",
+    "header": {
+      "exportCsv": "导出 CSV",
+      "exportCsvTooltip": "CSV 导出在 B4 版本交付。",
+      "manualLog": "+ 手工记录",
+      "manualLogTooltip": "手工关系记录在 B4 版本交付。",
+      "rangeDisabledTooltip": "时间范围筛选在 B4 版本交付。",
+      "range": {
+        "thisQuarter": "本季度",
+        "last90d": "近 90 天",
+        "allTime": "全部时间"
+      }
+    },
+    "kpi": {
+      "totalPipeline": "管线 KOL 总数",
+      "longTerm": "长期伙伴",
+      "cumulativeSpend": "累计花费",
+      "spendCaption": "近 14 天新增签约/长期合作",
+      "avgRoi": "平均 ROI",
+      "avgRoiPlaceholder": "F008 落地后可见"
+    },
+    "pipeline": {
+      "title": "按阶段管线",
+      "liveLabel": "实时数据",
+      "rowCount": "{count} 位 KOL ({percent}%)"
+    },
+    "funnel": {
+      "title": "转化漏斗",
+      "labels": {
+        "totalPipeline": "总管线",
+        "contacted": "已触达",
+        "negotiated": "谈判中",
+        "longTerm": "长期伙伴"
+      }
+    },
+    "recentChanges": {
+      "title": "最近关系变化",
+      "subtitle": "本租户最近 30 条关系状态变更。",
+      "empty": "暂无关系变化 — 去 Database 页切换某位 KOL 状态来开始时间线。",
+      "cols": {
+        "kol": "KOL",
+        "actor": "操作者",
+        "when": "时间",
+        "before": "变更前",
+        "after": "变更后"
+      }
+    }
+  },
   "relationshipStatus": {
     "prospect": "潜在",
     "first_contact": "初次联系",

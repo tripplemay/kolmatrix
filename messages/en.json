@@ -689,6 +689,56 @@
       "engineVersion": "KOLMatrix Neural Velocity Engine v4.2.0"
     }
   },
+  "crm": {
+    "title": "Relationship CRM",
+    "subtitle": "Long-term KOL relationships and pipeline funnel across campaigns.",
+    "header": {
+      "exportCsv": "Export CSV",
+      "exportCsvTooltip": "CSV export ships in B4.",
+      "manualLog": "+ Manual log",
+      "manualLogTooltip": "Manual relationship log entry ships in B4.",
+      "rangeDisabledTooltip": "Time-range filter ships in B4.",
+      "range": {
+        "thisQuarter": "This quarter",
+        "last90d": "Last 90 days",
+        "allTime": "All time"
+      }
+    },
+    "kpi": {
+      "totalPipeline": "Total KOL in Pipeline",
+      "longTerm": "Long-Term Partners",
+      "cumulativeSpend": "Cumulative Spend",
+      "spendCaption": "14d signed/long-term commits",
+      "avgRoi": "Avg ROI",
+      "avgRoiPlaceholder": "Available after F008 ships"
+    },
+    "pipeline": {
+      "title": "Pipeline by stage",
+      "liveLabel": "LIVE DATA",
+      "rowCount": "{count} {count, plural, one {KOL} other {KOLs}} ({percent}%)"
+    },
+    "funnel": {
+      "title": "Funnel Conversion",
+      "labels": {
+        "totalPipeline": "Total Pipeline",
+        "contacted": "Contacted",
+        "negotiated": "Negotiated",
+        "longTerm": "Long-term Partners"
+      }
+    },
+    "recentChanges": {
+      "title": "Recent stage changes",
+      "subtitle": "Last 30 relationship transitions audited across the tenant.",
+      "empty": "No relationship changes yet — flip a KOL on the Database page to start the timeline.",
+      "cols": {
+        "kol": "KOL",
+        "actor": "Changed by",
+        "when": "When",
+        "before": "Before",
+        "after": "After"
+      }
+    }
+  },
   "relationshipStatus": {
     "prospect": "Prospect",
     "first_contact": "First contact",

@@ -51,6 +51,11 @@ export default defineConfig({
         "src/lib/email/analytics.ts",
         "src/lib/email/batch-send.ts",
         "src/lib/email/composer-data.ts",
+        // BM2-F007 CRM DB-heavy helpers. Integration-tested via
+        // tests/integration/crm-overview.test.ts. Pure aggregate.ts
+        // stays under coverage with its own unit specs.
+        "src/lib/crm/overview.ts",
+        "src/lib/crm/update.ts",
       ],
       thresholds: {
         lines: 80,

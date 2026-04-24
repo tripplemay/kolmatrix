@@ -16,6 +16,8 @@ export { KolCard } from "./KolCard";
 export { SecondaryButton } from "./SecondaryButton";
 export { SectionHeader } from "./SectionHeader";
 export { StatCard } from "./StatCard";
+export { RingProgress, type RingProgressProps } from "./RingProgress";
+export { Sparkline, type SparklineProps } from "./Sparkline";
 export {
   StatusBadge,
   type StatusBadgeProps,

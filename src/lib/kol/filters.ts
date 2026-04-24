@@ -145,9 +145,20 @@ export function parseFilters(
     (v): v is BrandSafetyRating =>
       (BRAND_SAFETY_RATINGS as readonly string[]).includes(v)
   );
-  const relationshipStatuses = getAll("relationshipStatus").filter(
-    (v): v is RelationshipStatus =>
-      (RELATIONSHIP_STATUSES as readonly string[]).includes(v)
+  const relationshipStatusesRaw = getAll("relationshipStatus");
+  // BM2-F007: also accept the shorter `?status=X` alias used by
+  // cross-page deep links from /crm Pipeline bars (Planner adjudication
+  // §13.4 #8). Aliased value is appended after the existing list, then
+  // de-duped, so explicit `relationshipStatus` URL params still win.
+  const statusAlias = get("status");
+  const aliasedList =
+    statusAlias && (RELATIONSHIP_STATUSES as readonly string[]).includes(statusAlias)
+      ? [statusAlias]
+      : [];
+  const relationshipStatuses = Array.from(
+    new Set([...relationshipStatusesRaw, ...aliasedList])
+  ).filter((v): v is RelationshipStatus =>
+    (RELATIONSHIP_STATUSES as readonly string[]).includes(v)
   );
 
   const searchRaw = get("search");
