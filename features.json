@@ -62,7 +62,7 @@
       "title": "ROI 引擎（pure compute util + summary/trend API）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/lib/roi/compute.ts pure functions：computeCampaignRoi(spendTotal, revenueRecorded)→{roiPercent, netProfit}（null revenue→null roi；spend=0→null 避 div0）/ computeRoiTrend(tenantId, days)→按 day bucket 聚合 spend/revenue/roi / computeRoiSummary(tenantId)→totalSpend/totalRevenue/avgRoi/topCampaign/campaignCount{active,completed}；API GET /api/roi/summary + trend?days=30 + campaigns；tests/unit/roi-compute.test.ts full branch coverage（0 spend + 非 null / 100→150 / null revenue / trend 聚合 / summary 避 div0）；tests/integration/roi-api.test.ts RLS 隔离"
     },
     {
