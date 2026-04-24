@@ -810,5 +810,75 @@
         "after": "After"
       }
     }
+  },
+  "roi": {
+    "header": {
+      "crumbAnalytics": "Analytics",
+      "crumbCurrent": "ROI Tracking",
+      "title": "ROI Tracking",
+      "subtitle": "Spend, revenue, and return signals across completed campaigns.",
+      "rangeDisabledTooltip": "Time-range filter ships in B4.",
+      "range": {
+        "7d": "7D",
+        "30d": "30D",
+        "90d": "90D",
+        "all": "All-time"
+      },
+      "aiInsights": "AI Insights",
+      "recordRevenue": "Record revenue"
+    },
+    "kpi": {
+      "totalSpend": "Total Spend",
+      "totalRevenue": "Total Revenue",
+      "avgRoi": "Average ROI",
+      "topCampaign": "Top Campaign ROI",
+      "topCampaignEmpty": "No completed campaign with revenue yet.",
+      "velocity": {
+        "high": "High Velocity",
+        "steady": "Steady",
+        "cooling": "Cooling",
+        "na": "—"
+      }
+    },
+    "trend": {
+      "title": "Spend & Revenue Trend",
+      "windowLabel": "Last 30 days",
+      "legend": {
+        "spend": "Spend",
+        "revenue": "Revenue",
+        "roi": "ROI %"
+      }
+    },
+    "insights": {
+      "title": "AI Insights",
+      "idleHint": "Click below for AI-driven analysis of your ROI signals.",
+      "generate": "Generate AI Insights",
+      "regenerate": "Regenerate",
+      "loading": "Calling the AI engine…",
+      "cachedPrefix": "Generated",
+      "error": {
+        "missing_env": "AI gateway is not configured. Contact your admin.",
+        "http_error": "AI gateway returned an error. Please retry.",
+        "invalid_response": "AI returned an unexpected format. Please retry.",
+        "timeout": "AI service did not respond in time. Please retry.",
+        "unauthorized": "You are not signed in.",
+        "generic": "Could not generate insights. Please retry."
+      }
+    },
+    "table": {
+      "title": "Campaign ROI Analysis",
+      "filterPlaceholder": "Filter by name…",
+      "empty": "No completed campaigns match this filter.",
+      "statusCompleted": "Completed",
+      "cols": {
+        "campaign": "Campaign",
+        "product": "Product",
+        "closedAt": "Closed",
+        "spend": "Spend",
+        "revenue": "Revenue",
+        "roi": "ROI",
+        "status": "Status"
+      }
+    }
   }
 }

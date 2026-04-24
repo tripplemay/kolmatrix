@@ -811,5 +811,75 @@
       "not_found": "该创作者已不存在。",
       "generic": "更新失败，请稍后重试。"
     }
+  },
+  "roi": {
+    "header": {
+      "crumbAnalytics": "数据分析",
+      "crumbCurrent": "ROI 追踪",
+      "title": "ROI 追踪",
+      "subtitle": "已完成活动的支出、收入与回报信号一览。",
+      "rangeDisabledTooltip": "时间范围筛选将在 B4 上线。",
+      "range": {
+        "7d": "7天",
+        "30d": "30天",
+        "90d": "90天",
+        "all": "全部"
+      },
+      "aiInsights": "AI 洞察",
+      "recordRevenue": "录入收入"
+    },
+    "kpi": {
+      "totalSpend": "总支出",
+      "totalRevenue": "总收入",
+      "avgRoi": "平均 ROI",
+      "topCampaign": "最高 ROI 活动",
+      "topCampaignEmpty": "暂无含收入的已完成活动。",
+      "velocity": {
+        "high": "强势增长",
+        "steady": "稳定",
+        "cooling": "降温",
+        "na": "—"
+      }
+    },
+    "trend": {
+      "title": "支出与收入趋势",
+      "windowLabel": "近 30 天",
+      "legend": {
+        "spend": "支出",
+        "revenue": "收入",
+        "roi": "ROI %"
+      }
+    },
+    "insights": {
+      "title": "AI 洞察",
+      "idleHint": "点击下方按钮，获取 AI 驱动的 ROI 分析。",
+      "generate": "生成 AI 洞察",
+      "regenerate": "重新生成",
+      "loading": "正在调用 AI 引擎…",
+      "cachedPrefix": "生成于",
+      "error": {
+        "missing_env": "AI 网关未配置，请联系管理员。",
+        "http_error": "AI 网关返回错误，请重试。",
+        "invalid_response": "AI 返回格式异常，请重试。",
+        "timeout": "AI 服务无响应，请重试。",
+        "unauthorized": "未登录。",
+        "generic": "无法生成洞察，请重试。"
+      }
+    },
+    "table": {
+      "title": "活动 ROI 分析",
+      "filterPlaceholder": "按名称筛选…",
+      "empty": "没有匹配的已完成活动。",
+      "statusCompleted": "已完成",
+      "cols": {
+        "campaign": "活动",
+        "product": "产品",
+        "closedAt": "结束日期",
+        "spend": "支出",
+        "revenue": "收入",
+        "roi": "ROI",
+        "status": "状态"
+      }
+    }
   }
 }
