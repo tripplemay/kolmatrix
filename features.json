@@ -38,7 +38,7 @@
       "title": "Campaign 详情页 /campaigns/:id（KOL 面板 + Revenue + Status）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/app/[locale]/(app)/campaigns/[id]/page.tsx 对齐 Stitch campaign-detail.html；Section 1 Header（name + status badge + inline edit / Product 链接 / 4 KPI Budget/SpendTotal/Revenue/ROI%）；Section 2 KOL 面板（'添加 KOL' modal 从 Kol.isSaved=true 未在本 campaign 选 / 行显 avatar/name/handle/platform badge/contactStatus select 6 值/kolFee input onBlur save 后端事务重算 spendTotal/移除按钮）；Section 3 RevenueRecorder（status=completed 前可改，之后只读 + '重新激活' 切回 active 解锁）+ StatusController（draft→active→completed 按钮链记 startedAt/closedAt）；Section 4 '给所有有 email 的 KOL 发邮件' 跳 /outreach?campaignId=:id；API GET/PATCH /api/campaigns/:id + POST/DELETE/PATCH /api/campaigns/:id/kols/:kolId；每次 kolFee 变更事务内 recompute spendTotal；audit_log（BI4-F003）campaign.kol.status_changed / fee_updated；tests/integration/campaign-detail.test.ts（KOL 增删改 + spendTotal 正确 + audit_log + 重激活）；visual baseline"
     },
     {
