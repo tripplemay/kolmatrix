@@ -54,7 +54,7 @@
       "title": "CRM 简化页 /crm（阶段分布 + 漏斗 + 合作总额）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/app/[locale]/(app)/crm/page.tsx 对齐 Stitch crm-relationship.html；Section 1 阶段分布 6 卡（prospect/first_contact/negotiating/long_term/paused/terminated by Kol.relationshipStatus，点卡跳 /database?status=XXX）；Section 2 漏斗图 prospect→first_contact→negotiating→long_term 显数量 + 每步转化率 %；Section 3 合作总额 KPI（Σ KolCampaign.kolFee where status ∈ signed/delivered/paid）；Section 4 最近关系变化表（audit_log 查 kol.relationship_status_changed 最近 30 条：KOL/谁/何时/A→B）；每行 KOL relationshipStatus dropdown 切换 → PATCH /api/kols/:id/relationship-status + audit_log；API GET /api/crm/overview 返回 4 块数据；按钮切换（不做拖拽）；tests/integration/crm-overview.test.ts；visual baseline"
     },
     {
