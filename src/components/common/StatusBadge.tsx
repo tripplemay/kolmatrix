@@ -25,7 +25,6 @@ const NEUTRAL = "border-outline-variant bg-surface-high/40 text-on-surface-varia
 const CYAN = "border-cyan/30 bg-cyan/10 text-cyan";
 const EMERALD = "border-emerald-500/30 bg-emerald-500/10 text-emerald-300";
 const PURPLE = "border-purple/30 bg-purple/10 text-purple";
-const WARNING = "border-warning/30 bg-warning/10 text-warning";
 const ERROR = "border-error/30 bg-error/10 text-error";
 
 const TONE_MAP: Record<StatusDomain, Record<string, string>> = {
