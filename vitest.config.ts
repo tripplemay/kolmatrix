@@ -43,6 +43,14 @@ export default defineConfig({
         "src/lib/campaigns/search.ts",
         "src/lib/campaigns/update.ts",
         "src/lib/campaigns/kol-operations.ts",
+        // BM2-F006 outreach DB-heavy helpers. Same rationale —
+        // integration-tested via tests/integration/outreach-flow.test.ts.
+        // Pure helpers (variable-substitute / customize / resend mock
+        // path / json-extract) stay under coverage and have their own
+        // unit specs.
+        "src/lib/email/analytics.ts",
+        "src/lib/email/batch-send.ts",
+        "src/lib/email/composer-data.ts",
       ],
       thresholds: {
         lines: 80,
