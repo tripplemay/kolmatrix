@@ -57,6 +57,29 @@ Journey B：Campaign 结束后
 - Calendar / Gantt 视图（B3+）
 - 活动甘特图
 
+## 2.5 UI Fidelity Guardrail（F006-F010 必遵，2026-04-24 BM1 审计后硬要求）
+
+**背景：** BM1 F004/F005（Discovery/Database）签收后用户反馈与 Stitch 原型差异大，BM2 F003/F005 spot audit 确认重演（🟡 部分重演）。Generator 形成"看到装饰性丰富 UI 就简化/删除"稳定模式。
+
+**F006/F007/F009/F010 开工前硬要求**（对应 `framework/harness/ui-fidelity-guardrail.md`）：
+
+1. **Pre-impl 审计强制**：每个 UI 页面 feature 开工前 Generator 必须发审计请求，明确列出：
+   - 对 Stitch 原型中每个"看起来非 CRUD 核心"的元素（KPI 卡 / Insights Panel / AI CTA / Quick Stats / Bulk Action Bar / Active Filter chips 等）的处理方案（A 实现 / B 简化 / C 占位 disabled）
+   - 本页将用的 `@/components/common/*` 或 `@/components/ui/*` 组件清单（至少 5 个）
+   - 若缺抽象需要新建组件 → 列出建议名 + 按 Planner 批准后统一抽
+
+2. **不得自行简化装饰元素**：Generator 若认为某元素应删必须 audit 里问，Planner 裁决；**不得自行选 B 开工**
+
+3. **幽灵控件禁止**：原型有某控件但 MVP 暂不接功能 → 两选：(a) 完全隐藏不渲染 (b) `disabled + opacity-50 + tooltip "Coming soon"`。不得保留 active 但无 handler 的控件
+
+4. **Visual baseline PNG 入 git 是硬门槛**：spec §7 L2 已加该要求；F011 跑 `--update-snapshots` 后必须 `git add tests/screenshots/baseline/*.png`，缺失 → Reviewer 判 PARTIAL
+
+5. **公共组件复用阈值**：单文件 hardcoded `className="..."` 超过 20 处 → 考虑抽组件；如 `Dialog` / `StatCard` / `TableRow` 未存在必须新抽（Planner 裁决批准）
+
+**审计模板参考：** `docs/specs/BM1-f001-schema-preimpl-audit.md` 格式，UI feature 的审计焦点是上述 5 点（不是 schema 漂移）
+
+---
+
 ## 3. 关键设计决策
 
 | 决策 | 选定方案 | 理由 |

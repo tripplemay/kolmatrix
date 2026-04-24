@@ -34,6 +34,56 @@
     "discovered_in": "staging L2 pre-check by Planner johnsong"
   },
   {
+    "id": "BL-005",
+    "title": "BM1 F004 Discovery 页 UI fidelity gap（主搜索区 / AI CTA / Active filters / Grid-list toggle 缺失）",
+    "description": "2026-04-24 用户反馈 + Planner audit：/discovery 与 Stitch 原型还原度 6/10。4 条严重 gap：(1) 主搜索区完全缺失（platform + search + AI chips 轮转）；(2) AI Smart Match gradient CTA 缺失；(3) Active Filter 可视化 chips 退化为纯文本；(4) Grid/List 视图 toggle 缺失。中度：卡片列数 xl:grid-cols-4 → 3（宽屏浪费 25%）、avatar 放大 4 倍、Active Filter badges 缺。修复目标用户选 C 档 pixel perfect + 公共组件抽取。时机：BM2 done 后 MVP-visual-fidelity hotfix 批次。详细见 docs/test-reports/BM1-BM2-ui-fidelity-audit-2026-04-24.md §1",
+    "decisions": ["修复方式 C 档（pixel perfect + 组件库抽取）", "修复时机 BM2 done 后", "考虑扩大范围到 MVP-visual-fidelity 覆盖 5 页"],
+    "confirmed_at": "2026-04-24T00:00+0800",
+    "priority": "high",
+    "tags": ["ui-fidelity", "BM1-hotfix", "visual-regression"],
+    "discovered_in": "user feedback 2026-04-24 + Planner Explore agent audit"
+  },
+  {
+    "id": "BL-006",
+    "title": "BM1 F005 Database 页 UI fidelity gap（Insights Panel / Quick Stats / Bulk Action Bar / 幽灵 checkbox）",
+    "description": "2026-04-24 audit：/database 还原度 5/10。5 条严重 gap：(1) 右侧 Insights Panel 3 卡片（AI Intelligence / Coverage Gap / Engagement Trend）完全缺失；(2) Quick Stats 4 KPI 顶部 strip 缺失；(3) Bulk Action Bar 缺失 + checkbox 保留但无反应（幽灵控件）；(4) 过滤维度 7→4（Game / Tags 维度缺失）；(5) 表格增长指标（+12.4k 风格）缺失。修复方案同 BL-005。详细见 docs/test-reports/BM1-BM2-ui-fidelity-audit-2026-04-24.md §2",
+    "decisions": ["修复方式 C 档", "同 BL-005 合并 hotfix"],
+    "confirmed_at": "2026-04-24T00:00+0800",
+    "priority": "high",
+    "tags": ["ui-fidelity", "BM1-hotfix", "visual-regression"],
+    "discovered_in": "user feedback 2026-04-24 + Planner Explore agent audit"
+  },
+  {
+    "id": "BL-007",
+    "title": "BM2 F003 Campaigns 列表页 UI fidelity 部分重演（KPI strip / filter 6→2 / AI Suggestions 缺失）",
+    "description": "2026-04-24 spot audit：/campaigns 还原度 7/10。3 条 gap：(1) KPI stat strip（4 卡 Active Campaigns / KOLs in Pipeline / Avg Reply Rate / Reach Forecast）缺失；(2) Filter 从 6 维（status tab + Game / Region / Owner / Date）简化为 2（search + status）；(3) AI Suggestions panel 缺失。Generator 未复用 @/components/common 而是手写 StatusBadge / SpendCell 等。BM1 done 后 Generator 继续复犯同样错误 → 说明必须前置 guardrail 而非事后修。",
+    "decisions": ["同 BL-005 hotfix 扩大范围到 MVP-visual-fidelity"],
+    "confirmed_at": "2026-04-24T00:00+0800",
+    "priority": "high",
+    "tags": ["ui-fidelity", "BM2-hotfix", "visual-regression"],
+    "discovered_in": "Planner spot audit during BM2 building"
+  },
+  {
+    "id": "BL-008",
+    "title": "BM2 F005 Campaign 详情页 UI fidelity 部分重演（Email Performance chart / AI Suggestions / Activity Timeline / 无右侧 insights 布局）",
+    "description": "2026-04-24 spot audit：/campaigns/:id 还原度 7/10。3 条 gap：(1) Email Performance chart section 缺失；(2) AI Suggestions + Recent Activity Timeline 缺失；(3) 原型右侧 320px 固定列的 insights 布局缺失（实现是所有 section 单列垂直堆叠）。CampaignKolPanel 495 行全手写 modal/table/form，未抽 Dialog/TableRow 组件。",
+    "decisions": ["同 BL-005 hotfix 扩大范围", "抽公共组件 Dialog/TableRow 一起做"],
+    "confirmed_at": "2026-04-24T00:00+0800",
+    "priority": "high",
+    "tags": ["ui-fidelity", "BM2-hotfix", "visual-regression", "component-library"],
+    "discovered_in": "Planner spot audit during BM2 building"
+  },
+  {
+    "id": "BL-009",
+    "title": "Signoff 流程漏洞：visual regression baseline PNG 未入库也判 PASS",
+    "description": "BM1 F009 Generator session_notes 自报：'visual PNG 未生成（本地 WSL 无 Playwright system libs sudo 权限）'。Reviewer signoff 报告 BM1-console-kol-core-signoff-2026-04-23.md F009 标 PASS，验收凭据仅为 E2E spec 绿，未核 baseline PNG 入库。修复方案：(1) 更新 .auto-memory/role-context/evaluator.md 加 §UI Fidelity 签收硬要求（已做 2026-04-24，commit TBD）；(2) 新增 framework/harness/ui-fidelity-guardrail.md 作为跨批次规则（已做 2026-04-24）；(3) BM1 5 张 baseline PNG 补生成 + 入库（并入 MVP-visual-fidelity hotfix 或独立 F）。",
+    "decisions": ["evaluator.md + ui-fidelity-guardrail.md 已更新", "BM1 baseline PNG 生成并入 hotfix"],
+    "confirmed_at": "2026-04-24T00:00+0800",
+    "priority": "high",
+    "tags": ["process-gap", "signoff", "visual-regression", "framework"],
+    "discovered_in": "Planner audit 2026-04-24"
+  },
+  {
     "id": "BL-004",
     "title": "Staging 部署自动化（infrastructure/deploy-staging.sh 入 git）",
     "description": "当前 staging deploy 全手动 SSH（见 docs/dev/tls-staging-runbook.md §5），每次 git pull + npm ci + build + migrate + seed + pm2 restart 需 3-5min 输入。Planner 2026-04-23 评估后推荐方案 A（shell 脚本入 git）而非方案 B（GitHub Actions workflow）：1 人团队用不到 workflow 的可观测/权限/CD auto-deploy 价值；shell 脚本 ~1.5h 工时就能覆盖 80% 收益。脚本顺带修 BL-001（set -a source .env）+ BL-002（GIT_SHA=$(git rev-parse --short HEAD) npm run build）。落地时机：BM1 verifying 或 BM2 建中插空；最迟 MVP 上线前基建批次（'BIx-staging-automation'，可与 BL-001/BL-002/BL-003 打包）。方案 B workflow 延后到 MVP 后团队扩员。",

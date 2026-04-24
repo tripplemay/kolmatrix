@@ -23,6 +23,33 @@ type: feedback
 - 核对项：DOM 结构、class 名、图标名、数据字段语义、按钮/链接目标
 - 语义替换（换指标类型）= FAIL；区块删除 = FAIL；结构简化 = PARTIAL
 
+## UI Fidelity 签收硬要求（2026-04-24 BM1 审计后新增）
+
+对含 Stitch 原型参考的 UI feature，签收 PASS 前逐项核对：
+
+### 1. Visual baseline PNG in git（硬条款）
+```bash
+ssh tripplezhou@34.180.93.185 "cd /opt/kolmatrix && git ls-files tests/screenshots/baseline/*.png"
+# 对本批次新 UI 页面，至少有对应的 en-<page>.png 返回；空输出 = PARTIAL 不是 PASS
+```
+**Scaffold（.spec.ts 存在但 PNG 未生成）不算通过。** 这是 BM1 F009 踩坑根因。
+
+### 2. 原型"不得简化"清单核对
+若 spec §acceptance 中含"不得简化的元素"列表（per `framework/harness/ui-fidelity-guardrail.md` §2.3），签收前 Reviewer 并排对比 Stitch PNG 与实现页 screenshot，逐项核。任一缺失 → 按"区块删除 = FAIL"判。
+
+### 3. 幽灵控件检查
+`grep -rn "type=\"checkbox\"\|<select\|<button" src/app/...` 找出 UI 上 active 的控件，核对每个都有 handler/action。active 但无反应 → FAIL（比完全不渲染更差的 UX）。
+
+### 4. 签收报告新增章节
+模板 `framework/templates/signoff-report.md` 加节：
+```markdown
+## Stitch 还原度评估
+- 原型参考：<path>
+- 不得简化元素清单核对：
+  - [x] 主搜索区 / [x] AI CTA / [x] Insights Panel / ...
+- 总体评级：🟢 pixel-perfect / 🟡 中度差异可接受 / 🔴 重大缺失须回 fixing
+```
+
 ## 签收报告（硬性）
 
 - reverifying → done 前必须写 `docs/test-reports/[批次名]-signoff-YYYY-MM-DD.md`

@@ -13,6 +13,7 @@
 - [用户角色与工作方式](user-role.md) — 用户身份、技术背景、沟通偏好 | 加载：需要调整沟通风格时
 - [文档结构与查阅入口](reference-docs.md) — docs/ 各子目录用途 | 加载：需要查找文档时
 - [Pre-Impl Audit → Planner 裁决 模式](../framework/harness/pre-impl-adjudication.md) — Generator 开工前审计 + Planner 裁决完整流程 | 加载：Generator 准备开工遇歧义时，或 Planner 收到审计请求时
+- [UI Fidelity Guardrail](../framework/harness/ui-fidelity-guardrail.md) — UI 页面 spec 硬要求 + Generator 审计强制 + Evaluator 签收硬条款 + 不得幽灵控件 | 加载：UI 页面 feature 起草/开工/签收时（2026-04-24 BM1 审计后沉淀）
 - [架构决策记录索引](../docs/adr/README.md) — 9+ 关键决策的历史与理由（技术栈 / 视觉标准 / 组件库 / RLS / 验收模式 / AI 网关集成 等）| 加载：做新架构决策前核对一致性 / 新 agent 上手了解背景 / 规格冲突时查源
 
 <!-- 后续可按需追加 feedback-*.md / reference-*.md 条目 -->
