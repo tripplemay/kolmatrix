@@ -13,6 +13,7 @@ import type { Prisma } from "@prisma/client";
 
 import { withTenant } from "@/lib/db";
 import { createCursorPaginator } from "@/lib/pagination/cursor";
+import { computeCampaignRoi } from "@/lib/roi/compute";
 
 import { buildCampaignWhere, type CampaignListFilters } from "./filters";
 
@@ -65,13 +66,12 @@ type RawCampaignRow = Prisma.CampaignGetPayload<{
 }>;
 
 /**
- * Compute ROI% from spend + revenue. Null-safe:
- *   - Spend <= 0     → null (can't divide)
- *   - Revenue null   → null
- *   - Status != completed (decided by caller) → null
+ * Status-gated ROI% wrapper around F008's `computeCampaignRoi`.
  *
- * TODO(BM2-F008): replace with `computeCampaignRoi(spend, revenue)` from
- * `src/lib/roi/compute.ts` once F008 lands.
+ * The ROI engine itself is status-agnostic; the campaigns list +
+ * detail UIs only show ROI for completed campaigns (so a partially-
+ * spent active draft doesn't display a misleading "ROI"). This thin
+ * helper enforces that gate at the boundary.
  */
 export function computeRoiPercentInline(
   spend: number,
@@ -79,11 +79,10 @@ export function computeRoiPercentInline(
   status: string
 ): number | null {
   if (status !== "completed") return null;
-  if (!spend || spend <= 0) return null;
-  if (revenue == null) return null;
-  const pct = ((revenue - spend) / spend) * 100;
-  // Round to 1 decimal place; UI formats further.
-  return Math.round(pct * 10) / 10;
+  return computeCampaignRoi({
+    spendTotal: spend,
+    revenueRecorded: revenue,
+  }).roiPercent;
 }
 
 export async function runCampaignListSearch(

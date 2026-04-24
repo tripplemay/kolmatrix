@@ -56,6 +56,10 @@ export default defineConfig({
         // stays under coverage with its own unit specs.
         "src/lib/crm/overview.ts",
         "src/lib/crm/update.ts",
+        // BM2-F008 ROI DB-heavy loader. Integration-tested via
+        // tests/integration/roi.test.ts. Pure compute.ts stays under
+        // coverage with its own unit specs.
+        "src/lib/roi/queries.ts",
       ],
       thresholds: {
         lines: 80,
