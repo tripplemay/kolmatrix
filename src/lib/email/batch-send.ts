@@ -137,6 +137,8 @@ export async function batchSendOutreach(
         select: { id: true, status: true },
       });
       let statusChangedTo: string | null = null;
+      let auditedLinkId: string | null = null;
+      let previousStatus: string | null = null;
       if (
         !errorMessage &&
         link &&
@@ -147,21 +149,33 @@ export async function batchSendOutreach(
           data: { status: "contacted" },
         });
         statusChangedTo = "contacted";
-        // audit_log is fire-and-forget inside tx helper, but
-        // logAudit itself catches errors so it's safe to await here.
-        void logAudit({
-          actorId,
-          action: "campaign.kol.status_changed",
-          targetType: "kol_campaign",
-          targetId: link.id,
-          tenantId,
-          before: { status: link.status },
-          after: { status: "contacted" },
-        });
+        auditedLinkId = link.id;
+        previousStatus = link.status;
       }
 
-      return { emailLogId: emailLog.id, statusChangedTo };
+      return {
+        emailLogId: emailLog.id,
+        statusChangedTo,
+        auditedLinkId,
+        previousStatus,
+      };
     });
+
+    // Persist the audit AFTER the tx commits (so the row is visible)
+    // and AWAIT it so callers / tests don't see racy partial writes.
+    // logAudit has its own try/catch so failure here can't tank the
+    // batch.
+    if (dbOut.auditedLinkId && dbOut.previousStatus) {
+      await logAudit({
+        actorId,
+        action: "campaign.kol.status_changed",
+        targetType: "kol_campaign",
+        targetId: dbOut.auditedLinkId,
+        tenantId,
+        before: { status: dbOut.previousStatus },
+        after: { status: "contacted" },
+      });
+    }
 
     out.items.push({
       kolId: item.kolId,
