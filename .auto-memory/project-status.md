@@ -4,16 +4,17 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BM2-campaign-outreach-roi** — status=planning，11 features（Campaign + 联系 + CRM + ROI + AI 周报）
+- **BM2-campaign-outreach-roi** — status=building，9/11 features done（F009 /roi 完工）
   - Spec `docs/specs/BM2-campaign-outreach-roi-spec.md`（§6 + §F011 已吸收 BM1 F009 教训）
+  - F009 Planner 裁决文档：`docs/specs/BM2-f009-roi-page-preimpl-audit.md` §13（13 条决议 + Action 契约）
   - aigcgateway 3 Action 已建 + 验证：kol-email-customize (claude-haiku-4.5) / roi-insights + weekly-report-for-client (gemini-3-flash)
-  - 估 8-12 天；等用户 go-signal 切 building；Generator F001 开工前做 pre-impl 审计（扫 schema）
+  - 剩 F010 (AI 周报) + F011 (tests/baselines)；继续按计划推进
 - **BM1** ✅ done（9/9 PASS fix_rounds=2，signoff `docs/test-reports/BM1-console-kol-core-signoff-2026-04-23.md`）
 - 所有前置批次 ✅：B0 / BI1 / BI2 / BI3 / BAux1 / BI4 / BM1
 
-## MVP 现状（2/4 功能达成）
-- ✅ 控制台（BM1 F007）/ ✅ 筛选 KOL（BM1 F004-F006）
-- ⏳ 联系 KOL（BM2 F005-F006）/ ⏳ ROI 追踪（BM2 F008-F009）
+## MVP 现状（3/4 功能达成）
+- ✅ 控制台（BM1 F007）/ ✅ 筛选 KOL（BM1 F004-F006）/ ✅ ROI 追踪（BM2 F008-F009）
+- ⏳ 联系 KOL（BM2 F005-F006 ✅；F010 周报待做）
 - Prod 仍 `4b05cb60`（BI4 前快照）— BM1 签收通过，用户可随时 GitHub Actions 触发 prod deploy
 - Staging 在 `c96fb98`（main 落后 3 commits，全是 state/report 文件，不影响运行）
 

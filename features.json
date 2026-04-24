@@ -70,7 +70,7 @@
       "title": "ROI 追踪页 /roi（4 KPI + 趋势图 + Campaign 表 + AI Insights）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/app/[locale]/(app)/roi/page.tsx 对齐 Stitch roi-tracking.html；Section 1 4 KPI 卡（TotalSpend/TotalRevenue/AvgROI%/TopCampaign ROI from F008 summary）；Section 2 30 天趋势 recharts line chart（spend vs revenue 双线 + ROI% 次轴）；Section 3 Campaign ROI 表按 roiPercent DESC 可点跳详情；Section 4 AI Insights 卡片：默认 'Generate Insights' 按钮 → 调 aigcgateway Action roi-insights（action_id=cmob2zgae000jbnnuue2i7uaf model=gemini-3-flash）→ 返回 3-5 条 bilingual 洞察 match 当前 locale → 缓存 localStorage key=roi-insights-{tenantId}-{YYYYMMDD} 当日有效 + '重新生成' 按钮；src/lib/roi/insights.ts 契约；tests/integration/roi-page.test.ts（insights mock + localStorage）；visual baseline"
     },
     {

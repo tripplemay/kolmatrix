@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "MVP 业务批次 2/2 - Campaign + 联系 KOL + CRM 简化版 + ROI 追踪 + AI 周报：把 BM1 的 KOL 库转成真实营销活动。11 features，估 8-12 天。完成即 MVP 4 大功能全达成，可上线拿种子用户反馈。",
   "total_features": 11,
-  "completed_features": 8,
+  "completed_features": 9,
   "fix_rounds": 0,
   "current_sprint": "BM2-campaign-outreach-roi",
-  "last_updated": "2026-04-24T12:30+0800",
+  "last_updated": "2026-04-24T14:25+0800",
   "reference_docs": [
     "docs/specs/BM2-campaign-outreach-roi-spec.md",
     "docs/product/KOLMatrix-MVP-PRD.md",
