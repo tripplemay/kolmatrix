@@ -34,7 +34,7 @@ type: reference
 - **MCP 端点：** `https://aigc.guangai.ai/mcp`（25 tools）
 - **SDK：** `@guangai/aigc-sdk`（零依赖，Node 18+）
 - **内网 URL：** `http://localhost:3099/v1/`（同 VM 走内网，生产用，零公网延迟）
-- **KOLMatrix API Key：** `pk_babac...` (name: admintest, active, 2026-04-23 跨 staging + prod 共用单 key；长期建议拆 dev/prod 两份但当前足够)
+- **KOLMatrix API Key：** `pk_REDACTED` (name: admintest, active, 2026-04-23 跨 staging + prod 共用单 key；长期建议拆 dev/prod 两份；完整 key 仅存 `.env.production` / `.env.staging` 文件，本记忆文件禁录)
 - **月预算：** $100 USD（B2-B4 初期；当前余额 $49.60 @ 2026-04-23）
 - **Actions 清单：** BM2 使用 `kol-email-customize` / `roi-insights` / `weekly-report-for-client`（2026-04-23 Planner 创建 + 验证通过）；早期 B2 设想的 kol-eval-bulk/precision/campaign-match/email-personalize 未启用（MVP 未走 AI 匹配路线）
 - **集成决策：** 见 ADR-009
@@ -67,15 +67,19 @@ type: reference
 
 ## 测试账号
 
-- **Admin:** `admin@kolmatrix.local` / `KOLM@2026!` / API Key: `TBD`
-- **Marketer:** `marketer@kolmatrix.local` / `KOLM@2026!` / API Key: `TBD`
+> **2026-04-24 安全轮换：** prod 两账户密码已从 seed 默认值轮换为随机值，保存于用户密码管理器，本记忆文件**不记录**密码明文。Staging 仍用 `KOLM@2026!`（demo only，无真实数据）。seed.ts 使用的 `KOLM@2026!` 是 staging/local 用；prod **必须**在首次 deploy 后立即轮换（BM1.1 security-polish BI-F001 改为读 env var）。
+
+- **Admin（prod）:** `admin@kolmatrix.local` / 密码见用户密码管理器（2026-04-24 rotated）/ API Key: `TBD`
+- **Marketer（prod）:** `marketer@kolmatrix.local` / 密码见用户密码管理器（2026-04-24 rotated）/ API Key: `TBD`
+- **Admin（staging / local）:** `admin@kolmatrix.local` / `KOLM@2026!` / API Key: `TBD`
+- **Marketer（staging / local）:** `marketer@kolmatrix.local` / `KOLM@2026!` / API Key: `TBD`
 
 ## VPS env 文件当前 secrets 状态（2026-04-23 Planner 验证）
 
 | Key | `/opt/kolmatrix/.env.production` | `/opt/kolmatrix-staging/.env.staging` | 备注 |
 |---|---|---|---|
-| `AIGCGATEWAY_API_KEY` | ✅ 已配（`pk_bab...` 67 chars） | ✅ 已配（同 key） | 共用 "admintest" key；2026-04-23 从 staging VM 直 curl `/v1/models` 200 OK |
-| `RESEND_API_KEY` | ✅ 已配（`re_QEA...` 36 chars） | ✅ 已配（同 key） | 未在本次验证真发邮件，仅确认非 placeholder |
+| `AIGCGATEWAY_API_KEY` | ✅ 已配（67 chars） | ✅ 已配（同 key） | 共用 "admintest" key；2026-04-23 从 staging VM 直 curl `/v1/models` 200 OK；完整 key 不落 git，仅存 .env 文件 |
+| `RESEND_API_KEY` | ✅ 已配（36 chars） | ✅ 已配（同 key） | 未在本次验证真发邮件，仅确认非 placeholder；完整 key 不落 git |
 
 **修改流程（如未来需要换 key）：**
 ```bash
