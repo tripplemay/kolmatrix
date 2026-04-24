@@ -499,10 +499,14 @@ Page：`src/app/[locale]/(app)/roi/page.tsx` + 4 KPI / TrendChart / CampaignTabl
 
 **布局**（对齐 Stitch `roi-tracking.html`）：
 
-- **Section 1 — 4 KPI 卡片**：Total Spend / Total Revenue / Avg ROI % / Top Campaign ROI（from F008 summary）
-- **Section 2 — 30 天趋势图**：recharts line chart（spend vs revenue 双线 + ROI % 次轴）
-- **Section 3 — Campaign ROI 表**：所有 completed campaigns，按 roiPercent DESC 排序，可点跳详情
-- **Section 4 — AI Insights 卡片**：
+- **Section 1 — 4 KPI 卡片**（per F009 裁决）：Total Spend + Sparkline / Total Revenue + Sparkline / Avg ROI% + 动态副标（>200% "High Velocity" / 50-200% "Steady" / <50% "Cooling" / null "—"）/ **Top Campaign ROI**（spec 原版，非 Stitch "Active Campaigns"；F008 summary.topCampaign.name + roiPercent + 跳 /campaigns/:id）
+- **顶部 Header（裁决 #A:A3）**：breadcrumb（Analytics → ROI Tracking）+ title + 时间 toggle 4 段（仅 "30D" active，其余 disabled + tooltip "Available in B4"）+ AI Insights 按钮（smooth scroll 到右侧 panel + 首次触发 generate）+ "Record revenue" link 跳 /campaigns；Sync 按钮 drop（RSC 直读 DB 数据实时）
+- **Quarterly Budget 卡 drop**（裁决 #F:B）：Tenant 无 budgetTotal schema，MVP 不加 migration；Stitch 此块完全不渲染
+- **Section 2 — 60/40 split**（裁决 #E:C + #L:B）：左 60% 满高 Trend chart / 右 40% AI Insights panel
+  - Trend chart（裁决 #G:A + #H:A）：**recharts ComposedChart** = bar(spend, 灰 on-surface-variant) + bar(revenue, cyan-fixed) + line(ROI%, 紫色 accent-purple) 次轴；30 daily bucket；client-only（"use client" directive，recharts 不兼容 SSR）
+  - ROI% 次轴限制 [-100, 500] 防极端值压扁 bar
+- **Section 3 — Campaign ROI 表**（裁决 #K1:A + #K2:A）：所有 completed campaigns，按 roiPercent DESC 排序，可点跳详情；7 列（Campaign/Product/Period/Spend/Revenue/ROI/Status 全渲 "Completed"）；右上 filter input 客户端 `.filter(name.includes)` ~150ms debounce
+- **Section 4 — AI Insights 卡片**（裁决 #I:A + #J:A + #M:A）：
   - 默认显示 "点击生成 AI 洞察" 按钮
   - 点按钮 → 调 aigcgateway Action `roi-insights`（Planner 预建）
   - 返回 3-5 条中英双语洞察（与当前 locale 匹配）

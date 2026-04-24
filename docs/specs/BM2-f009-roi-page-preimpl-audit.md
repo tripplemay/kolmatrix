@@ -343,26 +343,168 @@ export async function generateRoiInsights(
 
 ---
 
-## 13. Planner 裁决（留白 · 等待）
+## 13. Planner 裁决（johnsong Planner · 2026-04-24）
 
-Generator 不自裁决。Planner 回复后 Generator 立即开工。
-
-回复格式建议：
-
-```
 ### 13.1 短格式裁决
-#A:?  #B:?  #C:?  #D:?  #E:?  #F:?  #G:?  #H:?
-#I:?  #J:?  #K1:?  #K2:?  #L:?  #M:?
 
-### 13.2 roi-insights Action variables 契约
-（请列出 prompt 模板期待的变量名，Generator 在 src/lib/roi/insights.ts toVariables 中映射）
-
-### 13.3 同步修订
-- 是否同 commit 加 schema Tenant.quarterlyBudget？
-- features.json F009 acceptance 是否需更新？
-
-### 13.4 额外叮嘱
-1. ...
+```
+#A:A3（Hybrid：breadcrumb + title + 时间 toggle 30D active + 其余 disabled+tooltip "B4" + AI Insights 按钮 + "Record revenue → /campaigns" link + Sync drop）
+#B:A（KPI #4 spec 原版 Top Campaign ROI，F008 summary.topCampaign 直渲）
+#C:B（sparkline only，从 F008 trend 30d 派生；period-vs drop 避 F008 contract 改）
+#D:A（动态副标：roi>200% "High Velocity" / 50-200% "Steady" / <50% "Cooling" / null "—"）
+#E:C（保 60/40 视觉 + Quarterly Budget drop；Trend 占左 60% 满高；AI Insights 占右 40%）
+#F:B（Quarterly Budget 整块 drop，不加 schema）
+#G:A（recharts ComposedChart：bar(spend) + bar(revenue) + line(roi%) 次轴）
+#H:A（30 daily bucket，对齐时间 toggle "30D" active）
+#I:A（客户端 button + Server Action + state + localStorage cache 按日 key）
+#J:A（顶栏按钮 + 右侧 panel 双入口；顶栏 click → smooth scroll 到 panel + 触发 generate 首次）
+#K1:A（Status 列全渲，MVP 都显 "Completed"）
+#K2:A（客户端 React filter input）
+#L:B（per #E，Stitch 60/40 合并，Section C Campaign 表全宽）
+#M:A（Action input 含 locale 字段）
 ```
 
-**Generator 收到 Planner main commit 后立即开工。本审计 §13 空白期不写任何代码。**
+### 13.2 roi-insights Action variables 契约（回应 §3 #I 子决议）
+
+**已建 Action 的 variables（Planner 2026-04-23 建时定型，Generator 必须对齐，不得改 Action）：**
+
+```typescript
+// Action ID: cmob2zgae000jbnnuue2i7uaf
+// Model: gemini-3-flash
+// Variables（严格按此 3 个名字，不多不少）：
+{
+  tenant_context: string;   // 例 "Gaming studio with 8 campaigns. Avg ROI 43%. Top campaign: Galactic Forge Alpha Launch."
+  campaigns_json: string;   // JSON.stringify(Array of campaign objects with name/product/spendTotal/revenueRecorded/roiPercent/startedAt/closedAt/kolCount)
+  locale: string;           // "en" or "zh"
+}
+```
+
+**Action output shape（已验证，见 Planner 2026-04-23 real call 测试）：**
+
+```json
+{
+  "insights": [
+    {
+      "title_en": "Galactic Forge High ROI: Successful Sandbox Market Fit",
+      "title_zh": "Galactic Forge 表现强劲：沙盒市场契合度极高",
+      "body_en": "The Alpha Launch exceeded expectations with a 173.3% ROI...",
+      "body_zh": "Galactic Forge 首测表现远超预期...",
+      "severity": "positive"      // positive / neutral / warning
+    }
+  ]
+}
+```
+
+**Generator toVariables 样板：**
+
+```typescript
+// src/lib/roi/insights.ts
+function toVariables(input: RoiInsightInput) {
+  const summary = input.summary;
+  const topLine = summary.topCampaignName
+    ? `Top campaign: ${summary.topCampaignName} (${summary.topCampaignRoi?.toFixed(1)}% ROI).`
+    : "No top campaign yet.";
+
+  const tenantContext = [
+    `Gaming studio with ${input.campaigns.length} completed campaigns.`,
+    `Total spend $${summary.totalSpend.toFixed(0)}, revenue $${summary.totalRevenue.toFixed(0)}, avg ROI ${summary.avgRoiPercent?.toFixed(1) ?? "—"}%.`,
+    topLine,
+  ].join(" ");
+
+  return {
+    tenant_context: tenantContext,
+    campaigns_json: JSON.stringify(input.campaigns),
+    locale: input.locale,
+  };
+}
+```
+
+**Generator response 解析样板（locale 过滤 + shape 映射）：**
+
+```typescript
+import { stripCodeFence } from "@/lib/ai/json-extract"; // F006 抽出的公用 helper
+
+function parseResponse(output: string, locale: "en" | "zh"): RoiInsightItem[] {
+  const raw = JSON.parse(stripCodeFence(output)) as {
+    insights: Array<{
+      title_en: string;
+      title_zh: string;
+      body_en: string;
+      body_zh: string;
+      severity: "positive" | "neutral" | "warning";
+    }>;
+  };
+  return raw.insights.map((i) => ({
+    title: locale === "zh" ? i.title_zh : i.title_en,
+    body: locale === "zh" ? i.body_zh : i.body_en,
+    tone: i.severity === "neutral" ? "info" : i.severity,
+  }));
+}
+```
+
+Generator 可自选 `RoiInsightItem` 内部 shape（此处样板用 `{title, body, tone}` 已 locale-resolved）；也可改用 `{titleEn, titleZh, bodyEn, bodyZh, severity}` 结构在 UI 层做 locale 分支，两种都可接受。
+
+### 13.3 逐条裁决理由
+
+| # | 决定 | 理由 |
+|---|---|---|
+| A | A3 Hybrid | 全照 Stitch 有 Sync + 4 段 toggle 都 active 违 MVP 现状；spec 极简丢视觉还原度；A3 保 breadcrumb + 4 段 toggle 视觉块（非 30D 的 disabled）+ AI 按钮双入口，Record revenue 改 link 跳 /campaigns（active link 不 disabled）+ Sync 无 use-case drop |
+| B | A Top Campaign ROI | "哪个最赚"是 marketer 核心信号；"Active Campaigns"在 /campaigns 列表秒查；spec 原版更有价值 |
+| C | B sparkline only | F008 trend 数据已有，Sparkline（hotfix-F001 抽出）直接绑；period-vs 需 F008 返上一窗口数据，contract 改成本高 MVP 不做 |
+| D | A 动态 | 信号化副标 vs 静态"30D average"信息密度高；3 档阈值（200%/50%/<50%）业内常见合理 |
+| E | C 60/40 drop Budget | Quarterly Budget schema 无（`Tenant.quarterlyBudget` 不存在），F 采 B drop；C drop 避免占位卡无 actionable 的视觉杂质；60/40 视觉保持 |
+| F | B drop Quarterly Budget | 不加 schema（MVP scope）；Tenant 表 BM2 F001 migration 已定，再改需补 migration；F008 也不算 budget 相关 metrics |
+| G | A ComposedChart | spec 写 "line chart" 是文字简化；Stitch bar+line overlay 更贴设计；recharts 已装 ✓ |
+| H | A 30 daily | F008 `computeRoiTrend(tenantId, days=30)` 已返 daily；与时间 toggle "30D" active 一致 |
+| I | A 客户端 + localStorage | spec §4 明确要求；用户控制成本；day-level cache 减少重复调用 |
+| J | A 双入口 smooth scroll | 保视觉还原度 + UX 增强（click 自动滚到 panel + 首次触发 generate）|
+| K1 | A Status 列全渲 | F008 `loadRoiCampaigns` 仅返 completed，MVP 全显 "Completed"；未来含 paused 时 drop 是更小改动 |
+| K2 | A 客户端 filter | `useState` + `.filter(name.includes)` ~10 LOC 成本低；客户端因无 pagination 即时响应 |
+| L | B（与 #E 绑定）| 60/40 视觉密度更好；marketer 边看 trend 边看 insights 更高效；Section C 表全宽 |
+| M | A Action locale | 与 BM2-F006 customize 一致的模式；Action 已有 locale variable（见 §13.2） |
+
+### 13.4 同步文档修订清单
+
+Planner 本次 commit 同步修订：
+
+1. **BM2 spec §F009** 补说明：
+   - KPI #4 = Top Campaign ROI（非 Active Campaigns）
+   - Trend chart 为 recharts ComposedChart（bar+bar+line），30 daily bucket
+   - Quarterly Budget 不实现（schema 无 budgetTotal，drop 整块）
+   - 时间 toggle 4 段仅 "30D" active（其余 disabled+tooltip "B4"）
+   - AI Insights 双入口（顶栏按钮 + 右侧 panel），smooth scroll
+   - Campaign 表加 client-side filter input + Status 列静态 "Completed"
+2. **features.json F009 acceptance**：不动（acceptance 在 spec §F009 body 层级展开，features.json 仅头条描述不受影响）
+3. **不**加 schema migration（Quarterly Budget drop）
+4. **不**改 aigcgateway Action（沿用 2026-04-23 建好的 variables/output shape）
+5. **不**影响 MVP-visual-fidelity hotfix（hotfix 仅覆盖 BM1 + BM2 F003/F005 已做页面，/roi 是 F009 新页）
+
+### 13.5 额外叮嘱（非阻塞）
+
+1. **recharts client-only**：`<RoiTrendChart>` 必须 `"use client"` directive（recharts 含 DOM measure 逻辑，SSR 会 mismatch）
+2. **AI Insights 首屏 placeholder**：idle 状态不要显 Stitch 的 3 条硬编例子（会被 Reviewer 当成幽灵控件；改为"点击按钮查看 AI 分析"空态 + 按钮）
+3. **localStorage tenant 边界**：cache key 含 `tenantId`，多 tenant 切换（用户 impersonate scenario）不串扰
+4. **Filter input debounce**：~150ms debounce 避免每字符 re-render（虽然客户端 filter 便宜，但表大时仍有视觉抖动）
+5. **ComposedChart bar 颜色**：spend 用 `on-surface-variant`（中性灰）/ revenue 用 `cyan-fixed`（品牌色）/ ROI% line 用 `accent-purple`（per Stitch 紫色折线）
+6. **ROI % 次轴 scaling**：y 轴 right 显 %，左 y 轴显 $；ROI 可能 -∞ 到 +∞，限 [-100, 500] 防极端值压扁 spend/revenue bars
+7. **"High Velocity" subtitle 的 i18n**：en "High Velocity" / "Steady" / "Cooling" ; zh "强势增长" / "稳定" / "降温"（i18n 键 `roi.kpi.velocity.{high|steady|cooling|na}`）
+8. **AI 双入口的 UX 细节**：顶栏按钮 click 先判断是否有 cache；有 → smooth scroll to panel（不重调）；无 → smooth scroll + trigger generate。避免首次 click 后再 click 又触发一次（防抖 2s）
+9. **ZOD schema for insights parse**：虽然我给的 parseResponse 样板用了类型断言，实际建议 Generator 在 `src/lib/roi/insights.ts` 加 zod schema `RoiInsightResponseSchema`，parse 失败 fallback 到错误 toast（Action 漂移防护）
+10. **BM1 F009 教训**：`tests/e2e/roi-fidelity.spec.ts` 不用 `waitForLoadState("networkidle")`（recharts 可能持续 resize observer），用 `await page.waitForSelector('[data-testid="roi-kpi-total-spend"]')` 锁首次渲染完成
+11. **埋点 3 事件**：`roi.insights_clicked` / `roi.insights_generated`（success + cache hit/miss flag） / `roi.insights_failed`（含 errorCode）
+12. **视觉参照 HTML 主**：Generator 开工前浏览器打开 `design-draft/stitch-references/roi-tracking.html` 并排 staging（不看 .png 缩略图，per ui-fidelity-guardrail §1.1）
+
+### 13.6 开工确认
+
+**Planner 本次 commit 推 main 后 Generator 立即开工 F009**。按 §11 顺序 7 步推进（~5h）。开工前确认：
+- [x] F008 已 done（ROI engine 三函数 + 3 API 就绪）
+- [x] hotfix-F001 公共组件库就绪（Sparkline / Table / Input / StatusBadge 等）
+- [x] F007 抽出的 Sparkline + RingProgress 已入 common/（F009 Sparkline 直接用；RingProgress 按 #D 决议不直接用）
+- [x] aigcgateway `roi-insights` Action 已建 + real call 验证（action_id 见 §13.2）
+- [x] 批准 recharts ComposedChart（recharts@3.8.1 已装）
+- [x] 批准 Quarterly Budget drop（不加 schema）
+- [x] BM1 F009 E2E 教训清单必遵守
+
+---
+
+**Generator 开工。本审计 §13 已裁决。**
