@@ -1,58 +1,78 @@
-import { Button as ButtonPrimitive } from "@base-ui/react/button"
-import { cva, type VariantProps } from "class-variance-authority"
+/**
+ * Hotfix-F001 · `<Button>` atom.
+ *
+ * 5 variants × 3 sizes built on `class-variance-authority`. Reuses the
+ * project's existing `gradient-cta` Tailwind class for the headline
+ * `primary-gradient` look so callers swapping ad-hoc buttons for this
+ * atom keep pixel-identical visuals.
+ *
+ * Variants:
+ *   primary-gradient — headline CTA (gradient-cta)
+ *   secondary       — outlined cyan
+ *   ghost           — transparent + hover
+ *   danger          — error tone (delete / destructive)
+ *   chip            — small filter chip; toggle on/off via `data-pressed`
+ */
+import { cva, type VariantProps } from "class-variance-authority";
+import { forwardRef } from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "inline-flex items-center justify-center gap-2 rounded-lg font-semibold whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan/40",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
-        outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+        "primary-gradient":
+          "gradient-cta text-on-primary shadow-[0_0_12px_rgba(0,229,255,0.2)] hover:scale-[1.02]",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "border border-cyan/30 bg-cyan/5 text-cyan hover:bg-cyan/10",
         ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
-        destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
-        link: "text-primary underline-offset-4 hover:underline",
+          "border border-outline-variant text-on-surface-variant hover:border-cyan/40 hover:text-cyan",
+        danger:
+          "border border-error/30 bg-error/10 text-error hover:bg-error/20",
+        chip:
+          "border border-outline-variant bg-surface-high/40 text-on-surface-variant hover:border-cyan/40 hover:text-cyan data-[pressed=true]:border-cyan/60 data-[pressed=true]:bg-cyan/10 data-[pressed=true]:text-cyan",
       },
       size: {
-        default:
-          "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        xs: "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        icon: "size-8",
-        "icon-xs":
-          "size-6 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",
-        "icon-sm":
-          "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
-        "icon-lg": "size-9",
+        sm: "h-8 px-3 text-xs",
+        md: "h-10 px-5 text-sm",
+        lg: "h-12 px-6 text-base",
       },
     },
     defaultVariants: {
-      variant: "default",
-      size: "default",
+      variant: "primary-gradient",
+      size: "md",
     },
   }
-)
+);
 
-function Button({
-  className,
-  variant = "default",
-  size = "default",
-  ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
-  return (
-    <ButtonPrimitive
-      data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
-  )
+export type ButtonVariant = NonNullable<
+  VariantProps<typeof buttonVariants>["variant"]
+>;
+export type ButtonSize = NonNullable<
+  VariantProps<typeof buttonVariants>["size"]
+>;
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  /** Sets `data-pressed` on the chip variant for filter-style toggles. */
+  pressed?: boolean;
 }
 
-export { Button, buttonVariants }
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  function Button({ className, variant, size, pressed, type, ...rest }, ref) {
+    return (
+      <button
+        ref={ref}
+        type={type ?? "button"}
+        data-pressed={pressed ? "true" : undefined}
+        className={cn(buttonVariants({ variant, size }), className)}
+        {...rest}
+      />
+    );
+  }
+);
+
+export { buttonVariants };

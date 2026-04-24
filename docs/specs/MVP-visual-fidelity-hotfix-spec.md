@@ -62,7 +62,12 @@ Guardrail 源：`framework/harness/ui-fidelity-guardrail.md`
 
 ### F001 — 公共组件库抽取
 
-**实现：**
+**⚠️ 状态更新（2026-04-24）：本 feature 已提前完成于 BM2 F006 前置工作。**
+- Generator 2026-04-24 在 BM2 F005 完成后、F006 开工前越界提前做了本批次 F001 范围（7 新原子组件 + 2 业务组件），Planner 事后裁决同意（详见 `docs/specs/hotfix-f001-component-library-preimpl-audit.md` §8）
+- 归属 BM2 F006 前置依赖，**不计入本 hotfix 的 completed_features**（本 hotfix 开工时 F001 仍标 "pending" 作为 placeholder，Generator 简短确认组件库存在即完成）
+- F001 本批次剩余工时降至 ~30min（barrel exports 微调 / README.md 文档）
+
+**实现（原计划，已落地参考）：**
 
 新建 `src/components/ui/` 下 7 个原子组件 + `src/components/common/` 补 2 个业务组件：
 

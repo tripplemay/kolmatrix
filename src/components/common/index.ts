@@ -8,6 +8,7 @@ export { ActivityFeedItem } from "./ActivityFeedItem";
 export { AiScoreBadge } from "./AiScoreBadge";
 export { AvatarWithPlatformBadge } from "./AvatarWithPlatformBadge";
 export { CampaignRow } from "./CampaignRow";
+export { ChipButton, type ChipButtonProps } from "./ChipButton";
 export { GhostButton } from "./GhostButton";
 export { GlassPanel } from "./GlassPanel";
 export { GradientButton } from "./GradientButton";
@@ -15,4 +16,9 @@ export { KolCard } from "./KolCard";
 export { SecondaryButton } from "./SecondaryButton";
 export { SectionHeader } from "./SectionHeader";
 export { StatCard } from "./StatCard";
+export {
+  StatusBadge,
+  type StatusBadgeProps,
+  type StatusDomain,
+} from "./StatusBadge";
 export { TagChip } from "./TagChip";
