@@ -320,27 +320,133 @@ en + zh 真译；ja/ko/es en-stub（对齐 BM1 F008 pattern）。
 
 ---
 
-## 12. Planner 裁决（留白 · 等待）
+## 12. Planner 裁决（johnsong Planner · 2026-04-24）
 
-Generator 自裁决明文禁止。Planner 回复格式建议：
-
-```
 ### 12.1 短格式裁决
-#A:A1 #B:C #C:A #D:A2 #E:A #F:A2 #G:A #H:A #I:B #J:依 #A #K:A+新建 lib/email/customize.ts #L:[新建/扩展]#M:批准 npm i resend #N:A #O:server-action #P:✓ #Q:VPS 跑
 
-### 12.2 逐条理由
-| # | 决定 | 理由 |
-| #A | A? | ... |
-
-### 12.3 同步修订清单
-- 若 #A=A1 无需修 spec
-- 若 #A=A2 需更 BM2 spec §F006 增加 `/email-center` 路由
-- features.json: F006 acceptance 不动
-- 其他文件修订如需说明
-
-### 12.4 额外叮嘱
-- 踩坑清单
-- 未来 gotchas
+```
+#A:A1  #B:C  #C:A  #D:A2  #E:A  #F:A2  #G:A  #H:A  #I:B
+#J:per #A=A1（composer 中段）  #K:新建 src/lib/email/customize.ts
+#L:新建 PATCH /api/kols/[id] 只接 email+emailSource（不 unify）
+#M:批准 npm i resend  #N:A  #O:server-action server-side batch
+#P:✓ schema 齐无需 migration  #Q:VPS 跑 --update-snapshots 入 git
 ```
 
-**Generator 收到 Planner commit 推 main 后立即开工，本审计 §12 空白期不写任何代码。**
+### 12.2 逐条裁决与理由
+
+| # | 决定 | 理由 |
+|---|---|---|
+| A | **A1（单页 analytics + composer）** | **PRD §4.1 第 7 行明示 `/outreach` 含"选 KOL + 选模板 + AI 定制 + 发送 + 发件记录"**——发件记录 = Stitch dashboard 部分（Recently sent / Top templates / Recent replies），不是独立页。A2 双路由反而违 PRD。A3 挤 analytics 到窄列丢太多 Stitch 元素。A4 违 guardrail。A1 本质是 PRD 原定义。 |
+| B | **C（tabs 保留 4 个但除 Overview 外 disabled+tooltip）** | 视觉还原度 + 幽灵控件合规；tooltip 标"B4"（对齐 PRD §4.2 Out of Scope 全交 B4）。自删 tabs strip 违 §3.1 anti-pattern |
+| C | **A（5 KPI 全实现）** | EmailLog 已有 sentAt/openedAt/repliedAt/status（bounced），MVP seed 300 行支撑聚合；算法简单：Sent Today=count(sentAt::date=today) / OpenRate=openedAt/sentAt / ReplyRate=repliedAt/sentAt / BounceRate=bounced/sent / Deliverability=1-BounceRate。注意：**prod 实际值会因无 webhook 而停留在 seed 基线**，UI 上别暗示"实时"字样，标注 "Based on last 30d" |
+| D | **A2（CSS flex bars 手搓，不装 recharts）** | 0 新依赖；与 Stitch HTML 原文 inline `style={{height:'60%'}}` 完全一致（bars 是 div flex 实现）；recharts 留给 F009 ROI 页真正需要时装 |
+| E | **A（静态全绿 + Reputation 98% 硬编）** | BI3-F005 + ADR-010 确认 kolquest.com DKIM/SPF/DMARC 全配；Resend admin API 查 reputation 是 B4 功能；98% 是保守静态值 |
+| F | **A2（改 "Recently sent" 最近 10 条 EmailLog desc）** | 避免 "Queue" 语义误导（MVP 无真队列，同步发）；保表头 5 列（KOL/Campaign/Subject/Status/Sent at）；StatusBadge domain="email" (sent/bounced/mock_sent) |
+| G | **A（聚合真实）** | EmailLog.templateId + EmailTemplate.name join；Top-3 by usage DESC；若 usage=0 fallback 显 F002 系统模板名 + "Usage stats from first send" |
+| H | **A（Recent replies）** | EmailLog WHERE repliedAt IS NOT NULL ORDER BY repliedAt DESC LIMIT 3；KOL.displayName + 正文截断 80 字（seed 无 reply body → 显 "—"+ tooltip "Reply body requires Resend webhook (B4)"）|
+| I | **B（静态 insight + 按钮 disabled tooltip "AI subject lines in B4"）** | 新 Action 超 F006 scope；BM2 aigcgateway 已建 3 Action 够用；第 4 Action 属 B4 范围 |
+| J | **Composer section 位于页面中段**（per A1 layout） | 顺序：Header → Tabs → Quick Stats 5 KPI → **Composer 8 步**（sticky `<section id="composer">` 默认锚滚定位，若 `?campaignId=` 预选则页面 onLoad scroll-into-view composer）→ Sending performance chart → 3-col (Top templates / Recent replies / Domain health) → Recently sent table → Footer (Daily Limit)。**composer 必须是进入页面后最快可用的单元。** |
+| K | **新建 `src/lib/email/customize.ts`**（不 reuse generateAiAssets.ts） | Email 变量替换逻辑独立于 Product AI 素材生成；clean boundary 便于独立测试。提取 `stripCodeFence` helper 到 `src/lib/ai/json-extract.ts`（F007/F010 亦复用）|
+| L | **新建 `PATCH /api/kols/[id]`，仅接 email + emailSource**；现有 `/api/kols/[id]/relationship-status` 保留不合并 | 保留独立路由避免本次改动面大（铁律 6 executor 边界）；unify 是 refactor，BL 登记后续批次做。新建的 PATCH 路由 zod 校验（email 格式 / emailSource 枚举 'manual'/'youtube-about'/'ai-extracted'）+ RLS + event_log `kol.email_updated` |
+| M | **批准 `npm i resend`**（官方 SDK，~6.x） | 官方轻量；type-safe；spec §F006 明示依赖；替代方案（fetch 直连）失 types 得不偿失。commit message 注 "Resend 6.x 引入用于 BM2 F006 邮件发送" |
+| N | **A（事务 + audit_log）** | 必须 prisma.$transaction 或 withTenant txn 包裹；按 generator audit §3 #N 模板实现；部分失败必须 rollback 避免状态不一致 |
+| O | **Server Action server-side batch**（server-side `for...of await sendOne()` + `await sleep(6000)`） | 避免 10x round-trip 网络开销；浏览器关闭不中断；前端进度条用 Server Action streaming response 或直接等 promise 完成给 `{ sent, failed, skipped }` 结果 |
+| P | ✓ schema 齐全 | BM2-F001 migration 已加 EmailLog.templateId / aiCustomized / bounceReason；无需新 migration。`fromAddress` 也已有 |
+| Q | **VPS 跑 `--update-snapshots`** | 沿用 BM1 F009 教训；本地 WSL 无 sudo 装 Playwright libs；staging 已装，可直接跑 |
+
+### 12.3 aigcgateway Action HTTP 契约（回应 §3 #K Planner 确认需求）
+
+**Endpoint（生产）：** `POST https://aigc.guangai.ai/v1/actions/{action_id}/run`
+**内网替代：** `POST http://localhost:3099/v1/actions/{action_id}/run`（同 VM 走内网零公网延迟，per environment.md）
+**Auth：** `Authorization: Bearer ${AIGCGATEWAY_API_KEY}`
+**Request body：**
+```json
+{
+  "variables": { "product_name": "...", "kol_name": "...", ... },
+  "dry_run": false
+}
+```
+**Response（成功）：**
+```json
+{
+  "output": "<raw model response, possibly with ```json fence for Claude>",
+  "traceId": "trc_xxx",
+  "usage": { "prompt_tokens": 549, "output_tokens": 287, "total_tokens": 836 }
+}
+```
+**错误：** HTTP 4xx/5xx + body `{ error: "...", message: "..." }`
+
+**Generator 在 `src/lib/email/customize.ts` 实现样板：**
+
+```typescript
+import 'dotenv/config'; // 避免 BL-001 同类问题
+import { stripCodeFence } from '@/lib/ai/json-extract';
+
+const ACTION_ID = 'cmob2z6j00001bnole7i8lg9h';
+
+export async function customizeEmail(input: CustomizeEmailInput): Promise<CustomizeEmailResult> {
+  const apiKey = process.env.AIGCGATEWAY_API_KEY;
+  if (!apiKey) throw new Error('AIGCGATEWAY_API_KEY not set');
+
+  const baseUrl = process.env.AIGCGATEWAY_BASE_URL ?? 'http://localhost:3099/v1';
+  const url = `${baseUrl}/actions/${ACTION_ID}/run`;
+
+  const res = await fetchWithRetry(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({ variables: toVariables(input), dry_run: false }),
+    timeout: 30_000,
+    retries: 1,
+  });
+
+  const { output, traceId } = await res.json();
+  const parsed = JSON.parse(stripCodeFence(output)) as { subject: string; body: string; rationale: string };
+  return { ...parsed, traceId };
+}
+```
+
+### 12.4 同步修订清单
+
+- **BM2 spec §F006**：无需修订（acceptance 保持当前文本；PRD §4.1 已含"发件记录"）
+- **features.json BM2 F006 acceptance**：无需修订（已含 mock fallback / stripCodeFence / contactStatus 更新 / event_log 3 事件等关键要点）
+- **package.json**：Generator 执行 `npm i resend` 后随 commit 一起
+- **framework/ui-fidelity-guardrail.md**：无修订
+- **新文件**：
+  - `src/lib/email/customize.ts` (aigcgateway Action 调用 + stripCodeFence)
+  - `src/lib/email/resend.ts` (Resend SDK wrapper + mock fallback)
+  - `src/lib/email/variable-substitute.ts` (pure fn 变量替换)
+  - `src/lib/email/batch-send.ts` (server-side batch with sleep guard)
+  - `src/lib/ai/json-extract.ts` (stripCodeFence 抽取公用)
+  - `src/app/api/kols/[id]/route.ts` (PATCH email + emailSource)
+  - `src/app/[locale]/(app)/outreach/page.tsx` + 子组件
+- **backlog 登记**：BL-011（新）"`/api/kols/[id]` 统一 PATCH 路由 refactor（F006 email + BM1 relationship-status 合一）"——未来批次做
+
+### 12.5 额外叮嘱（非阻塞）
+
+1. **composer 锚点滚动**：`?campaignId=` 预选时，`useEffect` 触发 `document.getElementById('composer')?.scrollIntoView({behavior:'smooth', block:'start'})`；无 query 时默认顶部 dashboard overview
+2. **Composer visual hierarchy**：composer `<section>` 用 `glass-panel` + `cyan ring` border 强调"这是当前行动区"，与 analytics 区视觉区分
+3. **Quick Stats 标签文案**：在 Quick Stats 块标题处加 "Last 30 days" 小字；右上角 info icon tooltip "Metrics from EmailLog seed; live updates require webhook (B4)"——避免 prod 上线后用户误认为数据实时
+4. **AI Insights 静态文本**：写个友好的占位，如 "Based on recent sends, personalized subject lines drove 35% higher open rates in similar campaigns. Generate subject variants with AI (Coming in B4)"
+5. **Send batch 失败的 UX**：结果页分三段（Sent X / Failed Y / Skipped Z with reasons: no-email / AI timeout / Resend error）；失败给 retry 单条按钮
+6. **BM1 F009 教训清单**：已在 audit §10 列齐，实施时 E2E 必遵守
+7. **audit_log 2 种 action name**：本次 F006 写入 `campaign.kol.status_changed` + `kol.email_updated`，避免命名漂移
+8. **埋点 3 事件**：`email.sent` / `email.ai_customize_clicked` / `email.ai_customize_accepted`（spec §F006 指定）
+9. **Resend 速率**：Resend 默认 100 msg/sec，MVP 10 msg/min 前端/后端节流已极保守
+10. **dotenv import**：`src/lib/email/*.ts` 所有独立使用 env var 的文件顶部加 `import 'dotenv/config';`（BL-001 吸取教训）
+
+### 12.6 开工确认
+
+**Planner 本次 commit 推 main 后 Generator 立即开工**。按 §9 实现清单顺序推进（~5h 工作量）。开工前确认：
+- [x] resend SDK install 已批准
+- [x] aigcgateway action endpoint 已给契约（§12.3）
+- [x] 公共组件库就绪（hotfix F001 提前完成）
+- [x] F005 已 done（依赖上游 Campaign 数据完整）
+- [x] BM1 F009 E2E 教训必须遵守
+- [x] audit §10 清单逐项符合
+
+---
+
+**Generator 开工（本审计 §12 填写后）。本次 audit 文件单 commit 推 main 即完成裁决。**

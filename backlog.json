@@ -84,6 +84,16 @@
     "discovered_in": "Planner audit 2026-04-24"
   },
   {
+    "id": "BL-011",
+    "title": "`/api/kols/[id]` 路由统一（合并 relationship-status + email 两个独立 PATCH）",
+    "description": "BM2 F006 pre-impl 审计 (#L) 发现：BM1 已有 `/api/kols/[id]/relationship-status`（PATCH），F006 需新建 `/api/kols/[id]` (PATCH email + emailSource)；为避免 F006 改动面过大（铁律 6 executor 边界），本批次保留两路由独立，unify 作 refactor 放 backlog。Post-MVP 或专门 refactor 批次做：(1) 把 `/api/kols/[id]` 做成统一 PATCH，接 partial update 含 email/emailSource/relationshipStatus；(2) 删除 `/api/kols/[id]/relationship-status`；(3) F007 CRM 切新路径；(4) audit_log action name 维持（kol.email_updated / kol.relationship_status_changed）。低优先级，MVP 功能不受影响。",
+    "decisions": ["短期保留两路由独立", "长期 unify 放 refactor 批次"],
+    "confirmed_at": "2026-04-24T09:30+0800",
+    "priority": "low",
+    "tags": ["refactor", "api-consistency"],
+    "discovered_in": "BM2 F006 pre-impl audit §3 #L + Planner 裁决 12.4"
+  },
+  {
     "id": "BL-010",
     "title": "Stitch 参考 PNG 全部 512px 缩略图 — 自动渲染高分辨率大 PNG（render-stitch-previews.ts）",
     "description": "2026-04-24 用户发现并 Planner 确认：`design-draft/stitch-references/*.png` 18 张全部是 Stitch preview 导出的 512px 封顶缩略图（详细尺寸 239-512 × 410-515，文件 56-152KB）。问题：Planner 读 PNG 起 spec 会漏细节；Generator 看 PNG 只能看大体块导致'装饰性删除'倾向；Reviewer 并排对比 PNG vs staging 时 PNG 看不清无法做像素级 fidelity 判断。guardrail §1.1 临时解法：用 HTML 浏览器渲染作为主参照物（HTML 本身就是 Stitch 精确 DOM 输出）。长期解：脚本自动渲染 HTML 为 1920px 大 PNG。实现：新建 `scripts/render-stitch-previews.ts` 用 Playwright headless chromium 1920×1200 viewport 打开每个 `design-draft/stitch-references/*.html` → 全页截图 → 写 `design-draft/stitch-references/renders/<page>-1920.png`；npm script `render:stitch-previews`；未来 Stitch 设计更新一键重跑。注意 HTML 可能引用外部资源（Tailwind CDN / Material Icons CDN / fonts），script 需确保全部加载完才截图（可用 waitForLoadState 'networkidle' + 额外 delay）。落地时机：并入 MVP-visual-fidelity hotfix F001 附带产出（~1h 额外工时），或独立 BL 执行。",
