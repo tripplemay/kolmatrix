@@ -82,8 +82,7 @@ export default async function OutreachPage({ params, searchParams }: Props) {
     templateLabel: tComposer("templateLabel"),
     templatePlaceholder: tComposer("templatePlaceholder"),
     kolSection: tComposer("kolSection"),
-    kolSelected: (n: number, total: number) =>
-      tComposer("kolSelected", { count: n, total }),
+    kolSelectedTemplate: tComposer.raw("kolSelected") as string,
     kolHeadSelect: tComposer("kolHeadSelect"),
     kolHeadCreator: tComposer("kolHeadCreator"),
     kolHeadEmail: tComposer("kolHeadEmail"),
@@ -99,8 +98,9 @@ export default async function OutreachPage({ params, searchParams }: Props) {
     previewTitle: tComposer("previewTitle"),
     previewSubject: tComposer("previewSubject"),
     previewBody: tComposer("previewBody"),
-    missingTokensWarning: (tokens: string) =>
-      tComposer("missingTokensWarning", { tokens }),
+    missingTokensWarningTemplate: tComposer.raw(
+      "missingTokensWarning"
+    ) as string,
     aiCustomizeButton: tComposer("aiCustomizeButton"),
     aiCustomizeTitle: tComposer("aiCustomizeTitle"),
     aiCustomizeOriginal: tComposer("aiCustomizeOriginal"),
@@ -111,11 +111,9 @@ export default async function OutreachPage({ params, searchParams }: Props) {
     aiCustomizePending: tComposer("aiCustomizePending"),
     sendButton: tComposer("sendButton"),
     sendPending: tComposer("sendPending"),
-    resultSentCount: (n: number) => tComposer("resultSentCount", { count: n }),
-    resultMockedCount: (n: number) =>
-      tComposer("resultMockedCount", { count: n }),
-    resultFailedCount: (n: number) =>
-      tComposer("resultFailedCount", { count: n }),
+    resultSentCountTemplate: tComposer.raw("resultSentCount") as string,
+    resultMockedCountTemplate: tComposer.raw("resultMockedCount") as string,
+    resultFailedCountTemplate: tComposer.raw("resultFailedCount") as string,
     resultDismiss: tComposer("resultDismiss"),
     statusLabels: {
       pending: tStatus("pending"),

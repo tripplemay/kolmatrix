@@ -60,7 +60,7 @@ interface Labels {
   templateLabel: string;
   templatePlaceholder: string;
   kolSection: string;
-  kolSelected: (n: number, total: number) => string;
+  kolSelectedTemplate: string;
   kolHeadSelect: string;
   kolHeadCreator: string;
   kolHeadEmail: string;
@@ -74,7 +74,7 @@ interface Labels {
   previewTitle: string;
   previewSubject: string;
   previewBody: string;
-  missingTokensWarning: (tokens: string) => string;
+  missingTokensWarningTemplate: string;
   aiCustomizeButton: string;
   aiCustomizeTitle: string;
   aiCustomizeOriginal: string;
@@ -85,9 +85,9 @@ interface Labels {
   aiCustomizePending: string;
   sendButton: string;
   sendPending: string;
-  resultSentCount: (n: number) => string;
-  resultMockedCount: (n: number) => string;
-  resultFailedCount: (n: number) => string;
+  resultSentCountTemplate: string;
+  resultMockedCountTemplate: string;
+  resultFailedCountTemplate: string;
   resultDismiss: string;
   statusLabels: Record<string, string>;
   errorLabels: Record<string, string>;
@@ -389,7 +389,10 @@ export function OutreachComposer({
             </pre>
             {preview.missing.length > 0 ? (
               <p className="mt-3 rounded border border-warning/40 bg-warning/10 px-2 py-1 text-[11px] text-warning">
-                {labels.missingTokensWarning(preview.missing.join(", "))}
+                {labels.missingTokensWarningTemplate.replace(
+                  "{tokens}",
+                  preview.missing.join(", ")
+                )}
               </p>
             ) : null}
           </div>
@@ -425,7 +428,9 @@ export function OutreachComposer({
 
       <div className="mt-8 flex items-center justify-between gap-4 border-t border-white/5 pt-5">
         <div className="text-sm text-on-surface-variant">
-          {labels.kolSelected(checked.size, selectableKols.length)}
+          {labels.kolSelectedTemplate
+            .replace("{count}", String(checked.size))
+            .replace("{total}", String(selectableKols.length))}
         </div>
         <Button
           variant="primary-gradient"
@@ -465,13 +470,22 @@ export function OutreachComposer({
         >
           <div className="flex flex-wrap gap-3 text-sm font-semibold">
             <span className="text-emerald-300">
-              {labels.resultSentCount(sendResult.sent)}
+              {labels.resultSentCountTemplate.replace(
+                "{count}",
+                String(sendResult.sent)
+              )}
             </span>
             <span className="text-cyan">
-              {labels.resultMockedCount(sendResult.mocked)}
+              {labels.resultMockedCountTemplate.replace(
+                "{count}",
+                String(sendResult.mocked)
+              )}
             </span>
             <span className="text-error">
-              {labels.resultFailedCount(sendResult.failed)}
+              {labels.resultFailedCountTemplate.replace(
+                "{count}",
+                String(sendResult.failed)
+              )}
             </span>
           </div>
           {sendResult.items.some((i) => i.status === "failed") ? (
