@@ -78,7 +78,7 @@
       "title": "AI 周报页 /weekly-report（生成 + PDF 导出 + 分享链接）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/app/[locale]/(app)/weekly-report/page.tsx 对齐 Stitch weekly-report.html；date picker（过去 7 天）+ locale selector；'生成周报' 调 aigcgateway Action weekly-report-for-client（action_id=cmob2zqkp0001bnnvel4vjapu model=gemini-3-flash）输入 tenant(name+logoUrl) + kol_activity_json + roi_data_json + prev_week_comparison_json → markdown；写入 WeeklyReport 表 (tenantId, weekStart, weekEnd, locale, contentMd, summaryJson=tenant snapshot + input data, createdByUserId)；react-markdown 渲染 5 段式（Executive Summary / Top Performers / Key Activity / Key Insights / Looking Ahead）+ branded header（tenant.name + logoUrl）；PDF 导出 window.print() + @media print stylesheet A4 隐藏 nav/sidebar；POST /api/weekly-reports/:id/share-token → 32 字符 token + 7 天过期 写回 WeeklyReport；src/app/shared/weekly-report/[token]/page.tsx 匿名路由 superuser 连接按 token 查 + 过期校验 + 仅 SELECT content_md/summary_json/created_at/share_token_expires_at（不 join tenant 表，logoUrl 从 summary_json 读）+ <meta robots noindex>；历史周报切换 /weekly-report?id=:id（最近 10 份）；tests/integration/weekly-report.test.ts（生成 + token + 过期 + 匿名访问）；visual baseline（登录 + 匿名 2 张）"
     },
     {
