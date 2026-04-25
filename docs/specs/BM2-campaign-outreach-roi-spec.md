@@ -540,29 +540,32 @@ Page：`src/app/[locale]/(app)/weekly-report/page.tsx` + WeeklyReportGenerator /
 
 **核心流程**（对齐 Stitch `weekly-report.html`）：
 
-1. 顶部 date picker（默认"过去 7 天"）+ locale selector（en/zh）
-2. "生成周报" 按钮 → 调 aigcgateway Action `weekly-report-for-client`（Planner 预建），输入：
-   - tenant（name / logo URL）
-   - 本期 KOL 活动（新增合作 / 切换状态 / 新增邮件发送等）
-   - 本期 ROI 数据（spend / revenue / top campaigns / 趋势）
-   - 上期对比（如果有）
-3. 返回 markdown → 前端用 `react-markdown` 渲染
-4. 渲染结果布局（PRD §2.1 DoD #7）：
-   - **Branded header**：tenant logo + 周报标题 + 日期范围
-   - **Executive Summary**：2-3 段
-   - **Top Performers**：Top 3 KOL / Campaign
-   - **Key Insights**：3-5 bullet points
-   - **Looking Ahead**：下周建议 2-3 条
+1. 顶部 page header（per F010 裁决 #A:A3）：breadcrumb + title + range toggle 2 段（"Last Week" active + "Last Month" disabled+tooltip "Custom range ships in B4"）+ locale selector `<select>` (en/zh) + Generate/Regenerate/Share/Download PDF 按钮组；settings 按钮 drop（不渲染）
+2. "生成周报" 按钮 → 调 aigcgateway Action `weekly-report-for-client` (action_id `cmob2zqkp0001bnnvel4vjapu`)，**Action variables 严格 7 个字段**（per F010 裁决 §13.2）：
+   - `tenant_name` (string)
+   - `report_week_start` / `report_week_end` (YYYY-MM-DD，分两字段非合并 week_range)
+   - `locale` (en/zh)
+   - `kol_activity_json` / `roi_data_json` / `prev_week_comparison_json`（stringified JSON；prev_week 空时传 `""` 非 `"{}"`）
+   - **`tenant_logo_url` 不传给 AI**（logo 是 UI 层 + summaryJson 快照，不影响 AI 文本）
+3. **Action output = raw markdown 5 段式**（**非 JSON 包裹**，per real call 验证）：`## Executive Summary` / `## Top Performers` / `## Key Activity This Week` / `## Key Insights` / `## Looking Ahead`
+4. 客户端用 `react-markdown` + `remark-gfm`（per #L:B 批准 npm install）渲染；`markdown-split.ts` H2 切片纯函数把 5 段分发到 Stitch 视觉块：
+   - **Branded header**：tenant.logoUrl + name（不分 markdown 段）
+   - **Executive Summary 卡**（## Executive Summary 段 → 2 列卡）
+   - **2 卡 Metric Highlights**（per #C:C drop Combined Impressions）：KOL Reach + ROI Realized
+   - **AI Insights 右侧 panel**（per #E:A）：## Key Insights 段提取 3-5 bullets 渲染彩边卡
+   - **Top Performers / Key Activity / Looking Ahead 段**：markdown body 自然渲染（per #D/#G:B drop 结构化卡）
+   - **Budget Pacing / Next Week Outlook drop**（per #F/#G:B）
+   - **历史周报 select 切换器**：page header 含 `<select>` 显近 10 份按 weekEnd DESC + URL `?id=:id`
 5. **PDF 导出**：
    - 按钮 → `window.print()` 触发浏览器打印对话
    - 页面用 `@media print` stylesheet：A4 / 隐藏 nav/sidebar / 强制分页
    - 用户在打印对话选 "Save as PDF"
-6. **分享链接**（按钮）：
-   - 生成周报时自动写入 `WeeklyReport` 表（contentMd + summaryJson 快照，保证 aigcgateway 不可达时匿名页仍能渲染）
-   - POST `/api/weekly-reports/:id/share-token` → 生成 32 字符 token + 7 天过期 → 写回同一 WeeklyReport 行的 shareToken / shareTokenExpiresAt
-   - 返回 URL `https://kol.guangai.ai/shared/weekly-report/:token`
-   - 客户访问 `/shared/weekly-report/:token` 匿名渲染 WeeklyReport.contentMd，no-index meta
-   - 历史周报可通过 `/weekly-report?id=:id` 切换查看（MVP 至少支持最近 10 份）
+6. **分享链接**（per #J:A 自动复制 + toast 无 modal）：
+   - 生成周报时**upsert 写入** `WeeklyReport` 表（per #I:B + I.1，F010 同 commit 加 ALTER TABLE 加 UNIQUE constraint `(tenant_id, week_start, week_end, locale)`）；contentMd + summaryJson 快照（含 `{tenantSnapshot:{name,logoUrl}, kolActivity, roiData, prevWeekComparison, generatedAt, traceId}`），保证匿名页不 join Tenant
+   - 重新生成（同 tenant + week + locale）= **覆盖** contentMd + summaryJson + **同时清掉** shareToken / shareTokenExpiresAt（旧链接打开看到的不应该是旧内容）
+   - Share 按钮 click → server action 生成 32 字符 token（`crypto.randomBytes(24).toString('base64url')`）+ 7 天过期 → 写回同一 WeeklyReport 行 + **自动复制到剪贴板** + toast "Link copied · expires in 7 days"
+   - 客户访问 `https://kol.guangai.ai/shared/weekly-report/:token` 匿名渲染 WeeklyReport.contentMd，no-index meta
+   - 历史周报：page header `<select>` 显近 10 份（per #H:A），URL `?id=:id` 切换
 
 **Share 路由**：`src/app/shared/weekly-report/[token]/page.tsx` — 不走 `[locale]/(app)` auth layout，中间件跳过 auth；服务端按 token 查 WeeklyReport + 过期校验（走 superuser 连接绕 RLS，仅 SELECT content_md / summary_json / created_at / share_token_expires_at 4 列，品牌 header（tenant.name + logoUrl）已在生成时快照进 summary_json，匿名页不再 join tenant 表，杜绝横向越权）；设置 `<meta name="robots" content="noindex" />`。
 

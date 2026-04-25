@@ -402,14 +402,226 @@ export async function generateWeeklyReport(
 
 ---
 
-## 13. Planner 裁决（待填写）
+## 13. Planner 裁决（johnsong Planner · 2026-04-25）
 
-> 留白 — Planner 在主分支 commit 中补 §13。Generator 不开工。
+### 13.1 短格式裁决
 
-请 Planner 给出：
-1. §13.1 短格式裁决（#A-#M 13 条决定）
-2. §13.2 weekly-report-for-client Action variables + output shape（参照 F009 §13.2 格式）
-3. §13.3 逐条理由表
-4. §13.4 同步文档修订清单
-5. §13.5 额外叮嘱（react-markdown 安装 / migration 时机 / cross-browser PDF 测试 / 等）
-6. §13.6 开工确认
+```
+#A:A3（Hybrid：range toggle "Last Week" active + "Last Month" disabled+tooltip "B4" + locale selector en/zh + settings drop）
+#B:A（AI markdown ## Executive Summary 段渲染到 Stitch 2 列卡，需 markdown-split.ts H2 切片）
+#C:C（2 卡 Metric Highlights：KOL Reach + ROI Realized；Combined Impressions drop 因 CampaignMetric.impressions seed 无 reliable 数据）
+#D:B（Top Performing Partnerships 表 drop；AI markdown 自带 ## Top Performers 段足够，重复结构化表是冗余）
+#E:A（AI Insights 右侧 panel：解析 ## Key Insights 段提取 3-5 bullets 渲染为彩边卡，与 F009 RoiInsightsPanel 视觉一致）
+#F:B（Budget Pacing Q2 整块 drop；与 F009 同处理；schema 不加 budgetTotal migration）
+#G:B（Next Week Outlook 三栏 drop；AI markdown ## Looking Ahead 段已带；Reports 列纯 placeholder 违幽灵控件）
+#H:A（历史周报 select 切换器 + URL ?id=:id 显近 10 份按 weekEnd DESC）
+#I:B + I.1:F010 同 commit migration（upsert 语义：(tenantId, weekStart, weekEnd, locale) UNIQUE；F010 加 ALTER TABLE 一并迁；prod 无 dup row 风险）
+#J:A（Share click → server action 生成 token → 自动复制剪贴板 + toast "Link copied · 7 days"，无 modal）
+#K:A+C（@media print 全局 stylesheet + document.title = "WeeklyReport_{tenant}_{YYYYMMDD}"，影响保存文件名）
+#L:B（npm i react-markdown + remark-gfm；批准；bundle ~30KB Next code-split 仅 /weekly-report 加载，可接受）
+#M:见 §13.2 精确契约（Generator §3 #M 推测有偏差，必须按 §13.2 修正）
+```
+
+### 13.2 weekly-report-for-client Action 精确契约（Planner 必给，覆盖 Generator §3 #M 推测）
+
+**已建 Action variables（Planner 2026-04-23 建时定型，**严格按此 7 个字段，不多不少**，**Generator 不得改 Action**）：**
+
+```typescript
+// Action ID: cmob2zqkp0001bnnvel4vjapu
+// Model: gemini-3-flash
+// Variables（命名 ⚠️ 注意：Generator §3 #M 推测的 tenant_logo_url 不在；week_range 拆为 start+end）：
+{
+  tenant_name: string;              // 例 "Lightning Games Inc."
+  report_week_start: string;        // YYYY-MM-DD（周一）例 "2026-04-14"
+  report_week_end: string;          // YYYY-MM-DD（周日）例 "2026-04-20"
+  locale: string;                   // "en" or "zh"
+  kol_activity_json: string;        // JSON.stringify({newPartnerships, statusChanges:[{kol,from,to}], emailsSent, aiCustomizedEmails, ...})
+  roi_data_json: string;            // JSON.stringify({totalSpend, totalRevenue, avgRoiPercent, topCampaign:{name, roiPercent}})
+  prev_week_comparison_json: string; // JSON.stringify({totalSpendDelta:"+20%", totalRevenueDelta:"+35%"}) 可选；空时传 ""（注意是空字符串非 "{}"）
+}
+```
+
+**关键：`tenant.logoUrl` 不传给 AI**（logo 不影响 AI 文本生成；UI 层从 DB 读 Tenant.logoUrl 渲染 branded header；写入 WeeklyReport.summaryJson 快照便于匿名页渲染）。
+
+**Action output shape（Planner 2026-04-23 real call 已验证，与 Generator §3 #M 推测都不同）：**
+
+**output 是 raw markdown 字符串**，不是 JSON 包裹。直接 `## Executive Summary\n...\n## Top Performers\n...\n## Key Activity This Week\n...\n## Key Insights\n- ...\n## Looking Ahead\n- ...` 5 段式。
+
+```
+## Executive Summary
+This week marked a period of accelerated growth for ...
+
+## Top Performers
+*   **Galactic Forge Alpha Campaign:** ...
+*   **Revenue Generation:** ...
+*   **Email Outreach Efficiency:** ...
+
+## Key Activity This Week
+*   Onboarded 3 new high-potential KOL partnerships ...
+*   ...
+
+## Key Insights
+*   **Scaling Efficiency:** ...
+*   ...
+
+## Looking Ahead
+*   Finalize terms with NintendoGalaxy ...
+*   ...
+```
+
+**Generator `generateWeeklyReport()` 实现样板：**
+
+```typescript
+// src/lib/weekly-report/generate.ts
+import 'dotenv/config';
+import { stripCodeFence } from '@/lib/ai/json-extract'; // F006 抽出，仍可用作 markdown 防御性 strip
+
+const ACTION_ID = 'cmob2zqkp0001bnnvel4vjapu';
+
+export async function generateWeeklyReport(input: WeeklyReportInput): Promise<WeeklyReportResult> {
+  const apiKey = process.env.AIGCGATEWAY_API_KEY;
+  if (!apiKey) throw new Error('AIGCGATEWAY_API_KEY not set');
+
+  const baseUrl = process.env.AIGCGATEWAY_BASE_URL ?? 'http://localhost:3099/v1';
+  const url = `${baseUrl}/actions/${ACTION_ID}/run`;
+
+  const variables = {
+    tenant_name: input.tenant.name,
+    report_week_start: formatDateUTC(input.weekStart), // YYYY-MM-DD
+    report_week_end: formatDateUTC(input.weekEnd),
+    locale: input.locale,
+    kol_activity_json: JSON.stringify(input.kolActivity),
+    roi_data_json: JSON.stringify(input.roiData),
+    prev_week_comparison_json: input.prevWeekComparison
+      ? JSON.stringify(input.prevWeekComparison)
+      : '', // 空字符串，非 "{}"
+  };
+
+  const res = await fetchWithRetry(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({ variables, dry_run: false }),
+    timeout: 30_000,
+    retries: 1,
+  });
+
+  const { output, traceId, usage } = await res.json();
+  // Gemini 实测无 code fence（vs Claude Haiku F006 case），但防御性 strip
+  const markdown = stripCodeFence(output);
+
+  // 校验 5 个 H2 标题存在
+  const requiredHeadings = ['Executive Summary', 'Top Performers', 'Key Activity', 'Key Insights', 'Looking Ahead'];
+  for (const h of requiredHeadings) {
+    if (!markdown.includes(`## ${h}`)) {
+      throw new Error(`AI output missing required section: ${h}`);
+    }
+  }
+
+  return {
+    markdown,
+    traceId,
+    cost: usage ? estimateCost(usage) : undefined,  // gemini-3-flash $0.5 in / $3 out per 1M
+  };
+}
+```
+
+**Generator markdown-split.ts 样板（H2 切片纯函数）：**
+
+```typescript
+// src/lib/weekly-report/markdown-split.ts
+export function splitByH2(markdown: string): Record<string, string> {
+  const sections: Record<string, string> = {};
+  const lines = markdown.split('\n');
+  let currentKey = '_preamble';
+  let buffer: string[] = [];
+
+  for (const line of lines) {
+    const m = line.match(/^##\s+(.+)$/);
+    if (m) {
+      if (buffer.length) sections[currentKey] = buffer.join('\n').trim();
+      currentKey = m[1].trim();
+      buffer = [];
+    } else {
+      buffer.push(line);
+    }
+  }
+  if (buffer.length) sections[currentKey] = buffer.join('\n').trim();
+  return sections;
+}
+
+// 使用：
+const sections = splitByH2(report.markdown);
+// sections["Executive Summary"] = "This week marked..."
+// sections["Top Performers"] = "*   **Galactic Forge..."
+// sections["Key Insights"] = "*   **Scaling Efficiency..."
+// 等
+```
+
+### 13.3 逐条裁决理由
+
+| # | 决定 | 理由 |
+|---|---|---|
+| A | A3 Hybrid | range toggle 视觉块保 Stitch 还原度；Last Month 是 "B4 custom range" 占位幽灵控件合规；locale selector 必须（spec 明示）；settings 按钮无 use case，drop 不渲染（per §3.3 隐藏 vs disabled 二选一） |
+| B | A | spec 5 段式与 Stitch 9 section 的最大公约数：把 AI markdown 5 个 H2 子段分发到 Stitch 视觉块（Executive Summary 卡 + AI Insights 右 panel 等）；C Hybrid 已被 A 包含 |
+| C | C 2 卡 | Combined Impressions 数据靠 CampaignMetric.impressions，MVP seed 不会有 → drop 真诚 > 占位假数；KOL Reach 从 KolCampaign 派生 + ROI Realized 从 F008 派生均可信 |
+| D | B drop | AI markdown ## Top Performers 段已被 prompt 要求 "3 bullet points: top 3 campaigns or KOLs with specific numbers"，重复结构化表 = 视觉重复；spec 也未要求结构化表 |
+| E | A 右 panel | Stitch 视觉块明确 + 解析成本低（splitByH2）+ 与 F009 RoiInsightsPanel 视觉一致维持产品一致性 |
+| F | B drop | F009 #F 同款（Quarterly Budget schema 无）；MVP scope |
+| G | B drop | AI markdown ## Looking Ahead 段已被 prompt 要求 "2-3 bullets — actionable next steps"；Reports 列硬编 placeholder 违 §3.3 anti-pattern；upcoming/follow-ups 派生数据但 UX 价值低（Campaign 详情页已有） |
+| H | A select 切换 | spec 明示；select 成本低；URL ?id 维持 share-friendliness（B4 加书签可行） |
+| I | B upsert + I.1 同 commit migration | 同周重生 audit 价值低（A 方案）；upsert 简洁（B）；prod WeeklyReport 表初始空无 dup 风险，F010 同 commit 加 unique constraint 是合理时机 |
+| J | A 自动复制 + toast | 最低摩擦；spec 7 天有效期可在 toast "Link copied · expires in 7 days" 一并展示 |
+| K | A + C | @media print 是低成本 UX；document.title 改影响保存默认文件名（macOS Safari + Chrome 都支持）；B 开新路由复杂度高且多一次 SSR |
+| L | B react-markdown + remark-gfm | AI 输出 ## Top Performers 段会用 GFM bullet（实测 `*   **bold:** ...`），无 GFM 渲染 bold 不出 + 表对齐丢失；30KB bundle 仅 /weekly-report 加载 Next 自动 code-split |
+| M | 见 §13.2 | Generator §3 #M 推测有 2 处偏差需对齐：(1) 推测 `tenant_logo_url` 实际 Action 不接 logo；(2) 推测 `week_range` 实际是 `report_week_start` + `report_week_end` 两字段。Output 推测 JSON 包裹实际是 raw markdown |
+
+### 13.4 同步文档修订清单
+
+Planner 本次 commit 同步修订：
+
+1. **BM2 spec §F010**：在 §F010 acceptance 段补 5 处对齐：
+   - locale selector 显式（en/zh）+ "Last Month" disabled+tooltip
+   - 3-Tile Metrics 改为 2 卡（Impressions drop）
+   - Top Performing Partnerships 表 drop
+   - AI Insights 右 panel = markdown ## Key Insights 段渲染
+   - Budget Pacing + Next Week Outlook drop
+   - 历史周报 select + ?id 切换
+   - upsert (tenantId, weekStart, weekEnd, locale) 唯一约束 + F010 同 commit migration
+2. **features.json BM2 F010 acceptance**：不动（features.json 仅头条描述，详细 acceptance 在 spec body）
+3. **新依赖**：批准 `npm install react-markdown remark-gfm`，commit message 注明
+4. **WeeklyReport unique constraint migration**：F010 同 commit 一起 push（路径 `prisma/migrations/20260425_F010_weekly_report_unique/migration.sql`，纯 ALTER TABLE，零数据风险）
+5. **匿名路由 SQL**：明确 SELECT 4 列 + 不 join tenant；tenant 信息全靠 WeeklyReport.summaryJson 写入时快照（含 tenant.name + tenant.logoUrl）
+6. **不**改 aigcgateway Action（沿用 2026-04-23 建好的 7 variables）
+
+### 13.5 额外叮嘱（非阻塞）
+
+1. **react-markdown SSR 兼容**：默认支持 SSR，但 GFM 表渲染在某些版本有 hydration mismatch 风险；建议 `<WeeklyReportRenderer>` 含 `"use client"` 强制客户端渲染（避免 SSR/CSR mismatch）
+2. **markdown 校验失败 fallback**：5 个 H2 标题缺失时（极端 AI 漂移）→ 整段 raw markdown 全宽渲染 + 顶部 warning bar "AI output missing some sections, displaying raw"，不要 throw exception 让用户看不到周报
+3. **匿名页 OG meta**：除 `<meta name="robots" content="noindex">` 外，加 `<meta property="og:title">` + `og:description` 让客户分享到 IM 时有预览（但 noindex 防搜索引擎）
+4. **share token 32 chars**：用 `crypto.randomBytes(24).toString('base64url')` 生成（24 bytes base64url ≈ 32 chars，URL-safe，无 `+/=` 字符）
+5. **PDF 文件名**：`document.title = '"WeeklyReport_" + tenantName.replace(/[^a-z0-9]/gi, "_") + "_" + weekStart.replace(/-/g, "")'`；保存默认 `WeeklyReport_Lightning_Games_Inc__20260414.pdf`
+6. **历史周报 select 显示**：`<option>` 文本格式 "Apr 14-20, 2026 (en)"；按 weekEnd DESC + locale 同时显示便于跨语言切换
+7. **upsert 与 share token 关系**：重新生成（覆盖 contentMd / summaryJson）必须**同时清掉** shareToken / shareTokenExpiresAt（旧 token 链接打开后看到的是旧内容，不应该；upsert 时重置）
+8. **gemini-3-flash 实测无 code fence**（F009 + F006 测试都干净），仍防御性 stripCodeFence；不要 throw 失败
+9. **BM1 F009 教训**：E2E waitForSelector `[data-testid="weekly-report-markdown"]` 锁渲染完成；不用 networkidle（react-markdown 含 syntax highlight 持续 work）
+10. **埋点 6 事件**：generate_clicked / generated（cost+traceId）/ generated_failed（errorCode）/ share_token_created / pdf_export_clicked / shared_view（含 days_until_expiry）
+11. **i18n 双重 locale**：`weeklyReport.*` namespace 按页 locale 翻译（按钮/标题/UI chrome），AI 生成的 markdown 内容按用户选的 locale selector 调（默认 = 页 locale；用户可改）；二者解耦
+12. **跨浏览器 PDF 测试**：Chrome / Safari / Firefox 各试一次（Stitch 设计 cyan + glass-panel 在 print mode 可能黑底白字反向 → 用 `@media print { ... background: white; color: black; ... }` force light）
+13. **WeeklyReport.summaryJson 字段**：写入时含 `{ tenantSnapshot: {name, logoUrl}, kolActivity, roiData, prevWeekComparison, generatedAt, traceId }`；匿名路由从 summaryJson.tenantSnapshot 读 logo（避免 join Tenant 表）
+14. **视觉参照 HTML 主**：浏览器打开 `design-draft/stitch-references/weekly-report.html` 作为主参照（per ui-fidelity-guardrail §1.1，PNG 缩略图不参照）
+
+### 13.6 开工确认
+
+**Planner 本次 commit 推 main 后 Generator 立即开工 F010**。按 §11 顺序 13 步推进（~9-11h）。开工前确认：
+- [x] F009 已 done（依赖 ROI 数据装配 helpers）
+- [x] hotfix-F001 公共组件库就绪（Button / GlassPanel / SectionHeader / StatCard / StatusBadge）
+- [x] aigcgateway `weekly-report-for-client` Action 已建 + real call 验证（action_id 见 §13.2）
+- [x] 批准 `npm i react-markdown remark-gfm`（~30KB bundle，Next code-split）
+- [x] 批准 F010 同 commit 加 WeeklyReport unique constraint migration
+- [x] 批准抽 `<WeeklyReportRenderer>` / `<WeeklyReportShareToast>` / `<WeeklyReportHistorySelector>` inline 在 page 目录（不抽 common，仅本页用）
+- [x] BM1 F009 E2E 教训清单必遵守
+- [x] §13.5 14 条额外叮嘱已读
+
+---
+
+**Generator 开工。本审计 §13 已裁决。**
