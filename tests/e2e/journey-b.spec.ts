@@ -47,10 +47,12 @@ test.describe("BM2 Journey B — Campaign → ROI → Weekly Report", () => {
 
     // Step 3 — Open the first campaign if any. Tenant may have no
     // campaigns; in that case skip the detail assertion (resilient
-    // to seed variability per BM1-F009 lesson).
+    // to seed variability per BM1-F009 lesson). The row is a <tr>
+    // wrapper; the navigation Link lives inside its first <Td>, so
+    // click that link directly rather than the row container.
     const firstRow = page.locator('[data-testid="campaign-row"]').first();
     if (await firstRow.count()) {
-      await firstRow.click();
+      await firstRow.locator("a").first().click();
       await page.waitForURL(
         /\/(en|zh|ja|ko|es)\/campaigns\/[0-9a-f-]{36}(\/|\?|$)/
       );

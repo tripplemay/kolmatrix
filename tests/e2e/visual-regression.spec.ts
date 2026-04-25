@@ -239,11 +239,13 @@ test.describe("Authenticated BM2 visual regression", () => {
     await page.waitForSelector('[data-testid="campaigns-page-title"]');
 
     // Click into the first row in whatever order the seed produced.
+    // The row is a <tr> with a Link nested in its first cell — click
+    // the link directly so navigation actually fires.
     const firstRow = page.locator('[data-testid="campaign-row"]').first();
     if ((await firstRow.count()) === 0) {
       test.skip(true, "No campaigns in seed — detail baseline N/A");
     }
-    await firstRow.click();
+    await firstRow.locator("a").first().click();
     await page.waitForURL(/\/campaigns\/[0-9a-f-]{36}(\/|\?|$)/);
     await page.waitForSelector('[data-testid="campaign-detail-title"]');
     await fontsReady(page);
