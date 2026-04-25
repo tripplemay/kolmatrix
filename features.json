@@ -86,7 +86,7 @@
       "title": "Tests + Visual regression baselines（6 页）+ BM1 E2E resilience 教训落地",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Integration tests 6 files（bm2-schema/email-template-seed/campaigns-api/outreach-api/crm-api/roi-api）+ unit tests 2 files（roi-compute 全 branch / email-customize 变量替换）+ E2E 2 files（journey-a: /discovery 保存→/campaigns/new→加 KOL→/outreach→AI 定制→发 mock；journey-b: 录 revenue→/roi→/weekly-report→PDF→匿名分享访问）+ 6 张 visual baseline（campaigns-list/campaign-detail/outreach/crm/roi/weekly-report）容差 0.1；AI 定制采纳率埋点验证 E2E 里 event_log 3 event 写入；**BM1 F009 教训必须落地**：禁用 waitForLoadState networkidle / 禁硬编 seed count 用 regex 或 >0 / revalidate 后 polling 15s / login redirect 锁 locale regex / saveKol 同时 revalidate 关联路由；fix_rounds 目标 ≤1；CI integration-tests + e2e-tests + visual-regression 三 job 全绿"
     }
   ]
