@@ -1,0 +1,94 @@
+name: Update visual baselines
+
+# Manual baseline-regeneration workflow for tests/e2e/visual-regression.spec.ts.
+#
+# WHY THIS EXISTS
+#   Visual baselines must be generated on a Linux runner with the
+#   Chromium system dependencies (libnspr4, libnss3, libasound2*) that
+#   the project's WSL dev box cannot install without sudo. CI runners
+#   already install those via `npx playwright install --with-deps`.
+#
+#   Per `framework/harness/ui-fidelity-guardrail.md` §4.1 and BM2 spec
+#   §F011, the baselines must be in git BEFORE Reviewer takes the
+#   batch into `verifying`. This workflow is the supported path.
+#
+# HOW TO USE
+#   GitHub → Actions → "Update visual baselines" → Run workflow → main.
+#   The job produces fresh PNGs under tests/screenshots/baseline/ and
+#   commits them straight to main as
+#     `chore(visual): regenerate baselines via update-visual-baselines workflow`.
+#
+#   The CI run that fires on the auto-commit will then assert against
+#   the new baselines (no-op diff).
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Why are you regenerating baselines?"
+        required: true
+        default: "BM2 page set"
+
+concurrency:
+  group: update-visual-baselines
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "20"
+  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/kolmatrix?schema=public"
+  DATABASE_ADMIN_URL: "postgresql://postgres:postgres@localhost:5432/kolmatrix?schema=public"
+  NEXTAUTH_SECRET: "ci-placeholder-secret-do-not-use-in-prod"
+  NEXTAUTH_URL: "http://localhost:3000"
+
+jobs:
+  regenerate:
+    name: Regenerate baselines
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: kolmatrix
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - name: Apply migrations + seed dev data
+        run: |
+          npx prisma migrate deploy
+          npm run db:seed
+      - name: Install Playwright Chromium + system deps
+        run: npx playwright install --with-deps chromium
+      - name: Regenerate baselines
+        run: npx playwright test tests/e2e/visual-regression.spec.ts --update-snapshots
+      - name: Commit + push regenerated baselines
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/screenshots/baseline/
+          if git diff --cached --quiet; then
+            echo "No baseline changes — nothing to commit."
+            exit 0
+          fi
+          git commit -m "chore(visual): regenerate baselines via update-visual-baselines workflow
+
+Reason: ${{ github.event.inputs.reason }}
+Triggered by: ${{ github.actor }}"
+          git push origin HEAD:main
