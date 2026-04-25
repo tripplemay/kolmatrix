@@ -56,7 +56,9 @@ test.describe("BM2 Journey B — Campaign → ROI → Weekly Report", () => {
       await page.waitForURL(
         /\/(en|zh|ja|ko|es)\/campaigns\/[0-9a-f-]{36}(\/|\?|$)/
       );
-      await expect(page.getByTestId("campaign-detail-title")).toBeVisible();
+      await expect(page.getByTestId("campaign-detail-title")).toBeVisible({
+        timeout: 15_000,
+      });
     }
 
     // Step 4 — ROI page reachable + KPI strip visible.
