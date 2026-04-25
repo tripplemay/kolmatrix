@@ -811,6 +811,52 @@
       "generic": "Could not update. Please retry."
     }
   },
+  "weeklyReport": {
+    "header": {
+      "crumbReports": "Reports",
+      "crumbCurrent": "Weekly Report",
+      "title": "Weekly Report",
+      "subtitle": "AI-generated client-ready recap of activity, KOL performance, and ROI.",
+      "rangeDisabledTooltip": "Custom range ships in B4.",
+      "range": {
+        "lastWeek": "Last Week",
+        "lastMonth": "Last Month"
+      },
+      "aiLocale": "AI",
+      "localeOptionEn": "EN",
+      "localeOptionZh": "ZH",
+      "history": "History",
+      "historyEmpty": "No reports yet"
+    },
+    "brand": {
+      "aiBadge": "AI-Generated"
+    },
+    "actions": {
+      "downloadPdf": "Download PDF",
+      "share": "Share",
+      "regenerate": "Regenerate"
+    },
+    "share": {
+      "toastSuccess": "Link copied · {0} · expires {1}",
+      "toastError": "Could not generate share link. Please retry."
+    },
+    "empty": {
+      "title": "No weekly report yet",
+      "body": "Generate this week's report to see KOL activity, ROI highlights, and AI-driven insights — ready to share with the client.",
+      "generate": "Generate Weekly Report",
+      "loading": "Calling the AI engine…",
+      "error": "Could not generate the report. Please retry."
+    },
+    "insights": {
+      "empty": "No insights extracted from this report."
+    },
+    "rawFallback": "AI output had no recognised sections; showing the raw report below.",
+    "footer": {
+      "reportId": "Report ID: {id}",
+      "cost": "Gen cost: ${amount}",
+      "poweredBy": "AI powered by KOLMatrix Neural Discovery Engine"
+    }
+  },
   "roi": {
     "header": {
       "crumbAnalytics": "Analytics",

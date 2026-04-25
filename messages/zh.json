@@ -812,6 +812,52 @@
       "generic": "更新失败，请稍后重试。"
     }
   },
+  "weeklyReport": {
+    "header": {
+      "crumbReports": "报表",
+      "crumbCurrent": "周报",
+      "title": "AI 周报",
+      "subtitle": "AI 生成的客户向周报，覆盖活动进度、KOL 表现与 ROI 亮点。",
+      "rangeDisabledTooltip": "自定义日期区间将在 B4 上线。",
+      "range": {
+        "lastWeek": "上周",
+        "lastMonth": "上月"
+      },
+      "aiLocale": "AI 语言",
+      "localeOptionEn": "英文",
+      "localeOptionZh": "中文",
+      "history": "历史",
+      "historyEmpty": "暂无周报"
+    },
+    "brand": {
+      "aiBadge": "AI 生成"
+    },
+    "actions": {
+      "downloadPdf": "下载 PDF",
+      "share": "分享",
+      "regenerate": "重新生成"
+    },
+    "share": {
+      "toastSuccess": "链接已复制 · {0} · 有效期至 {1}",
+      "toastError": "分享链接生成失败，请重试。"
+    },
+    "empty": {
+      "title": "暂无周报",
+      "body": "生成本周周报，查看 KOL 活动、ROI 亮点和 AI 洞察，可一键分享给客户。",
+      "generate": "生成周报",
+      "loading": "正在调用 AI 引擎…",
+      "error": "周报生成失败，请重试。"
+    },
+    "insights": {
+      "empty": "未从本期周报提取到洞察。"
+    },
+    "rawFallback": "AI 输出未识别到分段，下方展示原始周报。",
+    "footer": {
+      "reportId": "报告编号：{id}",
+      "cost": "生成成本：${amount}",
+      "poweredBy": "由 KOLMatrix Neural Discovery Engine 驱动"
+    }
+  },
   "roi": {
     "header": {
       "crumbAnalytics": "数据分析",

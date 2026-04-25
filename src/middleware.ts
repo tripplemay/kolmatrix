@@ -35,6 +35,13 @@ export default auth((req) => {
   const { nextUrl } = req;
   const pathname = nextUrl.pathname;
 
+  // BM2-F010 anonymous shared-report route: skip auth + skip i18n
+  // (next-intl would otherwise prefix the path with a locale and 404).
+  // The page itself sets <meta robots noindex>.
+  if (pathname.startsWith("/shared/")) {
+    return NextResponse.next();
+  }
+
   // BM1-F008: root path `/` — detect + redirect to /{locale}/dashboard.
   if (pathname === "/") {
     const locale = resolveTargetLocale(req);

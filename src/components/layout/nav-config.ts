@@ -85,6 +85,7 @@ export function deriveActiveNav(pathname: string): NavItemId {
   if (path.startsWith("/knowledge-base")) return "knowledge-base";
   if (path.startsWith("/analytics")) return "analytics";
   if (path.startsWith("/roi")) return "analytics";
+  if (path.startsWith("/weekly-report")) return "analytics";
   if (path.startsWith("/settings")) return "settings";
   return "dashboard";
 }

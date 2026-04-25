@@ -16,6 +16,10 @@ export const PROTECTED_PREFIXES = [
   "/emails",
   "/knowledge-base",
   "/analytics",
+  "/crm",
+  "/roi",
+  "/weekly-report",
+  "/outreach",
   "/settings",
 ];
 
