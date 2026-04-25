@@ -467,6 +467,7 @@ model WeeklyReport {
   tenant    Tenant @relation(fields: [tenantId], references: [id])
   createdBy User   @relation("WeeklyReportCreator", fields: [createdByUserId], references: [id])
 
+  @@unique([tenantId, weekStart, weekEnd, locale], map: "uq_weekly_report_tenant_week_locale")
   @@index([tenantId, weekEnd(sort: Desc)])
   @@map("weekly_report")
 }

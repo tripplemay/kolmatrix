@@ -60,6 +60,13 @@ export default defineConfig({
         // tests/integration/roi.test.ts. Pure compute.ts stays under
         // coverage with its own unit specs.
         "src/lib/roi/queries.ts",
+        // BM2-F010 weekly-report DB-heavy helpers. Integration-tested
+        // via tests/integration/weekly-report.test.ts. Pure helpers
+        // (generate/markdown-split/share-token) stay under coverage
+        // with their own unit specs.
+        "src/lib/weekly-report/persistence.ts",
+        "src/lib/weekly-report/data-assembly.ts",
+        "src/lib/db-admin.ts",
       ],
       thresholds: {
         lines: 80,
