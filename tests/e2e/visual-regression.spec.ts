@@ -375,6 +375,10 @@ test.describe("Auth cinematic — visual regression", () => {
   );
 
   test("/en/login full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
+    test.skip(
+      !baselineExists("en-login.png"),
+      "Baseline en-login.png missing — run the 'Update visual baselines' workflow."
+    );
     await page.goto("/en/login");
     await page.waitForSelector('input[name="email"]');
     await fontsReady(page);
@@ -388,6 +392,10 @@ test.describe("Auth cinematic — visual regression", () => {
   });
 
   test("/en/request-access full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
+    test.skip(
+      !baselineExists("en-request-access.png"),
+      "Baseline en-request-access.png missing — run the 'Update visual baselines' workflow."
+    );
     await page.goto("/en/request-access");
     await page.waitForSelector("form");
     await fontsReady(page);
