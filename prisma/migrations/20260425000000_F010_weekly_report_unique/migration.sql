@@ -13,5 +13,5 @@ ALTER TABLE "weekly_report"
   ADD CONSTRAINT "uq_weekly_report_tenant_week_locale"
   UNIQUE ("tenant_id", "week_start", "week_end", "locale");
 
--- ROLLBACK
+-- ROLLBACK:
 -- ALTER TABLE "weekly_report" DROP CONSTRAINT "uq_weekly_report_tenant_week_locale";
