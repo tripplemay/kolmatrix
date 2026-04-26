@@ -18,7 +18,7 @@
  *   - en-crm.png                — authenticated `/en/crm` (BM2-F007)
  *   - en-roi.png                — authenticated `/en/roi` (BM2-F009)
  *   - en-weekly-report.png      — authenticated `/en/weekly-report` (BM2-F010)
- *   - en-kols-detail.png        — authenticated `/en/kols/:id` (MVP-vf-F006)
+ *   - en-kols-detail.png        — authenticated `/en/kols/:id` (MVP-vf-F006, first baseline 2026-04-26)
  *
  * Tolerances (per BI1 spec §F009, raised in BM2 fixing-round 1):
  *   - threshold: 0.02    — 2% max normalised per-pixel channel diff
