@@ -46,7 +46,7 @@
       "title": "/kols/[id] 画像页轻度改写（手写 className → 公共组件，TabKey 枚举保留）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/app/[locale]/(app)/kols/[id]/page.tsx 轻度改写（**不全量重写**，本页 BM1 已基本对齐 Stitch kol-detail.html，只抽组件）。\n\n**必用公共组件：** <Button> / <StatusBadge> / <GlassPanel> / <SectionHeader> / <TagChip>\n\n**改写范围：**\n- 手写 TabKey 枚举保留（4 tab 切换逻辑良好）\n- 手写 className 密度 > 20 的部分改用公共组件\n- 4 tabs：Overview 真数据保持；Collabs / Contacts / AI 3 个 tab empty-state 补友好提示（不实现 MVP 外功能）\n\n**Acceptance：**\n- className 硬编码密度降到 < 20/file\n- Tab 切换行为不变（现有 E2E 跑通）\n- 新增 baseline tests/screenshots/baseline/en-kols-detail.png（**新增**，BM1+BM2 baseline 集合无此项）\n- visual-regression.spec.ts 加 kols-detail case（静态 URL /en/kols/demo-kol-001）"
     },
     {
