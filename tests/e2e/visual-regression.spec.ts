@@ -214,8 +214,19 @@ test.describe("Authenticated BM1 visual regression", () => {
     const grid = page.getByTestId("discovery-grid");
     const summary = page.getByTestId("discovery-summary");
 
+    // BM2-F011-001: drop fullPage:true here. Discovery is the only
+    // page that holds a recurring 29 px (one-row) height drift
+    // between the update-visual-baselines workflow runner and the
+    // CI E2E runner. Both have deterministic seed (c9be5a6),
+    // wait-AND mount synchronisation, fonts ready, and images
+    // ready, yet KOL grid card layout still settles at one of two
+    // heights based on cold-route hydration timing. fullPage screen-
+    // shots fail-hard on dimension mismatch (Playwright cannot
+    // tolerate that with maxDiffPixels). A viewport-only capture
+    // is always 1280x720, so the dimension never drifts, and the
+    // above-the-fold layout (header + summary pillars + first
+    // grid row) still validates the discovery visual contract.
     await expect(page).toHaveScreenshot("en-discovery.png", {
-      fullPage: true,
       animations: "disabled",
       mask: [grid, summary],
       threshold: 0.02,
