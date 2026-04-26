@@ -4,11 +4,11 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BM2-campaign-outreach-roi** — status=verifying（2026-04-26 切换），11/11 features done — Reviewer 接手 L1+L2
+- **BM2-campaign-outreach-roi** — status=fixing（2026-04-26 Reviewer 首轮验收未通过），11/11 features done — 等 Generator 修复后复验
   - Spec `docs/specs/BM2-campaign-outreach-roi-spec.md`（§6 + §F011 已吸收 BM1 F009 教训）
   - F011 落地：visual-regression spec 扩到 12 页（4 BM1 + 6 BM2 + 2 auth），journey-a + journey-b E2E，update-visual-baselines workflow_dispatch
   - aigcgateway 3 Action 已建 + 验证：kol-email-customize (claude-haiku-4.5) / roi-insights + weekly-report-for-client (gemini-3-flash)
-  - **Baseline 生成挂账**：6 BM2 PNG 通过 GitHub Actions "Update visual baselines" workflow 手动触发生成（WSL 无 sudo 装 libnspr4，本地无法生成）；spec scaffold 已用 `baselineExists()` 守卫 skip，新 PNG 入 git 后自动启用
+  - **首轮验收阻断**：6 BM2 visual baseline PNG 未入 git，visual-regression 12/12 skip；`codex-setup` 后 EmailTemplate seed=0；App Shell `/en/emails`、`/en/analytics` 404
 - **BM1** ✅ done（9/9 PASS fix_rounds=2，signoff `docs/test-reports/BM1-console-kol-core-signoff-2026-04-23.md`）
 - 所有前置批次 ✅：B0 / BI1 / BI2 / BI3 / BAux1 / BI4 / BM1
 
