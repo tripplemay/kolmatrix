@@ -1,24 +1,25 @@
 [
   {
     "id": "BL-013",
-    "title": "Build-time PostCSS deps 在 NODE_ENV=production 下 npm ci 漏装（影响 prod 下次 deploy 雪崩）",
-    "description": "2026-04-26 22:00 Planner 在 staging deploy main eb36bdd 时发现：staging .env.staging 设了 NODE_ENV=production；执行 `npm ci`（默认 --omit=dev）→ 漏装 `@tailwindcss/postcss` + `tailwindcss`（两者都在 devDependencies）→ `next build` 报 'Cannot find module @tailwindcss/postcss' fail。Planner 临时绕过：`npm ci --include=dev` 重装后 build 成功。**同坑必然影响 prod 下次 deploy**：当前 prod 在 4b05cb60 没爆是因为该 commit 之后没 redeploy 过；下次 prod deploy（如 BM2 上线）会立即雪崩。\n\n**方案对比：**\n- **方案 A（推荐）：** 修 package.json 把 `@tailwindcss/postcss` + `tailwindcss` 从 devDependencies 移到 dependencies。理由：build-time 必需 + 与 Next.js 16 + Tailwind v4 官方模板一致 + 1 行改动 + 不需改 deploy 流程。代价：production node_modules 多 ~30MB（可接受）。\n- **方案 B：** 改 deploy 流程：`npm ci --include=dev && npm run build && npm prune --production`。理由：保 devDeps 语义正确。代价：deploy script 改动 = BL-004 staging-automation 范围，等 BIx 批次才能落，期间 prod deploy 风险窗口。\n- **方案 C：** staging/prod 改 NODE_ENV=staging（自定义）。**不推荐**：影响 next.js 优化 + 其他工具识别。\n- **方案 D：** 每次 deploy 手动 `--include=dev`。**不推荐**：纯口头规则，容易遗忘。\n\n**Planner 建议：方案 A，micro-fix（~10 min 含验证）。** 由 Generator 执行。验证步骤：(1) 改 package.json (2) `npm install` 重生成 lockfile (3) 本地 `npm run build` 通过 (4) staging redeploy 验证不带 --include=dev 也成 (5) commit `fix(deps): move tailwindcss build-time deps to dependencies (BL-013)`。",
+    "title": "Build-time PostCSS deps 在 NODE_ENV=production 下 npm ci 漏装（仅 staging 手动 deploy 影响，prod 已用 --production=false 不受影响）",
+    "description": "2026-04-26 22:00 Planner 在 staging deploy main eb36bdd 时发现：staging .env.staging 设了 NODE_ENV=production；执行 `npm ci`（默认 --omit=dev）→ 漏装 `@tailwindcss/postcss` + `tailwindcss`（两者都在 devDependencies）→ `next build` 报 'Cannot find module @tailwindcss/postcss' fail。Planner 临时绕过：`npm ci --include=dev` 重装后 build 成功。\n\n**2026-04-27 Planner 修正之前的 prod 风险误判：**\n- scripts/deploy-prod.sh L53 已经用 `npm ci --production=false`（等价 --include=dev）\n- **prod deploy 不受 BL-013 影响**，可以立即触发\n- BL-013 仅影响 staging 手动 deploy 体验（runbook §5 命令未带 --include=dev）\n- 优先级降到 medium（之前误判为 high P0）\n\n**方案对比：**\n- **方案 A（推荐）：** 修 package.json 把 `@tailwindcss/postcss` + `tailwindcss` 从 devDependencies 移到 dependencies。理由：staging/prod 命令统一 + 与 Next.js 16 + Tailwind v4 官方模板一致 + 1 行改动。代价：production node_modules 多 ~30MB（可接受）。\n- **方案 B：** 改 staging deploy 流程或 runbook 文档，明示 `npm ci --include=dev`（同 prod 做法）。理由：保 devDeps 语义正确。代价：runbook 改动；BL-004 staging-automation 实施时也要这么改。\n- **方案 C：** staging/prod 改 NODE_ENV=staging（自定义）。**不推荐**：影响 next.js 优化 + 其他工具识别。\n\n**Planner 建议（修正后）：方案 A 仍推荐**，但优先级是 polish 级别（hotfix building 间隙做 / 或并入 BIx-staging-automation 批次统一处理）。不阻塞 prod deploy。",
     "decisions": [
       "方案 A 推荐（package.json 1 行 + lockfile）",
       "由 Generator (johnsong) 接手；不得 Planner 越界",
-      "BM2 reverifying 期间不阻塞，可作为 micro-fix 在 BM2 done 之前或之后做",
-      "如 BM2 done 后立即启动 MVP-visual-fidelity hotfix，可作为 hotfix F0 prep（同 F001 落地模式）",
-      "如不立即修，prod 下次 deploy 必须强制带 --include=dev 否则雪崩"
+      "[修正] 不阻塞 prod deploy（prod 已 --production=false）",
+      "时机：hotfix F001 残余之后 polish，或并入 BIx-staging-automation 批次"
     ],
     "confirmed_at": "2026-04-26T22:10+0800",
-    "priority": "high",
+    "priority": "medium",
     "tags": [
       "deploy",
       "build",
       "deps",
       "production-risk"
     ],
-    "discovered_in": "Planner staging deploy 2026-04-26 BM2 L2 prep"
+    "discovered_in": "Planner staging deploy 2026-04-26 BM2 L2 prep",
+    "priority_changed_at": "2026-04-27T08:00+0800",
+    "priority_change_reason": "Planner 重读 scripts/deploy-prod.sh L53 发现 prod 已用 --production=false，prod 不受影响"
   },
   {
     "id": "BL-001",
