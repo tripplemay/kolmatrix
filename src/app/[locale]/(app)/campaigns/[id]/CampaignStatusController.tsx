@@ -21,7 +21,12 @@ interface Props {
   closedAt: string | null;
   labels: {
     title: string;
-    transitionTo: (next: string) => string;
+    // RSC -> Client boundary: server-side page precomputes the label
+    // string for each reachable transition target. Indexed by the
+    // candidate `next` status (draft / active / completed) — falls
+    // back to the raw status string if the locale dictionary has a
+    // gap, which is safer than crashing the whole route.
+    transitionTo: Record<string, string>;
     reactivate: string;
     currentLabel: string;
     startedAtLabel: string;
@@ -128,7 +133,7 @@ export function CampaignStatusController({
             currentStatus === "completed" && next === "active";
           const label = isReactivate
             ? labels.reactivate
-            : labels.transitionTo(next);
+            : (labels.transitionTo[next] ?? next);
           return (
             <form key={next} action={formAction} className="inline-flex">
               <input type="hidden" name="campaignId" value={campaignId} />

@@ -202,13 +202,23 @@ export default async function CampaignDetailPage({ params }: Props) {
           closedAt={campaign.closedAt}
           labels={{
             title: t("statusController.title"),
-            transitionTo: (next: string) =>
-              t("statusController.transitionTo", {
-                next:
-                  next === "draft" || next === "active" || next === "completed"
-                    ? tStatus(next)
-                    : next,
+            // RSC -> Client boundary: precompute the localised label
+            // for every reachable transition status. Passing a function
+            // here violates the Server Component contract (see
+            // fd14b6f for the same fix on outreach). The set of
+            // possible `next` values is fixed by ALLOWED_NEXT in
+            // CampaignStatusController.tsx (draft / active / completed).
+            transitionTo: {
+              draft: t("statusController.transitionTo", {
+                next: tStatus("draft"),
               }),
+              active: t("statusController.transitionTo", {
+                next: tStatus("active"),
+              }),
+              completed: t("statusController.transitionTo", {
+                next: tStatus("completed"),
+              }),
+            },
             reactivate: t("statusController.reactivate"),
             currentLabel: t("statusController.currentLabel"),
             startedAtLabel: t("statusController.startedAtLabel"),
