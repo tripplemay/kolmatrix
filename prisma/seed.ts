@@ -383,21 +383,36 @@ async function main() {
   });
   const campaignEntries = Array.from(campaignIdByName.entries());
   const EMAIL_LOG_COUNT = 300;
-  const nowMs = Date.now();
+  // BM2-F011-001: replace Date.now() + Math.random() with deterministic
+  // values so two seed runs (e.g. update-visual-baselines workflow vs
+  // ordinary CI) produce byte-identical email_log rows. Without this,
+  // dashboard / database / outreach screenshots disagreed on page
+  // height (different number of seed-driven rows + chart values),
+  // making the visual-regression suite a coin-flip across runners.
+  // Reference epoch: 2026-04-26T00:00:00Z (BM2 fixing-round 1 day).
+  const SEED_REFERENCE_MS = Date.UTC(2026, 3, 26);
   const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+  // Linear-congruential PRNG. Numbers are the Numerical-Recipes
+  // constants (Knuth's lcg). Tiny + deterministic + good enough for
+  // generating funnel rolls; we don't need cryptographic quality.
+  let _lcg = 0xDEADBEEF;
+  const rand = (): number => {
+    _lcg = (Math.imul(_lcg, 1664525) + 1013904223) | 0;
+    return (_lcg >>> 0) / 0x100000000;
+  };
   const emailRows = Array.from({ length: EMAIL_LOG_COUNT }).map((_, i) => {
     const [campaignName, campaignId] = campaignEntries[i % campaignEntries.length];
     const kol = kolRows[i % kolRows.length];
-    const sentAt = new Date(nowMs - Math.random() * sevenDaysMs);
+    const sentAt = new Date(SEED_REFERENCE_MS - rand() * sevenDaysMs);
     // Realistic funnel: ~5% bounce, 60% opened, 20% replied, rest sent-only.
-    const roll = Math.random();
+    const roll = rand();
     const bounced = roll < 0.05;
     const opened = !bounced && roll < 0.65;
-    const replied = opened && Math.random() < 0.33;
+    const replied = opened && rand() < 0.33;
     const status = bounced ? "bounced" : replied ? "replied" : opened ? "opened" : "sent";
-    const openedAt = opened ? new Date(sentAt.getTime() + Math.random() * 6 * 3600_000) : null;
+    const openedAt = opened ? new Date(sentAt.getTime() + rand() * 6 * 3600_000) : null;
     const repliedAt =
-      replied && openedAt ? new Date(openedAt.getTime() + Math.random() * 24 * 3600_000) : null;
+      replied && openedAt ? new Date(openedAt.getTime() + rand() * 24 * 3600_000) : null;
     return {
       tenantId: tenant.id,
       campaignId,
