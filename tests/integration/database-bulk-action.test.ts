@@ -140,12 +140,19 @@ describe("bulkAddKolsToCampaign()", () => {
     expect(new Set(links.map((l) => l.kolId))).toEqual(new Set(w.kolIds));
     expect(links.every((l) => l.status === "pending")).toBe(true);
 
-    const auditCount = await getAdminPrisma().auditLog.count({
-      where: {
-        tenantId: w.tenantId,
-        action: "kol.bulk_added_to_campaign",
-      },
-    });
+    // logAudit() is fire-and-forget — poll until the writes flush.
+    const deadline = Date.now() + 2000;
+    let auditCount = 0;
+    while (Date.now() < deadline) {
+      auditCount = await getAdminPrisma().auditLog.count({
+        where: {
+          tenantId: w.tenantId,
+          action: "kol.bulk_added_to_campaign",
+        },
+      });
+      if (auditCount === 4) break;
+      await new Promise((r) => setTimeout(r, 50));
+    }
     expect(auditCount).toBe(4);
   });
 
