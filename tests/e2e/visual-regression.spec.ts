@@ -12,7 +12,7 @@
  *   - en-database.png           — authenticated `/en/database` (F005 + MVP-vf-F003)
  *   - en-login.png              — unauthenticated `/en/login` (BAux1-F004)
  *   - en-request-access.png     — unauthenticated `/en/request-access` (BAux1-F004)
- *   - en-campaigns.png          — authenticated `/en/campaigns` (BM2-F003)
+ *   - en-campaigns.png          — authenticated `/en/campaigns` (BM2-F003 + MVP-vf-F004)
  *   - en-campaign-detail.png    — authenticated `/en/campaigns/:id` (BM2-F005)
  *   - en-outreach.png           — authenticated `/en/outreach` (BM2-F006)
  *   - en-crm.png                — authenticated `/en/crm` (BM2-F007)
