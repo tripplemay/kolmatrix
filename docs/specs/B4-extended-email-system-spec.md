@@ -1,11 +1,11 @@
 ---
 name: B4-extended-email-system
 description: BM2 outreach 邮件系统增强 - Resend webhook + markdown 模板编辑器 + 打开率/回复率追踪 + 自动退订（合规由法律团队 review）
-status: framework-decisions-locked
+status: decisions-fully-locked
 created_by: Kimi (Planner)
 created_at: 2026-04-27
 decisions_locked_at: 2026-04-27
-estimated_effort: 5-7 day（F006 BullMQ 已拆出独立 B5 批次后；6 features）
+estimated_effort: 5-7 day（F006 BullMQ 已拆出独立 B5 批次后；6 features，分阶段执行）
 prerequisites:
   - MVP 上线 ≥ 4 周（充分收集种子用户邮件触达反馈）
   - BIx-staging-automation done（依赖 staging 真实邮件 webhook 调试）
@@ -150,7 +150,7 @@ features_count: 6（原 7，F006 BullMQ 已拆出独立 B5 批次）
 | AI 模板优化建议是否做 | 视种子用户反馈 | MVP 上线 4 周后决定 |
 | 模板分享 | 不做 | 隔离原则；marketplace 概念留 Post-MVP B7+ |
 
-### 3.1 Planner 推荐 5 trigger 优先级方案（待用户确认）
+### 3.1 5 trigger 优先级方案（✅ 用户 2026-04-27 确认 OK）
 
 | 排序 | Trigger | 优先级 | 触发条件 | 对应 features | 启动急迫度 |
 |---|---|---|---|---|---|
@@ -177,10 +177,15 @@ Phase 4 (P2，2-3 day，视用户反馈)：F002 模板编辑器 + F006 预览
 
 **Planner 建议：** 按数据驱动，不一次性做完 6 features。trigger 命中 → 立即做对应 feature；未命中（如发量小、无退订请求）→ 推迟到 Post-MVP 第 2 阶段。这样可避免过度建设。
 
-**待用户确认：**
-1. 同意此 5 trigger 优先级排序？
-2. 是否同意 "数据驱动 / 分阶段执行" 而非 "一次做完 6 features"？
-3. 法律 review F004 估时 / 联系窗口（建议 MVP 上线 + 2 周内启动 review，避免成为 trigger 命中时的瓶颈）？
+**✅ 用户裁决（2026-04-27）：**
+1. 5 trigger 优先级排序：**OK**（按 P0/P1/P2 表格）
+2. 数据驱动 / 分阶段执行（不一次做完）：**OK**
+3. 法律 review F004 启动时机：**MVP 上线 + 2 周内**（约 2026-05-15 前启动 review，避免成为 P1 退订 trigger 命中时的瓶颈）
+
+**Planner 行动项（用户确认后）：**
+- MVP 上线 ~2026-05-01 → 法律 review F004 联系窗口 = 2026-05-01 ~ 2026-05-15
+- 提前 2 周准备 review 材料：spec §F004 完整描述 + Resend 退订实现方案 + CAN-SPAM/GDPR 合规要点对照表
+- 用户负责对接法律团队（windowed contact + materials handoff）
 
 ## 4. 风险与对策
 
@@ -245,8 +250,8 @@ Phase 4 (P2，2-3 day，视用户反馈)：F002 模板编辑器 + F006 预览
 
 ---
 
-**Spec 状态：** framework-decisions-locked（2026-04-27 Planner 起草 + 用户裁决 3/4 落地，trigger 排序方案待用户确认 §3.1）
+**Spec 状态：** decisions-fully-locked（2026-04-27 Planner 起草 + 用户裁决 4/4 全部落地，trigger 排序方案 + 数据驱动 + 法律 review 时机均已确认）
 
-**本批次定位：** Post-MVP 第一阶段重点批次（与 BIx-staging-automation 并列，但优先级视反馈而定）
+**本批次定位：** Post-MVP 第一阶段重点批次（与 BIx-staging-automation 并列，但优先级视实际 trigger 而定）
 
-**待用户确认（剩余 1 项）：** §3.1 5 trigger 优先级排序方案 + 数据驱动分阶段执行方式 + 法律 review 启动时机
+**所有用户决策已 lock，无待确认项。** Spec 留待 MVP 上线 4 周后基于种子用户反馈细化具体 features 启动顺序。
