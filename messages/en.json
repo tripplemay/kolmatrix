@@ -614,14 +614,14 @@
           "heading": "Recent Activity",
           "empty": "No campaign activity yet.",
           "actions": {
-            "campaign.created": "Campaign created",
-            "campaign.kol.added": "KOL added",
-            "campaign.kol.removed": "KOL removed",
-            "campaign.kol.fee_updated": "KOL fee updated",
-            "campaign.kol.status_changed": "KOL status changed",
-            "campaign.status_changed": "Campaign status changed",
-            "campaign.revenue_recorded": "Revenue recorded",
-            "kol.bulk_added_to_campaign": "KOLs bulk-added"
+            "campaign_created": "Campaign created",
+            "campaign_kol_added": "KOL added",
+            "campaign_kol_removed": "KOL removed",
+            "campaign_kol_fee_updated": "KOL fee updated",
+            "campaign_kol_status_changed": "KOL status changed",
+            "campaign_status_changed": "Campaign status changed",
+            "campaign_revenue_recorded": "Revenue recorded",
+            "kol_bulk_added_to_campaign": "KOLs bulk-added"
           }
         }
       },

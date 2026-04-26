@@ -615,14 +615,14 @@
           "heading": "最近动态",
           "empty": "尚无活动动态。",
           "actions": {
-            "campaign.created": "活动创建",
-            "campaign.kol.added": "新增 KOL",
-            "campaign.kol.removed": "移除 KOL",
-            "campaign.kol.fee_updated": "KOL 报价更新",
-            "campaign.kol.status_changed": "KOL 状态变更",
-            "campaign.status_changed": "活动状态变更",
-            "campaign.revenue_recorded": "录入营收",
-            "kol.bulk_added_to_campaign": "批量加入 KOL"
+            "campaign_created": "活动创建",
+            "campaign_kol_added": "新增 KOL",
+            "campaign_kol_removed": "移除 KOL",
+            "campaign_kol_fee_updated": "KOL 报价更新",
+            "campaign_kol_status_changed": "KOL 状态变更",
+            "campaign_status_changed": "活动状态变更",
+            "campaign_revenue_recorded": "录入营收",
+            "kol_bulk_added_to_campaign": "批量加入 KOL"
           }
         }
       },

@@ -4,6 +4,14 @@
  * Renders the last 10 audit_log rows scoped to this campaign.
  * Server-formatted timestamps + action labels — no client-side
  * formatter calls so the page stays lean.
+ *
+ * audit_log.action stores dot-namespaced strings ("campaign.kol.added")
+ * but next-intl reserves dots for path nesting and rejects them as
+ * leaf keys. ACTION_META below maps each audit string to both the
+ * visible icon and the dot-free i18n lookup key (e.g.
+ * "campaign_kol_added"); unknown actions fall back to the literal
+ * audit string + a generic icon so a future, unlocalized action
+ * still renders something readable.
  */
 import { getFormatter, getTranslations } from "next-intl/server";
 
@@ -15,20 +23,32 @@ interface Props {
   rows: ActivityRow[];
 }
 
-const ACTION_ICON: Record<string, string> = {
-  "campaign.created": "auto_awesome",
-  "campaign.kol.added": "person_add",
-  "campaign.kol.removed": "person_remove",
-  "campaign.kol.fee_updated": "payments",
-  "campaign.kol.status_changed": "swap_horiz",
-  "campaign.status_changed": "flag",
-  "campaign.revenue_recorded": "trending_up",
-  "kol.bulk_added_to_campaign": "group_add",
+type ActionKey =
+  | "campaign_created"
+  | "campaign_kol_added"
+  | "campaign_kol_removed"
+  | "campaign_kol_fee_updated"
+  | "campaign_kol_status_changed"
+  | "campaign_status_changed"
+  | "campaign_revenue_recorded"
+  | "kol_bulk_added_to_campaign";
+
+const ACTION_META: Record<string, { icon: string; key: ActionKey }> = {
+  "campaign.created": { icon: "auto_awesome", key: "campaign_created" },
+  "campaign.kol.added": { icon: "person_add", key: "campaign_kol_added" },
+  "campaign.kol.removed": { icon: "person_remove", key: "campaign_kol_removed" },
+  "campaign.kol.fee_updated": { icon: "payments", key: "campaign_kol_fee_updated" },
+  "campaign.kol.status_changed": { icon: "swap_horiz", key: "campaign_kol_status_changed" },
+  "campaign.status_changed": { icon: "flag", key: "campaign_status_changed" },
+  "campaign.revenue_recorded": { icon: "trending_up", key: "campaign_revenue_recorded" },
+  "kol.bulk_added_to_campaign": { icon: "group_add", key: "kol_bulk_added_to_campaign" },
 };
 
 export async function ActivityTimelineCard({ rows }: Props) {
   const t = await getTranslations("campaigns.detail.insights.activity");
-  const tAction = await getTranslations("campaigns.detail.insights.activity.actions");
+  const tAction = await getTranslations(
+    "campaigns.detail.insights.activity.actions"
+  );
   const format = await getFormatter();
 
   return (
@@ -44,11 +64,12 @@ export async function ActivityTimelineCard({ rows }: Props) {
       ) : (
         <ol className="space-y-2 text-xs">
           {rows.map((row) => {
-            const icon = ACTION_ICON[row.action] ?? "history";
+            const meta = ACTION_META[row.action];
+            const icon = meta?.icon ?? "history";
+            const label = meta ? tAction(meta.key) : row.action;
             const when = format.relativeTime(new Date(row.createdAt), {
               now: new Date(),
             });
-            const label = tActionLabel(tAction, row.action);
             return (
               <li
                 key={row.id}
@@ -76,16 +97,4 @@ export async function ActivityTimelineCard({ rows }: Props) {
       )}
     </GlassPanel>
   );
-}
-
-function tActionLabel(
-  t: Awaited<ReturnType<typeof getTranslations>>,
-  action: string
-): string {
-  // next-intl throws on missing keys — guard with a defensive `has`.
-  // The set of recognised actions is small and stable; new ones
-  // surface as a literal action string until i18n catches up.
-  const known = new Set(Object.keys(ACTION_ICON));
-  if (!known.has(action)) return action;
-  return t(action as Parameters<typeof t>[0]);
 }
