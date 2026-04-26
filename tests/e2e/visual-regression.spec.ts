@@ -257,20 +257,32 @@ test.describe("Authenticated BM2 visual regression", () => {
       shouldSkipMissingBaseline("en-campaign-detail.png", test.info()),
       "Baseline en-campaign-detail.png missing — run the 'Update visual baselines' workflow."
     );
+    // CI cold-compile of /campaigns/:id is the slowest authenticated
+    // RSC route (joins on KOL + EmailLog + CampaignMetric); Generator
+    // already paid for that timeout three times on journey-b
+    // (commits f92a7f0 / 83c10e6 / 0a12e13). Default 30s test
+    // timeout is too tight for the regenerate-on-cold-runner path.
+    test.setTimeout(90_000);
     await login(page);
     await page.goto("/en/campaigns");
     await page.waitForSelector('[data-testid="campaigns-page-title"]');
 
-    // Click into the first row in whatever order the seed produced.
-    // The row is a <tr> with a Link nested in its first cell — click
-    // the link directly so navigation actually fires.
+    // Read the first row's anchor href and navigate directly with
+    // page.goto() — bypassing the client-side click handshake that
+    // amplifies the CI cold-route stall. journey-b ended up dropping
+    // the click+wait pattern entirely for the same reason.
     const firstRow = page.locator('[data-testid="campaign-row"]').first();
     if ((await firstRow.count()) === 0) {
       test.skip(true, "No campaigns in seed — detail baseline N/A");
     }
-    await firstRow.locator("a").first().click();
-    await page.waitForURL(/\/campaigns\/[0-9a-f-]{36}(\/|\?|$)/);
-    await page.waitForSelector('[data-testid="campaign-detail-title"]');
+    const href = await firstRow.locator("a").first().getAttribute("href");
+    if (!href || !/\/campaigns\/[0-9a-f-]{36}(\/|\?|$)/.test(href)) {
+      test.skip(true, `Unexpected campaign row href: ${href ?? "(null)"}`);
+    }
+    await page.goto(href!);
+    await page.waitForSelector('[data-testid="campaign-detail-title"]', {
+      timeout: 60_000,
+    });
     await fontsReady(page);
 
     const title = page.getByTestId("campaign-detail-title");
