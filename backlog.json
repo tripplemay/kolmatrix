@@ -12,7 +12,12 @@
     ],
     "confirmed_at": "2026-04-26T22:10+0800",
     "priority": "high",
-    "tags": ["deploy", "build", "deps", "production-risk"],
+    "tags": [
+      "deploy",
+      "build",
+      "deps",
+      "production-risk"
+    ],
     "discovered_in": "Planner staging deploy 2026-04-26 BM2 L2 prep"
   },
   {
@@ -22,17 +27,27 @@
     "decisions": [],
     "confirmed_at": "2026-04-23T08:00+0800",
     "priority": "low",
-    "tags": ["BM1-polish", "seed-script", "env-loading"],
+    "tags": [
+      "BM1-polish",
+      "seed-script",
+      "env-loading"
+    ],
     "discovered_in": "staging L2 pre-check by Planner johnsong"
   },
   {
     "id": "BL-002",
     "title": "Staging /api/health git_sha 显示 unknown（根因比初判更深）",
     "description": "Kimi 交接 notes 明确 'git_sha unknown 已修复（后续 deploy 正常反射 sha）'，但仅 prod 修好。2026-04-23 Planner 第 2 次 deploy staging 时用 `GIT_SHA=9ed5def npm run build` 显式注入 build-time env var 仍无效，health 返回仍为 unknown。**说明 health handler 不读 build-time env**，实际根因是 3 种可能之一：(1) handler 读运行时 process.env.GIT_SHA，PM2 不从 .env.staging 以外拿到；(2) handler 从某个 build 生成文件读（如 .git-sha），staging build 未生成；(3) 专用 next.config.ts env 配置。修复路径已不再是 'deploy script 里 GIT_SHA=xxx' 那么简单；需要 Generator 看 src/app/api/health/route.ts 源码 + deploy-prod.yml 比对来定位。prod 在 4b05cb6 时显示 git_sha=4b05cb60...（全长 sha），staging 始终 unknown。BL-004 实施时必须连带修这个。",
-    "decisions": ["BL-004 实施时 Generator 必须先看 health handler 源码再写脚本，不能只加 GIT_SHA= 前缀"],
+    "decisions": [
+      "BL-004 实施时 Generator 必须先看 health handler 源码再写脚本，不能只加 GIT_SHA= 前缀"
+    ],
     "confirmed_at": "2026-04-23T08:00+0800",
     "priority": "medium",
-    "tags": ["BM1-polish", "staging-devx", "observability"],
+    "tags": [
+      "BM1-polish",
+      "staging-devx",
+      "observability"
+    ],
     "discovered_in": "staging L2 pre-check by Planner johnsong",
     "investigation_log": [
       "2026-04-23 Planner 第 1 次 deploy: 假设 build-time env 就行",
@@ -43,61 +58,16 @@
     "id": "BL-003",
     "title": "/en 和 /en/ 404（根 locale 路径不落到 dashboard）— F008 后部分缓解",
     "description": "初次发现：GET /en 返回 404，GET /en/ 308 跳回 /en 再 404。2026-04-23 BM1 F008 落地后观察到：受保护路由的 307 跳转已正确保留 locale 前缀（/en/dashboard 跳 /en/login 而非裸 /login），说明 locale routing 主干已恢复。残留 bare /en 404 仍在，但正常用户走 / → /en/dashboard 自动补全路径，实操无路径断裂。MVP 可降级为 'deferred'（非 low），Post-MVP 再修。",
-    "decisions": ["F008 落地后优先级从 low 调为 deferred，不入 BL-004 polish 批次"],
+    "decisions": [
+      "F008 落地后优先级从 low 调为 deferred，不入 BL-004 polish 批次"
+    ],
     "confirmed_at": "2026-04-23T08:00+0800",
     "priority": "deferred",
-    "tags": ["routing", "i18n"],
+    "tags": [
+      "routing",
+      "i18n"
+    ],
     "discovered_in": "staging L2 pre-check by Planner johnsong"
-  },
-  {
-    "id": "BL-005",
-    "title": "BM1 F004 Discovery 页 UI fidelity gap（主搜索区 / AI CTA / Active filters / Grid-list toggle 缺失）",
-    "description": "2026-04-24 用户反馈 + Planner audit：/discovery 与 Stitch 原型还原度 6/10。4 条严重 gap：(1) 主搜索区完全缺失（platform + search + AI chips 轮转）；(2) AI Smart Match gradient CTA 缺失；(3) Active Filter 可视化 chips 退化为纯文本；(4) Grid/List 视图 toggle 缺失。中度：卡片列数 xl:grid-cols-4 → 3（宽屏浪费 25%）、avatar 放大 4 倍、Active Filter badges 缺。修复目标用户选 C 档 pixel perfect + 公共组件抽取。时机：BM2 done 后 MVP-visual-fidelity hotfix 批次。详细见 docs/test-reports/BM1-BM2-ui-fidelity-audit-2026-04-24.md §1",
-    "decisions": ["修复方式 C 档（pixel perfect + 组件库抽取）", "修复时机 BM2 done 后", "考虑扩大范围到 MVP-visual-fidelity 覆盖 5 页"],
-    "confirmed_at": "2026-04-24T00:00+0800",
-    "priority": "high",
-    "tags": ["ui-fidelity", "BM1-hotfix", "visual-regression"],
-    "discovered_in": "user feedback 2026-04-24 + Planner Explore agent audit"
-  },
-  {
-    "id": "BL-006",
-    "title": "BM1 F005 Database 页 UI fidelity gap（Insights Panel / Quick Stats / Bulk Action Bar / 幽灵 checkbox）",
-    "description": "2026-04-24 audit：/database 还原度 5/10。5 条严重 gap：(1) 右侧 Insights Panel 3 卡片（AI Intelligence / Coverage Gap / Engagement Trend）完全缺失；(2) Quick Stats 4 KPI 顶部 strip 缺失；(3) Bulk Action Bar 缺失 + checkbox 保留但无反应（幽灵控件）；(4) 过滤维度 7→4（Game / Tags 维度缺失）；(5) 表格增长指标（+12.4k 风格）缺失。修复方案同 BL-005。详细见 docs/test-reports/BM1-BM2-ui-fidelity-audit-2026-04-24.md §2",
-    "decisions": ["修复方式 C 档", "同 BL-005 合并 hotfix"],
-    "confirmed_at": "2026-04-24T00:00+0800",
-    "priority": "high",
-    "tags": ["ui-fidelity", "BM1-hotfix", "visual-regression"],
-    "discovered_in": "user feedback 2026-04-24 + Planner Explore agent audit"
-  },
-  {
-    "id": "BL-007",
-    "title": "BM2 F003 Campaigns 列表页 UI fidelity 部分重演（KPI strip / filter 6→2 / AI Suggestions 缺失）",
-    "description": "2026-04-24 spot audit：/campaigns 还原度 7/10。3 条 gap：(1) KPI stat strip（4 卡 Active Campaigns / KOLs in Pipeline / Avg Reply Rate / Reach Forecast）缺失；(2) Filter 从 6 维（status tab + Game / Region / Owner / Date）简化为 2（search + status）；(3) AI Suggestions panel 缺失。Generator 未复用 @/components/common 而是手写 StatusBadge / SpendCell 等。BM1 done 后 Generator 继续复犯同样错误 → 说明必须前置 guardrail 而非事后修。",
-    "decisions": ["同 BL-005 hotfix 扩大范围到 MVP-visual-fidelity"],
-    "confirmed_at": "2026-04-24T00:00+0800",
-    "priority": "high",
-    "tags": ["ui-fidelity", "BM2-hotfix", "visual-regression"],
-    "discovered_in": "Planner spot audit during BM2 building"
-  },
-  {
-    "id": "BL-008",
-    "title": "BM2 F005 Campaign 详情页 UI fidelity 部分重演（Email Performance chart / AI Suggestions / Activity Timeline / 无右侧 insights 布局）",
-    "description": "2026-04-24 spot audit：/campaigns/:id 还原度 7/10。3 条 gap：(1) Email Performance chart section 缺失；(2) AI Suggestions + Recent Activity Timeline 缺失；(3) 原型右侧 320px 固定列的 insights 布局缺失（实现是所有 section 单列垂直堆叠）。CampaignKolPanel 495 行全手写 modal/table/form，未抽 Dialog/TableRow 组件。",
-    "decisions": ["同 BL-005 hotfix 扩大范围", "抽公共组件 Dialog/TableRow 一起做"],
-    "confirmed_at": "2026-04-24T00:00+0800",
-    "priority": "high",
-    "tags": ["ui-fidelity", "BM2-hotfix", "visual-regression", "component-library"],
-    "discovered_in": "Planner spot audit during BM2 building"
-  },
-  {
-    "id": "BL-009",
-    "title": "Signoff 流程漏洞：visual regression baseline PNG 未入库也判 PASS",
-    "description": "BM1 F009 Generator session_notes 自报：'visual PNG 未生成（本地 WSL 无 Playwright system libs sudo 权限）'。Reviewer signoff 报告 BM1-console-kol-core-signoff-2026-04-23.md F009 标 PASS，验收凭据仅为 E2E spec 绿，未核 baseline PNG 入库。修复方案：(1) 更新 .auto-memory/role-context/evaluator.md 加 §UI Fidelity 签收硬要求（已做 2026-04-24，commit TBD）；(2) 新增 framework/harness/ui-fidelity-guardrail.md 作为跨批次规则（已做 2026-04-24）；(3) BM1 5 张 baseline PNG 补生成 + 入库（并入 MVP-visual-fidelity hotfix 或独立 F）。",
-    "decisions": ["evaluator.md + ui-fidelity-guardrail.md 已更新", "BM1 baseline PNG 生成并入 hotfix"],
-    "confirmed_at": "2026-04-24T00:00+0800",
-    "priority": "high",
-    "tags": ["process-gap", "signoff", "visual-regression", "framework"],
-    "discovered_in": "Planner audit 2026-04-24"
   },
   {
     "id": "BL-012",
@@ -112,7 +82,12 @@
     ],
     "confirmed_at": "2026-04-24T13:00+0800",
     "priority": "deferred",
-    "tags": ["integration", "crawler", "post-mvp", "data-sync"],
+    "tags": [
+      "integration",
+      "crawler",
+      "post-mvp",
+      "data-sync"
+    ],
     "discovered_in": "user decision 2026-04-24 + Planner 交接文档起草",
     "references": [
       "docs/product/kol-crawler-team-handoff-v1.md",
@@ -124,25 +99,17 @@
     "id": "BL-011",
     "title": "`/api/kols/[id]` 路由统一（合并 relationship-status + email 两个独立 PATCH）",
     "description": "BM2 F006 pre-impl 审计 (#L) 发现：BM1 已有 `/api/kols/[id]/relationship-status`（PATCH），F006 需新建 `/api/kols/[id]` (PATCH email + emailSource)；为避免 F006 改动面过大（铁律 6 executor 边界），本批次保留两路由独立，unify 作 refactor 放 backlog。Post-MVP 或专门 refactor 批次做：(1) 把 `/api/kols/[id]` 做成统一 PATCH，接 partial update 含 email/emailSource/relationshipStatus；(2) 删除 `/api/kols/[id]/relationship-status`；(3) F007 CRM 切新路径；(4) audit_log action name 维持（kol.email_updated / kol.relationship_status_changed）。低优先级，MVP 功能不受影响。",
-    "decisions": ["短期保留两路由独立", "长期 unify 放 refactor 批次"],
+    "decisions": [
+      "短期保留两路由独立",
+      "长期 unify 放 refactor 批次"
+    ],
     "confirmed_at": "2026-04-24T09:30+0800",
     "priority": "low",
-    "tags": ["refactor", "api-consistency"],
-    "discovered_in": "BM2 F006 pre-impl audit §3 #L + Planner 裁决 12.4"
-  },
-  {
-    "id": "BL-010",
-    "title": "Stitch 参考 PNG 全部 512px 缩略图 — 自动渲染高分辨率大 PNG（render-stitch-previews.ts）",
-    "description": "2026-04-24 用户发现并 Planner 确认：`design-draft/stitch-references/*.png` 18 张全部是 Stitch preview 导出的 512px 封顶缩略图（详细尺寸 239-512 × 410-515，文件 56-152KB）。问题：Planner 读 PNG 起 spec 会漏细节；Generator 看 PNG 只能看大体块导致'装饰性删除'倾向；Reviewer 并排对比 PNG vs staging 时 PNG 看不清无法做像素级 fidelity 判断。guardrail §1.1 临时解法：用 HTML 浏览器渲染作为主参照物（HTML 本身就是 Stitch 精确 DOM 输出）。长期解：脚本自动渲染 HTML 为 1920px 大 PNG。实现：新建 `scripts/render-stitch-previews.ts` 用 Playwright headless chromium 1920×1200 viewport 打开每个 `design-draft/stitch-references/*.html` → 全页截图 → 写 `design-draft/stitch-references/renders/<page>-1920.png`；npm script `render:stitch-previews`；未来 Stitch 设计更新一键重跑。注意 HTML 可能引用外部资源（Tailwind CDN / Material Icons CDN / fonts），script 需确保全部加载完才截图（可用 waitForLoadState 'networkidle' + 额外 delay）。落地时机：并入 MVP-visual-fidelity hotfix F001 附带产出（~1h 额外工时），或独立 BL 执行。",
-    "decisions": [
-      "短期 guardrail 已落实：HTML 是主视觉参照物（2026-04-24 framework/harness/ui-fidelity-guardrail.md §1.1 生效）",
-      "长期自动化：Playwright script 渲染 HTML → 1920px PNG 入 git",
-      "并入 MVP-visual-fidelity F001 附带做（~1h），不独立批次"
+    "tags": [
+      "refactor",
+      "api-consistency"
     ],
-    "confirmed_at": "2026-04-24T02:00+0800",
-    "priority": "medium",
-    "tags": ["design-asset", "visual-regression", "automation"],
-    "discovered_in": "user 2026-04-24 观察 + Planner file 命令确认全部 PNG < 512px"
+    "discovered_in": "BM2 F006 pre-impl audit §3 #L + Planner 裁决 12.4"
   },
   {
     "id": "BL-004",
@@ -157,7 +124,11 @@
     ],
     "confirmed_at": "2026-04-23T08:30+0800",
     "priority": "medium",
-    "tags": ["staging-devx", "infrastructure", "automation"],
+    "tags": [
+      "staging-devx",
+      "infrastructure",
+      "automation"
+    ],
     "discovered_in": "user question 2026-04-23 + Planner Bash 手动 deploy staging 实操经验"
   }
 ]

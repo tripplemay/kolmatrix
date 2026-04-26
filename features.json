@@ -1,93 +1,61 @@
 {
-  "sprint": "BM2-campaign-outreach-roi",
+  "sprint": "MVP-visual-fidelity-hotfix",
   "features": [
     {
       "id": "F001",
-      "title": "Prisma schema 扩展：Campaign + KolCampaign + CampaignMetric + EmailTemplate + WeeklyReport + Tenant.logoUrl + Kol.email",
+      "title": "公共组件库抽取（已提前完成于 BM2 F006 前置）+ Stitch 高分辨率预览渲染脚本（BL-010 并入）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "migration 20260504100000_bm2_schema 含：ALTER TABLE tenant ADD COLUMN logo_url（nullable）；ALTER TABLE kol ADD COLUMN email VarChar(320) + email_source default 'manual'；ALTER TABLE campaign ADD COLUMN product_id Uuid FK product / spend_total Decimal(12,2) default 0 / revenue_recorded Decimal(12,2) / started_at Timestamptz / closed_at Timestamptz + 2 新复合索引 (tenantId, productId) + (tenantId, status, closedAt DESC)；ALTER TABLE kol_campaign ALTER COLUMN status SET DEFAULT 'pending'（6 值 enum: pending/contacted/quoted/signed/delivered/paid）；CREATE TABLE campaign_metric（id/tenantId/campaignId/recordedAt/impressions/clicks/conversions/attributedRevenue/source default 'manual'）+ 索引 + RLS NULLIF；CREATE TABLE email_template（id/tenantId?（null=system）/name/subject/body Text/variables Json/locale VarChar(5)/type default 'system'）+ 索引 (tenantId, type) + (type, locale)；CREATE TABLE weekly_report（id/tenantId/weekStart/weekEnd/locale/contentMd Text/summaryJson Json?/shareToken unique VarChar(32)/shareTokenExpiresAt/createdByUserId FK user）+ 索引 (tenantId, weekEnd DESC) + RLS NULLIF + 匿名查询走 superuser 连接绕 RLS；ALTER TABLE email_log ADD COLUMN template_id Uuid FK / ai_customized Boolean default false；完整 ROLLBACK SQL；tests/integration/bm2-schema.test.ts 覆盖 Campaign 新字段 / KolCampaign enum 6 值 / CampaignMetric CRUD + RLS / EmailTemplate 跨租户 system 读 + 单租户 user 写 / WeeklyReport 匿名 token 查询"
+      "status": "pending",
+      "acceptance": "**前置已完成（无需重做）：** src/components/ui/{Button,Input,Select,Dialog,Table,Checkbox,index}.tsx 6 atoms + barrel 已落地（commit 链见 BM2 F006 前置 'feat(bm2-f006-prep)' 系列），src/components/common/ 已补 ChipButton/StatusBadge/RingProgress/Sparkline，StatCard 既有；ui __tests__/ 6 文件全绿；hotfix-f001-component-library-preimpl-audit.md §8 Planner 事后裁决全 A 采纳。\n\n**本批次残余工作（~1.5h）：**\n1. BL-010 render-stitch-previews 脚本：新建 scripts/render-stitch-previews.ts 用 Playwright headless chromium 1920×1200 viewport 打开 design-draft/stitch-references/*.html → 全页截图 → 写 design-draft/stitch-references/renders/<page>-1920.png；package.json 加 npm script 'render:stitch-previews'；处理外部 CDN 资源加载（Tailwind / Material Icons / fonts）waitForLoadState('domcontentloaded') + 显式 image 加载等待（**不用 'networkidle'**，遵循 BM1 F009 教训）；幂等覆盖写；首跑生成 18 张高分辨率 PNG 入 design-draft/stitch-references/renders/ 入 git\n2. ui/ + common/ 新增组件 README.md（component props 表 + 用法 snippet，~100 行）\n3. F002-F006 开工前 grep 验证：rg \"INPUT_CLASS|CHIP_BASE|inline-flex.*bg-cyan/10\" src/app 返回非空清单移交 Generator 替换\n\n**Acceptance 闸门：**\n- npm run render:stitch-previews 跑通，design-draft/stitch-references/renders/*.png ≥ 18 张入 git\n- src/components/ui/README.md 存在覆盖 6 atoms + 业务组件 props\n- typecheck + lint + npm test 全绿"
     },
     {
       "id": "F002",
-      "title": "EmailTemplate seed 5 套系统模板 × en/zh",
+      "title": "/discovery 重写（恢复主搜索区 + AI Smart Match CTA + Active Filter chips + Grid/List toggle + 4 列回归）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "scripts/seed-email-templates.ts（开头加 import 'dotenv/config'; 借鉴 BL-001 教训）tenantId=null / type='system'；5 套 × en+zh=10 行：初次询价 Initial Outreach / 跟进提醒 Follow-up / 签约邀请 Partnership Invitation / 拒绝跟进 Polite Decline / 已合作回访 Post-Collab Check-in；variables JSON 含 {{kol.name}} {{kol.handle}} {{product.name}} {{product.category}} {{product.usp}} {{marketer.name}}；模板正文 en 100-180 词 / zh 100-180 字；package.json 加 seed:email-templates；prisma.config.ts 接入；幂等（upsert by tenantId+name+locale 或 type+name+locale）；tests/integration/email-template-seed.test.ts count=10 / 双语对齐 / variables 非空"
+      "status": "pending",
+      "acceptance": "重写 src/app/[locale]/(app)/discovery/page.tsx + FilterSidebar.tsx + KolResultCard.tsx 对照 design-draft/stitch-references/kol-discovery.html（浏览器渲染，不用 PNG 缩略图）。\n\n**必用公共组件：** <GlassPanel> / <Button variant=\"primary-gradient|secondary\"> / <Input> / <Select> / <ChipButton> / <SectionHeader>；<KolResultCard> 本页专用保留\n\n**不得简化的元素（恢复清单）：**\n- 主搜索区：顶部 glass-panel 含 platform selector + search input + AI Chips 轮转示例\n- AI Smart Match gradient CTA 按钮（右上角，<Button variant=\"primary-gradient\">）\n- Active Filter chips（结果区顶部，可点击清除单个 filter）\n- Grid/List 视图 toggle（结果区右上，2 icon buttons）\n- 结果卡片列数 xl:grid-cols-4 回归（不是 3）\n- Avatar 尺寸回归小号 w-10 h-10 原型尺寸\n\n**幽灵控件检查：** 无（每个控件必有 handler 或 disabled tooltip）\n\n**功能保持不变：** 15 维 filter 沿用现有 FilterSidebar 搬到新 Input/Select/ChipButton；URL-driven GET form 不破；cursor pagination runDiscoverySearch 不动\n\n**E2E resilience 强制（BM2 F011-001 教训）：**\n- 禁 page.waitForLoadState('networkidle')；用 expect(locator).toBeVisible({timeout:15000})\n- 不硬编 seed count（用 regex 或 >0 断言）\n- saveKol 后 revalidate 关联路由（/discovery + /database）\n- login redirect 用 locale-prefixed regex 断言\n\n**Acceptance：**\n- L2 staging 浏览器并排：左 kol-discovery.html 渲染 / 右 /en/discovery 登录态，还原度 ≥ 9/10\n- tests/e2e/discovery-fidelity.spec.ts 新增 case：prototype 标志元素 visible（AI Smart Match button + 主搜索区 platform selector + Active Filter chip click clear）\n- tests/screenshots/baseline/en-discovery.png 重捕（discovery 仍 viewport-only，per BM2 F011-001 fix-round 1 决议）\n- src/app/[locale]/(app)/discovery/ 单文件 className=\"...\" 硬编码 < 20 处（grep 核）"
     },
     {
       "id": "F003",
-      "title": "Campaigns 列表页 /campaigns",
+      "title": "/database 重写（Quick Stats KPI strip + Insights Panel 3 卡 + Bulk Action Bar 接真功能 + 7 维 filter）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "src/app/[locale]/(app)/campaigns/page.tsx 对齐 Stitch campaigns-list.html；canonical App Shell active=Campaigns；顶部 title + '新建 Campaign' 主按钮跳 F004；filter 栏 status (all/draft/active/completed) + search by name；列表卡片（name / product / status badge 颜色区分 draft=灰 active=cyan completed=绿 / KOL 数 / spendTotal / ROI% 仅 completed 显示 / 起止日 / 点卡进详情）；空态插画 + '还没有 Campaign' 引导；API GET /api/campaigns?status=&cursor=&limit=20 用 BI4-F004 cursor util；i18n campaigns.* 全译；tests/integration/campaigns-list.test.ts cursor + filter + RLS；visual /en/campaigns baseline"
+      "status": "pending",
+      "acceptance": "重写 src/app/[locale]/(app)/database/page.tsx + DatabaseFilterBar.tsx 对照 design-draft/stitch-references/kol-database.html（浏览器渲染）。\n\n**必用公共组件：** <Table stickyHeader> + <TRow> + <TCell>（替代手写 Th/Td inline 函数）/ <Checkbox indeterminate>（行选 + header 全选）/ <StatCard> ×4（Quick Stats）/ <StatusBadge domain=\"kolRelationship\">/ <Button variant=\"danger|primary\">（Bulk Action Bar）/ <Select>（filter dropdowns）/ <Dialog>（Add to Campaign modal）\n\n**不得简化的元素：**\n- Quick Stats 4 KPI strip 顶部（Total KOLs / Active Collabs / Avg AI Score / Follower Reach）\n- Right-side Insights Panel 320px 固定列：(a) AI Intelligence Card（相关度评分建议）(b) Coverage Gap Card（类目/地区缺口，MVP 阶段 mock 'Coming in B6'）(c) Engagement Trend Card（7 天互动率趋势）\n- Bulk Action Bar：选中行后底部浮动 3 actions：Add to Campaign（**真功能**）/ Email（disabled tooltip 'Use /outreach for email campaigns'）/ Delete with confirm\n- 过滤维度补齐到 7：Search + Category + Region + Status + Tier + Game + Tags\n- 表格增长指标（+12.4k 风格）followers 列内联显示\n\n**幽灵控件处理：** Email bulk button → disabled + tooltip（已实装 /outreach，按 BM2 F006 落地实情提示用户改走 /outreach）\n\n**Acceptance：**\n- 所有'不得简化'清单项勾选\n- Bulk Action Bar：选 3 个 KOL → 'Add to Campaign' Dialog → 选 campaign → 批量 upsert KolCampaign（status=pending）+ audit_log 'kol.bulk_added_to_campaign'\n- Insights Panel 3 卡 render（Coverage Gap 硬编 'No data yet, coming in B6'）\n- tests/integration/database-bulk-action.test.ts Add to Campaign 批量 + RLS 跨租户隔离\n- tests/e2e/database-fidelity.spec.ts prototype 标志元素 visible\n- tests/screenshots/baseline/en-database.png 重捕（fullPage）\n- 单文件 className=\"...\" < 20 处"
     },
     {
       "id": "F004",
-      "title": "Campaign 新建页 /campaigns/new",
+      "title": "/campaigns 列表重写（KPI strip + 7 filter 维度 + AI Suggestions panel）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "src/app/[locale]/(app)/campaigns/new/page.tsx 独立页（非 modal）；表单字段 name(required, max 80) / productId(required dropdown from GET /api/products，无 product 时提示引导 /knowledge-base) / budgetAmount(optional Decimal 12,2) / startDate / endDate / ownerUserId(默认当前用户不可改) / game / markets / kpiTarget；src/lib/campaigns/schema.ts zod（F005/F006 复用）；Server Action createCampaign status=draft spendTotal=0 + event_log 'campaign.created' + 返回 id 前端跳 /campaigns/:id；tests/integration/campaign-create.test.ts（zod 校验 / RLS / event_log）；visual baseline"
+      "status": "pending",
+      "acceptance": "重写 src/app/[locale]/(app)/campaigns/page.tsx + CampaignsFilterBar.tsx 对照 design-draft/stitch-references/campaigns-list.html（浏览器渲染）。\n\n**必用公共组件：** <StatCard> ×4（KPI strip）/ <Table> + <TRow> + <TCell> / <ChipButton pressed>（status filter chips 多选）/ <Select>（Game/Region/Owner/Date）/ <StatusBadge domain=\"campaign\"> / <Button>（'新建 Campaign' CTA）\n\n**不得简化的元素：**\n- Top KPI strip 4 cards：Active Campaigns（DB 真查）/ KOLs in Pipeline（Σ KolCampaign.status NOT IN (terminated,paid)）/ Avg Reply Rate（BM2 F006 已落地，可真算 EmailLog.status='replied'/total；如无邮件硬编 '—'）/ Reach Forecast（Σ KOL.followers WHERE KolCampaign.campaignId IN active）\n- Status filter chips：All / Active / Draft / Paused / Completed（多选 ChipButton pressed，不是单选 dropdown）\n- 附加 filter：Game / Region / Owner / Date range（4 dropdowns）\n- AI Suggestions panel（左下角小卡，硬编 'Suggest matching KOLs - Coming in /discovery' 跳转链接）\n\n**幽灵控件处理：**\n- Owner filter（Solo tenant MVP）→ disabled tooltip 'Solo tenant mode'\n- Date range → 真功能（zod schema 校验 + URL param）\n\n**Acceptance：**\n- KPI strip 4 卡 render（Active count + KOLs Pipeline + Reply Rate 真算或硬编 '—' + Reach Forecast 计算）\n- 7 filter 维度全部工作（status chips multi-select + 4 dropdown）\n- AI Suggestions 卡片可点跳 /discovery\n- tests/integration/campaigns-list-filter.test.ts 7 filter 组合查询\n- tests/screenshots/baseline/en-campaigns.png 重捕\n- 单文件 className=\"...\" < 20 处"
     },
     {
       "id": "F005",
-      "title": "Campaign 详情页 /campaigns/:id（KOL 面板 + Revenue + Status）",
+      "title": "/campaigns/:id 详情重写（2-column layout + 右 320px Insights + Email Performance chart + Add KOL Dialog）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "src/app/[locale]/(app)/campaigns/[id]/page.tsx 对齐 Stitch campaign-detail.html；Section 1 Header（name + status badge + inline edit / Product 链接 / 4 KPI Budget/SpendTotal/Revenue/ROI%）；Section 2 KOL 面板（'添加 KOL' modal 从 Kol.isSaved=true 未在本 campaign 选 / 行显 avatar/name/handle/platform badge/contactStatus select 6 值/kolFee input onBlur save 后端事务重算 spendTotal/移除按钮）；Section 3 RevenueRecorder（status=completed 前可改，之后只读 + '重新激活' 切回 active 解锁）+ StatusController（draft→active→completed 按钮链记 startedAt/closedAt）；Section 4 '给所有有 email 的 KOL 发邮件' 跳 /outreach?campaignId=:id；API GET/PATCH /api/campaigns/:id + POST/DELETE/PATCH /api/campaigns/:id/kols/:kolId；每次 kolFee 变更事务内 recompute spendTotal；audit_log（BI4-F003）campaign.kol.status_changed / fee_updated；tests/integration/campaign-detail.test.ts（KOL 增删改 + spendTotal 正确 + audit_log + 重激活）；visual baseline"
+      "status": "pending",
+      "acceptance": "重写 src/app/[locale]/(app)/campaigns/[id]/page.tsx + 5 子组件 对照 design-draft/stitch-references/campaign-detail.html（浏览器渲染）。\n\n**必用公共组件：** <GlassPanel> + <SectionHeader> / <StatCard> ×4（Header KPI）/ <Table> + <TRow>（KOL Panel）/ <Dialog>（'Add KOL' modal **替换 CampaignKolPanel 495 行手写 modal**）/ <Button> variants / <StatusBadge domain=\"campaign|kolCampaign\"> / <Select>（contactStatus dropdown per row）\n\n**布局：**\n```\n┌──────────────────────────────────┬──────────────┐\n│ Section 1: Header (4 KPI)        │              │\n├──────────────────────────────────┤  Right       │\n│ Section 2: KOL Panel             │  Insights    │\n├──────────────────────────────────┤  320px       │\n│ Section 3: Email Performance     │              │\n├──────────────────────────────────┤              │\n│ Section 4: Revenue + Status      │              │\n└──────────────────────────────────┴──────────────┘\n```\n\n**不得简化的元素：**\n- 2-column grid layout（主内容 + 右 320px 固定列）\n- Email Performance chart（recharts line chart 显示 contactedAt/repliedAt 时序，从 EmailLog 真查；无邮件时空态 'No email activity yet'）\n- 右侧 Insights 窄列三卡：(a) Campaign Health（spend rate + revenue vs budget + days to closeout 倒计时）(b) AI Suggestions（硬编 'Next steps: Send to N uncontacted KOLs' with link 到 /outreach?campaignId=:id）(c) Recent Activity Timeline（audit_log 最近 10 条本 campaign 事件）\n- Add KOL Dialog 用公共 <Dialog>（替换 495 行手写 modal）\n\n**幽灵控件处理：**\n- AI Suggestions 'Run AI match' 按钮 → disabled tooltip 'B2 batch'（MVP 不做 AI 匹配）\n\n**Acceptance：**\n- 右侧 Insights 3 卡 render（Campaign Health 真数据 / AI Suggestions 静态文本 + uncontacted count 真算 / Activity Timeline 从 audit_log）\n- Email Performance chart 显示真实时序或空态\n- Add KOL Dialog 用新 <Dialog>，功能不变（从 Kol.isSaved=true 选）\n- **CampaignKolPanel.tsx 行数从 495 降至 ≤ 250**（抽走 modal + 表格到公共组件）\n- tests/integration/campaign-detail-rsc-boundary.test.ts 守 transitionTo Record<string,string>（BM2 F011 教训）\n- tests/screenshots/baseline/en-campaign-detail.png 重捕\n- 单文件 className=\"...\" < 20 处"
     },
     {
       "id": "F006",
-      "title": "邮件触达页 /outreach（Resend + AI 定制 + mock fallback + 补 email UI）",
+      "title": "/kols/[id] 画像页轻度改写（手写 className → 公共组件，TabKey 枚举保留）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "src/app/[locale]/(app)/outreach/page.tsx 对齐 Stitch email-center.html；顶部 Campaign selector（?campaignId=:id 预选）；KolCampaign 行勾选（Kol.email 非空启用；无 email 标灰 + tooltip '需手动 YouTube 私信' + '补 email' 行内编辑按钮 → PATCH /api/kols/:id {email, emailSource:'manual'}）；EmailTemplate selector（locale 过滤 system 模板）；预览变量替换；'AI 定制' 按钮 → AiCustomizeDialog 弹层 → 调 aigcgateway Action kol-email-customize（action_id=cmob2z6j00001bnole7i8lg9h model=claude-haiku-4.5）→ 响应 strip code fence 再 JSON.parse（BL-001 实测 Claude Haiku 习惯包 ```json）→ 左右对比原版 vs AI 版 → 可手动编辑 → 确认版本；发送按钮分批调 Resend（10 msg/min 前端节流 + 后端 sleep guard）；src/lib/email/resend.ts fallback：无 RESEND_API_KEY 时 structured log + EmailLog.status='mock_sent'；发件人 marketer@kolquest.com；错误 retry 1 次 30s timeout；EmailLog 记录 + KolCampaign.status 更新到 contacted（若当前 pending/quoted 之前）；event_log email.sent / email.ai_customize_clicked / email.ai_customize_accepted（PRD §2.2 AI 定制采纳率 ≥40% 指标源）；src/lib/email/customize.ts 契约定型；tests/integration/outreach-flow.test.ts（mock aigcgateway + Resend mock + EmailLog 写入）；visual baseline"
+      "status": "pending",
+      "acceptance": "src/app/[locale]/(app)/kols/[id]/page.tsx 轻度改写（**不全量重写**，本页 BM1 已基本对齐 Stitch kol-detail.html，只抽组件）。\n\n**必用公共组件：** <Button> / <StatusBadge> / <GlassPanel> / <SectionHeader> / <TagChip>\n\n**改写范围：**\n- 手写 TabKey 枚举保留（4 tab 切换逻辑良好）\n- 手写 className 密度 > 20 的部分改用公共组件\n- 4 tabs：Overview 真数据保持；Collabs / Contacts / AI 3 个 tab empty-state 补友好提示（不实现 MVP 外功能）\n\n**Acceptance：**\n- className 硬编码密度降到 < 20/file\n- Tab 切换行为不变（现有 E2E 跑通）\n- 新增 baseline tests/screenshots/baseline/en-kols-detail.png（**新增**，BM1+BM2 baseline 集合无此项）\n- visual-regression.spec.ts 加 kols-detail case（静态 URL /en/kols/demo-kol-001）"
     },
     {
       "id": "F007",
-      "title": "CRM 简化页 /crm（阶段分布 + 漏斗 + 合作总额）",
+      "title": "Visual regression baselines 重捕（受 F002-F006 影响的 5-6 张）+ CI 验证",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "src/app/[locale]/(app)/crm/page.tsx 对齐 Stitch crm-relationship.html；Section 1 阶段分布 6 卡（prospect/first_contact/negotiating/long_term/paused/terminated by Kol.relationshipStatus，点卡跳 /database?status=XXX）；Section 2 漏斗图 prospect→first_contact→negotiating→long_term 显数量 + 每步转化率 %；Section 3 合作总额 KPI（Σ KolCampaign.kolFee where status ∈ signed/delivered/paid）；Section 4 最近关系变化表（audit_log 查 kol.relationship_status_changed 最近 30 条：KOL/谁/何时/A→B）；每行 KOL relationshipStatus dropdown 切换 → PATCH /api/kols/:id/relationship-status + audit_log；API GET /api/crm/overview 返回 4 块数据；按钮切换（不做拖拽）；tests/integration/crm-overview.test.ts；visual baseline"
-    },
-    {
-      "id": "F008",
-      "title": "ROI 引擎（pure compute util + summary/trend API）",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "src/lib/roi/compute.ts pure functions：computeCampaignRoi(spendTotal, revenueRecorded)→{roiPercent, netProfit}（null revenue→null roi；spend=0→null 避 div0）/ computeRoiTrend(tenantId, days)→按 day bucket 聚合 spend/revenue/roi / computeRoiSummary(tenantId)→totalSpend/totalRevenue/avgRoi/topCampaign/campaignCount{active,completed}；API GET /api/roi/summary + trend?days=30 + campaigns；tests/unit/roi-compute.test.ts full branch coverage（0 spend + 非 null / 100→150 / null revenue / trend 聚合 / summary 避 div0）；tests/integration/roi-api.test.ts RLS 隔离"
-    },
-    {
-      "id": "F009",
-      "title": "ROI 追踪页 /roi（4 KPI + 趋势图 + Campaign 表 + AI Insights）",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "src/app/[locale]/(app)/roi/page.tsx 对齐 Stitch roi-tracking.html；Section 1 4 KPI 卡（TotalSpend/TotalRevenue/AvgROI%/TopCampaign ROI from F008 summary）；Section 2 30 天趋势 recharts line chart（spend vs revenue 双线 + ROI% 次轴）；Section 3 Campaign ROI 表按 roiPercent DESC 可点跳详情；Section 4 AI Insights 卡片：默认 'Generate Insights' 按钮 → 调 aigcgateway Action roi-insights（action_id=cmob2zgae000jbnnuue2i7uaf model=gemini-3-flash）→ 返回 3-5 条 bilingual 洞察 match 当前 locale → 缓存 localStorage key=roi-insights-{tenantId}-{YYYYMMDD} 当日有效 + '重新生成' 按钮；src/lib/roi/insights.ts 契约；tests/integration/roi-page.test.ts（insights mock + localStorage）；visual baseline"
-    },
-    {
-      "id": "F010",
-      "title": "AI 周报页 /weekly-report（生成 + PDF 导出 + 分享链接）",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "src/app/[locale]/(app)/weekly-report/page.tsx 对齐 Stitch weekly-report.html；date picker（过去 7 天）+ locale selector；'生成周报' 调 aigcgateway Action weekly-report-for-client（action_id=cmob2zqkp0001bnnvel4vjapu model=gemini-3-flash）输入 tenant(name+logoUrl) + kol_activity_json + roi_data_json + prev_week_comparison_json → markdown；写入 WeeklyReport 表 (tenantId, weekStart, weekEnd, locale, contentMd, summaryJson=tenant snapshot + input data, createdByUserId)；react-markdown 渲染 5 段式（Executive Summary / Top Performers / Key Activity / Key Insights / Looking Ahead）+ branded header（tenant.name + logoUrl）；PDF 导出 window.print() + @media print stylesheet A4 隐藏 nav/sidebar；POST /api/weekly-reports/:id/share-token → 32 字符 token + 7 天过期 写回 WeeklyReport；src/app/shared/weekly-report/[token]/page.tsx 匿名路由 superuser 连接按 token 查 + 过期校验 + 仅 SELECT content_md/summary_json/created_at/share_token_expires_at（不 join tenant 表，logoUrl 从 summary_json 读）+ <meta robots noindex>；历史周报切换 /weekly-report?id=:id（最近 10 份）；tests/integration/weekly-report.test.ts（生成 + token + 过期 + 匿名访问）；visual baseline（登录 + 匿名 2 张）"
-    },
-    {
-      "id": "F011",
-      "title": "Tests + Visual regression baselines（6 页）+ BM1 E2E resilience 教训落地",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "Integration tests 6 files（bm2-schema/email-template-seed/campaigns-api/outreach-api/crm-api/roi-api）+ unit tests 2 files（roi-compute 全 branch / email-customize 变量替换）+ E2E 2 files（journey-a: /discovery 保存→/campaigns/new→加 KOL→/outreach→AI 定制→发 mock；journey-b: 录 revenue→/roi→/weekly-report→PDF→匿名分享访问）+ 6 张 visual baseline（campaigns-list/campaign-detail/outreach/crm/roi/weekly-report）容差 0.1；AI 定制采纳率埋点验证 E2E 里 event_log 3 event 写入；**BM1 F009 教训必须落地**：禁用 waitForLoadState networkidle / 禁硬编 seed count 用 regex 或 >0 / revalidate 后 polling 15s / login redirect 锁 locale regex / saveKol 同时 revalidate 关联路由；fix_rounds 目标 ≤1；CI integration-tests + e2e-tests + visual-regression 三 job 全绿"
+      "status": "pending",
+      "acceptance": "**前置已完成（BM2 F011-001 fix-round 1 落地）：** 12 张 baseline PNG 已入 git（dashboard.png + en-{campaign-detail,campaigns,crm,database,discovery,knowledge-base,login,outreach,request-access,roi,weekly-report}.png）；CI E2E 拆 visual-first 步骤已就绪；seed deterministic（Date.UTC + LCG）已就绪；maxDiffPixels 8000（discovery 例外 viewport-only）已就绪。\n\n**本批次工作：**\n1. F002-F006 重写后必然失效的 baseline 重捕（在 GitHub Actions update-visual-baselines workflow 上跑 --update-snapshots）：\n   - en-discovery.png（F002 重写 → viewport-only 重捕）\n   - en-database.png（F003 重写 → fullPage 重捕）\n   - en-campaigns.png（F004 重写 → fullPage 重捕）\n   - en-campaign-detail.png（F005 重写 → fullPage 重捕）\n   - en-kols-detail.png（F006 新增 → fullPage 新捕）\n   - dashboard.png（**视 F001 抽 StatCard 是否影响 dashboard 决定**；如 dashboard 复用 StatCard 但样式未变 → 不重捕，跑一次 CI 看 diff < threshold 即可；如样式变化 → 重捕）\n2. 重捕后 commit 'chore(visual): regenerate baselines after MVP-visual-fidelity hotfix' 入 git\n3. CI visual-regression job PR 真跑（不再 skip），diff > maxDiffPixels 触发 fail\n4. tests/e2e/visual-regression.spec.ts 加 en-kols-detail case\n\n**Acceptance：**\n- ls tests/screenshots/baseline/*.png 至少 13 张（原 12 + 新增 en-kols-detail）\n- git ls-files tests/screenshots/baseline/*.png 全部追踪\n- CI run 全绿（typecheck / lint / unit / integration / build / E2E split + visual + 全套）\n- visual-regression.spec.ts 不含 .skip\n- discovery 仍 viewport-only 标注保持（per BM2 F011-001 fix-round 1 决议）"
     }
   ]
 }
