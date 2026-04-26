@@ -111,6 +111,29 @@ async function fontsReady(page: Page) {
   );
 }
 
+/**
+ * BM2-F011-001: discovery (and any other page with KOL avatars or
+ * external images) renders shorter while images are still loading
+ * because the placeholder div is shorter than the loaded image. The
+ * screenshot timing decides whether the page is N or N+1 rows tall,
+ * which fullPage captures as a 29-px height drift between runners.
+ *
+ * Wait for every <img> on the page to either be complete or fail to
+ * load before taking the screenshot. naturalWidth>0 distinguishes a
+ * loaded image from a placeholder; complete=true also covers the
+ * legitimate "image errored" case so we don't hang on broken URLs.
+ */
+async function imagesReady(page: Page) {
+  await page.waitForFunction(
+    () =>
+      Array.from(document.images).every(
+        (img) => img.complete && (img.naturalWidth > 0 || img.naturalWidth === 0)
+      ),
+    null,
+    { timeout: 5_000 }
+  );
+}
+
 test.describe("Authenticated BM1 visual regression", () => {
   test.skip(
     process.platform !== "linux",
@@ -186,27 +209,17 @@ test.describe("Authenticated BM1 visual regression", () => {
     await page.waitForSelector('[data-testid="discovery-grid"]');
     await page.waitForSelector('[data-testid="discovery-summary"]');
     await fontsReady(page);
+    await imagesReady(page);
 
     const grid = page.getByTestId("discovery-grid");
     const summary = page.getByTestId("discovery-summary");
 
-    // BM2-F011-001: discovery has a stubbornly 29-px / one-row delta
-    // between the update-visual-baselines workflow run (1280x1703) and
-    // the CI E2E split-step run (1280x1732). Both run the same code,
-    // same deterministic seed, same checked-in commit, and the
-    // wait-AND fix earlier in this file removed the grid-vs-summary
-    // mount race. The remaining drift is likely cold-route hydration
-    // timing on the discovery RSC bundle (it's the heaviest authed
-    // page, with 12 KOL cards + a 4-pillar summary). Bump just this
-    // test's pixel budget to 80000 (~5% of the 1.3M-pixel full page)
-    // so the test still trips on real visual regressions but the
-    // deterministic-yet-runner-dependent row delta no longer reds CI.
     await expect(page).toHaveScreenshot("en-discovery.png", {
       fullPage: true,
       animations: "disabled",
       mask: [grid, summary],
       threshold: 0.02,
-      maxDiffPixels: 80000,
+      maxDiffPixels: 8000,
     });
   });
 
