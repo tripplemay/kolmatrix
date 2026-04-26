@@ -6,7 +6,7 @@
       "title": "公共组件库抽取（已提前完成于 BM2 F006 前置）+ Stitch 高分辨率预览渲染脚本（BL-010 并入）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**前置已完成（无需重做）：** src/components/ui/{Button,Input,Select,Dialog,Table,Checkbox,index}.tsx 6 atoms + barrel 已落地（commit 链见 BM2 F006 前置 'feat(bm2-f006-prep)' 系列），src/components/common/ 已补 ChipButton/StatusBadge/RingProgress/Sparkline，StatCard 既有；ui __tests__/ 6 文件全绿；hotfix-f001-component-library-preimpl-audit.md §8 Planner 事后裁决全 A 采纳。\n\n**本批次残余工作（~1.5h）：**\n1. BL-010 render-stitch-previews 脚本：新建 scripts/render-stitch-previews.ts 用 Playwright headless chromium 1920×1200 viewport 打开 design-draft/stitch-references/*.html → 全页截图 → 写 design-draft/stitch-references/renders/<page>-1920.png；package.json 加 npm script 'render:stitch-previews'；处理外部 CDN 资源加载（Tailwind / Material Icons / fonts）waitForLoadState('domcontentloaded') + 显式 image 加载等待（**不用 'networkidle'**，遵循 BM1 F009 教训）；幂等覆盖写；首跑生成 18 张高分辨率 PNG 入 design-draft/stitch-references/renders/ 入 git\n2. ui/ + common/ 新增组件 README.md（component props 表 + 用法 snippet，~100 行）\n3. F002-F006 开工前 grep 验证：rg \"INPUT_CLASS|CHIP_BASE|inline-flex.*bg-cyan/10\" src/app 返回非空清单移交 Generator 替换\n\n**Acceptance 闸门：**\n- npm run render:stitch-previews 跑通，design-draft/stitch-references/renders/*.png ≥ 18 张入 git\n- src/components/ui/README.md 存在覆盖 6 atoms + 业务组件 props\n- typecheck + lint + npm test 全绿"
     },
     {
