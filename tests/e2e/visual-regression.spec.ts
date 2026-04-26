@@ -18,6 +18,7 @@
  *   - en-crm.png                — authenticated `/en/crm` (BM2-F007)
  *   - en-roi.png                — authenticated `/en/roi` (BM2-F009)
  *   - en-weekly-report.png      — authenticated `/en/weekly-report` (BM2-F010)
+ *   - en-kols-detail.png        — authenticated `/en/kols/:id` (MVP-vf-F006)
  *
  * Tolerances (per BI1 spec §F009, raised in BM2 fixing-round 1):
  *   - threshold: 0.02    — 2% max normalised per-pixel channel diff
@@ -444,6 +445,50 @@ test.describe("Authenticated BM2 visual regression", () => {
       fullPage: true,
       animations: "disabled",
       mask: [empty, sectionB, history, brandHeader],
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
+  });
+
+  // MVP-vf-F006 — first KOL profile reachable from /database. Same
+  // anti-handshake pattern as campaign-detail: read the first row
+  // anchor href and page.goto() it instead of clicking, so a cold CI
+  // RSC route doesn't blow the 30 s default test timeout.
+  test("kols-detail full-page screenshot diffs < 2% vs baseline", async ({
+    page,
+  }) => {
+    test.skip(
+      shouldSkipMissingBaseline("en-kols-detail.png", test.info()),
+      "Baseline en-kols-detail.png missing — run the 'Update visual baselines' workflow."
+    );
+    test.setTimeout(90_000);
+    await login(page);
+    await page.goto("/en/database");
+    await page.waitForSelector('[data-testid="database-table-wrapper"]');
+
+    const firstRow = page.locator('[data-testid="database-row"]').first();
+    if ((await firstRow.count()) === 0) {
+      test.skip(true, "No saved KOLs in seed — kols-detail baseline N/A");
+    }
+    const href = await firstRow.locator("a").first().getAttribute("href");
+    if (!href || !/\/kols\/[0-9a-f-]{36}/.test(href)) {
+      test.skip(true, `Unexpected database row href: ${href ?? "(null)"}`);
+    }
+    await page.goto(href!);
+    await page.waitForSelector('[data-testid="kol-hero"]', { timeout: 60_000 });
+    await fontsReady(page);
+    await imagesReady(page);
+
+    // Per-KOL chrome (display name, value score, follower count) is
+    // tenant-seed-specific — mask the hero + value score so the
+    // structural diff drives the signal.
+    const hero = page.getByTestId("kol-hero");
+    const valueScore = page.getByTestId("kol-value-score-card");
+
+    await expect(page).toHaveScreenshot("en-kols-detail.png", {
+      fullPage: true,
+      animations: "disabled",
+      mask: [hero, valueScore],
       threshold: 0.02,
       maxDiffPixels: 8000,
     });
