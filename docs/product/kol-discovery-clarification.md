@@ -78,14 +78,14 @@ Step 6  AI 生成个性化邮件 → 合规发送 → 邮件触达系统
 
 ### §2.2 对标竞品（帮助团队建立参考）
 
-| 产品 | 数据量 | 核心 Discovery 能力 |
-|---|---|---|
-| NoxInfluencer | 800K+ KOL | 多维 filter，无 AI 推荐 |
-| Upfluence | 500K+ | 多维 filter + 导入客户 CRM |
-| AspireIQ | 未公开 | 工作流自动化（发现→沟通→结算） |
-| HypeAuditor | 100M+ 跨平台 | 重 audit（虚假粉丝检测），弱推荐 |
-| Modash | 250M+（IG/YT/TikTok） | 受众分析 AI，相似 KOL 推荐 |
-| Heepsy | 100M+ | AI 搜索（品牌关键词匹配） |
+| 产品            | 数据量                 | 核心 Discovery 能力      |
+| ------------- | ------------------- | -------------------- |
+| NoxInfluencer | 800K+ KOL           | 多维 filter，无 AI 推荐    |
+| Upfluence     | 500K+               | 多维 filter + 导入客户 CRM |
+| AspireIQ      | 未公开                 | 工作流自动化（发现→沟通→结算）     |
+| HypeAuditor   | 100M+ 跨平台           | 重 audit（虚假粉丝检测），弱推荐  |
+| Modash        | 250M+（IG/YT/TikTok） | 受众分析 AI，相似 KOL 推荐    |
+| Heepsy        | 100M+               | AI 搜索（品牌关键词匹配）       |
 
 **空白点：** 上述产品都是**通用 KOL 库**，不是游戏垂直。KOLMatrix 的垂直切入是差异化机会。
 

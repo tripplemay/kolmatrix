@@ -500,30 +500,44 @@ MVP 用 **aigcgateway**（已接入）提供 3 档 AI 能力：
 **Q1. AI 打标结果 review 流程**
 AI 标好后如何 review？由 admin 用户手动看 sample 30 条 sign-off，还是直接上？
 
+reply：第二次复审之后的结果可以直接上
+
 **Q2. XLSX 质量偏低怎么处理**
 Pilot 发现 XLSX 有大量非游戏 KOL（估计 40-60%）。方案 C 会过滤掉，但剩下可能只有 ~700-1000 条。对 MVP demo 够吗？还是建议团队补数据源？
 
+reply：第二次复审之后的结果，够 mvp 使用了
 ### 🟨 P1（影响用户体验）
 
 **Q3. AI 定制邮件的 context**
 AI 定制按钮点了之后，LLM 拿到：Product 信息 + KOL 信息 + 模板。会生成什么？（举例：重写 subject 行 + 改写 body 前 1-2 句）
 
+reply：你使用 aigcgateway 的 action 和 template 能力，创建一个模板，后期再优化
+
 **Q4. AI 周报的覆盖范围**
 周报包含：本周触达 N 个 KOL / ROI 数据 / top 5 performers / 待跟进 10 个 —— 还是更简洁？格式给客户看还是给老板看？
+
+reply：给客户看
 
 **Q5. Product 录入是否要求所有字段**
 "独特卖点" 空白的话 AI 素材生成效果差，要强制要求吗？
 
+ reply:强制要求
 ### 🟩 P2（影响产品叙事）
 
 **Q6. 登录 "Continue with Google" disabled 是否合适**
 Stitch 设计有这按钮。MVP 禁用 tooltip "Coming soon"。团队是否接受？还是建议完全移除？
 
+reply：可以接受
+
 **Q7. 默认语言切换**
 用户首次访问 `/` 是否自动按浏览器语言跳 `/en/` 或 `/zh/`？还是统一默认 `/en/`？
 
+reply：自动按浏览器语言跳
+
 **Q8. ROI 页的 AI Insights 是否 MVP 做**
 原型有 "AI Insights" 卡片显示"TikTok campaigns outperforming by 2.3×"等洞察。MVP 是否用 aigcgateway 生成这类洞察？还是 Post-MVP？
+
+reply：需要
 
 ---
 
