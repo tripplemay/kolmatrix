@@ -25,6 +25,7 @@
     "db:seed": "prisma db seed",
     "seed:kol": "tsx scripts/seed-kol-from-enriched.ts",
     "seed:email-templates": "tsx scripts/seed-email-templates.ts",
+    "render:stitch-previews": "tsx scripts/render-stitch-previews.ts",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate"
   },
