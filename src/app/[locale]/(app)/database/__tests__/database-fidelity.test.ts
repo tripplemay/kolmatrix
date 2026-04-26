@@ -90,7 +90,9 @@ describe("/database fidelity guards (MVP-vf-F003)", () => {
       );
       expect(block, `BulkActionBar ${testid} block`).not.toBeNull();
       expect(block![0]).toMatch(/disabled/);
-      expect(block![0]).toMatch(new RegExp(`labels\\.${tooltipKey}`));
+      // Post-RSC-fix: BulkActionBar reads i18n via `t("...Tooltip")`
+      // directly instead of accepting a `labels` prop.
+      expect(block![0]).toMatch(new RegExp(`t\\("${tooltipKey}"\\)`));
     }
   });
 
@@ -112,5 +114,23 @@ describe("/database fidelity guards (MVP-vf-F003)", () => {
     const tc = read("DatabaseTableClient.tsx");
     expect(tc).toMatch(/Checkbox/);
     expect(tc).toMatch(/indeterminate=\{someOnPage\}/);
+  });
+
+  it("page.tsx never passes function props to DatabaseTableClient (RSC boundary)", () => {
+    // Regression guard for CI run 24960980374: an earlier draft passed
+    // `selectRowAria: (name) => tTable(...)` and `body: tDialog("body")`
+    // (with an unbound {count} ICU placeholder) across the server →
+    // client boundary. Both crashed at render with "Functions are not
+    // valid as a React child" / FORMATTING_ERROR. This guard fails if
+    // either pattern returns.
+    const page = read("page.tsx");
+    // Reject any `<Identifier>: (any-args) => …` shape inside a JSX prop.
+    expect(page).not.toMatch(/[a-zA-Z]+:\s*\([^)]*\)\s*=>\s*[a-zA-Z]/);
+    // The labels objects that previously held those callbacks should
+    // be gone — DatabaseTableClient now receives only `rows`, `locale`,
+    // `rowFormatted`.
+    expect(page).not.toMatch(/cellLabels=\{/);
+    expect(page).not.toMatch(/dialogLabels=\{/);
+    expect(page).not.toMatch(/bulkLabels=\{/);
   });
 });

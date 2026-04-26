@@ -66,10 +66,7 @@ export default async function DatabasePage({ params, searchParams }: Props) {
 
   const t = await getTranslations("database");
   const tHeader = await getTranslations("database.header");
-  const tTable = await getTranslations("database.table");
   const tStatus = await getTranslations("relationshipStatus");
-  const tBulk = await getTranslations("database.bulk");
-  const tDialog = await getTranslations("database.dialog");
   const tEmpty = await getTranslations("database.emptyState");
   const tSummary = await getTranslations("database.summary");
   const tPager = await getTranslations("discovery.pagination");
@@ -191,39 +188,6 @@ export default async function DatabasePage({ params, searchParams }: Props) {
             <DatabaseTableClient
               rows={searchResult.items}
               locale={locale}
-              cellLabels={{
-                creator: tTable("creator"),
-                platform: tTable("platform"),
-                followers: tTable("followers"),
-                engagement: tTable("engagement"),
-                score: tTable("aiScore"),
-                status: tTable("status"),
-                lastContact: tTable("lastContact"),
-                selectAll: tTable("selectAllAria"),
-                selectRowAria: (name: string) =>
-                  tTable("selectRowAria", { name }),
-                open: tTable("open"),
-              }}
-              bulkLabels={{
-                selected: tBulk("selected"),
-                addToCampaign: tBulk("addToCampaign"),
-                email: tBulk("email"),
-                emailTooltip: tBulk("emailTooltip"),
-                delete: tBulk("delete"),
-                deleteTooltip: tBulk("deleteTooltip"),
-                clear: tBulk("clear"),
-              }}
-              dialogLabels={{
-                title: tDialog("title"),
-                body: tDialog("body"),
-                chooseCampaign: tDialog("chooseCampaign"),
-                submit: tDialog("submit"),
-                submitting: tDialog("submitting"),
-                cancel: tDialog("cancel"),
-                loading: tDialog("loading"),
-                noCampaigns: tDialog("noCampaigns"),
-                errorGeneric: tDialog("errorGeneric"),
-              }}
               rowFormatted={rowFormatted}
             />
           )}

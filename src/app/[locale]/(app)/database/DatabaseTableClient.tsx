@@ -9,10 +9,16 @@
  *   - BulkActionBar visibility
  *   - AddToCampaignDialog open/close + post-success bookkeeping
  *
- * Defers all visual / data work to <table> with the public `<Checkbox>`
- * atom + plain elements; the layout matches the Stitch prototype's
- * "row 0 is the bulk-checkbox column" structure.
+ * Calls `useTranslations` directly for static cell + bulk + dialog
+ * strings. Per BM2 F011 / MVP-vf-F003 hotfix lesson: passing functions
+ * across the RSC boundary (e.g. `selectRowAria: (name) => ...`) makes
+ * Next try to serialize the closure and crash with "Functions are not
+ * valid as a React child" / stringify errors. Per-row dynamic labels
+ * (date, statusLabel, followersLabel) are still pre-formatted on the
+ * server because they need `getFormatter()` / `getTranslations()`
+ * which only exist server-side.
  */
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
@@ -30,42 +36,10 @@ import type { DatabaseKolRow } from "./search";
 interface Props {
   rows: DatabaseKolRow[];
   locale: string;
-  /** Pre-localised cell labels passed from the server component. */
-  cellLabels: {
-    creator: string;
-    platform: string;
-    followers: string;
-    engagement: string;
-    score: string;
-    status: string;
-    lastContact: string;
-    selectAll: string;
-    selectRowAria: (name: string) => string;
-    open: string;
-  };
-  bulkLabels: {
-    selected: string;
-    addToCampaign: string;
-    email: string;
-    emailTooltip: string;
-    delete: string;
-    deleteTooltip: string;
-    clear: string;
-  };
-  dialogLabels: {
-    title: string;
-    body: string;
-    chooseCampaign: string;
-    submit: string;
-    submitting: string;
-    cancel: string;
-    loading: string;
-    noCampaigns: string;
-    errorGeneric: string;
-  };
   /**
-   * Pre-formatted strings the parent already computed under
-   * next-intl/server. The client cannot recompute server formatters.
+   * Pre-formatted strings the server already computed under
+   * next-intl/server. Each entry covers the row's dynamic labels —
+   * date, relationshipStatus label, follower-count compact format.
    */
   rowFormatted: Record<
     string,
@@ -89,11 +63,9 @@ function initialsOf(name: string): string {
 export function DatabaseTableClient({
   rows,
   locale,
-  cellLabels,
-  bulkLabels,
-  dialogLabels,
   rowFormatted,
 }: Props) {
+  const tTable = useTranslations("database.table");
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -153,19 +125,19 @@ export function DatabaseTableClient({
                   checked={allOnPage}
                   indeterminate={someOnPage}
                   onCheckedChange={(v) => toggleAll(v)}
-                  aria-label={cellLabels.selectAll}
+                  aria-label={tTable("selectAllAria")}
                 />
               </TCell>
-              <TCell as="th">{cellLabels.creator}</TCell>
-              <TCell as="th">{cellLabels.platform}</TCell>
+              <TCell as="th">{tTable("creator")}</TCell>
+              <TCell as="th">{tTable("platform")}</TCell>
               <TCell as="th" align="right">
-                {cellLabels.followers}
+                {tTable("followers")}
               </TCell>
               <TCell as="th" align="center">
-                {cellLabels.score}
+                {tTable("aiScore")}
               </TCell>
-              <TCell as="th">{cellLabels.status}</TCell>
-              <TCell as="th">{cellLabels.lastContact}</TCell>
+              <TCell as="th">{tTable("status")}</TCell>
+              <TCell as="th">{tTable("lastContact")}</TCell>
             </TRow>
           </THead>
           <TBody>
@@ -184,7 +156,7 @@ export function DatabaseTableClient({
                     <Checkbox
                       checked={checked}
                       onCheckedChange={(v) => toggleRow(kol.id, v)}
-                      aria-label={cellLabels.selectRowAria(kol.displayName)}
+                      aria-label={tTable("selectRowAria", { name: kol.displayName })}
                     />
                   </TCell>
                   <TCell>
@@ -256,7 +228,6 @@ export function DatabaseTableClient({
         count={selected.size}
         onAddToCampaign={() => setDialogOpen(true)}
         onClear={clearAll}
-        labels={bulkLabels}
       />
 
       <AddToCampaignDialog
@@ -264,7 +235,6 @@ export function DatabaseTableClient({
         onOpenChange={setDialogOpen}
         selectedIds={selectedIds}
         onAdded={onAdded}
-        labels={dialogLabels}
       />
     </>
   );

@@ -9,28 +9,23 @@
  *   - Email               (disabled — point users at /outreach instead)
  *   - Delete              (disabled — destructive bulk actions wait for B6)
  *
- * Stays a client component because the selection state is owned by the
- * parent table client. Pure presentation here; mutation lives inside
- * AddToCampaignDialog.
+ * Calls `useTranslations` directly instead of accepting a labels object
+ * from the server parent — passing static i18n strings as props would
+ * waste the RSC bundle and we already pay for the next-intl client
+ * runtime once any descendant uses it.
  */
+import { useTranslations } from "next-intl";
+
 import { Button } from "@/components/ui";
 
 interface Props {
   count: number;
   onAddToCampaign: () => void;
-  labels: {
-    selected: string;
-    addToCampaign: string;
-    email: string;
-    emailTooltip: string;
-    delete: string;
-    deleteTooltip: string;
-    clear: string;
-  };
   onClear: () => void;
 }
 
-export function BulkActionBar({ count, onAddToCampaign, onClear, labels }: Props) {
+export function BulkActionBar({ count, onAddToCampaign, onClear }: Props) {
+  const t = useTranslations("database.bulk");
   if (count === 0) return null;
 
   return (
@@ -49,7 +44,7 @@ export function BulkActionBar({ count, onAddToCampaign, onClear, labels }: Props
             {count}
           </span>
           <span className="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
-            {labels.selected}
+            {t("selected")}
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -61,29 +56,29 @@ export function BulkActionBar({ count, onAddToCampaign, onClear, labels }: Props
             <span className="material-symbols-outlined text-[18px]" aria-hidden>
               add_to_photos
             </span>
-            {labels.addToCampaign}
+            {t("addToCampaign")}
           </Button>
           <Button
             variant="ghost"
             disabled
-            title={labels.emailTooltip}
+            title={t("emailTooltip")}
             data-testid="bulk-bar-email"
           >
             <span className="material-symbols-outlined text-[18px]" aria-hidden>
               mail
             </span>
-            {labels.email}
+            {t("email")}
           </Button>
           <Button
             variant="danger"
             disabled
-            title={labels.deleteTooltip}
+            title={t("deleteTooltip")}
             data-testid="bulk-bar-delete"
           >
             <span className="material-symbols-outlined text-[18px]" aria-hidden>
               delete_outline
             </span>
-            {labels.delete}
+            {t("delete")}
           </Button>
         </div>
         <button
@@ -92,7 +87,7 @@ export function BulkActionBar({ count, onAddToCampaign, onClear, labels }: Props
           className="ml-auto text-xs text-on-surface-variant hover:text-cyan"
           data-testid="bulk-bar-clear"
         >
-          {labels.clear}
+          {t("clear")}
         </button>
       </div>
     </div>

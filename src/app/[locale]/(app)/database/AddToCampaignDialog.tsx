@@ -8,7 +8,17 @@
  * load isn't paying for it. Posts to `/api/campaigns/:id/kols/bulk` and
  * then forces a router refresh so the count cards / status pills pick
  * up the new audit_log + spendTotal.
+ *
+ * Calls `useTranslations` directly: the body string has a {count} ICU
+ * placeholder bound to `selectedIds.length`, and forwarding that
+ * pre-formatted value as a server prop would either evaluate the
+ * placeholder server-side at render time (with the wrong count) or
+ * leave the raw `{count}` token to leak into the UI. Inlining
+ * `useTranslations` here keeps the placeholder bound to the live
+ * selection state (BM2 F011 RSC function-prop lesson — pre-format
+ * strings, never callbacks).
  */
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import {
@@ -35,18 +45,6 @@ interface Props {
   selectedIds: string[];
   /** Called after a successful bulk-add so the parent can clear selection. */
   onAdded: (result: BulkAddResult) => void;
-  /** i18n strings the parent component looks up via useTranslations. */
-  labels: {
-    title: string;
-    body: string;
-    chooseCampaign: string;
-    submit: string;
-    submitting: string;
-    cancel: string;
-    loading: string;
-    noCampaigns: string;
-    errorGeneric: string;
-  };
 }
 
 export interface BulkAddResult {
@@ -61,8 +59,8 @@ export function AddToCampaignDialog({
   onOpenChange,
   selectedIds,
   onAdded,
-  labels,
 }: Props) {
+  const t = useTranslations("database.dialog");
   const [campaigns, setCampaigns] = useState<CampaignOption[] | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [campaignId, setCampaignId] = useState("");
@@ -85,10 +83,10 @@ export function AddToCampaignDialog({
       setCampaignId(list[0]?.id ?? "");
     } catch (err) {
       console.error("[AddToCampaignDialog] load campaigns failed", err);
-      setError(labels.errorGeneric);
+      setError(t("errorGeneric"));
       setCampaigns([]);
     }
-  }, [labels.errorGeneric]);
+  }, [t]);
 
   useEffect(() => {
     if (!open) return;
@@ -125,7 +123,7 @@ export function AddToCampaignDialog({
       onOpenChange(false);
     } catch (err) {
       console.error("[AddToCampaignDialog] submit failed", err);
-      setError(labels.errorGeneric);
+      setError(t("errorGeneric"));
     } finally {
       setSubmitting(false);
     }
@@ -137,22 +135,22 @@ export function AddToCampaignDialog({
         <DialogBackdrop />
         <DialogPanel data-testid="add-to-campaign-dialog">
           <DialogHeader>
-            <DialogTitle>{labels.title}</DialogTitle>
+            <DialogTitle>{t("title")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-on-surface-variant">
-            {labels.body.replace("{count}", String(selectedIds.length))}
+            {t("body", { count: selectedIds.length })}
           </p>
           {loading ? (
-            <p className="mt-4 text-sm text-on-surface-variant">{labels.loading}</p>
+            <p className="mt-4 text-sm text-on-surface-variant">{t("loading")}</p>
           ) : campaigns && campaigns.length === 0 ? (
-            <p className="mt-4 text-sm text-on-surface-variant">{labels.noCampaigns}</p>
+            <p className="mt-4 text-sm text-on-surface-variant">{t("noCampaigns")}</p>
           ) : (
             <div className="mt-4 space-y-2">
               <label
                 htmlFor="add-to-campaign-select"
                 className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant"
               >
-                {labels.chooseCampaign}
+                {t("chooseCampaign")}
               </label>
               <Select
                 id="add-to-campaign-select"
@@ -180,7 +178,7 @@ export function AddToCampaignDialog({
               onClick={() => onOpenChange(false)}
               disabled={submitting}
             >
-              {labels.cancel}
+              {t("cancel")}
             </Button>
             <Button
               variant="primary-gradient"
@@ -188,7 +186,7 @@ export function AddToCampaignDialog({
               disabled={submitting || loading || !campaignId}
               data-testid="add-to-campaign-submit"
             >
-              {submitting ? labels.submitting : labels.submit}
+              {submitting ? t("submitting") : t("submit")}
             </Button>
           </DialogFooter>
         </DialogPanel>
