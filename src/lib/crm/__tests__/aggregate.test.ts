@@ -86,15 +86,22 @@ describe("stagesToFunnel", () => {
 });
 
 describe("bucketCommitments14d", () => {
+  // Pin a reference timestamp shared across each event constructor and
+  // the function call so micro-second clock drift between the test
+  // setup and the function body never fall an event onto the wrong side
+  // of `start`. Without this, CI run 24959893338 saw `bins[0]` collapse
+  // to 0 because the boundary event 13 days + 1 sec ago landed before
+  // `start = Date.now() - 13 * DAY_MS` when the function ran.
+  const NOW = Date.UTC(2026, 3, 26, 12, 0, 0); // 2026-04-26T12:00:00Z
+  const day = 24 * 60 * 60 * 1000;
+
   it("buckets relationship-changed events into 14 daily slots", () => {
-    const now = Date.now();
-    const day = 24 * 60 * 60 * 1000;
     const events = [
-      { createdAt: new Date(now - 13 * day + 1000), afterStatus: "long_term" },
-      { createdAt: new Date(now - 1 * day), afterStatus: "signed" },
-      { createdAt: new Date(now), afterStatus: "long_term" },
+      { createdAt: new Date(NOW - 13 * day + 1000), afterStatus: "long_term" },
+      { createdAt: new Date(NOW - 1 * day), afterStatus: "signed" },
+      { createdAt: new Date(NOW), afterStatus: "long_term" },
     ];
-    const bins = bucketCommitments14d(events);
+    const bins = bucketCommitments14d(events, NOW);
     expect(bins.length).toBe(14);
     expect(bins[0]).toBe(1); // 13 days ago
     expect(bins[12]).toBe(1); // yesterday
@@ -102,20 +109,34 @@ describe("bucketCommitments14d", () => {
   });
 
   it("ignores events with non-tracked afterStatus", () => {
-    const now = Date.now();
     const events = [
-      { createdAt: new Date(now), afterStatus: "first_contact" },
-      { createdAt: new Date(now), afterStatus: "negotiating" },
+      { createdAt: new Date(NOW), afterStatus: "first_contact" },
+      { createdAt: new Date(NOW), afterStatus: "negotiating" },
     ];
-    expect(bucketCommitments14d(events)).toEqual(new Array(14).fill(0));
+    expect(bucketCommitments14d(events, NOW)).toEqual(new Array(14).fill(0));
   });
 
   it("ignores events older than 14 days", () => {
-    const now = Date.now();
-    const day = 24 * 60 * 60 * 1000;
     const events = [
-      { createdAt: new Date(now - 30 * day), afterStatus: "long_term" },
+      { createdAt: new Date(NOW - 30 * day), afterStatus: "long_term" },
     ];
-    expect(bucketCommitments14d(events).reduce((a, b) => a + b, 0)).toBe(0);
+    expect(bucketCommitments14d(events, NOW).reduce((a, b) => a + b, 0)).toBe(0);
+  });
+
+  it("honors the injected `now` so test+function agree on the window edge", () => {
+    // Regression guard for CI run 24959893338. The pre-fix function
+    // recomputed `Date.now()` internally, so a tiny drift between the
+    // test snapshot and the function call could push a boundary event
+    // below `start` and silently zero out `bins[0]`. With `now` injected,
+    // the same anchor flows through both sides; the result is determined
+    // entirely by the inputs.
+    const t0 = NOW;
+    const events = [
+      { createdAt: new Date(t0 - 13 * day + 1000), afterStatus: "long_term" },
+    ];
+    // (a) When function and event share the same anchor, the event lands in bin 0.
+    expect(bucketCommitments14d(events, t0)[0]).toBe(1);
+    // (b) Shift the anchor 14 days forward — the same event falls out of window.
+    expect(bucketCommitments14d(events, t0 + 14 * day).reduce((a, b) => a + b, 0)).toBe(0);
   });
 });

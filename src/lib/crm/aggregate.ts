@@ -91,10 +91,19 @@ export function stagesToFunnel(buckets: StageBucket[]): FunnelStep[] {
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function bucketCommitments14d(
-  events: Array<{ createdAt: Date; afterStatus: string | null }>
+  events: Array<{ createdAt: Date; afterStatus: string | null }>,
+  /**
+   * Reference timestamp anchoring the rolling 14-day window. Defaults
+   * to `Date.now()`, but tests pass an explicit value to avoid the
+   * clock-drift flake CI surfaced in run 24959893338: when the test
+   * builds `events` with one snapshot of `Date.now()` and the function
+   * takes its own moments later, the boundary event near `13 * DAY_MS`
+   * back can fall on either side of `start` depending on cold-runner
+   * scheduling.
+   */
+  now: number = Date.now()
 ): number[] {
   const bins = new Array(14).fill(0);
-  const now = Date.now();
   const start = now - 13 * DAY_MS; // 14 days inclusive
   for (const e of events) {
     if (
