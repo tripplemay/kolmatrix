@@ -197,8 +197,26 @@ jobs:
             playwright-${{ runner.os }}-
       - name: Install Playwright Chromium + system deps
         run: npx playwright install --with-deps chromium
-      - name: Run Playwright E2E
-        run: npm run test:e2e
+      - name: Run Playwright E2E (visual on fresh seed first)
+        # BM2-F011-001 fixing-round 1: visual-regression baselines are
+        # captured against the fresh `prisma migrate deploy + db seed`
+        # state by the update-visual-baselines workflow, but the rest
+        # of the CI E2E suite mutates that state (bm1-flow creates
+        # products, journey-a + journey-b create campaigns, outreach
+        # specs send emails). Running the full suite in one shot leaves
+        # the visual tests racing against another worker's mutations,
+        # so dashboard / database / outreach / crm / weekly-report
+        # screenshots disagree by whole row blocks (KB 720 vs 742px,
+        # discovery 1732 vs 1703px, etc.).
+        #
+        # Fix: run visual-regression alone first against the clean
+        # seed, then re-seed (idempotent upserts + email_log clear)
+        # and run the rest of the suite. A future cleanup is to give
+        # visual its own Playwright project + isolated test database.
+        run: |
+          npx playwright test tests/e2e/visual-regression.spec.ts
+          npm run db:seed
+          npx playwright test --grep-invert "visual regression"
       - name: Upload playwright-report on failure
         if: failure()
         uses: actions/upload-artifact@v4
