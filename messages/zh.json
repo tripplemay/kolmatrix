@@ -365,13 +365,29 @@
     "subtitle": "已保存的 KOL 候选，随时可触达。",
     "bulkActions": "批量操作",
     "bulkActionsDisabled": "批量操作将在 BM2 开放，本按钮为预留。",
+    "header": {
+      "subtitle": "{count, plural, =0 {库中暂无 KOL} other {库中共有 # 位 KOL}}",
+      "export": "导出",
+      "exportTooltip": "CSV 导出将随 B6 上线",
+      "import": "导入 CSV",
+      "importTooltip": "CSV 导入将随 B6 上线",
+      "addKol": "新增 KOL",
+      "addKolTooltip": "手动新增 KOL 将随 B6 上线"
+    },
     "filters": {
       "search": "搜索",
       "searchPlaceholder": "在已保存 KOL 中搜索…",
       "region": "地区",
       "category": "品类",
+      "tier": "层级",
+      "game": "游戏",
+      "tags": "标签",
+      "tagsPlaceholder": "用逗号分隔多个标签",
+      "comingSoon": "B6 即将上线",
+      "comingSoonTooltip": "更多分类筛选将随 B6 数据补全批次开放",
       "status": "关系状态",
       "statusAny": "全部",
+      "statusAll": "全部",
       "apply": "应用",
       "clearAll": "清空"
     },
@@ -379,14 +395,55 @@
       "creator": "创作者",
       "platform": "平台",
       "followers": "粉丝",
+      "engagement": "互动率",
       "category": "品类",
       "region": "地区",
       "value": "价值",
+      "aiScore": "AI 评分",
       "status": "状态",
       "addedAt": "添加时间",
+      "lastContact": "最近接触",
       "actions": "操作",
       "open": "打开画像",
-      "ariaRow": "打开 KOL 画像"
+      "ariaRow": "打开 KOL 画像",
+      "selectAllAria": "选择当前页全部 KOL",
+      "selectRowAria": "选择 {name}"
+    },
+    "quickStats": {
+      "totalKols": "KOL 总数",
+      "activeCollabs": "活跃合作",
+      "avgScore": "平均 AI 评分",
+      "followerReach": "粉丝总触达"
+    },
+    "insights": {
+      "aiIntelligenceHeading": "AI 洞察",
+      "aiIntelligenceBody": "{count, plural, =0 {前往 KOL 发现先保存几位创作者，即可解锁评分刷新提醒。} other {当前 # 位已保存 KOL 可参与 AI 评分刷新。}}",
+      "aiRefreshCta": "刷新 AI 评分",
+      "aiRefreshTooltip": "AI 评分刷新将随 B6 数据补全批次上线",
+      "coverageGapHeading": "覆盖缺口",
+      "coverageGapPlaceholder": "覆盖缺口分析将随 B6 产品分类批次到来。",
+      "engagementHeading": "全局互动率",
+      "engagementPlaceholder": "实时互动率趋势将接入 B6 数据采集批次。"
+    },
+    "bulk": {
+      "selected": "已选中",
+      "addToCampaign": "加入活动",
+      "email": "发送邮件",
+      "emailTooltip": "请前往 /outreach 进行邮件触达",
+      "delete": "删除",
+      "deleteTooltip": "批量删除将随 B6 上线",
+      "clear": "取消选择"
+    },
+    "dialog": {
+      "title": "加入营销活动",
+      "body": "选择要加入的活动，将所选 {count} 位 KOL 一次性加入；已存在的关联会被自动跳过。",
+      "chooseCampaign": "活动",
+      "submit": "加入",
+      "submitting": "加入中…",
+      "cancel": "取消",
+      "loading": "加载活动中…",
+      "noCampaigns": "尚无可用的活跃 / 草稿活动，请先在「活动」页面创建。",
+      "errorGeneric": "加入失败，请重试。"
     },
     "emptyState": {
       "title": "尚未保存任何 KOL",

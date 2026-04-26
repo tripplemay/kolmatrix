@@ -365,13 +365,29 @@
     "subtitle": "Saved candidates ready for outreach.",
     "bulkActions": "Bulk actions",
     "bulkActionsDisabled": "Bulk edit lands in BM2 — this button is a placeholder.",
+    "header": {
+      "subtitle": "{count, plural, =0 {No KOLs in your library yet} one {# KOL in your library} other {# KOLs in your library}}",
+      "export": "Export",
+      "exportTooltip": "CSV export ships with B6",
+      "import": "Import CSV",
+      "importTooltip": "CSV import ships with B6",
+      "addKol": "Add KOL",
+      "addKolTooltip": "Manual KOL entry ships with B6"
+    },
     "filters": {
       "search": "Search",
       "searchPlaceholder": "Search saved KOLs…",
       "region": "Region",
       "category": "Category",
+      "tier": "Tier",
+      "game": "Game",
+      "tags": "Tags",
+      "tagsPlaceholder": "Comma-separated tags",
+      "comingSoon": "Coming with B6",
+      "comingSoonTooltip": "More taxonomy filters arrive with the B6 enrichment batch",
       "status": "Relationship status",
       "statusAny": "Any",
+      "statusAll": "All",
       "apply": "Apply",
       "clearAll": "Clear all"
     },
@@ -379,14 +395,55 @@
       "creator": "Creator",
       "platform": "Platform",
       "followers": "Followers",
+      "engagement": "Engagement",
       "category": "Category",
       "region": "Region",
       "value": "Value",
+      "aiScore": "AI Score",
       "status": "Status",
       "addedAt": "Added",
+      "lastContact": "Last contact",
       "actions": "Actions",
       "open": "Open profile",
-      "ariaRow": "Open KOL profile"
+      "ariaRow": "Open KOL profile",
+      "selectAllAria": "Select all rows on this page",
+      "selectRowAria": "Select {name}"
+    },
+    "quickStats": {
+      "totalKols": "Total KOLs",
+      "activeCollabs": "Active Collabs",
+      "avgScore": "Avg AI Score",
+      "followerReach": "Follower Reach"
+    },
+    "insights": {
+      "aiIntelligenceHeading": "AI Intelligence",
+      "aiIntelligenceBody": "{count, plural, =0 {Save your first KOL on Discovery to unlock score refresh suggestions.} one {# saved KOL is available for AI score refresh.} other {# saved KOLs are available for AI score refresh.}}",
+      "aiRefreshCta": "Refresh AI Scores",
+      "aiRefreshTooltip": "AI score refresh ships with the B6 enrichment batch",
+      "coverageGapHeading": "Coverage Gap",
+      "coverageGapPlaceholder": "Coverage gap analytics arrive with the B6 product taxonomy.",
+      "engagementHeading": "Global Engagement",
+      "engagementPlaceholder": "Live engagement trend connects to the B6 scraping batch."
+    },
+    "bulk": {
+      "selected": "selected",
+      "addToCampaign": "Add to Campaign",
+      "email": "Email",
+      "emailTooltip": "Use /outreach for email campaigns",
+      "delete": "Delete",
+      "deleteTooltip": "Bulk delete ships with B6",
+      "clear": "Clear selection"
+    },
+    "dialog": {
+      "title": "Add to Campaign",
+      "body": "Pick a campaign to add the {count} selected KOLs to. Existing links are skipped automatically.",
+      "chooseCampaign": "Campaign",
+      "submit": "Add",
+      "submitting": "Adding…",
+      "cancel": "Cancel",
+      "loading": "Loading campaigns…",
+      "noCampaigns": "No active or draft campaigns yet. Create one from the Campaigns page first.",
+      "errorGeneric": "Could not add the selected KOLs. Please retry."
     },
     "emptyState": {
       "title": "No saved KOLs yet",

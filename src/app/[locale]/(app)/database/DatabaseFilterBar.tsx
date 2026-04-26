@@ -1,40 +1,51 @@
 /**
- * BM1-F005 · Simplified filter bar (server component).
+ * BM1-F005 + MVP-vf-F003 · Filter strip for /database (server component).
  *
- * 4 dims laid out inline across the top of the table — no advanced
- * collapse (that stays on /discovery). Same URL-driven GET form pattern
- * as /discovery: unchecked boxes drop out of the URL, `parseFilters`
- * reconstructs the shape on the next request.
+ * Two horizontal rows that mirror the Stitch kol-database prototype:
+ *
+ *   [ All | Active | Negotiating | Long-term | Paused | Terminated ]
+ *   ─────────────────────────────────────────────────────────────
+ *   [ Search …… ] [ Category ▾ ] [ Region ▾ ] [ Tier ▾* ] [ Game ▾* ] [ Tags …… ] [ Apply ] [ Clear ]
+ *
+ * (* Tier and Game render as placeholder dropdowns disabled with a
+ * "Coming with B6" tooltip — the real product taxonomy ships with the
+ * Post-MVP B6 batch. They are visible per the prototype's seven-dim
+ * filter row but never look interactive when no real options exist;
+ * see ui-fidelity-guardrail.md §3.)
+ *
+ * URL-driven GET form, identical pattern to /discovery and BM1.
  */
 import { getTranslations } from "next-intl/server";
 
+import { ChipButton } from "@/components/common";
+import { Button, Input, Select } from "@/components/ui";
 import {
   DISCOVERY_CATEGORIES,
   DISCOVERY_REGIONS,
   RELATIONSHIP_STATUSES,
   type DiscoveryFilters,
 } from "@/lib/kol/filters";
-import { cn } from "@/lib/utils";
 
 interface Props {
   filters: DiscoveryFilters;
   basePath: string;
 }
 
-const INPUT_CLASS =
-  "h-10 w-full rounded-lg border border-outline-variant bg-surface/40 px-3 text-sm text-on-surface placeholder-slate-600 focus:border-cyan focus:outline-none focus:ring-1 focus:ring-cyan";
+const STATUS_PILLS = ["all", ...RELATIONSHIP_STATUSES] as const;
 
 export async function DatabaseFilterBar({ filters, basePath }: Props) {
   const t = await getTranslations("database.filters");
-  const tRegions = await getTranslations("discovery.regions");
-  const tCategories = await getTranslations("discovery.categories");
   const tStatus = await getTranslations("relationshipStatus");
+  const tCategories = await getTranslations("discovery.categories");
+  const tRegions = await getTranslations("discovery.regions");
 
+  const currentStatus = filters.relationshipStatuses[0] ?? "all";
   const anyFilter =
     Boolean(filters.search) ||
-    filters.regions.length > 0 ||
     filters.categories.length > 0 ||
-    filters.relationshipStatuses.length > 0;
+    filters.regions.length > 0 ||
+    filters.relationshipStatuses.length > 0 ||
+    filters.tags.length > 0;
 
   return (
     <form
@@ -42,97 +53,135 @@ export async function DatabaseFilterBar({ filters, basePath }: Props) {
       method="get"
       role="search"
       data-testid="database-filters"
-      className="glass-panel flex flex-col gap-4 rounded-xl border border-on-surface/5 p-5 lg:flex-row lg:items-end lg:gap-6"
+      className="glass-panel space-y-4 rounded-xl border border-on-surface/5 p-5"
     >
-      <div className="min-w-0 flex-1 lg:max-w-sm">
-        <Label>{t("search")}</Label>
-        <input
-          type="search"
-          name="search"
-          defaultValue={filters.search ?? ""}
-          placeholder={t("searchPlaceholder")}
-          maxLength={200}
-          className={INPUT_CLASS}
-        />
+      {/* Status pills (multi-state but URL-driven: each pill is a link
+          to /database with its relationshipStatus filter set). The
+          submit button is the only true `<form>` action; pills bypass
+          the form via plain anchors. */}
+      <div
+        className="flex flex-wrap items-center gap-2"
+        data-testid="database-status-pills"
+      >
+        {STATUS_PILLS.map((s) => {
+          const params = new URLSearchParams();
+          if (s !== "all") params.append("relationshipStatus", s);
+          if (filters.search) params.append("search", filters.search);
+          if (filters.sort !== "value") params.append("sort", filters.sort);
+          const href = params.toString() ? `${basePath}?${params}` : basePath;
+          const pressed = currentStatus === s;
+          return (
+            <a
+              key={s}
+              href={href}
+              data-testid={`database-status-pill-${s}`}
+              aria-current={pressed ? "true" : undefined}
+            >
+              <ChipButton pressed={pressed} type="button" tabIndex={-1}>
+                {s === "all" ? t("statusAll") : tStatus(s)}
+              </ChipButton>
+            </a>
+          );
+        })}
       </div>
 
-      <div className="flex-1">
-        <Label>{t("category")}</Label>
-        <select
-          name="categories"
-          defaultValue={filters.categories[0] ?? ""}
-          className={INPUT_CLASS}
-        >
-          <option value="">—</option>
-          {DISCOVERY_CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {tCategories(c)}
-            </option>
-          ))}
-        </select>
+      <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-7 lg:items-end">
+        <Field label={t("search")} className="lg:col-span-2">
+          <Input
+            type="search"
+            name="search"
+            defaultValue={filters.search ?? ""}
+            placeholder={t("searchPlaceholder")}
+            maxLength={200}
+          />
+        </Field>
+
+        <Field label={t("category")}>
+          <Select name="categories" defaultValue={filters.categories[0] ?? ""}>
+            <option value="">—</option>
+            {DISCOVERY_CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {tCategories(c)}
+              </option>
+            ))}
+          </Select>
+        </Field>
+
+        <Field label={t("region")}>
+          <Select name="regions" defaultValue={filters.regions[0] ?? ""}>
+            <option value="">—</option>
+            {DISCOVERY_REGIONS.map((r) => (
+              <option key={r} value={r}>
+                {tRegions(r)}
+              </option>
+            ))}
+          </Select>
+        </Field>
+
+        <Field label={t("tier")}>
+          <Select disabled title={t("comingSoonTooltip")} defaultValue="">
+            <option value="">{t("comingSoon")}</option>
+          </Select>
+        </Field>
+
+        <Field label={t("game")}>
+          <Select disabled title={t("comingSoonTooltip")} defaultValue="">
+            <option value="">{t("comingSoon")}</option>
+          </Select>
+        </Field>
+
+        <Field label={t("tags")}>
+          <Input
+            type="text"
+            name="tags"
+            defaultValue={filters.tags.join(",")}
+            placeholder={t("tagsPlaceholder")}
+            maxLength={120}
+          />
+        </Field>
       </div>
 
-      <div className="flex-1">
-        <Label>{t("region")}</Label>
-        <select
-          name="regions"
-          defaultValue={filters.regions[0] ?? ""}
-          className={INPUT_CLASS}
-        >
-          <option value="">—</option>
-          {DISCOVERY_REGIONS.map((r) => (
-            <option key={r} value={r}>
-              {tRegions(r)}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="flex-1">
-        <Label>{t("status")}</Label>
-        <select
-          name="relationshipStatus"
-          defaultValue={filters.relationshipStatuses[0] ?? ""}
-          className={INPUT_CLASS}
-        >
-          <option value="">{t("statusAny")}</option>
-          {RELATIONSHIP_STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {tStatus(s)}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Preserve sort across filter submissions */}
       <input type="hidden" name="sort" value={filters.sort} />
+      {filters.relationshipStatuses[0] ? (
+        <input
+          type="hidden"
+          name="relationshipStatus"
+          value={filters.relationshipStatuses[0]}
+        />
+      ) : null}
 
-      <div className="flex items-end gap-2">
-        <button
-          type="submit"
-          className={cn(
-            "gradient-cta h-10 rounded-lg px-5 text-sm font-bold text-on-primary shadow-[0_0_12px_rgba(0,229,255,0.2)]"
-          )}
-        >
-          {t("apply")}
-        </button>
+      <div className="flex items-center justify-end gap-2">
         {anyFilter ? (
           <a
             href={basePath}
-            className="h-10 rounded-lg border border-outline-variant px-4 text-sm font-medium text-on-surface-variant leading-[2.35rem] transition-colors hover:border-cyan/40 hover:text-cyan"
+            className="text-xs font-medium text-on-surface-variant transition-colors hover:text-cyan"
           >
             {t("clearAll")}
           </a>
         ) : null}
+        <Button type="submit" variant="primary-gradient">
+          {t("apply")}
+        </Button>
       </div>
     </form>
   );
 }
 
-function Label({ children }: { children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
+    <div className={`space-y-1 ${className ?? ""}`}>
+      <span className="block text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
+        {label}
+      </span>
       {children}
-    </span>
+    </div>
   );
 }

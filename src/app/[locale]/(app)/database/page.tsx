@@ -1,12 +1,40 @@
+/**
+ * BM1-F005 + MVP-vf-F003 · /database page (server component).
+ *
+ * Layout per the Stitch kol-database prototype:
+ *   ┌──────────────────────────────────────────────────┬──────────┐
+ *   │ Header (title + Export/Import/Add KOL CTAs)      │          │
+ *   ├──────────────────────────────────────────────────┤          │
+ *   │ QuickStats KPI strip                              │          │
+ *   ├──────────────────────────────────────────────────┤ Insights │
+ *   │ Filters strip (status pills + 7 filter dims)      │ Panel    │
+ *   ├──────────────────────────────────────────────────┤          │
+ *   │ Database table with row checkboxes (selection)   │ 320px    │
+ *   │ Bulk Action Bar floats at bottom when selected   │          │
+ *   ├──────────────────────────────────────────────────┤          │
+ *   │ Pagination                                        │          │
+ *   └──────────────────────────────────────────────────┴──────────┘
+ *
+ * Stays a server component for the data plumbing. The table itself
+ * lives in <DatabaseTableClient> because per-row checkbox selection
+ * is intrinsically client-side; the parent feeds it pre-formatted row
+ * labels so next-intl `getFormatter` continues to render dates and
+ * status text on the server side (per RSC → Client function-prop
+ * embargo from BM2 F011, no formatter callbacks cross the boundary).
+ */
 import { getFormatter, getTranslations } from "next-intl/server";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { Button } from "@/components/ui";
 import { parseFilters, serializeFilters } from "@/lib/kol/filters";
 
 import { DatabaseFilterBar } from "./DatabaseFilterBar";
-import { runDatabaseSearch, type DatabaseKolRow } from "./search";
+import { DatabaseTableClient } from "./DatabaseTableClient";
+import { InsightsPanel } from "./InsightsPanel";
+import { QuickStats } from "./QuickStats";
+import { runDatabaseSearch } from "./search";
+import { loadDatabaseStats } from "./stats";
 
 export const metadata = { title: "KOL Database — KOLMatrix" };
 
@@ -15,19 +43,9 @@ interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-const AVATAR_BASE =
-  "flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-cyan-fixed-dim to-cyan-soft text-xs font-bold text-on-primary";
-
-function initialsOf(name: string): string {
-  const trimmed = name.trim();
-  if (!trimmed) return "?";
-  const parts = trimmed.split(/\s+/);
-  if (parts.length >= 2) return (parts[0]![0]! + parts[1]![0]!).toUpperCase();
-  return trimmed.slice(0, 2).toUpperCase();
-}
-
-function formatFollowers(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+function compactFollowers(n: number): string {
+  if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)}B`;
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return String(n);
 }
@@ -41,14 +59,20 @@ export default async function DatabasePage({ params, searchParams }: Props) {
   const tenantId = session?.user?.tenantId;
   if (!tenantId) redirect("/login");
 
-  const result = await runDatabaseSearch(tenantId, filters);
+  const [searchResult, stats] = await Promise.all([
+    runDatabaseSearch(tenantId, filters),
+    loadDatabaseStats(tenantId),
+  ]);
 
   const t = await getTranslations("database");
+  const tHeader = await getTranslations("database.header");
   const tTable = await getTranslations("database.table");
   const tStatus = await getTranslations("relationshipStatus");
-  const tPager = await getTranslations("discovery.pagination");
+  const tBulk = await getTranslations("database.bulk");
+  const tDialog = await getTranslations("database.dialog");
   const tEmpty = await getTranslations("database.emptyState");
   const tSummary = await getTranslations("database.summary");
+  const tPager = await getTranslations("discovery.pagination");
   const format = await getFormatter();
 
   const basePath = `/${locale}/database`;
@@ -56,6 +80,39 @@ export default async function DatabasePage({ params, searchParams }: Props) {
     const q = serializeFilters(filters, overrides).toString();
     return q ? `${basePath}?${q}` : basePath;
   };
+
+  // Pre-format every row's locale-sensitive labels server-side. The
+  // client component only consumes plain strings — no Date / Intl
+  // formatter ever crosses the boundary (BM2 F011-001 lesson).
+  const rowFormatted: Record<
+    string,
+    {
+      dateLabel: string;
+      statusKey: string;
+      statusLabel: string;
+      followersLabel: string;
+    }
+  > = {};
+  for (const r of searchResult.items) {
+    rowFormatted[r.id] = {
+      dateLabel: format.dateTime(new Date(r.createdAt), {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }),
+      statusKey: r.relationshipStatus,
+      statusLabel: tStatus(
+        r.relationshipStatus as
+          | "prospect"
+          | "first_contact"
+          | "negotiating"
+          | "long_term"
+          | "paused"
+          | "terminated"
+      ),
+      followersLabel: compactFollowers(r.followerCount),
+    };
+  }
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-6 pb-16">
@@ -65,260 +122,139 @@ export default async function DatabasePage({ params, searchParams }: Props) {
             {t("title")}
           </h1>
           <p className="mt-1 max-w-2xl text-sm text-on-surface-variant">
-            {t("subtitle")}
+            {tHeader("subtitle", { count: stats.total })}
           </p>
         </div>
-        <button
-          type="button"
-          disabled
-          title={t("bulkActionsDisabled")}
-          data-testid="database-bulk-actions"
-          className="flex cursor-not-allowed items-center gap-2 rounded-lg border border-outline-variant px-4 py-2 text-xs font-semibold text-on-surface-variant opacity-50"
-        >
-          <span className="material-symbols-outlined text-[16px]" aria-hidden>
-            playlist_add_check
-          </span>
-          {t("bulkActions")}
-        </button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            disabled
+            title={tHeader("exportTooltip")}
+            data-testid="database-export"
+          >
+            <span className="material-symbols-outlined text-[16px]" aria-hidden>
+              ios_share
+            </span>
+            {tHeader("export")}
+          </Button>
+          <Button
+            variant="ghost"
+            disabled
+            title={tHeader("importTooltip")}
+            className="border-purple/40 text-purple"
+            data-testid="database-import"
+          >
+            <span className="material-symbols-outlined text-[16px]" aria-hidden>
+              publish
+            </span>
+            {tHeader("import")}
+          </Button>
+          <Button
+            variant="primary-gradient"
+            disabled
+            title={tHeader("addKolTooltip")}
+            data-testid="database-add-kol"
+          >
+            <span className="material-symbols-outlined text-[16px]" aria-hidden>
+              add
+            </span>
+            {tHeader("addKol")}
+          </Button>
+        </div>
       </header>
 
-      <DatabaseFilterBar filters={filters} basePath={basePath} />
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <section className="flex min-w-0 flex-col gap-6">
+          <QuickStats stats={stats} />
+          <DatabaseFilterBar filters={filters} basePath={basePath} />
 
-      <p
-        className="text-sm font-semibold text-on-surface"
-        data-testid="database-summary"
-      >
-        {tSummary("count", { count: result.total })}
-      </p>
-
-      {result.items.length === 0 ? (
-        <div
-          className="glass-panel rounded-2xl border border-on-surface/5 p-10 text-center"
-          data-testid="database-empty"
-        >
-          <h2 className="text-lg font-semibold text-white">
-            {tEmpty("title")}
-          </h2>
-          <p className="mt-2 text-sm text-on-surface-variant">
-            {tEmpty("body")}
+          <p
+            className="text-sm font-semibold text-on-surface"
+            data-testid="database-summary"
+          >
+            {tSummary("count", { count: searchResult.total })}
           </p>
-        </div>
-      ) : (
-        <div
-          className="glass-panel overflow-hidden rounded-2xl border border-on-surface/5"
-          data-testid="database-table-wrapper"
-        >
-          <table
-            className="w-full border-collapse text-left text-sm"
-            data-testid="database-table"
-          >
-            <thead>
-              <tr className="border-b border-white/5 text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
-                <Th>{tTable("creator")}</Th>
-                <Th>{tTable("platform")}</Th>
-                <Th alignRight>{tTable("followers")}</Th>
-                <Th>{tTable("category")}</Th>
-                <Th>{tTable("region")}</Th>
-                <Th alignCenter>{tTable("value")}</Th>
-                <Th>{tTable("status")}</Th>
-                <Th>{tTable("addedAt")}</Th>
-                <Th alignRight>{tTable("actions")}</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {result.items.map((k) => (
-                <TableRow
-                  key={k.id}
-                  kol={k}
-                  locale={locale}
-                  statusLabel={tStatus(
-                    k.relationshipStatus as
-                      | "prospect"
-                      | "first_contact"
-                      | "negotiating"
-                      | "long_term"
-                      | "paused"
-                      | "terminated"
-                  )}
-                  dateLabel={format.dateTime(new Date(k.createdAt), {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                  openLabel={tTable("open")}
-                  ariaLabel={`${tTable("ariaRow")}: ${k.displayName}`}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
 
-      <nav
-        className="flex items-center justify-end gap-2 pt-2 text-sm"
-        aria-label="Pagination"
-      >
-        {filters.cursor ? (
-          <a
-            href={withFilter({ cursor: undefined })}
-            className="rounded-lg border border-outline-variant px-4 py-2 font-medium text-on-surface-variant transition-colors hover:border-cyan/40 hover:text-cyan"
-            data-testid="pagination-first"
+          {searchResult.items.length === 0 ? (
+            <div
+              className="glass-panel rounded-2xl border border-on-surface/5 p-10 text-center"
+              data-testid="database-empty"
+            >
+              <h2 className="text-lg font-semibold text-white">
+                {tEmpty("title")}
+              </h2>
+              <p className="mt-2 text-sm text-on-surface-variant">
+                {tEmpty("body")}
+              </p>
+            </div>
+          ) : (
+            <DatabaseTableClient
+              rows={searchResult.items}
+              locale={locale}
+              cellLabels={{
+                creator: tTable("creator"),
+                platform: tTable("platform"),
+                followers: tTable("followers"),
+                engagement: tTable("engagement"),
+                score: tTable("aiScore"),
+                status: tTable("status"),
+                lastContact: tTable("lastContact"),
+                selectAll: tTable("selectAllAria"),
+                selectRowAria: (name: string) =>
+                  tTable("selectRowAria", { name }),
+                open: tTable("open"),
+              }}
+              bulkLabels={{
+                selected: tBulk("selected"),
+                addToCampaign: tBulk("addToCampaign"),
+                email: tBulk("email"),
+                emailTooltip: tBulk("emailTooltip"),
+                delete: tBulk("delete"),
+                deleteTooltip: tBulk("deleteTooltip"),
+                clear: tBulk("clear"),
+              }}
+              dialogLabels={{
+                title: tDialog("title"),
+                body: tDialog("body"),
+                chooseCampaign: tDialog("chooseCampaign"),
+                submit: tDialog("submit"),
+                submitting: tDialog("submitting"),
+                cancel: tDialog("cancel"),
+                loading: tDialog("loading"),
+                noCampaigns: tDialog("noCampaigns"),
+                errorGeneric: tDialog("errorGeneric"),
+              }}
+              rowFormatted={rowFormatted}
+            />
+          )}
+
+          <nav
+            className="flex items-center justify-end gap-2 pt-2 text-sm"
+            aria-label="Pagination"
           >
-            « {tPager("previous")}
-          </a>
-        ) : null}
-        {result.hasMore && result.nextCursor ? (
-          <a
-            href={withFilter({ cursor: result.nextCursor })}
-            className="gradient-cta rounded-lg px-4 py-2 font-semibold text-on-primary"
-            data-testid="pagination-next"
-          >
-            {tPager("next")} »
-          </a>
-        ) : null}
-      </nav>
+            {filters.cursor ? (
+              <a
+                href={withFilter({ cursor: undefined })}
+                className="rounded-lg border border-outline-variant px-4 py-2 font-medium text-on-surface-variant transition-colors hover:border-cyan/40 hover:text-cyan"
+                data-testid="pagination-first"
+              >
+                « {tPager("previous")}
+              </a>
+            ) : null}
+            {searchResult.hasMore && searchResult.nextCursor ? (
+              <a
+                href={withFilter({ cursor: searchResult.nextCursor })}
+                className="gradient-cta rounded-lg px-4 py-2 font-semibold text-on-primary"
+                data-testid="pagination-next"
+              >
+                {tPager("next")} »
+              </a>
+            ) : null}
+          </nav>
+        </section>
+
+        <InsightsPanel stats={stats} />
+      </div>
     </div>
-  );
-}
-
-interface TableRowProps {
-  kol: DatabaseKolRow;
-  locale: string;
-  statusLabel: string;
-  dateLabel: string;
-  openLabel: string;
-  ariaLabel: string;
-}
-
-function TableRow({
-  kol,
-  locale,
-  statusLabel,
-  dateLabel,
-  openLabel,
-  ariaLabel,
-}: TableRowProps) {
-  const href = `/${locale}/kols/${kol.id}`;
-  return (
-    <tr
-      className="border-b border-white/5 text-sm text-on-surface transition-colors last:border-none hover:bg-white/[0.03]"
-      data-testid="database-row"
-      data-kol-id={kol.id}
-    >
-      <Td>
-        <Link
-          href={href}
-          className="flex items-center gap-3 text-left"
-          aria-label={ariaLabel}
-        >
-          <span className={AVATAR_BASE} aria-hidden>
-            {kol.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={kol.avatarUrl}
-                alt=""
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              initialsOf(kol.displayName)
-            )}
-          </span>
-          <span className="min-w-0">
-            <span className="block truncate font-semibold text-white">
-              {kol.displayName}
-            </span>
-            <span className="block truncate text-xs text-on-surface-variant">
-              @{kol.handle}
-            </span>
-          </span>
-        </Link>
-      </Td>
-      <Td>
-        <span className="inline-flex items-center rounded bg-surface-high px-2 py-0.5 text-[11px] uppercase tracking-wide text-on-surface-variant">
-          {kol.platform}
-        </span>
-      </Td>
-      <Td alignRight className="tabular-nums">
-        {formatFollowers(kol.followerCount)}
-      </Td>
-      <Td>
-        <span className="text-xs text-on-surface-variant">
-          {kol.categories.slice(0, 2).join(", ") || "—"}
-        </span>
-      </Td>
-      <Td>
-        {kol.countryCode ? (
-          <span className="inline-flex items-center rounded bg-surface-high px-2 py-0.5 text-[11px] uppercase tracking-wide">
-            {kol.countryCode}
-          </span>
-        ) : (
-          <span className="text-on-surface-variant">—</span>
-        )}
-      </Td>
-      <Td alignCenter>
-        {kol.valueScore != null ? (
-          <span className="font-bold text-cyan">{kol.valueScore}</span>
-        ) : (
-          <span className="text-on-surface-variant">—</span>
-        )}
-      </Td>
-      <Td>
-        <span className="inline-flex items-center rounded-full border border-cyan-fixed/30 bg-cyan/10 px-2 py-0.5 text-[11px] font-medium text-cyan-fixed">
-          {statusLabel}
-        </span>
-      </Td>
-      <Td>
-        <span className="text-xs text-on-surface-variant">{dateLabel}</span>
-      </Td>
-      <Td alignRight>
-        <Link
-          href={href}
-          className="inline-flex items-center gap-1 rounded-lg border border-outline-variant px-3 py-1 text-xs font-medium text-on-surface-variant transition-colors hover:border-cyan/40 hover:text-cyan"
-        >
-          <span className="material-symbols-outlined text-[14px]" aria-hidden>
-            open_in_new
-          </span>
-          {openLabel}
-        </Link>
-      </Td>
-    </tr>
-  );
-}
-
-function Th({
-  children,
-  alignRight,
-  alignCenter,
-}: {
-  children: React.ReactNode;
-  alignRight?: boolean;
-  alignCenter?: boolean;
-}) {
-  return (
-    <th
-      className={`px-4 py-3 ${alignRight ? "text-right" : alignCenter ? "text-center" : "text-left"}`}
-    >
-      {children}
-    </th>
-  );
-}
-
-function Td({
-  children,
-  alignRight,
-  alignCenter,
-  className = "",
-}: {
-  children: React.ReactNode;
-  alignRight?: boolean;
-  alignCenter?: boolean;
-  className?: string;
-}) {
-  return (
-    <td
-      className={`px-4 py-3 ${alignRight ? "text-right" : alignCenter ? "text-center" : "text-left"} ${className}`}
-    >
-      {children}
-    </td>
   );
 }

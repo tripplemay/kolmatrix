@@ -139,6 +139,90 @@ export async function addKolToCampaign(
   }
 }
 
+/**
+ * MVP-vf-F003 · Bulk-add KOLs to a campaign from /database Bulk Action Bar.
+ *
+ * Idempotent in the existing-link sense: each KOL that's already in the
+ * campaign is skipped (counted in `skipped`), the rest are inserted in
+ * one transaction. Returns counts so the UI can render a toast like
+ * "Added 4 KOLs · 2 already in campaign". One audit_log row per
+ * successful add.
+ */
+export async function bulkAddKolsToCampaign(
+  tenantId: string,
+  actorId: string,
+  campaignId: string,
+  kolIds: readonly string[]
+): Promise<{
+  added: number;
+  skipped: number;
+  notFound: number;
+  newSpendTotal: number;
+}> {
+  if (kolIds.length === 0) {
+    throw new CampaignKolError("invalid_status", "kolIds must be non-empty");
+  }
+  if (kolIds.length > 200) {
+    throw new CampaignKolError("invalid_status", "too many kolIds (max 200)");
+  }
+
+  try {
+    return await withTenant(tenantId, async (tx) => {
+      const campaign = await tx.campaign.findUnique({
+        where: { id: campaignId },
+        select: { id: true },
+      });
+      if (!campaign) {
+        throw new CampaignKolError("campaign_not_found", "campaign not found");
+      }
+
+      const validKols = await tx.kol.findMany({
+        where: { id: { in: kolIds.slice() } },
+        select: { id: true },
+      });
+      const validKolIds = new Set(validKols.map((k) => k.id));
+      const notFound = kolIds.length - validKolIds.size;
+
+      const existingLinks = await tx.kolCampaign.findMany({
+        where: { campaignId, kolId: { in: Array.from(validKolIds) } },
+        select: { kolId: true },
+      });
+      const alreadyLinked = new Set(existingLinks.map((l) => l.kolId));
+
+      const toAdd = Array.from(validKolIds).filter((id) => !alreadyLinked.has(id));
+      let added = 0;
+      for (const kolId of toAdd) {
+        const link = await tx.kolCampaign.create({
+          data: { tenantId, campaignId, kolId, status: "pending", kolFee: null },
+          select: { id: true },
+        });
+        added += 1;
+        void logAudit({
+          actorId,
+          action: "kol.bulk_added_to_campaign",
+          targetType: "kol_campaign",
+          targetId: link.id,
+          tenantId,
+          after: { campaignId, kolId, source: "database_bulk_action" },
+        });
+      }
+
+      const newSpendTotal = await syncCampaignSpend(tx, campaignId);
+
+      return {
+        added,
+        skipped: alreadyLinked.size,
+        notFound,
+        newSpendTotal,
+      };
+    });
+  } catch (err) {
+    if (err instanceof CampaignKolError) throw err;
+    console.error("[bulkAddKolsToCampaign] failed:", err);
+    throw new CampaignKolError("db_error", "failed to bulk-add kols");
+  }
+}
+
 export async function removeKolFromCampaign(
   tenantId: string,
   actorId: string,
