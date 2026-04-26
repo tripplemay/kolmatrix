@@ -178,7 +178,13 @@ test.describe("Authenticated BM1 visual regression", () => {
       .getByRole("link", { name: /KOL Discovery/i })
       .click();
     await page.waitForURL(/\/discovery(\/|\?|$)/);
-    await page.waitForSelector('[data-testid="discovery-grid"], [data-testid="discovery-summary"]');
+    // BM2-F011-001: wait for BOTH grid and summary, not the OR shortcut.
+    // Workflow run 24953605628 captured a 1280x1703 baseline because
+    // summary mounted before grid; CI's first run saw grid mount
+    // first and produced 1280x1732 (29 px / one row of grid taller).
+    // Splitting the OR into a sequential AND removes the race.
+    await page.waitForSelector('[data-testid="discovery-grid"]');
+    await page.waitForSelector('[data-testid="discovery-summary"]');
     await fontsReady(page);
 
     const grid = page.getByTestId("discovery-grid");
