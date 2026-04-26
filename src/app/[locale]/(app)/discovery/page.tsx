@@ -1,12 +1,42 @@
+/**
+ * BM1-F004 + MVP-vf-F002 · /discovery page (server component).
+ *
+ * Layout matches the Stitch kol-discovery prototype:
+ *   ┌──────────────────────────────────────────────────────────────┐
+ *   │ Header: title + Save Search + AI Smart Match (top-right)     │
+ *   ├──────────────────────────────────────────────────────────────┤
+ *   │ Search bar: platform selector + input + AI suggestion chips  │
+ *   ├──────────────────────────────────────────────────────────────┤
+ *   │ Filter sidebar (260px) │ Active filter chips                 │
+ *   │                        │ Summary + sort + grid/list toggle   │
+ *   │                        │ Card grid (xl:grid-cols-4)          │
+ *   │                        │ Pagination                          │
+ *   └──────────────────────────────────────────────────────────────┘
+ *
+ * Stays a server component: filters, view mode, sort, and cursor are
+ * URL-driven, so re-rendering off `searchParams` covers every state
+ * change. Save Search and AI Smart Match are disabled placeholders
+ * for future B2 work; both surface a tooltip explaining when they
+ * ship rather than rendering controls that look interactive but do
+ * nothing (per `framework/harness/ui-fidelity-guardrail.md` §3 anti-
+ * ghost-control rule).
+ */
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { Button } from "@/components/ui";
 import { parseFilters, serializeFilters } from "@/lib/kol/filters";
+import { cn } from "@/lib/utils";
 
+import { ActiveFilters } from "./ActiveFilters";
+import { EmptyState } from "./EmptyState";
 import { FilterSidebar } from "./FilterSidebar";
 import { KolResultCard } from "./KolResultCard";
+import { SearchBar } from "./SearchBar";
+import { SummaryBar } from "./SummaryBar";
 import { runDiscoverySearch } from "./search";
+import { parseView } from "./view-mode";
 
 export const metadata = { title: "Discover KOLs — KOLMatrix" };
 
@@ -19,6 +49,7 @@ export default async function DiscoveryPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const raw = await searchParams;
   const filters = parseFilters(raw);
+  const view = parseView(raw);
 
   const session = await auth();
   const tenantId = session?.user?.tenantId;
@@ -27,15 +58,23 @@ export default async function DiscoveryPage({ params, searchParams }: Props) {
   const result = await runDiscoverySearch(tenantId, filters);
 
   const t = await getTranslations("discovery");
+  const tHeader = await getTranslations("discovery.header");
   const tPager = await getTranslations("discovery.pagination");
-  const tSummary = await getTranslations("discovery.summary");
-  const tSort = await getTranslations("discovery.sort");
-  const tEmpty = await getTranslations("discovery.emptyState");
 
   const basePath = `/${locale}/discovery`;
 
   function withFilter(overrides: Parameters<typeof serializeFilters>[1]) {
     const q = serializeFilters(filters, overrides).toString();
+    return q ? `${basePath}?${q}` : basePath;
+  }
+
+  function withParams(extra: Record<string, string | undefined>) {
+    const params = serializeFilters(filters);
+    for (const [key, value] of Object.entries(extra)) {
+      params.delete(key);
+      if (value != null) params.append(key, value);
+    }
+    const q = params.toString();
     return q ? `${basePath}?${q}` : basePath;
   }
 
@@ -51,38 +90,33 @@ export default async function DiscoveryPage({ params, searchParams }: Props) {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 rounded-lg border border-on-surface/5 bg-surface/40 px-3 py-2 text-xs text-on-surface-variant">
-            <span>{tSort("label")}:</span>
-            <div className="flex items-center gap-1">
-              {(["value", "followers", "recent"] as const).map((s) => (
-                <a
-                  key={s}
-                  href={withFilter({ sort: s, cursor: undefined })}
-                  className={
-                    filters.sort === s
-                      ? "rounded bg-cyan/20 px-2 py-0.5 text-cyan"
-                      : "rounded px-2 py-0.5 hover:text-cyan"
-                  }
-                  data-testid={`sort-${s}`}
-                >
-                  {tSort(s)}
-                </a>
-              ))}
-            </div>
-          </div>
-          <button
-            type="button"
+          <Button
+            variant="ghost"
             disabled
-            title={tSummary("saveAllComingSoon")}
-            className="flex cursor-not-allowed items-center gap-2 rounded-lg border border-outline-variant px-4 py-2 text-xs font-semibold text-on-surface-variant opacity-50"
+            title={tHeader("saveSearchTooltip")}
+            data-testid="save-search-button"
+            className="border-purple/40 text-purple"
           >
             <span className="material-symbols-outlined text-[16px]" aria-hidden>
-              bookmark_added
+              bookmark
             </span>
-            {tSummary("saveAll")}
-          </button>
+            {tHeader("saveSearch")}
+          </Button>
+          <Button
+            variant="primary-gradient"
+            disabled
+            title={tHeader("aiSmartMatchTooltip")}
+            data-testid="ai-smart-match-button"
+          >
+            <span className="material-symbols-outlined text-[16px]" aria-hidden>
+              auto_awesome
+            </span>
+            {tHeader("aiSmartMatch")}
+          </Button>
         </div>
       </header>
+
+      <SearchBar basePath={basePath} filters={filters} />
 
       <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
         <aside className="lg:sticky lg:top-20 lg:self-start">
@@ -90,40 +124,27 @@ export default async function DiscoveryPage({ params, searchParams }: Props) {
         </aside>
 
         <section className="flex min-w-0 flex-col gap-4">
-          <p
-            className="text-sm font-semibold text-on-surface"
-            data-testid="discovery-summary"
-          >
-            {tSummary("count", { count: result.total })}
-          </p>
+          <ActiveFilters filters={filters} basePath={basePath} />
+          <SummaryBar
+            total={result.total}
+            sort={filters.sort}
+            view={view}
+            withFilter={withFilter}
+            withParams={withParams}
+          />
 
           {result.items.length === 0 ? (
-            <div
-              className="glass-panel rounded-2xl border border-on-surface/5 p-10 text-center"
-              data-testid="discovery-empty"
-            >
-              <h2 className="text-lg font-semibold text-white">
-                {tEmpty("title")}
-              </h2>
-              <div className="mt-3 inline-flex items-start gap-2 rounded-lg border border-cyan/20 bg-cyan/5 px-4 py-3 text-left text-[12px] text-on-surface-variant">
-                <span
-                  className="material-symbols-outlined mt-0.5 text-cyan"
-                  aria-hidden
-                >
-                  lightbulb
-                </span>
-                <div>
-                  <p className="font-semibold text-cyan-fixed">
-                    {tEmpty("tipHeading")}
-                  </p>
-                  <p className="mt-1">{tEmpty("tipBody")}</p>
-                </div>
-              </div>
-            </div>
+            <EmptyState />
           ) : (
             <div
-              className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
+              className={cn(
+                "gap-4",
+                view === "grid"
+                  ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4"
+                  : "flex flex-col"
+              )}
               data-testid="discovery-grid"
+              data-view={view}
             >
               {result.items.map((k) => (
                 <KolResultCard key={k.id} kol={k} />

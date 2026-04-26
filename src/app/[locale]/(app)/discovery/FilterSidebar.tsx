@@ -1,13 +1,19 @@
 /**
- * BM1-F004 · Filter sidebar (server component).
+ * BM1-F004 + MVP-vf-F002 · Filter sidebar (server component).
  *
  * Pure HTML GET form — checkboxes that aren't ticked are simply absent
  * in the next URL, so we don't need client state to track the filter
  * object. The page re-renders off the URL; parseFilters rebuilds the
- * DiscoveryFilters from searchParams. No "use client" needed.
+ * DiscoveryFilters from searchParams.
+ *
+ * MVP-vf-F002 hotfix: replaced local INPUT_CLASS / CHIP_BASE constants
+ * with `<Input>` / `<Select>` / `<Button>` from the public component
+ * library so the visuals match the rest of the app and future
+ * page-rewrites can copy the pattern.
  */
 import { getTranslations } from "next-intl/server";
 
+import { Button, Input, Label, Select } from "@/components/ui";
 import {
   BRAND_SAFETY_RATINGS,
   DISCOVERY_CATEGORIES,
@@ -23,13 +29,6 @@ interface Props {
   filters: DiscoveryFilters;
   basePath: string;
 }
-
-const CHIP_BASE =
-  "inline-flex cursor-pointer items-center justify-center rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors select-none";
-const CHIP_OFF =
-  "border-outline-variant bg-surface/40 text-on-surface-variant hover:border-cyan/40";
-const INPUT_CLASS =
-  "w-full rounded-lg border border-outline-variant bg-surface/40 px-3 py-2 text-sm text-on-surface placeholder-slate-600 focus:border-cyan focus:outline-none focus:ring-1 focus:ring-cyan";
 
 export async function FilterSidebar({ filters, basePath }: Props) {
   const t = await getTranslations("discovery.filters");
@@ -56,39 +55,34 @@ export async function FilterSidebar({ filters, basePath }: Props) {
       </div>
 
       {/* Basic 4: search / followers / region / category */}
-      <div className="space-y-2">
-        <Label>{t("search")}</Label>
-        <input
+      <Field label={t("search")}>
+        <Input
           type="search"
           name="search"
           defaultValue={filters.search ?? ""}
           placeholder={t("searchPlaceholder")}
-          className={INPUT_CLASS}
           maxLength={200}
         />
-      </div>
+      </Field>
 
-      <div className="space-y-2">
-        <Label>{t("followers")}</Label>
+      <Field label={t("followers")}>
         <div className="grid grid-cols-2 gap-2">
-          <input
+          <Input
             type="number"
             name="followersMin"
             defaultValue={filters.followersMin ?? ""}
             min={0}
             placeholder={t("followersMin")}
-            className={INPUT_CLASS}
           />
-          <input
+          <Input
             type="number"
             name="followersMax"
             defaultValue={filters.followersMax ?? ""}
             min={0}
             placeholder={t("followersMax")}
-            className={INPUT_CLASS}
           />
         </div>
-      </div>
+      </Field>
 
       <ChipGroup label={t("region")}>
         {DISCOVERY_REGIONS.map((code) => (
@@ -138,21 +132,18 @@ export async function FilterSidebar({ filters, basePath }: Props) {
             ))}
           </ChipGroup>
 
-          <div className="space-y-2">
-            <Label>{t("language")}</Label>
-            <input
+          <Field label={t("language")}>
+            <Input
               type="text"
               name="languages"
               defaultValue={filters.languages.join(",")}
               placeholder="en, zh, ja"
-              className={INPUT_CLASS}
             />
-          </div>
+          </Field>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label>{t("engagement")}</Label>
-              <input
+            <Field label={t("engagement")} compact>
+              <Input
                 type="number"
                 name="engagementMin"
                 defaultValue={filters.engagementMin ?? ""}
@@ -160,35 +151,28 @@ export async function FilterSidebar({ filters, basePath }: Props) {
                 max={100}
                 step="0.1"
                 placeholder={t("engagementPlaceholder")}
-                className={INPUT_CLASS}
               />
-            </div>
-            <div className="space-y-1">
-              <Label>{t("avgViews")}</Label>
-              <input
+            </Field>
+            <Field label={t("avgViews")} compact>
+              <Input
                 type="number"
                 name="avgViewsMin"
                 defaultValue={filters.avgViewsMin ?? ""}
                 min={0}
-                className={INPUT_CLASS}
               />
-            </div>
-            <div className="space-y-1">
-              <Label>{t("uploads")}</Label>
-              <input
+            </Field>
+            <Field label={t("uploads")} compact>
+              <Input
                 type="number"
                 name="uploadsPerMonthMin"
                 defaultValue={filters.uploadsPerMonthMin ?? ""}
                 min={0}
-                className={INPUT_CLASS}
               />
-            </div>
-            <div className="space-y-1">
-              <Label>{t("lastUpload")}</Label>
-              <select
+            </Field>
+            <Field label={t("lastUpload")} compact>
+              <Select
                 name="lastUpload"
                 defaultValue={filters.lastUploadWithinDays?.toString() ?? ""}
-                className={INPUT_CLASS}
               >
                 <option value="">{t("lastUploadAny")}</option>
                 {LAST_UPLOAD_WINDOWS.map((d) => (
@@ -196,8 +180,8 @@ export async function FilterSidebar({ filters, basePath }: Props) {
                     {t(`lastUpload${d}` as `lastUpload${30 | 90 | 180}`)}
                   </option>
                 ))}
-              </select>
-            </div>
+              </Select>
+            </Field>
           </div>
 
           <ChipGroup label={t("monetization")}>
@@ -235,27 +219,23 @@ export async function FilterSidebar({ filters, basePath }: Props) {
             ))}
           </ChipGroup>
 
-          <div className="space-y-2">
-            <Label>{t("knownCollabs")}</Label>
-            <input
+          <Field label={t("knownCollabs")}>
+            <Input
               type="text"
               name="knownCollabs"
               defaultValue={filters.knownCollabs.join(",")}
               placeholder={t("knownCollabsPlaceholder")}
-              className={INPUT_CLASS}
             />
-          </div>
+          </Field>
 
-          <div className="space-y-2">
-            <Label>{t("tags")}</Label>
-            <input
+          <Field label={t("tags")}>
+            <Input
               type="text"
               name="tags"
               defaultValue={filters.tags.join(",")}
               placeholder={t("tagsPlaceholder")}
-              className={INPUT_CLASS}
             />
-          </div>
+          </Field>
 
           <label className="flex cursor-pointer items-start gap-3">
             <input
@@ -279,12 +259,9 @@ export async function FilterSidebar({ filters, basePath }: Props) {
       {/* Keep sort sticky across filter submissions */}
       <input type="hidden" name="sort" value={filters.sort} />
 
-      <button
-        type="submit"
-        className="gradient-cta mt-2 rounded-lg py-2.5 text-sm font-bold text-on-primary shadow-[0_0_15px_rgba(0,229,255,0.2)]"
-      >
+      <Button type="submit" variant="primary-gradient" className="mt-2 w-full">
         {t("apply")}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -305,11 +282,21 @@ function hasAnyAdvanced(f: DiscoveryFilters): boolean {
   );
 }
 
-function Label({ children }: { children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+  compact,
+}: {
+  label: string;
+  children: React.ReactNode;
+  /** Tightens the label/control gap for the 2-col grid pairs. */
+  compact?: boolean;
+}) {
   return (
-    <span className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
+    <div className={compact ? "space-y-1" : "space-y-2"}>
+      <Label>{label}</Label>
       {children}
-    </span>
+    </div>
   );
 }
 
@@ -321,10 +308,9 @@ function ChipGroup({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-2">
-      <Label>{label}</Label>
+    <Field label={label}>
       <div className="flex flex-wrap gap-2">{children}</div>
-    </div>
+    </Field>
   );
 }
 
@@ -336,6 +322,13 @@ interface ChipCheckboxProps {
   dataTestid?: string;
 }
 
+/**
+ * Filter chip rendered as a labeled checkbox so the filter form stays
+ * URL-driven (no client state). Visual tokens match `<ChipButton>` —
+ * inert/hover/checked all use the same cyan border/background palette
+ * — but the shape is rounded-lg (not pill) to match the Stitch
+ * filter-sidebar prototype.
+ */
 function ChipCheckbox({
   name,
   value,
@@ -355,9 +348,10 @@ function ChipCheckbox({
       />
       <span
         className={cn(
-          CHIP_BASE,
-          CHIP_OFF,
-          "peer-checked:border-cyan/60 peer-checked:bg-cyan/20 peer-checked:text-cyan peer-focus-visible:ring-2 peer-focus-visible:ring-cyan/50"
+          "inline-flex cursor-pointer items-center justify-center select-none rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
+          "border-outline-variant bg-surface/40 text-on-surface-variant hover:border-cyan/40 hover:text-cyan",
+          "peer-checked:border-cyan/60 peer-checked:bg-cyan/20 peer-checked:text-cyan",
+          "peer-focus-visible:ring-2 peer-focus-visible:ring-cyan/50"
         )}
       >
         {label}

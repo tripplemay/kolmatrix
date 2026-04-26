@@ -284,6 +284,30 @@
       "saveAll": "Save all as group",
       "saveAllComingSoon": "Coming soon — BM2"
     },
+    "header": {
+      "saveSearch": "Save search",
+      "saveSearchTooltip": "Saved searches launch with B2",
+      "aiSmartMatch": "AI Smart Match",
+      "aiSmartMatchTooltip": "AI-powered campaign matching ships with B2"
+    },
+    "searchBar": {
+      "platformAll": "All platforms",
+      "placeholder": "Try: FPS YouTubers in EN markets…",
+      "submit": "Search",
+      "aiChipsHeading": "Suggested searches",
+      "chip1": "🎮 FPS creators for Honor of Kings launch",
+      "chip2": "📈 High-growth Twitch streamers EU",
+      "chip3": "🎯 RPG mobile game reviewers"
+    },
+    "activeFilters": {
+      "heading": "Active filters",
+      "clearAria": "Remove {label} filter"
+    },
+    "view": {
+      "label": "View",
+      "grid": "Grid",
+      "list": "List"
+    },
     "pagination": {
       "previous": "Previous",
       "next": "Next",
