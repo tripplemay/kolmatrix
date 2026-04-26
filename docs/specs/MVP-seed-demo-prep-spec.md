@@ -1,14 +1,16 @@
 ---
 name: MVP-seed-demo-prep
-description: MVP 上线前最后批次 - 种子用户 demo 准备（账号、数据、引导、烟测）
-status: draft
+description: MVP 上线前最后批次 - 种子用户 demo 准备（账号、数据、引导发放）
+status: decisions-locked
 created_by: Kimi (Planner)
 created_at: 2026-04-27
-estimated_effort: 2-3 day
+decisions_locked_at: 2026-04-27
+estimated_effort: 2-2.5 day
+features_count: 4 (F004 prod 烟测已拆出 → docs/specs/MVP-prod-launch-smoke-spec.md)
 prerequisites:
   - MVP-visual-fidelity-hotfix done
-  - BL-013 push 到 main + prod deploy 触发完成
-  - prod L2 健康基线
+  - 用户触发 prod deploy 触发完成
+  - MVP-prod-launch-smoke done（必须先确认 prod 可承接种子用户）
 ---
 
 # MVP-seed-demo-prep — 种子用户 demo 准备
@@ -30,13 +32,14 @@ MVP 4 大能力（Discovery / Campaign / Outreach / ROI+Weekly Report）已经�
 
 ## 2. 范围
 
-### In Scope（5 features）
+### In Scope（4 features，原 F004 已拆出独立 micro-batch）
 
 1. **F001** — Demo tenant seed 脚本（独立于测试 seed）
 2. **F002** — Onboarding 文档（用户首次登录前后的引导文本）
-3. **F003** — 演示脚本 / video walkthrough（Planner / 用户写，Generator 不参与）
-4. **F004** — prod L2 烟测清单 + 执行（Reviewer / 用户）
-5. **F005** — Demo 账号发放流程 + 安全 checklist
+3. **F003** — 演示脚本（Planner 起草脚本，**用户负责录制 video walkthrough**）
+4. **F004** — Demo 账号发放流程 + 安全 checklist（原 F005，拆 F004 后重新编号）
+
+**已拆出：** ~~F004 prod L2 烟测~~ → 独立 micro-batch `MVP-prod-launch-smoke-spec.md`（与本批次平行执行，prod deploy 后立即跑，是本批次发邀请的硬前提）
 
 ### Out of Scope
 
@@ -48,16 +51,19 @@ MVP 4 大能力（Discovery / Campaign / Outreach / ROI+Weekly Report）已经�
 
 ## 3. 关键设计决策
 
-| 决策 | 选定方案 | 理由 |
+| 决策 | 选定方案 | 用户裁决（2026-04-27） |
 |---|---|---|
-| Demo 账号模式 | **每个种子用户独立 tenant + 1 admin + 1 marketer 账号** | 数据隔离，避免互相看见；模拟真实多租户场景 |
-| Demo 数据源 | **基于现有 seed.ts 12 KOL + 3 campaigns 改造为「Studio Demo」品牌主题** | 复用已有演示数据，不重建轮子 |
-| 密码策略 | **首次随机 16 位（rotate-on-first-login 提示）** | 安全 baseline；prod 不能像 staging 用 KOLM@2026! |
-| onboarding 形式 | **欢迎邮件（含登录信息）+ 在线 PDF 引导（5 页 A4）** | MVP 简化；非 wizard |
-| Demo 周期 | **30 天试用，到期前 7 天提醒** | 给种子用户充分体验时间，但避免无限期占资源 |
-| 烟测分工 | **L2 自动化（Playwright @prod）+ 用户手动 1 次完整 Journey A 走查** | 自动化覆盖回归 + 人工覆盖 UX 体验 |
-| Demo 数据多样化 | **3 套预制 demo dataset（小型/中型/大型 game studio）** | 不同种子用户拿不同 dataset 避免雷同感；MVP 阶段先 1 套通用 |
-| 邀请方式 | **AccessRequest 流程（已有 BI3-F005）+ admin 后台一键 approve** | 复用现有审批流程 |
+| Demo 账号模式 | **每个种子用户独立 tenant + 1 admin + 1 marketer 账号** | — |
+| Demo 数据源 | **基于现有 seed.ts 12 KOL + 3 campaigns 改造为「Studio Demo」品牌主题** | — |
+| 密码策略 | **首次随机 16 位（rotate-on-first-login 提示）** | — |
+| onboarding 形式 | **欢迎邮件（含登录信息）+ 在线 PDF 引导（5 页 A4）** | — |
+| **Demo 周期** | **30 天试用，到期前 7 天提醒** | ✅ 用户确认 30 天 |
+| **首批种子用户数量** | **5-10 人** | ✅ 用户同意 |
+| **邀请邮件发件人** | **`marketer@kolquest.com`**（已配，未来可换 founder@） | ✅ 用户同意（不新建 founder@）|
+| **video walkthrough 录制** | **Planner 起草脚本 → 用户负责录制** | ✅ 用户回答"我们做" |
+| **prod 烟测拆批** | **拆出独立 micro-batch `MVP-prod-launch-smoke`** | ✅ 用户回答"按你的建议执行" |
+| Demo 数据多样化 | **3 套预制 demo dataset（小型/中型/大型 game studio）** | MVP 阶段先 1 套通用，3 套留 Post-MVP |
+| 邀请方式 | **AccessRequest 流程（已有 BI3-F005）+ admin 后台一键 approve** | — |
 
 ## 4. 功能列表
 
@@ -111,40 +117,33 @@ docs/user-guide/
 - 上传 docs/user-guide/welcome-onboarding-en.pdf + welcome-onboarding-zh.pdf
 - 内容引用真实 demo 账号场景（不用 lorem ipsum）
 
-### F003 — 演示脚本 + video walkthrough
+### F003 — 演示脚本（Planner 起草，用户负责录制 video）
 
-**实现：** **Planner / 用户负责（不属 Generator 工作）**
+**实现：** **Planner 起草脚本 → 用户用 Loom / OBS / QuickTime 录制**
 
-`docs/marketing/demo-walkthrough-script.md`：
+`docs/marketing/demo-walkthrough-script.md`（Planner 起草）：
 - 5 分钟 demo 脚本（按 Journey A 走）
-- 录制要点：开场 30s 介绍 → 90s Discovery → 90s Campaign → 60s ROI → 30s 结语
-- 录制工具：用户自选（Loom / OBS / QuickTime）
-- 视频上传到内部 Notion，链接给种子用户
+- 逐段标时间轴：开场 30s 介绍 → 90s Discovery → 90s Campaign → 60s ROI → 30s 结语
+- 每段含旁白文本 + 操作步骤 + 期望页面截图
+- bilingual（en + zh 各一版，给不同种子用户用）
+
+**用户工作（不属 Generator）：**
+- 用户用 Loom / OBS / QuickTime 录制 ≤ 6 分钟 1080p 视频
+- 视频上传到内部 Notion / YouTube unlisted
+- 视频链接 → 由 Planner 登记到 `docs/user-guide/01-welcome.md` 顶部
 
 **Acceptance：**
 - 脚本字数 800-1200，逐段标时间轴
-- 视频 ≤ 6 分钟，1080p
-- 视频链接登记到 `docs/user-guide/01-welcome.md` 顶部
+- 脚本 bilingual en + zh
+- 用户录制完成后 Planner 把视频链接更新到 user-guide
 
-### F004 — prod L2 烟测清单 + 执行
+### ~~F004 — prod L2 烟测清单 + 执行~~（已拆出独立 micro-batch）
 
-**实现：** 新建 `docs/test-cases/MVP-prod-launch-smoke-checklist.md`，并由 Reviewer 在 prod deploy 后执行。
+**移到：** `docs/specs/MVP-prod-launch-smoke-spec.md`（独立 1 day micro-batch，与本批次平行执行）
 
-**清单内容（参照 BM2-L2-staging-checklist 格式）：**
-- 健康基线：`/api/health` 200 + git_sha 正确（BL-013 修后 health git_sha 应已修复）
-- F001-F010 BM2 全功能 prod 路径走查（同 staging L2 清单，URL 替换为 prod）
-- visual baseline：访问 6 张 baseline 对应路由对比
-- 跨租户隔离烟测
-- 性能基线：每页 LCP < 2.5s（用 lighthouse / web vitals）
-- AI Action 真调用（消耗少量 aigcgateway 余额）：1 次 outreach AI 定制 + 1 次 weekly-report 生成
-- 邮件真发（用户 1 个测试邮箱，**禁止给真实 KOL 发**）
+**关系：** prod-launch-smoke done 是本批次发邀请的硬前提；不放在本批次内是为了让 Reviewer 在 prod deploy 后立即开跑，不依赖 Generator 的 demo prep 进度。
 
-**Acceptance：**
-- 清单 ≥ 30 条 checkbox
-- Reviewer 签收 `docs/test-reports/MVP-prod-launch-signoff-<date>.md`
-- 任何 P0/P1 失败 → status 切回 fixing，Generator hotfix；P2/P3 写 backlog 不阻塞上线
-
-### F005 — Demo 账号发放流程 + 安全 checklist
+### F004 — Demo 账号发放流程 + 安全 checklist（原 F005，重新编号）
 
 **实现：** `docs/ops/demo-account-onboarding-runbook.md`：
 
@@ -171,18 +170,26 @@ docs/user-guide/
 ## 5. 依赖关系
 
 ```
-F001 (seed 脚本) ────┐
-                    ├─→ F005 (发放 runbook)
-F002 (用户文档) ────┤
-                    ├─→ Demo 账号可发放
-F003 (演示视频) ────┘
-
-F004 (prod 烟测) ─→ 独立路径，prod deploy 后立即跑
+[平行 micro-batch]                  [本批次 4 features]
+MVP-prod-launch-smoke ────┐
+（Reviewer，~半天）        │
+                          ├──────→ Demo 邀请发出（5-10 人）
+F001 (seed 脚本) ─────────┤
+F002 (用户文档) ──────────┤
+F003 (演示脚本+录制) ─────┤
+F004 (发放 runbook) ──────┘
 ```
 
-**强依赖：** F001 + F002 + F003 + F005 → 缺一不可（Demo 不能发）；F004 独立验证 prod 健康
+**强依赖：**
+- 本批次 F001-F004 缺一不可
+- `MVP-prod-launch-smoke` done 是发邀请的硬前提（在独立 spec 中执行）
 
-**推荐顺序：** F004（prod 烟测，最先验证 prod 健康）→ F001 → F002 + F003（用户/Planner 并行）→ F005
+**推荐顺序：**
+1. prod deploy 触发 → MVP-prod-launch-smoke 启动（Reviewer，平行）
+2. F001 demo seed 脚本（Generator）
+3. F002 + F003 并行（Generator 写文档 / Planner 起草脚本 + 用户录视频）
+4. F004 发放 runbook（Planner）
+5. prod-launch-smoke + F001-F004 全 done → 用户开始邀请 5-10 人
 
 ## 6. 风险与对策
 
@@ -234,12 +241,12 @@ F004 (prod 烟测) ─→ 独立路径，prod deploy 后立即跑
 | 环节 | 预估 | 执行者 |
 |---|---|---|
 | F001 seed:demo 脚本 + tests | ~0.5 day | Generator |
-| F002 用户文档 6 文件（en/zh）+ PDF | ~1 day | Generator + Planner（文案） |
-| F003 演示脚本 + video 录制 | ~0.5 day | Planner / 用户 |
-| F004 prod 烟测清单 + 执行 | ~0.5 day | Planner（清单）+ Reviewer（执行） |
-| F005 发放 runbook + safety checklist | ~0.5 day | Planner |
+| F002 用户文档 6 文件（en/zh）+ PDF | ~1 day | Generator（结构）+ Planner（文案） |
+| F003 演示脚本起草（视频录制由用户做，不计本批次工时） | ~0.3 day | Planner |
+| F004 发放 runbook + safety checklist | ~0.5 day | Planner |
 | 缓冲（安全 / 反复修文档） | ~0.5 day | — |
-| **总计** | **~2.5-3 day** | — |
+| **总计（本批次 4 features）** | **~2-2.5 day** | — |
+| **平行 micro-batch** MVP-prod-launch-smoke | ~0.5 day | Planner+Reviewer |
 
 ## 11. 与 MVP 上线时间线
 
@@ -254,11 +261,11 @@ F004 (prod 烟测) ─→ 独立路径，prod deploy 后立即跑
 
 ---
 
-**Spec 状态：** draft（2026-04-27 Planner 起草，hotfix done 后切 planning → building）
+**Spec 状态：** decisions-locked（2026-04-27 Planner 起草 + 用户裁决 5/5 全部落地，hotfix done 后切 planning → building）
 
-**待用户确认：**
-1. demo 周期 30 天是否合适？（短：紧迫感强 / 长：体验充分）
-2. 首批种子用户数量目标？（建议 5-10 人，便于 1:1 反馈）
-3. 邀请邮件用谁的发件人？（marketer@kolquest.com 已配 / 或新建 founder@kolquest.com）
-4. video walkthrough 录制谁做？（用户 / Planner 起草脚本）
-5. 是否需要把 F004 prod 烟测拆出来独立 micro-batch（与 F001-F003 解耦）？
+**用户决策（2026-04-27 全部 ✅）：**
+1. demo 周期 30 天 ✅
+2. 首批种子用户数量 5-10 人 ✅
+3. 邀请邮件发件人 marketer@kolquest.com（不新建 founder@） ✅
+4. video walkthrough：Planner 起草脚本，**用户负责录制** ✅
+5. F004 prod 烟测拆出独立 micro-batch ✅ → `docs/specs/MVP-prod-launch-smoke-spec.md`

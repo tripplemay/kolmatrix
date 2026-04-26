@@ -1,13 +1,14 @@
 ---
 name: BIx-staging-automation
-description: Staging 部署自动化 - 整合 BL-001/002/004/013 一次性消除手动 SSH + git_sha unknown + dotenv 漏装 + npm ci omit-dev
-status: draft
+description: Staging 部署自动化 - 整合 BL-001/002/004/013 + prod git_sha 一并修
+status: decisions-locked
 created_by: Kimi (Planner)
 created_at: 2026-04-27
-estimated_effort: 2-3 day
+decisions_locked_at: 2026-04-27
+estimated_effort: 2.5-3 day
 prerequisites:
-  - MVP-seed-demo-prep done（不强依赖，但建议 hotfix + demo 上线后做）
-  - prod 已稳定运行 7 天以上（避免改 staging 流程时干扰 prod 故障调查）
+  - MVP-seed-demo-prep done（用户裁决：demo done 立即启动，不等第一周 monitoring）
+  - prod 健康（已通过 MVP-prod-launch-smoke 验证）
 ---
 
 # BIx-staging-automation — Staging 部署自动化
@@ -194,7 +195,7 @@ echo "✅ Staging deploy success: $GIT_SHA"
 - `npm run seed:kol` 在裸 shell（无 `set -a && source .env`）下跑通
 - tests/unit/scripts-dotenv-loaded.test.ts 静态守门（grep 检测）
 
-### F004 — BL-002 修复（git_sha runtime 可见）
+### F004 — BL-002 修复（git_sha runtime 可见）+ prod 同坑一并修（用户裁决）
 
 **根因（Planner 2026-04-27 调研）：**
 - `src/app/api/health/route.ts` L79: `git_sha: process.env.GIT_SHA ?? "unknown"`
@@ -202,13 +203,24 @@ echo "✅ Staging deploy success: $GIT_SHA"
 - staging 手动 deploy 时，build-time `GIT_SHA=xxx npm run build` **不持久化**到 pm2 process env
 - pm2 reload 后 process 拿到的 env 来自 .env.staging（如其中无 GIT_SHA → unknown）
 
-**修复（已包含在 F001 deploy-staging.sh §2 中）：** 部署脚本将 GIT_SHA upsert 到 .env.staging，再 pm2 reload --update-env 让 process 拿到。
+**修复 staging（已包含在 F001 deploy-staging.sh §2 中）：** 部署脚本将 GIT_SHA upsert 到 .env.staging，再 pm2 reload --update-env 让 process 拿到。
+
+**修复 prod（用户裁决"一并修"）：**
+- `scripts/deploy-prod.sh` 在 `npm run build` 前增加：
+  ```bash
+  # Persist GIT_SHA to .env.production for runtime visibility (BL-002 fix)
+  if grep -q "^GIT_SHA=" .env.production; then
+    sed -i "s|^GIT_SHA=.*|GIT_SHA=$GIT_SHA|" .env.production
+  else
+    echo "GIT_SHA=$GIT_SHA" >> .env.production
+  fi
+  ```
+- prod 验证：下次 prod deploy 后 `curl https://kol.guangai.ai/api/health | jq .git_sha` 必须等于 deploy 的 commit sha（前 7 位）
 
 **Acceptance：**
-- BL-002 验证：deploy-staging.sh 跑完后 `curl https://staging.kol.guangai.ai/api/health | jq .git_sha` 返回 7 位 sha 字符串
-- prod 同样修：通过 .github/workflows/deploy-prod.yml 已有 envs 注入 GIT_SHA → ssh-action 把 GIT_SHA 传到 deploy-prod.sh，但 deploy-prod.sh **未持久化到 .env.production**（需核对 prod 是否同样有问题；如 prod 已正常显示 sha，说明另有路径，调研后修复或保持）
-  - **2026-04-27 Planner 备注**：当前 prod health 显示 git_sha 正常，可能 PM2 reload 时 `--update-env` 自动从 ssh-action envs 拿到。需要 Generator 实测确认。
-- 可选：把 GIT_SHA 也写到 `.next/git-sha.txt` build-time artifact，作为兜底（runtime fallback 读 file）— 本批次先不做，作为 polish
+- BL-002 staging 验证：deploy-staging.sh 跑完后 git_sha 返回 7 位 sha
+- BL-002 prod 验证：下次 prod deploy 后 git_sha 同样返回 7 位 sha（可通过测试 prod 触发非业务 commit deploy 验证）
+- 可选 polish：把 GIT_SHA 也写到 `.next/git-sha.txt` build-time artifact，作为兜底（runtime fallback 读 file）— 本批次不做，留 backlog
 
 ### F005 — runbook 更新 + 静态守门测试
 
@@ -306,22 +318,24 @@ F004 (BL-002 git_sha) ─┘ (实现含在 F001 内，无独立代码)
 | 缓冲 + L2 staging 验证 + 反复修 | ~0.4 day |
 | **总计** | **~2.5 day** |
 
-## 11. 与时间线
+## 11. 与时间线（用户裁决：demo done 立即启动）
 
 | 节点 | 预估 |
 |---|---|
 | MVP-visual-fidelity-hotfix done | ~2026-05-02 |
+| MVP-prod-launch-smoke done（平行 micro-batch） | 2026-05-02 |
 | MVP-seed-demo-prep done | ~2026-05-05 |
-| MVP 正式上线（首批种子用户邀请发出） | 2026-05-05 |
-| **第 1 周 monitoring 窗口（5 月 5-12 日）** | — |
-| BIx-staging-automation（本批次）启动 | **~2026-05-12** |
-| BIx done | ~2026-05-15 |
+| 首批种子用户邀请发出 | 2026-05-05 |
+| **BIx-staging-automation 启动**（用户裁决 demo done 立即，不等第一周 monitoring） | **~2026-05-05** |
+| BIx done | ~2026-05-08 |
+
+**调整说明：** 比原 spec 草案的 "MVP 上线后第一周观察期满（5/12）" 提前 7 天，避免 staging deploy 痛点积累；不影响 prod 稳定性（仅改 staging + prod git_sha 一处）。
 
 ---
 
-**Spec 状态：** draft（2026-04-27 Planner 起草，hotfix done + demo done 后 + MVP 上线第一周观察后启动）
+**Spec 状态：** decisions-locked（2026-04-27 Planner 起草 + 用户裁决 3/3 全部落地，demo done 后切 planning → building）
 
-**待用户确认：**
-1. BIx 启动时机：(a) MVP 上线后第一周观察期满 (b) demo done 后立即 (c) 推到 Post-MVP 1 月后做
-2. F004 prod git_sha 路径：是否一并修 prod？还是仅 staging？
-3. F002 dep 移动是否需要先在独立 micro-batch 修（解锁 staging 而不等 BIx）？建议同 MVP 上线节奏挂钩
+**用户决策（2026-04-27 全部 ✅）：**
+1. 启动时机：**demo done 立即**（不等第一周 monitoring）✅
+2. F004 prod git_sha：**一并修 prod**（同样 .env.production upsert + pm2 reload --update-env 模式）✅
+3. F002 dep 移动：**留在 BIx 内做**，不独立 micro-batch；同时 **Generator 在 hotfix building 间隙可顺手做**（如已修则 BIx F002 标 "已落地" 跳过）✅

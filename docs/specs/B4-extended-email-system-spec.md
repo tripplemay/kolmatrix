@@ -1,14 +1,17 @@
 ---
 name: B4-extended-email-system
-description: BM2 outreach 邮件系统增强 - Resend webhook + 模板编辑器 + 打开率/回复率追踪 + 自动退订
-status: draft (framework only)
+description: BM2 outreach 邮件系统增强 - Resend webhook + markdown 模板编辑器 + 打开率/回复率追踪 + 自动退订（合规由法律团队 review）
+status: framework-decisions-locked
 created_by: Kimi (Planner)
 created_at: 2026-04-27
-estimated_effort: 7-10 day（最终拆分待 Post-MVP 反馈细化）
+decisions_locked_at: 2026-04-27
+estimated_effort: 5-7 day（F006 BullMQ 已拆出独立 B5 批次后；6 features）
 prerequisites:
   - MVP 上线 ≥ 4 周（充分收集种子用户邮件触达反馈）
   - BIx-staging-automation done（依赖 staging 真实邮件 webhook 调试）
   - aigcgateway 余额充足（如新增 AI 模板生成功能）
+  - 法律团队 review F004 自动退订合规（用户裁决）
+features_count: 6（原 7，F006 BullMQ 已拆出独立 B5 批次）
 ---
 
 # B4-extended — 邮件系统增强
@@ -116,18 +119,15 @@ prerequisites:
 
 **依赖：** F001 webhook + Kol schema 扩展
 
-### F006 — 发送队列 + 频控（BullMQ workers）
+### ~~F006 — 发送队列 + 频控（BullMQ workers）~~ → 已拆出 B5 独立批次
 
-**范围：**
-- B5 BullMQ workers 上线（roadmap 已有规划，不属本批次主线）
-- 邮件发送从同步 await Resend 改为异步 enqueue
-- 频控：每 tenant 每分钟最多 10 封 / 每天最多 1000 封（user-tenant plan 决定）
-- worker 失败重试 3 次（30s / 5min / 30min backoff）
-- failed 邮件入 dead letter queue + admin 看板可见
+**用户裁决（2026-04-27）：** 独立批次
 
-**依赖：** B5 BullMQ workers（独立批次或本批次合并，待决定）
+**新归属：** 待新建 `docs/specs/B5-bullmq-workers-spec.md`（roadmap B5 主体）
 
-### F007 — 邮件预览增强
+**关系：** B4-extended 不依赖 B5；B5 上线后 B4 邮件发送可平滑迁移到队列（无 schema 改动）
+
+### F006 — 邮件预览增强（原 F007 重新编号）
 
 **范围：**
 - 在 outreach 页 EmailTemplate selector 旁加 "预览" 按钮
@@ -137,16 +137,50 @@ prerequisites:
 
 **依赖：** 可与 F002 模板编辑器内嵌共用预览组件
 
-## 3. 关键设计决策（待 Post-MVP 反馈细化）
+## 3. 关键设计决策
 
-| 决策 | 候选方案 | 待决议时机 |
+| 决策 | 用户裁决（2026-04-27） | 备注 |
 |---|---|---|
-| 模板编辑器选型 | (a) markdown + react-markdown（同 weekly-report 栈） / (b) WYSIWYG 如 lexical / tiptap | F002 启动前 |
-| webhook 签名验证库 | Resend 官方 SDK 或手写 HMAC | F001 启动前 |
-| KolUnsubscribe 表设计 | (a) per-tenant + per-kol / (b) 全局 email-level（影响多租户场景） | F004 启动前 |
-| BullMQ vs PgBoss | (a) BullMQ + Redis（roadmap 默认） / (b) PgBoss（pg-only，无新依赖） | F006 / B5 启动前 |
-| AI 模板优化建议是否做 | 视种子用户反馈（如多人提"模板效果差"才做） | MVP 上线 4 周后 |
-| 模板分享（user 模板能否跨 tenant 分享） | 不做（隔离原则）vs 做（marketplace 概念） | Post-MVP B7+ |
+| **模板编辑器选型** | ✅ **markdown + react-markdown** | 与 weekly-report 渲染栈一致 + git 友好 + AI 友好 |
+| **F006 BullMQ 队列** | ✅ **独立 B5 批次** | 不属本 B4-extended 范围 |
+| **F004 自动退订法律 review** | ✅ **法律团队负责** | F004 启动前必须拿到 review 通过 |
+| **5 trigger 优先级** | ⏳ Planner 提方案待用户确认（见下表）| — |
+| webhook 签名验证库 | TBD（F001 启动前定）| 推荐 Resend 官方 SDK |
+| KolUnsubscribe 表设计 | TBD（F004 启动前定）| 推荐 per-tenant + per-kol |
+| AI 模板优化建议是否做 | 视种子用户反馈 | MVP 上线 4 周后决定 |
+| 模板分享 | 不做 | 隔离原则；marketplace 概念留 Post-MVP B7+ |
+
+### 3.1 Planner 推荐 5 trigger 优先级方案（待用户确认）
+
+| 排序 | Trigger | 优先级 | 触发条件 | 对应 features | 启动急迫度 |
+|---|---|---|---|---|---|
+| **1** | Deliverability 下降（bounce rate > 5%） | **P0** | Resend dashboard 数据 / 周度报告 | F005 bounce/complaint + F001 webhook | **立即**（影响 sender reputation，> 5% 会被 Resend 限流） |
+| **2** | 退订请求频繁（≥ 5/周手动 handle） | **P1** | ops 周度统计 | F004 自动退订 + F001 webhook（unsubscribe event） | 1 周内（合规风险） |
+| **3** | 邮件量增长（月发送 ≥ 1000 封） | **P1** | event_log 'email.sent' count | F001 webhook（数据收集）→ F003 dashboard | 数据积累 ≥ 2 周后做 F003 |
+| **4** | 效果数据缺失（marketer 反馈"看不到效果"） | **P2** | 用户访谈 / NPS 反馈 | F003 dashboard | F001 数据积累 ≥ 2 周后 |
+| **5** | 模板需求（≥ 3 用户反馈"想自定义"） | **P2** | 用户访谈 | F002 markdown 编辑器 + F006 预览 | 视用户强度 |
+
+**Planner 推荐执行顺序（基于排序）：**
+
+```
+Phase 1 (P0/P1，2-3 day)：F001 webhook + F005 bounce/complaint 自动处理
+       │（webhook 数据积累 ~ 2 周）
+       ▼
+Phase 2 (P1 合规，1-2 day)：F004 自动退订（需法律 review 前置）
+       │
+       ▼
+Phase 3 (P1/P2，1-2 day)：F003 dashboard
+       │
+       ▼
+Phase 4 (P2，2-3 day，视用户反馈)：F002 模板编辑器 + F006 预览
+```
+
+**Planner 建议：** 按数据驱动，不一次性做完 6 features。trigger 命中 → 立即做对应 feature；未命中（如发量小、无退订请求）→ 推迟到 Post-MVP 第 2 阶段。这样可避免过度建设。
+
+**待用户确认：**
+1. 同意此 5 trigger 优先级排序？
+2. 是否同意 "数据驱动 / 分阶段执行" 而非 "一次做完 6 features"？
+3. 法律 review F004 估时 / 联系窗口（建议 MVP 上线 + 2 周内启动 review，避免成为 trigger 命中时的瓶颈）？
 
 ## 4. 风险与对策
 
@@ -200,15 +234,19 @@ prerequisites:
 - Resend 官方文档：https://resend.com/docs/webhooks
 - aigcgateway Action `kol-email-customize`（已存在，B4 模板优化建议可复用）
 
-## 9. 待用户决策（spec 细化前）
+## 9. 用户决策（2026-04-27 ✅）
 
-1. **MVP 上线后第 4 周触发条件**：上述 5 个 trigger 哪个最重要 / 优先做？
-2. **F006 BullMQ vs B5 关系**：是否把 F006 拆到 B5 单独做？
-3. **F002 模板编辑器选型**：markdown / WYSIWYG / 不做（仅扩 system 模板数）？
-4. **法律审核**：F004 自动退订需要法律 review，谁负责？
+| # | 问题 | 用户答复 |
+|---|---|---|
+| 1 | 5 trigger 优先级 | **Planner 提方案**（详见 §3.1）— 待用户确认 |
+| 2 | F006 BullMQ vs B5 关系 | ✅ **独立批次 B5**（已从本 spec 移除 F006，重新编号 F006=邮件预览） |
+| 3 | F002 模板编辑器选型 | ✅ **markdown** |
+| 4 | F004 自动退订法律 review | ✅ **法律团队负责** |
 
 ---
 
-**Spec 状态：** draft framework only（2026-04-27 Planner 起草，留待 MVP 上线 4 周后基于种子用户反馈细化）
+**Spec 状态：** framework-decisions-locked（2026-04-27 Planner 起草 + 用户裁决 3/4 落地，trigger 排序方案待用户确认 §3.1）
 
 **本批次定位：** Post-MVP 第一阶段重点批次（与 BIx-staging-automation 并列，但优先级视反馈而定）
+
+**待用户确认（剩余 1 项）：** §3.1 5 trigger 优先级排序方案 + 数据驱动分阶段执行方式 + 法律 review 启动时机
