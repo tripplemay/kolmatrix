@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BM2-campaign-outreach-roi** — status=building，11/11 features done — ready for verifying
+- **BM2-campaign-outreach-roi** — status=verifying（2026-04-26 切换），11/11 features done — Reviewer 接手 L1+L2
   - Spec `docs/specs/BM2-campaign-outreach-roi-spec.md`（§6 + §F011 已吸收 BM1 F009 教训）
   - F011 落地：visual-regression spec 扩到 12 页（4 BM1 + 6 BM2 + 2 auth），journey-a + journey-b E2E，update-visual-baselines workflow_dispatch
   - aigcgateway 3 Action 已建 + 验证：kol-email-customize (claude-haiku-4.5) / roi-insights + weekly-report-for-client (gemini-3-flash)
@@ -18,8 +18,8 @@ type: project
 - Prod 仍 `4b05cb60`（BI4 前快照）— BM1 签收通过，用户可随时 GitHub Actions 触发 prod deploy
 - Staging 在 `c96fb98`（main 落后 3 commits，全是 state/report 文件，不影响运行）
 
-## 角色分配（BM2，沿用 BM1）
-- Planner: johnsong / Generator: johnsong / Evaluator: Reviewer
+## 角色分配（BM2，2026-04-26 切换）
+- Planner: Kimi（隔离 §4.6/§4.7 风险，原 johnsong）/ Generator: johnsong / Evaluator: Reviewer
 
 ## 关键决策（详见 MVP PRD §11 + BM2 spec §3）
 - Product USP 必填 / Google OAuth disabled / AI 走 aigcgateway Action
