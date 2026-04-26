@@ -4,41 +4,29 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BM2-campaign-outreach-roi** — status=fixing（2026-04-26 Reviewer 首轮验收未通过），11/11 features done — 等 Generator 修复后复验
-  - Spec `docs/specs/BM2-campaign-outreach-roi-spec.md`（§6 + §F011 已吸收 BM1 F009 教训）
-  - F011 落地：visual-regression spec 扩到 12 页（4 BM1 + 6 BM2 + 2 auth），journey-a + journey-b E2E，update-visual-baselines workflow_dispatch
-  - aigcgateway 3 Action 已建 + 验证：kol-email-customize (claude-haiku-4.5) / roi-insights + weekly-report-for-client (gemini-3-flash)
-  - **首轮验收阻断**：6 BM2 visual baseline PNG 未入 git，visual-regression 12/12 skip；`codex-setup` 后 EmailTemplate seed=0；App Shell `/en/emails`、`/en/analytics` 404
-- **BM1** ✅ done（9/9 PASS fix_rounds=2，signoff `docs/test-reports/BM1-console-kol-core-signoff-2026-04-23.md`）
-- 所有前置批次 ✅：B0 / BI1 / BI2 / BI3 / BAux1 / BI4 / BM1
+- **BM2-campaign-outreach-roi** — status=reverifying（2026-04-26 18:30 Generator fix-round 1 完成），11/11，fix_rounds=1
+  - 4 主修复：F006-002 seed 链调 / NAV-003 nav href→/outreach+/roi / HARNESS-004 codex-wait 3xx / F011-001 12 张 baseline PNG 入 git
+  - 7 次生：lockfile 恢复 / spec.skip 尊重 update-snapshots / campaign-detail RSC 函数 prop / seed deterministic / CI E2E 拆 visual-first / discovery viewport-only / workflow mkdir defensive
+  - 4 回归测试 file 沉淀；最终 CI 24954417129 全绿
+- **BM1** ✅ done 9/9 fix_rounds=2 / 所有前置批次 ✅
 
-## MVP 现状（4/4 功能达成 — 待 F011 test/baseline 验收）
-- ✅ 控制台（BM1 F007）/ ✅ 筛选 KOL（BM1 F004-F006）/ ✅ 联系 KOL（BM2 F005-F006）
-- ✅ ROI 追踪（BM2 F008-F009）/ ✅ AI 周报（BM2 F010）
-- Prod 仍 `4b05cb60`（BI4 前快照）— BM1 签收通过，用户可随时 GitHub Actions 触发 prod deploy
-- Staging 在 `c96fb98`（main 落后 3 commits，全是 state/report 文件，不影响运行）
+## MVP 现状（4/4 达成，待 Reviewer 复验）
+- 控制台 BM1-F007 / 筛选 BM1-F004-F006 / 联系 BM2-F005-F006 / ROI BM2-F008-F009 / AI 周报 BM2-F010
+- Prod `4b05cb60` / Staging `c96fb98`
 
-## 角色分配（BM2，2026-04-26 切换）
-- Planner: Kimi（隔离 §4.6/§4.7 风险，原 johnsong）/ Generator: johnsong / Evaluator: Reviewer
+## 角色分配
+- Planner Kimi / Generator johnsong / Evaluator Reviewer
 
-## 关键决策（详见 MVP PRD §11 + BM2 spec §3）
-- Product USP 必填 / Google OAuth disabled / AI 走 aigcgateway Action
-- AI 匹配分不做 MVP / KOL 价值分简单公式（归一化 0-100）
-- Browser locale detection auto / AI 周报给客户看 PDF+share link
-- BM1/BM2 L2 验收强制走 staging（2026-04-23 决议）
-- **BM2 Resend mock fallback** / PDF 浏览器 print / 独立 WeeklyReport 快照表
-- **MVP-visual-fidelity hotfix 批次**（2026-04-24 决议）：BM2 done 后启动，覆盖 BM1+BM2 5 页（C 档 pixel-perfect + 公共组件抽取），推迟 MVP 上线 ~1 周到 2026-05-14
-- **Visual baseline PNG 入 git 是 PASS 硬门槛**（role-context/evaluator.md + framework/harness/ui-fidelity-guardrail.md）
+## 关键决策
+- AI 走 aigcgateway Action / Resend mock fallback / PDF print / 独立 WeeklyReport 表
+- BM1/BM2 L2 强制 staging
+- **MVP-visual-fidelity hotfix 批次** BM2 done 后启动
+- **Visual baseline PNG in git 硬门槛**（已落地）
+- **Seed deterministic 必须**（fix-round 1 沉淀：LCG + Date.UTC 固定 epoch）
+- **CI E2E 拆两步**（fix-round 1 沉淀）：visual fresh-seed → 全套 grep-invert visual
 
-## BM1 F009 教训（BM2 必遵守）
-- 禁用 waitForLoadState("networkidle")
-- 不硬编 seed-dependent count（staging 真数据变，用 regex/>0）
-- revalidate 后 polling 15s / login redirect locale-prefixed URL
-
-## Backlog 4 条
-- BL-001 low / BL-002 medium / BL-003 deferred / BL-004 medium — BM2 done 后 polish micro-batch 一起收
+## Backlog
+- BL-001/002/003/004 + 新：discovery fullPage 长期根因待查（hydration async 层）
 
 ## 环境
-- 生产 DB `kolmatrix` / staging DB `kolmatrix_staging`
-- Resend 发件 `marketer@kolquest.com`
-- aigcgateway `https://aigc.guangai.ai/v1`（admintest key 已配两端）
+- DB kolmatrix / kolmatrix_staging / Resend marketer@kolquest.com / aigcgateway admintest key
