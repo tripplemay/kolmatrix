@@ -450,10 +450,12 @@ test.describe("Authenticated BM2 visual regression", () => {
     });
   });
 
-  // MVP-vf-F006 — first KOL profile reachable from /database. Same
-  // anti-handshake pattern as campaign-detail: read the first row
-  // anchor href and page.goto() it instead of clicking, so a cold CI
-  // RSC route doesn't blow the 30 s default test timeout.
+  // MVP-vf-F006 — first KOL profile reachable from /discovery.
+  // Why /discovery instead of /database: a fresh CI seed has no
+  // isSaved=true rows, so /database renders the empty state and
+  // never mounts data-testid="database-table-wrapper". /discovery
+  // shows every KOL regardless of save state, so the first
+  // [data-testid="kol-card"] is always present.
   test("kols-detail full-page screenshot diffs < 2% vs baseline", async ({
     page,
   }) => {
@@ -463,18 +465,22 @@ test.describe("Authenticated BM2 visual regression", () => {
     );
     test.setTimeout(90_000);
     await login(page);
-    await page.goto("/en/database");
-    await page.waitForSelector('[data-testid="database-table-wrapper"]');
+    await page.goto("/en/discovery");
+    await page.waitForSelector('[data-testid="discovery-grid"]');
 
-    const firstRow = page.locator('[data-testid="database-row"]').first();
-    if ((await firstRow.count()) === 0) {
-      test.skip(true, "No saved KOLs in seed — kols-detail baseline N/A");
+    const firstCard = page.locator('[data-testid="kol-card"]').first();
+    if ((await firstCard.count()) === 0) {
+      test.skip(true, "No KOLs in seed — kols-detail baseline N/A");
     }
-    const href = await firstRow.locator("a").first().getAttribute("href");
-    if (!href || !/\/kols\/[0-9a-f-]{36}/.test(href)) {
-      test.skip(true, `Unexpected database row href: ${href ?? "(null)"}`);
+    // KolResultCard exposes data-kol-id; assemble the profile URL
+    // directly so the test doesn't depend on the card hosting an
+    // anchor link to /kols/:id (it currently doesn't — clicking the
+    // card opens the save toggle inline, not a navigation).
+    const kolId = await firstCard.getAttribute("data-kol-id");
+    if (!kolId || !/^[0-9a-f-]{36}$/.test(kolId)) {
+      test.skip(true, `Unexpected kol-card id: ${kolId ?? "(null)"}`);
     }
-    await page.goto(href!);
+    await page.goto(`/en/kols/${kolId}`);
     await page.waitForSelector('[data-testid="kol-hero"]', { timeout: 60_000 });
     await fontsReady(page);
     await imagesReady(page);
