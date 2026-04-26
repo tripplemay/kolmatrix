@@ -46,56 +46,113 @@ describe("campaigns/status", () => {
   });
 });
 
+function empty(): import("@/lib/campaigns/filters").CampaignListFilters {
+  return { statuses: [], games: [], regions: [], ownerIds: [] };
+}
+
 describe("campaigns/filters", () => {
-  it("parseCampaignFilters defaults to status=all and ignores bad values", () => {
-    expect(parseCampaignFilters({})).toEqual({ status: "all" });
-    expect(parseCampaignFilters({ status: "garbage" })).toEqual({
-      status: "all",
+  it("parseCampaignFilters defaults to empty arrays and ignores bad statuses", () => {
+    expect(parseCampaignFilters({})).toEqual(empty());
+    expect(parseCampaignFilters({ status: "garbage" })).toEqual(empty());
+  });
+
+  it("parseCampaignFilters lifts status into an array (chip multi-select)", () => {
+    expect(
+      parseCampaignFilters({ status: "draft", search: " foo ", cursor: "abc" })
+    ).toEqual({ ...empty(), statuses: ["draft"], search: "foo", cursor: "abc" });
+    expect(
+      parseCampaignFilters({ status: ["active", "draft"] })
+    ).toEqual({ ...empty(), statuses: ["active", "draft"] });
+    expect(
+      parseCampaignFilters({ status: "active,completed" })
+    ).toEqual({ ...empty(), statuses: ["active", "completed"] });
+  });
+
+  it("parseCampaignFilters reads game / region / owner / dateFrom / dateTo", () => {
+    expect(
+      parseCampaignFilters({
+        game: "Cyber",
+        region: ["US", "JP"],
+        owner: "u1",
+        dateFrom: "2026-04-01",
+        dateTo: "2026-04-30",
+      })
+    ).toEqual({
+      ...empty(),
+      games: ["Cyber"],
+      regions: ["US", "JP"],
+      ownerIds: ["u1"],
+      dateFrom: "2026-04-01",
+      dateTo: "2026-04-30",
     });
   });
 
-  it("parseCampaignFilters picks up status + search + cursor", () => {
-    expect(
-      parseCampaignFilters({ status: "draft", search: " foo ", cursor: "abc" })
-    ).toEqual({ status: "draft", search: "foo", cursor: "abc" });
+  it("parseCampaignFilters drops malformed dates", () => {
+    expect(parseCampaignFilters({ dateFrom: "yesterday", dateTo: "" })).toEqual(
+      empty()
+    );
   });
 
   it("parseCampaignFilters treats empty strings as undefined", () => {
-    expect(parseCampaignFilters({ search: "   ", cursor: "" })).toEqual({
-      status: "all",
-    });
+    expect(parseCampaignFilters({ search: "   ", cursor: "" })).toEqual(empty());
   });
 
-  it("parseCampaignFilters takes the first value of a repeated param", () => {
-    expect(parseCampaignFilters({ search: ["hello", "ignored"] })).toEqual({
-      status: "all",
-      search: "hello",
-    });
+  it("parseCampaignFilters takes the first value of a repeated single param", () => {
+    expect(
+      parseCampaignFilters({ search: ["hello", "ignored"] })
+    ).toEqual({ ...empty(), search: "hello" });
   });
 
   it("serializeCampaignFilters drops defaults but keeps explicit overrides", () => {
-    expect(serializeCampaignFilters({ status: "all" }).toString()).toBe("");
+    expect(serializeCampaignFilters(empty()).toString()).toBe("");
     expect(
       serializeCampaignFilters(
-        { status: "all", search: "foo" },
+        { ...empty(), search: "foo" },
         { cursor: "cur1" }
       ).toString()
     ).toBe("search=foo&cursor=cur1");
     expect(
       serializeCampaignFilters(
-        { status: "active", search: "foo", cursor: "cur1" },
+        { ...empty(), statuses: ["active"], search: "foo", cursor: "cur1" },
         { cursor: undefined }
       ).toString()
     ).toBe("status=active&search=foo");
+    expect(
+      serializeCampaignFilters({
+        ...empty(),
+        statuses: ["active", "draft"],
+        regions: ["US", "JP"],
+        dateFrom: "2026-04-01",
+      }).toString()
+    ).toBe("status=active&status=draft&region=US&region=JP&dateFrom=2026-04-01");
   });
 
-  it("buildCampaignWhere emits a contains clause only when search present", () => {
-    expect(buildCampaignWhere({ status: "all" })).toEqual({});
-    expect(buildCampaignWhere({ status: "draft" })).toEqual({
-      status: "draft",
+  it("buildCampaignWhere composes status / search / game / region / owner / date", () => {
+    expect(buildCampaignWhere(empty())).toEqual({});
+    expect(buildCampaignWhere({ ...empty(), statuses: ["draft"] })).toEqual({
+      status: { in: ["draft"] },
     });
-    expect(buildCampaignWhere({ status: "all", search: "beta" })).toEqual({
-      name: { contains: "beta", mode: "insensitive" },
+    expect(
+      buildCampaignWhere({ ...empty(), search: "beta" })
+    ).toEqual({ name: { contains: "beta", mode: "insensitive" } });
+    expect(
+      buildCampaignWhere({
+        ...empty(),
+        games: ["Cyber-Odyssey"],
+        regions: ["US"],
+      })
+    ).toEqual({
+      game: { in: ["Cyber-Odyssey"] },
+      markets: { hasSome: ["US"] },
+    });
+    const dated = buildCampaignWhere({
+      ...empty(),
+      dateFrom: "2026-04-01",
+      dateTo: "2026-04-30",
+    });
+    expect(dated.startDate).toMatchObject({
+      gte: new Date("2026-04-01"),
+      lte: new Date("2026-04-30"),
     });
   });
 });

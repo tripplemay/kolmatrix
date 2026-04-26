@@ -36,7 +36,12 @@ type CampaignListFilters = import(
 
 let runCampaignListSearch: RunCampaignListSearch;
 
-const DEFAULT_FILTERS: CampaignListFilters = { status: "all" };
+const DEFAULT_FILTERS: CampaignListFilters = {
+  statuses: [],
+  games: [],
+  regions: [],
+  ownerIds: [],
+};
 
 beforeAll(async () => {
   await setupTestDb();
@@ -158,13 +163,15 @@ describe("runCampaignListSearch()", () => {
       statuses: ["draft", "active", "completed", "active"],
     });
     const active = await runCampaignListSearch(tenantId, {
-      status: "active",
+      ...DEFAULT_FILTERS,
+      statuses: ["active"],
     });
     expect(active.items.every((r) => r.status === "active")).toBe(true);
     expect(active.items).toHaveLength(2);
     expect(active.tenantTotalCount).toBe(4);
     const drafts = await runCampaignListSearch(tenantId, {
-      status: "draft",
+      ...DEFAULT_FILTERS,
+      statuses: ["draft"],
     });
     expect(drafts.items).toHaveLength(1);
   });
@@ -174,7 +181,7 @@ describe("runCampaignListSearch()", () => {
       names: ["Nebula Launch", "Cyber Odyssey", "nebula Expansion"],
     });
     const res = await runCampaignListSearch(tenantId, {
-      status: "all",
+      ...DEFAULT_FILTERS,
       search: "NEBULA",
     });
     expect(res.items.map((r) => r.name).sort()).toEqual([
@@ -274,7 +281,8 @@ describe("runCampaignListSearch()", () => {
       statuses: ["draft", "draft"],
     });
     const res = await runCampaignListSearch(tenantId, {
-      status: "completed",
+      ...DEFAULT_FILTERS,
+      statuses: ["completed"],
     });
     expect(res.items).toHaveLength(0);
     expect(res.tenantTotalCount).toBe(2);

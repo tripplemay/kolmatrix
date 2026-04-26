@@ -458,10 +458,36 @@
     "subtitle": "统一规划、执行并度量每一次推广。",
     "newCampaign": "新建活动",
     "summary": "{count, plural, =0 {没有符合条件的活动} other {共 # 条活动}}",
+    "header": {
+      "import": "导入",
+      "importTooltip": "CSV 导入将随 B6 上线"
+    },
+    "kpis": {
+      "activeCampaigns": "进行中活动",
+      "kolsInPipeline": "管道中的 KOL",
+      "avgReplyRate": "平均回复率",
+      "reachForecast": "粉丝总触达预估"
+    },
+    "aiSuggestions": {
+      "heading": "AI 建议",
+      "comingTag": "B2 即将上线",
+      "body": "B2 上线后，AI 会根据当前活跃活动目标，从粉丝重叠度最高的 KOL 中给出推荐。在那之前，请在 KOL 发现页手动筛选候选名单。",
+      "cta": "推荐匹配的 KOL"
+    },
     "filters": {
       "search": "搜索",
       "searchPlaceholder": "按活动名搜索…",
       "status": "状态",
+      "game": "游戏",
+      "anyGame": "全部游戏",
+      "gameTooltipEmpty": "暂无关联游戏 — 创建活动时填写「游戏」字段",
+      "region": "地区",
+      "anyRegion": "全部地区",
+      "owner": "负责人",
+      "ownerSoloTenant": "单一租户",
+      "ownerTooltip": "当租户有多个席位时启用「负责人」筛选",
+      "dateFrom": "起始日期",
+      "dateTo": "截止日期",
       "apply": "应用",
       "clearAll": "清空筛选"
     },

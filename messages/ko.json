@@ -458,10 +458,36 @@
     "subtitle": "Plan, run, and measure every outreach push.",
     "newCampaign": "New Campaign",
     "summary": "{count, plural, =0 {No campaigns match} one {# campaign} other {# campaigns}}",
+    "header": {
+      "import": "Import",
+      "importTooltip": "CSV import ships with B6"
+    },
+    "kpis": {
+      "activeCampaigns": "Active Campaigns",
+      "kolsInPipeline": "KOLs in Pipeline",
+      "avgReplyRate": "Avg Reply Rate",
+      "reachForecast": "Reach Forecast"
+    },
+    "aiSuggestions": {
+      "heading": "AI Suggestions",
+      "comingTag": "Coming with B2",
+      "body": "Once B2 ships, the matcher will surface KOLs whose audience overlap maximises your active campaign goals. For now, browse the discovery library to seed candidate lists by hand.",
+      "cta": "Suggest matching KOLs"
+    },
     "filters": {
       "search": "Search",
       "searchPlaceholder": "Search by campaign name…",
       "status": "Status",
+      "game": "Game",
+      "anyGame": "Any game",
+      "gameTooltipEmpty": "No games tracked yet — add one when you create a campaign",
+      "region": "Region",
+      "anyRegion": "Any region",
+      "owner": "Owner",
+      "ownerSoloTenant": "Solo tenant",
+      "ownerTooltip": "Owner filter activates when your tenant has multiple seats",
+      "dateFrom": "From",
+      "dateTo": "To",
       "apply": "Apply",
       "clearAll": "Clear all"
     },

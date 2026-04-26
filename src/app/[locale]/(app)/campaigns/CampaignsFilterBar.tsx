@@ -1,44 +1,73 @@
 /**
- * BM2-F003 · Campaigns list filter bar (server component).
+ * BM2-F003 + MVP-vf-F004 · Campaigns list filter strip (server component).
  *
- * Two dims only (status dropdown + search input) per spec §F003 and
- * adjudication §7 #E. URL-driven GET form — unchecked values drop out
- * of the URL, `parseCampaignFilters` reconstructs the shape on the
- * next request. Submitting resets `cursor` so the user lands back on
- * page 1 (handled implicitly by not forwarding the hidden cursor).
+ * Two horizontal rows that mirror the Stitch campaigns-list prototype:
+ *
+ *   [ All | Active | Draft | Completed ]    (status chip multi-select)
+ *   ─────────────────────────────────────────────────────────────
+ *   [ Search …… ]  [ Game ▾ ]  [ Region ▾ ]  [ Owner ▾* ]  [ Date from … to ]  [ Apply ] [ Clear ]
+ *
+ * (* Owner stays disabled in MVP solo-tenant mode — only one owner
+ * exists, so the dropdown has nothing meaningful to switch between.
+ * Date range is real and validated server-side.)
+ *
+ * URL-driven GET form. Status chips are anchor links that toggle the
+ * single chip's state without resubmitting the form, keeping the
+ * primary "Apply" button focused on text + dropdown changes.
  */
 import { getTranslations } from "next-intl/server";
 
-import { cn } from "@/lib/utils";
-
+import { ChipButton } from "@/components/common";
+import { Button, Input, Select } from "@/components/ui";
 import {
-  CAMPAIGN_STATUS_FILTER_VALUES,
-  type CampaignStatusFilter,
+  CAMPAIGN_STATUS_VALUES,
+  type CampaignStatus,
 } from "@/lib/campaigns/status";
-import type { CampaignListFilters } from "@/lib/campaigns/filters";
+import {
+  serializeCampaignFilters,
+  type CampaignListFilters,
+} from "@/lib/campaigns/filters";
+import { DISCOVERY_REGIONS } from "@/lib/kol/filters";
 
 interface Props {
   filters: CampaignListFilters;
   basePath: string;
+  /** Distinct game values seen in the tenant's campaigns — feeds the dropdown. */
+  knownGames: string[];
 }
 
-const INPUT_CLASS =
-  "h-10 w-full rounded-lg border border-outline-variant bg-surface/40 px-3 text-sm text-on-surface placeholder-slate-600 focus:border-cyan focus:outline-none focus:ring-1 focus:ring-cyan";
-
-function Label({ children }: { children: React.ReactNode }) {
-  return (
-    <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
-      {children}
-    </label>
-  );
-}
-
-export async function CampaignsFilterBar({ filters, basePath }: Props) {
+export async function CampaignsFilterBar({ filters, basePath, knownGames }: Props) {
   const t = await getTranslations("campaigns.filters");
   const tStatus = await getTranslations("campaigns.status");
+  const tRegions = await getTranslations("discovery.regions");
 
   const anyFilter =
-    Boolean(filters.search) || filters.status !== "all";
+    Boolean(filters.search) ||
+    filters.statuses.length > 0 ||
+    filters.games.length > 0 ||
+    filters.regions.length > 0 ||
+    filters.dateFrom != null ||
+    filters.dateTo != null;
+
+  // Build status chip URLs that toggle the chip on/off without losing
+  // other filters. "All" clears the status array; each named chip is a
+  // single-select link (clicking on already-pressed → clears).
+  function statusChipHref(status: CampaignStatus | "all"): string {
+    let nextStatuses: CampaignStatus[];
+    if (status === "all") {
+      nextStatuses = [];
+    } else if (filters.statuses.length === 1 && filters.statuses[0] === status) {
+      nextStatuses = [];
+    } else {
+      nextStatuses = [status];
+    }
+    const params = serializeCampaignFilters(filters, {
+      statuses: nextStatuses,
+      cursor: undefined,
+    });
+    const q = params.toString();
+    return q ? `${basePath}?${q}` : basePath;
+  }
 
   return (
     <form
@@ -46,57 +75,143 @@ export async function CampaignsFilterBar({ filters, basePath }: Props) {
       method="get"
       role="search"
       data-testid="campaigns-filters"
-      className="glass-panel flex flex-col gap-4 rounded-xl border border-on-surface/5 p-5 lg:flex-row lg:items-end lg:gap-6"
+      className="glass-panel space-y-4 rounded-xl border border-on-surface/5 p-5"
     >
-      <div className="min-w-0 flex-1 lg:max-w-md">
-        <Label>{t("search")}</Label>
-        <input
-          type="search"
-          name="search"
-          defaultValue={filters.search ?? ""}
-          placeholder={t("searchPlaceholder")}
-          maxLength={200}
-          data-testid="campaigns-search-input"
-          className={INPUT_CLASS}
-        />
+      <div
+        className="flex flex-wrap items-center gap-2"
+        data-testid="campaigns-status-chips"
+      >
+        {(["all", ...CAMPAIGN_STATUS_VALUES] as const).map((s) => {
+          const pressed =
+            s === "all"
+              ? filters.statuses.length === 0
+              : filters.statuses.length === 1 && filters.statuses[0] === s;
+          return (
+            <a
+              key={s}
+              href={statusChipHref(s)}
+              data-testid={`campaigns-status-chip-${s}`}
+              aria-current={pressed ? "true" : undefined}
+            >
+              <ChipButton pressed={pressed} type="button" tabIndex={-1}>
+                {tStatus(s)}
+              </ChipButton>
+            </a>
+          );
+        })}
       </div>
 
-      <div className="flex-1 lg:max-w-xs">
-        <Label>{t("status")}</Label>
-        <select
-          name="status"
-          defaultValue={filters.status}
-          data-testid="campaigns-status-select"
-          className={INPUT_CLASS}
-        >
-          {CAMPAIGN_STATUS_FILTER_VALUES.map((s: CampaignStatusFilter) => (
-            <option key={s} value={s}>
-              {tStatus(s)}
-            </option>
-          ))}
-        </select>
+      <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-7 lg:items-end">
+        <Field label={t("search")} className="lg:col-span-2">
+          <Input
+            type="search"
+            name="search"
+            defaultValue={filters.search ?? ""}
+            placeholder={t("searchPlaceholder")}
+            maxLength={200}
+            data-testid="campaigns-search-input"
+          />
+        </Field>
+
+        <Field label={t("game")}>
+          <Select
+            name="game"
+            defaultValue={filters.games[0] ?? ""}
+            data-testid="campaigns-game-select"
+            disabled={knownGames.length === 0}
+            title={knownGames.length === 0 ? t("gameTooltipEmpty") : undefined}
+          >
+            <option value="">{t("anyGame")}</option>
+            {knownGames.map((g) => (
+              <option key={g} value={g}>
+                {g}
+              </option>
+            ))}
+          </Select>
+        </Field>
+
+        <Field label={t("region")}>
+          <Select
+            name="region"
+            defaultValue={filters.regions[0] ?? ""}
+            data-testid="campaigns-region-select"
+          >
+            <option value="">{t("anyRegion")}</option>
+            {DISCOVERY_REGIONS.map((r) => (
+              <option key={r} value={r}>
+                {tRegions(r)}
+              </option>
+            ))}
+          </Select>
+        </Field>
+
+        <Field label={t("owner")}>
+          <Select
+            disabled
+            title={t("ownerTooltip")}
+            defaultValue=""
+            data-testid="campaigns-owner-select"
+          >
+            <option value="">{t("ownerSoloTenant")}</option>
+          </Select>
+        </Field>
+
+        <Field label={t("dateFrom")}>
+          <Input
+            type="date"
+            name="dateFrom"
+            defaultValue={filters.dateFrom ?? ""}
+            data-testid="campaigns-date-from"
+          />
+        </Field>
+
+        <Field label={t("dateTo")}>
+          <Input
+            type="date"
+            name="dateTo"
+            defaultValue={filters.dateTo ?? ""}
+            data-testid="campaigns-date-to"
+          />
+        </Field>
       </div>
 
-      <div className="flex items-end gap-2">
-        <button
-          type="submit"
-          data-testid="campaigns-filters-apply"
-          className={cn(
-            "gradient-cta h-10 rounded-lg px-5 text-sm font-bold text-on-primary shadow-[0_0_12px_rgba(0,229,255,0.2)]"
-          )}
-        >
-          {t("apply")}
-        </button>
+      <div className="flex items-center justify-end gap-2">
         {anyFilter ? (
           <a
             href={basePath}
             data-testid="campaigns-filters-clear"
-            className="flex h-10 items-center rounded-lg border border-outline-variant px-4 text-sm text-on-surface-variant transition-colors hover:border-cyan/40 hover:text-cyan"
+            className="text-xs font-medium text-on-surface-variant transition-colors hover:text-cyan"
           >
             {t("clearAll")}
           </a>
         ) : null}
+        <Button
+          type="submit"
+          variant="primary-gradient"
+          data-testid="campaigns-filters-apply"
+        >
+          {t("apply")}
+        </Button>
       </div>
     </form>
+  );
+}
+
+function Field({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={`space-y-1 ${className ?? ""}`}>
+      <span className="block text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
+        {label}
+      </span>
+      {children}
+    </div>
   );
 }
