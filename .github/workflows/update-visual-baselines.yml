@@ -85,6 +85,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Defensive: a previous run failed at this step with
+          # "pathspec 'tests/screenshots/baseline/' did not match any
+          # files" because the dir didn't exist when no PNGs were
+          # captured (run 24952605896, BM2-F011-001 first attempt).
+          # mkdir -p makes this step a no-op success in that case
+          # rather than a hard fail; the diff-quiet check below
+          # still exits cleanly when there's nothing to commit.
+          mkdir -p tests/screenshots/baseline
           git add tests/screenshots/baseline/
           if git diff --cached --quiet; then
             echo "No baseline changes — nothing to commit."
