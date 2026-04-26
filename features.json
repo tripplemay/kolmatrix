@@ -54,7 +54,7 @@
       "title": "Visual regression baselines 重捕（受 F002-F006 影响的 5-6 张）+ CI 验证",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**前置已完成（BM2 F011-001 fix-round 1 落地）：** 12 张 baseline PNG 已入 git（dashboard.png + en-{campaign-detail,campaigns,crm,database,discovery,knowledge-base,login,outreach,request-access,roi,weekly-report}.png）；CI E2E 拆 visual-first 步骤已就绪；seed deterministic（Date.UTC + LCG）已就绪；maxDiffPixels 8000（discovery 例外 viewport-only）已就绪。\n\n**本批次工作：**\n1. F002-F006 重写后必然失效的 baseline 重捕（在 GitHub Actions update-visual-baselines workflow 上跑 --update-snapshots）：\n   - en-discovery.png（F002 重写 → viewport-only 重捕）\n   - en-database.png（F003 重写 → fullPage 重捕）\n   - en-campaigns.png（F004 重写 → fullPage 重捕）\n   - en-campaign-detail.png（F005 重写 → fullPage 重捕）\n   - en-kols-detail.png（F006 新增 → fullPage 新捕）\n   - dashboard.png（**视 F001 抽 StatCard 是否影响 dashboard 决定**；如 dashboard 复用 StatCard 但样式未变 → 不重捕，跑一次 CI 看 diff < threshold 即可；如样式变化 → 重捕）\n2. 重捕后 commit 'chore(visual): regenerate baselines after MVP-visual-fidelity hotfix' 入 git\n3. CI visual-regression job PR 真跑（不再 skip），diff > maxDiffPixels 触发 fail\n4. tests/e2e/visual-regression.spec.ts 加 en-kols-detail case\n\n**Acceptance：**\n- ls tests/screenshots/baseline/*.png 至少 13 张（原 12 + 新增 en-kols-detail）\n- git ls-files tests/screenshots/baseline/*.png 全部追踪\n- CI run 全绿（typecheck / lint / unit / integration / build / E2E split + visual + 全套）\n- visual-regression.spec.ts 不含 .skip\n- discovery 仍 viewport-only 标注保持（per BM2 F011-001 fix-round 1 决议）"
     }
   ]
