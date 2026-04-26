@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "MVP-visual-fidelity-hotfix - 跨 BM1+BM2 的 5 页 UI 还原度修复 + 公共组件库抽取（F001 已落于 BM2 F006 前置）+ visual baseline 重捕。7 features，估 5-6 day。完成即 MVP 上线视觉基线达标，可发种子用户 demo。BL-013 在 building 期间作为低优先 polish 由 Generator 处理（不影响 prod，仅 staging 手动 deploy 体验改善）。",
   "total_features": 7,
-  "completed_features": 4,
+  "completed_features": 5,
   "fix_rounds": 0,
   "current_sprint": "MVP-visual-fidelity-hotfix",
-  "last_updated": "2026-04-27T01:30+0800",
+  "last_updated": "2026-04-27T02:00+0800",
   "reference_docs": [
     "docs/specs/MVP-visual-fidelity-hotfix-spec.md",
     "docs/specs/hotfix-f001-component-library-preimpl-audit.md",
