@@ -8,7 +8,7 @@
  * Coverage:
  *   - dashboard.png             — authenticated marketer `/dashboard` (F007 refresh)
  *   - en-knowledge-base.png     — authenticated `/en/knowledge-base` (F003)
- *   - en-discovery.png          — authenticated `/en/discovery` (F004, viewport-only)
+ *   - en-discovery.png          — authenticated `/en/discovery` (F004 + MVP-vf-F002, viewport-only)
  *   - en-database.png           — authenticated `/en/database` (F005)
  *   - en-login.png              — unauthenticated `/en/login` (BAux1-F004)
  *   - en-request-access.png     — unauthenticated `/en/request-access` (BAux1-F004)
