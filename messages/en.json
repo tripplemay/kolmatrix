@@ -586,6 +586,45 @@
         "noEmailable": "Add KOL emails (or invite new creators) to enable bulk outreach.",
         "cta": "Open Outreach composer"
       },
+      "insights": {
+        "emailChart": {
+          "title": "Email Performance",
+          "empty": "No email activity in the last 14 days.",
+          "contacted": "Contacted",
+          "replied": "Replied"
+        },
+        "health": {
+          "heading": "Campaign Health",
+          "spendRate": "Spend rate",
+          "spendRateAria": "Spend rate ring progress",
+          "revenueVsBudget": "Revenue / budget",
+          "closeout": "Closeout",
+          "noEndDate": "—",
+          "daysLeft": "{days, plural, =0 {Closes today} one {# day left} other {# days left}}",
+          "overdue": "{days, plural, one {# day overdue} other {# days overdue}}"
+        },
+        "ai": {
+          "heading": "AI Suggestions",
+          "nextSteps": "{count, plural, =0 {Every linked KOL is paid up — pick a new candidate from Discovery.} one {Send to # uncontacted KOL.} other {Send to # uncontacted KOLs.}}",
+          "outreachCta": "Send to uncontacted",
+          "runMatchCta": "Run AI match",
+          "runMatchTooltip": "AI matching arrives with the B2 batch"
+        },
+        "activity": {
+          "heading": "Recent Activity",
+          "empty": "No campaign activity yet.",
+          "actions": {
+            "campaign.created": "Campaign created",
+            "campaign.kol.added": "KOL added",
+            "campaign.kol.removed": "KOL removed",
+            "campaign.kol.fee_updated": "KOL fee updated",
+            "campaign.kol.status_changed": "KOL status changed",
+            "campaign.status_changed": "Campaign status changed",
+            "campaign.revenue_recorded": "Revenue recorded",
+            "kol.bulk_added_to_campaign": "KOLs bulk-added"
+          }
+        }
+      },
       "errors": {
         "endBeforeStart": "End date cannot be before the start date.",
         "validationFailed": "Some fields are invalid. Please check and try again.",

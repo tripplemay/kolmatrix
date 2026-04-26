@@ -6,6 +6,7 @@
  */
 import { useState, useTransition } from "react";
 
+import { Button, Input } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 import { updateCampaignFieldsAction } from "./actions";
@@ -45,9 +46,6 @@ interface Props {
   };
   labels: Labels;
 }
-
-const INPUT_CLASS =
-  "h-10 w-full rounded-lg border border-outline-variant bg-surface/40 px-3 text-sm text-on-surface placeholder-slate-600 focus:border-cyan focus:outline-none focus:ring-1 focus:ring-cyan";
 
 function formatCurrency(n: number | null): string {
   if (n == null) return "—";
@@ -128,11 +126,12 @@ export function CampaignHeader({ campaign, labels }: Props) {
           </div>
         </div>
 
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => setEditing((v) => !v)}
           data-testid="campaign-header-edit-toggle"
-          className="flex items-center gap-1 rounded-lg border border-outline-variant px-4 py-2 text-sm text-on-surface-variant transition-colors hover:border-cyan/40 hover:text-cyan"
         >
           <span
             className="material-symbols-outlined text-[18px]"
@@ -141,7 +140,7 @@ export function CampaignHeader({ campaign, labels }: Props) {
             {editing ? "close" : "edit"}
           </span>
           {editing ? labels.cancel : labels.edit}
-        </button>
+        </Button>
       </div>
 
       {editing ? (
@@ -152,17 +151,16 @@ export function CampaignHeader({ campaign, labels }: Props) {
         >
           <input type="hidden" name="campaignId" value={campaign.id} />
           <Labeled label={labels.fields.name}>
-            <input
+            <Input
               type="text"
               name="name"
               defaultValue={campaign.name}
               maxLength={80}
-              className={INPUT_CLASS}
               data-testid="campaign-header-name-input"
             />
           </Labeled>
           <Labeled label={labels.fields.budget}>
-            <input
+            <Input
               type="text"
               inputMode="decimal"
               name="budgetAmount"
@@ -172,12 +170,11 @@ export function CampaignHeader({ campaign, labels }: Props) {
                   : String(campaign.budgetAmount)
               }
               placeholder="10000.00"
-              className={INPUT_CLASS}
               data-testid="campaign-header-budget-input"
             />
           </Labeled>
           <Labeled label={labels.fields.startDate}>
-            <input
+            <Input
               type="date"
               name="startDate"
               defaultValue={
@@ -185,26 +182,23 @@ export function CampaignHeader({ campaign, labels }: Props) {
                   ? campaign.startDate.slice(0, 10)
                   : ""
               }
-              className={INPUT_CLASS}
             />
           </Labeled>
           <Labeled label={labels.fields.endDate}>
-            <input
+            <Input
               type="date"
               name="endDate"
               defaultValue={
                 campaign.endDate ? campaign.endDate.slice(0, 10) : ""
               }
-              className={INPUT_CLASS}
             />
           </Labeled>
           <Labeled label={labels.fields.game} className="md:col-span-2">
-            <input
+            <Input
               type="text"
               name="game"
               defaultValue={campaign.game ?? ""}
               maxLength={80}
-              className={INPUT_CLASS}
             />
           </Labeled>
 
@@ -218,25 +212,24 @@ export function CampaignHeader({ campaign, labels }: Props) {
           ) : null}
 
           <div className="flex justify-end gap-2 md:col-span-2">
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setEditing(false)}
               disabled={pending}
-              className="rounded-lg border border-outline-variant px-4 py-1.5 text-xs text-on-surface-variant hover:border-cyan/40 hover:text-cyan disabled:opacity-60"
             >
               {labels.cancel}
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              variant="primary-gradient"
+              size="sm"
               disabled={pending}
               data-testid="campaign-header-save"
-              className={cn(
-                "gradient-cta rounded-lg px-4 py-1.5 text-xs font-bold text-on-primary",
-                pending && "cursor-not-allowed opacity-70"
-              )}
             >
               {pending ? `${labels.save}…` : labels.save}
-            </button>
+            </Button>
           </div>
         </form>
       ) : null}

@@ -587,6 +587,45 @@
         ,
         "cta": "打开触达编辑"
       },
+      "insights": {
+        "emailChart": {
+          "title": "邮件表现",
+          "empty": "近 14 天暂无邮件活动。",
+          "contacted": "已触达",
+          "replied": "已回复"
+        },
+        "health": {
+          "heading": "活动健康度",
+          "spendRate": "预算消耗率",
+          "spendRateAria": "预算消耗率环形进度",
+          "revenueVsBudget": "营收 / 预算",
+          "closeout": "结案倒计时",
+          "noEndDate": "—",
+          "daysLeft": "{days, plural, =0 {今日结案} other {还剩 # 天}}",
+          "overdue": "已逾期 {days} 天"
+        },
+        "ai": {
+          "heading": "AI 建议",
+          "nextSteps": "{count, plural, =0 {当前活动 KOL 已结款，请前往 KOL 发现挑选新候选。} other {可对 # 位未触达 KOL 发起触达。}}",
+          "outreachCta": "向未触达 KOL 发邮件",
+          "runMatchCta": "运行 AI 匹配",
+          "runMatchTooltip": "AI 匹配将随 B2 批次上线"
+        },
+        "activity": {
+          "heading": "最近动态",
+          "empty": "尚无活动动态。",
+          "actions": {
+            "campaign.created": "活动创建",
+            "campaign.kol.added": "新增 KOL",
+            "campaign.kol.removed": "移除 KOL",
+            "campaign.kol.fee_updated": "KOL 报价更新",
+            "campaign.kol.status_changed": "KOL 状态变更",
+            "campaign.status_changed": "活动状态变更",
+            "campaign.revenue_recorded": "录入营收",
+            "kol.bulk_added_to_campaign": "批量加入 KOL"
+          }
+        }
+      },
       "errors": {
         "endBeforeStart": "结束日期不能早于开始日期。",
         "validationFailed": "部分字段不合法，请检查后重试。",
