@@ -40,6 +40,29 @@ describe("deriveActiveNav", () => {
     expect(deriveActiveNav("/es/settings")).toBe("settings");
   });
 
+  it("routes BM2 implemented surfaces to the correct sidebar item (NAV-003 regression)", () => {
+    // BM2-F006 outreach page is the canonical Email Center entry;
+    // sidebar Email Center now hrefs /outreach. /emails (legacy) and
+    // /crm (BM2-F007) must still highlight Email Center.
+    expect(deriveActiveNav("/en/outreach")).toBe("email-center");
+    expect(deriveActiveNav("/zh/outreach")).toBe("email-center");
+    expect(deriveActiveNav("/en/crm")).toBe("email-center");
+    expect(deriveActiveNav("/en/emails")).toBe("email-center");
+    // BM2-F009 ROI is the canonical Analytics entry; Analytics
+    // sidebar now hrefs /roi. /analytics (legacy) + /weekly-report
+    // (BM2-F010) keep highlighting Analytics.
+    expect(deriveActiveNav("/en/roi")).toBe("analytics");
+    expect(deriveActiveNav("/en/analytics")).toBe("analytics");
+    expect(deriveActiveNav("/en/weekly-report")).toBe("analytics");
+  });
+
+  it("Email Center href targets implemented BM2 surface, not 404 (NAV-003 regression)", () => {
+    const emailCenter = NAV_ITEMS.find((n) => n.id === "email-center");
+    const analytics = NAV_ITEMS.find((n) => n.id === "analytics");
+    expect(emailCenter?.href).toBe("/outreach");
+    expect(analytics?.href).toBe("/roi");
+  });
+
   it("resolves /knowledge-base to the Knowledge Base nav", () => {
     expect(deriveActiveNav("/en/knowledge-base")).toBe("knowledge-base");
     expect(deriveActiveNav("/zh/knowledge-base")).toBe("knowledge-base");

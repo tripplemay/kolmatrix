@@ -16,6 +16,8 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 
+import { seedSystemTemplates } from "../scripts/seed-email-templates";
+
 // Seed bootstraps the first tenant, so it needs to write before any
 // tenant context exists. Use the admin URL (superuser) so RLS is bypassed.
 const connectionString = process.env.DATABASE_ADMIN_URL ?? process.env.DATABASE_URL;
@@ -361,11 +363,14 @@ async function main() {
 
   // BM2-F001: email_template table was rebuilt (DROP + CREATE) with a
   // new shape (tenantId nullable → system/user split, single `body`
-  // column, `type` column instead of `category`). The B0 tenant-scoped
-  // seed rows that used to live here are superseded by the dedicated
-  // BM2-F002 seed (scripts/seed-email-templates.ts) that plants 10
-  // system templates (5 × en/zh). Nothing to seed from this script.
-  const seededTemplateCount = 0;
+  // column, `type` column instead of `category`). System templates
+  // live in scripts/seed-email-templates.ts (5 categories × en/zh =
+  // 10 rows). Chain-run it from `prisma db seed` so the official
+  // codex-setup.sh path produces a database where /en/outreach
+  // template selector has options (BM2-F006 dependency, fix for
+  // verifying-2026-04-26 BM2-F006-002).
+  const templateStats = await seedSystemTemplates();
+  const seededTemplateCount = templateStats.total;
 
   // ----- Email logs (F007 Dashboard KPI + chart) -----
   // Idempotent: clear prior seeded logs for this tenant before repopulating so

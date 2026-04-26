@@ -47,7 +47,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     id: "email-center",
-    href: "/emails",
+    href: "/outreach",
     label: "Email Center",
     i18nKey: "nav.emailCenter",
     icon: "forward_to_inbox",
@@ -61,7 +61,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     id: "analytics",
-    href: "/analytics",
+    href: "/roi",
     label: "Analytics",
     i18nKey: "nav.analytics",
     icon: "query_stats",
@@ -81,8 +81,16 @@ export function deriveActiveNav(pathname: string): NavItemId {
   if (path.startsWith("/database")) return "kol-database";
   if (path.startsWith("/kols")) return "kol-database";
   if (path.startsWith("/campaigns")) return "campaigns";
+  // Email Center primary route is /outreach (BM2-F006). /emails and
+  // /crm are kept here so any direct-URL or legacy entrypoints still
+  // light the correct sidebar item.
+  if (path.startsWith("/outreach")) return "email-center";
   if (path.startsWith("/emails")) return "email-center";
+  if (path.startsWith("/crm")) return "email-center";
   if (path.startsWith("/knowledge-base")) return "knowledge-base";
+  // Analytics primary route is /roi (BM2-F009). /analytics is kept
+  // for any legacy URL inbound; /weekly-report (BM2-F010) is part of
+  // the same surface area.
   if (path.startsWith("/analytics")) return "analytics";
   if (path.startsWith("/roi")) return "analytics";
   if (path.startsWith("/weekly-report")) return "analytics";
