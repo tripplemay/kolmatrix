@@ -30,7 +30,7 @@
       "title": "/campaigns 列表重写（KPI strip + 7 filter 维度 + AI Suggestions panel）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "重写 src/app/[locale]/(app)/campaigns/page.tsx + CampaignsFilterBar.tsx 对照 design-draft/stitch-references/campaigns-list.html（浏览器渲染）。\n\n**必用公共组件：** <StatCard> ×4（KPI strip）/ <Table> + <TRow> + <TCell> / <ChipButton pressed>（status filter chips 多选）/ <Select>（Game/Region/Owner/Date）/ <StatusBadge domain=\"campaign\"> / <Button>（'新建 Campaign' CTA）\n\n**不得简化的元素：**\n- Top KPI strip 4 cards：Active Campaigns（DB 真查）/ KOLs in Pipeline（Σ KolCampaign.status NOT IN (terminated,paid)）/ Avg Reply Rate（BM2 F006 已落地，可真算 EmailLog.status='replied'/total；如无邮件硬编 '—'）/ Reach Forecast（Σ KOL.followers WHERE KolCampaign.campaignId IN active）\n- Status filter chips：All / Active / Draft / Paused / Completed（多选 ChipButton pressed，不是单选 dropdown）\n- 附加 filter：Game / Region / Owner / Date range（4 dropdowns）\n- AI Suggestions panel（左下角小卡，硬编 'Suggest matching KOLs - Coming in /discovery' 跳转链接）\n\n**幽灵控件处理：**\n- Owner filter（Solo tenant MVP）→ disabled tooltip 'Solo tenant mode'\n- Date range → 真功能（zod schema 校验 + URL param）\n\n**Acceptance：**\n- KPI strip 4 卡 render（Active count + KOLs Pipeline + Reply Rate 真算或硬编 '—' + Reach Forecast 计算）\n- 7 filter 维度全部工作（status chips multi-select + 4 dropdown）\n- AI Suggestions 卡片可点跳 /discovery\n- tests/integration/campaigns-list-filter.test.ts 7 filter 组合查询\n- tests/screenshots/baseline/en-campaigns.png 重捕\n- 单文件 className=\"...\" < 20 处"
     },
     {
