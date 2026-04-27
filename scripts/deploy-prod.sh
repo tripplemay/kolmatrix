@@ -57,9 +57,11 @@ npx prisma migrate deploy
 
 echo "── 6/8  next build"
 # Node default old-gen heap is 2 GB; the TypeScript-check pass on the
-# current codebase + Next 16 Turbopack pipeline OOMs at ~2 GB. Same
-# fix verified on staging redeploy 2026-04-27.
-NODE_OPTIONS="--max-old-space-size=4096" npm run build
+# current codebase + Next 16 Turbopack pipeline OOMs at ~2 GB.
+# NODE_OPTIONS prefix didn't reach Next's worker fork through
+# appleboy/ssh-action; invoke node directly so --max-old-space-size
+# lands in the parent's execArgv and child workers inherit it.
+node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build
 
 echo "── 7/8  pm2 reload kolmatrix (zero-downtime)"
 pm2 reload kolmatrix --update-env
