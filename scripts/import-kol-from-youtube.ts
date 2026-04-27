@@ -270,15 +270,21 @@ export async function runImport(
 export function createPrismaImportClient(prisma: PrismaClient): ImportClient {
   return {
     async upsertKol(tenantId, row, now) {
+      // Spec calls for dedupe by (tenantId, platform, externalId) —
+      // YouTube channel.id is the permanent identifier; the handle is
+      // mutable (creators rename their @customUrl) and would silently
+      // create duplicate rows if used as the upsert key. The migration
+      // 20260427230000_kol_external_id_unique adds the matching unique
+      // constraint behind this lookup.
       const existing = await prisma.kol.findUnique({
         where: {
-          tenantId_platform_handle: {
+          tenantId_platform_externalId: {
             tenantId,
             platform: row.platform,
-            handle: row.handle,
+            externalId: row.externalId,
           },
         },
-        select: { id: true },
+        select: { id: true, handle: true },
       });
       const data = {
         displayName: row.displayName,
@@ -290,6 +296,9 @@ export function createPrismaImportClient(prisma: PrismaClient): ImportClient {
         avgViews: row.avgViews,
         categories: row.categories,
         isGaming: row.isGaming,
+        // Track the latest handle each pass — channels rename, and the
+        // canonical column should follow.
+        handle: row.handle,
         externalId: row.externalId,
         metadata: row.metadata,
         valueScore: row.valueScore,
@@ -297,16 +306,15 @@ export function createPrismaImportClient(prisma: PrismaClient): ImportClient {
       };
       await prisma.kol.upsert({
         where: {
-          tenantId_platform_handle: {
+          tenantId_platform_externalId: {
             tenantId,
             platform: row.platform,
-            handle: row.handle,
+            externalId: row.externalId,
           },
         },
         create: {
           tenantId,
           platform: row.platform,
-          handle: row.handle,
           ...data,
         },
         update: data,

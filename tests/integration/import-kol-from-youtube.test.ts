@@ -162,6 +162,37 @@ describe("runImport (live Prisma)", () => {
     expect(count2).toBe(3);
   });
 
+  it("dedupes by externalId — handle change updates the existing row, no duplicate", async () => {
+    const admin = getAdminPrisma();
+    const tenant = await admin.tenant.create({
+      data: { name: "Rename Tenant", slug: `rename-${Date.now()}` },
+    });
+    const client = createPrismaImportClient(admin);
+
+    // First pass — channel published as @oldname.
+    const before = fakeChannel("UC_renamed", { handle: "@oldname" });
+    const stats1 = await runImport([before], tenant.id, client);
+    expect(stats1).toMatchObject({ inserted: 1, updated: 0 });
+
+    // Second pass — same channel.id, but the creator renamed to
+    // @newname. Under the old (tenantId, platform, handle) key this
+    // would have inserted a second row; with the externalId key it
+    // updates the existing row and the handle column moves to
+    // @newname.
+    const after = fakeChannel("UC_renamed", {
+      handle: "@newname",
+      subscriberCount: 300_000,
+    });
+    const stats2 = await runImport([after], tenant.id, client);
+    expect(stats2).toMatchObject({ inserted: 0, updated: 1 });
+
+    const rows = await admin.kol.findMany({ where: { tenantId: tenant.id } });
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.handle).toBe("@newname");
+    expect(rows[0]!.externalId).toBe("UC_renamed");
+    expect(rows[0]!.followerCount).toBe(300_000);
+  });
+
   it("isolates the imported rows under RLS", async () => {
     const admin = getAdminPrisma();
     const app = getAppPrisma();

@@ -178,6 +178,11 @@ model Kol {
   emailLogs    EmailLog[]
 
   @@unique([tenantId, platform, handle])
+  // MVP-kol-seed-redo F003 fix-round 1 — channel-id-based dedupe key.
+  // YouTube channel.id is permanent; handle is mutable. Both
+  // constraints stay live so legacy lookups (UI / search) keep
+  // working while the YouTube import upserts on the stable id.
+  @@unique([tenantId, platform, externalId], map: "kol_tenantId_platform_externalId_key")
   @@index([tenantId, aiScore(sort: Desc)])
   @@index([tenantId, platform, followerCount])
   @@index([tenantId, isGaming, valueScore(sort: Desc)], map: "kol_tenant_gaming_value_idx")
