@@ -1,0 +1,129 @@
+/**
+ * MVP-vf-F002 · /discovery prototype-fidelity E2E.
+ *
+ * Asserts the Stitch "不得简化的元素" list against a real authenticated
+ * render of /en/discovery. Source-level static greps live alongside
+ * the page (`src/app/[locale]/(app)/discovery/__tests__/discovery-
+ * fidelity.test.ts`) and run in milliseconds; this spec is the
+ * end-to-end proof that the same markers actually mount in a
+ * Playwright-driven browser.
+ *
+ * BM1-F009 / BM2 F011-001 lessons: never `waitForLoadState
+ * ("networkidle")`; rely on `expect(locator).toBeVisible()` auto-wait.
+ */
+import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
+
+const MARKETER = {
+  email: "marketer@kolmatrix.local",
+  password: "KOLM@2026!",
+};
+
+async function login(page: Page) {
+  await page.goto("/login");
+  await page.locator('input[name="email"]').fill(MARKETER.email);
+  await page.locator('input[name="password"]').fill(MARKETER.password);
+  await page.getByRole("button", { name: /Sign in/ }).click();
+  await page.waitForURL(/\/(en|zh|ja|ko|es)\/dashboard(\/|$)/);
+}
+
+test.describe("/discovery fidelity (MVP-vf-F002)", () => {
+  test.beforeEach(async ({ page }) => {
+    await login(page);
+    await page.goto("/en/discovery");
+    await expect(page.getByTestId("discovery-grid")).toBeVisible({
+      timeout: 15_000,
+    });
+  });
+
+  test("AI Smart Match CTA is visible and disabled with a B2 tooltip", async ({
+    page,
+  }) => {
+    const button = page.getByTestId("ai-smart-match-button");
+    await expect(button).toBeVisible();
+    await expect(button).toBeDisabled();
+    // Tooltip is delivered via `title=` attribute (no JS hover required).
+    const title = await button.getAttribute("title");
+    expect(title, "ai-smart-match-button title attr").toBeTruthy();
+    expect(title!.toLowerCase()).toMatch(/b2|coming/);
+  });
+
+  test("Save Search placeholder is visible and disabled (no ghost control)", async ({
+    page,
+  }) => {
+    const button = page.getByTestId("save-search-button");
+    await expect(button).toBeVisible();
+    await expect(button).toBeDisabled();
+    const title = await button.getAttribute("title");
+    expect(title, "save-search-button title attr").toBeTruthy();
+  });
+
+  test("main search bar surfaces platform selector + search input + AI chips", async ({
+    page,
+  }) => {
+    await expect(page.getByTestId("discovery-search-bar")).toBeVisible();
+    await expect(page.getByTestId("search-platform-select")).toBeVisible();
+    await expect(page.getByTestId("search-main-input")).toBeVisible();
+    // Three pre-filled AI suggestion chips
+    await expect(page.getByTestId("ai-chip-1")).toBeVisible();
+    await expect(page.getByTestId("ai-chip-2")).toBeVisible();
+    await expect(page.getByTestId("ai-chip-3")).toBeVisible();
+  });
+
+  test("Grid/List view toggle is wired to the ?view URL param", async ({
+    page,
+  }) => {
+    const toggle = page.getByTestId("discovery-view-toggle");
+    await expect(toggle).toBeVisible();
+    const grid = page.getByTestId("view-grid");
+    const list = page.getByTestId("view-list");
+    await expect(grid).toBeVisible();
+    await expect(list).toBeVisible();
+    // Default state: grid is the current view.
+    await expect(grid).toHaveAttribute("aria-current", "true");
+
+    // Click into list view via its href link.
+    await list.click();
+    await page.waitForURL(/[?&]view=list/);
+    await expect(page.getByTestId("view-list")).toHaveAttribute(
+      "aria-current",
+      "true"
+    );
+  });
+
+  test("Active Filter chip click clears that single filter", async ({
+    page,
+  }) => {
+    // Apply a single platform filter via URL so the test is self-contained
+    // (the form submit dance would re-render twice).
+    await page.goto("/en/discovery?platforms=youtube");
+    await expect(page.getByTestId("discovery-grid")).toBeVisible({
+      timeout: 15_000,
+    });
+
+    const activeBar = page.getByTestId("discovery-active-filters");
+    await expect(activeBar).toBeVisible();
+    const chip = page.getByTestId("active-filter-chip-platform-youtube");
+    await expect(chip).toBeVisible();
+    await chip.click();
+
+    // Clicking the chip is a plain anchor → /discovery without that
+    // platform param. Wait for the URL to drop the platforms key.
+    await page.waitForURL((url) => !/[?&]platforms=/.test(url.toString()), {
+      timeout: 15_000,
+    });
+    await expect(
+      page.getByTestId("active-filter-chip-platform-youtube")
+    ).toHaveCount(0);
+  });
+
+  test("result grid uses xl:grid-cols-4 (per F002 acceptance, not 3)", async ({
+    page,
+  }) => {
+    const grid = page.getByTestId("discovery-grid");
+    const className = await grid.getAttribute("class");
+    expect(className, "discovery-grid class").toBeTruthy();
+    expect(className!).toContain("xl:grid-cols-4");
+    expect(className!).not.toContain("xl:grid-cols-3");
+  });
+});
