@@ -6,7 +6,7 @@
       "title": "Sync Worker 通用接口（KolSyncAdapter trait + Dispatcher）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**新建 src/lib/kol-sync/types.ts：** KolSyncAdapter interface（name/source/discover/refresh/healthCheck）+ SyncParams + RawKolData types\n\n**新建 src/lib/kol-sync/dispatcher.ts：** KolSyncDispatcher class，runDailySync + runRefresh，支持多 adapter 注册\n\n**目的：** 不直接调 YouTube API；通过 adapter 抽象，6 月可加 CrawlerTeamAdapter 替换。\n\n**Acceptance：**\n- types + dispatcher + 1 个 mock adapter\n- tests/unit/kol-sync-dispatcher.test.ts 5 fixture（adapter 注册 / dispatch / health / fail handling / multi-adapter）\n- 详见 docs/specs/B6-kol-daily-sync-spec.md §F001"
     },
     {
