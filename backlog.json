@@ -1,27 +1,5 @@
 [
   {
-    "id": "BL-013",
-    "title": "Build-time PostCSS deps 在 NODE_ENV=production 下 npm ci 漏装（仅 staging 手动 deploy 影响，prod 已用 --production=false 不受影响）",
-    "description": "2026-04-26 22:00 Planner 在 staging deploy main eb36bdd 时发现：staging .env.staging 设了 NODE_ENV=production；执行 `npm ci`（默认 --omit=dev）→ 漏装 `@tailwindcss/postcss` + `tailwindcss`（两者都在 devDependencies）→ `next build` 报 'Cannot find module @tailwindcss/postcss' fail。Planner 临时绕过：`npm ci --include=dev` 重装后 build 成功。\n\n**2026-04-27 Planner 修正之前的 prod 风险误判：**\n- scripts/deploy-prod.sh L53 已经用 `npm ci --production=false`（等价 --include=dev）\n- **prod deploy 不受 BL-013 影响**，可以立即触发\n- BL-013 仅影响 staging 手动 deploy 体验（runbook §5 命令未带 --include=dev）\n- 优先级降到 medium（之前误判为 high P0）\n\n**方案对比：**\n- **方案 A（推荐）：** 修 package.json 把 `@tailwindcss/postcss` + `tailwindcss` 从 devDependencies 移到 dependencies。理由：staging/prod 命令统一 + 与 Next.js 16 + Tailwind v4 官方模板一致 + 1 行改动。代价：production node_modules 多 ~30MB（可接受）。\n- **方案 B：** 改 staging deploy 流程或 runbook 文档，明示 `npm ci --include=dev`（同 prod 做法）。理由：保 devDeps 语义正确。代价：runbook 改动；BL-004 staging-automation 实施时也要这么改。\n- **方案 C：** staging/prod 改 NODE_ENV=staging（自定义）。**不推荐**：影响 next.js 优化 + 其他工具识别。\n\n**Planner 建议（修正后）：方案 A 仍推荐**，但优先级是 polish 级别（hotfix building 间隙做 / 或并入 BIx-staging-automation 批次统一处理）。不阻塞 prod deploy。",
-    "decisions": [
-      "方案 A 推荐（package.json 1 行 + lockfile）",
-      "由 Generator (johnsong) 接手；不得 Planner 越界",
-      "[修正] 不阻塞 prod deploy（prod 已 --production=false）",
-      "时机：hotfix F001 残余之后 polish，或并入 BIx-staging-automation 批次"
-    ],
-    "confirmed_at": "2026-04-26T22:10+0800",
-    "priority": "medium",
-    "tags": [
-      "deploy",
-      "build",
-      "deps",
-      "production-risk"
-    ],
-    "discovered_in": "Planner staging deploy 2026-04-26 BM2 L2 prep",
-    "priority_changed_at": "2026-04-27T08:00+0800",
-    "priority_change_reason": "Planner 重读 scripts/deploy-prod.sh L53 发现 prod 已用 --production=false，prod 不受影响"
-  },
-  {
     "id": "BL-001",
     "title": "BM1 F002 seed:kol 脚本缺失 dotenv 自动加载",
     "description": "scripts/seed-kol-from-enriched.ts line 31+ 直接读 process.env.DATABASE_ADMIN_URL/DATABASE_URL，但脚本开头未 `import 'dotenv/config';`。`npm run seed:kol` 独立跑时环境变量不加载导致抛错 \"DATABASE_ADMIN_URL must be set\"。Workaround：`set -a && source .env && set +a && npm run seed:kol`。Fix：脚本第一行加 `import 'dotenv/config';`（2 行改动）。2026-04-23 Planner staging deploy 时发现。",

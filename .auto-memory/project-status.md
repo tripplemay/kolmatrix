@@ -4,19 +4,26 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **MVP-visual-fidelity-hotfix** ✅ done（2026-04-27 Reviewer 复验签收），7/7，fix_rounds=1
+- **MVP-visual-fidelity-hotfix** ✅ done（2026-04-27 Reviewer 签收 + Planner 收尾完成），7/7，fix_rounds=1
 - signoff：`docs/test-reports/MVP-visual-fidelity-hotfix-signoff-2026-04-27.md`
+- L1 + L2 staging 全 PASS（E2E 20 PASS / visual 13 skip Linux-canonical）
+- Stitch 还原度 🟢 通过
+- BL-013 由 Generator 顺手修复（commits 05682cd + 0f688d2），backlog 已关闭
 
-## 复验结论
-- 上轮 4 项阻断全部闭环：
-  - discovery/database fidelity E2E 文件已补齐并通过
-  - campaigns-list-filter / campaign-detail-rsc-boundary integration 文件按 acceptance 对齐并通过
-- L1：typecheck/lint + 目标 unit/integration 全 PASS
-- L2 staging：preflight healthy（git_sha=406599f），E2E 20 PASS
-
-## 视觉验收说明
-- visual-regression 在当前执行节点按 Linux-canonical 策略 skip 13（非 Linux）
-- baseline in git 结构与相关守门测试已通过，像素 diff 以 Linux runner 为准
+## ⚠️ Prod 与最新 main 不同步（待用户决定）
+- HEAD = f2a5c66（hotfix done signoff）
+- prod = 0f688d2（BL-013 followup，hotfix UI 重写之前）
+- 建议用户立即触发 prod deploy 部署 f2a5c66（否则种子用户看到旧 UI）
 
 ## MVP 状态
-- BM1 + BM2 + MVP-visual-fidelity 均已签收，可用于种子用户 demo
+- BM1 + BM2 + MVP-visual-fidelity 均已签收，4 大能力可用于种子用户 demo
+
+## 下一批次候选（spec 已 decisions-locked，等用户启动信号）
+- MVP-prod-launch-smoke micro-batch（半天，Reviewer）
+- MVP-seed-demo-prep（4 features，2-2.5 day）
+- BIx-staging-automation（demo done 立即，5 features，2.5 day）
+- B4-extended-email-system（MVP 上线 4 周后 trigger 触发分阶段做）
+
+## 角色分配
+- 默认（无 role_assignments）= CLI Planner+Generator / Codex Evaluator
+- 上次批次：planner=Kimi / generator=johnsong / evaluator=Reviewer
