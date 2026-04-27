@@ -101,10 +101,11 @@ describe("findUntranslated", () => {
 });
 
 describe("extractTokens", () => {
-  it("captures multiple placeholders", () => {
+  it("captures multiple simple placeholders", () => {
     expect(extractTokens("Hi {name}, you have {count} alerts.")).toEqual({
       placeholders: ["{count}", "{name}"],
       tags: [],
+      icuShape: [],
     });
   });
 
@@ -112,15 +113,23 @@ describe("extractTokens", () => {
     expect(extractTokens("<accent>{count}</accent><br></br>")).toEqual({
       placeholders: ["{count}"],
       tags: ["</accent>", "</br>", "<accent>", "<br>"],
+      icuShape: [],
     });
   });
 
-  it("captures ICU plural blocks as single placeholder tokens", () => {
+  it("captures ICU plural shape (var + branch keys) without inner text", () => {
     const t = extractTokens(
       "{count, plural, one {# saved KOL} other {# saved KOLs}}"
     );
-    expect(t.placeholders.length).toBeGreaterThanOrEqual(1);
-    expect(t.placeholders[0]).toContain("count, plural");
+    expect(t.placeholders).toEqual([]);
+    expect(t.icuShape).toEqual(["count|plural|one,other"]);
+  });
+
+  it("captures ICU branches with =0 and other", () => {
+    const t = extractTokens(
+      "{count, plural, =0 {No matches} one {# match} other {# matches}}"
+    );
+    expect(t.icuShape).toEqual(["count|plural|=0,one,other"]);
   });
 });
 
@@ -147,6 +156,24 @@ describe("validateTokenPreservation", () => {
     );
     expect(r.ok).toBe(false);
     expect("reason" in r && r.reason).toMatch(/HTML tag mismatch/);
+  });
+
+  it("permits ICU plural inner-text translation when shape matches", () => {
+    expect(
+      validateTokenPreservation(
+        "{count, plural, one {# email template} other {# email templates}}",
+        "{count, plural, one {# 件のメールテンプレート} other {# 件のメールテンプレート}}"
+      )
+    ).toEqual({ ok: true });
+  });
+
+  it("flags ICU plural shape change (e.g., dropped branch)", () => {
+    const r = validateTokenPreservation(
+      "{count, plural, =0 {none} one {# x} other {# xs}}",
+      "{count, plural, one {# x} other {# xs}}"
+    );
+    expect(r.ok).toBe(false);
+    expect("reason" in r && r.reason).toMatch(/ICU plural shape mismatch/);
   });
 });
 

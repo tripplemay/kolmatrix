@@ -198,13 +198,42 @@ export function findUntranslated(
 // Placeholder + HTML tag preservation validation
 // ---------------------------------------------------------------------
 
-const PLACEHOLDER_RE = /\{[a-zA-Z_][a-zA-Z0-9_]*[^}]*\}/g;
+// Simple placeholders only ({name}, {count}). ICU plural blocks
+// ({count, plural, one {…} other {…}}) are handled separately because
+// the original regex captured them partially and rejected legitimate
+// translations like "one {# email template}" vs "one {# 件のメール
+// テンプレート}". We instead extract the *plural variable name* and
+// branch keywords from each ICU block, leaving the human-text inside
+// {…} branches free to be translated.
+const SIMPLE_PLACEHOLDER_RE = /\{[a-zA-Z_][a-zA-Z0-9_]*\}/g;
 const HTML_TAG_RE = /<\/?[a-zA-Z][a-zA-Z0-9-]*(?:\s+[^<>]*)?\/?>/g;
+const ICU_PLURAL_RE = /\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*,\s*(plural|select|selectordinal)\s*,([^]*?)\}\s*\}/g;
+const ICU_BRANCH_KEYS_RE = /(=\d+|zero|one|two|few|many|other|[a-zA-Z]+)\s*\{/g;
 
-export function extractTokens(s: string): { placeholders: string[]; tags: string[] } {
+export function extractTokens(s: string): {
+  placeholders: string[];
+  tags: string[];
+  icuShape: string[];
+} {
+  const icuShape: string[] = [];
+  // Pull each ICU plural/select block out of the string before
+  // matching simple placeholders, so the inner {var} of e.g.
+  // {count, plural, one {# X}} doesn't double-count.
+  let stripped = s;
+  for (const m of s.matchAll(ICU_PLURAL_RE)) {
+    const varName = m[1] ?? "";
+    const kind = m[2] ?? "";
+    const body = m[3] ?? "";
+    const branchKeys = (body.match(ICU_BRANCH_KEYS_RE) ?? [])
+      .map((b) => b.replace(/\s*\{$/, ""))
+      .sort();
+    icuShape.push(`${varName}|${kind}|${branchKeys.join(",")}`);
+    stripped = stripped.replace(m[0]!, "");
+  }
   return {
-    placeholders: (s.match(PLACEHOLDER_RE) ?? []).slice().sort(),
+    placeholders: (stripped.match(SIMPLE_PLACEHOLDER_RE) ?? []).slice().sort(),
     tags: (s.match(HTML_TAG_RE) ?? []).slice().sort(),
+    icuShape: icuShape.sort(),
   };
 }
 
@@ -226,6 +255,12 @@ export function validateTokenPreservation(
       reason: `HTML tag mismatch: source=${JSON.stringify(src.tags)} translated=${JSON.stringify(tgt.tags)}`,
     };
   }
+  if (JSON.stringify(src.icuShape) !== JSON.stringify(tgt.icuShape)) {
+    return {
+      ok: false,
+      reason: `ICU plural shape mismatch: source=${JSON.stringify(src.icuShape)} translated=${JSON.stringify(tgt.icuShape)}`,
+    };
+  }
   return { ok: true };
 }
 
@@ -244,7 +279,11 @@ interface SectionBundle {
 export function buildSectionBundles(
   en: JsonObject,
   untranslated: Leaf[],
-  maxLeavesPerBundle = 200
+  // doubao-pro on a 50-leaf payload averages ~30 s per call; bigger
+  // sections (campaigns: 171, outreach: 117) reliably blow the
+  // 90 s request timeout on F003 ja's first run. Cap small enough
+  // that every section completes inside the 180 s timeout below.
+  maxLeavesPerBundle = 60
 ): SectionBundle[] {
   const bySection = new Map<string, Leaf[]>();
   for (const leaf of untranslated) {
@@ -302,7 +341,7 @@ export async function callTranslator(
   const url = `${baseUrl}/actions/run`;
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), opts.timeout ?? 90_000);
+  const timer = setTimeout(() => controller.abort(), opts.timeout ?? 180_000);
   try {
     const res = await fetch(url, {
       method: "POST",
