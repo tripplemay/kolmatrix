@@ -22,7 +22,7 @@
       "title": "ja.json 全翻 ~812 处（doubao-pro + 用户 review）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "跑 `npm run i18n:translate -- --target ja` 自动翻 ~812 leaves。\n\n**重点 review：** 敬语级别（dashboard 用です/ます级 / marketing 文案可用 dashing 风格）+ 长句通顺度（auth.heroTitle 含 HTML 嵌套）+ 品牌词保留 + 营销 vs 功能 UI 不同语调\n\n**Acceptance：** ja.json leaves 与 en.json 一致；tests/unit/i18n-ja-coverage.test.ts 通过；用户 spot check 5 页（dashboard/discovery/database/campaigns/weekly-report）；commit `i18n(ja): full translation 812 leaves via doubao-pro + user review`"
     },
     {
