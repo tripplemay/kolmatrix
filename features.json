@@ -14,7 +14,7 @@
       "title": "zh.json 补全 59 处（doubao-pro + 用户 review）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "跑 `npm run i18n:translate -- --target zh` 自动补 59 处。Generator commit 翻译 + push → 通知用户 review → 用户给 diff 反馈 → Generator 二轮修 → 最终 commit。\n\n**重点 review 区域（用户优先 spot check）：**\n- topbar.searchPlaceholder（建议：'搜索 KOL、活动、邮件...'）\n- userMenu.profile/settings/signOut（'个人资料 / 设置 / 退出登录'）\n- dashboard 12 处（greeting/subtitle/newCampaign/activeCampaigns/viewAll/recommendedKols/autoMatch/seeMatrix/emailPerformance 等）\n- discovery 9 处 / auth 11 处 / outreach 5 处 / knowledgeBase 4 / campaigns 3 / common 2 / roi 2 / crm 1\n\n**Acceptance：**\n- zh.json leaves 与 en.json 一致（数量 + 路径）\n- tests/unit/i18n-zh-coverage.test.ts：zh leaf == en leaf 数 = 0\n- 用户 spot check 5 关键页（dashboard/discovery/outreach/userMenu/topbar）确认\n- commit message: `i18n(zh): fill 59 missing leaves via doubao-pro + user review`"
     },
     {
