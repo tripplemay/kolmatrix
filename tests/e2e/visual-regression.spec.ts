@@ -339,11 +339,34 @@ test.describe("Authenticated BM2 visual regression", () => {
     const title = page.getByTestId("campaign-detail-title");
     const status = page.getByTestId("campaign-detail-status");
     const productLink = page.getByTestId("campaign-product-link");
+    // MVP-vf-F005 right rail + email chart additions move per run:
+    //   - ActivityTimelineCard renders `format.relativeTime(createdAt,
+    //     { now: new Date() })`. The seed pins createdAt but `now` is
+    //     real-time, so labels shift from "just now" → "1 day ago"
+    //     overnight and exceed maxDiffPixels.
+    //   - EmailPerformanceChart uses recharts ResponsiveContainer; the
+    //     container width/height race occasionally renders at -1×-1
+    //     and bails before laying out, leaving an empty area whose
+    //     pixel diff vs. baseline blows the threshold.
+    // Masking both regions stabilises the visual signal on the
+    // structural page chrome around them.
+    const activity = page.getByTestId("campaign-activity-timeline");
+    const emailChart = page.getByTestId("campaign-email-perf-chart");
+    const healthCard = page.getByTestId("campaign-health-card");
+    const aiCard = page.getByTestId("campaign-ai-suggestions-card");
 
     await expect(page).toHaveScreenshot("en-campaign-detail.png", {
       fullPage: true,
       animations: "disabled",
-      mask: [title, status, productLink],
+      mask: [
+        title,
+        status,
+        productLink,
+        activity,
+        emailChart,
+        healthCard,
+        aiCard,
+      ],
       threshold: 0.02,
       maxDiffPixels: 8000,
     });
