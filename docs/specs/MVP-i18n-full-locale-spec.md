@@ -1,16 +1,17 @@
 ---
 name: MVP-i18n-full-locale
-description: 5 语言全翻 hotfix - zh 补 59 处 + ja/ko/es 全翻 ~810 处 + html lang 修 + 翻译流程沉淀（用户选 C 方案）
-status: draft
+description: 5 语言全翻 hotfix - zh 补 59 处 + ja/ko/es 全翻 ~810 处 + html lang 修 + 翻译流程沉淀（用户选 C 方案 + B 混合 model 策略）
+status: decisions-locked
 created_by: Kimi (Planner)
 created_at: 2026-04-27
-estimated_effort: 3 day（AI 辅助翻译 + 人工 review）
+decisions_locked_at: 2026-04-27
+estimated_effort: 2.5-3 day（AI 辅助翻译 + 用户人工 review）
 prerequisites:
   - hotfix done（已满足，58fa549）
-  - aigcgateway 余额 ≥ $20（当前 $49.60，充足）
-  - 用户确认翻译质量基准（见 §3 决策）
+  - aigcgateway 余额 ≥ $20（当前 $48.38，充足）
+  - 翻译 model 已确认：zh/ja/ko 用 doubao-pro，es 用 gemini-2.5-flash-lite
 blocks:
-  - MVP-prod-launch-smoke（建议 i18n hotfix done 后再 prod redeploy）
+  - MVP-prod-launch-smoke（建议 i18n done 后 prod redeploy 一次部署完整）
   - MVP-seed-demo-prep（demo 含未翻译 UI 体验差）
 ---
 
@@ -58,11 +59,12 @@ blocks:
 
 ## 3. 关键设计决策
 
-| 决策 | 选定方案 | 理由 |
+| 决策 | 选定方案 | 用户裁决（2026-04-27）|
 |---|---|---|
-| **翻译方式** | **AI 辅助批量翻译（aigcgateway）+ 人工 review** | 4 语言 ~2500 leaves；纯人工 5+ 天；纯 AI 风险大；混合最优 |
-| **AI 模型选择** | **Claude Sonnet 4.6**（高质量，含上下文理解）| 模板/营销文案需要语调；Gemini Flash 便宜但 nuance 差 |
-| **Action 设计** | aigcgateway 新建 `ui-i18n-translate` Action（input: source_text, target_lang, context, glossary; output: JSON 翻译） | Action 化 + 可复用未来加新键 |
+| **翻译方式** | **AI 辅助批量翻译（aigcgateway）+ 用户人工 review** | ✅ 用户裁决"用户自己接 review" |
+| **AI 模型选择（混合策略）** | **zh/ja/ko：doubao-pro**（ByteDance，中日韩 native）<br>**es：gemini-2.5-flash-lite**（Google，西方语系强） | ✅ 用户选方案 B（混合策略）|
+| **总成本估算** | **< $0.05**（远低于余额 $48.38） | — |
+| **Action 设计** | aigcgateway 新建 `ui-i18n-translate` Action（input: source_text, target_lang, context, glossary, model; output: JSON 翻译） | Action 接 model 参数实现混合策略 |
 | **批量粒度** | **按 section 翻译（section-by-section）** | 每 section 一次调用，traverse JSON 树；保 nested key 结构；上下文清晰 |
 | **品牌词不翻译** | "KOLMatrix" / "AI" / "AIGC" / "API" / 平台名（YouTube/TikTok/Twitch/Bilibili/Instagram）保英文；提供 glossary | 保品牌识别度 |
 | **变量保留** | `{name}` `{date}` `{count}` 等占位符**严格保留**（AI prompt 强约束） | 否则 t() 调用 fail |
@@ -305,16 +307,23 @@ F006 (html lang + 守门 tests) ──→ F007 (runbook + Topbar)
 - **不阻塞：** BIx-staging-automation / B4-extended（独立路径）
 - **后续：** 加新 i18n key 时遵循 §F007 runbook 流程，不再积累债
 
-## 13. 待用户确认（启动前）
+## 13. 用户决策（2026-04-27 ✅ 全部 lock）
 
-1. **AI 模型选择：** 推荐 Claude Sonnet 4.6（高质量），可否？还是用 Gemini 3 Pro / 4 Flash 省成本？
-2. **review 工作量：** 100% 人工 review 4 语言 ~2500 leaves，~5h 工时谁负责？（Planner 起草 + 用户最终拍板？还是用户自己翻 review？）
-3. **zh 已翻部分是否复审：** Planner 推荐**不复审**（仅补 59）；如用户要求 100% 复审 zh，工时 +2h
-4. **品牌 glossary：** Planner 起草 30 词初版给用户 review；用户可否提供更专业的市场术语对照？
-5. **角色分配：** 沿用 Kimi/johnsong/Reviewer？还是用户自己接 review 工作？
+| # | 问题 | 用户答复 |
+|---|---|---|
+| 1 | AI 模型选择 | ✅ **方案 B 混合策略**：zh/ja/ko=doubao-pro，es=gemini-2.5-flash-lite（用户原选 "Gemini 4 Flash" 但 aigcgateway 不存在该模型）|
+| 2 | Review 工作量 | ✅ **用户自己接 review**（Generator AI 翻 → 用户人工 review → 调整后 commit） |
+| 3 | zh 已翻部分复审 | ✅ **不复审**（仅补 59 处）|
+| 4 | Glossary | ✅ **同意**（Planner 起草 30 词，用户 review）|
+| 5 | 角色分配 | ✅ **沿用 Kimi/johnsong/Reviewer**（review 工作仍由用户兜底，不属 evaluator 角色范围）|
 
 ---
 
-**Spec 状态：** draft（2026-04-27 Planner 起草，待用户确认 5 个 open question 后切 planning → building）
+**Spec 状态：** decisions-locked（2026-04-27 Planner 起草 + 用户裁决 5/5 全部落地）
 
-**预估 MVP 时间线：~2026-05-04 上线**（i18n hotfix 推迟 ~1 天，可接受）
+**预估 MVP 时间线：~2026-05-04 上线**（i18n hotfix 推迟 ~1-2 天，可接受）
+
+**Generator 工作模式（重要）：**
+- F002-F005 翻译：Generator 跑 AI 翻译 → commit 到独立分支 / 暂存 → 通知用户 review → 用户提改动反馈 → Generator 调整 → 最终 commit
+- 或：Generator AI 翻直接 commit + push → 用户 view diff 提改动 → Generator 二轮修
+- 推荐第二种（避免长分支 + 与 main 同步简单）
