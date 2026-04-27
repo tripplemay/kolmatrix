@@ -10,11 +10,13 @@
  *
  * Usage:
  *   npm run i18n:translate -- --target zh
- *   npm run i18n:translate:dry -- --target ja
+ *   npm run i18n:translate:dry                     (all 4 locales, no writes)
+ *   npm run i18n:translate:dry -- --target ja      (single locale)
  *   npm run i18n:translate -- --target es --section dashboard
  *
  * Flags:
- *   --target zh|ja|ko|es  required
+ *   --target zh|ja|ko|es  required for live runs; optional for --dry-run
+ *                         (when omitted in dry-run, iterates all 4 locales)
  *   --section <name>      optional; only translate that top-level section
  *   --dry-run             skip the network call; print the diff plan
  *   --max-leaves N        cap leaves per section; useful for smoke runs
@@ -53,14 +55,21 @@ export type JsonValue =
 export type JsonObject = { [k: string]: JsonValue };
 
 export interface CliArgs {
-  target: Locale;
+  /**
+   * Target locale. Required for live runs; in --dry-run mode it may be
+   * omitted, in which case the runner iterates all 4 locales so the
+   * dry-run prints the full untranslated-leaf inventory.
+   */
+  target?: Locale;
   section?: string;
   dryRun: boolean;
   maxLeaves?: number;
 }
 
+export const ALL_LOCALES: readonly Locale[] = ["zh", "ja", "ko", "es"];
+
 export function parseArgs(argv: readonly string[]): CliArgs {
-  const args: CliArgs = { target: "" as Locale, dryRun: false };
+  const args: CliArgs = { dryRun: false };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i]!;
     if (a === "--target") {
@@ -77,8 +86,11 @@ export function parseArgs(argv: readonly string[]): CliArgs {
       args.maxLeaves = n;
     }
   }
-  if (!args.target) {
-    throw new Error("missing --target zh|ja|ko|es");
+  // --target is required for live runs (would otherwise silently write
+  // four locale files); optional for dry-run since the report is the
+  // whole point of running it standalone.
+  if (!args.dryRun && !args.target) {
+    throw new Error("missing --target zh|ja|ko|es (required outside --dry-run)");
   }
   return args;
 }
@@ -479,9 +491,15 @@ interface RunReport {
 }
 
 export async function runTranslate(args: CliArgs): Promise<RunReport> {
+  if (!args.target) {
+    throw new Error(
+      "runTranslate requires args.target; for multi-locale dry-run use runTranslateAll"
+    );
+  }
+  const locale: Locale = args.target;
   const repoRoot = resolve(__dirname, "..");
   const enPath = resolve(repoRoot, "messages/en.json");
-  const targetPath = resolve(repoRoot, `messages/${args.target}.json`);
+  const targetPath = resolve(repoRoot, `messages/${locale}.json`);
   const glossaryPath = resolve(repoRoot, "docs/i18n/brand-glossary.json");
 
   const en = JSON.parse(readFileSync(enPath, "utf8")) as JsonObject;
@@ -494,9 +512,9 @@ export async function runTranslate(args: CliArgs): Promise<RunReport> {
   }
   const bundles = buildSectionBundles(en, untranslated);
 
-  const action = actionForLocale(args.target);
+  const action = actionForLocale(locale);
   console.log(
-    `[i18n-translate] target=${args.target} action=${action.id} model=${action.model}`
+    `[i18n-translate] target=${locale} action=${action.id} model=${action.model}`
   );
   console.log(
     `[i18n-translate] untranslated leaves: ${untranslated.length} across ${bundles.length} section bundle(s)`
@@ -507,7 +525,7 @@ export async function runTranslate(args: CliArgs): Promise<RunReport> {
   if (untranslated.length === 0) {
     console.log("[i18n-translate] nothing to translate. exiting.");
     return {
-      locale: args.target,
+      locale,
       totalUntranslated: 0,
       totalApplied: 0,
       totalSkipped: 0,
@@ -517,7 +535,7 @@ export async function runTranslate(args: CliArgs): Promise<RunReport> {
   }
 
   const report: RunReport = {
-    locale: args.target,
+    locale,
     totalUntranslated: untranslated.length,
     totalApplied: 0,
     totalSkipped: 0,
@@ -526,7 +544,7 @@ export async function runTranslate(args: CliArgs): Promise<RunReport> {
   };
 
   for (const bundle of bundles) {
-    const result = await runBundle(bundle, args.target, glossaryText, args.dryRun);
+    const result = await runBundle(bundle, locale, glossaryText, args.dryRun);
     report.bundles.push(result);
     report.totalApplied += result.applied;
     report.totalSkipped += result.skipped.length;
@@ -554,10 +572,12 @@ export async function runTranslate(args: CliArgs): Promise<RunReport> {
     writeFileSync(targetPath, JSON.stringify(target, null, 2) + "\n", "utf8");
   }
 
-  // Diff report
+  // Diff report — dry-run uses a `-dry` suffix so it doesn't clobber
+  // the historical live-run report committed alongside the locale.
+  const reportSuffix = args.dryRun ? `${locale}-dry` : locale;
   const reportPath = resolve(
     repoRoot,
-    `docs/i18n/translate-report-${todayUtc()}-${args.target}.md`
+    `docs/i18n/translate-report-${todayUtc()}-${reportSuffix}.md`
   );
   mkdirSync(dirname(reportPath), { recursive: true });
   writeFileSync(reportPath, formatReportMarkdown(report, args), "utf8");
@@ -614,9 +634,34 @@ function formatReportMarkdown(report: RunReport, args: CliArgs): string {
   return lines.join("\n");
 }
 
+/**
+ * Iterate every supported locale and run the translator. Used by
+ * --dry-run when --target is omitted, so `npm run i18n:translate:dry`
+ * standalone prints the full untranslated-leaf inventory across
+ * zh/ja/ko/es in a single invocation.
+ */
+export async function runTranslateAll(args: CliArgs): Promise<RunReport[]> {
+  const reports: RunReport[] = [];
+  for (const locale of ALL_LOCALES) {
+    console.log(`\n=== ${locale} ===`);
+    const report = await runTranslate({ ...args, target: locale });
+    reports.push(report);
+  }
+  console.log("\n=== summary ===");
+  for (const r of reports) {
+    console.log(
+      `  ${r.locale}: untranslated=${r.totalUntranslated} bundles=${r.bundles.length} cost=$${r.estimatedCostUsd.toFixed(4)}`
+    );
+  }
+  return reports;
+}
+
 if (require.main === module) {
   const args = parseArgs(process.argv.slice(2));
-  runTranslate(args).catch((err) => {
+  const exec = args.target
+    ? runTranslate(args).then(() => undefined)
+    : runTranslateAll(args).then(() => undefined);
+  exec.catch((err) => {
     console.error("[i18n-translate] fatal:", err.message);
     process.exitCode = 1;
   });

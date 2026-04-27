@@ -47,3 +47,7 @@ playwright-report/
 test-results/
 blob-report/
 playwright/.cache/
+
+# i18n translator dry-run reports — regenerated on every dry-run, not
+# audit-worthy (live-run reports without the -dry suffix are committed).
+docs/i18n/translate-report-*-dry.md

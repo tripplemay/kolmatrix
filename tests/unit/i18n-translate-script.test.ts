@@ -26,12 +26,33 @@ import {
 } from "@/../scripts/i18n-translate";
 
 describe("parseArgs", () => {
-  it("requires --target with a valid locale", () => {
-    expect(() => parseArgs([])).toThrow(/--target/);
+  it("rejects bad locale and accepts a good one in live mode", () => {
     expect(() => parseArgs(["--target", "fr"])).toThrow(/zh\|ja\|ko\|es/);
     expect(parseArgs(["--target", "zh"])).toMatchObject({
       target: "zh",
       dryRun: false,
+    });
+  });
+
+  it("requires --target for live runs (no --dry-run)", () => {
+    expect(() => parseArgs([])).toThrow(/--target/);
+    expect(() => parseArgs(["--section", "dashboard"])).toThrow(/--target/);
+  });
+
+  it("permits omitting --target when --dry-run is set (multi-locale dry-run)", () => {
+    // F001 acceptance: `npm run i18n:translate:dry` must run standalone
+    // and print the untranslated-leaf inventory for all 4 locales.
+    expect(parseArgs(["--dry-run"])).toEqual({ dryRun: true });
+    expect(parseArgs(["--dry-run", "--section", "dashboard"])).toEqual({
+      dryRun: true,
+      section: "dashboard",
+    });
+  });
+
+  it("still accepts a single-locale dry-run when --target is given", () => {
+    expect(parseArgs(["--dry-run", "--target", "ja"])).toEqual({
+      dryRun: true,
+      target: "ja",
     });
   });
 
