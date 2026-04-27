@@ -501,12 +501,11 @@ async function main(): Promise<void> {
 
   const client = createYoutubeClient(apiKey);
   let runningQuota = 0;
+  const regionsAnnounced = new Set<Region>();
   const report = await runCrawl(args, {
     client,
     onApiCall: (kind, units) => {
       runningQuota += units;
-      const callIndex =
-        kind === "search" ? "search" : "channels";
       // Print every 10 search calls (1,000u steps) and every 50 channel
       // calls (50u steps) to keep the log readable on long runs.
       if (
@@ -514,13 +513,14 @@ async function main(): Promise<void> {
         (kind === "channels" && runningQuota % 50 < 1)
       ) {
         console.log(
-          `[seed-kol-youtube] ${callIndex} call. running quota=${runningQuota}u (~${Math.round((runningQuota / 10_000) * 100)}% of daily budget)`
+          `[seed-kol-youtube] ${kind} call. running quota=${runningQuota}u (~${Math.round((runningQuota / 10_000) * 100)}% of daily budget)`
         );
       }
     },
     onChannel: (c) => {
       // Stay quiet on the per-channel hose — only show one line/region.
-      if (report?.perRegion[c.matrixRegion] === 1) {
+      if (!regionsAnnounced.has(c.matrixRegion)) {
+        regionsAnnounced.add(c.matrixRegion);
         console.log(
           `[seed-kol-youtube] first ${c.matrixRegion} hit: ${c.title} (${c.subscriberCount.toLocaleString()} subs)`
         );
