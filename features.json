@@ -1,53 +1,53 @@
 {
-  "sprint": "MVP-kol-seed-redo",
+  "sprint": "B6-kol-daily-sync",
   "features": [
     {
       "id": "F001",
-      "title": "YouTube Data API 接入 + 一次性爬取脚本基础设施",
+      "title": "Sync Worker 通用接口（KolSyncAdapter trait + Dispatcher）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "**新建 `scripts/seed-kol-from-youtube.ts`：** import 'dotenv/config' 头（BL-001 教训）+ googleapis SDK + YOUTUBE_API_KEY env（已配 staging+prod，AIzaSy...）。功能：(1) 矩阵执行配置（region × keyword × min subscribers）(2) 输出 docs/kol-seed-youtube-{YYYYMMDD}.json + 进度日志 (3) quota 监控（每 100 calls 输出剩余配额）(4) dry-run 模式 (5) 失败重试 3 次 30s/2min/5min backoff (6) YOUTUBE_API_KEY 缺失时报错指引。\n\n**package.json scripts：** `seed:kol-youtube` + `seed:kol-youtube:dry`\n\n**Acceptance：**\n- 脚本头含 `import 'dotenv/config'`（BL-001 教训）\n- npm run seed:kol-youtube:dry 跑通且打印矩阵 + 预期 quota 消耗\n- YOUTUBE_API_KEY 缺失时报错含配置指引\n- tests/unit/seed-kol-from-youtube.test.ts 5 fixture（mock youtube API + 字段映射 + retry + dry-run + matrix）\n- googleapis npm 包用 `npm install googleapis --save` 精准引入（避免 lockfile 漂移）"
+      "status": "pending",
+      "acceptance": "**新建 src/lib/kol-sync/types.ts：** KolSyncAdapter interface（name/source/discover/refresh/healthCheck）+ SyncParams + RawKolData types\n\n**新建 src/lib/kol-sync/dispatcher.ts：** KolSyncDispatcher class，runDailySync + runRefresh，支持多 adapter 注册\n\n**目的：** 不直接调 YouTube API；通过 adapter 抽象，6 月可加 CrawlerTeamAdapter 替换。\n\n**Acceptance：**\n- types + dispatcher + 1 个 mock adapter\n- tests/unit/kol-sync-dispatcher.test.ts 5 fixture（adapter 注册 / dispatch / health / fail handling / multi-adapter）\n- 详见 docs/specs/B6-kol-daily-sync-spec.md §F001"
     },
     {
       "id": "F002",
-      "title": "多维矩阵爬取 1000-2000 真 KOL（全字段填充，0 增量工时）",
+      "title": "YouTube adapter 实现（首个真实数据源）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "**🔄 fix-round 1 二次修订（用户 2026-04-27 16:00 同意 B6 接力策略）：**\n\n**阈值再次放宽（接受现状 + B6 接力补缺口）：**\n- total ≥ 750（接受现 760）\n- CN+HK+TW（按 country 字段）≥ 80（接受现 83）\n- quota ≤ 8500（接受现 8077，留 1923 给明天 B6 第 1 次 cron 用）\n\n**新条款：B6-kol-daily-sync 接力补缺口（必含验证）：**\n- B6 启动后第 5 天（~05-03）staging 累计 total ≥ 1000\n- B6 启动后第 5 天（~05-03）staging 累计 CN+HK+TW ≥ 150\n- 由 B6 reverifying 阶段 Reviewer 验证（不属本批次 F002 acceptance 阻断）\n\n**Planner 决议理由（2026-04-27 16:00）：**\nB6 第 1-3 天每日 +30-50 KOL（含中文区 +15-30）即可补完 F002 缺口。强行 fix-round 1 补爬冗余：\n- 节省 Generator ~30 min 工时\n- 节省 1225 quota 留给明天 B6\n- 加速 reverifying ~30-60 min\n- 邀请发出节点不变（~05-09）\n- 战略价值：用户首次见 KOL 库时已运行 5 天自动同步，'产品在生长' PMF 信号\n\n**其他 F002 acceptance（保持不变）：**\n- 全字段填充率 ≥ 95%\n- 8 region 覆盖（已通过）\n- 类目覆盖 ≥ 6（已 22 类目，超额）\n- followers 中位数 ≥ 50K（已 116K，超额）\n- 0 spam/suspended\n\n**Reverifying 时 F002 直接 PASS**（按修订阈值实际已达，无需 Generator 补爬）"
+      "status": "pending",
+      "acceptance": "**新建 src/lib/kol-sync/adapters/youtube.ts：** YouTubeKolSyncAdapter implements KolSyncAdapter\n\n**每日策略（lock）：**\n- discover：6 region × 3 keyword × 10 results = 18 search calls × 100 = 1800 units\n- refresh：~200 KOL/day × 1 unit = 4 units（按 last_synced_at 排序，每周轮询一次）\n- 合计：~1800-2000 units/day（10K 配额 18-20%）\n- 预期增量：每日 30-50 真新 KOL\n\n**关键 keyword 设计（侧重补 kol-seed-redo F002 接力条款 CN+HK+TW 缺口 -67）：**\n- 中文区 keyword 优先：游戏直播 / Steam / 独立游戏 / 手游推荐 / 主播\n- 其他 region：同 kol-seed-redo F002 矩阵\n- 第 1-3 天倾向 CN/HK/TW，补完缺口后均衡分配\n\n**Acceptance：**\n- YouTube adapter 实现 KolSyncAdapter 接口\n- discover 跑通 + 去重（externalId）+ 全字段填充（沿用 kol-seed-redo F002 全字段策略）\n- metadata 字段：is_demo=false / source='youtube-api-daily' / synced_at=now\n- refresh 跑通 + last_synced_at 更新\n- tests/integration/youtube-adapter.test.ts mock + 真 API 调用（少量 quota，gated by env YOUTUBE_API_TEST=true）\n- staging 手动跑一次（仅 ~50 quota 验证 e2e）\n- 详见 docs/specs/B6-kol-daily-sync-spec.md §F002"
     },
     {
       "id": "F003",
-      "title": "数据清洗 + import script + is_demo 标记",
+      "title": "Cron 配置 + 调度脚本",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "**新建 `scripts/import-kol-from-youtube.ts`：**\n1. 读 docs/kol-seed-youtube-{date}.json（F002 输出）\n2. 字段映射到 Prisma Kol model（参照 BM1-F002 既有 seed-kol-from-enriched.ts 逻辑）\n3. metadata 字段 塞 `{is_demo: true, source: 'youtube-api', seeded_at: now(), youtube: {...}}` — **避免 schema migration**（B5 后续升级到正式列）\n4. **upsert by (tenantId, platform, externalId)**（用 channel.id 去重）\n5. categories 推断 mapping（轻量，不调 AI）：Action_game→FPS/Action / Strategy_video_game→Strategy / Role-playing_video_game→RPG / Sports_game→Sports / 等\n6. 进度日志 + import/skip 数\n\n**package.json scripts：** `import:kol-youtube` + `import:kol-youtube:dry`\n\n**执行流程：**\n- staging 先跑：`npm run import:kol-youtube`\n- prod 留待用户手动 SSH（**不要在 building 阶段自动跑 prod**）\n\n**Acceptance：**\n- staging Kol count 增加 ≥ 1,000（原 2,535 → 3,500+）\n- staging 全部新增 KOL 含 metadata.is_demo=true\n- staging 验证 categories 推断正确率 ≥ 90%（spot check 50 entries）\n- tests/integration/import-kol-from-youtube.test.ts 验证 import + RLS 隔离 + metadata 写入 + 一键清 SQL（DELETE WHERE metadata->>'is_demo'='true'）\n- prod import 留待用户手动触发，本批次 acceptance **不含 prod**\n\n**🔄 fix-round 1 修复（Reviewer 验收发现 2026-04-27）：**\n- **当前实现：** scripts/import-kol-from-youtube.ts L275 + L300 用 `(tenantId, platform, handle)` upsert key\n- **必修：** 切换到 `(tenantId, platform, externalId)` 用 channel.id 去重（spec 原意 + 风险：handle 可改名，externalId 永久稳定）\n- 同时调整 integration test 覆盖 externalId 去重场景\n- 预估工时：~30 min\n- 修后必须重跑 staging import 验证不破坏现有 2,535 KOL（upsert by externalId 应该不破坏 enriched seed 历史 import，因为 enriched 有自己的 externalId）"
+      "status": "pending",
+      "acceptance": "**新建 infrastructure/cron/kolmatrix-kol-sync：**\n```bash\n# Runs daily at 08:30 北京 (= 0:30 UTC，YouTube quota 已重置)\n30 0 * * * tripplezhou cd /opt/kolmatrix && npm run kol-sync:daily >> /var/log/kolmatrix-kol-sync.log 2>&1\n```\n\n**新建 scripts/kol-sync-daily.ts：**\n- import 'dotenv/config'（BL-001 教训）\n- 用 KolSyncDispatcher + YouTubeKolSyncAdapter\n- 跑 discover + refresh\n- 写入 KOL 表 + 输出报告 docs/test-reports/kol-sync-daily-{date}.md\n- 失败不阻塞次日 cron（exit 0，错误写 log）\n\n**package.json scripts：** kol-sync:daily + kol-sync:daily:dry\n\n**部署：**\n- 仅 prod 跑（avoid staging 双重 quota 消耗，10K/day 共享 1 个 API key）\n- staging 仅手动跑验证\n- Generator 部署到 VM /etc/cron.d/kolmatrix-kol-sync\n- log rotation：infrastructure/cron/logrotate.d/kolmatrix-kol-sync\n\n**Acceptance：**\n- infrastructure/cron/kolmatrix-kol-sync 入 git + deploy 到 VM /etc/cron.d/\n- prod 第一次自动跑（监控 log）\n- log rotation 配置入 git\n- 详见 docs/specs/B6-kol-daily-sync-spec.md §F003"
     },
     {
       "id": "F004",
-      "title": "弃用 enriched JSON（保留 git 历史）",
+      "title": "失败重试 + 监控 + structured 日志 + 告警",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "**不删除以下文件**（git 历史保留）：\n- docs/kol-seed-enriched-final.json / .csv\n- docs/kol-seed-enriched.json / .csv\n- scripts/seed-kol-from-enriched.ts（保留 BM1-F002 历史）\n\n**新建 `docs/kol-seed-enriched-DEPRECATED-2026-04-27.md`：**\n- 弃用原因：99.5% < 10K micro-creator，不符合 KOL 平台定位（Planner 2026-04-27 调研发现）\n- 数据画像：2,524 / 415 gaming / median followers 2,540 / 中文区缺失（CN 0 / TW 1）\n- 替换方案：YouTube Data API 重爬（本批次）\n- 历史 AI 打标成本 $0.91 沉没\n- prod 未导入此数据；staging 历史曾导入 2,524 条\n- 6 月爬虫团队真数据接入路径：BL-012 + 待起草的 B6 spec\n\n**Acceptance：**\n- DEPRECATED md 存在 + 引用本批次 spec\n- enriched JSON 不删除\n- BM1 sprint completed_features 不变"
+      "status": "pending",
+      "acceptance": "**失败重试：** YouTube API 失败 3 次 30s/2min/5min backoff（同 BM2 F006 模式）\n\n**Structured 日志 JSON（每行一个）：** timestamp / adapter / discover_count / refresh_count / dedupe_skipped / quota_consumed / quota_remaining_estimate / duration_ms / errors\n\n**告警阈值（写入日志）：**\n- quota_consumed > 3000 → WARN\n- discover_count = 0（连续 3 天）→ ALERT\n- errors.length > 0 → WARN\n- duration_ms > 300000 → WARN\n\n**Acceptance：**\n- scripts/kol-sync-daily.ts 含完整 try/catch + 重试逻辑\n- structured 日志 JSON 写入 /var/log/kolmatrix-kol-sync.log\n- 告警阈值文档化在 docs/dev/kol-sync-runbook.md\n- tests/unit/kol-sync-retry.test.ts 覆盖 retry / backoff / max attempts\n- 详见 docs/specs/B6-kol-daily-sync-spec.md §F004"
     },
     {
       "id": "F005",
-      "title": "PRD §12 验证 + spec 链一致性 check",
+      "title": "数据质量校验（5 规则）+ 周报",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "**已完成于 spec 起草时（commit 23aba07）：** PRD §12 line 484 已更新。\n\n**本 feature 实际工作（轻量 ~30min）：**\n1. Generator 验证 PRD §12 修改正确（grep 'YouTube Data API'）\n2. 验证 spec 链一致性：MVP-kol-seed-redo / B5（合并到 MVP-demo-launch）/ BL-012 互相引用正确\n3. 如发现 spec 链遗漏，加 cross-reference\n\n**Acceptance：**\n- grep 'YouTube Data API' docs/product/KOLMatrix-MVP-PRD.md 输出含 'MVP 一次性手动 seed via YouTube Data API 允许'\n- spec 链一致性 grep 验证通过\n- 不重写 .auto-memory/project-status.md（Planner 在 done 收尾时做）"
+      "status": "pending",
+      "acceptance": "**写入前过滤 5 规则（src/lib/kol-sync/quality.ts）：**\n1. 去重 upsert by (tenantId, platform, externalId)\n2. 去 spam：subscriberCount < 1000 → skip\n3. 去僵尸：lastUploadAt > 90 days → skip\n4. 去 NSFW：channel meta brand_safety_rating（如有）\n5. 重复账号检测：同 channel.id 不同 handle → 仅 update display_name\n\n**写入后异常监控（写入 metadata.flags）：**\n- followers 增长曲线异常（突增 10x）→ flags.suspicious_growth = true，UI 不展示\n- 长期下降（30 天 -50% subscribers）→ flags.declining = true\n\n**周报 cron（周一跑）：**\n- 新建 scripts/kol-quality-weekly.ts + cron infrastructure/cron/kolmatrix-kol-quality\n- 输出 docs/test-reports/kol-quality-weekly-{date}.md（本周新增 / region 分布 / categories 分布 / 异常 KOL 数 / 评级）\n\n**Acceptance：**\n- 5 条过滤规则 implemented + tests/integration/kol-sync-quality.test.ts 5 fixture\n- 周报 cron 入 git + 第一次手动跑验证\n- metadata.flags 字段写入 + UI 隐藏 suspicious_growth=true 的 KOL（Discovery / Database 都需）\n- 详见 docs/specs/B6-kol-daily-sync-spec.md §F005"
     },
     {
       "id": "F006",
-      "title": "BL-014 hotfix: 去除 glass-panel 默认 box-shadow 光晕（与 Stitch 原型对齐）",
+      "title": "Tests + spec 链 + BL-012 接入兼容性 + kol-seed-redo F002 接力条款验证",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "**触发：** 用户 2026-04-27 反馈 KOL 发现 / KOL 数据库 / 投放活动页面筛选侧边栏（蓝色 section）周围有冗余光晕，与原型不一致。\n\n**根因（Planner 调研）：** src/styles/globals.css `@utility glass-panel` 定义含默认 `box-shadow: 0 0 24px cyan 30%`，导致所有用 GlassPanel 的元素都有冗余光晕（影响几乎所有页面）。Stitch kol-discovery.html 原型 `glass-panel` **无 box-shadow**。\n\n**清查结果：**\n- `<GlassPanel glow>` 直接使用：**0 处**（删 box-shadow 不破坏任何'想要光晕'用法）\n- 显式 `ambient-glow` className：5 处（KolValueScoreCard / AiMatchRingCard / UserAvatarMenu / StatCard / GlassPanel） — **保留**\n- 显式 `ai-glow` className：3 处（NotificationBell / SidebarLogo / AiScoreBadge） — **保留**\n\n**修复（src/styles/globals.css `@utility glass-panel`）：**\n```diff\n@utility glass-panel {\n- backdrop-filter: blur(24px);\n- -webkit-backdrop-filter: blur(24px);\n- background-color: color-mix(in srgb, var(--color-cyan) 20%, transparent);\n- box-shadow: 0 0 24px color-mix(in srgb, var(--color-cyan) 30%, transparent);\n+ backdrop-filter: blur(20px);\n+ -webkit-backdrop-filter: blur(20px);\n+ background-color: color-mix(in srgb, var(--color-surface-low) 70%, transparent);\n+ /* 默认无 box-shadow，与 Stitch 原型一致；如需光晕用 <GlassPanel glow> (ambient-glow) 或 ai-glow class */\n  border-radius: var(--radius-md);\n}\n```\n\n**对齐 Stitch 原型 kol-discovery.html：** `background: rgba(19,27,46,0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); /* 无 box-shadow */`\n\n**注意：**\n- `ambient-glow` + `ai-glow` 两个独立 utility 不动（仍有 box-shadow，5+3 处显式调用保留视觉）\n- 修改后 12 张 visual baseline PNG 全部失效，必须用 `update-visual-baselines` workflow 重捕（同 BM2 F011 模式）\n- 受影响页面（grep glass-panel 验证）：discovery / database / campaigns / campaigns/[id] / kols/[id] / dashboard / outreach / weekly-report / crm / roi / login / etc.（几乎所有页面）\n\n**Acceptance：**\n- src/styles/globals.css `@utility glass-panel` 删除 box-shadow + background 改为 surface-low 70% transparent + blur 20px\n- ambient-glow / ai-glow 两个 utility 保持原状（不改）\n- L2 staging 浏览器并排：左 design-draft/stitch-references/kol-discovery.html / 右 staging /en/discovery 筛选侧边栏，光晕已去除，背景色调一致\n- visual baseline 12 张全部用 update-visual-baselines workflow 重捕（GitHub Actions trigger）\n- typecheck / lint / 现有 unit + integration tests 全绿\n- 手动 spot check 3 个页面：/en/discovery、/en/database、/en/campaigns 筛选/数据卡光晕去除 ✅\n- 手动 spot check ambient-glow 元素仍有视觉效果（KolValueScoreCard / Dashboard StatCard / UserAvatarMenu）\n- 手动 spot check ai-glow 元素仍有视觉效果（NotificationBell 红点 / SidebarLogo / AiScoreBadge）\n- commit message: `fix(ui): remove default glass-panel box-shadow halo (BL-014, align with Stitch prototype)`\n\n**🔄 fix-round 1 修复（Reviewer 验收发现 2026-04-27）：**\n- **现状：** 本地 globals.css 已修（commit 已 push），但 staging git_sha=be764a7 未含 F006 commit\n- **必做：** SSH staging redeploy 跑 infrastructure/deploy-staging.sh（如不存在则手动 git pull + npm ci + build + pm2 reload --update-env）\n- **验证：** Reviewer 重跑 Playwright probe 确认 /en/discovery /en/database /en/campaigns 上 .glass-panel 元素 box-shadow=none\n- **预期：** panelShadowNonNone=0/22 + 0/6 + 0/4（fix-round 0 是 22/22+6/6+4/4 全 fail）\n- 注：staging deploy 由 Generator 或用户触发；BL-004 staging-automation 仍未做（手动 SSH）"
+      "status": "pending",
+      "acceptance": "**1. 全套 tests：** unit + integration + E2E staging 一次完整 daily sync（手动触发 ~50 quota）+ load test 模拟连续 7 天调度（mock）\n\n**2. Spec 链一致性 grep 验证：**\n- PRD §12 已更新 ✅（commit e7ea349 / 0df4e8f）\n- BL-012 backlog 加 cross-reference\n- docs/product/kol-crawler-team-handoff-v1.md §'KOLMatrix 侧职责' 加 6 月接入路径清单\n\n**3. BL-012 接入兼容性 review：**\n- 起草 src/lib/kol-sync/adapters/crawler-team.ts.todo 占位（interface stub + TODO 注释）\n- 与 docs/product/kol-crawler-team-handoff-v1.md §3-§4 字段契约 + API 契约对照\n- 标注 6 月真实接入时需要做的最小改动（≥ 5 步骤）\n\n**4. ⭐ kol-seed-redo F002 接力条款验证（跨批次重要！）：**\n- B6 启动后第 5 天（~05-03）验证 staging 累计：\n  - total ≥ 1000\n  - CN+HK+TW（按 country 字段）≥ 150\n- 输出 docs/test-reports/B6-kol-seed-redo-handoff-validation-2026-05-03.md\n- 如未达标，本 F006 标 FAIL → fixing：F002 keyword 倾向中文区，5-10 天补完\n- 如达标，验证报告含 staging Kol count 前后对比 + region 分布表\n\n**Acceptance：**\n- 全套 tests 通过\n- staging 手动 sync ≥ 30 KOL 入库 + log 完整\n- PRD §12 + BL-012 + crawler-handoff 三处文档一致（grep 验证）\n- crawler-team.ts.todo 占位 + ≥ 5 步骤路径清单\n- B6 启动第 5 天 kol-seed-redo F002 接力条款验证报告（关键 acceptance）\n- 详见 docs/specs/B6-kol-daily-sync-spec.md §F006"
     }
   ]
 }
