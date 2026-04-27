@@ -30,7 +30,7 @@
       "title": "弃用 enriched JSON（保留 git 历史）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**不删除以下文件**（git 历史保留）：\n- docs/kol-seed-enriched-final.json / .csv\n- docs/kol-seed-enriched.json / .csv\n- scripts/seed-kol-from-enriched.ts（保留 BM1-F002 历史）\n\n**新建 `docs/kol-seed-enriched-DEPRECATED-2026-04-27.md`：**\n- 弃用原因：99.5% < 10K micro-creator，不符合 KOL 平台定位（Planner 2026-04-27 调研发现）\n- 数据画像：2,524 / 415 gaming / median followers 2,540 / 中文区缺失（CN 0 / TW 1）\n- 替换方案：YouTube Data API 重爬（本批次）\n- 历史 AI 打标成本 $0.91 沉没\n- prod 未导入此数据；staging 历史曾导入 2,524 条\n- 6 月爬虫团队真数据接入路径：BL-012 + 待起草的 B6 spec\n\n**Acceptance：**\n- DEPRECATED md 存在 + 引用本批次 spec\n- enriched JSON 不删除\n- BM1 sprint completed_features 不变"
     },
     {
@@ -38,7 +38,7 @@
       "title": "PRD §12 验证 + spec 链一致性 check",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**已完成于 spec 起草时（commit 23aba07）：** PRD §12 line 484 已更新。\n\n**本 feature 实际工作（轻量 ~30min）：**\n1. Generator 验证 PRD §12 修改正确（grep 'YouTube Data API'）\n2. 验证 spec 链一致性：MVP-kol-seed-redo / B5（合并到 MVP-demo-launch）/ BL-012 互相引用正确\n3. 如发现 spec 链遗漏，加 cross-reference\n\n**Acceptance：**\n- grep 'YouTube Data API' docs/product/KOLMatrix-MVP-PRD.md 输出含 'MVP 一次性手动 seed via YouTube Data API 允许'\n- spec 链一致性 grep 验证通过\n- 不重写 .auto-memory/project-status.md（Planner 在 done 收尾时做）"
     },
     {

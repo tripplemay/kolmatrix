@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "MVP-kol-seed-redo - 用 YouTube Data API 重爬 1000+ 真高粉游戏 KOL 替代 XLSX micro-creator 数据集 + F006 BL-014 glass-panel 光晕修复（用户 2026-04-27 新增需求）。6 features 估 0.5-1 day + ~1h。完成即 prod KOL 数据从 12 demo → 1000+ 真高粉，含中文区 200+，符合 KOL 平台定位 + UI 与 Stitch 原型对齐，为 demo 邀请发出做准备。",
   "total_features": 6,
-  "completed_features": 2,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "MVP-kol-seed-redo",
-  "last_updated": "2026-04-27T14:00+0800",
+  "last_updated": "2026-04-27T14:50+0800",
   "reference_docs": [
     "docs/specs/MVP-kol-seed-redo-spec.md",
     "docs/specs/MVP-seed-demo-prep-spec.md",
