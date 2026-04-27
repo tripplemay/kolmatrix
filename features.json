@@ -1,61 +1,45 @@
 {
-  "sprint": "MVP-i18n-full-locale",
+  "sprint": "MVP-kol-seed-redo",
   "features": [
     {
       "id": "F001",
-      "title": "翻译流程基础设施（aigcgateway Action + scripts/i18n-translate.ts + glossary）",
+      "title": "YouTube Data API 接入 + 一次性爬取脚本基础设施",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "**新建 aigcgateway Action `ui-i18n-translate`**：input variables source_text(JSON 子树)/target_lang(zh/ja/ko/es)/context(如 'dashboard greeting')/glossary(品牌词 list)/model(可选)；prompt 模板含严格规则（保占位符 + 保 HTML tags + 不译品牌词 + 语调 professional/concise/lightly friendly）。Action 调用时按 target_lang 自动路由：zh/ja/ko → doubao-pro / es → gemini-2.5-flash-lite。\n\n**新建 `scripts/i18n-translate.ts`**：(1) 读 messages/en.json (2) 对比 messages/{zh,ja,ko,es}.json 找出未翻译 leaves（leaf value === en value 且 len > 2）(3) 按 section 分批调 ui-i18n-translate Action（避免单次 token 超长）(4) 写入对应 messages/{locale}.json（保留已翻译，仅填空白）(5) 输出 diff 报告 docs/i18n/translate-report-{date}.md (6) 支持 --target zh|ja|ko|es 参数 + --dry-run 参数 (7) 严格保留 placeholders {xxx} 与 HTML tags，缺失则 warn + skip。\n\n**glossary 文件 docs/i18n/brand-glossary.json**：30+ 品牌词条目（KOLMatrix/KOL/Campaign/Discovery/Database/Outreach/Dashboard/YouTube/TikTok/Twitch/Bilibili/Instagram/Facebook/Twitter/Discord/AI/AIGC/API/Resend/Webhook 等技术品牌词保英；Campaign/Discovery 等业务术语按语言提供 native 翻译）。\n\n**package.json scripts：** `i18n:translate` + `i18n:translate:dry`\n\n**Acceptance：**\n- mcp__aigc-gateway__create_action 创建 ui-i18n-translate Action 成功（action_id 记入 commit message）\n- npm run i18n:translate:dry 跑通且打印未翻译 leaves 清单（zh ~59 / ja/ko/es 各 ~810）\n- glossary.json ≥ 30 品牌词条目（Generator 起草，用户 review）\n- script 严格保留 placeholders + HTML tags（unit test tests/unit/i18n-translate-script.test.ts 5 fixture）\n- 干跑显示预期 token 消耗 + model 路由（zh→doubao-pro / es→gemini-2.5-flash-lite）"
+      "status": "pending",
+      "acceptance": "**新建 `scripts/seed-kol-from-youtube.ts`：** import 'dotenv/config' 头（BL-001 教训）+ googleapis SDK + YOUTUBE_API_KEY env（已配 staging+prod，AIzaSy...）。功能：(1) 矩阵执行配置（region × keyword × min subscribers）(2) 输出 docs/kol-seed-youtube-{YYYYMMDD}.json + 进度日志 (3) quota 监控（每 100 calls 输出剩余配额）(4) dry-run 模式 (5) 失败重试 3 次 30s/2min/5min backoff (6) YOUTUBE_API_KEY 缺失时报错指引。\n\n**package.json scripts：** `seed:kol-youtube` + `seed:kol-youtube:dry`\n\n**Acceptance：**\n- 脚本头含 `import 'dotenv/config'`（BL-001 教训）\n- npm run seed:kol-youtube:dry 跑通且打印矩阵 + 预期 quota 消耗\n- YOUTUBE_API_KEY 缺失时报错含配置指引\n- tests/unit/seed-kol-from-youtube.test.ts 5 fixture（mock youtube API + 字段映射 + retry + dry-run + matrix）\n- googleapis npm 包用 `npm install googleapis --save` 精准引入（避免 lockfile 漂移）"
     },
     {
       "id": "F002",
-      "title": "zh.json 补全 59 处（doubao-pro + 用户 review）",
+      "title": "多维矩阵爬取 1000-2000 真 KOL（全字段填充，0 增量工时）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "跑 `npm run i18n:translate -- --target zh` 自动补 59 处。Generator commit 翻译 + push → 通知用户 review → 用户给 diff 反馈 → Generator 二轮修 → 最终 commit。\n\n**重点 review 区域（用户优先 spot check）：**\n- topbar.searchPlaceholder（建议：'搜索 KOL、活动、邮件...'）\n- userMenu.profile/settings/signOut（'个人资料 / 设置 / 退出登录'）\n- dashboard 12 处（greeting/subtitle/newCampaign/activeCampaigns/viewAll/recommendedKols/autoMatch/seeMatrix/emailPerformance 等）\n- discovery 9 处 / auth 11 处 / outreach 5 处 / knowledgeBase 4 / campaigns 3 / common 2 / roi 2 / crm 1\n\n**Acceptance：**\n- zh.json leaves 与 en.json 一致（数量 + 路径）\n- tests/unit/i18n-zh-coverage.test.ts：zh leaf == en leaf 数 = 0\n- 用户 spot check 5 关键页（dashboard/discovery/outreach/userMenu/topbar）确认\n- commit message: `i18n(zh): fill 59 missing leaves via doubao-pro + user review`"
+      "status": "pending",
+      "acceptance": "**🆕 用户裁决（2026-04-27）：F002 扩展为'全字段填充'**，0 增量工时（API 调用本来就要做）。channels.list 调用时 `part=snippet,statistics,topicDetails,brandingSettings` 全要。\n\n**Region 矩阵（8 个）：** CN / HK / TW / US / GB / JP / KR / ES\n\n**Query keywords（每 region 5 个）：**\n- 中文区（CN/HK/TW）：游戏 / 电竞 / 手游 / 主播 / 实况\n- 英文区（US/GB）：gaming / gameplay / esports / let's play / streamer\n- 日文（JP）：ゲーム / 実況 / esports / Vtuber / プロゲーマー\n- 韩文（KR）：게임 / 방송 / esports / 스트리머 / 프로게이머\n- 西文（ES）：juegos / gaming / esports / streamer / videojuegos\n\n**过滤条件：** subscriberCount ≥ 10K（去 micro）+ videoCount ≥ 30（去僵尸）+ description 非空 + topicCategories 含 Game/Action_game/Strategy_video_game/etc.\n\n**全字段填充清单（写入输出 JSON，F003 import 用）：**\n- platform = 'youtube'\n- handle = snippet.customUrl\n- externalId = channel.id\n- displayName = snippet.title\n- bio = snippet.description\n- avatarUrl = snippet.thumbnails.high.url\n- countryCode = snippet.country (ISO-2)\n- language = snippet.defaultLanguage\n- followerCount = statistics.subscriberCount\n- categories = topicDetails.topicCategories → mapping 到 KOLMatrix 类目\n- avgViews = viewCount / videoCount 估算\n- metadata.is_demo = true\n- metadata.youtube.channelCreatedAt = snippet.publishedAt\n- metadata.youtube.videoCount = statistics.videoCount\n- metadata.youtube.totalViewCount = statistics.viewCount\n- metadata.youtube.bannerUrl = brandingSettings.image.bannerExternalUrl\n- metadata.youtube.scrapedAt = now()\n\n**预备 B5：** B5（已合并到 MVP-demo-launch sprint）会扩 schema 把 metadata.youtube.* 提升为正式列。\n\n**Acceptance：**\n- 输出 docs/kol-seed-youtube-{date}.json ≥ 1,000 entries\n- 中文区（CN+HK+TW）≥ 200\n- 每 region 至少 10 KOL\n- 类目覆盖 ≥ 6 个\n- followers 中位数 ≥ 50K\n- 全字段填充率 ≥ 95%（除非 channel 自身没 country/language）\n- quota 实际消耗 ≤ 5,000 units"
     },
     {
       "id": "F003",
-      "title": "ja.json 全翻 ~812 处（doubao-pro + 用户 review）",
+      "title": "数据清洗 + import script + is_demo 标记",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "跑 `npm run i18n:translate -- --target ja` 自动翻 ~812 leaves。\n\n**重点 review：** 敬语级别（dashboard 用です/ます级 / marketing 文案可用 dashing 风格）+ 长句通顺度（auth.heroTitle 含 HTML 嵌套）+ 品牌词保留 + 营销 vs 功能 UI 不同语调\n\n**Acceptance：** ja.json leaves 与 en.json 一致；tests/unit/i18n-ja-coverage.test.ts 通过；用户 spot check 5 页（dashboard/discovery/database/campaigns/weekly-report）；commit `i18n(ja): full translation 812 leaves via doubao-pro + user review`"
+      "status": "pending",
+      "acceptance": "**新建 `scripts/import-kol-from-youtube.ts`：**\n1. 读 docs/kol-seed-youtube-{date}.json（F002 输出）\n2. 字段映射到 Prisma Kol model（参照 BM1-F002 既有 seed-kol-from-enriched.ts 逻辑）\n3. metadata 字段 塞 `{is_demo: true, source: 'youtube-api', seeded_at: now(), youtube: {...}}` — **避免 schema migration**（B5 后续升级到正式列）\n4. **upsert by (tenantId, platform, externalId)**（用 channel.id 去重）\n5. categories 推断 mapping（轻量，不调 AI）：Action_game→FPS/Action / Strategy_video_game→Strategy / Role-playing_video_game→RPG / Sports_game→Sports / 等\n6. 进度日志 + import/skip 数\n\n**package.json scripts：** `import:kol-youtube` + `import:kol-youtube:dry`\n\n**执行流程：**\n- staging 先跑：`npm run import:kol-youtube`\n- prod 留待用户手动 SSH（**不要在 building 阶段自动跑 prod**）\n\n**Acceptance：**\n- staging Kol count 增加 ≥ 1,000（原 2,535 → 3,500+）\n- staging 全部新增 KOL 含 metadata.is_demo=true\n- staging 验证 categories 推断正确率 ≥ 90%（spot check 50 entries）\n- tests/integration/import-kol-from-youtube.test.ts 验证 import + RLS 隔离 + metadata 写入 + 一键清 SQL（DELETE WHERE metadata->>'is_demo'='true'）\n- prod import 留待用户手动触发，本批次 acceptance **不含 prod**"
     },
     {
       "id": "F004",
-      "title": "ko.json 全翻 ~812 处（doubao-pro + 用户 review）",
+      "title": "弃用 enriched JSON（保留 git 历史）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "同 F003，target ko。\n\n**重点 review：** 敬语（습니다/해요 体）+ 영어 차용어（KOL/Campaign 是否保英 / 是否用 캠페인）+ 营销文案语调\n\n**Acceptance：** ko 同 F003 标准；commit `i18n(ko): full translation 812 leaves via doubao-pro + user review`"
+      "status": "pending",
+      "acceptance": "**不删除以下文件**（git 历史保留）：\n- docs/kol-seed-enriched-final.json / .csv\n- docs/kol-seed-enriched.json / .csv\n- scripts/seed-kol-from-enriched.ts（保留 BM1-F002 历史）\n\n**新建 `docs/kol-seed-enriched-DEPRECATED-2026-04-27.md`：**\n- 弃用原因：99.5% < 10K micro-creator，不符合 KOL 平台定位（Planner 2026-04-27 调研发现）\n- 数据画像：2,524 / 415 gaming / median followers 2,540 / 中文区缺失（CN 0 / TW 1）\n- 替换方案：YouTube Data API 重爬（本批次）\n- 历史 AI 打标成本 $0.91 沉没\n- prod 未导入此数据；staging 历史曾导入 2,524 条\n- 6 月爬虫团队真数据接入路径：BL-012 + 待起草的 B6 spec\n\n**Acceptance：**\n- DEPRECATED md 存在 + 引用本批次 spec\n- enriched JSON 不删除\n- BM1 sprint completed_features 不变"
     },
     {
       "id": "F005",
-      "title": "es.json 全翻 ~812 处（gemini-2.5-flash-lite + 用户 review）",
+      "title": "PRD §12 验证 + spec 链一致性 check",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "跑 `npm run i18n:translate -- --target es` 自动翻 ~812 leaves（model 路由到 gemini-2.5-flash-lite）。\n\n**重点 review：** 性别一致性（西语动名词形态）+ 拉美 vs 欧西区分（默认中性）+ 长度（西语普遍比英语长 20-30%，注意 UI 不破坏）+ 营销文案语调\n\n**Acceptance：** es 同 F003 标准；commit `i18n(es): full translation 812 leaves via gemini-2.5-flash-lite + user review`"
-    },
-    {
-      "id": "F006",
-      "title": "<html lang> runtime 修 + 6 个静态守门 tests",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "**修 src/app/layout.tsx + src/app/[locale]/layout.tsx：**\n- root layout 必须保留 <html><body>（Next.js App Router 硬要求），lang 设 'en' fallback\n- [locale]/layout.tsx 必须能让 <html lang> 反映实际 locale\n- **推荐方案（待 Generator F006 spike 决定，~30 min）：** 用 next-intl + Next.js 16 root layout async params；如不行 fallback 用 client-side useEffect 同步 document.documentElement.lang（hydration mismatch 风险评估）\n- 验证：访问 /en/* lang='en' / /zh/* lang='zh' / /ja|ko|es/* 同理\n\n**6 个静态守门 tests（含 F002-F005 的 4 个 coverage tests）：**\n1. tests/unit/i18n-zh-coverage.test.ts（F002 含）\n2. tests/unit/i18n-ja-coverage.test.ts（F003 含）\n3. tests/unit/i18n-ko-coverage.test.ts（F004 含）\n4. tests/unit/i18n-es-coverage.test.ts（F005 含）\n5. tests/unit/i18n-placeholders.test.ts：所有 locale leaves 中 {xxx} 占位符与 en 一一对应\n6. tests/unit/i18n-html-tags.test.ts：所有 locale leaves HTML tag (<accent>/<br></br>/<strong>) 与 en 一一对应\n\n**Acceptance：**\n- /en/login curl + view-source 含 lang='en'；/zh/login lang='zh'；其他同理\n- 6 个守门 test 全绿\n- 浏览器 console 无 hydration warning（Generator 验证）"
-    },
-    {
-      "id": "F007",
-      "title": "i18n 翻译 runbook + Topbar 5 语言全启用",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "**新建 docs/dev/i18n-runbook.md（≥ 80 行）：**\n- 加新文案流程：en.json 加 key → npm run i18n:translate → 用户 review → commit\n- 新增 locale 流程（如未来加 fr）：routing.ts 加 fr → messages/fr.json 复制 en.json → npm run i18n:translate --target fr → glossary 加 fr 列\n- glossary 维护规范\n- 翻译质量评级标准（A: native quality / B: 通顺 / C: 字面 / D: 重翻）\n- 模型路由：默认 zh/ja/ko=doubao-pro，es=gemini-2.5-flash-lite；如未来想升级用 deepseek-v4-pro 或 claude-sonnet-4.6\n\n**Topbar 5 语言全启用：**\n- 当前 selector 应已是 5 语言（routing.locales 含 en/zh/ja/ko/es）\n- 检查无 disable 逻辑（本批次不再降级 ja/ko/es）\n- 切换语言后验证 cookie NEXT_LOCALE + URL 跳转 + html lang 同步\n\n**Acceptance：**\n- runbook ≥ 80 行，含 5 流程示例\n- L2 staging Topbar 切 ja/ko/es 后页面渲染对应翻译\n- cookie 正确写入\n- 现有 i18n 相关 E2E（login locale-prefix）不退化"
+      "status": "pending",
+      "acceptance": "**已完成于 spec 起草时（commit 23aba07）：** PRD §12 line 484 已更新。\n\n**本 feature 实际工作（轻量 ~30min）：**\n1. Generator 验证 PRD §12 修改正确（grep 'YouTube Data API'）\n2. 验证 spec 链一致性：MVP-kol-seed-redo / B5（合并到 MVP-demo-launch）/ BL-012 互相引用正确\n3. 如发现 spec 链遗漏，加 cross-reference\n\n**Acceptance：**\n- grep 'YouTube Data API' docs/product/KOLMatrix-MVP-PRD.md 输出含 'MVP 一次性手动 seed via YouTube Data API 允许'\n- spec 链一致性 grep 验证通过\n- 不重写 .auto-memory/project-status.md（Planner 在 done 收尾时做）"
     }
   ]
 }
