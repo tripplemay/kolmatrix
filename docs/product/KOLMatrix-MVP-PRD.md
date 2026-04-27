@@ -481,9 +481,12 @@ MVP 用 **aigcgateway**（已接入）提供 3 档 AI 能力：
 - ❌ 活动日历 / 甘特图（列表视图足够）
 - ❌ 多 Product 组合 / Product 模板
 - ❌ BullMQ workers 真实跑（Job Queue interface 有但 executor 是 in-memory stub）
-- ❌ YouTube Data API **持续 / 自动 sync**（B6 + BL-012 爬虫团队 ~2026-06-25 落地）
-  - 注：**MVP 一次性手动 seed via YouTube Data API 允许**（用户 2026-04-27 决议）— 用于 demo 启动前 seed 1000+ 真实高粉游戏 KOL，替代 XLSX micro-creator 数据集（2026-04-27 调研发现 XLSX 99.5% < 10K followers，不符合 KOL 平台定位）
-  - 一次性 seed 见 `docs/specs/MVP-kol-seed-redo-spec.md`（freeze after demo launch；6 月由爬虫团队 sync worker 接力）
+- ✅ **YouTube Data API 持续 / 自动 sync 现已允许**（用户 2026-04-27 二次决议；原 MVP 锁定的 ❌ 已解锁）
+  - **B6-kol-daily-sync** KOLMatrix 自建每日 cron 增量同步（30-50 KOL/day，~2026-05-12 ~ 05-17 落地，不依赖外部团队 — 核心理由：自主可控数据增长）
+  - **BL-012 爬虫团队** 6 月接入（M4 ~2026-06-15 + M5 ~2026-06-25），交付 5K KOL + 持续 sync
+  - **共存策略**：B6 + BL-012 双数据源，按 metadata.source 字段区分（`youtube-api-daily` / `crawler-team`），互为容灾
+  - 一次性 seed `docs/specs/MVP-kol-seed-redo-spec.md`（已建 1000+ 真高粉 demo seed）+ B6 接力持续增长
+  - B6 详见 `docs/specs/B6-kol-daily-sync-spec.md`
 - ❌ 邮件模板编辑器（B4）
 - ❌ 邮件队列监控页（B4）
 - ❌ 退订管理自动化（B4）
