@@ -4,20 +4,20 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BM2-campaign-outreach-roi** ✅ done（2026-04-26 Reviewer L2 复验通过），11/11，fix_rounds=1
-  - L1：已通过（单测/集成/E2E smoke/typecheck/lint）
-  - L2 staging rerun：7/7 PASS（bm1-flow + journey-a + journey-b + marketer-dashboard）
-  - 历史阻断（outreach 500 / roi 404 / weekly-report 404）已不可复现
-  - signoff：`docs/test-reports/BM2-campaign-outreach-roi-signoff-2026-04-26.md`
-  - L2 复验报告：`docs/test-reports/BM2-campaign-outreach-roi-l2-staging-reverifying-2026-04-26.md`
+- **MVP-visual-fidelity-hotfix** — status=fixing（2026-04-27 Reviewer 首轮验收）
+- 进度：7 features 中 3 completed，4 退回 pending（F002/F003/F004/F005）
+- 报告：`docs/test-reports/MVP-visual-fidelity-hotfix-verifying-2026-04-27.md`
 
-## MVP 现状
-- BM1 + BM2 全部签收，MVP 4 大能力齐备
-- 待 Planner 启动下一批次（候选：MVP-visual-fidelity hotfix）
+## 已验证通过
+- L1：typecheck/lint、unit(2/4)、integration(2/11) 全 PASS
+- L2 staging：preflight healthy（git_sha=5dbcb07），E2E 7 PASS
+- F001/F007 静态条款：render-stitch-previews 18/18、baseline 13 张含 en-kols-detail、kols-detail visual case 存在
 
-## 角色分配
-- Planner Kimi / Generator johnsong / Evaluator Reviewer
+## 当前阻断（需 Generator 修复）
+- F002：缺 `tests/e2e/discovery-fidelity.spec.ts`
+- F003：缺 `tests/e2e/database-fidelity.spec.ts`
+- F004：acceptance 要 `tests/integration/campaigns-list-filter.test.ts`，实际为 `campaigns-list-filter-combo.test.ts`
+- F005：acceptance 要 `tests/integration/campaign-detail-rsc-boundary.test.ts`，实际为 `tests/unit/campaign-detail-rsc-boundary.test.ts`
 
 ## 遗留关注
-- visual-regression 仍 Linux canonical（darwin 本地会策略性 skip）
-- discovery fullPage 漂移长期根因仍在 backlog（当前 viewport-only 基线稳定）
+- visual-regression 在 darwin 按平台策略 skip（Linux canonical）
