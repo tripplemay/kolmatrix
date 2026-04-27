@@ -391,17 +391,28 @@ F005 ─→ F006 (tests + spec 链 + BL-012 兼容)
 
 详见 `docs/specs/B6-kol-daily-sync-spec.md` §10 时序 + §11 双数据源策略。
 
-## 13. 用户决策（2026-04-27 ✅ lock）
+## 13. 用户决策（2026-04-27 ✅ 4/4 全 lock）
 
 | # | 问题 | 用户答复 |
 |---|---|---|
 | 1 | 是否启动 B6 自动同步 | ✅ 方案 A（起草 spec，启动） |
 | 2 | 启动时机 | ✅ kol-seed-redo 完成后立即做（核心理由：不依赖外部团队验证 KOL 发现）|
 | 3 | PRD §12 更新 | ✅ 同意 |
-| 4 | 与 demo-launch 时序 | ⏳ 待选 A/B/C（Planner 推荐 B 邀请优先 + B6 紧跟）|
+| 4 | 与 demo-launch 时序 | ✅ **方案 A B6 优先**（接受邀请推迟 2 天换取自主可控数据增长前置）|
 
 ---
 
-**Spec 状态：** decisions-locked（5 features 4-5 day，3/4 决策 lock，余 1 项时序待选）
+**Spec 状态：** decisions-fully-locked（5 features 4-5 day，4/4 决策全 lock）
 
-**待用户最后确认 1 项：** §10 时序 A/B/C 选择？Planner 推荐 B（邀请节点不动 + B6 紧跟邀请发出后）
+**最终时序（方案 A lock）：**
+```
+~04-28  kol-seed-redo done（fix-round 1 + reverifying 完成）
+~04-28  ⭐ B6 启动（Generator 接力）
+~05-03  B6 done + 第一次 cron 自动跑（prod）
+~05-03  MVP-demo-launch 合并 sprint 启动（9 features）
+~05-09  done + 邀请发出 ⭐ MVP 上线（vs 原 05-07，推迟 2 天）
+~05-09 ~ 06-25  6.5 周，每日 +30-50 KOL = 累计 +1300-2200
+~06-25  BL-012 爬虫团队接入 + 替换 adapter（~1 day）
+```
+
+**用户战略选择：** 邀请推迟 2 天换取"邀请发出时已有 5 天自动同步数据"，种子用户首次登录看到的不是"静态 1000 条"而是"持续生长的 1000+ 条"，PMF 信号更强。

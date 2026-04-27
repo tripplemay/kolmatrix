@@ -34,11 +34,21 @@ prerequisites:
 - **demo-prep F004** 发放 runbook（Planner，~0.5 day）
 - prod-launch-smoke 整批（Reviewer，~半天）
 
-**时间线影响：**
-- 邀请发出 ~2026-05-07（vs C 方案 ~05-04，推迟 3 天）
-- 优势：邀请发出时 KOL 详情页含 banner + 视频 + 真数据，完全增强版（"产品在迭代"叙事丢失，但首版即完整版）
+**时间线影响（用户 2026-04-27 二次更新：B6 优先 = 方案 A）：**
+- 邀请发出 ~2026-05-09（推迟 vs 原 demo-launch only 05-07）
+- 推迟 2 天换取 B6 自动同步前置（邀请发出时已 5 天自动数据增长）
+- 优势：邀请发出时 KOL 库不仅含完整 enriched 数据，还在持续生长（"产品在迭代" PMF 信号）
 
-**详见：** `docs/specs/B5-kol-data-enrichment-spec.md` §10 时序方案 B2
+**最终时序：**
+```
+~04-28  kol-seed-redo done
+~04-28  B6-kol-daily-sync 启动（Generator）
+~05-03  B6 done + 第一次 cron 自动跑
+~05-03  MVP-demo-launch 启动（本 9 features 合并 sprint）
+~05-09  done + 邀请发出 ⭐ MVP 上线
+```
+
+**详见：** `docs/specs/B5-kol-data-enrichment-spec.md` §10 时序方案 B2 + `docs/specs/B6-kol-daily-sync-spec.md` §13 时序方案 A
 
 # MVP-seed-demo-prep — 种子用户 demo 准备
 
