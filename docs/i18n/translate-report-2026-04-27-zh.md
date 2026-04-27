@@ -4,21 +4,19 @@
 - Target: zh
 - Model: doubao-pro
 - Mode: live
-- Untranslated leaves: 59
-- Applied: 54
+- Untranslated leaves: 37
+- Applied: 32
 - Skipped: 5
-- Estimated cost: $0.0028
+- Estimated cost: $0.0023
 
 ## Per-section breakdown
 
 | Section | Leaves | Applied | Skipped | Prompt tok | Output tok |
 |---|---:|---:|---:|---:|---:|
-| topbar | 7 | 7 | 0 | 3064 | 0 |
-| userMenu | 3 | 3 | 0 | 3004 | 0 |
-| auth | 11 | 11 | 0 | 3141 | 0 |
-| dashboard | 12 | 12 | 0 | 3143 | 0 |
-| common | 2 | 2 | 0 | 2994 | 0 |
-| knowledgeBase | 4 | 4 | 0 | 3045 | 0 |
+| topbar | 5 | 5 | 0 | 3035 | 0 |
+| auth | 9 | 9 | 0 | 3121 | 0 |
+| dashboard | 1 | 1 | 0 | 2996 | 0 |
+| knowledgeBase | 2 | 2 | 0 | 3011 | 0 |
 | discovery | 9 | 9 | 0 | 3089 | 0 |
 | campaigns | 3 | 3 | 0 | 3049 | 0 |
 | outreach | 5 | 0 | 5 | 3097 | 0 |

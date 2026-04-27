@@ -13,11 +13,11 @@
     "searchPlaceholder": "搜索KOL、活动、邮件...",
     "languageAriaLabel": "更改语言",
     "locale": {
-      "en": "English",
+      "en": "英语",
       "zh": "中文（简体）",
-      "ja": "日本語",
-      "ko": "한국어",
-      "es": "Español"
+      "ja": "日语",
+      "ko": "韩语",
+      "es": "西班牙语"
     }
   },
   "userMenu": {
@@ -172,8 +172,8 @@
     "emptyCardLabel": "录入新产品",
     "card": {
       "lastUpdated": "更新于 {date}",
-      "emailTemplates": "{count} 套邮件模板",
-      "videoScripts": "{count} 套视频脚本",
+      "emailTemplates": "{count, plural, one {# 套邮件模板} other {# 套邮件模板}}",
+      "videoScripts": "{count, plural, one {# 套视频脚本} other {# 套视频脚本}}",
       "assetsReady": "素材已就绪",
       "generating": "正在生成素材…",
       "generationFailed": "生成失败 — 请编辑后重试",
@@ -601,7 +601,7 @@
           "closeout": "结案倒计时",
           "noEndDate": "—",
           "daysLeft": "{days, plural, =0 {今日结案} other {还剩 # 天}}",
-          "overdue": "已逾期 {days} 天"
+          "overdue": "{days, plural, one {已逾期 # 天} other {已逾期 # 天}}"
         },
         "ai": {
           "heading": "AI 建议",
@@ -734,7 +734,7 @@
     },
     "topTemplates": {
       "title": "热门模板",
-      "usedCount": "已使用 {count} 次",
+      "usedCount": "已使用 {count} {count, plural, one {次} other {次}}",
       "noUsage": "还未发送 — 发送第一封后将有数据",
       "openRate": "开信",
       "noOpenRate": "暂无数据"
@@ -861,7 +861,7 @@
     "pipeline": {
       "title": "按阶段管线",
       "liveLabel": "实时数据",
-      "rowCount": "{count} 位 KOL ({percent}%)"
+      "rowCount": "{count} {count, plural, one {位 KOL} other {位 KOL}} ({percent}%)"
     },
     "funnel": {
       "title": "转化漏斗",

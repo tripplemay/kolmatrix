@@ -38,7 +38,7 @@
       "title": "es.json 全翻 ~812 处（gemini-2.5-flash-lite + 用户 review）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "跑 `npm run i18n:translate -- --target es` 自动翻 ~812 leaves（model 路由到 gemini-2.5-flash-lite）。\n\n**重点 review：** 性别一致性（西语动名词形态）+ 拉美 vs 欧西区分（默认中性）+ 长度（西语普遍比英语长 20-30%，注意 UI 不破坏）+ 营销文案语调\n\n**Acceptance：** es 同 F003 标准；commit `i18n(es): full translation 812 leaves via gemini-2.5-flash-lite + user review`"
     },
     {
