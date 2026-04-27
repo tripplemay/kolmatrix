@@ -1,17 +1,44 @@
 ---
 name: MVP-seed-demo-prep
-description: MVP 上线前最后批次 - 种子用户 demo 准备（账号、数据、引导发放）
-status: decisions-locked
+description: MVP 上线前最后批次 - 种子用户 demo 准备（账号、数据、引导发放） + 已并入 MVP-demo-launch 合并 sprint（含 B5）
+status: decisions-locked + merged-sprint
 created_by: Kimi (Planner)
 created_at: 2026-04-27
 decisions_locked_at: 2026-04-27
-estimated_effort: 2-2.5 day
-features_count: 4 (F004 prod 烟测已拆出 → docs/specs/MVP-prod-launch-smoke-spec.md)
+merged_into: MVP-demo-launch（9 features = 本批次 4 + B5-kol-data-enrichment 5），用户 2026-04-27 选 B2 合并方案
+estimated_effort: 5-6 day（合并后；本批次部分仍 2-2.5 day）
+features_count: 4（合并 sprint 内）
 prerequisites:
-  - MVP-visual-fidelity-hotfix done
-  - 用户触发 prod deploy 触发完成
+  - MVP-visual-fidelity-hotfix done ✅
+  - MVP-i18n-full-locale done（verifying 中）
+  - MVP-kol-seed-redo done（schema metadata.youtube.* 已填）
+  - 用户触发 prod deploy 完成
   - MVP-prod-launch-smoke done（必须先确认 prod 可承接种子用户）
 ---
+
+## ⭐ 合并 sprint 说明（用户 2026-04-27 选 B2）
+
+本批次与 `B5-kol-data-enrichment` 合并到单一 sprint **MVP-demo-launch**（9 features 串行）。
+
+**执行顺序（Generator 视角）：**
+1. B5-F001 schema migration（~3-4h，先做，让 demo seed 用新字段）
+2. B5-F002 enrich KOL + metadata 升级到列（~2-3h）
+3. **demo-prep F001** demo tenant seed 脚本（~0.5 day，基于新 schema）
+4. **demo-prep F002** 用户文档（~1 day）
+5. B5-F003 Discovery filter +3 维 + 高级筛选折叠（~4-5h）
+6. B5-F004 KOL 详情页改造（banner + 6 视频 + 词云 + 真 engagement + 隐藏 audience）（~5-6h）
+7. B5-F005 i18n 新 keys + 守门 tests（~2-3h）
+
+**Planner / 用户并行（不占 Generator）：**
+- **demo-prep F003** 演示脚本起草（Planner，~0.3 day）+ 视频录制（用户）
+- **demo-prep F004** 发放 runbook（Planner，~0.5 day）
+- prod-launch-smoke 整批（Reviewer，~半天）
+
+**时间线影响：**
+- 邀请发出 ~2026-05-07（vs C 方案 ~05-04，推迟 3 天）
+- 优势：邀请发出时 KOL 详情页含 banner + 视频 + 真数据，完全增强版（"产品在迭代"叙事丢失，但首版即完整版）
+
+**详见：** `docs/specs/B5-kol-data-enrichment-spec.md` §10 时序方案 B2
 
 # MVP-seed-demo-prep — 种子用户 demo 准备
 

@@ -1,16 +1,34 @@
 ---
 name: B5-kol-data-enrichment
-description: KOL 数据深度增强 - schema 扩字段提升 + Discovery 高级筛选 + KOL 详情页改造（最近 6 视频 + 主题词云 + 真 engagementRate） + 隐藏 audience demographics（用户 2026-04-27 决议）
-status: decisions-locked
+description: KOL 数据深度增强 - schema 扩字段提升 + Discovery 高级筛选 + KOL 详情页改造（最近 6 视频 + 主题词云 + 真 engagementRate） + 隐藏 audience demographics + 已并入 MVP-demo-launch 合并 sprint（用户 2026-04-27 选 B2）
+status: decisions-locked + merged-sprint
 created_by: Kimi (Planner)
 created_at: 2026-04-27
 decisions_locked_at: 2026-04-27
-estimated_effort: 2-3 day
+merged_into: MVP-demo-launch（9 features = MVP-seed-demo-prep 4 + 本批次 5），用户 2026-04-27 选 B2 合并方案
+estimated_effort: 5-6 day（合并后；本批次部分仍 2-3 day）
+features_count: 5（合并 sprint 内）
 prerequisites:
   - MVP-kol-seed-redo done（schema metadata.youtube.* 已填）
   - YouTube API 余配额充足（B5 二次跑 channels.list 仅消耗 ~30 units）
-trigger: kol-seed-redo done 后启动；与 MVP-prod-launch-smoke + MVP-seed-demo-prep 时序协调（详见 §10）
+trigger: 合并 sprint MVP-demo-launch 内执行（见 §10 时序方案 B2 已 lock）
 ---
+
+## ⭐ 合并 sprint 说明（用户 2026-04-27 选 B2）
+
+本批次与 `MVP-seed-demo-prep` 合并到单一 sprint **MVP-demo-launch**（9 features 串行）。
+
+**合并理由：** 用户期望 "和之前规划的下一批次一起启动"，且接受邀请发出节点推迟 3 天换取首版即完整版（含 KOL banner / 6 视频 / 真 engagement）。
+
+**Generator 顺序详见 `MVP-seed-demo-prep-spec.md` 的 "⭐ 合并 sprint 说明" 段落。**
+
+**本批次在合并 sprint 内位置：**
+- B5-F001 schema migration → 第 1 步（让 demo seed 用新字段）
+- B5-F002 enrich KOL → 第 2 步
+- demo-prep F001+F002 → 第 3-4 步
+- B5-F003 Discovery filter → 第 5 步
+- B5-F004 KOL 详情页改造 → 第 6 步（最重）
+- B5-F005 i18n + 守门 → 第 7 步
 
 # B5-kol-data-enrichment — KOL 数据深度增强
 
@@ -361,7 +379,7 @@ F001 (schema migration) ─→ F002 (enrich + 升级 metadata 到列) ─┐
 - F003-F005 是 UI 改造，留到邀请发出后做（种子用户首周用 demo-prep 简化版，第二周看到 B5 增强版，**形成"产品在迭代"印象**）
 - demo-prep F001 demo seed 脚本可基于 B5 升级后的 schema 写（一次到位）
 
-## 11. 用户决策（2026-04-27 ✅ lock）
+## 11. 用户决策（2026-04-27 ✅ 5/5 全 lock）
 
 | # | 问题 | 用户答复 |
 |---|---|---|
@@ -369,15 +387,15 @@ F001 (schema migration) ─→ F002 (enrich + 升级 metadata 到列) ─┐
 | 2 | 启动时机 | ✅ 本批次（kol-seed-redo）完成后，和之前规划的下一批次一起启动 |
 | 3 | filter UI 折叠改进 | ✅ 同意（含在 F003）|
 | 4 | audience demographics UI | ✅ 隐藏（含在 F004）|
+| 5 | §10 时序方案 | ✅ **B2 合并 sprint**（接受邀请发出推迟到 ~05-07，换取首版即完整版） |
 
 ---
 
-**Spec 状态：** decisions-locked（2026-04-27 Planner 起草 + 用户裁决 4/4 lock）
-
-**待用户最终确认 1 项：** §10 时序方案 A / B / C？Planner 推荐 C（schema 部分前置，UI 部分后置）。
+**Spec 状态：** decisions-locked + merged-sprint（2026-04-27 Planner 起草 + 用户裁决 5/5 全 lock）
 
 **与其他批次关系：**
 - 依赖 MVP-kol-seed-redo（schema metadata.youtube.* 已填）
-- 与 MVP-seed-demo-prep + MVP-prod-launch-smoke 时序协调（方案 A/B/C 待定）
+- **合并 sprint：** MVP-demo-launch = MVP-seed-demo-prep (4) + 本批次 (5) = 9 features
+- prod-launch-smoke 平行执行（Reviewer，~半天）
 - 不与 BIx-staging-automation / B4-extended-email-system 冲突
 - 与 BL-012 爬虫团队 6 月接入兼容（schema 列已就绪）
