@@ -46,7 +46,7 @@
       "title": "<html lang> runtime 修 + 6 个静态守门 tests",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**修 src/app/layout.tsx + src/app/[locale]/layout.tsx：**\n- root layout 必须保留 <html><body>（Next.js App Router 硬要求），lang 设 'en' fallback\n- [locale]/layout.tsx 必须能让 <html lang> 反映实际 locale\n- **推荐方案（待 Generator F006 spike 决定，~30 min）：** 用 next-intl + Next.js 16 root layout async params；如不行 fallback 用 client-side useEffect 同步 document.documentElement.lang（hydration mismatch 风险评估）\n- 验证：访问 /en/* lang='en' / /zh/* lang='zh' / /ja|ko|es/* 同理\n\n**6 个静态守门 tests（含 F002-F005 的 4 个 coverage tests）：**\n1. tests/unit/i18n-zh-coverage.test.ts（F002 含）\n2. tests/unit/i18n-ja-coverage.test.ts（F003 含）\n3. tests/unit/i18n-ko-coverage.test.ts（F004 含）\n4. tests/unit/i18n-es-coverage.test.ts（F005 含）\n5. tests/unit/i18n-placeholders.test.ts：所有 locale leaves 中 {xxx} 占位符与 en 一一对应\n6. tests/unit/i18n-html-tags.test.ts：所有 locale leaves HTML tag (<accent>/<br></br>/<strong>) 与 en 一一对应\n\n**Acceptance：**\n- /en/login curl + view-source 含 lang='en'；/zh/login lang='zh'；其他同理\n- 6 个守门 test 全绿\n- 浏览器 console 无 hydration warning（Generator 验证）"
     },
     {
@@ -54,7 +54,7 @@
       "title": "i18n 翻译 runbook + Topbar 5 语言全启用",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**新建 docs/dev/i18n-runbook.md（≥ 80 行）：**\n- 加新文案流程：en.json 加 key → npm run i18n:translate → 用户 review → commit\n- 新增 locale 流程（如未来加 fr）：routing.ts 加 fr → messages/fr.json 复制 en.json → npm run i18n:translate --target fr → glossary 加 fr 列\n- glossary 维护规范\n- 翻译质量评级标准（A: native quality / B: 通顺 / C: 字面 / D: 重翻）\n- 模型路由：默认 zh/ja/ko=doubao-pro，es=gemini-2.5-flash-lite；如未来想升级用 deepseek-v4-pro 或 claude-sonnet-4.6\n\n**Topbar 5 语言全启用：**\n- 当前 selector 应已是 5 语言（routing.locales 含 en/zh/ja/ko/es）\n- 检查无 disable 逻辑（本批次不再降级 ja/ko/es）\n- 切换语言后验证 cookie NEXT_LOCALE + URL 跳转 + html lang 同步\n\n**Acceptance：**\n- runbook ≥ 80 行，含 5 流程示例\n- L2 staging Topbar 切 ja/ko/es 后页面渲染对应翻译\n- cookie 正确写入\n- 现有 i18n 相关 E2E（login locale-prefix）不退化"
     }
   ]

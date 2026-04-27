@@ -104,7 +104,27 @@ const youtube = google.youtube({
 - dry-run 模式（不调 API 仅打印计划）
 - 失败重试 3 次（30s/2min/5min backoff）
 
-### F002 — 多维矩阵爬取 1000-2000 真 KOL
+### F002 — 多维矩阵爬取 1000-2000 真 KOL（全字段填充，2026-04-27 用户裁决扩展）
+
+**🆕 用户裁决（2026-04-27）：** F002 扩展为"全字段填充"，0 增量工时（API 调用本来就要做）。channels.list 调用时 `part=snippet,statistics,topicDetails,brandingSettings` 全要，把以下 schema 字段全部填满：
+
+| Kol schema 字段 | YouTube API 来源 |
+|---|---|
+| bio | `snippet.description` |
+| avatarUrl | `snippet.thumbnails.high.url` |
+| countryCode | `snippet.country` (ISO-2) |
+| language | `snippet.defaultLanguage` |
+| followerCount | `statistics.subscriberCount`（真数据） |
+| categories | `topicDetails.topicCategories` → mapping 到 KOLMatrix 类目（FPS/MOBA/RPG/手游/Casual/Esports/etc.）|
+| avgViews | `viewCount / videoCount` 估算 |
+| externalId | `channel.id`（YouTube 官方 channel ID）|
+| metadata.is_demo | `true`（标记 demo 数据，6 月可一键清） |
+| metadata.youtube.channelCreatedAt | `snippet.publishedAt`（账号建立时间，B5 用） |
+| metadata.youtube.videoCount | `statistics.videoCount`（B5 用） |
+| metadata.youtube.totalViewCount | `statistics.viewCount`（B5 用） |
+| metadata.youtube.bannerUrl | `brandingSettings.image.bannerExternalUrl`（B5 用） |
+
+**预备 B5：** B5-kol-data-enrichment 批次会扩 schema 把 metadata.youtube.* 提升为正式列；本批次先塞 metadata JSON 避免 schema migration 阻塞 i18n building。
 
 **实现：** F001 脚本配置矩阵执行：
 
