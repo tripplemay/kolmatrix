@@ -4,20 +4,19 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **MVP-visual-fidelity-hotfix** — status=fixing（2026-04-27 Reviewer 首轮验收）
-- 进度：7 features 中 3 completed，4 退回 pending（F002/F003/F004/F005）
-- 报告：`docs/test-reports/MVP-visual-fidelity-hotfix-verifying-2026-04-27.md`
+- **MVP-visual-fidelity-hotfix** ✅ done（2026-04-27 Reviewer 复验签收），7/7，fix_rounds=1
+- signoff：`docs/test-reports/MVP-visual-fidelity-hotfix-signoff-2026-04-27.md`
 
-## 已验证通过
-- L1：typecheck/lint、unit(2/4)、integration(2/11) 全 PASS
-- L2 staging：preflight healthy（git_sha=5dbcb07），E2E 7 PASS
-- F001/F007 静态条款：render-stitch-previews 18/18、baseline 13 张含 en-kols-detail、kols-detail visual case 存在
+## 复验结论
+- 上轮 4 项阻断全部闭环：
+  - discovery/database fidelity E2E 文件已补齐并通过
+  - campaigns-list-filter / campaign-detail-rsc-boundary integration 文件按 acceptance 对齐并通过
+- L1：typecheck/lint + 目标 unit/integration 全 PASS
+- L2 staging：preflight healthy（git_sha=406599f），E2E 20 PASS
 
-## 当前阻断（需 Generator 修复）
-- F002：缺 `tests/e2e/discovery-fidelity.spec.ts`
-- F003：缺 `tests/e2e/database-fidelity.spec.ts`
-- F004：acceptance 要 `tests/integration/campaigns-list-filter.test.ts`，实际为 `campaigns-list-filter-combo.test.ts`
-- F005：acceptance 要 `tests/integration/campaign-detail-rsc-boundary.test.ts`，实际为 `tests/unit/campaign-detail-rsc-boundary.test.ts`
+## 视觉验收说明
+- visual-regression 在当前执行节点按 Linux-canonical 策略 skip 13（非 Linux）
+- baseline in git 结构与相关守门测试已通过，像素 diff 以 Linux runner 为准
 
-## 遗留关注
-- visual-regression 在 darwin 按平台策略 skip（Linux canonical）
+## MVP 状态
+- BM1 + BM2 + MVP-visual-fidelity 均已签收，可用于种子用户 demo
