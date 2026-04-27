@@ -10,16 +10,18 @@ type: project
 
 ## Generator 产出关键证据
 - F001/F002 path-1：YouTube live 爬 760 channels（quota-bound at 8K of 10K daily）→ docs/kol-seed-youtube-2026-04-27.json
-- F002 path-2：enriched 415 entries 验证 → 50 real_kol grown / 285 below_threshold / 76 not_found → docs/kol-seed-enriched-validation-2026-04-27.json
+- F002 path-2 gaming：enriched 415 entries 全扫 → 50 real_kol（12%）→ docs/kol-seed-enriched-validation-2026-04-27.json
+- F002 path-2 nongaming：sample 600/2109 → **54 real_kol（9% AI false-negative）** → docs/kol-seed-enriched-validation-nongaming-2026-04-27.json
 - F003：staging 导入 760，DB total Kol 2535→3295，metadata.is_demo=true 760，10 categories
 - F003 schema：新 metadata jsonb column + 部分索引（用户 14:46 选 A），rollback SQL 完整
 - F006：glass-panel halo 删除 + visual baselines 重捕（13 张 7 张更新）
 - 全测试：475 unit + 234 integration = 709 specs 全绿
 
-## ⚠️ Spec 缺口（待 Reviewer 评估）
+## ⚠️ Spec 缺口 + Audit 发现（待 Reviewer 评估）
 - F002 总数 760 < ≥1000（YouTube quota 50 results/page 上限）
 - F002 中文区 country=CN+HK+TW=83 < ≥200（结构性：YouTube 无大陆账号）
-- 选项：fix-round 重跑 3-page / 接受 / 转 backlog
+- AI 打标 9% false-negative：50 (gaming) + 54 (nongaming sample) = 104 已确认 real_kol 未导入；外推 nongaming 全量 ~190 漏识别
+- 选项：fix-round 重跑 3-page + nongaming 全扫 / 接受 + follow-up batch 回收 / 全转 backlog
 
 ## 已验证
 - staging /api/health healthy（git_sha=be764a7）
