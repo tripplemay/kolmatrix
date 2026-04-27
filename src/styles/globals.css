@@ -157,10 +157,11 @@
    Custom utilities (§5 质感规则 materialization)
    ============================================================ */
 @utility glass-panel {
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  background-color: color-mix(in srgb, var(--color-cyan) 20%, transparent);
-  box-shadow: 0 0 24px color-mix(in srgb, var(--color-cyan) 30%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background-color: color-mix(in srgb, var(--color-surface-low) 70%, transparent);
+  /* No default halo — matches the Stitch prototype. Use <GlassPanel glow>
+     (ambient-glow) or the ai-glow utility when a glow is intentional. */
   border-radius: var(--radius-md);
 }
 
