@@ -26,6 +26,8 @@
     "seed:kol": "tsx scripts/seed-kol-from-enriched.ts",
     "seed:kol-youtube": "tsx scripts/seed-kol-from-youtube.ts",
     "seed:kol-youtube:dry": "tsx scripts/seed-kol-from-youtube.ts --dry-run",
+    "validate:kol-enriched": "tsx scripts/validate-kol-from-enriched.ts",
+    "validate:kol-enriched:dry": "tsx scripts/validate-kol-from-enriched.ts --dry-run",
     "seed:email-templates": "tsx scripts/seed-email-templates.ts",
     "render:stitch-previews": "tsx scripts/render-stitch-previews.ts",
     "i18n:translate": "tsx scripts/i18n-translate.ts",
