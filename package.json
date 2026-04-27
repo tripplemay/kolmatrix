@@ -28,6 +28,8 @@
     "seed:kol-youtube:dry": "tsx scripts/seed-kol-from-youtube.ts --dry-run",
     "validate:kol-enriched": "tsx scripts/validate-kol-from-enriched.ts",
     "validate:kol-enriched:dry": "tsx scripts/validate-kol-from-enriched.ts --dry-run",
+    "import:kol-youtube": "tsx scripts/import-kol-from-youtube.ts",
+    "import:kol-youtube:dry": "tsx scripts/import-kol-from-youtube.ts --dry-run",
     "seed:email-templates": "tsx scripts/seed-email-templates.ts",
     "render:stitch-previews": "tsx scripts/render-stitch-previews.ts",
     "i18n:translate": "tsx scripts/i18n-translate.ts",

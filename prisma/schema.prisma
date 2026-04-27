@@ -166,6 +166,13 @@ model Kol {
   email       String? @db.VarChar(320)
   emailSource String? @default("manual") @map("email_source") @db.VarChar(20)
 
+  // MVP-kol-seed-redo F003 — provenance JSONB. Holds is_demo flag for
+  // the YouTube seed so a single DELETE WHERE metadata->>'is_demo'='true'
+  // retires it when BL-012's crawler dataset lands. B5-kol-data-enrichment
+  // will promote metadata.youtube.* (videoCount / totalViewCount /
+  // channelCreatedAt / bannerUrl) into proper columns.
+  metadata Json? @db.JsonB
+
   tenant       Tenant        @relation(fields: [tenantId], references: [id])
   kolCampaigns KolCampaign[]
   emailLogs    EmailLog[]
