@@ -73,6 +73,10 @@ export interface ValidationResult {
 export interface CliArgs {
   dryRun: boolean;
   limit?: number;
+  /** When true, validate the AI-tagged non-gaming subset instead. Used
+   *  to confirm the AI tagger's negative calls (i.e. our seed's 2,109
+   *  non-gaming entries don't contain hidden gaming KOLs). */
+  nonGamingOnly: boolean;
 }
 
 // ---------------------------------------------------------------------
@@ -80,7 +84,7 @@ export interface CliArgs {
 // ---------------------------------------------------------------------
 
 export function parseArgs(argv: readonly string[]): CliArgs {
-  const args: CliArgs = { dryRun: false };
+  const args: CliArgs = { dryRun: false, nonGamingOnly: false };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i]!;
     if (a === "--dry-run") {
@@ -91,6 +95,8 @@ export function parseArgs(argv: readonly string[]): CliArgs {
         throw new Error(`--limit must be a positive integer`);
       }
       args.limit = n;
+    } else if (a === "--non-gaming-only") {
+      args.nonGamingOnly = true;
     }
   }
   return args;
@@ -281,17 +287,32 @@ export function summarize(results: ValidationResult[]): ValidationSummary {
 // ---------------------------------------------------------------------
 
 export function loadGamingEntries(jsonPath: string): EnrichedEntry[] {
+  return loadEntries(jsonPath, { nonGaming: false });
+}
+
+export function loadEntries(
+  jsonPath: string,
+  opts: { nonGaming: boolean }
+): EnrichedEntry[] {
   const raw = JSON.parse(readFileSync(jsonPath, "utf8")) as {
     results: EnrichedEntry[];
   };
-  return raw.results.filter((r) => r.is_gaming === true);
+  const target = !opts.nonGaming;
+  return raw.results.filter((r) => r.is_gaming === target);
 }
 
-export function outputPath(date: string = todayUtc()): string {
+export function outputPath(
+  date: string = todayUtc(),
+  variant: "gaming" | "nongaming" = "gaming"
+): string {
+  // Gaming variant keeps the unsuffixed name (the path 2 default,
+  // already committed). Non-gaming gets a `-nongaming` suffix so the
+  // two audit reports can sit side-by-side.
+  const suffix = variant === "nongaming" ? "-nongaming" : "";
   return resolve(
     __dirname,
     "..",
-    `docs/kol-seed-enriched-validation-${date}.json`
+    `docs/kol-seed-enriched-validation${suffix}-${date}.json`
   );
 }
 
@@ -321,11 +342,12 @@ export function formatOutputJson(
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   const inputPath = resolve(__dirname, "..", "docs/kol-seed-enriched-final.json");
-  let entries = loadGamingEntries(inputPath);
+  const variant: "gaming" | "nongaming" = args.nonGamingOnly ? "nongaming" : "gaming";
+  let entries = loadEntries(inputPath, { nonGaming: args.nonGamingOnly });
   if (args.limit) entries = entries.slice(0, args.limit);
 
   console.log(
-    `[validate-kol-enriched] gaming entries to validate: ${entries.length}`
+    `[validate-kol-enriched] variant=${variant} entries to validate: ${entries.length}`
   );
   console.log(
     `[validate-kol-enriched] quota cost (live): ~${entries.length} units (1u per channels.list call)`
@@ -366,7 +388,7 @@ async function main(): Promise<void> {
   });
 
   const summary = summarize(results);
-  const path = outputPath();
+  const path = outputPath(undefined, variant);
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(
     path,

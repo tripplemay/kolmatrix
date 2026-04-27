@@ -27,14 +27,23 @@ import {
 } from "@/../scripts/validate-kol-from-enriched";
 
 describe("parseArgs", () => {
-  it("defaults to live + no limit", () => {
-    expect(parseArgs([])).toEqual({ dryRun: false });
+  it("defaults to live + gaming + no limit", () => {
+    expect(parseArgs([])).toEqual({ dryRun: false, nonGamingOnly: false });
   });
 
   it("accepts --dry-run + --limit", () => {
     expect(parseArgs(["--dry-run", "--limit", "10"])).toEqual({
       dryRun: true,
+      nonGamingOnly: false,
       limit: 10,
+    });
+  });
+
+  it("flips to non-gaming when --non-gaming-only is set", () => {
+    expect(parseArgs(["--non-gaming-only", "--limit", "1400"])).toEqual({
+      dryRun: false,
+      nonGamingOnly: true,
+      limit: 1400,
     });
   });
 
