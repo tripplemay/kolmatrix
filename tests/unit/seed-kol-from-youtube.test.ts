@@ -32,15 +32,30 @@ import {
 } from "@/../scripts/seed-kol-from-youtube";
 
 describe("parseArgs", () => {
-  it("defaults to live + 50 results + all regions", () => {
-    expect(parseArgs([])).toEqual({ dryRun: false, maxResultsPerQuery: 50 });
+  it("defaults to live + 50 results + 2 pages + all regions", () => {
+    expect(parseArgs([])).toEqual({
+      dryRun: false,
+      maxResultsPerQuery: 50,
+      maxPagesPerQuery: 2,
+    });
   });
 
-  it("accepts --dry-run + --region + --max-results", () => {
-    expect(parseArgs(["--dry-run", "--region", "US", "--max-results", "25"])).toEqual({
+  it("accepts --dry-run + --region + --max-results + --max-pages", () => {
+    expect(
+      parseArgs([
+        "--dry-run",
+        "--region",
+        "US",
+        "--max-results",
+        "25",
+        "--max-pages",
+        "3",
+      ])
+    ).toEqual({
       dryRun: true,
       region: "US",
       maxResultsPerQuery: 25,
+      maxPagesPerQuery: 3,
     });
   });
 
@@ -48,26 +63,42 @@ describe("parseArgs", () => {
     expect(() => parseArgs(["--region", "FR"])).toThrow(/region must be one of/i);
   });
 
-  it("rejects out-of-range --max-results", () => {
+  it("rejects out-of-range --max-results / --max-pages", () => {
     expect(() => parseArgs(["--max-results", "0"])).toThrow();
     expect(() => parseArgs(["--max-results", "51"])).toThrow();
     expect(() => parseArgs(["--max-results", "junk"])).toThrow();
+    expect(() => parseArgs(["--max-pages", "0"])).toThrow();
+    expect(() => parseArgs(["--max-pages", "6"])).toThrow();
   });
 });
 
 describe("buildRunPlan", () => {
-  it("computes 4,020u worst-case quota for the full matrix", () => {
-    const plan = buildRunPlan({ dryRun: false, maxResultsPerQuery: 50 });
+  it("computes 8,080u worst-case quota for the full matrix at 2 pages", () => {
+    const plan = buildRunPlan({
+      dryRun: false,
+      maxResultsPerQuery: 50,
+      maxPagesPerQuery: 2,
+    });
     expect(plan.regions).toEqual(ALL_REGIONS);
-    // 8 regions × 5 keywords each.
+    // 8 regions × 5 keywords × 2 pages.
+    expect(plan.totalSearchCalls).toBe(80);
+    expect(plan.totalSearchQuotaUnits).toBe(8_000);
+    // Worst-case 80 × 50 = 4,000 channels → 80 channels.list calls.
+    expect(plan.worstCaseChannelCalls).toBe(80);
+    expect(plan.worstCaseChannelQuotaUnits).toBe(80);
+    expect(plan.totalQuotaUnitsWorstCase).toBe(8_080);
+    // Headroom check: stays under the 10K daily free quota.
+    expect(plan.totalQuotaUnitsWorstCase).toBeLessThan(10_000);
+  });
+
+  it("collapses to single page when --max-pages 1", () => {
+    const plan = buildRunPlan({
+      dryRun: false,
+      maxResultsPerQuery: 50,
+      maxPagesPerQuery: 1,
+    });
     expect(plan.totalSearchCalls).toBe(40);
-    expect(plan.totalSearchQuotaUnits).toBe(4_000);
-    // Worst-case 40 × 50 = 2,000 channels → 40 channels.list calls.
-    expect(plan.worstCaseChannelCalls).toBe(40);
-    expect(plan.worstCaseChannelQuotaUnits).toBe(40);
     expect(plan.totalQuotaUnitsWorstCase).toBe(4_040);
-    // Headroom check: stays safely under the 10K daily free quota.
-    expect(plan.totalQuotaUnitsWorstCase).toBeLessThan(5_000);
   });
 
   it("narrows to a single region when --region is provided", () => {
@@ -75,10 +106,12 @@ describe("buildRunPlan", () => {
       dryRun: false,
       region: "JP",
       maxResultsPerQuery: 50,
+      maxPagesPerQuery: 2,
     });
     expect(plan.regions).toEqual(["JP"]);
-    expect(plan.totalSearchCalls).toBe(5);
-    expect(plan.totalSearchQuotaUnits).toBe(500);
+    // 5 keywords × 2 pages.
+    expect(plan.totalSearchCalls).toBe(10);
+    expect(plan.totalSearchQuotaUnits).toBe(1_000);
   });
 });
 
@@ -287,8 +320,12 @@ describe("runCrawl + formatOutputJson", () => {
     const fakeClient: YoutubeClient = {
       searchChannels: vi.fn(async (region: Region, keyword: string) => {
         // Each (region, keyword) pair returns one fresh ID + one shared
-        // ID so the dedupe path is exercised.
-        return [`${region}-${keyword}`.replace(/\s+/g, "_"), "SHARED_ID"];
+        // ID so the dedupe path is exercised. No nextPageToken — the
+        // test runs single-page by default.
+        return {
+          ids: [`${region}-${keyword}`.replace(/\s+/g, "_"), "SHARED_ID"],
+          nextPageToken: null,
+        };
       }),
       fetchChannels: vi.fn(async (ids: string[]) =>
         ids.map((id: string) =>
@@ -297,13 +334,19 @@ describe("runCrawl + formatOutputJson", () => {
       ),
     };
 
-    const args = { dryRun: false, region: "JP" as Region, maxResultsPerQuery: 50 };
+    const args = {
+      dryRun: false,
+      region: "JP" as Region,
+      maxResultsPerQuery: 50,
+      maxPagesPerQuery: 2,
+    };
     const report = await runCrawl(args, {
       client: fakeClient,
       retry: { sleep: async () => {} },
     });
 
-    // 1 region × 5 keywords.
+    // 1 region × 5 keywords. nextPageToken is null so the second page
+    // never gets requested — searchCallsExecuted = 5, not 10.
     expect(report.searchCallsExecuted).toBe(5);
     // SHARED_ID is fetched only on the first iteration; subsequent
     // search hits dedupe it out so the channel call only carries the
@@ -325,5 +368,37 @@ describe("runCrawl + formatOutputJson", () => {
       matrixRegion: "JP",
       country: expect.any(String),
     });
+  });
+
+  it("follows nextPageToken up to maxPagesPerQuery", async () => {
+    let callCount = 0;
+    const fakeClient: YoutubeClient = {
+      searchChannels: vi.fn(async (region: Region, keyword: string) => {
+        callCount += 1;
+        // First call returns a nextPageToken; second call clears it.
+        const isFirstPage = callCount % 2 === 1;
+        return {
+          ids: [`${region}-${keyword}-p${isFirstPage ? 1 : 2}`.replace(/\s+/g, "_")],
+          nextPageToken: isFirstPage ? "TOK" : null,
+        };
+      }),
+      fetchChannels: vi.fn(async (ids: string[]) =>
+        ids.map((id: string) => stubChannel(id, "JP"))
+      ),
+    };
+
+    const report = await runCrawl(
+      {
+        dryRun: false,
+        region: "JP",
+        maxResultsPerQuery: 50,
+        maxPagesPerQuery: 2,
+      },
+      { client: fakeClient, retry: { sleep: async () => {} } }
+    );
+
+    // 5 keywords × 2 pages = 10 search calls.
+    expect(report.searchCallsExecuted).toBe(10);
+    expect(report.uniqueChannelsSeen).toBe(10);
   });
 });

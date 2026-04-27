@@ -90,6 +90,12 @@ export function isGamingTopic(urls: readonly string[]): boolean {
 // we request — the API simply caps the page. Default to that.
 const DEFAULT_MAX_RESULTS_PER_QUERY = 50;
 
+// 2 pages per (region, keyword) typically yields ~25 surviving channels
+// after the subs/videos/desc/topic filters. 40 (region,keyword) combos
+// × 2 pages = 80 search calls × 100u = 8,000u + ≤80 channels × 1u =
+// ≤8,080u, leaving ~2,000u headroom on the 10,000u/day free tier.
+const DEFAULT_MAX_PAGES_PER_QUERY = 2;
+
 // ---------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------
@@ -134,6 +140,7 @@ export interface CliArgs {
   dryRun: boolean;
   region?: Region;
   maxResultsPerQuery: number;
+  maxPagesPerQuery: number;
 }
 
 // ---------------------------------------------------------------------
@@ -144,6 +151,7 @@ export function parseArgs(argv: readonly string[]): CliArgs {
   const args: CliArgs = {
     dryRun: false,
     maxResultsPerQuery: DEFAULT_MAX_RESULTS_PER_QUERY,
+    maxPagesPerQuery: DEFAULT_MAX_PAGES_PER_QUERY,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i]!;
@@ -163,6 +171,12 @@ export function parseArgs(argv: readonly string[]): CliArgs {
         throw new Error(`--max-results must be 1..50, got "${argv[i]}"`);
       }
       args.maxResultsPerQuery = n;
+    } else if (a === "--max-pages") {
+      const n = Number(argv[++i]);
+      if (!Number.isFinite(n) || n < 1 || n > 5) {
+        throw new Error(`--max-pages must be 1..5, got "${argv[i]}"`);
+      }
+      args.maxPagesPerQuery = n;
     }
   }
   return args;
@@ -178,10 +192,11 @@ function isRegion(v: string): v is Region {
 
 export function buildRunPlan(args: CliArgs): RunPlan {
   const regions = args.region ? [args.region] : ALL_REGIONS;
-  const totalSearchCalls = regions.reduce(
+  const totalQueries = regions.reduce(
     (sum, r) => sum + KEYWORDS_BY_REGION[r].length,
     0
   );
+  const totalSearchCalls = totalQueries * args.maxPagesPerQuery;
   const totalSearchQuotaUnits = totalSearchCalls * 100;
   const worstCaseChannels = totalSearchCalls * args.maxResultsPerQuery;
   const worstCaseChannelCalls = Math.ceil(worstCaseChannels / 50);
@@ -299,19 +314,25 @@ function defaultSleep(ms: number): Promise<void> {
 // YouTube client
 // ---------------------------------------------------------------------
 
+export interface SearchPage {
+  ids: string[];
+  nextPageToken: string | null;
+}
+
 export interface YoutubeClient {
   searchChannels(
     region: Region,
     keyword: string,
-    maxResults: number
-  ): Promise<string[]>;
+    maxResults: number,
+    pageToken?: string
+  ): Promise<SearchPage>;
   fetchChannels(ids: string[]): Promise<youtube_v3.Schema$Channel[]>;
 }
 
 export function createYoutubeClient(apiKey: string): YoutubeClient {
   const yt = google.youtube({ version: "v3", auth: apiKey });
   return {
-    async searchChannels(region, keyword, maxResults) {
+    async searchChannels(region, keyword, maxResults, pageToken) {
       // NOTE: `videoCategoryId` is only honoured by search.list when
       // type=video; combining it with type=channel returns
       // 400 "Request contains an invalid argument". We instead lean on
@@ -323,12 +344,16 @@ export function createYoutubeClient(apiKey: string): YoutubeClient {
         regionCode: region,
         type: ["channel"],
         maxResults,
+        ...(pageToken ? { pageToken } : {}),
       });
       const items = res.data.items ?? [];
       const ids = items
         .map((it) => it.snippet?.channelId ?? it.id?.channelId ?? null)
         .filter((id): id is string => Boolean(id));
-      return Array.from(new Set(ids));
+      return {
+        ids: Array.from(new Set(ids)),
+        nextPageToken: res.data.nextPageToken ?? null,
+      };
     },
     async fetchChannels(ids) {
       if (ids.length === 0) return [];
@@ -386,33 +411,45 @@ export async function runCrawl(
   for (const region of plan.regions) {
     const keywords = KEYWORDS_BY_REGION[region];
     for (const keyword of keywords) {
-      const ids = await withRetry(
-        () => opts.client.searchChannels(region, keyword, args.maxResultsPerQuery),
-        opts.retry
-      );
-      searchCallsExecuted += 1;
-      opts.onApiCall?.("search", 100);
-
-      const newIds = ids.filter((id) => !seenChannelIds.has(id));
-      for (const id of newIds) seenChannelIds.add(id);
-
-      // channels.list takes up to 50 IDs/call.
-      for (let i = 0; i < newIds.length; i += 50) {
-        const slice = newIds.slice(i, i + 50);
-        const raw = await withRetry(
-          () => opts.client.fetchChannels(slice),
+      let pageToken: string | undefined = undefined;
+      for (let page = 0; page < args.maxPagesPerQuery; page += 1) {
+        const search: SearchPage = await withRetry(
+          () =>
+            opts.client.searchChannels(
+              region,
+              keyword,
+              args.maxResultsPerQuery,
+              pageToken
+            ),
           opts.retry
         );
-        channelCallsExecuted += 1;
-        opts.onApiCall?.("channels", 1);
-        for (const r of raw) {
-          const mapped = mapChannel(r, region, keyword);
-          if (!mapped) continue;
-          acceptedByFilters += 1;
-          perRegion[region] += 1;
-          collectedChannels.push(mapped);
-          opts.onChannel?.(mapped);
+        searchCallsExecuted += 1;
+        opts.onApiCall?.("search", 100);
+
+        const newIds = search.ids.filter((id) => !seenChannelIds.has(id));
+        for (const id of newIds) seenChannelIds.add(id);
+
+        // channels.list takes up to 50 IDs/call.
+        for (let i = 0; i < newIds.length; i += 50) {
+          const slice = newIds.slice(i, i + 50);
+          const raw = await withRetry(
+            () => opts.client.fetchChannels(slice),
+            opts.retry
+          );
+          channelCallsExecuted += 1;
+          opts.onApiCall?.("channels", 1);
+          for (const r of raw) {
+            const mapped = mapChannel(r, region, keyword);
+            if (!mapped) continue;
+            acceptedByFilters += 1;
+            perRegion[region] += 1;
+            collectedChannels.push(mapped);
+            opts.onChannel?.(mapped);
+          }
         }
+
+        if (!search.nextPageToken) break;
+        pageToken = search.nextPageToken;
       }
     }
   }
@@ -451,6 +488,7 @@ export function formatOutputJson(report: RunReport): string {
         sourceMatrix: {
           regions: report.plan.regions,
           maxResultsPerQuery: report.plan.maxResultsPerQuery,
+          totalSearchCalls: report.plan.totalSearchCalls,
         },
         quota: {
           searchCallsExecuted: report.searchCallsExecuted,
@@ -478,7 +516,9 @@ export function formatOutputJson(report: RunReport): string {
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   const plan = buildRunPlan(args);
-  console.log(`[seed-kol-youtube] regions=${plan.regions.join(",")}`);
+  console.log(
+    `[seed-kol-youtube] regions=${plan.regions.join(",")} maxPages=${args.maxPagesPerQuery} maxResults=${args.maxResultsPerQuery}`
+  );
   console.log(
     `[seed-kol-youtube] plan: search=${plan.totalSearchCalls} calls × 100u = ${plan.totalSearchQuotaUnits}u, channels (worst case)=${plan.worstCaseChannelCalls} calls × 1u = ${plan.worstCaseChannelQuotaUnits}u, total worst-case ${plan.totalQuotaUnitsWorstCase}u (free tier 10,000u/day)`
   );
