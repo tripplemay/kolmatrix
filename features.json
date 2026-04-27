@@ -14,7 +14,7 @@
       "title": "YouTube adapter 实现（首个真实数据源）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**新建 src/lib/kol-sync/adapters/youtube.ts：** YouTubeKolSyncAdapter implements KolSyncAdapter\n\n**每日策略（lock）：**\n- discover：6 region × 3 keyword × 10 results = 18 search calls × 100 = 1800 units\n- refresh：~200 KOL/day × 1 unit = 4 units（按 last_synced_at 排序，每周轮询一次）\n- 合计：~1800-2000 units/day（10K 配额 18-20%）\n- 预期增量：每日 30-50 真新 KOL\n\n**关键 keyword 设计（侧重补 kol-seed-redo F002 接力条款 CN+HK+TW 缺口 -67）：**\n- 中文区 keyword 优先：游戏直播 / Steam / 独立游戏 / 手游推荐 / 主播\n- 其他 region：同 kol-seed-redo F002 矩阵\n- 第 1-3 天倾向 CN/HK/TW，补完缺口后均衡分配\n\n**Acceptance：**\n- YouTube adapter 实现 KolSyncAdapter 接口\n- discover 跑通 + 去重（externalId）+ 全字段填充（沿用 kol-seed-redo F002 全字段策略）\n- metadata 字段：is_demo=false / source='youtube-api-daily' / synced_at=now\n- refresh 跑通 + last_synced_at 更新\n- tests/integration/youtube-adapter.test.ts mock + 真 API 调用（少量 quota，gated by env YOUTUBE_API_TEST=true）\n- staging 手动跑一次（仅 ~50 quota 验证 e2e）\n- 详见 docs/specs/B6-kol-daily-sync-spec.md §F002"
     },
     {
