@@ -1,0 +1,24 @@
+# B6-kol-daily-sync F003 · Daily KOL ingest cron
+#
+# Deploy with:
+#   sudo cp infrastructure/cron/kolmatrix-kol-sync /etc/cron.d/kolmatrix-kol-sync
+#   sudo chown root:root /etc/cron.d/kolmatrix-kol-sync
+#   sudo chmod 0644 /etc/cron.d/kolmatrix-kol-sync
+#
+# Schedule: 00:30 UTC = 08:30 BJ. YouTube API quota resets at 00:00 PT
+# (= 16:00 BJ summer / 17:00 BJ winter). The 08:30 BJ slot lands well
+# inside the next window, so a fresh 10K units is guaranteed.
+#
+# Why we redirect both streams to the same log:
+#   `kol-sync-daily.ts` already writes structured JSON via
+#   appendFileSync to /var/log/kolmatrix-kol-sync.log. The redirect
+#   below catches stdout/stderr from npm + node startup so a
+#   misconfigured environment (missing API key, broken DB URL) leaves
+#   a breadcrumb instead of a silent cron-mail.
+#
+# The PATH line is required because cron's default PATH is /usr/bin:/bin
+# and `npm` / `node` live elsewhere on the deploy box.
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin:/home/tripplezhou/.nvm/versions/node/v22.22.2/bin
+
+30 0 * * * tripplezhou cd /opt/kolmatrix && npm run kol-sync:daily >> /var/log/kolmatrix-kol-sync.log 2>&1

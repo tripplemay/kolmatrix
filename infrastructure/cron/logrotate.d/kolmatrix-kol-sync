@@ -1,0 +1,21 @@
+# B6-kol-daily-sync F003 · logrotate for the daily sync log.
+#
+# Deploy with:
+#   sudo cp infrastructure/cron/logrotate.d/kolmatrix-kol-sync /etc/logrotate.d/kolmatrix-kol-sync
+#   sudo chown root:root /etc/logrotate.d/kolmatrix-kol-sync
+#   sudo chmod 0644 /etc/logrotate.d/kolmatrix-kol-sync
+#   sudo logrotate -d /etc/logrotate.d/kolmatrix-kol-sync   # dry-run check
+#
+# 30-day retention matches the spec; gzipping after rotate keeps
+# /var/log under control on the modest VPS disk (the structured JSON
+# compresses ~95%).
+/var/log/kolmatrix-kol-sync.log {
+    daily
+    rotate 30
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0644 tripplezhou tripplezhou
+    sharedscripts
+}

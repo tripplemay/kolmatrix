@@ -51,3 +51,8 @@ playwright/.cache/
 # i18n translator dry-run reports — regenerated on every dry-run, not
 # audit-worthy (live-run reports without the -dry suffix are committed).
 docs/i18n/translate-report-*-dry.md
+
+# B6 daily-sync operational reports — written on every cron run on
+# prod / staging. Not audit material, and not portable across hosts.
+docs/test-reports/kol-sync-daily-*.md
+docs/test-reports/kol-quality-weekly-*.md
