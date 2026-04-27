@@ -286,10 +286,20 @@ export async function callTranslator(
 ): Promise<RunActionResponse> {
   const apiKey = process.env.AIGCGATEWAY_API_KEY;
   if (!apiKey) throw new Error("AIGCGATEWAY_API_KEY is not set");
+  // Local .env points AIGCGATEWAY_BASE_URL at http://localhost:4000
+  // (where no service runs); override that stub here so the script
+  // doesn't need a manual env shadow on dev machines. Set
+  // I18N_TRANSLATE_USE_LOCAL_GATEWAY=1 to honour the .env value.
+  const useLocal = process.env.I18N_TRANSLATE_USE_LOCAL_GATEWAY === "1";
   const baseUrl = (
-    process.env.AIGCGATEWAY_BASE_URL ?? "https://aigc.guangai.ai/v1"
+    useLocal
+      ? (process.env.AIGCGATEWAY_BASE_URL ?? "https://aigc.guangai.ai/v1")
+      : "https://aigc.guangai.ai/v1"
   ).replace(/\/$/, "");
-  const url = `${baseUrl}/actions/${actionId}/run`;
+  // aigcgateway exposes action runs at POST /v1/actions/run with the
+  // action_id in the request body (not as a path segment). Same shape
+  // the MCP `run_action` tool uses.
+  const url = `${baseUrl}/actions/run`;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), opts.timeout ?? 90_000);
@@ -300,7 +310,15 @@ export async function callTranslator(
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({ variables, dry_run: !!opts.dryRun }),
+      body: JSON.stringify({
+        action_id: actionId,
+        variables,
+        dry_run: !!opts.dryRun,
+        // Default endpoint behaviour is SSE streaming. Force the
+        // single-JSON variant since the script post-processes a
+        // structured object, not a token-by-token feed.
+        stream: false,
+      }),
       signal: controller.signal,
     });
     if (!res.ok) {
@@ -308,6 +326,14 @@ export async function callTranslator(
       throw new Error(`aigcgateway responded ${res.status}: ${txt.slice(0, 200)}`);
     }
     return (await res.json()) as RunActionResponse;
+  } catch (err) {
+    if (err instanceof Error) {
+      const cause = (err as Error & { cause?: unknown }).cause;
+      throw new Error(
+        `${err.message}${cause ? ` (cause: ${String(cause)})` : ""}`
+      );
+    }
+    throw err;
   } finally {
     clearTimeout(timer);
   }

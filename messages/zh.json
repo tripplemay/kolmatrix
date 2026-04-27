@@ -10,8 +10,8 @@
     "settings": "设置"
   },
   "topbar": {
-    "searchPlaceholder": "Search KOLs, campaigns, emails...",
-    "languageAriaLabel": "Change language",
+    "searchPlaceholder": "搜索KOL、活动、邮件...",
+    "languageAriaLabel": "更改语言",
     "locale": {
       "en": "English",
       "zh": "中文（简体）",
@@ -21,9 +21,9 @@
     }
   },
   "userMenu": {
-    "profile": "Profile",
-    "settings": "Settings",
-    "signOut": "Sign out"
+    "profile": "个人资料",
+    "settings": "设置",
+    "signOut": "退出登录"
   },
   "login": {
     "title": "登录 KOLMatrix",
@@ -84,9 +84,9 @@
       "formTitle": "申请工作区访问",
       "formSubtitle": "填写你的工作室信息，加入优先审核队列。",
       "firstNameLabel": "名",
-      "firstNamePlaceholder": "Sarah",
+      "firstNamePlaceholder": "莎拉",
       "lastNameLabel": "姓",
-      "lastNamePlaceholder": "Chen",
+      "lastNamePlaceholder": "陈",
       "emailLabel": "工作邮箱",
       "emailPlaceholder": "sarah@studio.com",
       "emailHint": "请使用公司域名邮箱以便快速验证。",
@@ -122,17 +122,17 @@
     }
   },
   "dashboard": {
-    "greeting": "Welcome back, {name}.",
-    "subtitle": "Here is your global KOL marketing pulse for {date}.",
-    "newCampaign": "New Campaign",
-    "activeCampaigns": "Active Campaigns",
-    "viewAll": "View All",
-    "recommendedKols": "AI-Recommended KOLs",
-    "autoMatch": "Auto-Match",
-    "seeMatrix": "See Matrix",
-    "emailPerformance": "Email Performance",
-    "recentActivity": "Recent Activity",
-    "mockNote": "Dashboard mock data: 7d rolling window. KPI values reflect current tenant only.",
+    "greeting": "欢迎回来，{name}。",
+    "subtitle": "这是您 {date} 的全球 KOL 营销动态。",
+    "newCampaign": "新建活动",
+    "activeCampaigns": "正在进行的活动",
+    "viewAll": "查看全部",
+    "recommendedKols": "AI 推荐的 KOL",
+    "autoMatch": "自动匹配",
+    "seeMatrix": "查看矩阵",
+    "emailPerformance": "邮件表现",
+    "recentActivity": "最近动态",
+    "mockNote": "仪表盘模拟数据：7 天滚动窗口。KPI 值仅反映当前租户情况。",
     "kpi": {
       "totalKols": "KOL 总数",
       "activeCampaigns": "活跃活动",
@@ -155,8 +155,8 @@
     }
   },
   "common": {
-    "openRate": "Open Rate",
-    "progress": "Progress"
+    "openRate": "打开率",
+    "progress": "进度"
   },
   "knowledgeBase": {
     "breadcrumbRoot": "产品",
@@ -219,10 +219,10 @@
     },
     "mockActivity": {
       "heading1": "王者荣耀 Q2",
-      "heading2": "Valorant Ep. 9",
+      "heading2": "无畏契约第9集",
       "heading3": "MobileRush 日服",
       "heading4": "原神版本更新",
-      "heading5": "Project X",
+      "heading5": "X项目",
       "time1": "2 分钟前",
       "time2": "15 分钟前",
       "time3": "1 小时前",
@@ -583,8 +583,7 @@
       "outreach": {
         "title": "群发触达邮件",
         "ready": "有邮箱的 KOL 可以进行批量触达。",
-        "noEmailable": "需要先补齐 KOL 邮箱（或邀请新创作者）才能群发。"
-        ,
+        "noEmailable": "需要先补齐 KOL 邮箱（或邀请新创作者）才能群发。",
         "cta": "打开触达编辑"
       },
       "insights": {
