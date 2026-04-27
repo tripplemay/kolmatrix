@@ -14,7 +14,7 @@
       "title": "多维矩阵爬取 1000-2000 真 KOL（全字段填充，0 增量工时）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**🆕 用户裁决（2026-04-27）：F002 扩展为'全字段填充'**，0 增量工时（API 调用本来就要做）。channels.list 调用时 `part=snippet,statistics,topicDetails,brandingSettings` 全要。\n\n**Region 矩阵（8 个）：** CN / HK / TW / US / GB / JP / KR / ES\n\n**Query keywords（每 region 5 个）：**\n- 中文区（CN/HK/TW）：游戏 / 电竞 / 手游 / 主播 / 实况\n- 英文区（US/GB）：gaming / gameplay / esports / let's play / streamer\n- 日文（JP）：ゲーム / 実況 / esports / Vtuber / プロゲーマー\n- 韩文（KR）：게임 / 방송 / esports / 스트리머 / 프로게이머\n- 西文（ES）：juegos / gaming / esports / streamer / videojuegos\n\n**过滤条件：** subscriberCount ≥ 10K（去 micro）+ videoCount ≥ 30（去僵尸）+ description 非空 + topicCategories 含 Game/Action_game/Strategy_video_game/etc.\n\n**全字段填充清单（写入输出 JSON，F003 import 用）：**\n- platform = 'youtube'\n- handle = snippet.customUrl\n- externalId = channel.id\n- displayName = snippet.title\n- bio = snippet.description\n- avatarUrl = snippet.thumbnails.high.url\n- countryCode = snippet.country (ISO-2)\n- language = snippet.defaultLanguage\n- followerCount = statistics.subscriberCount\n- categories = topicDetails.topicCategories → mapping 到 KOLMatrix 类目\n- avgViews = viewCount / videoCount 估算\n- metadata.is_demo = true\n- metadata.youtube.channelCreatedAt = snippet.publishedAt\n- metadata.youtube.videoCount = statistics.videoCount\n- metadata.youtube.totalViewCount = statistics.viewCount\n- metadata.youtube.bannerUrl = brandingSettings.image.bannerExternalUrl\n- metadata.youtube.scrapedAt = now()\n\n**预备 B5：** B5（已合并到 MVP-demo-launch sprint）会扩 schema 把 metadata.youtube.* 提升为正式列。\n\n**Acceptance：**\n- 输出 docs/kol-seed-youtube-{date}.json ≥ 1,000 entries\n- 中文区（CN+HK+TW）≥ 200\n- 每 region 至少 10 KOL\n- 类目覆盖 ≥ 6 个\n- followers 中位数 ≥ 50K\n- 全字段填充率 ≥ 95%（除非 channel 自身没 country/language）\n- quota 实际消耗 ≤ 5,000 units"
     },
     {
@@ -22,7 +22,7 @@
       "title": "数据清洗 + import script + is_demo 标记",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**新建 `scripts/import-kol-from-youtube.ts`：**\n1. 读 docs/kol-seed-youtube-{date}.json（F002 输出）\n2. 字段映射到 Prisma Kol model（参照 BM1-F002 既有 seed-kol-from-enriched.ts 逻辑）\n3. metadata 字段 塞 `{is_demo: true, source: 'youtube-api', seeded_at: now(), youtube: {...}}` — **避免 schema migration**（B5 后续升级到正式列）\n4. **upsert by (tenantId, platform, externalId)**（用 channel.id 去重）\n5. categories 推断 mapping（轻量，不调 AI）：Action_game→FPS/Action / Strategy_video_game→Strategy / Role-playing_video_game→RPG / Sports_game→Sports / 等\n6. 进度日志 + import/skip 数\n\n**package.json scripts：** `import:kol-youtube` + `import:kol-youtube:dry`\n\n**执行流程：**\n- staging 先跑：`npm run import:kol-youtube`\n- prod 留待用户手动 SSH（**不要在 building 阶段自动跑 prod**）\n\n**Acceptance：**\n- staging Kol count 增加 ≥ 1,000（原 2,535 → 3,500+）\n- staging 全部新增 KOL 含 metadata.is_demo=true\n- staging 验证 categories 推断正确率 ≥ 90%（spot check 50 entries）\n- tests/integration/import-kol-from-youtube.test.ts 验证 import + RLS 隔离 + metadata 写入 + 一键清 SQL（DELETE WHERE metadata->>'is_demo'='true'）\n- prod import 留待用户手动触发，本批次 acceptance **不含 prod**"
     },
     {
