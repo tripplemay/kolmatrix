@@ -273,42 +273,19 @@ function parseIntSafe(v: string | number | null | undefined): number {
 }
 
 // ---------------------------------------------------------------------
-// Retry — generic exponential backoff with three attempts, used to
-// wrap each individual API call. Pure helper so tests can drive the
-// wait function in synchronous mode.
+// Retry — moved to src/lib/kol-sync/retry.ts in B6-F004 so the same
+// 30s/2min/5min schedule covers the kol-seed-redo + B6 daily paths
+// without two implementations drifting. Re-exported here so existing
+// callers (and the unit fixtures in tests/unit/seed-kol-from-youtube.test.ts)
+// keep importing from the same surface.
 // ---------------------------------------------------------------------
 
-const DEFAULT_BACKOFFS_MS = [30_000, 120_000, 300_000];
+import {
+  withRetry,
+  type RetryOpts,
+} from "../src/lib/kol-sync/retry";
 
-export interface RetryOpts {
-  backoffsMs?: readonly number[];
-  sleep?: (ms: number) => Promise<void>;
-  onRetry?: (attempt: number, err: unknown) => void;
-}
-
-export async function withRetry<T>(
-  fn: () => Promise<T>,
-  opts: RetryOpts = {}
-): Promise<T> {
-  const backoffs = opts.backoffsMs ?? DEFAULT_BACKOFFS_MS;
-  const sleep = opts.sleep ?? defaultSleep;
-  let lastErr: unknown = null;
-  for (let attempt = 0; attempt <= backoffs.length; attempt += 1) {
-    try {
-      return await fn();
-    } catch (err) {
-      lastErr = err;
-      if (attempt === backoffs.length) break;
-      opts.onRetry?.(attempt + 1, err);
-      await sleep(backoffs[attempt]!);
-    }
-  }
-  throw lastErr instanceof Error ? lastErr : new Error(String(lastErr));
-}
-
-function defaultSleep(ms: number): Promise<void> {
-  return new Promise((res) => setTimeout(res, ms));
-}
+export { withRetry, type RetryOpts };
 
 // ---------------------------------------------------------------------
 // YouTube client

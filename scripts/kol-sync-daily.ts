@@ -26,7 +26,13 @@
  */
 import "dotenv/config";
 
-import { mkdirSync, writeFileSync, appendFileSync } from "node:fs";
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, resolve } from "node:path";
 
 import { PrismaPg } from "@prisma/adapter-pg";
@@ -35,6 +41,13 @@ import { PrismaClient } from "@prisma/client";
 import { YouTubeKolSyncAdapter } from "../src/lib/kol-sync/adapters/youtube";
 import { KolSyncDispatcher } from "../src/lib/kol-sync/dispatcher";
 import { importRawKolData, type ImportStats } from "../src/lib/kol-sync/import";
+import {
+  classifyDailyRun,
+  countTrailingZeroDiscoverStreak,
+  formatDailyLogLineJson,
+  type DailyLogLine,
+} from "../src/lib/kol-sync/log";
+import { DEFAULT_BACKOFFS_MS } from "../src/lib/kol-sync/retry";
 import type {
   HealthCheckResult,
   KolSyncAdapter,
@@ -147,27 +160,31 @@ function formatMarkdownReport(report: DailyRunReport): string {
   return lines.join("\n");
 }
 
-function formatLogLine(report: DailyRunReport): string {
+export function buildLogLineFromReport(
+  report: DailyRunReport,
+  zeroDiscoverStreakBefore: number
+): DailyLogLine {
   const adapters = Object.entries(report.health).map(([name, h]) => ({
     name,
     healthy: h.healthy,
   }));
-  const line = {
+  return classifyDailyRun({
     timestamp: report.startedAt,
-    discover_count: report.discover?.totals.discoverCount ?? 0,
-    refresh_count: report.refresh?.totals.refreshCount ?? 0,
+    endedAt: report.endedAt,
+    adapters,
+    discoverCount: report.discover?.totals.discoverCount ?? 0,
+    refreshCount: report.refresh?.totals.refreshCount ?? 0,
     inserted: report.importStats?.inserted ?? 0,
     updated:
       (report.importStats?.updated ?? 0) +
       (report.refreshImportStats?.updated ?? 0),
     skipped: report.importStats?.skipped ?? 0,
-    estimated_quota: report.estimatedQuotaConsumed,
-    duration_ms:
-      new Date(report.endedAt).getTime() - new Date(report.startedAt).getTime(),
-    adapters,
+    dedupeSkipped: 0, // F005 will surface this once quality module lands
+    estimatedQuotaConsumed: report.estimatedQuotaConsumed,
+    estimatedQuotaRemaining: Math.max(0, 10_000 - report.estimatedQuotaConsumed),
     errors: report.errors,
-  };
-  return JSON.stringify(line);
+    zeroDiscoverStreakBefore,
+  });
 }
 
 // ---------------------------------------------------------------------
@@ -182,6 +199,10 @@ export interface DailyRunDeps {
   refreshBatch: number;
   noRefresh: boolean;
   now?: () => Date;
+  /** Override the default 30s/2min/5min backoff (e.g. tests pass in
+   *  a synchronous sleep). When undefined the orchestrator uses the
+   *  spec-mandated schedule. */
+  retry?: import("../src/lib/kol-sync/retry").RetryOpts;
 }
 
 export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
@@ -215,7 +236,17 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
   // ---- DISCOVER ----
   const discover = deps.dryRun
     ? null
-    : await dispatcher.runDailySync({});
+    : await dispatcher.runDailySync({
+        retry: deps.retry ?? {
+          backoffsMs: DEFAULT_BACKOFFS_MS,
+          onRetry: (attempt, err) => {
+            const msg = err instanceof Error ? err.message : String(err);
+            console.warn(
+              `[kol-sync-daily] discover retry #${attempt}: ${msg.slice(0, 200)}`
+            );
+          },
+        },
+      });
   if (discover) {
     // Estimate: each YouTube adapter discover call burns ~1,800u for
     // the default daily matrix. Other adapters add their own when
@@ -283,6 +314,15 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
       if (staleIds.length > 0) {
         const refreshReport = await dispatcher.runRefresh({
           perAdapterIds: { youtube: staleIds },
+          retry: deps.retry ?? {
+            backoffsMs: DEFAULT_BACKOFFS_MS,
+            onRetry: (attempt, err) => {
+              const msg = err instanceof Error ? err.message : String(err);
+              console.warn(
+                `[kol-sync-daily] refresh retry #${attempt}: ${msg.slice(0, 200)}`
+              );
+            },
+          },
         });
         refresh = {
           outcomes: refreshReport.outcomes,
@@ -391,9 +431,27 @@ async function main(): Promise<void> {
     if (prisma) await prisma.$disconnect();
   }
 
+  // Compute the zero-discover streak by reading the existing log
+  // file's trailing entries. Tolerates missing file / malformed
+  // lines — both yield 0.
+  let priorStreak = 0;
+  try {
+    if (existsSync(STRUCTURED_LOG_PATH)) {
+      priorStreak = countTrailingZeroDiscoverStreak(
+        readFileSync(STRUCTURED_LOG_PATH, "utf8")
+      );
+    }
+  } catch (err) {
+    console.warn(
+      `[kol-sync-daily] could not read prior log for streak: ${err instanceof Error ? err.message : err}`
+    );
+  }
+
+  const logLine = buildLogLineFromReport(report, priorStreak);
+
   // Write the structured log line + markdown report.
   try {
-    appendFileSync(STRUCTURED_LOG_PATH, formatLogLine(report) + "\n");
+    appendFileSync(STRUCTURED_LOG_PATH, formatDailyLogLineJson(logLine) + "\n");
   } catch (err) {
     console.warn(
       `[kol-sync-daily] could not write structured log to ${STRUCTURED_LOG_PATH}: ${err instanceof Error ? err.message : err}`
@@ -410,8 +468,11 @@ async function main(): Promise<void> {
 
   console.log(`[kol-sync-daily] DONE — report: ${reportPath}`);
   console.log(
-    `[kol-sync-daily] summary: discover=${report.discover?.totals.discoverCount ?? 0} refresh=${report.refresh?.totals.refreshCount ?? 0} inserted=${report.importStats?.inserted ?? 0} updated=${(report.importStats?.updated ?? 0) + (report.refreshImportStats?.updated ?? 0)} errors=${report.errors.length} quota_est=${report.estimatedQuotaConsumed}`
+    `[kol-sync-daily] level=${logLine.level} summary: discover=${logLine.discoverCount} refresh=${logLine.refreshCount} inserted=${logLine.inserted} updated=${logLine.updated} errors=${logLine.errors.length} quota_est=${logLine.estimatedQuotaConsumed}`
   );
+  if (logLine.alerts.length > 0) {
+    console.log(`[kol-sync-daily] alerts: ${logLine.alerts.join(" | ")}`);
+  }
 
   // Exit 0 even on partial errors — F004's alerting job is to surface
   // them out-of-band.

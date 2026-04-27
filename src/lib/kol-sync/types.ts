@@ -98,6 +98,10 @@ export interface DailySyncOpts {
   /** When true the dispatch stops on the first failing adapter; when
    *  false the rest still run. Default: false. */
   failFast?: boolean;
+  /** When set each adapter call is wrapped in withRetry — F004's
+   *  30s/2min/5min backoff schedule. Omit to skip retries entirely
+   *  (useful in tests). */
+  retry?: import("./retry").RetryOpts;
 }
 
 export interface RefreshOpts {
@@ -105,6 +109,7 @@ export interface RefreshOpts {
    *  no-ops for that adapter. */
   perAdapterIds: Readonly<Record<string, readonly string[]>>;
   failFast?: boolean;
+  retry?: import("./retry").RetryOpts;
 }
 
 export type AdapterOutcome<T> =

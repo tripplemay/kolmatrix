@@ -100,6 +100,7 @@ describe("runDaily · all unhealthy", () => {
       dryRun: false,
       refreshBatch: 200,
       noRefresh: false,
+      retry: { sleep: async () => {}, backoffsMs: [1, 1, 1] },
     });
     expect(report.discover).toBeNull();
     expect(report.refresh).toBeNull();
@@ -148,6 +149,7 @@ describe("runDaily · happy path", () => {
       dryRun: false,
       refreshBatch: 200,
       noRefresh: false,
+      retry: { sleep: async () => {}, backoffsMs: [1, 1, 1] },
     });
 
     expect(report.health.youtube.healthy).toBe(true);
@@ -190,6 +192,7 @@ describe("runDaily · failure isolation", () => {
       dryRun: false,
       refreshBatch: 0,
       noRefresh: false,
+      retry: { sleep: async () => {}, backoffsMs: [1, 1, 1] },
     });
     expect(report.health.dead.healthy).toBe(false);
     expect(report.health.ok.healthy).toBe(true);

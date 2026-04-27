@@ -8,6 +8,7 @@
  * retry / backoff on top of the adapter calls; this file stays
  * ignorant of that detail so unit tests can drive it directly.
  */
+import { withRetry } from "./retry";
 import type {
   AdapterOutcome,
   DailySyncOpts,
@@ -66,6 +67,9 @@ export class KolSyncDispatcher {
   /**
    * Daily delta crawl. One adapter throwing surfaces as a non-OK
    * outcome unless `failFast` is set; the rest still get to run.
+   * When `opts.retry` is provided each adapter call is wrapped in
+   * the 30s/2min/5min backoff (F004) — the outcome still surfaces
+   * `ok: false` if all retries fail.
    */
   async runDailySync(opts: DailySyncOpts = {}): Promise<SyncReport> {
     const startedAt = new Date().toISOString();
@@ -73,7 +77,9 @@ export class KolSyncDispatcher {
     for (const [name, adapter] of this.adapters) {
       const params = opts.perAdapterParams?.[name] ?? {};
       try {
-        const data = await adapter.discover(params);
+        const data = opts.retry
+          ? await withRetry(() => adapter.discover(params), opts.retry)
+          : await adapter.discover(params);
         outcomes.push({ adapter: name, ok: true, data });
       } catch (err) {
         outcomes.push({
@@ -95,7 +101,8 @@ export class KolSyncDispatcher {
   /**
    * Re-fetch known externalIds per adapter. Adapters with an empty
    * (or missing) id list skip cleanly — useful when only one source
-   * is on the refresh rota for the day.
+   * is on the refresh rota for the day. Same retry semantics as
+   * runDailySync.
    */
   async runRefresh(opts: RefreshOpts): Promise<RefreshReport> {
     const startedAt = new Date().toISOString();
@@ -104,7 +111,9 @@ export class KolSyncDispatcher {
       const ids = opts.perAdapterIds[name] ?? [];
       if (ids.length === 0) continue;
       try {
-        const data = await adapter.refresh(ids);
+        const data = opts.retry
+          ? await withRetry(() => adapter.refresh(ids), opts.retry)
+          : await adapter.refresh(ids);
         outcomes.push({ adapter: name, ok: true, data });
       } catch (err) {
         outcomes.push({
