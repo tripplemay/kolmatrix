@@ -1,0 +1,16 @@
+# B6-kol-daily-sync F005 · Weekly KOL data-quality report cron.
+#
+# Deploy with:
+#   sudo cp infrastructure/cron/kolmatrix-kol-quality /etc/cron.d/kolmatrix-kol-quality
+#   sudo chown root:root /etc/cron.d/kolmatrix-kol-quality
+#   sudo chmod 0644 /etc/cron.d/kolmatrix-kol-quality
+#
+# Schedule: Mondays 01:00 UTC (= 09:00 BJ). Runs after the daily-sync
+# cron, so the freshest day's metadata is included in the rollup.
+#
+# The script is read-only — no quota burn, no DB writes — so it's safe
+# to point at staging too without conflicting with prod.
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin:/home/tripplezhou/.nvm/versions/node/v22.22.2/bin
+
+0 1 * * 1 tripplezhou cd /opt/kolmatrix && npm run kol-quality:weekly >> /var/log/kolmatrix-kol-quality.log 2>&1

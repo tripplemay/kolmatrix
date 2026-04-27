@@ -183,13 +183,15 @@ describe("serializeFilters()", () => {
 });
 
 describe("buildKolWhere()", () => {
-  it("applies the gaming default + soft-delete guard", () => {
+  it("applies the gaming default + soft-delete + suspicious-hide guards", () => {
     const where = buildKolWhere(empty);
     expect(Array.isArray(where.AND)).toBe(true);
     const clauses = where.AND as Record<string, unknown>[];
     expect(clauses[0]).toEqual({ deletedAt: null });
-    expect(clauses[1]).toEqual({ isGaming: true });
-    expect(clauses.length).toBe(2);
+    // B6-F005 hide flag — suspicious_growth rows excluded by default.
+    expect(clauses[1]).toEqual({ isSuspicious: false });
+    expect(clauses[2]).toEqual({ isGaming: true });
+    expect(clauses.length).toBe(3);
   });
 
   it("drops the is_gaming filter when includeNonGaming=true", () => {
@@ -197,6 +199,8 @@ describe("buildKolWhere()", () => {
     const clauses = where.AND as Record<string, unknown>[];
     expect(clauses.some((c) => "isGaming" in c)).toBe(false);
     expect(clauses[0]).toEqual({ deletedAt: null });
+    // F005 guard still applies regardless of the gaming toggle.
+    expect(clauses[1]).toEqual({ isSuspicious: false });
   });
 
   it("adds an OR on displayName + handle for search", () => {

@@ -10,10 +10,11 @@
  * Unique key: `(tenantId, platform, externalId)` — the kol-seed-redo
  * fix-round 1 added that constraint, F003 here just relies on it.
  */
-import type { PrismaClient } from "@prisma/client";
+import { Prisma, type PrismaClient } from "@prisma/client";
 
 import { computeKolValueScore } from "../kol/value-score";
 
+import { checkQuality, type QualityFlags, type QualitySkipReason } from "./quality";
 import type { RawKolData } from "./types";
 
 export const TOPIC_CATEGORY_MAP: Record<string, readonly string[]> = {
@@ -82,6 +83,10 @@ export interface KolUpsertPayload {
     seeded_at: string;
     matrix_region: string | null;
     matrix_keyword: string | null;
+    /** F005 anomaly flags — `flags.suspicious_growth=true` rows are
+     *  hidden by the Discovery / Database UI. Only present when at
+     *  least one anomaly fires on the current pass. */
+    flags?: QualityFlags;
     youtube?: {
       videoCount: number | null;
       totalViewCount: number | null;
@@ -96,7 +101,16 @@ export interface KolUpsertPayload {
 
 export function mapToUpsertPayload(
   raw: RawKolData,
-  opts: { source: string; isDemo: boolean; nowIso: string }
+  opts: {
+    source: string;
+    isDemo: boolean;
+    nowIso: string;
+    /** F005 flags computed by checkQuality on the current row. When
+     *  the verdict is empty (no anomaly), this stays undefined and
+     *  metadata.flags doesn't get serialised — keeps the JSON tight
+     *  for the 99% of normal rows. */
+    flags?: QualityFlags;
+  }
 ): KolUpsertPayload | null {
   if (!raw.externalId) return null;
   const handle = raw.handle ?? `@${raw.externalId}`;
@@ -136,6 +150,9 @@ export function mapToUpsertPayload(
       seeded_at: opts.nowIso,
       matrix_region: matrixRegion,
       matrix_keyword: matrixKeyword,
+      ...(opts.flags && Object.keys(opts.flags).length > 0
+        ? { flags: opts.flags }
+        : {}),
       youtube:
         raw.platform === "youtube"
           ? {
@@ -161,6 +178,12 @@ export interface ImportStats {
   inserted: number;
   updated: number;
   skipped: number;
+  /** Per-skip-reason counter so the daily report shows what the
+   *  quality module rejected. */
+  skippedByReason: Partial<Record<QualitySkipReason, number>>;
+  /** Rows that were kept but ended up flagged by F005 anomaly
+   *  detection. Counted once per fired flag. */
+  flaggedByKind: Partial<Record<keyof QualityFlags, number>>;
   /** Per-category histogram for the dashboard report. */
   categoriesHistogram: Record<string, number>;
 }
@@ -176,14 +199,52 @@ export async function importRawKolData(
     inserted: 0,
     updated: 0,
     skipped: 0,
+    skippedByReason: {},
+    flaggedByKind: {},
     categoriesHistogram: {},
   };
   for (const raw of raws) {
-    const nowIso = now().toISOString();
+    if (!raw.externalId) {
+      stats.skipped += 1;
+      stats.skippedByReason["missing-id"] =
+        (stats.skippedByReason["missing-id"] ?? 0) + 1;
+      continue;
+    }
+    // Look the existing row up first — quality checks need
+    // (followerCount, lastSyncedAt) to compute growth / decline flags.
+    const existing = await prisma.kol.findUnique({
+      where: {
+        tenantId_platform_externalId: {
+          tenantId: opts.tenantId,
+          platform: raw.platform,
+          externalId: raw.externalId,
+        },
+      },
+      select: { id: true, followerCount: true, lastSyncedAt: true },
+    });
+
+    const nowDate = now();
+    const verdict = checkQuality(
+      raw,
+      existing
+        ? { followerCount: existing.followerCount, lastSyncedAt: existing.lastSyncedAt }
+        : null,
+      nowDate
+    );
+
+    if (!verdict.keep) {
+      stats.skipped += 1;
+      stats.skippedByReason[verdict.reason] =
+        (stats.skippedByReason[verdict.reason] ?? 0) + 1;
+      continue;
+    }
+
+    const nowIso = nowDate.toISOString();
     const payload = mapToUpsertPayload(raw, {
       source: opts.source,
       isDemo: opts.isDemo,
       nowIso,
+      flags: verdict.flags,
     });
     if (!payload) {
       stats.skipped += 1;
@@ -192,16 +253,9 @@ export async function importRawKolData(
     for (const c of payload.categories) {
       stats.categoriesHistogram[c] = (stats.categoriesHistogram[c] ?? 0) + 1;
     }
-    const existing = await prisma.kol.findUnique({
-      where: {
-        tenantId_platform_externalId: {
-          tenantId: opts.tenantId,
-          platform: payload.platform,
-          externalId: payload.externalId,
-        },
-      },
-      select: { id: true },
-    });
+    for (const flag of Object.keys(verdict.flags) as Array<keyof QualityFlags>) {
+      stats.flaggedByKind[flag] = (stats.flaggedByKind[flag] ?? 0) + 1;
+    }
     const data = {
       displayName: payload.displayName,
       bio: payload.bio,
@@ -214,7 +268,14 @@ export async function importRawKolData(
       isGaming: payload.isGaming,
       handle: payload.handle,
       externalId: payload.externalId,
-      metadata: payload.metadata,
+      // Prisma's InputJsonObject requires an index signature; the
+      // narrowly-typed QualityFlags doesn't satisfy that purely
+      // structurally, so widen at the boundary.
+      metadata: payload.metadata as unknown as Prisma.InputJsonValue,
+      // F005 canonical "hide me from Discovery / Database" bit.
+      // Audit trail stays in metadata.flags; this column is what
+      // buildKolWhere reads.
+      isSuspicious: verdict.flags.suspicious_growth === true,
       valueScore: payload.valueScore,
       lastSyncedAt: now(),
     };

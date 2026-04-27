@@ -36,6 +36,15 @@ export interface RawKolData {
   /** Wikipedia topic URLs or platform-native category labels. */
   topicCategories?: string[];
   publishedAt?: string | null;
+  /** ISO timestamp of the latest published video. Surfaces from
+   *  adapters that walk the uploads playlist (e.g. crawler-team API).
+   *  YouTube channels.list doesn't expose this directly; F005's
+   *  zombie-skip rule short-circuits when undefined. */
+  lastUploadAt?: string | null;
+  /** Coarse safety classification from the upstream — F005's
+   *  NSFW-skip rule normalises to lowercase and matches against
+   *  ["questionable", "unsafe", "nsfw"]. */
+  brandSafetyRating?: string | null;
   /** Source-specific raw payload, preserved verbatim so B5-enrichment
    *  can promote nested fields into proper columns later without a
    *  re-fetch. */

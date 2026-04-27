@@ -173,6 +173,12 @@ model Kol {
   // channelCreatedAt / bannerUrl) into proper columns.
   metadata Json? @db.JsonB
 
+  // B6-kol-daily-sync F005 — UI hide flag for "suspicious_growth"
+  // rows (follower count spiked 10× between syncs, likely fake-buy).
+  // Audit trail stays in metadata.flags; this boolean is the
+  // canonical filter the Discovery / Database UI checks.
+  isSuspicious Boolean @default(false) @map("is_suspicious")
+
   tenant       Tenant        @relation(fields: [tenantId], references: [id])
   kolCampaigns KolCampaign[]
   emailLogs    EmailLog[]

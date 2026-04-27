@@ -241,6 +241,11 @@ export function serializeFilters(
 export function buildKolWhere(filters: DiscoveryFilters): Prisma.KolWhereInput {
   const and: Prisma.KolWhereInput[] = [
     { deletedAt: null },
+    // B6-F005: hide rows the daily-sync quality module flagged as
+    // suspicious_growth (likely fake-follower buy). The canonical
+    // bit lives on `kol.is_suspicious` (default false) — the JSONB
+    // audit trail in `metadata.flags` is preserved for forensics.
+    { isSuspicious: false },
   ];
   if (!filters.includeNonGaming) {
     and.push({ isGaming: true });

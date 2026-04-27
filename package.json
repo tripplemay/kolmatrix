@@ -32,6 +32,8 @@
     "import:kol-youtube:dry": "tsx scripts/import-kol-from-youtube.ts --dry-run",
     "kol-sync:daily": "tsx scripts/kol-sync-daily.ts",
     "kol-sync:daily:dry": "tsx scripts/kol-sync-daily.ts --dry-run",
+    "kol-quality:weekly": "tsx scripts/kol-quality-weekly.ts",
+    "kol-quality:weekly:dry": "tsx scripts/kol-quality-weekly.ts --dry-run",
     "seed:email-templates": "tsx scripts/seed-email-templates.ts",
     "render:stitch-previews": "tsx scripts/render-stitch-previews.ts",
     "i18n:translate": "tsx scripts/i18n-translate.ts",
