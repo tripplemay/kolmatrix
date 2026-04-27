@@ -69,6 +69,23 @@ const KEYWORDS_BY_REGION: Record<Region, readonly string[]> = {
 export const FILTER_MIN_SUBSCRIBERS = 10_000;
 export const FILTER_MIN_VIDEOS = 30;
 
+/**
+ * Returns true iff at least one Wikipedia topic URL looks like a
+ * gaming subject. We bias toward false-positives over false-negatives:
+ * if YouTube returns no topicCategories at all (some smaller channels
+ * have an empty topicDetails) we trust the search-keyword pre-filter
+ * and let it through. Concrete URL examples we match:
+ *
+ *   https://en.wikipedia.org/wiki/Action_game
+ *   https://en.wikipedia.org/wiki/Strategy_video_game
+ *   https://en.wikipedia.org/wiki/ESports
+ *   https://en.wikipedia.org/wiki/Sports_game
+ */
+export function isGamingTopic(urls: readonly string[]): boolean {
+  if (urls.length === 0) return true;
+  return urls.some((u) => /game|esport/i.test(u));
+}
+
 // search.list returns at most 50 results per call, regardless of what
 // we request — the API simply caps the page. Default to that.
 const DEFAULT_MAX_RESULTS_PER_QUERY = 50;
@@ -207,6 +224,8 @@ export function mapChannel(
   if (videoCount < FILTER_MIN_VIDEOS) return null;
   const description = (snippet.description ?? "").trim();
   if (description.length === 0) return null;
+  const topicCategories = topic.topicCategories ?? [];
+  if (!isGamingTopic(topicCategories)) return null;
 
   return {
     id,
@@ -224,7 +243,7 @@ export function mapChannel(
     subscriberCount,
     videoCount,
     viewCount,
-    topicCategories: topic.topicCategories ?? [],
+    topicCategories,
     matrixRegion,
     matrixKeyword,
     scrapedAt: now(),
@@ -293,12 +312,16 @@ export function createYoutubeClient(apiKey: string): YoutubeClient {
   const yt = google.youtube({ version: "v3", auth: apiKey });
   return {
     async searchChannels(region, keyword, maxResults) {
+      // NOTE: `videoCategoryId` is only honoured by search.list when
+      // type=video; combining it with type=channel returns
+      // 400 "Request contains an invalid argument". We instead lean on
+      // (a) keyword (gaming/电竞/ゲーム/etc.) and (b) the post-search
+      // topicCategories filter inside mapChannel().
       const res = await yt.search.list({
         part: ["snippet"],
         q: keyword,
         regionCode: region,
         type: ["channel"],
-        videoCategoryId: "20",
         maxResults,
       });
       const items = res.data.items ?? [];

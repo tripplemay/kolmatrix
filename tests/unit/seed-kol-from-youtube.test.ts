@@ -21,6 +21,7 @@ import {
   ALL_REGIONS,
   buildRunPlan,
   formatOutputJson,
+  isGamingTopic,
   mapChannel,
   parseArgs,
   runCrawl,
@@ -161,6 +162,26 @@ describe("mapChannel", () => {
     expect(mapChannel(blank, "US", "gaming")).toBeNull();
   });
 
+  it("drops channels whose topicCategories don't look gaming", () => {
+    const cooking = {
+      ...baseRaw,
+      topicDetails: {
+        topicCategories: ["https://en.wikipedia.org/wiki/Cuisine"],
+      },
+    };
+    expect(mapChannel(cooking, "US", "gaming")).toBeNull();
+  });
+
+  it("trusts the search keyword when topicCategories is empty", () => {
+    const noTopics = {
+      ...baseRaw,
+      topicDetails: {},
+    };
+    const out = mapChannel(noTopics, "US", "gaming");
+    expect(out).not.toBeNull();
+    expect(out!.topicCategories).toEqual([]);
+  });
+
   it("falls back to the default thumbnail when high is missing", () => {
     const noHigh = {
       ...baseRaw,
@@ -171,6 +192,25 @@ describe("mapChannel", () => {
     };
     const out = mapChannel(noHigh, "US", "gaming");
     expect(out?.thumbnailUrl).toBe("https://example.com/d.jpg");
+  });
+});
+
+describe("isGamingTopic", () => {
+  it("matches Action_game / Strategy_video_game / Sports_game / ESports", () => {
+    expect(isGamingTopic(["https://en.wikipedia.org/wiki/Action_game"])).toBe(true);
+    expect(isGamingTopic(["https://en.wikipedia.org/wiki/Strategy_video_game"])).toBe(true);
+    expect(isGamingTopic(["https://en.wikipedia.org/wiki/Sports_game"])).toBe(true);
+    expect(isGamingTopic(["https://en.wikipedia.org/wiki/ESports"])).toBe(true);
+    expect(isGamingTopic(["https://en.wikipedia.org/wiki/Casual_game"])).toBe(true);
+  });
+
+  it("rejects non-gaming topics", () => {
+    expect(isGamingTopic(["https://en.wikipedia.org/wiki/Cuisine"])).toBe(false);
+    expect(isGamingTopic(["https://en.wikipedia.org/wiki/Music"])).toBe(false);
+  });
+
+  it("permits unknown topicCategories (empty list trusts the search keyword)", () => {
+    expect(isGamingTopic([])).toBe(true);
   });
 });
 
