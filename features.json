@@ -6,7 +6,7 @@
       "title": "翻译流程基础设施（aigcgateway Action + scripts/i18n-translate.ts + glossary）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**新建 aigcgateway Action `ui-i18n-translate`**：input variables source_text(JSON 子树)/target_lang(zh/ja/ko/es)/context(如 'dashboard greeting')/glossary(品牌词 list)/model(可选)；prompt 模板含严格规则（保占位符 + 保 HTML tags + 不译品牌词 + 语调 professional/concise/lightly friendly）。Action 调用时按 target_lang 自动路由：zh/ja/ko → doubao-pro / es → gemini-2.5-flash-lite。\n\n**新建 `scripts/i18n-translate.ts`**：(1) 读 messages/en.json (2) 对比 messages/{zh,ja,ko,es}.json 找出未翻译 leaves（leaf value === en value 且 len > 2）(3) 按 section 分批调 ui-i18n-translate Action（避免单次 token 超长）(4) 写入对应 messages/{locale}.json（保留已翻译，仅填空白）(5) 输出 diff 报告 docs/i18n/translate-report-{date}.md (6) 支持 --target zh|ja|ko|es 参数 + --dry-run 参数 (7) 严格保留 placeholders {xxx} 与 HTML tags，缺失则 warn + skip。\n\n**glossary 文件 docs/i18n/brand-glossary.json**：30+ 品牌词条目（KOLMatrix/KOL/Campaign/Discovery/Database/Outreach/Dashboard/YouTube/TikTok/Twitch/Bilibili/Instagram/Facebook/Twitter/Discord/AI/AIGC/API/Resend/Webhook 等技术品牌词保英；Campaign/Discovery 等业务术语按语言提供 native 翻译）。\n\n**package.json scripts：** `i18n:translate` + `i18n:translate:dry`\n\n**Acceptance：**\n- mcp__aigc-gateway__create_action 创建 ui-i18n-translate Action 成功（action_id 记入 commit message）\n- npm run i18n:translate:dry 跑通且打印未翻译 leaves 清单（zh ~59 / ja/ko/es 各 ~810）\n- glossary.json ≥ 30 品牌词条目（Generator 起草，用户 review）\n- script 严格保留 placeholders + HTML tags（unit test tests/unit/i18n-translate-script.test.ts 5 fixture）\n- 干跑显示预期 token 消耗 + model 路由（zh→doubao-pro / es→gemini-2.5-flash-lite）"
     },
     {

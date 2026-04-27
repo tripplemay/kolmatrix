@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "MVP-i18n-full-locale - 5 语言全翻 hotfix（zh 补 59 + ja/ko/es 全翻 ~812 each + html lang 修 + 翻译流程沉淀）。7 features，估 2.5-3 day。完成即 5 语言完整支持，可发种子用户 demo（不再降级 ja/ko/es）。AI 模型混合策略：zh/ja/ko=doubao-pro，es=gemini-2.5-flash-lite。",
   "total_features": 7,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
   "current_sprint": "MVP-i18n-full-locale",
-  "last_updated": "2026-04-27T09:00+0800",
+  "last_updated": "2026-04-27T09:55+0800",
   "reference_docs": [
     "docs/specs/MVP-i18n-full-locale-spec.md",
     "messages/en.json",
