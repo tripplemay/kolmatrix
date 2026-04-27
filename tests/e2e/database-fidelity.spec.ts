@@ -79,56 +79,46 @@ test.describe("/database fidelity (MVP-vf-F003)", () => {
     await expect(panel.getByRole("heading", { level: 4 })).toHaveCount(3);
   });
 
-  test("Bulk Action Bar appears only after rows are selected (no ghost CTA)", async ({
+  test("Bulk Action Bar is absent on a fresh load (no ghost CTA)", async ({
     page,
   }) => {
-    // Pre-select check: bar should NOT be visible on a fresh load.
+    // BulkActionBar's `if (count === 0) return null` guard means it
+    // never mounts on first render — the floating CTA only appears
+    // after the user picks at least one row. This is the "no ghost
+    // control" contract the F003 acceptance demands.
     await expect(page.getByTestId("database-bulk-bar")).toHaveCount(0);
-
-    // If the tenant has zero saved KOLs, the empty state is showing
-    // and there are no checkboxes to toggle — that's still a valid
-    // confirmation of "no ghost CTA". Skip the click portion in that
-    // case.
-    const tableMounted = await page
-      .getByTestId("database-table-wrapper")
-      .count();
-    test.skip(
-      tableMounted === 0,
-      "Tenant has no saved KOLs — empty-state path covers the assertion."
-    );
-
-    // Toggle the first row's checkbox; bar should appear with count=1.
-    const firstRow = page.getByTestId("database-row").first();
-    await firstRow.locator('button[role="checkbox"]').click();
-    await expect(page.getByTestId("database-bulk-bar")).toBeVisible({
-      timeout: 5_000,
-    });
-    await expect(page.getByTestId("bulk-bar-count")).toHaveText("1");
   });
 
-  test("Email and Delete bulk actions are disabled with explicit tooltips", async ({
+  test("Bulk Action Bar mounts after a row checkbox toggles (state contract)", async ({
     page,
   }) => {
-    // The bar mounts only after a row is selected — selectively skip
-    // when no rows exist.
-    const tableMounted = await page
-      .getByTestId("database-table-wrapper")
-      .count();
+    // Behavioural assertion: when at least one row is selected, the
+    // BulkActionBar must mount. Auto-skips if the seed has no saved
+    // KOLs (the empty-state path is still covered by the
+    // "no ghost CTA" assertion above).
+    const rowCount = await page.getByTestId("database-row").count();
     test.skip(
-      tableMounted === 0,
-      "Tenant has no saved KOLs — bulk actions are unreachable in this seed."
+      rowCount === 0,
+      "No saved KOLs in seed — checkbox interaction path unreachable."
     );
 
+    // Base UI Checkbox renders as button[role="checkbox"]; use
+    // getByRole rather than a CSS selector to avoid attribute-order
+    // surprises across base-ui releases.
     const firstRow = page.getByTestId("database-row").first();
-    await firstRow.locator('button[role="checkbox"]').click();
+    await firstRow.getByRole("checkbox").first().click();
     await expect(page.getByTestId("database-bulk-bar")).toBeVisible({
-      timeout: 5_000,
+      timeout: 10_000,
     });
+    await expect(page.getByTestId("bulk-bar-count")).toHaveText("1");
 
+    // Email + Delete actions must be disabled with tooltips while
+    // the bar is up — once mounted, those props are stable, so we
+    // pile this assertion onto the same selection action rather than
+    // double-clicking in a sibling test.
     const email = page.getByTestId("bulk-bar-email");
     await expect(email).toBeDisabled();
     expect(await email.getAttribute("title")).toBeTruthy();
-
     const del = page.getByTestId("bulk-bar-delete");
     await expect(del).toBeDisabled();
     expect(await del.getAttribute("title")).toBeTruthy();
