@@ -299,12 +299,29 @@ F001 (YouTube API 接入脚本) ─→ F002 (爬取 1000+) ─→ F003 (清洗 +
 | 1 | 路径选择 | ✅ **路径 1+2 混合**（本 spec 即此方案）|
 | 2 | YouTube API key 提供 | ✅ **可以**（用户负责注册 + 配 .env） |
 | 3 | PRD §12 更新 | ✅ **更新**（spec 起草时已完成）|
+| 4 | **启动时机** | ✅ **i18n done 立即启动**（与 prod redeploy 平行）|
+| 5 | YOUTUBE_API_KEY 何时提供 | ⏳ 待用户答复（建议 i18n building 期间空闲注册好） |
+| 6 | F003 prod seed 谁触发 | ⏳ 待用户答复（默认推荐用户手动 ssh） |
 
 ---
 
-**Spec 状态：** decisions-locked（2026-04-27 Planner 起草 + 用户裁决 3/3 全部落地）
+**Spec 状态：** decisions-locked（2026-04-27 Planner 起草 + 用户裁决 4/6 落地，余 2 项是辅助操作问题，可在 i18n done 前任意时刻确认）
 
-**待用户最后确认：**
-1. 启动时机：i18n done 立即？还是等 prod redeploy 后？（Planner 推荐 i18n done 立即 + 与 prod redeploy 平行）
-2. YOUTUBE_API_KEY 何时提供？（建议用户在 i18n building 期间空闲注册好，避免本批次启动时阻塞）
-3. F003 prod 跑 seed 谁触发？（推荐用户手动 ssh，避免 Generator 越界）
+**用户行动项（紧急度由高到低）：**
+
+1. **🔴 必做（i18n done 前）：** 在 Google Cloud Console 注册 YouTube Data API v3 项目（~5 min）→ 拿到 API key → SSH staging + prod 各加 `YOUTUBE_API_KEY=xxx` 到 `.env.{staging,production}` + `pm2 reload --update-env`
+   - 注册步骤：https://console.cloud.google.com/apis → 启用 YouTube Data API v3 → 创建凭据 → API Key
+   - 配额：默认 10,000 units/day（本批次仅消耗 ~4K）
+   - **关键：** 此 API key 不入 git；仅存 .env 文件（同 AIGCGATEWAY_API_KEY 模式）
+
+2. **🟡 推荐（i18n done 时）：** 通知 Generator johnsong 接手新批次（如不通知，Generator 不知 i18n done 后该做什么）
+
+3. **🟢 可后定（F003 启动前）：** 确认 prod seed 触发者（默认用户手动 ssh）
+
+---
+
+**启动条件总览（i18n done 时检查）：**
+- [ ] MVP-i18n-full-locale signoff PASS + status=done + role_assignments 清空
+- [ ] YOUTUBE_API_KEY 已配置（用户）
+- [ ] 用户确认启动 → Planner 切 sprint = MVP-kol-seed-redo + status = building
+- [ ] Generator johnsong 接手 F001
