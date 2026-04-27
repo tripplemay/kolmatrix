@@ -3,30 +3,34 @@
 - Date: 2026-04-27
 - Target: es
 - Model: gemini-2.5-flash-lite
-- Mode: dry-run
-- Untranslated leaves: 812
-- Applied: 0
-- Skipped: 0
-- Estimated cost: $0.0078
+- Mode: live
+- Untranslated leaves: 61
+- Applied: 54
+- Skipped: 7
+- Estimated cost: $0.0039
 
 ## Per-section breakdown
 
 | Section | Leaves | Applied | Skipped | Prompt tok | Output tok |
 |---|---:|---:|---:|---:|---:|
-| nav | 8 | 0 | 0 | 94 | 94 |
-| topbar | 7 | 0 | 0 | 85 | 85 |
-| userMenu | 3 | 0 | 0 | 35 | 35 |
-| login | 6 | 0 | 0 | 91 | 91 |
-| auth | 81 | 0 | 0 | 1357 | 1357 |
-| dashboard | 27 | 0 | 0 | 445 | 445 |
-| common | 2 | 0 | 0 | 26 | 26 |
-| knowledgeBase | 59 | 0 | 0 | 937 | 937 |
-| discovery | 98 | 0 | 0 | 1324 | 1324 |
-| database | 73 | 0 | 0 | 1212 | 1212 |
-| campaigns | 171 | 0 | 0 | 2968 | 2968 |
-| outreach | 117 | 0 | 0 | 1772 | 1772 |
-| crm | 32 | 0 | 0 | 552 | 552 |
-| relationshipStatus | 6 | 0 | 0 | 73 | 73 |
-| kolProfile | 51 | 0 | 0 | 886 | 886 |
-| weeklyReport | 25 | 0 | 0 | 490 | 490 |
-| roi | 46 | 0 | 0 | 724 | 724 |
+| topbar | 5 | 5 | 0 | 2949 | 0 |
+| auth | 9 | 9 | 0 | 3016 | 0 |
+| dashboard | 1 | 1 | 0 | 2912 | 0 |
+| knowledgeBase | 4 | 4 | 0 | 2963 | 0 |
+| discovery | 17 | 17 | 0 | 3104 | 0 |
+| database | 1 | 1 | 0 | 2909 | 0 |
+| campaigns | 6 | 6 | 0 | 3008 | 0 |
+| outreach | 6 | 6 | 0 | 3044 | 0 |
+| crm | 2 | 2 | 0 | 2959 | 0 |
+| weeklyReport | 8 | 1 | 7 | 3084 | 0 |
+| roi | 2 | 2 | 0 | 2945 | 0 |
+
+## Skipped leaves (placeholder / tag mismatch)
+
+- `weeklyReport.weeklyReport.header.subtitle` — placeholder mismatch: source=[] translated=["{AI}","{KOL}","{ROI}"]
+- `weeklyReport.weeklyReport.brand.aiBadge` — placeholder mismatch: source=[] translated=["{AI}"]
+- `weeklyReport.weeklyReport.actions.downloadPdf` — placeholder mismatch: source=[] translated=["{PDF}"]
+- `weeklyReport.weeklyReport.empty.body` — placeholder mismatch: source=[] translated=["{AI}","{KOL}","{ROI}"]
+- `weeklyReport.weeklyReport.empty.loading` — placeholder mismatch: source=[] translated=["{AI}"]
+- `weeklyReport.weeklyReport.rawFallback` — placeholder mismatch: source=[] translated=["{AI}"]
+- `weeklyReport.weeklyReport.footer.poweredBy` — placeholder mismatch: source=[] translated=["{Discovery}","{KOLMatrix}"]

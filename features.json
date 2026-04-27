@@ -30,7 +30,7 @@
       "title": "ko.json 全翻 ~812 处（doubao-pro + 用户 review）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "同 F003，target ko。\n\n**重点 review：** 敬语（습니다/해요 体）+ 영어 차용어（KOL/Campaign 是否保英 / 是否用 캠페인）+ 营销文案语调\n\n**Acceptance：** ko 同 F003 标准；commit `i18n(ko): full translation 812 leaves via doubao-pro + user review`"
     },
     {
