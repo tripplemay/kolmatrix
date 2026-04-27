@@ -15,7 +15,7 @@
 -- Additive migration — no data backfill, no breaking changes. All
 -- existing rows (B0 demo + BM1 enriched seed) get NULL.
 --
--- ROLLBACK SQL (manual revert if needed):
+-- ROLLBACK:
 --   DROP INDEX IF EXISTS "kol_metadata_is_demo_idx";
 --   ALTER TABLE "kol" DROP COLUMN IF EXISTS "metadata";
 

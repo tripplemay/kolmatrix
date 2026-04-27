@@ -18,7 +18,7 @@
 -- channel.id values per import, so the constraint passes the existing
 -- data unchanged.
 --
--- ROLLBACK SQL:
+-- ROLLBACK:
 --   ALTER TABLE "kol" DROP CONSTRAINT "kol_tenantId_platform_externalId_key";
 
 ALTER TABLE "kol"
