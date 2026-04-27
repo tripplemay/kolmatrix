@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "B6-kol-daily-sync - KOL 数据每日自动增量同步。Sync Worker 通用接口（adapter pattern）+ YouTube adapter（首个数据源）+ cron + 监控 + 数据质量校验。核心战略价值：不依赖外部团队（BL-012 爬虫团队 6 月）验证 KOL 发现。每日 +30-50 真新 KOL（含中文区 +15-30），6.5 周空窗期累计 +1300-2200 KOL。为 BL-012 接入做接口前置（adapter pattern 已 ready，6 月仅替换 adapter ~1 day）。6 features 估 4-5 day。完成后切 MVP-demo-launch 合并 sprint，邀请发出 ~05-09。",
   "total_features": 6,
-  "completed_features": 4,
+  "completed_features": 5,
   "fix_rounds": 0,
   "current_sprint": "B6-kol-daily-sync",
-  "last_updated": "2026-04-28T00:50+0800",
+  "last_updated": "2026-04-28T01:10+0800",
   "reference_docs": [
     "docs/specs/B6-kol-daily-sync-spec.md",
     "docs/specs/MVP-kol-seed-redo-spec.md",

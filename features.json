@@ -38,7 +38,7 @@
       "title": "数据质量校验（5 规则）+ 周报",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**写入前过滤 5 规则（src/lib/kol-sync/quality.ts）：**\n1. 去重 upsert by (tenantId, platform, externalId)\n2. 去 spam：subscriberCount < 1000 → skip\n3. 去僵尸：lastUploadAt > 90 days → skip\n4. 去 NSFW：channel meta brand_safety_rating（如有）\n5. 重复账号检测：同 channel.id 不同 handle → 仅 update display_name\n\n**写入后异常监控（写入 metadata.flags）：**\n- followers 增长曲线异常（突增 10x）→ flags.suspicious_growth = true，UI 不展示\n- 长期下降（30 天 -50% subscribers）→ flags.declining = true\n\n**周报 cron（周一跑）：**\n- 新建 scripts/kol-quality-weekly.ts + cron infrastructure/cron/kolmatrix-kol-quality\n- 输出 docs/test-reports/kol-quality-weekly-{date}.md（本周新增 / region 分布 / categories 分布 / 异常 KOL 数 / 评级）\n\n**Acceptance：**\n- 5 条过滤规则 implemented + tests/integration/kol-sync-quality.test.ts 5 fixture\n- 周报 cron 入 git + 第一次手动跑验证\n- metadata.flags 字段写入 + UI 隐藏 suspicious_growth=true 的 KOL（Discovery / Database 都需）\n- 详见 docs/specs/B6-kol-daily-sync-spec.md §F005"
     },
     {
