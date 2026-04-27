@@ -30,7 +30,7 @@
       "title": "失败重试 + 监控 + structured 日志 + 告警",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**失败重试：** YouTube API 失败 3 次 30s/2min/5min backoff（同 BM2 F006 模式）\n\n**Structured 日志 JSON（每行一个）：** timestamp / adapter / discover_count / refresh_count / dedupe_skipped / quota_consumed / quota_remaining_estimate / duration_ms / errors\n\n**告警阈值（写入日志）：**\n- quota_consumed > 3000 → WARN\n- discover_count = 0（连续 3 天）→ ALERT\n- errors.length > 0 → WARN\n- duration_ms > 300000 → WARN\n\n**Acceptance：**\n- scripts/kol-sync-daily.ts 含完整 try/catch + 重试逻辑\n- structured 日志 JSON 写入 /var/log/kolmatrix-kol-sync.log\n- 告警阈值文档化在 docs/dev/kol-sync-runbook.md\n- tests/unit/kol-sync-retry.test.ts 覆盖 retry / backoff / max attempts\n- 详见 docs/specs/B6-kol-daily-sync-spec.md §F004"
     },
     {
