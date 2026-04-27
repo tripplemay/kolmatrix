@@ -1,0 +1,311 @@
+{
+  "$comment": "MVP-i18n-full-locale F001 — Brand + business term glossary. Drives the AI translator's 'do not translate' allowlist plus authoritative native renderings of business terms. Each entry has: en (canonical), keep_en (true if the term must stay English in every locale), zh/ja/ko/es (preferred translations when keep_en is false). Order: tech brands first (keep_en), then platforms (keep_en), then product/business terms (translated).",
+  "version": "2026-04-27.1",
+  "entries": [
+    {
+      "en": "KOLMatrix",
+      "keep_en": true,
+      "category": "brand",
+      "note": "Product name. Always English."
+    },
+    {
+      "en": "KOL",
+      "keep_en": true,
+      "category": "brand",
+      "note": "Industry term. Stay English even in CJK locales."
+    },
+    {
+      "en": "KOC",
+      "keep_en": true,
+      "category": "brand"
+    },
+    {
+      "en": "AI",
+      "keep_en": true,
+      "category": "tech-acronym"
+    },
+    {
+      "en": "AIGC",
+      "keep_en": true,
+      "category": "tech-acronym"
+    },
+    {
+      "en": "API",
+      "keep_en": true,
+      "category": "tech-acronym"
+    },
+    {
+      "en": "ROI",
+      "keep_en": true,
+      "category": "tech-acronym",
+      "note": "Stay English; commonly used as-is in marketing analytics globally."
+    },
+    {
+      "en": "CRM",
+      "keep_en": true,
+      "category": "tech-acronym"
+    },
+    {
+      "en": "CSV",
+      "keep_en": true,
+      "category": "tech-acronym"
+    },
+    {
+      "en": "PDF",
+      "keep_en": true,
+      "category": "tech-acronym"
+    },
+    {
+      "en": "URL",
+      "keep_en": true,
+      "category": "tech-acronym"
+    },
+    {
+      "en": "YouTube",
+      "keep_en": true,
+      "category": "platform"
+    },
+    {
+      "en": "TikTok",
+      "keep_en": true,
+      "category": "platform"
+    },
+    {
+      "en": "Twitch",
+      "keep_en": true,
+      "category": "platform"
+    },
+    {
+      "en": "Bilibili",
+      "keep_en": true,
+      "category": "platform"
+    },
+    {
+      "en": "Instagram",
+      "keep_en": true,
+      "category": "platform"
+    },
+    {
+      "en": "Facebook",
+      "keep_en": true,
+      "category": "platform"
+    },
+    {
+      "en": "Twitter",
+      "keep_en": true,
+      "category": "platform"
+    },
+    {
+      "en": "Discord",
+      "keep_en": true,
+      "category": "platform"
+    },
+    {
+      "en": "Resend",
+      "keep_en": true,
+      "category": "vendor"
+    },
+    {
+      "en": "Webhook",
+      "keep_en": true,
+      "category": "tech-term"
+    },
+    {
+      "en": "OAuth",
+      "keep_en": true,
+      "category": "tech-term"
+    },
+    {
+      "en": "Campaign",
+      "keep_en": false,
+      "category": "product-noun",
+      "zh": "活动",
+      "ja": "キャンペーン",
+      "ko": "캠페인",
+      "es": "Campaña"
+    },
+    {
+      "en": "Discovery",
+      "keep_en": false,
+      "category": "product-noun",
+      "zh": "发现",
+      "ja": "発見",
+      "ko": "발견",
+      "es": "Descubrir"
+    },
+    {
+      "en": "Database",
+      "keep_en": false,
+      "category": "product-noun",
+      "zh": "数据库",
+      "ja": "データベース",
+      "ko": "데이터베이스",
+      "es": "Base de datos"
+    },
+    {
+      "en": "Outreach",
+      "keep_en": false,
+      "category": "product-noun",
+      "zh": "触达",
+      "ja": "アウトリーチ",
+      "ko": "아웃리치",
+      "es": "Contacto"
+    },
+    {
+      "en": "Dashboard",
+      "keep_en": false,
+      "category": "product-noun",
+      "zh": "仪表盘",
+      "ja": "ダッシュボード",
+      "ko": "대시보드",
+      "es": "Panel"
+    },
+    {
+      "en": "Knowledge Base",
+      "keep_en": false,
+      "category": "product-noun",
+      "zh": "知识库",
+      "ja": "ナレッジベース",
+      "ko": "지식 베이스",
+      "es": "Base de conocimientos"
+    },
+    {
+      "en": "Pipeline",
+      "keep_en": false,
+      "category": "business-noun",
+      "zh": "管道",
+      "ja": "パイプライン",
+      "ko": "파이프라인",
+      "es": "Pipeline",
+      "note": "Marketing pipeline (KOLs in pipeline). Spanish keeps the English loanword."
+    },
+    {
+      "en": "Engagement",
+      "keep_en": false,
+      "category": "business-noun",
+      "zh": "互动",
+      "ja": "エンゲージメント",
+      "ko": "참여",
+      "es": "Engagement",
+      "note": "Spanish marketers commonly keep the English term."
+    },
+    {
+      "en": "Reach",
+      "keep_en": false,
+      "category": "business-noun",
+      "zh": "触达",
+      "ja": "リーチ",
+      "ko": "도달",
+      "es": "Alcance"
+    },
+    {
+      "en": "Followers",
+      "keep_en": false,
+      "category": "business-noun",
+      "zh": "粉丝",
+      "ja": "フォロワー",
+      "ko": "팔로워",
+      "es": "Seguidores"
+    },
+    {
+      "en": "Reply rate",
+      "keep_en": false,
+      "category": "business-noun",
+      "zh": "回复率",
+      "ja": "返信率",
+      "ko": "답장률",
+      "es": "Tasa de respuesta"
+    },
+    {
+      "en": "Open rate",
+      "keep_en": false,
+      "category": "business-noun",
+      "zh": "打开率",
+      "ja": "開封率",
+      "ko": "오픈율",
+      "es": "Tasa de apertura"
+    },
+    {
+      "en": "Spend",
+      "keep_en": false,
+      "category": "business-noun",
+      "zh": "支出",
+      "ja": "支出",
+      "ko": "지출",
+      "es": "Gasto"
+    },
+    {
+      "en": "Revenue",
+      "keep_en": false,
+      "category": "business-noun",
+      "zh": "营收",
+      "ja": "収益",
+      "ko": "매출",
+      "es": "Ingresos"
+    },
+    {
+      "en": "Budget",
+      "keep_en": false,
+      "category": "business-noun",
+      "zh": "预算",
+      "ja": "予算",
+      "ko": "예산",
+      "es": "Presupuesto"
+    },
+    {
+      "en": "Tier",
+      "keep_en": false,
+      "category": "business-noun",
+      "zh": "层级",
+      "ja": "ティア",
+      "ko": "티어",
+      "es": "Nivel"
+    },
+    {
+      "en": "Brand safety",
+      "keep_en": false,
+      "category": "business-noun",
+      "zh": "品牌安全",
+      "ja": "ブランドセーフティ",
+      "ko": "브랜드 안전성",
+      "es": "Seguridad de marca"
+    },
+    {
+      "en": "Creator",
+      "keep_en": false,
+      "category": "business-noun",
+      "zh": "创作者",
+      "ja": "クリエイター",
+      "ko": "크리에이터",
+      "es": "Creador"
+    },
+    {
+      "en": "Insights",
+      "keep_en": false,
+      "category": "product-noun",
+      "zh": "洞察",
+      "ja": "インサイト",
+      "ko": "인사이트",
+      "es": "Análisis"
+    },
+    {
+      "en": "Tenant",
+      "keep_en": false,
+      "category": "product-noun",
+      "zh": "租户",
+      "ja": "テナント",
+      "ko": "테넌트",
+      "es": "Inquilino",
+      "note": "Multi-tenancy term. Show a glossary tooltip if surfaced to non-technical users."
+    },
+    {
+      "en": "Workspace",
+      "keep_en": false,
+      "category": "product-noun",
+      "zh": "工作空间",
+      "ja": "ワークスペース",
+      "ko": "워크스페이스",
+      "es": "Espacio de trabajo"
+    }
+  ]
+}
