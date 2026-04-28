@@ -173,24 +173,43 @@ B7-mvp-launch-ready-spec.md §F001 line 80:
 
 ---
 
-## 9. Planner 裁决（待用户填写）
+## 9. Planner 裁决（2026-04-28 ✅ lock by Kimi）
 
-**短格式：** `#1:_ #2:_ #3:_ #4:_ #5:_ #6:_ #7:_ #8:_ #9:_ #10:_ #11:_`
+**短格式：** `#1:A #2:A #3:A #4:B #5:B #6:B' #7:A #8:B #9:A #10:A #11:A`
 
-**逐条理由（如偏离建议）：**
+**逐条决定 + 理由：**
 
 | # | 决定 | 理由 |
 |---|---|---|
-| 1 | _ | _ |
-| ... | _ | _ |
+| 1 | **A**（apt 包） | 同意 — 最小变更，prod/staging 同机共用 PG 17，5 min 用户操作；B 重做 DB 部署推迟 4-7 天；C 架构变更 |
+| 2 | **A**（Unsupported + $queryRaw）| 同意 — 沿用 BI4 searchVector 已成熟模式，零新风险；B 是 Preview Feature；C 让 db pull 丢列 |
+| 3 | **A**（IVFFlat lists=4）| 同意 — N=3,303 IVFFlat 够用；> 10K 时 reindex 切 HNSW（B8/Post-MVP）；B 在小数据上构建慢且过度；C 数据增长后变慢 |
+| 4 | **B**（KOL 拼接多字段）| 同意 — bio NULL 高比例 A 不适用；50 tokens 成本极低；C JSON 浪费 tokens 且 LLM-friendly 在 embedding 不重要 |
+| 5 | **B**（Product 拼接 name+category+targetAudience+USP）| 同意 — 同 KOL 思路；spec line 73 措辞需修订（Product 无 description 字段，本 commit 修订）|
+| 6 | ⚠️ **B'**（B 精确版 / 偏离 Generator C） | **理由：cost 极低（月 < $0.01）时简单胜复杂。** C 引入 embeddingDirty hash 计算逻辑增加测试面积；B 简单但浪费成本。**B' = B 精确版**：仅当 displayName/bio/categories/tags 任一字段实际变化时 re-embed（避免 viewCount/subscribeCount 等统计指标变化触发重 embed），介于 B 和 C 之间，简化 hash 比对为"字段直接比较" |
+| 7 | **A**（全量 embed 含 demo） | 同意 — 成本极低 + demo Smart Match 流程需要；B 漏 12 条 demo；C 漏 30%+ KOL（决议 #4-B 拼接已覆盖 NULL bio）|
+| 8 | **B**（kol-sync-daily.ts 单独跑） | 同意 — 错误隔离 + 不污染 import 关键路径；A 强耦合（embedding 失败影响 sync 主线）；C 引入新 cron 增加运维复杂度 |
+| 9 | **A**（raw fetch + zod） | 同意 — 项目惯例（generateAiAssets/insights/customize 一致）；B 引入新依赖；C 浪费工时 |
+| 10 | **A**（单 migration） | 同意 — 一次跑完语义清晰；Prisma migration 是事务的；database-patterns.md 未明文反对单 migration |
+| 11 | **A**（WHERE NOT NULL + 即时 embed）| 同意 — 数据干净 + 即时 embed 延迟可控（首次 ~300ms 一次）；B 浪费 LIMIT 名额；C UX 差异大 |
 
-**spec 修订清单（裁决时一并交代）：**
-- [ ] B7-mvp-launch-ready-spec.md §F001 line 73 "Product description" 改为 "Product (name + category + uniqueSellingPoints)"
-- [ ] B7-mvp-launch-ready-spec.md §F001 line 71 "PostgreSQL 16" 改为 "PostgreSQL 17"
-- [ ] 是否要把决议 #4 / #5 / #6 的最终文本组成 + re-embed 策略写进 spec acceptance？
+**spec 修订清单（本次裁决一并落地）：**
+- [x] B7-mvp-launch-ready-spec.md §F001 line 73 "Product description" 改为 "Product (name + category + targetAudience + uniqueSellingPoints)" ✅
+- [x] B7-mvp-launch-ready-spec.md §F001 line 71 "PostgreSQL 16" 改为 "PostgreSQL 17" ✅
+- [x] §F001 acceptance 加 #4/#5 文本组成 + #6-B' re-embed 策略 + #11 NULL 兜底 ✅
 
 **额外叮嘱（非阻塞）：**
 
 | 类目 | 内容 |
 |---|---|
-| _ | _ |
+| 数据监控 | bio NULL 比例核实：staging 实测看 NULL 率，如 ≥ 50% 在 acceptance 加监控（"embedding 文本平均长度 ≥ 30 chars"）— 已写入 spec acceptance |
+| F002 关系 | #11 与 F002 "< 200ms" 的细化：F002 acceptance 应明确"首次 product 无 embedding 时一次 ~300ms 含 embed；后续重复查询 < 200ms"（用户 spot check 时若选 fresh product 可能首次稍慢，正常） |
+| #6 实现 | B' 实现细节：在 B6 refresh hook 内加 `prevHash = hash([displayName, bio, categories, tags])` 与新值对比；不变则 skip embed |
+| Batch size | aigcgateway batch API 上限未知，失败自动降到 100→50→20→1 + retry log（Generator 自决） |
+| 用户行动项 | 决议 #1 需用户在 prod VM 跑 `sudo apt install postgresql-17-pgvector` + `sudo systemctl restart postgresql@17-main`；本审计裁决 lock 后用户先做这一步，Generator 才开工 |
+
+**开工条件确认：**
+- ✅ 11 决议全部 lock
+- ✅ spec 修订 3 项已落地（同 commit）
+- ⏳ 用户先做 pgvector OS 包安装（决议 #1，~5 min）
+- 安装完成后 Generator 接手 F001 实施（~5.5h）

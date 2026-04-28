@@ -68,21 +68,28 @@ Product description ─→ aigcgateway bge-m3 ─→ vector[1024]  ─→ cosine
 **实现：**
 
 1. **数据库基础设施：**
-   - 新 migration：启用 pgvector extension（PostgreSQL 16 已支持）
-   - Kol 表加 `embedding` 列（vector(1024) nullable）
+   - 新 migration：启用 pgvector extension（PostgreSQL 17 已支持，prod/staging 同机共用 PG 17）
+   - Kol 表加 `embedding` 列（vector(1024) nullable）+ `Unsupported("vector(1024)")` Prisma 类型（沿用 BI4-F005 searchVector 模式）
    - Product 表加 `embedding` 列（vector(1024) nullable）
-   - 加 IVFFlat 或 HNSW 索引（KOL 库 < 10K 用 IVFFlat，> 10K 用 HNSW）
+   - 加 IVFFlat 索引（lists=4，KOL 库 < 10K 用；> 10K 时 reindex 切 HNSW）
    - migration 含 ROLLBACK SQL（database-patterns.md §3）
+   - **单 migration**（CREATE EXTENSION + ALTER × 2 + INDEX × 2 一次跑完，事务原子）
 
 2. **新建 `src/lib/embedding/` 模块：**
    - `types.ts` — EmbedRequest / EmbedResponse / SimilarityResult
-   - `client.ts` — 调 aigcgateway `/v1/embeddings` (bge-m3, multilingual, 1024 dims, $0.084/M)
-   - `kol-embed.ts` — 一次性 embed 全部 Kol（batch 100/call）+ B6 daily 增量 embed
+   - `client.ts` — raw fetch 调 aigcgateway `/v1/embeddings` (bge-m3, multilingual, 1024 dims, $0.084/M) + zod 验证（沿用 generateAiAssets/insights 项目惯例，无新 npm 依赖）
+   - `kol-embed.ts` — 一次性 embed 全部 Kol（batch 100/call，失败渐进降到 50→20→1 + retry log）+ B6 daily 增量 hook
    - `cosine.ts` — 用 pgvector 内置 `<=>` operator 算余弦相似度
 
-3. **B6 cron 接力（修改 B6 F002 YouTube adapter）：**
+3. **Embedding 文本组成（B7a F001 pre-impl 审计 #4 #5 决议 lock 2026-04-28）：**
+   - **Kol embedding 文本**：拼接 `displayName + bio + categories.join(',') + tags.join(',') + countryCode + language`（覆盖 ≥ 30% bio NULL 的 case；bge-m3 多语言强）
+   - **Product embedding 文本**：拼接 `name + category + targetAudience + uniqueSellingPoints`（**注：Product 表无 description 字段**，spec 原措辞修正）
+   - 平均 ~50 tokens，全量 1500+ KOL 一次性成本 ~$0.0063
+
+4. **B6 cron 接力（修改 `scripts/kol-sync-daily.ts` 而非 import.ts）：**
    - 每日新爬的 KOL 自动 embed（avg 50/day × 50 tokens × $0.084/M ≈ $0.0002/day）
-   - 不破坏 B6 主线（仅加 hook 在 import 后调 embed）
+   - **错误隔离**：embed 失败不影响 import 主线（不同事务）
+   - **Re-embed 触发条件（B' 决议 lock）**：B6 refresh 命中且 `displayName / bio / categories / tags` 任一字段实际变化时 re-embed（避免 viewCount/subscriberCount 等统计指标变化触发重 embed 浪费）
 
 4. **新建 aigcgateway Action `kol-embed`（可选）：**
    - 直接用 chat 接口或新建 type='embedding' action
@@ -94,12 +101,16 @@ Product description ─→ aigcgateway bge-m3 ─→ vector[1024]  ─→ cosine
 - 查询（Smart Match + 相似推荐 + 多语言）月 ~5000 次 × 20 tokens = 100K × $0.084/M = **$0.0084/月**
 - **月总：< $0.02/月**（vs 原 LLM ranking $1-5/月，cost ↓ 50x+）
 
-**Acceptance：**
-- pgvector extension 启用 + Kol/Product 表加 embedding 列 + 索引
-- 一次性 embed 1500+ KOL（staging 验证）
-- B6 daily 增量 embed 接入（每日 cron 跑后自动 embed 新 KOL）
-- src/lib/embedding/ 模块完整 + tests
+**Acceptance（B7a F001 pre-impl 审计 lock 2026-04-28）：**
+- pgvector extension 启用 + Kol/Product 表加 embedding 列（vector(1024)）+ IVFFlat 索引（lists=4）
+- 一次性 embed staging 全部 KOL（含 demo seed 12 条），覆盖 ≥ 95%（除非 staging 个别 KOL 全字段都为空）
+- 决议 #4/#5 文本组成：KOL = displayName+bio+categories+tags+country+language；Product = name+category+targetAudience+uniqueSellingPoints
+- 决议 #6 B' re-embed 策略：B6 refresh 命中且关键字段（displayName/bio/categories/tags）实际变化才 re-embed
+- 决议 #11 NULL 兜底：Smart Match SQL `WHERE embedding IS NOT NULL`；Product 无 embedding 时即时 embed（首次 ~300ms 含 embed，后续重复 < 200ms）
+- src/lib/embedding/ 模块完整 + unit + integration tests
 - cost 监控埋点 event_log 'embedding.invoked'
+- migration ROLLBACK SQL 完整（DROP INDEX → ALTER TABLE DROP COLUMN × 2 → DROP EXTENSION CASCADE）
+- 监控：embedding 文本平均长度 ≥ 30 chars（保证拼接策略覆盖 NULL 字段）
 - migration ROLLBACK SQL 完整
 
 ### F002 — /discovery AI Smart Match 实装（embedding 版，毫秒级）⭐⭐⭐
