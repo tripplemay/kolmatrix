@@ -389,3 +389,79 @@ describe("runSmartMatch — errors", () => {
     ).rejects.toBeInstanceOf(SmartMatchError);
   });
 });
+
+/**
+ * fix-round 1 regression: the production runtime calls runSmartMatch
+ * WITHOUT a `prismaOverride` — the app-role `prisma` from db.ts has
+ * no tenant GUC set, so any naive `$queryRawUnsafe`/`$executeRaw` on
+ * `product`/`kol` returns 0 rows under RLS. The original verifying
+ * round failed exactly here ("product vector unreadable after
+ * embed"). This test pins the fix: when no override is passed,
+ * the function must internally route the embed read/write through
+ * `prismaAdmin` (or whatever non-RLS path is in place) so the SQL
+ * UPDATE + SELECT actually touch the row.
+ */
+describe("runSmartMatch — RLS regression (fix-round 1)", () => {
+  it("works without prismaOverride (production runtime path)", async () => {
+    // setupTestDb populated DATABASE_URL + DATABASE_ADMIN_URL on
+    // process.env, so the lazy db.ts + db-admin.ts imports inside
+    // runSmartMatch will resolve to the testcontainer.
+    const admin = getAdminPrisma();
+    const tenant = await admin.tenant.create({
+      data: { name: "RLS Regression", slug: "rls-reg" },
+    });
+    const product = await admin.product.create({
+      data: {
+        tenantId: tenant.id,
+        name: "RLS Product",
+        category: "shooter",
+        uniqueSellingPoints: "fast TTK",
+      },
+    });
+    const productVec = fakeVec(0);
+    await setEmbedding(admin, "product", product.id, productVec);
+
+    const kol = await admin.kol.create({
+      data: {
+        tenantId: tenant.id,
+        handle: "rls",
+        displayName: "Rls",
+        platform: "youtube",
+        bio: "x",
+        categories: [],
+        tags: [],
+      },
+    });
+    await setEmbedding(admin, "kol", kol.id, productVec);
+
+    process.env.AIGCGATEWAY_API_KEY = "pk_test";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        new Response(
+          JSON.stringify({
+            object: "list",
+            data: [
+              { object: "embedding", index: 0, embedding: productVec },
+            ],
+            model: "bge-m3",
+            usage: { prompt_tokens: 1, total_tokens: 1 },
+          }),
+          { status: 200 }
+        )
+      )
+    );
+    await admin.$executeRawUnsafe(`ANALYZE "kol"`);
+
+    // No prismaOverride passed — exactly the prod runtime call.
+    const result = await runSmartMatch({
+      tenantId: tenant.id,
+      productId: product.id,
+    });
+    vi.unstubAllGlobals();
+
+    expect(result.product.id).toBe(product.id);
+    expect(result.results.length).toBe(1);
+    expect(result.results[0]!.id).toBe(kol.id);
+  });
+});

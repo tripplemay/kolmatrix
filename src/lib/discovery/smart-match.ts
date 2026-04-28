@@ -28,6 +28,9 @@ import { EMBEDDING_DIMS } from "@/lib/embedding/types";
 async function dbModule(): Promise<typeof import("@/lib/db")> {
   return import("@/lib/db");
 }
+async function dbAdminModule(): Promise<typeof import("@/lib/db-admin")> {
+  return import("@/lib/db-admin");
+}
 
 /** Match score range (0–100) used by the UI RingProgress. */
 export const MIN_SCORE = 0;
@@ -117,14 +120,24 @@ export async function runSmartMatch(
 
   const db = await dbModule();
   const { Prisma, withTenant } = db;
-  const prisma = input.prismaOverride ?? db.prisma;
+
+  // RLS-aware tenant validation lives on the app-role prisma, but the
+  // embed UPDATE + vector readback need the admin client to bypass RLS
+  // — UPDATE statements run without a tenant GUC otherwise affect 0
+  // rows, and SELECT-by-id likewise returns 0 rows. The bug surfaced in
+  // staging verifying-2026-04-28: 5/5 products returned
+  // "product vector unreadable after embed" because the unscoped app
+  // role couldn't see/touch its own row. We pre-validate tenant
+  // ownership via withTenant findUnique below so admin access is safe.
+  const prismaAdmin = (await dbAdminModule()).prismaAdmin;
+  const prismaForEmbed = input.prismaOverride ?? prismaAdmin;
 
   let embeddedJustInTime = false;
 
-  // 1. Resolve product & ensure embedding exists. We use the unscoped
-  //    `prisma` for the embed call (it talks to the unsafe layer
-  //    via $queryRawUnsafe + $executeRaw with explicit id WHERE
-  //    clauses), but the read still lives behind RLS via withTenant.
+  // 1. Resolve product & ensure embedding exists. The findUnique
+  //    runs through withTenant, so RLS is the security boundary that
+  //    proves the caller actually owns this product before we hand
+  //    the id over to the admin-role embed/read path.
   const product = await withTenant(input.tenantId, (tx) =>
     tx.product.findUnique({
       where: { id: input.productId },
@@ -141,8 +154,9 @@ export async function runSmartMatch(
   }
 
   // 2. JIT-embed the product if needed. embedProductIfStale itself
-  //    short-circuits when hash matches.
-  const embedStats = await embedProductIfStale(prisma, input.productId, {
+  //    short-circuits when hash matches. Admin role so the UPDATE
+  //    actually touches the row.
+  const embedStats = await embedProductIfStale(prismaForEmbed, input.productId, {
     source: "product-jit",
   });
   if (embedStats.failed > 0 && embedStats.embedded === 0) {
@@ -153,8 +167,9 @@ export async function runSmartMatch(
   }
   embeddedJustInTime = embedStats.embedded > 0;
 
-  // 3. Fetch the now-guaranteed-non-null product vector.
-  const productVecRow = await prisma.$queryRawUnsafe<
+  // 3. Fetch the now-guaranteed-non-null product vector via admin role
+  //    so RLS doesn't hide it (caller already validated ownership).
+  const productVecRow = await prismaForEmbed.$queryRawUnsafe<
     { vec: number[] | null }[]
   >(
     `SELECT (embedding::text)::jsonb AS vec
