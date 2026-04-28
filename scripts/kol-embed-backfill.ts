@@ -103,8 +103,13 @@ async function main(): Promise<void> {
       let totalFailed = 0;
       let totalTokens = 0;
       let totalCost = 0;
-      for (const { id } of ids) {
-        const s = await embedProductIfStale(prisma, id);
+      // Per-product loop is one API call each; throttle to keep us
+      // under the 30 RPM gateway cap (audit footnote — discovered
+      // 2026-04-28 during staging backfill, RPM cap was undocumented
+      // up to this point).
+      for (let i = 0; i < ids.length; i += 1) {
+        if (i > 0) await new Promise((r) => setTimeout(r, 2_500));
+        const s = await embedProductIfStale(prisma, ids[i]!.id);
         totalEmbedded += s.embedded;
         totalSkipped += s.skipped;
         totalFailed += s.failed;

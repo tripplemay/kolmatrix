@@ -28,6 +28,15 @@ const BGE_M3_INPUT_USD_PER_M = 0.084;
 const DEFAULT_TIMEOUT_MS = 30_000;
 
 /**
+ * aigcgateway throttles per-key at ~30 RPM. Backfill scripts can blast
+ * through that in seconds, so we honour `retryAfterSeconds` from the
+ * 429 response and retry once. The orchestrator (kol-embed.ts) adds a
+ * proactive throttle on top so we don't hit 429 in the first place.
+ */
+const RATE_LIMIT_RETRY_LIMIT = 1;
+const RATE_LIMIT_DEFAULT_RETRY_AFTER_MS = 60_000;
+
+/**
  * The shape of one error reachable from a failed call. Mirrors the
  * EmbeddingError patterns in roi/insights.ts so logging code can
  * `instanceof` cleanly.
@@ -164,6 +173,25 @@ export async function embedBatch(
 
   if (!res.ok) {
     const text = await res.text().catch(() => "<no body>");
+    if (res.status === 429) {
+      const retryMs = parseRetryAfterMs(text);
+      if (
+        retryMs !== null &&
+        ((opts as { _rateRetryDepth?: number })._rateRetryDepth ?? 0) <
+          RATE_LIMIT_RETRY_LIMIT
+      ) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[embed-client] 429 from gateway, sleeping ${Math.round(retryMs / 1000)}s then retrying`
+        );
+        await new Promise((r) => setTimeout(r, retryMs));
+        return embedBatch(inputs, {
+          ...opts,
+          _rateRetryDepth:
+            ((opts as { _rateRetryDepth?: number })._rateRetryDepth ?? 0) + 1,
+        } as EmbeddingClientOpts);
+      }
+    }
     throw new EmbeddingError(
       "http",
       `aigcgateway responded ${res.status}: ${text.slice(0, 200)}`
@@ -219,6 +247,22 @@ export async function embedBatch(
     vectors,
     usage: { promptTokens, totalTokens, estimatedCostUsd },
   };
+}
+
+/** Pull `retryAfterSeconds` out of the 429 JSON body if present. */
+function parseRetryAfterMs(body: string): number | null {
+  try {
+    const parsed = JSON.parse(body) as {
+      error?: { retryAfterSeconds?: number };
+    };
+    const sec = parsed?.error?.retryAfterSeconds;
+    if (typeof sec === "number" && sec > 0 && sec < 600) {
+      return Math.ceil(sec * 1000) + 1_000; // small jitter
+    }
+  } catch {
+    // fall through
+  }
+  return RATE_LIMIT_DEFAULT_RETRY_AFTER_MS;
 }
 
 /** Convenience for the single-row case (e.g. just-in-time Product embed). */

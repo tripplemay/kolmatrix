@@ -41,6 +41,13 @@ import {
 
 const DEFAULT_BATCH_SIZE = 100;
 const FALLBACK_BATCH_SIZES = [50, 20, 1] as const;
+/**
+ * aigcgateway per-key RPM cap is ~30. Sleeping 2.5s between batches
+ * keeps us at ≤ 24 RPM with comfortable headroom. The client.ts layer
+ * also honours 429 `retryAfterSeconds` as a fallback if a burst slips
+ * through (e.g. concurrent runs against the same key).
+ */
+const INTER_BATCH_THROTTLE_MS = 2_500;
 
 export interface EmbedRunStats {
   /** Rows considered for this run. */
@@ -273,6 +280,7 @@ export async function embedAllKols(
   if (stale.length === 0) return stats;
 
   for (let i = 0; i < stale.length; i += batchSize) {
+    if (i > 0) await sleep(INTER_BATCH_THROTTLE_MS);
     const chunk = stale.slice(i, i + batchSize);
     const result = await sendBatchWithFallback(chunk, opts.client ?? {}, log);
     stats.batches += result.batches;
@@ -308,6 +316,10 @@ export async function embedAllKols(
   return stats;
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
 /**
  * B6 cron hook entry. Given a narrow id list (the rows the daily sync
  * just inserted/updated), embed only those whose source text changed.
@@ -339,6 +351,7 @@ export async function embedKolsForIds(
   stats.skipped = skipped;
 
   for (let i = 0; i < stale.length; i += batchSize) {
+    if (i > 0) await sleep(INTER_BATCH_THROTTLE_MS);
     const chunk = stale.slice(i, i + batchSize);
     const result = await sendBatchWithFallback(chunk, opts.client ?? {}, log);
     stats.batches += result.batches;
