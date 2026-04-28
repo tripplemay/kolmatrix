@@ -108,8 +108,9 @@
 
 - 占位创建于 `2026-04-28`（B6 day-2，F006 building 阶段）。
 - 接力条款验证依赖 5 天 cron 自动跑完，**今天无法签收 F006**。
-- F006 其他 sub-acceptance（spec 链 grep + crawler-team.ts.todo 占位 + tests + load test）已在今天交付，见 commit chain。
-- staging 手动 sync 验证（F006 acceptance 第 2 项）由用户决定时机：今天还有 ~2K quota 余量（prod cron 已用 ~1.8K），可单跑 ~50u 验证一次；推荐放在 day-5 一并做。
+- F006 其他 sub-acceptance（spec 链 grep + crawler-team.ts.todo 占位 + tests + load test）已在 day-1 / day-2 交付，见 commit chain。
+- **2026-04-28 14:30 BJ A 方案 lock（用户裁决）：** staging 手动 sync 验证（acceptance #5）今日独立跑，**不与本 day-5 接力条款验证合并**；F006 拆分为本批次 done（#1-3 + #5）+ 跨批次延迟（#4 即本报告）两段。
+- **prod cron deploy 缺口（2026-04-28 发现）：** `infrastructure/cron/kolmatrix-kol-sync` 入 git ✅，但 VM `/etc/cron.d/` 未拷贝；prod git SHA 仍在旧版（不含 sync script），需用户先触发 prod redeploy 再 deploy cron，否则 cron 跑会报 `Missing script "kol-sync:daily"`。**本 day-5 接力条款验证依赖 prod cron 在 5 天内每日自动跑**；如 cron 未及时部署，day-5 数据会全部依赖 staging 手动跑 → 接力条款判定改用 staging 数据为准（该报告 §3 已写明）。
 
 ---
 

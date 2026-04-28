@@ -221,9 +221,14 @@ export class YouTubeKolSyncAdapter implements KolSyncAdapter {
 
 **Acceptance：**
 - 全套 tests 通过
-- staging 一次手动 sync 验证（≥ 30 KOL 真入库 + log 完整）
+- staging 一次手动 sync 验证：
+  - (a) 链路无 error（`errors=[]` + level ≠ ALERT）
+  - (b) **≥ 30 条 KOL 记录被本次 sync 触达**（insert OR update，以 `last_synced_at ≥ 本次 sync started_at` 为准）
+  - (c) structured log 含 `level / discoverCount / estimatedQuotaConsumed / estimatedQuotaRemaining` 字段
+  - 措辞修订自原 "≥ 30 KOL 真入库 + log 完整"（用户 2026-04-28 BJ 15:10 lock）；理由：staging 已存在同源历史数据使 dedupe 命中率高，"新插入"与"链路写入"是两个不同概念，后者更能反映 prod cron 真实行为。详见 `docs/test-reports/B6-F006-staging-manual-sync-2026-04-28.md` §1.1 §4 §5。
 - PRD §12 + BL-012 + crawler-handoff 三处文档一致
 - crawler-team.ts.todo 占位文件 + 6 月接入路径清单（≥ 5 步骤）
+- ⭐ kol-seed-redo F002 接力条款（day-5 staging total≥1000 + CN+HK+TW≥150）— **延迟跨批次条款**（不阻塞 B6 done）
 
 ## 3. 关键设计决策
 
@@ -276,9 +281,9 @@ F005 ─→ F006 (tests + spec 链 + BL-012 兼容)
 - mock YouTube API 7 天连续调度（验证累计 dedupe + 数据增长曲线）
 
 ### L2 staging
-- 手动跑 `npm run kol-sync:daily` → 验证 ≥ 30 KOL 真入库
-- log 文件结构化日志正确
-- staging Kol count 增加（前后对比）
+- 手动跑 `npm run kol-sync:daily` → 验证 ≥ 30 条 KOL 记录被本次 sync 触达（insert OR update，以 `last_synced_at` 为准；措辞修订见 §F006 acceptance）
+- structured log 含必要字段且 level ≠ ALERT
+- staging Kol 总数 + last_synced_at 触达数前后对比
 
 ### L3 prod
 - F003 cron 加入 /etc/cron.d/ + 第一次自动触发监控
