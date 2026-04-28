@@ -51,13 +51,14 @@
   {
     "id": "BL-012",
     "title": "KOL crawler API 集成 sync worker（消费独立爬虫团队交付的数据）",
-    "description": "用户 2026-04-24 决策：KOL Discovery 数据源从静态 XLSX seed（2524 条）切换到独立爬虫团队实时/准实时交付模式。交接文档见 `docs/product/kol-crawler-team-handoff-v1.md`（549 行，14 章节完整需求规格）。KOLMatrix 侧需要实现 sync worker 消费爬虫 API 写入本地 Kol table，包括：(1) 周期性增量同步（GET /v1/kols?changed_since=...）；(2) 字段映射（爬虫 schema 15 维 → Prisma Kol 模型）；(3) upsert 去重（按 externalId+platform+handle）；(4) 失败重试 + 告警；(5) 可选 webhook endpoint 接收准实时 push（POST /api/v1/crawler-webhook 含 HMAC-SHA256 签名）；(6) 数据质量监控（质量异常告警 + 反馈通道回爬虫团队）。依赖：爬虫团队 M4（~2026-06-15）交付首批 5000 KOL + API sandbox 就绪。实际落地时机：M5 联调（~2026-06-25）；占位作为未来 B6 或 BIx-crawler-sync 批次。当前仅登记，kickoff 会议后（2026-04-25 ±）用户 + 爬虫团队答复交接文档 §11 10 条开放问题后 Planner 细化为具体 feature 清单。",
+    "description": "用户 2026-04-24 决策：KOL Discovery 数据源从静态 XLSX seed（2524 条）切换到独立爬虫团队实时/准实时交付模式。交接文档见 `docs/product/kol-crawler-team-handoff-v1.md`（549 行，14 章节完整需求规格）。KOLMatrix 侧需要实现 sync worker 消费爬虫 API 写入本地 Kol table，包括：(1) 周期性增量同步（GET /v1/kols?changed_since=...）；(2) 字段映射（爬虫 schema 15 维 → Prisma Kol 模型）；(3) upsert 去重（按 externalId+platform+handle）；(4) 失败重试 + 告警；(5) 可选 webhook endpoint 接收准实时 push（POST /api/v1/crawler-webhook 含 HMAC-SHA256 签名）；(6) 数据质量监控（质量异常告警 + 反馈通道回爬虫团队）。依赖：爬虫团队 M4（~2026-06-15）交付首批 5000 KOL + API sandbox 就绪。实际落地时机：M5 联调（~2026-06-25）；占位作为未来 B6 或 BIx-crawler-sync 批次。当前仅登记，kickoff 会议后（2026-04-25 ±）用户 + 爬虫团队答复交接文档 §11 10 条开放问题后 Planner 细化为具体 feature 清单。\n\n**B6-kol-daily-sync (~2026-04-28) cross-reference：** B6 已落地 KolSyncAdapter 抽象（src/lib/kol-sync/types.ts + dispatcher.ts）+ YouTube adapter 作为首个真实实现 + 重试/质量校验/周报全套基础设施。BL-012 接入仅需新增 src/lib/kol-sync/adapters/crawler-team.ts 实现同一 KolSyncAdapter 接口，dispatcher / cron / 重试 / 质量过滤 / 周报 5 模块零改动；预估接入工时 ~1 day。占位文件 src/lib/kol-sync/adapters/crawler-team.ts.todo 已含 1:1 字段映射表 + ≥7 步骤接入路径。B6 + BL-012 双数据源按 metadata.source 字段区分（'youtube-api-daily' vs 'crawler-team'），互为容灾。",
     "decisions": [
       "数据集成模型：独立爬虫团队负责采集 + API 提供；KOLMatrix 仅消费",
       "字段契约已起草：交接文档 §3 10 核心 + 15 扩展 + categories 枚举 + JSON shape",
       "API 契约已起草：交接文档 §4 Bearer auth + cursor pagination + changed_since 增量 + 可选 webhook",
       "法律/合规边界已划：GDPR / 个人邮箱禁爬 / 平台 ToS 责任归属爬虫团队（交接文档 §5）",
-      "落地时机：Post-MVP（MVP 上线 2026-05-14 不含本功能），M5 联调 ~2026-06-25"
+      "落地时机：Post-MVP（MVP 上线 2026-05-14 不含本功能），M5 联调 ~2026-06-25",
+      "B6 落地后 sync worker 接口已 ready（KolSyncAdapter trait + dispatcher + 重试 + 质量校验全套），接入仅 ~1 day 替换 adapter（B6 F006 cross-ref）"
     ],
     "confirmed_at": "2026-04-24T13:00+0800",
     "priority": "deferred",
@@ -71,7 +72,9 @@
     "references": [
       "docs/product/kol-crawler-team-handoff-v1.md",
       "docs/product/KOLMatrix-MVP-PRD.md §12 Out of Scope line 484 (YouTube Data API 自动 sync 不做 MVP)",
-      "docs/specs/roadmap.md B6 YouTube/TikTok 真实数据接入（原为自接 API，现改为爬虫团队交付）"
+      "docs/specs/roadmap.md B6 YouTube/TikTok 真实数据接入（原为自接 API，现改为爬虫团队交付）",
+      "docs/specs/B6-kol-daily-sync-spec.md §F006（KolSyncAdapter 接口前置 + crawler-team.ts.todo 占位）",
+      "src/lib/kol-sync/adapters/crawler-team.ts.todo（1:1 字段/API 映射 + 接入步骤）"
     ]
   },
   {

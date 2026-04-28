@@ -424,6 +424,33 @@ GET  /v1/kols?changed_since=YYYY-MM-DDTHH:MM:SSZ  # 增量同步
 - 租户数据权限
 - 反馈收集（通过 B7 客户协同筛选 → 爬虫团队数据质量改进）
 
+#### sync worker 接入状态（2026-04-28 B6 落地后）
+
+**KOLMatrix 侧 sync worker 框架已 ready**，6 月 M5 联调时爬虫团队仅需 KOLMatrix 工程师约 1 个工作日即可接入。已就位组件：
+
+| 组件 | 路径 | 角色 |
+|---|---|---|
+| Adapter 接口 | `src/lib/kol-sync/types.ts` (`KolSyncAdapter`) | 多数据源契约抽象 |
+| Dispatcher | `src/lib/kol-sync/dispatcher.ts` | 多 adapter 注册 + 串行 discover/refresh + per-adapter 失败隔离 |
+| 重试 | `src/lib/kol-sync/retry.ts` | 30s/2min/5min backoff（已通过 dispatcher 注入） |
+| 质量过滤 | `src/lib/kol-sync/quality.ts` | 5 条规则（spam / zombie / NSFW / dedupe / 重复 handle）+ 异常增长 flag |
+| Import | `src/lib/kol-sync/import.ts` | RawKolData → Prisma Kol upsert（key: tenantId+platform+externalId） |
+| Cron + 日报 | `scripts/kol-sync-daily.ts` + `infrastructure/cron/kolmatrix-kol-sync` | 每日 08:30 北京自动跑 |
+| 周报 | `scripts/kol-quality-weekly.ts` + `infrastructure/cron/kolmatrix-kol-quality` | 周一汇总数据质量 |
+| 占位 + 接入路径 | `src/lib/kol-sync/adapters/crawler-team.ts.todo` | 1:1 字段映射 + ≥7 步骤接入清单 |
+
+**KOLMatrix 侧 6 月 M5 接入工作（≥ 7 步骤）：**
+
+1. 把 `src/lib/kol-sync/adapters/crawler-team.ts.todo` 重命名为 `crawler-team.ts`，反注释 import + class 定义。
+2. 实现 `discover()`（cursor pagination + `changed_since` 增量 + 429 Retry-After 兼容，对照本文 §4.3 / §4.6）。
+3. 实现 `mapHandoffItemToRawKolData()`（本文 §3 → `RawKolData`，扩展字段进 `raw` 让 B5 enrichment 后续 promote）。
+4. 加 `tests/integration/crawler-team-adapter.test.ts`（msw fixture：分页 + tombstones + 429）。
+5. 把 `CrawlerTeamSyncAdapter` 加入 `scripts/kol-sync-daily.ts` 的 dispatcher 注册列表（与 YouTube adapter 并列；dispatcher 已支持多 adapter，failure 隔离）。
+6. VM 配置 `CRAWLER_TEAM_API_BASE_URL` + `CRAWLER_TEAM_API_KEY` 两个 env 到 `/opt/kolmatrix/.env.production` 与 `/opt/kolmatrix-staging/.env.staging`，更新 `docs/dev/kol-sync-runbook.md` Required env 表 + `.auto-memory/environment.md` secrets 状态表。
+7. 调高 F004 quota 告警阈值（双数据源后 `quota_consumed` 应分 adapter 计而非合计）。
+
+**爬虫团队侧职责对应（不变）**：本文 §1.3 / §8 已界定；M4 完成 sandbox 上线 + 5,000 KOL 后即可触发上述步骤。
+
 ### KOLMatrix 团队 ❌ 不负责
 - 爬虫自身的运行 / 运维
 - 数据采集合法性（由你们把关）
