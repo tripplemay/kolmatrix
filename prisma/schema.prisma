@@ -179,6 +179,13 @@ model Kol {
   // canonical filter the Discovery / Database UI checks.
   isSuspicious Boolean @default(false) @map("is_suspicious")
 
+  // B7a-F001 — bge-m3 embedding (1024 dims) for Smart Match cosine.
+  // Read/written via $queryRaw (Prisma Unsupported pattern, same as
+  // searchVector above). Source text composition + re-embed policy:
+  // see docs/specs/B7a-f001-embedding-preimpl-audit.md §9 #4 #6.
+  embedding         Unsupported("vector(1024)")? @map("embedding")
+  embeddingTextHash String?                      @map("embedding_text_hash")
+
   tenant       Tenant        @relation(fields: [tenantId], references: [id])
   kolCampaigns KolCampaign[]
   emailLogs    EmailLog[]
@@ -422,6 +429,12 @@ model Product {
   aiAssets            Json?     @map("ai_assets") @db.JsonB
   createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  // B7a-F001 — bge-m3 embedding (1024 dims) for Smart Match cosine.
+  // Source text: name + category + targetAudience + uniqueSellingPoints.
+  // See docs/specs/B7a-f001-embedding-preimpl-audit.md §9 #5.
+  embedding         Unsupported("vector(1024)")? @map("embedding")
+  embeddingTextHash String?                      @map("embedding_text_hash")
 
   tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   campaigns Campaign[]

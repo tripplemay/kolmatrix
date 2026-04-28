@@ -38,6 +38,10 @@ import { dirname, resolve } from "node:path";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
+import {
+  embedKolsForIds,
+  type EmbedRunStats,
+} from "../src/lib/embedding/kol-embed";
 import { YouTubeKolSyncAdapter } from "../src/lib/kol-sync/adapters/youtube";
 import { KolSyncDispatcher } from "../src/lib/kol-sync/dispatcher";
 import { importRawKolData, type ImportStats } from "../src/lib/kol-sync/import";
@@ -110,10 +114,25 @@ interface DailyRunReport {
   } | null;
   importStats: ImportStats | null;
   refreshImportStats: ImportStats | null;
+  /** B7a-F001 — embedding hook results (audit lock #8:B, soft phase). */
+  embedStats: EmbedRunStats | null;
   errors: string[];
   /** Best-effort estimate based on adapter knowledge; F004 will
    *  replace this with a real counter once retry tracking lands. */
   estimatedQuotaConsumed: number;
+}
+
+function formatEmbedSection(report: DailyRunReport, lines: string[]): void {
+  if (!report.embedStats) return;
+  const e = report.embedStats;
+  lines.push("## Embedding hook (B7a-F001)");
+  lines.push(
+    `- Scanned: ${e.scanned} | Skipped (hash unchanged): ${e.skipped} | Embedded: ${e.embedded} | Failed: ${e.failed}`
+  );
+  lines.push(
+    `- Batches: ${e.batches} | Tokens: ${e.promptTokens} | Estimated cost: $${e.estimatedCostUsd.toFixed(6)}`
+  );
+  lines.push("");
 }
 
 function formatMarkdownReport(report: DailyRunReport): string {
@@ -152,6 +171,7 @@ function formatMarkdownReport(report: DailyRunReport): string {
     }
     lines.push("");
   }
+  formatEmbedSection(report, lines);
   if (report.errors.length > 0) {
     lines.push("## Errors");
     for (const e of report.errors) lines.push(`- ${e}`);
@@ -228,6 +248,7 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
       refresh: null,
       importStats: null,
       refreshImportStats: null,
+      embedStats: null,
       errors,
       estimatedQuotaConsumed,
     };
@@ -358,6 +379,45 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
     }
   }
 
+  // ---- EMBED HOOK (B7a-F001 audit lock #8:B) ----
+  // Soft phase: embedding failures degrade to "vectors stale by one
+  // day" but never abort the sync. We pull every kol id touched in
+  // this run via last_synced_at >= startedAt, then call
+  // embedKolsForIds which itself dirty-checks via embedding_text_hash.
+  let embedStats: EmbedRunStats | null = null;
+  if (deps.prisma && !deps.dryRun) {
+    try {
+      const tenant = await deps.prisma.tenant.findUnique({
+        where: { slug: deps.tenantSlug },
+      });
+      if (tenant) {
+        const touched = await deps.prisma.kol.findMany({
+          where: {
+            tenantId: tenant.id,
+            lastSyncedAt: { gte: new Date(startedAt) },
+          },
+          select: { id: true },
+        });
+        const ids = touched.map((r) => r.id);
+        if (ids.length > 0) {
+          embedStats = await embedKolsForIds(deps.prisma, ids, {
+            logger: (m) => console.log(m),
+          });
+          if (embedStats.failed > 0) {
+            errors.push(
+              `embed-hook: ${embedStats.failed}/${embedStats.scanned} failed`
+            );
+          }
+        }
+      }
+    } catch (err) {
+      // Soft-fail: log + collect but never throw out of runDaily.
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`[kol-sync-daily] embed-hook failed: ${msg.slice(0, 200)}`);
+      errors.push(`embed-hook: ${msg.slice(0, 200)}`);
+    }
+  }
+
   return {
     date: todayUtc(),
     startedAt,
@@ -369,6 +429,7 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
     refresh,
     importStats,
     refreshImportStats,
+    embedStats,
     errors,
     estimatedQuotaConsumed,
   };

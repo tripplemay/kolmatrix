@@ -139,6 +139,13 @@ describe("runDaily · happy path", () => {
           return null;
         }),
       },
+      // B7a-F001 embed hook entry — orchestrator queries
+      // `prisma.kol.findMany` for ids touched, then calls
+      // `embedKolsForIds(prisma, ids)` which runs $queryRawUnsafe.
+      // Returning an empty array short-circuits the embed loop, so the
+      // hook stays a no-op without polluting `report.errors`.
+      $queryRawUnsafe: vi.fn(async () => []),
+      $executeRaw: vi.fn(async () => 0),
     };
 
     const report = await runDaily({

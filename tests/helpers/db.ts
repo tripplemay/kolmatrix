@@ -45,7 +45,12 @@ type Clients = {
 };
 
 const APP_ROLE_PASSWORD = "kolmatrix_app";
-const POSTGRES_IMAGE = "postgres:16-alpine";
+// B7a-F001: switch from `postgres:16-alpine` to `pgvector/pgvector:pg16` so
+// the pgvector extension migration can install. `pgvector/pgvector:pg16` is
+// a drop-in postgres:16 + pre-built pgvector binaries. Keeping PG 16 (vs
+// matching prod's PG 17) to minimise behavioural diff against existing
+// integration suite.
+const POSTGRES_IMAGE = "pgvector/pgvector:pg16";
 const DB_NAME = "kolmatrix";
 
 let shared: Clients | null = null;
