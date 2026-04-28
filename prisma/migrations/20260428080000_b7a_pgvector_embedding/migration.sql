@@ -39,7 +39,7 @@ ANALYZE "kol";
 ANALYZE "product";
 
 -- ===================================================================
--- ROLLBACK SQL (database-patterns.md §3 requirement)
+-- ROLLBACK: (database-patterns.md §3 requirement)
 -- ===================================================================
 -- BEGIN;
 --   DROP INDEX IF EXISTS "product_embedding_ivfflat_idx";
