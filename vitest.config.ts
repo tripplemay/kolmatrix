@@ -67,6 +67,17 @@ export default defineConfig({
         "src/lib/weekly-report/persistence.ts",
         "src/lib/weekly-report/data-assembly.ts",
         "src/lib/db-admin.ts",
+        // B7a-F001 DB-heavy embedding orchestrator. The pure surface
+        // (text builders, client, sql helpers, event-log emitter) all
+        // have unit specs; kol-embed.ts is integration-tested via
+        // tests/integration/embedding-pipeline.test.ts (9 specs covering
+        // backfill / dirty-check / NULL filter / Product JIT).
+        "src/lib/embedding/kol-embed.ts",
+        // B7a-F002 DB-heavy Smart Match orchestrator. Pure surface
+        // (similarityToScore) has unit specs; the cosine top-K +
+        // RLS path is integration-tested via
+        // tests/integration/smart-match-api.test.ts (5 specs).
+        "src/lib/discovery/smart-match.ts",
       ],
       thresholds: {
         lines: 80,
