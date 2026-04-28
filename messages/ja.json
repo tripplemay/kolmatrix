@@ -358,6 +358,31 @@
       "bilibili": "Bilibili",
       "twitter": "Twitter",
       "instagram": "Instagram"
+    },
+    "smartMatch": {
+      "button": "AI Smart Match",
+      "title": "AI Smart Match",
+      "subtitle": "Pick a product — we will rank your KOLs by semantic match in milliseconds.",
+      "productLabel": "Product",
+      "productPlaceholder": "Select a product…",
+      "noProducts": "Add a product in Knowledge Base to enable Smart Match.",
+      "run": "Find matches",
+      "loading": "Computing matches…",
+      "empty": "No KOLs are eligible for matching yet — embeddings are still being computed for the most recent imports.",
+      "metaCount": "Top {n, plural, one {1 match} other {# matches}}",
+      "metaLatency": "{ms}ms",
+      "ringLabel": "Match score {score}",
+      "followers": "followers",
+      "saveAllToCampaign": "Save all to campaign",
+      "close": "Close",
+      "errors": {
+        "pickProduct": "Please pick a product first.",
+        "productMissing": "That product no longer exists.",
+        "embeddingDown": "Our embedding service is temporarily unavailable. Please try again in a moment.",
+        "unauthorized": "Please sign in again.",
+        "network": "Network error — check your connection and retry.",
+        "generic": "Something went wrong. Please retry."
+      }
     }
   },
   "database": {
@@ -561,6 +586,9 @@
         "ownerInvalid": "オーナーのセッションが無効のようです — 再度ログインしてください。",
         "generic": "何かがうまくいきませんでした。再度試してください。",
         "unauthorized": "キャンペーンを作成するにはログインしてください。"
+      },
+      "smartMatch": {
+        "banner": "{count, plural, one {1 KOL} other {# KOLs}} from Smart Match will be linked once you save this campaign."
       }
     },
     "detail": {

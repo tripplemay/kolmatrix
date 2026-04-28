@@ -358,6 +358,31 @@
       "bilibili": "哔哩哔哩",
       "twitter": "Twitter",
       "instagram": "Instagram"
+    },
+    "smartMatch": {
+      "button": "AI 智能匹配",
+      "title": "AI 智能匹配",
+      "subtitle": "选一个产品 — 我们将在几十毫秒内基于语义为你筛选最匹配的 KOL。",
+      "productLabel": "产品",
+      "productPlaceholder": "请选择一个产品…",
+      "noProducts": "请先在知识库中添加产品，再使用智能匹配。",
+      "run": "开始匹配",
+      "loading": "正在计算匹配度…",
+      "empty": "暂无可匹配的 KOL — 最近导入的内容仍在生成 embedding。",
+      "metaCount": "前 {n, plural, one {1 个匹配} other {# 个匹配}}",
+      "metaLatency": "{ms} 毫秒",
+      "ringLabel": "匹配度 {score}",
+      "followers": "粉丝",
+      "saveAllToCampaign": "全部加入新 Campaign",
+      "close": "关闭",
+      "errors": {
+        "pickProduct": "请先选择一个产品。",
+        "productMissing": "该产品已不存在。",
+        "embeddingDown": "Embedding 服务临时不可用，请稍后再试。",
+        "unauthorized": "请重新登录。",
+        "network": "网络错误，请检查连接后重试。",
+        "generic": "发生错误，请重试。"
+      }
     }
   },
   "database": {
@@ -687,6 +712,9 @@
         "ownerInvalid": "登录状态异常，请重新登录。",
         "generic": "出错啦，请稍后再试。",
         "unauthorized": "请先登录后再创建活动。"
+      },
+      "smartMatch": {
+        "banner": "保存 Campaign 后将自动关联 {count, plural, one {1 位} other {# 位}}通过智能匹配选中的 KOL。"
       }
     }
   },

@@ -14,6 +14,10 @@ import { getLocale } from "next-intl/server";
 
 import { auth } from "@/auth";
 import {
+  bulkAddKolsToCampaign,
+  CampaignKolError,
+} from "@/lib/campaigns/kol-operations";
+import {
   createCampaignRecord,
   CampaignCreateError,
 } from "@/lib/campaigns/create";
@@ -24,6 +28,19 @@ import {
   CAMPAIGN_MARKETS,
   type CampaignMarket,
 } from "@/lib/campaigns/schema";
+
+const UUID_LIST_LIMIT = 50;
+const UUID_LIST_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function parseSmartMatchKolIds(raw: string): string[] {
+  if (!raw) return [];
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => UUID_LIST_RE.test(s))
+    .slice(0, UUID_LIST_LIMIT);
+}
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -105,6 +122,30 @@ export async function createCampaign(
       }
     }
     return { ok: false, errors: { form: "generic" } };
+  }
+
+  // B7a-F002 — Smart Match "Save all to campaign" arrives with a
+  // hidden input carrying the matched KOL ids; if present, attach
+  // them to the freshly-created campaign before redirecting. Bulk
+  // attach is best-effort (logs but doesn't block the redirect).
+  const smartMatchKolIds = parseSmartMatchKolIds(
+    String(formData.get("smartMatchKolIds") ?? "")
+  );
+  if (smartMatchKolIds.length > 0) {
+    try {
+      await bulkAddKolsToCampaign(
+        tenantId,
+        userId,
+        createdId,
+        smartMatchKolIds
+      );
+    } catch (err) {
+      console.warn(
+        `[smart-match attach] bulk-add failed for campaign ${createdId}: ${
+          err instanceof CampaignKolError ? err.code : (err as Error).message
+        }`
+      );
+    }
   }
 
   // Bust the list cache so the marketer sees the new campaign when

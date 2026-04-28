@@ -180,7 +180,6 @@ export async function embedBatch(
         ((opts as { _rateRetryDepth?: number })._rateRetryDepth ?? 0) <
           RATE_LIMIT_RETRY_LIMIT
       ) {
-        // eslint-disable-next-line no-console
         console.warn(
           `[embed-client] 429 from gateway, sleeping ${Math.round(retryMs / 1000)}s then retrying`
         );

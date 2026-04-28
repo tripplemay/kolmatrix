@@ -20,10 +20,22 @@ export const metadata = { title: "New Campaign — KOLMatrix" };
 
 interface Props {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function NewCampaignPage({ params }: Props) {
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function pickFirst(
+  raw: string | string[] | undefined
+): string | undefined {
+  if (Array.isArray(raw)) return raw[0];
+  return raw;
+}
+
+export default async function NewCampaignPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const sp = await searchParams;
   const session = await auth();
   const tenantId = session?.user?.tenantId;
   if (!tenantId) redirect("/login");
@@ -35,9 +47,28 @@ export default async function NewCampaignPage({ params }: Props) {
     })
   );
 
+  // B7a-F002 — Smart Match redirect carries productId + a list of
+  // matched KOL ids; harvest them so the form can pre-link after
+  // the campaign is created.
+  const smartMatchProductRaw = pickFirst(sp.productId);
+  const smartMatchProductId =
+    smartMatchProductRaw && products.some((p) => p.id === smartMatchProductRaw)
+      ? smartMatchProductRaw
+      : undefined;
+
+  const smartMatchKolIdsRaw = pickFirst(sp.smartMatchKolIds);
+  const smartMatchKolIds = smartMatchKolIdsRaw
+    ? smartMatchKolIdsRaw
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => UUID_RE.test(s))
+        .slice(0, 50)
+    : [];
+
   const t = await getTranslations("campaigns.new");
   const tErrors = await getTranslations("campaigns.new.errors");
   const tMarkets = await getTranslations("campaigns.new.markets");
+  const tSmartMatch = await getTranslations("campaigns.new.smartMatch");
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 pb-16">
@@ -93,6 +124,13 @@ export default async function NewCampaignPage({ params }: Props) {
       ) : (
         <CampaignForm
           products={products}
+          defaultProductId={smartMatchProductId}
+          smartMatchKolIds={smartMatchKolIds}
+          smartMatchBanner={
+            smartMatchKolIds.length > 0
+              ? tSmartMatch("banner", { count: smartMatchKolIds.length })
+              : undefined
+          }
           labels={{
             name: t("fields.name"),
             nameHint: t("fields.nameHint"),

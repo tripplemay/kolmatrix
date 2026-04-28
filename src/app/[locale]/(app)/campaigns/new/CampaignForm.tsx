@@ -46,6 +46,14 @@ interface Props {
   };
   marketLabels: Record<CampaignMarket, string>;
   errorLabels: Record<string, string>;
+  /** B7a-F002 · prefilled product (e.g. from Smart Match redirect). */
+  defaultProductId?: string;
+  /** B7a-F002 · matched KOL ids handed off via URL; passed through as
+   *  a hidden input so the create-campaign Server Action can call
+   *  bulkAddKolsToCampaign right after the row lands. */
+  smartMatchKolIds?: readonly string[];
+  /** Banner copy when smart-match redirect is in-flight. */
+  smartMatchBanner?: string;
 }
 
 const INPUT_CLASS =
@@ -123,8 +131,15 @@ export function CampaignForm({
   labels,
   marketLabels,
   errorLabels,
+  defaultProductId,
+  smartMatchKolIds,
+  smartMatchBanner,
 }: Props) {
   const [state, formAction] = useActionState(createCampaign, initialState);
+  const smartIdsCsv =
+    smartMatchKolIds && smartMatchKolIds.length > 0
+      ? smartMatchKolIds.join(",")
+      : "";
 
   return (
     <form
@@ -133,6 +148,15 @@ export function CampaignForm({
       data-testid="campaign-new-form"
       noValidate
     >
+      {smartMatchBanner && smartIdsCsv ? (
+        <p
+          className="rounded-lg border border-cyan/30 bg-cyan/10 px-3 py-2 text-sm text-cyan"
+          data-testid="campaign-new-smart-match-banner"
+        >
+          {smartMatchBanner}
+        </p>
+      ) : null}
+      <input type="hidden" name="smartMatchKolIds" value={smartIdsCsv} />
       <div>
         <Label htmlFor="campaign-name" required>
           {labels.name}
@@ -160,7 +184,7 @@ export function CampaignForm({
           id="campaign-product"
           name="productId"
           required
-          defaultValue=""
+          defaultValue={defaultProductId ?? ""}
           data-testid="campaign-new-product"
           className={INPUT_CLASS}
         >

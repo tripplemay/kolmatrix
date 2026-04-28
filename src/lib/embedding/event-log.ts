@@ -65,7 +65,6 @@ export async function logEmbeddingInvoked(
       },
     });
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.warn(
       `[embedding.invoked] event_log write failed: ${(err as Error).message}`
     );

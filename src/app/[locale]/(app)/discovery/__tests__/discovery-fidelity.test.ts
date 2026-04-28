@@ -19,18 +19,27 @@ function read(relative: string): string {
 }
 
 describe("/discovery fidelity guards (MVP-vf-F002)", () => {
-  it("page renders the AI Smart Match CTA with the BM2 disabled tooltip", () => {
+  it("page mounts the SmartMatchDialog (B7a-F002) — disabled placeholder is gone", () => {
     const page = read("page.tsx");
-    expect(page).toMatch(/data-testid="ai-smart-match-button"/);
-    expect(page).toMatch(/aiSmartMatchTooltip/);
+    expect(page).toMatch(/<SmartMatchDialog /);
+    // The dialog itself owns the data-testid="ai-smart-match-button"
+    // — assert it lives in the client component, not back in page.tsx.
+    expect(page).not.toMatch(/aiSmartMatchTooltip/);
+    const dialog = read("SmartMatchDialog.tsx");
+    expect(dialog).toMatch(/data-testid="ai-smart-match-button"/);
+    expect(dialog).toMatch(/data-testid="smart-match-dialog"/);
   });
 
   it("page renders the Save Search placeholder with a tooltip (no ghost control)", () => {
     const page = read("page.tsx");
     expect(page).toMatch(/data-testid="save-search-button"/);
     expect(page).toMatch(/saveSearchTooltip/);
-    // Must be disabled — Save Search is not real until B2.
-    expect(page).toMatch(/data-testid="save-search-button"[\s\S]*?disabled/);
+    // Must be disabled — Save Search is not real until B7b.
+    // Look for the disabled attribute inside the same JSX element as
+    // the save-search testid (Button block spans ~7 lines).
+    expect(page).toMatch(
+      /<Button[\s\S]{0,500}disabled[\s\S]{0,500}data-testid="save-search-button"/
+    );
   });
 
   it("page renders the SearchBar above the filter+grid layout", () => {

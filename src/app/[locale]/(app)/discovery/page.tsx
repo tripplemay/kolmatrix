@@ -26,6 +26,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { Button } from "@/components/ui";
+import { withTenant } from "@/lib/db";
 import { parseFilters, serializeFilters } from "@/lib/kol/filters";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +35,7 @@ import { EmptyState } from "./EmptyState";
 import { FilterSidebar } from "./FilterSidebar";
 import { KolResultCard } from "./KolResultCard";
 import { SearchBar } from "./SearchBar";
+import { SmartMatchDialog } from "./SmartMatchDialog";
 import { SummaryBar } from "./SummaryBar";
 import { runDiscoverySearch } from "./search";
 import { parseView } from "./view-mode";
@@ -56,6 +58,16 @@ export default async function DiscoveryPage({ params, searchParams }: Props) {
   if (!tenantId) redirect("/login");
 
   const result = await runDiscoverySearch(tenantId, filters);
+
+  // Smart Match needs the tenant's product list for the dialog
+  // dropdown. Loading server-side keeps the client bundle small and
+  // avoids an extra round-trip after the dialog opens.
+  const products = await withTenant(tenantId, (tx) =>
+    tx.product.findMany({
+      select: { id: true, name: true, category: true },
+      orderBy: { createdAt: "desc" },
+    })
+  );
 
   const t = await getTranslations("discovery");
   const tHeader = await getTranslations("discovery.header");
@@ -102,17 +114,7 @@ export default async function DiscoveryPage({ params, searchParams }: Props) {
             </span>
             {tHeader("saveSearch")}
           </Button>
-          <Button
-            variant="primary-gradient"
-            disabled
-            title={tHeader("aiSmartMatchTooltip")}
-            data-testid="ai-smart-match-button"
-          >
-            <span className="material-symbols-outlined text-[16px]" aria-hidden>
-              auto_awesome
-            </span>
-            {tHeader("aiSmartMatch")}
-          </Button>
+          <SmartMatchDialog products={products} locale={locale} />
         </div>
       </header>
 

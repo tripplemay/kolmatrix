@@ -93,6 +93,33 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   "discovery.filters.brandSafetyPG13",
   "discovery.filters.brandSafetyR",
   "discovery.header.aiSmartMatch",
+  // B7a-F002 — Smart Match dialog keys land in en+zh now (B 方案
+  // split lock 2026-04-28 16:45). ja/ko/es intentionally mirror en
+  // until B7b F006 runs `npm run i18n:translate` for the four
+  // languages. Reviewer should ensure these paths are removed once
+  // B7b lands real translations.
+  "discovery.smartMatch.button",
+  "discovery.smartMatch.title",
+  "discovery.smartMatch.subtitle",
+  "discovery.smartMatch.productLabel",
+  "discovery.smartMatch.productPlaceholder",
+  "discovery.smartMatch.noProducts",
+  "discovery.smartMatch.run",
+  "discovery.smartMatch.loading",
+  "discovery.smartMatch.empty",
+  "discovery.smartMatch.metaCount",
+  "discovery.smartMatch.metaLatency",
+  "discovery.smartMatch.ringLabel",
+  "discovery.smartMatch.followers",
+  "discovery.smartMatch.saveAllToCampaign",
+  "discovery.smartMatch.close",
+  "discovery.smartMatch.errors.pickProduct",
+  "discovery.smartMatch.errors.productMissing",
+  "discovery.smartMatch.errors.embeddingDown",
+  "discovery.smartMatch.errors.unauthorized",
+  "discovery.smartMatch.errors.network",
+  "discovery.smartMatch.errors.generic",
+  "campaigns.new.smartMatch.banner",
   "discovery.card.engagement",
   "discovery.card.unavailableMetric",
   "discovery.regions.VN",
