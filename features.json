@@ -1,53 +1,69 @@
 {
-  "sprint": "B6-kol-daily-sync",
+  "sprint": "B7-mvp-launch-ready",
   "features": [
     {
       "id": "F001",
-      "title": "Sync Worker 通用接口（KolSyncAdapter trait + Dispatcher）",
+      "title": "Embedding Pipeline + pgvector + KOL/Product Embed（一次性 + B6 daily 增量）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "**新建 src/lib/kol-sync/types.ts：** KolSyncAdapter interface（name/source/discover/refresh/healthCheck）+ SyncParams + RawKolData types\n\n**新建 src/lib/kol-sync/dispatcher.ts：** KolSyncDispatcher class，runDailySync + runRefresh，支持多 adapter 注册\n\n**目的：** 不直接调 YouTube API；通过 adapter 抽象，6 月可加 CrawlerTeamAdapter 替换。\n\n**Acceptance：**\n- types + dispatcher + 1 个 mock adapter\n- tests/unit/kol-sync-dispatcher.test.ts 5 fixture（adapter 注册 / dispatch / health / fail handling / multi-adapter）\n- 详见 docs/specs/B6-kol-daily-sync-spec.md §F001"
+      "status": "pending",
+      "acceptance": "**架构：** Embedding cosine + pgvector（替代原 LLM ranking 方案）\n\n**1. 数据库基础设施：**\n- 新 migration：启用 pgvector extension\n- Kol 表加 `embedding` 列（vector(1024) nullable）\n- Product 表加 `embedding` 列（vector(1024) nullable）\n- 加 IVFFlat 索引（KOL 库 < 10K 用 IVFFlat）\n- migration 含 ROLLBACK SQL（database-patterns.md §3）\n\n**2. 新建 src/lib/embedding/ 模块：**\n- types.ts — EmbedRequest / EmbedResponse / SimilarityResult\n- client.ts — 调 aigcgateway /v1/embeddings (bge-m3, multilingual, 1024 dims, $0.084/M)\n- kol-embed.ts — 一次性 embed 全部 Kol（batch 100/call）+ B6 daily 增量\n- cosine.ts — pgvector 内置 `<=>` operator 算余弦相似度\n\n**3. B6 cron 接力：**\n- 每日新爬的 KOL 自动 embed（修改 B6 F002 YouTube adapter，加 embed hook）\n\n**Cost：** 一次性 $0.0063 + 月 < $0.02（vs 原 LLM ranking $1-5/月）\n\n**Acceptance：** pgvector + Kol/Product embedding 列 + 索引；一次性 embed 1500+ KOL（staging）；B6 daily 增量接入；模块完整 + tests；event_log 'embedding.invoked' 埋点；migration ROLLBACK SQL；详见 docs/specs/B7-mvp-launch-ready-spec.md §F001"
     },
     {
       "id": "F002",
-      "title": "YouTube adapter 实现（首个真实数据源）",
+      "title": "/discovery AI Smart Match 实装（embedding 版，毫秒级响应）⭐⭐⭐",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "**新建 src/lib/kol-sync/adapters/youtube.ts：** YouTubeKolSyncAdapter implements KolSyncAdapter\n\n**每日策略（lock）：**\n- discover：6 region × 3 keyword × 10 results = 18 search calls × 100 = 1800 units\n- refresh：~200 KOL/day × 1 unit = 4 units（按 last_synced_at 排序，每周轮询一次）\n- 合计：~1800-2000 units/day（10K 配额 18-20%）\n- 预期增量：每日 30-50 真新 KOL\n\n**关键 keyword 设计（侧重补 kol-seed-redo F002 接力条款 CN+HK+TW 缺口 -67）：**\n- 中文区 keyword 优先：游戏直播 / Steam / 独立游戏 / 手游推荐 / 主播\n- 其他 region：同 kol-seed-redo F002 矩阵\n- 第 1-3 天倾向 CN/HK/TW，补完缺口后均衡分配\n\n**Acceptance：**\n- YouTube adapter 实现 KolSyncAdapter 接口\n- discover 跑通 + 去重（externalId）+ 全字段填充（沿用 kol-seed-redo F002 全字段策略）\n- metadata 字段：is_demo=false / source='youtube-api-daily' / synced_at=now\n- refresh 跑通 + last_synced_at 更新\n- tests/integration/youtube-adapter.test.ts mock + 真 API 调用（少量 quota，gated by env YOUTUBE_API_TEST=true）\n- staging 手动跑一次（仅 ~50 quota 验证 e2e）\n- 详见 docs/specs/B6-kol-daily-sync-spec.md §F002"
+      "status": "pending",
+      "acceptance": "**核心震撼点 — 当前 disabled placeholder 改为真实装。**\n\n1. 重写 /discovery Header：移除 disabled，加 onClick 打开 SmartMatchDialog\n2. 新建 SmartMatchDialog.tsx：选 Product → 极速 loading（< 200ms）→ top 10 KOL with match score (RingProgress) + 1 句 AI reasoning（可选 LLM 二次调用）\n3. API: POST /api/kols/smart-match { productId } → 拿 Product.embedding（无则即时 embed）→ SQL `ORDER BY embedding <=> $1 LIMIT 10` → < 100ms\n4. 'Save All to Campaign' 一键加入新 campaign\n5. 埋点 smart_match.invoked / kol_saved / batch_saved\n\n**Acceptance：** Smart Match 按钮**不再 disabled**；< 200ms 显示 top 10 KOL；'Save All' 跳转预填；visual baseline 重捕；tests/integration + tests/e2e；用户 spot check：staging demo 真实匹配 + 极速响应；详见 §F002"
     },
     {
       "id": "F003",
-      "title": "Cron 配置 + 调度脚本",
+      "title": "/database AI Intelligence + Coverage Gap 实装",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "**新建 infrastructure/cron/kolmatrix-kol-sync：**\n```bash\n# Runs daily at 08:30 北京 (= 0:30 UTC，YouTube quota 已重置)\n30 0 * * * tripplezhou cd /opt/kolmatrix && npm run kol-sync:daily >> /var/log/kolmatrix-kol-sync.log 2>&1\n```\n\n**新建 scripts/kol-sync-daily.ts：**\n- import 'dotenv/config'（BL-001 教训）\n- 用 KolSyncDispatcher + YouTubeKolSyncAdapter\n- 跑 discover + refresh\n- 写入 KOL 表 + 输出报告 docs/test-reports/kol-sync-daily-{date}.md\n- 失败不阻塞次日 cron（exit 0，错误写 log）\n\n**package.json scripts：** kol-sync:daily + kol-sync:daily:dry\n\n**部署：**\n- 仅 prod 跑（avoid staging 双重 quota 消耗，10K/day 共享 1 个 API key）\n- staging 仅手动跑验证\n- Generator 部署到 VM /etc/cron.d/kolmatrix-kol-sync\n- log rotation：infrastructure/cron/logrotate.d/kolmatrix-kol-sync\n\n**Acceptance：**\n- infrastructure/cron/kolmatrix-kol-sync 入 git + deploy 到 VM /etc/cron.d/\n- prod 第一次自动跑（监控 log）\n- log rotation 配置入 git\n- 详见 docs/specs/B6-kol-daily-sync-spec.md §F003"
+      "status": "pending",
+      "acceptance": "**当前：** AI Intelligence Card disabled CTA + Coverage Gap 硬编 'Coming in B6'\n\n1. 新建 aigcgateway Action `kol-database-intelligence`（gemini-2.5-flash-lite，JSON mode，24h 缓存）\n2. 修改 InsightsPanel.tsx：AI Intelligence 真功能 + Coverage Gap 真计算（tenant categories vs gaming baseline）\n3. baseline 硬编：FPS 20% / MOBA 15% / RPG 15% / 手游 15% / Casual 20% / Esports 10% / 其他 5%\n\n**Acceptance：** AI Intelligence 真 AI 调用；Coverage Gap 真计算；localStorage 24h 缓存；tests/integration/database-intelligence.test.ts；staging spot check"
     },
     {
       "id": "F004",
-      "title": "失败重试 + 监控 + structured 日志 + 告警",
+      "title": "/campaigns/:id AI Suggestions 实装",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "**失败重试：** YouTube API 失败 3 次 30s/2min/5min backoff（同 BM2 F006 模式）\n\n**Structured 日志 JSON（每行一个）：** timestamp / adapter / discover_count / refresh_count / dedupe_skipped / quota_consumed / quota_remaining_estimate / duration_ms / errors\n\n**告警阈值（写入日志）：**\n- quota_consumed > 3000 → WARN\n- discover_count = 0（连续 3 天）→ ALERT\n- errors.length > 0 → WARN\n- duration_ms > 300000 → WARN\n\n**Acceptance：**\n- scripts/kol-sync-daily.ts 含完整 try/catch + 重试逻辑\n- structured 日志 JSON 写入 /var/log/kolmatrix-kol-sync.log\n- 告警阈值文档化在 docs/dev/kol-sync-runbook.md\n- tests/unit/kol-sync-retry.test.ts 覆盖 retry / backoff / max attempts\n- 详见 docs/specs/B6-kol-daily-sync-spec.md §F004"
+      "status": "pending",
+      "acceptance": "**当前：** AiSuggestionsCard hardcoded 静态 + 'Run AI match' disabled\n\n1. 新建 aigcgateway Action `campaign-next-action-suggest`（claude-haiku-4.5，24h 缓存）\n2. 修改 AiSuggestionsCard.tsx：真 'Generate Suggestions' 按钮 → 显示 3 个 next action（priority 标签 + 跳转）\n3. 移除 'Run AI match' 按钮（已被 Smart Match 替代）\n\n**Acceptance：** 真 AI 调用；'Run AI match' 隐藏；24h 缓存；tests/integration/campaign-suggest.test.ts"
     },
     {
       "id": "F005",
-      "title": "数据质量校验（5 规则）+ 周报",
+      "title": "/database Tier+Game filter 实装 + /discovery Save Search 实装",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "**写入前过滤 5 规则（src/lib/kol-sync/quality.ts）：**\n1. 去重 upsert by (tenantId, platform, externalId)\n2. 去 spam：subscriberCount < 1000 → skip\n3. 去僵尸：lastUploadAt > 90 days → skip\n4. 去 NSFW：channel meta brand_safety_rating（如有）\n5. 重复账号检测：同 channel.id 不同 handle → 仅 update display_name\n\n**写入后异常监控（写入 metadata.flags）：**\n- followers 增长曲线异常（突增 10x）→ flags.suspicious_growth = true，UI 不展示\n- 长期下降（30 天 -50% subscribers）→ flags.declining = true\n\n**周报 cron（周一跑）：**\n- 新建 scripts/kol-quality-weekly.ts + cron infrastructure/cron/kolmatrix-kol-quality\n- 输出 docs/test-reports/kol-quality-weekly-{date}.md（本周新增 / region 分布 / categories 分布 / 异常 KOL 数 / 评级）\n\n**Acceptance：**\n- 5 条过滤规则 implemented + tests/integration/kol-sync-quality.test.ts 5 fixture\n- 周报 cron 入 git + 第一次手动跑验证\n- metadata.flags 字段写入 + UI 隐藏 suspicious_growth=true 的 KOL（Discovery / Database 都需）\n- 详见 docs/specs/B6-kol-daily-sync-spec.md §F005"
+      "status": "pending",
+      "acceptance": "**Tier filter：** Kol.valueScore 分桶 (high ≥80 / medium 60-79 / low <60 / unrated null)；Select dropdown 改 enabled；SQL `WHERE valueScore BETWEEN`\n\n**Game filter：** Kol.categories array 筛选（避免 schema 改）；multi-select；SQL `categories && ARRAY['FPS', ...]`\n\n**Save Search：** 新建 SavedSearch model (id, tenantId, userId, name, filters JSON)；migration ROLLBACK；API POST/GET /api/saved-searches；UI 'Save Search' 按钮 + '我的搜索 (3)' 下拉\n\n**Acceptance：** 3 项不再 disabled；visual baseline 重捕；tests/integration + filter combination；i18n 4 语言新 keys"
     },
     {
       "id": "F006",
-      "title": "Tests + spec 链 + BL-012 接入兼容性 + kol-seed-redo F002 接力条款验证",
+      "title": "Polish 5 处 placeholder + tests + spec 链 + i18n + 守门",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "**🔄 用户 2026-04-28 13:15 同意 A 方案 + 15:10 同意 Ⅱ+Ⅲ 组合（acceptance #5 措辞修订）**\n\n**5 项 acceptance 状态：**\n\n| # | Acceptance | 本批次状态 |\n|---|---|---|\n| 1 | 全套 tests（unit + integration + load test mock）| ✅ done |\n| 2 | Spec 链一致性 grep（PRD §12 + BL-012 + crawler-handoff）| ✅ done |\n| 3 | BL-012 接入兼容性 review（crawler-team.ts.todo 占位 + 7 步骤）| ✅ done |\n| 4 | ⭐ kol-seed-redo F002 接力条款验证（day-5 staging total ≥ 1000 + CN+HK+TW ≥ 150）| 🔄 **延迟跨批次条款**（不阻塞 B6 done，~05-03 单独验证，占位报告 docs/test-reports/B6-kol-seed-redo-handoff-validation-2026-05-03.md）|\n| 5 | staging 手动 sync 验证（修订措辞）| ✅ done — PASS（discover=73 inserted=8 updated=265 errors=0 quota=1805 level=INFO；273 records last_synced_at ≥ 07:01 UTC ≥ 30 阈值）|\n\n**acceptance #5 措辞修订（用户 2026-04-28 BJ 15:10 lock）：**\n- 原：staging 手动 sync 验证 ≥ 30 KOL 入库 + log 完整\n- 新：(a) 链路无 error；(b) ≥ 30 条 KOL 记录被本次 sync 触达（insert OR update，以 last_synced_at ≥ 本次 sync started_at 为准）；(c) structured log 含必要字段且 level ≠ ALERT\n- 理由：staging 已存在同源历史数据（昨日 400 条）使 daily matrix dedupe 命中率高，\"新插入\"与\"链路写入\"是两个不同概念。详 docs/test-reports/B6-F006-staging-manual-sync-2026-04-28.md §1.1 §4 §5。\n\n**Reviewer 验收范围（修订后 A 方案）：**\n- L1: typecheck/lint + unit(83/542) + integration(32/241) + load test mock\n- L2: staging /api/health + acceptance #5 PASS 报告 + structured log JSON 检查 + crawler-team.ts.todo 占位 11KB 检查\n- **不验 acceptance #4**（延迟到 ~05-03）\n- **不验 prod cron 部署**（被 prod redeploy 阻塞 — prod git=26dbb7f 不含 sync script；cron deploy 是 verifying 后用户行动项，见 progress.json session_notes）"
+      "status": "pending",
+      "acceptance": "**1. Placeholder polish：**\n- /campaigns/:id 'Run AI match' → F004 已隐藏 ✓\n- /database Email + Delete bulk → tooltip\n- /roi B4 buttons → tooltip 'Available in B4 Email System Extended'\n- /weekly-report B4 buttons → 同上\n- /discovery AI suggestion chips → 保持静态\n\n**2. i18n 4 语言新 keys：** F002-F008 全套 → npm run i18n:translate\n\n**3. 守门 tests：**\n- tests/unit/no-disabled-without-tooltip.test.ts\n- tests/unit/no-hardcoded-coming-soon-without-issue.test.ts\n\n**4. Spec 链 grep 验证：** PRD §7 已更新（commit 2312bfb）+ B5/B6/B7 cross-reference\n\n**5. 完整 tests：** 全套 unit + integration + E2E 全绿；typecheck/lint 不退化"
+    },
+    {
+      "id": "F007",
+      "title": "🆕 KOL 相似推荐（embedding 解锁，类比 Spotify 找到下一个）",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "**1. /kols/[id] 底部'相似 KOL' section（5 个推荐）：**\n- SQL `ORDER BY embedding <=> (subquery) LIMIT 5`\n- < 50ms（pgvector 索引）\n- UI: 5 个 KOL 卡片（水平排列）+ '查看更多相似' 跳 /discovery\n\n**2. API: GET /api/kols/:id/similar?limit=5**\n\n**3. 埋点：** event_log kol_similar.viewed / kol_similar.clicked\n\n**Acceptance：** 详情页底部 5 个相似 KOL；点击跳详情生成新一组；< 100ms；tests/integration/kol-similar-api.test.ts；staging spot check（同类目 + 相似规模）；工时 ~2 day"
+    },
+    {
+      "id": "F008",
+      "title": "🆕 多语言 KOL 跨区匹配（embedding 解锁差异化能力）",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "**业务场景：** 中文 marketer 找日本 FPS gaming KOL（bio 是日文）\n\n**1. /discovery 加'跨语言搜索'toggle（默认关）：** 打开后 query embed → cosine 匹配所有 KOL（不分 language）\n\n**2. API: GET /api/kols/cross-lang-search?q=...&limit=20** — query embed (bge-m3 多语言) → SQL `ORDER BY embedding <=> $1 LIMIT 20` → < 100ms\n\n**3. 演示价值：** '主播' query 命中日韩 KOL；'esports streamer' 命中中文 KOL（同义跨语言）\n\n**4. 埋点：** event_log cross_lang_search.invoked\n\n**Acceptance：** toggle 工作；中文 query 命中日韩 KOL（5 例 spot check）；tests/integration/cross-lang-search-api.test.ts；演示文档：MVP-seed-demo-prep F002 用户文档加跨语言 demo 章节；工时 ~1 day"
     }
   ]
 }
