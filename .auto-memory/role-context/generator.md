@@ -29,3 +29,55 @@ type: feedback
 
 - 每次 `git push origin main` 后必须 `gh run list --limit 3 --branch main` 检查
 - CI 红色 → 立即停止新功能，先修复 CI；通过后才继续下一个功能
+
+## 切 verifying 前的 staging deploy 硬要求（2026-04-28 lock）
+
+**Generator 把 status 从 `building` / `fixing` 切到 `verifying` / `reverifying` 之前必须**：
+
+1. **SSH staging 跑完整 deploy 流程**（不能跳步骤）：
+   ```bash
+   ssh tripplezhou@34.180.93.185
+   cd /opt/kolmatrix-staging
+   set -a && source .env.staging && set +a
+   git pull --ff-only origin main
+   npm ci --include=dev          # NODE_ENV=production 时 BL-013 教训
+   npx prisma migrate deploy     # 如有新 migration
+   GIT_SHA=$(git rev-parse --short HEAD) npm run build  # 不能跳！
+   pm2 reload kolmatrix-staging --update-env
+   ```
+2. **验证 staging git_sha = 当前 main HEAD**：
+   ```bash
+   curl -sS https://staging.kol.guangai.ai/api/health | jq .git_sha
+   # 必须等于 git rev-parse --short HEAD
+   ```
+3. **验证 health 200 + DB ok**
+4. **在 progress.json `session_notes` 标注**：
+   ```
+   [staging deployed @ {git_sha} @ {timestamp}]
+   ```
+
+**违反后果：** Reviewer 拒绝接收 verifying，写 evaluator_feedback：
+> "staging git_sha={X} 落后 main={Y}，建议 Generator 先 deploy + 重新切 verifying"
+>
+> → status 不变（仍 building / fixing），不计入 fix_rounds
+
+**适用范围：**
+- 所有改动了 src/ / prisma/ / messages/ / public/ 的批次（即影响 staging 运行时的）
+- 仅改 docs/ / .auto-memory/ / progress.json / features.json 的批次可豁免（无运行时影响）
+
+**历史教训（已发生）：**
+- B6 F006 fix-round 0：staging 落后 commit → Reviewer Playwright probe 标 FAIL → 多 1 次 fixing 来回
+- B6 F006 fix-round 1：deploy 时跳过 npm run build → CSS bundle 陈旧 → 又一次调试
+- kol-seed-redo F006：staging 落后 5+ commits 才被 Reviewer 发现
+
+**未来 BL-004 BIx-staging-automation done 后**：用 `infrastructure/deploy-staging.sh` 一条命令跑完整 6 步，物理上消除"漏步骤"风险。本规则仍适用。
+
+## features.json acceptance 模板（2026-04-28 lock）
+
+每个 feature acceptance 末尾**默认含 staging deployed 验证项**：
+
+```
+- staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）
+```
+
+**Planner 起草新 features.json 时套用此模板**（B7b / B8 / 后续批次）。Reviewer 验收时显式核对。

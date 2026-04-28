@@ -57,6 +57,11 @@ B7 原 8 features 14-15 day → 用户 2026-04-28 16:45 选 B 方案拆 3 批：
 
 详见 `docs/specs/B7-mvp-launch-ready-spec.md` §F007 / §F008，本批次 features.json 重新编号为 F001-F002 但 acceptance 内容一致。
 
+**🆕 staging deployed 模板（2026-04-28 lock，每 feature 强制含）：**
+- `staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）`
+
+详见 `.auto-memory/role-context/generator.md` §"切 verifying 前的 staging deploy 硬要求" + §"features.json acceptance 模板"。
+
 ## 7. 用户决策（2026-04-28 16:45 ✅ lock）
 
 | # | 问题 | 用户答复 |
