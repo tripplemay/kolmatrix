@@ -14,7 +14,7 @@
       "title": "/discovery AI Smart Match 实装（embedding 版，毫秒级响应）⭐⭐⭐",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**核心震撼点 — 当前 disabled placeholder 改为真实装。**\n\n1. 重写 /discovery Header：移除 disabled，加 onClick 打开 SmartMatchDialog\n2. 新建 SmartMatchDialog.tsx：选 Product → 极速 loading（< 200ms）→ top 10 KOL with match score (RingProgress) + 1 句 AI reasoning（可选 LLM 二次调用）\n3. API: POST /api/kols/smart-match { productId } → 拿 Product.embedding（无则即时 embed）→ SQL `ORDER BY embedding <=> $1 LIMIT 10` → < 100ms\n4. 'Save All to Campaign' 一键加入新 campaign\n5. 埋点 smart_match.invoked / kol_saved / batch_saved\n\n**Acceptance：** Smart Match 按钮**不再 disabled**；< 200ms 显示 top 10 KOL；'Save All' 跳转预填；visual baseline 重捕；tests/integration + tests/e2e；用户 spot check：staging demo 真实匹配 + 极速响应；详见 §F002\n\n**🔄 B 方案拆分注（2026-04-28 16:45 用户裁决）：**\n本批次 B7a 仅做 F001+F002 核心震撼。F002 涉及 SmartMatchDialog 新 i18n keys（en+zh 必补；ja/ko/es 暂留 en 作 fallback，由 B7b F006 统一 npm run i18n:translate 4 语言）。\n本批次 visual baseline 重捕仅 /en/discovery + /zh/discovery（其他 locale 在 B7b 一并）。"
     }
   ]
