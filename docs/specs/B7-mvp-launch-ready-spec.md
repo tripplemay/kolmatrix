@@ -1,15 +1,16 @@
 ---
 name: B7-mvp-launch-ready
-description: MVP 上线 ready - Tier 1 全做（AI 实装 4 项 + placeholder 清理 5 项）。核心震撼点 /discovery AI Smart Match 实装；所有 disabled placeholder 实装/隐藏/友好 tooltip 三选一。用户 2026-04-28 决议 X 方案（接受邀请推迟 13 天换取首版即完整 AI 体验）。
+description: MVP 上线 ready（embedding 升级版）- 8 features：AI 实装 4 项 + 2 项 embedding 解锁的全新功能（KOL 相似推荐 + 多语言匹配）+ placeholder 清理 + Save Search/Tier+Game filter。用户 2026-04-28 决议 X 方案 + R 方案（aigcgateway bge-m3 上线后 embedding 全面解锁）。
 status: decisions-locked
 created_by: Kimi (Planner)
 created_at: 2026-04-28
-decisions_locked_at: 2026-04-28
-estimated_effort: 12-13 day
+decisions_locked_at: 2026-04-28（X 方案）+ 2026-04-28 二次 lock（R 方案 embedding 升级）
+estimated_effort: 14-15 day（embedding 简化 F001+F002 节省 1.5 day + 新增 F007+F008 加 3 day = 净 +1.5 day）
 prerequisites:
   - B6-kol-daily-sync done（第 5 天接力条款验证完成）
-  - aigcgateway 余额 ≥ $20（本批次预算 ~$5-10）
-trigger: B6 done 后立即（B7 优先于 MVP-demo-launch，邀请推迟到 ~05-22）
+  - aigcgateway 余额 ≥ $20（本批次预算 < $1，因 embedding 极便宜）
+  - aigcgateway bge-m3 embedding model 已上线 ✅（验证通过 2026-04-28）
+trigger: B6 done 后立即（B7 优先于 MVP-demo-launch，邀请推迟到 ~05-24）
 ---
 
 # B7-mvp-launch-ready — MVP 上线 ready（AI 实装 + Placeholder 清理）
@@ -22,12 +23,22 @@ trigger: B6 done 后立即（B7 优先于 MVP-demo-launch，邀请推迟到 ~05-
 
 Planner 调研发现 11 处 placeholder（5 处必处理 + 6 处需 tooltip polish），核心震撼点 `/discovery AI Smart Match` 当前**完全 disabled**，是种子用户期望最高的入口但点了无效。
 
+**🆕 2026-04-28 二次更新（R 方案 embedding 升级）：**
+- aigcgateway 已上线 `bge-m3` embedding model（1024 dims, 中日韩多语言, $0.084 in / $0 out per 1M）
+- B7 F001+F002 改用 embedding cosine（替代 LLM ranking），cost ↓ 50x，latency ↓ 50-150x
+- 新增 F007 KOL 相似推荐（详情页"相似 KOL"5 个）
+- 新增 F008 多语言 KOL 匹配（zh marketer 找 ja KOL，embedding 跨语言原生支持）
+- 邀请节点 05-22 → 05-24（推迟 2 天换 2 个亮点）
+
 ### 1.2 战略价值
 
-1. **核心震撼点：Smart Match 实装** — 种子用户首次见 = "AI 平台" 差异化定位
+1. **核心震撼点：Smart Match 实装**（embedding 版，毫秒级响应 + 长期可持续）— 种子用户首次见 = "AI 平台" 差异化定位
 2. **整体可用性：placeholder 零容忍** — 消除"摆设但点了无效"破坏产品质感
 3. **PMF 验证升级** — 邀请发出时种子用户体验"完整 AI 产品"，反馈质量更高
 4. **预演 B6 + 数据增长价值** — Smart Match 直接消费 B6 持续增长的 KOL 库
+5. **🆕 KOL 相似推荐**（"找到下一个"）— 类比 Spotify 推荐，高留存核心
+6. **🆕 多语言 KOL 跨区匹配** — KOLMatrix 主要客户群（中文 game studio 找日韩游戏 KOL）的差异化能力
+7. **🆕 长期 cost 可持续** — embedding 月成本 < $0.05（vs LLM ranking 1 年后 $2000-5000/月）
 
 ### 1.3 非目标
 
@@ -38,49 +49,101 @@ Planner 调研发现 11 处 placeholder（5 处必处理 + 6 处需 tooltip poli
 - 不做 KOL × KOL 关系图谱（B7+ 远期）
 - 不实装 /roi + /weekly-report 的 B4 disabled 按钮（B4-extended 范围）
 
-## 2. 范围（6 features）
+## 2. 范围（8 features，R 方案 embedding 升级版）
 
-### F001 — AI Matching Infrastructure（LLM-based + SQL pre-filter）
+### F001 — Embedding Pipeline + pgvector + KOL Embed（替换原 LLM ranker）
 
-**重要：aigcgateway 无 embedding model**（list_models 仅 text/image），改方案：
+**🆕 R 方案：aigcgateway bge-m3 embedding 已上线，改用 embedding cosine 替代 LLM ranking**
 
-**架构：SQL pre-filter → LLM ranking 混合**
+**架构：Embedding cosine + pgvector**
 
 ```
-Product description + filters
-    ↓
-SQL pre-filter（region/category/followers）→ 缩小到 ~50-100 候选 KOL
-    ↓
-LLM 对候选打分 + 解释（deepseek-v4-flash 1M context, $0.14 in / $0.28 out）
-    ↓
-返回 top 10 + match score + 1 句解释
+KOL bio/categories  ─→ aigcgateway bge-m3 ─→ vector[1024]  ─→ Kol.embedding（pgvector 列）
+                                                                     ↓
+Product description ─→ aigcgateway bge-m3 ─→ vector[1024]  ─→ cosine similarity
+                                                                     ↓
+                                                            返回 top 10 + score
 ```
 
 **实现：**
 
-1. 新建 `src/lib/kol-match/` 模块：
-   - `types.ts` — KolMatchRequest / KolMatchResult / MatchScore types
-   - `pre-filter.ts` — SQL 候选筛选（基于 product.markets/category 软匹配 KOL.region/categories）
-   - `llm-ranker.ts` — 调 aigcgateway Action 排序候选
+1. **数据库基础设施：**
+   - 新 migration：启用 pgvector extension（PostgreSQL 16 已支持）
+   - Kol 表加 `embedding` 列（vector(1024) nullable）
+   - Product 表加 `embedding` 列（vector(1024) nullable）
+   - 加 IVFFlat 或 HNSW 索引（KOL 库 < 10K 用 IVFFlat，> 10K 用 HNSW）
+   - migration 含 ROLLBACK SQL（database-patterns.md §3）
 
-2. 新建 aigcgateway Action `kol-product-match-rank`:
-   - input：product (name/description/category/markets) + candidates (50-100 KOL summary 数组)
-   - output：strict JSON `{rankings: [{kolId, score: 0-100, reasoning: "1 句中/英"}], top10: [...kolIds]}`
-   - model：**deepseek-v4-flash**（1M context, 最便宜，与现有 Action 集成简单）
-   - cost 估算：50 候选 × 150 chars = 7.5K input + 1K output = $0.0014/调用
+2. **新建 `src/lib/embedding/` 模块：**
+   - `types.ts` — EmbedRequest / EmbedResponse / SimilarityResult
+   - `client.ts` — 调 aigcgateway `/v1/embeddings` (bge-m3, multilingual, 1024 dims, $0.084/M)
+   - `kol-embed.ts` — 一次性 embed 全部 Kol（batch 100/call）+ B6 daily 增量 embed
+   - `cosine.ts` — 用 pgvector 内置 `<=>` operator 算余弦相似度
 
-3. cost 控制：
-   - 每个 marketer 每个 product 调 1 次（缓存 7 天到 Product.metadata.smartMatchCache）
-   - 失效条件：KOL 库新增 > 100 / 用户手动 "Refresh"
-   - 100 用户 × 5 product × 1 次/周 = 500 次/月 = ~$0.7/month
+3. **B6 cron 接力（修改 B6 F002 YouTube adapter）：**
+   - 每日新爬的 KOL 自动 embed（avg 50/day × 50 tokens × $0.084/M ≈ $0.0002/day）
+   - 不破坏 B6 主线（仅加 hook 在 import 后调 embed）
+
+4. **新建 aigcgateway Action `kol-embed`（可选）：**
+   - 直接用 chat 接口或新建 type='embedding' action
+   - aigcgateway 上线了 bge-m3，需测试调用方式（curl + openai SDK 兼容）
+
+**Cost 估算（开工前精算）：**
+- 一次性 embed 1500 KOL × ~50 tokens = 75K input × $0.084/M = **$0.0063**（一次性）
+- B6 daily 增量 50 KOL × 50 tokens × 30 days = 75K/月 × $0.084/M = **$0.006/月**
+- 查询（Smart Match + 相似推荐 + 多语言）月 ~5000 次 × 20 tokens = 100K × $0.084/M = **$0.0084/月**
+- **月总：< $0.02/月**（vs 原 LLM ranking $1-5/月，cost ↓ 50x+）
 
 **Acceptance：**
-- aigcgateway Action `kol-product-match-rank` 创建（action_id 入 commit message）
-- src/lib/kol-match/types.ts + pre-filter.ts + llm-ranker.ts 实现
-- pre-filter SQL 测试（region/category 软匹配 + valueScore 排序）
-- LLM ranker 测试（mock + 真实 fixture，gated by env）
-- cost 监控：每次调用记录 token 消耗到 event_log 'smart_match.invoked'
-- tests/unit/kol-match-prefilter.test.ts + tests/unit/kol-match-llm-ranker.test.ts
+- pgvector extension 启用 + Kol/Product 表加 embedding 列 + 索引
+- 一次性 embed 1500+ KOL（staging 验证）
+- B6 daily 增量 embed 接入（每日 cron 跑后自动 embed 新 KOL）
+- src/lib/embedding/ 模块完整 + tests
+- cost 监控埋点 event_log 'embedding.invoked'
+- migration ROLLBACK SQL 完整
+
+### F002 — /discovery AI Smart Match 实装（embedding 版，毫秒级）⭐⭐⭐
+
+**当前现状：** `<button disabled title="will ship in B2">AI Smart Match</button>` — 种子用户首次见的最大失望点
+
+**实装（embedding cosine，替代原 LLM ranking）：**
+
+1. 重写 `src/app/[locale]/(app)/discovery/page.tsx` Header 段：
+   - 移除 disabled state，加 onClick
+
+2. 新建 `src/app/[locale]/(app)/discovery/SmartMatchDialog.tsx`：
+   - Step 1: 选 Product（下拉，从 tenant Product 表加载）
+   - Step 2: **极速 loading state**（"AI 正在分析 ..."，预期 < 200ms 完成）
+   - Step 3: 显示 top 10 KOL with match score（0-100）+ 1 句 AI 解释（**可选 LLM 二次调用解释**）
+   - 每个 KOL 卡片：avatar / name / followers / categories / **match score (圆形 ring)** / **AI reasoning (1 句，可选)** / "保存" 按钮
+   - "Save All to Campaign" 一键加入新 campaign
+
+3. **API：** `POST /api/kols/smart-match { productId }` → 内部：
+   - 拿 Product.embedding（如无则即时 embed）
+   - SQL `SELECT id, name, ..., embedding <=> $1 AS distance FROM kol WHERE tenant_id = ? ORDER BY distance LIMIT 10`
+   - **响应 < 100ms**（pgvector 索引 + cosine 数学计算）
+   - 可选：调 LLM 给每个 KOL 一句 reasoning（claude-haiku-4.5，~$0.0001/调用，10 个 KOL = $0.001/调用）
+
+4. **缓存策略调整（embedding 版）：**
+   - **不需要 7 天缓存**（每次实时计算 < 100ms 远比缓存查询快）
+   - 移除复杂缓存逻辑，反而更简单
+
+5. UI 细节：
+   - match score 用 RingProgress 组件
+   - Loading state 极快（预期用户都看不到 spinner）
+   - empty state（KOL < 10）友好提示
+
+6. 埋点：
+   - event_log `smart_match.invoked` + `smart_match.kol_saved` + `smart_match.batch_saved`
+
+**Acceptance：**
+- /discovery AI Smart Match 按钮**不再 disabled**
+- 点击弹层 → 选 product → < 200ms 显示 top 10 KOL with match score（**embedding 速度优势**）
+- 可选 AI reasoning（每个 KOL 1 句解释，1 次 LLM 调用 + 缓存）
+- "Save All to Campaign" 跳 /campaigns/new 预填
+- visual baseline 重捕 /en/discovery（含 SmartMatchDialog 截图）
+- tests/integration/smart-match-api.test.ts + tests/e2e/discovery-smart-match.spec.ts
+- 用户 spot check：staging 跑一次 demo（用 demo product → 显示真实匹配 + < 200ms 响应）
 
 ### F002 — /discovery AI Smart Match 实装（核心震撼点）⭐⭐⭐
 
@@ -215,7 +278,69 @@ LLM 对候选打分 + 解释（deepseek-v4-flash 1M context, $0.14 in / $0.28 ou
 - visual baseline 重捕 /en/database + /en/discovery
 - tests 覆盖
 
-### F006 — Polish + tests + spec 链验证
+### 🆕 F007 — KOL 相似推荐（embedding 解锁的全新功能）
+
+**触发：** R 方案 embedding 升级解锁的能力。类比 Spotify "为你推荐"。
+
+**实装：**
+
+1. **`/kols/[id]` 详情页底部加"相似 KOL"section（5 个推荐）：**
+   - SQL: `SELECT * FROM kol WHERE tenant_id = ? AND id != ? ORDER BY embedding <=> (SELECT embedding FROM kol WHERE id = ?) LIMIT 5`
+   - 响应 < 50ms（pgvector 索引）
+   - UI: 5 个 KOL 卡片（小尺寸，水平排列）+ "查看更多相似" 跳 /discovery 预填 filter
+
+2. **/discovery 列表卡片右下角加"相似 KOL"小图标（hover 浮窗显示 3 个相似）：**
+   - 可选 stretch goal，工时紧可推迟到 B8
+
+3. **API：** `GET /api/kols/:id/similar?limit=5`
+
+4. **新埋点：** event_log `kol_similar.viewed` + `kol_similar.clicked`
+
+**Acceptance：**
+- KOL 详情页底部"相似 KOL"section 显示 5 个推荐
+- 点击推荐 KOL 跳详情（生成新一组相似）
+- 响应 < 100ms
+- tests/integration/kol-similar-api.test.ts
+- L2 staging spot check：打开 demo KOL → 看到合理的 5 个相似（同类目 + 相似规模）
+
+**工时：** ~2 day
+
+### 🆕 F008 — 多语言 KOL 跨区匹配（embedding 解锁的差异化能力）
+
+**触发：** R 方案 embedding 升级解锁的能力。bge-m3 多语言原生支持，**几乎免费**实装。
+
+**业务场景：**
+- 中文 marketer 想找日本 FPS gaming KOL
+- KOL bio 是日文（"FPSゲーマー、esports選手"）
+- 当前 SQL filter 仅按 country 过滤，无法语义匹配
+
+**实装：**
+
+1. **/discovery 加"跨语言搜索"toggle：**
+   - 默认关闭（保持当前 SQL filter 行为）
+   - 打开后：search bar 接受任意语言查询 → query embed → cosine 匹配所有 KOL（不分 language）
+   - UI: 顶部 toggle "🌐 跨语言搜索"
+
+2. **API: `GET /api/kols/cross-lang-search?q=...&limit=20`**
+   - 内部：query embed (bge-m3 自动多语言) → SQL `ORDER BY embedding <=> $1 LIMIT 20`
+   - 响应 < 100ms
+
+3. **演示价值（demo 上线说明文档强调）：**
+   - 输入"FPS 主播" → 显示日本 / 韩国 / 英语 KOL 跨语言混合
+   - 输入"esports streamer" → 中文 + 日文 KOL 也命中（同义跨语言）
+
+4. **埋点：** event_log `cross_lang_search.invoked`
+
+**Acceptance：**
+- /discovery 加"跨语言搜索"toggle
+- toggle 打开后 query 走 embedding 匹配
+- 验证：中文 query 命中日韩 KOL（spot check 5 例）
+- tests/integration/cross-lang-search-api.test.ts
+- 演示文档：MVP-seed-demo-prep F002 用户文档加跨语言 demo 章节
+
+**工时：** ~1 day
+
+### F006 — Polish + tests + spec 链验证（含 4 项新调整）
 
 **实现：**
 
@@ -387,18 +512,32 @@ F006 Polish + tests + spec 链（最后做）
 | AI 邮件回复分类 | 未在 PRD | ⏳ B4-extended trigger 后做 |
 | KOL 智能推荐 | ❌ MVP 外 | ✅ B7 Smart Match 已部分覆盖 |
 
-## 13. 用户决策（2026-04-28 ✅ lock）
+## 13. 用户决策（2026-04-28 ✅ 二次 lock）
 
 | # | 问题 | 用户答复 |
 |---|---|---|
 | 1 | AI 增强方向选择 | ✅ 4 AI 能力深化（讨论话题选 4） |
 | 2 | 优先级方向 | ✅ "首次进 /discovery 就被震撼" + "基本功能均可用" |
 | 3 | 实施方案 | ✅ X 方案 Tier 1 全做（接受邀请推迟 13 天）|
+| 4 | aigcgateway embedding 上线后方案 | ✅ **R 方案 — embedding 全面解锁，加 2 个新功能（KOL 相似推荐 + 多语言匹配）** |
 
 ---
 
-**Spec 状态：** decisions-locked（2026-04-28 Planner 起草 + 用户裁决 3/3 全 lock）
+**Spec 状态：** decisions-locked + embedding-upgraded（2026-04-28 Planner 起草 X + 二次 lock R）
 
-**预估 MVP 上线：~2026-05-22**（vs 原 lock 05-09，推迟 13 天）
+**预估 MVP 上线：~2026-05-24**（vs 原 X 方案 05-22，推迟 2 天换 2 个新亮点 + cost 长期可持续）
 
-**核心交付：** 邀请发出时种子用户首次进 /discovery 就被 AI Smart Match 震撼 + 全 placeholder 消除"基本可用"。
+**核心交付（embedding 升级版）：**
+- 邀请发出时种子用户首次进 /discovery 就被 AI Smart Match 震撼（**毫秒级响应** + 1500+ KOL 真实匹配）
+- 全 placeholder 消除（基本功能均可用）
+- **🆕 KOL 相似推荐**（详情页"找到下一个"，类比 Spotify）
+- **🆕 多语言 KOL 跨区匹配**（中文 marketer 找日韩 KOL 的差异化能力）
+- 长期 cost 可持续（embedding 月 < $0.05，vs LLM ranking 1 年后 $2000-5000/月）
+
+**aigcgateway 上线 bge-m3 验证（2026-04-28）：**
+- modality: embedding ✅
+- dimensions: 1024 ✅
+- 多语言：中日韩英强 ✅
+- pricing: $0.084 in / $0 out per 1M tokens ✅
+- context window: 8192 tokens ✅
+- hosting: SiliconFlow（国产，国内访问快）✅

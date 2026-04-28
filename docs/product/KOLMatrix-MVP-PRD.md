@@ -332,8 +332,10 @@ MVP 用 **aigcgateway**（已接入）提供 3 档 AI 能力：
 | **AI 定制邮件** | claude-haiku-4.5 或 gemini-3-flash | ✅ | 邮件模板 × Product × KOL context → 个性化改写 |
 | **AI 周报生成** | gemini-3-flash（长 context）| ✅ | 读 CRM/ROI/待办 → 生成 markdown → 前端转 PDF |
 | **AI 推广素材生成** | gpt-image / gemini-3-pro-image（图）+ claude-haiku-4.5（文） | ✅ 基础版 | 从 Product 字段生成：邮件模板 3 套 + 短视频脚本 2 套 |
-| ~~KOL × Product 匹配分~~ | — | ❌ MVP 外 | 需要 embedding 管道（B2）|
-| ~~AI Insights 自动分析~~ | — | ❌ MVP 外 | 需要 ROI 数据积累足够（BM2 后 B2 做）|
+| **KOL × Product Smart Match** | bge-m3 embedding | ✅ **B7 实装**（aigcgateway 2026-04-28 上线 bge-m3，cost ↓ 50x，毫秒级响应）| 用户 2026-04-28 解锁；详见 docs/specs/B7-mvp-launch-ready-spec.md §F002 |
+| **AI Insights 自动分析** | gemini-2.5-flash-lite + claude-haiku-4.5 | ✅ B7 实装（3 处：/database AI Intelligence + /campaigns/:id Suggestions + /roi 已有）| 详见 B7 §F003 §F004 |
+| **🆕 KOL 相似推荐** | bge-m3 embedding | ✅ **B7 新增 F007**（embedding 解锁，类比 Spotify "找到下一个"）| 详见 B7 §F007 |
+| **🆕 多语言 KOL 跨区匹配** | bge-m3 embedding | ✅ **B7 新增 F008**（中文 marketer 找日韩 KOL，差异化能力）| 详见 B7 §F008 |
 
 ---
 

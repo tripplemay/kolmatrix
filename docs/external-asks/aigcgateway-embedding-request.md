@@ -464,3 +464,63 @@ embedding 是以下场景的核心基础：
 ---
 
 **文档状态：** customer request draft（2026-04-28 KOLMatrix Planner 起草，待 aigcgateway 产品 + 工程 review）
+
+
+---
+
+## 11. ✅ 交付状态更新（2026-04-28）
+
+**aigcgateway 团队已上线 `bge-m3` embedding model。** 验证通过：
+
+```json
+{
+  "id": "bge-m3",
+  "name": "bge-m3",
+  "brand": "BAAI",
+  "modality": "embedding",          ✅ 新 modality
+  "contextWindow": 8192,
+  "price": "$0.084 in / $0 out per 1M tokens",  ✅ embedding 仅 input cost
+  "pricing": {
+    "inputPerMillion": 0.084,
+    "outputPerMillion": 0,
+    "currency": "USD"
+  },
+  "description": "Multilingual embedding model by BAAI (1024 dims). Optimized for Chinese/Japanese/Korean. Hosted on SiliconFlow."
+}
+```
+
+**验证结果：**
+
+| 需求章节 | 交付状态 |
+|---|---|
+| 3.1.1 Embedding modality 注册 | ✅ list_models 已显示 modality='embedding' |
+| 3.1.2 Embedding API endpoint | ⏳ 未实测（KOLMatrix B7 F001 实施时验证 /v1/embeddings 兼容 OpenAI）|
+| 3.1.3 Action 系统支持 | ⏳ 未实测 |
+| 3.1.4 至少 1 个 model | ✅ bge-m3（KOLMatrix P0 推荐，完全匹配）|
+
+**KOLMatrix 团队感谢：** 完美匹配 P0 推荐 model + pricing 合理 + 多语言匹配 KOLMatrix 客户群（中日韩 game studio）。
+
+**KOLMatrix 后续行动（已 lock）：**
+
+- 不延后到 MVP+1 月，**直接在 B7-mvp-launch-ready 实施**（2026-05-03 启动）
+- B7 F001 改为 embedding pipeline + pgvector
+- B7 F002 Smart Match 改用 embedding cosine（毫秒级响应）
+- 新增 B7 F007 KOL 相似推荐 + B7 F008 多语言 KOL 跨区匹配
+- 详见 `docs/specs/B7-mvp-launch-ready-spec.md` §F001-F008
+
+**KOLMatrix 月成本估算（embedding 上线后）：**
+
+| 场景 | 月 tokens | 月成本 |
+|---|---|---|
+| 一次性 embed 1500 KOL | 75K（一次性）| $0.0063 |
+| B6 daily 增量 embed 50 KOL | 75K/月 | $0.006 |
+| Smart Match 查询 1000 次 | 20K/月 | $0.0017 |
+| KOL 相似推荐查询 5000 次 | 100K/月 | $0.0084 |
+| 多语言搜索查询 3000 次 | 60K/月 | $0.005 |
+| **月总** | **~330K** | **~$0.03/月** |
+
+vs 原 LLM ranking 月 $1-5：**cost ↓ 30-150x ✅**
+
+---
+
+**文档状态更新：** 2026-04-28 aigcgateway 交付确认，KOLMatrix 已立即采用，外部需求闭环。
