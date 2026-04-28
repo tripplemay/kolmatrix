@@ -22,7 +22,7 @@
       "title": "Cron 配置 + 调度脚本",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**新建 infrastructure/cron/kolmatrix-kol-sync：**\n```bash\n# Runs daily at 08:30 北京 (= 0:30 UTC，YouTube quota 已重置)\n30 0 * * * tripplezhou cd /opt/kolmatrix && npm run kol-sync:daily >> /var/log/kolmatrix-kol-sync.log 2>&1\n```\n\n**新建 scripts/kol-sync-daily.ts：**\n- import 'dotenv/config'（BL-001 教训）\n- 用 KolSyncDispatcher + YouTubeKolSyncAdapter\n- 跑 discover + refresh\n- 写入 KOL 表 + 输出报告 docs/test-reports/kol-sync-daily-{date}.md\n- 失败不阻塞次日 cron（exit 0，错误写 log）\n\n**package.json scripts：** kol-sync:daily + kol-sync:daily:dry\n\n**部署：**\n- 仅 prod 跑（avoid staging 双重 quota 消耗，10K/day 共享 1 个 API key）\n- staging 仅手动跑验证\n- Generator 部署到 VM /etc/cron.d/kolmatrix-kol-sync\n- log rotation：infrastructure/cron/logrotate.d/kolmatrix-kol-sync\n\n**Acceptance：**\n- infrastructure/cron/kolmatrix-kol-sync 入 git + deploy 到 VM /etc/cron.d/\n- prod 第一次自动跑（监控 log）\n- log rotation 配置入 git\n- 详见 docs/specs/B6-kol-daily-sync-spec.md §F003"
     },
     {

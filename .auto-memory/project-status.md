@@ -4,18 +4,26 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **B6-kol-daily-sync** — status=fixing（2026-04-28 首轮验收未通过）
-- 进度：5/6 completed，fix_rounds=0
-- 报告：`docs/test-reports/B6-kol-daily-sync-verifying-2026-04-28.md`
+- **B6-kol-daily-sync** — status=reverifying（2026-04-28 15:55 BJ）
+- 进度：6/6 completed，fix_rounds=1
+- 报告：`docs/test-reports/B6-kol-daily-sync-fixing-round-1-2026-04-28.md`
 
-## 已通过
-- F001/F002/F004/F005/F006
-- L1：typecheck/lint + unit(24) + integration(6 pass / 2 skipped)
-- L2：staging health 正常，F006 #5 日志证据一致（discover=73 inserted=8 updated=265 errors=0）
+## fix-round 1 闭环（Z 路径）
+- 用户 ~15:40 触发 prod redeploy → prod 升到 `83edd3b`
+- F003 三项 acceptance 全部落地：
+  - cron deploy（kolmatrix-kol-sync + kolmatrix-kol-quality）到 /etc/cron.d/
+  - prod 首次跑：手动 npm run kol-sync:daily → /var/log/kolmatrix-kol-sync.log INFO 行 + DB 760→768
+  - logrotate `su tripplezhou tripplezhou` directive 修复 + dry-run 通过
 
-## 阻断项
-- F003：验收要求的 cron deploy 未落地 VM `/etc/cron.d`（仅有 `kolmatrix-cert-expiry`，缺 `kolmatrix-kol-sync` / `kolmatrix-kol-quality`）
-- 因此“prod 首次自动跑”证据不可验证
+## 已通过项（首轮 + fix-round 1）
+- F001/F002/F004/F005/F006（首轮 PASS）
+- F003 fix-round 1 PASS
+- L1：typecheck/lint + unit(83/542) + integration(32/241+2 skip)
+- L2：staging git_sha=83edd3b，acceptance #5 273 触达 PASS
+- prod manual sync evidence：discover=71 inserted=8 updated=263 errors=0 quota=1805
 
-## 备注
-- F006 #4 已按文档定义为跨批次 day-5 验证（~05-03），不构成本轮阻断
+## 跨批次延迟项（不阻塞 done）
+- F006 acceptance #4 接力条款 → ~2026-05-03 day-5 验证（占位报告 docs/test-reports/B6-kol-seed-redo-handoff-validation-2026-05-03.md）
+
+## 下游 lock
+- B6 done → MVP-demo-launch 合并 sprint（9 features）→ 邀请 ~05-19（A 方案提前 5 天）
