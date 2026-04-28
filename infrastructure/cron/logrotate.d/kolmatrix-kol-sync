@@ -10,6 +10,7 @@
 # /var/log under control on the modest VPS disk (the structured JSON
 # compresses ~95%).
 /var/log/kolmatrix-kol-sync.log {
+    su tripplezhou tripplezhou
     daily
     rotate 30
     compress
