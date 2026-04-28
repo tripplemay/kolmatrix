@@ -4,26 +4,20 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **B7a-discovery-smart-match** — status=verifying（2026-04-28 17:55 BJ）
-- 进度：2/2 completed，fix_rounds=0
-- role_assignments：planner=Kimi / generator=johnsong（本会话 cli=Kimi 接管）/ evaluator=Reviewer
+- **B7a-discovery-smart-match** — status=fixing（2026-04-28 18:24 BJ）
+- 进度：0/2 completed（本轮 verifying 将 F001/F002 回退为 pending），fix_rounds=0
+- role_assignments：planner=Kimi / generator=johnsong / evaluator=Reviewer
 
-## F001 + F002 acceptance 全部达成
-- F001 pgvector + embedding pipeline：staging 3,303 KOL + 16 Product + prod 768 KOL 全 embed
-- F002 /discovery Smart Match Dialog + POST /api/kols/smart-match + cosine top-K + Save All to Campaign
+## 本轮验收结论（Reviewer）
+- L1：typecheck/lint + unit(15/15) + integration(5/5) 全通过
+- L2 staging：`/api/health` healthy，`git_sha=218bf8078c966318f3a2c51da1035f320d5a7597`
+- L2 关键阻断：`POST /api/kols/smart-match` 对抽检 5 个 product 全返回 `503 embedding_failed`（`product vector unreadable after embed`）
+- 影响：Smart Match 无法返回 top-10，F001/F002 均不满足验收
 
-## L1 baseline
-- typecheck/lint + unit 87/577 + integration 34+1 skipped / 255+2 skipped tests 全绿
+## 产物
+- 验收报告：`docs/test-reports/B7a-discovery-smart-match-verifying-2026-04-28.md`
+- progress.json 已写 evaluator_feedback，status 已切 `fixing`
 
-## L2 staging
-- git_sha=a00dbf2，build + pm2 reload 完成
-- /api/health healthy
-- /api/kols/smart-match 401 unauth（auth gate 验证）
-
-## 跨批次延迟项（不阻塞 done）
-- B6-F006 #4 接力条款 day-5 验证 ~2026-05-03
-- B7b（4 features，7-8 day）：F003-F006 placeholder + ai-aux + i18n 4-locale translate + visual baseline 重捕全 locale
-- B8（2 features，3 day，邀请发出后）：F007 KOL 相似推荐 + F008 多语言匹配
-
-## 下游 lock
-- B7a done → B7b building（~05-01）→ B7b done（~05-08）→ MVP-demo-launch sprint → 邀请 ~05-13
+## 下游
+- 等 Generator 修复 Product embedding 读写链路后进入 `reverifying`
+- B7b/B8 计划不变（需 B7a 先闭环）
