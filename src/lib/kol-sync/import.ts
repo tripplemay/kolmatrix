@@ -77,6 +77,16 @@ export interface KolUpsertPayload {
   avgViews: number | null;
   categories: string[];
   isGaming: boolean;
+  // B5-F001 / F002 — promoted from metadata.youtube.*. New code only
+  // writes these columns; legacy rows keep their metadata.youtube.*
+  // payload for historical reads (A2 — no double-write, see B5 spec
+  // §F002). bigint for totalViewCount because top channels exceed
+  // INT32_MAX. Set to null for non-YouTube platforms or when the
+  // adapter didn't surface a value.
+  channelCreatedAt: Date | null;
+  videoCount: number | null;
+  totalViewCount: bigint | null;
+  bannerUrl: string | null;
   metadata: {
     is_demo: boolean;
     source: string;
@@ -87,11 +97,11 @@ export interface KolUpsertPayload {
      *  hidden by the Discovery / Database UI. Only present when at
      *  least one anomaly fires on the current pass. */
     flags?: QualityFlags;
+    /** Wikipedia topic URLs preserved here for the BL-012 crawler
+     *  team to map against once their dataset lands; keeping them in
+     *  metadata avoids a second column for what is otherwise just
+     *  source provenance. */
     youtube?: {
-      videoCount: number | null;
-      totalViewCount: number | null;
-      channelCreatedAt: string | null;
-      bannerUrl: string | null;
       topicCategories: string[];
       scrapedAt: string;
     };
@@ -131,6 +141,27 @@ export function mapToUpsertPayload(
     typeof raw.raw?.matrixKeyword === "string" || raw.raw?.matrixKeyword === null
       ? (raw.raw?.matrixKeyword as string | null) ?? null
       : null;
+  // B5-F001 / F002 — column-side YouTube fields. publishedAt comes
+  // through as an ISO-8601 string from the adapter; convert to Date for
+  // the @db.Timestamptz column. Invalid strings produce Invalid Date,
+  // so we skip those by checking isFinite on getTime().
+  let channelCreatedAt: Date | null = null;
+  if (raw.platform === "youtube" && raw.publishedAt) {
+    const d = new Date(raw.publishedAt);
+    if (Number.isFinite(d.getTime())) channelCreatedAt = d;
+  }
+  const videoCount =
+    raw.platform === "youtube" && typeof raw.videoCount === "number"
+      ? raw.videoCount
+      : null;
+  const totalViewCount =
+    raw.platform === "youtube" &&
+    typeof raw.viewCount === "number" &&
+    Number.isFinite(raw.viewCount)
+      ? BigInt(raw.viewCount)
+      : null;
+  const bannerUrl =
+    raw.platform === "youtube" ? raw.bannerUrl ?? null : null;
   return {
     platform: raw.platform,
     handle,
@@ -144,6 +175,10 @@ export function mapToUpsertPayload(
     avgViews,
     categories,
     isGaming: true,
+    channelCreatedAt,
+    videoCount,
+    totalViewCount,
+    bannerUrl,
     metadata: {
       is_demo: opts.isDemo,
       source: opts.source,
@@ -156,10 +191,6 @@ export function mapToUpsertPayload(
       youtube:
         raw.platform === "youtube"
           ? {
-              videoCount: raw.videoCount ?? null,
-              totalViewCount: raw.viewCount ?? null,
-              channelCreatedAt: raw.publishedAt ?? null,
-              bannerUrl: raw.bannerUrl ?? null,
               topicCategories: [...(raw.topicCategories ?? [])],
               scrapedAt: raw.scrapedAt,
             }
@@ -268,6 +299,14 @@ export async function importRawKolData(
       isGaming: payload.isGaming,
       handle: payload.handle,
       externalId: payload.externalId,
+      // B5-F001 / F002 — promoted from metadata.youtube.*. Existing
+      // rows from before this batch keep NULL here until the
+      // enrich-kol-from-youtube one-shot script (or the next daily
+      // sync) backfills them.
+      channelCreatedAt: payload.channelCreatedAt,
+      videoCount: payload.videoCount,
+      totalViewCount: payload.totalViewCount,
+      bannerUrl: payload.bannerUrl,
       // Prisma's InputJsonObject requires an index signature; the
       // narrowly-typed QualityFlags doesn't satisfy that purely
       // structurally, so widen at the boundary.

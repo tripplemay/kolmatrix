@@ -99,17 +99,29 @@ describe("deriveCategories (pure)", () => {
 });
 
 describe("mapToKolRow (pure)", () => {
-  it("emits metadata.is_demo + nested youtube.* provenance", () => {
+  it("emits metadata.is_demo + promotes YouTube channel data into dedicated columns", () => {
+    // B5-F001/F002: the four heavy YouTube fields (videoCount /
+    // totalViewCount / channelCreatedAt / bannerUrl) live in dedicated
+    // schema columns now. metadata.youtube only retains the
+    // channelId + Wikipedia topic URLs (BL-012 crawler hand-off
+    // payload) per the 2026-04-30 user adjudication A2 (no
+    // double-write).
     const row = mapToKolRow(fakeChannel("UC_test"), "2026-04-27T12:00:00.000Z");
     expect(row).not.toBeNull();
     expect(row!.metadata.is_demo).toBe(true);
     expect(row!.metadata.source).toBe("youtube-api");
     expect(row!.metadata.seeded_at).toBe("2026-04-27T12:00:00.000Z");
     expect(row!.metadata.youtube.channelId).toBe("UC_test");
-    expect(row!.metadata.youtube.videoCount).toBe(320);
-    expect(row!.metadata.youtube.bannerUrl).toBe(
-      "https://yt.example/UC_test-banner.jpg"
-    );
+    // metadata.youtube.* no longer carries the four promoted fields.
+    expect(row!.metadata.youtube).not.toHaveProperty("videoCount");
+    expect(row!.metadata.youtube).not.toHaveProperty("totalViewCount");
+    expect(row!.metadata.youtube).not.toHaveProperty("channelCreatedAt");
+    expect(row!.metadata.youtube).not.toHaveProperty("bannerUrl");
+    // Dedicated columns carry the promoted values.
+    expect(row!.videoCount).toBe(320);
+    expect(row!.totalViewCount).toBe(50_000_000n);
+    expect(row!.bannerUrl).toBe("https://yt.example/UC_test-banner.jpg");
+    expect(row!.channelCreatedAt).toEqual(new Date("2018-01-01T00:00:00Z"));
     expect(row!.avgViews).toBe(Math.round(50_000_000 / 320));
     expect(row!.platform).toBe("youtube");
   });

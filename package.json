@@ -30,6 +30,8 @@
     "validate:kol-enriched:dry": "tsx scripts/validate-kol-from-enriched.ts --dry-run",
     "import:kol-youtube": "tsx scripts/import-kol-from-youtube.ts",
     "import:kol-youtube:dry": "tsx scripts/import-kol-from-youtube.ts --dry-run",
+    "enrich:kol-youtube": "tsx scripts/enrich-kol-from-youtube.ts",
+    "enrich:kol-youtube:dry": "tsx scripts/enrich-kol-from-youtube.ts --dry-run",
     "kol-sync:daily": "tsx scripts/kol-sync-daily.ts",
     "kol-sync:daily:dry": "tsx scripts/kol-sync-daily.ts --dry-run",
     "kol-quality:weekly": "tsx scripts/kol-quality-weekly.ts",

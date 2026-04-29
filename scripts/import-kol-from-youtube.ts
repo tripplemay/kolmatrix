@@ -92,18 +92,25 @@ export interface KolRow {
   avgViews: number | null;
   categories: string[];
   isGaming: boolean;
+  // B5-F001 / F002 — promoted from metadata.youtube.* into dedicated
+  // columns. New code (this seed import + the daily sync mapper) only
+  // writes these; legacy rows keep their metadata.youtube.* payload
+  // for historical reads (A2 — no double-write, see B5 spec §F002).
+  channelCreatedAt: Date | null;
+  videoCount: number | null;
+  totalViewCount: bigint | null;
+  bannerUrl: string | null;
   metadata: {
     is_demo: true;
     source: "youtube-api";
     seeded_at: string;
     matrix_region: string;
     matrix_keyword: string;
+    /** Wikipedia topic URLs preserved here for the BL-012 crawler
+     *  team to map against once their dataset lands. The other
+     *  YouTube fields moved up to top-level columns above. */
     youtube: {
       channelId: string;
-      videoCount: number;
-      totalViewCount: number;
-      channelCreatedAt: string | null;
-      bannerUrl: string | null;
       topicCategories: string[];
       scrapedAt: string;
     };
@@ -134,6 +141,15 @@ export function mapToKolRow(
     followerCount: channel.subscriberCount,
     categories,
   });
+  // B5-F001 / F002 — column-side YouTube fields. publishedAt is an
+  // ISO-8601 string from F002's seed JSON; convert to Date for the
+  // @db.Timestamptz column. Invalid strings produce Invalid Date,
+  // which we filter via isFinite on getTime().
+  let channelCreatedAt: Date | null = null;
+  if (channel.publishedAt) {
+    const d = new Date(channel.publishedAt);
+    if (Number.isFinite(d.getTime())) channelCreatedAt = d;
+  }
   return {
     platform: "youtube",
     handle,
@@ -147,6 +163,10 @@ export function mapToKolRow(
     avgViews,
     categories,
     isGaming: true,
+    channelCreatedAt,
+    videoCount: channel.videoCount,
+    totalViewCount: BigInt(channel.viewCount),
+    bannerUrl: channel.bannerUrl,
     metadata: {
       is_demo: true,
       source: "youtube-api",
@@ -155,10 +175,6 @@ export function mapToKolRow(
       matrix_keyword: channel.matrixKeyword,
       youtube: {
         channelId: channel.id,
-        videoCount: channel.videoCount,
-        totalViewCount: channel.viewCount,
-        channelCreatedAt: channel.publishedAt,
-        bannerUrl: channel.bannerUrl,
         topicCategories: [...channel.topicCategories],
         scrapedAt: channel.scrapedAt,
       },
@@ -300,6 +316,12 @@ export function createPrismaImportClient(prisma: PrismaClient): ImportClient {
         // canonical column should follow.
         handle: row.handle,
         externalId: row.externalId,
+        // B5-F001 / F002 — promoted from metadata.youtube.* (A2 — no
+        // double-write).
+        channelCreatedAt: row.channelCreatedAt,
+        videoCount: row.videoCount,
+        totalViewCount: row.totalViewCount,
+        bannerUrl: row.bannerUrl,
         metadata: row.metadata,
         valueScore: row.valueScore,
         lastSyncedAt: now,
