@@ -202,12 +202,12 @@ type RegionGroupFilter = "asia" | "europe" | "americas" | "latam" | "oceania";
 - 词云 click → 暂不做 filter 跳转（Post-MVP 增强）
 - 包大小：react-wordcloud + d3-cloud ~30KB gzip，**lazy load**（dynamic import）避免影响其他页
 
-4. **真 engagementRate（A1 澄清，2026-04-30 修订）：**
-- 详情页打开时 lazy load 调 search.list (channelId, order=date, maxResults=6) cost 100 units/call
-- 拿到视频列表后调 videos.list (id=v1,v2,...,v6) 一次拿 6 视频 statistics（cost 1 unit）
-- 计算 avg(likeCount + commentCount) / avg(viewCount) → engagementRate
-- 写回 Kol.engagementRate 字段缓存 24h（24h 内重访不重调）
-- **覆盖** F002 的估算值（DB 状态：F002 写估算 → F004 首次 visit 后变真值）
+4. **engagementRate 显示（2026-04-30 二次修订 — 移除 lazy-load 真值，改由 BIx-mvp-polish-pass F004 batch 预计算）：**
+- 详情页**直接从 DB 读 `Kol.engagementRate`** —— 不再 lazy-load 调 YouTube API
+- 显示来源：F002 的公式估算值（在 BIx-mvp-polish-pass F004 batch 真值覆盖前）
+- BIx-mvp-polish-pass F004（独立批次）每天为 top 100 by valueScore KOL 用 playlistItems + videos.list batch 预计算真值（cost ~112u/day），写回 `Kol.engagementRate`
+- 详情页对此完全无感：永远从 DB 读 + 不发任何 YouTube API 请求
+- **理由：** 避免 100u + 1u/次 lazy-load 浪费配额；用 BIx F004 批量 1u + 0.12u/channel 替代，配额 ROI 提升 ~50×
 
 5. **隐藏 audience demographics：**
 - 当前 KolDetailTabs 中 Audience tab 显示 placeholder
@@ -215,11 +215,11 @@ type RegionGroupFilter = "asia" | "europe" | "americas" | "latam" | "oceania";
 - 加注释 `// B6: re-enable when NoxInfluencer integration lands`
 
 **Acceptance：**
-- KOL 详情页含 banner / 最近 6 视频 / 真 engagementRate / 完整版词云
+- KOL 详情页含 banner / 最近 6 视频 / engagementRate（DB 读，不调 API）/ 完整版词云
 - Audience tab 不渲染（visual + integration test 验证）
 - 词云 react-wordcloud + d3-cloud 集成完成，weight 0-1 映射字号 14-32px
 - 词云 lazy load（不在首屏 JS bundle）
-- engagementRate F002 估算值 → F004 真值覆盖链路通畅
+- engagementRate 显示路径**永远从 Kol.engagementRate DB 字段读**（不再 lazy-load 真值）；由 BIx-mvp-polish-pass F004 batch 后端填充
 - staging git_sha 与本 commit 一致
 
 ### F005 — i18n 补新 keys + 守门 tests + UI polish
@@ -258,7 +258,7 @@ type RegionGroupFilter = "asia" | "europe" | "americas" | "latam" | "oceania";
 | audience demographics | 完全隐藏 tab | ✅ 2026-04-27 |
 | 最近 6 视频获取时机 | lazy load + cache 24h | Planner 推荐 |
 | **词云方案** | **C 完整版（react-wordcloud + AI 提取关键词 + weight 视觉化）** | ✅ **2026-04-30** |
-| **engagementRate 真值（A1）** | F002 估算 / 留空 → F004 lazy load 时写回真值 | ✅ **2026-04-30** |
+| **engagementRate 真值（A1 + 2026-04-30 二次修订）** | F002 估算（B5 期间永久使用）→ BIx-mvp-polish-pass F004 batch 预计算覆盖（top 100 KOL/day）。**B5 F004 移除 lazy-load 设计** —— 详情页直接从 DB 读 | ✅ **2026-04-30 二次** |
 | **6 月爬虫数据 import（A2）** | metadata 字段保留旧数据；新数据**只写 schema 列**；**不双写** | ✅ **2026-04-30** |
 | 启动模式 | **B5 单独批次先做，B5 done 后再起 MVP-internal-demo-prep**（A 方案，原 merged-sprint 废弃） | ✅ **2026-04-30** |
 
