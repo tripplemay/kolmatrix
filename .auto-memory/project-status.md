@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **HOTFIX-product-delete-cuid** — status=verifying（2026-04-29 19:37 BJ）
+- **HOTFIX-product-delete-cuid** — status=verifying（2026-04-29 19:43 BJ）
 - 进度：2/2 completed，fix_rounds=0
 
 ## Generator 完成项
@@ -16,6 +16,9 @@ type: project
 - `npm test -- 'src/app/[locale]/(app)/knowledge-base/__tests__/actions.test.ts'` PASS（5/5）
 - `npm run lint -- 'src/app/[locale]/(app)/knowledge-base/actions.ts' 'src/app/[locale]/(app)/knowledge-base/__tests__/actions.test.ts'` PASS
 - `npx tsc --noEmit` PASS
+
+## Staging
+- 已部署到 staging：`git_sha=9a3d0c7`，`/api/health` = healthy，database=ok
 
 ## 下游
 - 下一步由 Evaluator 在 staging 验证真实 cuid 产品的编辑/删除链路

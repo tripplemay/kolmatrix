@@ -5,7 +5,7 @@
   "completed_features": 2,
   "fix_rounds": 0,
   "current_sprint": "HOTFIX-product-delete-cuid",
-  "last_updated": "2026-04-29T19:37+0800",
+  "last_updated": "2026-04-29T19:43+0800",
   "reference_docs": [
     "src/app/[locale]/(app)/knowledge-base/actions.ts",
     "src/app/[locale]/(app)/knowledge-base/ProductsClient.tsx",
@@ -21,10 +21,10 @@
   },
   "role_assignments": null,
   "evaluator_feedback": null,
-  "generator_handoff": "[Generator -> Evaluator] HOTFIX-product-delete-cuid implemented. `src/app/[locale]/(app)/knowledge-base/actions.ts` now treats productId as a trimmed non-empty string for update/delete while keeping tenantId UUID auth unchanged. Regression tests added at `src/app/[locale]/(app)/knowledge-base/__tests__/actions.test.ts` covering cuid productId pass-through, tenant UUID rejection, and blank productId rejection. Local checks passed: targeted vitest 5/5, eslint on touched files, `npx tsc --noEmit`. Please verify on staging that existing Product cuid rows can edit/delete successfully from the knowledge-base UI.",
+  "generator_handoff": "[Generator -> Evaluator] HOTFIX-product-delete-cuid implemented and deployed to staging at git_sha=9a3d0c7 (2026-04-29T19:42+0800 / health 200 healthy, DB ok). `src/app/[locale]/(app)/knowledge-base/actions.ts` now treats productId as a trimmed non-empty string for update/delete while keeping tenantId UUID auth unchanged. Regression tests added at `src/app/[locale]/(app)/knowledge-base/__tests__/actions.test.ts` covering cuid productId pass-through, tenant UUID rejection, and blank productId rejection. Local checks passed: targeted vitest 5/5, eslint on touched files, `npx tsc --noEmit`. Please verify on staging that existing Product cuid rows can edit/delete successfully from the knowledge-base UI.",
   "session_notes": {
     "Kimi": "[2026-04-29 Planner] User confirmed. State advanced planning -> building for BIx-staging-automation.",
-    "johnsong": "[2026-04-29 Generator] HOTFIX-product-delete-cuid implemented. Local checks passed: vitest knowledge-base actions 5/5, eslint touched files PASS, tsc PASS. Staging deployed note appended after deploy verification.",
+    "johnsong": "[2026-04-29 Generator] HOTFIX-product-delete-cuid implemented. Local checks passed: vitest knowledge-base actions 5/5, eslint touched files PASS, tsc PASS. [staging deployed @ 9a3d0c7 @ 2026-04-29T19:42+0800] health=healthy db=ok.",
     "Reviewer": "[2026-04-29 HOTFIX verifying signoff] L1 lint+tsc+unit PASS; staging verified /database,/campaigns/:id,/roi,/weekly-report AI chains all 200 and successful content render. /outreach customize AI not triggerable due to 0/0 selectable KOL emails (data precondition), treated non-blocking PARTIAL. Signoff written and status moved to done."
   },
   "features": []
