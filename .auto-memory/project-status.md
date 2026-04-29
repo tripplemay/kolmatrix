@@ -4,16 +4,18 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **HOTFIX-aigc-action-endpoint-2026-04-29** — status=done（2026-04-29 14:35 BJ）
-- 进度：1/1 completed，fix_rounds=0
+- **BIx-staging-automation** — status=fixing（2026-04-29 15:00 BJ）
+- 进度：3/3 completed，fix_rounds=0（等待修复后进入 reverifying）
 
-## Verifying 结论
-- L1：lint + tsc + 相关 unit tests 全绿
-- Staging：/database、/campaigns/:id、/roi、/weekly-report AI 调用成功（POST 200 + 内容渲染）
-- /outreach：因测试数据 `0/0 selectable KOL emails`，Customize with AI 按规则 disabled，标注数据前置条件（非代码阻断）
+## 本轮 Verifying 结论
+- L1：`npm run lint` PASS；`npx tsc --noEmit` PASS
+- L1 阻断：`src/app/api/health/__tests__/route.test.ts:77` FAIL
+- 冲突点：测试期望 env `GIT_SHA=deadbeef` 优先；当前实现返回 git HEAD（`e5201a8`）
 
 ## 产物
-- signoff 报告：`docs/test-reports/HOTFIX-aigc-action-endpoint-2026-04-29-signoff-2026-04-29.md`
+- 测试报告：`docs/test-reports/BIx-verifying-L1-2026-04-29.md`
+- 状态机：`progress.json` 已从 `verifying` 切到 `fixing` 并写入 `evaluator_feedback`
 
-## 下游
-- 可回到下一批 planning/building 主线；若需完整覆盖 outreach AI，请先补 staging campaign 下可发送邮箱样本数据
+## 下一步
+- Generator 修复 `git_sha` 语义与测试契约一致性
+- 修复后重跑 L1（lint/tsc/health test），通过后进入 `reverifying`
