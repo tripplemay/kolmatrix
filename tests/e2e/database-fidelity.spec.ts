@@ -58,15 +58,16 @@ test.describe("/database fidelity (MVP-vf-F003)", () => {
     await expect(allPill).toHaveAttribute("aria-current", "true");
   });
 
-  test("Tier and Game filters are placeholder Selects disabled with a tooltip", async ({
+  test("Tier and Game filters are live enabled controls", async ({
     page,
   }) => {
-    // Tier and Game are forward-looking dimensions awaiting the B6
-    // taxonomy work. They render visibly so the seven-dim row is
-    // structurally complete, but never look interactive.
     const filters = page.getByTestId("database-filters");
-    const tier = filters.locator('select[disabled]', { hasText: /Coming|B6/ });
-    await expect(tier.first()).toBeVisible();
+    const tier = filters.locator('select[name="tiers"]');
+    const game = filters.locator('select[name="categories"]').nth(1);
+    await expect(tier).toBeVisible();
+    await expect(tier).toBeEnabled();
+    await expect(game).toBeVisible();
+    await expect(game).toBeEnabled();
   });
 
   test("Insights Panel renders all three cards (AI / Coverage Gap / Engagement)", async ({

@@ -3,7 +3,8 @@
  *
  * Marketers' first-click launchpad into the 3 BM1 features (Knowledge
  * Base / Discovery / Database) and a preview of BM2 (Campaigns,
- * disabled with "Coming soon" tooltip). Kept in /features/dashboard/
+ * disabled with "Coming soon" tooltip; tracked in backlog/spec docs).
+ * Kept in /features/dashboard/
  * alongside KpiRow + ActiveCampaignsSection so imports stay local to
  * the dashboard tree.
  */

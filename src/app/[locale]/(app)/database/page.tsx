@@ -34,7 +34,7 @@ import { DatabaseTableClient } from "./DatabaseTableClient";
 import { InsightsPanel } from "./InsightsPanel";
 import { QuickStats } from "./QuickStats";
 import { runDatabaseSearch } from "./search";
-import { loadDatabaseStats } from "./stats";
+import { loadCoverageGapSummary, loadDatabaseStats } from "./stats";
 
 export const metadata = { title: "KOL Database — KOLMatrix" };
 
@@ -59,9 +59,10 @@ export default async function DatabasePage({ params, searchParams }: Props) {
   const tenantId = session?.user?.tenantId;
   if (!tenantId) redirect("/login");
 
-  const [searchResult, stats] = await Promise.all([
+  const [searchResult, stats, coverage] = await Promise.all([
     runDatabaseSearch(tenantId, filters),
     loadDatabaseStats(tenantId),
+    loadCoverageGapSummary(tenantId),
   ]);
 
   const t = await getTranslations("database");
@@ -217,7 +218,12 @@ export default async function DatabasePage({ params, searchParams }: Props) {
           </nav>
         </section>
 
-        <InsightsPanel stats={stats} />
+        <InsightsPanel
+          stats={stats}
+          coverage={coverage}
+          tenantId={tenantId}
+          locale={locale}
+        />
       </div>
     </div>
   );

@@ -286,9 +286,13 @@
     },
     "header": {
       "saveSearch": "Save search",
-      "saveSearchTooltip": "Saved searches launch with B2",
       "aiSmartMatch": "AI Smart Match",
-      "aiSmartMatchTooltip": "AI-powered campaign matching ships with B2"
+      "aiSmartMatchTooltip": "AI-powered campaign matching ships with B2",
+      "saveSearchPrompt": "Name this search",
+      "saveSearchSaved": "Search saved.",
+      "saveSearchFailed": "Could not save search.",
+      "mySearches": "My searches ({count})",
+      "loadSearchPlaceholder": "Load saved search"
     },
     "searchBar": {
       "platformAll": "All platforms",
@@ -442,11 +446,16 @@
     },
     "insights": {
       "aiIntelligenceHeading": "AI Intelligence",
-      "aiIntelligenceBody": "{count, plural, =0 {Save your first KOL on Discovery to unlock score refresh suggestions.} one {# saved KOL is available for AI score refresh.} other {# saved KOLs are available for AI score refresh.}}",
-      "aiRefreshCta": "Refresh AI Scores",
-      "aiRefreshTooltip": "AI score refresh ships with the B6 enrichment batch",
+      "aiIntelligenceBody": "{count, plural, =0 {No saved KOLs yet. Generate insights once you save creators from Discovery.} one {# saved KOL is ready for AI intelligence generation.} other {# saved KOLs are ready for AI intelligence generation.}}",
+      "aiGenerateCta": "Generate Insights",
+      "aiRefreshCta": "Refresh",
+      "aiLoading": "Generating…",
+      "aiCachedPrefix": "Cached",
+      "aiEmpty": "Generate once to cache for 24 hours.",
+      "aiError": "Could not generate insights. Please retry.",
       "coverageGapHeading": "Coverage Gap",
-      "coverageGapPlaceholder": "Coverage gap analytics arrive with the B6 product taxonomy.",
+      "coverageGapLine": "Current {actual} vs baseline {baseline}",
+      "coverageGapEmpty": "No category signals yet. Save more KOLs to compute coverage gaps.",
       "engagementHeading": "Global Engagement",
       "engagementPlaceholder": "Live engagement trend connects to the B6 scraping batch."
     },
@@ -631,9 +640,12 @@
         "ai": {
           "heading": "AI Suggestions",
           "nextSteps": "{count, plural, =0 {Every linked KOL is paid up — pick a new candidate from Discovery.} one {Send to # uncontacted KOL.} other {Send to # uncontacted KOLs.}}",
-          "outreachCta": "Send to uncontacted",
-          "runMatchCta": "Run AI match",
-          "runMatchTooltip": "AI matching arrives with the B2 batch"
+          "generateCta": "Generate Suggestions",
+          "refreshCta": "Refresh",
+          "loading": "Generating…",
+          "cachedPrefix": "Cached",
+          "empty": "Generate once to cache for 24 hours.",
+          "error": "Could not generate suggestions. Please retry."
         },
         "activity": {
           "heading": "Recent Activity",

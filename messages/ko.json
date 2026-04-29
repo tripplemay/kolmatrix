@@ -286,9 +286,13 @@
     },
     "header": {
       "saveSearch": "검색 저장",
-      "saveSearchTooltip": "저장된 검색은 B2에서 실행됩니다.",
       "aiSmartMatch": "AI 스마트 매치",
-      "aiSmartMatchTooltip": "AI 기반 캠페인 매칭은 B2와 함께 제공됩니다."
+      "aiSmartMatchTooltip": "AI 기반 캠페인 매칭은 B2와 함께 제공됩니다.",
+      "saveSearchPrompt": "검색 이름을 입력하세요",
+      "saveSearchSaved": "검색이 저장되었습니다.",
+      "saveSearchFailed": "검색 저장에 실패했습니다.",
+      "mySearches": "내 검색 ({count})",
+      "loadSearchPlaceholder": "저장된 검색 불러오기"
     },
     "searchBar": {
       "platformAll": "모든 플랫폼",
@@ -442,13 +446,18 @@
     },
     "insights": {
       "aiIntelligenceHeading": "AI 인텔리전스",
-      "aiIntelligenceBody": "{count, plural, =0 {발견에서 첫 번째 KOL을 저장하여 점수 갱신 제안을 활성화하세요.} one {저장된 #명의 KOL이 AI 점수 갱신을 위해 사용 가능합니다.} other {저장된 #명의 KOL이 AI 점수 갱신을 위해 사용 가능합니다.}}",
-      "aiRefreshCta": "AI 점수 갱신",
-      "aiRefreshTooltip": "AI 점수 갱신은 B6 강화 배치와 함께 제공됩니다.",
+      "aiIntelligenceBody": "{count, plural, =0 {저장된 KOL이 아직 없습니다. Discovery에서 저장 후 인사이트를 생성하세요.} one {저장된 #명의 KOL로 AI 인사이트를 생성할 수 있습니다.} other {저장된 #명의 KOL로 AI 인사이트를 생성할 수 있습니다.}}",
+      "aiGenerateCta": "인사이트 생성",
+      "aiRefreshCta": "새로고침",
+      "aiLoading": "생성 중…",
+      "aiCachedPrefix": "캐시",
+      "aiEmpty": "한 번 생성하면 24시간 캐시됩니다.",
+      "aiError": "인사이트 생성에 실패했습니다. 다시 시도해 주세요.",
       "coverageGapHeading": "커버리지 격차",
-      "coverageGapPlaceholder": "커버리지 격차 분석은 B6 제품 분류와 함께 제공됩니다.",
-      "engagementHeading": "전역 참여도",
-      "engagementPlaceholder": "실시간 참여 추세는 B6 스크래핑 배치와 연결됩니다."
+      "coverageGapLine": "현재 {actual}, 기준 {baseline}",
+      "coverageGapEmpty": "카테고리 신호가 없습니다. 더 많은 KOL 저장 후 계산됩니다.",
+      "engagementHeading": "글로벌 참여율",
+      "engagementPlaceholder": "실시간 참여 추세는 B6 수집 배치와 연결됩니다."
     },
     "bulk": {
       "selected": "선택됨",
@@ -681,10 +690,13 @@
         },
         "ai": {
           "heading": "AI 제안",
-          "nextSteps": "{count, plural, =0 {연결된 모든 KOL이 결제되었습니다. 발견에서 새로운 후보를 선택하세요.} one {연락하지 않은 #명의 KOL에게 보내기.} other {연락하지 않은 #명의 KOL에게 보내기.}}",
-          "outreachCta": "연락하지 않은 KOL에게 보내기",
-          "runMatchCta": "AI 매칭 실행",
-          "runMatchTooltip": "AI 매칭은 B2 배치와 함께 제공됩니다."
+          "nextSteps": "{count, plural, =0 {연결된 KOL이 모두 paid 상태입니다. Discovery에서 새 후보를 추가하세요.} one {미접촉 KOL #명에게 우선 발송하세요.} other {미접촉 KOL #명에게 우선 발송하세요.}}",
+          "generateCta": "제안 생성",
+          "refreshCta": "새로고침",
+          "loading": "생성 중…",
+          "cachedPrefix": "캐시",
+          "empty": "한 번 생성하면 24시간 캐시됩니다.",
+          "error": "제안 생성에 실패했습니다. 다시 시도해 주세요."
         },
         "activity": {
           "heading": "최근 활동",

@@ -5,13 +5,7 @@
  *
  *   [ All | Active | Negotiating | Long-term | Paused | Terminated ]
  *   ─────────────────────────────────────────────────────────────
- *   [ Search …… ] [ Category ▾ ] [ Region ▾ ] [ Tier ▾* ] [ Game ▾* ] [ Tags …… ] [ Apply ] [ Clear ]
- *
- * (* Tier and Game render as placeholder dropdowns disabled with a
- * "Coming with B6" tooltip — the real product taxonomy ships with the
- * Post-MVP B6 batch. They are visible per the prototype's seven-dim
- * filter row but never look interactive when no real options exist;
- * see ui-fidelity-guardrail.md §3.)
+ *   [ Search …… ] [ Category ▾ ] [ Region ▾ ] [ Tier ▾ ] [ Game ▾ ] [ Tags …… ] [ Apply ] [ Clear ]
  *
  * URL-driven GET form, identical pattern to /discovery and BM1.
  */
@@ -32,6 +26,7 @@ interface Props {
 }
 
 const STATUS_PILLS = ["all", ...RELATIONSHIP_STATUSES] as const;
+const TIER_OPTIONS = ["high", "medium", "low", "unrated"] as const;
 
 export async function DatabaseFilterBar({ filters, basePath }: Props) {
   const t = await getTranslations("database.filters");
@@ -119,14 +114,28 @@ export async function DatabaseFilterBar({ filters, basePath }: Props) {
         </Field>
 
         <Field label={t("tier")}>
-          <Select disabled title={t("comingSoonTooltip")} defaultValue="">
-            <option value="">{t("comingSoon")}</option>
+          <Select name="tiers" defaultValue={filters.tiers?.[0] ?? ""}>
+            <option value="">—</option>
+            {TIER_OPTIONS.map((tier) => (
+              <option key={tier} value={tier}>
+                {t(`tier${tier[0].toUpperCase()}${tier.slice(1)}` as
+                  | "tierHigh"
+                  | "tierMedium"
+                  | "tierLow"
+                  | "tierUnrated")}
+              </option>
+            ))}
           </Select>
         </Field>
 
         <Field label={t("game")}>
-          <Select disabled title={t("comingSoonTooltip")} defaultValue="">
-            <option value="">{t("comingSoon")}</option>
+          <Select name="categories" defaultValue={filters.categories[0] ?? ""}>
+            <option value="">—</option>
+            {DISCOVERY_CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {tCategories(c)}
+              </option>
+            ))}
           </Select>
         </Field>
 

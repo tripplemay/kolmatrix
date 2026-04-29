@@ -70,6 +70,7 @@ export interface DiscoveryFilters {
   brandSafety: BrandSafetyRating[];
   knownCollabs: string[];
   tags: string[];
+  tiers?: Array<"high" | "medium" | "low" | "unrated">;
   /**
    * BM1-F005: /database uses this for the "Relationship status" column
    * filter. /discovery does not expose the dim in the UI but the schema
@@ -181,6 +182,10 @@ export function parseFilters(
     relationshipStatuses,
     knownCollabs: getAll("knownCollabs"),
     tags: getAll("tags"),
+    tiers: getAll("tiers").filter(
+      (v): v is "high" | "medium" | "low" | "unrated" =>
+        v === "high" || v === "medium" || v === "low" || v === "unrated"
+    ),
     includeNonGaming: get("includeNonGaming") === "on" || get("includeNonGaming") === "true",
     sort,
     cursor: get("cursor") || undefined,
@@ -217,6 +222,7 @@ export function serializeFilters(
     params.append("relationshipStatus", v);
   for (const v of merged.knownCollabs) params.append("knownCollabs", v);
   for (const v of merged.tags) params.append("tags", v);
+  for (const v of merged.tiers ?? []) params.append("tiers", v);
   if (merged.includeNonGaming) params.set("includeNonGaming", "on");
   if (merged.sort !== "value") params.set("sort", merged.sort);
   if (merged.cursor) params.set("cursor", merged.cursor);
@@ -312,6 +318,21 @@ export function buildKolWhere(filters: DiscoveryFilters): Prisma.KolWhereInput {
   }
   if (filters.tags.length > 0) {
     and.push({ tags: { hasSome: filters.tags } });
+  }
+  if ((filters.tiers?.length ?? 0) > 0) {
+    const tierClauses: Prisma.KolWhereInput[] = [];
+    for (const tier of filters.tiers ?? []) {
+      if (tier === "high") {
+        tierClauses.push({ valueScore: { gte: 80 } });
+      } else if (tier === "medium") {
+        tierClauses.push({ valueScore: { gte: 60, lt: 80 } });
+      } else if (tier === "low") {
+        tierClauses.push({ valueScore: { lt: 60 } });
+      } else {
+        tierClauses.push({ valueScore: null });
+      }
+    }
+    and.push({ OR: tierClauses });
   }
 
   return { AND: and };

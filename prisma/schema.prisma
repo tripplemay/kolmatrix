@@ -36,6 +36,7 @@ model Tenant {
   products        Product[]
   campaignMetrics CampaignMetric[]
   weeklyReports   WeeklyReport[]
+  savedSearches   SavedSearch[]
 
   @@map("tenant")
 }
@@ -58,9 +59,25 @@ model User {
   sessions       Session[]
   campaignsOwned Campaign[]     @relation("CampaignOwner")
   weeklyReports  WeeklyReport[] @relation("WeeklyReportCreator")
+  savedSearches  SavedSearch[]
 
   @@index([tenantId])
   @@map("user")
+}
+
+model SavedSearch {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  name      String   @db.VarChar(120)
+  filters   Json     @db.JsonB
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, userId, createdAt(sort: Desc)])
+  @@map("saved_search")
 }
 
 // ============================================================

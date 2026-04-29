@@ -159,6 +159,7 @@ export default async function CampaignDetailPage({ params }: Props) {
         >
           <CampaignHealthCard health={insights.health} />
           <AiSuggestionsCard
+            tenantId={tenantId}
             campaignId={campaign.id}
             locale={locale}
             uncontactedKolCount={insights.health.uncontactedKolCount}

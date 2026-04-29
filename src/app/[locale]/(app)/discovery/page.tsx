@@ -15,17 +15,13 @@
  *
  * Stays a server component: filters, view mode, sort, and cursor are
  * URL-driven, so re-rendering off `searchParams` covers every state
- * change. Save Search and AI Smart Match are disabled placeholders
- * for future B2 work; both surface a tooltip explaining when they
- * ship rather than rendering controls that look interactive but do
- * nothing (per `framework/harness/ui-fidelity-guardrail.md` §3 anti-
- * ghost-control rule).
+ * change. Save Search and AI Smart Match are live controls mounted in
+ * the header, with server-loaded context and client-side interactions.
  */
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { Button } from "@/components/ui";
 import { withTenant } from "@/lib/db";
 import { parseFilters, serializeFilters } from "@/lib/kol/filters";
 import { cn } from "@/lib/utils";
@@ -35,6 +31,7 @@ import { EmptyState } from "./EmptyState";
 import { FilterSidebar } from "./FilterSidebar";
 import { KolResultCard } from "./KolResultCard";
 import { SearchBar } from "./SearchBar";
+import { SaveSearchControls } from "./SaveSearchControls";
 import { SmartMatchDialog } from "./SmartMatchDialog";
 import { SummaryBar } from "./SummaryBar";
 import { runDiscoverySearch } from "./search";
@@ -57,7 +54,17 @@ export default async function DiscoveryPage({ params, searchParams }: Props) {
   const tenantId = session?.user?.tenantId;
   if (!tenantId) redirect("/login");
 
-  const result = await runDiscoverySearch(tenantId, filters);
+  const [result, savedSearches] = await Promise.all([
+    runDiscoverySearch(tenantId, filters),
+    withTenant(tenantId, (tx) =>
+      tx.savedSearch.findMany({
+        where: { userId: session.user.id },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+        select: { id: true, name: true, filters: true, createdAt: true },
+      })
+    ),
+  ]);
 
   // Smart Match needs the tenant's product list for the dialog
   // dropdown. Loading server-side keeps the client bundle small and
@@ -102,18 +109,24 @@ export default async function DiscoveryPage({ params, searchParams }: Props) {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            disabled
-            title={tHeader("saveSearchTooltip")}
-            data-testid="save-search-button"
-            className="border-purple/40 text-purple"
-          >
-            <span className="material-symbols-outlined text-[16px]" aria-hidden>
-              bookmark
-            </span>
-            {tHeader("saveSearch")}
-          </Button>
+          <SaveSearchControls
+            basePath={basePath}
+            currentFilters={filters}
+            initialItems={savedSearches.map((r) => ({
+              id: r.id,
+              name: r.name,
+              filters: r.filters as Record<string, unknown>,
+              createdAt: r.createdAt.toISOString(),
+            }))}
+            labels={{
+              saveSearch: tHeader("saveSearch"),
+              savePrompt: tHeader("saveSearchPrompt"),
+              saveConfirm: tHeader("saveSearchSaved"),
+              mySearches: tHeader("mySearches"),
+              loadPlaceholder: tHeader("loadSearchPlaceholder"),
+              saveFailed: tHeader("saveSearchFailed"),
+            }}
+          />
           <SmartMatchDialog products={products} locale={locale} />
         </div>
       </header>

@@ -59,14 +59,12 @@ test.describe("/discovery fidelity (MVP-vf-F002)", () => {
     ).toBeVisible();
   });
 
-  test("Save Search placeholder is visible and disabled (no ghost control)", async ({
+  test("Save Search control is visible and interactive", async ({
     page,
   }) => {
     const button = page.getByTestId("save-search-button");
     await expect(button).toBeVisible();
-    await expect(button).toBeDisabled();
-    const title = await button.getAttribute("title");
-    expect(title, "save-search-button title attr").toBeTruthy();
+    await expect(button).toBeEnabled();
   });
 
   test("main search bar surfaces platform selector + search input + AI chips", async ({

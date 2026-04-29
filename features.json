@@ -6,7 +6,7 @@
       "title": "/database AI Intelligence + Coverage Gap 实装（原 B7 F003）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**当前现状：** AI Intelligence Card disabled CTA + Coverage Gap 硬编 'Coming in B6 product analytics ship'\n\n**实装：**\n\n1. **新建 aigcgateway Action `kol-database-intelligence`：**\n   - input: tenant KOL stats（count by region/category/followers tier/relationshipStatus）+ product context（如有）\n   - output: strict JSON `{insights: [{type: 'opportunity|gap|trend', title, description, action_link?}]}`\n   - model: gemini-2.5-flash-lite（便宜 + JSON mode 强）\n   - 24h 缓存 localStorage\n\n2. **新建 src/lib/kol-database/intelligence.ts:** 调 Action + 缓存 + 错误处理\n\n3. **修改 InsightsPanel.tsx:**\n   - AI Intelligence Card：disabled CTA → 真 'Generate Insights' 按钮 → 调 Action → 显示 1-2 条洞察\n   - Coverage Gap Card：硬编 → 真计算（tenant categories vs gaming baseline）\n   - Engagement Trend Card：保持 sparkline，本批次不深化\n\n4. **数据基线（硬编）：** FPS 20% / MOBA 15% / RPG 15% / 手游 15% / Casual 20% / Esports 10% / 其他 5%\n\n**Acceptance：**\n- aigcgateway Action 创建（action_id 入 commit message）\n- AI Intelligence Card 真功能 + Coverage Gap 真计算\n- localStorage 24h 缓存 + Refresh 按钮\n- tests/integration/database-intelligence.test.ts\n- visual baseline 重捕 /en/database\n- **staging git_sha 与本 commit 一致**（curl https://staging.kol.guangai.ai/api/health | jq .git_sha — 2026-04-28 staging deploy 硬规则）\n- 详见 docs/specs/B7-mvp-launch-ready-spec.md §F003"
     },
     {
@@ -14,7 +14,7 @@
       "title": "/campaigns/:id AI Suggestions 实装（原 B7 F004）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**当前现状：** AiSuggestionsCard.tsx hardcoded 静态 + 'Run AI match' disabled\n\n**实装：**\n\n1. **新建 aigcgateway Action `campaign-next-action-suggest`：**\n   - input: campaign meta + KolCampaign 列表 + recent audit_log + product context\n   - output: strict JSON `{suggestions: [{priority, title, description, action_link, action_label}]}`\n   - model: claude-haiku-4.5（与 outreach customize 同模型）\n   - 24h localStorage 缓存\n\n2. **修改 AiSuggestionsCard.tsx:**\n   - 静态文本 → 真 'Generate Suggestions' 按钮\n   - 显示 3 个 next action（priority 标签 + 跳转链接）\n   - event_log campaign_suggestion.clicked\n\n3. **移除 'Run AI match' 按钮**（已被 /discovery Smart Match 替代）\n\n**Acceptance：**\n- Action 创建（action_id 入 commit message）\n- AiSuggestionsCard 真 AI 调用\n- 'Run AI match' 隐藏\n- 24h 缓存 + Refresh 按钮\n- tests/integration/campaign-suggest.test.ts\n- visual baseline 重捕 /en/campaigns/[id]\n- **staging git_sha 与本 commit 一致**（curl /api/health | jq .git_sha）\n- 详见 docs/specs/B7-mvp-launch-ready-spec.md §F004"
     },
     {
@@ -22,7 +22,7 @@
       "title": "/database Tier+Game filter 实装 + /discovery Save Search 实装（原 B7 F005）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**当前现状：** Tier/Game filter dropdown disabled / Save Search button disabled\n\n**Tier filter：** Kol.valueScore 分桶 (high ≥80 / medium 60-79 / low <60 / unrated null)；Select dropdown 改 enabled；SQL `WHERE valueScore BETWEEN`\n\n**Game filter（避免 schema 改动）：** Kol.categories array 筛选；multi-select；SQL `categories && ARRAY['FPS', ...]`\n\n**Save Search：**\n- 新建 prisma SavedSearch model `(id, tenantId, userId, name, filters JSON, createdAt)`\n- migration 含 ROLLBACK SQL\n- API: POST/GET/DELETE /api/saved-searches\n- UI: 'Save Search' 按钮 enabled → 弹层输入 name → 保存 URL filters；顶部 '我的搜索 (3)' 下拉跳转预填\n- tests/integration/saved-search.test.ts（CRUD + RLS 跨租户隔离）\n\n**Acceptance：**\n- 3 项不再 disabled，工作正常\n- visual baseline 重捕 /en/database + /en/discovery\n- tests/integration + filter combination test\n- i18n 4 语言新 keys（zh/ja/ko/es）补\n- **staging git_sha 与本 commit 一致**（curl /api/health | jq .git_sha）\n- 详见 docs/specs/B7-mvp-launch-ready-spec.md §F005"
     },
     {
@@ -30,7 +30,7 @@
       "title": "Polish 5 处 placeholder + tests + spec 链 + i18n（4 语言）+ 守门（原 B7 F006）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "**1. Placeholder polish：**\n- /campaigns/:id 'Run AI match' → F002 已隐藏 ✓\n- /database Email + Delete bulk → tooltip 'Use /outreach for bulk email' / 'Bulk delete coming in B7+'\n- /roi B4 buttons → tooltip 'Available in B4 Email System Extended (planned for May)'\n- /weekly-report B4 buttons → 同上\n- /discovery AI suggestion chips → 保持静态\n\n**2. i18n 4 语言新 keys 补：**\n- B7a F002 SmartMatchDialog 新 keys（en+zh 已补，本批补 ja/ko/es）\n- F001 InsightsPanel 新 keys（5 语言全套）\n- F002 AiSuggestionsCard 新 keys（同上）\n- F003 Tier/Game/Save Search 新 keys（同上）\n- 跑 npm run i18n:translate 自动补\n\n**3. 守门 tests（新增）：**\n- tests/unit/no-disabled-without-tooltip.test.ts：grep src/ 所有 disabled 必有 title/aria-label\n- tests/unit/no-hardcoded-coming-soon-without-issue.test.ts：grep 'Coming soon'/'B6'/'TODO' 必关联 backlog/spec\n\n**4. Spec 链一致性 grep：**\n- PRD §7 已更新（commit 2312bfb）\n- B5/B6/B7 spec cross-reference\n- B7b 与 B7a/B8 关系\n\n**5. 完整 tests：**\n- 全套 unit + integration + E2E 全绿\n- typecheck / lint 不退化\n- visual baseline 全部更新（5 语言关键页）\n\n**Acceptance：**\n- 5 项 polish 完成\n- i18n 4 语言新 keys 全补\n- 2 个守门 test 全绿\n- spec 链 grep 验证一致\n- 全套 tests 全绿\n- **staging git_sha 与本 commit 一致**（curl /api/health | jq .git_sha）\n- 详见 docs/specs/B7-mvp-launch-ready-spec.md §F006"
     }
   ]

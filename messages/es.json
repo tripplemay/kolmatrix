@@ -286,9 +286,13 @@
     },
     "header": {
       "saveSearch": "Guardar búsqueda",
-      "saveSearchTooltip": "Las búsquedas guardadas se lanzan con B2",
       "aiSmartMatch": "AI Smart Match",
-      "aiSmartMatchTooltip": "La coincidencia de Campaña impulsada por AI se lanza con B2"
+      "aiSmartMatchTooltip": "La coincidencia de Campaña impulsada por AI se lanza con B2",
+      "saveSearchPrompt": "Nombra esta búsqueda",
+      "saveSearchSaved": "Búsqueda guardada.",
+      "saveSearchFailed": "No se pudo guardar la búsqueda.",
+      "mySearches": "Mis búsquedas ({count})",
+      "loadSearchPlaceholder": "Cargar búsqueda guardada"
     },
     "searchBar": {
       "platformAll": "Todas las plataformas",
@@ -442,13 +446,18 @@
     },
     "insights": {
       "aiIntelligenceHeading": "Inteligencia AI",
-      "aiIntelligenceBody": "{count, plural, =0 {Guarda tu primer KOL en Descubrir para desbloquear las sugerencias de actualización de puntuación.} one {# KOL guardado está disponible para la actualización de puntuación AI.} other {# KOLs guardados están disponibles para la actualización de puntuación AI.}}",
-      "aiRefreshCta": "Actualizar puntuaciones AI",
-      "aiRefreshTooltip": "La actualización de puntuación AI llega con el lote de enriquecimiento B6",
+      "aiIntelligenceBody": "{count, plural, =0 {Aún no hay KOLs guardados. Guarda creadores en Descubrir y luego genera insights.} one {# KOL guardado está listo para generar insights con AI.} other {# KOLs guardados están listos para generar insights con AI.}}",
+      "aiGenerateCta": "Generar insights",
+      "aiRefreshCta": "Actualizar",
+      "aiLoading": "Generando…",
+      "aiCachedPrefix": "En caché",
+      "aiEmpty": "Tras la primera generación se guarda en caché por 24 h.",
+      "aiError": "No se pudieron generar insights. Intenta de nuevo.",
       "coverageGapHeading": "Brecha de Cobertura",
-      "coverageGapPlaceholder": "Los análisis de brecha de cobertura llegan con la taxonomía de productos B6.",
+      "coverageGapLine": "Actual {actual} vs base {baseline}",
+      "coverageGapEmpty": "Aún no hay señales de categoría. Guarda más KOLs para calcular la brecha.",
       "engagementHeading": "Engagement Global",
-      "engagementPlaceholder": "La tendencia de engagement en vivo se conecta con el lote de extracción B6."
+      "engagementPlaceholder": "La tendencia en vivo se conectará con el lote de scraping B6."
     },
     "bulk": {
       "selected": "seleccionados",
@@ -680,11 +689,14 @@
           "overdue": "{days, plural, one {# día de retraso} other {# días de retraso}}"
         },
         "ai": {
-          "heading": "Sugerencias de AI",
-          "nextSteps": "{count, plural, =0 {Todos los KOL vinculados están pagados: elija un nuevo candidato de Descubrir.} one {Enviar a # KOL sin contactar.} other {Enviar a # KOLs sin contactar.}}",
-          "outreachCta": "Enviar a no contactados",
-          "runMatchCta": "Ejecutar coincidencia de AI",
-          "runMatchTooltip": "La coincidencia de AI llegará con el lote B2"
+          "heading": "Sugerencias AI",
+          "nextSteps": "{count, plural, =0 {Todos los KOL vinculados ya están en paid; añade nuevos candidatos desde Descubrir.} one {Envía primero a # KOL sin contactar.} other {Envía primero a # KOLs sin contactar.}}",
+          "generateCta": "Generar sugerencias",
+          "refreshCta": "Actualizar",
+          "loading": "Generando…",
+          "cachedPrefix": "En caché",
+          "empty": "Tras la primera generación se guarda en caché por 24 h.",
+          "error": "No se pudieron generar sugerencias. Intenta de nuevo."
         },
         "activity": {
           "heading": "Actividad reciente",

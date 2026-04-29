@@ -56,10 +56,10 @@
 将需求展开为 5-30 条具体功能，写入 features.json。
 
 **每条功能必须声明 `executor` 字段：**
-- `"generator"`（默认）：代码实现类，由 Claude CLI 在 building 阶段完成
-- `"codex"`：执行/评估类，由 Codex 在 verifying 阶段完成
+- `"generator"`（默认）：代码实现类，由 generator 在 building 阶段完成
+- `"evaluator"`：执行/评估类，由 evaluator 在 verifying 阶段完成
 
-executor:codex 的典型场景：压力测试执行、code review、安全审计、E2E 测试运行、性能分析报告。
+executor:evaluator 的典型场景：压力测试执行、code review、安全审计、E2E 测试运行、性能分析报告。
 
 ```json
 {
@@ -76,7 +76,7 @@ executor:codex 的典型场景：压力测试执行、code review、安全审计
       "id": "F002",
       "title": "执行压测并输出报告",
       "priority": "high",
-      "executor": "codex",
+      "executor": "evaluator",
       "status": "pending",
       "acceptance": "报告文件已生成，包含所有场景数据和结论"
     }
@@ -108,7 +108,7 @@ executor:codex 的典型场景：压力测试执行、code review、安全审计
 
 **校验规则（写入前必须检查）：**
 - generator 和 evaluator 不能是同一个 agent-id
-- 当前阶段（方向 B）：Codex 类 agent 只能被分配为 evaluator
+- 当前阶段（方向 A）：Codex 类 agent 可以被分配为任何角色
 - 指定的 agent 名必须在 `.agents-registry` 中存在
 
 `.agents-registry` 文件不存在 → 跳过此步骤，按默认映射。
@@ -138,7 +138,7 @@ executor:codex 的典型场景：压力测试执行、code review、安全审计
 }
 ```
 
-**全部为 `executor:codex`（Codex-only 批次，跳过 building）：**
+**全部为 `executor:Evaluator`（Evaluator-only 批次，跳过 building）：**
 ```json
 {
   "status": "verifying",
@@ -238,7 +238,7 @@ Planner 写 spec，若涉及以下内容，**必须先 Read 对应文件核实**
 
 ## status = "done" 时的收尾流程
 
-当 Codex 将 progress.json 置为 `done` 后，Claude CLI 接手执行以下步骤（**必须按顺序**）：
+当 Evaluator 将 progress.json 置为 `done` 后，Planner接手执行以下步骤（**必须按顺序**）：
 
 ### 1. 校验并整合 project-status.md
 读取 `.auto-memory/project-status.md`，检查 Generator 和 Evaluator 在过程中写入的内容是否准确完整：

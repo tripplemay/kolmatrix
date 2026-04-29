@@ -1,29 +1,31 @@
 /**
- * MVP-vf-F005 · Right-rail AI Suggestions card.
+ * B7b-F002 · Right-rail AI Suggestions card.
  *
- * Static MVP placeholder per F005 acceptance: hardcoded copy + a
- * jump-off link to /outreach pre-filtered to the current campaign so
- * the marketer can act on uncontacted KOLs immediately. The "Run AI
- * match" button is disabled with a tooltip pointing at the B2 batch.
+ * Server shell + client generator flow. The card renders campaign
+ * context copy and delegates generation/caching/refresh to
+ * AiSuggestionsClient.
  */
 import { getTranslations } from "next-intl/server";
 
 import { GlassPanel } from "@/components/common";
-import { Button } from "@/components/ui";
+
+import { AiSuggestionsClient } from "./AiSuggestionsClient";
 
 interface Props {
+  tenantId: string;
   campaignId: string;
   locale: string;
   uncontactedKolCount: number;
 }
 
 export async function AiSuggestionsCard({
+  tenantId,
   campaignId,
   locale,
   uncontactedKolCount,
 }: Props) {
   const t = await getTranslations("campaigns.detail.insights.ai");
-  const outreachHref = `/${locale}/outreach?campaignId=${campaignId}`;
+
   return (
     <GlassPanel
       data-testid="campaign-ai-suggestions-card"
@@ -44,27 +46,20 @@ export async function AiSuggestionsCard({
       <p className="text-sm text-on-surface-variant">
         {t("nextSteps", { count: uncontactedKolCount })}
       </p>
-      <div className="flex flex-col gap-2">
-        <a
-          href={outreachHref}
-          data-testid="campaign-ai-suggestions-outreach"
-          className="gradient-cta inline-flex h-9 items-center justify-center gap-1 rounded-lg px-3 text-xs font-bold text-on-primary"
-        >
-          {t("outreachCta")}
-          <span className="material-symbols-outlined text-sm" aria-hidden>
-            arrow_forward
-          </span>
-        </a>
-        <Button
-          variant="ghost"
-          disabled
-          title={t("runMatchTooltip")}
-          data-testid="campaign-ai-run-match"
-          size="sm"
-        >
-          {t("runMatchCta")}
-        </Button>
-      </div>
+
+      <AiSuggestionsClient
+        tenantId={tenantId}
+        campaignId={campaignId}
+        locale={locale}
+        labels={{
+          generate: t("generateCta"),
+          refresh: t("refreshCta"),
+          loading: t("loading"),
+          cachedPrefix: t("cachedPrefix"),
+          empty: t("empty"),
+          error: t("error"),
+        }}
+      />
     </GlassPanel>
   );
 }

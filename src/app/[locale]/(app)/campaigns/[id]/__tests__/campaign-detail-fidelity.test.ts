@@ -52,14 +52,13 @@ describe("/campaigns/:id fidelity guards (MVP-vf-F005)", () => {
     expect(hdr).toMatch(/from "@\/components\/ui"/);
   });
 
-  it("AI Suggestions card disables Run AI match with a tooltip (no ghost control)", () => {
+  it("AI Suggestions card uses client generator flow (no disabled Run AI match ghost control)", () => {
     const card = read("AiSuggestionsCard.tsx");
-    const block = card.match(
-      /<Button[\s\S]*?data-testid="campaign-ai-run-match"[\s\S]*?>/
-    );
-    expect(block, "Run AI match Button block").not.toBeNull();
-    expect(block![0]).toMatch(/disabled/);
-    expect(block![0]).toMatch(/runMatchTooltip/);
+    expect(card).toMatch(/<AiSuggestionsClient\b/);
+    expect(card).toMatch(/generateCta/);
+    expect(card).toMatch(/refreshCta/);
+    expect(card).not.toMatch(/campaign-ai-run-match/);
+    expect(card).not.toMatch(/runMatchTooltip/);
   });
 
   it("CampaignKolRow uses <Select>/<Input>/<TCell> from the public ui atoms", () => {

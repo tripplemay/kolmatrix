@@ -286,9 +286,13 @@
     },
     "header": {
       "saveSearch": "保存搜索",
-      "saveSearchTooltip": "保存搜索功能将在 B2 批次上线",
       "aiSmartMatch": "AI 智能匹配",
-      "aiSmartMatchTooltip": "AI 营销活动匹配将随 B2 批次上线"
+      "aiSmartMatchTooltip": "AI 营销活动匹配将随 B2 批次上线",
+      "saveSearchPrompt": "请输入搜索名称",
+      "saveSearchSaved": "搜索已保存。",
+      "saveSearchFailed": "保存搜索失败。",
+      "mySearches": "我的搜索（{count}）",
+      "loadSearchPlaceholder": "加载已保存搜索"
     },
     "searchBar": {
       "platformAll": "全部平台",
@@ -442,13 +446,18 @@
     },
     "insights": {
       "aiIntelligenceHeading": "AI 洞察",
-      "aiIntelligenceBody": "{count, plural, =0 {前往 KOL 发现先保存几位创作者，即可解锁评分刷新提醒。} other {当前 # 位已保存 KOL 可参与 AI 评分刷新。}}",
-      "aiRefreshCta": "刷新 AI 评分",
-      "aiRefreshTooltip": "AI 评分刷新将随 B6 数据补全批次上线",
+      "aiIntelligenceBody": "{count, plural, =0 {当前还没有已保存 KOL。先在发现页保存创作者后再生成洞察。} other {当前 # 位已保存 KOL 可用于生成 AI 洞察。}}",
+      "aiGenerateCta": "生成洞察",
+      "aiRefreshCta": "刷新",
+      "aiLoading": "生成中…",
+      "aiCachedPrefix": "缓存时间",
+      "aiEmpty": "首次生成后将缓存 24 小时。",
+      "aiError": "生成洞察失败，请重试。",
       "coverageGapHeading": "覆盖缺口",
-      "coverageGapPlaceholder": "覆盖缺口分析将随 B6 产品分类批次到来。",
-      "engagementHeading": "全局互动率",
-      "engagementPlaceholder": "实时互动率趋势将接入 B6 数据采集批次。"
+      "coverageGapLine": "当前占比 {actual}，基线 {baseline}",
+      "coverageGapEmpty": "暂无分类信号，保存更多 KOL 后可计算覆盖缺口。",
+      "engagementHeading": "全球互动率",
+      "engagementPlaceholder": "实时互动趋势将在 B6 数据采集批次接入。"
     },
     "bulk": {
       "selected": "已选中",
@@ -630,10 +639,13 @@
         },
         "ai": {
           "heading": "AI 建议",
-          "nextSteps": "{count, plural, =0 {当前活动 KOL 已结款，请前往 KOL 发现挑选新候选。} other {可对 # 位未触达 KOL 发起触达。}}",
-          "outreachCta": "向未触达 KOL 发邮件",
-          "runMatchCta": "运行 AI 匹配",
-          "runMatchTooltip": "AI 匹配将随 B2 批次上线"
+          "nextSteps": "{count, plural, =0 {当前关联 KOL 已全部进入 paid，可从发现页补充新候选。} other {可优先联系 # 位未触达 KOL。}}",
+          "generateCta": "生成建议",
+          "refreshCta": "刷新",
+          "loading": "生成中…",
+          "cachedPrefix": "缓存时间",
+          "empty": "首次生成后将缓存 24 小时。",
+          "error": "生成建议失败，请重试。"
         },
         "activity": {
           "heading": "最近动态",

@@ -30,16 +30,13 @@ describe("/discovery fidelity guards (MVP-vf-F002)", () => {
     expect(dialog).toMatch(/data-testid="smart-match-dialog"/);
   });
 
-  it("page renders the Save Search placeholder with a tooltip (no ghost control)", () => {
+  it("page renders live Save Search controls (button + saved-searches select)", () => {
     const page = read("page.tsx");
-    expect(page).toMatch(/data-testid="save-search-button"/);
-    expect(page).toMatch(/saveSearchTooltip/);
-    // Must be disabled — Save Search is not real until B7b.
-    // Look for the disabled attribute inside the same JSX element as
-    // the save-search testid (Button block spans ~7 lines).
-    expect(page).toMatch(
-      /<Button[\s\S]{0,500}disabled[\s\S]{0,500}data-testid="save-search-button"/
-    );
+    expect(page).toMatch(/<SaveSearchControls\b/);
+    const controls = read("SaveSearchControls.tsx");
+    expect(controls).toMatch(/data-testid="save-search-button"/);
+    expect(controls).toMatch(/data-testid="saved-searches-select"/);
+    expect(controls).not.toMatch(/disabled/);
   });
 
   it("page renders the SearchBar above the filter+grid layout", () => {

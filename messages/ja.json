@@ -286,9 +286,13 @@
     },
     "header": {
       "saveSearch": "検索を保存",
-      "saveSearchTooltip": "保存した検索はB2で起動します",
       "aiSmartMatch": "AIスマートマッチ",
-      "aiSmartMatchTooltip": "AIによるキャンペーンマッチングはB2で提供されます"
+      "aiSmartMatchTooltip": "AIによるキャンペーンマッチングはB2で提供されます",
+      "saveSearchPrompt": "検索名を入力してください",
+      "saveSearchSaved": "検索を保存しました。",
+      "saveSearchFailed": "検索の保存に失敗しました。",
+      "mySearches": "保存済み検索（{count}）",
+      "loadSearchPlaceholder": "保存済み検索を読み込む"
     },
     "searchBar": {
       "platformAll": "すべてのプラットフォーム",
@@ -442,13 +446,18 @@
     },
     "insights": {
       "aiIntelligenceHeading": "AIインテリジェンス",
-      "aiIntelligenceBody": "{count, plural, =0 {発見機能で最初のKOLを保存して、スコア更新の提案を有効にしましょう。} one {保存された#件のKOLのAIスコアを更新できます。} other {保存された#件のKOLのAIスコアを更新できます。}}",
-      "aiRefreshCta": "AIスコアを更新",
-      "aiRefreshTooltip": "AIスコアの更新はB6のエンリッチメントバッチで利用可能になります",
+      "aiIntelligenceBody": "{count, plural, =0 {保存済みKOLはまだありません。Discovery で保存後に洞察を生成してください。} one {保存済み # 件のKOLで AI 洞察を生成できます。} other {保存済み # 件のKOLで AI 洞察を生成できます。}}",
+      "aiGenerateCta": "洞察を生成",
+      "aiRefreshCta": "再取得",
+      "aiLoading": "生成中…",
+      "aiCachedPrefix": "キャッシュ",
+      "aiEmpty": "初回生成後は24時間キャッシュされます。",
+      "aiError": "洞察の生成に失敗しました。再試行してください。",
       "coverageGapHeading": "カバレッジギャップ",
-      "coverageGapPlaceholder": "カバレッジギャップ分析はB6の製品分類で利用可能になります。",
+      "coverageGapLine": "現在 {actual} / 基準 {baseline}",
+      "coverageGapEmpty": "カテゴリ信号がまだありません。KOL を保存すると算出されます。",
       "engagementHeading": "グローバルエンゲージメント",
-      "engagementPlaceholder": "リアルタイムのエンゲージメントトレンドはB6のスクレイピングバッチに接続されます。"
+      "engagementPlaceholder": "ライブのエンゲージメント推移は B6 収集バッチで接続されます。"
     },
     "bulk": {
       "selected": "選択済み",
@@ -680,11 +689,14 @@
           "overdue": "{days, plural, one {期限を # 日超過} other {期限を # 日超過}}"
         },
         "ai": {
-          "heading": "AI提案",
-          "nextSteps": "{count, plural, =0 {すべての関連付けられたKOLに支払いが完了しています — 発見から新しい候補を選択してください。} one {連絡未済のKOLに # 人に送信します。} other {連絡未済のKOLに # 人に送信します。}}",
-          "outreachCta": "未連絡のKOLに送信",
-          "runMatchCta": "AIマッチングを実行",
-          "runMatchTooltip": "AIマッチングはB2バッチで提供されます"
+          "heading": "AI 提案",
+          "nextSteps": "{count, plural, =0 {連携済みKOLはすべて paid です。Discovery から候補を追加してください。} one {未連絡のKOL # 件へ優先送信しましょう。} other {未連絡のKOL # 件へ優先送信しましょう。}}",
+          "generateCta": "提案を生成",
+          "refreshCta": "再取得",
+          "loading": "生成中…",
+          "cachedPrefix": "キャッシュ",
+          "empty": "初回生成後は24時間キャッシュされます。",
+          "error": "提案の生成に失敗しました。再試行してください。"
         },
         "activity": {
           "heading": "最近の活動",

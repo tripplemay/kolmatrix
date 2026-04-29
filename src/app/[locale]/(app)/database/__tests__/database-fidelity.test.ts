@@ -20,7 +20,7 @@ describe("/database fidelity guards (MVP-vf-F003)", () => {
   it("renders the QuickStats KPI strip and InsightsPanel above the fold", () => {
     const page = read("page.tsx");
     expect(page).toMatch(/<QuickStats /);
-    expect(page).toMatch(/<InsightsPanel /);
+    expect(page).toMatch(/<InsightsPanel\b/);
     // QuickStats must come before the table in JSX order for the
     // layout to match Stitch. Find the FIRST `<QuickStats stats=` JSX
     // tag (skipping the import line) and compare to the JSX tag for
@@ -72,10 +72,11 @@ describe("/database fidelity guards (MVP-vf-F003)", () => {
     expect(fb).toMatch(/data-testid="database-status-pills"/);
   });
 
-  it("Tier and Game placeholders are disabled (no ghost controls)", () => {
+  it("Tier and Game filters are enabled (real controls)", () => {
     const fb = read("DatabaseFilterBar.tsx");
-    // Each placeholder Select must declare `disabled` and a tooltip.
-    expect(fb).toMatch(/<Select disabled title=\{t\("comingSoonTooltip"\)\}/);
+    expect(fb).toMatch(/<Select name="tiers"/);
+    expect(fb).toMatch(/<Select name="categories"/);
+    expect(fb).not.toMatch(/comingSoonTooltip/);
   });
 
   it("BulkActionBar wires Add to Campaign to the campaign dialog and disables Email + Delete", () => {
