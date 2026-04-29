@@ -158,6 +158,7 @@ describe("serializeFilters()", () => {
       relationshipStatuses: ["negotiating", "long_term"],
       knownCollabs: ["Razer"],
       tags: ["esports"],
+      tiers: [],
       includeNonGaming: true,
       sort: "followers",
       cursor: "abc",

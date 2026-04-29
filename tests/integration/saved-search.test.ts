@@ -3,9 +3,8 @@
  */
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { withTenant } from "@/lib/db";
-
 import {
+  asTenant,
   cleanDb,
   getAdminPrisma,
   setupTestDb,
@@ -56,7 +55,7 @@ describe("SavedSearch", () => {
   it("supports create/list/delete in tenant scope", async () => {
     await seedTenant(TENANT_A, USER_A);
 
-    const created = await withTenant(TENANT_A, (tx) =>
+    const created = await asTenant(TENANT_A, (tx) =>
       tx.savedSearch.create({
         data: {
           tenantId: TENANT_A,
@@ -71,14 +70,14 @@ describe("SavedSearch", () => {
       })
     );
 
-    const listed = await withTenant(TENANT_A, (tx) =>
+    const listed = await asTenant(TENANT_A, (tx) =>
       tx.savedSearch.findMany({ where: { userId: USER_A } })
     );
     expect(listed).toHaveLength(1);
     expect(listed[0]!.id).toBe(created.id);
 
-    await withTenant(TENANT_A, (tx) => tx.savedSearch.delete({ where: { id: created.id } }));
-    const afterDelete = await withTenant(TENANT_A, (tx) =>
+    await asTenant(TENANT_A, (tx) => tx.savedSearch.delete({ where: { id: created.id } }));
+    const afterDelete = await asTenant(TENANT_A, (tx) =>
       tx.savedSearch.findMany({ where: { userId: USER_A } })
     );
     expect(afterDelete).toHaveLength(0);
@@ -88,7 +87,7 @@ describe("SavedSearch", () => {
     await seedTenant(TENANT_A, USER_A);
     await seedTenant(TENANT_B, USER_B);
 
-    const rowA = await withTenant(TENANT_A, (tx) =>
+    const rowA = await asTenant(TENANT_A, (tx) =>
       tx.savedSearch.create({
         data: {
           tenantId: TENANT_A,
@@ -99,7 +98,7 @@ describe("SavedSearch", () => {
       })
     );
 
-    const rowB = await withTenant(TENANT_B, (tx) =>
+    const rowB = await asTenant(TENANT_B, (tx) =>
       tx.savedSearch.create({
         data: {
           tenantId: TENANT_B,
@@ -110,8 +109,8 @@ describe("SavedSearch", () => {
       })
     );
 
-    const aView = await withTenant(TENANT_A, (tx) => tx.savedSearch.findMany());
-    const bView = await withTenant(TENANT_B, (tx) => tx.savedSearch.findMany());
+    const aView = await asTenant(TENANT_A, (tx) => tx.savedSearch.findMany());
+    const bView = await asTenant(TENANT_B, (tx) => tx.savedSearch.findMany());
 
     expect(aView.map((r) => r.id)).toEqual([rowA.id]);
     expect(bView.map((r) => r.id)).toEqual([rowB.id]);
