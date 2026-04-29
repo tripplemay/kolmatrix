@@ -122,7 +122,7 @@ export default async function DiscoveryPage({ params, searchParams }: Props) {
               saveSearch: tHeader("saveSearch"),
               savePrompt: tHeader("saveSearchPrompt"),
               saveConfirm: tHeader("saveSearchSaved"),
-              mySearches: tHeader("mySearches"),
+              mySearches: tHeader("mySearches", { count: savedSearches.length }),
               loadPlaceholder: tHeader("loadSearchPlaceholder"),
               saveFailed: tHeader("saveSearchFailed"),
             }}
