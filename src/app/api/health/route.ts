@@ -68,17 +68,19 @@ function isHealthy(checks: Record<string, Check>): boolean {
 }
 
 function resolveGitSha(): string {
-  if (process.env.GIT_SHA && process.env.GIT_SHA.trim() !== "") {
-    return process.env.GIT_SHA;
-  }
   try {
-    return execSync("git rev-parse --short HEAD", {
+    const head = execSync("git rev-parse --short HEAD", {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
     }).trim();
+    if (head) return head;
   } catch {
-    return "unknown";
+    // fall through
   }
+  if (process.env.GIT_SHA && process.env.GIT_SHA.trim() !== "") {
+    return process.env.GIT_SHA;
+  }
+  return "unknown";
 }
 
 export async function GET(): Promise<Response> {
