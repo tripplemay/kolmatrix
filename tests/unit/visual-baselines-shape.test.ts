@@ -14,7 +14,7 @@
  * matching toHaveScreenshot() in visual-regression.spec.ts.
  */
 import { execFileSync } from "child_process";
-import { readFileSync } from "fs";
+import { readdirSync, readFileSync } from "fs";
 import { resolve } from "path";
 
 import { describe, expect, it } from "vitest";
@@ -52,6 +52,18 @@ function gitTrackedBaselines(): string[] {
     .sort();
 }
 
+function baselineWidths(): Array<{ name: string; width: number }> {
+  return readdirSync(resolve(REPO_ROOT, "tests/screenshots/baseline"))
+    .filter((name) => name.endsWith(".png"))
+    .sort()
+    .map((name) => {
+      const png = readFileSync(resolve(REPO_ROOT, "tests/screenshots/baseline", name));
+      // PNG IHDR stores width as a 4-byte big-endian int at offset 16.
+      if (png.length < 24) throw new Error(`invalid png: ${name}`);
+      return { name, width: png.readUInt32BE(16) };
+    });
+}
+
 describe("visual baseline collection (MVP-vf-F007)", () => {
   it("git tracks exactly the 14 baseline PNGs the spec covers", () => {
     expect(gitTrackedBaselines()).toEqual([...EXPECTED_BASELINES].sort());
@@ -68,5 +80,13 @@ describe("visual baseline collection (MVP-vf-F007)", () => {
         `expected toHaveScreenshot("${baseline}") in visual-regression.spec.ts`
       ).toContain(`toHaveScreenshot("${baseline}"`);
     }
+  });
+
+  it("keeps every baseline on the canonical 1280px Playwright width", () => {
+    expect(baselineWidths()).toEqual(
+      EXPECTED_BASELINES.map((name) => ({ name, width: 1280 })).sort((a, b) =>
+        a.name.localeCompare(b.name)
+      )
+    );
   });
 });
