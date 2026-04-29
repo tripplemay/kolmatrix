@@ -1,11 +1,11 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "修复生产环境知识库页面产品删除失败问题，根因是 Product.cuid() 主键与 server action 的 UUID 校验不匹配，并补最小回归测试。",
   "total_features": 2,
   "completed_features": 2,
   "fix_rounds": 0,
   "current_sprint": "HOTFIX-product-delete-cuid",
-  "last_updated": "2026-04-29T19:43+0800",
+  "last_updated": "2026-04-29T20:04+0800",
   "reference_docs": [
     "src/app/[locale]/(app)/knowledge-base/actions.ts",
     "src/app/[locale]/(app)/knowledge-base/ProductsClient.tsx",
@@ -16,15 +16,21 @@
   "docs": {
     "spec": null,
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/HOTFIX-product-delete-cuid-signoff-2026-04-29.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
+  "evaluator_feedback": {
+    "summary": "Knowledge-base 产品编辑/删除 hotfix 在本地与 staging 均通过，cuid 产品 ID 可正常编辑并删除，tenant UUID 鉴权未被放宽。",
+    "pass_count": 2,
+    "partial_count": 0,
+    "fail_count": 0,
+    "issues": []
+  },
   "generator_handoff": "[Generator -> Evaluator] HOTFIX-product-delete-cuid implemented and deployed to staging at git_sha=9a3d0c7 (2026-04-29T19:42+0800 / health 200 healthy, DB ok). `src/app/[locale]/(app)/knowledge-base/actions.ts` now treats productId as a trimmed non-empty string for update/delete while keeping tenantId UUID auth unchanged. Regression tests added at `src/app/[locale]/(app)/knowledge-base/__tests__/actions.test.ts` covering cuid productId pass-through, tenant UUID rejection, and blank productId rejection. Local checks passed: targeted vitest 5/5, eslint on touched files, `npx tsc --noEmit`. Please verify on staging that existing Product cuid rows can edit/delete successfully from the knowledge-base UI.",
   "session_notes": {
     "Kimi": "[2026-04-29 Planner] User confirmed. State advanced planning -> building for BIx-staging-automation.",
-    "johnsong": "[2026-04-29 Generator] HOTFIX-product-delete-cuid implemented. Local checks passed: vitest knowledge-base actions 5/5, eslint touched files PASS, tsc PASS. [staging deployed @ 9a3d0c7 @ 2026-04-29T19:42+0800] health=healthy db=ok.",
+    "johnsong": "[2026-04-29 Evaluator] HOTFIX-product-delete-cuid verified PASS. Local: vitest 5/5, eslint touched files PASS, tsc PASS. Staging: health healthy @ git_sha=2630871; knowledge-base row 'E2E Game 1777251227667' edited to '... QA' then deleted successfully. Signoff written and status moved to done.",
     "Reviewer": "[2026-04-29 HOTFIX verifying signoff] L1 lint+tsc+unit PASS; staging verified /database,/campaigns/:id,/roi,/weekly-report AI chains all 200 and successful content render. /outreach customize AI not triggerable due to 0/0 selectable KOL emails (data precondition), treated non-blocking PARTIAL. Signoff written and status moved to done."
   },
   "features": []
