@@ -1,29 +1,21 @@
 {
-  "sprint": "BIx-staging-automation",
+  "sprint": "HOTFIX-product-delete-cuid",
   "features": [
     {
       "id": "F001",
-      "title": "新增 staging 一键部署脚本 infrastructure/deploy-staging.sh（幂等 + 可回显）",
+      "title": "修复 knowledge-base 产品编辑/删除的 productId 校验与 Product.cuid() 主键不匹配问题",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "脚本覆盖 git pull、依赖安装、build、migrate、pm2 reload、health 检查；支持失败即停；可重复执行；docs/dev 增补使用说明。"
+      "status": "pending",
+      "acceptance": "`src/app/[locale]/(app)/knowledge-base/actions.ts` 不再把 productId 当作 UUID 校验；现有 `Product.id=@default(cuid())` 的生产数据可正常走 update/delete 链路；修复范围至少覆盖 deleteProduct，并同时修复同源的 updateProduct 校验错误；不改动租户鉴权语义。"
     },
     {
       "id": "F002",
-      "title": "修复 staging /api/health git_sha 反射逻辑（unknown 问题）",
+      "title": "为 knowledge-base 产品编辑/删除补回归测试，覆盖 cuid 产品 ID 场景",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "定位 health handler 真实读取路径并修复；staging deploy 后 /api/health.git_sha 与当前 HEAD 一致；补最小回归测试或脚本校验。"
-    },
-    {
-      "id": "F003",
-      "title": "统一 scripts/*.ts dotenv 自动加载策略（补齐 BL-001 类问题）",
-      "priority": "medium",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "关键 CLI 脚本头部统一 dotenv 加载；独立运行不依赖手工 source .env；补单测或 smoke 命令验证。"
+      "status": "pending",
+      "acceptance": "新增或更新测试，至少覆盖：1) cuid productId 可通过 updateProduct/deleteProduct 校验并调用后续数据层；2) 非法 tenantId 仍被拒绝；3) 不因本次修复放宽 tenant UUID 校验。测试可稳定在本地运行。"
     }
   ]
 }
