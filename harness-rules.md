@@ -3,42 +3,42 @@
 ## 你是谁
 你是一个多工具协作编码系统的执行者。每次启动时，先读取 progress.json 判断当前阶段，再执行对应角色的指令文件。
 
-## 角色对应
+## 工具与角色对应
 
-各角色通过 `progress.json` 交接，不直接通信：
+两个工具通过 `progress.json` 交接，不直接通信：
 
-| 角色                                           | 负责阶段                                                |
-| -------------------------------------------- | --------------------------------------------------- |
-| Planner + Generator（需求拆解 + 功能实现 + 修复 + 记忆维护） | `new` / `planning` / `building` / `fixing` / `done` |
-| Evaluator（测试设计 + 执行 + 验收 + 复验）               | `verifying` / `reverifying`                         |
+| 工具 | 角色 | 负责阶段 |
+|---|---|---|
+| Claude CLI（Claude Code） | Planner + Generator（需求拆解 + 功能实现 + 修复 + 记忆维护） | `new` / `planning` / `building` / `fixing` / `done` |
+| Codex | Evaluator（测试设计 + 执行 + 验收 + 复验） | `verifying` / `reverifying` |
 
 **职责边界说明：**
-- Planner 和 Generator 负责全流程：需求拆解、规格文档、功能实现、修复、记忆维护。不写任何测试。
-- Evaluator 拥有完整的「测试域」——设计测试用例、编写测试脚本、执行测试、分析结果、输出报告。
+- Claude CLI 负责全流程：需求拆解、规格文档、功能实现、修复、记忆维护。不写任何测试。
+- Codex 拥有完整的「测试域」——设计测试用例、编写测试脚本、执行测试、分析结果、输出报告。
 
 ## Feature 执行者（executor）
 
 features.json 中每条功能必须声明 `executor` 字段：
 
-| executor 值    | 含义         | 执行阶段        |
-| ------------- | ---------- | ----------- |
-| `"generator"` | 代码实现类（默认值） | `building`  |
-| `"Evaluator"` | 执行 / 评估类   | `verifying` |
+| executor 值 | 含义 | 由谁执行 | 执行阶段 |
+|---|---|---|---|
+| `"generator"` | 代码实现类（默认值） | Claude CLI | `building` |
+| `"codex"` | 执行 / 评估类 | Codex | `verifying` |
 
-**executor:Evaluator 的适用场景：** 压力测试执行、code review、安全审计、E2E 测试运行、性能分析报告。
-这类任务的交付物是"结果报告"而非代码，由 Generator 提供工具/脚本，Evaluator 操作工具产出结论。
+**executor:codex 的适用场景：** 压力测试执行、code review、安全审计、E2E 测试运行、性能分析报告。
+这类任务的交付物是"结果报告"而非代码，由 Generator 提供工具/脚本，Codex 操作工具产出结论。
 
 ## 批次类型
 
-| 批次类型              | 特征                            | 状态流转                                       |
-| ----------------- | ----------------------------- | ------------------------------------------ |
-| 普通批次              | 全部 `executor:generator`       | `planning → building → verifying → done`   |
-| 混合批次              | 部分 `generator`，部分 `Evaluator` | `planning → building → verifying → done`   |
-| Evaluator-only 批次 | 全部 `executor:Evaluator`       | `planning → verifying → done`（跳过 building） |
+| 批次类型 | 特征 | 状态流转 |
+|---|---|---|
+| 普通批次 | 全部 `executor:generator` | `planning → building → verifying → done` |
+| 混合批次 | 部分 `generator`，部分 `codex` | `planning → building → verifying → done` |
+| Codex-only 批次 | 全部 `executor:codex` | `planning → verifying → done`（跳过 building） |
 
 **判断规则（Planner 在 planning 末尾执行）：**
 - features.json 中存在任意一条 `executor:generator` → status 设为 `building`
-- features.json 中全部为 `executor:Evaluator` → status 直接设为 `verifying`（Evaluator-only 批次）
+- features.json 中全部为 `executor:codex` → status 直接设为 `verifying`（Codex-only 批次）
 
 ## 启动流程（每次必须按顺序执行）
 
@@ -122,7 +122,7 @@ git push origin main
 
 ```
 如果 role_assignments 不存在或为 null：
-  → 询问用户当前应该承担的工作
+  → 按默认映射执行（Claude CLI = planner + generator，Codex = evaluator）
 
 如果 role_assignments 存在：
   如果 myId = null（未配置 .agent-id）：
@@ -134,15 +134,15 @@ git push origin main
 
 **默认映射（无 role_assignments 时）：**
 
-| status        | 加载文件         | 动作                                |
-| ------------- | ------------ | --------------------------------- |
-| `new`         | planner.md   | 拆解需求，生成 features.json，写 spec      |
-| `planning`    | planner.md   | 继续 planning（上次中断时）                |
-| `building`    | generator.md | 按功能列表逐条实现                         |
-| `verifying`   | evaluator.md | 首轮验收                              |
-| `fixing`      | generator.md | 根据 evaluator_feedback 修复          |
-| `reverifying` | evaluator.md | 复验，写 signoff 报告                   |
-| `done`        | planner.md   | 更新记忆，处理 proposed-learnings，询问下一批次 |
+| status | 执行工具 | 加载文件 | 动作 |
+|---|---|---|---|
+| `new` | Claude CLI | planner.md | 拆解需求，生成 features.json，写 spec |
+| `planning` | Claude CLI | planner.md | 继续 planning（上次中断时） |
+| `building` | Claude CLI | generator.md | 按功能列表逐条实现 |
+| `verifying` | Codex | evaluator.md | 首轮验收 |
+| `fixing` | Claude CLI | generator.md | 根据 evaluator_feedback 修复 |
+| `reverifying` | Codex | evaluator.md | 复验，写 signoff 报告 |
+| `done` | Claude CLI | planner.md | 更新记忆，处理 proposed-learnings，询问下一批次 |
 
 **阶段与角色的对应关系：**
 
@@ -188,13 +188,13 @@ git push origin main
                                     ↑__________________________|
                                           （有问题继续循环）
 
-Evaluator-only 批次（全部 executor:Evaluator）：
+Codex-only 批次（全部 executor:codex）：
   new → planning → verifying → fixing ⟷ reverifying → done
                       ↑___________________________|
 ```
 
 - `planning → building`：仅当存在 `executor:generator` 的功能时
-- `planning → verifying`：当全部功能均为 `executor:Evaluator` 时（跳过 building）
+- `planning → verifying`：当全部功能均为 `executor:codex` 时（跳过 building）
 - `verifying`：首轮，有问题 → `fixing`，全 PASS → `done`
 - `fixing`：修复完成 → `reverifying`，fix_rounds +1
 - `reverifying`：有问题 → `fixing`，全 PASS → `done`
@@ -264,10 +264,10 @@ docs/
 
 项目使用单一 `main` 分支：
 
-| 操作                     | 执行者        | 说明                                        |
-| ---------------------- | ---------- | ----------------------------------------- |
-| `git push origin main` | Claude CLI | 触发 CI（lint + tsc），不自动部署                   |
-| 手动触发 Deploy workflow   | 用户         | Evaluator 验收通过后，在 GitHub Actions 手动点击触发部署 |
+| 操作 | 执行者 | 说明 |
+|---|---|---|
+| `git push origin main` | Claude CLI | 触发 CI（lint + tsc），不自动部署 |
+| 手动触发 Deploy workflow | 用户 | Codex 验收通过后，在 GitHub Actions 手动点击触发部署 |
 
 ```bash
 # Generator 的标准提交流程
@@ -306,7 +306,7 @@ git status --short docs/test-reports/ docs/test-cases/ .auto-memory/
 **约束规则：**
 - generator 和 evaluator 不得为同一 agent-id（不能自己评估自己的代码）
 - planner 可与任何角色重叠
-- 当前阶段（方向 A）：Codex  可以被分配为任意角色(AGENTS.md 限制）
+- 当前阶段（方向 B）：Codex 只能被分配为 evaluator（AGENTS.md 限制）
 - `role_assignments` 为 null 或不存在时，按默认映射执行，完全向后兼容
 - done 阶段清除 `role_assignments`
 
@@ -318,10 +318,10 @@ git status --short docs/test-reports/ docs/test-cases/ .auto-memory/
 1. 永远不要一次性生成所有代码，必须分功能逐条实现
 2. 每完成一个功能，立即写入 progress.json，不得跳过
 3. 上下文窗口剩余不足 20% 时，立即保存进度，结束当前会话
-4. 不得自己评估自己的代码质量，评估由 Evaluator（evaluator.md）完成
+4. 不得自己评估自己的代码质量，评估由 Codex（evaluator.md）完成
 5. 每次提交代码前必须确认可以运行，不提交无法运行的代码
-6. Generator 不得执行 `executor:Evaluator` 的功能；Evaluator 不得实现 `executor:generator` 的功能
-7. 压测执行、code review、安全审计等"产出报告"类任务，必须标注 `executor:Evaluator`
+6. Generator 不得执行 `executor:codex` 的功能；Codex 不得实现 `executor:generator` 的功能
+7. 压测执行、code review、安全审计等"产出报告"类任务，必须标注 `executor:codex`
 8. `role_assignments` 存在时，agent 只执行分配给自己的角色，不越界
 9. 生产紧急故障（hotfix）也必须走流程：Planner 分析根因并报告修复方案 → 用户确认 → 指定 Generator 执行修复 → Evaluator 验收。Planner 不得直接修改产品代码，即使是一行代码
 10. 任何 spec-driven 工作必须有 `features.json` feature 号归属。无归属的代码修改 = 越界（commit message 的 `feat(<batch>-F<num>):` 标签必须能对应 features.json 实际条目，否则 Reviewer 拒绝签收）。详见 `framework/harness/pre-impl-adjudication.md` §4.6 §4.7 anti-patterns
