@@ -186,9 +186,24 @@ model Kol {
   // MVP-kol-seed-redo F003 — provenance JSONB. Holds is_demo flag for
   // the YouTube seed so a single DELETE WHERE metadata->>'is_demo'='true'
   // retires it when BL-012's crawler dataset lands. B5-kol-data-enrichment
-  // will promote metadata.youtube.* (videoCount / totalViewCount /
-  // channelCreatedAt / bannerUrl) into proper columns.
+  // promoted metadata.youtube.* (videoCount / totalViewCount /
+  // channelCreatedAt / bannerUrl) into the dedicated columns below;
+  // legacy rows retain their metadata.youtube.* payload for historical
+  // reads but new code only writes the dedicated columns (A2 — no
+  // double-write, see B5 spec §F002).
   metadata Json? @db.JsonB
+
+  // B5-kol-data-enrichment F001 — promoted from metadata.youtube.*.
+  // F002 backfills channelCreatedAt / videoCount / totalViewCount /
+  // bannerUrl via channels.list and writes an estimated engagementRate;
+  // F004 lazy-loads search.list/videos.list on detail-page open and
+  // overwrites engagementRate with the true value (A1, see B5 spec
+  // §F004 #4). All four columns are nullable — additive migration with
+  // no backfill at apply time.
+  channelCreatedAt DateTime? @map("channel_created_at") @db.Timestamptz
+  videoCount       Int?      @map("video_count")
+  totalViewCount   BigInt?   @map("total_view_count")
+  bannerUrl        String?   @map("banner_url")
 
   // B6-kol-daily-sync F005 — UI hide flag for "suspicious_growth"
   // rows (follower count spiked 10× between syncs, likely fake-buy).
