@@ -24,9 +24,10 @@ const REPO_ROOT = resolve(__dirname, "../..");
 type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
 
 function load(locale: string): Record<string, Json> {
-  return JSON.parse(
-    readFileSync(resolve(REPO_ROOT, `messages/${locale}.json`), "utf8")
-  ) as Record<string, Json>;
+  return JSON.parse(readFileSync(resolve(REPO_ROOT, `messages/${locale}.json`), "utf8")) as Record<
+    string,
+    Json
+  >;
 }
 
 function* leaves(obj: Json, path: string[] = []): Generator<{ path: string; value: string }> {
@@ -39,7 +40,8 @@ function* leaves(obj: Json, path: string[] = []): Generator<{ path: string; valu
     return;
   }
   if (obj !== null && typeof obj === "object") {
-    for (const k of Object.keys(obj)) yield* leaves((obj as Record<string, Json>)[k]!, [...path, k]);
+    for (const k of Object.keys(obj))
+      yield* leaves((obj as Record<string, Json>)[k]!, [...path, k]);
   }
 }
 
