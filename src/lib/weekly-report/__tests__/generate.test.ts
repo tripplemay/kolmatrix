@@ -116,7 +116,8 @@ describe("generateWeeklyReport", () => {
     expect(body.variables.report_week_start).toBe("2026-04-14");
     expect(body.variables.report_week_end).toBe("2026-04-20");
     expect(body.variables.locale).toBe("en");
-    expect(body.dry_run).toBe(false);
+    expect(body.action_id).toBe("cmob2zqkp0001bnnvel4vjapu");
+    expect(body.stream).toBe(false);
   });
 
   it("encodes prevWeekComparison=null as empty string (NOT '{}')", async () => {

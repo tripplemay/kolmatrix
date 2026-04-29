@@ -119,9 +119,7 @@ describe("generateRoiInsights", () => {
         : arg0 instanceof URL
           ? arg0.toString()
           : (arg0 as Request).url;
-    expect(calledUrl).toContain(
-      "/actions/cmob2zgae000jbnnuue2i7uaf/run"
-    );
+    expect(calledUrl).toContain("/actions/run");
     // Body lives either on init (string fetch call) or the Request (when
     // the Node runtime normalised our (url, init) into a Request).
     let bodyText: string;
@@ -136,7 +134,8 @@ describe("generateRoiInsights", () => {
       "locale",
       "tenant_context",
     ]);
-    expect(body.dry_run).toBe(false);
+    expect(body.action_id).toBe("cmob2zgae000jbnnuue2i7uaf");
+    expect(body.stream).toBe(false);
     expect(body.variables.locale).toBe("en");
     expect(body.variables.tenant_context).toContain("Top campaign:");
   });
