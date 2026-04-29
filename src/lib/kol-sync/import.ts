@@ -135,11 +135,11 @@ export function mapToUpsertPayload(
   });
   const matrixRegion =
     typeof raw.raw?.matrixRegion === "string" || raw.raw?.matrixRegion === null
-      ? (raw.raw?.matrixRegion as string | null) ?? null
+      ? ((raw.raw?.matrixRegion as string | null) ?? null)
       : null;
   const matrixKeyword =
     typeof raw.raw?.matrixKeyword === "string" || raw.raw?.matrixKeyword === null
-      ? (raw.raw?.matrixKeyword as string | null) ?? null
+      ? ((raw.raw?.matrixKeyword as string | null) ?? null)
       : null;
   // B5-F001 / F002 — column-side YouTube fields. publishedAt comes
   // through as an ISO-8601 string from the adapter; convert to Date for
@@ -151,17 +151,14 @@ export function mapToUpsertPayload(
     if (Number.isFinite(d.getTime())) channelCreatedAt = d;
   }
   const videoCount =
-    raw.platform === "youtube" && typeof raw.videoCount === "number"
-      ? raw.videoCount
-      : null;
+    raw.platform === "youtube" && typeof raw.videoCount === "number" ? raw.videoCount : null;
   const totalViewCount =
     raw.platform === "youtube" &&
     typeof raw.viewCount === "number" &&
     Number.isFinite(raw.viewCount)
       ? BigInt(raw.viewCount)
       : null;
-  const bannerUrl =
-    raw.platform === "youtube" ? raw.bannerUrl ?? null : null;
+  const bannerUrl = raw.platform === "youtube" ? (raw.bannerUrl ?? null) : null;
   return {
     platform: raw.platform,
     handle,
@@ -185,9 +182,7 @@ export function mapToUpsertPayload(
       seeded_at: opts.nowIso,
       matrix_region: matrixRegion,
       matrix_keyword: matrixKeyword,
-      ...(opts.flags && Object.keys(opts.flags).length > 0
-        ? { flags: opts.flags }
-        : {}),
+      ...(opts.flags && Object.keys(opts.flags).length > 0 ? { flags: opts.flags } : {}),
       youtube:
         raw.platform === "youtube"
           ? {
@@ -237,8 +232,7 @@ export async function importRawKolData(
   for (const raw of raws) {
     if (!raw.externalId) {
       stats.skipped += 1;
-      stats.skippedByReason["missing-id"] =
-        (stats.skippedByReason["missing-id"] ?? 0) + 1;
+      stats.skippedByReason["missing-id"] = (stats.skippedByReason["missing-id"] ?? 0) + 1;
       continue;
     }
     // Look the existing row up first — quality checks need
@@ -265,8 +259,7 @@ export async function importRawKolData(
 
     if (!verdict.keep) {
       stats.skipped += 1;
-      stats.skippedByReason[verdict.reason] =
-        (stats.skippedByReason[verdict.reason] ?? 0) + 1;
+      stats.skippedByReason[verdict.reason] = (stats.skippedByReason[verdict.reason] ?? 0) + 1;
       continue;
     }
 

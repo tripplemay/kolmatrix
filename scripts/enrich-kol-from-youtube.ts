@@ -39,10 +39,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import type { youtube_v3 } from "googleapis";
 
-import {
-  createYoutubeClient,
-  type YoutubeClient,
-} from "./seed-kol-from-youtube";
+import { createYoutubeClient, type YoutubeClient } from "./seed-kol-from-youtube";
 
 // ---------------------------------------------------------------------
 // CLI
@@ -84,9 +81,7 @@ export interface EnrichmentUpdate {
   bannerUrl: string | null;
 }
 
-export function mapToEnrichmentUpdate(
-  raw: youtube_v3.Schema$Channel
-): EnrichmentUpdate {
+export function mapToEnrichmentUpdate(raw: youtube_v3.Schema$Channel): EnrichmentUpdate {
   const stats = raw.statistics ?? {};
   const snippet = raw.snippet ?? {};
   const branding = raw.brandingSettings ?? {};
@@ -111,9 +106,7 @@ function parseIntOrNull(v: string | number | null | undefined): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-function parseBigIntOrNull(
-  v: string | number | null | undefined
-): bigint | null {
+function parseBigIntOrNull(v: string | number | null | undefined): bigint | null {
   if (v == null) return null;
   try {
     if (typeof v === "number") {
@@ -148,10 +141,7 @@ export interface EnrichClient {
 }
 
 export interface EnrichDeps {
-  prisma: Pick<
-    PrismaClient,
-    "kol" | "tenant" | "$disconnect" | "$transaction"
-  >;
+  prisma: Pick<PrismaClient, "kol" | "tenant" | "$disconnect" | "$transaction">;
   client: EnrichClient;
   tenantSlug?: string;
   dryRun: boolean;
@@ -190,9 +180,7 @@ export async function runEnrich(deps: EnrichDeps): Promise<EnrichStats> {
   stats.totalKols = kols.length;
   if (kols.length === 0) return stats;
 
-  const externalIds = kols
-    .map((k) => k.externalId)
-    .filter((id): id is string => Boolean(id));
+  const externalIds = kols.map((k) => k.externalId).filter((id): id is string => Boolean(id));
   const idToKolId = new Map<string, string>();
   for (const k of kols) {
     if (k.externalId) idToKolId.set(k.externalId, k.id);
@@ -208,10 +196,7 @@ export async function runEnrich(deps: EnrichDeps): Promise<EnrichStats> {
       channels = await deps.client.fetchChannels(slice);
     } catch (err) {
       stats.errored += slice.length;
-      console.error(
-        `[enrich-kol-youtube] batch fetch failed (${slice.length} ids):`,
-        err
-      );
+      console.error(`[enrich-kol-youtube] batch fetch failed (${slice.length} ids):`, err);
       continue;
     }
     stats.fetched += channels.length;
@@ -251,10 +236,7 @@ export async function runEnrich(deps: EnrichDeps): Promise<EnrichStats> {
         stats.updated += 1;
       } catch (err) {
         stats.errored += 1;
-        console.error(
-          `[enrich-kol-youtube] update failed for ${kolId} (${ch.id}):`,
-          err
-        );
+        console.error(`[enrich-kol-youtube] update failed for ${kolId} (${ch.id}):`, err);
       }
     }
   }
@@ -273,12 +255,9 @@ async function main(): Promise<void> {
     console.error("[enrich-kol-youtube] YOUTUBE_API_KEY is not set");
     process.exit(1);
   }
-  const connectionString =
-    process.env.DATABASE_ADMIN_URL ?? process.env.DATABASE_URL;
+  const connectionString = process.env.DATABASE_ADMIN_URL ?? process.env.DATABASE_URL;
   if (!connectionString) {
-    console.error(
-      "[enrich-kol-youtube] DATABASE_ADMIN_URL / DATABASE_URL is not set"
-    );
+    console.error("[enrich-kol-youtube] DATABASE_ADMIN_URL / DATABASE_URL is not set");
     process.exit(1);
   }
 

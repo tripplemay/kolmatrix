@@ -26,13 +26,7 @@ import {
 } from "@/../scripts/import-kol-from-youtube";
 import type { EnrichedChannel } from "@/../scripts/seed-kol-from-youtube";
 
-import {
-  cleanDb,
-  getAdminPrisma,
-  getAppPrisma,
-  setupTestDb,
-  teardownTestDb,
-} from "../helpers/db";
+import { cleanDb, getAdminPrisma, getAppPrisma, setupTestDb, teardownTestDb } from "../helpers/db";
 
 beforeAll(async () => {
   await setupTestDb();
@@ -70,9 +64,10 @@ function fakeChannel(id: string, overrides: Partial<EnrichedChannel> = {}): Enri
 
 describe("deriveCategories (pure)", () => {
   it("collapses YouTube Wikipedia URLs to KOLMatrix category names", () => {
-    expect(
-      deriveCategories(["https://en.wikipedia.org/wiki/Action_game"])
-    ).toEqual(["Action", "FPS"]);
+    expect(deriveCategories(["https://en.wikipedia.org/wiki/Action_game"])).toEqual([
+      "Action",
+      "FPS",
+    ]);
     expect(
       deriveCategories([
         "https://en.wikipedia.org/wiki/Strategy_video_game",
@@ -92,9 +87,7 @@ describe("deriveCategories (pure)", () => {
 
   it("falls back to Gaming when nothing matches", () => {
     expect(deriveCategories([])).toEqual(["Gaming"]);
-    expect(
-      deriveCategories(["https://en.wikipedia.org/wiki/Cuisine"])
-    ).toEqual(["Gaming"]);
+    expect(deriveCategories(["https://en.wikipedia.org/wiki/Cuisine"])).toEqual(["Gaming"]);
   });
 });
 
@@ -119,7 +112,9 @@ describe("mapToKolRow (pure)", () => {
     expect(row!.metadata.youtube).not.toHaveProperty("bannerUrl");
     // Dedicated columns carry the promoted values.
     expect(row!.videoCount).toBe(320);
-    expect(row!.totalViewCount).toBe(50_000_000n);
+    // tsconfig targets ES2017 so BigInt literals (50_000_000n) are not
+    // accepted at compile time; use the BigInt() constructor instead.
+    expect(row!.totalViewCount).toEqual(BigInt(50_000_000));
     expect(row!.bannerUrl).toBe("https://yt.example/UC_test-banner.jpg");
     expect(row!.channelCreatedAt).toEqual(new Date("2018-01-01T00:00:00Z"));
     expect(row!.avgViews).toBe(Math.round(50_000_000 / 320));
@@ -220,10 +215,7 @@ describe("runImport (live Prisma)", () => {
 
     // App role pinned to tenant A only sees A's rows.
     const seenForA = await app.$transaction(async (tx) => {
-      await tx.$executeRawUnsafe(
-        `SELECT set_config('app.tenant_id', $1, true)`,
-        tenantA.id
-      );
+      await tx.$executeRawUnsafe(`SELECT set_config('app.tenant_id', $1, true)`, tenantA.id);
       return tx.kol.findMany({
         where: { platform: "youtube" },
         select: { externalId: true },

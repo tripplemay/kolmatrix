@@ -133,9 +133,7 @@ export function mapToKolRow(
   const handle = channel.handle ?? `@${channel.id}`;
   if (!channel.id) return null;
   const avgViews =
-    channel.videoCount > 0
-      ? Math.round(channel.viewCount / channel.videoCount)
-      : null;
+    channel.videoCount > 0 ? Math.round(channel.viewCount / channel.videoCount) : null;
   const categories = deriveCategories(channel.topicCategories);
   const { total: valueScore } = computeKolValueScore({
     followerCount: channel.subscriberCount,
@@ -239,11 +237,7 @@ export interface ImportStats {
 }
 
 export interface ImportClient {
-  upsertKol(
-    tenantId: string,
-    row: KolRow,
-    now: Date
-  ): Promise<"inserted" | "updated" | "skipped">;
+  upsertKol(tenantId: string, row: KolRow, now: Date): Promise<"inserted" | "updated" | "skipped">;
 }
 
 export async function runImport(
@@ -352,21 +346,14 @@ export function createPrismaImportClient(prisma: PrismaClient): ImportClient {
 
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
-  const inputPath = args.input
-    ? resolve(args.input)
-    : findLatestInputPath();
+  const inputPath = args.input ? resolve(args.input) : findLatestInputPath();
   console.log(`[import-kol-youtube] reading ${inputPath}`);
   const data = JSON.parse(readFileSync(inputPath, "utf8")) as InputJson;
-  console.log(
-    `[import-kol-youtube] channels in input: ${data.channels.length}`
-  );
+  console.log(`[import-kol-youtube] channels in input: ${data.channels.length}`);
 
-  const connectionString =
-    process.env.DATABASE_ADMIN_URL ?? process.env.DATABASE_URL;
+  const connectionString = process.env.DATABASE_ADMIN_URL ?? process.env.DATABASE_URL;
   if (!connectionString) {
-    throw new Error(
-      "DATABASE_ADMIN_URL (or DATABASE_URL fallback) must be set to run the import"
-    );
+    throw new Error("DATABASE_ADMIN_URL (or DATABASE_URL fallback) must be set to run the import");
   }
   const prisma = new PrismaClient({
     adapter: new PrismaPg({ connectionString }),
@@ -397,9 +384,7 @@ async function main(): Promise<void> {
 
 if (require.main === module) {
   main().catch((err) => {
-    console.error(
-      `[import-kol-youtube] fatal: ${err instanceof Error ? err.message : err}`
-    );
+    console.error(`[import-kol-youtube] fatal: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
   });
 }
