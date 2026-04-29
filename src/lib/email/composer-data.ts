@@ -9,6 +9,7 @@
  */
 import { auth } from "@/auth";
 import { withTenant } from "@/lib/db";
+import { loadOutreachTemplates } from "@/lib/email/templates";
 
 export interface OutreachCampaignOption {
   id: string;
@@ -34,8 +35,10 @@ export interface OutreachTemplateOption {
   name: string;
   subject: string;
   body: string;
+  variables: unknown;
   locale: string;
   type: string;
+  scope: "system" | "user";
 }
 
 export interface OutreachComposerData {
@@ -137,35 +140,7 @@ export async function loadOutreachComposerData(
       }
     }
 
-    // System templates (tenantId IS NULL) filtered by the active locale
-    // fall back to "en" when the requested locale has no seeded
-    // templates so the composer always renders.
-    let templates = await tx.emailTemplate.findMany({
-      where: { tenantId: null, locale },
-      select: {
-        id: true,
-        name: true,
-        subject: true,
-        body: true,
-        locale: true,
-        type: true,
-      },
-      orderBy: { createdAt: "asc" },
-    });
-    if (templates.length === 0 && locale !== "en") {
-      templates = await tx.emailTemplate.findMany({
-        where: { tenantId: null, locale: "en" },
-        select: {
-          id: true,
-          name: true,
-          subject: true,
-          body: true,
-          locale: true,
-          type: true,
-        },
-        orderBy: { createdAt: "asc" },
-      });
-    }
+    const templates = await loadOutreachTemplates(tx, tenantId, locale);
 
     return {
       campaigns: campaignOptions,

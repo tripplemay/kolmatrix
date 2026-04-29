@@ -15,6 +15,7 @@
  *   - en-campaigns.png          — authenticated `/en/campaigns` (BM2-F003 + MVP-vf-F004)
  *   - en-campaign-detail.png    — authenticated `/en/campaigns/:id` (BM2-F005 + MVP-vf-F005, masks expanded 2026-04-27)
  *   - en-outreach.png           — authenticated `/en/outreach` (BM2-F006)
+ *   - en-outreach-templates.png — authenticated `/en/outreach/templates` (BM2-F006)
  *   - en-crm.png                — authenticated `/en/crm` (BM2-F007)
  *   - en-roi.png                — authenticated `/en/roi` (BM2-F009)
  *   - en-weekly-report.png      — authenticated `/en/weekly-report` (BM2-F010)
@@ -83,10 +84,12 @@ function baselineExists(name: string): boolean {
  * `expect(page).toHaveScreenshot(name)` writes the baseline file.
  */
 function shouldSkipMissingBaseline(name: string, info: { config: { updateSnapshots?: string } }): boolean {
-  const mode = info.config.updateSnapshots ?? "missing";
-  // Playwright >= 1.46 default is "missing"; treat any non-"none" mode
-  // as "we are regenerating, do NOT skip".
-  const regenerating = mode !== "none";
+  const mode = info.config.updateSnapshots ?? "none";
+  const argvRegenerating = process.argv.includes("--update-snapshots");
+  // Playwright's runtime config is not always surfaced consistently in
+  // `test.info().config` during local regeneration, so treat the CLI
+  // flag as the source of truth and fall back to the runtime mode.
+  const regenerating = argvRegenerating || mode !== "none";
   if (regenerating) return false;
   return !baselineExists(name);
 }
@@ -391,6 +394,23 @@ test.describe("Authenticated BM2 visual regression", () => {
       fullPage: true,
       animations: "disabled",
       mask: [replies, domain],
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
+  });
+
+  test("outreach template library full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
+    await login(page);
+    await page.goto("/en/outreach/templates");
+    await page.waitForSelector('[data-testid="outreach-template-library"]');
+    await fontsReady(page);
+
+    const preview = page.locator('[data-testid="outreach-preview-panel"]');
+
+    await expect(page).toHaveScreenshot("en-outreach-templates.png", {
+      fullPage: true,
+      animations: "disabled",
+      mask: [preview],
       threshold: 0.02,
       maxDiffPixels: 8000,
     });

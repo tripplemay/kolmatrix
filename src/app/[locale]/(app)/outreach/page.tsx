@@ -81,6 +81,8 @@ export default async function OutreachPage({ params, searchParams }: Props) {
     campaignPlaceholder: tComposer("campaignPlaceholder"),
     templateLabel: tComposer("templateLabel"),
     templatePlaceholder: tComposer("templatePlaceholder"),
+    templateSystemGroup: tComposer("templateSystemGroup"),
+    templateUserGroup: tComposer("templateUserGroup"),
     kolSection: tComposer("kolSection"),
     kolSelectedTemplate: tComposer.raw("kolSelected") as string,
     kolHeadSelect: tComposer("kolHeadSelect"),
@@ -107,6 +109,8 @@ export default async function OutreachPage({ params, searchParams }: Props) {
     aiCustomizeAi: tComposer("aiCustomizeAi"),
     aiCustomizeUseOriginal: tComposer("aiCustomizeUseOriginal"),
     aiCustomizeUseAi: tComposer("aiCustomizeUseAi"),
+    aiCustomizeSaveAsTemplate: tComposer("aiCustomizeSaveAsTemplate"),
+    aiCustomizeSavePending: tComposer("aiCustomizeSavePending"),
     aiCustomizeClose: tComposer("aiCustomizeClose"),
     aiCustomizePending: tComposer("aiCustomizePending"),
     sendButton: tComposer("sendButton"),
@@ -156,7 +160,7 @@ export default async function OutreachPage({ params, searchParams }: Props) {
         </div>
       </header>
 
-      <OutreachTabs />
+      <OutreachTabs locale={locale} activeTab="overview" />
 
       <OutreachQuickStats stats={stats} />
 

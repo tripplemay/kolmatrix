@@ -23,6 +23,14 @@ import {
   type CustomizeEmailResult,
 } from "@/lib/email/customize";
 import {
+  createUserTemplate,
+  deleteUserTemplate,
+  duplicateUserTemplate,
+  updateUserTemplate,
+  type EmailTemplateDraftInput,
+  type EmailTemplateOption,
+} from "@/lib/email/templates";
+import {
   batchSendOutreach,
   type BatchSendItem,
   type BatchSendResult,
@@ -272,6 +280,160 @@ export async function sendBatchAction(
   revalidatePath("/[locale]/outreach", "page");
   revalidatePath(`/[locale]/campaigns/${parsed.data.campaignId}`, "page");
   return { ok: true, data: result };
+}
+
+// --- Template library ------------------------------------------------
+
+const templateDraftSchema = z.object({
+  templateId: z.string().regex(UUID_RE).optional(),
+  name: z.string().trim().min(1).max(120),
+  subject: z.string().trim().min(1).max(240),
+  body: z.string().min(1),
+  locale: z.enum(["en", "zh"]),
+  variables: z.string().optional().default("[]"),
+  sourceTemplateId: z.string().regex(UUID_RE).optional(),
+});
+
+export type TemplateMutationResult = EmailTemplateOption;
+
+function parseVariables(raw: string): EmailTemplateDraftInput["variables"] {
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed as EmailTemplateDraftInput["variables"];
+  } catch {
+    return [];
+  }
+}
+
+export async function saveTemplateAction(
+  _prev: ComposerActionState<TemplateMutationResult>,
+  formData: FormData
+): Promise<ComposerActionState<TemplateMutationResult>> {
+  const session = await requireSession();
+  if (!session) return { ok: false, error: "unauthorized" };
+
+  const parsed = templateDraftSchema.safeParse({
+    templateId: String(formData.get("templateId") ?? "") || undefined,
+    name: String(formData.get("name") ?? ""),
+    subject: String(formData.get("subject") ?? ""),
+    body: String(formData.get("body") ?? ""),
+    locale: String(formData.get("locale") ?? ""),
+    variables: String(formData.get("variables") ?? "[]"),
+    sourceTemplateId: String(formData.get("sourceTemplateId") ?? "") || undefined,
+  });
+  if (!parsed.success) return { ok: false, error: "invalid_input" };
+
+  const draft: EmailTemplateDraftInput = {
+    name: parsed.data.name,
+    subject: parsed.data.subject,
+    body: parsed.data.body,
+    locale: parsed.data.locale,
+    variables: parseVariables(parsed.data.variables),
+  };
+
+  let template: TemplateMutationResult | null = null;
+  let mutation: "created" | "updated" = "created";
+
+  try {
+    template = await withTenant(session.tenantId, async (tx) => {
+      if (parsed.data.templateId) {
+        const updated = await updateUserTemplate(
+          tx,
+          session.tenantId,
+          parsed.data.templateId,
+          draft
+        );
+        if (updated) mutation = "updated";
+        return updated;
+      }
+      return createUserTemplate(tx, session.tenantId, draft);
+    });
+  } catch {
+    return { ok: false, error: "db_error" };
+  }
+
+  if (!template) return { ok: false, error: "not_found" };
+
+  void logEvent({
+    type: `email.template_${mutation}`,
+    tenantId: session.tenantId,
+    actorId: session.userId,
+    resourceId: template.id,
+    payload: {
+      locale: template.locale,
+      sourceTemplateId: parsed.data.sourceTemplateId ?? null,
+      templateType: template.type,
+    },
+  });
+
+  void revalidatePath("/[locale]/outreach", "page");
+  void revalidatePath("/[locale]/outreach/templates", "page");
+  return { ok: true, data: template };
+}
+
+export async function duplicateTemplateAction(
+  _prev: ComposerActionState<TemplateMutationResult>,
+  formData: FormData
+): Promise<ComposerActionState<TemplateMutationResult>> {
+  const session = await requireSession();
+  if (!session) return { ok: false, error: "unauthorized" };
+
+  const templateId = String(formData.get("templateId") ?? "");
+  if (!UUID_RE.test(templateId)) return { ok: false, error: "invalid_input" };
+
+  let template: TemplateMutationResult | null = null;
+  try {
+    template = await withTenant(session.tenantId, async (tx) =>
+      duplicateUserTemplate(tx, session.tenantId, templateId)
+    );
+  } catch {
+    return { ok: false, error: "db_error" };
+  }
+  if (!template) return { ok: false, error: "not_found" };
+
+  void logEvent({
+    type: "email.template_duplicated",
+    tenantId: session.tenantId,
+    actorId: session.userId,
+    resourceId: template.id,
+    payload: { templateId },
+  });
+
+  void revalidatePath("/[locale]/outreach", "page");
+  void revalidatePath("/[locale]/outreach/templates", "page");
+  return { ok: true, data: template };
+}
+
+export async function deleteTemplateAction(
+  _prev: ComposerActionState,
+  formData: FormData
+): Promise<ComposerActionState> {
+  const session = await requireSession();
+  if (!session) return { ok: false, error: "unauthorized" };
+
+  const templateId = String(formData.get("templateId") ?? "");
+  if (!UUID_RE.test(templateId)) return { ok: false, error: "invalid_input" };
+
+  let deleted = false;
+  try {
+    deleted = await withTenant(session.tenantId, async (tx) =>
+      deleteUserTemplate(tx, session.tenantId, templateId)
+    );
+  } catch {
+    return { ok: false, error: "db_error" };
+  }
+  if (!deleted) return { ok: false, error: "not_found" };
+
+  void logEvent({
+    type: "email.template_deleted",
+    tenantId: session.tenantId,
+    actorId: session.userId,
+    resourceId: templateId,
+  });
+
+  void revalidatePath("/[locale]/outreach", "page");
+  void revalidatePath("/[locale]/outreach/templates", "page");
+  return { ok: true };
 }
 
 // Re-export the pure substituter for client components (they can't

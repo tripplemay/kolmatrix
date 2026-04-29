@@ -7,6 +7,12 @@ type: project
 - **HOTFIX-product-delete-cuid** — status=done（2026-04-29 20:04 BJ）
 - 进度：2/2 completed，fix_rounds=0
 
+## 新批次
+- **B4-email-template-library** — status=building（2026-04-29 21:47 BJ）
+- 目标：把 AI 生成的邮件模板保存并管理为可复用模板库，并在 `/outreach` 发送界面可选择
+- 规格：`docs/specs/B4-email-template-library-spec.md`
+- 特征：6 项，5 个 generator + 1 个 evaluator（测试/回归）
+
 ## 已验收内容
 - `knowledge-base/actions.ts` 已移除 product update/delete 对 `productId` 的 UUID 限制，改为 trim 后非空字符串
 - `tenantId` UUID 鉴权保持不变；未放宽租户边界
@@ -22,4 +28,4 @@ type: project
 - 真实知识库产品 `E2E Game 1777251227667` 已在 staging 完成编辑后删除验证
 
 ## 下游
-- 本批次已闭环，可进入下一批次 planning
+- 旧批次已闭环；新批次进入 planning/building 交接

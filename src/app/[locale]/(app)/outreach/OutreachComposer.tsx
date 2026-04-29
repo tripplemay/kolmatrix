@@ -42,6 +42,7 @@ import { substituteSubjectAndBody } from "@/lib/email/variable-substitute";
 import {
   customizeAction,
   sendBatchAction,
+  saveTemplateAction,
   updateKolEmailAction,
   type ComposerActionState,
 } from "./actions";
@@ -59,6 +60,8 @@ interface Labels {
   campaignPlaceholder: string;
   templateLabel: string;
   templatePlaceholder: string;
+  templateSystemGroup: string;
+  templateUserGroup: string;
   kolSection: string;
   kolSelectedTemplate: string;
   kolHeadSelect: string;
@@ -81,6 +84,8 @@ interface Labels {
   aiCustomizeAi: string;
   aiCustomizeUseOriginal: string;
   aiCustomizeUseAi: string;
+  aiCustomizeSaveAsTemplate: string;
+  aiCustomizeSavePending: string;
   aiCustomizeClose: string;
   aiCustomizePending: string;
   sendButton: string;
@@ -184,6 +189,8 @@ export function OutreachComposer({
   const [aiOpen, setAiOpen] = useState(false);
   const [aiState, setAiState] = useState(initialCustomizeState);
   const [aiPending, startAi] = useTransition();
+  const [savePending, startSave] = useTransition();
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [aiEditedSubject, setAiEditedSubject] = useState("");
   const [aiEditedBody, setAiEditedBody] = useState("");
 
@@ -212,6 +219,35 @@ export function OutreachComposer({
       fromAi: true,
     });
     setAiOpen(false);
+  };
+  const saveAiAsTemplate = () => {
+    if (!activeTemplate) return;
+    setSaveError(null);
+    startSave(async () => {
+      const fd = new FormData();
+      fd.set("name", `${activeTemplate.name} (Custom)`);
+      fd.set("subject", aiEditedSubject || activeTemplate.subject);
+      fd.set("body", aiEditedBody || activeTemplate.body);
+      fd.set("locale", activeTemplate.locale);
+      fd.set(
+        "variables",
+        JSON.stringify((activeTemplate as OutreachTemplateOption).variables ?? [])
+      );
+      fd.set("sourceTemplateId", activeTemplate.id);
+      const result = await saveTemplateAction({ ok: false }, fd);
+      if (!result.ok || !result.data) {
+        setSaveError(result.error ?? "generic");
+        return;
+      }
+      setTemplateId(result.data.id);
+      setOverrideTemplate({
+        subject: result.data.subject,
+        body: result.data.body,
+        fromAi: true,
+      });
+      setAiOpen(false);
+      router.refresh();
+    });
   };
   const restoreOriginal = () => {
     setOverrideTemplate(null);
@@ -333,11 +369,28 @@ export function OutreachComposer({
             disabled={data.templates.length === 0}
           >
             <option value="">{labels.templatePlaceholder}</option>
-            {data.templates.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name} ({t.locale})
-              </option>
-            ))}
+            {data.templates.filter((t) => t.scope === "system").length > 0 ? (
+              <optgroup label={labels.templateSystemGroup}>
+                {data.templates
+                  .filter((t) => t.scope === "system")
+                  .map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name} ({t.locale})
+                    </option>
+                  ))}
+              </optgroup>
+            ) : null}
+            {data.templates.filter((t) => t.scope === "user").length > 0 ? (
+              <optgroup label={labels.templateUserGroup}>
+                {data.templates
+                  .filter((t) => t.scope === "user")
+                  .map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name} ({t.locale})
+                    </option>
+                  ))}
+              </optgroup>
+            ) : null}
           </Select>
         </div>
       </div>
@@ -523,8 +576,11 @@ export function OutreachComposer({
         onEditedSubject={setAiEditedSubject}
         onEditedBody={setAiEditedBody}
         onAccept={acceptAi}
+        onSaveAsTemplate={saveAiAsTemplate}
         onRestore={restoreOriginal}
         onClose={() => setAiOpen(false)}
+        savePending={savePending}
+        saveError={saveError}
         labels={labels}
       />
     </section>
@@ -759,8 +815,11 @@ function AiCustomizeDialog({
   onEditedSubject,
   onEditedBody,
   onAccept,
+  onSaveAsTemplate,
   onRestore,
   onClose,
+  savePending,
+  saveError,
   labels,
 }: {
   open: boolean;
@@ -778,8 +837,11 @@ function AiCustomizeDialog({
   onEditedSubject: (v: string) => void;
   onEditedBody: (v: string) => void;
   onAccept: () => void;
+  onSaveAsTemplate: () => void;
   onRestore: () => void;
   onClose: () => void;
+  savePending: boolean;
+  saveError: string | null;
   labels: Labels;
 }) {
   return (
@@ -864,6 +926,17 @@ function AiCustomizeDialog({
               {labels.aiCustomizeUseOriginal}
             </Button>
             <Button
+              variant="secondary"
+              size="sm"
+              onClick={onSaveAsTemplate}
+              disabled={!state.ok || pending || savePending}
+              data-testid="outreach-ai-customize-save-template"
+            >
+              {savePending
+                ? labels.aiCustomizeSavePending
+                : labels.aiCustomizeSaveAsTemplate}
+            </Button>
+            <Button
               variant="primary-gradient"
               size="sm"
               disabled={!state.ok || pending}
@@ -873,6 +946,11 @@ function AiCustomizeDialog({
               {labels.aiCustomizeUseAi}
             </Button>
           </DialogFooter>
+          {saveError ? (
+            <p className="px-5 pb-4 text-xs text-error" role="alert">
+              {labels.errorLabels[saveError] ?? labels.errorLabels.generic}
+            </p>
+          ) : null}
         </DialogPanel>
       </DialogPortal>
     </Dialog>

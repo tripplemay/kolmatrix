@@ -1,21 +1,53 @@
 {
-  "sprint": "HOTFIX-product-delete-cuid",
+  "sprint": "B4-email-template-library",
   "features": [
     {
       "id": "F001",
-      "title": "修复 knowledge-base 产品编辑/删除的 productId 校验与 Product.cuid() 主键不匹配问题",
+      "title": "抽出 /outreach 模板库数据读取与权限规则",
       "priority": "high",
-      "executor": "generator",
+      "executor": "Evaluator",
       "status": "completed",
-      "acceptance": "`src/app/[locale]/(app)/knowledge-base/actions.ts` 不再把 productId 当作 UUID 校验；现有 `Product.id=@default(cuid())` 的生产数据可正常走 update/delete 链路；修复范围至少覆盖 deleteProduct，并同时修复同源的 updateProduct 校验错误；不改动租户鉴权语义。"
+      "acceptance": "模板读取统一走一个共享 helper，能够同时返回当前 locale 的 system + user templates；system 模板跨租户可读，user 模板仅当前租户可见；locale 为空时按 spec fallback 到 en system templates。staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）。"
     },
     {
       "id": "F002",
-      "title": "为 knowledge-base 产品编辑/删除补回归测试，覆盖 cuid 产品 ID 场景",
+      "title": "AI 定制结果可保存为当前租户模板",
       "priority": "high",
       "executor": "generator",
       "status": "completed",
-      "acceptance": "新增或更新测试，至少覆盖：1) cuid productId 可通过 updateProduct/deleteProduct 校验并调用后续数据层；2) 非法 tenantId 仍被拒绝；3) 不因本次修复放宽 tenant UUID 校验。测试可稳定在本地运行。"
+      "acceptance": "AI 对话框新增保存动作；保存会创建一条 tenant-scoped 的 user EmailTemplate，复制 subject/body/variables/locale；返回新模板 id，前端可自动选中；不影响仅临时使用的原有 AI 预览路径。staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）。"
+    },
+    {
+      "id": "F003",
+      "title": "发送界面支持 system + user 模板分组选择",
+      "priority": "high",
+      "executor": "generator",
+      "status": "completed",
+      "acceptance": "/outreach 的模板下拉可以同时看到 system 与 user 模板，并按组/locale 展示；切换模板后预览、发送 payload 和现有 AI 临时覆盖逻辑保持正常；刷新后已保存模板仍可选。staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）。"
+    },
+    {
+      "id": "F004",
+      "title": "实现 /outreach/templates 模板库页",
+      "priority": "high",
+      "executor": "generator",
+      "status": "completed",
+      "acceptance": "新增模板库页并按 Stitch 的 Email Template Editor 设计稿实现；页面支持搜索、locale 过滤、创建、编辑、复制和删除 user 模板；system 模板只读，不提供破坏性操作。staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）。"
+    },
+    {
+      "id": "F005",
+      "title": "启用 OutreachTabs 的 Templates 路由",
+      "priority": "medium",
+      "executor": "generator",
+      "status": "completed",
+      "acceptance": "Templates tab 不再 disabled，而是可点击进入模板库页；模板库页显示 active 状态；Overview 页面与现有右侧分析区保持原有行为，不引入空壳控件。staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）。"
+    },
+    {
+      "id": "F006",
+      "title": "补模板库回归测试与视觉基线",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "新增测试覆盖模板 union load、user template 保存、system 模板只读、模板 CRUD guardrail、路由跳转和保存后可复选；新增模板库页的 visual baseline，必要时更新 /outreach 现有 baseline。staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）。"
     }
   ]
 }
