@@ -1,11 +1,11 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "把 AI 生成的邮件模板保存并管理为可复用模板库，并在 /outreach 发送界面可选择。",
   "total_features": 6,
   "completed_features": 5,
   "fix_rounds": 0,
-  "current_sprint": null,
-  "last_updated": "2026-04-29T21:47+0800",
+  "current_sprint": "B4-email-template-library",
+  "last_updated": "2026-04-29T22:15+0800",
   "reference_docs": [
     "docs/specs/B4-email-template-library-spec.md",
     "src/lib/email/composer-data.ts",
