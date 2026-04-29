@@ -11,10 +11,7 @@
  */
 import { getTranslations } from "next-intl/server";
 
-import {
-  type DiscoveryFilters,
-  serializeFilters,
-} from "@/lib/kol/filters";
+import { type DiscoveryFilters, serializeFilters } from "@/lib/kol/filters";
 
 interface Props {
   filters: DiscoveryFilters;
@@ -187,10 +184,7 @@ export async function ActiveFilters({ filters, basePath }: Props) {
     chips.push({
       key: `channelAge-${tier}`,
       label: `${tFilters("channelAge")}: ${tFilters(
-        `channelAge_${tier}` as
-          | "channelAge_new"
-          | "channelAge_established"
-          | "channelAge_veteran"
+        `channelAge_${tier}` as "channelAge_new" | "channelAge_established" | "channelAge_veteran"
       )}`,
       clear: {
         channelAge: filters.channelAge.filter((t) => t !== tier),
@@ -246,11 +240,8 @@ export async function ActiveFilters({ filters, basePath }: Props) {
   }
 
   return (
-    <div
-      data-testid="discovery-active-filters"
-      className="flex flex-wrap items-center gap-2"
-    >
-      <span className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant/70">
+    <div data-testid="discovery-active-filters" className="flex flex-wrap items-center gap-2">
+      <span className="text-on-surface-variant/70 text-[11px] font-semibold tracking-wider uppercase">
         {t("heading")}
       </span>
       {chips.map((chip) => {
@@ -262,13 +253,10 @@ export async function ActiveFilters({ filters, basePath }: Props) {
             href={href}
             data-testid={`active-filter-chip-${chip.key}`}
             aria-label={t("clearAria", { label: chip.label })}
-            className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-surface-high/40 px-3 py-1 text-xs text-on-surface transition-colors hover:border-cyan/40 hover:text-cyan"
+            className="bg-surface-high/40 text-on-surface hover:border-cyan/40 hover:text-cyan inline-flex items-center gap-1 rounded-full border border-white/10 px-3 py-1 text-xs transition-colors"
           >
             <span>{chip.label}</span>
-            <span
-              aria-hidden
-              className="material-symbols-outlined text-[14px] opacity-70"
-            >
+            <span aria-hidden className="material-symbols-outlined text-[14px] opacity-70">
               close
             </span>
           </a>

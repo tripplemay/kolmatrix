@@ -16,12 +16,7 @@
  */
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import {
-  cleanDb,
-  getAdminPrisma,
-  setupTestDb,
-  teardownTestDb,
-} from "../helpers/db";
+import { cleanDb, getAdminPrisma, setupTestDb, teardownTestDb } from "../helpers/db";
 
 type RunDiscoverySearch = typeof import("@/app/[locale]/(app)/discovery/search").runDiscoverySearch;
 type DiscoveryFilters = import("@/lib/kol/filters").DiscoveryFilters;
@@ -31,9 +26,7 @@ let baseFilters: DiscoveryFilters;
 
 beforeAll(async () => {
   await setupTestDb();
-  ({ runDiscoverySearch } = await import(
-    "@/app/[locale]/(app)/discovery/search"
-  ));
+  ({ runDiscoverySearch } = await import("@/app/[locale]/(app)/discovery/search"));
   baseFilters = {
     regions: [],
     categories: [],
@@ -72,9 +65,7 @@ interface SeededKol {
 }
 
 async function seedTenantWithKols(
-  rows: Array<
-    Omit<SeededKol, "id" | "createdAt"> & { createdAt?: Date }
-  >,
+  rows: Array<Omit<SeededKol, "id" | "createdAt"> & { createdAt?: Date }>,
   slug = `disco-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 ): Promise<{ tenantId: string; created: SeededKol[] }> {
   const admin = getAdminPrisma();
@@ -106,8 +97,7 @@ async function seedTenantWithKols(
       followerCount: k.followerCount,
       categories: k.categories,
       isGaming: k.isGaming,
-      engagementRate:
-        k.engagementRate == null ? null : Number(k.engagementRate.toString()),
+      engagementRate: k.engagementRate == null ? null : Number(k.engagementRate.toString()),
       valueScore: k.valueScore!,
       createdAt: k.createdAt,
     });
@@ -156,10 +146,7 @@ describe("runDiscoverySearch()", () => {
 
     const res = await runDiscoverySearch(tenantId, baseFilters);
     expect(res.total).toBe(2);
-    expect(res.items.map((i) => i.handle).sort()).toEqual([
-      "gaming_a",
-      "gaming_b",
-    ]);
+    expect(res.items.map((i) => i.handle).sort()).toEqual(["gaming_a", "gaming_b"]);
   });
 
   it("returns gaming + non-gaming when includeNonGaming=true", async () => {
@@ -340,10 +327,7 @@ describe("runDiscoverySearch()", () => {
       ...baseFilters,
       search: "nintendo",
     });
-    expect(res.items.map((i) => i.handle).sort()).toEqual([
-      "nintendo_fan",
-      "nn",
-    ]);
+    expect(res.items.map((i) => i.handle).sort()).toEqual(["nintendo_fan", "nn"]);
   });
 
   it("paginates with the cursor covering every row exactly once", async () => {
@@ -374,10 +358,7 @@ describe("runDiscoverySearch()", () => {
     expect(page2.items).toHaveLength(5);
     expect(page2.hasMore).toBe(false);
 
-    const seen = new Set([
-      ...page1.items.map((i) => i.id),
-      ...page2.items.map((i) => i.id),
-    ]);
+    const seen = new Set([...page1.items.map((i) => i.id), ...page2.items.map((i) => i.id)]);
     expect(seen.size).toBe(25);
   });
 

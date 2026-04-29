@@ -34,18 +34,14 @@ export async function SearchBar({ basePath, filters }: Props) {
   const carryover = buildCarryoverFields(filters);
 
   return (
-    <section
-      data-testid="discovery-search-bar"
-      className="space-y-3"
-      aria-label="Search KOLs"
-    >
+    <section data-testid="discovery-search-bar" className="space-y-3" aria-label="Search KOLs">
       <form
         action={basePath}
         method="get"
         role="search"
-        className="glass-panel flex h-14 items-center overflow-hidden rounded-xl border border-on-surface/5 px-4 transition-colors focus-within:border-cyan/30 focus-within:ring-1 focus-within:ring-cyan/30"
+        className="glass-panel border-on-surface/5 focus-within:border-cyan/30 focus-within:ring-cyan/30 flex h-14 items-center overflow-hidden rounded-xl border px-4 transition-colors focus-within:ring-1"
       >
-        <label className="flex items-center gap-2 border-r border-white/10 pr-4 text-sm font-medium text-on-surface-variant">
+        <label className="text-on-surface-variant flex items-center gap-2 border-r border-white/10 pr-4 text-sm font-medium">
           <span className="material-symbols-outlined text-base" aria-hidden>
             public
           </span>
@@ -53,7 +49,7 @@ export async function SearchBar({ basePath, filters }: Props) {
           <select
             name="platforms"
             defaultValue={filters.platforms[0] ?? ""}
-            className="cursor-pointer appearance-none border-0 bg-transparent pr-2 text-sm font-medium text-on-surface-variant focus:outline-none"
+            className="text-on-surface-variant cursor-pointer appearance-none border-0 bg-transparent pr-2 text-sm font-medium focus:outline-none"
             data-testid="search-platform-select"
           >
             <option value="">{t("platformAll")}</option>
@@ -64,10 +60,7 @@ export async function SearchBar({ basePath, filters }: Props) {
             ))}
           </select>
         </label>
-        <span
-          className="material-symbols-outlined ml-4 text-on-surface-variant"
-          aria-hidden
-        >
+        <span className="material-symbols-outlined text-on-surface-variant ml-4" aria-hidden>
           search
         </span>
         <input
@@ -76,7 +69,7 @@ export async function SearchBar({ basePath, filters }: Props) {
           defaultValue={filters.search ?? ""}
           placeholder={t("placeholder")}
           maxLength={200}
-          className="h-full flex-1 border-0 bg-transparent px-4 text-sm text-on-surface placeholder-on-surface-variant/60 outline-none focus:ring-0"
+          className="text-on-surface placeholder-on-surface-variant/60 h-full flex-1 border-0 bg-transparent px-4 text-sm outline-none focus:ring-0"
           data-testid="search-main-input"
         />
         {carryover}
@@ -85,11 +78,8 @@ export async function SearchBar({ basePath, filters }: Props) {
         </button>
       </form>
 
-      <div
-        className="flex flex-wrap items-center gap-2 pb-1"
-        data-testid="discovery-ai-chips"
-      >
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant/70">
+      <div className="flex flex-wrap items-center gap-2 pb-1" data-testid="discovery-ai-chips">
+        <span className="text-on-surface-variant/70 text-[11px] font-semibold tracking-wider uppercase">
           {t("aiChipsHeading")}
         </span>
         {(["chip1", "chip2", "chip3"] as const).map((key, i) => {
@@ -100,7 +90,7 @@ export async function SearchBar({ basePath, filters }: Props) {
               key={key}
               href={href}
               data-testid={`ai-chip-${i + 1}`}
-              className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-cyan/30 bg-cyan/5 px-4 py-2 text-xs font-medium text-cyan-fixed transition-colors hover:bg-cyan/10"
+              className="border-cyan/30 bg-cyan/5 text-cyan-fixed hover:bg-cyan/10 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium whitespace-nowrap transition-colors"
             >
               <span
                 className="material-symbols-outlined text-[14px]"

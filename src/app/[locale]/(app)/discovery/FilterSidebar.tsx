@@ -63,13 +63,13 @@ export async function FilterSidebar({ filters, basePath }: Props) {
       method="get"
       role="search"
       data-testid="discovery-filters"
-      className="glass-panel flex flex-col gap-6 rounded-xl border border-on-surface/5 p-5"
+      className="glass-panel border-on-surface/5 flex flex-col gap-6 rounded-xl border p-5"
     >
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold text-white">{t("heading")}</h2>
         <a
           href={basePath}
-          className="text-xs text-on-surface-variant transition-colors hover:text-cyan"
+          className="text-on-surface-variant hover:text-cyan text-xs transition-colors"
         >
           {t("clearAll")}
         </a>
@@ -135,10 +135,10 @@ export async function FilterSidebar({ filters, basePath }: Props) {
          B5-F003 added channelAge / uploadFrequency / regionGroup. */}
       <details
         data-disco-advanced
-        className="-mx-1 rounded-lg border border-outline-variant/30 px-3 py-2 open:pb-4"
+        className="border-outline-variant/30 -mx-1 rounded-lg border px-3 py-2 open:pb-4"
         {...(advancedOpen ? { open: true } : {})}
       >
-        <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wider text-cyan-fixed">
+        <summary className="text-cyan-fixed cursor-pointer text-xs font-semibold tracking-wider uppercase select-none">
           {t("advancedToggle")}
         </summary>
 
@@ -324,13 +324,11 @@ export async function FilterSidebar({ filters, basePath }: Props) {
               type="checkbox"
               name="includeNonGaming"
               defaultChecked={filters.includeNonGaming}
-              className="mt-1 h-4 w-4 rounded border-outline-variant bg-surface-high text-cyan"
+              className="border-outline-variant bg-surface-high text-cyan mt-1 h-4 w-4 rounded"
             />
             <span>
-              <span className="block text-sm text-on-surface">
-                {t("includeNonGaming")}
-              </span>
-              <span className="block text-[11px] text-on-surface-variant/70">
+              <span className="text-on-surface block text-sm">{t("includeNonGaming")}</span>
+              <span className="text-on-surface-variant/70 block text-[11px]">
                 {t("includeNonGamingHelper")}
               </span>
             </span>
@@ -397,13 +395,7 @@ function Field({
   );
 }
 
-function ChipGroup({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function ChipGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <Field label={label}>
       <div className="flex flex-wrap gap-2">{children}</div>
@@ -426,13 +418,7 @@ interface ChipCheckboxProps {
  * — but the shape is rounded-lg (not pill) to match the Stitch
  * filter-sidebar prototype.
  */
-function ChipCheckbox({
-  name,
-  value,
-  label,
-  checked,
-  dataTestid,
-}: ChipCheckboxProps) {
+function ChipCheckbox({ name, value, label, checked, dataTestid }: ChipCheckboxProps) {
   return (
     <label className="inline-flex">
       <input
@@ -445,10 +431,10 @@ function ChipCheckbox({
       />
       <span
         className={cn(
-          "inline-flex cursor-pointer items-center justify-center select-none rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
+          "inline-flex cursor-pointer items-center justify-center rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors select-none",
           "border-outline-variant bg-surface/40 text-on-surface-variant hover:border-cyan/40 hover:text-cyan",
           "peer-checked:border-cyan/60 peer-checked:bg-cyan/20 peer-checked:text-cyan",
-          "peer-focus-visible:ring-2 peer-focus-visible:ring-cyan/50"
+          "peer-focus-visible:ring-cyan/50 peer-focus-visible:ring-2"
         )}
       >
         {label}

@@ -15,12 +15,7 @@
  */
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import {
-  cleanDb,
-  getAdminPrisma,
-  setupTestDb,
-  teardownTestDb,
-} from "../helpers/db";
+import { cleanDb, getAdminPrisma, setupTestDb, teardownTestDb } from "../helpers/db";
 
 type RunDatabaseSearch = typeof import("@/app/[locale]/(app)/database/search").runDatabaseSearch;
 type DiscoveryFilters = import("@/lib/kol/filters").DiscoveryFilters;
@@ -30,9 +25,7 @@ let baseFilters: DiscoveryFilters;
 
 beforeAll(async () => {
   await setupTestDb();
-  ({ runDatabaseSearch } = await import(
-    "@/app/[locale]/(app)/database/search"
-  ));
+  ({ runDatabaseSearch } = await import("@/app/[locale]/(app)/database/search"));
   baseFilters = {
     regions: [],
     categories: [],
@@ -43,6 +36,11 @@ beforeAll(async () => {
     relationshipStatuses: [],
     knownCollabs: [],
     tags: [],
+    // B5-F003 — DiscoveryFilters now has three required advanced
+    // dimensions; default to empty arrays for the no-filter baseline.
+    channelAge: [],
+    uploadFrequency: [],
+    regionGroup: [],
     includeNonGaming: false,
     sort: "value",
   };
@@ -328,10 +326,7 @@ describe("runDatabaseSearch()", () => {
       ...baseFilters,
       search: "nintendo",
     });
-    expect(res.items.map((i) => i.handle).sort()).toEqual([
-      "nintendo_fan",
-      "nn",
-    ]);
+    expect(res.items.map((i) => i.handle).sort()).toEqual(["nintendo_fan", "nn"]);
   });
 
   it("RLS isolates the saved pool across tenants", async () => {
