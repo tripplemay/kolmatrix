@@ -1,82 +1,38 @@
 {
-  "status": "done",
-  "user_goal": "把 AI 生成的邮件模板保存并管理为可复用模板库，并在 /outreach 发送界面可选择。",
-  "total_features": 6,
-  "completed_features": 6,
+  "status": "building",
+  "user_goal": "KOL 数据深度增强 - schema 扩 4 字段 (channelCreatedAt / videoCount / totalViewCount / bannerUrl) + Discovery filter +3 维 + 高级筛选折叠 + KOL 详情页改造（banner + 最近 6 视频 + 完整版词云 react-wordcloud + 真 engagementRate）+ 隐藏 audience demographics tab。Definition of Done = staging KOL 详情页含全部新元素 + Discovery 高级筛选可用 + i18n 5 语言齐 + 守门 tests 全绿 + Reviewer L1+L2 验收 PASS。",
+  "total_features": 5,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "B4-email-template-library",
-  "last_updated": "2026-04-29T23:17+0800",
+  "current_sprint": "B5-kol-data-enrichment",
+  "last_updated": "2026-04-30T00:50+0900",
   "reference_docs": [
-    "docs/specs/B4-email-template-library-spec.md",
-    "src/lib/email/composer-data.ts",
-    "src/lib/email/customize.ts",
-    "src/app/[locale]/(app)/outreach/actions.ts",
-    "src/app/[locale]/(app)/outreach/OutreachComposer.tsx",
-    "src/app/[locale]/(app)/outreach/OutreachTabs.tsx",
-    "src/app/[locale]/(app)/outreach/page.tsx"
+    "docs/specs/B5-kol-data-enrichment-spec.md",
+    "docs/specs/MVP-internal-demo-prep-spec.md",
+    "docs/product/MVP-gap-audit-2026-04-30.md",
+    "docs/product/KOLMatrix-MVP-PRD.md",
+    "framework/harness/database-patterns.md",
+    "prisma/schema.prisma",
+    ".auto-memory/environment.md",
+    "harness-rules.md"
   ],
   "docs": {
-    "spec": "docs/specs/B4-email-template-library-spec.md",
+    "spec": "docs/specs/B5-kol-data-enrichment-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/B4-email-template-library-signoff-2026-04-29.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
-  "role_assignments": null,
-  "evaluator_feedback": "PASS: template save/refresh persistence, /outreach navigation, and visual baseline coverage verified on staging git_sha=31ab6c0.",
-  "generator_handoff": "[Generator -> Evaluator] B4-email-template-library implementation is in place. Shared helper: `src/lib/email/templates.ts` now loads system + user templates with locale fallback and exposes create/update/duplicate/delete helpers. Composer/Template library changes: `/outreach` template selector now groups system/user templates; AI customize dialog can save AI output as a user template; new `/outreach/templates` route provides the editor/library workspace; `OutreachTabs` now routes Templates to the new page. Evaluator should verify template save/refresh persistence, route navigation, and visual baseline alignment on staging after Generator deploys the current main HEAD.",
+  "role_assignments": {
+    "planner": "johnsong",
+    "generator": "johnsong",
+    "evaluator": "Reviewer"
+  },
+  "evaluator_feedback": null,
+  "generator_handoff": null,
   "session_notes": {
-    "Kimi": "[2026-04-29 Planner] User confirmed. State advanced planning -> building for BIx-staging-automation.",
-    "johnsong": "[2026-04-29 Planner] Started B4-email-template-library planning: added spec/features, chose /outreach/templates route, and kept existing EmailTemplate table shape (tenantId/type) as the persistence base. Next step is generator implementation for union load, save-as-template, and template library CRUD.",
-    "Reviewer": "[2026-04-29 HOTFIX verifying signoff] L1 lint+tsc+unit PASS; staging verified /database,/campaigns/:id,/roi,/weekly-report AI chains all 200 and successful content render. /outreach customize AI not triggerable due to 0/0 selectable KOL emails (data precondition), treated non-blocking PARTIAL. Signoff written and status moved to done."
+    "Kimi": null,
+    "johnsong": "[2026-04-30 Planner] B4 done 收尾 + MVP gap audit + B5 重启 planning + MVP-internal-demo-prep spec 起草。本会话固定 planner 身份。完整决策链：(1) 确认 B4 done 后清理 backlog（删 BL-001/BL-002/BL-004 已闭环 3 条，剩 BL-003/BL-011/BL-012 全 deferred 或 low）+ project-status.md 对齐 + features.json F001 executor typo 修。(2) MVP gap audit 报告 docs/product/MVP-gap-audit-2026-04-30.md：3 个 P0 阻塞（Dashboard 三元素 / 生产 DB seed / Q5 Product 字段强制）+ 2 个 P1 spec 未签收（MVP-prod-launch-smoke / MVP-seed-demo-prep）+ B8 按计划推迟。(3) 用户原选 A 方案 MVP-launch-readiness 5 features，讨论中澄清 MVP 受众=团队内部其他岗位（不是外部种子用户），核心约束=零技术债。架构调整：走现有 Demo Studio tenant + 共用 admin/marketer 账号（schema 不动 RLS 不动，原本架构就支持），不写 demo seed 脚本。(4) 用户选 A：B5 先做再起 MVP-internal-demo-prep（KOL 详情页数据太少需 B5 升级）。(5) B5 spec 修订要点：去 merged-sprint 标记单独执行 + F002/F004 engagementRate 关系澄清（A1：F002 仅估算/留空，F004 lazy load 时覆盖为真值）+ §5 metadata 升级到列后只写新列不双写（A2）+ 词云从 stretch P2 升级到必做 c 完整版 react-wordcloud + d3-cloud。(6) MVP-internal-demo-prep spec 起草完整 5 features + 全决策表 lock，待 B5 done 后启动。Generator 开工前置：YouTube API quota ≥ 5K 检查 + aigcgateway 余额 ≥ $5 检查（词云 AI 提取）。",
+    "Reviewer": null
   },
-  "features": [
-    {
-      "id": "F001",
-      "title": "抽出 /outreach 模板库数据读取与权限规则",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "模板读取统一走一个共享 helper，能够同时返回当前 locale 的 system + user templates；system 模板跨租户可读，user 模板仅当前租户可见；locale 为空时按 spec fallback 到 en system templates。"
-    },
-    {
-      "id": "F002",
-      "title": "AI 定制结果可保存为当前租户模板",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "AI 对话框新增保存动作；保存会创建一条 tenant-scoped 的 user EmailTemplate，复制 subject/body/variables/locale；返回新模板 id，前端可自动选中；不影响仅临时使用的原有 AI 预览路径。"
-    },
-    {
-      "id": "F003",
-      "title": "发送界面支持 system + user 模板分组选择",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "/outreach 的模板下拉可以同时看到 system 与 user 模板，并按组/locale 展示；切换模板后预览、发送 payload 和现有 AI 临时覆盖逻辑保持正常；刷新后已保存模板仍可选。"
-    },
-    {
-      "id": "F004",
-      "title": "实现 /outreach/templates 模板库页",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增模板库页并按 Stitch 的 Email Template Editor 设计稿实现；页面支持搜索、locale 过滤、创建、编辑、复制和删除 user 模板；system 模板只读，不提供破坏性操作。"
-    },
-    {
-      "id": "F005",
-      "title": "启用 OutreachTabs 的 Templates 路由",
-      "priority": "medium",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "Templates tab 不再 disabled，而是可点击进入模板库页；模板库页显示 active 状态；Overview 页面与现有右侧分析区保持原有行为，不引入空壳控件。"
-    },
-    {
-      "id": "F006",
-      "title": "补模板库回归测试与视觉基线",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增测试覆盖模板 union load、user template 保存、system 模板只读、模板 CRUD guardrail、路由跳转和保存后可复选；新增模板库页的 visual baseline，必要时更新 /outreach 现有 baseline。"
-    }
-  ]
+  "features": []
 }

@@ -1,53 +1,45 @@
 {
-  "sprint": "B4-email-template-library",
+  "sprint": "B5-kol-data-enrichment",
   "features": [
     {
       "id": "F001",
-      "title": "抽出 /outreach 模板库数据读取与权限规则",
+      "title": "Kol schema 扩 4 字段（channelCreatedAt / videoCount / totalViewCount / bannerUrl）+ migration",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "模板读取统一走一个共享 helper，能够同时返回当前 locale 的 system + user templates；system 模板跨租户可读，user 模板仅当前租户可见；locale 为空时按 spec fallback 到 en system templates。staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）。"
+      "status": "pending",
+      "acceptance": "prisma schema 新增 4 个 nullable 字段 + Prisma 5 migration 含完整 ROLLBACK SQL；migration 通过 validate-rollback-sql.sh；prisma migrate deploy 在 staging + prod 跑通；tests/integration/b5-schema.test.ts 验证 4 字段 CRUD + RLS；staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）。"
     },
     {
       "id": "F002",
-      "title": "AI 定制结果可保存为当前租户模板",
+      "title": "二次跑 YouTube API enrich + metadata.youtube.* 升级到列（不双写）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "AI 对话框新增保存动作；保存会创建一条 tenant-scoped 的 user EmailTemplate，复制 subject/body/variables/locale；返回新模板 id，前端可自动选中；不影响仅临时使用的原有 AI 预览路径。staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）。"
+      "status": "pending",
+      "acceptance": "scripts/enrich-kol-from-youtube.ts 批量调 channels.list 写入 4 新列 + engagementRate 估算值（不调 search.list 避免 quota 爆）；metadata.youtube.* 字段保留旧数据但不再写（A2 修订：不双写）；engagementRate 估算值由 F004 lazy load 时覆盖为真值（A1 澄清）；staging Kol 表 4 新字段填充率 ≥ 95%；tests/integration/b5-enrich-kol.test.ts 验证 enrich 流程 + 字段映射；任何 metadata.youtube.* 字段不再被新代码写入（守门 test 在 F005）；staging git_sha 与本 commit 一致。"
     },
     {
       "id": "F003",
-      "title": "发送界面支持 system + user 模板分组选择",
+      "title": "Discovery filter 加 3 维（channelAge / uploadFrequency / regionGroup）+ 高级筛选折叠 UI",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "/outreach 的模板下拉可以同时看到 system 与 user 模板，并按组/locale 展示；切换模板后预览、发送 payload 和现有 AI 临时覆盖逻辑保持正常；刷新后已保存模板仍可选。staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）。"
+      "status": "pending",
+      "acceptance": "Discovery filter 总维度从 12 → 15；新增 channelAge（new/established/veteran）/ uploadFrequency（active/semi-active/inactive）/ regionGroup（asia/europe/americas/latam/oceania）3 个 filter；高级筛选默认折叠（cookie 记住用户上次选择，basic 6 + advanced 9+3 折叠）；3 个新 filter 在 SQL where 正确过滤（integration test 覆盖）；tests/e2e/discovery-advanced-filters.spec.ts 验证折叠 + 各 filter 工作；i18n keys 新增并跑 i18n:translate 补 zh/ja/ko/es；staging git_sha 与本 commit 一致。"
     },
     {
       "id": "F004",
-      "title": "实现 /outreach/templates 模板库页",
+      "title": "KOL 详情页改造（banner + 最近 6 视频 + 词云完整版 + 真 engagementRate + 隐藏 audience demographics）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增模板库页并按 Stitch 的 Email Template Editor 设计稿实现；页面支持搜索、locale 过滤、创建、编辑、复制和删除 user 模板；system 模板只读，不提供破坏性操作。staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）。"
+      "status": "pending",
+      "acceptance": "/kols/[id] 顶部 banner（bannerUrl）+ Stats Cards 含 channelAge/videoCount/真 engagementRate；Overview tab 含最近 6 视频缩略图 3×2 grid（lazy load search.list cost 100 units/call + cache 24h）+ 完整版词云（react-wordcloud + d3-cloud + AI 提取关键词附 weight 0-1，字号 14-32px 视觉化映射，AI 失败 friendly empty state，缓存 7 天，dynamic import 避免影响其他页 bundle）；Audience tab 完全隐藏（tab 数从 4 → 3）；engagementRate 真值由 F004 lazy load 写回 DB 覆盖 F002 估算（A1）；visual + integration test 验证；staging git_sha 与本 commit 一致。"
     },
     {
       "id": "F005",
-      "title": "启用 OutreachTabs 的 Templates 路由",
-      "priority": "medium",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "Templates tab 不再 disabled，而是可点击进入模板库页；模板库页显示 active 状态；Overview 页面与现有右侧分析区保持原有行为，不引入空壳控件。staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）。"
-    },
-    {
-      "id": "F006",
-      "title": "补模板库回归测试与视觉基线",
+      "title": "i18n 补新 keys + 守门 tests + UI polish",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "新增测试覆盖模板 union load、user template 保存、system 模板只读、模板 CRUD guardrail、路由跳转和保存后可复选；新增模板库页的 visual baseline，必要时更新 /outreach 现有 baseline。staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）。"
+      "status": "pending",
+      "acceptance": "F003+F004 新增 i18n keys 4 语言全补（zh/ja/ko/es 跑 i18n:translate）；守门 tests：tests/unit/b5-kol-detail-no-audience-tab.test.ts（静态源码守 KolDetailTabs 不再渲染 Audience tab）+ tests/integration/b5-discovery-filter-combinations.test.ts（3 新 filter 与原 12 filter 任意组合查询正确）+ tests/unit/b5-no-double-write-metadata.test.ts（守 enrich script 不再写 metadata.youtube.*，A2 强化）；UI polish：详情页 banner max-height 240px 自适应，词云 empty state 友好；L2 staging 浏览器 spot check 4 大场景全通过；staging git_sha 与本 commit 一致。"
     }
   ]
 }

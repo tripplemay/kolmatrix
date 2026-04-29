@@ -1,34 +1,19 @@
 ---
 name: B5-kol-data-enrichment
-description: KOL 数据深度增强 - schema 扩字段提升 + Discovery 高级筛选 + KOL 详情页改造（最近 6 视频 + 主题词云 + 真 engagementRate） + 隐藏 audience demographics + 已并入 MVP-demo-launch 合并 sprint（用户 2026-04-27 选 B2）
-status: decisions-locked + merged-sprint
-created_by: Kimi (Planner)
+description: KOL 数据深度增强 - schema 扩字段 + Discovery 高级筛选折叠 + KOL 详情页改造（banner + 最近 6 视频 + 词云 + 真 engagementRate）+ 隐藏 audience demographics
+status: decisions-locked
+created_by: Kimi (Planner) + 修订 johnsong (2026-04-30)
 created_at: 2026-04-27
-decisions_locked_at: 2026-04-27
-merged_into: MVP-demo-launch（9 features = MVP-seed-demo-prep 4 + 本批次 5），用户 2026-04-27 选 B2 合并方案
-estimated_effort: 5-6 day（合并后；本批次部分仍 2-3 day）
-features_count: 5（合并 sprint 内）
+decisions_locked_at: 2026-04-27（原合并 sprint 5 项 lock）
+revised_at: 2026-04-30（用户选 A 方案：B5 单独先做，再起 MVP-internal-demo-prep；词云从 stretch P2 升级为 c 完整版；A1/A2 spec 歧义澄清）
+estimated_effort: ~3-3.5 day（含词云完整版升级）
+features_count: 5
 prerequisites:
-  - MVP-kol-seed-redo done（schema metadata.youtube.* 已填）
-  - YouTube API 余配额充足（B5 二次跑 channels.list 仅消耗 ~30 units）
-trigger: 合并 sprint MVP-demo-launch 内执行（见 §10 时序方案 B2 已 lock）
+  - MVP-kol-seed-redo done ✅（schema metadata.youtube.* 已填）
+  - YouTube API quota ≥ 5K（F002 enrich + F004 lazy load 余量）
+  - aigcgateway 余额 ≥ $5（F004 词云 AI 提取关键词）
+trigger: B4-email-template-library done 后立即启动（用户 2026-04-30 决议 A 方案）
 ---
-
-## ⭐ 合并 sprint 说明（用户 2026-04-27 选 B2）
-
-本批次与 `MVP-seed-demo-prep` 合并到单一 sprint **MVP-demo-launch**（9 features 串行）。
-
-**合并理由：** 用户期望 "和之前规划的下一批次一起启动"，且接受邀请发出节点推迟 3 天换取首版即完整版（含 KOL banner / 6 视频 / 真 engagement）。
-
-**Generator 顺序详见 `MVP-seed-demo-prep-spec.md` 的 "⭐ 合并 sprint 说明" 段落。**
-
-**本批次在合并 sprint 内位置：**
-- B5-F001 schema migration → 第 1 步（让 demo seed 用新字段）
-- B5-F002 enrich KOL → 第 2 步
-- demo-prep F001+F002 → 第 3-4 步
-- B5-F003 Discovery filter → 第 5 步
-- B5-F004 KOL 详情页改造 → 第 6 步（最重）
-- B5-F005 i18n + 守门 → 第 7 步
 
 # B5-kol-data-enrichment — KOL 数据深度增强
 
@@ -37,6 +22,7 @@ trigger: 合并 sprint MVP-demo-launch 内执行（见 §10 时序方案 B2 已 
 ### 1.1 触发
 
 用户 2026-04-27 提问 "有了 YouTube API，KOL 信息展示和筛选能否支持更丰富的数据？"
+用户 2026-04-30 重申 "现在觉得 KOL 详情页数据太少"，确认 B5 单独先做。
 
 Planner 调研发现：
 - 当前 Kol schema 已有 30+ 字段，但 XLSX 数据源填充率低
@@ -48,7 +34,7 @@ Planner 调研发现：
 
 ### 1.2 目标
 
-**让 KOLMatrix 从"列表平台"进化到"KOL 深度画像平台"，支持种子用户体验"专业 KOL 营销决策"。**
+**让 KOLMatrix 从"列表平台"进化到"KOL 深度画像平台"**，提升内部团队 demo 的产品成熟度观感。
 
 具体收益：
 - KOL 详情页从 "12 字段" → "丰富画像"（含最近 6 视频缩略图 + 主题词云 + banner）
@@ -90,26 +76,35 @@ model Kol {
 - migration 通过 `validate-rollback-sql.sh`
 - prisma migrate deploy 在 staging + prod 跑通
 - tests/integration/b5-schema.test.ts 验证 4 字段 CRUD + RLS
+- staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）
 
-### F002 — 二次跑 YouTube API 补字段 + metadata.youtube.* 提升为正式列
+### F002 — 二次跑 YouTube API 补字段 + metadata.youtube.* 升级到列
 
 **实现：**
 
 1. **新建 `scripts/enrich-kol-from-youtube.ts`**：
-   - 读 prod / staging 当前 KOL（is_demo=true 仅 YouTube 来源）
+   - 读 prod / staging 当前 KOL（来源是 YouTube）
    - 批量调 channels.list (cost 1 unit/call, 50 channels/call) 拿 brandingSettings + 完整 statistics
-   - 写入 4 个新列 + `engagementRate`（基于 videos.list 平均 likeCount/viewCount）
-   - 同时把 metadata.youtube.* 数据**升级**到正式列（migration 后保留 metadata 兼容）
+   - 写入 4 个新列 + `engagementRate`（公式估算）
+   - 同时把 metadata.youtube.* 数据**升级**到正式列（migration 后**只写新列，metadata 字段保留旧数据但不再写**）
    - quota 估算：1000 KOL / 50 = 20 calls × 1 unit = **20 units**（极少）
 
-2. **真实 engagementRate 计算（可选 stretch）：**
-   - 调 search.list 拿每 KOL 最近 10 个视频（cost 100 units/call × N KOL = 100K units）— **超 quota，本批次不做**
-   - **降级方案：** engagementRate 留空 or 用 `viewCount / videoCount / subscriberCount` 公式估算
+**关键澄清（A1，2026-04-30 修订）：**
+- 本批次 engagementRate 仅做**估算或留空**，**不调 search.list 拿视频细节**避免 quota 爆
+- **engagementRate 真值由 F004 在用户点详情页时 lazy load 计算并写回 DB**（参见 F004 §4）
+- DB 状态生命周期：F002 写估算值 → F004 首次 visit 后覆盖为真值
+
+**关键澄清（A2，2026-04-30 修订）：**
+- metadata.youtube.* 字段**保留旧数据但不再写**；新数据**只写 schema 列**；读取统一从 schema 列取
+- **不双写**（避免数据漂移风险）
+- BL-012 爬虫团队 6 月接入时按 schema 列直填
 
 **Acceptance：**
 - staging Kol 表 4 新字段填充率 ≥ 95%（除非 channel.country 真无）
 - prod 同上
 - tests/integration/b5-enrich-kol.test.ts 验证 enrich 流程 + 字段映射
+- 任何 metadata.youtube.* 字段不再被新代码写入（守门 test）
+- staging git_sha 与本 commit 一致
 
 ### F003 — Discovery filter 加 3 维 + 高级筛选折叠 UI
 
@@ -165,8 +160,9 @@ type RegionGroupFilter = "asia" | "europe" | "americas" | "latam" | "oceania";
 - 高级筛选默认折叠（cookie 记住用户上次选择）
 - 3 个新 filter 在 SQL where 正确过滤（integration test 覆盖）
 - tests/e2e/discovery-advanced-filters.spec.ts 验证折叠 + 各 filter 工作
+- staging git_sha 与本 commit 一致
 
-### F004 — KOL 详情页改造（最近 6 视频 + 主题词云 + 真 engagementRate + 隐藏 audience demographics）
+### F004 — KOL 详情页改造（banner + 最近 6 视频 + 词云完整版 + 真 engagementRate + 隐藏 audience demographics）
 
 **实现：**
 
@@ -183,7 +179,7 @@ type RegionGroupFilter = "asia" | "europe" | "americas" | "latam" | "oceania";
 │ - Bio (snippet.description)                        │
 │ - Categories (chips)                               │
 │ - 最近 6 个视频缩略图（新增，3×2 grid）            │
-│ - 视频主题词云（新增，AI 提取自标题，stretch）     │
+│ - 视频主题词云（新增，react-wordcloud 完整版）     │
 └────────────────────────────────────────────────────┘
 ┌─ Tab: Audience ────────────────────────────────────┐
 │ ⚠️ 隐藏（hidden, 不再渲染 placeholder）            │
@@ -198,14 +194,20 @@ type RegionGroupFilter = "asia" | "europe" | "americas" | "latam" | "oceania";
 - demo 阶段每 KOL 仅在用户**点开详情页时**调（lazy load + cache 24h）
 - 不在 seed 阶段批量爬（避免 quota 爆）
 
-3. **视频主题词云（stretch goal，可推迟）：**
-- 6 视频标题拼接 → 调 aigcgateway Action 提取关键词（5-10 个）
-- 渲染为词云（react-wordcloud 或简单 chip 列表）
-- 缓存 7 天
+3. **视频主题词云（C2 升级 — 必做完整版，2026-04-30 修订）：**
+- 6 视频标题拼接 → 调 aigcgateway Action 提取关键词（5-10 个，附 weight 0-1）
+- 渲染为完整版词云（**react-wordcloud + d3-cloud**，字号视 weight 大小映射 14-32px）
+- 缓存 7 天（DB JSONB 字段 `topicCloud` 或 `aiInsights.topicCloud`）
+- 无数据 / AI 失败 → 显示 "Topics being analyzed..." 友好 empty state
+- 词云 click → 暂不做 filter 跳转（Post-MVP 增强）
+- 包大小：react-wordcloud + d3-cloud ~30KB gzip，**lazy load**（dynamic import）避免影响其他页
 
-4. **真 engagementRate（基于实际视频）：**
-- 同 6 视频拿 statistics.likeCount / viewCount → 平均
-- 替换 F002 估算值
+4. **真 engagementRate（A1 澄清，2026-04-30 修订）：**
+- 详情页打开时 lazy load 调 search.list (channelId, order=date, maxResults=6) cost 100 units/call
+- 拿到视频列表后调 videos.list (id=v1,v2,...,v6) 一次拿 6 视频 statistics（cost 1 unit）
+- 计算 avg(likeCount + commentCount) / avg(viewCount) → engagementRate
+- 写回 Kol.engagementRate 字段缓存 24h（24h 内重访不重调）
+- **覆盖** F002 的估算值（DB 状态：F002 写估算 → F004 首次 visit 后变真值）
 
 5. **隐藏 audience demographics：**
 - 当前 KolDetailTabs 中 Audience tab 显示 placeholder
@@ -213,9 +215,12 @@ type RegionGroupFilter = "asia" | "europe" | "americas" | "latam" | "oceania";
 - 加注释 `// B6: re-enable when NoxInfluencer integration lands`
 
 **Acceptance：**
-- KOL 详情页含 banner / 最近 6 视频 / 真 engagementRate
+- KOL 详情页含 banner / 最近 6 视频 / 真 engagementRate / 完整版词云
 - Audience tab 不渲染（visual + integration test 验证）
-- 词云作为 stretch goal，可在 Acceptance 中标 P2 不阻塞
+- 词云 react-wordcloud + d3-cloud 集成完成，weight 0-1 映射字号 14-32px
+- 词云 lazy load（不在首屏 JS bundle）
+- engagementRate F002 估算值 → F004 真值覆盖链路通畅
+- staging git_sha 与本 commit 一致
 
 ### F005 — i18n 补新 keys + 守门 tests + UI polish
 
@@ -230,36 +235,39 @@ type RegionGroupFilter = "asia" | "europe" | "americas" | "latam" | "oceania";
 2. **守门 tests：**
 - tests/unit/b5-kol-detail-no-audience-tab.test.ts：静态源码守 KolDetailTabs 不再渲染 Audience tab
 - tests/integration/b5-discovery-filter-combinations.test.ts：3 新 filter 与原 12 filter 任意组合查询正确
+- tests/unit/b5-no-double-write-metadata.test.ts：守 enrich script 不再写 metadata.youtube.* 字段（A2 强化）
 
 3. **UI polish：**
 - KOL 卡片（Discovery / Database 列表）显示 banner 缩略（hover 露出）— 可选
-- 详情页 banner 高度自适应（避免 banner 太长占满首屏）
+- 详情页 banner 高度自适应（max-height 240px，避免占满首屏）
 - 词云无数据时友好 empty state
 
 **Acceptance：**
 - i18n 4 语言新 keys 全补
-- 6 个守门 test 全绿
-- L2 staging 浏览器 spot check：KOL 详情页 / Discovery 高级筛选 / Audience 隐藏
+- 6+ 守门 test 全绿（含 A2 不双写守门）
+- L2 staging 浏览器 spot check：KOL 详情页 / Discovery 高级筛选 / Audience 隐藏 / 词云渲染
+- staging git_sha 与本 commit 一致
 
 ## 3. 关键设计决策
 
-| 决策 | 选定方案 | 用户裁决（2026-04-27）|
+| 决策 | 选定方案 | 用户裁决 |
 |---|---|---|
-| **schema 扩字段** | 4 个新列（channelCreatedAt / videoCount / totalViewCount / bannerUrl） | ✅ 同意 |
-| **Discovery filter 折叠 UI** | 基础 6 + 高级 9+3 折叠（cookie 记忆）| ✅ 同意 |
-| **KOL 详情页改造** | banner + 最近 6 视频 + 词云（stretch）+ 真 engagementRate | ✅ 同意 |
-| **audience demographics** | **完全隐藏 tab**（不显示 placeholder） | ✅ 用户选"隐藏" |
-| **最近 6 视频获取时机** | 用户点详情页时 lazy load + cache 24h（避免 quota 爆） | Planner 推荐 |
-| **词云优先级** | stretch goal P2，可推迟 | Planner 推荐 |
-| **engagementRate 真值** | 基于最近 6 视频 likeCount/viewCount 平均；F002 仅做估算 | Planner 推荐 |
-| **6 月爬虫数据 import 时** | metadata.youtube.* 兼容字段保留；新爬虫数据按 schema 列填充 | 平滑过渡 |
+| schema 扩字段 | 4 个新列（channelCreatedAt / videoCount / totalViewCount / bannerUrl） | ✅ 2026-04-27 |
+| Discovery filter 折叠 UI | 基础 6 + 高级 9+3 折叠（cookie 记忆） | ✅ 2026-04-27 |
+| KOL 详情页改造 | banner + 最近 6 视频 + 词云 + 真 engagementRate | ✅ 2026-04-27 |
+| audience demographics | 完全隐藏 tab | ✅ 2026-04-27 |
+| 最近 6 视频获取时机 | lazy load + cache 24h | Planner 推荐 |
+| **词云方案** | **C 完整版（react-wordcloud + AI 提取关键词 + weight 视觉化）** | ✅ **2026-04-30** |
+| **engagementRate 真值（A1）** | F002 估算 / 留空 → F004 lazy load 时写回真值 | ✅ **2026-04-30** |
+| **6 月爬虫数据 import（A2）** | metadata 字段保留旧数据；新数据**只写 schema 列**；**不双写** | ✅ **2026-04-30** |
+| 启动模式 | **B5 单独批次先做，B5 done 后再起 MVP-internal-demo-prep**（A 方案，原 merged-sprint 废弃） | ✅ **2026-04-30** |
 
 ## 4. 依赖关系
 
 ```
 F001 (schema migration) ─→ F002 (enrich + 升级 metadata 到列) ─┐
                                                                  ├─→ F003 (Discovery filter 3 维 + 折叠)
-                                                                 ├─→ F004 (KOL 详情页改造)
+                                                                 ├─→ F004 (KOL 详情页改造 + 词云)
                                                                  └─→ F005 (i18n + 守门 tests + polish)
 ```
 
@@ -270,11 +278,12 @@ F001 (schema migration) ─→ F002 (enrich + 升级 metadata 到列) ─┐
 | 风险 | 严重度 | 对策 |
 |---|---|---|
 | schema migration 影响生产数据 | 中 | F001 nullable + ROLLBACK SQL 完整；先 staging 验证 |
-| YouTube API quota 不够（特别是 F004 lazy load 视频）| 中 | F004 lazy load + cache 24h；监控每日 quota 消耗 |
-| 词云 AI 提取效果差 | 低 | 标 stretch P2，效果不好可推迟到 Post-B5 |
-| Audience tab 隐藏后用户问 "我看到原型有这个"| 低 | F005 在隐藏处加 tooltip "Available with NoxInfluencer integration (Q3 2026)" 或完全静默 |
+| YouTube API quota 不够（F004 lazy load 视频）| 中 | F004 lazy load + cache 24h；监控每日 quota 消耗 |
+| 词云 AI 提取效果差 | 低 | F004 加 fallback empty state；如果 AI 提取关键词全无意义可手动 fallback 到分类标签 |
+| Audience tab 隐藏后用户问 | 低 | F005 在 KOL 详情页加 footer 备注 "Audience demographics coming with NoxInfluencer integration" 或完全静默 |
 | 新 filter 维度 SQL 性能 | 低 | F003 加 channel_age / video_count 索引（已有 isGaming + categories 索引）|
-| metadata.youtube.* 字段升级到列后兼容性 | 中 | F002 保留 metadata 字段（向后兼容，6 月爬虫数据 import 时双写）|
+| metadata.youtube.* 升级到列后兼容（A2）| 中 | **不双写**；保留旧 metadata 数据但读写都走新列；BL-012 爬虫接入时按新列 schema 直填；F005 加守门 test |
+| 词云包大小影响首屏 | 低 | react-wordcloud + d3-cloud ~30KB gzip，KOL 详情页 lazy load（dynamic import）避免影响其他页 |
 
 ## 6. 验收方式
 
@@ -282,12 +291,12 @@ F001 (schema migration) ─→ F002 (enrich + 升级 metadata 到列) ─┐
 - F001 schema migration 通过 + integration test
 - F002 enrich script + integration test
 - F003 filter combinations integration + e2e test
-- F004 detail page test（含 hidden Audience tab）
-- F005 i18n + 守门 tests
+- F004 detail page test（含 hidden Audience tab + 词云渲染）
+- F005 i18n + 守门 tests（含 no-double-write）
 - typecheck / lint / 现有套件不退化
 
 ### L2 staging
-- KOL 详情页打开 demo-kol-001（或任意 youtube-seeded KOL） → 含 banner / 最近 6 视频 / 真 engagementRate / 无 Audience tab
+- KOL 详情页打开任意 youtube-seeded KOL → 含 banner / 最近 6 视频 / 真 engagementRate / 完整版词云 / 无 Audience tab
 - Discovery 高级筛选展开 → 3 新 filter 组合查询
 - 4 语言（en/zh/ja/ko/es）KOL 详情页 + Discovery 切换正常
 
@@ -300,15 +309,16 @@ F001 (schema migration) ─→ F002 (enrich + 升级 metadata 到列) ─┐
 - `docs/specs/MVP-kol-seed-redo-spec.md`（前置批次，schema metadata.youtube.* 已填）
 - `docs/product/KOLMatrix-MVP-PRD.md` §11（产品决策）+ §12（B6 爬虫团队接入边界）
 - `docs/product/kol-crawler-team-handoff-v1.md`（6 月爬虫团队，本批次 schema 与之兼容）
+- `docs/product/MVP-gap-audit-2026-04-30.md`（B5 启动决策溯源）
 - `prisma/schema.prisma` model Kol（扩字段）
 - `framework/harness/database-patterns.md`（migration 规则）
 
 ## 8. 启动检查清单（Generator 开工前）
 
-- [ ] MVP-kol-seed-redo done + signoff（schema metadata.youtube.* 已填）
-- [ ] YouTube API quota ≥ 5K（B5 仅消耗 ~30，但 F004 lazy load 需余量）
-- [ ] aigcgateway 余额 ≥ $5（F004 词云 AI 提取，可选）
-- [ ] 用户确认启动时机（与 demo-prep + prod-launch-smoke 协调，详见 §10）
+- [x] MVP-kol-seed-redo done + signoff（schema metadata.youtube.* 已填）
+- [ ] YouTube API quota ≥ 5K（B5 enrich 仅消耗 ~30，但 F004 lazy load 需余量）
+- [ ] aigcgateway 余额 ≥ $5（F004 词云 AI 提取）
+- [x] 用户确认启动时机（2026-04-30 A 方案 lock）
 
 ## 9. 估时
 
@@ -317,85 +327,63 @@ F001 (schema migration) ─→ F002 (enrich + 升级 metadata 到列) ─┐
 | F001 schema + migration + tests | ~3-4h |
 | F002 enrich script + tests | ~2-3h |
 | F003 Discovery 3 filter + 折叠 UI + tests | ~4-5h |
-| F004 KOL 详情页改造（banner + 6 视频 + 真 engagement + 隐藏 audience）| ~5-6h |
+| F004 KOL 详情页改造（banner + 6 视频 + 真 engagement + 隐藏 audience + **词云完整版**）| ~6-8h（含 react-wordcloud 集成 +1-2h vs 原 stretch）|
 | F005 i18n + 守门 tests + polish | ~2-3h |
 | 缓冲 | ~3h |
-| **总计** | **~19-24h ≈ 2.5-3 day** |
+| **总计** | **~20-26h ≈ 2.5-3.5 day** |
 
-## 10. 时间线 + 启动时序（与之前规划批次协调）
+## 10. 时间线 + 启动时序
 
-### 用户期望（2026-04-27）
+### 用户决策（2026-04-30）
 
-> "在本批次（kol-seed-redo）完成后，和之前规划的下一批次一起启动"
+> 用户选 A 方案：B5 单独先做，B5 done 后再起 MVP-internal-demo-prep。
+> 理由："KOL 详情页数据太少"，需要 B5 先做提升详情页画像质量。
+> 同时锁定 MVP-internal-demo-prep 全部决策（详见 `docs/specs/MVP-internal-demo-prep-spec.md`）。
 
-**"之前规划的下一批次"** = MVP-prod-launch-smoke + MVP-seed-demo-prep（kol-seed-redo done 后启动的两批）
-
-### Generator 单线限制
-
-按 harness-rules.md 铁律 6，Generator 一次只做一批：
-- B5 5 features 全 Generator 工作
-- demo-prep F001+F002 也是 Generator 工作
-- prod-launch-smoke F002 是 Reviewer 工作（Codex），不占 Generator
-
-### 时序方案对比
-
-**方案 A（Planner 推荐）：错峰但都启动**
+### 启动时序
 
 ```
-~04-30  i18n done
-~04-30  kol-seed-redo 启动（与 prod redeploy 平行）
-~05-01  kol-seed-redo done + 用户 prod redeploy
-~05-01  ⭐ 三批同时进入"启动状态"：
-          - MVP-prod-launch-smoke building（Reviewer 主体，半天 done）
-          - MVP-seed-demo-prep building（Generator 主体，~2-2.5 day）
-          - B5-kol-data-enrichment planning（Planner 起草 + 等 Generator 接手）
-~05-01-04 demo-prep 推进（Generator）+ prod-launch-smoke 推进（Reviewer）
-~05-04  邀请发出 ⭐
-~05-04  B5 building 启动（Generator 接力 demo-prep 之后）
-~05-07  B5 done + 用户 prod redeploy（B5 schema + 字段升级）
+~04-30  B4-email-template-library done ✅
+~04-30  done 收尾 + MVP gap audit + B5 重新 planning（本会话 johnsong）
+~04-30  ⭐ B5 building 启动（Generator 接手）
+~05-01  F001 + F002 完成（schema + enrich，半天）
+~05-02  F003 完成（Discovery filter + 折叠 UI）
+~05-03  F004 完成（KOL 详情页 + 词云完整版）
+~05-03  F005 完成（i18n + 守门）
+~05-04  B5 verifying（Reviewer L1/L2）
+~05-05  B5 done + 用户 prod redeploy（schema migration 落地）
+~05-05  ⭐ MVP-internal-demo-prep planning + building（5 features，~1.5-2 day）
+~05-07  MVP-internal-demo-prep done + prod L2 烟测 PASS
+~05-07  团队内部 demo 准备就绪
 ```
 
-**方案 B（用户字面理解：严格平行）**
+## 11. 用户决策（已 lock）
 
-```
-~05-01  三批 Generator 全部尝试启动 → 实际无法（Generator 单线）
-        必须串行 demo-prep 和 B5
-        实际等价于方案 A
-```
-
-**方案 C（B5 schema-only 先做，剩余 demo 后做）**
-
-```
-~05-01  kol-seed-redo done + prod redeploy
-~05-01  B5 F001 + F002 启动（schema migration + enrich，~半天，Generator 间隙）
-~05-01  prod-launch-smoke + demo-prep 启动（demo-prep 用 B5 已升级 schema）
-~05-04  邀请发出
-~05-04  B5 F003-F005 启动（剩余功能）
-~05-07  B5 完整 done
-```
-
-**Planner 推荐：方案 C** — 理由：
-- B5 schema 部分（F001+F002）轻量（~半天），不阻塞 demo-prep
-- F003-F005 是 UI 改造，留到邀请发出后做（种子用户首周用 demo-prep 简化版，第二周看到 B5 增强版，**形成"产品在迭代"印象**）
-- demo-prep F001 demo seed 脚本可基于 B5 升级后的 schema 写（一次到位）
-
-## 11. 用户决策（2026-04-27 ✅ 5/5 全 lock）
+### 2026-04-27（原合并 sprint）
 
 | # | 问题 | 用户答复 |
 |---|---|---|
 | 1 | 是否起草 B5 spec | ✅ 同意 |
-| 2 | 启动时机 | ✅ 本批次（kol-seed-redo）完成后，和之前规划的下一批次一起启动 |
-| 3 | filter UI 折叠改进 | ✅ 同意（含在 F003）|
-| 4 | audience demographics UI | ✅ 隐藏（含在 F004）|
-| 5 | §10 时序方案 | ✅ **B2 合并 sprint**（接受邀请发出推迟到 ~05-07，换取首版即完整版） |
+| 2 | 启动时机 | ✅ 本批次（kol-seed-redo）完成后启动（已 done） |
+| 3 | filter UI 折叠改进 | ✅ 同意（含在 F003） |
+| 4 | audience demographics UI | ✅ 隐藏（含在 F004） |
+| 5 | 时序方案 | ⚠️ 原 B2 合并 sprint，已被 2026-04-30 A 方案替代 |
+
+### 2026-04-30（修订）
+
+| # | 问题 | 用户答复 |
+|---|---|---|
+| 6 | 启动模式（A/B/C 方案）| ✅ A 方案：B5 单独先做，再起 MVP-internal-demo-prep |
+| 7 | C1 — A1（engagementRate）+ A2（不双写）解读 | ✅ 同意 |
+| 8 | C2 — 词云方案 | ✅ c 完整版（react-wordcloud + d3-cloud） |
+| 9 | C3 — MVP-internal-demo-prep 决策保存 | ✅ a 起草独立 spec 文件 |
 
 ---
 
-**Spec 状态：** decisions-locked + merged-sprint（2026-04-27 Planner 起草 + 用户裁决 5/5 全 lock）
+**Spec 状态：** decisions-locked（2026-04-30 修订完成，等 Generator 开工）
 
 **与其他批次关系：**
-- 依赖 MVP-kol-seed-redo（schema metadata.youtube.* 已填）
-- **合并 sprint：** MVP-demo-launch = MVP-seed-demo-prep (4) + 本批次 (5) = 9 features
-- prod-launch-smoke 平行执行（Reviewer，~半天）
-- 不与 BIx-staging-automation / B4-extended-email-system 冲突
-- 与 BL-012 爬虫团队 6 月接入兼容（schema 列已就绪）
+- 依赖 MVP-kol-seed-redo done ✅（schema metadata.youtube.* 已填）
+- B5 done 后立即启动 MVP-internal-demo-prep（5 features）
+- 不与 B4-extended-email-system 冲突
+- 与 BL-012 爬虫团队 6 月接入兼容（schema 列已就绪，A2 修订后明确不双写）
