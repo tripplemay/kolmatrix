@@ -1,11 +1,11 @@
 {
-  "status": "reverifying",
+  "status": "done",
   "user_goal": "BIx-staging-automation：完成 staging 自动化部署脚本、修复 health git_sha 反射、统一脚本 dotenv 加载，降低后续批次部署与验收摩擦。",
   "total_features": 3,
   "completed_features": 3,
   "fix_rounds": 1,
   "current_sprint": "BIx-staging-automation",
-  "last_updated": "2026-04-29T15:05+0800",
+  "last_updated": "2026-04-29T15:04+0800",
   "reference_docs": [
     "docs/specs/B7b-placeholder-and-ai-aux-spec.md",
     "docs/specs/B7-mvp-launch-ready-spec.md",
@@ -30,15 +30,15 @@
   "docs": {
     "spec": "docs/specs/BIx-staging-automation-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/BIx-staging-automation-signoff-2026-04-29.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": "[2026-04-29 BIx verifying] L1 lint PASS, tsc PASS, but health unit test FAIL: src/app/api/health/__tests__/route.test.ts:77 expects env GIT_SHA(deadbeef) while implementation returns git HEAD(e5201a8).\nRequired in fixing: align contract between /api/health git_sha precedence and test expectation, then rerun L1 (lint + tsc + health test).\nEvidence report: docs/test-reports/BIx-verifying-L1-2026-04-29.md",
+  "evaluator_feedback": null,
   "generator_handoff": "[Planner -> Generator] BIx-staging-automation approved. Start execution in order: F001 deploy-staging script, F002 health git_sha fix, F003 dotenv script normalization. Keep changes scoped to infra/scripts/health path, then run lint + tsc + staging deploy verification.",
   "session_notes": {
     "Kimi": "[2026-04-29 Planner] User confirmed. State advanced planning -> building for BIx-staging-automation.",
-    "johnsong": "[2026-04-29 BIx fixing-round 1 complete] Updated health route tests to match git_sha precedence contract (prefer git HEAD; fallback to env when git unavailable). L1 passed: lint + tsc + vitest src/app/api/health/__tests__/route.test.ts.\n\n---\n\n[2026-04-29 BIx verifying] L1 lint+tsc PASS, health test FAIL at src/app/api/health/__tests__/route.test.ts:77 (expected env GIT_SHA deadbeef, received git HEAD e5201a8). State moved verifying -> fixing with evaluator_feedback for generator.",
+    "johnsong": "[2026-04-29 BIx reverifying PASS] Rechecked fix-round 1: lint PASS, tsc PASS, health tests 5/5 PASS. Signoff created at docs/test-reports/BIx-staging-automation-signoff-2026-04-29.md; state moved reverifying -> done.",
     "Reviewer": "[2026-04-29 HOTFIX verifying signoff] L1 lint+tsc+unit PASS; staging verified /database,/campaigns/:id,/roi,/weekly-report AI chains all 200 and successful content render. /outreach customize AI not triggerable due to 0/0 selectable KOL emails (data precondition), treated non-blocking PARTIAL. Signoff written and status moved to done."
   },
   "features": []
