@@ -1,39 +1,5 @@
 [
   {
-    "id": "BL-001",
-    "title": "BM1 F002 seed:kol 脚本缺失 dotenv 自动加载",
-    "description": "scripts/seed-kol-from-enriched.ts line 31+ 直接读 process.env.DATABASE_ADMIN_URL/DATABASE_URL，但脚本开头未 `import 'dotenv/config';`。`npm run seed:kol` 独立跑时环境变量不加载导致抛错 \"DATABASE_ADMIN_URL must be set\"。Workaround：`set -a && source .env && set +a && npm run seed:kol`。Fix：脚本第一行加 `import 'dotenv/config';`（2 行改动）。2026-04-23 Planner staging deploy 时发现。",
-    "decisions": [],
-    "confirmed_at": "2026-04-23T08:00+0800",
-    "priority": "low",
-    "tags": [
-      "BM1-polish",
-      "seed-script",
-      "env-loading"
-    ],
-    "discovered_in": "staging L2 pre-check by Planner johnsong"
-  },
-  {
-    "id": "BL-002",
-    "title": "Staging /api/health git_sha 显示 unknown（根因比初判更深）",
-    "description": "Kimi 交接 notes 明确 'git_sha unknown 已修复（后续 deploy 正常反射 sha）'，但仅 prod 修好。2026-04-23 Planner 第 2 次 deploy staging 时用 `GIT_SHA=9ed5def npm run build` 显式注入 build-time env var 仍无效，health 返回仍为 unknown。**说明 health handler 不读 build-time env**，实际根因是 3 种可能之一：(1) handler 读运行时 process.env.GIT_SHA，PM2 不从 .env.staging 以外拿到；(2) handler 从某个 build 生成文件读（如 .git-sha），staging build 未生成；(3) 专用 next.config.ts env 配置。修复路径已不再是 'deploy script 里 GIT_SHA=xxx' 那么简单；需要 Generator 看 src/app/api/health/route.ts 源码 + deploy-prod.yml 比对来定位。prod 在 4b05cb6 时显示 git_sha=4b05cb60...（全长 sha），staging 始终 unknown。BL-004 实施时必须连带修这个。",
-    "decisions": [
-      "BL-004 实施时 Generator 必须先看 health handler 源码再写脚本，不能只加 GIT_SHA= 前缀"
-    ],
-    "confirmed_at": "2026-04-23T08:00+0800",
-    "priority": "medium",
-    "tags": [
-      "BM1-polish",
-      "staging-devx",
-      "observability"
-    ],
-    "discovered_in": "staging L2 pre-check by Planner johnsong",
-    "investigation_log": [
-      "2026-04-23 Planner 第 1 次 deploy: 假设 build-time env 就行",
-      "2026-04-23 Planner 第 2 次 deploy: `GIT_SHA=9ed5def npm run build` 注入仍 unknown -> 假设不成立"
-    ]
-  },
-  {
     "id": "BL-003",
     "title": "/en 和 /en/ 404（根 locale 路径不落到 dashboard）— F008 后部分缓解",
     "description": "初次发现：GET /en 返回 404，GET /en/ 308 跳回 /en 再 404。2026-04-23 BM1 F008 落地后观察到：受保护路由的 307 跳转已正确保留 locale 前缀（/en/dashboard 跳 /en/login 而非裸 /login），说明 locale routing 主干已恢复。残留 bare /en 404 仍在，但正常用户走 / → /en/dashboard 自动补全路径，实操无路径断裂。MVP 可降级为 'deferred'（非 low），Post-MVP 再修。",
@@ -92,25 +58,5 @@
       "api-consistency"
     ],
     "discovered_in": "BM2 F006 pre-impl audit §3 #L + Planner 裁决 12.4"
-  },
-  {
-    "id": "BL-004",
-    "title": "Staging 部署自动化（infrastructure/deploy-staging.sh 入 git）",
-    "description": "当前 staging deploy 全手动 SSH（见 docs/dev/tls-staging-runbook.md §5），每次 git pull + npm ci + build + migrate + seed + pm2 restart 需 3-5min 输入。Planner 2026-04-23 评估后推荐方案 A（shell 脚本入 git）而非方案 B（GitHub Actions workflow）：1 人团队用不到 workflow 的可观测/权限/CD auto-deploy 价值；shell 脚本 ~1.5h 工时就能覆盖 80% 收益。脚本顺带修 BL-001（set -a source .env）+ BL-002（GIT_SHA=$(git rev-parse --short HEAD) npm run build）。落地时机：BM1 verifying 或 BM2 建中插空；最迟 MVP 上线前基建批次（'BIx-staging-automation'，可与 BL-001/BL-002/BL-003 打包）。方案 B workflow 延后到 MVP 后团队扩员。",
-    "decisions": [
-      "方案 A（shell 脚本）而非 B（GitHub Actions）——1 人团队不匹配 workflow 成本",
-      "不加进 BM1/BM2 spec（已锁），作为独立 micro-batch 或 polish 收口",
-      "脚本中带 GIT_SHA 注入 + dotenv source，顺带关闭 BL-001/BL-002",
-      "部署职责分配（2026-04-23 用户确认，BL-004 spec 实施时落地）：building 期间 Generator 自觉 deploy / verifying 前 Evaluator 跑一次保证 SHA 对齐 / ad-hoc 任何人可跑（脚本幂等非破坏）/ prod 部署始终由用户触发 GitHub Actions 不变",
-      "铁律 9 释疑：deploy 不算产品代码修改，Planner/Evaluator/用户均可 ssh 执行 deploy-staging.sh；但脚本本身的创建属 Generator 工作"
-    ],
-    "confirmed_at": "2026-04-23T08:30+0800",
-    "priority": "medium",
-    "tags": [
-      "staging-devx",
-      "infrastructure",
-      "automation"
-    ],
-    "discovered_in": "user question 2026-04-23 + Planner Bash 手动 deploy staging 实操经验"
   }
 ]

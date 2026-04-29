@@ -5,7 +5,7 @@
       "id": "F001",
       "title": "抽出 /outreach 模板库数据读取与权限规则",
       "priority": "high",
-      "executor": "Evaluator",
+      "executor": "generator",
       "status": "completed",
       "acceptance": "模板读取统一走一个共享 helper，能够同时返回当前 locale 的 system + user templates；system 模板跨租户可读，user 模板仅当前租户可见；locale 为空时按 spec fallback 到 en system templates。staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）。"
     },

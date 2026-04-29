@@ -19,7 +19,7 @@
     "spec": "docs/specs/B4-email-template-library-spec.md",
     "test_cases": null,
     "signoff": "docs/test-reports/B4-email-template-library-signoff-2026-04-29.md",
-    "framework_reviewed": false
+    "framework_reviewed": true
   },
   "role_assignments": null,
   "evaluator_feedback": "PASS: template save/refresh persistence, /outreach navigation, and visual baseline coverage verified on staging git_sha=31ab6c0.",
