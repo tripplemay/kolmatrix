@@ -4,19 +4,16 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **B7b-placeholder-and-ai-aux** — status=done（2026-04-29 11:00 BJ）
-- 进度：4/4 completed，fix_rounds=0
-- role_assignments：已清空（done 阶段）
+- **HOTFIX-aigc-action-endpoint-2026-04-29** — status=done（2026-04-29 14:35 BJ）
+- 进度：1/1 completed，fix_rounds=0
 
-## Verifying 结论（PASS）
-- L1：lint + tsc + guard unit tests 全绿
-- Integration：database-intelligence / campaign-suggest / saved-search 共 3 files 8 tests PASS
-- E2E：`bash scripts/test/codex-e2e.sh` = 38 passed / 13 skipped（visual-regression 按脚本策略跳过）
-- L2：staging `/api/health` git_sha=`ffc43d5` 与 main HEAD 一致
+## Verifying 结论
+- L1：lint + tsc + 相关 unit tests 全绿
+- Staging：/database、/campaigns/:id、/roi、/weekly-report AI 调用成功（POST 200 + 内容渲染）
+- /outreach：因测试数据 `0/0 selectable KOL emails`，Customize with AI 按规则 disabled，标注数据前置条件（非代码阻断）
 
 ## 产物
-- signoff 报告：`docs/test-reports/B7b-placeholder-and-ai-aux-signoff-2026-04-29.md`
+- signoff 报告：`docs/test-reports/HOTFIX-aigc-action-endpoint-2026-04-29-signoff-2026-04-29.md`
 
 ## 下游
-- 下一批：MVP-demo-launch 合并 sprint（9 features，预计 5-6 天）
-- 并行待办：B6 day-5 handoff validation（~2026-05-03，不阻塞主线）
+- 可回到下一批 planning/building 主线；若需完整覆盖 outreach AI，请先补 staging campaign 下可发送邮箱样本数据
