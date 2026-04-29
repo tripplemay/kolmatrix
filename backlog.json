@@ -58,5 +58,110 @@
       "api-consistency"
     ],
     "discovered_in": "BM2 F006 pre-impl audit §3 #L + Planner 裁决 12.4"
+  },
+  {
+    "id": "BL-014",
+    "title": "ja/ko/es LLM 翻译人工审核",
+    "description": "MVP-i18n batch 用 doubao-pro 自动翻译 ja/ko/es 三语言。仅 zh 由用户手动 review，其他三语完全依赖 LLM 输出。可能存在不地道用语 / 翻译错误 / 文化适配问题。MVP polish 审计（docs/product/MVP-polish-audit-2026-04-30.md P1-6）建议找 native speaker 或团队中的 ja/ko/es 母语成员 review 100-200 个高频 key（dashboard / discovery / outreach 优先）。本任务非 dev 工作，属翻译/产品工作，不阻塞 MVP 团队内部 demo（团队主要用 zh + en）。",
+    "decisions": [
+      "Post-MVP 处理（团队内部 demo 不阻塞）",
+      "执行者：翻译同事 / 团队 ja/ko/es 母语成员（非 Generator dev 工作）",
+      "范围：dashboard / discovery / outreach 高频 key 100-200 条优先"
+    ],
+    "confirmed_at": "2026-04-30T02:30+0800",
+    "priority": "low",
+    "tags": [
+      "i18n",
+      "post-mvp",
+      "translation-quality"
+    ],
+    "discovered_in": "docs/product/MVP-polish-audit-2026-04-30.md P1-6"
+  },
+  {
+    "id": "BL-015",
+    "title": "Visual regression 跨平台 baseline",
+    "description": "tests/e2e/visual-regression.spec.ts 当前仅 Linux 平台跑（13 个 test.skip 带 process.platform !== 'linux' check），非 Linux runner（macOS / Windows / WSL non-Linux）全部跳过。导致其他 OS 上的开发者 / Reviewer 看不到漂移。MVP polish 审计 P1-7 建议起 Docker 容器统一 runner 或为各 OS 生成 platform-specific baseline。属 infra 优化，团队不直接接触，不阻塞 MVP 内部 demo。",
+    "decisions": [
+      "Post-MVP infra 优化批次处理",
+      "范围：Docker 容器 runner 或 platform-specific baseline 二选一"
+    ],
+    "confirmed_at": "2026-04-30T02:30+0800",
+    "priority": "low",
+    "tags": [
+      "infra",
+      "testing",
+      "visual-regression",
+      "post-mvp"
+    ],
+    "discovered_in": "docs/product/MVP-polish-audit-2026-04-30.md P1-7"
+  },
+  {
+    "id": "BL-016",
+    "title": "Weekly Report 真 PDF 导出（jsPDF / puppeteer）",
+    "description": "/weekly-report Download PDF 当前实际是 window.print() + 打印样式表，需用户在打印对话框选 'Save as PDF'。BIx-mvp-polish-pass F002 仅加帮助文案（P1-8a）。如团队/客户希望'一键直接下载 PDF 文件'，需引入 jsPDF（客户端，~半天但样式还原成本高）或 puppeteer（服务端，~1 day，准确但 ops 成本）。Post-MVP 评估：如团队 demo 后无人投诉，长期 deferred。",
+    "decisions": [
+      "MVP polish 仅加文案引导（已落地）",
+      "真 PDF 实现 deferred 到反馈触发",
+      "实现方案二选一：jsPDF（客户端）or puppeteer（服务端）"
+    ],
+    "confirmed_at": "2026-04-30T02:30+0800",
+    "priority": "deferred",
+    "tags": [
+      "weekly-report",
+      "pdf-export",
+      "post-mvp"
+    ],
+    "discovered_in": "docs/product/MVP-polish-audit-2026-04-30.md P1-8b/c"
+  },
+  {
+    "id": "BL-017",
+    "title": "/shared/weekly-report token 过期 + 撤销机制",
+    "description": "周报匿名分享链接 /shared/weekly-report/[token] 当前未审过过期时间是否可控、撤销是否生效。MVP 内部团队 demo 不会真分享给外部，不阻塞。Post-MVP 接客户后必须支持：(1) token 过期时间字段（默认 7 天）；(2) revoke API 立即失效；(3) 链接 metadata 显示创建者 + 过期时间。",
+    "decisions": [
+      "Post-MVP 处理",
+      "默认过期 7 天 + revoke API + 创建者 metadata"
+    ],
+    "confirmed_at": "2026-04-30T02:30+0800",
+    "priority": "low",
+    "tags": [
+      "weekly-report",
+      "share-link",
+      "security",
+      "post-mvp"
+    ],
+    "discovered_in": "docs/product/MVP-polish-audit-2026-04-30.md P1-11"
+  },
+  {
+    "id": "BL-018",
+    "title": "11 页全量 edge states 系统性 spot check",
+    "description": "BIx-mvp-polish-pass F003 仅做 critical paths（11 页 × 1-2 关键 state）。Post-MVP 全量 spot check 包括：每页 loading skeleton（>1.5s 空白页）/ all empty states / all error states / 网络中断恢复 / API timeout fallback / 长列表滚动 / 长文本截断 等。属系统性 polish 工作，不阻塞团队 demo。",
+    "decisions": [
+      "MVP 仅 critical paths（已落地于 BIx-mvp-polish-pass F003）",
+      "全量 spot check Post-MVP"
+    ],
+    "confirmed_at": "2026-04-30T02:30+0800",
+    "priority": "low",
+    "tags": [
+      "edge-states",
+      "ux-polish",
+      "post-mvp"
+    ],
+    "discovered_in": "docs/product/MVP-polish-audit-2026-04-30.md P1-10"
+  },
+  {
+    "id": "BL-019",
+    "title": "Mobile responsive 11 页适配（如需求出现）",
+    "description": "用户 2026-04-30 明确 '团队不会通过移动端使用产品'，本批次 BIx-mvp-polish-pass 移除 mobile 适配范围。Post-MVP 如出现真客户 mobile 需求（如 KOL 经纪/差旅出行场景），起独立批次：11 页 mobile spot check + 必修 breakpoint（dashboard 当前仅 3 处 responsive class，明显不足）。",
+    "decisions": [
+      "MVP 不做（用户 2026-04-30 决议）",
+      "等真客户 mobile 需求触发"
+    ],
+    "confirmed_at": "2026-04-30T02:30+0800",
+    "priority": "deferred",
+    "tags": [
+      "mobile-responsive",
+      "post-mvp"
+    ],
+    "discovered_in": "docs/product/MVP-polish-audit-2026-04-30.md P1-5 + 用户 2026-04-30 决议"
   }
 ]

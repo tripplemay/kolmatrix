@@ -1,12 +1,13 @@
 ---
 name: MVP-internal-demo-prep
-description: MVP 内部团队 demo 准备 - Dashboard 三元素 + Q5 Product 字段强制 + 5 款游戏 Products seed + 团队 README + Prod L2 烟测
+description: MVP 内部团队 demo 准备 - Dashboard 三元素 + 真数据替换 mock + Q5 Product 字段强制 + 5 款游戏 Products seed + 团队 README + Prod L2 烟测 + 文案 polish
 status: decisions-locked, awaits B5 done
 created_by: johnsong (Planner)
 created_at: 2026-04-30
 decisions_locked_at: 2026-04-30
-estimated_effort: ~2 day Generator + 0.5 day Reviewer
-features_count: 5
+revised_at: 2026-04-30（用户接受 polish 审计 P0 4 项并入：F006 Dashboard 真数据替 mock + F007 文案 polish 整理）
+estimated_effort: ~3 day Generator + 0.5 day Reviewer
+features_count: 7
 prerequisites:
   - B5-kol-data-enrichment done（schema 4 字段 + 详情页改造完成）
   - 用户触发 prod redeploy（B5 schema 落地）
@@ -51,7 +52,10 @@ trigger: B5 done 后立即启动
 - ❌ 不出 PDF / 多语言 onboarding 文档（README en 单文件）
 - ❌ 不接竞品 CPI 实时数据（hardcoded 行业基准已够 demo）
 
-## 2. 范围（5 features）
+## 2. 范围（7 features）
+
+> **2026-04-30 用户接受 polish 审计**：原 5 features → 7 features，新增 F006 Dashboard 真数据替 mock + F007 文案 polish 整理。详见 `docs/product/MVP-polish-audit-2026-04-30.md` §"P0 — 建议并入 MVP-internal-demo-prep"。
+
 
 ### F001 — Dashboard 补三元素（workflow 6 步图 + CPI hardcoded 卡 + 30d ROI 趋势）
 
@@ -306,6 +310,79 @@ trigger: B5 done 后立即启动
 - 报告 ≥ 50 行，含烟测命令 + 关键 endpoint 数据
 - signoff 中明示"prod 可承接团队内部 demo"
 
+### F006 — Dashboard 真数据替换 mock（EmailPerformanceCard + RecentActivityCard）
+
+**Executor：** generator
+**估时：** ~5-7h（P0-1 ~3-4h + P0-2 ~2-3h）
+
+**实现：**
+
+1. **EmailPerformanceCard 真接 EmailLog（P0-1）**
+   - 当前：`src/features/dashboard/EmailPerformanceCard.tsx` 用 `EMAIL_PERFORMANCE_DATA`（14 天 sine wave hardcoded mock）
+   - 改造：新增 `src/lib/dashboard/email-performance.ts` 从 `EmailLog` 表 aggregate 14 天数据：
+     ```typescript
+     // 按 createdAt 切 14 天桶；status='sent' 计 sent；
+     // openedAt!=null 计 opened；replyAt!=null 计 replied
+     ```
+   - 数据为空时（新 tenant）显示 friendly empty state："Send your first batch via /outreach to see performance trends"
+   - 删除 `src/features/dashboard/mocks.ts` 中的 `EMAIL_PERFORMANCE_DATA`
+
+2. **RecentActivityCard 真接 audit_log（P0-2）**
+   - 当前：用 `RECENT_ACTIVITIES`（5 条 hardcoded 假活动）
+   - 改造：新增 `src/lib/dashboard/recent-activity.ts` 从 `AuditLog` 表 query 当前 tenant 最近 5 条：
+     ```typescript
+     // SELECT actor_user_email, action, before_value, after_value, created_at
+     // FROM audit_log
+     // WHERE tenant_id = ?
+     // ORDER BY created_at DESC
+     // LIMIT 5
+     ```
+   - 把 audit_log 行转译为自然语言（i18n）：
+     - `kol.relationship_status_changed` → "{actor} marked {kolName} as '{newStatus}'"
+     - `campaign.created` → "{actor} created campaign '{name}'"
+     - `kol.email_updated` → "{actor} added email for {kolName}"
+     - 等
+   - 数据为空时显示 friendly empty state："Activity from your team will appear here"
+   - 删除 `src/features/dashboard/mocks.ts` 中的 `RECENT_ACTIVITIES`
+   - 删除 `mocks.ts` 整个文件（如清空后无其他 export）
+
+**Acceptance：**
+- `src/features/dashboard/mocks.ts` 删除或清空
+- Dashboard EmailPerformanceCard 显示当前 tenant 真实 EmailLog 14 天聚合
+- Dashboard RecentActivityCard 显示当前 tenant 真实 audit_log 最近 5 条
+- 新 tenant（空数据）显示友好 empty state
+- i18n keys 新增（en/zh + 跑 i18n:translate 补 ja/ko/es）
+- tests/integration/dashboard-real-data.test.ts 验证 EmailLog → 14 天聚合 + audit_log → 自然语言转译
+- staging git_sha 与本 commit 一致
+
+### F007 — 文案 polish 整理（/campaigns AiSuggestionsCard + /api/health redis + /campaigns Import）
+
+**Executor：** generator
+**估时：** ~30 min
+
+**实现：**
+
+1. **/campaigns 列表 AiSuggestionsCard 文案修（P0-3，方案 c）**
+   - 当前：`src/app/[locale]/(app)/campaigns/AiSuggestionsCard.tsx` 标 "Coming with B2"，但 B7b F002 已在 `/campaigns/[id]` 落地真实 AI Suggestions
+   - 改造：移除 `comingTag` 紫色 badge；body 文案改为 "AI Suggestions are now live on each campaign — open any campaign to see personalized matches" + 主 CTA 链接到 `/campaigns/{firstActiveId}` 或保留通用 `/discovery` 链接
+   - i18n：`campaigns.aiSuggestions.comingTag` 移除；`body` / `ctaLabel` 改文案
+
+2. **/api/health redis 字段文案修（P0-4）**
+   - 当前：`src/app/api/health/route.ts` 返回 `{status: "stub", note: "wired in B5 with BullMQ"}`
+   - 改造：返回 `{status: "not_used", note: "BullMQ enables when production scale demands"}`
+   - 单元 test 更新（`tests/unit/health-redis-status.test.ts`）
+
+3. **/campaigns Header Import 按钮删除（P1-2 顺手）**
+   - 当前：`src/app/[locale]/(app)/campaigns/page.tsx:101` 有 disabled "Import" 按钮
+   - 改造：直接删除该按钮（PRD §12 已说 CSV 批量导入 = B1 完整版，MVP 不需要占位）
+
+**Acceptance：**
+- /campaigns 列表 AiSuggestionsCard 不再显示 "Coming with B2" badge；CTA 引导到详情页
+- /api/health JSON 中 redis.status = "not_used"，note 文案产品化
+- /campaigns Header 不再有 Import 按钮（直接 New Campaign CTA）
+- existing tests 不破坏（i18n keys 只删不漏）
+- staging git_sha 与本 commit 一致
+
 ## 3. 关键设计决策（已 lock）
 
 | 决策 | 选定方案 | 理由 |
@@ -325,13 +402,15 @@ trigger: B5 done 后立即启动
 ```
 B5 done → 用户 prod redeploy → MVP-internal-demo-prep building
                                        ↓
-                                F001 + F002 + F003 + F004 (Generator 串行)
+                                F001 + F002 + F003 + F004 + F006 + F007 (Generator 串行)
                                        ↓
                                 用户 prod redeploy + npm run db:seed
                                        ↓
                                 F005 (Reviewer codex)
                                        ↓
-                                done → 团队 demo 启用
+                                done → BIx-mvp-polish-pass building
+                                       ↓
+                                团队 demo 启用
 ```
 
 ## 5. 风险与对策
@@ -383,13 +462,15 @@ B5 done → 用户 prod redeploy → MVP-internal-demo-prep building
 
 | 环节 | 预估 | 执行者 |
 |---|---|---|
-| F001 Dashboard 三元素 | ~1 day | Generator |
+| F001 Dashboard 三元素（workflow / CPI / 30d ROI 趋势）| ~1 day | Generator |
 | F002 Q5 Product zod | ~30 min | Generator |
 | F003 5 Products seed + aiAssets | ~2-3h | Generator |
 | F004 团队 README | ~2-3h | Generator |
 | F005 Prod L2 烟测 + signoff | ~0.5 day | codex (Reviewer) |
-| 缓冲 | ~3h | — |
-| **总计** | **~2 day Generator + 0.5 day Reviewer** | — |
+| **F006 Dashboard 真数据替 mock**（EmailPerformance + RecentActivity）| ~5-7h | Generator |
+| **F007 文案 polish**（campaigns AiSuggestionsCard + /api/health redis + Import 按钮删）| ~30 min | Generator |
+| 缓冲 | ~4h | — |
+| **总计** | **~3 day Generator + 0.5 day Reviewer** | — |
 
 ## 10. 用户决策（2026-04-30 全部 ✅）
 
