@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+#
+# Staging deploy driver (BIx-staging-automation F001).
+# Runs on VPS host against /opt/kolmatrix-staging and is safe to rerun.
+#
+# Sequence:
+#   1) git pull --ff-only origin main
+#   2) npm ci --include=dev
+#   3) npx prisma migrate deploy
+#   4) next build (with 4G old-space to avoid OOM)
+#   5) pm2 restart kolmatrix-staging --update-env
+#   6) curl /api/health and print structured JSON
+
+set -euo pipefail
+
+: "${REPO_DIR:=/opt/kolmatrix-staging}"
+: "${APP_NAME:=kolmatrix-staging}"
+: "${HEALTH_URL:=https://staging.kol.guangai.ai/api/health}"
+
+require_cmd() {
+  if ! command -v "$1" >/dev/null 2>&1; then
+    echo "❌ missing required command: $1" >&2
+    exit 1
+  fi
+}
+
+echo "== BIx staging deploy =="
+echo "repo:   $REPO_DIR"
+echo "app:    $APP_NAME"
+echo "health: $HEALTH_URL"
+
+require_cmd git
+require_cmd npm
+require_cmd npx
+require_cmd pm2
+require_cmd curl
+require_cmd node
+
+if [[ ! -d "$REPO_DIR/.git" ]]; then
+  echo "❌ invalid repo dir (missing .git): $REPO_DIR" >&2
+  exit 1
+fi
+
+cd "$REPO_DIR"
+
+echo "── 1/6 git pull --ff-only origin main"
+git pull --ff-only origin main
+HEAD_SHA="$(git rev-parse --short HEAD)"
+echo "   HEAD=$HEAD_SHA"
+
+echo "── 2/6 npm ci --include=dev"
+npm ci --include=dev
+
+echo "── 3/6 prisma migrate deploy"
+npx prisma migrate deploy
+
+echo "── 4/6 next build"
+node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build
+
+echo "── 5/6 pm2 restart $APP_NAME --update-env"
+pm2 restart "$APP_NAME" --update-env >/dev/null
+pm2 describe "$APP_NAME" | sed -n '1,40p'
+
+echo "── 6/6 health check"
+HEALTH_JSON="$(curl -fsS "$HEALTH_URL")"
+echo "$HEALTH_JSON" | python3 -m json.tool
+
+HEALTH_SHA="$(echo "$HEALTH_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("git_sha",""))')"
+HEALTH_STATUS="$(echo "$HEALTH_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("status",""))')"
+
+if [[ "$HEALTH_STATUS" != "healthy" ]]; then
+  echo "❌ health status is not healthy: $HEALTH_STATUS" >&2
+  exit 1
+fi
+
+if [[ -z "$HEALTH_SHA" || "$HEALTH_SHA" == "unknown" ]]; then
+  echo "❌ health git_sha is empty/unknown" >&2
+  exit 1
+fi
+
+echo "✅ staging deploy done (HEAD=$HEAD_SHA, health.git_sha=$HEALTH_SHA)"

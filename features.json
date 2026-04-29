@@ -6,7 +6,7 @@
       "title": "新增 staging 一键部署脚本 infrastructure/deploy-staging.sh（幂等 + 可回显）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "脚本覆盖 git pull、依赖安装、build、migrate、pm2 reload、health 检查；支持失败即停；可重复执行；docs/dev 增补使用说明。"
     },
     {
@@ -14,7 +14,7 @@
       "title": "修复 staging /api/health git_sha 反射逻辑（unknown 问题）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "定位 health handler 真实读取路径并修复；staging deploy 后 /api/health.git_sha 与当前 HEAD 一致；补最小回归测试或脚本校验。"
     },
     {
@@ -22,7 +22,7 @@
       "title": "统一 scripts/*.ts dotenv 自动加载策略（补齐 BL-001 类问题）",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "关键 CLI 脚本头部统一 dotenv 加载；独立运行不依赖手工 source .env；补单测或 smoke 命令验证。"
     }
   ]

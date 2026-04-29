@@ -18,6 +18,7 @@
  * subsystem broke.
  */
 import packageJson from "../../../../package.json";
+import { execSync } from "node:child_process";
 
 import { prisma } from "@/lib/db";
 
@@ -66,6 +67,20 @@ function isHealthy(checks: Record<string, Check>): boolean {
   return Object.values(checks).every((c) => c.status === "ok" || c.status === "stub");
 }
 
+function resolveGitSha(): string {
+  if (process.env.GIT_SHA && process.env.GIT_SHA.trim() !== "") {
+    return process.env.GIT_SHA;
+  }
+  try {
+    return execSync("git rev-parse --short HEAD", {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return "unknown";
+  }
+}
+
 export async function GET(): Promise<Response> {
   const [database] = await Promise.all([checkDatabase()]);
   const redis = checkRedisStub();
@@ -76,7 +91,7 @@ export async function GET(): Promise<Response> {
   const body = {
     status: healthy ? "healthy" : "unhealthy",
     version: packageJson.version,
-    git_sha: process.env.GIT_SHA ?? "unknown",
+    git_sha: resolveGitSha(),
     uptime_seconds: Math.round(process.uptime()),
     checks,
     timestamp: new Date().toISOString(),

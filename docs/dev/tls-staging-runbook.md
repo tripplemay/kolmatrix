@@ -139,12 +139,12 @@ Staging runs from `/opt/kolmatrix-staging` with PM2 app name `kolmatrix-staging`
 ```bash
 ssh kolmatrix-vps
 cd /opt/kolmatrix-staging
-git pull --ff-only origin main
-npm ci                      # if package-lock changed
-npm run build               # rebuild .next/
-pm2 restart kolmatrix-staging --update-env
-curl -sS https://staging.kol.guangai.ai/api/health | python3 -m json.tool
+bash infrastructure/deploy-staging.sh
 ```
+
+脚本默认执行 `git pull` / `npm ci --include=dev` / `prisma migrate deploy` / `next build` / `pm2 restart --update-env` / `health` 校验，并且会在最后断言：
+- `status=healthy`
+- `git_sha` 非 `unknown`
 
 `restart` (not `reload`) is intentional: staging runs a single fork instance, there's nothing to rotate.
 
