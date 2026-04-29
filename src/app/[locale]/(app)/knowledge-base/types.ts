@@ -17,5 +17,5 @@ export interface ProductListItem {
   launchDate: string | null;
   aiAssets: ProductAiAssets | null;
   createdAt: string;
-  updatedAt: Date;
+  updatedAt: string;
 }

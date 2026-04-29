@@ -19,6 +19,7 @@
 import "dotenv/config";
 
 import { stripCodeFence } from "@/lib/ai/json-extract";
+import { resolveAigcV1BaseUrl } from "@/lib/aigc/base-url";
 
 export const WEEKLY_REPORT_ACTION_ID = "cmob2zqkp0001bnnvel4vjapu";
 
@@ -86,9 +87,7 @@ export class WeeklyReportError extends Error {
 }
 
 function baseUrl(): string {
-  return (
-    process.env.AIGCGATEWAY_BASE_URL ?? "https://aigc.guangai.ai/v1"
-  ).replace(/\/$/, "");
+  return resolveAigcV1BaseUrl(process.env.AIGCGATEWAY_BASE_URL);
 }
 
 function formatDateUtc(d: Date): string {

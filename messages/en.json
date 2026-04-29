@@ -178,7 +178,8 @@
       "generating": "Generating assets…",
       "generationFailed": "Generation failed — edit to retry",
       "noAssetsYet": "No assets yet",
-      "editAction": "Edit product"
+      "editAction": "Edit product",
+      "deleteAction": "Delete product"
     },
     "modal": {
       "titleCreate": "Add new product",

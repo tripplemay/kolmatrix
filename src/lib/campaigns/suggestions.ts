@@ -3,6 +3,7 @@ import "dotenv/config";
 import { z } from "zod";
 
 import { parseFencedJson } from "@/lib/ai/json-extract";
+import { resolveAigcV1BaseUrl } from "@/lib/aigc/base-url";
 
 export const CAMPAIGN_NEXT_ACTION_SUGGEST_ID = "cmojd6iw70009bn1notxch4ki";
 
@@ -50,7 +51,7 @@ const ResponseSchema = z.object({
 });
 
 function baseUrl(): string {
-  return (process.env.AIGCGATEWAY_BASE_URL ?? "https://aigc.guangai.ai/v1").replace(/\/$/, "");
+  return resolveAigcV1BaseUrl(process.env.AIGCGATEWAY_BASE_URL);
 }
 
 function toVariables(input: CampaignSuggestInput): Record<string, string> {

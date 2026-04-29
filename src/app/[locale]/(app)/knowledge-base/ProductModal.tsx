@@ -21,7 +21,8 @@ import {
 import { cn } from "@/lib/utils";
 import { PRODUCT_PLATFORMS, type ProductPlatform } from "@/lib/products/schema";
 
-import { createProduct } from "./actions";
+import { createProduct, updateProduct } from "./actions";
+import type { ProductListItem } from "./types";
 import type { CreateProductState } from "@/lib/products/schema";
 
 const initialState: CreateProductState = { ok: false };
@@ -29,6 +30,7 @@ const initialState: CreateProductState = { ok: false };
 interface Props {
   onClose: () => void;
   onCreated: () => void;
+  product?: ProductListItem;
 }
 
 const UNDERLINE_INPUT =
@@ -36,12 +38,16 @@ const UNDERLINE_INPUT =
 const BOXED_TEXTAREA =
   "w-full rounded-lg border border-outline-variant bg-transparent p-3 text-sm text-on-surface placeholder-slate-600 focus:border-cyan focus:outline-none focus:ring-1 focus:ring-cyan";
 
-export function ProductModal({ onClose, onCreated }: Props) {
+export function ProductModal({ onClose, onCreated, product }: Props) {
   const t = useTranslations("knowledgeBase");
   const tErr = useTranslations("knowledgeBase.errors");
-  const [state, formAction, pending] = useActionState(createProduct, initialState);
+  const isEdit = Boolean(product);
+  const [state, formAction, pending] = useActionState(
+    isEdit ? updateProduct : createProduct,
+    initialState
+  );
   const [platforms, setPlatforms] = useState<ProductPlatform[]>(["mobile"]);
-  const [generate, setGenerate] = useState(true);
+  const [generate, setGenerate] = useState(!isEdit);
   const formRef = useRef<HTMLFormElement>(null);
   const titleId = useId();
 
@@ -95,7 +101,7 @@ export function ProductModal({ onClose, onCreated }: Props) {
       >
         <div className="flex items-center justify-between border-b border-white/5 px-8 py-6">
           <h2 id={titleId} className="text-xl font-bold text-white">
-            {t("modal.titleCreate")}
+            {isEdit ? t("modal.titleEdit") : t("modal.titleCreate")}
           </h2>
           <button
             type="button"
@@ -119,6 +125,7 @@ export function ProductModal({ onClose, onCreated }: Props) {
               <input
                 type="text"
                 name="name"
+                defaultValue={product?.name ?? ""}
                 placeholder={t("modal.namePlaceholder")}
                 required
                 maxLength={200}
@@ -134,6 +141,7 @@ export function ProductModal({ onClose, onCreated }: Props) {
               <input
                 type="text"
                 name="category"
+                defaultValue={product?.category ?? ""}
                 placeholder={t("modal.categoryPlaceholder")}
                 required
                 maxLength={80}
@@ -176,6 +184,7 @@ export function ProductModal({ onClose, onCreated }: Props) {
           <FieldLabel label={t("modal.targetAudienceLabel")}>
             <textarea
               name="targetAudience"
+              defaultValue={product?.targetAudience ?? ""}
               placeholder={t("modal.targetAudiencePlaceholder")}
               maxLength={2000}
               rows={3}
@@ -191,6 +200,7 @@ export function ProductModal({ onClose, onCreated }: Props) {
           >
             <textarea
               name="uniqueSellingPoints"
+              defaultValue={product?.uniqueSellingPoints ?? ""}
               placeholder={t("modal.uspPlaceholder")}
               required
               maxLength={4000}
@@ -208,6 +218,7 @@ export function ProductModal({ onClose, onCreated }: Props) {
               <input
                 type="url"
                 name="downloadUrl"
+                defaultValue={product?.downloadUrl ?? ""}
                 placeholder={t("modal.downloadUrlPlaceholder")}
                 className={UNDERLINE_INPUT}
                 aria-invalid={Boolean(state.fieldErrors?.downloadUrl)}
@@ -220,11 +231,14 @@ export function ProductModal({ onClose, onCreated }: Props) {
               <input
                 type="date"
                 name="launchDate"
+                defaultValue={product?.launchDate?.slice(0, 10) ?? ""}
                 className={cn(UNDERLINE_INPUT, "[color-scheme:dark]")}
                 aria-invalid={Boolean(state.fieldErrors?.launchDate)}
               />
             </FieldLabel>
           </div>
+
+          {product ? <input type="hidden" name="productId" value={product.id} /> : null}
 
           {globalError ? (
             <p className="text-sm text-rose-400" role="alert">
@@ -267,7 +281,9 @@ export function ProductModal({ onClose, onCreated }: Props) {
                 ? t("modal.submitting")
                 : generate
                   ? t("modal.submit")
-                  : t("modal.submitWithoutAi")}
+                  : isEdit
+                    ? t("modal.titleEdit")
+                    : t("modal.submitWithoutAi")}
             </button>
           </div>
         </div>

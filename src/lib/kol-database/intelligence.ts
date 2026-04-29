@@ -3,6 +3,7 @@ import "dotenv/config";
 import { z } from "zod";
 
 import { parseFencedJson } from "@/lib/ai/json-extract";
+import { resolveAigcV1BaseUrl } from "@/lib/aigc/base-url";
 
 export const KOL_DATABASE_INTELLIGENCE_ACTION_ID = "cmojd0eq90003bn1nz0pm6xsz";
 
@@ -61,7 +62,7 @@ const ResponseSchema = z.object({
 });
 
 function baseUrl(): string {
-  return (process.env.AIGCGATEWAY_BASE_URL ?? "https://aigc.guangai.ai/v1").replace(/\/$/, "");
+  return resolveAigcV1BaseUrl(process.env.AIGCGATEWAY_BASE_URL);
 }
 
 function toVariables(input: DatabaseIntelligenceInput): Record<string, string> {

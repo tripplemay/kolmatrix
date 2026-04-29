@@ -178,7 +178,8 @@
       "generating": "正在生成素材…",
       "generationFailed": "生成失败 — 请编辑后重试",
       "noAssetsYet": "尚未生成素材",
-      "editAction": "编辑产品"
+      "editAction": "编辑产品",
+      "deleteAction": "删除产品"
     },
     "modal": {
       "titleCreate": "录入新产品",

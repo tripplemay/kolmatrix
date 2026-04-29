@@ -37,7 +37,7 @@ export default async function KnowledgeBasePage({ params }: Props) {
     launchDate: r.launchDate ? r.launchDate.toISOString() : null,
     aiAssets: r.aiAssets as ProductAiAssets | null,
     createdAt: r.createdAt.toISOString(),
-    updatedAt: r.updatedAt,
+    updatedAt: r.updatedAt.toISOString(),
   }));
 
   const t = await getTranslations("knowledgeBase");

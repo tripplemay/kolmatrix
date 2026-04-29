@@ -178,7 +178,8 @@
       "generating": "資産を生成中…",
       "generationFailed": "生成に失敗しました — 編集して再試行してください",
       "noAssetsYet": "まだ資産がありません",
-      "editAction": "製品を編集"
+      "editAction": "製品を編集",
+      "deleteAction": "製品を削除"
     },
     "modal": {
       "titleCreate": "新しい製品を追加",

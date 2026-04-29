@@ -12,6 +12,7 @@
  * the same order, plus aggregate token usage.
  */
 import { z } from "zod";
+import { resolveAigcV1BaseUrl } from "@/lib/aigc/base-url";
 
 import {
   EMBEDDING_DIMS,
@@ -102,9 +103,9 @@ function resolveConfig(opts: EmbeddingClientOpts): {
   fetchImpl: typeof fetch;
 } {
   const baseUrl =
-    opts.baseUrl ??
-    process.env.AIGCGATEWAY_BASE_URL ??
-    "https://aigc.guangai.ai/v1";
+    resolveAigcV1BaseUrl(
+      opts.baseUrl ?? process.env.AIGCGATEWAY_BASE_URL
+    );
   const apiKey = opts.apiKey ?? process.env.AIGCGATEWAY_API_KEY;
   if (!apiKey) {
     throw new EmbeddingError("config", "AIGCGATEWAY_API_KEY not set");

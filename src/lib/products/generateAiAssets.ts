@@ -12,6 +12,7 @@
  * dependency during the MVP push.
  */
 import { Prisma, withTenant } from "@/lib/db";
+import { resolveAigcV1BaseUrl } from "@/lib/aigc/base-url";
 
 export interface GenerateAiAssetsInput {
   productId: string;
@@ -110,7 +111,7 @@ export async function generateAiAssets(
   };
 
   try {
-    const resp = await fetchImpl(`${baseUrl.replace(/\/$/, "")}/v1/chat/completions`, {
+    const resp = await fetchImpl(`${resolveAigcV1BaseUrl(baseUrl)}/chat/completions`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,

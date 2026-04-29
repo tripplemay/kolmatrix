@@ -13,8 +13,9 @@
  */
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
+import { deleteProduct } from "./actions";
 import { ProductCard } from "./ProductCard";
 import { ProductModal } from "./ProductModal";
 import type { ProductListItem } from "./types";
@@ -27,9 +28,25 @@ export function ProductsClient({ products }: Props) {
   const t = useTranslations("knowledgeBase");
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<ProductListItem | null>(null);
+  const [isDeleting, startDelete] = useTransition();
 
   const onCreated = () => {
     router.refresh();
+    setEditing(null);
+  };
+
+  const onDelete = (product: ProductListItem) => {
+    const confirmed = window.confirm(`Delete "${product.name}"?`);
+    if (!confirmed) return;
+    startDelete(async () => {
+      const res = await deleteProduct(product.id);
+      if (!res.ok) {
+        window.alert("Could not delete product. Please retry.");
+        return;
+      }
+      router.refresh();
+    });
   };
 
   return (
@@ -72,7 +89,15 @@ export function ProductsClient({ products }: Props) {
         data-testid="kb-grid"
       >
         {products.map((p) => (
-          <ProductCard key={p.id} product={p} />
+          <ProductCard
+            key={p.id}
+            product={p}
+            onEdit={(item) => {
+              setEditing(item);
+              setOpen(true);
+            }}
+            onDelete={onDelete}
+          />
         ))}
         <button
           type="button"
@@ -91,10 +116,15 @@ export function ProductsClient({ products }: Props) {
 
       {open ? (
         <ProductModal
-          onClose={() => setOpen(false)}
+          onClose={() => {
+            setOpen(false);
+            setEditing(null);
+          }}
           onCreated={onCreated}
+          product={editing ?? undefined}
         />
       ) : null}
+      {isDeleting ? <span className="sr-only">Deleting</span> : null}
     </>
   );
 }

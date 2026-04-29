@@ -11,6 +11,7 @@
 import "dotenv/config";
 
 import { parseFencedJson } from "@/lib/ai/json-extract";
+import { resolveAigcV1BaseUrl } from "@/lib/aigc/base-url";
 
 export const KOL_EMAIL_CUSTOMIZE_ACTION_ID =
   "cmob2z6j00001bnole7i8lg9h";
@@ -56,10 +57,7 @@ export class CustomizeEmailError extends Error {
 }
 
 function baseUrl(): string {
-  return (
-    process.env.AIGCGATEWAY_BASE_URL ??
-    "https://aigc.guangai.ai/v1"
-  ).replace(/\/$/, "");
+  return resolveAigcV1BaseUrl(process.env.AIGCGATEWAY_BASE_URL);
 }
 
 function toVariables(input: CustomizeEmailInput): Record<string, string> {

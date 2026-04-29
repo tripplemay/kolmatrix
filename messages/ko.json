@@ -178,7 +178,8 @@
       "generating": "자산 생성 중…",
       "generationFailed": "생성 실패 — 편집하여 다시 시도하세요.",
       "noAssetsYet": "아직 자산이 없습니다",
-      "editAction": "제품 편집"
+      "editAction": "제품 편집",
+      "deleteAction": "제품 삭제"
     },
     "modal": {
       "titleCreate": "새 제품 추가",

@@ -9,6 +9,7 @@
  * success counts, or a failure prompt without refreshing JSON.
  */
 import { useFormatter, useTranslations } from "next-intl";
+import { useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -16,6 +17,8 @@ import type { ProductListItem } from "./types";
 
 interface Props {
   product: ProductListItem;
+  onEdit: (product: ProductListItem) => void;
+  onDelete: (product: ProductListItem) => void;
 }
 
 const CATEGORY_TONE: Record<string, string> = {
@@ -29,9 +32,10 @@ function pillClass(category: string): string {
   return CATEGORY_TONE[key] ?? "bg-slate-800 text-on-surface-variant";
 }
 
-export function ProductCard({ product }: Props) {
+export function ProductCard({ product, onEdit, onDelete }: Props) {
   const t = useTranslations("knowledgeBase.card");
   const format = useFormatter();
+  const [menuOpen, setMenuOpen] = useState(false);
   const assets = product.aiAssets;
 
   const emailCount =
@@ -53,16 +57,42 @@ export function ProductCard({ product }: Props) {
         >
           {product.category}
         </div>
-        <button
-          type="button"
-          className="text-on-surface-variant hover:text-white transition-colors"
-          aria-label={t("editAction")}
-          disabled
-        >
-          <span className="material-symbols-outlined" aria-hidden>
-            more_vert
-          </span>
-        </button>
+        <div className="relative">
+          <button
+            type="button"
+            className="text-on-surface-variant transition-colors hover:text-white"
+            aria-label={t("editAction")}
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            <span className="material-symbols-outlined" aria-hidden>
+              more_vert
+            </span>
+          </button>
+          {menuOpen ? (
+            <div className="absolute right-0 top-7 z-10 w-32 rounded-lg border border-outline-variant bg-surface-high p-1 shadow-xl">
+              <button
+                type="button"
+                className="w-full rounded-md px-3 py-2 text-left text-xs text-on-surface hover:bg-surface"
+                onClick={() => {
+                  setMenuOpen(false);
+                  onEdit(product);
+                }}
+              >
+                {t("editAction")}
+              </button>
+              <button
+                type="button"
+                className="w-full rounded-md px-3 py-2 text-left text-xs text-rose-300 hover:bg-surface"
+                onClick={() => {
+                  setMenuOpen(false);
+                  onDelete(product);
+                }}
+              >
+                {t("deleteAction")}
+              </button>
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <h3 className="mb-2 text-lg font-bold text-white line-clamp-2">
@@ -103,7 +133,7 @@ export function ProductCard({ product }: Props) {
         )}
         <p className="pt-2 text-[11px] text-on-surface-variant/60">
           {t("lastUpdated", {
-            date: format.dateTime(product.updatedAt, {
+            date: format.dateTime(new Date(product.updatedAt), {
               year: "numeric",
               month: "short",
               day: "numeric",
@@ -145,4 +175,3 @@ function ChipRow({ tone, icon, label, spin }: ChipRowProps) {
     </div>
   );
 }
-

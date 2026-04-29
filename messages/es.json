@@ -178,7 +178,8 @@
       "generating": "Generando activos…",
       "generationFailed": "Fallo al generar; edite para reintentar",
       "noAssetsYet": "Aún no hay activos",
-      "editAction": "Editar producto"
+      "editAction": "Editar producto",
+      "deleteAction": "Eliminar producto"
     },
     "modal": {
       "titleCreate": "Añadir nuevo producto",
