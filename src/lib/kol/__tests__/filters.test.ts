@@ -265,6 +265,72 @@ describe("buildKolWhere()", () => {
     expect(findOne("tags")).toEqual({ tags: { hasSome: ["esports"] } });
     expect(findOne("lastUploadAt")).toBeDefined();
   });
+
+  // B5-F003 — guard rails on the three new advanced filter branches.
+  // Each branch maps a multi-select tier list onto an OR within an AND
+  // clause; the tests below exercise every tier so the coverage gate
+  // stays >= 80% and Reviewer can rely on the branch being live.
+  it("emits OR clauses for each channelAge tier with the right date math", () => {
+    const where = buildKolWhere({
+      ...empty,
+      channelAge: ["new", "established", "veteran"],
+    });
+    const clauses = where.AND as Record<string, unknown>[];
+    const orClause = clauses.find(
+      (c) => "OR" in c && Array.isArray((c as { OR: unknown[] }).OR)
+    ) as { OR: Record<string, unknown>[] } | undefined;
+    expect(orClause).toBeDefined();
+    // Three tiers → three OR branches in this clause.
+    expect(orClause!.OR).toHaveLength(3);
+    // Branch shapes: { channelCreatedAt: { gte | lt | { gte+lt } } }
+    const hasGte = orClause!.OR.some(
+      (b) => "channelCreatedAt" in b && (b.channelCreatedAt as { gte?: unknown }).gte
+    );
+    const hasLt = orClause!.OR.some(
+      (b) => "channelCreatedAt" in b && (b.channelCreatedAt as { lt?: unknown }).lt
+    );
+    const hasAndPair = orClause!.OR.some((b) => "AND" in b && Array.isArray(b.AND));
+    expect(hasGte && hasLt && hasAndPair).toBe(true);
+  });
+
+  it("emits OR clauses for each uploadFrequency tier on uploadsPerMonth", () => {
+    const where = buildKolWhere({
+      ...empty,
+      uploadFrequency: ["active", "semi-active", "inactive"],
+    });
+    const clauses = where.AND as Record<string, unknown>[];
+    const orClause = clauses.find(
+      (c) =>
+        "OR" in c &&
+        Array.isArray((c as { OR: unknown[] }).OR) &&
+        ((c as { OR: unknown[] }).OR as Record<string, unknown>[]).every(
+          (b) => "uploadsPerMonth" in b
+        )
+    ) as { OR: Record<string, unknown>[] } | undefined;
+    expect(orClause).toBeDefined();
+    expect(orClause!.OR).toEqual([
+      { uploadsPerMonth: { gte: 4 } },
+      { uploadsPerMonth: { gte: 1, lt: 4 } },
+      { uploadsPerMonth: { lt: 1 } },
+    ]);
+  });
+
+  it("unions the country list when regionGroup buckets are picked", () => {
+    const where = buildKolWhere({
+      ...empty,
+      regionGroup: ["americas", "oceania"],
+    });
+    const clauses = where.AND as Record<string, unknown>[];
+    const cc = clauses.find((c) => "countryCode" in c) as
+      | { countryCode: { in: string[] } }
+      | undefined;
+    expect(cc).toBeDefined();
+    // americas → US, CA; oceania → AU, NZ, FJ, PG, WS, TO.
+    expect(cc!.countryCode.in).toEqual(
+      expect.arrayContaining(["US", "CA", "AU", "NZ", "FJ", "PG", "WS", "TO"])
+    );
+    expect(cc!.countryCode.in.length).toBe(8);
+  });
 });
 
 describe("sortToOrderBy()", () => {
