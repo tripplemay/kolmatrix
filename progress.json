@@ -35,7 +35,7 @@
       "title": "抽出 /outreach 模板库数据读取与权限规则",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "模板读取统一走一个共享 helper，能够同时返回当前 locale 的 system + user templates；system 模板跨租户可读，user 模板仅当前租户可见；locale 为空时按 spec fallback 到 en system templates。"
     },
     {
@@ -43,7 +43,7 @@
       "title": "AI 定制结果可保存为当前租户模板",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "AI 对话框新增保存动作；保存会创建一条 tenant-scoped 的 user EmailTemplate，复制 subject/body/variables/locale；返回新模板 id，前端可自动选中；不影响仅临时使用的原有 AI 预览路径。"
     },
     {
@@ -51,7 +51,7 @@
       "title": "发送界面支持 system + user 模板分组选择",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "/outreach 的模板下拉可以同时看到 system 与 user 模板，并按组/locale 展示；切换模板后预览、发送 payload 和现有 AI 临时覆盖逻辑保持正常；刷新后已保存模板仍可选。"
     },
     {
@@ -59,7 +59,7 @@
       "title": "实现 /outreach/templates 模板库页",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增模板库页并按 Stitch 的 Email Template Editor 设计稿实现；页面支持搜索、locale 过滤、创建、编辑、复制和删除 user 模板；system 模板只读，不提供破坏性操作。"
     },
     {
@@ -67,7 +67,7 @@
       "title": "启用 OutreachTabs 的 Templates 路由",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Templates tab 不再 disabled，而是可点击进入模板库页；模板库页显示 active 状态；Overview 页面与现有右侧分析区保持原有行为，不引入空壳控件。"
     },
     {
@@ -75,7 +75,7 @@
       "title": "补模板库回归测试与视觉基线",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增测试覆盖模板 union load、user template 保存、system 模板只读、模板 CRUD guardrail、路由跳转和保存后可复选；新增模板库页的 visual baseline，必要时更新 /outreach 现有 baseline。"
     }
   ]
