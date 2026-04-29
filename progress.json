@@ -1,11 +1,11 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "修复生产环境知识库页面产品删除失败问题，根因是 Product.cuid() 主键与 server action 的 UUID 校验不匹配，并补最小回归测试。",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 2,
   "fix_rounds": 0,
   "current_sprint": "HOTFIX-product-delete-cuid",
-  "last_updated": "2026-04-29T19:20+0800",
+  "last_updated": "2026-04-29T19:37+0800",
   "reference_docs": [
     "src/app/[locale]/(app)/knowledge-base/actions.ts",
     "src/app/[locale]/(app)/knowledge-base/ProductsClient.tsx",
@@ -21,10 +21,10 @@
   },
   "role_assignments": null,
   "evaluator_feedback": null,
-  "generator_handoff": "[Planner -> Generator] HOTFIX-product-delete-cuid approved. Root cause is confirmed: Product.id uses cuid() in prisma/schema.prisma, but knowledge-base actions.ts validates productId with UUID_RE in both updateProduct and deleteProduct, causing production delete to short-circuit before Prisma. Scope: fix only the ID validation path for product update/delete, preserve tenant UUID auth checks, and add regression tests for cuid productId handling. Do not broaden into product UX refactors or unrelated knowledge-base changes.",
+  "generator_handoff": "[Generator -> Evaluator] HOTFIX-product-delete-cuid implemented. `src/app/[locale]/(app)/knowledge-base/actions.ts` now treats productId as a trimmed non-empty string for update/delete while keeping tenantId UUID auth unchanged. Regression tests added at `src/app/[locale]/(app)/knowledge-base/__tests__/actions.test.ts` covering cuid productId pass-through, tenant UUID rejection, and blank productId rejection. Local checks passed: targeted vitest 5/5, eslint on touched files, `npx tsc --noEmit`. Please verify on staging that existing Product cuid rows can edit/delete successfully from the knowledge-base UI.",
   "session_notes": {
     "Kimi": "[2026-04-29 Planner] User confirmed. State advanced planning -> building for BIx-staging-automation.",
-    "johnsong": "[2026-04-29 Planner] Started HOTFIX-product-delete-cuid. Root cause verified on prod: Product.id is cuid(), while updateProduct/deleteProduct reject non-UUID productId before Prisma. New batch scoped to validation fix + regression tests.",
+    "johnsong": "[2026-04-29 Generator] HOTFIX-product-delete-cuid implemented. Local checks passed: vitest knowledge-base actions 5/5, eslint touched files PASS, tsc PASS. Staging deployed note appended after deploy verification.",
     "Reviewer": "[2026-04-29 HOTFIX verifying signoff] L1 lint+tsc+unit PASS; staging verified /database,/campaigns/:id,/roi,/weekly-report AI chains all 200 and successful content render. /outreach customize AI not triggerable due to 0/0 selectable KOL emails (data precondition), treated non-blocking PARTIAL. Signoff written and status moved to done."
   },
   "features": []

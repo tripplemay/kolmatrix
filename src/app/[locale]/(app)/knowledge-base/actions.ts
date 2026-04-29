@@ -19,6 +19,12 @@ import {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+function normalizeProductId(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const productId = value.trim();
+  return productId.length > 0 ? productId : null;
+}
+
 function extractRaw(formData: FormData): Record<string, unknown> {
   const platforms = formData
     .getAll("platforms")
@@ -126,8 +132,8 @@ export async function updateProduct(
     return { ok: false, error: "unauthorized" };
   }
 
-  const productId = String(formData.get("productId") ?? "");
-  if (!UUID_RE.test(productId)) {
+  const productId = normalizeProductId(formData.get("productId"));
+  if (!productId) {
     return { ok: false, error: "invalid_input" };
   }
 
@@ -196,14 +202,15 @@ export async function deleteProduct(productId: string): Promise<{ ok: boolean }>
   const session = await auth();
   const tenantId = session?.user?.tenantId;
   const userId = session?.user?.id;
-  if (!tenantId || !UUID_RE.test(tenantId) || !UUID_RE.test(productId)) {
+  const normalizedProductId = normalizeProductId(productId);
+  if (!tenantId || !UUID_RE.test(tenantId) || !normalizedProductId) {
     return { ok: false };
   }
 
   try {
     await withTenant(tenantId, (tx) =>
       tx.product.delete({
-        where: { id: productId },
+        where: { id: normalizedProductId },
       })
     );
 
@@ -211,7 +218,7 @@ export async function deleteProduct(productId: string): Promise<{ ok: boolean }>
       type: "product.deleted",
       tenantId,
       actorId: userId,
-      resourceId: productId,
+      resourceId: normalizedProductId,
     });
 
     revalidatePath("/[locale]/knowledge-base", "page");

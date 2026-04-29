@@ -6,7 +6,7 @@
       "title": "修复 knowledge-base 产品编辑/删除的 productId 校验与 Product.cuid() 主键不匹配问题",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "`src/app/[locale]/(app)/knowledge-base/actions.ts` 不再把 productId 当作 UUID 校验；现有 `Product.id=@default(cuid())` 的生产数据可正常走 update/delete 链路；修复范围至少覆盖 deleteProduct，并同时修复同源的 updateProduct 校验错误；不改动租户鉴权语义。"
     },
     {
@@ -14,7 +14,7 @@
       "title": "为 knowledge-base 产品编辑/删除补回归测试，覆盖 cuid 产品 ID 场景",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增或更新测试，至少覆盖：1) cuid productId 可通过 updateProduct/deleteProduct 校验并调用后续数据层；2) 非法 tenantId 仍被拒绝；3) 不因本次修复放宽 tenant UUID 校验。测试可稳定在本地运行。"
     }
   ]

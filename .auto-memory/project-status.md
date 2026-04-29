@@ -4,19 +4,18 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **HOTFIX-product-delete-cuid** — status=building（2026-04-29 19:20 BJ）
-- 进度：0/2 completed，fix_rounds=0
+- **HOTFIX-product-delete-cuid** — status=verifying（2026-04-29 19:37 BJ）
+- 进度：2/2 completed，fix_rounds=0
 
-## 已确认根因
-- 生产知识库“删除产品”失败不是权限或数据缺失
-- `Product.id` 为 `cuid()`，但 `updateProduct/deleteProduct` 仍用 `UUID_RE` 校验 `productId`
-- 结果：前端删除请求在进入 Prisma 前直接返回 `{ ok: false }`，弹出 `Could not delete product. Please retry.`
+## Generator 完成项
+- `knowledge-base/actions.ts` 已移除 product update/delete 对 `productId` 的 UUID 限制，改为 trim 后非空字符串
+- `tenantId` UUID 鉴权保持不变；未放宽租户边界
+- 新增回归测试：`src/app/[locale]/(app)/knowledge-base/__tests__/actions.test.ts`
 
-## 当前范围
-- 仅修复 knowledge-base 产品 update/delete 的 ID 校验
-- 同批补最小回归测试，覆盖 cuid productId 场景
-- 不扩展到 UI 重构、文案优化或其他知识库功能
+## 本地验证
+- `npm test -- 'src/app/[locale]/(app)/knowledge-base/__tests__/actions.test.ts'` PASS（5/5）
+- `npm run lint -- 'src/app/[locale]/(app)/knowledge-base/actions.ts' 'src/app/[locale]/(app)/knowledge-base/__tests__/actions.test.ts'` PASS
+- `npx tsc --noEmit` PASS
 
 ## 下游
-- Generator 按 handoff 修复代码与测试
-- Evaluator 后续需重点验收生产复现场景：知识库删除产品成功
+- 下一步由 Evaluator 在 staging 验证真实 cuid 产品的编辑/删除链路
