@@ -8,6 +8,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const queryRaw = vi.fn<(strings: TemplateStringsArray) => Promise<unknown>>();
+const execSyncMock = vi.fn<(cmd: string) => string>();
 const transactionRun = vi.fn(async (fn: (tx: unknown) => unknown) =>
   fn({ $executeRawUnsafe: vi.fn() })
 );
@@ -23,6 +24,10 @@ vi.mock("@prisma/adapter-pg", () => {
   class PrismaPg {}
   return { PrismaPg };
 });
+vi.mock("node:child_process", () => ({
+  execSync: execSyncMock,
+  default: { execSync: execSyncMock },
+}));
 
 process.env.DATABASE_URL ??= "postgresql://unit:unit@localhost:5432/unit_test";
 
@@ -31,6 +36,8 @@ const { GET } = await import("@/app/api/health/route");
 beforeEach(() => {
   queryRaw.mockReset();
   transactionRun.mockClear();
+  execSyncMock.mockReset();
+  execSyncMock.mockReturnValue("unithead\n");
 });
 
 describe("GET /api/health", () => {
@@ -67,14 +74,31 @@ describe("GET /api/health", () => {
     expect(body.checks.database.error).toMatch(/ECONNREFUSED/);
   });
 
-  it("honours GIT_SHA from env when set", async () => {
+  it("falls back to GIT_SHA env when git HEAD cannot be resolved", async () => {
+    queryRaw.mockResolvedValueOnce([{ "?column?": 1 }]);
+    const prev = process.env.GIT_SHA;
+    process.env.GIT_SHA = "deadbeef";
+    execSyncMock.mockImplementationOnce(() => {
+      throw new Error("git unavailable");
+    });
+    try {
+      const res = await GET();
+      const body = (await res.json()) as { git_sha: string };
+      expect(body.git_sha).toBe("deadbeef");
+    } finally {
+      if (prev === undefined) delete process.env.GIT_SHA;
+      else process.env.GIT_SHA = prev;
+    }
+  });
+
+  it("prefers git HEAD over stale GIT_SHA env", async () => {
     queryRaw.mockResolvedValueOnce([{ "?column?": 1 }]);
     const prev = process.env.GIT_SHA;
     process.env.GIT_SHA = "deadbeef";
     try {
       const res = await GET();
       const body = (await res.json()) as { git_sha: string };
-      expect(body.git_sha).toBe("deadbeef");
+      expect(body.git_sha).toBe("unithead");
     } finally {
       if (prev === undefined) delete process.env.GIT_SHA;
       else process.env.GIT_SHA = prev;
