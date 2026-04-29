@@ -2,8 +2,8 @@
  * BM2-F006 · aigcgateway `kol-email-customize` Action client.
  *
  * Per pre-impl adjudication §12.3 the action run endpoint is
- *   POST {BASE}/actions/{ACTION_ID}/run
- * with { variables, dry_run } body + Bearer auth. Model used by the
+ *   POST {BASE}/actions/run
+ * with { action_id, variables, stream:false } body + Bearer auth. Model used by the
  * action is Claude Haiku 4.5 — Claude habitually wraps structured
  * output in ```json fences, so responses always go through
  * `parseFencedJson`.
@@ -115,7 +115,7 @@ export async function customizeEmail(
     );
   }
 
-  const url = `${baseUrl()}/actions/${KOL_EMAIL_CUSTOMIZE_ACTION_ID}/run`;
+  const url = `${baseUrl()}/actions/run`;
 
   let res: Response;
   try {
@@ -128,8 +128,9 @@ export async function customizeEmail(
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
+          action_id: KOL_EMAIL_CUSTOMIZE_ACTION_ID,
           variables: toVariables(input),
-          dry_run: false,
+          stream: false,
         }),
       },
       { retries: 1, timeout: 30_000 }
@@ -155,6 +156,7 @@ export async function customizeEmail(
   const body = (await res.json()) as {
     output?: string;
     traceId?: string;
+    trace_id?: string;
   };
   if (!body.output) {
     throw new CustomizeEmailError(
@@ -188,6 +190,6 @@ export async function customizeEmail(
     body: parsed.body,
     rationale:
       typeof parsed.rationale === "string" ? parsed.rationale : undefined,
-    traceId: body.traceId,
+    traceId: body.traceId ?? body.trace_id,
   };
 }

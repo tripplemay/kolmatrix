@@ -9,8 +9,8 @@
  * Performers / Key Activity / Key Insights / Looking Ahead).
  *
  * Mirrors the contract pattern from `customize.ts` (BM2-F006) and
- * `insights.ts` (BM2-F009): POST {BASE}/actions/{ACTION_ID}/run,
- * Bearer auth, `{variables, dry_run}` body.
+ * `insights.ts` (BM2-F009): POST {BASE}/actions/run, Bearer auth,
+ * `{action_id, variables, stream:false}` body.
  *
  * Defensive `stripCodeFence` per Planner §13.5 #8 — gemini-3-flash
  * is clean in tests but Claude Haiku F006 case taught us not to
@@ -168,7 +168,7 @@ export async function generateWeeklyReport(
     );
   }
 
-  const url = `${baseUrl()}/actions/${WEEKLY_REPORT_ACTION_ID}/run`;
+  const url = `${baseUrl()}/actions/run`;
 
   let res: Response;
   try {
@@ -181,8 +181,9 @@ export async function generateWeeklyReport(
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
+          action_id: WEEKLY_REPORT_ACTION_ID,
           variables: toVariables(input),
-          dry_run: false,
+          stream: false,
         }),
       },
       { retries: 1, timeout: 30_000 }
@@ -211,6 +212,7 @@ export async function generateWeeklyReport(
   const body = (await res.json()) as {
     output?: string;
     traceId?: string;
+    trace_id?: string;
     usage?: unknown;
   };
   if (!body.output || typeof body.output !== "string") {
@@ -237,7 +239,7 @@ export async function generateWeeklyReport(
 
   return {
     markdown,
-    traceId: body.traceId,
+    traceId: body.traceId ?? body.trace_id,
     cost: estimateCost(body.usage),
   };
 }

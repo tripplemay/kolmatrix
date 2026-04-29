@@ -8,8 +8,9 @@
  * so we always pipe through `stripCodeFence` + zod validate.
  *
  * Mirrors the contract pattern from `src/lib/email/customize.ts`
- * (BM2-F006): POST {BASE}/actions/{ACTION_ID}/run, Bearer auth,
- * `{variables, dry_run}` body, response `{output, traceId, usage}`.
+ * (BM2-F006): POST {BASE}/actions/run, Bearer auth,
+ * `{action_id, variables, stream:false}` body, response
+ * `{output, traceId|trace_id, usage}`.
  */
 import "dotenv/config";
 
@@ -168,7 +169,7 @@ export async function generateRoiInsights(
     );
   }
 
-  const url = `${baseUrl()}/actions/${ROI_INSIGHTS_ACTION_ID}/run`;
+  const url = `${baseUrl()}/actions/run`;
 
   let res: Response;
   try {
@@ -181,8 +182,9 @@ export async function generateRoiInsights(
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
+          action_id: ROI_INSIGHTS_ACTION_ID,
           variables: toVariables(input),
-          dry_run: false,
+          stream: false,
         }),
       },
       { retries: 1, timeout: 30_000 }
@@ -205,7 +207,11 @@ export async function generateRoiInsights(
     );
   }
 
-  const body = (await res.json()) as { output?: string; traceId?: string };
+  const body = (await res.json()) as {
+    output?: string;
+    traceId?: string;
+    trace_id?: string;
+  };
   if (!body.output) {
     throw new RoiInsightsError(
       "invalid_response",
@@ -236,5 +242,5 @@ export async function generateRoiInsights(
     return { title, body: itemBody, tone: severityToTone(raw.severity) };
   });
 
-  return { insights, traceId: body.traceId };
+  return { insights, traceId: body.traceId ?? body.trace_id };
 }

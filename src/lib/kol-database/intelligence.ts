@@ -109,7 +109,7 @@ export async function generateDatabaseIntelligence(
     throw new DatabaseIntelligenceError("missing_env", "AIGCGATEWAY_API_KEY is not set");
   }
 
-  const url = `${baseUrl()}/actions/${KOL_DATABASE_INTELLIGENCE_ACTION_ID}/run`;
+  const url = `${baseUrl()}/actions/run`;
 
   let res: Response;
   try {
@@ -122,8 +122,9 @@ export async function generateDatabaseIntelligence(
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
+          action_id: KOL_DATABASE_INTELLIGENCE_ACTION_ID,
           variables: toVariables(input),
-          dry_run: false,
+          stream: false,
         }),
       },
       { retries: 1, timeout: 30_000 }
@@ -146,7 +147,7 @@ export async function generateDatabaseIntelligence(
     );
   }
 
-  const body = (await res.json()) as { output?: string; traceId?: string };
+  const body = (await res.json()) as { output?: string; traceId?: string; trace_id?: string };
   if (!body.output) {
     throw new DatabaseIntelligenceError("invalid_response", "aigcgateway response missing `output`");
   }
@@ -177,6 +178,6 @@ export async function generateDatabaseIntelligence(
       action_link:
         item.action_link && item.action_link !== "null" ? item.action_link : undefined,
     })),
-    traceId: body.traceId,
+    traceId: body.traceId ?? body.trace_id,
   };
 }

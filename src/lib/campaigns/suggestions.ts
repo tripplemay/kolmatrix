@@ -97,7 +97,7 @@ export async function generateCampaignSuggestions(
     throw new CampaignSuggestError("missing_env", "AIGCGATEWAY_API_KEY is not set");
   }
 
-  const url = `${baseUrl()}/actions/${CAMPAIGN_NEXT_ACTION_SUGGEST_ID}/run`;
+  const url = `${baseUrl()}/actions/run`;
 
   let res: Response;
   try {
@@ -110,8 +110,9 @@ export async function generateCampaignSuggestions(
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
+          action_id: CAMPAIGN_NEXT_ACTION_SUGGEST_ID,
           variables: toVariables(input),
-          dry_run: false,
+          stream: false,
         }),
       },
       { retries: 1, timeout: 30_000 }
@@ -131,7 +132,7 @@ export async function generateCampaignSuggestions(
     );
   }
 
-  const body = (await res.json()) as { output?: string; traceId?: string };
+  const body = (await res.json()) as { output?: string; traceId?: string; trace_id?: string };
   if (!body.output) {
     throw new CampaignSuggestError("invalid_response", "aigcgateway response missing `output`");
   }
@@ -159,6 +160,6 @@ export async function generateCampaignSuggestions(
       ...item,
       action_link: item.action_link.startsWith("/") ? item.action_link : "/campaigns",
     })),
-    traceId: body.traceId,
+    traceId: body.traceId ?? body.trace_id,
   };
 }
