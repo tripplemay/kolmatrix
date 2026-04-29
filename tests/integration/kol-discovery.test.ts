@@ -44,6 +44,11 @@ beforeAll(async () => {
     relationshipStatuses: [],
     knownCollabs: [],
     tags: [],
+    // B5-F003 — DiscoveryFilters now has three required advanced
+    // dimensions; default to empty arrays for the no-filter baseline.
+    channelAge: [],
+    uploadFrequency: [],
+    regionGroup: [],
     includeNonGaming: false,
     sort: "value",
   };

@@ -10,20 +10,32 @@
  * with `<Input>` / `<Select>` / `<Button>` from the public component
  * library so the visuals match the rest of the app and future
  * page-rewrites can copy the pattern.
+ *
+ * B5-F003: added the three new filter dimensions (channelAge,
+ * uploadFrequency, regionGroup) inside the existing <details> advanced
+ * section. The advanced section's open/closed state is persisted in a
+ * cookie (`kolm_disco_advanced` = "1" / "0") so a marketer who manually
+ * expands it once doesn't have to re-expand on every Discovery visit.
  */
+import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
 import { Button, Input, Label, Select } from "@/components/ui";
 import {
   BRAND_SAFETY_RATINGS,
+  CHANNEL_AGE_TIERS,
   DISCOVERY_CATEGORIES,
   DISCOVERY_PLATFORMS,
   DISCOVERY_REGIONS,
   LAST_UPLOAD_WINDOWS,
   MONETIZATION_STATUSES,
+  REGION_GROUPS,
+  UPLOAD_FREQUENCY_TIERS,
   type DiscoveryFilters,
 } from "@/lib/kol/filters";
 import { cn } from "@/lib/utils";
+
+const ADVANCED_COOKIE_NAME = "kolm_disco_advanced";
 
 interface Props {
   filters: DiscoveryFilters;
@@ -35,6 +47,15 @@ export async function FilterSidebar({ filters, basePath }: Props) {
   const tRegions = await getTranslations("discovery.regions");
   const tCategories = await getTranslations("discovery.categories");
   const tPlatforms = await getTranslations("discovery.platforms");
+
+  // B5-F003: open the advanced <details> when (a) any advanced filter
+  // is currently active in the URL, or (b) the marketer expanded it on
+  // a previous visit (cookie). The cookie is written by the inline
+  // toggle script below, so the round-trip is purely client-side ↔
+  // server-side via the request cookie header.
+  const cookieJar = await cookies();
+  const advancedCookie = cookieJar.get(ADVANCED_COOKIE_NAME)?.value;
+  const advancedOpen = advancedCookie === "1" || hasAnyAdvanced(filters);
 
   return (
     <form
@@ -110,10 +131,12 @@ export async function FilterSidebar({ filters, basePath }: Props) {
         ))}
       </ChipGroup>
 
-      {/* Advanced 11, collapsed by default using native <details> */}
+      {/* Advanced filters, collapsed by default using native <details>.
+         B5-F003 added channelAge / uploadFrequency / regionGroup. */}
       <details
+        data-disco-advanced
         className="-mx-1 rounded-lg border border-outline-variant/30 px-3 py-2 open:pb-4"
-        {...(hasAnyAdvanced(filters) ? { open: true } : {})}
+        {...(advancedOpen ? { open: true } : {})}
       >
         <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wider text-cyan-fixed">
           {t("advancedToggle")}
@@ -237,6 +260,65 @@ export async function FilterSidebar({ filters, basePath }: Props) {
             />
           </Field>
 
+          {/* B5-F003 — three new advanced filter chips. Each chip
+             group binds onto the same param name as the checkbox value
+             so the form GET serializes correctly. */}
+          <ChipGroup label={t("channelAge")}>
+            {CHANNEL_AGE_TIERS.map((tier) => (
+              <ChipCheckbox
+                key={tier}
+                name="channelAge"
+                value={tier}
+                label={t(
+                  `channelAge_${tier}` as
+                    | "channelAge_new"
+                    | "channelAge_established"
+                    | "channelAge_veteran"
+                )}
+                checked={filters.channelAge.includes(tier)}
+                dataTestid={`filter-channel-age-${tier}`}
+              />
+            ))}
+          </ChipGroup>
+
+          <ChipGroup label={t("uploadFrequency")}>
+            {UPLOAD_FREQUENCY_TIERS.map((tier) => (
+              <ChipCheckbox
+                key={tier}
+                name="uploadFrequency"
+                value={tier}
+                label={t(
+                  `uploadFrequency_${tier}` as
+                    | "uploadFrequency_active"
+                    | "uploadFrequency_semi-active"
+                    | "uploadFrequency_inactive"
+                )}
+                checked={filters.uploadFrequency.includes(tier)}
+                dataTestid={`filter-upload-freq-${tier}`}
+              />
+            ))}
+          </ChipGroup>
+
+          <ChipGroup label={t("regionGroup")}>
+            {REGION_GROUPS.map((grp) => (
+              <ChipCheckbox
+                key={grp}
+                name="regionGroup"
+                value={grp}
+                label={t(
+                  `regionGroup_${grp}` as
+                    | "regionGroup_asia"
+                    | "regionGroup_europe"
+                    | "regionGroup_americas"
+                    | "regionGroup_latam"
+                    | "regionGroup_oceania"
+                )}
+                checked={filters.regionGroup.includes(grp)}
+                dataTestid={`filter-region-group-${grp}`}
+              />
+            ))}
+          </ChipGroup>
+
           <label className="flex cursor-pointer items-start gap-3">
             <input
               type="checkbox"
@@ -256,6 +338,16 @@ export async function FilterSidebar({ filters, basePath }: Props) {
         </div>
       </details>
 
+      {/* B5-F003 cookie persistence — small inline script that writes
+         `kolm_disco_advanced` whenever the marketer toggles the
+         <details>. Pure browser code, no React state, runs once per
+         page render. */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `(function(){var d=document.querySelector('details[data-disco-advanced]');if(!d)return;d.addEventListener('toggle',function(){document.cookie='${ADVANCED_COOKIE_NAME}='+(d.open?'1':'0')+';path=/;max-age=31536000;samesite=lax';});})();`,
+        }}
+      />
+
       {/* Keep sort sticky across filter submissions */}
       <input type="hidden" name="sort" value={filters.sort} />
 
@@ -274,6 +366,11 @@ function hasAnyAdvanced(f: DiscoveryFilters): boolean {
     f.avgViewsMin != null ||
     f.uploadsPerMonthMin != null ||
     f.lastUploadWithinDays != null ||
+    // B5-F003 — also auto-open when any of the three new advanced
+    // filters is in play.
+    f.channelAge.length > 0 ||
+    f.uploadFrequency.length > 0 ||
+    f.regionGroup.length > 0 ||
     f.monetizationStatuses.length > 0 ||
     f.brandSafety.length > 0 ||
     f.knownCollabs.length > 0 ||

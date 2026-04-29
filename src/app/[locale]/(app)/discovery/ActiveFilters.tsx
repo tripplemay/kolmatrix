@@ -182,6 +182,57 @@ export async function ActiveFilters({ filters, basePath }: Props) {
     });
   }
 
+  // B5-F003 — surface the three new advanced filter chips.
+  for (const tier of filters.channelAge) {
+    chips.push({
+      key: `channelAge-${tier}`,
+      label: `${tFilters("channelAge")}: ${tFilters(
+        `channelAge_${tier}` as
+          | "channelAge_new"
+          | "channelAge_established"
+          | "channelAge_veteran"
+      )}`,
+      clear: {
+        channelAge: filters.channelAge.filter((t) => t !== tier),
+        cursor: undefined,
+      },
+    });
+  }
+
+  for (const tier of filters.uploadFrequency) {
+    chips.push({
+      key: `uploadFrequency-${tier}`,
+      label: `${tFilters("uploadFrequency")}: ${tFilters(
+        `uploadFrequency_${tier}` as
+          | "uploadFrequency_active"
+          | "uploadFrequency_semi-active"
+          | "uploadFrequency_inactive"
+      )}`,
+      clear: {
+        uploadFrequency: filters.uploadFrequency.filter((t) => t !== tier),
+        cursor: undefined,
+      },
+    });
+  }
+
+  for (const grp of filters.regionGroup) {
+    chips.push({
+      key: `regionGroup-${grp}`,
+      label: `${tFilters("regionGroup")}: ${tFilters(
+        `regionGroup_${grp}` as
+          | "regionGroup_asia"
+          | "regionGroup_europe"
+          | "regionGroup_americas"
+          | "regionGroup_latam"
+          | "regionGroup_oceania"
+      )}`,
+      clear: {
+        regionGroup: filters.regionGroup.filter((g) => g !== grp),
+        cursor: undefined,
+      },
+    });
+  }
+
   if (filters.includeNonGaming) {
     chips.push({
       key: "includeNonGaming",

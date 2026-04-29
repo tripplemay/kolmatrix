@@ -24,6 +24,11 @@ const empty: DiscoveryFilters = {
   relationshipStatuses: [],
   knownCollabs: [],
   tags: [],
+  // B5-F003 — new advanced filter dimensions; default to empty so
+  // existing fixtures keep parsing as the no-filter baseline.
+  channelAge: [],
+  uploadFrequency: [],
+  regionGroup: [],
   includeNonGaming: false,
   sort: "value",
 };
@@ -73,9 +78,7 @@ describe("parseFilters()", () => {
   });
 
   it("accepts a valid lastUpload window and drops others", () => {
-    expect(
-      parseFilters(new URLSearchParams({ lastUpload: "90" })).lastUploadWithinDays
-    ).toBe(90);
+    expect(parseFilters(new URLSearchParams({ lastUpload: "90" })).lastUploadWithinDays).toBe(90);
     expect(
       parseFilters(new URLSearchParams({ lastUpload: "7" })).lastUploadWithinDays
     ).toBeUndefined();
@@ -102,21 +105,17 @@ describe("parseFilters()", () => {
   });
 
   it("treats includeNonGaming truthy values", () => {
-    expect(
-      parseFilters(new URLSearchParams({ includeNonGaming: "on" }))
-        .includeNonGaming
-    ).toBe(true);
-    expect(
-      parseFilters(new URLSearchParams({ includeNonGaming: "true" }))
-        .includeNonGaming
-    ).toBe(true);
+    expect(parseFilters(new URLSearchParams({ includeNonGaming: "on" })).includeNonGaming).toBe(
+      true
+    );
+    expect(parseFilters(new URLSearchParams({ includeNonGaming: "true" })).includeNonGaming).toBe(
+      true
+    );
     expect(parseFilters(new URLSearchParams({})).includeNonGaming).toBe(false);
   });
 
   it("trims whitespace from search input", () => {
-    expect(
-      parseFilters(new URLSearchParams({ search: "  Nintendo  " })).search
-    ).toBe("Nintendo");
+    expect(parseFilters(new URLSearchParams({ search: "  Nintendo  " })).search).toBe("Nintendo");
     expect(parseFilters(new URLSearchParams({ search: "   " })).search).toBeUndefined();
   });
 
@@ -159,6 +158,10 @@ describe("serializeFilters()", () => {
       knownCollabs: ["Razer"],
       tags: ["esports"],
       tiers: [],
+      // B5-F003 — round-trip the new advanced filter dimensions.
+      channelAge: ["established"],
+      uploadFrequency: ["active", "semi-active"],
+      regionGroup: ["asia", "americas"],
       includeNonGaming: true,
       sort: "followers",
       cursor: "abc",
@@ -207,9 +210,7 @@ describe("buildKolWhere()", () => {
   it("adds an OR on displayName + handle for search", () => {
     const where = buildKolWhere({ ...empty, search: "Nintendo" });
     const clauses = where.AND as Record<string, unknown>[];
-    const searchClause = clauses.find(
-      (c) => "OR" in c
-    ) as { OR: Record<string, unknown>[] };
+    const searchClause = clauses.find((c) => "OR" in c) as { OR: Record<string, unknown>[] };
     expect(searchClause.OR).toEqual([
       { displayName: { contains: "Nintendo", mode: "insensitive" } },
       { handle: { contains: "Nintendo", mode: "insensitive" } },

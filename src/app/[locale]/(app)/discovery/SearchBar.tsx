@@ -153,6 +153,11 @@ function buildCarryoverFields(f: DiscoveryFilters): React.ReactNode[] {
   addAll("brandSafety", f.brandSafety);
   addAll("knownCollabs", f.knownCollabs);
   addAll("tags", f.tags);
+  // B5-F003 — carry the three new advanced filter dimensions so the
+  // search bar's submit doesn't drop them.
+  addAll("channelAge", f.channelAge);
+  addAll("uploadFrequency", f.uploadFrequency);
+  addAll("regionGroup", f.regionGroup);
   if (f.includeNonGaming) add("includeNonGaming", "on");
   add("sort", f.sort);
 

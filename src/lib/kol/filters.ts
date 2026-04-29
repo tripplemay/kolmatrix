@@ -34,6 +34,132 @@ export const BRAND_SAFETY_RATINGS = ["G", "PG", "PG13", "R"] as const;
 export const LAST_UPLOAD_WINDOWS = [30, 90, 180] as const;
 export const SORT_OPTIONS = ["value", "followers", "recent"] as const;
 
+// B5-F003 — channel age tiers, derived at query time from
+// kol.channel_created_at. Boundaries are inclusive on the upper end:
+//   new          channelCreatedAt >= now - 1y
+//   established  now - 3y <= channelCreatedAt < now - 1y
+//   veteran      channelCreatedAt < now - 3y
+// Rows with NULL channel_created_at are excluded from any of the three
+// buckets — same semantic as the existing engagement / avgViews filters.
+export const CHANNEL_AGE_TIERS = ["new", "established", "veteran"] as const;
+export type ChannelAgeTier = (typeof CHANNEL_AGE_TIERS)[number];
+
+// B5-F003 — upload frequency tiers, mapped onto the existing
+// kol.uploads_per_month column (BM1).
+//   active       uploads_per_month >= 4
+//   semi-active  1 <= uploads_per_month < 4
+//   inactive     uploads_per_month < 1
+export const UPLOAD_FREQUENCY_TIERS = ["active", "semi-active", "inactive"] as const;
+export type UploadFrequencyTier = (typeof UPLOAD_FREQUENCY_TIERS)[number];
+
+// B5-F003 — coarse region groups. Country codes that don't map to one
+// of the five buckets (e.g. AE, ZA) just fall outside any group filter
+// — the row is still visible when no regionGroup filter is set, and
+// hidden when one is set, identical to the existing `regions` filter
+// semantic.
+export const REGION_GROUPS = ["asia", "europe", "americas", "latam", "oceania"] as const;
+export type RegionGroup = (typeof REGION_GROUPS)[number];
+
+export const REGION_GROUP_COUNTRIES: Record<RegionGroup, readonly string[]> = {
+  asia: [
+    "CN",
+    "HK",
+    "TW",
+    "JP",
+    "KR",
+    "SG",
+    "ID",
+    "VN",
+    "TH",
+    "MY",
+    "PH",
+    "IN",
+    "BD",
+    "PK",
+    "LK",
+    "MM",
+    "KH",
+    "LA",
+    "MN",
+    "NP",
+    "IQ",
+    "IR",
+    "AE",
+    "SA",
+    "IL",
+    "JO",
+  ],
+  europe: [
+    "GB",
+    "IE",
+    "DE",
+    "FR",
+    "IT",
+    "ES",
+    "PT",
+    "NL",
+    "BE",
+    "LU",
+    "AT",
+    "CH",
+    "SE",
+    "NO",
+    "DK",
+    "FI",
+    "IS",
+    "PL",
+    "CZ",
+    "SK",
+    "HU",
+    "RO",
+    "BG",
+    "GR",
+    "EE",
+    "LV",
+    "LT",
+    "SI",
+    "HR",
+    "RS",
+    "BA",
+    "AL",
+    "MK",
+    "ME",
+    "MD",
+    "UA",
+    "BY",
+    "RU",
+    "TR",
+    "CY",
+    "MT",
+  ],
+  americas: ["US", "CA"],
+  latam: [
+    "MX",
+    "BR",
+    "AR",
+    "CO",
+    "PE",
+    "CL",
+    "VE",
+    "EC",
+    "BO",
+    "PY",
+    "UY",
+    "CR",
+    "PA",
+    "GT",
+    "HN",
+    "SV",
+    "NI",
+    "DO",
+    "PR",
+    "CU",
+    "JM",
+    "TT",
+  ],
+  oceania: ["AU", "NZ", "FJ", "PG", "WS", "TO"],
+};
+
 // BM1-F005/F006 relationship lifecycle. Default for newly-seeded KOLs is
 // "prospect"; /database surfaces the dropdown so marketers can move a
 // creator through the funnel. BM2 will upgrade this to an event-sourced
@@ -71,6 +197,14 @@ export interface DiscoveryFilters {
   knownCollabs: string[];
   tags: string[];
   tiers?: Array<"high" | "medium" | "low" | "unrated">;
+  /** B5-F003 — multi-select channel age bucket. Undefined / empty
+   *  means no filter; an empty array is also the no-filter case. */
+  channelAge: ChannelAgeTier[];
+  /** B5-F003 — multi-select upload-frequency bucket. */
+  uploadFrequency: UploadFrequencyTier[];
+  /** B5-F003 — multi-select coarse region group; combined with the
+   *  fine-grained `regions` filter via AND. */
+  regionGroup: RegionGroup[];
   /**
    * BM1-F005: /database uses this for the "Relationship status" column
    * filter. /discovery does not expose the dim in the UI but the schema
@@ -131,20 +265,16 @@ export function parseFilters(
   };
 
   const last = get("lastUpload");
-  const lastParsed =
-    last === "30" ? 30 : last === "90" ? 90 : last === "180" ? 180 : undefined;
+  const lastParsed = last === "30" ? 30 : last === "90" ? 90 : last === "180" ? 180 : undefined;
 
   const sortRaw = get("sort");
-  const sort: SortOption =
-    sortRaw === "followers" || sortRaw === "recent" ? sortRaw : "value";
+  const sort: SortOption = sortRaw === "followers" || sortRaw === "recent" ? sortRaw : "value";
 
-  const monetizationStatuses = getAll("monetization").filter(
-    (v): v is MonetizationStatus =>
-      (MONETIZATION_STATUSES as readonly string[]).includes(v)
+  const monetizationStatuses = getAll("monetization").filter((v): v is MonetizationStatus =>
+    (MONETIZATION_STATUSES as readonly string[]).includes(v)
   );
-  const brandSafety = getAll("brandSafety").filter(
-    (v): v is BrandSafetyRating =>
-      (BRAND_SAFETY_RATINGS as readonly string[]).includes(v)
+  const brandSafety = getAll("brandSafety").filter((v): v is BrandSafetyRating =>
+    (BRAND_SAFETY_RATINGS as readonly string[]).includes(v)
   );
   const relationshipStatusesRaw = getAll("relationshipStatus");
   // BM2-F007: also accept the shorter `?status=X` alias used by
@@ -186,6 +316,15 @@ export function parseFilters(
       (v): v is "high" | "medium" | "low" | "unrated" =>
         v === "high" || v === "medium" || v === "low" || v === "unrated"
     ),
+    channelAge: getAll("channelAge").filter((v): v is ChannelAgeTier =>
+      (CHANNEL_AGE_TIERS as readonly string[]).includes(v)
+    ),
+    uploadFrequency: getAll("uploadFrequency").filter((v): v is UploadFrequencyTier =>
+      (UPLOAD_FREQUENCY_TIERS as readonly string[]).includes(v)
+    ),
+    regionGroup: getAll("regionGroup").filter((v): v is RegionGroup =>
+      (REGION_GROUPS as readonly string[]).includes(v)
+    ),
     includeNonGaming: get("includeNonGaming") === "on" || get("includeNonGaming") === "true",
     sort,
     cursor: get("cursor") || undefined,
@@ -214,15 +353,16 @@ export function serializeFilters(
   if (merged.avgViewsMin != null) params.set("avgViewsMin", String(merged.avgViewsMin));
   if (merged.uploadsPerMonthMin != null)
     params.set("uploadsPerMonthMin", String(merged.uploadsPerMonthMin));
-  if (merged.lastUploadWithinDays)
-    params.set("lastUpload", String(merged.lastUploadWithinDays));
+  if (merged.lastUploadWithinDays) params.set("lastUpload", String(merged.lastUploadWithinDays));
   for (const v of merged.monetizationStatuses) params.append("monetization", v);
   for (const v of merged.brandSafety) params.append("brandSafety", v);
-  for (const v of merged.relationshipStatuses)
-    params.append("relationshipStatus", v);
+  for (const v of merged.relationshipStatuses) params.append("relationshipStatus", v);
   for (const v of merged.knownCollabs) params.append("knownCollabs", v);
   for (const v of merged.tags) params.append("tags", v);
   for (const v of merged.tiers ?? []) params.append("tiers", v);
+  for (const v of merged.channelAge) params.append("channelAge", v);
+  for (const v of merged.uploadFrequency) params.append("uploadFrequency", v);
+  for (const v of merged.regionGroup) params.append("regionGroup", v);
   if (merged.includeNonGaming) params.set("includeNonGaming", "on");
   if (merged.sort !== "value") params.set("sort", merged.sort);
   if (merged.cursor) params.set("cursor", merged.cursor);
@@ -296,9 +436,7 @@ export function buildKolWhere(filters: DiscoveryFilters): Prisma.KolWhereInput {
     and.push({ uploadsPerMonth: { gte: filters.uploadsPerMonthMin } });
   }
   if (filters.lastUploadWithinDays) {
-    const cutoff = new Date(
-      Date.now() - filters.lastUploadWithinDays * 86_400_000
-    );
+    const cutoff = new Date(Date.now() - filters.lastUploadWithinDays * 86_400_000);
     and.push({ lastUploadAt: { gte: cutoff } });
   }
 
@@ -333,6 +471,64 @@ export function buildKolWhere(filters: DiscoveryFilters): Prisma.KolWhereInput {
       }
     }
     and.push({ OR: tierClauses });
+  }
+
+  // B5-F003 — channel age. Multi-select uses OR across the picked
+  // tiers; combined with the rest of the filters via AND.
+  if (filters.channelAge.length > 0) {
+    const now = Date.now();
+    const oneYearMs = 365 * 86_400_000;
+    const threeYearMs = 3 * oneYearMs;
+    const ageClauses: Prisma.KolWhereInput[] = [];
+    for (const tier of filters.channelAge) {
+      if (tier === "new") {
+        ageClauses.push({
+          channelCreatedAt: { gte: new Date(now - oneYearMs) },
+        });
+      } else if (tier === "established") {
+        ageClauses.push({
+          AND: [
+            { channelCreatedAt: { gte: new Date(now - threeYearMs) } },
+            { channelCreatedAt: { lt: new Date(now - oneYearMs) } },
+          ],
+        });
+      } else {
+        ageClauses.push({
+          channelCreatedAt: { lt: new Date(now - threeYearMs) },
+        });
+      }
+    }
+    and.push({ OR: ageClauses });
+  }
+
+  // B5-F003 — upload frequency. Maps onto the BM1 uploads_per_month
+  // column. NULL rows are excluded from any tier (same semantic as
+  // the existing engagementRate / avgViews filters).
+  if (filters.uploadFrequency.length > 0) {
+    const freqClauses: Prisma.KolWhereInput[] = [];
+    for (const tier of filters.uploadFrequency) {
+      if (tier === "active") {
+        freqClauses.push({ uploadsPerMonth: { gte: 4 } });
+      } else if (tier === "semi-active") {
+        freqClauses.push({ uploadsPerMonth: { gte: 1, lt: 4 } });
+      } else {
+        freqClauses.push({ uploadsPerMonth: { lt: 1 } });
+      }
+    }
+    and.push({ OR: freqClauses });
+  }
+
+  // B5-F003 — coarse region group, ANDed with the existing fine-
+  // grained `regions` filter. The country list per group is a static
+  // mapping; selecting multiple groups unions their countries.
+  if (filters.regionGroup.length > 0) {
+    const countries = new Set<string>();
+    for (const grp of filters.regionGroup) {
+      for (const c of REGION_GROUP_COUNTRIES[grp]) countries.add(c);
+    }
+    if (countries.size > 0) {
+      and.push({ countryCode: { in: Array.from(countries) } });
+    }
   }
 
   return { AND: and };
