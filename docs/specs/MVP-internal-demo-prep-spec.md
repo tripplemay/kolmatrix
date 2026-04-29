@@ -355,28 +355,77 @@ trigger: B5 done 后立即启动
 - tests/integration/dashboard-real-data.test.ts 验证 EmailLog → 14 天聚合 + audit_log → 自然语言转译
 - staging git_sha 与本 commit 一致
 
-### F007 — 文案 polish 整理（/campaigns AiSuggestionsCard + /api/health redis + /campaigns Import）
+### F007 — 文案 polish 整理（登录页重写 + /campaigns AiSuggestionsCard + /api/health redis + /campaigns Import）
 
 **Executor：** generator
-**估时：** ~30 min
+**估时：** ~1.5h（原 30 min + 登录页重写 1h）
 
 **实现：**
 
-1. **/campaigns 列表 AiSuggestionsCard 文案修（P0-3，方案 c）**
+1. **登录页左侧文案完全重写（P0-5，2026-04-30 用户 4 轮讨论 lock）**
+
+   **背景：** 当前文案虚假宣传严重（"800K+ creators / 94% AI 精度 / 9 locales / 200+ studios trust us / 5 假工作室名"），与 PRD §1.1 / §3.1 真实定位脱节。详细审计见对话记录（Q1-Q4 + Title C + Subtitle γ + 用户其他 4 项确认）。
+
+   **i18n keys 改值（`messages/en.json` + `messages/zh.json` 的 `auth.login` 节点）：**
+
+   ```jsonc
+   // 改值
+   "eyebrow":      "GAME KOL OPERATIONS · 2026"           // 原 "CREATOR OPERATIONS · 2026"
+                   "游戏 KOL 运营中枢 · 2026"               // 原 "创作者运营中枢 · 2026"
+
+   "heroTitle":    "<accent>The KOL command center</accent><br></br>for global game studios."
+                   "为全球游戏工作室打造的<br></br><accent>KOL 营销指挥中心。</accent>"
+
+   "heroSubtitle": "Across YouTube, TikTok, Twitch, and Bilibili — gaming KOL operations purpose-built for studios going global."
+                   "覆盖 YouTube、TikTok、Twitch、Bilibili —— 为出海游戏工作室打造的游戏 KOL 运营平台。"
+
+   "chipCreators": "2,500+ gaming creators"                // 原 "850K+ creators indexed"
+                   "2,500+ 游戏创作者"                      // 原 "创作者库存 85 万+"
+
+   "chipMatch":    "AI-powered KOL × Product matching"     // 原 "AI match precision 94%"
+                   "AI 智能匹配 KOL × 产品"                 // 原 "AI 匹配精度 94%"
+
+   "chipLocales":  "EN · ZH · JA · KO · ES"                // 原 "9 locales · 24/7 ops"
+                   "5 种语言：中 · 英 · 日 · 韩 · 西"        // 原 "9 种语言 · 7×24 运营"
+
+   // 删除（连带 LoginBrandOverlay.tsx 中相关引用）
+   "chipStudios":  // DELETE
+   "trustedBy":    // DELETE
+   ```
+
+   **`src/components/auth/LoginBrandOverlay.tsx` 改造：**
+   - 删除 `chipStudios` chip 项（`chips` 数组从 4 个降到 3 个）
+   - 删除 `const studios = ["LIGHTNING", "VOIDPEAK", "STARFORGE", "AURORA", "NEBULA"]` 数组
+   - 删除整段 trust footer JSX（`{/* Trust footer */}` 注释 + 包裹 div）
+   - 调整 layout 让中间 content 块视觉居中（删 trust footer 后底部空白；可加 `mb-auto` 或调整 flex spacing）
+
+   **i18n 自动补 ja/ko/es：**
+   - 跑 `npm run i18n:translate -- --target ja,ko,es`
+   - 用户/团队 review 5 keys 关键译文（eyebrow / heroTitle / heroSubtitle / 3 chips）
+
+   **Visual baseline 重新生成：**
+   - `tests/screenshots/baseline/en-login.png`
+   - `tests/screenshots/baseline/zh-login.png`
+
+2. **/campaigns 列表 AiSuggestionsCard 文案修（P0-3，方案 c）**
    - 当前：`src/app/[locale]/(app)/campaigns/AiSuggestionsCard.tsx` 标 "Coming with B2"，但 B7b F002 已在 `/campaigns/[id]` 落地真实 AI Suggestions
    - 改造：移除 `comingTag` 紫色 badge；body 文案改为 "AI Suggestions are now live on each campaign — open any campaign to see personalized matches" + 主 CTA 链接到 `/campaigns/{firstActiveId}` 或保留通用 `/discovery` 链接
    - i18n：`campaigns.aiSuggestions.comingTag` 移除；`body` / `ctaLabel` 改文案
 
-2. **/api/health redis 字段文案修（P0-4）**
+3. **/api/health redis 字段文案修（P0-4）**
    - 当前：`src/app/api/health/route.ts` 返回 `{status: "stub", note: "wired in B5 with BullMQ"}`
    - 改造：返回 `{status: "not_used", note: "BullMQ enables when production scale demands"}`
    - 单元 test 更新（`tests/unit/health-redis-status.test.ts`）
 
-3. **/campaigns Header Import 按钮删除（P1-2 顺手）**
+4. **/campaigns Header Import 按钮删除（P1-2 顺手）**
    - 当前：`src/app/[locale]/(app)/campaigns/page.tsx:101` 有 disabled "Import" 按钮
    - 改造：直接删除该按钮（PRD §12 已说 CSV 批量导入 = B1 完整版，MVP 不需要占位）
 
 **Acceptance：**
+- 登录页左侧 EN + ZH 文案与上述 spec lock 一致（5 keys 改值 + 2 keys 删除）
+- LoginBrandOverlay.tsx 不再含假工作室数组 + trust footer 段
+- ja/ko/es 自动 i18n:translate 补全 5 keys
+- visual baseline en-login.png + zh-login.png 重新生成入库
 - /campaigns 列表 AiSuggestionsCard 不再显示 "Coming with B2" badge；CTA 引导到详情页
 - /api/health JSON 中 redis.status = "not_used"，note 文案产品化
 - /campaigns Header 不再有 Import 按钮（直接 New Campaign CTA）
@@ -396,6 +445,7 @@ trigger: B5 done 后立即启动
 | aiAssets 策略 | 3 预生成 + 2 null（混合）| 兼顾"完成态"和"AI 体验" |
 | Onboarding 文档 | 单文件 README en（不要 PDF / 不要 i18n） | 团队内部够用 |
 | Sprint 名 | MVP-internal-demo-prep | 用户 D4 选 B |
+| **登录页文案** | 选项 A 整体重写（去虚假数字 + 加游戏垂直）+ Title C 指挥中心 + Subtitle γ 多平台前置 + Trust footer 删 | 用户 2026-04-30 4 轮讨论 lock；多平台叙事保留对应 BL-012 爬虫团队 ~2026-06-25 数据接入后零文案返工 |
 
 ## 4. 依赖关系
 
@@ -468,8 +518,8 @@ B5 done → 用户 prod redeploy → MVP-internal-demo-prep building
 | F004 团队 README | ~2-3h | Generator |
 | F005 Prod L2 烟测 + signoff | ~0.5 day | codex (Reviewer) |
 | **F006 Dashboard 真数据替 mock**（EmailPerformance + RecentActivity）| ~5-7h | Generator |
-| **F007 文案 polish**（campaigns AiSuggestionsCard + /api/health redis + Import 按钮删）| ~30 min | Generator |
-| 缓冲 | ~4h | — |
+| **F007 文案 polish**（**登录页重写** + campaigns AiSuggestionsCard + /api/health redis + Import 按钮删）| ~1.5h | Generator |
+| 缓冲 | ~3.5h | — |
 | **总计** | **~3 day Generator + 0.5 day Reviewer** | — |
 
 ## 10. 用户决策（2026-04-30 全部 ✅）
