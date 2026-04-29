@@ -4,8 +4,8 @@
  * Locks the post-hotfix baseline shape in:
  *   - tests/screenshots/baseline/*.png are all git-tracked (no stray
  *     local-only PNGs that would diff in CI)
- *   - the 13 expected pages are present (the 12 BM1+BM2 set plus the
- *     new en-kols-detail introduced by F006)
+ *   - the 14 expected pages are present (the 12 BM1+BM2 set plus
+ *     en-kols-detail and en-outreach-templates)
  *   - the visual-regression spec covers each baseline with a
  *     toHaveScreenshot() call so a missing test can't silently
  *     orphan a baseline file
@@ -31,6 +31,7 @@ const EXPECTED_BASELINES = [
   "en-knowledge-base.png",
   "en-kols-detail.png",
   "en-login.png",
+  "en-outreach-templates.png",
   "en-outreach.png",
   "en-request-access.png",
   "en-roi.png",
@@ -52,7 +53,7 @@ function gitTrackedBaselines(): string[] {
 }
 
 describe("visual baseline collection (MVP-vf-F007)", () => {
-  it("git tracks exactly the 13 baseline PNGs the spec covers", () => {
+  it("git tracks exactly the 14 baseline PNGs the spec covers", () => {
     expect(gitTrackedBaselines()).toEqual([...EXPECTED_BASELINES].sort());
   });
 
