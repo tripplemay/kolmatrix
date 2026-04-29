@@ -46,7 +46,7 @@
       "title": "补模板库回归测试与视觉基线",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新增测试覆盖模板 union load、user template 保存、system 模板只读、模板 CRUD guardrail、路由跳转和保存后可复选；新增模板库页的 visual baseline，必要时更新 /outreach 现有 baseline。staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）。"
     }
   ]

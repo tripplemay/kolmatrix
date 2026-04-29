@@ -1,11 +1,11 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "把 AI 生成的邮件模板保存并管理为可复用模板库，并在 /outreach 发送界面可选择。",
   "total_features": 6,
-  "completed_features": 5,
+  "completed_features": 6,
   "fix_rounds": 0,
   "current_sprint": "B4-email-template-library",
-  "last_updated": "2026-04-29T22:15+0800",
+  "last_updated": "2026-04-29T23:17+0800",
   "reference_docs": [
     "docs/specs/B4-email-template-library-spec.md",
     "src/lib/email/composer-data.ts",
@@ -18,11 +18,11 @@
   "docs": {
     "spec": "docs/specs/B4-email-template-library-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/B4-email-template-library-signoff-2026-04-29.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
+  "evaluator_feedback": "PASS: template save/refresh persistence, /outreach navigation, and visual baseline coverage verified on staging git_sha=31ab6c0.",
   "generator_handoff": "[Generator -> Evaluator] B4-email-template-library implementation is in place. Shared helper: `src/lib/email/templates.ts` now loads system + user templates with locale fallback and exposes create/update/duplicate/delete helpers. Composer/Template library changes: `/outreach` template selector now groups system/user templates; AI customize dialog can save AI output as a user template; new `/outreach/templates` route provides the editor/library workspace; `OutreachTabs` now routes Templates to the new page. Evaluator should verify template save/refresh persistence, route navigation, and visual baseline alignment on staging after Generator deploys the current main HEAD.",
   "session_notes": {
     "Kimi": "[2026-04-29 Planner] User confirmed. State advanced planning -> building for BIx-staging-automation.",
