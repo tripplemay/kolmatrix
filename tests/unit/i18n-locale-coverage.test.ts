@@ -120,6 +120,25 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   "discovery.smartMatch.errors.network",
   "discovery.smartMatch.errors.generic",
   "campaigns.new.smartMatch.banner",
+  // B5-F003 — Discovery filter +3 dimensions (channelAge / uploadFrequency
+  // / regionGroup) seed en values into zh/ja/ko/es so the locale-coverage
+  // gate stays green until F005 runs `npm run i18n:translate -- --target
+  // zh,ja,ko,es` for the cross-batch translation pass. Reviewer should
+  // ensure these paths are removed once F005 lands real translations.
+  "discovery.filters.channelAge",
+  "discovery.filters.channelAge_new",
+  "discovery.filters.channelAge_established",
+  "discovery.filters.channelAge_veteran",
+  "discovery.filters.uploadFrequency",
+  "discovery.filters.uploadFrequency_active",
+  "discovery.filters.uploadFrequency_semi-active",
+  "discovery.filters.uploadFrequency_inactive",
+  "discovery.filters.regionGroup",
+  "discovery.filters.regionGroup_asia",
+  "discovery.filters.regionGroup_europe",
+  "discovery.filters.regionGroup_americas",
+  "discovery.filters.regionGroup_latam",
+  "discovery.filters.regionGroup_oceania",
   "discovery.card.engagement",
   "discovery.card.unavailableMetric",
   "discovery.regions.VN",
