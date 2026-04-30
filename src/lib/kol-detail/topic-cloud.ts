@@ -27,6 +27,8 @@
  */
 import "dotenv/config";
 
+import type { Prisma } from "@prisma/client";
+
 import { resolveAigcV1BaseUrl } from "@/lib/aigc/base-url";
 import { parseFencedJson } from "@/lib/ai/json-extract";
 import { withTenant } from "@/lib/db";
@@ -208,7 +210,9 @@ export async function loadTopicCloud(opts: LoadTopicCloudOpts): Promise<TopicKey
     await withTenant(opts.tenantId, async (tx) => {
       await tx.kol.update({
         where: { id: opts.kolId },
-        data: { metadata: mergeMetadata(opts.metadata, next) },
+        data: {
+          metadata: mergeMetadata(opts.metadata, next) as Prisma.InputJsonValue,
+        },
       });
     });
   } catch {

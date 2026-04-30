@@ -14,6 +14,7 @@
  * googleapis calls. Codex 守门 tests in F005 cover the pure read/merge
  * branches via integration specs.
  */
+import type { Prisma } from "@prisma/client";
 import { google } from "googleapis";
 
 import { withTenant } from "@/lib/db";
@@ -33,10 +34,7 @@ export interface RecentVideosCache {
 const TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_ITEMS = 6;
 
-export function isCacheFresh(
-  cache: RecentVideosCache | null,
-  now = Date.now()
-): boolean {
+export function isCacheFresh(cache: RecentVideosCache | null, now = Date.now()): boolean {
   if (!cache) return false;
   const fetched = Date.parse(cache.fetchedAt);
   if (!Number.isFinite(fetched)) return false;
@@ -76,8 +74,7 @@ export async function fetchRecentVideosFromYoutube(
     id: [channelId],
     maxResults: 1,
   });
-  const playlistId =
-    ch.data.items?.[0]?.contentDetails?.relatedPlaylists?.uploads ?? null;
+  const playlistId = ch.data.items?.[0]?.contentDetails?.relatedPlaylists?.uploads ?? null;
   if (!playlistId) return [];
   const pi = await yt.playlistItems.list({
     part: ["snippet", "contentDetails"],
@@ -94,11 +91,7 @@ export async function fetchRecentVideosFromYoutube(
     out.push({
       videoId,
       title: sn.title ?? "",
-      thumbnailUrl:
-        thumbs?.medium?.url ??
-        thumbs?.high?.url ??
-        thumbs?.default?.url ??
-        null,
+      thumbnailUrl: thumbs?.medium?.url ?? thumbs?.high?.url ?? thumbs?.default?.url ?? null,
       publishedAt: sn.publishedAt ?? null,
     });
   }
@@ -137,7 +130,9 @@ export async function loadRecentVideos(
     await withTenant(opts.tenantId, async (tx) => {
       await tx.kol.update({
         where: { id: opts.kolId },
-        data: { metadata: mergeMetadata(opts.metadata, next) },
+        data: {
+          metadata: mergeMetadata(opts.metadata, next) as Prisma.InputJsonValue,
+        },
       });
     });
   } catch {
