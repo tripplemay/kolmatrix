@@ -17,6 +17,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { withTenant } from "@/lib/db";
+import { loadRecentVideos } from "@/lib/kol-detail/recent-videos";
 
 import { EmptyTabState } from "./EmptyTabState";
 import { KolActionsCard } from "./KolActionsCard";
@@ -25,6 +26,7 @@ import { KolOverviewInfo } from "./KolOverviewInfo";
 import { KolTabsNav, type KolTabKey } from "./KolTabsNav";
 import { KolValueScoreCard } from "./KolValueScoreCard";
 import { RecentVideosGrid } from "./RecentVideosGrid";
+import { TopicCloud } from "./TopicCloud";
 
 interface Props {
   params: Promise<{ locale: string; id: string }>;
@@ -132,6 +134,24 @@ export default async function KolProfilePage({ params, searchParams }: Props) {
   const basePath = `/${locale}/kols/${id}`;
   const engagementRate = kol.engagementRate == null ? null : Number(kol.engagementRate.toString());
 
+  // Single source of truth for the recent-videos cache so RecentVideosGrid
+  // and TopicCloud both read the same items without re-hitting YouTube +
+  // double-writing the metadata cache (see B5-F006 spec §risks).
+  const recentVideos =
+    activeTab === "overview"
+      ? await loadRecentVideos({
+          tenantId,
+          kolId: kol.id,
+          platform: kol.platform,
+          externalId: kol.externalId,
+          metadata: kol.metadata,
+          apiKey: process.env.YOUTUBE_API_KEY,
+        })
+      : null;
+  const recentVideoTitles = (recentVideos ?? [])
+    .map((v) => v.title)
+    .filter((title) => title && title.trim().length > 0);
+
   return (
     <div className="mx-auto max-w-[1400px] space-y-6 pb-16">
       <Breadcrumb
@@ -190,12 +210,13 @@ export default async function KolProfilePage({ params, searchParams }: Props) {
               channelCreatedAt={kol.channelCreatedAt}
               videoCount={kol.videoCount}
             />
-            <RecentVideosGrid
+            <RecentVideosGrid items={recentVideos} platform={kol.platform} />
+            <TopicCloud
               tenantId={tenantId}
               kolId={kol.id}
               platform={kol.platform}
-              externalId={kol.externalId}
               metadata={kol.metadata}
+              recentVideoTitles={recentVideoTitles}
             />
           </div>
           <aside className="flex flex-col gap-6">

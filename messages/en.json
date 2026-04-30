@@ -1055,6 +1055,11 @@
       "title": "Recent videos",
       "empty": "No recent videos yet — check back after the next sync."
     },
+    "topicCloud": {
+      "title": "Content topics",
+      "empty": "Topics being analyzed — check back after the next refresh.",
+      "loading": "Loading topic cloud…"
+    },
     "emptyTab": {
       "collabs": "Campaign collaborations will appear here once you launch your first campaign (BM2).",
       "contacts": "Email and message history will appear here after your first outreach (BM2).",

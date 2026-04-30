@@ -84,6 +84,14 @@ export default defineConfig({
         // exercised via the loader path. Codex 守门 in F005 covers the
         // happy-path + cache-miss + YT-failure branches via integration.
         "src/lib/kol-detail/recent-videos.ts",
+        // B5-F006 KOL detail topic-cloud loader. Same rationale —
+        // surface is dominated by withTenant + aigcgateway fetch.
+        // Pure helpers (isCacheFresh / readCache / normalizeKeywords /
+        // mergeMetadata) are exercised via the loader path. Codex 守门
+        // tests in F006 cover cache / mock-success / Action-failure /
+        // Action-not-configured branches via integration specs
+        // (tests/integration/b5-topic-cloud.test.ts per spec §F006).
+        "src/lib/kol-detail/topic-cloud.ts",
       ],
       thresholds: {
         lines: 80,

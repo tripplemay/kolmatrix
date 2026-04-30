@@ -151,6 +151,14 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   "kolProfile.overview.fieldVideoCount",
   "kolProfile.recentVideos.title",
   "kolProfile.recentVideos.empty",
+  // B5-F006 — KOL detail page topic-cloud panel (visx/wordcloud);
+  // seeded en values into zh/ja/ko/es alongside F004 so the locale
+  // gate stays green until F005 runs `npm run i18n:translate`.
+  // Reviewer should ensure these paths are removed once F005 lands
+  // real translations.
+  "kolProfile.topicCloud.title",
+  "kolProfile.topicCloud.empty",
+  "kolProfile.topicCloud.loading",
   "discovery.card.engagement",
   "discovery.card.unavailableMetric",
   "discovery.regions.VN",
