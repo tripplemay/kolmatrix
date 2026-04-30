@@ -126,6 +126,12 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   // zh/ja/ko/es were removed in F005 after `npm run i18n:translate
   // -- --target {zh,ja,ko,es}` landed real translations
   // (commit 2026-04-30, batch B5).
+  // Exception: regionGroup_asia in Spanish — "Asia" is spelled the
+  // same in en + es. zh/ja/ko all translated correctly. Keep this
+  // path on the allowlist so the cross-locale gate passes; reviewer
+  // should NOT remove it without confirming es maintainers want a
+  // synonym (none exists in standard Spanish).
+  "discovery.filters.regionGroup_asia",
   "discovery.card.engagement",
   "discovery.card.unavailableMetric",
   "discovery.regions.VN",
