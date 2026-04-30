@@ -147,13 +147,18 @@ export async function fetchTopicKeywordsFromAigcGateway(
     if (!res.ok) return null;
     const body = (await res.json()) as { output?: unknown };
     if (typeof body.output !== "string" || !body.output) return null;
-    let parsed: { keywords?: unknown };
+    let parsed: unknown;
     try {
-      parsed = parseFencedJson<typeof parsed>(body.output);
+      parsed = parseFencedJson<unknown>(body.output);
     } catch {
       return null;
     }
-    return normalizeKeywords(parsed.keywords);
+    // Action may return either a bare array `[{term,weight}, ...]` or
+    // an object wrapper `{keywords: [...]}` depending on prompt shape.
+    const raw = Array.isArray(parsed)
+      ? parsed
+      : (parsed as { keywords?: unknown } | null)?.keywords;
+    return normalizeKeywords(raw);
   } catch {
     return null;
   } finally {
