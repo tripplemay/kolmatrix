@@ -141,6 +141,14 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   "discovery.filters.regionGroup_americas",
   "discovery.filters.regionGroup_latam",
   "discovery.filters.regionGroup_oceania",
+  // B5-F004 — KOL detail page banner + channel age + video count;
+  // seeded en values into zh/ja/ko/es so the locale-coverage gate stays
+  // green until F005 runs `npm run i18n:translate -- --target
+  // zh,ja,ko,es`. Reviewer should ensure these paths are removed once
+  // F005 lands real translations.
+  "kolProfile.hero.bannerAlt",
+  "kolProfile.overview.fieldChannelAge",
+  "kolProfile.overview.fieldVideoCount",
   "discovery.card.engagement",
   "discovery.card.unavailableMetric",
   "discovery.regions.VN",

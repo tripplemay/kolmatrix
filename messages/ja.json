@@ -773,7 +773,8 @@
       "followers": "フォロワー",
       "country": "国",
       "language": "言語",
-      "unknown": "—"
+      "unknown": "—",
+      "bannerAlt": "Channel banner"
     },
     "overview": {
       "sectionInfo": "基本情報",
@@ -790,6 +791,8 @@
       "fieldMonetization": "収益化",
       "fieldBrandSafety": "ブランドセーフティ",
       "fieldUploadsPerMonth": "月あたりのアップロード数",
+      "fieldChannelAge": "Channel age",
+      "fieldVideoCount": "Total videos",
       "fieldTags": "タグ",
       "fieldBio": "自己紹介",
       "valueScoreLabel": "価値",

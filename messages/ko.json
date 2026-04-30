@@ -773,7 +773,8 @@
       "followers": "팔로워",
       "country": "국가",
       "language": "언어",
-      "unknown": "—"
+      "unknown": "—",
+      "bannerAlt": "Channel banner"
     },
     "overview": {
       "sectionInfo": "기본 정보",
@@ -790,6 +791,8 @@
       "fieldMonetization": "수익화",
       "fieldBrandSafety": "브랜드 안전성",
       "fieldUploadsPerMonth": "월 업로드 수",
+      "fieldChannelAge": "Channel age",
+      "fieldVideoCount": "Total videos",
       "fieldTags": "태그",
       "fieldBio": "소개",
       "valueScoreLabel": "가치",

@@ -68,13 +68,13 @@ type KolDetailShape = Prisma.KolGetPayload<{
     isSaved: true;
     isGaming: true;
     relationshipStatus: true;
+    bannerUrl: true;
+    channelCreatedAt: true;
+    videoCount: true;
   };
 }>;
 
-async function loadKol(
-  tenantId: string,
-  kolId: string
-): Promise<KolDetailShape | null> {
+async function loadKol(tenantId: string, kolId: string): Promise<KolDetailShape | null> {
   return withTenant(tenantId, async (tx) => {
     return tx.kol.findUnique({
       where: { id: kolId },
@@ -100,6 +100,9 @@ async function loadKol(
         isSaved: true,
         isGaming: true,
         relationshipStatus: true,
+        bannerUrl: true,
+        channelCreatedAt: true,
+        videoCount: true,
       },
     });
   });
@@ -122,8 +125,7 @@ export default async function KolProfilePage({ params, searchParams }: Props) {
   const t = await getTranslations("kolProfile");
 
   const basePath = `/${locale}/kols/${id}`;
-  const engagementRate =
-    kol.engagementRate == null ? null : Number(kol.engagementRate.toString());
+  const engagementRate = kol.engagementRate == null ? null : Number(kol.engagementRate.toString());
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-6 pb-16">
@@ -132,6 +134,20 @@ export default async function KolProfilePage({ params, searchParams }: Props) {
         backLabel={t("backToDatabase")}
         currentName={kol.displayName}
       />
+
+      {kol.bannerUrl ? (
+        <section
+          className="overflow-hidden rounded-2xl border border-white/5"
+          data-testid="kol-banner"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={kol.bannerUrl}
+            alt={t("hero.bannerAlt")}
+            className="h-auto max-h-[240px] w-full object-cover"
+          />
+        </section>
+      ) : null}
 
       <KolHero
         displayName={kol.displayName}
@@ -165,6 +181,8 @@ export default async function KolProfilePage({ params, searchParams }: Props) {
             brandSafetyRating={kol.brandSafetyRating}
             tags={kol.tags}
             bio={kol.bio}
+            channelCreatedAt={kol.channelCreatedAt}
+            videoCount={kol.videoCount}
           />
           <aside className="flex flex-col gap-6">
             <KolValueScoreCard valueScore={kol.valueScore} />
@@ -193,12 +211,12 @@ function Breadcrumb({
 }) {
   return (
     <nav
-      className="flex items-center gap-2 text-xs text-on-surface-variant"
+      className="text-on-surface-variant flex items-center gap-2 text-xs"
       aria-label="Breadcrumb"
     >
       <Link
         href={href}
-        className="inline-flex items-center gap-1 transition-colors hover:text-cyan"
+        className="hover:text-cyan inline-flex items-center gap-1 transition-colors"
       >
         <span className="material-symbols-outlined text-[14px]" aria-hidden>
           arrow_back
@@ -206,7 +224,7 @@ function Breadcrumb({
         {backLabel}
       </Link>
       <span aria-hidden>·</span>
-      <span className="truncate text-cyan-fixed">{currentName}</span>
+      <span className="text-cyan-fixed truncate">{currentName}</span>
     </nav>
   );
 }

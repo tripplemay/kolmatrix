@@ -1012,7 +1012,8 @@
       "followers": "粉丝",
       "country": "国家",
       "language": "语言",
-      "unknown": "—"
+      "unknown": "—",
+      "bannerAlt": "Channel banner"
     },
     "overview": {
       "sectionInfo": "基础信息",
@@ -1029,6 +1030,8 @@
       "fieldMonetization": "变现状态",
       "fieldBrandSafety": "品牌安全分级",
       "fieldUploadsPerMonth": "月均上传数",
+      "fieldChannelAge": "Channel age",
+      "fieldVideoCount": "Total videos",
       "fieldTags": "标签",
       "fieldBio": "简介",
       "valueScoreLabel": "价值",

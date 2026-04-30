@@ -773,7 +773,8 @@
       "followers": "Seguidores",
       "country": "País",
       "language": "Idioma",
-      "unknown": "—"
+      "unknown": "—",
+      "bannerAlt": "Channel banner"
     },
     "overview": {
       "sectionInfo": "Información básica",
@@ -790,6 +791,8 @@
       "fieldMonetization": "Monetización",
       "fieldBrandSafety": "Seguridad de marca",
       "fieldUploadsPerMonth": "Subidas / mes",
+      "fieldChannelAge": "Channel age",
+      "fieldVideoCount": "Total videos",
       "fieldTags": "Etiquetas",
       "fieldBio": "Biografía",
       "valueScoreLabel": "Valor",

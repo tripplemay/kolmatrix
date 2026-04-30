@@ -24,6 +24,18 @@ interface Props {
   brandSafetyRating: string | null;
   tags: string[];
   bio: string | null;
+  channelCreatedAt: Date | null;
+  videoCount: number | null;
+}
+
+function formatChannelAge(createdAt: Date | null): string | null {
+  if (!createdAt) return null;
+  const ms = Date.now() - createdAt.getTime();
+  if (ms <= 0) return null;
+  const years = ms / (365.25 * 24 * 60 * 60 * 1000);
+  if (years >= 1) return `${years.toFixed(1)}y`;
+  const months = ms / (30.44 * 24 * 60 * 60 * 1000);
+  return `${Math.max(1, Math.round(months))}mo`;
 }
 
 function formatFollowers(n: number | null): string | null {
@@ -40,8 +52,8 @@ export async function KolOverviewInfo(props: Props) {
   const unknown = tHero("unknown");
 
   return (
-    <GlassPanel className="rounded-2xl border border-on-surface/5 p-6">
-      <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-cyan-fixed">
+    <GlassPanel className="border-on-surface/5 rounded-2xl border p-6">
+      <h2 className="text-cyan-fixed mb-4 text-sm font-semibold tracking-wider uppercase">
         {t("sectionInfo")}
       </h2>
       <dl className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -55,21 +67,20 @@ export async function KolOverviewInfo(props: Props) {
         />
         <Field
           label={t("fieldEngagement")}
-          value={
-            props.engagementRate != null
-              ? `${props.engagementRate.toFixed(1)}%`
-              : unknown
-          }
+          value={props.engagementRate != null ? `${props.engagementRate.toFixed(1)}%` : unknown}
         />
-        <Field
-          label={t("fieldAvgViews")}
-          value={formatFollowers(props.avgViews) ?? unknown}
-        />
+        <Field label={t("fieldAvgViews")} value={formatFollowers(props.avgViews) ?? unknown} />
         <Field
           label={t("fieldUploadsPerMonth")}
-          value={
-            props.uploadsPerMonth != null ? String(props.uploadsPerMonth) : unknown
-          }
+          value={props.uploadsPerMonth != null ? String(props.uploadsPerMonth) : unknown}
+        />
+        <Field
+          label={t("fieldChannelAge")}
+          value={formatChannelAge(props.channelCreatedAt) ?? unknown}
+        />
+        <Field
+          label={t("fieldVideoCount")}
+          value={props.videoCount != null ? String(props.videoCount) : unknown}
         />
         <Field
           label={t("fieldLastUpload")}
@@ -83,27 +94,13 @@ export async function KolOverviewInfo(props: Props) {
               : unknown
           }
         />
-        <Field
-          label={t("fieldMonetization")}
-          value={props.monetizationStatus ?? unknown}
-        />
-        <Field
-          label={t("fieldBrandSafety")}
-          value={props.brandSafetyRating ?? unknown}
-        />
+        <Field label={t("fieldMonetization")} value={props.monetizationStatus ?? unknown} />
+        <Field label={t("fieldBrandSafety")} value={props.brandSafetyRating ?? unknown} />
       </dl>
 
       <div className="mt-6 space-y-3">
-        <TagsSection
-          tags={props.tags}
-          tagsLabel={t("fieldTags")}
-          emptyLabel={t("tagsEmpty")}
-        />
-        <BioSection
-          bio={props.bio}
-          label={t("fieldBio")}
-          emptyLabel={t("bioEmpty")}
-        />
+        <TagsSection tags={props.tags} tagsLabel={t("fieldTags")} emptyLabel={t("tagsEmpty")} />
+        <BioSection bio={props.bio} label={t("fieldBio")} emptyLabel={t("bioEmpty")} />
       </div>
     </GlassPanel>
   );
@@ -112,10 +109,10 @@ export async function KolOverviewInfo(props: Props) {
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
+      <dt className="text-on-surface-variant text-[11px] font-semibold tracking-wider uppercase">
         {label}
       </dt>
-      <dd className="mt-1 text-sm text-on-surface">{value}</dd>
+      <dd className="text-on-surface mt-1 text-sm">{value}</dd>
     </div>
   );
 }
@@ -131,7 +128,7 @@ function TagsSection({
 }) {
   return (
     <div>
-      <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
+      <p className="text-on-surface-variant mb-1 text-[11px] font-semibold tracking-wider uppercase">
         {tagsLabel}
       </p>
       {tags.length > 0 ? (
@@ -139,14 +136,14 @@ function TagsSection({
           {tags.map((tag) => (
             <span
               key={tag}
-              className="rounded border border-cyan-fixed/20 bg-cyan-fixed/10 px-2 py-1 text-[11px] text-cyan-fixed"
+              className="border-cyan-fixed/20 bg-cyan-fixed/10 text-cyan-fixed rounded border px-2 py-1 text-[11px]"
             >
               {tag}
             </span>
           ))}
         </div>
       ) : (
-        <p className="text-xs text-on-surface-variant/70">{emptyLabel}</p>
+        <p className="text-on-surface-variant/70 text-xs">{emptyLabel}</p>
       )}
     </div>
   );
@@ -163,10 +160,10 @@ function BioSection({
 }) {
   return (
     <div>
-      <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
+      <p className="text-on-surface-variant mb-1 text-[11px] font-semibold tracking-wider uppercase">
         {label}
       </p>
-      <p className="text-sm text-on-surface-variant">{bio ?? emptyLabel}</p>
+      <p className="text-on-surface-variant text-sm">{bio ?? emptyLabel}</p>
     </div>
   );
 }
