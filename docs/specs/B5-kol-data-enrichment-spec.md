@@ -5,9 +5,9 @@ status: decisions-locked
 created_by: Kimi (Planner) + 修订 johnsong (2026-04-30)
 created_at: 2026-04-27
 decisions_locked_at: 2026-04-27（原合并 sprint 5 项 lock）
-revised_at: 2026-04-30（用户选 A 方案：B5 单独先做，再起 MVP-internal-demo-prep；词云从 stretch P2 升级为 c 完整版；A1/A2 spec 歧义澄清）
-estimated_effort: ~3-3.5 day（含词云完整版升级）
-features_count: 5
+revised_at: 2026-04-30（用户选 A 方案：B5 单独先做，再起 MVP-internal-demo-prep；词云从 stretch P2 升级为 c 完整版；A1/A2 spec 歧义澄清）+ 2026-04-30 二次（F004 #4 词云 DEFERRED 因 react-wordcloud peer deps incompat React 19 → 用户决议 X+a：分离到新增 F006，客户端改用 @visx/wordcloud）
+estimated_effort: ~3.5-4.5 day（含 F006 词云补做 +0.5-1 day）
+features_count: 6
 prerequisites:
   - MVP-kol-seed-redo done ✅（schema metadata.youtube.* 已填）
   - YouTube API quota ≥ 5K（F002 enrich + F004 lazy load 余量）
@@ -51,7 +51,7 @@ Planner 调研发现：
 - 不做 KOL 内容 NLP 深度分析（如品牌调性匹配，B7+）
 - 不修改 KOL Discovery 主搜索算法（hotfix F002 已重写，本批次仅扩 filter）
 
-## 2. 范围（5 features）
+## 2. 范围（6 features）
 
 ### F001 — Kol schema 扩 4 字段 + migration
 
@@ -194,13 +194,14 @@ type RegionGroupFilter = "asia" | "europe" | "americas" | "latam" | "oceania";
 - demo 阶段每 KOL 仅在用户**点开详情页时**调（lazy load + cache 24h）
 - 不在 seed 阶段批量爬（避免 quota 爆）
 
-3. **视频主题词云（C2 升级 — 必做完整版，2026-04-30 修订）：**
-- 6 视频标题拼接 → 调 aigcgateway Action 提取关键词（5-10 个，附 weight 0-1）
-- 渲染为完整版词云（**react-wordcloud + d3-cloud**，字号视 weight 大小映射 14-32px）
+3. **视频主题词云（C2 升级 — 必做完整版，2026-04-30 修订）：** ⚠️ **2026-04-30 二次修订：分离到 F006 实现**（react-wordcloud peer deps incompat React 19，改用 @visx/wordcloud）
+- 6 视频标题拼接 → 调 aigcgateway Action `kol-topic-extract` (action_id `cmokr9z880009bn18sre31yf0`) 提取关键词（5-10 个，附 weight 0-1）
+- 渲染为完整版词云（**@visx/wordcloud + d3-cloud**，字号视 weight 大小映射 14-32px）
 - 缓存 7 天（DB JSONB 字段 `topicCloud` 或 `aiInsights.topicCloud`）
 - 无数据 / AI 失败 → 显示 "Topics being analyzed..." 友好 empty state
 - 词云 click → 暂不做 filter 跳转（Post-MVP 增强）
-- 包大小：react-wordcloud + d3-cloud ~30KB gzip，**lazy load**（dynamic import）避免影响其他页
+- 包大小：@visx/wordcloud + d3-cloud ~50KB gzip，**lazy load**（dynamic import）避免影响其他页
+- **完整实现见 §F006**
 
 4. **engagementRate 显示（2026-04-30 二次修订 — 移除 lazy-load 真值，改由 BIx-mvp-polish-pass F004 batch 预计算）：**
 - 详情页**直接从 DB 读 `Kol.engagementRate`** —— 不再 lazy-load 调 YouTube API
@@ -248,8 +249,70 @@ type RegionGroupFilter = "asia" | "europe" | "americas" | "latam" | "oceania";
 **Acceptance：**
 - i18n 4 语言新 keys 全补
 - 6+ 守门 test 全绿（含 A2 不双写守门）
-- L2 staging 浏览器 spot check：KOL 详情页 / Discovery 高级筛选 / Audience 隐藏 / 词云渲染
+- L2 staging 浏览器 spot check：KOL 详情页 / Discovery 高级筛选 / Audience 隐藏（词云渲染并入 F006 验收）
 - staging git_sha 与本 commit 一致
+
+### F006 — KOL 详情页词云完整版（@visx/wordcloud + d3-cloud + AI 关键词提取）
+
+**触发：** F004 #4 实施时发现 spec 指定的 `react-wordcloud` peer deps 要求 React ≤17，本项目 React 19.2 不兼容 → DEFERRED；用户 2026-04-30 决议 X（留 B5）+ a（@visx/wordcloud）。
+
+**实现：**
+
+1. **依赖：**
+   - `npm install @visx/wordcloud d3-cloud`（@visx 全家桶 React 19 兼容；d3-cloud 是 visx 底层 layout 算法）
+   - 校验 lockfile 无冲突；本地 WSL native build 不强求（CI 决定）
+
+2. **AI 关键词提取（src/lib/kol-detail/topic-cloud.ts）：**
+   ```typescript
+   // 调 aigcgateway run_action({action_id, variables: { titles: [...] }})
+   // 返回 { keywords: [{ term: string, weight: 0-1 }] }
+   // action_id 来自 env: AIGCGATEWAY_KOL_TOPIC_ACTION_ID
+   ```
+   - 入参：最近 6 视频标题数组
+   - 出参：5-10 个关键词 + weight 0-1
+   - Action prompt template 已在 aigcgateway console 落定（cmokr9z880009bn18sre31yf0），Generator 不需重写
+   - 失败/无 env var → 返回 `null`，前端显示 empty state
+
+3. **缓存：** 写 `Kol.metadata.topicCloud = { keywords, fetchedAt, version }`，TTL 7 天，到期时 lazy 重算
+
+4. **客户端组件（src/app/[locale]/(app)/kols/[id]/TopicCloud.tsx）：**
+   - `dynamic(() => import('@visx/wordcloud'), { ssr: false })` 避免影响其他页 bundle 与 SSR 漂移
+   - 字号映射：`fontSize = 14 + weight * 18`（14-32px 区间）
+   - 颜色：使用现有 design tokens（cyan-fixed / on-surface 系列）
+   - 容器：固定宽度 100% × max-h 240px，超出时 visx layout 自动收缩
+
+5. **Empty state：**
+   - AI 失败 / 无关键词 / Action 未配置 → 显示 i18n key `kolProfile.topicCloud.empty`（"Topics being analyzed..."）
+   - Loading 态：`kolProfile.topicCloud.loading`（首次 fetch 时）
+
+6. **i18n keys（F005 跑 i18n:translate 时一并补）：**
+   - `kolProfile.topicCloud.title`
+   - `kolProfile.topicCloud.empty`
+   - `kolProfile.topicCloud.loading`
+
+7. **Env var 落地（用户 SSH 操作，Generator 在 PR description 给指令）：**
+   ```bash
+   ssh tripplezhou@34.180.93.185
+   sudo vi /opt/kolmatrix-staging/.env.staging   # 加 AIGCGATEWAY_KOL_TOPIC_ACTION_ID=cmokr9z880009bn18sre31yf0
+   sudo vi /opt/kolmatrix/.env.production        # 同上
+   pm2 reload kolmatrix-staging --update-env
+   pm2 reload kolmatrix --update-env
+   ```
+
+**Acceptance：**
+- @visx/wordcloud + d3-cloud 安装成功（CI 通过 `npm ci`）
+- src/lib/kol-detail/topic-cloud.ts 单测覆盖：cache 命中 / aigcgateway mock 成功 / aigcgateway 失败 fallback / Action 未配置 fallback
+- TopicCloud 组件 dynamic import（其他页面 bundle 不增长，体现在 next build size diff）
+- Kol.metadata.topicCloud cache 7d TTL 验证（integration test 时间冻结）
+- env var `AIGCGATEWAY_KOL_TOPIC_ACTION_ID` 在 staging + prod .env 落地（用户操作；Generator 在 README/PR 给指令）
+- L2 staging：随机 youtube-seeded KOL 详情页词云渲染（首次 SSR + 二次 cache hit）
+- aigcgateway 月增量预算 ≤ $5/month（基于 ~$0.001/extract × 缓存 7d × 100 KOL × 30d ÷ 7 ≈ $0.43）
+- staging git_sha 与本 commit 一致
+
+**风险：**
+- @visx/wordcloud 在 SSR 边界可能 throw → 强制 `ssr: false` 解决
+- d3-cloud layout 在某些极端 weight 分布下 collide 失败导致空渲染 → fallback 到简化布局（或直接 empty state）
+- aigcgateway Action 偶发超时 → 设 timeout 5s + cache miss 时静默 empty state，不阻塞页面渲染
 
 ## 3. 关键设计决策
 
@@ -260,7 +323,8 @@ type RegionGroupFilter = "asia" | "europe" | "americas" | "latam" | "oceania";
 | KOL 详情页改造 | banner + 最近 6 视频 + 词云 + 真 engagementRate | ✅ 2026-04-27 |
 | audience demographics | **保持现状 4 tabs（无 audience tab）+ 加锚点注释**（2026-04-30 audit 修订：现状已满足"不渲染" → C 方案 no-op 防退化）| ✅ 2026-04-30 audit |
 | 最近 6 视频获取时机 | lazy load + cache 24h | Planner 推荐 |
-| **词云方案** | **C 完整版（react-wordcloud + AI 提取关键词 + weight 视觉化）** | ✅ **2026-04-30** |
+| **词云方案** | **C 完整版（AI 提取关键词 + weight 视觉化）** | ✅ **2026-04-30** |
+| **词云客户端库（X+a 修订）** | **@visx/wordcloud + d3-cloud**（react-wordcloud 因 peer deps incompat React 19 弃用；分离到 F006） | ✅ **2026-04-30 二次** |
 | **engagementRate 真值（A1 + 2026-04-30 二次修订）** | F002 估算（B5 期间永久使用）→ BIx-mvp-polish-pass F004 batch 预计算覆盖（top 100 KOL/day）。**B5 F004 移除 lazy-load 设计** —— 详情页直接从 DB 读 | ✅ **2026-04-30 二次** |
 | **6 月爬虫数据 import（A2）** | metadata 字段保留旧数据；新数据**只写 schema 列**；**不双写** | ✅ **2026-04-30** |
 | 启动模式 | **B5 单独批次先做，B5 done 后再起 MVP-internal-demo-prep**（A 方案，原 merged-sprint 废弃） | ✅ **2026-04-30** |
@@ -270,11 +334,12 @@ type RegionGroupFilter = "asia" | "europe" | "americas" | "latam" | "oceania";
 ```
 F001 (schema migration) ─→ F002 (enrich + 升级 metadata 到列) ─┐
                                                                  ├─→ F003 (Discovery filter 3 维 + 折叠)
-                                                                 ├─→ F004 (KOL 详情页改造 + 词云)
-                                                                 └─→ F005 (i18n + 守门 tests + polish)
+                                                                 ├─→ F004 (KOL 详情页改造 + #4 词云 DEFERRED→F006)
+                                                                 ├─→ F005 (i18n + 守门 tests + polish)
+                                                                 └─→ F006 (词云完整版 @visx/wordcloud) ─ 依赖 F004 (recent videos)
 ```
 
-**强依赖：** F001 → F002 → F003/F004/F005（可并行）
+**强依赖：** F001 → F002 → F003/F004/F005（可并行）；F006 依赖 F004 done（recent videos 是词云 input）
 
 ## 5. 风险与对策
 
@@ -286,7 +351,8 @@ F001 (schema migration) ─→ F002 (enrich + 升级 metadata 到列) ─┐
 | Audience tab 隐藏后用户问 | 低 | F005 在 KOL 详情页加 footer 备注 "Audience demographics coming with NoxInfluencer integration" 或完全静默 |
 | 新 filter 维度 SQL 性能 | 低 | F003 加 channel_age / video_count 索引（已有 isGaming + categories 索引）|
 | metadata.youtube.* 升级到列后兼容（A2）| 中 | **不双写**；保留旧 metadata 数据但读写都走新列；BL-012 爬虫接入时按新列 schema 直填；F005 加守门 test |
-| 词云包大小影响首屏 | 低 | react-wordcloud + d3-cloud ~30KB gzip，KOL 详情页 lazy load（dynamic import）避免影响其他页 |
+| 词云包大小影响首屏 | 低 | @visx/wordcloud + d3-cloud ~50KB gzip，KOL 详情页 lazy load（dynamic import）避免影响其他页 |
+| @visx/wordcloud SSR 兼容性 | 低 | F006 强制 `ssr: false`；首次 fetch 由 server route 完成，client 只渲染 |
 
 ## 6. 验收方式
 
@@ -294,8 +360,9 @@ F001 (schema migration) ─→ F002 (enrich + 升级 metadata 到列) ─┐
 - F001 schema migration 通过 + integration test
 - F002 enrich script + integration test
 - F003 filter combinations integration + e2e test
-- F004 detail page test（含 hidden Audience tab + 词云渲染）
+- F004 detail page test（含 hidden Audience tab，词云在 F006 验收）
 - F005 i18n + 守门 tests（含 no-double-write）
+- F006 topic cloud unit + integration（cache / mock / fallback）
 - typecheck / lint / 现有套件不退化
 
 ### L2 staging
@@ -327,13 +394,14 @@ F001 (schema migration) ─→ F002 (enrich + 升级 metadata 到列) ─┐
 
 | 环节 | 预估 |
 |---|---|
-| F001 schema + migration + tests | ~3-4h |
-| F002 enrich script + tests | ~2-3h |
-| F003 Discovery 3 filter + 折叠 UI + tests | ~4-5h |
-| F004 KOL 详情页改造（banner + 6 视频 + 真 engagement + 隐藏 audience + **词云完整版**）| ~6-8h（含 react-wordcloud 集成 +1-2h vs 原 stretch）|
-| F005 i18n + 守门 tests + polish | ~2-3h |
-| 缓冲 | ~3h |
-| **总计** | **~20-26h ≈ 2.5-3.5 day** |
+| F001 schema + migration + tests | ~3-4h | ✅ done |
+| F002 enrich script + tests | ~2-3h | ✅ done |
+| F003 Discovery 3 filter + 折叠 UI + tests | ~4-5h | ✅ done |
+| F004 KOL 详情页改造（banner + 6 视频 + 隐藏 audience，**词云分离到 F006**）| ~5-6h | ✅ done |
+| F005 i18n + 守门 tests + polish | ~2-3h | ⏳ pending |
+| F006 词云完整版（@visx/wordcloud + d3-cloud + AI + cache + i18n）| ~3-4h | ⏳ pending |
+| 缓冲 | ~3h | — |
+| **总计** | **~22-28h ≈ 2.75-3.5 day** | F005+F006 剩余 ~5-7h |
 
 ## 10. 时间线 + 启动时序
 
@@ -349,15 +417,16 @@ F001 (schema migration) ─→ F002 (enrich + 升级 metadata 到列) ─┐
 ~04-30  B4-email-template-library done ✅
 ~04-30  done 收尾 + MVP gap audit + B5 重新 planning（本会话 johnsong）
 ~04-30  ⭐ B5 building 启动（Generator 接手）
-~05-01  F001 + F002 完成（schema + enrich，半天）
-~05-02  F003 完成（Discovery filter + 折叠 UI）
-~05-03  F004 完成（KOL 详情页 + 词云完整版）
-~05-03  F005 完成（i18n + 守门）
-~05-04  B5 verifying（Reviewer L1/L2）
-~05-05  B5 done + 用户 prod redeploy（schema migration 落地）
-~05-05  ⭐ MVP-internal-demo-prep planning + building（5 features，~1.5-2 day）
-~05-07  MVP-internal-demo-prep done + prod L2 烟测 PASS
-~05-07  团队内部 demo 准备就绪
+~04-30  F001 + F002 完成（schema + enrich）✅
+~04-30  F003 完成（Discovery filter + 折叠 UI）✅
+~04-30  F004 完成（KOL 详情页 banner + 6 视频 + audience anchor；#4 词云 DEFERRED）✅
+~04-30  Planner 二次裁决 X+a：F006 新增（词云 @visx/wordcloud），B5 内补做
+~05-01  F005 + F006 完成（i18n + 守门 + 词云完整版，~5-7h）
+~05-02  B5 verifying（Reviewer L1/L2）
+~05-03  B5 done + 用户 prod redeploy（schema migration 落地 + env var AIGCGATEWAY_KOL_TOPIC_ACTION_ID 落地）
+~05-03  ⭐ MVP-internal-demo-prep planning + building（5 features，~1.5-2 day）
+~05-05  MVP-internal-demo-prep done + prod L2 烟测 PASS
+~05-05  团队内部 demo 准备就绪（原 ~05-07，提前 2 天）
 ```
 
 ## 11. 用户决策（已 lock）
@@ -380,6 +449,14 @@ F001 (schema migration) ─→ F002 (enrich + 升级 metadata 到列) ─┐
 | 7 | C1 — A1（engagementRate）+ A2（不双写）解读 | ✅ 同意 |
 | 8 | C2 — 词云方案 | ✅ c 完整版（react-wordcloud + d3-cloud） |
 | 9 | C3 — MVP-internal-demo-prep 决策保存 | ✅ a 起草独立 spec 文件 |
+
+### 2026-04-30 二次（F004 #4 词云阻塞 → F006 分离）
+
+| # | 问题 | 用户答复 |
+|---|---|---|
+| 10 | F004 #4 词云客户端 react-wordcloud peer deps incompat React 19，候选 (a)@visx/wordcloud / (b)自写 d3-cloud SVG / (c)其他 | ✅ **a — @visx/wordcloud** |
+| 11 | 实施时机 X（B5 内补 F006）/ Y（开 follow-up batch 与 BIx 合批）| ✅ **X — B5 内补做（推迟 done 0.5-1 day）** |
+| 12 | 未提交格式化噪音处置 R（git restore）/ K（留给 F005）| ✅ **R — restore 掉**（已执行）|
 
 ---
 
