@@ -209,17 +209,20 @@ type RegionGroupFilter = "asia" | "europe" | "americas" | "latam" | "oceania";
 - 详情页对此完全无感：永远从 DB 读 + 不发任何 YouTube API 请求
 - **理由：** 避免 100u + 1u/次 lazy-load 浪费配额；用 BIx F004 批量 1u + 0.12u/channel 替代，配额 ROI 提升 ~50×
 
-5. **隐藏 audience demographics：**
-- 当前 KolDetailTabs 中 Audience tab 显示 placeholder
-- 本批次：**完全隐藏 Audience tab**（tab 数量从 4 → 3）
-- 加注释 `// B6: re-enable when NoxInfluencer integration lands`
+5. **Audience tab 防退化守门 + 未来扩展锚点（2026-04-30 audit 修订）：**
+- 现状：KolTabsNav.tsx 含 4 tabs（overview / collabs / contacts / ai），**没有 audience tab**（历史上未实现，spec 原作者 Kimi 与修订者 johnsong 均未核对现实）
+- 本批次：保持现状 4 tabs，加注释 `// B6: re-enable Audience tab when NoxInfluencer integration lands` 作为未来 NoxInfluencer 接入时的扩展锚点
+- 未来：B6+ NoxInfluencer / SocialBlade 三方接入后再扩展 audience demographics，tabs 数量 4 → 5
+- F005 守门 test：`tests/unit/b5-kol-detail-no-audience-tab.test.ts` 静态断言 `KolTabKey` union 不含 "audience"（防 LLM 误新增 audience tab 留空白 placeholder）
+- 完整审计 + 决议见 `docs/specs/B5-f004-audience-tab-clarification.md`
 
 **Acceptance：**
-- KOL 详情页含 banner / 最近 6 视频 / engagementRate（DB 读，不调 API）/ 完整版词云
-- Audience tab 不渲染（visual + integration test 验证）
-- 词云 react-wordcloud + d3-cloud 集成完成，weight 0-1 映射字号 14-32px
+- KOL 详情页含 banner / 最近 6 视频 / engagementRate（DB 读，不调 API）/ 完整版词云（如 aigcgateway Action 就位；否则推迟）
+- KolTabsNav 保持 4 tabs（overview / collabs / contacts / ai），未新增 audience tab；含未来扩展锚点注释
+- 词云 react-wordcloud + d3-cloud 集成完成（条件性：依赖 `AIGCGATEWAY_KOL_TOPIC_ACTION_ID` env var 就位），weight 0-1 映射字号 14-32px
 - 词云 lazy load（不在首屏 JS bundle）
 - engagementRate 显示路径**永远从 Kol.engagementRate DB 字段读**（不再 lazy-load 真值）；由 BIx-mvp-polish-pass F004 batch 后端填充
+- 最近 6 视频 lazy 实现用 `channels.list contentDetails` + `playlistItems.list`（cost 2u/channel/24h）— **不要用 `search.list`（100u 高浪费）**
 - staging git_sha 与本 commit 一致
 
 ### F005 — i18n 补新 keys + 守门 tests + UI polish
@@ -255,7 +258,7 @@ type RegionGroupFilter = "asia" | "europe" | "americas" | "latam" | "oceania";
 | schema 扩字段 | 4 个新列（channelCreatedAt / videoCount / totalViewCount / bannerUrl） | ✅ 2026-04-27 |
 | Discovery filter 折叠 UI | 基础 6 + 高级 9+3 折叠（cookie 记忆） | ✅ 2026-04-27 |
 | KOL 详情页改造 | banner + 最近 6 视频 + 词云 + 真 engagementRate | ✅ 2026-04-27 |
-| audience demographics | 完全隐藏 tab | ✅ 2026-04-27 |
+| audience demographics | **保持现状 4 tabs（无 audience tab）+ 加锚点注释**（2026-04-30 audit 修订：现状已满足"不渲染" → C 方案 no-op 防退化）| ✅ 2026-04-30 audit |
 | 最近 6 视频获取时机 | lazy load + cache 24h | Planner 推荐 |
 | **词云方案** | **C 完整版（react-wordcloud + AI 提取关键词 + weight 视觉化）** | ✅ **2026-04-30** |
 | **engagementRate 真值（A1 + 2026-04-30 二次修订）** | F002 估算（B5 期间永久使用）→ BIx-mvp-polish-pass F004 batch 预计算覆盖（top 100 KOL/day）。**B5 F004 移除 lazy-load 设计** —— 详情页直接从 DB 读 | ✅ **2026-04-30 二次** |

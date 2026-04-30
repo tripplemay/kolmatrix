@@ -117,8 +117,127 @@ A 方案直保留原文数字会让 Reviewer 困惑（「现状 4 → 4，何来
 
 ---
 
-## 7. Planner 裁决（待 johnsong · 2026-04-30）
+## 7. Planner 裁决（johnsong · 2026-04-30 13:30 BJ）
 
-> **注意：** 本批次 `role_assignments.planner == role_assignments.generator == johnsong`，按 §4.6 豁免条款，Planner 裁决可在同一 agent 不同会话段完成，但**必须分段标注角色切换**，不得省略本节。等用户切到 Planner 角色或同一会话明确「现在我用 Planner 帽子裁决」后再填。
+> **角色切换标注：** 本会话用户 `本会话你的身份固定为planner`。Generator 已交接 (commit 2f7bf28)，本 Planner 裁决与 Generator 工作处于不同会话段，符合 §4.6 豁免条款。
 
-_待 Planner 填_
+### 决议 1（Audience tab 处理）：✅ **C 方案 lock**
+
+**理由：**
+- 现状 4 tabs（overview/collabs/contacts/ai）**已满足** spec acceptance「Audience tab 不渲染」
+- B 方案误把 contacts tab 当 audience tab，contacts 是 KOL 联系方式 tab（PRD §3 marketing manager 用它管 outreach），**绝不可隐藏**
+- A 方案语义清楚但丢失未来扩展锚点
+- C 方案：现状 = 目标，加 1 行 `// B6: re-enable Audience tab when NoxInfluencer integration lands` 锚点注释（spec line 215 原文要求），F005 守门 test 仍写防退化
+
+**根因坦诚：** B5 spec 原作者 Kimi（2026-04-27 起草）+ Planner johnsong（2026-04-30 修订）均未核对 KolTabsNav 现状，是 spec 编写时 reality drift 漏核对。本次审计纠错。
+
+### 决议 2（spec §F004 #5 数字）：✅ **A 方案 lock**
+
+修订 spec §F004 #5 为：
+
+> **5. Audience tab 防退化守门 + 未来扩展锚点（2026-04-30 audit 修订）：**
+> - 现状：KolTabsNav.tsx 含 4 tabs（overview / collabs / contacts / ai），**没有 audience tab**（历史上未实现）
+> - 本批次：保持现状 4 tabs，加注释 `// B6: re-enable Audience tab when NoxInfluencer integration lands` 作为未来 NoxInfluencer 接入时的扩展锚点
+> - 未来：B6+ NoxInfluencer / SocialBlade 三方接入后再扩展 audience demographics，tabs 数量 4 → 5
+> - F005 守门 test：`tests/unit/b5-kol-detail-no-audience-tab.test.ts` 静态断言 KolTabKey union 不含 "audience"（防 LLM 误新增 audience tab 留空白 placeholder）
+
+### 决议 3（F004 其余 4 项开工节奏）：✅ **A 方案 lock**
+
+4 项一起开工，每子项独立 commit，单一 F004 归属。
+Commit message 模板：`feat(B5-F004): <子项名>`，例：
+- `feat(B5-F004): banner image at top of /kols/[id]`
+- `feat(B5-F004): stats cards surface channelAge + videoCount`
+- `feat(B5-F004): recent 6 videos grid via playlistItems (lazy + 24h cache)`
+- `feat(B5-F004): wordcloud via aigcgateway kol-topic-extract action`
+- `feat(B5-F004): audience tab anchor comment + spec §F004 #5 修订`
+
+### 决议 4（wordcloud aigcgateway Action 阻塞）：⚠️ **用户操作 + Generator fallback**
+
+**(a) Action 状态：** 未建。需要在 https://aigc.guangai.ai 控制台创建 `kol-topic-extract` Action。
+
+**(b) env var 名：** `AIGCGATEWAY_KOL_TOPIC_ACTION_ID` 确认采用（与现有 `AIGCGATEWAY_*_ACTION_ID` 命名一致 — 见 environment.md）
+
+**(c) Generator 节奏裁决：**
+- **Phase 1（不等 Action）：** Generator 现在可以并行做 #1 banner / #2 stats cards / #3 recent 6 videos / #5 audience anchor + 文档（共 ~3-4h），各自独立 commit
+- **Phase 2（等 Action 就位）：** Wordcloud 实现 #4 等用户在 aigcgateway 控制台创建 `kol-topic-extract` Action 并把 action_id 落入 `/opt/kolmatrix/.env.production` + `/opt/kolmatrix-staging/.env.staging` 后启动；如 Action 5/2 前未建好，则把 #4 wordcloud 整体推迟到 BIx-mvp-polish-pass 或留 backlog（不阻塞 B5 done）
+
+### 用户行动项（aigcgateway Action 创建）
+
+请你 5-10 min 在 aigcgateway 控制台建 Action：
+
+```
+名称: kol-topic-extract
+描述: 从 6 个 YouTube 视频标题中提取 5-10 个游戏主题关键词，附 weight (0-1) 用于词云字号映射
+
+模型: claude-haiku-4-5（cost 极低，~$0.001 / 调用）
+   或 gemini-2.5-flash-lite（同档备选）
+
+System prompt:
+You are a topic-extraction assistant for gaming KOL profiles.
+Given 6 YouTube video titles, identify 5-10 gaming-related keywords
+that capture the channel's content focus. Output strict JSON.
+
+User prompt template (留 {{titles}} 占位):
+Video titles:
+{{titles}}
+
+Extract 5-10 gaming-related keywords (single words or short phrases).
+For each, assign a weight (0-1) reflecting prominence in the titles.
+Output JSON array: [{"term": "...", "weight": 0.0-1.0}, ...]
+Higher-weight terms appear more or are more central to the channel.
+Skip stopwords / generic verbs (play / watch / new / 2024 等).
+Skip non-gaming topics.
+
+Schema 输出（JSON Mode）:
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "term": { "type": "string" },
+      "weight": { "type": "number", "minimum": 0, "maximum": 1 }
+    },
+    "required": ["term", "weight"]
+  },
+  "minItems": 5,
+  "maxItems": 10
+}
+
+测试输入：
+"Genshin Impact 5.0 Natlan Reaction"
+"Top 10 4-Star Builds Ranked"
+"Mihoyo's New Banner Drama"
+"Live: Spiral Abyss Floor 12"
+"Why HSR is overtaking Genshin"
+"Wuthering Waves vs Genshin"
+
+预期输出（示例）：
+[
+  {"term": "Genshin Impact", "weight": 0.95},
+  {"term": "Natlan", "weight": 0.5},
+  {"term": "Honkai Star Rail", "weight": 0.45},
+  {"term": "Spiral Abyss", "weight": 0.4},
+  {"term": "Mihoyo", "weight": 0.35},
+  {"term": "Wuthering Waves", "weight": 0.3},
+  {"term": "Banner", "weight": 0.25}
+]
+```
+
+建好后告诉我 action_id（pk_xxx 格式 / 或控制台分配的 ID），我把 env var 落到 .env.production + .env.staging 让 Generator 接入。
+
+### 总结开工指引（Generator 下一会话 / 会话续接）
+
+**立即可开工（Phase 1，~3-4h）：**
+1. F004 #1 banner（5-10 min）
+2. F004 #2 stats cards channelAge + videoCount（~1h）
+3. F004 #3 recent 6 videos via playlistItems lazy + 24h cache（~2-3h，**用 channels.list contentDetails 拿 uploads playlistId + playlistItems.list 6 items + videos.list snippet/statistics**，不要用 search.list 100u）
+4. F004 #5 audience anchor 注释 + 修订 spec §F004 #5（~5-10 min）
+
+**等 aigcgateway Action 就位后（Phase 2，~2-3h）：**
+5. F004 #4 wordcloud（react-wordcloud + d3-cloud + dynamic import + 7d cache）
+
+**Phase 1 推完 4 个 commit 后（不等 Phase 2）即可：**
+- 标 F004 status=done（acceptance #1/#2/#3/#5 全过；#4 #wordcloud-deferred 备注，由 BIx 或 follow-up 处理）
+- 切 F005
+
+如 Action 在 Generator 当晚开工时已就位，Phase 2 直接接做即可，单 F004 commit。
