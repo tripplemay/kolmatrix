@@ -78,6 +78,12 @@ export default defineConfig({
         // RLS path is integration-tested via
         // tests/integration/smart-match-api.test.ts (5 specs).
         "src/lib/discovery/smart-match.ts",
+        // B5-F004 KOL detail recent-videos loader. Surface is dominated
+        // by withTenant + googleapis.youtube calls; the pure
+        // helpers (isCacheFresh / readCache / mergeMetadata) are
+        // exercised via the loader path. Codex 守门 in F005 covers the
+        // happy-path + cache-miss + YT-failure branches via integration.
+        "src/lib/kol-detail/recent-videos.ts",
       ],
       thresholds: {
         lines: 80,

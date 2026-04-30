@@ -812,6 +812,10 @@
       "unsave": "Eliminar de lista corta",
       "saveHelper": "Los Creadores guardados aparecen en /database para seguimiento de Contacto."
     },
+    "recentVideos": {
+      "title": "Recent videos",
+      "empty": "No recent videos yet — check back after the next sync."
+    },
     "emptyTab": {
       "collabs": "Las colaboraciones de Campaña aparecerán aquí una vez que lance su primera Campaña (BM2).",
       "contacts": "El historial de correos electrónicos y mensajes aparecerá aquí después de su primer Contacto (BM2).",

@@ -812,6 +812,10 @@
       "unsave": "ショートリストから削除",
       "saveHelper": "保存されたクリエイターは、アウトリーチのフォローアップのために /database に表示されます。"
     },
+    "recentVideos": {
+      "title": "Recent videos",
+      "empty": "No recent videos yet — check back after the next sync."
+    },
     "emptyTab": {
       "collabs": "最初のキャンペーン（BM2）を開始すると、キャンペーンのコラボレーションがここに表示されます。",
       "contacts": "最初のアウトリーチ（BM2）の後、メールとメッセージの履歴がここに表示されます。",

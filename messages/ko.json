@@ -812,6 +812,10 @@
       "unsave": "단골 목록에서 제거",
       "saveHelper": "저장된 크리에이터는 /database에서 아웃리치 후속 조치를 위해 표시됩니다."
     },
+    "recentVideos": {
+      "title": "Recent videos",
+      "empty": "No recent videos yet — check back after the next sync."
+    },
     "emptyTab": {
       "collabs": "첫 번째 캠페인(BM2)을 시작하면 캠페인 협업이 여기에 표시됩니다.",
       "contacts": "첫 번째 아웃리치(BM2) 후 이메일 및 메시지 기록이 여기에 표시됩니다.",

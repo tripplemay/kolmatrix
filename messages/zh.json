@@ -1051,6 +1051,10 @@
       "unsave": "从候选组移除",
       "saveHelper": "已保存的创作者会出现在数据库页，便于后续触达。"
     },
+    "recentVideos": {
+      "title": "Recent videos",
+      "empty": "No recent videos yet — check back after the next sync."
+    },
     "emptyTab": {
       "collabs": "创建首个活动后（BM2）将在此显示合作历史。",
       "contacts": "首次触达后（BM2）将在此显示邮件与消息记录。",

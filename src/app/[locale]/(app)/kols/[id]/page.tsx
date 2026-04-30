@@ -24,6 +24,7 @@ import { KolHero } from "./KolHero";
 import { KolOverviewInfo } from "./KolOverviewInfo";
 import { KolTabsNav, type KolTabKey } from "./KolTabsNav";
 import { KolValueScoreCard } from "./KolValueScoreCard";
+import { RecentVideosGrid } from "./RecentVideosGrid";
 
 interface Props {
   params: Promise<{ locale: string; id: string }>;
@@ -71,6 +72,8 @@ type KolDetailShape = Prisma.KolGetPayload<{
     bannerUrl: true;
     channelCreatedAt: true;
     videoCount: true;
+    externalId: true;
+    metadata: true;
   };
 }>;
 
@@ -103,6 +106,8 @@ async function loadKol(tenantId: string, kolId: string): Promise<KolDetailShape 
         bannerUrl: true,
         channelCreatedAt: true,
         videoCount: true,
+        externalId: true,
+        metadata: true,
       },
     });
   });
@@ -167,23 +172,32 @@ export default async function KolProfilePage({ params, searchParams }: Props) {
           className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]"
           data-testid="kol-overview"
         >
-          <KolOverviewInfo
-            platform={kol.platform}
-            handle={kol.handle}
-            countryCode={kol.countryCode}
-            language={kol.language}
-            followerCount={kol.followerCount}
-            engagementRate={engagementRate}
-            avgViews={kol.avgViews}
-            uploadsPerMonth={kol.uploadsPerMonth}
-            lastUploadAt={kol.lastUploadAt}
-            monetizationStatus={kol.monetizationStatus}
-            brandSafetyRating={kol.brandSafetyRating}
-            tags={kol.tags}
-            bio={kol.bio}
-            channelCreatedAt={kol.channelCreatedAt}
-            videoCount={kol.videoCount}
-          />
+          <div className="flex flex-col gap-6">
+            <KolOverviewInfo
+              platform={kol.platform}
+              handle={kol.handle}
+              countryCode={kol.countryCode}
+              language={kol.language}
+              followerCount={kol.followerCount}
+              engagementRate={engagementRate}
+              avgViews={kol.avgViews}
+              uploadsPerMonth={kol.uploadsPerMonth}
+              lastUploadAt={kol.lastUploadAt}
+              monetizationStatus={kol.monetizationStatus}
+              brandSafetyRating={kol.brandSafetyRating}
+              tags={kol.tags}
+              bio={kol.bio}
+              channelCreatedAt={kol.channelCreatedAt}
+              videoCount={kol.videoCount}
+            />
+            <RecentVideosGrid
+              tenantId={tenantId}
+              kolId={kol.id}
+              platform={kol.platform}
+              externalId={kol.externalId}
+              metadata={kol.metadata}
+            />
+          </div>
           <aside className="flex flex-col gap-6">
             <KolValueScoreCard valueScore={kol.valueScore} />
             <KolActionsCard

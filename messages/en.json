@@ -1051,6 +1051,10 @@
       "unsave": "Remove from shortlist",
       "saveHelper": "Saved creators appear in /database for outreach follow-up."
     },
+    "recentVideos": {
+      "title": "Recent videos",
+      "empty": "No recent videos yet — check back after the next sync."
+    },
     "emptyTab": {
       "collabs": "Campaign collaborations will appear here once you launch your first campaign (BM2).",
       "contacts": "Email and message history will appear here after your first outreach (BM2).",

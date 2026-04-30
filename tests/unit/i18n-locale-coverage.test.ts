@@ -149,6 +149,8 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   "kolProfile.hero.bannerAlt",
   "kolProfile.overview.fieldChannelAge",
   "kolProfile.overview.fieldVideoCount",
+  "kolProfile.recentVideos.title",
+  "kolProfile.recentVideos.empty",
   "discovery.card.engagement",
   "discovery.card.unavailableMetric",
   "discovery.regions.VN",
