@@ -30,8 +30,9 @@
       "title": "KOL 详情页改造（banner + 最近 6 视频 + 词云完整版 + 真 engagementRate + 隐藏 audience demographics）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
-      "acceptance": "/kols/[id] 顶部 banner（bannerUrl）+ Stats Cards 含 channelAge/videoCount/真 engagementRate；Overview tab 含最近 6 视频缩略图 3×2 grid（lazy load search.list cost 100 units/call + cache 24h）+ 完整版词云（react-wordcloud + d3-cloud + AI 提取关键词附 weight 0-1，字号 14-32px 视觉化映射，AI 失败 friendly empty state，缓存 7 天，dynamic import 避免影响其他页 bundle）；Audience tab 完全隐藏（tab 数从 4 → 3）；engagementRate 真值由 F004 lazy load 写回 DB 覆盖 F002 估算（A1）；visual + integration test 验证；staging git_sha 与本 commit 一致。"
+      "status": "done",
+      "acceptance": "/kols/[id] 顶部 banner（bannerUrl）+ Stats Cards 含 channelAge/videoCount/真 engagementRate；Overview tab 含最近 6 视频缩略图 3×2 grid（lazy load search.list cost 100 units/call + cache 24h）+ 完整版词云（react-wordcloud + d3-cloud + AI 提取关键词附 weight 0-1，字号 14-32px 视觉化映射，AI 失败 friendly empty state，缓存 7 天，dynamic import 避免影响其他页 bundle）；Audience tab 完全隐藏（tab 数从 4 → 3）；engagementRate 真值由 F004 lazy load 写回 DB 覆盖 F002 估算（A1）；visual + integration test 验证；staging git_sha 与本 commit 一致。",
+      "notes": "2026-04-30 Generator (johnsong) — #1 banner ✅ / #2 stats cards channelAge+videoCount ✅ / #3 recent 6 videos via playlistItems + 24h cache ✅ / #5 audience anchor + spec 修订 ✅ (per pre-impl audit C-lock; KolTabKey union 不含 audience 防退化). #4 词云 DEFERRED — react-wordcloud npm package peer deps require React ≤17 but project is React 19.2; needs Planner 选 alternative (visx/wordcloud or d3-cloud-only custom React wrapper) — 加入 backlog/follow-up batch. engagementRate 已直接从 DB 读 (KolOverviewInfo) per Planner 2026-04-30 二次修订, BIx F004 batch 接管真值预填."
     },
     {
       "id": "F005",

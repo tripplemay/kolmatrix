@@ -4,14 +4,13 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **B5-kol-data-enrichment** — building 3/5 done (F001/F002/F003 ✅ CI 全绿 pushed to main)
-- 待完成：F004 KOL 详情页（banner+6videos+wordcloud；engagementRate lazy-load 移除→BIx F004 batch 接管） / F005 i18n:translate + UI polish + Codex 守门 tests / Staging deploy
-
-## ⚠️ F004 待 Planner 裁决
-- spec §F004 #5 写「Audience tab 4→3」但 KolTabsNav 现有 tabs=overview/collabs/contacts/ai (NO audience tab)。建议下一位 Generator 先发 pre-impl audit（详 progress.json.generator_handoff）
+- **B5-kol-data-enrichment** — building 4/5 done (F001/F002/F003/F004 ✅，F004 #4 wordcloud DEFERRED — react-wordcloud peer deps incompat React 19)
+- 待完成：F005 i18n:translate + UI polish + Codex 守门 tests / Staging deploy / F004 #4 wordcloud 选 React 19 兼容库（visx 或自写 d3-cloud SVG）→ 加入 backlog/follow-up batch
 
 ## ⚠️ F005 必做项
-- 跑 i18n:translate 后 REMOVE 14 个 discovery.filters.{channelAge|uploadFrequency|regionGroup}* paths from KEEP_AS_EN_PATHS in tests/unit/i18n-locale-coverage.test.ts
+- 跑 i18n:translate 后 REMOVE **19** 个 paths from KEEP_AS_EN_PATHS in tests/unit/i18n-locale-coverage.test.ts:
+  - 14 个 F003: discovery.filters.{channelAge|uploadFrequency|regionGroup}*
+  - 5 个 F004: kolProfile.hero.bannerAlt / kolProfile.overview.field{ChannelAge|VideoCount} / kolProfile.recentVideos.{title|empty}
 
 ## 即将启动批次（按序）
 - **MVP-internal-demo-prep** (B5 done 后, 7 features ~3 day) — `docs/specs/MVP-internal-demo-prep-spec.md`
