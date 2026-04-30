@@ -13,7 +13,7 @@
  * collapses extra terms when packing fails (which is fine — the
  * loader already caps at 10 keywords).
  */
-import { Wordcloud } from "@visx/wordcloud";
+import { Wordcloud, type CloudWord } from "@visx/wordcloud";
 import { useMemo } from "react";
 
 import type { TopicKeyword } from "@/lib/kol-detail/topic-cloud";
@@ -86,15 +86,15 @@ export default function TopicCloudCanvas({ keywords }: Props) {
           words={words}
           width={WIDTH}
           height={HEIGHT}
-          fontSize={(d) => d.value}
+          fontSize={(d: WordcloudDatum) => d.value}
           font="Inter, system-ui, sans-serif"
           padding={3}
           spiral="archimedean"
           rotate={0}
           random={seededRandom(seed)}
         >
-          {(cloudWords) =>
-            cloudWords.map((w, i) => (
+          {(cloudWords: CloudWord[]) =>
+            cloudWords.map((w: CloudWord, i: number) => (
               <text
                 key={`${w.text}-${i}`}
                 fill={COLORS[i % COLORS.length]}
