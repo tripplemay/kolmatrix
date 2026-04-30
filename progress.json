@@ -1,11 +1,11 @@
 {
-  "status": "reverifying",
+  "status": "done",
   "user_goal": "KOL 数据深度增强 - schema 扩 4 字段 (channelCreatedAt / videoCount / totalViewCount / bannerUrl) + Discovery filter +3 维 + 高级筛选折叠 + KOL 详情页改造（banner + 最近 6 视频 + 完整版词云 @visx/wordcloud + 真 engagementRate）+ 隐藏 audience demographics tab。Definition of Done = staging KOL 详情页含全部新元素（含 F006 词云）+ Discovery 高级筛选可用 + i18n 5 语言齐 + 守门 tests 全绿 + Reviewer L1+L2 验收 PASS。",
   "total_features": 6,
   "completed_features": 6,
   "fix_rounds": 7,
   "current_sprint": "B5-kol-data-enrichment",
-  "last_updated": "2026-05-01T01:30+0800",
+  "last_updated": "2026-05-01T01:45+0800",
   "reference_docs": [
     "docs/specs/B5-kol-data-enrichment-spec.md",
     "docs/specs/MVP-internal-demo-prep-spec.md",
