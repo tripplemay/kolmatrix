@@ -5,7 +5,7 @@ type: project
 ---
 ## 当前批次
 - **B5-kol-data-enrichment** — fixing（2026-04-30 Reviewer L2 FAIL）
-- fixing-2 已修复 staging 路由与 migration；当前阻塞转为 KOL 详情页内容未落地
+- fixing-3 已恢复详情页 banner / recent videos；当前阻塞转为 topic cloud 仍停留 empty state
 
 ## Reviewer 已完成
 - 新增 B5 守门测试：
@@ -16,11 +16,12 @@ type: project
 - 新增用例：`docs/test-cases/B5-kol-data-enrichment-cases.md`
 - L1 复验 PASS：`typecheck` + 上述 4 个新测试 + `kol-discovery` / `import-kol-from-youtube` 相邻回归 + lint
 - L2 路由 / Discovery / i18n 复验 PASS：dashboard/discovery/database 正常；高级筛选与 4 语 key 正常
+- L2 白名单详情页 PASS：banner + recent videos + no audience tab
 
 ## 当前缺陷
-- 5/5 YouTube KOL 详情页抽样都没有 banner
-- 5/5 YouTube KOL 详情页 recent videos tiles = `0`
-- 5/5 YouTube KOL 详情页 topic cloud 仅落 empty state，无 canvas
+- 5/5 白名单 YouTube KOL 详情页的 `kol-topic-cloud-canvas` 都不存在
+- 5/5 白名单 YouTube KOL 详情页的 `kol-topic-cloud-empty` 都存在
+- topic cloud 仍停留在 empty state，没有产出可视化词云
 
 ## 即将启动批次（按序）
 - **MVP-internal-demo-prep** (B5 done 后, 7 features ~3 day) — `docs/specs/MVP-internal-demo-prep-spec.md`
