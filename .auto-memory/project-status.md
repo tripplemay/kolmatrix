@@ -4,19 +4,23 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **B5-kol-data-enrichment** — building 4/6 done (F001/F002/F003/F004 ✅；F005 + F006 pending)
-- 2026-04-30 二次 Planner 裁决 X+a：F004 #4 词云不再 deferred，分离到 F006 在 B5 内补做
+- **B5-kol-data-enrichment** — fixing（2026-04-30 Reviewer L1 FAIL）
+- 阻塞点：`src/app/[locale]/(app)/kols/[id]/TopicCloudCanvas.tsx` 类型守门失败，B5 不能签收
 
-## ⚠️ F005 必做项
-- 跑 i18n:translate 后 REMOVE **22** 个 paths from KEEP_AS_EN_PATHS in tests/unit/i18n-locale-coverage.test.ts:
-  - 14 个 F003: discovery.filters.{channelAge|uploadFrequency|regionGroup}*
-  - 5 个 F004: kolProfile.hero.bannerAlt / kolProfile.overview.field{ChannelAge|VideoCount} / kolProfile.recentVideos.{title|empty}
-  - 3 个 F006: kolProfile.topicCloud.{title|empty|loading}
+## Reviewer 已完成
+- 新增 B5 守门测试：
+  - `tests/unit/b5-kol-detail-no-audience-tab.test.ts`
+  - `tests/unit/b5-no-double-write-metadata.test.ts`
+  - `tests/integration/b5-discovery-filter-combinations.test.ts`
+  - `tests/integration/b5-topic-cloud.test.ts`
+- 新增用例：`docs/test-cases/B5-kol-data-enrichment-cases.md`
+- L1 PASS：上述 4 个新测试 + `kol-discovery` / `import-kol-from-youtube` 相邻回归 + lint
 
-## ⚠️ F006 关键信息
-- 客户端库：**@visx/wordcloud + d3-cloud**（React 19 兼容；react-wordcloud 弃用 — peer deps incompat）
-- aigcgateway Action `kol-topic-extract` (action_id `cmokr9z880009bn18sre31yf0`) 已 ready + dry-run PASS
-- env var `AIGCGATEWAY_KOL_TOPIC_ACTION_ID` 待用户 SSH 落入 .env.staging + .env.production（Generator 在 PR 给指令）
+## 当前缺陷
+- `npm run typecheck` FAIL：
+  - `TopicCloudCanvas.tsx:16` `TS2307` 找不到 `@visx/wordcloud` 类型
+  - `TopicCloudCanvas.tsx:89/96/97` `TS7006` 若干参数隐式 `any`
+- L2 staging 未执行：L1 已失败，且仍需用户明确授权
 
 ## 即将启动批次（按序）
 - **MVP-internal-demo-prep** (B5 done 后, 7 features ~3 day) — `docs/specs/MVP-internal-demo-prep-spec.md`
