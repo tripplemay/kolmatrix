@@ -49,6 +49,7 @@ export function KolResultCard({ kol }: Props) {
       className="glass-panel card-glow relative flex h-full flex-col gap-4 rounded-2xl border border-on-surface/5 p-5"
       data-testid="kol-card"
       data-kol-id={kol.id}
+      data-kol-platform={kol.platform}
     >
       {kol.valueScore != null ? (
         <div
