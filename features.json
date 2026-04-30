@@ -39,7 +39,7 @@
       "title": "i18n 补新 keys + 守门 tests + UI polish",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "F003+F004 新增 i18n keys 4 语言全补（zh/ja/ko/es 跑 i18n:translate）；守门 tests：tests/unit/b5-kol-detail-no-audience-tab.test.ts（静态源码守 KolDetailTabs 不再渲染 Audience tab）+ tests/integration/b5-discovery-filter-combinations.test.ts（3 新 filter 与原 12 filter 任意组合查询正确）+ tests/unit/b5-no-double-write-metadata.test.ts（守 enrich script 不再写 metadata.youtube.*，A2 强化）；UI polish：详情页 banner max-height 240px 自适应，词云 empty state 友好；L2 staging 浏览器 spot check 4 大场景全通过；staging git_sha 与本 commit 一致。"
     },
     {
