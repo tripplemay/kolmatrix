@@ -107,4 +107,4 @@ export default defineConfig({
   },
 });
 
-// re-trigger CI to verify F006 against regenerated baselines (chore-only no-op)
+// re-trigger CI for F006 against baseline v2 (data-kol-platform=youtube selector)
