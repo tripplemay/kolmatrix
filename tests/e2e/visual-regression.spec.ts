@@ -511,7 +511,19 @@ test.describe("Authenticated BM2 visual regression", () => {
     await page.goto("/en/discovery");
     await page.waitForSelector('[data-testid="discovery-grid"]');
 
-    const firstCard = page.locator('[data-testid="kol-card"]').first();
+    // B5-F006: prefer the first YouTube-platform card so the
+    // RecentVideosGrid + TopicCloud panels (both youtube-only) always
+    // render in the screenshot — otherwise the discovery default order
+    // can return a twitch/other-platform KOL on one CI run and a
+    // youtube KOL on another, drifting page height by ~250px and
+    // tripping the visual-diff threshold.
+    const youtubeCard = page
+      .locator('[data-testid="kol-card"][data-kol-platform="youtube"]')
+      .first();
+    const firstCard =
+      (await youtubeCard.count()) > 0
+        ? youtubeCard
+        : page.locator('[data-testid="kol-card"]').first();
     if ((await firstCard.count()) === 0) {
       test.skip(true, "No KOLs in seed — kols-detail baseline N/A");
     }
