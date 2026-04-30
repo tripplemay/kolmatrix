@@ -4,8 +4,8 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **B5-kol-data-enrichment** — fixing（2026-04-30 Reviewer L2 FAIL）
-- fixing-4 已稳定 banner / recent videos；当前阻塞仍是 topic cloud empty state
+- **B5-kol-data-enrichment** — fixing（2026-05-01 Reviewer L2 FAIL）
+- 当前阻塞仍是 topic cloud 不稳定：5/5 白名单里有 1 个样本仍只显示 empty state
 
 ## Reviewer 已完成
 - 新增 B5 守门测试：
@@ -16,12 +16,12 @@ type: project
 - 新增用例：`docs/test-cases/B5-kol-data-enrichment-cases.md`
 - L1 复验 PASS：`typecheck` + 上述 4 个新测试 + `kol-discovery` / `import-kol-from-youtube` 相邻回归 + lint
 - L2 路由 / Discovery / i18n 复验 PASS：dashboard/discovery/database 正常；高级筛选与 4 语 key 正常
-- L2 白名单详情页 PASS：banner + recent videos + no audience tab
+- L2 白名单详情页部分 PASS：banner + recent videos + no audience tab；topic cloud 仍有 1/5 样本回落到 empty state
 
 ## 当前缺陷
-- 5/5 白名单 YouTube KOL 详情页的 `kol-topic-cloud-canvas` 都不存在
-- 5/5 白名单 YouTube KOL 详情页的 `kol-topic-cloud-empty` 都存在
-- topic cloud 仍停留在 empty state，没有产出可视化词云
+- 5/5 白名单 YouTube KOL 详情页中，4/5 已出现 `kol-topic-cloud-canvas`
+- 仍有 1/5 白名单 YouTube KOL 详情页保留 `kol-topic-cloud-empty`
+- topic cloud 还未稳定达成“所有白名单样本都有 canvas”的验收目标
 
 ## 即将启动批次（按序）
 - **MVP-internal-demo-prep** (B5 done 后, 7 features ~3 day) — `docs/specs/MVP-internal-demo-prep-spec.md`
