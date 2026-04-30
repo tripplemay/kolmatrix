@@ -269,20 +269,20 @@
       "tags": "Etiquetas",
       "tagsPlaceholder": "Separe las etiquetas con comas",
       "platform": "Plataforma",
-      "channelAge": "Channel age",
-      "channelAge_new": "New (< 1y)",
-      "channelAge_established": "Established (1–3y)",
-      "channelAge_veteran": "Veteran (> 3y)",
-      "uploadFrequency": "Upload frequency",
-      "uploadFrequency_active": "Active (≥ 4/mo)",
-      "uploadFrequency_semi-active": "Semi-active (1–4/mo)",
-      "uploadFrequency_inactive": "Inactive (< 1/mo)",
-      "regionGroup": "Region group",
+      "channelAge": "Antigüedad del canal",
+      "channelAge_new": "Nuevo (< 1 a)",
+      "channelAge_established": "Establecido (1–3 a)",
+      "channelAge_veteran": "Veterano (> 3 a)",
+      "uploadFrequency": "Frecuencia de subida",
+      "uploadFrequency_active": "Activo (≥ 4/mes)",
+      "uploadFrequency_semi-active": "Semi-activo (1–4/mes)",
+      "uploadFrequency_inactive": "Inactivo (< 1/mes)",
+      "regionGroup": "Grupo de región",
       "regionGroup_asia": "Asia",
-      "regionGroup_europe": "Europe",
-      "regionGroup_americas": "Americas",
-      "regionGroup_latam": "Latin America",
-      "regionGroup_oceania": "Oceania",
+      "regionGroup_europe": "Europa",
+      "regionGroup_americas": "Américas",
+      "regionGroup_latam": "Latam",
+      "regionGroup_oceania": "Oceanía",
       "includeNonGaming": "Incluir Creadores no relacionados con juegos",
       "includeNonGamingHelper": "MVP está configurado por defecto solo para Creadores de juegos.",
       "apply": "Aplicar filtros",
@@ -381,26 +381,26 @@
     "smartMatch": {
       "button": "AI Smart Match",
       "title": "AI Smart Match",
-      "subtitle": "Pick a product — we will rank your KOLs by semantic match in milliseconds.",
-      "productLabel": "Product",
-      "productPlaceholder": "Select a product…",
-      "noProducts": "Add a product in Knowledge Base to enable Smart Match.",
-      "run": "Find matches",
-      "loading": "Computing matches…",
-      "empty": "No KOLs are eligible for matching yet — embeddings are still being computed for the most recent imports.",
-      "metaCount": "Top {n, plural, one {1 match} other {# matches}}",
+      "subtitle": "Selecciona un producto y clasificaremos a tus KOL según la coincidencia semántica en milisegundos.",
+      "productLabel": "Producto",
+      "productPlaceholder": "Selecciona un producto…",
+      "noProducts": "Añade un producto en la Base de conocimientos para habilitar Smart Match.",
+      "run": "Encontrar coincidencias",
+      "loading": "Calculando coincidencias…",
+      "empty": "Aún no hay KOL elegibles para la coincidencia; las incrustaciones se están calculando para las importaciones más recientes.",
+      "metaCount": "Top {n, plural, one {1 coincidencia} other {# coincidencias}}",
       "metaLatency": "{ms}ms",
-      "ringLabel": "Match score {score}",
-      "followers": "followers",
-      "saveAllToCampaign": "Save all to campaign",
-      "close": "Close",
+      "ringLabel": "Puntuación de coincidencia {score}",
+      "followers": "Seguidores",
+      "saveAllToCampaign": "Guardar todo en Campaña",
+      "close": "Cerrar",
       "errors": {
-        "pickProduct": "Please pick a product first.",
-        "productMissing": "That product no longer exists.",
-        "embeddingDown": "Our embedding service is temporarily unavailable. Please try again in a moment.",
-        "unauthorized": "Please sign in again.",
-        "network": "Network error — check your connection and retry.",
-        "generic": "Something went wrong. Please retry."
+        "pickProduct": "Por favor, selecciona un producto primero.",
+        "productMissing": "Ese producto ya no existe.",
+        "embeddingDown": "Nuestro servicio de incrustaciones no está disponible temporalmente. Por favor, inténtalo de nuevo más tarde.",
+        "unauthorized": "Por favor, inicia sesión de nuevo.",
+        "network": "Error de red: comprueba tu conexión y reinténtalo.",
+        "generic": "Algo salió mal. Por favor, reinténtalo."
       }
     }
   },
@@ -616,7 +616,7 @@
         "unauthorized": "Por favor, inicia sesión para crear campañas."
       },
       "smartMatch": {
-        "banner": "{count, plural, one {1 KOL} other {# KOLs}} from Smart Match will be linked once you save this campaign."
+        "banner": "{count, plural, one {1 KOL} other {# KOLs}} de Contacto inteligente se vincularán una vez que guarde esta Campaña."
       }
     },
     "detail": {
@@ -774,7 +774,7 @@
       "country": "País",
       "language": "Idioma",
       "unknown": "—",
-      "bannerAlt": "Channel banner"
+      "bannerAlt": "Banner del canal"
     },
     "overview": {
       "sectionInfo": "Información básica",
@@ -791,8 +791,8 @@
       "fieldMonetization": "Monetización",
       "fieldBrandSafety": "Seguridad de marca",
       "fieldUploadsPerMonth": "Subidas / mes",
-      "fieldChannelAge": "Channel age",
-      "fieldVideoCount": "Total videos",
+      "fieldChannelAge": "Antigüedad del canal",
+      "fieldVideoCount": "Total de videos",
       "fieldTags": "Etiquetas",
       "fieldBio": "Biografía",
       "valueScoreLabel": "Valor",
@@ -813,13 +813,13 @@
       "saveHelper": "Los Creadores guardados aparecen en /database para seguimiento de Contacto."
     },
     "recentVideos": {
-      "title": "Recent videos",
-      "empty": "No recent videos yet — check back after the next sync."
+      "title": "Videos recientes",
+      "empty": "Aún no hay videos recientes; vuelve a revisar después de la próxima sincronización."
     },
     "topicCloud": {
-      "title": "Content topics",
-      "empty": "Topics being analyzed — check back after the next refresh.",
-      "loading": "Loading topic cloud…"
+      "title": "Temas de contenido",
+      "empty": "Analizando temas; vuelve a revisar después de la próxima actualización.",
+      "loading": "Cargando nube de temas…"
     },
     "emptyTab": {
       "collabs": "Las colaboraciones de Campaña aparecerán aquí una vez que lance su primera Campaña (BM2).",

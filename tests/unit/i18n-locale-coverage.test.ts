@@ -122,43 +122,10 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   "discovery.smartMatch.errors.network",
   "discovery.smartMatch.errors.generic",
   "campaigns.new.smartMatch.banner",
-  // B5-F003 — Discovery filter +3 dimensions (channelAge / uploadFrequency
-  // / regionGroup) seed en values into zh/ja/ko/es so the locale-coverage
-  // gate stays green until F005 runs `npm run i18n:translate -- --target
-  // zh,ja,ko,es` for the cross-batch translation pass. Reviewer should
-  // ensure these paths are removed once F005 lands real translations.
-  "discovery.filters.channelAge",
-  "discovery.filters.channelAge_new",
-  "discovery.filters.channelAge_established",
-  "discovery.filters.channelAge_veteran",
-  "discovery.filters.uploadFrequency",
-  "discovery.filters.uploadFrequency_active",
-  "discovery.filters.uploadFrequency_semi-active",
-  "discovery.filters.uploadFrequency_inactive",
-  "discovery.filters.regionGroup",
-  "discovery.filters.regionGroup_asia",
-  "discovery.filters.regionGroup_europe",
-  "discovery.filters.regionGroup_americas",
-  "discovery.filters.regionGroup_latam",
-  "discovery.filters.regionGroup_oceania",
-  // B5-F004 — KOL detail page banner + channel age + video count;
-  // seeded en values into zh/ja/ko/es so the locale-coverage gate stays
-  // green until F005 runs `npm run i18n:translate -- --target
-  // zh,ja,ko,es`. Reviewer should ensure these paths are removed once
-  // F005 lands real translations.
-  "kolProfile.hero.bannerAlt",
-  "kolProfile.overview.fieldChannelAge",
-  "kolProfile.overview.fieldVideoCount",
-  "kolProfile.recentVideos.title",
-  "kolProfile.recentVideos.empty",
-  // B5-F006 — KOL detail page topic-cloud panel (visx/wordcloud);
-  // seeded en values into zh/ja/ko/es alongside F004 so the locale
-  // gate stays green until F005 runs `npm run i18n:translate`.
-  // Reviewer should ensure these paths are removed once F005 lands
-  // real translations.
-  "kolProfile.topicCloud.title",
-  "kolProfile.topicCloud.empty",
-  "kolProfile.topicCloud.loading",
+  // B5-F003 / F004 / F006 paths previously seeded as English in
+  // zh/ja/ko/es were removed in F005 after `npm run i18n:translate
+  // -- --target {zh,ja,ko,es}` landed real translations
+  // (commit 2026-04-30, batch B5).
   "discovery.card.engagement",
   "discovery.card.unavailableMetric",
   "discovery.regions.VN",

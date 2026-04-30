@@ -269,20 +269,20 @@
       "tags": "タグ",
       "tagsPlaceholder": "タグはカンマで区切ってください",
       "platform": "プラットフォーム",
-      "channelAge": "Channel age",
-      "channelAge_new": "New (< 1y)",
-      "channelAge_established": "Established (1–3y)",
-      "channelAge_veteran": "Veteran (> 3y)",
-      "uploadFrequency": "Upload frequency",
-      "uploadFrequency_active": "Active (≥ 4/mo)",
-      "uploadFrequency_semi-active": "Semi-active (1–4/mo)",
-      "uploadFrequency_inactive": "Inactive (< 1/mo)",
-      "regionGroup": "Region group",
-      "regionGroup_asia": "Asia",
-      "regionGroup_europe": "Europe",
-      "regionGroup_americas": "Americas",
-      "regionGroup_latam": "Latin America",
-      "regionGroup_oceania": "Oceania",
+      "channelAge": "チャンネルの運営期間",
+      "channelAge_new": "新規 (< 1年)",
+      "channelAge_established": "定着済み (1–3年)",
+      "channelAge_veteran": "長期運営 (> 3年)",
+      "uploadFrequency": "投稿頻度",
+      "uploadFrequency_active": "活発 (≥ 4回/月)",
+      "uploadFrequency_semi-active": "半活発 (1–4回/月)",
+      "uploadFrequency_inactive": "不活発 (< 1回/月)",
+      "regionGroup": "地域グループ",
+      "regionGroup_asia": "アジア",
+      "regionGroup_europe": "ヨーロッパ",
+      "regionGroup_americas": "南北アメリカ",
+      "regionGroup_latam": "ラテンアメリカ",
+      "regionGroup_oceania": "オセアニア",
       "includeNonGaming": "非ゲームクリエイターを含める",
       "includeNonGamingHelper": "MVPはデフォルトでゲームクリエイターのみを対象としています。",
       "apply": "フィルターを適用",
@@ -379,28 +379,28 @@
       "instagram": "Instagram"
     },
     "smartMatch": {
-      "button": "AI Smart Match",
-      "title": "AI Smart Match",
-      "subtitle": "Pick a product — we will rank your KOLs by semantic match in milliseconds.",
-      "productLabel": "Product",
-      "productPlaceholder": "Select a product…",
-      "noProducts": "Add a product in Knowledge Base to enable Smart Match.",
-      "run": "Find matches",
-      "loading": "Computing matches…",
-      "empty": "No KOLs are eligible for matching yet — embeddings are still being computed for the most recent imports.",
-      "metaCount": "Top {n, plural, one {1 match} other {# matches}}",
-      "metaLatency": "{ms}ms",
-      "ringLabel": "Match score {score}",
-      "followers": "followers",
-      "saveAllToCampaign": "Save all to campaign",
-      "close": "Close",
+      "button": "AIスマートマッチ",
+      "title": "AIスマートマッチ",
+      "subtitle": "商品を選択すると、数ミリ秒でKOLをセマンティックマッチでランキング付けします。",
+      "productLabel": "商品",
+      "productPlaceholder": "商品を選択…",
+      "noProducts": "ナレッジベースに商品を追加して、スマートマッチを有効にしましょう。",
+      "run": "マッチを探す",
+      "loading": "マッチを計算中…",
+      "empty": "まだマッチングに適格なKOLはいません — 最新のインポートに対する埋め込み計算がまだ行われています。",
+      "metaCount": "上位 {n, plural, one {1件のマッチ} other {#件のマッチ}}",
+      "metaLatency": "{ms}ミリ秒",
+      "ringLabel": "マッチスコア {score}",
+      "followers": "フォロワー",
+      "saveAllToCampaign": "すべてをキャンペーンに保存",
+      "close": "閉じる",
       "errors": {
-        "pickProduct": "Please pick a product first.",
-        "productMissing": "That product no longer exists.",
-        "embeddingDown": "Our embedding service is temporarily unavailable. Please try again in a moment.",
-        "unauthorized": "Please sign in again.",
-        "network": "Network error — check your connection and retry.",
-        "generic": "Something went wrong. Please retry."
+        "pickProduct": "まず商品を選択してください。",
+        "productMissing": "その商品はもう存在しません。",
+        "embeddingDown": "埋め込みサービスが一時的に利用できません。しばらくしてから再度お試しください。",
+        "unauthorized": "再度サインインしてください。",
+        "network": "ネットワークエラー — 接続を確認して再試行してください。",
+        "generic": "何かがうまくいきませんでした。再試行してください。"
       }
     }
   },
@@ -616,7 +616,7 @@
         "unauthorized": "キャンペーンを作成するにはログインしてください。"
       },
       "smartMatch": {
-        "banner": "{count, plural, one {1 KOL} other {# KOLs}} from Smart Match will be linked once you save this campaign."
+        "banner": "{count, plural, one {1 KOL} other {# KOLs}} スマートマッチからのKOLが、このキャンペーンを保存するとリンクされます。"
       }
     },
     "detail": {
@@ -774,7 +774,7 @@
       "country": "国",
       "language": "言語",
       "unknown": "—",
-      "bannerAlt": "Channel banner"
+      "bannerAlt": "チャンネルのバナー"
     },
     "overview": {
       "sectionInfo": "基本情報",
@@ -791,8 +791,8 @@
       "fieldMonetization": "収益化",
       "fieldBrandSafety": "ブランドセーフティ",
       "fieldUploadsPerMonth": "月あたりのアップロード数",
-      "fieldChannelAge": "Channel age",
-      "fieldVideoCount": "Total videos",
+      "fieldChannelAge": "チャンネルの開設期間",
+      "fieldVideoCount": "総動画数",
       "fieldTags": "タグ",
       "fieldBio": "自己紹介",
       "valueScoreLabel": "価値",
@@ -813,13 +813,13 @@
       "saveHelper": "保存されたクリエイターは、アウトリーチのフォローアップのために /database に表示されます。"
     },
     "recentVideos": {
-      "title": "Recent videos",
-      "empty": "No recent videos yet — check back after the next sync."
+      "title": "最近の動画",
+      "empty": "最近の動画はまだありません。次回の同期後に再確認してください。"
     },
     "topicCloud": {
-      "title": "Content topics",
-      "empty": "Topics being analyzed — check back after the next refresh.",
-      "loading": "Loading topic cloud…"
+      "title": "コンテンツのトピック",
+      "empty": "トピックを分析中です。次回の更新後に再確認してください。",
+      "loading": "トピッククラウドを読み込んでいます…"
     },
     "emptyTab": {
       "collabs": "最初のキャンペーン（BM2）を開始すると、キャンペーンのコラボレーションがここに表示されます。",

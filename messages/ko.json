@@ -13,11 +13,11 @@
     "searchPlaceholder": "KOL, 캠페인, 이메일 등 검색",
     "languageAriaLabel": "언어 변경",
     "locale": {
-      "en": "English",
+      "en": "영어",
       "zh": "中文（简体）",
       "ja": "日本語",
       "ko": "한국어",
-      "es": "Español"
+      "es": "스페인어"
     }
   },
   "userMenu": {
@@ -269,20 +269,20 @@
       "tags": "태그",
       "tagsPlaceholder": "태그를 쉼표로 구분하세요",
       "platform": "플랫폼",
-      "channelAge": "Channel age",
-      "channelAge_new": "New (< 1y)",
-      "channelAge_established": "Established (1–3y)",
-      "channelAge_veteran": "Veteran (> 3y)",
-      "uploadFrequency": "Upload frequency",
-      "uploadFrequency_active": "Active (≥ 4/mo)",
-      "uploadFrequency_semi-active": "Semi-active (1–4/mo)",
-      "uploadFrequency_inactive": "Inactive (< 1/mo)",
-      "regionGroup": "Region group",
-      "regionGroup_asia": "Asia",
-      "regionGroup_europe": "Europe",
-      "regionGroup_americas": "Americas",
-      "regionGroup_latam": "Latin America",
-      "regionGroup_oceania": "Oceania",
+      "channelAge": "채널 노출 기간",
+      "channelAge_new": "신규 (< 1년)",
+      "channelAge_established": "성장기 (1 - 3년)",
+      "channelAge_veteran": "성숙기 (> 3년)",
+      "uploadFrequency": "업로드 빈도",
+      "uploadFrequency_active": "활발함 (≥ 4회/월)",
+      "uploadFrequency_semi-active": "보통 (1 - 4회/월)",
+      "uploadFrequency_inactive": "비활성 (< 1회/월)",
+      "regionGroup": "지역 그룹",
+      "regionGroup_asia": "아시아",
+      "regionGroup_europe": "유럽",
+      "regionGroup_americas": "미주",
+      "regionGroup_latam": "라틴 아메리카",
+      "regionGroup_oceania": "오세아니아",
       "includeNonGaming": "게임이 아닌 크리에이터 포함",
       "includeNonGamingHelper": "MVP는 기본적으로 게임 크리에이터만 표시합니다.",
       "apply": "필터 적용",
@@ -379,28 +379,28 @@
       "instagram": "Instagram"
     },
     "smartMatch": {
-      "button": "AI Smart Match",
-      "title": "AI Smart Match",
-      "subtitle": "Pick a product — we will rank your KOLs by semantic match in milliseconds.",
-      "productLabel": "Product",
-      "productPlaceholder": "Select a product…",
-      "noProducts": "Add a product in Knowledge Base to enable Smart Match.",
-      "run": "Find matches",
-      "loading": "Computing matches…",
-      "empty": "No KOLs are eligible for matching yet — embeddings are still being computed for the most recent imports.",
-      "metaCount": "Top {n, plural, one {1 match} other {# matches}}",
+      "button": "AI 스마트 매칭",
+      "title": "AI 스마트 매칭",
+      "subtitle": "제품을 선택하세요. KOL을 의미적 일치도에 따라 수 밀리초 내에 순위를 매깁니다.",
+      "productLabel": "제품",
+      "productPlaceholder": "제품을 선택하세요...",
+      "noProducts": "지식 베이스에 제품을 추가하여 스마트 매칭을 활성화하세요.",
+      "run": "일치 항목 찾기",
+      "loading": "일치 항목 계산 중...",
+      "empty": "아직 일치할 KOL이 없습니다. 가장 최근에 가져온 항목에 대한 임베딩 계산이 아직 진행 중입니다.",
+      "metaCount": "상위 {n, plural, one {1개 일치 항목} other {#개 일치 항목}}",
       "metaLatency": "{ms}ms",
-      "ringLabel": "Match score {score}",
-      "followers": "followers",
-      "saveAllToCampaign": "Save all to campaign",
-      "close": "Close",
+      "ringLabel": "일치 점수 {score}",
+      "followers": "팔로워",
+      "saveAllToCampaign": "모두 캠페인에 저장",
+      "close": "닫기",
       "errors": {
-        "pickProduct": "Please pick a product first.",
-        "productMissing": "That product no longer exists.",
-        "embeddingDown": "Our embedding service is temporarily unavailable. Please try again in a moment.",
-        "unauthorized": "Please sign in again.",
-        "network": "Network error — check your connection and retry.",
-        "generic": "Something went wrong. Please retry."
+        "pickProduct": "먼저 제품을 선택하세요.",
+        "productMissing": "해당 제품이 더 이상 존재하지 않습니다.",
+        "embeddingDown": "임베딩 서비스가 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도하세요.",
+        "unauthorized": "다시 로그인하세요.",
+        "network": "네트워크 오류 - 연결을 확인하고 다시 시도하세요.",
+        "generic": "문제가 발생했습니다. 다시 시도하세요."
       }
     }
   },
@@ -616,7 +616,7 @@
         "unauthorized": "캠페인을 생성하려면 로그인하세요."
       },
       "smartMatch": {
-        "banner": "{count, plural, one {1 KOL} other {# KOLs}} from Smart Match will be linked once you save this campaign."
+        "banner": "{count, plural, one {1 KOL} other {# KOLs}} 스마트 매치에서 추천한 크리에이터는 이 캠페인을 저장하면 연결됩니다."
       }
     },
     "detail": {
@@ -774,7 +774,7 @@
       "country": "국가",
       "language": "언어",
       "unknown": "—",
-      "bannerAlt": "Channel banner"
+      "bannerAlt": "채널 배너"
     },
     "overview": {
       "sectionInfo": "기본 정보",
@@ -791,8 +791,8 @@
       "fieldMonetization": "수익화",
       "fieldBrandSafety": "브랜드 안전성",
       "fieldUploadsPerMonth": "월 업로드 수",
-      "fieldChannelAge": "Channel age",
-      "fieldVideoCount": "Total videos",
+      "fieldChannelAge": "채널 연령",
+      "fieldVideoCount": "총 비디오 수",
       "fieldTags": "태그",
       "fieldBio": "소개",
       "valueScoreLabel": "가치",
@@ -813,13 +813,13 @@
       "saveHelper": "저장된 크리에이터는 /database에서 아웃리치 후속 조치를 위해 표시됩니다."
     },
     "recentVideos": {
-      "title": "Recent videos",
-      "empty": "No recent videos yet — check back after the next sync."
+      "title": "최근 비디오",
+      "empty": "아직 최근 비디오가 없습니다. 다음 동기화 후에 다시 확인해주세요."
     },
     "topicCloud": {
-      "title": "Content topics",
-      "empty": "Topics being analyzed — check back after the next refresh.",
-      "loading": "Loading topic cloud…"
+      "title": "콘텐츠 주제",
+      "empty": "주제 분석 중입니다. 다음 새로고침 후에 다시 확인해주세요.",
+      "loading": "주제 클라우드 로딩 중..."
     },
     "emptyTab": {
       "collabs": "첫 번째 캠페인(BM2)을 시작하면 캠페인 협업이 여기에 표시됩니다.",

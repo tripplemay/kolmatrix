@@ -269,20 +269,20 @@
       "tags": "标签",
       "tagsPlaceholder": "用英文逗号分隔多个标签",
       "platform": "平台",
-      "channelAge": "Channel age",
-      "channelAge_new": "New (< 1y)",
-      "channelAge_established": "Established (1–3y)",
-      "channelAge_veteran": "Veteran (> 3y)",
-      "uploadFrequency": "Upload frequency",
-      "uploadFrequency_active": "Active (≥ 4/mo)",
-      "uploadFrequency_semi-active": "Semi-active (1–4/mo)",
-      "uploadFrequency_inactive": "Inactive (< 1/mo)",
-      "regionGroup": "Region group",
-      "regionGroup_asia": "Asia",
-      "regionGroup_europe": "Europe",
-      "regionGroup_americas": "Americas",
-      "regionGroup_latam": "Latin America",
-      "regionGroup_oceania": "Oceania",
+      "channelAge": "频道使用时长",
+      "channelAge_new": "新频道 (< 1年)",
+      "channelAge_established": "成熟频道 (1 - 3年)",
+      "channelAge_veteran": "资深频道 (> 3年)",
+      "uploadFrequency": "上传频率",
+      "uploadFrequency_active": "活跃 (≥ 4次/月)",
+      "uploadFrequency_semi-active": "半活跃 (1 - 4次/月)",
+      "uploadFrequency_inactive": "不活跃 (< 1次/月)",
+      "regionGroup": "地区组",
+      "regionGroup_asia": "亚洲",
+      "regionGroup_europe": "欧洲",
+      "regionGroup_americas": "美洲",
+      "regionGroup_latam": "拉丁美洲",
+      "regionGroup_oceania": "大洋洲",
       "includeNonGaming": "包含非游戏创作者",
       "includeNonGamingHelper": "MVP 默认仅显示游戏创作者。",
       "apply": "应用筛选",
@@ -1013,7 +1013,7 @@
       "country": "国家",
       "language": "语言",
       "unknown": "—",
-      "bannerAlt": "Channel banner"
+      "bannerAlt": "频道横幅"
     },
     "overview": {
       "sectionInfo": "基础信息",
@@ -1030,8 +1030,8 @@
       "fieldMonetization": "变现状态",
       "fieldBrandSafety": "品牌安全分级",
       "fieldUploadsPerMonth": "月均上传数",
-      "fieldChannelAge": "Channel age",
-      "fieldVideoCount": "Total videos",
+      "fieldChannelAge": "频道使用时长",
+      "fieldVideoCount": "视频总数",
       "fieldTags": "标签",
       "fieldBio": "简介",
       "valueScoreLabel": "价值",
@@ -1052,13 +1052,13 @@
       "saveHelper": "已保存的创作者会出现在数据库页，便于后续触达。"
     },
     "recentVideos": {
-      "title": "Recent videos",
-      "empty": "No recent videos yet — check back after the next sync."
+      "title": "近期视频",
+      "empty": "暂无近期视频 — 下次同步后再来查看。"
     },
     "topicCloud": {
-      "title": "Content topics",
-      "empty": "Topics being analyzed — check back after the next refresh.",
-      "loading": "Loading topic cloud…"
+      "title": "内容主题",
+      "empty": "主题正在分析中 — 下次刷新后再来查看。",
+      "loading": "正在加载主题云…"
     },
     "emptyTab": {
       "collabs": "创建首个活动后（BM2）将在此显示合作历史。",
