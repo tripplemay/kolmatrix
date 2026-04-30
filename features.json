@@ -47,7 +47,7 @@
       "title": "KOL 详情页词云完整版（@visx/wordcloud + d3-cloud + AI 关键词提取）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "B5 F004 #4 词云 DEFERRED 解锁 — react-wordcloud peer deps incompat React 19 → 改用 @visx/wordcloud（React 19 兼容，~50KB）；npm install @visx/wordcloud d3-cloud（如需）；新建 src/lib/kol-detail/topic-cloud.ts 调 aigcgateway Action `kol-topic-extract` (action_id `cmokr9z880009bn18sre31yf0`) 从最近 6 视频标题提取 5-10 关键词 + weight 0-1，缓存 7d（Kol.metadata.topicCloud JSONB）；KOL 详情页 Overview tab 动态 import <TopicCloud> 组件（避免影响其他页 bundle），weight → 字号映射 14-32px；空数据 / AI 失败 / Action 未配置 → friendly empty state 'Topics being analyzed...'；env var AIGCGATEWAY_KOL_TOPIC_ACTION_ID 须在 staging + prod .env 落地（用户 SSH 配置，Generator 在 README/spec 给指令）；新增 i18n keys：kolProfile.topicCloud.{title|empty|loading}（zh/ja/ko/es 跑 i18n:translate）；tests/integration/b5-topic-cloud.test.ts 验证 cache 命中 + AI 提取 mock + 失败 fallback；F005 守门 test 复用（no-audience-tab 不影响）；aigcgateway 月增量预算 ≤ $5/month；staging git_sha 与本 commit 一致；L2 staging 浏览器验证：随机 youtube-seeded KOL 详情页词云渲染（首次 SSR + 二次 cache hit）。",
       "notes": "用户 2026-04-30 决议 X+a：B5 内补做（推迟 done 0.5-1 day）+ 选 @visx/wordcloud（React 19 兼容）。aigcgateway Action 已 ready（dry-run PASS），仅需客户端集成 + env var 落地。"
     }
