@@ -5,7 +5,7 @@ type: project
 ---
 ## 当前批次
 - **B5-kol-data-enrichment** — fixing（2026-04-30 Reviewer L2 FAIL）
-- fixing-1 已修复本地类型守门；当前阻塞转为 staging 部署/运行时错误
+- fixing-2 已修复 staging 路由与 migration；当前阻塞转为 KOL 详情页内容未落地
 
 ## Reviewer 已完成
 - 新增 B5 守门测试：
@@ -15,13 +15,12 @@ type: project
   - `tests/integration/b5-topic-cloud.test.ts`
 - 新增用例：`docs/test-cases/B5-kol-data-enrichment-cases.md`
 - L1 复验 PASS：`typecheck` + 上述 4 个新测试 + `kol-discovery` / `import-kol-from-youtube` 相邻回归 + lint
+- L2 路由 / Discovery / i18n 复验 PASS：dashboard/discovery/database 正常；高级筛选与 4 语 key 正常
 
 ## 当前缺陷
-- staging 版本不匹配：health `git_sha=f275359`，当前 `HEAD=837d990`
-- staging 登录后核心页面错误：
-  - `/en/dashboard` ERROR `2524396519`
-  - `/en/discovery` ERROR `3413792213`
-  - `/en/database` ERROR `3994538279`
+- 5/5 YouTube KOL 详情页抽样都没有 banner
+- 5/5 YouTube KOL 详情页 recent videos tiles = `0`
+- 5/5 YouTube KOL 详情页 topic cloud 仅落 empty state，无 canvas
 
 ## 即将启动批次（按序）
 - **MVP-internal-demo-prep** (B5 done 后, 7 features ~3 day) — `docs/specs/MVP-internal-demo-prep-spec.md`
