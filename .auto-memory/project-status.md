@@ -5,7 +5,7 @@ type: project
 ---
 ## 当前批次
 - **B5-kol-data-enrichment** — fixing（2026-04-30 Reviewer L2 FAIL）
-- fixing-3 已恢复详情页 banner / recent videos；当前阻塞转为 topic cloud 仍停留 empty state
+- fixing-4 已稳定 banner / recent videos；当前阻塞仍是 topic cloud empty state
 
 ## Reviewer 已完成
 - 新增 B5 守门测试：
