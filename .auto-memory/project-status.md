@@ -4,8 +4,8 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **B5-kol-data-enrichment** — fixing（2026-04-30 Reviewer L1 FAIL）
-- 阻塞点：`src/app/[locale]/(app)/kols/[id]/TopicCloudCanvas.tsx` 类型守门失败，B5 不能签收
+- **B5-kol-data-enrichment** — fixing（2026-04-30 Reviewer L2 FAIL）
+- fixing-1 已修复本地类型守门；当前阻塞转为 staging 部署/运行时错误
 
 ## Reviewer 已完成
 - 新增 B5 守门测试：
@@ -14,13 +14,14 @@ type: project
   - `tests/integration/b5-discovery-filter-combinations.test.ts`
   - `tests/integration/b5-topic-cloud.test.ts`
 - 新增用例：`docs/test-cases/B5-kol-data-enrichment-cases.md`
-- L1 PASS：上述 4 个新测试 + `kol-discovery` / `import-kol-from-youtube` 相邻回归 + lint
+- L1 复验 PASS：`typecheck` + 上述 4 个新测试 + `kol-discovery` / `import-kol-from-youtube` 相邻回归 + lint
 
 ## 当前缺陷
-- `npm run typecheck` FAIL：
-  - `TopicCloudCanvas.tsx:16` `TS2307` 找不到 `@visx/wordcloud` 类型
-  - `TopicCloudCanvas.tsx:89/96/97` `TS7006` 若干参数隐式 `any`
-- L2 staging 未执行：L1 已失败，且仍需用户明确授权
+- staging 版本不匹配：health `git_sha=f275359`，当前 `HEAD=837d990`
+- staging 登录后核心页面错误：
+  - `/en/dashboard` ERROR `2524396519`
+  - `/en/discovery` ERROR `3413792213`
+  - `/en/database` ERROR `3994538279`
 
 ## 即将启动批次（按序）
 - **MVP-internal-demo-prep** (B5 done 后, 7 features ~3 day) — `docs/specs/MVP-internal-demo-prep-spec.md`
