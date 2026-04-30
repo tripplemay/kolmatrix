@@ -46,7 +46,7 @@ export interface TopicCloudCache {
 
 export const TOPIC_CLOUD_VERSION = 1;
 export const TOPIC_CLOUD_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-export const TOPIC_CLOUD_TIMEOUT_MS = 5_000;
+export const TOPIC_CLOUD_TIMEOUT_MS = 10_000;
 export const MAX_KEYWORDS = 10;
 
 export function isCacheFresh(cache: TopicCloudCache | null, now = Date.now()): boolean {
