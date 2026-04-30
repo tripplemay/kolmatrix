@@ -151,15 +151,33 @@ Commit message 模板：`feat(B5-F004): <子项名>`，例：
 - `feat(B5-F004): wordcloud via aigcgateway kol-topic-extract action`
 - `feat(B5-F004): audience tab anchor comment + spec §F004 #5 修订`
 
-### 决议 4（wordcloud aigcgateway Action 阻塞）：⚠️ **用户操作 + Generator fallback**
+### 决议 4（wordcloud aigcgateway Action 阻塞）：✅ **2026-04-30 14:00 BJ resolved**
 
-**(a) Action 状态：** 未建。需要在 https://aigc.guangai.ai 控制台创建 `kol-topic-extract` Action。
+**(a) Action 状态：** ✅ **已建** — 用户授权 MCP key + Planner 用 MCP `create_action` tool 直接创建并 dry-run 验证。
+- `action_id`: **`cmokr9z880009bn18sre31yf0`**
+- `model`: claude-haiku-4.5
+- `active_version`: 1
+- 验证输出质量：10 个游戏关键词 + 合理 weight（0.5-0.9 分布）
+- 单次调用成本：~435 tokens ≈ $0.001（B5 F004 daily batch 100 KOL = ~$0.10/day）
 
-**(b) env var 名：** `AIGCGATEWAY_KOL_TOPIC_ACTION_ID` 确认采用（与现有 `AIGCGATEWAY_*_ACTION_ID` 命名一致 — 见 environment.md）
+**(b) env var 名：** `AIGCGATEWAY_KOL_TOPIC_ACTION_ID` 锁定
 
 **(c) Generator 节奏裁决：**
-- **Phase 1（不等 Action）：** Generator 现在可以并行做 #1 banner / #2 stats cards / #3 recent 6 videos / #5 audience anchor + 文档（共 ~3-4h），各自独立 commit
-- **Phase 2（等 Action 就位）：** Wordcloud 实现 #4 等用户在 aigcgateway 控制台创建 `kol-topic-extract` Action 并把 action_id 落入 `/opt/kolmatrix/.env.production` + `/opt/kolmatrix-staging/.env.staging` 后启动；如 Action 5/2 前未建好，则把 #4 wordcloud 整体推迟到 BIx-mvp-polish-pass 或留 backlog（不阻塞 B5 done）
+- **不再需要 Phase 拆分** — Action 已就位，4 项可一并开工
+- 但 env var **尚未落入 .env.production / .env.staging**（需用户 SSH 操作 — 见下方）
+- Generator 在 KOL 详情页代码里硬编 fallback：`process.env.AIGCGATEWAY_KOL_TOPIC_ACTION_ID ?? "cmokr9z880009bn18sre31yf0"`，这样即使 env var 暂时未落地，词云也能跑（参考 BM2 `KOL_EMAIL_CUSTOMIZE_ACTION_ID` 同款模式）
+
+**(d) 用户行动项 — env var SSH 落地（建议但不强制阻塞 Generator）：**
+
+```bash
+ssh tripplezhou@34.180.93.185
+echo "AIGCGATEWAY_KOL_TOPIC_ACTION_ID=cmokr9z880009bn18sre31yf0" | sudo tee -a /opt/kolmatrix/.env.production
+echo "AIGCGATEWAY_KOL_TOPIC_ACTION_ID=cmokr9z880009bn18sre31yf0" | sudo tee -a /opt/kolmatrix-staging/.env.staging
+pm2 reload kolmatrix --update-env
+pm2 reload kolmatrix-staging --update-env
+```
+
+落不落地都不阻塞 — Generator 用代码硬编 fallback 兜底。env var 落地后可统一改用 env 优先 fallback 二级。
 
 ### 用户行动项（aigcgateway Action 创建）
 

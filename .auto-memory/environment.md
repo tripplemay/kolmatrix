@@ -36,7 +36,10 @@ type: reference
 - **内网 URL：** `http://localhost:3099/v1/`（同 VM 走内网，生产用，零公网延迟）
 - **KOLMatrix API Key：** `pk_REDACTED` (name: admintest, active, 2026-04-23 跨 staging + prod 共用单 key；长期建议拆 dev/prod 两份；完整 key 仅存 `.env.production` / `.env.staging` 文件，本记忆文件禁录)
 - **月预算：** $100 USD（B2-B4 初期；当前余额 $49.60 @ 2026-04-23）
-- **Actions 清单：** BM2 使用 `kol-email-customize` / `roi-insights` / `weekly-report-for-client`（2026-04-23 Planner 创建 + 验证通过）；早期 B2 设想的 kol-eval-bulk/precision/campaign-match/email-personalize 未启用（MVP 未走 AI 匹配路线）
+- **Actions 清单：**
+  - **BM2 (2026-04-23 创建)：** `kol-email-customize` / `roi-insights` / `weekly-report-for-client`
+  - **B5-F004 (2026-04-30 创建)：** `kol-topic-extract` (action_id `cmokr9z880009bn18sre31yf0`, model claude-haiku-4.5, 用于 KOL 详情页词云从 6 视频标题提取 5-10 关键词 + weight，单次 ~$0.001) — env var `AIGCGATEWAY_KOL_TOPIC_ACTION_ID` 待 SSH 落入 `.env.production` + `.env.staging`
+  - 早期 B2 设想的 kol-eval-bulk/precision/campaign-match/email-personalize 未启用（MVP 未走 AI 匹配路线）
 - **集成决策：** 见 ADR-009
 
 ## 生产服务器（与 aigcgateway 共机）
