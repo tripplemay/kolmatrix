@@ -15,10 +15,14 @@ F002 ✅ targetAudience zod | F007 ✅ copy polish | F004 ✅ demo README | F003
 ## Pending — Reviewer codex
 F005 ⏳ Prod L2 smoke 34-item checklist → docs/test-cases/MVP-internal-demo-prep-prod-smoke-checklist.md
 
-## Pre-verifying User Actions
-1. SSH prod: git pull + npm ci + prisma migrate deploy + npm run db:seed + rebuild + pm2 restart
-2. Verify `curl /api/health | jq .git_sha` = HEAD SHA
+## Staging Deploy Status (2026-05-01)
+✅ Staging redeployed via new deploy-staging.yml workflow → git_sha=d26735b matches HEAD; redis=not_used; db:seed ran (5 demo Products + 300 EmailLog rows)
+
+## Pre-prod User Actions
+1. Manual prod deploy via GitHub Actions "Deploy to Production" workflow (workflow_dispatch)
+2. After prod deploy: `curl https://kol.guangai.ai/api/health | jq .git_sha` = HEAD SHA
 3. Trigger "Update visual baselines" GitHub workflow (dashboard.png deleted after F001)
+4. Then hand off to Reviewer codex for F005 prod L2 smoke checklist
 
 ## Key Decisions (this batch)
 - WorkflowSteps: 6-step completion from dashboardData counts (no extra DB round-trips)
