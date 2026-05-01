@@ -11,11 +11,11 @@
     },
     {
       "id": "F002",
-      "title": "Misc 5 项 polish（campaigns Owner filter / database Email btn / PDF 文案 / mock_sent fail-fast / AiSuggestions 已删）",
+      "title": "Misc 6 项 polish（campaigns Owner filter / database Email btn / PDF 文案 / mock_sent fail-fast / AiSuggestions 已删 / dashboard newCampaign 按钮修复）",
       "priority": "high",
       "executor": "generator",
       "status": "pending",
-      "acceptance": "/campaigns Owner filter 真做（取自 Campaign.ownerUserId，URL 参数 ?owner=<userId>，单 tenant 用户时 hide filter）；/database BulkActionBar Email 按钮 onClick → router.push('/outreach?kolIds=' + selectedKolIds.join(','))，/outreach 接收 ?kolIds=... 自动预选；/weekly-report PDF 帮助文案（button title='Save as PDF in the print dialog'，click 后 toast 提示）；邮件 mock_sent fail-fast（src/lib/email/resend.ts 在 NODE_ENV=production 下无 RESEND_API_KEY 时 throw 'RESEND_API_KEY missing in production'，dev 仍允许 mock_sent）；/campaigns AiSuggestionsCard 'Coming with B2' badge 已在 MVP-internal-demo-prep F007 处理（不重复）；existing tests 不破坏；staging git_sha 与本 commit 一致。"
+      "acceptance": "/campaigns Owner filter 真做（取自 Campaign.ownerUserId，URL 参数 ?owner=<userId>，单 tenant 用户时 hide filter）；/database BulkActionBar Email 按钮 onClick → router.push('/outreach?kolIds=' + selectedKolIds.join(','))，/outreach 接收 ?kolIds=... 自动预选；/weekly-report PDF 帮助文案（button title='Save as PDF in the print dialog'，click 后 toast 提示）；邮件 mock_sent fail-fast（src/lib/email/resend.ts 在 NODE_ENV=production 下无 RESEND_API_KEY 时 throw 'RESEND_API_KEY missing in production'，dev 仍允许 mock_sent）；/campaigns AiSuggestionsCard 'Coming with B2' badge 已在 MVP-internal-demo-prep F007 处理（不重复）；Dashboard newCampaign 按钮修复（用户 2026-05-01 报告：GreetingBar GradientButton 无 onClick 也无路由跳转 → 点击无效；用户决议方案 A：GradientButton 加可选 href prop，render 分支 `href` 存在渲 next/link <Link> / 无 href 渲 <button>，disabled 或 loading 时 always 渲 <button>；GreetingBar 改用 <GradientButton href={`/${locale}/campaigns/new`} ...>；新增 GradientButton.test.tsx 2 个 it block 验证 href + href+disabled fallback；grep 全代码 <GradientButton 抓其他类似失效；staging 浏览器走查 zh+en 各一次跳转 PASS）；existing tests 不破坏；staging git_sha 与本 commit 一致。"
     },
     {
       "id": "F003",

@@ -87,10 +87,10 @@ trigger: MVP-internal-demo-prep done 后立即启动
 - tests/integration/crm-export-csv.test.ts 验证 CSV 内容
 - staging git_sha 与本 commit 一致
 
-### F002 — Misc 5 项 polish（campaigns Owner filter / database Email btn / PDF 文案 / mock_sent fail-fast）
+### F002 — Misc 6 项 polish（campaigns Owner filter / database Email btn / PDF 文案 / mock_sent fail-fast / dashboard newCampaign 按钮修复）
 
 **Executor：** generator
-**估时：** ~2h
+**估时：** ~2.5h（原 5 项 ~2h + dashboard 按钮 ~30min）
 
 **实现：**
 
@@ -116,11 +116,26 @@ trigger: MVP-internal-demo-prep done 后立即启动
 
 5. **/campaigns/AiSuggestionsCard "Coming with B2" badge 已在 MVP-internal-demo-prep F007 处理**（不重复）
 
+6. **Dashboard `/dashboard` "New Campaign" 按钮失效修复（用户 2026-05-01 报告）**
+   - 现状：`src/features/dashboard/GreetingBar.tsx:28-37` 渲染 `<GradientButton>` 是纯 `<button type="button">`，无 onClick 也无路由 → 点击无效
+   - 修复方式（用户 2026-05-01 决议方案 A）：**`GradientButton` 加可选 `href` prop**
+     - `src/components/common/GradientButton.tsx`：扩展 props 加 `href?: string`；render 分支：`href` 存在时渲 `<Link href={href} className={...}>...{contents}</Link>`，无 href 时维持现 `<button>` 渲染
+     - 视觉/样式 100% 保留（cn className 完全相同；保留 size/icon/loading/fullWidth/disabled 既有 props）
+     - `disabled` + `href` 同时存在时，仍渲 `<button disabled>`（避免 disabled link 不可达 a11y 问题）
+     - `loading` + `href` 同时存在时同上（loading 是异步触发态，href 不适用）
+     - 类型：`interface GradientButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> { href?: string; ... }` —— 单一 union 太复杂，保留 ButtonHTMLAttributes 即可（href 是额外字段）
+   - 落地：`src/features/dashboard/GreetingBar.tsx` 改用 `<GradientButton href={`/${locale}/campaigns/new`} size="lg" icon={...}>` —— locale 从 `getLocale()` 拿（next-intl/server 已暴露）或从 page.tsx 透传 prop
+   - 测试：`src/components/common/__tests__/GradientButton.test.tsx` 加 ≥ 2 个 it block：(a) `href` 时 render 出 `<a>` 标签且 `href` 属性正确；(b) `href + disabled` 时仍渲 `<button disabled>`（不渲 link）
+   - 配套审计：grep `<GradientButton` 全代码检查其他「主 CTA」是否有同类失效 bug（如 page.tsx 头 New Campaign / Edit / Apply Filters 等）—— 如发现 ≥1 处类似 bug，本 acceptance 加抓修
+
 **Acceptance：**
 - /campaigns Owner filter 真过滤（tenant 单用户时 hide）
 - /database BulkActionBar Email 跳转 /outreach 带预选
 - /weekly-report Download PDF 显示友好 print 对话框引导
 - 邮件无 key + production env → 立即 throw（不 silent mock）
+- **Dashboard /dashboard "New Campaign" 按钮点击跳转 `/<locale>/campaigns/new`**（staging 浏览器走查 zh + en 两个 locale 各一次）
+- **GradientButton.tsx 单元测试覆盖 href + disabled + loading 组合**
+- **grep 全代码 `<GradientButton`，确认其他「主 CTA」（如页头 Apply Filters / Edit 等）按钮要么本就有正确 onClick / 要么改用 href prop**（不漏其他失效 bug）
 - existing tests 不破坏
 - staging git_sha 与本 commit 一致
 
@@ -479,7 +494,7 @@ MVP-internal-demo-prep done → BIx-mvp-polish-pass building
 | 环节 | 预估 | 执行者 |
 |---|---|---|
 | F001 /crm 3 disabled 控件清理（time toggle real / Export CSV impl / Manual log delete）| ~1 day | Generator |
-| F002 Misc 5 项 polish（Owner filter + Email btn + PDF 文案 + mock_sent + AiSuggestions 已删）| ~2h | Generator |
+| F002 Misc 6 项 polish（Owner filter + Email btn + PDF 文案 + mock_sent + AiSuggestions 已删 + dashboard newCampaign 按钮修复）| ~2.5h | Generator |
 | F003 11 页 critical paths edge states + 必修 | ~半天 (~4h) | Generator |
 | **F004 YouTube sync 配额优化（P1 ~89% + 真 engagement batch）**| ~1.5-2 day | Generator |
 | **F005 前端 perf 六件套（CR-4/5/6 + H-P1/2/3）**| ~1.4 day (~11.2h) | Generator |
@@ -514,6 +529,12 @@ MVP-internal-demo-prep done → BIx-mvp-polish-pass building
 | 12 | Material Symbols 字体策略 | ✅ next/font 自托管子集（保留视觉一致；M-P8 lucide-react 卸载单独处理） |
 | 13 | CSP 上线节奏 | ✅ Report-Only 一周观察期，本批次只做 Report-Only，下批次切 enforce |
 | 14 | CR-1/2/3 安全 Critical + H-S1/2/3 安全 High 归属 | ✅ 走 backlog 单独跟踪（不进 BIx；团队内部 demo 安全风险低）|
+
+### 2026-05-01 四次决议（用户报告 dashboard 按钮 bug）
+
+| # | 问题 | 用户答复 |
+|---|---|---|
+| 15 | dashboard 新建活动按钮点击无效（用户 2026-05-01 报告） | ✅ **(1) 并入 BIx-F002**（不立刻 hotfix）+ **(A) `GradientButton` 加 `href` prop**（一处改全应用受益）；F002 估时 2h → 2.5h |
 
 ---
 
