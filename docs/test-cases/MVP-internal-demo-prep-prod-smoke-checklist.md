@@ -17,7 +17,7 @@
 - [ ] **A-01** `curl https://kol.guangai.ai/api/health` returns HTTP 200
 - [ ] **A-02** Response body `status` = `"healthy"`
 - [ ] **A-03** Response body `git_sha` matches expected HEAD SHA (F005 pre-condition)
-- [ ] **A-04** Response body `checks.database.status` = `"ok"` and latency implied by uptime > 0
+- [ ] **A-04** Response body `checks.database.status` = `"ok"` and `checks.database.latencyMs` < 500
 - [ ] **A-05** Response body `checks.redis.status` = `"not_used"` (F007 polish verified)
 
 ---
@@ -26,10 +26,10 @@
 
 - [ ] **B-01** `GET https://kol.guangai.ai/en/login` returns HTTP 200 (unauthenticated)
 - [ ] **B-02** `GET https://kol.guangai.ai/en/dashboard` → redirects to `/en/login` (unauthenticated 307)
-- [ ] **B-03** All 9 protected routes redirect to login when unauthenticated:
+- [ ] **B-03** All 8 protected routes redirect to login when unauthenticated:
   `/en/discovery`, `/en/database`, `/en/knowledge-base`, `/en/campaigns`,
   `/en/outreach`, `/en/crm`, `/en/roi`, `/en/weekly-report`
-  _(curl each, verify 307 → login)_
+  _(curl each, verify 307 → login; do not follow redirects)_
 - [ ] **B-04** `GET /shared/weekly-report/invalid-token-xyz` returns 404 (not 500)
 - [ ] **B-05** `GET /api/health` is publicly accessible without session cookie (returns 200)
 
@@ -56,7 +56,7 @@
 
 - [ ] **C-05** `/en/knowledge-base`: Exactly 5 Products visible (Honor of Kings / Genshin Impact / PUBG Mobile / Pokemon Go / Clash Royale). 3 products show pre-generated AI assets badge. 2 show "Generate AI assets" button.
 
-- [ ] **C-06** Click "Generate AI assets" on Pokemon Go → AIGC job triggers → within 15s assets populate (or spinner shown). Confirm no 500 error.
+- [ ] **C-06** Click "Generate AI assets" on Pokemon Go → AIGC job triggers → within 30s assets populate (or persistent spinner with no error toast). Confirm no 500 error in network tab. If aigcgateway timeout → friendly retry CTA appears (acceptable; not a blocker).
 
 - [ ] **C-07** Submit empty `Target Audience` field on Product create modal → i18n error "Target audience is required." appears. Submit with value → form succeeds.
 
@@ -64,7 +64,7 @@
 
 - [ ] **C-09** Click a campaign to open `/en/campaigns/:id`: KOL panel lists associated KOLs. AI Suggestions card visible with CTA link (links to `/campaigns/{id}` or `/discovery`).
 
-- [ ] **C-10** `/en/outreach`: Template dropdown shows system + user templates. Select a template, click "AI Customize" → customized preview renders. Send 1 test email → success toast.
+- [ ] **C-10** `/en/outreach`: Template dropdown shows system + user templates. Select a template, click "AI Customize" → customized preview renders. Send 1 test email **to your own email address** (do not use real KOL contact in this smoke) → success toast and EmailLog row created.
 
 - [ ] **C-11** `/en/crm`: 6 relationship-status cards (Prospect / Contacted / Interested / Contracted / Active / Closed) visible. KOL funnel chart renders.
 
