@@ -14,8 +14,9 @@ type: project
 - F005 前端 perf 六件套（next.config.ts/font/image + recharts/markdown dynamic + AppShellLayout island）~1.4 day
 ## Generator 开工建议顺序（spec §4 + 工时优化）
 F002 → F003 → F001 → F005 → F004 → push CI 全绿 → SSH staging deploy（按 framework deploy-patterns §3.2 完整链）→ SSH prod redeploy（F004 含 migration）→ verifying 移交 Reviewer
-## ⚠️ F004 开工前 1 个 open question 待用户裁决
-FILTER_MIN_SUBSCRIBERS = 10K vs 1K vs env var 三选一（spec §F004 末尾 + §10 决议 9）。其他 4 features 不阻塞。
+## ✅ F004 用户已裁决 (c) — env var KOL_SYNC_MIN_SUBSCRIBERS
+- prod 默认 1000（与 PRD §10.1 微网红 + quality.ts 对齐）；staging 显式 10000（保留降噪）
+- Generator 5 features 已无 open question，可即刻按建议顺序开工
 ## 关键设计决议（spec §3 + §10 lock）
 - F005 范围 (γ)：CR-4/5/6 + H-P1/2/3 六件套；H-P4 → BL-021；H-P5 → BL-022
 - Material Symbols：next/font 自托管子集（不切 Lucide）；CSP Report-Only 一周观察期；next/image 全 7 处一次性替换

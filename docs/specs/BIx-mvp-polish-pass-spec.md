@@ -244,12 +244,13 @@ healthcheck                                     =     1u
 - staging 跑 7 天连续观察：每日 inserted ≥ 30（vs 当前 1-8）+ 配额 8,500-9,200u + 0 errors
 - staging git_sha 与本 commit 一致
 
-**待你裁决（开工前 1 个 open question）：**
+**用户 2026-05-01 已裁决（c）：**
 
-- `FILTER_MIN_SUBSCRIBERS = 10_000`（`scripts/seed-kol-from-youtube.ts`）与 PRD §10.1 "500-10K 微网红" 矛盾。是否改 1,000 与 quality.ts 一致？
-  - **a. 改 1,000**（与 PRD 微网红 + quality.ts 对齐）
-  - **b. 维持 10,000**（避免 KOL 库被低价值 channel 灌水）
-  - **c. 改成 env var 可调**（部署时配置）
+- `FILTER_MIN_SUBSCRIBERS` 改为 env var `KOL_SYNC_MIN_SUBSCRIBERS`，默认值：
+  - **prod：`1000`**（与 PRD §10.1 "500-10K 微网红" + `quality.ts` 1K 阈值对齐）
+  - **staging：`10000`**（保留降噪能力，避免 staging 测试数据池过散）
+- 实现要求：`scripts/seed-kol-from-youtube.ts` + `src/lib/kol-sync/adapters/youtube.ts` 读 `process.env.KOL_SYNC_MIN_SUBSCRIBERS`，未设时默认 `1000`；staging `.env.staging` 显式写 `KOL_SYNC_MIN_SUBSCRIBERS=10000`；prod `.env.production` 不写或写 `1000`
+- 文档：spec 起草 acceptance 加一条「env var 落入 .env.staging + 验证 staging 跑 sync 时拉取下界=10K」
 
 ### F005 — 前端 perf Critical + High 六件套（next.config.ts / next/font / next/image / recharts dynamic / markdown dynamic / AppShellLayout island）
 
@@ -502,7 +503,7 @@ MVP-internal-demo-prep done → BIx-mvp-polish-pass building
 | 6 | 配额利用率目标 | ✅ **P1 ~89%**（加 IN/ES 共 14 region；P2 95% 危险，P3 98% 极危险） |
 | 7 | 真 engagement 实现路径 | ✅ **替代 B5 F004 lazy-load，改 BIx F004 batch 预计算 top 100 KOL/day** |
 | 8 | 改造批次归属 | ✅ **C 方案：合到 BIx-mvp-polish-pass**（避免拆碎独立批次）|
-| 9 | FILTER_MIN_SUBSCRIBERS = 10K vs PRD 微网红 | ⚠️ **待 Generator 开工前决议**（spec §F004 open question）|
+| 9 | FILTER_MIN_SUBSCRIBERS = 10K vs PRD 微网红 | ✅ **(c) env var `KOL_SYNC_MIN_SUBSCRIBERS`：prod 默认 1000 / staging 显式 10000** —— 与 PRD §10.1 微网红对齐 + 保留 staging 降噪能力（用户 2026-05-01 决议）|
 
 ### 2026-05-01 三次决议（前端审计 perf 整改）
 
