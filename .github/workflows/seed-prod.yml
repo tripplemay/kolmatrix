@@ -1,0 +1,62 @@
+name: Seed Production DB
+
+# One-shot manual workflow for re-running prisma db seed against prod.
+#
+# Use cases:
+#   - landing new demo Products / KOLs after a feature batch
+#   - re-establishing demo data after a destructive migration
+#
+# Behaviour:
+#   - Products / KOLs / Campaigns / users: idempotent upsert (safe to rerun).
+#   - EmailLog rows for the Demo Studio tenant: WIPED + recreated (the seed
+#     does `deleteMany({ where: { tenantId: demoTenant.id } })` then
+#     `createMany` 300 deterministic rows). Acceptable for the internal-demo
+#     tenant; do NOT use this workflow once real KOL outreach traffic lives
+#     on the same tenantId.
+#
+# Required confirmation: the `confirm` input must equal "yes-i-mean-it"
+# before the SSH job will start. This is a defence against accidental
+# clicks in the Actions UI.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "yes-i-mean-it" to confirm prod seed (overwrites EmailLog for Demo Studio)'
+        required: true
+        type: string
+
+concurrency:
+  group: seed-prod
+  cancel-in-progress: false
+
+jobs:
+  seed:
+    name: Run prisma db seed on prod
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://kol.guangai.ai
+    steps:
+      - name: Verify confirmation phrase
+        run: |
+          if [[ "${{ inputs.confirm }}" != "yes-i-mean-it" ]]; then
+            echo "::error::Confirmation phrase mismatch — got '${{ inputs.confirm }}', expected 'yes-i-mean-it'."
+            exit 1
+          fi
+
+      - name: SSH + run db:seed on prod
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          command_timeout: 10m
+          script: |
+            set -euo pipefail
+            cd /opt/kolmatrix
+            echo "── HEAD on prod = $(git rev-parse --short HEAD)"
+            echo "── npm run db:seed"
+            npm run db:seed
+            echo "✅ seed complete"
