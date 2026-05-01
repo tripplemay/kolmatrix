@@ -6,7 +6,7 @@
       "title": "Dashboard 补三元素：Workflow 6 步图 + CPI hardcoded 卡 + 30 天 ROI 趋势",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "src/features/dashboard/{WorkflowSteps,CompetitorCpiCard,RoiTrendCard}.tsx 三组件落地；Dashboard page.tsx 在 KpiRow 下方按「workflow → CPI → ROI 趋势」插入；WorkflowSteps 6 步状态基于当前 tenant 数据是否走过该步动态指示；CompetitorCpiCard hardcoded 6-8 品类基准（数据来源 Sensor Tower 2025/data.ai/AppsFlyer 公开报告，含 'Sample data' 角标 + 'Source: Industry benchmarks Q1 2025' 小字）；RoiTrendCard 复用 /api/roi/trend 折线 30 天 + 无数据 friendly empty state；mobile <640px 单列；visual baseline dashboard.spec.ts 更新；i18n keys 新增 en/zh + 跑 i18n:translate 补 ja/ko/es；staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）。"
     },
     {
