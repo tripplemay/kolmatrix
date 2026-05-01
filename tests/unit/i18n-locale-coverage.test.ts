@@ -173,6 +173,9 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   "roi.kpi.velocity.na",
   "roi.trend.legend.roi",
   "roi.table.cols.roi",
+  // MVP-internal-demo-prep-F007: chipLocales is a locale-code list
+  // that reads the same in every language (en/zh/ja/ko/es intentional).
+  "auth.login.chipLocales",
 ]);
 
 const en = load("en");

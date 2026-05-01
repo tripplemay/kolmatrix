@@ -35,14 +35,12 @@
   },
   "auth": {
     "login": {
-      "eyebrow": "クリエイターオペレーション · 2026",
-      "heroTitle": "グローバルなKOLキャンペーンを実行<br></br><accent>ローンチデイのように。</accent>",
-      "heroSubtitle": "YouTube、TikTok、Twitch、Bilibiliを含む80万以上の認証済みクリエイターを、1つのコマンドセンターから発見、評価、協力しましょう。",
-      "chipCreators": "85万以上のクリエイターが登録されています",
-      "chipMatch": "AIマッチ精度94％",
-      "chipLocales": "9つの地域 · 24時間体制でのオペレーション",
-      "chipStudios": "200以上のスタジオが信頼しています",
-      "trustedBy": "これらのクリエイターが信頼しています",
+      "eyebrow": "ゲーム KOL オペレーション · 2026",
+      "heroTitle": "<accent>KOL コマンドセンター</accent><br></br>グローバルゲームスタジオのために。",
+      "heroSubtitle": "YouTube、TikTok、Twitch、Bilibili — グローバル展開を目指すゲームスタジオのための KOL 運用プラットフォーム。",
+      "chipCreators": "2,500+ ゲームクリエイター",
+      "chipMatch": "AI が KOL × 製品をインテリジェントマッチング",
+      "chipLocales": "EN · ZH · JA · KO · ES",
       "welcomeBack": "お帰りなさい",
       "welcomeSubtitle": "サインインしてアウトリーチを続けましょう",
       "emailLabel": "メールアドレス",
@@ -523,10 +521,9 @@
       "reachForecast": "リーチ予測"
     },
     "aiSuggestions": {
-      "heading": "AI提案",
-      "comingTag": "B2で提供予定",
-      "body": "B2がリリースされると、マッチャーはオーディエンスの重複がアクティブなキャンペーンの目標を最大化するKOLを提示します。現時点では、発見ライブラリを参照して、候補リストを手動で作成してください。",
-      "cta": "適合するKOLを提案する"
+      "heading": "AI 提案",
+      "body": "AI 提案は各キャンペーンで利用可能になりました。キャンペーンを開いてパーソナライズされたマッチングを確認してください。",
+      "cta": "キャンペーンを見る"
     },
     "filters": {
       "search": "検索",

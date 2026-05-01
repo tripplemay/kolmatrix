@@ -23,15 +23,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { Button } from "@/components/ui";
-import {
-  parseCampaignFilters,
-  serializeCampaignFilters,
-} from "@/lib/campaigns/filters";
-import {
-  loadCampaignsListKpis,
-  loadKnownGames,
-} from "@/lib/campaigns/list-kpis";
+import { parseCampaignFilters, serializeCampaignFilters } from "@/lib/campaigns/filters";
+import { loadCampaignsListKpis, loadKnownGames } from "@/lib/campaigns/list-kpis";
 import { runCampaignListSearch } from "@/lib/campaigns/search";
 
 import { AiSuggestionsCard } from "./AiSuggestionsCard";
@@ -63,7 +56,6 @@ export default async function CampaignsPage({ params, searchParams }: Props) {
   ]);
 
   const t = await getTranslations("campaigns");
-  const tHeader = await getTranslations("campaigns.header");
   const tEmpty = await getTranslations("campaigns.emptyState");
   const tNoMatches = await getTranslations("campaigns.noMatches");
   const tPager = await getTranslations("discovery.pagination");
@@ -71,9 +63,7 @@ export default async function CampaignsPage({ params, searchParams }: Props) {
   const basePath = `/${locale}/campaigns`;
   const newCampaignHref = `/${locale}/campaigns/new`;
 
-  const withFilter = (
-    overrides: Parameters<typeof serializeCampaignFilters>[1]
-  ) => {
+  const withFilter = (overrides: Parameters<typeof serializeCampaignFilters>[1]) => {
     const q = serializeCampaignFilters(filters, overrides).toString();
     return q ? `${basePath}?${q}` : basePath;
   };
@@ -91,27 +81,13 @@ export default async function CampaignsPage({ params, searchParams }: Props) {
           >
             {t("title")}
           </h1>
-          <p className="mt-1 max-w-2xl text-sm text-on-surface-variant">
-            {t("subtitle")}
-          </p>
+          <p className="text-on-surface-variant mt-1 max-w-2xl text-sm">{t("subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            disabled
-            title={tHeader("importTooltip")}
-            className="border-purple/40 text-purple"
-            data-testid="campaigns-import"
-          >
-            <span className="material-symbols-outlined text-[16px]" aria-hidden>
-              upload_file
-            </span>
-            {tHeader("import")}
-          </Button>
           <Link
             href={newCampaignHref}
             data-testid="campaigns-new-button"
-            className="gradient-cta inline-flex h-10 items-center gap-2 rounded-lg px-5 text-sm font-bold text-on-primary shadow-[0_0_12px_rgba(0,229,255,0.2)]"
+            className="gradient-cta text-on-primary inline-flex h-10 items-center gap-2 rounded-lg px-5 text-sm font-bold shadow-[0_0_12px_rgba(0,229,255,0.2)]"
           >
             <span className="material-symbols-outlined text-[16px]" aria-hidden>
               add
@@ -122,11 +98,7 @@ export default async function CampaignsPage({ params, searchParams }: Props) {
       </header>
 
       <CampaignsKpiStrip kpis={kpis} />
-      <CampaignsFilterBar
-        filters={filters}
-        basePath={basePath}
-        knownGames={knownGames}
-      />
+      <CampaignsFilterBar filters={filters} basePath={basePath} knownGames={knownGames} />
 
       {tenantIsEmpty ? (
         <EmptyTenantState
@@ -137,37 +109,27 @@ export default async function CampaignsPage({ params, searchParams }: Props) {
         />
       ) : (
         <>
-          <p
-            className="text-sm font-semibold text-on-surface"
-            data-testid="campaigns-summary"
-          >
+          <p className="text-on-surface text-sm font-semibold" data-testid="campaigns-summary">
             {t("summary", { count: result.items.length })}
           </p>
 
           {filteredEmpty ? (
             <div
-              className="glass-panel rounded-2xl border border-on-surface/5 p-10 text-center"
+              className="glass-panel border-on-surface/5 rounded-2xl border p-10 text-center"
               data-testid="campaigns-no-matches"
             >
-              <h2 className="text-lg font-semibold text-white">
-                {tNoMatches("title")}
-              </h2>
-              <p className="mt-2 text-sm text-on-surface-variant">
-                {tNoMatches("body")}
-              </p>
+              <h2 className="text-lg font-semibold text-white">{tNoMatches("title")}</h2>
+              <p className="text-on-surface-variant mt-2 text-sm">{tNoMatches("body")}</p>
             </div>
           ) : (
             <CampaignsTable rows={result.items} locale={locale} />
           )}
 
-          <nav
-            className="flex items-center justify-end gap-2 pt-2 text-sm"
-            aria-label="Pagination"
-          >
+          <nav className="flex items-center justify-end gap-2 pt-2 text-sm" aria-label="Pagination">
             {filters.cursor ? (
               <a
                 href={withFilter({ cursor: undefined })}
-                className="rounded-lg border border-outline-variant px-4 py-2 font-medium text-on-surface-variant hover:border-cyan/40 hover:text-cyan"
+                className="border-outline-variant text-on-surface-variant hover:border-cyan/40 hover:text-cyan rounded-lg border px-4 py-2 font-medium"
                 data-testid="campaigns-pagination-first"
               >
                 « {tPager("previous")}
@@ -176,7 +138,7 @@ export default async function CampaignsPage({ params, searchParams }: Props) {
             {result.hasMore && result.nextCursor ? (
               <a
                 href={withFilter({ cursor: result.nextCursor })}
-                className="gradient-cta rounded-lg px-4 py-2 font-semibold text-on-primary"
+                className="gradient-cta text-on-primary rounded-lg px-4 py-2 font-semibold"
                 data-testid="campaigns-pagination-next"
               >
                 {tPager("next")} »
@@ -184,7 +146,7 @@ export default async function CampaignsPage({ params, searchParams }: Props) {
             ) : null}
           </nav>
 
-          <AiSuggestionsCard locale={locale} />
+          <AiSuggestionsCard locale={locale} firstCampaignId={result.items[0]?.id} />
         </>
       )}
     </div>

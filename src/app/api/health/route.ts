@@ -27,8 +27,8 @@ export const dynamic = "force-dynamic"; // never cache
 
 type CheckOk = { status: "ok"; latency_ms: number };
 type CheckError = { status: "error"; latency_ms: number; error: string };
-type CheckStub = { status: "stub"; note: string };
-type Check = CheckOk | CheckError | CheckStub;
+type CheckNotUsed = { status: "not_used"; note: string };
+type Check = CheckOk | CheckError | CheckNotUsed;
 
 // Bound the DB probe so the endpoint itself stays fast even when
 // postgres is unreachable. Without this, Prisma waits on the TCP
@@ -58,13 +58,12 @@ async function checkDatabase(): Promise<CheckOk | CheckError> {
   }
 }
 
-function checkRedisStub(): CheckStub {
-  // B5 will replace this with a real Redis PING via the BullMQ client.
-  return { status: "stub", note: "wired in B5 with BullMQ" };
+function checkRedis(): CheckNotUsed {
+  return { status: "not_used", note: "BullMQ enables when production scale demands" };
 }
 
 function isHealthy(checks: Record<string, Check>): boolean {
-  return Object.values(checks).every((c) => c.status === "ok" || c.status === "stub");
+  return Object.values(checks).every((c) => c.status === "ok" || c.status === "not_used");
 }
 
 function resolveGitSha(): string {
@@ -85,7 +84,7 @@ function resolveGitSha(): string {
 
 export async function GET(): Promise<Response> {
   const [database] = await Promise.all([checkDatabase()]);
-  const redis = checkRedisStub();
+  const redis = checkRedis();
 
   const checks: Record<string, Check> = { database, redis };
   const healthy = isHealthy(checks);

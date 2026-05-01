@@ -35,14 +35,12 @@
   },
   "auth": {
     "login": {
-      "eyebrow": "创作者运营中枢 · 2026",
-      "heroTitle": "像发售日那样<br></br><accent>运营全球 KOL 活动。</accent>",
-      "heroSubtitle": "一个命令中心，触达 80 万+ 经过验证的创作者，覆盖 YouTube、TikTok、Twitch、Bilibili。",
-      "chipCreators": "创作者库存 85 万+",
-      "chipMatch": "AI 匹配精度 94%",
-      "chipLocales": "9 种语言 · 7×24 运营",
-      "chipStudios": "200+ 工作室信赖",
-      "trustedBy": "正在使用 KOLMATRIX 的创作者伙伴",
+      "eyebrow": "游戏 KOL 运营中枢 · 2026",
+      "heroTitle": "为全球游戏工作室打造的<br></br><accent>KOL 营销指挥中心。</accent>",
+      "heroSubtitle": "覆盖 YouTube、TikTok、Twitch、Bilibili —— 为出海游戏工作室打造的游戏 KOL 运营平台。",
+      "chipCreators": "2,500+ 游戏创作者",
+      "chipMatch": "AI 智能匹配 KOL × 产品",
+      "chipLocales": "5 种语言：中 · 英 · 日 · 韩 · 西",
       "welcomeBack": "欢迎回来",
       "welcomeSubtitle": "登录以继续你的触达工作",
       "emailLabel": "邮箱地址",
@@ -524,9 +522,8 @@
     },
     "aiSuggestions": {
       "heading": "AI 建议",
-      "comingTag": "B2 即将上线",
-      "body": "B2 上线后，AI 会根据当前活跃活动目标，从粉丝重叠度最高的 KOL 中给出推荐。在那之前，请在 KOL 发现页手动筛选候选名单。",
-      "cta": "推荐匹配的 KOL"
+      "body": "AI 建议现已在每个活动中上线——打开任意活动，即可查看个性化匹配推荐。",
+      "cta": "查看活动"
     },
     "filters": {
       "search": "搜索",

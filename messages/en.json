@@ -35,14 +35,12 @@
   },
   "auth": {
     "login": {
-      "eyebrow": "CREATOR OPERATIONS · 2026",
-      "heroTitle": "Run global KOL campaigns<br></br><accent>like a launch day.</accent>",
-      "heroSubtitle": "Discover, score, and coordinate with 800K+ verified creators across YouTube, TikTok, Twitch, and Bilibili — from one command center.",
-      "chipCreators": "850K+ creators indexed",
-      "chipMatch": "AI match precision 94%",
-      "chipLocales": "9 locales · 24/7 ops",
-      "chipStudios": "200+ studios trust us",
-      "trustedBy": "TRUSTED BY CREATORS WORKING WITH",
+      "eyebrow": "GAME KOL OPERATIONS · 2026",
+      "heroTitle": "<accent>The KOL command center</accent><br></br>for global game studios.",
+      "heroSubtitle": "Across YouTube, TikTok, Twitch, and Bilibili — gaming KOL operations purpose-built for studios going global.",
+      "chipCreators": "2,500+ gaming creators",
+      "chipMatch": "AI-powered KOL × Product matching",
+      "chipLocales": "EN · ZH · JA · KO · ES",
       "welcomeBack": "Welcome back",
       "welcomeSubtitle": "Sign in to continue your outreach",
       "emailLabel": "Email address",
@@ -524,9 +522,8 @@
     },
     "aiSuggestions": {
       "heading": "AI Suggestions",
-      "comingTag": "Coming with B2",
-      "body": "Once B2 ships, the matcher will surface KOLs whose audience overlap maximises your active campaign goals. For now, browse the discovery library to seed candidate lists by hand.",
-      "cta": "Suggest matching KOLs"
+      "body": "AI Suggestions are now live on each campaign — open any campaign to see personalized matches.",
+      "cta": "View campaigns"
     },
     "filters": {
       "search": "Search",

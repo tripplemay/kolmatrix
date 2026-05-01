@@ -35,14 +35,12 @@
   },
   "auth": {
     "login": {
-      "eyebrow": "크리에이터 운영 · 2026",
-      "heroTitle": "글로벌 KOL 캠페인을<br></br><accent>런치 데이처럼</accent> 실행하세요.",
-      "heroSubtitle": "YouTube, TikTok, Twitch, Bilibili 등 800,000명 이상의 검증된 크리에이터를 한 곳에서 발견하고 점수 매기며 협력할 수 있습니다.",
-      "chipCreators": "850,000명 이상의 크리에이터 인덱싱됨",
-      "chipMatch": "AI 매칭 정확도 94%",
-      "chipLocales": "9개 지역 · 24/7 운영",
-      "chipStudios": "200개 이상의 스튜디오가 믿고 사용합니다",
-      "trustedBy": "다음과 함께 일하는 크리에이터들이 믿습니다",
+      "eyebrow": "게임 KOL 운영 · 2026",
+      "heroTitle": "<accent>KOL 커맨드 센터</accent><br></br>글로벌 게임 스튜디오를 위한.",
+      "heroSubtitle": "YouTube, TikTok, Twitch, Bilibili — 글로벌 진출을 목표로 하는 게임 스튜디오를 위한 KOL 운영 플랫폼.",
+      "chipCreators": "2,500+ 게임 크리에이터",
+      "chipMatch": "AI 기반 KOL × 제품 매칭",
+      "chipLocales": "EN · ZH · JA · KO · ES",
       "welcomeBack": "환영합니다",
       "welcomeSubtitle": "로그인하여 아웃리치를 계속하세요",
       "emailLabel": "이메일 주소",
@@ -523,10 +521,9 @@
       "reachForecast": "도달 예측"
     },
     "aiSuggestions": {
-      "heading": "AI 제안",
-      "comingTag": "B2 버전에서 제공됩니다.",
-      "body": "B2 버전이 출시되면 매처가 대상 그룹이 겹치는 KOL을 찾아내어 활성 캠페인 목표를 최대화합니다. 현재는 발견 라이브러리를 탐색하여 후보 목록을 수동으로 생성하세요.",
-      "cta": "일치하는 KOL 제안"
+      "heading": "AI 추천",
+      "body": "AI 추천이 각 캠페인에서 제공됩니다. 캠페인을 열어 개인화된 매칭을 확인하세요.",
+      "cta": "캠페인 보기"
     },
     "filters": {
       "search": "검색",

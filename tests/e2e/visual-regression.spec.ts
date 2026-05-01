@@ -584,6 +584,23 @@ test.describe("Auth cinematic — visual regression", () => {
     });
   });
 
+  test("/zh/login full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
+    test.skip(
+      shouldSkipMissingBaseline("zh-login.png", test.info()),
+      "Baseline zh-login.png missing — run the 'Update visual baselines' workflow."
+    );
+    await page.goto("/zh/login");
+    await page.waitForSelector('input[name="email"]');
+    await fontsReady(page);
+
+    await expect(page).toHaveScreenshot("zh-login.png", {
+      fullPage: true,
+      animations: "disabled",
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
+  });
+
   test("/en/request-access full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
       shouldSkipMissingBaseline("en-request-access.png", test.info()),

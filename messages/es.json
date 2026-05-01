@@ -35,14 +35,12 @@
   },
   "auth": {
     "login": {
-      "eyebrow": "OPERACIONES DE CREADORES · 2026",
-      "heroTitle": "Ejecuta campañas globales de KOL<br></br><accent>como un día de lanzamiento.</accent>",
-      "heroSubtitle": "Descubre, puntúa y coordina con más de 800K creadores verificados en YouTube, TikTok, Twitch y Bilibili, desde un único centro de mando.",
-      "chipCreators": "Más de 850K creadores indexados",
-      "chipMatch": "Precisión de coincidencia de IA 94%",
-      "chipLocales": "9 idiomas · Operaciones 24/7",
-      "chipStudios": "Más de 200 estudios confían en nosotros",
-      "trustedBy": "CONFIADO POR CREADORES QUE TRABAJAN CON",
+      "eyebrow": "OPERACIONES KOL DE JUEGOS · 2026",
+      "heroTitle": "<accent>El centro de mando KOL</accent><br></br>para estudios de juegos globales.",
+      "heroSubtitle": "En YouTube, TikTok, Twitch y Bilibili — operaciones KOL de juegos diseñadas para estudios con alcance global.",
+      "chipCreators": "2,500+ creadores de juegos",
+      "chipMatch": "Emparejamiento KOL × Producto con IA",
+      "chipLocales": "EN · ZH · JA · KO · ES",
       "welcomeBack": "Bienvenido de nuevo",
       "welcomeSubtitle": "Inicia sesión para continuar con tu contacto",
       "emailLabel": "Dirección de correo electrónico",
@@ -523,10 +521,9 @@
       "reachForecast": "Alcance Pronosticado"
     },
     "aiSuggestions": {
-      "heading": "Sugerencias de AI",
-      "comingTag": "Llega con B2",
-      "body": "Una vez que se lance B2, el emparejador sugerirá KOLs cuyo solapamiento de audiencia maximice los objetivos de su campaña activa. Por ahora, explore la biblioteca de Descubrimiento para sembrar listas de candidatos manualmente.",
-      "cta": "Sugerir KOLs coincidentes"
+      "heading": "Sugerencias de IA",
+      "body": "Las sugerencias de IA ya están disponibles en cada campaña — abre cualquier campaña para ver coincidencias personalizadas.",
+      "cta": "Ver campañas"
     },
     "filters": {
       "search": "Buscar",
