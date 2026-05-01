@@ -50,7 +50,7 @@ type: reference
 | 地区 | asia-northeast1-b（东京） |
 | 外网 IP | `34.180.93.185` |
 | 主机名 | `instance-20260403-154049` |
-| SSH | `ssh tripplezhou@34.180.93.185`（sudo passwordless） |
+| SSH | `ssh tripplezhou@34.180.93.185`（sudo passwordless）— 2026-05-01 起本机 WSL2 默认 KEX 已通（`~/.ssh/config` 加 `KexAlgorithms -sntrup761x25519-sha512@openssh.com,sntrup761x25519-sha512` 从默认列表减掉 buggy KEX；不再需 `-o KexAlgorithms=curve25519-sha256` workaround）。`~/.ssh/sockets/` 目录已建（ControlMaster 多路复用启用） |
 | 部署路径 | `/opt/kolmatrix`（git clone from GitHub，`core.sshCommand` 锁 `~/.ssh/id_ed25519_github`） |
 | 备份路径 | `/opt/kolmatrix-backups`（tripplezhou:tripplezhou 0755） |
 | 日志路径 | `/var/log/pm2/kolmatrix-{out,error}.log` |
