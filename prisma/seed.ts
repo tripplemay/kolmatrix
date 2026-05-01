@@ -685,10 +685,12 @@ async function main() {
     "PUBG Mobile — Season 30": ["kaibytes", "zeralite", "forgefalcon"],
   };
   const kolByHandle = new Map<string, string>(
-    (await prisma.kol.findMany({
-      where: { tenantId: tenant.id, handle: { in: KOLS.map((k) => k.handle) } },
-      select: { id: true, handle: true },
-    })).map((row) => [row.handle, row.id])
+    (
+      await prisma.kol.findMany({
+        where: { tenantId: tenant.id, handle: { in: KOLS.map((k) => k.handle) } },
+        select: { id: true, handle: true },
+      })
+    ).map((row) => [row.handle, row.id])
   );
   let linkedKolCampaignCount = 0;
   for (const [campaignName, handles] of Object.entries(KOL_CAMPAIGN_SEEDS)) {
