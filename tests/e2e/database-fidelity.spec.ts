@@ -113,12 +113,12 @@ test.describe("/database fidelity (MVP-vf-F003)", () => {
     });
     await expect(page.getByTestId("bulk-bar-count")).toHaveText("1");
 
-    // Email + Delete actions must be disabled with tooltips while
-    // the bar is up — once mounted, those props are stable, so we
-    // pile this assertion onto the same selection action rather than
-    // double-clicking in a sibling test.
+    // BIx-mvp-polish-pass F002 P1-4: Email button is now active and
+    // routes to /outreach with `?kolIds=` preselection. Delete keeps
+    // the disabled placeholder until B6 ships destructive bulk actions.
     const email = page.getByTestId("bulk-bar-email");
-    await expect(email).toBeDisabled();
+    await expect(email).toBeVisible();
+    await expect(email).toBeEnabled();
     expect(await email.getAttribute("title")).toBeTruthy();
     const del = page.getByTestId("bulk-bar-delete");
     await expect(del).toBeDisabled();

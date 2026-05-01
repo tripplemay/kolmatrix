@@ -108,20 +108,23 @@ describe("sendEmail — real SDK", () => {
 // ---------------------------------------------------------------------------
 
 describe("sendEmail — production fail-fast (BIx-vf F002 P1-9)", () => {
-  const originalNodeEnv = process.env.NODE_ENV;
+  // @types/node 20 declares process.env.NODE_ENV as a literal read-only
+  // type; we need to bypass it for tests that toggle the env. Cast
+  // through `as Record<string, string | undefined>` so the test file
+  // compiles under strict ts.
+  const env = process.env as Record<string, string | undefined>;
+  const originalNodeEnv = env.NODE_ENV;
 
   afterEach(() => {
     if (originalNodeEnv === undefined) {
-      // NODE_ENV is typed as read-only by Node 20's @types/node; use
-      // Reflect to bypass the literal-type guard rather than `delete`.
-      Reflect.deleteProperty(process.env, "NODE_ENV");
+      Reflect.deleteProperty(env, "NODE_ENV");
     } else {
-      process.env.NODE_ENV = originalNodeEnv;
+      env.NODE_ENV = originalNodeEnv;
     }
   });
 
   it("throws when NODE_ENV=production and RESEND_API_KEY is unset", async () => {
-    process.env.NODE_ENV = "production";
+    env.NODE_ENV = "production";
     delete process.env.RESEND_API_KEY;
     const { sendEmail } = await importFresh();
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
@@ -137,7 +140,7 @@ describe("sendEmail — production fail-fast (BIx-vf F002 P1-9)", () => {
   });
 
   it("throws when NODE_ENV=production and RESEND_API_KEY is a known placeholder", async () => {
-    process.env.NODE_ENV = "production";
+    env.NODE_ENV = "production";
     process.env.RESEND_API_KEY = "placeholder-do-not-use";
     const { sendEmail } = await importFresh();
     await expect(
@@ -150,7 +153,7 @@ describe("sendEmail — production fail-fast (BIx-vf F002 P1-9)", () => {
   });
 
   it("still allows mock_sent in dev (NODE_ENV != production) when key is missing", async () => {
-    process.env.NODE_ENV = "development";
+    env.NODE_ENV = "development";
     delete process.env.RESEND_API_KEY;
     const { sendEmail } = await importFresh();
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
