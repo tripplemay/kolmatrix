@@ -46,7 +46,7 @@
       "title": "Dashboard 真数据替换 mock（EmailPerformanceCard + RecentActivityCard）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "EmailPerformanceCard 改造：新增 src/lib/dashboard/email-performance.ts 从 EmailLog 表 14 天聚合（按 createdAt 切桶；status='sent' 计 sent；openedAt!=null 计 opened；replyAt!=null 计 replied）；空数据 friendly empty state 'Send your first batch via /outreach to see performance trends'；删除 src/features/dashboard/mocks.ts 中 EMAIL_PERFORMANCE_DATA。RecentActivityCard 改造：新增 src/lib/dashboard/recent-activity.ts 从 AuditLog 表 query 当前 tenant 最近 5 条 ORDER BY created_at DESC LIMIT 5；i18n 自然语言转译（kol.relationship_status_changed / campaign.created / kol.email_updated 等 action）；空数据 friendly empty state 'Activity from your team will appear here'；删除 RECENT_ACTIVITIES；如 mocks.ts 全空则删整个文件。i18n keys 新增 en/zh + 跑 i18n:translate 补 ja/ko/es；tests/integration/dashboard-real-data.test.ts 验证 EmailLog → 14 天聚合 + AuditLog → 自然语言转译；staging git_sha 与本 commit 一致。"
     },
     {

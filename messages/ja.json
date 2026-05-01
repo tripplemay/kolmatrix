@@ -130,6 +130,26 @@
     "seeMatrix": "マトリックスを見る",
     "emailPerformance": "メールのパフォーマンス",
     "recentActivity": "最近の活動",
+    "workflow": {
+      "title": "KOLマーケティングワークフロー",
+      "addProduct": "製品を追加",
+      "findKol": "KOLを探す",
+      "createCampaign": "キャンペーン作成",
+      "sendEmails": "メール送信",
+      "recordRevenue": "収益を記録",
+      "viewRoi": "ROIを確認"
+    },
+    "cpi": {
+      "title": "ジャンル別CPIベンチマーク",
+      "myLabel": "自社CPI",
+      "cpiLabel": "CPI",
+      "sampleBadge": "サンプルデータ",
+      "source": "出典：業界ベンチマーク Q1 2025（AppsFlyer / Sensor Tower）"
+    },
+    "roi": {
+      "title": "30日間のROIトレンド",
+      "empty": "ROIデータがまだありません。キャンペーンを完了するとトレンドが表示されます。"
+    },
     "emailPerformanceEmpty": "/outreach から最初のバッチを送信すると、パフォーマンストレンドがここに表示されます。",
     "recentActivityEmpty": "チームの操作履歴がここに表示されます。",
     "activity": {

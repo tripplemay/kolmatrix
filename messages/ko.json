@@ -130,6 +130,26 @@
     "seeMatrix": "매트릭스 보기",
     "emailPerformance": "이메일 성과",
     "recentActivity": "최근 활동",
+    "workflow": {
+      "title": "KOL 마케팅 워크플로우",
+      "addProduct": "제품 추가",
+      "findKol": "KOL 찾기",
+      "createCampaign": "캠페인 생성",
+      "sendEmails": "이메일 발송",
+      "recordRevenue": "수익 기록",
+      "viewRoi": "ROI 확인"
+    },
+    "cpi": {
+      "title": "장르별 CPI 벤치마크",
+      "myLabel": "내 CPI",
+      "cpiLabel": "CPI",
+      "sampleBadge": "샘플 데이터",
+      "source": "출처: 업계 벤치마크 Q1 2025 (AppsFlyer / Sensor Tower)"
+    },
+    "roi": {
+      "title": "30일 ROI 트렌드",
+      "empty": "아직 ROI 데이터가 없습니다. 캠페인을 완료하면 트렌드를 확인할 수 있습니다."
+    },
     "emailPerformanceEmpty": "/outreach에서 첫 번째 배치를 발송하면 성과 트렌드가 여기에 표시됩니다.",
     "recentActivityEmpty": "팀의 활동 내역이 여기에 표시됩니다.",
     "activity": {

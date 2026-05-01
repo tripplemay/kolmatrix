@@ -21,7 +21,7 @@ export function EmailPerformanceCard({ data }: Props) {
   const t = useTranslations("dashboard");
   const isEmpty = data.every((p) => p.sent === 0 && p.opened === 0 && p.replied === 0);
   return (
-    <GlassPanel padding="md" rounded="2xl" tone="neutral">
+    <GlassPanel padding="md" rounded="2xl" tone="neutral" data-testid="dashboard-email-perf">
       <SectionHeader title={t("emailPerformance")} as="h3" className="mb-3" />
       {isEmpty ? (
         <p className="text-on-surface-variant py-10 text-center text-xs">

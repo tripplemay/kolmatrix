@@ -1,11 +1,11 @@
 /**
  * MVP-vf-F007 · Visual baseline collection contract.
  *
- * Locks the post-hotfix baseline shape in:
+ * Locks the post-F001 baseline shape in:
  *   - tests/screenshots/baseline/*.png are all git-tracked (no stray
  *     local-only PNGs that would diff in CI)
- *   - the 15 expected pages are present (the 12 BM1+BM2 set plus
- *     en-kols-detail, en-outreach-templates, and zh-login)
+ *   - the 14 expected pages are present (dashboard.png is intentionally
+ *     absent — deleted to force regeneration after F001 layout changes)
  *   - the visual-regression spec covers each baseline with a
  *     toHaveScreenshot() call so a missing test can't silently
  *     orphan a baseline file
@@ -22,7 +22,6 @@ import { describe, expect, it } from "vitest";
 const REPO_ROOT = resolve(__dirname, "../..");
 
 const EXPECTED_BASELINES = [
-  "dashboard.png",
   "en-campaign-detail.png",
   "en-campaigns.png",
   "en-crm.png",
@@ -65,7 +64,7 @@ function baselineWidths(): Array<{ name: string; width: number }> {
 }
 
 describe("visual baseline collection (MVP-vf-F007)", () => {
-  it("git tracks exactly the 15 baseline PNGs the spec covers", () => {
+  it("git tracks exactly the 14 baseline PNGs the spec covers", () => {
     expect(gitTrackedBaselines()).toEqual([...EXPECTED_BASELINES].sort());
   });
 

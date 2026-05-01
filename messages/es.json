@@ -130,6 +130,26 @@
     "seeMatrix": "Ver Matrix",
     "emailPerformance": "Rendimiento de Correo Electrónico",
     "recentActivity": "Actividad Reciente",
+    "workflow": {
+      "title": "Flujo de Trabajo de Marketing KOL",
+      "addProduct": "Añadir Producto",
+      "findKol": "Encontrar KOLs",
+      "createCampaign": "Crear Campaña",
+      "sendEmails": "Enviar Correos",
+      "recordRevenue": "Registrar Ingresos",
+      "viewRoi": "Ver ROI"
+    },
+    "cpi": {
+      "title": "Benchmarks de CPI por Género",
+      "myLabel": "Mi CPI",
+      "cpiLabel": "CPI",
+      "sampleBadge": "Datos de muestra",
+      "source": "Fuente: Benchmarks del sector Q1 2025 (AppsFlyer / Sensor Tower)"
+    },
+    "roi": {
+      "title": "Tendencia de ROI 30 días",
+      "empty": "Aún no hay datos de ROI. Completa una campaña para ver tu tendencia."
+    },
     "emailPerformanceEmpty": "Envía tu primer lote desde /outreach para ver las tendencias de rendimiento.",
     "recentActivityEmpty": "La actividad de tu equipo aparecerá aquí.",
     "activity": {

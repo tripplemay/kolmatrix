@@ -130,6 +130,26 @@
     "seeMatrix": "查看矩阵",
     "emailPerformance": "邮件表现",
     "recentActivity": "最近动态",
+    "workflow": {
+      "title": "KOL 营销工作流",
+      "addProduct": "录入产品",
+      "findKol": "找 KOL",
+      "createCampaign": "创建活动",
+      "sendEmails": "发送邮件",
+      "recordRevenue": "录入收益",
+      "viewRoi": "查看 ROI"
+    },
+    "cpi": {
+      "title": "各品类 CPI 基准对比",
+      "myLabel": "我的 CPI",
+      "cpiLabel": "CPI",
+      "sampleBadge": "示例数据",
+      "source": "数据来源：行业基准 Q1 2025（AppsFlyer / Sensor Tower）"
+    },
+    "roi": {
+      "title": "30 天 ROI 趋势",
+      "empty": "暂无 ROI 数据。完成一个活动后即可查看趋势。"
+    },
     "emailPerformanceEmpty": "通过 /outreach 发送第一个邮件批次，即可在此查看效果趋势。",
     "recentActivityEmpty": "团队的操作动态将在此显示。",
     "activity": {

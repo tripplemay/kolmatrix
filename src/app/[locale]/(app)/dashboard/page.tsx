@@ -4,11 +4,14 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { GhostButton, KolCard, SecondaryButton, SectionHeader } from "@/components/common";
 import { ActiveCampaignsSection } from "@/features/dashboard/ActiveCampaignsSection";
+import { CompetitorCpiCard } from "@/features/dashboard/CompetitorCpiCard";
+import { DashboardRoiTrendCard } from "@/features/dashboard/DashboardRoiTrendCard";
 import { EmailPerformanceCard } from "@/features/dashboard/EmailPerformanceCard";
 import { GreetingBar } from "@/features/dashboard/GreetingBar";
 import { KpiRow } from "@/features/dashboard/KpiRow";
 import { QuickActions } from "@/features/dashboard/QuickActions";
 import { RecentActivityCard } from "@/features/dashboard/RecentActivityCard";
+import { WorkflowSteps } from "@/features/dashboard/WorkflowSteps";
 import { isLocale, routing } from "@/i18n/routing";
 import { fetchEmailPerformance } from "@/lib/dashboard/email-performance";
 import {
@@ -17,6 +20,7 @@ import {
   resolveActivityMeta,
 } from "@/lib/dashboard/recent-activity";
 import { withTenant } from "@/lib/db";
+import { loadRoiTrend } from "@/lib/roi/queries";
 
 import { fetchDashboardData, mapCampaign, mapKol } from "./data";
 
@@ -32,9 +36,14 @@ export default async function DashboardPage({ params }: Props) {
   const session = await auth();
   const tenantId = session?.user.tenantId;
   if (!tenantId) redirect("/login");
-  const [d, emailPerf, rawActivity] = await withTenant(tenantId, (tx) =>
-    Promise.all([fetchDashboardData(tx), fetchEmailPerformance(tx), fetchRecentActivity(tx)])
-  );
+
+  const [[d, emailPerf, rawActivity], roiTrend] = await Promise.all([
+    withTenant(tenantId, (tx) =>
+      Promise.all([fetchDashboardData(tx), fetchEmailPerformance(tx), fetchRecentActivity(tx)])
+    ),
+    loadRoiTrend(tenantId, 30),
+  ]);
+
   const t = await getTranslations("dashboard");
   const activityItems = rawActivity.map((row) => {
     const meta = resolveActivityMeta(row.action);
@@ -46,6 +55,8 @@ export default async function DashboardPage({ params }: Props) {
       time: formatRelativeTime(row.createdAt),
     };
   });
+
+  const roiDataCount = roiTrend.filter((p) => p.roiPercent !== null).length;
   const dateLabel = new Date().toLocaleDateString(locale, {
     month: "long",
     day: "numeric",
@@ -63,6 +74,21 @@ export default async function DashboardPage({ params }: Props) {
         productCount={d.productCount}
         avgValueScore={d.avgValueScore}
       />
+
+      {/* F001: 3 new dashboard elements */}
+      <WorkflowSteps
+        productCount={d.productCount}
+        kolCount={d.kolCount}
+        campaignTotal={d.campaignTotal}
+        emailTotal={d.emailTotal}
+        revenueCount={d.campaignsWithRevenue}
+        roiDataCount={roiDataCount}
+      />
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <CompetitorCpiCard />
+        <DashboardRoiTrendCard trend={roiTrend} />
+      </div>
+
       <QuickActions locale={locale} />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-8 lg:col-span-2">

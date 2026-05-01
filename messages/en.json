@@ -130,6 +130,26 @@
     "seeMatrix": "See Matrix",
     "emailPerformance": "Email Performance",
     "recentActivity": "Recent Activity",
+    "workflow": {
+      "title": "Your KOL Marketing Workflow",
+      "addProduct": "Add Product",
+      "findKol": "Find KOLs",
+      "createCampaign": "Create Campaign",
+      "sendEmails": "Send Emails",
+      "recordRevenue": "Record Revenue",
+      "viewRoi": "View ROI"
+    },
+    "cpi": {
+      "title": "CPI Benchmarks by Genre",
+      "myLabel": "My CPI",
+      "cpiLabel": "CPI",
+      "sampleBadge": "Sample data",
+      "source": "Source: Industry benchmarks Q1 2025 (AppsFlyer / Sensor Tower)"
+    },
+    "roi": {
+      "title": "30-Day ROI Trend",
+      "empty": "No ROI data yet. Complete a campaign to see your trend."
+    },
     "emailPerformanceEmpty": "Send your first batch via /outreach to see performance trends.",
     "recentActivityEmpty": "Activity from your team will appear here.",
     "activity": {

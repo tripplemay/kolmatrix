@@ -155,16 +155,21 @@ test.describe("Authenticated BM1 visual regression", () => {
     await fontsReady(page);
 
     // Greeting subtitle bakes in today's date; KPI values roll with
-    // seeded counts. Mask the dynamic regions and let the surrounding
-    // chrome (layout, typography, panels) be the signal.
+    // seeded counts; email chart distributes by sentAt date bucket
+    // (shifts daily); CPI + workflow steps + ROI are deterministic.
+    // Mask the rolling-window chart and all count-sensitive regions.
     const dateSubtitle = page.getByText(/Here is your global KOL marketing pulse/);
     const kpiRow = page.getByTestId("dashboard-kpi-row");
     const topKols = page.getByTestId("dashboard-top-kols");
+    // email chart data shifts daily with the 14-day window
+    const emailCard = page.getByTestId("dashboard-email-perf");
+    // ROI chart area may show real spend/revenue from seeded campaigns
+    const roiCard = page.getByTestId("dashboard-roi-card");
 
     await expect(page).toHaveScreenshot("dashboard.png", {
       fullPage: true,
       animations: "disabled",
-      mask: [dateSubtitle, kpiRow, topKols],
+      mask: [dateSubtitle, kpiRow, topKols, emailCard, roiCard],
       threshold: 0.02,
       maxDiffPixels: 8000,
     });
