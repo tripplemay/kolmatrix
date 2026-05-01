@@ -104,19 +104,21 @@ describe("customizeEmail", () => {
   // not respond" — exactly Reviewer's prod L2 round-2 blocker. Lock
   // the wire-format key set + the key→input mapping so future renames
   // surface as a unit-test failure, not a prod outage.
+  //
+  // Drives via fetchMock body inspection — the same pattern works
+  // because fetchMock is the only fetch the env sees once
+  // vi.stubGlobal lands at file-import time.
   it("sends the canonical kol-email-customize variable contract", async () => {
-    fetchMock.mockResolvedValueOnce(
-      jsonResponse({
-        output: '{"subject":"S","body":"B"}',
-      })
-    );
+    let capturedBody: unknown = undefined;
+    fetchMock.mockImplementationOnce(async (_url, init) => {
+      capturedBody = JSON.parse(String((init as RequestInit).body));
+      return jsonResponse({ output: '{"subject":"S","body":"B"}' });
+    });
     const { customizeEmail } = await importCustomize();
     await customizeEmail(baseInput);
+
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const callArgs = fetchMock.mock.calls[0] as [unknown, RequestInit];
-    const init = callArgs[1];
-    expect(init).toBeDefined();
-    const body = JSON.parse(String(init.body)) as {
+    const body = capturedBody as {
       action_id: string;
       stream: boolean;
       variables: Record<string, string>;
