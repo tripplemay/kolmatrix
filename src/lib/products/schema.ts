@@ -27,17 +27,14 @@ export const createProductSchema = z
   .object({
     name: z.string().trim().min(1, "nameRequired").max(200),
     category: z.string().trim().min(1, "categoryRequired").max(80),
-    targetAudience: trimmedOptional(2000),
+    targetAudience: z.string().trim().min(1, "targetAudienceRequired").max(2000),
     uniqueSellingPoints: z.string().trim().min(1, "uspRequired").max(4000),
     downloadUrl: z
       .string()
       .trim()
       .optional()
       .transform((v) => (v && v.length > 0 ? v : undefined))
-      .refine(
-        (v) => !v || /^https?:\/\//i.test(v),
-        { message: "downloadUrlInvalid" }
-      )
+      .refine((v) => !v || /^https?:\/\//i.test(v), { message: "downloadUrlInvalid" })
       .refine(
         (v) => {
           if (!v) return true;
@@ -55,10 +52,7 @@ export const createProductSchema = z
       .trim()
       .optional()
       .transform((v) => (v && v.length > 0 ? v : undefined))
-      .refine(
-        (v) => !v || !Number.isNaN(Date.parse(v)),
-        { message: "launchDateInvalid" }
-      ),
+      .refine((v) => !v || !Number.isNaN(Date.parse(v)), { message: "launchDateInvalid" }),
     platforms: z.array(z.enum(PRODUCT_PLATFORMS)).default([]),
     generateImmediately: z.boolean().default(false),
   })

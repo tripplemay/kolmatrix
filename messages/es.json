@@ -216,7 +216,8 @@
       "downloadUrlInvalid": "Introduzca una URL válida que comience por http:// o https://",
       "launchDateInvalid": "La fecha de lanzamiento no es válida.",
       "platformsInvalid": "Seleccione al menos una plataforma.",
-      "generic": "No se pudo guardar el producto. Por favor, inténtelo de nuevo."
+      "generic": "No se pudo guardar el producto. Por favor, inténtelo de nuevo.",
+      "targetAudienceRequired": "El público objetivo es obligatorio."
     },
     "mockActivity": {
       "heading1": "Honor of Kings T2",

@@ -9,14 +9,7 @@
  * the modal closes and the page re-fetches via revalidatePath().
  */
 import { useTranslations } from "next-intl";
-import {
-  useActionState,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type MouseEvent,
-} from "react";
+import { useActionState, useEffect, useId, useRef, useState, type MouseEvent } from "react";
 
 import { cn } from "@/lib/utils";
 import { PRODUCT_PLATFORMS, type ProductPlatform } from "@/lib/products/schema";
@@ -117,11 +110,7 @@ export function ProductModal({ onClose, onCreated, product }: Props) {
 
         <div className="flex-1 space-y-7 overflow-y-auto px-8 py-8">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            <FieldLabel
-              label={t("modal.nameLabel")}
-              required
-              error={fieldErr("name")}
-            >
+            <FieldLabel label={t("modal.nameLabel")} required error={fieldErr("name")}>
               <input
                 type="text"
                 name="name"
@@ -133,11 +122,7 @@ export function ProductModal({ onClose, onCreated, product }: Props) {
                 aria-invalid={Boolean(state.fieldErrors?.name)}
               />
             </FieldLabel>
-            <FieldLabel
-              label={t("modal.categoryLabel")}
-              required
-              error={fieldErr("category")}
-            >
+            <FieldLabel label={t("modal.categoryLabel")} required error={fieldErr("category")}>
               <input
                 type="text"
                 name="category"
@@ -156,8 +141,7 @@ export function ProductModal({ onClose, onCreated, product }: Props) {
             <div className="flex flex-wrap gap-2">
               {PRODUCT_PLATFORMS.map((p) => {
                 const active = platforms.includes(p);
-                const labelKey =
-                  `modal.platform${p.charAt(0).toUpperCase()}${p.slice(1)}` as const;
+                const labelKey = `modal.platform${p.charAt(0).toUpperCase()}${p.slice(1)}` as const;
                 return (
                   <button
                     type="button"
@@ -181,14 +165,20 @@ export function ProductModal({ onClose, onCreated, product }: Props) {
             ))}
           </div>
 
-          <FieldLabel label={t("modal.targetAudienceLabel")}>
+          <FieldLabel
+            label={t("modal.targetAudienceLabel")}
+            required
+            error={fieldErr("targetAudience")}
+          >
             <textarea
               name="targetAudience"
               defaultValue={product?.targetAudience ?? ""}
               placeholder={t("modal.targetAudiencePlaceholder")}
+              required
               maxLength={2000}
               rows={3}
               className={cn(BOXED_TEXTAREA, "h-24")}
+              aria-invalid={Boolean(state.fieldErrors?.targetAudience)}
             />
           </FieldLabel>
 
@@ -211,10 +201,7 @@ export function ProductModal({ onClose, onCreated, product }: Props) {
           </FieldLabel>
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            <FieldLabel
-              label={t("modal.downloadUrlLabel")}
-              error={fieldErr("downloadUrl")}
-            >
+            <FieldLabel label={t("modal.downloadUrlLabel")} error={fieldErr("downloadUrl")}>
               <input
                 type="url"
                 name="downloadUrl"
@@ -224,10 +211,7 @@ export function ProductModal({ onClose, onCreated, product }: Props) {
                 aria-invalid={Boolean(state.fieldErrors?.downloadUrl)}
               />
             </FieldLabel>
-            <FieldLabel
-              label={t("modal.launchDateLabel")}
-              error={fieldErr("launchDate")}
-            >
+            <FieldLabel label={t("modal.launchDateLabel")} error={fieldErr("launchDate")}>
               <input
                 type="date"
                 name="launchDate"
@@ -245,21 +229,19 @@ export function ProductModal({ onClose, onCreated, product }: Props) {
               {globalError}
             </p>
           ) : null}
-          <p className="text-[11px] text-on-surface-variant/60">
-            {t("modal.requiredNote")}
-          </p>
+          <p className="text-on-surface-variant/60 text-[11px]">{t("modal.requiredNote")}</p>
         </div>
 
-        <div className="flex items-center justify-between border-t border-white/5 bg-surface-lowest px-8 py-6">
+        <div className="bg-surface-lowest flex items-center justify-between border-t border-white/5 px-8 py-6">
           <label className="group flex cursor-pointer items-center gap-3">
             <input
               type="checkbox"
               name="generateImmediately"
               checked={generate}
               onChange={(e) => setGenerate(e.target.checked)}
-              className="h-4 w-4 rounded border-outline-variant bg-surface-high text-cyan focus:ring-offset-background"
+              className="border-outline-variant bg-surface-high text-cyan focus:ring-offset-background h-4 w-4 rounded"
             />
-            <span className="text-[13px] text-on-surface-variant transition-colors group-hover:text-on-surface">
+            <span className="text-on-surface-variant group-hover:text-on-surface text-[13px] transition-colors">
               {t("modal.generateToggle")}
             </span>
           </label>
@@ -267,7 +249,7 @@ export function ProductModal({ onClose, onCreated, product }: Props) {
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2 text-sm font-semibold text-on-surface-variant transition-colors hover:text-white"
+              className="text-on-surface-variant px-5 py-2 text-sm font-semibold transition-colors hover:text-white"
               disabled={pending}
             >
               {t("modal.cancel")}
@@ -275,7 +257,7 @@ export function ProductModal({ onClose, onCreated, product }: Props) {
             <button
               type="submit"
               disabled={pending}
-              className="gradient-cta rounded-xl px-8 py-2.5 text-sm font-bold text-on-primary shadow-lg shadow-cyan/20 disabled:cursor-not-allowed disabled:opacity-60"
+              className="gradient-cta text-on-primary shadow-cyan/20 rounded-xl px-8 py-2.5 text-sm font-bold shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
             >
               {pending
                 ? t("modal.submitting")
@@ -302,9 +284,9 @@ interface FieldLabelProps {
 
 function LabelTag({ label, required }: { label: string; required?: boolean }) {
   return (
-    <label className="text-[11px] font-bold uppercase tracking-wider text-cyan-fixed">
+    <label className="text-cyan-fixed text-[11px] font-bold tracking-wider uppercase">
       {label}
-      {required ? <span className="ml-1 text-cyan">*</span> : null}
+      {required ? <span className="text-cyan ml-1">*</span> : null}
     </label>
   );
 }
@@ -314,9 +296,7 @@ function FieldLabel({ label, required, error, hint, children }: FieldLabelProps)
     <div className="space-y-1.5">
       <LabelTag label={label} required={required} />
       {children}
-      {hint && !error ? (
-        <p className="text-[11px] text-on-surface-variant/70">{hint}</p>
-      ) : null}
+      {hint && !error ? <p className="text-on-surface-variant/70 text-[11px]">{hint}</p> : null}
       {error ? (
         <p className="text-[11px] text-rose-400" role="alert">
           {error}

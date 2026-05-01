@@ -216,7 +216,8 @@
       "downloadUrlInvalid": "http:// または https:// で始まる有効なURLを入力してください",
       "launchDateInvalid": "リリース日が無効です。",
       "platformsInvalid": "少なくとも1つのプラットフォームを選択してください。",
-      "generic": "製品を保存できませんでした。もう一度試してください。"
+      "generic": "製品を保存できませんでした。もう一度試してください。",
+      "targetAudienceRequired": "ターゲットオーディエンスは必須です。"
     },
     "mockActivity": {
       "heading1": "王者榮耀Q2",

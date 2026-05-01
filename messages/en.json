@@ -216,7 +216,8 @@
       "downloadUrlInvalid": "Enter a valid URL starting with http:// or https://",
       "launchDateInvalid": "Launch date is invalid.",
       "platformsInvalid": "Select at least one platform.",
-      "generic": "Could not save the product. Please retry."
+      "generic": "Could not save the product. Please retry.",
+      "targetAudienceRequired": "Target audience is required."
     },
     "mockActivity": {
       "heading1": "Honor of Kings Q2",

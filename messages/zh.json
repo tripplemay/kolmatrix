@@ -216,7 +216,8 @@
       "downloadUrlInvalid": "请填写以 http:// 或 https:// 开头的有效链接。",
       "launchDateInvalid": "上线日期无效。",
       "platformsInvalid": "请至少选择一个平台。",
-      "generic": "保存失败，请稍后重试。"
+      "generic": "保存失败，请稍后重试。",
+      "targetAudienceRequired": "请填写目标受众。"
     },
     "mockActivity": {
       "heading1": "王者荣耀 Q2",
