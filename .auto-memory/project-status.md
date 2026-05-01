@@ -6,29 +6,26 @@ type: project
 
 # Project Status — KOLMatrix
 
-**Last Updated:** 2026-05-01 (johnsong fix-round 3)
-**Sprint:** MVP-internal-demo-prep | **Status:** reverifying | **fix_rounds:** 3
+**Last Updated:** 2026-05-01 (johnsong fix-round 3 signoff)
+**Sprint:** MVP-internal-demo-prep | **Status:** done | **fix_rounds:** 3
 
-## Reviewer round-2 报告两条缺陷已修
-- **C-10 真因**：customize.ts:toVariables 传 `template_subject`/`template_body`，但 aigcgateway action 期望 `original_subject`/`original_body` → 400 → http_error → "AI service could not respond"。直接 curl prod aigcgateway 确认。修复：重命名 + export `toVariables` + `KOL_EMAIL_CUSTOMIZE_VARIABLE_KEYS` 锁 wire-format contract
-- **C-13**：headless 不触发 beforeprint。修复：handleDownload 在 window.print() 前 dispatch `kolmatrix:weekly-report-download` CustomEvent
+## Final Reviewer signoff
+- `C-10` Outreach AI customize 复验 PASS：`PUBG Mobile — Season 30` campaign 上返回可编辑 preview，`Accept AI` 后 send result 为 `1 sent / 0 mocked / 0 failed`
+- `C-13` Weekly Report 复验 PASS：`Download PDF` 触发 `kolmatrix:weekly-report-download`
+- `F-01` coverage PASS：`97` files / `625` tests
+- `F-02` CI PASS：最新 main deploy / test 流水均 success
+- `F-03` Playwright E2E PASS：`journey-a` / `journey-b`
+- prod health SHA = `6f33a55`
+- `a541f8e` 仅更新状态机与 project-status，不改 runtime
 
-## CI 修复链 (fix-round 3)
-4 commits — 主因 vi.stubGlobal('fetch') 与 MSW 拦截器在 Node 20 互动不可靠。最终方案：导出 toVariables 成 public，contract test 测纯函数，绕开 fetch
+## CI / Runtime
+✅ prod runtime `6f33a55`: healthy / git_sha matches deployed build
+✅ latest CI & deploy workflows: success
+✅ prod smoke runtime validated in browser
 
-## Deploy Status (2026-05-01 fix-round 3)
-✅ Staging 6f33a55: healthy
-✅ Prod 6f33a55: healthy / git_sha = HEAD
-✅ aigcgateway 端到端 curl 验证：200 + valid output（成本 ~$0.002/次）
-
-## Ready for Reviewer Round-3 Reverify
-- prod git_sha = 6f33a55（matches HEAD）
-- 重点验证 C-10（登录→/outreach→AI customize 应返 preview）+ C-13（Download PDF dispatch event listener）
-- 报告路径建议: docs/test-reports/MVP-internal-demo-prep-reverifying-2026-05-01-round-3.md
-
-## 经验沉淀
-- vi.stubGlobal + MSW 不可靠 → 用 server.use() handler 或 public pure-helper unit test
-- aigcgateway action 字段命名漂移须靠 contract test 锁定（本次 BM2-F006 的隐 bug 拖了 4 轮才发现）
+## Current State
+- `status=done`
+- `docs.signoff` 已写入 [`docs/test-reports/MVP-internal-demo-prep-signoff-2026-05-01.md`](../test-reports/MVP-internal-demo-prep-2026-05-01.md)
 
 ## Backlog
 9 entries: BL-003/011/012/014/015/016/017/018/019 + BL-020/021/022 (all Post-MVP)
