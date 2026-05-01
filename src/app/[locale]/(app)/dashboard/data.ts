@@ -87,8 +87,7 @@ export async function fetchDashboardData(tx: TenantPrisma) {
   ]);
 
   const avgRaw = valueScoreAgg._avg.valueScore;
-  const avgValueScore =
-    avgRaw == null ? 0 : Math.round(Number(avgRaw.toString()));
+  const avgValueScore = avgRaw == null ? 0 : Math.round(Number(avgRaw.toString()));
 
   return {
     kolCount,

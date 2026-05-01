@@ -21,14 +21,12 @@ export function DashboardRoiTrendCard({ trend }: Props) {
     <GlassPanel padding="md" rounded="2xl" tone="neutral" data-testid="dashboard-roi-card">
       <div className="mb-3 flex items-baseline justify-between gap-3">
         <SectionHeader title={t("title")} as="h3" />
-        <p className="text-[11px] font-bold uppercase tracking-widest text-cyan/80">
+        <p className="text-cyan/80 text-[11px] font-bold tracking-widest uppercase">
           {tRoi("windowLabel")}
         </p>
       </div>
       {isEmpty ? (
-        <p className="text-on-surface-variant py-14 text-center text-xs">
-          {t("empty")}
-        </p>
+        <p className="text-on-surface-variant py-14 text-center text-xs">{t("empty")}</p>
       ) : (
         <RoiTrendChart
           data={trend}

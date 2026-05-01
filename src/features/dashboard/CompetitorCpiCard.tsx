@@ -25,12 +25,12 @@ import { GlassPanel, SectionHeader } from "@/components/common";
 const CPI_DATA = [
   { genre: "Casual", cpi: 0.55 },
   { genre: "Simulation", cpi: 0.95 },
-  { genre: "MOBA", cpi: 1.20 },
+  { genre: "MOBA", cpi: 1.2 },
   { genre: "Sports", cpi: 1.65 },
-  { genre: "Card/CCG", cpi: 1.90 },
-  { genre: "FPS/BR", cpi: 2.10 },
-  { genre: "Strategy", cpi: 3.20 },
-  { genre: "Open World", cpi: 3.80 },
+  { genre: "Card/CCG", cpi: 1.9 },
+  { genre: "FPS/BR", cpi: 2.1 },
+  { genre: "Strategy", cpi: 3.2 },
+  { genre: "Open World", cpi: 3.8 },
 ];
 
 // "My" demo CPI — realistic for a mixed MOBA/Strategy portfolio.
@@ -39,16 +39,15 @@ const MY_CPI = 1.45;
 export function CompetitorCpiCard() {
   const t = useTranslations("dashboard.cpi");
 
-  const chartData = [
-    ...CPI_DATA,
-    { genre: t("myLabel"), cpi: MY_CPI, isMe: true },
-  ].sort((a, b) => a.cpi - b.cpi);
+  const chartData = [...CPI_DATA, { genre: t("myLabel"), cpi: MY_CPI, isMe: true }].sort(
+    (a, b) => a.cpi - b.cpi
+  );
 
   return (
     <GlassPanel padding="md" rounded="2xl" tone="neutral" data-testid="dashboard-cpi-card">
       <div className="mb-3 flex items-start justify-between gap-2">
         <SectionHeader title={t("title")} as="h3" />
-        <span className="shrink-0 rounded-full border border-cyan/30 bg-cyan/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-cyan">
+        <span className="border-cyan/30 bg-cyan/10 text-cyan shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase">
           {t("sampleBadge")}
         </span>
       </div>
@@ -103,7 +102,7 @@ export function CompetitorCpiCard() {
         </BarChart>
       </ResponsiveContainer>
 
-      <p className="mt-2 text-right text-[10px] text-on-surface-variant">{t("source")}</p>
+      <p className="text-on-surface-variant mt-2 text-right text-[10px]">{t("source")}</p>
     </GlassPanel>
   );
 }

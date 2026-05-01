@@ -40,7 +40,7 @@ export function WorkflowSteps({
 
   return (
     <GlassPanel padding="md" rounded="2xl" tone="neutral" data-testid="dashboard-workflow-steps">
-      <h3 className="mb-4 text-sm font-semibold uppercase tracking-widest text-on-surface-variant">
+      <h3 className="text-on-surface-variant mb-4 text-sm font-semibold tracking-widest uppercase">
         {t("title")}
       </h3>
       {/* overflow-x-auto keeps the row scrollable on small screens */}
@@ -59,7 +59,7 @@ export function WorkflowSteps({
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                     step.done
                       ? "border-cyan bg-cyan/15 text-cyan"
-                      : "border-white/20 bg-surface-low text-on-surface-variant"
+                      : "bg-surface-low text-on-surface-variant border-white/20"
                   }`}
                 >
                   <span className="material-symbols-outlined text-[18px]">{step.icon}</span>
@@ -71,7 +71,7 @@ export function WorkflowSteps({
               </div>
               {/* label */}
               <p
-                className={`mt-2 text-center text-[11px] font-medium leading-tight ${
+                className={`mt-2 text-center text-[11px] leading-tight font-medium ${
                   step.done ? "text-white" : "text-on-surface-variant"
                 }`}
               >
