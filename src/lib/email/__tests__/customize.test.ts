@@ -113,8 +113,10 @@ describe("customizeEmail", () => {
     const { customizeEmail } = await importCustomize();
     await customizeEmail(baseInput);
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [, init] = fetchMock.mock.calls[0];
-    const body = JSON.parse(String((init as RequestInit).body)) as {
+    const callArgs = fetchMock.mock.calls[0] as [unknown, RequestInit];
+    const init = callArgs[1];
+    expect(init).toBeDefined();
+    const body = JSON.parse(String(init.body)) as {
       action_id: string;
       stream: boolean;
       variables: Record<string, string>;
