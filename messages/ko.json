@@ -518,7 +518,7 @@
       "selected": "선택됨",
       "addToCampaign": "캠페인에 추가",
       "email": "이메일",
-      "emailTooltip": "이메일 캠페인은 /outreach를 사용하세요.",
+      "emailTooltip": "선택한 KOL에 아웃리치 이메일 작성",
       "delete": "삭제",
       "deleteTooltip": "일괄 삭제는 B6에서 지원됩니다.",
       "clear": "선택 취소"
@@ -572,6 +572,7 @@
       "region": "지역",
       "anyRegion": "모든 지역",
       "owner": "소유자",
+      "anyOwner": "모든 소유자",
       "ownerSoloTenant": "단일 테넌트",
       "ownerTooltip": "테넌트에 여러 자리가 있는 경우 소유자 필터가 활성화됩니다.",
       "dateFrom": "시작일",
@@ -1203,6 +1204,8 @@
     },
     "actions": {
       "downloadPdf": "PDF 다운로드",
+      "downloadPdfTooltip": "인쇄 대화상자에서 'PDF로 저장'을 선택하세요",
+      "downloadPdfToast": "표시되는 인쇄 대화상자에서 'PDF로 저장'을 선택하세요.",
       "share": "공유",
       "regenerate": "다시 생성"
     },

@@ -35,7 +35,8 @@ describe("customizeEmail", () => {
   it("parses a fenced JSON response", async () => {
     fetchMock.mockResolvedValueOnce(
       jsonResponse({
-        output: '```json\n{"subject":"Hello Luna","body":"Made for you","rationale":"personalized"}\n```',
+        output:
+          '```json\n{"subject":"Hello Luna","body":"Made for you","rationale":"personalized"}\n```',
         traceId: "trc_1",
       })
     );
@@ -60,13 +61,9 @@ describe("customizeEmail", () => {
   });
 
   it("throws CustomizeEmailError when API returns 5xx after retry", async () => {
-    fetchMock.mockResolvedValue(
-      jsonResponse({ error: "internal_error" }, 503)
-    );
+    fetchMock.mockResolvedValue(jsonResponse({ error: "internal_error" }, 503));
     const { customizeEmail, CustomizeEmailError } = await importCustomize();
-    await expect(customizeEmail(baseInput)).rejects.toBeInstanceOf(
-      CustomizeEmailError
-    );
+    await expect(customizeEmail(baseInput)).rejects.toBeInstanceOf(CustomizeEmailError);
     expect(fetchMock).toHaveBeenCalledTimes(2); // original + 1 retry
   });
 
@@ -80,9 +77,7 @@ describe("customizeEmail", () => {
   });
 
   it("throws invalid_response when JSON cannot be parsed", async () => {
-    fetchMock.mockResolvedValueOnce(
-      jsonResponse({ output: "not even close to JSON" })
-    );
+    fetchMock.mockResolvedValueOnce(jsonResponse({ output: "not even close to JSON" }));
     const { customizeEmail } = await importCustomize();
     await expect(customizeEmail(baseInput)).rejects.toMatchObject({
       code: "invalid_response",
@@ -96,7 +91,6 @@ describe("customizeEmail", () => {
       code: "missing_env",
     });
   });
-
 });
 
 // ---------------------------------------------------------------------------

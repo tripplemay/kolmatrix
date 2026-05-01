@@ -518,7 +518,7 @@
       "selected": "seleccionados",
       "addToCampaign": "Añadir a Campaña",
       "email": "Correo electrónico",
-      "emailTooltip": "Usa /outreach para campañas de correo electrónico",
+      "emailTooltip": "Redactar outreach para los KOL seleccionados",
       "delete": "Eliminar",
       "deleteTooltip": "La eliminación masiva llega con B6",
       "clear": "Borrar selección"
@@ -572,6 +572,7 @@
       "region": "Región",
       "anyRegion": "Cualquier región",
       "owner": "Propietario",
+      "anyOwner": "Cualquier propietario",
       "ownerSoloTenant": "Inquilino único",
       "ownerTooltip": "El filtro de propietario se activa cuando su inquilino tiene varios asientos",
       "dateFrom": "Desde",
@@ -1203,6 +1204,8 @@
     },
     "actions": {
       "downloadPdf": "Descargar PDF",
+      "downloadPdfTooltip": "Selecciona «Guardar como PDF» en el diálogo de impresión",
+      "downloadPdfToast": "Elige «Guardar como PDF» en el diálogo de impresión que aparezca.",
       "share": "Compartir",
       "regenerate": "Regenerar"
     },

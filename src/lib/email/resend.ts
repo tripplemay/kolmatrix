@@ -36,12 +36,7 @@ export interface SendEmailResult {
 
 export class SendEmailError extends Error {
   constructor(
-    public readonly code:
-      | "invalid_to"
-      | "timeout"
-      | "rate_limited"
-      | "provider_error"
-      | "unknown",
+    public readonly code: "invalid_to" | "timeout" | "rate_limited" | "provider_error" | "unknown",
     message: string
   ) {
     super(message);
@@ -51,9 +46,30 @@ export class SendEmailError extends Error {
 
 function isMockMode(): boolean {
   const key = process.env.RESEND_API_KEY;
-  if (!key) return true;
-  // Common placeholder values should behave like no-key dev setups.
-  if (/^(placeholder|test|mock|re_placeholder)/i.test(key)) return true;
+  if (!key) {
+    // BIx-mvp-polish-pass F002 (P1-9) — fail fast in production rather
+    // than silently mock. Real customer outreach must never silently
+    // disappear into a [EMAIL MOCK] log line. Local dev still
+    // tolerates the missing key (developers don't always have one).
+    if (process.env.NODE_ENV === "production") {
+      throw new SendEmailError(
+        "provider_error",
+        "RESEND_API_KEY missing in production — email send refused; see ADR-010"
+      );
+    }
+    return true;
+  }
+  // Common placeholder values should behave like no-key dev setups,
+  // and likewise refuse to ship in production.
+  if (/^(placeholder|test|mock|re_placeholder)/i.test(key)) {
+    if (process.env.NODE_ENV === "production") {
+      throw new SendEmailError(
+        "provider_error",
+        "RESEND_API_KEY looks like a placeholder in production — refusing to send"
+      );
+    }
+    return true;
+  }
   return false;
 }
 
@@ -68,19 +84,13 @@ function getClient(): Resend {
   return cachedClient;
 }
 
-async function withTimeout<T>(
-  promise: Promise<T>,
-  ms: number
-): Promise<T> {
+async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   let t: NodeJS.Timeout | undefined;
   try {
     return await Promise.race([
       promise,
       new Promise<T>((_, reject) => {
-        t = setTimeout(
-          () => reject(new SendEmailError("timeout", "resend timed out")),
-          ms
-        );
+        t = setTimeout(() => reject(new SendEmailError("timeout", "resend timed out")), ms);
       }),
     ]);
   } finally {
@@ -88,9 +98,7 @@ async function withTimeout<T>(
   }
 }
 
-export async function sendEmail(
-  input: SendEmailInput
-): Promise<SendEmailResult> {
+export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
   if (!/^.+@.+\..+$/.test(input.to)) {
     throw new SendEmailError("invalid_to", `invalid email: ${input.to}`);
   }
@@ -127,8 +135,7 @@ export async function sendEmail(
         if (error) {
           const name = error.name ?? "";
           // Resend SDK error shapes: `rate_limit_exceeded` / `validation_error` / etc.
-          const retryable =
-            /rate_limit|internal_server|timeout|network/i.test(name);
+          const retryable = /rate_limit|internal_server|timeout|network/i.test(name);
           if (!retryable || attempt === 1) {
             throw new SendEmailError(
               name === "rate_limit_exceeded" ? "rate_limited" : "provider_error",
@@ -148,10 +155,7 @@ export async function sendEmail(
           throw err;
         }
         if (attempt === 1) {
-          throw new SendEmailError(
-            "unknown",
-            `resend send failed: ${(err as Error).message}`
-          );
+          throw new SendEmailError("unknown", `resend send failed: ${(err as Error).message}`);
         }
       }
     }

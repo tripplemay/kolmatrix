@@ -103,6 +103,13 @@ interface Labels {
 interface Props {
   data: OutreachComposerData;
   activeCampaignId: string | null;
+  /**
+   * BIx-mvp-polish-pass F002 P1-4: when /database "Email selected"
+   * routes here with `?kolIds=a,b,c`, pre-tick those rows in the
+   * composer KOL list (intersected with the campaign's actually-
+   * selectable rows so we don't tick missing ids).
+   */
+  preselectedKolIds?: string[];
   locale: string;
   labels: Labels;
 }
@@ -118,6 +125,7 @@ const initialPatchState: ComposerActionState = { ok: false };
 export function OutreachComposer({
   data,
   activeCampaignId,
+  preselectedKolIds,
   locale,
   labels,
 }: Props) {
@@ -130,7 +138,18 @@ export function OutreachComposer({
   // KOL selection state — only enable KOLs with email. Parent page
   // remounts this component via `key={campaignId}` so switching
   // campaigns naturally resets `checked` without a setState-in-effect.
-  const [checked, setChecked] = useState<Set<string>>(() => new Set());
+  // BIx-mvp-polish-pass F002 P1-4: seed the Set from `preselectedKolIds`
+  // when the URL carries `?kolIds=...` (intersected with the campaign's
+  // selectable rows so we never tick a kol that isn't visible).
+  const [checked, setChecked] = useState<Set<string>>(() => {
+    if (!preselectedKolIds?.length) return new Set();
+    const visibleIds = new Set(
+      (data.selectedCampaign?.kols ?? [])
+        .filter((k) => !!k.email)
+        .map((k) => k.kolId)
+    );
+    return new Set(preselectedKolIds.filter((id) => visibleIds.has(id)));
+  });
 
   const selectableKols = useMemo(
     () => (selectedCampaign?.kols ?? []).filter((k) => !!k.email),

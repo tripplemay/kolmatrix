@@ -29,14 +29,30 @@ import {
 } from "@/lib/campaigns/filters";
 import { DISCOVERY_REGIONS } from "@/lib/kol/filters";
 
+interface OwnerOption {
+  id: string;
+  name: string;
+}
+
 interface Props {
   filters: CampaignListFilters;
   basePath: string;
   /** Distinct game values seen in the tenant's campaigns — feeds the dropdown. */
   knownGames: string[];
+  /**
+   * BIx-mvp-polish-pass F002 P1-3: distinct campaign owners in the
+   * tenant. Empty array means "single-user tenant" → hide the filter
+   * altogether instead of showing a dropdown with one stale option.
+   */
+  owners: OwnerOption[];
 }
 
-export async function CampaignsFilterBar({ filters, basePath, knownGames }: Props) {
+export async function CampaignsFilterBar({
+  filters,
+  basePath,
+  knownGames,
+  owners,
+}: Props) {
   const t = await getTranslations("campaigns.filters");
   const tStatus = await getTranslations("campaigns.status");
   const tRegions = await getTranslations("discovery.regions");
@@ -145,15 +161,39 @@ export async function CampaignsFilterBar({ filters, basePath, knownGames }: Prop
           </Select>
         </Field>
 
+        {/*
+          BIx-mvp-polish-pass F002 P1-3: when the tenant has multiple
+          users, render a real owner select (URL ?owner=<userId>).
+          Single-user tenants get the placeholder + tooltip preserved
+          for the campaigns-fidelity guard test that already locks the
+          shape of this Select; the underlying control remains
+          disabled there because there's nothing meaningful to filter
+          on.
+        */}
         <Field label={t("owner")}>
-          <Select
-            disabled
-            title={t("ownerTooltip")}
-            defaultValue=""
-            data-testid="campaigns-owner-select"
-          >
-            <option value="">{t("ownerSoloTenant")}</option>
-          </Select>
+          {owners.length > 0 ? (
+            <Select
+              name="owner"
+              defaultValue={filters.ownerIds[0] ?? ""}
+              data-testid="campaigns-owner-select"
+            >
+              <option value="">{t("anyOwner")}</option>
+              {owners.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.name}
+                </option>
+              ))}
+            </Select>
+          ) : (
+            <Select
+              disabled
+              title={t("ownerTooltip")}
+              defaultValue=""
+              data-testid="campaigns-owner-select"
+            >
+              <option value="">{t("ownerSoloTenant")}</option>
+            </Select>
+          )}
         </Field>
 
         <Field label={t("dateFrom")}>

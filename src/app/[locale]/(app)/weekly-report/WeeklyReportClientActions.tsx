@@ -15,10 +15,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useState, useTransition } from "react";
 
-import {
-  createShareTokenAction,
-  generateWeeklyReportAction,
-} from "./actions";
+import { createShareTokenAction, generateWeeklyReportAction } from "./actions";
 
 interface Props {
   reportId: string;
@@ -26,6 +23,9 @@ interface Props {
   weekStartIso: string;
   locale: "en" | "zh";
   downloadPdfLabel: string;
+  /** Tooltip + toast strings for the PDF download flow (BIx F002 P1-8a). */
+  downloadPdfTooltip: string;
+  downloadPdfToast: string;
   shareLabel: string;
   regenerateLabel: string;
   /** "{0}" placeholder for the URL, "{1}" placeholder for expiry. */
@@ -48,6 +48,8 @@ export function WeeklyReportClientActions({
   weekStartIso,
   locale,
   downloadPdfLabel,
+  downloadPdfTooltip,
+  downloadPdfToast,
   shareLabel,
   regenerateLabel,
   shareToastSuccessTemplate,
@@ -71,12 +73,18 @@ export function WeeklyReportClientActions({
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("kolmatrix:weekly-report-download"));
     }
+    // BIx-mvp-polish-pass F002 P1-8a — surface a toast that explains
+    // the print-dialog → "Save as PDF" path. Browser print dialogs
+    // are jurisdiction-/OS-dependent so we can't guarantee a Save-as-PDF
+    // shortcut, but this nudges the user away from the "did anything
+    // happen?" confusion the audit flagged.
+    setToast({ tone: "success", message: downloadPdfToast });
     window.print();
     // Restore the original title after the print dialog closes.
     setTimeout(() => {
       document.title = original;
     }, 1_000);
-  }, [tenantName, weekStartIso]);
+  }, [tenantName, weekStartIso, downloadPdfToast]);
 
   const handleShare = useCallback(() => {
     setToast(null);
@@ -118,8 +126,9 @@ export function WeeklyReportClientActions({
       <button
         type="button"
         onClick={handleDownload}
+        title={downloadPdfTooltip}
         data-testid="weekly-report-download-pdf"
-        className="flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] px-5 py-2.5 text-xs font-bold text-on-primary"
+        className="text-on-primary flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] px-5 py-2.5 text-xs font-bold"
       >
         <span aria-hidden className="material-symbols-outlined text-[18px]">
           download
@@ -131,7 +140,7 @@ export function WeeklyReportClientActions({
         onClick={handleShare}
         disabled={isSharing}
         data-testid="weekly-report-share"
-        className="flex items-center gap-2 rounded-xl bg-surface-container-high/70 px-3 py-2 text-xs font-bold text-on-surface hover:bg-surface-container-high disabled:cursor-progress disabled:opacity-60"
+        className="bg-surface-container-high/70 text-on-surface hover:bg-surface-container-high flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold disabled:cursor-progress disabled:opacity-60"
       >
         <span aria-hidden className="material-symbols-outlined text-[18px]">
           share
@@ -143,7 +152,7 @@ export function WeeklyReportClientActions({
         onClick={handleRegenerate}
         disabled={isRegenerating}
         data-testid="weekly-report-regenerate"
-        className="flex items-center gap-2 rounded-xl bg-surface-container-high/70 px-3 py-2 text-xs font-bold text-on-surface hover:bg-surface-container-high disabled:cursor-progress disabled:opacity-60"
+        className="bg-surface-container-high/70 text-on-surface hover:bg-surface-container-high flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold disabled:cursor-progress disabled:opacity-60"
       >
         <span aria-hidden className="material-symbols-outlined text-[18px]">
           autorenew
@@ -155,7 +164,7 @@ export function WeeklyReportClientActions({
           role="status"
           data-testid="weekly-report-toast"
           data-tone={toast.tone}
-          className={`absolute right-4 top-20 max-w-md rounded-xl border px-4 py-3 text-xs ${
+          className={`absolute top-20 right-4 max-w-md rounded-xl border px-4 py-3 text-xs ${
             toast.tone === "success"
               ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200"
               : "border-error/30 bg-error/10 text-error"

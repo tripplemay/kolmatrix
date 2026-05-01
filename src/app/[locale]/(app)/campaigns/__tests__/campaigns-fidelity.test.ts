@@ -51,15 +51,19 @@ describe("/campaigns fidelity guards (MVP-vf-F004)", () => {
     expect(fb).toMatch(/data-testid="campaigns-date-to"/);
   });
 
-  it("Owner select is disabled in solo-tenant MVP with a tooltip", () => {
+  it("Owner select renders an active dropdown when owners.length > 0 and falls back to disabled solo-tenant placeholder otherwise (BIx F002 P1-3)", () => {
     const fb = read("CampaignsFilterBar.tsx");
-    // The Owner placeholder must declare disabled + the ownerTooltip
-    // key. JSX prop order is formatter-dependent — match the whole
-    // <Select> block so we don't care which prop comes first.
-    const block = fb.match(/<Select[\s\S]*?data-testid="campaigns-owner-select"[\s\S]*?>/);
-    expect(block, "Owner Select block").not.toBeNull();
-    expect(block![0]).toMatch(/disabled/);
-    expect(block![0]).toMatch(/t\("ownerTooltip"\)/);
+    // The Owner Field now branches on owners.length:
+    //   active branch → Select with name="owner" + anyOwner option
+    //   solo branch   → Select disabled + ownerTooltip (preserved
+    //                    so single-user tenants still see the
+    //                    explanatory placeholder)
+    expect(fb).toMatch(/owners\.length\s*>\s*0/);
+    expect(fb).toMatch(/name="owner"/);
+    expect(fb).toMatch(/t\("anyOwner"\)/);
+    // The disabled fallback Select is still in the file for solo tenants.
+    const fallback = fb.match(/<Select[\s\S]*?disabled[\s\S]*?ownerTooltip[\s\S]*?campaigns-owner-select/);
+    expect(fallback, "solo-tenant fallback Select").not.toBeNull();
   });
 
   it("filter bar drops INPUT_CLASS local and uses public ui atoms", () => {

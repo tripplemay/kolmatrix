@@ -13,6 +13,8 @@ interface Props {
   reportId: string;
   aiBadge: string;
   downloadPdfLabel: string;
+  downloadPdfTooltip: string;
+  downloadPdfToast: string;
   shareLabel: string;
   regenerateLabel: string;
   shareToastSuccessTemplate: string;
@@ -37,6 +39,8 @@ export function WeeklyReportBrandHeader({
   reportId,
   aiBadge,
   downloadPdfLabel,
+  downloadPdfTooltip,
+  downloadPdfToast,
   shareLabel,
   regenerateLabel,
   shareToastSuccessTemplate,
@@ -47,7 +51,7 @@ export function WeeklyReportBrandHeader({
   return (
     <section
       data-testid="weekly-report-brand-header"
-      className="flex flex-wrap items-center gap-6 rounded-2xl border border-white/5 bg-surface-low/60 p-6"
+      className="bg-surface-low/60 flex flex-wrap items-center gap-6 rounded-2xl border border-white/5 p-6"
     >
       <div className="relative">
         {tenant.logoUrl ? (
@@ -55,25 +59,20 @@ export function WeeklyReportBrandHeader({
           <img
             src={tenant.logoUrl}
             alt={`${tenant.name} logo`}
-            className="h-16 w-16 rounded-full border-2 border-cyan object-cover"
+            className="border-cyan h-16 w-16 rounded-full border-2 object-cover"
           />
         ) : (
-          <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-cyan bg-surface-container shadow-[0_0_15px_rgba(0,229,255,0.15)]">
-            <span className="text-2xl font-black text-cyan">
-              {tenantInitials(tenant.name)}
-            </span>
+          <div className="border-cyan bg-surface-container flex h-16 w-16 items-center justify-center rounded-full border-2 shadow-[0_0_15px_rgba(0,229,255,0.15)]">
+            <span className="text-cyan text-2xl font-black">{tenantInitials(tenant.name)}</span>
           </div>
         )}
       </div>
       <div className="flex-grow">
         <h3 className="text-xl font-bold text-white">{tenant.name}</h3>
-        <p className="mt-1 text-sm text-on-surface-variant">{weekRangeLabel}</p>
+        <p className="text-on-surface-variant mt-1 text-sm">{weekRangeLabel}</p>
       </div>
-      <div
-        className="flex flex-wrap items-center gap-3"
-        data-testid="weekly-report-print-hide"
-      >
-        <span className="flex items-center gap-1.5 rounded-full bg-purple/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-purple">
+      <div className="flex flex-wrap items-center gap-3" data-testid="weekly-report-print-hide">
+        <span className="bg-purple/10 text-purple flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold tracking-wider uppercase">
           <span aria-hidden className="material-symbols-outlined text-[14px]">
             bolt
           </span>
@@ -85,6 +84,8 @@ export function WeeklyReportBrandHeader({
           weekStartIso={weekStartIso}
           locale={locale}
           downloadPdfLabel={downloadPdfLabel}
+          downloadPdfTooltip={downloadPdfTooltip}
+          downloadPdfToast={downloadPdfToast}
           shareLabel={shareLabel}
           regenerateLabel={regenerateLabel}
           shareToastSuccessTemplate={shareToastSuccessTemplate}

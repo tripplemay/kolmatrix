@@ -61,6 +61,37 @@ export async function loadKnownGames(tenantId: string): Promise<string[]> {
   });
 }
 
+export interface CampaignOwnerOption {
+  id: string;
+  name: string;
+}
+
+/**
+ * Distinct campaign owners (= users that have authored ≥ 1 campaign in
+ * the tenant). Drives the BIx-mvp-polish-pass F002 P1-3 Owner filter.
+ * Returns `[]` when the tenant only has a single user (caller can hide
+ * the filter altogether).
+ */
+export async function loadCampaignOwners(
+  tenantId: string
+): Promise<CampaignOwnerOption[]> {
+  return withTenant(tenantId, async (tx) => {
+    const userCount = await tx.user.count();
+    if (userCount <= 1) return [];
+
+    const rows = await tx.campaign.findMany({
+      distinct: ["ownerUserId"],
+      select: { owner: { select: { id: true, name: true, email: true } } },
+      orderBy: { ownerUserId: "asc" },
+    });
+
+    return rows
+      .map((r) => r.owner)
+      .filter((o): o is { id: string; name: string; email: string } => o != null)
+      .map((o) => ({ id: o.id, name: o.name || o.email }));
+  });
+}
+
 export async function loadCampaignsListKpis(
   tenantId: string
 ): Promise<CampaignsListKpis> {

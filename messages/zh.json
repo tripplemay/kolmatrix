@@ -518,7 +518,7 @@
       "selected": "已选中",
       "addToCampaign": "加入活动",
       "email": "发送邮件",
-      "emailTooltip": "请前往 /outreach 进行邮件触达",
+      "emailTooltip": "为选中的 KOL 撰写触达邮件",
       "delete": "删除",
       "deleteTooltip": "批量删除将随 B6 上线",
       "clear": "取消选择"
@@ -572,6 +572,7 @@
       "region": "地区",
       "anyRegion": "全部地区",
       "owner": "负责人",
+      "anyOwner": "任意负责人",
       "ownerSoloTenant": "单一租户",
       "ownerTooltip": "当租户有多个席位时启用「负责人」筛选",
       "dateFrom": "起始日期",
@@ -1133,6 +1134,8 @@
     },
     "actions": {
       "downloadPdf": "下载 PDF",
+      "downloadPdfTooltip": "在打印对话框中选择「保存为 PDF」",
+      "downloadPdfToast": "请在弹出的打印对话框中选择「保存为 PDF」。",
       "share": "分享",
       "regenerate": "重新生成"
     },

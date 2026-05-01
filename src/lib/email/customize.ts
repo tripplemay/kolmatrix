@@ -13,8 +13,7 @@ import "dotenv/config";
 import { parseFencedJson } from "@/lib/ai/json-extract";
 import { resolveAigcV1BaseUrl } from "@/lib/aigc/base-url";
 
-export const KOL_EMAIL_CUSTOMIZE_ACTION_ID =
-  "cmob2z6j00001bnole7i8lg9h";
+export const KOL_EMAIL_CUSTOMIZE_ACTION_ID = "cmob2z6j00001bnole7i8lg9h";
 
 export interface CustomizeEmailInput {
   product: {
@@ -44,11 +43,7 @@ export interface CustomizeEmailResult {
 
 export class CustomizeEmailError extends Error {
   constructor(
-    public readonly code:
-      | "missing_env"
-      | "http_error"
-      | "invalid_response"
-      | "timeout",
+    public readonly code: "missing_env" | "http_error" | "invalid_response" | "timeout",
     message: string
   ) {
     super(message);
@@ -130,15 +125,10 @@ async function fetchWithRetry(
   throw new CustomizeEmailError("http_error", "unreachable");
 }
 
-export async function customizeEmail(
-  input: CustomizeEmailInput
-): Promise<CustomizeEmailResult> {
+export async function customizeEmail(input: CustomizeEmailInput): Promise<CustomizeEmailResult> {
   const apiKey = process.env.AIGCGATEWAY_API_KEY;
   if (!apiKey) {
-    throw new CustomizeEmailError(
-      "missing_env",
-      "AIGCGATEWAY_API_KEY is not set"
-    );
+    throw new CustomizeEmailError("missing_env", "AIGCGATEWAY_API_KEY is not set");
   }
 
   const url = `${baseUrl()}/actions/run`;
@@ -185,10 +175,7 @@ export async function customizeEmail(
     trace_id?: string;
   };
   if (!body.output) {
-    throw new CustomizeEmailError(
-      "invalid_response",
-      "aigcgateway response missing `output`"
-    );
+    throw new CustomizeEmailError("invalid_response", "aigcgateway response missing `output`");
   }
 
   let parsed: { subject?: unknown; body?: unknown; rationale?: unknown };
@@ -201,10 +188,7 @@ export async function customizeEmail(
     );
   }
 
-  if (
-    typeof parsed.subject !== "string" ||
-    typeof parsed.body !== "string"
-  ) {
+  if (typeof parsed.subject !== "string" || typeof parsed.body !== "string") {
     throw new CustomizeEmailError(
       "invalid_response",
       "aigcgateway output missing `subject` or `body` string"
@@ -214,8 +198,7 @@ export async function customizeEmail(
   return {
     subject: parsed.subject,
     body: parsed.body,
-    rationale:
-      typeof parsed.rationale === "string" ? parsed.rationale : undefined,
+    rationale: typeof parsed.rationale === "string" ? parsed.rationale : undefined,
     traceId: body.traceId ?? body.trace_id,
   };
 }

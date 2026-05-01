@@ -1,11 +1,4 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const sendMock = vi.fn();
 vi.mock("resend", () => {
@@ -102,5 +95,69 @@ describe("sendEmail — real SDK", () => {
       })
     ).rejects.toMatchObject({ name: "SendEmailError", code: "invalid_to" });
     expect(sendMock).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BIx-mvp-polish-pass F002 (P1-9) — production fail-fast.
+//
+// Real customer outreach must never silently disappear into a
+// [EMAIL MOCK] log line. When NODE_ENV=production AND the key is
+// missing or a known placeholder, sendEmail must throw immediately
+// rather than returning { mocked: true }.
+// ---------------------------------------------------------------------------
+
+describe("sendEmail — production fail-fast (BIx-vf F002 P1-9)", () => {
+  const originalNodeEnv = process.env.NODE_ENV;
+
+  afterEach(() => {
+    if (originalNodeEnv === undefined) {
+      delete process.env.NODE_ENV;
+    } else {
+      process.env.NODE_ENV = originalNodeEnv;
+    }
+  });
+
+  it("throws when NODE_ENV=production and RESEND_API_KEY is unset", async () => {
+    process.env.NODE_ENV = "production";
+    delete process.env.RESEND_API_KEY;
+    const { sendEmail } = await importFresh();
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    await expect(
+      sendEmail({ to: "kol@example.test", subject: "Hi", bodyText: "H" })
+    ).rejects.toMatchObject({
+      name: "SendEmailError",
+      code: "provider_error",
+    });
+    expect(sendMock).not.toHaveBeenCalled();
+    // Mock log line must NOT have been emitted in the fail-fast path.
+    expect(logSpy).not.toHaveBeenCalledWith("[EMAIL MOCK]", expect.any(Object));
+  });
+
+  it("throws when NODE_ENV=production and RESEND_API_KEY is a known placeholder", async () => {
+    process.env.NODE_ENV = "production";
+    process.env.RESEND_API_KEY = "placeholder-do-not-use";
+    const { sendEmail } = await importFresh();
+    await expect(
+      sendEmail({ to: "kol@example.test", subject: "Hi", bodyText: "H" })
+    ).rejects.toMatchObject({
+      name: "SendEmailError",
+      code: "provider_error",
+    });
+    expect(sendMock).not.toHaveBeenCalled();
+  });
+
+  it("still allows mock_sent in dev (NODE_ENV != production) when key is missing", async () => {
+    process.env.NODE_ENV = "development";
+    delete process.env.RESEND_API_KEY;
+    const { sendEmail } = await importFresh();
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const res = await sendEmail({
+      to: "kol@example.test",
+      subject: "Hi",
+      bodyText: "H",
+    });
+    expect(res.mocked).toBe(true);
+    expect(logSpy).toHaveBeenCalledWith("[EMAIL MOCK]", expect.any(Object));
   });
 });

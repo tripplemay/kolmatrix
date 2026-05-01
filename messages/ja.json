@@ -518,7 +518,7 @@
       "selected": "選択済み",
       "addToCampaign": "キャンペーンに追加",
       "email": "メール",
-      "emailTooltip": "メールキャンペーンには/outreachを使用します",
+      "emailTooltip": "選択したKOLにアウトリーチメールを作成",
       "delete": "削除",
       "deleteTooltip": "一括削除はB6で利用可能になります",
       "clear": "選択を解除"
@@ -572,6 +572,7 @@
       "region": "地域",
       "anyRegion": "任意の地域",
       "owner": "オーナー",
+      "anyOwner": "すべてのオーナー",
       "ownerSoloTenant": "単一テナント",
       "ownerTooltip": "テナントに複数のシートがある場合、オーナーフィルターが有効になります",
       "dateFrom": "開始日",
@@ -1203,6 +1204,8 @@
     },
     "actions": {
       "downloadPdf": "PDFをダウンロード",
+      "downloadPdfTooltip": "印刷ダイアログで「PDFとして保存」を選択してください",
+      "downloadPdfToast": "開いた印刷ダイアログで「PDFとして保存」を選択してください。",
       "share": "共有",
       "regenerate": "再生成"
     },

@@ -66,7 +66,7 @@ export default async function DashboardPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-8">
-      <GreetingBar name={name} dateLabel={dateLabel} />
+      <GreetingBar name={name} dateLabel={dateLabel} locale={locale} />
       <KpiRow
         kolCount={d.kolCount}
         activeCampaigns={d.activeCampaigns}

@@ -6,7 +6,8 @@
  * Renders only when at least one row is selected. Three actions per the
  * Stitch prototype:
  *   - Add to Campaign     (real, opens AddToCampaignDialog)
- *   - Email               (disabled — point users at /outreach instead)
+ *   - Email               (BIx-mvp-polish-pass F002 P1-4: jump to
+ *                          /outreach with the selected kolIds preselected)
  *   - Delete              (disabled — destructive bulk actions wait for B6)
  *
  * Calls `useTranslations` directly instead of accepting a labels object
@@ -21,10 +22,11 @@ import { Button } from "@/components/ui";
 interface Props {
   count: number;
   onAddToCampaign: () => void;
+  onEmail: () => void;
   onClear: () => void;
 }
 
-export function BulkActionBar({ count, onAddToCampaign, onClear }: Props) {
+export function BulkActionBar({ count, onAddToCampaign, onEmail, onClear }: Props) {
   const t = useTranslations("database.bulk");
   if (count === 0) return null;
 
@@ -60,7 +62,7 @@ export function BulkActionBar({ count, onAddToCampaign, onClear }: Props) {
           </Button>
           <Button
             variant="ghost"
-            disabled
+            onClick={onEmail}
             title={t("emailTooltip")}
             data-testid="bulk-bar-email"
           >

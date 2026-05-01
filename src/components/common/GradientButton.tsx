@@ -5,8 +5,18 @@
  * 里 rounded-lg (size md) / rounded-xl (size lg) 的变体。
  * HTML 源：dashboard.html:182-185 ("+ New Campaign")。
  * 用途：每页头部的主 CTA（New Campaign / Apply Filters / Edit 等）。
+ *
+ * BIx-mvp-polish-pass F002 (2026-05-01) — `href` prop added so the
+ * dashboard "New Campaign" GreetingBar button (and any other main CTA
+ * that wants link semantics) actually navigates instead of being a
+ * silent <button> with no onClick. When href is set AND the button is
+ * not disabled/loading, render a next/link <Link>; otherwise fall
+ * back to <button> for the disabled/loading a11y story (disabled
+ * links are unreachable + screen-reader-confusing).
  */
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+
+import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 
@@ -19,6 +29,11 @@ interface GradientButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: Size;
   fullWidth?: boolean;
   loading?: boolean;
+  /**
+   * When set, the button renders as a next/link <a>. Disabled/loading
+   * states still fall back to <button> for a11y reasons.
+   */
+  href?: string;
 }
 
 const SIZE_MAP: Record<Size, string> = {
@@ -27,31 +42,22 @@ const SIZE_MAP: Record<Size, string> = {
   lg: "h-12 px-6 text-[14px] rounded-[14px]",
 };
 
-export function GradientButton({
-  children,
+const BASE_CLASS =
+  "gradient-cta inline-flex items-center justify-center gap-2 font-semibold transition-shadow duration-200 hover:shadow-[0_0_24px_rgba(0,229,255,0.4)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:shadow-none";
+
+function Inner({
   icon,
-  iconPosition = "left",
-  size = "md",
-  fullWidth = false,
-  loading = false,
-  disabled,
-  className,
-  ...rest
-}: GradientButtonProps) {
+  iconPosition,
+  loading,
+  children,
+}: {
+  icon?: ReactNode;
+  iconPosition: "left" | "right";
+  loading: boolean;
+  children: ReactNode;
+}) {
   return (
-    <button
-      type="button"
-      disabled={disabled || loading}
-      className={cn(
-        "gradient-cta inline-flex items-center justify-center gap-2 font-semibold transition-shadow duration-200",
-        "hover:shadow-[0_0_24px_rgba(0,229,255,0.4)]",
-        "disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:shadow-none",
-        fullWidth && "w-full",
-        SIZE_MAP[size],
-        className
-      )}
-      {...rest}
-    >
+    <>
       {icon && iconPosition === "left" ? (
         <span className="inline-flex shrink-0">{icon}</span>
       ) : null}
@@ -67,6 +73,42 @@ export function GradientButton({
       {icon && iconPosition === "right" ? (
         <span className="inline-flex shrink-0">{icon}</span>
       ) : null}
+    </>
+  );
+}
+
+export function GradientButton({
+  children,
+  icon,
+  iconPosition = "left",
+  size = "md",
+  fullWidth = false,
+  loading = false,
+  disabled,
+  className,
+  href,
+  ...rest
+}: GradientButtonProps) {
+  const composed = cn(BASE_CLASS, fullWidth && "w-full", SIZE_MAP[size], className);
+
+  // href semantics only kick in when the button is interactive — disabled
+  // / loading still render <button disabled> to avoid the a11y trap of
+  // an "interactive" <a> the user can't actually click.
+  if (href && !disabled && !loading) {
+    return (
+      <Link href={href} className={composed}>
+        <Inner icon={icon} iconPosition={iconPosition} loading={false}>
+          {children}
+        </Inner>
+      </Link>
+    );
+  }
+
+  return (
+    <button type="button" disabled={disabled || loading} className={composed} {...rest}>
+      <Inner icon={icon} iconPosition={iconPosition} loading={loading}>
+        {children}
+      </Inner>
     </button>
   );
 }

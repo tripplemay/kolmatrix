@@ -33,4 +33,39 @@ describe("GradientButton", () => {
     // Icon must sit to the right of the label in DOM order.
     expect(btn.lastElementChild?.contains(icon)).toBe(true);
   });
+
+  // BIx-mvp-polish-pass F002 — `href` prop semantics. Adding href turns
+  // the button into a next/link <a>, but disabled / loading still
+  // fall back to <button disabled> for a11y reasons (you can't make
+  // an <a> non-interactive without breaking screen readers).
+  it("renders a next/link <a> with the given href when interactive", () => {
+    render(<GradientButton href="/en/campaigns/new">New Campaign</GradientButton>);
+    const link = screen.getByRole("link", { name: /New Campaign/i });
+    expect(link.tagName).toBe("A");
+    expect(link).toHaveAttribute("href", "/en/campaigns/new");
+  });
+
+  it("falls back to <button disabled> when href + disabled are both set", () => {
+    render(
+      <GradientButton href="/en/campaigns/new" disabled>
+        New Campaign
+      </GradientButton>
+    );
+    expect(screen.queryByRole("link")).toBeNull();
+    const btn = screen.getByRole("button", { name: /New Campaign/i });
+    expect(btn.tagName).toBe("BUTTON");
+    expect(btn).toBeDisabled();
+  });
+
+  it("falls back to <button disabled> when href + loading are both set", () => {
+    render(
+      <GradientButton href="/en/campaigns/new" loading>
+        New Campaign
+      </GradientButton>
+    );
+    expect(screen.queryByRole("link")).toBeNull();
+    const btn = screen.getByRole("button");
+    expect(btn.tagName).toBe("BUTTON");
+    expect(btn).toBeDisabled();
+  });
 });

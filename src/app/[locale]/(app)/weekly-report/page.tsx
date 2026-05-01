@@ -119,12 +119,7 @@ interface WeeklyReportContentProps {
   t: Awaited<ReturnType<typeof getTranslations<"weeklyReport">>>;
 }
 
-function WeeklyReportContent({
-  report,
-  locale,
-  weekRangeLabel,
-  t,
-}: WeeklyReportContentProps) {
+function WeeklyReportContent({ report, locale, weekRangeLabel, t }: WeeklyReportContentProps) {
   const sections = splitByH2(report.contentMd);
   const tenantSnapshot = report.summaryJson?.tenantSnapshot ?? {
     name: "—",
@@ -133,12 +128,7 @@ function WeeklyReportContent({
 
   // Compose the "main column" markdown by re-stitching every H2 section
   // EXCEPT Key Insights (which renders in the right panel).
-  const mainHeadings = [
-    "Executive Summary",
-    "Top Performers",
-    "Key Activity",
-    "Looking Ahead",
-  ];
+  const mainHeadings = ["Executive Summary", "Top Performers", "Key Activity", "Looking Ahead"];
   const mainMarkdown = mainHeadings
     .filter((h) => sections[h])
     .map((h) => `## ${h}\n${sections[h]}`)
@@ -155,6 +145,8 @@ function WeeklyReportContent({
         reportId={report.id}
         aiBadge={t("brand.aiBadge")}
         downloadPdfLabel={t("actions.downloadPdf")}
+        downloadPdfTooltip={t("actions.downloadPdfTooltip")}
+        downloadPdfToast={t("actions.downloadPdfToast")}
         shareLabel={t("actions.share")}
         regenerateLabel={t("actions.regenerate")}
         shareToastSuccessTemplate={t("share.toastSuccess")}
@@ -167,13 +159,11 @@ function WeeklyReportContent({
         className="grid grid-cols-1 gap-6 lg:grid-cols-10"
         data-testid="weekly-report-section-b"
       >
-        <div className="lg:col-span-6 rounded-2xl border border-white/5 bg-surface-low/60 p-6">
+        <div className="bg-surface-low/60 rounded-2xl border border-white/5 p-6 lg:col-span-6">
           {mainMarkdown ? (
             <WeeklyReportRenderer markdown={mainMarkdown} />
           ) : (
-            <p className="text-sm text-on-surface-variant">
-              {t("rawFallback")}
-            </p>
+            <p className="text-on-surface-variant text-sm">{t("rawFallback")}</p>
           )}
           {/* Fallback: if H2 split missed everything, show the raw blob
               so the user always sees content (Planner §13.5 #2). */}
@@ -191,7 +181,7 @@ function WeeklyReportContent({
 
       <footer
         data-testid="weekly-report-footer"
-        className="flex flex-col items-center gap-1 border-t border-white/5 pt-6 text-[10px] text-on-surface-variant/70"
+        className="text-on-surface-variant/70 flex flex-col items-center gap-1 border-t border-white/5 pt-6 text-[10px]"
       >
         <div className="flex items-center gap-3">
           <span>{t("footer.reportId", { id: reportIdShort })}</span>

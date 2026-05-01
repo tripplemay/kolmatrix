@@ -46,6 +46,12 @@ export default async function OutreachPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const raw = await searchParams;
   const campaignId = asScalar(raw.campaignId) ?? null;
+  // BIx-mvp-polish-pass F002 P1-4: /database BulkActionBar can route
+  // here with `?kolIds=<id>,<id>` to pre-tick the composer's KOL list.
+  const kolIdsRaw = asScalar(raw.kolIds);
+  const preselectedKolIds = kolIdsRaw
+    ? kolIdsRaw.split(",").map((s) => s.trim()).filter(Boolean)
+    : undefined;
 
   const session = await auth();
   const tenantId = session?.user?.tenantId;
@@ -160,6 +166,7 @@ export default async function OutreachPage({ params, searchParams }: Props) {
         key={campaignId ?? "no-campaign"}
         data={composerData}
         activeCampaignId={campaignId}
+        preselectedKolIds={preselectedKolIds}
         locale={locale}
         labels={composerLabels}
       />

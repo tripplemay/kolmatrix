@@ -24,7 +24,11 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { parseCampaignFilters, serializeCampaignFilters } from "@/lib/campaigns/filters";
-import { loadCampaignsListKpis, loadKnownGames } from "@/lib/campaigns/list-kpis";
+import {
+  loadCampaignOwners,
+  loadCampaignsListKpis,
+  loadKnownGames,
+} from "@/lib/campaigns/list-kpis";
 import { runCampaignListSearch } from "@/lib/campaigns/search";
 
 import { AiSuggestionsCard } from "./AiSuggestionsCard";
@@ -49,10 +53,11 @@ export default async function CampaignsPage({ params, searchParams }: Props) {
   const tenantId = session?.user?.tenantId;
   if (!tenantId) redirect("/login");
 
-  const [result, kpis, knownGames] = await Promise.all([
+  const [result, kpis, knownGames, owners] = await Promise.all([
     runCampaignListSearch(tenantId, filters),
     loadCampaignsListKpis(tenantId),
     loadKnownGames(tenantId),
+    loadCampaignOwners(tenantId),
   ]);
 
   const t = await getTranslations("campaigns");
@@ -98,7 +103,12 @@ export default async function CampaignsPage({ params, searchParams }: Props) {
       </header>
 
       <CampaignsKpiStrip kpis={kpis} />
-      <CampaignsFilterBar filters={filters} basePath={basePath} knownGames={knownGames} />
+      <CampaignsFilterBar
+        filters={filters}
+        basePath={basePath}
+        knownGames={knownGames}
+        owners={owners}
+      />
 
       {tenantIsEmpty ? (
         <EmptyTenantState

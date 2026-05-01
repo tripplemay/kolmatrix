@@ -227,6 +227,13 @@ export function DatabaseTableClient({
       <BulkActionBar
         count={selected.size}
         onAddToCampaign={() => setDialogOpen(true)}
+        onEmail={() => {
+          // BIx-mvp-polish-pass F002 P1-4: route to /outreach with the
+          // selected kolIds preselected. /outreach reads ?kolIds=...
+          // and pre-selects matching rows in the composer.
+          if (selectedIds.length === 0) return;
+          router.push(`/${locale}/outreach?kolIds=${selectedIds.join(",")}`);
+        }}
         onClear={clearAll}
       />
 
