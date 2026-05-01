@@ -82,19 +82,24 @@ describe("/database fidelity guards (MVP-vf-F003)", () => {
   it("BulkActionBar wires Add to Campaign to the campaign dialog and disables Email + Delete", () => {
     const bar = read("BulkActionBar.tsx");
     expect(bar).toMatch(/data-testid="bulk-bar-add-to-campaign"/);
-    for (const [testid, tooltipKey] of [
-      ["bulk-bar-email", "emailTooltip"],
-      ["bulk-bar-delete", "deleteTooltip"],
-    ] as const) {
-      const block = bar.match(
-        new RegExp(`<Button[\\s\\S]*?data-testid="${testid}"[\\s\\S]*?>`)
-      );
-      expect(block, `BulkActionBar ${testid} block`).not.toBeNull();
-      expect(block![0]).toMatch(/disabled/);
-      // Post-RSC-fix: BulkActionBar reads i18n via `t("...Tooltip")`
-      // directly instead of accepting a `labels` prop.
-      expect(block![0]).toMatch(new RegExp(`t\\("${tooltipKey}"\\)`));
-    }
+    // BIx-mvp-polish-pass F002 P1-4: Email button is now active —
+    // it routes to /outreach with `?kolIds=` preselection. Only the
+    // Delete button keeps the disabled-with-tooltip placeholder
+    // shape until B6 ships destructive bulk actions.
+    const emailBlock = bar.match(
+      /<Button[\s\S]*?data-testid="bulk-bar-email"[\s\S]*?>/
+    );
+    expect(emailBlock, "BulkActionBar bulk-bar-email block").not.toBeNull();
+    expect(emailBlock![0]).toMatch(/onClick=\{onEmail\}/);
+    expect(emailBlock![0]).toMatch(/t\("emailTooltip"\)/);
+    expect(emailBlock![0]).not.toMatch(/disabled\b/);
+
+    const deleteBlock = bar.match(
+      /<Button[\s\S]*?data-testid="bulk-bar-delete"[\s\S]*?>/
+    );
+    expect(deleteBlock, "BulkActionBar bulk-bar-delete block").not.toBeNull();
+    expect(deleteBlock![0]).toMatch(/disabled/);
+    expect(deleteBlock![0]).toMatch(/t\("deleteTooltip"\)/);
   });
 
   it("Add to Campaign dialog points at the new bulk endpoint", () => {
