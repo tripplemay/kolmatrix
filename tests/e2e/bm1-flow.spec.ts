@@ -72,6 +72,10 @@ test.describe("BM1 — full marketer journey (F009 E2E)", () => {
       // generate-immediately to keep the run offline (no aigcgateway).
       await modal.locator('input[name="name"]').fill(productName);
       await modal.locator('input[name="category"]').fill("MOBA");
+      // MVP-internal-demo-prep F002 — targetAudience is now form-required.
+      await modal
+        .locator('textarea[name="targetAudience"]')
+        .fill("APAC mobile gamers aged 18-30");
       await modal
         .locator('textarea[name="uniqueSellingPoints"]')
         .fill("Cross-platform MOBA with deep progression.");
