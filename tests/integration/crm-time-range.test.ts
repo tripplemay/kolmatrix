@@ -117,7 +117,7 @@ describe("runCrmOverview range filtering (BIx-vf F001)", () => {
         handle: "new2",
         displayName: "New 2",
         followerCount: 300,
-        relationshipStatus: "contacted",
+        relationshipStatus: "first_contact",
         createdAt: recentDate,
       },
     });

@@ -57,7 +57,7 @@ describe("/api/crm/export-csv (BIx-vf F001)", () => {
         handle: "alpha",
         displayName: "Alpha Streams",
         followerCount: 1000,
-        relationshipStatus: "contacted",
+        relationshipStatus: "first_contact",
         countryCode: "US",
       },
     });
