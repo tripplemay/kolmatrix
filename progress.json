@@ -19,7 +19,7 @@
   "docs": {
     "spec": "docs/specs/B5-kol-data-enrichment-spec.md",
     "test_cases": "docs/test-cases/B5-kol-data-enrichment-cases.md",
-    "signoff": null,
+    "signoff": "docs/test-reports/B5-kol-data-enrichment-signoff-2026-05-01.md",
     "framework_reviewed": false
   },
   "role_assignments": {
