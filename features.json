@@ -1,61 +1,45 @@
 {
-  "sprint": "MVP-internal-demo-prep",
+  "sprint": "BIx-mvp-polish-pass",
   "features": [
     {
       "id": "F001",
-      "title": "Dashboard 补三元素：Workflow 6 步图 + CPI hardcoded 卡 + 30 天 ROI 趋势",
+      "title": "/crm Header 3 个 disabled 控件清理（time toggle real / Export CSV impl / Manual log delete）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "src/features/dashboard/{WorkflowSteps,CompetitorCpiCard,RoiTrendCard}.tsx 三组件落地；Dashboard page.tsx 在 KpiRow 下方按「workflow → CPI → ROI 趋势」插入；WorkflowSteps 6 步状态基于当前 tenant 数据是否走过该步动态指示；CompetitorCpiCard hardcoded 6-8 品类基准（数据来源 Sensor Tower 2025/data.ai/AppsFlyer 公开报告，含 'Sample data' 角标 + 'Source: Industry benchmarks Q1 2025' 小字）；RoiTrendCard 复用 /api/roi/trend 折线 30 天 + 无数据 friendly empty state；mobile <640px 单列；visual baseline dashboard.spec.ts 更新；i18n keys 新增 en/zh + 跑 i18n:translate 补 ja/ko/es；staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）。"
+      "status": "pending",
+      "acceptance": "/crm 时间 toggle（thisQuarter / Last 90d / allTime）3 个 button 全可点，按 created_at 范围 filter 4 个 CRM 组件（CrmKpiStrip/CrmPipelineBars/CrmFunnel/CrmRecentChanges），URL 参数 ?range=thisQuarter|last90d|allTime，default last90d；runCrmOverview 接受 range 参数；Export CSV 按钮真做 Server Action 生成 CRM 数据 CSV（KOL 列表 + 阶段 + kolCampaign + 金额）含 Content-Disposition; +Manual log 按钮从 CrmHeader 移除并删除 i18n key crm.header.manualLog*；tests/integration/crm-time-range.test.ts 验证 3 range × 4 组件；tests/integration/crm-export-csv.test.ts 验证 CSV 内容；visual baseline 重生（dashboard/crm 受影响）；staging git_sha 与本 commit 一致。"
     },
     {
       "id": "F002",
-      "title": "Product targetAudience zod 强制（form-level min(1) + i18n error）",
+      "title": "Misc 5 项 polish（campaigns Owner filter / database Email btn / PDF 文案 / mock_sent fail-fast / AiSuggestions 已删）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "src/app/[locale]/(app)/knowledge-base/actions.ts 加 z.string().min(1, { message: t('errors.targetAudienceRequired') })；messages/en/zh/knowledge-base 新 'errors.targetAudienceRequired' key（zh: 请填写目标受众）；提交空 targetAudience → form 显示 i18n error；提交非空 → 通过；DB schema 不动（保持 nullable）；existing knowledge-base tests 不破坏；跑 i18n:translate 补 ja/ko/es；staging git_sha 与本 commit 一致。"
+      "status": "pending",
+      "acceptance": "/campaigns Owner filter 真做（取自 Campaign.ownerUserId，URL 参数 ?owner=<userId>，单 tenant 用户时 hide filter）；/database BulkActionBar Email 按钮 onClick → router.push('/outreach?kolIds=' + selectedKolIds.join(','))，/outreach 接收 ?kolIds=... 自动预选；/weekly-report PDF 帮助文案（button title='Save as PDF in the print dialog'，click 后 toast 提示）；邮件 mock_sent fail-fast（src/lib/email/resend.ts 在 NODE_ENV=production 下无 RESEND_API_KEY 时 throw 'RESEND_API_KEY missing in production'，dev 仍允许 mock_sent）；/campaigns AiSuggestionsCard 'Coming with B2' badge 已在 MVP-internal-demo-prep F007 处理（不重复）；existing tests 不破坏；staging git_sha 与本 commit 一致。"
     },
     {
       "id": "F003",
-      "title": "5 款典型游戏 Products seed 进 Demo Studio + aiAssets 混合策略",
+      "title": "11 页 critical paths edge states + error.tsx 兜底",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "prisma/seed.ts 在 Demo Studio tenant 下 upsert 5 个 Product：Honor of Kings (MOBA 预生成 aiAssets)、Genshin Impact (Open World RPG 预生成)、PUBG Mobile (Battle Royale/FPS 预生成)、Pokemon Go (AR/Casual 空 aiAssets)、Clash Royale (Strategy/Card 空 aiAssets)；3 个预生成 aiAssets JSON 含 emailTemplates × 3 + videoScripts × 2（hardcoded 高质量样本，模拟 aigcgateway 输出格式）；以 (tenantId, name) 自然键 upsert 幂等；Demo Studio tenant 内 5 个 Product 全部含 targetAudience 字段（满足 F002 zod 校验）；npm run db:seed 在 staging + prod 跑通；点击 2 个 null aiAssets Product 的 'Generate AI assets' 触发 aigcgateway 真实调用并写入 aiAssets；tests/integration/seed-demo-products.test.ts 验证幂等 + 内容完整；staging git_sha 与本 commit 一致。"
+      "status": "pending",
+      "acceptance": "11 页（dashboard/discovery/database/kols-detail/knowledge-base/campaigns/campaigns-detail/outreach/crm/roi/weekly-report）每页加 error.tsx 兜底（display friendly error + reload CTA），关键 empty state（spec §F003 表格列出每页 critical empty + critical error）有 friendly 引导（不出现纯白屏 / Lorem ipsum）；tests/integration/edge-states-coverage.test.ts 验证 11 页 error.tsx 存在性；手工 spot check：dev 模式停 PG → 11 页全部 graceful（非崩溃）；staging git_sha 与本 commit 一致。"
     },
     {
       "id": "F004",
-      "title": "团队内部 demo README（en 单文件）",
+      "title": "YouTube sync 配额优化（P1 ~89% + 真 engagement batch + Top 100 KOL latestVideos）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "新建 docs/internal/team-demo-guide.md（en 单文件）含 5 sections：1. Login（admin/marketer URL + 密码引用 Notion）2. 3 Journeys to Try（A: KOL Discovery → Campaign → Email; B: Campaign → ROI → Weekly Report; C: Knowledge Base → AI Assets → Campaign）3. What to See on Each Page（8 页：dashboard/discovery/database/kols-detail/campaigns/outreach/crm/roi/weekly-report 各列关键元素）4. Known Limits（demo 数据共享 / B8 推荐 Post-MVP / Resend webhook B4-extended / BullMQ stub / AIGC 单次 ~$0.02 / B5 schema migration 已落 prod）5. Feedback Channel（Notion + Slack + Github issues）；不需要 i18n（仅 en）；不需要截图；staging git_sha 与本 commit 一致。"
+      "status": "pending",
+      "acceptance": "search.list maxResults 10→50；DAILY_REGIONS 6→14（+GB/DE/BR/MX/TH/ID/IN/ES）；KEYWORD_POOL 每 region ≥ 12 词，dayOfYear%6 轮转 6 词；page 轮转 cursor 持久化 kol_sync_cursor 表 + migration + ROLLBACK SQL；publishedAfter 4 切片 dayOfYear%4 轮转 6 region × 100u = 600u/day；分层 refresh（Tier 1 top 50 by valueScore 每 3 天 / Tier 2 51-500 每 7 天 / Tier 3 500+ 每 21 天 / Flagged 必入），总日 ~150-200 KOL ~4u；Top 100 engagement batch（channels.list 2u + playlistItems.list 100u + videos.list 12u = 114u/day）写回 Kol.engagementRate + Kol.metadata.latestVideos；DailyLogLine schema 加 perMatrix + engagementBatchStats；tests/integration/sync-quota-optimization.test.ts 验证 14 region matrix + 池轮转 + 分层 refresh + engagement batch；staging 跑 7 天连续观察：每日 inserted ≥ 30 + 配额 8500-9200u + 0 errors；env var KOL_SYNC_PUBLISHED_AFTER_SLICES（默认 6，告警时降 4）；FILTER_MIN_SUBSCRIBERS 决议待 Planner 收用户答复（10K / 1K / env var 三选一）；staging git_sha 与本 commit 一致。"
     },
     {
       "id": "F005",
-      "title": "Prod L2 烟测 ≥30 条 checklist 执行 + signoff",
+      "title": "前端 perf Critical + High 六件套（next.config.ts / next/font / next/image / recharts dynamic / markdown dynamic / AppShellLayout island）",
       "priority": "high",
-      "executor": "codex",
+      "executor": "generator",
       "status": "pending",
-      "acceptance": "Planner verifying 前起草 docs/test-cases/MVP-internal-demo-prep-prod-smoke-checklist.md（≥30 条 checkbox 覆盖 A 健康基线 5 条 / B endpoint smoke 5 条 / C 登录态功能 ≥10 条 / D 跨 locale 4 条 / E 视觉 3 条 / F 自动化 3 条 / G 性能可选 4 条）；Reviewer codex 在 prod (https://kol.guangai.ai) 逐条勾选；任何 P0/P1 阻断 → evaluator_feedback + status=fixing；P2/P3 残余风险 → 写 backlog 注明 priority；签收报告 ≥50 行含烟测命令 + 关键 endpoint 数据 + 截图；signoff 中明示 'prod 可承接团队内部 demo'；docs/test-reports/MVP-internal-demo-prep-signoff-YYYY-MM-DD.md。"
-    },
-    {
-      "id": "F006",
-      "title": "Dashboard 真数据替换 mock（EmailPerformanceCard + RecentActivityCard）",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "EmailPerformanceCard 改造：新增 src/lib/dashboard/email-performance.ts 从 EmailLog 表 14 天聚合（按 createdAt 切桶；status='sent' 计 sent；openedAt!=null 计 opened；replyAt!=null 计 replied）；空数据 friendly empty state 'Send your first batch via /outreach to see performance trends'；删除 src/features/dashboard/mocks.ts 中 EMAIL_PERFORMANCE_DATA。RecentActivityCard 改造：新增 src/lib/dashboard/recent-activity.ts 从 AuditLog 表 query 当前 tenant 最近 5 条 ORDER BY created_at DESC LIMIT 5；i18n 自然语言转译（kol.relationship_status_changed / campaign.created / kol.email_updated 等 action）；空数据 friendly empty state 'Activity from your team will appear here'；删除 RECENT_ACTIVITIES；如 mocks.ts 全空则删整个文件。i18n keys 新增 en/zh + 跑 i18n:translate 补 ja/ko/es；tests/integration/dashboard-real-data.test.ts 验证 EmailLog → 14 天聚合 + AuditLog → 自然语言转译；staging git_sha 与本 commit 一致。"
-    },
-    {
-      "id": "F007",
-      "title": "文案 polish（登录页重写 + AiSuggestions/health redis/Import 按钮）",
-      "priority": "high",
-      "executor": "generator",
-      "status": "done",
-      "acceptance": "1) 登录页左侧文案重写（用户 4 轮 lock）：messages/{en,zh}.json 改 5 keys（auth.login.eyebrow='GAME KOL OPERATIONS · 2026'/'游戏 KOL 运营中枢 · 2026'；heroTitle='<accent>The KOL command center</accent><br></br>for global game studios.' / '为全球游戏工作室打造的<br></br><accent>KOL 营销指挥中心。</accent>'；heroSubtitle='Across YouTube, TikTok, Twitch, and Bilibili — gaming KOL operations purpose-built for studios going global.' / '覆盖 YouTube、TikTok、Twitch、Bilibili —— 为出海游戏工作室打造的游戏 KOL 运营平台。'；chipCreators='2,500+ gaming creators' / '2,500+ 游戏创作者'；chipMatch='AI-powered KOL × Product matching' / 'AI 智能匹配 KOL × 产品'；chipLocales='EN · ZH · JA · KO · ES' / '5 种语言：中 · 英 · 日 · 韩 · 西'）+ 删 chipStudios + trustedBy keys；src/components/auth/LoginBrandOverlay.tsx 删 chipStudios chip + studios const 数组 + trust footer JSX 段；ja/ko/es 跑 i18n:translate 补全 5 keys；visual baseline en-login.png + zh-login.png 重生入库。2) /campaigns AiSuggestionsCard 移除 'Coming with B2' badge（comingTag）+ body 改 'AI Suggestions are now live on each campaign — open any campaign to see personalized matches' + CTA 链 /campaigns/{firstActiveId} 或 /discovery。3) /api/health redis 字段改 {status:'not_used', note:'BullMQ enables when production scale demands'}；tests/unit/health-redis-status.test.ts 更新。4) src/app/[locale]/(app)/campaigns/page.tsx 删 disabled Import 按钮。existing tests 不破坏；staging git_sha 与本 commit 一致。"
+      "acceptance": "Part A next.config.ts 配 images.remotePatterns（YouTube/Twitch/TikTok/Bilibili CDN）+ formats avif/webp + optimizePackageImports recharts/@base-ui/react + serverExternalPackages @prisma/client/bcrypt/googleapis/resend + headers 6 项（X-Frame DENY / X-Content-Type nosniff / Referrer-Policy / Permissions-Policy / HSTS / CSP-Report-Only 一周观察期）；Part B Material Symbols 改 next/font 自托管子集（生成脚本 grep 全代码 icon name + 100+ 处 material-symbols-outlined 全渲染无字符方框 + 删 fonts.googleapis.com link）；Part C 7 处原生 <img> 替换 next/image（CampaignKolRow/KolHero/RecentVideosGrid/AvatarWithPlatformBadge/CampaignRow/SidebarUserChip/UserAvatarMenu，全部含 width/height 防 CLS + KolHero priority + 其他 lazy 默认）；Part D recharts 三处 dynamic（roi/RoiTrendChart + campaigns/[id]/EmailPerformanceChart + features/dashboard/EmailPerformanceChart）；Part E markdown dynamic 两处（weekly-report/WeeklyReportRenderer + outreach/templates/TemplateWorkspaceClient）；Part F AppShellLayout 拆 ActiveNavClient island（usePathname 仅在 island，外壳 server，sidebar 子树全 server）；npm run build + @next/bundle-analyzer 验证初始 JS 减 ≥ 200KB gzipped（audit 估 400-500KB 留余量）；curl -I https://staging.kol.guangai.ai/ 验证 6 头存在；Lighthouse 移动 perf ≥ 75；CSP Report-Only 一周观察期 violation log 0；visual baseline 重生（dashboard/campaigns/roi/kols-detail/login）；existing tests 不破坏；staging git_sha 与本 commit 一致。"
     }
   ]
 }

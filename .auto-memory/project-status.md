@@ -3,29 +3,31 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
+## 当前批次
+- **BIx-mvp-polish-pass** — building 0/5（2026-05-01 启动；MVP-internal-demo-prep done + signoff PASS + framework v0.9.5 12 条 learnings 沉淀完毕）
+- 估时 ~5-5.5 day Generator + 0.5 day Reviewer
+## Features (5, 全 generator 批次)
+- F001 /crm 3 disabled 控件清理（time toggle / Export CSV / 删 Manual log）~1 day
+- F002 Misc 5 项 polish（Owner filter / Email btn / PDF 文案 / mock_sent / AiSuggestions）~2h
+- F003 11 页 critical paths edge states + error.tsx 兜底 ~4h
+- F004 YouTube sync 配额优化 P1 ~89% + Top 100 真 engagement batch ~1.5-2 day
+- F005 前端 perf 六件套（next.config.ts/font/image + recharts/markdown dynamic + AppShellLayout island）~1.4 day
+## Generator 开工建议顺序（spec §4 + 工时优化）
+F002 → F003 → F001 → F005 → F004 → push CI 全绿 → SSH staging deploy（按 framework deploy-patterns §3.2 完整链）→ SSH prod redeploy（F004 含 migration）→ verifying 移交 Reviewer
+## ⚠️ F004 开工前 1 个 open question 待用户裁决
+FILTER_MIN_SUBSCRIBERS = 10K vs 1K vs env var 三选一（spec §F004 末尾 + §10 决议 9）。其他 4 features 不阻塞。
+## 关键设计决议（spec §3 + §10 lock）
+- F005 范围 (γ)：CR-4/5/6 + H-P1/2/3 六件套；H-P4 → BL-021；H-P5 → BL-022
+- Material Symbols：next/font 自托管子集（不切 Lucide）；CSP Report-Only 一周观察期；next/image 全 7 处一次性替换
+- F004 P1 ~89% utilization + Top 100 真 engagement batch 替代 B5 lazy-load + kol_sync_cursor 表新建
+## 角色分配
+- 默认映射（role_assignments=null）：CLI = planner+generator，Codex = evaluator
+## Backlog 12 条
+BL-003/011/012/014/015/016/017/018/019 + BL-020 安全 high / BL-021 Suspense medium / BL-022 虚拟化 deferred
+## 即将启动批次
+- **BL-020 安全 mini-batch** (BIx done 后, ~0.5-1 day) — 6 项前端审计安全 Critical/High，上线对外客户前必须
+## 时间线
+- ~05-12 BIx-mvp-polish-pass done
+- ~05-13 BL-020 安全整改 done → 上线对外客户准备就绪
 
-# Project Status — KOLMatrix
-
-**Last Updated:** 2026-05-01 (johnsong fix-round 3 signoff)
-**Sprint:** MVP-internal-demo-prep | **Status:** done | **fix_rounds:** 3
-
-## Final Reviewer signoff
-- `C-10` Outreach AI customize 复验 PASS：`PUBG Mobile — Season 30` campaign 上返回可编辑 preview，`Accept AI` 后 send result 为 `1 sent / 0 mocked / 0 failed`
-- `C-13` Weekly Report 复验 PASS：`Download PDF` 触发 `kolmatrix:weekly-report-download`
-- `F-01` coverage PASS：`97` files / `625` tests
-- `F-02` CI PASS：最新 main deploy / test 流水均 success
-- `F-03` Playwright E2E PASS：`journey-a` / `journey-b`
-- prod health SHA = `6f33a55`
-- `a541f8e` 仅更新状态机与 project-status，不改 runtime
-
-## CI / Runtime
-✅ prod runtime `6f33a55`: healthy / git_sha matches deployed build
-✅ latest CI & deploy workflows: success
-✅ prod smoke runtime validated in browser
-
-## Current State
-- `status=done`
-- `docs.signoff` 已写入 [`docs/test-reports/MVP-internal-demo-prep-signoff-2026-05-01.md`](../test-reports/MVP-internal-demo-prep-2026-05-01.md)
-
-## Backlog
-9 entries: BL-003/011/012/014/015/016/017/018/019 + BL-020/021/022 (all Post-MVP)
+<!-- 写入规则（harness §记忆分层）：覆盖写 / ≤30 行 / 所有角色可写 / 只放 WHAT / 不重复 progress.json -->
