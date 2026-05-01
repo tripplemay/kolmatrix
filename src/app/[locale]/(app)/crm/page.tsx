@@ -1,9 +1,8 @@
 /**
- * BM2-F007 · `/crm` page (Hybrid layout per Planner adjudication
- * §13 #A:A3).
+ * BM2-F007 / BIx-mvp-polish-pass F001 · `/crm` page.
  *
  * Layout:
- *   Header (title + disabled time toggle + Export CSV + +Manual log)
+ *   Header (title + 3-way time toggle + Export CSV)
  *   → 4-card KPI strip (Pipeline / Long-term ring / Spend sparkline /
  *     Avg ROI placeholder)
  *   → Section B 60/40 split (Pipeline horizontal bars clickable →
@@ -14,7 +13,12 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { runCrmOverview } from "@/lib/crm/overview";
+import {
+  DEFAULT_CRM_RANGE,
+  isCrmRange,
+  runCrmOverview,
+  type CrmRange,
+} from "@/lib/crm/overview";
 
 import { CrmFunnel } from "./CrmFunnel";
 import { CrmHeader } from "./CrmHeader";
@@ -26,23 +30,40 @@ export const metadata = { title: "CRM — KOLMatrix" };
 
 interface Props {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function CrmPage({ params }: Props) {
+function asScalar(v: string | string[] | undefined): string | undefined {
+  if (Array.isArray(v)) return v[0];
+  return v;
+}
+
+export default async function CrmPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const raw = await searchParams;
   const session = await auth();
   const tenantId = session?.user?.tenantId;
   if (!tenantId) redirect("/login");
 
-  const overview = await runCrmOverview(tenantId);
+  const rawRange = asScalar(raw.range);
+  const range: CrmRange = isCrmRange(rawRange) ? rawRange : DEFAULT_CRM_RANGE;
+
+  const overview = await runCrmOverview(tenantId, { range });
   const t = await getTranslations("crm");
+
+  const basePath = `/${locale}/crm`;
 
   return (
     <div
       className="mx-auto flex max-w-[1600px] flex-col gap-6 pb-16"
       data-testid="crm-page"
     >
-      <CrmHeader title={t("title")} subtitle={t("subtitle")} />
+      <CrmHeader
+        title={t("title")}
+        subtitle={t("subtitle")}
+        basePath={basePath}
+        range={range}
+      />
 
       <CrmKpiStrip kpi={overview.collabKpi} />
 

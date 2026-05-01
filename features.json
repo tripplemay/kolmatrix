@@ -6,7 +6,7 @@
       "title": "/crm Header 3 个 disabled 控件清理（time toggle real / Export CSV impl / Manual log delete）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "/crm 时间 toggle（thisQuarter / Last 90d / allTime）3 个 button 全可点，按 created_at 范围 filter 4 个 CRM 组件（CrmKpiStrip/CrmPipelineBars/CrmFunnel/CrmRecentChanges），URL 参数 ?range=thisQuarter|last90d|allTime，default last90d；runCrmOverview 接受 range 参数；Export CSV 按钮真做 Server Action 生成 CRM 数据 CSV（KOL 列表 + 阶段 + kolCampaign + 金额）含 Content-Disposition; +Manual log 按钮从 CrmHeader 移除并删除 i18n key crm.header.manualLog*；tests/integration/crm-time-range.test.ts 验证 3 range × 4 组件；tests/integration/crm-export-csv.test.ts 验证 CSV 内容；visual baseline 重生（dashboard/crm 受影响）；staging git_sha 与本 commit 一致。"
     },
     {

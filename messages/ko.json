@@ -1073,10 +1073,7 @@
     "subtitle": "캠페인 전반에 걸친 장기 KOL 관계 및 파이프라인 퍼널입니다.",
     "header": {
       "exportCsv": "CSV 내보내기",
-      "exportCsvTooltip": "CSV 내보내기는 B4에서 제공됩니다.",
-      "manualLog": "+ 수동 로그",
-      "manualLogTooltip": "수동 관계 로그 입력은 B4에서 제공됩니다.",
-      "rangeDisabledTooltip": "시간 범위 필터는 B4에서 제공됩니다.",
+      "exportCsvTooltip": "선택한 기간의 CRM 명단 CSV를 다운로드합니다.",
       "range": {
         "thisQuarter": "이번 분기",
         "last90d": "최근 90일",

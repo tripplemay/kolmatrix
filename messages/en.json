@@ -989,10 +989,7 @@
     "subtitle": "Long-term KOL relationships and pipeline funnel across campaigns.",
     "header": {
       "exportCsv": "Export CSV",
-      "exportCsvTooltip": "CSV export ships in B4.",
-      "manualLog": "+ Manual log",
-      "manualLogTooltip": "Manual relationship log entry ships in B4.",
-      "rangeDisabledTooltip": "Time-range filter ships in B4.",
+      "exportCsvTooltip": "Download a CSV of your CRM roster for the selected time range.",
       "range": {
         "thisQuarter": "This quarter",
         "last90d": "Last 90 days",

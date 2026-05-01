@@ -1073,10 +1073,7 @@
     "subtitle": "Relaciones de KOL a largo plazo y embudo de pipeline a través de campañas.",
     "header": {
       "exportCsv": "Exportar CSV",
-      "exportCsvTooltip": "La exportación de CSV se lanzará en B4.",
-      "manualLog": "+ Registro manual",
-      "manualLogTooltip": "La entrada de registro de relación manual se lanzará en B4.",
-      "rangeDisabledTooltip": "El filtro de rango de tiempo se lanzará en B4.",
+      "exportCsvTooltip": "Descarga un CSV del registro CRM para el rango de tiempo seleccionado.",
       "range": {
         "thisQuarter": "Este trimestre",
         "last90d": "Últimos 90 días",

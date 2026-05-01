@@ -989,10 +989,7 @@
     "subtitle": "跨活动追踪 KOL 长期关系与漏斗。",
     "header": {
       "exportCsv": "导出 CSV",
-      "exportCsvTooltip": "CSV 导出在 B4 版本交付。",
-      "manualLog": "+ 手工记录",
-      "manualLogTooltip": "手工关系记录在 B4 版本交付。",
-      "rangeDisabledTooltip": "时间范围筛选在 B4 版本交付。",
+      "exportCsvTooltip": "下载所选时间范围内的 CRM 名单 CSV。",
       "range": {
         "thisQuarter": "本季度",
         "last90d": "近 90 天",

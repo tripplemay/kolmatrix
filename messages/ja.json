@@ -1073,10 +1073,7 @@
     "subtitle": "キャンペーン全体での長期的なKOL関係とパイプラインファネル。",
     "header": {
       "exportCsv": "CSVをエクスポート",
-      "exportCsvTooltip": "CSVエクスポートはB4で提供されます。",
-      "manualLog": "+ 手動ログ",
-      "manualLogTooltip": "手動の関係ログエントリはB4で提供されます。",
-      "rangeDisabledTooltip": "時間範囲フィルタはB4で提供されます。",
+      "exportCsvTooltip": "選択した期間のCRM名簿のCSVをダウンロードします。",
       "range": {
         "thisQuarter": "今四半期",
         "last90d": "過去90日間",

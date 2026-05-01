@@ -22,6 +22,38 @@ import {
 
 const ENGAGEMENT_STATUSES = ["signed", "delivered", "paid"] as const;
 
+/**
+ * BIx-mvp-polish-pass F001 — `/crm` time-toggle ranges.
+ *
+ * - `thisQuarter` → start of the current calendar quarter (UTC)
+ * - `last90d`     → 90 days ago (default; matches the legacy single
+ *                    enabled toggle)
+ * - `allTime`     → undefined cutoff (no createdAt filter)
+ */
+export type CrmRange = "thisQuarter" | "last90d" | "allTime";
+
+export const DEFAULT_CRM_RANGE: CrmRange = "last90d";
+
+export function isCrmRange(value: unknown): value is CrmRange {
+  return value === "thisQuarter" || value === "last90d" || value === "allTime";
+}
+
+/**
+ * Resolve a range to an inclusive start Date (or null for `allTime`).
+ * `now` is injectable so tests pin a deterministic boundary.
+ */
+export function rangeStart(range: CrmRange, now: Date = new Date()): Date | null {
+  if (range === "allTime") return null;
+  if (range === "last90d") {
+    return new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+  }
+  // thisQuarter — UTC quarter boundary so the cutoff is deterministic
+  // regardless of where the request was rendered from.
+  const month = now.getUTCMonth();
+  const quarterStartMonth = month - (month % 3);
+  return new Date(Date.UTC(now.getUTCFullYear(), quarterStartMonth, 1));
+}
+
 export interface CrmKpi {
   totalPipeline: number;
   longTermPartners: number;
@@ -65,14 +97,30 @@ function readStatusFromPayload(
   return typeof v === "string" ? v : null;
 }
 
-export async function runCrmOverview(tenantId: string): Promise<CrmOverview> {
+export interface RunCrmOverviewOptions {
+  /** Default `last90d`; UI surfaces a 3-way toggle. */
+  range?: CrmRange;
+}
+
+export async function runCrmOverview(
+  tenantId: string,
+  options: RunCrmOverviewOptions = {}
+): Promise<CrmOverview> {
+  const range = options.range ?? DEFAULT_CRM_RANGE;
+  const cutoff = rangeStart(range);
+
   // Stage distribution + cumulative spend run inside withTenant (RLS
-  // enforces tenant scoping on Kol + KolCampaign).
+  // enforces tenant scoping on Kol + KolCampaign). The time-range
+  // toggle filters by createdAt — `null` cutoff (allTime) means no
+  // filter, matching the legacy default scope.
   const tenantBlock = await withTenant(tenantId, async (tx) => {
     const grouped = await tx.kol.groupBy({
       by: ["relationshipStatus"],
       _count: { _all: true },
-      where: { deletedAt: null },
+      where: {
+        deletedAt: null,
+        ...(cutoff ? { createdAt: { gte: cutoff } } : {}),
+      },
     });
     const stageDistribution = fillStageDistribution(
       grouped.map((g) => ({
@@ -82,7 +130,10 @@ export async function runCrmOverview(tenantId: string): Promise<CrmOverview> {
     );
 
     const spendRows = await tx.kolCampaign.findMany({
-      where: { status: { in: [...ENGAGEMENT_STATUSES] } },
+      where: {
+        status: { in: [...ENGAGEMENT_STATUSES] },
+        ...(cutoff ? { createdAt: { gte: cutoff } } : {}),
+      },
       select: { kolFee: true },
     });
     const cumulativeSpend = spendRows.reduce((acc, r) => {
@@ -95,7 +146,9 @@ export async function runCrmOverview(tenantId: string): Promise<CrmOverview> {
 
   // audit_log queries via the base client (platform table, no RLS).
   // Manual `tenant_id` filter + LEFT JOIN guards on each side per
-  // §13.4 #1.
+  // §13.4 #1. The 14d sparkline window is independent of the toggle
+  // — it always shows the last 14 days of commitments because the
+  // KPI tile labels itself "14d activity".
   const since14d = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
   const [commitmentEvents, recentRaw] = await Promise.all([
     prisma.auditLog.findMany({
@@ -110,6 +163,7 @@ export async function runCrmOverview(tenantId: string): Promise<CrmOverview> {
       where: {
         tenantId,
         action: "kol.relationship_changed",
+        ...(cutoff ? { createdAt: { gte: cutoff } } : {}),
       },
       orderBy: { createdAt: "desc" },
       take: 30,
