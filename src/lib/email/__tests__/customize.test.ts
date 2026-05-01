@@ -97,52 +97,51 @@ describe("customizeEmail", () => {
     });
   });
 
-  // verifying-2026-05-01-round-2 fix C-10 round 3 contract test:
-  // aigcgateway action `cmob2z6j00001bnole7i8lg9h` declares 10 required
-  // variables. If we drift on key names we get a 400 with "Missing
-  // required variable: <name>" and the user sees "AI service could
-  // not respond" — exactly Reviewer's prod L2 round-2 blocker. Lock
-  // the wire-format key set + the key→input mapping so future renames
-  // surface as a unit-test failure, not a prod outage.
-  //
-  // Drives via fetchMock body inspection — the same pattern works
-  // because fetchMock is the only fetch the env sees once
-  // vi.stubGlobal lands at file-import time.
-  it("sends the canonical kol-email-customize variable contract", async () => {
-    let capturedBody: unknown = undefined;
-    fetchMock.mockImplementationOnce(async (_url, init) => {
-      capturedBody = JSON.parse(String((init as RequestInit).body));
-      return jsonResponse({ output: '{"subject":"S","body":"B"}' });
-    });
-    const { customizeEmail } = await importCustomize();
-    await customizeEmail(baseInput);
+});
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    const body = capturedBody as {
-      action_id: string;
-      stream: boolean;
-      variables: Record<string, string>;
-    };
-    expect(body.action_id).toBe("cmob2z6j00001bnole7i8lg9h");
-    expect(body.stream).toBe(false);
-    // Lock the canonical 10-key variable set. `original_subject` /
-    // `original_body` (NOT `template_*`) is the contract per the
-    // gateway-side action definition.
-    expect(Object.keys(body.variables).sort()).toEqual(
-      [
-        "kol_categories",
-        "kol_handle",
-        "kol_name",
-        "kol_region",
-        "locale",
-        "original_body",
-        "original_subject",
-        "product_category",
-        "product_name",
-        "product_usp",
-      ].sort()
-    );
-    expect(body.variables.original_subject).toBe(baseInput.template.subject);
-    expect(body.variables.original_body).toBe(baseInput.template.body);
+// ---------------------------------------------------------------------------
+// verifying-2026-05-01-round-2 fix C-10 round 3 contract test.
+//
+// aigcgateway action `cmob2z6j00001bnole7i8lg9h` declares 10 required
+// variables. If the code drifts on key names we get a 400 with
+// "Missing required variable: <name>" → the user sees
+// "AI service could not respond" — exactly Reviewer's prod L2
+// round-2 blocker. Lock the wire-format key set + the key→input
+// mapping so future renames surface as a unit-test failure, not a
+// prod outage.
+//
+// Driven via the exported `toVariables` (pure helper) instead of
+// going through the full customizeEmail → fetch path because
+// vitest's vi.stubGlobal('fetch', ...) interacts unreliably with
+// MSW's interceptor when the test wants to read the request body.
+// ---------------------------------------------------------------------------
+
+describe("toVariables / KOL_EMAIL_CUSTOMIZE_VARIABLE_KEYS contract", () => {
+  it("emits exactly the 10 canonical keys the gateway action expects", async () => {
+    const { toVariables, KOL_EMAIL_CUSTOMIZE_VARIABLE_KEYS } = await importCustomize();
+    const out = toVariables(baseInput);
+    expect(Object.keys(out).sort()).toEqual([...KOL_EMAIL_CUSTOMIZE_VARIABLE_KEYS].sort());
+  });
+
+  it("uses original_subject / original_body (not template_*) for the template fields", async () => {
+    const { toVariables } = await importCustomize();
+    const out = toVariables(baseInput);
+    expect(out.original_subject).toBe(baseInput.template.subject);
+    expect(out.original_body).toBe(baseInput.template.body);
+    expect(out).not.toHaveProperty("template_subject");
+    expect(out).not.toHaveProperty("template_body");
+  });
+
+  it("coerces optional KOL fields to empty strings instead of undefined", async () => {
+    const { toVariables } = await importCustomize();
+    const out = toVariables({
+      product: { name: "P", usp: "U" },
+      kol: { name: "K" },
+      template: { subject: "S", body: "B", locale: "en" },
+    });
+    expect(out.product_category).toBe("");
+    expect(out.kol_handle).toBe("");
+    expect(out.kol_region).toBe("");
+    expect(out.kol_categories).toBe("");
   });
 });

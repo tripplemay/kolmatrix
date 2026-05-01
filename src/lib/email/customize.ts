@@ -60,15 +60,35 @@ function baseUrl(): string {
   return resolveAigcV1BaseUrl(process.env.AIGCGATEWAY_BASE_URL);
 }
 
-function toVariables(input: CustomizeEmailInput): Record<string, string> {
-  // verifying-2026-05-01-round-2 fix C-10 round 3: aigcgateway action
-  // `cmob2z6j00001bnole7i8lg9h` (kol-email-customize) declares its
-  // template-side variables as `original_subject` / `original_body`.
-  // The earlier names `template_subject` / `template_body` were only
-  // ever wired up to the same variable names but the action was
-  // (re)published with `original_*` semantics, so prod now returns
-  //   400 invalid_request_error: Missing required variable: original_subject
-  // Confirmed via direct `POST /v1/actions/run` curl 2026-05-01.
+/**
+ * Canonical variable contract for aigcgateway action
+ * `kol-email-customize` (id `cmob2z6j00001bnole7i8lg9h`).
+ *
+ * The action declares 10 required variables. Drift on any of these
+ * names produces a 400 from the gateway and the user sees
+ * "AI service could not respond." (Reviewer prod L2 round-2 blocker
+ * 2026-05-01: `template_subject` was renamed to `original_subject`
+ * gateway-side; the code was still sending `template_*`.)
+ *
+ * Exported so a unit test can lock the wire format against future
+ * renames.
+ */
+export const KOL_EMAIL_CUSTOMIZE_VARIABLE_KEYS = [
+  "product_name",
+  "product_category",
+  "product_usp",
+  "kol_name",
+  "kol_handle",
+  "kol_region",
+  "kol_categories",
+  "original_subject",
+  "original_body",
+  "locale",
+] as const;
+
+export function toVariables(
+  input: CustomizeEmailInput
+): Record<(typeof KOL_EMAIL_CUSTOMIZE_VARIABLE_KEYS)[number], string> {
   return {
     product_name: input.product.name,
     product_category: input.product.category ?? "",
