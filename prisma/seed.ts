@@ -274,6 +274,10 @@ async function main() {
         displayName: kol.displayName,
         followerCount: kol.followerCount,
         aiScore: kol.aiScore,
+        // verifying-2026-05-01-fixing-1 fix C-10 round 2: backfill demo
+        // emails on rerun so older seed data picks up the new field.
+        email: `${kol.handle}@demo.kolmatrix.local`,
+        emailSource: "demo_seed",
       },
       create: {
         tenantId: tenant.id,
@@ -298,6 +302,12 @@ async function main() {
         },
         aiEvaluatedAt: new Date(),
         status: "active",
+        // verifying-2026-05-01-fixing-1 fix C-10 round 2: KOLs need an
+        // email so /outreach AI customize → send can be demo'd end to
+        // end on the seed alone (Reviewer's reverify blocked because
+        // product-linked campaigns had no email-bearing KOLs).
+        email: `${kol.handle}@demo.kolmatrix.local`,
+        emailSource: "demo_seed",
       },
     });
   }
@@ -660,6 +670,49 @@ async function main() {
     },
   });
 
+  // ----- Wire KolCampaign rows so /outreach can demo end-to-end -----
+  // verifying-2026-05-01-fixing-1 fix C-10 round 2: each productId-linked
+  // campaign needs at least one KolCampaign row whose KOL has an email,
+  // otherwise the composer's KOL list is empty and AI customize → send
+  // can't be demo'd. We pick handles by category fit per spec:
+  //   - HoK (MOBA)        → MOBA / Mobile / Tournament leaning handles
+  //   - Genshin (RPG)     → RPG / MMO / Story / Anime handles
+  //   - PUBG  (FPS / BR)  → FPS / Battle-Royale / Competitive handles
+  // findFirst + create makes this idempotent across reruns.
+  const KOL_CAMPAIGN_SEEDS: Record<string, string[]> = {
+    "Honor of Kings — Global Launch": ["gamerxia", "mei.plays", "neonhaze"],
+    "Genshin Impact — Winter Event": ["sakurayt", "aisha.streams", "lumenarc", "ryo.arcade"],
+    "PUBG Mobile — Season 30": ["kaibytes", "zeralite", "forgefalcon"],
+  };
+  const kolByHandle = new Map<string, string>(
+    (await prisma.kol.findMany({
+      where: { tenantId: tenant.id, handle: { in: KOLS.map((k) => k.handle) } },
+      select: { id: true, handle: true },
+    })).map((row) => [row.handle, row.id])
+  );
+  let linkedKolCampaignCount = 0;
+  for (const [campaignName, handles] of Object.entries(KOL_CAMPAIGN_SEEDS)) {
+    const campaignId = campaignIdByName.get(campaignName);
+    if (!campaignId) continue;
+    for (let i = 0; i < handles.length; i++) {
+      const handle = handles[i];
+      const kolId = kolByHandle.get(handle);
+      if (!kolId) continue;
+      const existing = await prisma.kolCampaign.findFirst({
+        where: { tenantId: tenant.id, kolId, campaignId },
+        select: { id: true },
+      });
+      if (existing) continue;
+      // Alternate status across rows so the funnel + composer KOL list
+      // looks varied rather than 100% pending.
+      const status = i === 0 ? "contacted" : i === 1 ? "pending" : "quoted";
+      await prisma.kolCampaign.create({
+        data: { tenantId: tenant.id, kolId, campaignId, status },
+      });
+      linkedKolCampaignCount++;
+    }
+  }
+
   console.log("Seed complete:", {
     tenant: tenant.slug,
     users: [admin.email, marketer.email],
@@ -670,6 +723,7 @@ async function main() {
     products: seededProductCount,
     productsRemoved: removed.count,
     campaignsLinkedToProducts: linkedCampaignCount,
+    kolCampaignRowsCreated: linkedKolCampaignCount,
   });
 }
 

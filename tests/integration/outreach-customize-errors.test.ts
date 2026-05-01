@@ -26,17 +26,16 @@ import { cleanDb, setupTestDb, teardownTestDb, withTestTenant } from "../helpers
 // from the test without going through a Server Action stack. This stays
 // in lockstep with src/app/[locale]/(app)/outreach/actions.ts:97-148.
 type ResolverInputs = {
-  campaign: { product: { name: string; category: string; uniqueSellingPoints: string } | null } | null;
+  campaign: {
+    product: { name: string; category: string; uniqueSellingPoints: string } | null;
+  } | null;
   kol: unknown;
   template: unknown;
 };
 
-function classifyMissing(inputs: ResolverInputs):
-  | "campaign_not_found"
-  | "campaign_no_product"
-  | "kol_not_found"
-  | "template_not_found"
-  | "ok" {
+function classifyMissing(
+  inputs: ResolverInputs
+): "campaign_not_found" | "campaign_no_product" | "kol_not_found" | "template_not_found" | "ok" {
   if (!inputs.campaign) return "campaign_not_found";
   if (!inputs.campaign.product) return "campaign_no_product";
   if (!inputs.kol) return "kol_not_found";
@@ -58,9 +57,7 @@ beforeEach(async () => {
 
 describe("customizeAction error classification (MVP-vf C-10)", () => {
   it("returns campaign_not_found when the campaign row is missing", () => {
-    expect(classifyMissing({ campaign: null, kol: {}, template: {} })).toBe(
-      "campaign_not_found"
-    );
+    expect(classifyMissing({ campaign: null, kol: {}, template: {} })).toBe("campaign_not_found");
   });
 
   it("returns campaign_no_product when campaign exists but productId is null", () => {

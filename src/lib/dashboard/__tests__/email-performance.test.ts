@@ -76,9 +76,7 @@ describe("fetchEmailPerformance", () => {
   });
 
   it("rows with null sentAt are skipped silently", async () => {
-    const rows: Row[] = [
-      { sentAt: null, status: "queued", openedAt: null, repliedAt: null },
-    ];
+    const rows: Row[] = [{ sentAt: null, status: "queued", openedAt: null, repliedAt: null }];
     const out = await fetchEmailPerformance(buildTx(rows));
     const total = out.reduce((s, p) => s + p.sent + p.opened + p.replied, 0);
     expect(total).toBe(0);

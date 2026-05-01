@@ -6,9 +6,7 @@ vi.mock("next/cache", () => ({ revalidatePath }));
 const authMock = vi.fn<() => Promise<unknown>>();
 vi.mock("@/auth", () => ({ auth: () => authMock() }));
 
-const withTenant = vi.fn<
-  (tenantId: string, fn: (tx: unknown) => unknown) => Promise<unknown>
->();
+const withTenant = vi.fn<(tenantId: string, fn: (tx: unknown) => unknown) => Promise<unknown>>();
 vi.mock("@/lib/db", () => ({ withTenant }));
 
 const logEvent = vi.fn();
@@ -21,9 +19,7 @@ vi.mock("@/lib/products/generateAiAssets", () => ({
   markAiAssetsPending,
 }));
 
-const { deleteProduct, updateProduct, triggerAiGeneration } = await import(
-  "../actions"
-);
+const { deleteProduct, updateProduct, triggerAiGeneration } = await import("../actions");
 
 const TENANT_ID = "11111111-2222-3333-4444-555555555555";
 const USER_ID = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
@@ -156,10 +152,7 @@ describe("knowledge-base product actions", () => {
   it("rejects a blank productId on update without reaching Prisma", async () => {
     authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
 
-    const res = await updateProduct(
-      { ok: false },
-      buildFormData({ productId: "   " })
-    );
+    const res = await updateProduct({ ok: false }, buildFormData({ productId: "   " }));
 
     expect(res).toEqual({ ok: false, error: "invalid_input" });
     expect(withTenant).not.toHaveBeenCalled();
@@ -186,9 +179,7 @@ describe("knowledge-base product actions", () => {
     const res = await triggerAiGeneration(PRODUCT_ID);
 
     expect(res).toEqual({ ok: true });
-    expect(findUnique).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: PRODUCT_ID } })
-    );
+    expect(findUnique).toHaveBeenCalledWith(expect.objectContaining({ where: { id: PRODUCT_ID } }));
     expect(markAiAssetsPending).toHaveBeenCalledWith(TENANT_ID, PRODUCT_ID);
     expect(generateAiAssets).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -205,10 +196,7 @@ describe("knowledge-base product actions", () => {
         resourceId: PRODUCT_ID,
       })
     );
-    expect(revalidatePath).toHaveBeenCalledWith(
-      "/[locale]/knowledge-base",
-      "page"
-    );
+    expect(revalidatePath).toHaveBeenCalledWith("/[locale]/knowledge-base", "page");
   });
 
   it("triggerAiGeneration returns not_found when the product is missing", async () => {

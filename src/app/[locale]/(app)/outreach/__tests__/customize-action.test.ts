@@ -14,9 +14,7 @@ vi.mock("next/cache", () => ({ revalidatePath }));
 const authMock = vi.fn<() => Promise<unknown>>();
 vi.mock("@/auth", () => ({ auth: () => authMock() }));
 
-const withTenant = vi.fn<
-  (tenantId: string, fn: (tx: unknown) => unknown) => Promise<unknown>
->();
+const withTenant = vi.fn<(tenantId: string, fn: (tx: unknown) => unknown) => Promise<unknown>>();
 vi.mock("@/lib/db", () => ({ withTenant }));
 
 const logEvent = vi.fn();
@@ -52,7 +50,9 @@ function buildFD(): FormData {
 }
 
 function buildResolverTx(opts: {
-  campaign?: { product: { name: string; category: string; uniqueSellingPoints: string } | null } | null;
+  campaign?: {
+    product: { name: string; category: string; uniqueSellingPoints: string } | null;
+  } | null;
   kol?: unknown;
   template?: unknown;
 }) {

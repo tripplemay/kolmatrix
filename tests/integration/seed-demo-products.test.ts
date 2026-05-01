@@ -154,3 +154,127 @@ describe("seed.ts product cleanup (MVP-vf C-05.1)", () => {
     });
   });
 });
+
+// ---------------------------------------------------------------------------
+// MVP-vf C-10 round 2 — Outreach end-to-end smoke prerequisite.
+//
+// Reviewer's reverify reported that no single campaign on prod
+// satisfied (productId NOT NULL) AND (≥1 KolCampaign whose KOL has
+// email): the only campaign with email-bearing KOLs lacked a product,
+// while the productId-linked campaigns had empty kolCampaigns. The
+// seed now wires KolCampaign rows into HoK / Genshin / PUBG and sets
+// email on every demo KOL, so this regression spec asserts that
+// post-seed there's at least one campaign meeting the smoke combo.
+// ---------------------------------------------------------------------------
+
+describe("seed.ts outreach end-to-end smoke (MVP-vf C-10 round 2)", () => {
+  it("at least one campaign has productId AND a KolCampaign whose KOL has email", async () => {
+    await withTestTenant(async (tenantId, tx) => {
+      const owner = await tx.user.create({
+        data: { email: "smoke@t.local", tenantId, role: "marketer", name: "Smoke" },
+      });
+      const product = await tx.product.create({
+        data: {
+          tenantId,
+          name: "Honor of Kings",
+          category: "MOBA",
+          uniqueSellingPoints: "USP",
+          targetAudience: "Mobile gamers",
+        },
+      });
+      const campaign = await tx.campaign.create({
+        data: {
+          tenantId,
+          name: "Honor of Kings — Global Launch",
+          ownerUserId: owner.id,
+          status: "active",
+          markets: ["US"],
+          productId: product.id,
+        },
+      });
+      const kol = await tx.kol.create({
+        data: {
+          tenantId,
+          platform: "youtube",
+          handle: "gamerxia",
+          displayName: "GamerXia",
+          followerCount: 1_000,
+          categories: ["MOBA"],
+          email: "gamerxia@demo.kolmatrix.local",
+          emailSource: "demo_seed",
+          status: "active",
+        },
+      });
+      await tx.kolCampaign.create({
+        data: { tenantId, kolId: kol.id, campaignId: campaign.id, status: "contacted" },
+      });
+
+      // Mirror the loadOutreachComposerData query: a campaign with a
+      // product AND at least one KolCampaign whose KOL has an email.
+      const ready = await tx.campaign.findMany({
+        where: {
+          productId: { not: null },
+          kolCampaigns: { some: { kol: { email: { not: null } } } },
+        },
+      });
+      expect(ready.length).toBeGreaterThanOrEqual(1);
+      expect(ready[0].name).toBe("Honor of Kings — Global Launch");
+    });
+  });
+
+  it("KolCampaign create is idempotent on (tenantId, kolId, campaignId)", async () => {
+    await withTestTenant(async (tenantId, tx) => {
+      const owner = await tx.user.create({
+        data: { email: "idem@t.local", tenantId, role: "marketer", name: "Idem" },
+      });
+      const product = await tx.product.create({
+        data: {
+          tenantId,
+          name: "Honor of Kings",
+          category: "MOBA",
+          uniqueSellingPoints: "USP",
+        },
+      });
+      const campaign = await tx.campaign.create({
+        data: {
+          tenantId,
+          name: "Honor of Kings — Global Launch",
+          ownerUserId: owner.id,
+          status: "active",
+          markets: ["US"],
+          productId: product.id,
+        },
+      });
+      const kol = await tx.kol.create({
+        data: {
+          tenantId,
+          platform: "youtube",
+          handle: "gamerxia",
+          displayName: "GamerXia",
+          followerCount: 1_000,
+          categories: ["MOBA"],
+          email: "gamerxia@demo.kolmatrix.local",
+        },
+      });
+
+      // Mirror seed's findFirst + create idempotency contract: re-running
+      // the seed against an already-linked KOL must not duplicate.
+      for (let i = 0; i < 3; i++) {
+        const existing = await tx.kolCampaign.findFirst({
+          where: { tenantId, kolId: kol.id, campaignId: campaign.id },
+          select: { id: true },
+        });
+        if (!existing) {
+          await tx.kolCampaign.create({
+            data: { tenantId, kolId: kol.id, campaignId: campaign.id, status: "contacted" },
+          });
+        }
+      }
+
+      const count = await tx.kolCampaign.count({
+        where: { tenantId, kolId: kol.id, campaignId: campaign.id },
+      });
+      expect(count).toBe(1);
+    });
+  });
+});

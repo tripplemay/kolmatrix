@@ -52,20 +52,18 @@ export function ProductCard({ product, onEdit, onDelete }: Props) {
     });
   };
 
-  const emailCount =
-    assets && assets.status === "ready" ? assets.emailTemplates.length : 0;
-  const videoCount =
-    assets && assets.status === "ready" ? assets.videoScripts.length : 0;
+  const emailCount = assets && assets.status === "ready" ? assets.emailTemplates.length : 0;
+  const videoCount = assets && assets.status === "ready" ? assets.videoScripts.length : 0;
 
   return (
     <div
-      className="glass-panel card-glow flex h-full flex-col rounded-2xl border border-on-surface/5 p-6"
+      className="glass-panel card-glow border-on-surface/5 flex h-full flex-col rounded-2xl border p-6"
       data-testid="product-card"
     >
       <div className="mb-4 flex items-start justify-between">
         <div
           className={cn(
-            "rounded-md px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider",
+            "rounded-md px-2.5 py-1 text-[11px] font-bold tracking-wider uppercase",
             pillClass(product.category)
           )}
         >
@@ -83,10 +81,10 @@ export function ProductCard({ product, onEdit, onDelete }: Props) {
             </span>
           </button>
           {menuOpen ? (
-            <div className="absolute right-0 top-7 z-10 w-32 rounded-lg border border-outline-variant bg-surface-high p-1 shadow-xl">
+            <div className="border-outline-variant bg-surface-high absolute top-7 right-0 z-10 w-32 rounded-lg border p-1 shadow-xl">
               <button
                 type="button"
-                className="w-full rounded-md px-3 py-2 text-left text-xs text-on-surface hover:bg-surface"
+                className="text-on-surface hover:bg-surface w-full rounded-md px-3 py-2 text-left text-xs"
                 onClick={() => {
                   setMenuOpen(false);
                   onEdit(product);
@@ -96,7 +94,7 @@ export function ProductCard({ product, onEdit, onDelete }: Props) {
               </button>
               <button
                 type="button"
-                className="w-full rounded-md px-3 py-2 text-left text-xs text-rose-300 hover:bg-surface"
+                className="hover:bg-surface w-full rounded-md px-3 py-2 text-left text-xs text-rose-300"
                 onClick={() => {
                   setMenuOpen(false);
                   onDelete(product);
@@ -109,10 +107,8 @@ export function ProductCard({ product, onEdit, onDelete }: Props) {
         </div>
       </div>
 
-      <h3 className="mb-2 text-lg font-bold text-white line-clamp-2">
-        {product.name}
-      </h3>
-      <p className="mb-4 text-[13px] text-on-surface-variant line-clamp-2">
+      <h3 className="mb-2 line-clamp-2 text-lg font-bold text-white">{product.name}</h3>
+      <p className="text-on-surface-variant mb-4 line-clamp-2 text-[13px]">
         {product.targetAudience ?? product.uniqueSellingPoints}
       </p>
 
@@ -133,17 +129,9 @@ export function ProductCard({ product, onEdit, onDelete }: Props) {
         ) : assets?.status === "pending" ? (
           <ChipRow tone="amber" icon="progress_activity" label={t("generating")} spin />
         ) : assets?.status === "failed" ? (
-          <ChipRow
-            tone="rose"
-            icon="error"
-            label={t("generationFailed")}
-          />
+          <ChipRow tone="rose" icon="error" label={t("generationFailed")} />
         ) : (
-          <ChipRow
-            tone="neutral"
-            icon="horizontal_rule"
-            label={t("noAssetsYet")}
-          />
+          <ChipRow tone="neutral" icon="horizontal_rule" label={t("noAssetsYet")} />
         )}
         {canTriggerGenerate ? (
           <button
@@ -152,7 +140,7 @@ export function ProductCard({ product, onEdit, onDelete }: Props) {
             disabled={generatePending}
             data-testid="product-generate-ai-button"
             className={cn(
-              "mt-1 flex w-full items-center justify-center gap-1 rounded-lg border border-cyan/30 bg-cyan/10 px-3 py-1.5 text-[12px] font-semibold text-cyan transition-colors",
+              "border-cyan/30 bg-cyan/10 text-cyan mt-1 flex w-full items-center justify-center gap-1 rounded-lg border px-3 py-1.5 text-[12px] font-semibold transition-colors",
               "hover:border-cyan hover:bg-cyan/15 disabled:cursor-wait disabled:opacity-60"
             )}
           >
@@ -174,10 +162,8 @@ export function ProductCard({ product, onEdit, onDelete }: Props) {
             </span>
           </button>
         ) : null}
-        {generateError ? (
-          <p className="text-[11px] text-rose-300">{t("generateAiError")}</p>
-        ) : null}
-        <p className="pt-2 text-[11px] text-on-surface-variant/60">
+        {generateError ? <p className="text-[11px] text-rose-300">{t("generateAiError")}</p> : null}
+        <p className="text-on-surface-variant/60 pt-2 text-[11px]">
           {t("lastUpdated", {
             date: format.dateTime(new Date(product.updatedAt), {
               year: "numeric",
@@ -209,10 +195,7 @@ function ChipRow({ tone, icon, label, spin }: ChipRowProps) {
   return (
     <div className={cn("flex items-center gap-2 text-[12px] font-medium", CHIP_TONE[tone])}>
       <span
-        className={cn(
-          "material-symbols-outlined text-[18px]",
-          spin && "animate-spin"
-        )}
+        className={cn("material-symbols-outlined text-[18px]", spin && "animate-spin")}
         aria-hidden
       >
         {icon}

@@ -5,10 +5,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { withTenant } from "@/lib/db";
 import { logEvent } from "@/lib/events/log";
-import {
-  generateAiAssets,
-  markAiAssetsPending,
-} from "@/lib/products/generateAiAssets";
+import { generateAiAssets, markAiAssetsPending } from "@/lib/products/generateAiAssets";
 import {
   createProductSchema,
   type CreateProductInput,
@@ -29,9 +26,7 @@ function extractRaw(formData: FormData): Record<string, unknown> {
   const platforms = formData
     .getAll("platforms")
     .map(String)
-    .filter((p): p is ProductPlatform =>
-      (PRODUCT_PLATFORMS as readonly string[]).includes(p)
-    );
+    .filter((p): p is ProductPlatform => (PRODUCT_PLATFORMS as readonly string[]).includes(p));
   return {
     name: String(formData.get("name") ?? ""),
     category: String(formData.get("category") ?? ""),

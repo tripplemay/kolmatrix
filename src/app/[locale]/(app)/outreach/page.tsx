@@ -53,21 +53,16 @@ export default async function OutreachPage({ params, searchParams }: Props) {
 
   const composerLocale: "en" | "zh" = locale === "zh" ? "zh" : "en";
 
-  const [
-    stats,
-    daily,
-    topTemplates,
-    recentReplies,
-    recentlySent,
-    composerData,
-  ] = await Promise.all([
-    runEmailQuickStats(tenantId),
-    runSendingPerformance30d(tenantId),
-    runTopTemplates(tenantId, 3),
-    runRecentReplies(tenantId, 3),
-    runRecentlySent(tenantId, 10),
-    loadOutreachComposerData(tenantId, campaignId, composerLocale),
-  ]);
+  const [stats, daily, topTemplates, recentReplies, recentlySent, composerData] = await Promise.all(
+    [
+      runEmailQuickStats(tenantId),
+      runSendingPerformance30d(tenantId),
+      runTopTemplates(tenantId, 3),
+      runRecentReplies(tenantId, 3),
+      runRecentlySent(tenantId, 10),
+      loadOutreachComposerData(tenantId, campaignId, composerLocale),
+    ]
+  );
 
   const t = await getTranslations("outreach");
   const tComposer = await getTranslations("outreach.composer");
@@ -100,9 +95,7 @@ export default async function OutreachPage({ params, searchParams }: Props) {
     previewTitle: tComposer("previewTitle"),
     previewSubject: tComposer("previewSubject"),
     previewBody: tComposer("previewBody"),
-    missingTokensWarningTemplate: tComposer.raw(
-      "missingTokensWarning"
-    ) as string,
+    missingTokensWarningTemplate: tComposer.raw("missingTokensWarning") as string,
     aiCustomizeButton: tComposer("aiCustomizeButton"),
     aiCustomizeTitle: tComposer("aiCustomizeTitle"),
     aiCustomizeOriginal: tComposer("aiCustomizeOriginal"),
@@ -146,10 +139,7 @@ export default async function OutreachPage({ params, searchParams }: Props) {
   };
 
   return (
-    <div
-      className="mx-auto flex max-w-[1600px] flex-col gap-6 pb-16"
-      data-testid="outreach-page"
-    >
+    <div className="mx-auto flex max-w-[1600px] flex-col gap-6 pb-16" data-testid="outreach-page">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1
@@ -158,9 +148,7 @@ export default async function OutreachPage({ params, searchParams }: Props) {
           >
             {t("title")}
           </h1>
-          <p className="mt-1 max-w-2xl text-sm text-on-surface-variant">
-            {t("subtitle")}
-          </p>
+          <p className="text-on-surface-variant mt-1 max-w-2xl text-sm">{t("subtitle")}</p>
         </div>
       </header>
 
@@ -178,24 +166,15 @@ export default async function OutreachPage({ params, searchParams }: Props) {
 
       <SendingPerformanceChart daily={daily} />
 
-      <section
-        className="grid grid-cols-1 gap-6 md:grid-cols-3"
-        data-testid="outreach-bottom-row"
-      >
-        <TopTemplatesCard
-          rows={topTemplates}
-          fallbackTemplates={composerData.templates}
-        />
+      <section className="grid grid-cols-1 gap-6 md:grid-cols-3" data-testid="outreach-bottom-row">
+        <TopTemplatesCard rows={topTemplates} fallbackTemplates={composerData.templates} />
         <RecentRepliesCard rows={recentReplies} />
         <DomainHealthCard />
       </section>
 
       <RecentlySentTable rows={recentlySent} />
 
-      <OutreachFooter
-        dailyLimit={5000}
-        sentToday={stats.sentToday}
-      />
+      <OutreachFooter dailyLimit={5000} sentToday={stats.sentToday} />
     </div>
   );
 }

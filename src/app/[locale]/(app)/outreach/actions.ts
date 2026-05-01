@@ -37,8 +37,7 @@ import {
 } from "@/lib/email/batch-send";
 import { substituteSubjectAndBody } from "@/lib/email/variable-substitute";
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export type ComposerActionState<T = undefined> = {
   ok: boolean;
@@ -49,12 +48,7 @@ async function requireSession() {
   const session = await auth();
   const tenantId = session?.user?.tenantId;
   const userId = session?.user?.id;
-  if (
-    !tenantId ||
-    !UUID_RE.test(tenantId) ||
-    !userId ||
-    !UUID_RE.test(userId)
-  ) {
+  if (!tenantId || !UUID_RE.test(tenantId) || !userId || !UUID_RE.test(userId)) {
     return null;
   }
   return { tenantId, userId, marketerName: session!.user!.name ?? "Marketer" };
@@ -160,9 +154,7 @@ export async function customizeAction(
       template: {
         subject: inputs.template.subject,
         body: inputs.template.body,
-        locale: (inputs.template.locale === "zh" ? "zh" : "en") as
-          | "en"
-          | "zh",
+        locale: (inputs.template.locale === "zh" ? "zh" : "en") as "en" | "zh",
       },
     });
     return { ok: true, data: result };
