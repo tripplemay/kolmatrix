@@ -14,7 +14,7 @@
       "title": "Product targetAudience zod 强制（form-level min(1) + i18n error）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "src/app/[locale]/(app)/knowledge-base/actions.ts 加 z.string().min(1, { message: t('errors.targetAudienceRequired') })；messages/en/zh/knowledge-base 新 'errors.targetAudienceRequired' key（zh: 请填写目标受众）；提交空 targetAudience → form 显示 i18n error；提交非空 → 通过；DB schema 不动（保持 nullable）；existing knowledge-base tests 不破坏；跑 i18n:translate 补 ja/ko/es；staging git_sha 与本 commit 一致。"
     },
     {
@@ -54,7 +54,7 @@
       "title": "文案 polish（登录页重写 + AiSuggestions/health redis/Import 按钮）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "1) 登录页左侧文案重写（用户 4 轮 lock）：messages/{en,zh}.json 改 5 keys（auth.login.eyebrow='GAME KOL OPERATIONS · 2026'/'游戏 KOL 运营中枢 · 2026'；heroTitle='<accent>The KOL command center</accent><br></br>for global game studios.' / '为全球游戏工作室打造的<br></br><accent>KOL 营销指挥中心。</accent>'；heroSubtitle='Across YouTube, TikTok, Twitch, and Bilibili — gaming KOL operations purpose-built for studios going global.' / '覆盖 YouTube、TikTok、Twitch、Bilibili —— 为出海游戏工作室打造的游戏 KOL 运营平台。'；chipCreators='2,500+ gaming creators' / '2,500+ 游戏创作者'；chipMatch='AI-powered KOL × Product matching' / 'AI 智能匹配 KOL × 产品'；chipLocales='EN · ZH · JA · KO · ES' / '5 种语言：中 · 英 · 日 · 韩 · 西'）+ 删 chipStudios + trustedBy keys；src/components/auth/LoginBrandOverlay.tsx 删 chipStudios chip + studios const 数组 + trust footer JSX 段；ja/ko/es 跑 i18n:translate 补全 5 keys；visual baseline en-login.png + zh-login.png 重生入库。2) /campaigns AiSuggestionsCard 移除 'Coming with B2' badge（comingTag）+ body 改 'AI Suggestions are now live on each campaign — open any campaign to see personalized matches' + CTA 链 /campaigns/{firstActiveId} 或 /discovery。3) /api/health redis 字段改 {status:'not_used', note:'BullMQ enables when production scale demands'}；tests/unit/health-redis-status.test.ts 更新。4) src/app/[locale]/(app)/campaigns/page.tsx 删 disabled Import 按钮。existing tests 不破坏；staging git_sha 与本 commit 一致。"
     }
   ]

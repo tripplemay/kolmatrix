@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "MVP 内部团队 demo 准备 - Dashboard 三元素（workflow 6 步图 + CPI hardcoded 卡 + 30d ROI 趋势）+ Q5 Product targetAudience zod 强制 + 5 款游戏 Products seed（Honor of Kings/Genshin/PUBG Mobile/Pokemon Go/Clash Royale，3 预生成 aiAssets + 2 null）+ 团队内部 README + Prod L2 烟测 + Dashboard 真数据替 mock（EmailPerformance/RecentActivity）+ 文案 polish（登录页重写 + AiSuggestions/health redis/Import 按钮）。Definition of Done = prod redeploy 后 7 features 全 PASS + Reviewer ≥30 条 prod L2 checklist 全勾 + signoff 明示 prod 可承接团队内部 demo。",
   "total_features": 7,
-  "completed_features": 0,
+  "completed_features": 2,
   "fix_rounds": 0,
   "current_sprint": "MVP-internal-demo-prep",
-  "last_updated": "2026-05-01T02:00+0800",
+  "last_updated": "2026-05-01T02:36+0800",
   "reference_docs": [
     "docs/specs/MVP-internal-demo-prep-spec.md",
     "docs/product/MVP-gap-audit-2026-04-30.md",
