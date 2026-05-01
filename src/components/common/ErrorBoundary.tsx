@@ -13,6 +13,7 @@
  * Per Next 15 conventions, this is a Client Component (`error.tsx`
  * MUST be a CC) and accepts `(error, reset)` props.
  */
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 
@@ -41,7 +42,6 @@ export function ErrorBoundary({ error, reset, scope }: ErrorBoundaryProps) {
     // Surface the digest to the browser console so ops can correlate
     // a customer's screenshot with the server log line. The digest is
     // a hash Next emits in prod; the raw message + stack are dev-only.
-    // eslint-disable-next-line no-console
     console.error("[ErrorBoundary]", scope ?? "unknown", {
       digest: error.digest,
       message: error.message,
@@ -79,13 +79,13 @@ export function ErrorBoundary({ error, reset, scope }: ErrorBoundaryProps) {
           >
             {t("retry")}
           </button>
-          <a
+          <Link
             href="/"
             data-testid="route-error-home"
             className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-bold text-on-surface-variant transition-colors hover:text-white"
           >
             {t("backHome")}
-          </a>
+          </Link>
         </div>
       </GlassPanel>
     </div>
