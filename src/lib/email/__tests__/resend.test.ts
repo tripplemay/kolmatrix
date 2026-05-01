@@ -112,7 +112,9 @@ describe("sendEmail — production fail-fast (BIx-vf F002 P1-9)", () => {
 
   afterEach(() => {
     if (originalNodeEnv === undefined) {
-      delete process.env.NODE_ENV;
+      // NODE_ENV is typed as read-only by Node 20's @types/node; use
+      // Reflect to bypass the literal-type guard rather than `delete`.
+      Reflect.deleteProperty(process.env, "NODE_ENV");
     } else {
       process.env.NODE_ENV = originalNodeEnv;
     }
