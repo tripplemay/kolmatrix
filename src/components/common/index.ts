@@ -9,6 +9,7 @@ export { AiScoreBadge } from "./AiScoreBadge";
 export { AvatarWithPlatformBadge } from "./AvatarWithPlatformBadge";
 export { CampaignRow } from "./CampaignRow";
 export { ChipButton, type ChipButtonProps } from "./ChipButton";
+export { ErrorBoundary, type ErrorBoundaryProps } from "./ErrorBoundary";
 export { GhostButton } from "./GhostButton";
 export { GlassPanel } from "./GlassPanel";
 export { GradientButton } from "./GradientButton";

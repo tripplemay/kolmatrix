@@ -187,7 +187,13 @@
   },
   "common": {
     "openRate": "오픈율",
-    "progress": "진행 상황"
+    "progress": "진행 상황",
+    "error": {
+      "title": "문제가 발생했습니다",
+      "body": "이 페이지를 불러오는 중에 예기치 않은 오류가 발생했습니다. 팀에 통보되었습니다 — 잠시 후 다시 시도하거나 대시보드로 돌아가세요.",
+      "retry": "다시 시도",
+      "backHome": "대시보드로 돌아가기"
+    }
   },
   "knowledgeBase": {
     "breadcrumbRoot": "제품",

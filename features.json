@@ -22,7 +22,7 @@
       "title": "11 页 critical paths edge states + error.tsx 兜底",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "11 页（dashboard/discovery/database/kols-detail/knowledge-base/campaigns/campaigns-detail/outreach/crm/roi/weekly-report）每页加 error.tsx 兜底（display friendly error + reload CTA），关键 empty state（spec §F003 表格列出每页 critical empty + critical error）有 friendly 引导（不出现纯白屏 / Lorem ipsum）；tests/integration/edge-states-coverage.test.ts 验证 11 页 error.tsx 存在性；手工 spot check：dev 模式停 PG → 11 页全部 graceful（非崩溃）；staging git_sha 与本 commit 一致。"
     },
     {

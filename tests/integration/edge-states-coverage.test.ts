@@ -1,0 +1,73 @@
+/**
+ * BIx-mvp-polish-pass F003 — Edge-state coverage guard.
+ *
+ * Filesystem grep over the 11 critical-path routes the spec lists in
+ * §F003. Each one must:
+ *   - have an `error.tsx` next to its `page.tsx`
+ *   - re-export the shared `<ErrorBoundary>` so unhandled server-
+ *     component / suspense errors render a friendly fallback rather
+ *     than Next's stark default
+ *
+ * No DB / no testcontainers — this is a pure file inspection. We
+ * keep it under tests/integration/ rather than tests/unit/ because
+ * the assertion crosses the app router tree; future spec drift gets
+ * caught here even when the offending PR doesn't touch unit tests.
+ */
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+import { describe, expect, it } from "vitest";
+
+const APP_ROOT = resolve(__dirname, "../../src/app/[locale]/(app)");
+
+const PAGES_THAT_NEED_ERROR_TSX = [
+  "dashboard",
+  "discovery",
+  "database",
+  "kols/[id]",
+  "knowledge-base",
+  "campaigns",
+  "campaigns/[id]",
+  "outreach",
+  "crm",
+  "roi",
+  "weekly-report",
+] as const;
+
+describe("edge-states coverage (BIx-vf F003)", () => {
+  it.each(PAGES_THAT_NEED_ERROR_TSX)(
+    "%s/ exposes an error.tsx that re-exports the shared ErrorBoundary",
+    (route) => {
+      const errorPath = resolve(APP_ROOT, route, "error.tsx");
+      expect(existsSync(errorPath), `expected ${route}/error.tsx to exist`).toBe(true);
+
+      const source = readFileSync(errorPath, "utf8");
+      // Must be a Client Component (Next 15 requirement for error.tsx)
+      expect(source).toMatch(/^"use client"/m);
+      // Must re-export the shared boundary so the rendered UI stays
+      // consistent + i18n keys are centralised.
+      expect(source).toMatch(/from "@\/components\/common"/);
+      expect(source).toMatch(/<ErrorBoundary[\s\S]*?\/>/);
+      expect(source).toMatch(/scope=/);
+    }
+  );
+
+  it("ErrorBoundary is exported from @/components/common and uses the canonical i18n namespace", () => {
+    const indexSource = readFileSync(
+      resolve(APP_ROOT, "../../../components/common/index.ts"),
+      "utf8"
+    );
+    expect(indexSource).toMatch(/export \{ ErrorBoundary/);
+
+    const ebSource = readFileSync(
+      resolve(APP_ROOT, "../../../components/common/ErrorBoundary.tsx"),
+      "utf8"
+    );
+    expect(ebSource).toMatch(/^"use client"/m);
+    expect(ebSource).toMatch(/useTranslations\("common\.error"\)/);
+    // The 4 canonical i18n keys ErrorBoundary reads.
+    for (const key of ["title", "body", "retry", "backHome"]) {
+      expect(ebSource).toMatch(new RegExp(`t\\("${key}"\\)`));
+    }
+  });
+});

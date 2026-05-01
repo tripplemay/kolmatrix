@@ -187,7 +187,13 @@
   },
   "common": {
     "openRate": "Tasa de apertura",
-    "progress": "Progreso"
+    "progress": "Progreso",
+    "error": {
+      "title": "Algo salió mal",
+      "body": "Ocurrió un error inesperado al cargar esta página. El equipo ha sido notificado — vuelve a intentarlo en un momento, o regresa al panel.",
+      "retry": "Reintentar",
+      "backHome": "Volver al panel"
+    }
   },
   "knowledgeBase": {
     "breadcrumbRoot": "Productos",
