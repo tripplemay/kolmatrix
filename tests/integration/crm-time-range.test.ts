@@ -10,14 +10,14 @@
  */
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import {
-  DEFAULT_CRM_RANGE,
-  isCrmRange,
-  rangeStart,
-  runCrmOverview,
-} from "@/lib/crm/overview";
-
 import { cleanDb, getAdminPrisma, setupTestDb, teardownTestDb } from "../helpers/db";
+
+// Defer this import until after `setupTestDb()` boots the test
+// container — otherwise lib/crm/overview.ts pulls in @/lib/db's
+// prisma client and pins it to localhost:5432 (the CI runner has no
+// postgres there). Same pattern as tests/integration/crm-overview.test.ts.
+type OverviewMod = typeof import("@/lib/crm/overview");
+let overviewMod: OverviewMod;
 
 let tenantCounter = 0;
 
@@ -33,6 +33,7 @@ async function freshTenant(): Promise<string> {
 
 beforeAll(async () => {
   await setupTestDb();
+  overviewMod = await import("@/lib/crm/overview");
 });
 
 afterAll(async () => {
@@ -47,11 +48,11 @@ describe("rangeStart() (BIx-vf F001)", () => {
   const NOW = new Date("2026-05-15T12:00:00Z");
 
   it("allTime returns null", () => {
-    expect(rangeStart("allTime", NOW)).toBeNull();
+    expect(overviewMod.rangeStart("allTime", NOW)).toBeNull();
   });
 
   it("last90d returns 90 days before now", () => {
-    const out = rangeStart("last90d", NOW);
+    const out = overviewMod.rangeStart("last90d", NOW);
     expect(out).not.toBeNull();
     const diffMs = NOW.getTime() - out!.getTime();
     expect(diffMs).toBe(90 * 24 * 60 * 60 * 1000);
@@ -59,22 +60,22 @@ describe("rangeStart() (BIx-vf F001)", () => {
 
   it("thisQuarter returns the start of the calendar quarter (UTC)", () => {
     // May → Q2 starts on 2026-04-01 UTC
-    expect(rangeStart("thisQuarter", NOW)?.toISOString()).toBe(
+    expect(overviewMod.rangeStart("thisQuarter", NOW)?.toISOString()).toBe(
       "2026-04-01T00:00:00.000Z"
     );
   });
 
   it("isCrmRange accepts only the 3 valid values", () => {
-    expect(isCrmRange("allTime")).toBe(true);
-    expect(isCrmRange("last90d")).toBe(true);
-    expect(isCrmRange("thisQuarter")).toBe(true);
-    expect(isCrmRange("today")).toBe(false);
-    expect(isCrmRange(null)).toBe(false);
-    expect(isCrmRange(undefined)).toBe(false);
+    expect(overviewMod.isCrmRange("allTime")).toBe(true);
+    expect(overviewMod.isCrmRange("last90d")).toBe(true);
+    expect(overviewMod.isCrmRange("thisQuarter")).toBe(true);
+    expect(overviewMod.isCrmRange("today")).toBe(false);
+    expect(overviewMod.isCrmRange(null)).toBe(false);
+    expect(overviewMod.isCrmRange(undefined)).toBe(false);
   });
 
   it("DEFAULT_CRM_RANGE is last90d", () => {
-    expect(DEFAULT_CRM_RANGE).toBe("last90d");
+    expect(overviewMod.DEFAULT_CRM_RANGE).toBe("last90d");
   });
 });
 
@@ -121,11 +122,11 @@ describe("runCrmOverview range filtering (BIx-vf F001)", () => {
       },
     });
 
-    const all = await runCrmOverview(tenantId, { range: "allTime" });
+    const all = await overviewMod.runCrmOverview(tenantId, { range: "allTime" });
     const allTotal = all.stageDistribution.reduce((acc, b) => acc + b.count, 0);
     expect(allTotal).toBe(3);
 
-    const last90 = await runCrmOverview(tenantId, { range: "last90d" });
+    const last90 = await overviewMod.runCrmOverview(tenantId, { range: "last90d" });
     const last90Total = last90.stageDistribution.reduce((acc, b) => acc + b.count, 0);
     expect(last90Total).toBe(2);
   });
@@ -145,8 +146,8 @@ describe("runCrmOverview range filtering (BIx-vf F001)", () => {
       },
     });
 
-    const noOpt = await runCrmOverview(tenantId);
-    const last90 = await runCrmOverview(tenantId, { range: "last90d" });
+    const noOpt = await overviewMod.runCrmOverview(tenantId);
+    const last90 = await overviewMod.runCrmOverview(tenantId, { range: "last90d" });
     expect(noOpt.collabKpi.totalPipeline).toBe(last90.collabKpi.totalPipeline);
   });
 });
