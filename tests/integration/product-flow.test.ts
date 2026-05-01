@@ -235,6 +235,7 @@ describe("createProductSchema", () => {
     const parsed = createProductSchema.safeParse({
       name: "X",
       category: "RPG",
+      targetAudience: "Gamers",
       uniqueSellingPoints: "",
       platforms: [],
       generateImmediately: false,
@@ -250,6 +251,7 @@ describe("createProductSchema", () => {
     const parsed = createProductSchema.safeParse({
       name: "X",
       category: "RPG",
+      targetAudience: "Gamers",
       uniqueSellingPoints: "Cool thing",
       downloadUrl: "not-a-url",
       platforms: [],
@@ -266,6 +268,7 @@ describe("createProductSchema", () => {
     const parsed = createProductSchema.safeParse({
       name: "X",
       category: "RPG",
+      targetAudience: "Gamers",
       uniqueSellingPoints: "Cool thing",
       downloadUrl: "",
       platforms: [],
