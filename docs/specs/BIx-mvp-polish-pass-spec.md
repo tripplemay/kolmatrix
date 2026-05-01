@@ -1,12 +1,13 @@
 ---
 name: BIx-mvp-polish-pass
-description: MVP 上线前最后 polish - /crm 3 disabled controls 真做 + 5 项 misc 文案/小修 + 11 页 edge states critical paths + YouTube sync 配额优化 P1 ~89% + 真 engagement batch
+description: MVP 上线前最后 polish - /crm 3 disabled controls 真做 + 5 项 misc 文案/小修 + 11 页 edge states critical paths + YouTube sync 配额优化 P1 ~89% + 真 engagement batch + 前端 perf Critical+High 六件套（next.config.ts / next/font / next/image / recharts dynamic / markdown dynamic / AppShellLayout island）
 status: decisions-locked, awaits MVP-internal-demo-prep done
 created_by: johnsong (Planner)
 created_at: 2026-04-30
 decisions_locked_at: 2026-04-30
-estimated_effort: ~2-2.5 day Generator + 0.5 day Reviewer
-features_count: 4
+revised_at: 2026-05-01（用户接受前端审计 CR-4/5/6 + H-P1/2/3 并入 F005，~1.4 day Generator）
+estimated_effort: ~5-5.5 day Generator + 0.5 day Reviewer
+features_count: 5
 prerequisites:
   - MVP-internal-demo-prep done（含 P0 polish 4 项 F006/F007）
 trigger: MVP-internal-demo-prep done 后立即启动
@@ -18,16 +19,22 @@ trigger: MVP-internal-demo-prep done 后立即启动
 
 ### 1.1 来源
 
-`docs/product/MVP-polish-audit-2026-04-30.md` §"P1 — 独立 micro-batch / 团队 demo 后期补"。
+- `docs/product/MVP-polish-audit-2026-04-30.md` §"P1 — 独立 micro-batch / 团队 demo 后期补"
+- `docs/reviews/frontend-audit-2026-05-01.md`（三 agent 并行前端审计 6 Critical / 16 High / 29 Medium / 15 Low / 2 Info）
 
 用户 2026-04-30 决议：
 - 取消 P1-5 mobile responsive（团队不会通过移动端使用产品）
 - 接受 P0 4 项并入 MVP-internal-demo-prep（F006/F007）
 - P1 必做 6 项 + critical paths edge states 合并到本批次
 
+用户 2026-05-01 决议（前端审计后续）：
+- F005 = CR-4/5/6（性能 Critical 三件套）+ H-P1/2/3（高价值 perf 三件套）共六件套合并 → 选项 (γ)
+- 跳过 H-P4 Suspense 边界（范围易扩 → 留 backlog 评估）+ H-P5 列表虚拟化（无 scale signal → BL-022）
+- CR-1/2/3 安全 Critical + H-S1/2/3 安全 High 走 backlog 单独跟踪
+
 ### 1.2 目标
 
-清掉团队第一眼可见的 ghost controls（6 个 disabled 按钮），消除"半成品观感"；并修关键 edge states（loading / empty / error）让团队体验稳定。
+清掉团队第一眼可见的 ghost controls（6 个 disabled 按钮），消除"半成品观感"；并修关键 edge states（loading / empty / error）让团队体验稳定；**完成前端 perf 关键基础设施（next.config.ts / next/font / next/image / recharts+markdown dynamic / AppShellLayout island），降初始 JS ≥200KB + LCP −30%。**
 
 ### 1.3 非目标
 
@@ -37,8 +44,14 @@ trigger: MVP-internal-demo-prep done 后立即启动
 - ❌ jsPDF / puppeteer 真 PDF（团队不抱怨可不做 → BL-016 backlog）
 - ❌ /shared/weekly-report token 过期 + 撤销（团队内部 demo 不会真分享给外部）
 - ❌ 11 页 mobile 适配 / 全量 edge states 系统性 spot check（仅 critical paths）
+- ❌ H-P4 全应用 Suspense / loading.tsx 边界（范围易扩 → backlog 单独评估）
+- ❌ H-P5 列表页虚拟化（当前分页兜底，无 scale signal → BL-022 backlog）
+- ❌ 前端审计 CR-1/2/3 安全 Critical + H-S1/2/3 安全 High（走 backlog 单独跟踪，团队内部 demo 风险低）
 
-## 2. 范围（3 features）
+## 2. 范围（5 features）
+
+> **2026-05-01 修订**：原 4 features → 5 features，新增 F005 前端 perf 六件套。详见 `docs/reviews/frontend-audit-2026-05-01.md` Critical/High 路线图 + 用户 2026-05-01 (γ) 决议。
+
 
 ### F001 — /crm Header 3 个 disabled 控件清理
 
@@ -238,6 +251,140 @@ healthcheck                                     =     1u
   - **b. 维持 10,000**（避免 KOL 库被低价值 channel 灌水）
   - **c. 改成 env var 可调**（部署时配置）
 
+### F005 — 前端 perf Critical + High 六件套（next.config.ts / next/font / next/image / recharts dynamic / markdown dynamic / AppShellLayout island）
+
+**Executor：** generator
+**估时：** ~1.4 day（~11.2h，含 1.5h 缓冲）
+
+**来源：** `docs/reviews/frontend-audit-2026-05-01.md` CR-4/5/6 + H-P1/2/3。用户 2026-05-01 (γ) 决议。
+
+**实现：**
+
+#### Part A — `next.config.ts` 完整配置（CR-4，~3h）
+
+当前 `next.config.ts` 仅挂 next-intl 插件。补全：
+
+```ts
+const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "i.ytimg.com" },          // YouTube thumbnail
+      { protocol: "https", hostname: "yt3.ggpht.com" },        // YouTube channel avatar legacy
+      { protocol: "https", hostname: "yt3.googleusercontent.com" }, // YouTube channel avatar new
+      // Generator 开工时 grep KOL 数据中 platform=twitch/tiktok/bilibili 的实际 CDN 域补齐
+    ],
+    formats: ["image/avif", "image/webp"],
+  },
+  experimental: {
+    optimizePackageImports: ["recharts", "@base-ui/react"],
+  },
+  serverExternalPackages: ["@prisma/client", "bcrypt", "googleapis", "resend"],
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+          // CSP 走 Report-Only 一周观察期，本批次只做 Report-Only，不切 enforce
+          { key: "Content-Security-Policy-Report-Only", value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://aigc.guangai.ai; frame-ancestors 'none';" },
+        ],
+      },
+    ];
+  },
+};
+```
+
+#### Part B — Material Symbols 字体改 next/font 自托管（CR-5，~2h）
+
+当前 `src/app/layout.tsx:33-36` 直接 `<link>` 加载 Google Fonts Material Symbols 完整轴变量字体（~300+ KB woff2，第三方域名 DNS+TLS+下载，无 `font-display: swap`）。
+
+**Planner 决议（2026-05-01）：** 走 next/font 自托管 Material Symbols 子集（**保留**当前图标系统，不破坏全应用 100+ 处 `<span class="material-symbols-outlined">` 调用）。lucide-react M-P8 卸载单独处理（不在 F005 范围）。
+
+实现路径：
+1. 生成项目实际使用的 icon 子集（`grep -ohE 'material-symbols-outlined.*?>[\w_]+' src/ | sort -u` 得到约 100 个 icon name）
+2. 用 [google-fonts-helper](https://gwfh.mranftl.com/) 或 [glyphhanger](https://github.com/zachleat/glyphhanger) 生成 Material Symbols Outlined OPSZ+WGHT 子集 woff2（仅含使用的 icon）
+3. 落 `public/fonts/material-symbols-subset.woff2`
+4. `src/app/layout.tsx` 用 `next/font/local` 加载，`display: 'swap'`
+5. 删除 `<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined">`
+
+**预期：** 主线程阻塞 −200~400ms，FOIT 消除。
+
+#### Part C — 7 处原生 `<img>` 替换为 `<Image>`（CR-6，~3h）
+
+audit 列出 7 处文件全替换为 `next/image`：
+
+| 文件 | 类型 | 处理 |
+|---|---|---|
+| `CampaignKolRow.tsx:117` | KOL 头像 | `<Image fill sizes="40px">` w/ object-cover |
+| `KolHero.tsx:49` | KOL banner | `<Image priority width={1200} height={240}>` 首屏 |
+| `RecentVideosGrid.tsx:47` | YouTube 缩略图 6 张 | `<Image width={320} height={180} loading="lazy">` |
+| `AvatarWithPlatformBadge.tsx:68` | KOL 通用头像 | `<Image fill sizes={size variant}>` |
+| `CampaignRow.tsx:62` | mini avatar | `<Image width={32} height={32}>` |
+| `SidebarUserChip.tsx:14` | 用户头像 | 同上 |
+| `UserAvatarMenu.tsx:46` | 用户头像 | 同上 |
+
+**全部加 `width/height` 防 CLS；`priority` 仅给 KolHero banner（首屏 LCP 候选）；其他 lazy 默认。**
+
+#### Part D — recharts 三处 dynamic（H-P1，~45min）
+
+参 `src/app/[locale]/(app)/kols/[id]/TopicCloudClient.tsx:16` 范式，三处 chart 复制套路：
+
+```tsx
+// roi/RoiTrendChart.tsx
+"use client";
+import dynamic from "next/dynamic";
+const Chart = dynamic(() => import("./RoiTrendChartImpl"), { ssr: false });
+export default function RoiTrendChart(props) { return <Chart {...props} />; }
+```
+
+三处目标文件：
+- `src/app/[locale]/(app)/roi/RoiTrendChart.tsx:18-28`
+- `src/app/[locale]/(app)/campaigns/[id]/EmailPerformanceChart.tsx:11-20`
+- `src/features/dashboard/EmailPerformanceChart.tsx:11-19`
+
+**预期：** 每页 −90KB gzipped × 3 页 = **−270KB**（与 CR-4 optimizePackageImports 协同：tree-shake + dynamic 拆 chunk 双重收益）。
+
+#### Part E — react-markdown + remark-gfm dynamic（H-P2，~30min）
+
+两处目标：
+- `src/app/[locale]/(app)/weekly-report/WeeklyReportRenderer.tsx:12-13`
+- `src/app/[locale]/(app)/outreach/templates/TemplateWorkspaceClient.tsx:5-6`
+
+同 dynamic 套路，markdown 子树标 dynamic，外壳保留。**预期：−50KB gzipped。**
+
+#### Part F — AppShellLayout 拆 ActiveNavClient island（H-P3，~1.5h）
+
+当前 `src/components/layout/AppShellLayout.tsx:1` 整文件标 `"use client"`，仅为了在 `Sidebar` / `TopBar` 里调 `usePathname()` 高亮当前路由。代价：sidebar 全子树（logo / nav links / footer / chip）都拉到 client bundle。
+
+改造：
+1. 拆出 `src/components/layout/ActiveNavClient.tsx`（~30 行 `"use client"`，仅含 `usePathname()` + active class 计算 + 把 active path 通过 context/data attribute 暴露给 nav links）
+2. `AppShellLayout.tsx` 删 `"use client"`，回归 server component
+3. Sidebar 子树（logo / 静态 nav 列表 / SidebarUserChip）全部 server-rendered，hydration 仅留 ActiveNavClient
+
+**预期：** −15-25KB gzipped + hydration 减负 ~50-100ms。
+
+**注意：** sidebar active state 是用户高频感知的视觉，staging spot check 必须覆盖每条 nav link 切换正确。
+
+**Acceptance：**
+
+- `npm run build` + `@next/bundle-analyzer` 实测初始 JS（dashboard / campaigns / roi / discovery）减 ≥200KB gzipped（audit 估 400-500KB，留余量）
+- next/image 替换后 staging KOL 列表页 / Discovery / Detail 页所有图片正常渲染（无 broken image / 无 CLS）
+- `curl -I https://staging.kol.guangai.ai/` 验证 6 个 HTTP 安全头存在（X-Frame-Options DENY / X-Content-Type-Options nosniff / Referrer-Policy / Permissions-Policy / HSTS / CSP-Report-Only）
+- Lighthouse 移动端 perf score ≥ 75（base 估 ~50；目标 LCP −30%）
+- recharts 三页 client bundle 不含 chart 代码（用 bundle-analyzer 验证），首次访问按需 dynamic load
+- WeeklyReportRenderer / TemplateWorkspaceClient 不再 SSR markdown bundle，client dynamic load
+- AppShellLayout.tsx 不再有 `"use client"`，仅 ActiveNavClient.tsx 标 client；sidebar active state 在所有 nav link 上正确高亮
+- Material Symbols 字体走 next/font local，`<link>` Google Fonts 已删；DevTools Network 看不到 fonts.googleapis.com 请求；100+ 处 `material-symbols-outlined` icon 全部正常渲染（无字符方框）
+- CSP Report-Only 一周观察期不报告任何来自正常使用的 violation（团队走查后下批次切 enforce）
+- existing tests 不破坏；visual baseline 必要时重生（dashboard.spec.ts / campaigns / roi / kols-detail / login）
+- staging git_sha 与本 commit 一致
+
+**风险（详见 §5）：** next/image CDN 域漏配 / next/font 子集漏 icon / AppShellLayout 拆 island 影响 sidebar active / CSP enforce 漏白名单。
+
 ## 3. 关键设计决策（已 lock）
 
 | 决策 | 选定方案 | 理由 |
@@ -252,15 +399,19 @@ healthcheck                                     =     1u
 | **YouTube sync 配额利用率** | **P1 ~89%**（原 18% → ~91% 满载，留 ~9% 安全余量）| 用户 2026-04-30 决议 P1（加 IN/ES 共 14 region）；从昨天数据看 82% 配额浪费且 dedupe rate 攀升至 99% |
 | **真 engagement 实现路径** | **Batch 预计算（top 100 KOL/day，cost ~114u）替代 B5 F004 lazy-load** | 用户同意；ROI 提升 ~50×（lazy-load 100u/次 vs batch 1.14u/channel）；详情页瞬开不依赖 API |
 | **Page 轮转 cursor 持久化** | 新 `kol_sync_cursor` 表 + migration | day-of-year mod cycle 跨 cron run 保留 nextPageToken |
+| **F005 范围 = CR-4/5/6 + H-P1/2/3（六件套）** | 用户 2026-05-01 (γ) | 跳过 H-P4 Suspense（范围易扩 → backlog）+ H-P5 虚拟化（无 scale signal → BL-022） |
+| **Material Symbols 字体策略** | next/font 自托管子集 | 保留视觉一致；不切 Lucide React（M-P8 卸载单独处理） |
+| **CSP 上线策略** | Report-Only 一周观察期 | 本批次只做 Report-Only，下批次切 enforce；避免一次性切到 enforce 误伤 |
+| **next/image 替换范围** | 全 7 处一次性替换 | 渐进式替换会留 mixed pattern 长期债 |
 
 ## 4. 依赖关系
 
 ```
 MVP-internal-demo-prep done → BIx-mvp-polish-pass building
                                        ↓
-                                F001 + F002 + F003 (Generator 串行)
+                                F001 + F002 + F003 + F004 + F005 (Generator 串行)
                                        ↓
-                                Reviewer L1+L2 verifying
+                                Reviewer L1+L2 verifying（含 perf 实测：bundle-analyzer + Lighthouse）
                                        ↓
                                 done → 团队 demo 启用 ⭐
 ```
@@ -274,6 +425,12 @@ MVP-internal-demo-prep done → BIx-mvp-polish-pass building
 | Owner filter SQL 性能（小 tenant 不影响）| 低 | 单 tenant 用户 ≤ 5 时无索引压力 |
 | edge states 11 页 critical paths 工时超预估 | 中 | 缓冲 1h；如某页复杂超预算 → 推到 backlog |
 | 邮件 fail-fast 改动可能让 dev 跑测试失败 | 低 | F002 限 production env；dev 仍 silent mock |
+| **F005-A** next/image CDN 域漏配 → broken image | 中 | Acceptance 含 staging 三页浏览器走查；漏配立即补 remotePatterns；优先 grep KOL platform CDN 域 |
+| **F005-B** next/font 子集生成漏覆盖某 icon → 字符方框 | 中 | 子集脚本 grep 全代码所有 `material-symbols-outlined` icon name；CI 加 icon name 与子集 diff 检查 |
+| **F005-C** AppShellLayout 拆 island 影响 sidebar active state | 中 | staging spot check 必须覆盖每条 nav link 切换；e2e 测试加 active class 断言 |
+| **F005-D** CSP Report-Only 切 enforce 时漏白名单（本批次不切，下批次） | 中 | 本批次只 Report-Only；一周 violation log 观察后再切 |
+| **F005-E** recharts/markdown dynamic 后首次渲染闪 loading skeleton | 低 | dynamic 默认 fallback 为 null（不闪）；如有体感差 → 加 lightweight skeleton |
+| **F005-F** Lighthouse perf score < 75（达不到 acceptance）| 中 | 留 1.5h 缓冲调优；如全六件套已落地仍未达 → 单独 backlog 跟踪（不阻塞 done）|
 
 ## 6. 验收方式
 
@@ -281,6 +438,8 @@ MVP-internal-demo-prep done → BIx-mvp-polish-pass building
 - F001 crm-time-range + crm-export-csv integration tests
 - F002 owner-filter + bulk-email-jump integration tests
 - F003 edge-states-coverage 11 页 error.tsx 存在性检查
+- F005 next.config.ts 配置存在性 + remotePatterns 完整性 unit test
+- F005 visual baseline 重生（dashboard / campaigns / roi / kols-detail / login 必查）
 - typecheck / lint / 现有套件不退化
 
 ### L2 staging
@@ -288,13 +447,19 @@ MVP-internal-demo-prep done → BIx-mvp-polish-pass building
 - /campaigns Owner filter 真过滤
 - /database BulkActionBar Email 跳转 /outreach 带 ?kolIds=...
 - 11 页 error.tsx + empty state spot check（dev 停 PG → 全 graceful）
+- **F005 perf 实测：** `npm run build` + `@next/bundle-analyzer` 截图 chunk 大小变化（dashboard / campaigns / roi 三页 chart bundle 移除）；Lighthouse 移动端 perf score ≥ 75
+- **F005 安全头：** `curl -I https://staging.kol.guangai.ai/` 验证 6 个 HTTP 头存在
+- **F005 图片：** Discovery / Detail / Campaigns 三页浏览器走查 — 所有 KOL 头像 + banner + 视频缩略图 200 加载，无 broken image，无 CLS
+- **F005 字体：** DevTools Network 看不到 fonts.googleapis.com 请求；100+ 处 `material-symbols-outlined` icon 全渲染（重点查 KOL list / Campaigns Header / Sidebar nav）
 
 ### L3 prod 烟测
 - 同 MVP-internal-demo-prep F005 checklist 但补 BIx 涉及功能（time toggle / Export CSV / Owner filter）
+- **F005 perf 二次验证：** prod Lighthouse 实测 + bundle-analyzer 对比 build artifact
 
 ## 7. 引用文档
 
 - `docs/product/MVP-polish-audit-2026-04-30.md`（本批次起源 + 完整 P1 清单）
+- `docs/reviews/frontend-audit-2026-05-01.md`（F005 来源 — 三 agent 并行前端审计 6 Critical / 16 High / 29 Medium / 15 Low / 2 Info）
 - `docs/specs/MVP-internal-demo-prep-spec.md`（前置批次，F006/F007 已含 P0 4 项）
 - `docs/product/KOLMatrix-MVP-PRD.md` §11.4（CRM 简化版决策）+ §12（Out of Scope）
 - `framework/harness/ui-fidelity-guardrail.md`（ghost controls 容许带 tooltip 的 guardrail）
@@ -305,6 +470,8 @@ MVP-internal-demo-prep done → BIx-mvp-polish-pass building
 - [ ] 用户触发 prod redeploy（含 F006/F007）
 - [ ] prod /api/health 200 + redis.status="not_used"（F007 落地证据）
 - [ ] /campaigns 页面无 "Coming with B2" badge（F007 落地证据）
+- [ ] F005 开工前 `grep -ohE 'material-symbols-outlined.*?>[\\w_]+' src/ | sort -u` 出 icon name 清单留底（用于子集生成验证）
+- [ ] F005 开工前 `npm install --save-dev @next/bundle-analyzer`（如尚未安装）
 
 ## 9. 估时
 
@@ -314,8 +481,9 @@ MVP-internal-demo-prep done → BIx-mvp-polish-pass building
 | F002 Misc 5 项 polish（Owner filter + Email btn + PDF 文案 + mock_sent + AiSuggestions 已删）| ~2h | Generator |
 | F003 11 页 critical paths edge states + 必修 | ~半天 (~4h) | Generator |
 | **F004 YouTube sync 配额优化（P1 ~89% + 真 engagement batch）**| ~1.5-2 day | Generator |
+| **F005 前端 perf 六件套（CR-4/5/6 + H-P1/2/3）**| ~1.4 day (~11.2h) | Generator |
 | 缓冲 | ~4h | — |
-| **总计** | **~3.5-4.5 day Generator + 0.5 day Reviewer** | — |
+| **总计** | **~5-5.5 day Generator + 0.5 day Reviewer** | — |
 
 ## 10. 用户决策（2026-04-30 lock）
 
@@ -335,6 +503,16 @@ MVP-internal-demo-prep done → BIx-mvp-polish-pass building
 | 7 | 真 engagement 实现路径 | ✅ **替代 B5 F004 lazy-load，改 BIx F004 batch 预计算 top 100 KOL/day** |
 | 8 | 改造批次归属 | ✅ **C 方案：合到 BIx-mvp-polish-pass**（避免拆碎独立批次）|
 | 9 | FILTER_MIN_SUBSCRIBERS = 10K vs PRD 微网红 | ⚠️ **待 Generator 开工前决议**（spec §F004 open question）|
+
+### 2026-05-01 三次决议（前端审计 perf 整改）
+
+| # | 问题 | 用户答复 |
+|---|---|---|
+| 10 | 6 项前端 Critical 是否插队 MVP-internal-demo-prep | ❌ 不插队（团队内部 demo 风险低；MVP 批次保持 7 features）|
+| 11 | F005 范围（CR-4/5/6 + H-P1/2/3 / 4 / 5 是否一并入 BIx）| ✅ **(γ)** 仅 CR-4/5/6 + H-P1/2/3 六件套；H-P4 Suspense 进 backlog 评估，H-P5 虚拟化进 BL-022（无 scale signal）|
+| 12 | Material Symbols 字体策略 | ✅ next/font 自托管子集（保留视觉一致；M-P8 lucide-react 卸载单独处理） |
+| 13 | CSP 上线节奏 | ✅ Report-Only 一周观察期，本批次只做 Report-Only，下批次切 enforce |
+| 14 | CR-1/2/3 安全 Critical + H-S1/2/3 安全 High 归属 | ✅ 走 backlog 单独跟踪（不进 BIx；团队内部 demo 安全风险低）|
 
 ---
 
