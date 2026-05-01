@@ -198,6 +198,70 @@ export async function updateProduct(
   }
 }
 
+/**
+ * MVP-internal-demo-prep verifying-2026-05-01 fix C-05.2.
+ * F003 acceptance promised a "Generate AI assets" trigger on cards with
+ * null aiAssets, but only the create/edit-modal `generateImmediately`
+ * checkbox actually wired generation. This action lets ProductCard
+ * launch a fire-and-forget generation without reopening the modal.
+ */
+export async function triggerAiGeneration(
+  productId: string
+): Promise<{ ok: boolean; error?: string }> {
+  const session = await auth();
+  const tenantId = session?.user?.tenantId;
+  const userId = session?.user?.id;
+  const normalizedProductId = normalizeProductId(productId);
+  if (!tenantId || !UUID_RE.test(tenantId) || !normalizedProductId) {
+    return { ok: false, error: "unauthorized" };
+  }
+
+  try {
+    const product = await withTenant(tenantId, (tx) =>
+      tx.product.findUnique({
+        where: { id: normalizedProductId },
+        select: {
+          id: true,
+          name: true,
+          category: true,
+          targetAudience: true,
+          uniqueSellingPoints: true,
+          downloadUrl: true,
+        },
+      })
+    );
+    if (!product) {
+      return { ok: false, error: "not_found" };
+    }
+
+    await markAiAssetsPending(tenantId, product.id);
+    // Fire-and-forget — same shape as createProduct/updateProduct so the
+    // UI gets a fast turnaround and revalidates on the next page render.
+    void generateAiAssets({
+      productId: product.id,
+      tenantId,
+      name: product.name,
+      category: product.category,
+      targetAudience: product.targetAudience,
+      uniqueSellingPoints: product.uniqueSellingPoints,
+      downloadUrl: product.downloadUrl,
+    });
+
+    void logEvent({
+      type: "product.ai_generate_requested",
+      tenantId,
+      actorId: userId,
+      resourceId: product.id,
+    });
+
+    revalidatePath("/[locale]/knowledge-base", "page");
+    return { ok: true };
+  } catch (err) {
+    console.error("[knowledge-base] triggerAiGeneration failed:", err);
+    return { ok: false, error: "generic" };
+  }
+}
+
 export async function deleteProduct(productId: string): Promise<{ ok: boolean }> {
   const session = await auth();
   const tenantId = session?.user?.tenantId;

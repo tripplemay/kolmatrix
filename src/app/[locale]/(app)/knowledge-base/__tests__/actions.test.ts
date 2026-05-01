@@ -21,7 +21,9 @@ vi.mock("@/lib/products/generateAiAssets", () => ({
   markAiAssetsPending,
 }));
 
-const { deleteProduct, updateProduct } = await import("../actions");
+const { deleteProduct, updateProduct, triggerAiGeneration } = await import(
+  "../actions"
+);
 
 const TENANT_ID = "11111111-2222-3333-4444-555555555555";
 const USER_ID = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
@@ -161,5 +163,76 @@ describe("knowledge-base product actions", () => {
 
     expect(res).toEqual({ ok: false, error: "invalid_input" });
     expect(withTenant).not.toHaveBeenCalled();
+  });
+
+  // ----- triggerAiGeneration (MVP-vf C-05.2) -----------------------------
+
+  it("triggerAiGeneration fires generateAiAssets for a known product", async () => {
+    const findUnique = vi.fn().mockResolvedValue({
+      id: PRODUCT_ID,
+      name: "Pokemon Go",
+      category: "AR/Casual",
+      targetAudience: "All ages",
+      uniqueSellingPoints: "AR-first gameplay",
+      downloadUrl: null,
+    });
+    authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
+    withTenant.mockImplementation(async (_tenantId, fn) =>
+      (fn as (tx: unknown) => unknown)({
+        product: { findUnique },
+      })
+    );
+
+    const res = await triggerAiGeneration(PRODUCT_ID);
+
+    expect(res).toEqual({ ok: true });
+    expect(findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: PRODUCT_ID } })
+    );
+    expect(markAiAssetsPending).toHaveBeenCalledWith(TENANT_ID, PRODUCT_ID);
+    expect(generateAiAssets).toHaveBeenCalledWith(
+      expect.objectContaining({
+        productId: PRODUCT_ID,
+        tenantId: TENANT_ID,
+        name: "Pokemon Go",
+      })
+    );
+    expect(logEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "product.ai_generate_requested",
+        tenantId: TENANT_ID,
+        actorId: USER_ID,
+        resourceId: PRODUCT_ID,
+      })
+    );
+    expect(revalidatePath).toHaveBeenCalledWith(
+      "/[locale]/knowledge-base",
+      "page"
+    );
+  });
+
+  it("triggerAiGeneration returns not_found when the product is missing", async () => {
+    authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
+    withTenant.mockImplementation(async (_tenantId, fn) =>
+      (fn as (tx: unknown) => unknown)({
+        product: { findUnique: vi.fn().mockResolvedValue(null) },
+      })
+    );
+
+    const res = await triggerAiGeneration(PRODUCT_ID);
+
+    expect(res).toEqual({ ok: false, error: "not_found" });
+    expect(generateAiAssets).not.toHaveBeenCalled();
+    expect(markAiAssetsPending).not.toHaveBeenCalled();
+  });
+
+  it("triggerAiGeneration rejects when tenantId is not a UUID", async () => {
+    authMock.mockResolvedValue({ user: { tenantId: "not-a-uuid", id: USER_ID } });
+
+    const res = await triggerAiGeneration(PRODUCT_ID);
+
+    expect(res).toEqual({ ok: false, error: "unauthorized" });
+    expect(withTenant).not.toHaveBeenCalled();
+    expect(generateAiAssets).not.toHaveBeenCalled();
   });
 });

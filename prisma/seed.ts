@@ -620,6 +620,46 @@ async function main() {
     seededProductCount++;
   }
 
+  // ----- Link seeded campaigns to their matching Product -----
+  // MVP-internal-demo-prep verifying-2026-05-01 fix C-10: outreach AI
+  // customize was failing with "Campaign or template not found" because
+  // campaignSeeds didn't set productId. We pair by Campaign.game ===
+  // Product.name (Honor of Kings / Genshin Impact / PUBG Mobile —
+  // identical strings in both seed arrays). Campaigns whose `game`
+  // doesn't match a seeded Product (none today) are left alone.
+  let linkedCampaignCount = 0;
+  for (const [campaignName, campaignId] of campaignIdByName.entries()) {
+    const seed = campaignSeeds.find((c) => c.name === campaignName);
+    if (!seed) continue;
+    const product = await prisma.product.findFirst({
+      where: { tenantId: tenant.id, name: seed.game },
+      select: { id: true },
+    });
+    if (!product) continue;
+    await prisma.campaign.update({
+      where: { id: campaignId },
+      data: { productId: product.id },
+    });
+    linkedCampaignCount++;
+  }
+
+  // ----- Cleanup leftover Products outside the canonical 5-product set -----
+  // verifying-2026-05-01 fix C-05.1: prod Demo Studio had a 6th product
+  // from manual UI testing. seed previously didn't sweep — deleting any
+  // Product for this tenant whose name isn't in PRODUCT_SEEDS keeps the
+  // seeded set canonical across reruns. Guard with `campaigns: { none }`
+  // so we don't silently break a campaign-product link the user wired up
+  // intentionally; products that ARE referenced stay (FK Restrict would
+  // throw anyway).
+  const allowedNames = PRODUCT_SEEDS.map((p) => p.name);
+  const removed = await prisma.product.deleteMany({
+    where: {
+      tenantId: tenant.id,
+      name: { notIn: allowedNames },
+      campaigns: { none: {} },
+    },
+  });
+
   console.log("Seed complete:", {
     tenant: tenant.slug,
     users: [admin.email, marketer.email],
@@ -628,6 +668,8 @@ async function main() {
     templates: seededTemplateCount,
     emailLogs: EMAIL_LOG_COUNT,
     products: seededProductCount,
+    productsRemoved: removed.count,
+    campaignsLinkedToProducts: linkedCampaignCount,
   });
 }
 

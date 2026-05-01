@@ -9,10 +9,11 @@
  * success counts, or a failure prompt without refreshing JSON.
  */
 import { useFormatter, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 import { cn } from "@/lib/utils";
 
+import { triggerAiGeneration } from "./actions";
 import type { ProductListItem } from "./types";
 
 interface Props {
@@ -36,7 +37,20 @@ export function ProductCard({ product, onEdit, onDelete }: Props) {
   const t = useTranslations("knowledgeBase.card");
   const format = useFormatter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [generatePending, startGenerate] = useTransition();
+  const [generateError, setGenerateError] = useState<string | null>(null);
   const assets = product.aiAssets;
+  const canTriggerGenerate = !assets || assets.status === "failed";
+
+  const handleGenerate = () => {
+    setGenerateError(null);
+    startGenerate(async () => {
+      const res = await triggerAiGeneration(product.id);
+      if (!res.ok) {
+        setGenerateError(res.error ?? "generic");
+      }
+    });
+  };
 
   const emailCount =
     assets && assets.status === "ready" ? assets.emailTemplates.length : 0;
@@ -131,6 +145,38 @@ export function ProductCard({ product, onEdit, onDelete }: Props) {
             label={t("noAssetsYet")}
           />
         )}
+        {canTriggerGenerate ? (
+          <button
+            type="button"
+            onClick={handleGenerate}
+            disabled={generatePending}
+            data-testid="product-generate-ai-button"
+            className={cn(
+              "mt-1 flex w-full items-center justify-center gap-1 rounded-lg border border-cyan/30 bg-cyan/10 px-3 py-1.5 text-[12px] font-semibold text-cyan transition-colors",
+              "hover:border-cyan hover:bg-cyan/15 disabled:cursor-wait disabled:opacity-60"
+            )}
+          >
+            <span
+              className={cn(
+                "material-symbols-outlined text-[16px]",
+                generatePending && "animate-spin"
+              )}
+              aria-hidden
+            >
+              {generatePending ? "progress_activity" : "auto_awesome"}
+            </span>
+            <span>
+              {generatePending
+                ? t("generateAiPending")
+                : assets?.status === "failed"
+                  ? t("generateAiRetry")
+                  : t("generateAiCta")}
+            </span>
+          </button>
+        ) : null}
+        {generateError ? (
+          <p className="text-[11px] text-rose-300">{t("generateAiError")}</p>
+        ) : null}
         <p className="pt-2 text-[11px] text-on-surface-variant/60">
           {t("lastUpdated", {
             date: format.dateTime(new Date(product.updatedAt), {

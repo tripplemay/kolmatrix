@@ -126,8 +126,22 @@ export async function customizeAction(
     return { campaign, kol, template };
   });
 
-  if (!inputs.campaign?.product || !inputs.kol || !inputs.template) {
-    return { ok: false, error: "not_found" };
+  // Differentiate the four "missing prerequisite" cases so the user
+  // gets a useful error message. Reviewer 2026-05-01 prod L2 smoke C-10
+  // hit the campaign_no_product path because seed campaigns weren't
+  // linked to Products; the old undifferentiated "Campaign or template
+  // not found" hid the real issue.
+  if (!inputs.campaign) {
+    return { ok: false, error: "campaign_not_found" };
+  }
+  if (!inputs.campaign.product) {
+    return { ok: false, error: "campaign_no_product" };
+  }
+  if (!inputs.kol) {
+    return { ok: false, error: "kol_not_found" };
+  }
+  if (!inputs.template) {
+    return { ok: false, error: "template_not_found" };
   }
 
   try {
