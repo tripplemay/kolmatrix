@@ -96,4 +96,49 @@ describe("customizeEmail", () => {
       code: "missing_env",
     });
   });
+
+  // verifying-2026-05-01-round-2 fix C-10 round 3 contract test:
+  // aigcgateway action `cmob2z6j00001bnole7i8lg9h` declares 10 required
+  // variables. If we drift on key names we get a 400 with "Missing
+  // required variable: <name>" and the user sees "AI service could
+  // not respond" — exactly Reviewer's prod L2 round-2 blocker. Lock
+  // the wire-format key set + the key→input mapping so future renames
+  // surface as a unit-test failure, not a prod outage.
+  it("sends the canonical kol-email-customize variable contract", async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({
+        output: '{"subject":"S","body":"B"}',
+      })
+    );
+    const { customizeEmail } = await importCustomize();
+    await customizeEmail(baseInput);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [, init] = fetchMock.mock.calls[0];
+    const body = JSON.parse(String((init as RequestInit).body)) as {
+      action_id: string;
+      stream: boolean;
+      variables: Record<string, string>;
+    };
+    expect(body.action_id).toBe("cmob2z6j00001bnole7i8lg9h");
+    expect(body.stream).toBe(false);
+    // Lock the canonical 10-key variable set. `original_subject` /
+    // `original_body` (NOT `template_*`) is the contract per the
+    // gateway-side action definition.
+    expect(Object.keys(body.variables).sort()).toEqual(
+      [
+        "kol_categories",
+        "kol_handle",
+        "kol_name",
+        "kol_region",
+        "locale",
+        "original_body",
+        "original_subject",
+        "product_category",
+        "product_name",
+        "product_usp",
+      ].sort()
+    );
+    expect(body.variables.original_subject).toBe(baseInput.template.subject);
+    expect(body.variables.original_body).toBe(baseInput.template.body);
+  });
 });

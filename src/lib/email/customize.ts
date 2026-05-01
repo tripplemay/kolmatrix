@@ -61,6 +61,14 @@ function baseUrl(): string {
 }
 
 function toVariables(input: CustomizeEmailInput): Record<string, string> {
+  // verifying-2026-05-01-round-2 fix C-10 round 3: aigcgateway action
+  // `cmob2z6j00001bnole7i8lg9h` (kol-email-customize) declares its
+  // template-side variables as `original_subject` / `original_body`.
+  // The earlier names `template_subject` / `template_body` were only
+  // ever wired up to the same variable names but the action was
+  // (re)published with `original_*` semantics, so prod now returns
+  //   400 invalid_request_error: Missing required variable: original_subject
+  // Confirmed via direct `POST /v1/actions/run` curl 2026-05-01.
   return {
     product_name: input.product.name,
     product_category: input.product.category ?? "",
@@ -69,8 +77,8 @@ function toVariables(input: CustomizeEmailInput): Record<string, string> {
     kol_handle: input.kol.handle ?? "",
     kol_region: input.kol.region ?? "",
     kol_categories: (input.kol.categories ?? []).join(", "),
-    template_subject: input.template.subject,
-    template_body: input.template.body,
+    original_subject: input.template.subject,
+    original_body: input.template.body,
     locale: input.template.locale,
   };
 }

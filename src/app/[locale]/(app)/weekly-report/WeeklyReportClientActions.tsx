@@ -61,6 +61,16 @@ export function WeeklyReportClientActions({
   const handleDownload = useCallback(() => {
     const original = document.title;
     document.title = `WeeklyReport_${safeFilenameFragment(tenantName)}_${weekStartIso.replace(/-/g, "")}`;
+    // verifying-2026-05-01-round-2 fix C-13: dispatch a synthetic
+    // event right before window.print(). Headless Chromium does not
+    // fire `beforeprint` for `window.print()` reliably, so Reviewer's
+    // prod L2 round-2 verification couldn't confirm the click did
+    // anything. Listening for `kolmatrix:weekly-report-download`
+    // gives both Playwright and onlookers a deterministic signal
+    // that the handler ran without changing the user-visible flow.
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("kolmatrix:weekly-report-download"));
+    }
     window.print();
     // Restore the original title after the print dialog closes.
     setTimeout(() => {
