@@ -23,8 +23,8 @@ F002 → F003 → F001 → F005 → F004 → push CI 全绿 → SSH staging depl
 - F004 P1 ~89% utilization + Top 100 真 engagement batch 替代 B5 lazy-load + kol_sync_cursor 表新建
 ## 角色分配
 - 默认映射（role_assignments=null）：CLI = planner+generator，Codex = evaluator
-## Backlog 12 条
-BL-003/011/012/014/015/016/017/018/019 + BL-020 安全 high / BL-021 Suspense medium / BL-022 虚拟化 deferred
+## Backlog 13 条
+BL-003/011/012/014/015/016/017/018/019 + BL-020 安全 high / BL-021 Suspense medium / BL-022 虚拟化 deferred / BL-023 KOL 评分体系升级 medium（A engagement 真值 + B brand safety 软扣分 + C followerScore cap + D Smart Match 区分度，~6-7h，前置 BIx F004 done）
 ## 即将启动批次
 - **BL-020 安全 mini-batch** (BIx done 后, ~0.5-1 day) — 6 项前端审计安全 Critical/High，上线对外客户前必须
 ## 时间线
