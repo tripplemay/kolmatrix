@@ -34,14 +34,10 @@ describe("/campaigns fidelity guards (MVP-vf-F004)", () => {
     expect(tableJsx).toBeGreaterThan(filterJsx);
   });
 
-  it("Import button is disabled with an explicit tooltip (no ghost control)", () => {
+  it("Import button is fully removed — no ghost control remains (F007 polish)", () => {
     const page = read("page.tsx");
-    const block = page.match(
-      /<Button[\s\S]*?data-testid="campaigns-import"[\s\S]*?>/
-    );
-    expect(block, "campaigns-import block").not.toBeNull();
-    expect(block![0]).toMatch(/disabled/);
-    expect(block![0]).toMatch(/importTooltip/);
+    expect(page).not.toMatch(/campaigns-import/);
+    expect(page).not.toMatch(/importTooltip/);
   });
 
   it("filter bar surfaces the 7 acceptance dims (status chips + search + game + region + owner + 2 date)", () => {

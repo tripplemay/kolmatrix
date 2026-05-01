@@ -432,6 +432,178 @@ async function main() {
   });
   await prisma.emailLog.createMany({ data: emailRows });
 
+  // ----- Demo Products (MVP-internal-demo-prep F003) -----
+  // 5 seeded games: 3 with pre-generated aiAssets, 2 with null aiAssets.
+  // Natural key: (tenantId, name) — findFirst + upsert pattern (no DB unique constraint).
+  type ProductSeed = {
+    name: string;
+    category: string;
+    targetAudience: string;
+    uniqueSellingPoints: string;
+    downloadUrl: string;
+    aiAssets: unknown;
+  };
+
+  const PRODUCT_SEEDS: ProductSeed[] = [
+    {
+      name: "Honor of Kings",
+      category: "MOBA",
+      targetAudience: "Competitive mobile gamers aged 16–30 in Southeast Asia and China, interested in team-based MOBA gameplay and esports tournaments",
+      uniqueSellingPoints: "Real-time 5v5 MOBA with 120Hz ultra-smooth gameplay, featuring 100+ legendary hero rosters and seasonal esports championships with $500K prize pools",
+      downloadUrl: "https://www.honorofkings.com",
+      aiAssets: {
+        status: "ready",
+        generatedAt: "2026-04-28T08:00:00.000Z",
+        traceId: "seed-hok-001",
+        emailTemplates: [
+          {
+            subject: "Join the Honor of Kings Creator Program — Exclusive Tournament Access",
+            body: "Hi [Creator Name],\n\nWe've been following your content and love how you bring out the strategy in every match. We'd like to invite you to the HoK Creator Program — get early access to new hero releases, exclusive tournament invitations, and a dedicated partnership manager.\n\nInterested? Reply and we'll send you the partnership deck.\n\nBest,\n[Your Name] · KOL Partnerships · Honor of Kings"
+          },
+          {
+            subject: "Honor of Kings Season 18 Championship — Your Audience Will Love This",
+            body: "Hey [Creator Name],\n\nSeason 18 Championship is live and the prize pool just hit $500K. We're looking for top creators to cover the finals — full media credential access, exclusive backstage content, and a $2,000 creator fee.\n\nYour MOBA content consistently hits 8%+ engagement, which is exactly the energy we want representing HoK. Want in?\n\n[Your Name] · Partnerships"
+          },
+          {
+            subject: "HoK × [Creator] Collab — Let's Lock In the Details",
+            body: "Hi [Creator Name],\n\nExcited to move forward! Here's a quick recap of what we're offering:\n• 3 sponsored videos over 6 weeks\n• $3,500 total fee + in-game premium currency pack for your subscribers\n• Creative freedom: you script, we approve\n\nContract attached. Let us know if you have any questions — happy to jump on a call.\n\n[Your Name]"
+          }
+        ],
+        videoScripts: [
+          {
+            title: "YouTube 60s — Hero Reveal Feature",
+            script: "HOOK (0-5s): Cut to: clutch teamfight ace play. Caption: 'When your team says they don't need a tank.'\n\nSETUP (5-20s): 'I've been testing the new Season 18 assassin — and honestly? The mobility alone breaks the meta. Let me show you why.'\n\nDEMO (20-45s): Walkthrough of abilities, combo demonstration, matchup analysis.\n\nCTA (45-60s): 'Download link in bio — Season 18 Battle Pass gives you 3 hero trial cards instantly. Use code [CREATOR] for 20% off first recharge.'"
+          },
+          {
+            title: "TikTok 15s — Clutch Comeback Hook",
+            script: "0-3s: Show 1v4 situation, health bar almost empty.\n3-8s: Execute perfect ability combo, screen shake effect.\n8-12s: Victory screen. Text overlay: 'Bro said 1v4 was impossible 💀'\n12-15s: Logo + 'Download free — link in bio' card."
+          }
+        ]
+      }
+    },
+    {
+      name: "Genshin Impact",
+      category: "Open World RPG",
+      targetAudience: "Anime game enthusiasts aged 15–28 globally, particularly in CN/JP/KR/NA, who enjoy open-world exploration, character collection, and gacha mechanics",
+      uniqueSellingPoints: "Breathtaking open-world RPG with AAA-quality anime art, biweekly content updates introducing new regions and characters, cross-platform play across mobile/PC/PS5, and zero pay-to-play barrier",
+      downloadUrl: "https://genshin.hoyoverse.com",
+      aiAssets: {
+        status: "ready",
+        generatedAt: "2026-04-28T08:05:00.000Z",
+        traceId: "seed-genshin-001",
+        emailTemplates: [
+          {
+            subject: "Genshin Impact Creator Partnership — Fontaine Archon Quest Launch",
+            body: "Hi [Creator Name],\n\nWith Fontaine Chapter IV dropping next patch, we're looking for creators who can bring the narrative depth of Genshin to life. Your storytelling approach and anime-focused audience are a perfect fit.\n\nWe're offering: early access 72h before launch, $4,000 creator fee, limited in-game collectibles for your subscribers.\n\nInterested in a call this week?\n\n[Your Name] · HoYoverse Creator Relations"
+          },
+          {
+            subject: "New Character Reveal — Exclusive Preview for Your Channel",
+            body: "Hey [Creator Name],\n\nWe'd like to give you exclusive first-look access to the 5-star character dropping in v5.2. Embargo lifts 48h before the patch — early content consistently drives 3-5× your average view count on Genshin videos.\n\nMaterials, kit details, and a suggested B-roll package attached. No fee for preview content; the sponsored video brief is separate if you want to pursue that.\n\n[Your Name]"
+          },
+          {
+            subject: "Genshin × [Creator] — Finalizing the 3-Video Sponsored Series",
+            body: "Hi [Creator Name],\n\nHere's our offer for the Sumeru anniversary series:\n• Video 1: Region overview (organic-first, sponsored tag)\n• Video 2: Character tier list (sponsored)\n• Video 3: Endgame guide (sponsored)\n• Total fee: $9,000 over 5 weeks\n• Subscriber benefit: 10-day Primogem code exclusive\n\nLet me know your thoughts and we can finalize the contract by Friday.\n\n[Your Name]"
+          }
+        ],
+        videoScripts: [
+          {
+            title: "YouTube 90s — New Region Story Summary",
+            script: "HOOK (0-5s): Cinematic cutscene screenshot. Caption: 'HoYoverse spent 3 years building this region.'\n\nNARRATIVE (5-40s): Walk through the lore setup, character motivations, world-building details.\n\nGAMEPLAY (40-70s): Open-world exploration, puzzle mechanics, boss encounter preview.\n\nCTA (70-90s): 'Genshin is free on iOS, Android, PC, and PS5. If you want to support the channel, use my creator code — link below gives you a starter pack.'"
+          },
+          {
+            title: "TikTok 15s — 5-Star Character Reveal Reaction",
+            script: "0-2s: Dark screen, build-up music.\n2-6s: Character splash art reveal with particle effects.\n6-11s: Rapid gameplay clips showing kit highlights. Text: 'They actually made her broken 💀'\n11-15s: Wishlist banner screenshot + 'Free-to-play players: she's in standard next patch.'"
+          }
+        ]
+      }
+    },
+    {
+      name: "PUBG Mobile",
+      category: "Battle Royale",
+      targetAudience: "Hardcore mobile gamers aged 18–35 globally with strong presence in SEA/MENA/LATAM who enjoy competitive survival shooters and ranked ladder progression",
+      uniqueSellingPoints: "Console-quality battle royale on mobile — 100-player Erangel maps, licensed real-world firearms system, 60fps smooth gameplay, and official esports circuits with $250K prize pools",
+      downloadUrl: "https://www.pubgmobile.com",
+      aiAssets: {
+        status: "ready",
+        generatedAt: "2026-04-28T08:10:00.000Z",
+        traceId: "seed-pubg-001",
+        emailTemplates: [
+          {
+            subject: "PUBG Mobile Pro Series — Exclusive Coverage Opportunity",
+            body: "Hi [Creator Name],\n\nThe PUBG Mobile Pro League (PMPL) Americas finals are happening next month and we're building a creator media team. Your FPS gameplay content and engaged community make you an ideal fit.\n\nWhat we offer: press credentials, $2,500 appearance fee, exclusive developer interview access, and a co-branded content series.\n\nAre you available for a quick call Tuesday or Wednesday?\n\n[Your Name] · PUBG Mobile Partnerships"
+          },
+          {
+            subject: "Season 30 Meta Update — Your Squad Will Want to See This",
+            body: "Hey [Creator Name],\n\nSeason 30 dropped a significant weapon balance patch — the M416 nerf has completely shifted the mid-range meta. We'd like to sponsor a tier list breakdown video with your take.\n\nFee: $1,800 flat. No mandatory talking points — just your honest analysis with a 15-second branded end card.\n\n[Your Name]"
+          },
+          {
+            subject: "PUBG Mobile × [Creator] Collaboration — Contract Ready",
+            body: "Hi [Creator Name],\n\nWe're ready to move forward on the 4-video series. Here's the final brief:\n• 2× ranked gameplay highlight videos\n• 1× season overview & loadout guide\n• 1× tournament reaction/vlog\n• Total: $6,500 + exclusive in-game cosmetics for your audience\n\nContract and content calendar attached. Looking forward to working together.\n\n[Your Name]"
+          }
+        ],
+        videoScripts: [
+          {
+            title: "YouTube 75s — Ranked Clutch Gameplay",
+            script: "HOOK (0-5s): Final circle, 1v3, showing heartbeat cam overlay. Caption: 'Diamond lobby, 3 squads left.'\n\nGAMEPLAY (5-55s): Commentary-driven clutch sequence — positioning decisions, weapon choices, ring movement timing.\n\nANALYSIS (55-70s): 'Here's what most players miss in this situation: the micro-movement before the peek is what creates the angle.'\n\nCTA (70-75s): 'PUBG Mobile is free — download in bio. Season 30 Battle Pass details in the pinned comment.'"
+          },
+          {
+            title: "TikTok 15s — Sniper 300m Shot",
+            script: "0-3s: Scoping in on distant target, full focus.\n3-8s: Slow-motion bullet travel, hit marker, kill feed.\n8-12s: Turn to camera, reaction. Text: '300 meters. No scope. Different.'\n12-15s: PUBG Mobile logo + 'Download free' CTA card."
+          }
+        ]
+      }
+    },
+    {
+      name: "Pokemon Go",
+      category: "AR / Casual",
+      targetAudience: "Casual gamers and Pokemon fans aged 10–40 globally who enjoy outdoor AR gaming, community events, and Pokemon collection mechanics",
+      uniqueSellingPoints: "The world's #1 AR mobile game — catch Pokemon in the real world via GPS + camera, battle at local Gyms, trade with friends, and join global community events with millions of simultaneous players",
+      downloadUrl: "https://pokemongolive.com",
+      aiAssets: null
+    },
+    {
+      name: "Clash Royale",
+      category: "Strategy / Card",
+      targetAudience: "Strategy game fans aged 13–35 globally who enjoy competitive card-based tower defense with quick 3-minute match formats and deep deck-building meta",
+      uniqueSellingPoints: "Fast-paced real-time 1v1 card strategy — over 100 collectible cards, seasonal deck meta shifts, ranked ladder with global leaderboard, and $1M annual esports prize pool",
+      downloadUrl: "https://clashroyale.com",
+      aiAssets: null
+    }
+  ];
+
+  let seededProductCount = 0;
+  for (const prod of PRODUCT_SEEDS) {
+    const existing = await prisma.product.findFirst({
+      where: { tenantId: tenant.id, name: prod.name },
+      select: { id: true },
+    });
+    if (existing) {
+      await prisma.product.update({
+        where: { id: existing.id },
+        data: {
+          category: prod.category,
+          targetAudience: prod.targetAudience,
+          uniqueSellingPoints: prod.uniqueSellingPoints,
+          downloadUrl: prod.downloadUrl,
+          ...(prod.aiAssets !== null ? { aiAssets: prod.aiAssets as never } : {}),
+        },
+      });
+    } else {
+      await prisma.product.create({
+        data: {
+          tenantId: tenant.id,
+          name: prod.name,
+          category: prod.category,
+          targetAudience: prod.targetAudience,
+          uniqueSellingPoints: prod.uniqueSellingPoints,
+          downloadUrl: prod.downloadUrl,
+          aiAssets: prod.aiAssets as never,
+        },
+      });
+    }
+    seededProductCount++;
+  }
+
   console.log("Seed complete:", {
     tenant: tenant.slug,
     users: [admin.email, marketer.email],
@@ -439,6 +611,7 @@ async function main() {
     campaigns: campaignSeeds.length,
     templates: seededTemplateCount,
     emailLogs: EMAIL_LOG_COUNT,
+    products: seededProductCount,
   });
 }
 

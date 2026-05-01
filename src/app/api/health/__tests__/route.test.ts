@@ -56,7 +56,7 @@ describe("GET /api/health", () => {
     expect(body.status).toBe("healthy");
     expect(body.version).toMatch(/^\d+\.\d+\.\d+/);
     expect(body.checks.database.status).toBe("ok");
-    expect(body.checks.redis.status).toBe("stub");
+    expect(body.checks.redis.status).toBe("not_used");
     expect(body.uptime_seconds).toBeGreaterThanOrEqual(0);
     expect(() => new Date(body.timestamp).toISOString()).not.toThrow();
   });

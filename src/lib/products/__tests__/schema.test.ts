@@ -29,13 +29,14 @@ describe("createProductSchema", () => {
     const parsed = createProductSchema.safeParse({
       name: "Minimal",
       category: "RPG",
+      targetAudience: "Gamers aged 18-30",
       uniqueSellingPoints: "Compelling story",
     });
     expect(parsed.success).toBe(true);
     if (parsed.success) {
       expect(parsed.data.platforms).toEqual([]);
       expect(parsed.data.generateImmediately).toBe(false);
-      expect(parsed.data.targetAudience).toBeUndefined();
+      expect(parsed.data.targetAudience).toBe("Gamers aged 18-30");
       expect(parsed.data.downloadUrl).toBeUndefined();
       expect(parsed.data.launchDate).toBeUndefined();
     }
@@ -104,6 +105,7 @@ describe("createProductSchema", () => {
     const parsed = createProductSchema.safeParse({
       name: "X",
       category: "RPG",
+      targetAudience: "Gamers",
       uniqueSellingPoints: "Y",
       downloadUrl: "",
     });
@@ -115,6 +117,7 @@ describe("createProductSchema", () => {
     const parsed = createProductSchema.safeParse({
       name: "X",
       category: "RPG",
+      targetAudience: "Gamers",
       uniqueSellingPoints: "Y",
       launchDate: "",
     });
