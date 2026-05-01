@@ -75,7 +75,10 @@ export function CompetitorCpiCard() {
             width={72}
           />
           <Tooltip
-            formatter={(v: number) => [`$${v.toFixed(2)}`, t("cpiLabel")]}
+            formatter={(value) => {
+              const num = typeof value === "number" ? value : Number(value);
+              return [`$${num.toFixed(2)}`, t("cpiLabel")];
+            }}
             contentStyle={{
               background: "rgba(11, 19, 38, 0.95)",
               border: "1px solid rgba(0, 229, 255, 0.2)",
@@ -95,7 +98,10 @@ export function CompetitorCpiCard() {
             <LabelList
               dataKey="cpi"
               position="right"
-              formatter={(v: number) => `$${v.toFixed(2)}`}
+              formatter={(value) => {
+                const num = typeof value === "number" ? value : Number(value);
+                return `$${num.toFixed(2)}`;
+              }}
               style={{ fill: "rgba(186, 201, 204, 0.75)", fontSize: 10 }}
             />
           </Bar>
