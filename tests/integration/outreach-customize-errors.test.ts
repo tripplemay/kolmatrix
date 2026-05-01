@@ -118,7 +118,7 @@ describe("Campaign.productId nullability (regression for seed-side fix)", () => 
           email: "owner@test.local",
           tenantId,
           role: "marketer",
-          passwordHash: "x",
+          name: "Owner",
         },
       });
       const campaign = await tx.campaign.create({
@@ -146,7 +146,7 @@ describe("Campaign.productId nullability (regression for seed-side fix)", () => 
           email: "owner2@test.local",
           tenantId,
           role: "marketer",
-          passwordHash: "x",
+          name: "Owner 2",
         },
       });
       const product = await tx.product.create({

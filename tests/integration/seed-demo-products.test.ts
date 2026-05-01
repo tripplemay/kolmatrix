@@ -36,7 +36,7 @@ describe("seed.ts campaign↔product link (MVP-vf C-10)", () => {
   it("links a campaign to the matching product by name", async () => {
     await withTestTenant(async (tenantId, tx) => {
       const owner = await tx.user.create({
-        data: { email: "o@t.local", tenantId, role: "marketer", passwordHash: "x" },
+        data: { email: "o@t.local", tenantId, role: "marketer", name: "Owner" },
       });
       const product = await tx.product.create({
         data: {
@@ -116,7 +116,7 @@ describe("seed.ts product cleanup (MVP-vf C-05.1)", () => {
   it("keeps a non-canonical product if it has a campaign linked (FK Restrict guard)", async () => {
     await withTestTenant(async (tenantId, tx) => {
       const owner = await tx.user.create({
-        data: { email: "k@t.local", tenantId, role: "marketer", passwordHash: "x" },
+        data: { email: "k@t.local", tenantId, role: "marketer", name: "Keeper" },
       });
       const oldProduct = await tx.product.create({
         data: {
