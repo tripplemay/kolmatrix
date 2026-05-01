@@ -15,14 +15,6 @@ import { z } from "zod";
 export const PRODUCT_PLATFORMS = ["mobile", "pc", "console", "web3"] as const;
 export type ProductPlatform = (typeof PRODUCT_PLATFORMS)[number];
 
-const trimmedOptional = (max: number) =>
-  z
-    .string()
-    .trim()
-    .max(max)
-    .optional()
-    .transform((v) => (v && v.length > 0 ? v : undefined));
-
 export const createProductSchema = z
   .object({
     name: z.string().trim().min(1, "nameRequired").max(200),

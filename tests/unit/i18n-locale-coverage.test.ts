@@ -176,6 +176,9 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   // MVP-internal-demo-prep-F007: chipLocales is a locale-code list
   // that reads the same in every language (en/zh/ja/ko/es intentional).
   "auth.login.chipLocales",
+  // MVP-internal-demo-prep-F001: "CPI" is a marketing acronym kept
+  // verbatim across locales (en/zh/ja/ko/es intentional).
+  "dashboard.cpi.cpiLabel",
 ]);
 
 const en = load("en");
