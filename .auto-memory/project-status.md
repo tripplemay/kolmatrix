@@ -6,35 +6,29 @@ type: project
 
 # Project Status — KOLMatrix
 
-**Last Updated:** 2026-05-01 (johnsong Generator session)
-**Sprint:** MVP-internal-demo-prep | **Status:** verifying | **Completed:** 7/7 features
+**Last Updated:** 2026-05-01 (johnsong fix-round 1)
+**Sprint:** MVP-internal-demo-prep | **Status:** reverifying | **fix_rounds:** 1
 
-## Completed Generator Features
-F002 ✅ targetAudience zod | F007 ✅ copy polish | F004 ✅ demo README | F003 ✅ 5 products seeded | F006 ✅ dashboard real data | F001 ✅ WorkflowSteps + CPI + ROI cards
+## Reviewer 报告分类（verifying-2026-05-01）
+- **类型 1（报告自身漏洞）:** A-03 git_sha 期望值 stale，复验时现场填
+- **类型 2（checklist 陈旧）:** C-03 /database 三卡名与代码不一致（AI Intelligence/Coverage Gap/Engagement vs 报告期望的 Market Intel/Campaign Timing/Budget Benchmark）
+- **类型 3（真 bug，本轮已修）:** C-05.1+C-05.2（Knowledge Base 6 vs 5 + 缺 Generate AI 按钮）/ C-10（Outreach AI customize campaign_no_product）
+- **类型 4（偶发）:** C-13 Weekly report stuck — 复验重试
 
-## Pending — Reviewer codex
-F005 ⏳ Prod L2 smoke 34-item checklist → docs/test-cases/MVP-internal-demo-prep-prod-smoke-checklist.md
+## Deploy Status (2026-05-01 fix-round 1)
+✅ Staging deploy 4a3249b: healthy / productsRemoved=15 / campaignsLinkedToProducts=3
+✅ Prod deploy 4a3249b: healthy / redis=not_used
+✅ Prod seed: products=5 / productsRemoved=1（Reviewer 第 6 个 leftover 清掉）/ campaigns 全关联
 
-## Deploy Status (2026-05-01)
-✅ Staging deploy d26735b: healthy / db:seed ran (5 Products + 300 EmailLog)
-✅ Prod deploy d906060: healthy / redis=not_used / db latency=22ms
-✅ Prod seed (via new seed-prod.yml workflow): 5 Products + 12 KOLs + 3 Campaigns + 300 EmailLog
-✅ Visual baseline regenerated: dashboard.png back in git (post-F001 layout, 177KB)
+## Ready for Reviewer Reverify
+- prod git_sha = 4a3249b（本地 HEAD 一致）
+- F005 checklist: docs/test-cases/MVP-internal-demo-prep-prod-smoke-checklist.md
+- 复验报告建议路径: docs/test-reports/MVP-internal-demo-prep-reverifying-2026-05-01.md
 
-## New CI Infrastructure (this session)
-- `.github/workflows/deploy-staging.yml` — workflow_dispatch, runs deploy-staging.sh + db:seed
-- `.github/workflows/seed-prod.yml` — workflow_dispatch with confirm phrase guard
-
-## Ready for Reviewer (F005)
-- Status: verifying (`progress.json` already set)
-- Checklist: `docs/test-cases/MVP-internal-demo-prep-prod-smoke-checklist.md` (34 items A–G)
-- Target: https://kol.guangai.ai (git_sha=d906060)
-
-## Key Decisions (this batch)
-- WorkflowSteps: 6-step completion from dashboardData counts (no extra DB round-trips)
-- CompetitorCpiCard: hardcoded Q1 2025 benchmarks, "Sample data" badge
-- EmailPerformance: buckets by sentAt (deterministic with LCG seed); mocks.ts deleted
-- Recent Activity: AuditLog 5 rows → i18n via action→key registry; empty state for demo
+## CI Infrastructure (新增本会话)
+- `.github/workflows/seed-prod.yml`（昨日加）
+- src/lib/dashboard/__tests__/* 单元测试（覆盖率 79.42% → ≥80%）
+- src/app/[locale]/(app)/outreach/__tests__/* 单元测试
 
 ## Backlog
 9 entries: BL-003/011/012/014/015/016/017/018/019 + BL-020/021/022 (all Post-MVP)
