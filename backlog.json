@@ -163,5 +163,66 @@
       "post-mvp"
     ],
     "discovered_in": "docs/product/MVP-polish-audit-2026-04-30.md P1-5 + 用户 2026-04-30 决议"
+  },
+  {
+    "id": "BL-020",
+    "title": "前端审计 6 条安全整改 mini-batch（CR-1/2/3 + H-S1/2/3）",
+    "description": "2026-05-01 三 agent 并行前端审计（约 37,500 行 TS/TSX，325 文件）出 6 项安全相关问题，团队内部 demo 风险低未进 BIx-mvp-polish-pass，作为单 mini-batch 排期（~0.5-1 day Generator + 0.25 day Reviewer）。基础工程质量良好（每条 API 校验 session+tenantId / 用户输入走 zod / bcrypt cost 12 / 192-bit token），无 0day 级漏洞，但 6 项是真实安全边界，正式上线对外客户前必须落地。\n\n**CR-1 productId 缺 UUID 格式校验**\n- 文件：src/app/[locale]/(app)/knowledge-base/actions.ts:22-25, 135-136, 205\n- normalizeProductId() 仅检查非空，未调 UUID_RE.test()，与本仓库其它 actions 不一致。RLS 兜底但畸形 productId 仍能进 tx.product.update/delete\n- 修复：normalizeProductId 加 UUID_RE.test()，或 Prisma 调用前内联校验\n\n**CR-2 AI 生成 URL 直渲染 <a href>（潜在 open redirect）**\n- 文件：src/app/[locale]/(app)/campaigns/[id]/AiSuggestionsClient.tsx:150\n- s.action_link 来自 AI 响应 + localStorage 反序列化，无 schema 校验\n- 修复：路径白名单 ['/campaigns','/discovery','/database','/outreach']，否则 fallback；改 <Link>\n\n**CR-3 dangerouslySetInnerHTML 内联脚本（discovery 高级筛选）**\n- 文件：src/app/[locale]/(app)/discovery/FilterSidebar.tsx:344-347\n- 当前注入常量安全，但反范式；未来如改动态 cookie 名会洞开\n- 修复：改小型 'use client' 组件，<details> toggle 事件读写 cookie\n\n**H-S1 SQL 注入风险（防御依赖单点 assertUuid）**\n- 文件：src/lib/db.ts:60\n- tx.$executeRawUnsafe(\\`SET LOCAL app.tenant_id = '${tenantId}'\\`) — 当前 assertUuid 兜住，但任何未来 caller 绕过即洞开\n- 修复：tx.$executeRaw\\`SET LOCAL app.tenant_id = ${tenantId}\\` 参数化\n\n**H-S2 登录无防爆破 / 限流**\n- 文件：src/app/[locale]/login/actions.ts + src/app/api/auth/[...nextauth]/route.ts\n- bcrypt cost=12 减缓单点，但并发请求可平行投喂；/api/** 被 middleware 排除\n- 修复：用 @upstash/ratelimit + Redis（.env.example 已有 Redis URL）滑动窗口（10/15min/email）\n\n**H-S3 缺失 HTTP 安全头**\n- 文件：next.config.ts — 缺 CSP / X-Frame-Options / X-Content-Type-Options / HSTS / Referrer-Policy / Permissions-Policy\n- 修复：BIx F005 已含 6 头 + CSP-Report-Only。本条 BL-020 余项 = 一周观察期后切 CSP enforce\n- /shared/weekly-report/[token] 公开页尤其暴露在 clickjacking 下\n\n**Acceptance（mini-batch 启动时落地）：**\n- 6 项全修\n- 加守门 tests：UUID 校验 / open-redirect 白名单 / dangerouslySetInnerHTML 改 client component / SQL 参数化 / 限流 unit + integration / CSP 切 enforce 后 violation log 0\n- staging + prod L2 烟测 30+ 条 checklist（同 MVP F005 模式补安全维度）\n- signoff 报告明示「6 项安全 Critical/High 全部闭环」",
+    "decisions": [
+      "用户 2026-05-01 决议 14：6 项不进 BIx-mvp-polish-pass，单独 mini-batch（团队内部 demo 风险低）",
+      "用户 2026-05-01 决议 (γ-2)：6 项合 1 条 backlog 条目（紧凑，作为单 mini-batch 排期）",
+      "排期建议：BIx done + 团队 demo 反馈窗口期内启动 1 mini-batch（~0.5-1 day），上线对外客户前必须落地",
+      "CSP enforce 切换属本条 acceptance 子项（H-S3 后半段 — BIx F005 仅做 Report-Only）"
+    ],
+    "confirmed_at": "2026-05-01T03:00+0800",
+    "priority": "high",
+    "tags": [
+      "security",
+      "audit-2026-05-01",
+      "post-bix",
+      "pre-external-customer"
+    ],
+    "discovered_in": "docs/reviews/frontend-audit-2026-05-01.md（三 agent 并行：typescript-reviewer / security-reviewer / general-purpose-performance）",
+    "references": [
+      "docs/reviews/frontend-audit-2026-05-01.md §🔴 Critical (CR-1/2/3) + §🟠 High 安全相关 (H-S1/S2/S3)",
+      "docs/specs/BIx-mvp-polish-pass-spec.md §1.3 非目标 + §10 决议 14"
+    ]
+  },
+  {
+    "id": "BL-021",
+    "title": "全应用 Suspense / loading.tsx 边界（H-P4）",
+    "description": "前端审计 H-P4：当前全应用 0 个 loading.tsx / Suspense 边界。ROI / Dashboard / Campaign Detail 都'全等就绪才出现'，慢查询全局阻塞。预估收益：感知首屏 −300~800ms。BIx F005 (γ) 决议跳过 H-P4（范围易扩，11 路由全加 ~4h，critical paths 5 路由 ~2h），单独 backlog 条目评估。等 BIx done 后据团队 demo 反馈决定：(a) critical paths 5 路由（~2h）/ (b) 全 11 路由（~4h）/ (c) 仍不做（如团队反馈无慢页阻塞感）。\n\n**实现路径（如启动）：**\n- 选 5/11 路由各加 src/app/[locale]/(app)/<route>/loading.tsx skeleton\n- 慢查询拆 Suspense boundary：dashboard KPI / ROI trend / campaign KOL panel 等独立 query 并行 stream\n- visual baseline 必更（loading skeleton 引入新 layout）",
+    "decisions": [
+      "用户 2026-05-01 决议 11 (γ)：跳过 BIx，单独 backlog 评估",
+      "等团队 demo 反馈数据决定 (a)/(b)/(c)"
+    ],
+    "confirmed_at": "2026-05-01T03:00+0800",
+    "priority": "medium",
+    "tags": [
+      "performance",
+      "perceived-performance",
+      "audit-2026-05-01",
+      "post-bix"
+    ],
+    "discovered_in": "docs/reviews/frontend-audit-2026-05-01.md §H-P4"
+  },
+  {
+    "id": "BL-022",
+    "title": "列表页虚拟化（H-P5，等 scale signal）",
+    "description": "前端审计 H-P5：列表页未虚拟化（DatabaseTableClient.tsx:144 / RoiCampaignTable.tsx:110 / CampaignKolPanel.tsx:104 / CampaignsTable.tsx:58，4 个表）。当前靠分页规避，500+ 行批量场景会暴露。BIx F005 (γ) 决议不在 BIx 处理，等 scale signal（团队反馈某表卡顿 / KOL/Campaign 数据增长 ≥ 500/tenant）触发独立 mini-batch（~1-2 day Generator）。\n\n**实现路径（触发后）：**\n- npm install @tanstack/react-virtual\n- 4 个表按相同范式改造（参考 https://tanstack.com/virtual/v3/docs/framework/react/examples/table）\n- 大量回归测试：scrollIntoView / sort / filter / 跨页 selection 状态 / a11y\n- 预估 ~1-2 day Generator + 0.5 day Reviewer（含回归测试）",
+    "decisions": [
+      "用户 2026-05-01 决议 11 (γ)：跳过 BIx",
+      "触发条件：团队反馈某表卡顿 / KOL/Campaign 数据 ≥ 500/tenant",
+      "无 scale signal 前 deferred；接外部客户后大概率触发"
+    ],
+    "confirmed_at": "2026-05-01T03:00+0800",
+    "priority": "deferred",
+    "tags": [
+      "performance",
+      "scalability",
+      "audit-2026-05-01",
+      "scale-triggered"
+    ],
+    "discovered_in": "docs/reviews/frontend-audit-2026-05-01.md §H-P5"
   }
 ]
