@@ -130,7 +130,20 @@
     "seeMatrix": "매트릭스 보기",
     "emailPerformance": "이메일 성과",
     "recentActivity": "최근 활동",
-    "mockNote": "대시보드 모의 데이터: 7일 롤링 윈도우. KPI 값은 현재 테넌트만 반영합니다.",
+    "emailPerformanceEmpty": "/outreach에서 첫 번째 배치를 발송하면 성과 트렌드가 여기에 표시됩니다.",
+    "recentActivityEmpty": "팀의 활동 내역이 여기에 표시됩니다.",
+    "activity": {
+      "campaignKolAdded": "KOL이 캠페인에 추가되었습니다",
+      "campaignKolRemoved": "KOL이 캠페인에서 제거되었습니다",
+      "campaignKolStatusChanged": "KOL 상태가 업데이트되었습니다",
+      "campaignKolFeeUpdated": "KOL 보수가 업데이트되었습니다",
+      "campaignStatusTransitioned": "캠페인 상태가 변경되었습니다",
+      "campaignFieldsUpdated": "캠페인 세부 정보가 업데이트되었습니다",
+      "campaignRevenueRecorded": "캠페인 수익이 기록되었습니다",
+      "kolRelationshipChanged": "KOL 관계 상태가 업데이트되었습니다",
+      "kolBulkAdded": "KOL이 캠페인에 일괄 추가되었습니다",
+      "unknown": "팀 활동이 기록되었습니다"
+    },
     "kpi": {
       "totalKols": "전체 KOL",
       "activeCampaigns": "진행 중인 캠페인",

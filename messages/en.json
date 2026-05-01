@@ -130,7 +130,20 @@
     "seeMatrix": "See Matrix",
     "emailPerformance": "Email Performance",
     "recentActivity": "Recent Activity",
-    "mockNote": "Dashboard mock data: 7d rolling window. KPI values reflect current tenant only.",
+    "emailPerformanceEmpty": "Send your first batch via /outreach to see performance trends.",
+    "recentActivityEmpty": "Activity from your team will appear here.",
+    "activity": {
+      "campaignKolAdded": "KOL added to campaign",
+      "campaignKolRemoved": "KOL removed from campaign",
+      "campaignKolStatusChanged": "KOL status updated",
+      "campaignKolFeeUpdated": "KOL fee updated",
+      "campaignStatusTransitioned": "Campaign status changed",
+      "campaignFieldsUpdated": "Campaign details updated",
+      "campaignRevenueRecorded": "Revenue recorded for campaign",
+      "kolRelationshipChanged": "KOL relationship status updated",
+      "kolBulkAdded": "KOLs bulk-added to campaign",
+      "unknown": "Team activity recorded"
+    },
     "kpi": {
       "totalKols": "Total KOLs",
       "activeCampaigns": "Active Campaigns",

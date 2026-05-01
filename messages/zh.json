@@ -130,7 +130,20 @@
     "seeMatrix": "查看矩阵",
     "emailPerformance": "邮件表现",
     "recentActivity": "最近动态",
-    "mockNote": "仪表盘模拟数据：7 天滚动窗口。KPI 值仅反映当前租户情况。",
+    "emailPerformanceEmpty": "通过 /outreach 发送第一个邮件批次，即可在此查看效果趋势。",
+    "recentActivityEmpty": "团队的操作动态将在此显示。",
+    "activity": {
+      "campaignKolAdded": "KOL 已加入活动",
+      "campaignKolRemoved": "KOL 已从活动移除",
+      "campaignKolStatusChanged": "KOL 状态已更新",
+      "campaignKolFeeUpdated": "KOL 报酬已更新",
+      "campaignStatusTransitioned": "活动状态已变更",
+      "campaignFieldsUpdated": "活动信息已更新",
+      "campaignRevenueRecorded": "已记录活动收益",
+      "kolRelationshipChanged": "KOL 合作关系状态已更新",
+      "kolBulkAdded": "KOL 已批量加入活动",
+      "unknown": "团队操作已记录"
+    },
     "kpi": {
       "totalKols": "KOL 总数",
       "activeCampaigns": "活跃活动",

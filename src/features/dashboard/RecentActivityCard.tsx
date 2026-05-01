@@ -7,9 +7,9 @@
 
 import { useTranslations } from "next-intl";
 
-import { ActivityFeedItem, GlassPanel, SectionHeader } from "@/components/common";
+import type { ActivityItem } from "@/lib/dashboard/recent-activity";
 
-import type { ActivityItem } from "./mocks";
+import { ActivityFeedItem, GlassPanel, SectionHeader } from "@/components/common";
 
 interface Props {
   items: ActivityItem[];
@@ -20,17 +20,23 @@ export function RecentActivityCard({ items }: Props) {
   return (
     <GlassPanel padding="md" rounded="2xl" tone="neutral">
       <SectionHeader title={t("recentActivity")} as="h3" className="mb-4" />
-      <div className="flex flex-col gap-4">
-        {items.map((a) => (
-          <ActivityFeedItem
-            key={a.id}
-            text={a.text}
-            time={a.time}
-            icon={a.icon}
-            accent={a.accent}
-          />
-        ))}
-      </div>
+      {items.length === 0 ? (
+        <p className="text-on-surface-variant py-8 text-center text-xs">
+          {t("recentActivityEmpty")}
+        </p>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {items.map((a) => (
+            <ActivityFeedItem
+              key={a.id}
+              text={a.text}
+              time={a.time}
+              icon={a.icon}
+              accent={a.accent}
+            />
+          ))}
+        </div>
+      )}
     </GlassPanel>
   );
 }

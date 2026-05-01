@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  createProductSchema,
-  PRODUCT_PLATFORMS,
-  type ProductPlatform,
-} from "../schema";
+import { createProductSchema, PRODUCT_PLATFORMS, type ProductPlatform } from "../schema";
 
 describe("createProductSchema", () => {
   it("accepts a full happy-path payload", () => {

@@ -130,7 +130,20 @@
     "seeMatrix": "マトリックスを見る",
     "emailPerformance": "メールのパフォーマンス",
     "recentActivity": "最近の活動",
-    "mockNote": "ダッシュボードのモックデータ：7 日間のローリングウィンドウ。KPI 値は現在のテナントのみを反映しています。",
+    "emailPerformanceEmpty": "/outreach から最初のバッチを送信すると、パフォーマンストレンドがここに表示されます。",
+    "recentActivityEmpty": "チームの操作履歴がここに表示されます。",
+    "activity": {
+      "campaignKolAdded": "KOL がキャンペーンに追加されました",
+      "campaignKolRemoved": "KOL がキャンペーンから削除されました",
+      "campaignKolStatusChanged": "KOL のステータスが更新されました",
+      "campaignKolFeeUpdated": "KOL の報酬が更新されました",
+      "campaignStatusTransitioned": "キャンペーンのステータスが変更されました",
+      "campaignFieldsUpdated": "キャンペーンの詳細が更新されました",
+      "campaignRevenueRecorded": "キャンペーンの収益が記録されました",
+      "kolRelationshipChanged": "KOL の関係ステータスが更新されました",
+      "kolBulkAdded": "KOL が一括でキャンペーンに追加されました",
+      "unknown": "チームの操作が記録されました"
+    },
     "kpi": {
       "totalKols": "総 KOL 数",
       "activeCampaigns": "アクティブなキャンペーン",

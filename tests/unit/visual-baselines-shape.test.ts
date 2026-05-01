@@ -40,11 +40,10 @@ const EXPECTED_BASELINES = [
 ] as const;
 
 function gitTrackedBaselines(): string[] {
-  const out = execFileSync(
-    "git",
-    ["ls-files", "tests/screenshots/baseline/"],
-    { cwd: REPO_ROOT, encoding: "utf8" }
-  );
+  const out = execFileSync("git", ["ls-files", "tests/screenshots/baseline/"], {
+    cwd: REPO_ROOT,
+    encoding: "utf8",
+  });
   return out
     .split("\n")
     .filter(Boolean)
@@ -71,10 +70,7 @@ describe("visual baseline collection (MVP-vf-F007)", () => {
   });
 
   it("every git-tracked baseline has a matching toHaveScreenshot() call", () => {
-    const spec = readFileSync(
-      resolve(REPO_ROOT, "tests/e2e/visual-regression.spec.ts"),
-      "utf8"
-    );
+    const spec = readFileSync(resolve(REPO_ROOT, "tests/e2e/visual-regression.spec.ts"), "utf8");
     for (const baseline of EXPECTED_BASELINES) {
       expect(
         spec,

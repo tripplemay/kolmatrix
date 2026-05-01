@@ -15,13 +15,7 @@
  */
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-  asTenant,
-  cleanDb,
-  getAdminPrisma,
-  setupTestDb,
-  teardownTestDb,
-} from "../helpers/db";
+import { asTenant, cleanDb, getAdminPrisma, setupTestDb, teardownTestDb } from "../helpers/db";
 
 type GenerateAiAssets = typeof import("@/lib/products/generateAiAssets").generateAiAssets;
 type MarkAiAssetsPending = typeof import("@/lib/products/generateAiAssets").markAiAssetsPending;
@@ -37,9 +31,7 @@ beforeAll(async () => {
   // actual API is not called — `fetchImpl` is injected by the test.
   process.env.AIGCGATEWAY_BASE_URL = "http://localhost:4000";
   process.env.AIGCGATEWAY_API_KEY = "test-key-abcd";
-  ({ generateAiAssets, markAiAssetsPending } = await import(
-    "@/lib/products/generateAiAssets"
-  ));
+  ({ generateAiAssets, markAiAssetsPending } = await import("@/lib/products/generateAiAssets"));
   ({ createProductSchema } = await import("@/lib/products/schema"));
 });
 

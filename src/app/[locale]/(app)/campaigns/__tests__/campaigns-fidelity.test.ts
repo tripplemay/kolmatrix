@@ -56,9 +56,7 @@ describe("/campaigns fidelity guards (MVP-vf-F004)", () => {
     // The Owner placeholder must declare disabled + the ownerTooltip
     // key. JSX prop order is formatter-dependent — match the whole
     // <Select> block so we don't care which prop comes first.
-    const block = fb.match(
-      /<Select[\s\S]*?data-testid="campaigns-owner-select"[\s\S]*?>/
-    );
+    const block = fb.match(/<Select[\s\S]*?data-testid="campaigns-owner-select"[\s\S]*?>/);
     expect(block, "Owner Select block").not.toBeNull();
     expect(block![0]).toMatch(/disabled/);
     expect(block![0]).toMatch(/t\("ownerTooltip"\)/);

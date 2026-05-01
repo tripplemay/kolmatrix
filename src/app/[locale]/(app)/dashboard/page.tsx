@@ -2,21 +2,20 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import {
-  GhostButton,
-  GlassPanel,
-  KolCard,
-  SecondaryButton,
-  SectionHeader,
-} from "@/components/common";
+import { GhostButton, KolCard, SecondaryButton, SectionHeader } from "@/components/common";
 import { ActiveCampaignsSection } from "@/features/dashboard/ActiveCampaignsSection";
 import { EmailPerformanceCard } from "@/features/dashboard/EmailPerformanceCard";
 import { GreetingBar } from "@/features/dashboard/GreetingBar";
 import { KpiRow } from "@/features/dashboard/KpiRow";
 import { QuickActions } from "@/features/dashboard/QuickActions";
 import { RecentActivityCard } from "@/features/dashboard/RecentActivityCard";
-import { EMAIL_PERFORMANCE_DATA, RECENT_ACTIVITIES } from "@/features/dashboard/mocks";
 import { isLocale, routing } from "@/i18n/routing";
+import { fetchEmailPerformance } from "@/lib/dashboard/email-performance";
+import {
+  fetchRecentActivity,
+  formatRelativeTime,
+  resolveActivityMeta,
+} from "@/lib/dashboard/recent-activity";
 import { withTenant } from "@/lib/db";
 
 import { fetchDashboardData, mapCampaign, mapKol } from "./data";
@@ -33,9 +32,25 @@ export default async function DashboardPage({ params }: Props) {
   const session = await auth();
   const tenantId = session?.user.tenantId;
   if (!tenantId) redirect("/login");
-  const d = await withTenant(tenantId, fetchDashboardData);
+  const [d, emailPerf, rawActivity] = await withTenant(tenantId, (tx) =>
+    Promise.all([fetchDashboardData(tx), fetchEmailPerformance(tx), fetchRecentActivity(tx)])
+  );
   const t = await getTranslations("dashboard");
-  const dateLabel = new Date().toLocaleDateString(locale, { month: "long", day: "numeric", year: "numeric" });
+  const activityItems = rawActivity.map((row) => {
+    const meta = resolveActivityMeta(row.action);
+    return {
+      id: row.id.toString(),
+      icon: meta.icon,
+      accent: meta.accent,
+      text: t(`activity.${meta.i18nKey}` as Parameters<typeof t>[0]),
+      time: formatRelativeTime(row.createdAt),
+    };
+  });
+  const dateLabel = new Date().toLocaleDateString(locale, {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
   const name = session.user.name ?? "Operator";
 
   return (
@@ -56,24 +71,37 @@ export default async function DashboardPage({ params }: Props) {
             <SectionHeader
               title={t("recommendedKols")}
               as="h2"
-              actions={<><SecondaryButton size="sm" tone="cyan">{t("autoMatch")}</SecondaryButton><GhostButton>{t("seeMatrix")}</GhostButton></>}
+              actions={
+                <>
+                  <SecondaryButton size="sm" tone="cyan">
+                    {t("autoMatch")}
+                  </SecondaryButton>
+                  <GhostButton>{t("seeMatrix")}</GhostButton>
+                </>
+              }
             />
             <div
               className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5"
               data-testid="dashboard-top-kols"
             >
               {d.topKols.map(mapKol).map((k) => (
-                <KolCard key={k.id} name={k.name} avatar={k.avatar} followers={k.followers} aiScore={k.aiScore} platform={k.platform} tags={k.tags} variant="grid" />
+                <KolCard
+                  key={k.id}
+                  name={k.name}
+                  avatar={k.avatar}
+                  followers={k.followers}
+                  aiScore={k.aiScore}
+                  platform={k.platform}
+                  tags={k.tags}
+                  variant="grid"
+                />
               ))}
             </div>
           </section>
         </div>
         <aside className="space-y-6">
-          <EmailPerformanceCard data={EMAIL_PERFORMANCE_DATA} />
-          <RecentActivityCard items={RECENT_ACTIVITIES} />
-          <GlassPanel padding="sm" tone="cyan" glow>
-            <p className="text-on-surface-variant text-xs">{t("mockNote")}</p>
-          </GlassPanel>
+          <EmailPerformanceCard data={emailPerf} />
+          <RecentActivityCard items={activityItems} />
         </aside>
       </div>
     </div>

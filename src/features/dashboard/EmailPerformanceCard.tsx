@@ -9,8 +9,9 @@ import { useTranslations } from "next-intl";
 
 import { GlassPanel, SectionHeader } from "@/components/common";
 
+import type { EmailPerfPoint } from "@/lib/dashboard/email-performance";
+
 import { EmailPerformanceChart } from "./EmailPerformanceChart";
-import type { EmailPerfPoint } from "./mocks";
 
 interface Props {
   data: EmailPerfPoint[];
@@ -18,10 +19,17 @@ interface Props {
 
 export function EmailPerformanceCard({ data }: Props) {
   const t = useTranslations("dashboard");
+  const isEmpty = data.every((p) => p.sent === 0 && p.opened === 0 && p.replied === 0);
   return (
     <GlassPanel padding="md" rounded="2xl" tone="neutral">
       <SectionHeader title={t("emailPerformance")} as="h3" className="mb-3" />
-      <EmailPerformanceChart data={data} />
+      {isEmpty ? (
+        <p className="text-on-surface-variant py-10 text-center text-xs">
+          {t("emailPerformanceEmpty")}
+        </p>
+      ) : (
+        <EmailPerformanceChart data={data} />
+      )}
     </GlassPanel>
   );
 }

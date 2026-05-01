@@ -22,7 +22,7 @@
       "title": "5 款典型游戏 Products seed 进 Demo Studio + aiAssets 混合策略",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "prisma/seed.ts 在 Demo Studio tenant 下 upsert 5 个 Product：Honor of Kings (MOBA 预生成 aiAssets)、Genshin Impact (Open World RPG 预生成)、PUBG Mobile (Battle Royale/FPS 预生成)、Pokemon Go (AR/Casual 空 aiAssets)、Clash Royale (Strategy/Card 空 aiAssets)；3 个预生成 aiAssets JSON 含 emailTemplates × 3 + videoScripts × 2（hardcoded 高质量样本，模拟 aigcgateway 输出格式）；以 (tenantId, name) 自然键 upsert 幂等；Demo Studio tenant 内 5 个 Product 全部含 targetAudience 字段（满足 F002 zod 校验）；npm run db:seed 在 staging + prod 跑通；点击 2 个 null aiAssets Product 的 'Generate AI assets' 触发 aigcgateway 真实调用并写入 aiAssets；tests/integration/seed-demo-products.test.ts 验证幂等 + 内容完整；staging git_sha 与本 commit 一致。"
     },
     {
@@ -30,7 +30,7 @@
       "title": "团队内部 demo README（en 单文件）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "新建 docs/internal/team-demo-guide.md（en 单文件）含 5 sections：1. Login（admin/marketer URL + 密码引用 Notion）2. 3 Journeys to Try（A: KOL Discovery → Campaign → Email; B: Campaign → ROI → Weekly Report; C: Knowledge Base → AI Assets → Campaign）3. What to See on Each Page（8 页：dashboard/discovery/database/kols-detail/campaigns/outreach/crm/roi/weekly-report 各列关键元素）4. Known Limits（demo 数据共享 / B8 推荐 Post-MVP / Resend webhook B4-extended / BullMQ stub / AIGC 单次 ~$0.02 / B5 schema migration 已落 prod）5. Feedback Channel（Notion + Slack + Github issues）；不需要 i18n（仅 en）；不需要截图；staging git_sha 与本 commit 一致。"
     },
     {

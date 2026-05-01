@@ -18,7 +18,7 @@ import {
   YAxis,
 } from "recharts";
 
-import type { EmailPerfPoint } from "./mocks";
+import type { EmailPerfPoint } from "@/lib/dashboard/email-performance";
 
 interface Props {
   data: EmailPerfPoint[];

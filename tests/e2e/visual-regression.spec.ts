@@ -83,7 +83,10 @@ function baselineExists(name: string): boolean {
  * "missing" / "changed"), the test must run end-to-end so
  * `expect(page).toHaveScreenshot(name)` writes the baseline file.
  */
-function shouldSkipMissingBaseline(name: string, info: { config: { updateSnapshots?: string } }): boolean {
+function shouldSkipMissingBaseline(
+  name: string,
+  info: { config: { updateSnapshots?: string } }
+): boolean {
   const mode = info.config.updateSnapshots ?? "none";
   const argvRegenerating = process.argv.includes("--update-snapshots");
   // Playwright's runtime config is not always surfaced consistently in
@@ -110,9 +113,7 @@ async function login(page: Page) {
 }
 
 async function fontsReady(page: Page) {
-  await page.evaluate(
-    () => (document as { fonts?: { ready: Promise<unknown> } }).fonts?.ready
-  );
+  await page.evaluate(() => (document as { fonts?: { ready: Promise<unknown> } }).fonts?.ready);
 }
 
 /**
@@ -361,15 +362,7 @@ test.describe("Authenticated BM2 visual regression", () => {
     await expect(page).toHaveScreenshot("en-campaign-detail.png", {
       fullPage: true,
       animations: "disabled",
-      mask: [
-        title,
-        status,
-        productLink,
-        activity,
-        emailChart,
-        healthCard,
-        aiCard,
-      ],
+      mask: [title, status, productLink, activity, emailChart, healthCard, aiCard],
       threshold: 0.02,
       maxDiffPixels: 8000,
     });
@@ -399,7 +392,9 @@ test.describe("Authenticated BM2 visual regression", () => {
     });
   });
 
-  test("outreach template library full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
+  test("outreach template library full-page screenshot diffs < 2% vs baseline", async ({
+    page,
+  }) => {
     await login(page);
     await page.goto("/en/outreach/templates");
     await page.waitForSelector('[data-testid="outreach-template-library"]');
@@ -466,7 +461,9 @@ test.describe("Authenticated BM2 visual regression", () => {
     });
   });
 
-  test("weekly-report empty state full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
+  test("weekly-report empty state full-page screenshot diffs < 2% vs baseline", async ({
+    page,
+  }) => {
     test.skip(
       shouldSkipMissingBaseline("en-weekly-report.png", test.info()),
       "Baseline en-weekly-report.png missing — run the 'Update visual baselines' workflow."
@@ -499,9 +496,7 @@ test.describe("Authenticated BM2 visual regression", () => {
   // never mounts data-testid="database-table-wrapper". /discovery
   // shows every KOL regardless of save state, so the first
   // [data-testid="kol-card"] is always present.
-  test("kols-detail full-page screenshot diffs < 2% vs baseline", async ({
-    page,
-  }) => {
+  test("kols-detail full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
       shouldSkipMissingBaseline("en-kols-detail.png", test.info()),
       "Baseline en-kols-detail.png missing — run the 'Update visual baselines' workflow."

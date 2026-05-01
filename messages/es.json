@@ -130,7 +130,20 @@
     "seeMatrix": "Ver Matrix",
     "emailPerformance": "Rendimiento de Correo Electrónico",
     "recentActivity": "Actividad Reciente",
-    "mockNote": "Datos simulados del Panel: ventana móvil de 7 días. Los valores de KPI reflejan solo el inquilino actual.",
+    "emailPerformanceEmpty": "Envía tu primer lote desde /outreach para ver las tendencias de rendimiento.",
+    "recentActivityEmpty": "La actividad de tu equipo aparecerá aquí.",
+    "activity": {
+      "campaignKolAdded": "KOL añadido a la campaña",
+      "campaignKolRemoved": "KOL eliminado de la campaña",
+      "campaignKolStatusChanged": "Estado de KOL actualizado",
+      "campaignKolFeeUpdated": "Tarifa de KOL actualizada",
+      "campaignStatusTransitioned": "Estado de campaña cambiado",
+      "campaignFieldsUpdated": "Detalles de campaña actualizados",
+      "campaignRevenueRecorded": "Ingresos registrados para la campaña",
+      "kolRelationshipChanged": "Estado de relación con KOL actualizado",
+      "kolBulkAdded": "KOLs añadidos en bloque a la campaña",
+      "unknown": "Actividad del equipo registrada"
+    },
     "kpi": {
       "totalKols": "Total de KOLs",
       "activeCampaigns": "Campañas Activas",
