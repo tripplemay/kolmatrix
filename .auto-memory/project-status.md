@@ -4,9 +4,9 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BIx-mvp-polish-pass** — building 5/5 done（2026-05-02 11:55 F004 全部 P1-P5 完成 @ 219983c CI 绿；MVP-internal-demo-prep done + signoff PASS + framework v0.9.5 12 条 learnings 沉淀完毕）
+- **BIx-mvp-polish-pass** — verifying（2026-05-02 13:30 staging+prod deploy 全绿 @ a851866；5/5 features done；migration 已应用；MVP-internal-demo-prep done + signoff PASS + framework v0.9.5 12 条 learnings 沉淀完毕）
 - 估时 ~5-5.5 day Generator + 0.5 day Reviewer
-- 待 staging deploy（含 kol_sync_cursor migration + KOL_SYNC_MIN_SUBSCRIBERS env）+ prod redeploy → 切 verifying
+- Reviewer Codex L1+L2 验收，~0.5 day；7-day staging soft-watch acceptance 切 done 后用 /schedule 起 follow-up agent
 ## Features (5, 全 generator 批次)
 - F001 /crm 3 disabled 控件清理（time toggle / Export CSV / 删 Manual log）~1 day
 - F002 Misc 5 项 polish（Owner filter / Email btn / PDF 文案 / mock_sent / AiSuggestions）~2h
