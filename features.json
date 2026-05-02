@@ -54,7 +54,7 @@
       "title": "/knowledge-base 集成（ProductCard chip 4 状态可点 + ProductModal 展示生成进度/结果预览）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "ProductCard.tsx：emailCount/videoCount chip 改 <Link href=/assets?productId={id}&types=email/video_script>；hover 透明度变化+cursor-pointer+tooltip；4 状态 UI 一致：null='⏳ Generate AI assets' 点击触发 triggerAiGeneration / pending=spin+'Generating...' / ready=可点击 / failed=错误图标+Retry；ProductModal 编辑产品时 aiAssets.status='ready' 展示 'AI Assets Generated · 3 emails + 2 videos · [View in /assets] [Regenerate]'；跳 /assets?productId 自动 filter 应用；守门 test src/app/[locale]/(app)/knowledge-base/__tests__/ProductCard.test.tsx 4 状态 + 跳转；visual baseline 重生。详见 spec §F007。"
     },
     {
@@ -62,7 +62,7 @@
       "title": "Send to /outreach（email asset 一键注入 composer，prefilled state）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Detail panel 'Send to outreach' 按钮仅 type=email 显示；点击 router.push('/outreach?prefilledAssetId={asset.id}')；OutreachComposer 加载时检查 query param prefilledAssetId 命中 → pre-select dropdown + auto-fill subject + body + toast 'Loaded template from /assets'；守门 test tests/e2e/asset-send-to-outreach.spec.ts 端到端。详见 spec §F008。"
     },
     {

@@ -327,7 +327,7 @@ async function seedSystemTemplates(): Promise<SeedStats> {
       where: { tenantId: null, name: tpl.name, locale: tpl.locale },
       select: { id: true },
     });
-    const data: Prisma.EmailTemplateUncheckedCreateInput = {
+    const emailTemplateData: Prisma.EmailTemplateUncheckedCreateInput = {
       tenantId: null,
       name: tpl.name,
       subject: tpl.subject,
@@ -336,16 +336,59 @@ async function seedSystemTemplates(): Promise<SeedStats> {
       locale: tpl.locale,
       type: "system",
     };
+
+    let templateId: string;
     if (existing) {
       await prisma.emailTemplate.update({
         where: { id: existing.id },
-        data,
+        data: emailTemplateData,
       });
+      templateId = existing.id;
       stats.updated += 1;
     } else {
-      await prisma.emailTemplate.create({ data });
+      const created = await prisma.emailTemplate.create({
+        data: emailTemplateData,
+        select: { id: true },
+      });
+      templateId = created.id;
       stats.inserted += 1;
     }
+
+    // BL-025-F006 dual-write — keep the unified asset table in sync so
+    // loadOutreachTemplates (which now reads from `asset` rather than
+    // `email_template`) sees these system seeds. id is shared with the
+    // email_template row so future email_log.template_id can refer to
+    // either source consistently.
+    await prisma.asset.upsert({
+      where: { id: templateId },
+      update: {
+        name: tpl.name,
+        content: {
+          subject: tpl.subject,
+          body: tpl.body,
+          locale: tpl.locale,
+          variables: tpl.variables,
+        },
+        status: "published",
+        source: "system_seed",
+      },
+      create: {
+        id: templateId,
+        tenantId: null,
+        type: "email",
+        name: tpl.name,
+        content: {
+          subject: tpl.subject,
+          body: tpl.body,
+          locale: tpl.locale,
+          variables: tpl.variables,
+        },
+        source: "system_seed",
+        status: "published",
+        metadata: { seeded: true },
+      },
+    });
+
     stats.total += 1;
   }
   return stats;

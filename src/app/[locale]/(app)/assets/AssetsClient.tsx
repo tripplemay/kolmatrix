@@ -22,6 +22,7 @@
  */
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 
 import {
   AssetCard,
@@ -558,6 +559,8 @@ interface DetailPanelInnerProps {
 }
 
 function DetailPanelInner({ asset, onClose, onAssetMutated }: DetailPanelInnerProps) {
+  const router = useRouter();
+  const locale = useLocale();
   const [activeTab, setActiveTab] = useState<AssetTabId>("preview");
 
   // Best-effort hydration: if the asset object came from the listing
@@ -628,6 +631,9 @@ function DetailPanelInner({ asset, onClose, onAssetMutated }: DetailPanelInnerPr
               <span className="material-symbols-outlined text-[16px]" aria-hidden>
                 send
               </span>
+            }
+            onClick={() =>
+              router.push(`/${locale}/outreach?prefilledAssetId=${asset.id}`)
             }
           >
             Send to Outreach

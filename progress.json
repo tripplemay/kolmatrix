@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "素材中心 / Asset Library — 解决产品 → AI 生成 (3 邮件 + 2 视频) → 0% 接通到使用端的功能岛问题。统一 Asset 表（方案 X，含 EmailTemplate dual-write 迁移）+ /assets 三栏页面（Filter sidebar / Grid / Detail panel）+ variant tree（regenerate 不覆盖原版）+ AI generate/regenerate audit log + /outreach composer 接通 + KB 集成 + Send to Outreach + Material Symbols subset 守门加固（hotfix bb637a1 follow-up）。Definition of Done = 9 features 全 PASS + Reviewer L1+L2 签收 + Asset 表 + EmailTemplate dual-write 兼容期上线 + /assets 视觉与 design-draft/BL-025-asset-library/variant-a-296k 一致 + ProductCard chip 4 状态可点 + ProductModal 显示生成进度 + Audit log 记录 generate/regenerate + F009 守门加固 (manifest + grep pattern + CI test + PR template) + staging+prod redeploy + L2 烟测 30+ 全 PASS。",
   "total_features": 9,
-  "completed_features": 6,
+  "completed_features": 8,
   "fix_rounds": 0,
   "current_sprint": "BL-025-asset-library",
-  "last_updated": "2026-05-03T05:10+0800",
+  "last_updated": "2026-05-03T05:50+0800",
   "reference_docs": [
     "docs/specs/BL-025-asset-library-spec.md",
     "docs/adr/ADR-011-unified-asset-table-vs-typed-tables.md",

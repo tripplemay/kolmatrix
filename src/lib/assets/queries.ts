@@ -264,6 +264,8 @@ export interface ComposerAssetOption {
   source: AssetCard["source"];
   productId: string | null;
   productName: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
@@ -296,6 +298,8 @@ export async function loadAssetsForComposer(
       source: true,
       productId: true,
       product: { select: { name: true } },
+      createdAt: true,
+      updatedAt: true,
     },
     orderBy: [{ source: "asc" }, { updatedAt: "desc" }],
     take: COMPOSER_MAX_RESULTS,
@@ -306,6 +310,8 @@ export async function loadAssetsForComposer(
     source: AssetCard["source"];
     productId: string | null;
     product: { name: string } | null;
+    createdAt: Date;
+    updatedAt: Date;
   }>;
 
   return rows.map((row) => {
@@ -320,6 +326,8 @@ export async function loadAssetsForComposer(
       source: row.source,
       productId: row.productId,
       productName: row.product?.name ?? null,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
     };
   });
 }

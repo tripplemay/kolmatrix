@@ -8,13 +8,14 @@
  * so the AI asset generator has something to grip on. On successful save
  * the modal closes and the page re-fetches via revalidatePath().
  */
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import Link from "next/link";
 import { useActionState, useEffect, useId, useRef, useState, type MouseEvent } from "react";
 
 import { cn } from "@/lib/utils";
 import { PRODUCT_PLATFORMS, type ProductPlatform } from "@/lib/products/schema";
 
-import { createProduct, updateProduct } from "./actions";
+import { createProduct, triggerAiGeneration, updateProduct } from "./actions";
 import type { ProductListItem } from "./types";
 import type { CreateProductState } from "@/lib/products/schema";
 
@@ -43,6 +44,11 @@ export function ProductModal({ onClose, onCreated, product }: Props) {
   const [generate, setGenerate] = useState(!isEdit);
   const formRef = useRef<HTMLFormElement>(null);
   const titleId = useId();
+  const locale = useLocale();
+  // BL-025-F007 — AI Assets Generated panel + Regenerate trigger.
+  const [regeneratePending, setRegeneratePending] = useState(false);
+  const [regenerateError, setRegenerateError] = useState<string | null>(null);
+  const aiReady = isEdit && product?.aiAssets?.status === "ready" ? product.aiAssets : null;
 
   useEffect(() => {
     if (state.ok) {
@@ -230,6 +236,43 @@ export function ProductModal({ onClose, onCreated, product }: Props) {
             </p>
           ) : null}
           <p className="text-on-surface-variant/60 text-[11px]">{t("modal.requiredNote")}</p>
+
+          {aiReady && product ? (
+            <div className="border-cyan/30 bg-cyan/5 mt-2 flex flex-wrap items-center gap-3 rounded-lg border p-4">
+              <span className="material-symbols-outlined text-cyan text-[20px]" aria-hidden>
+                auto_awesome
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-on-surface text-[13px] font-semibold">AI Assets Generated</p>
+                <p className="text-on-surface-variant text-[11px]">
+                  {aiReady.emailTemplates.length} emails · {aiReady.videoScripts.length} videos
+                </p>
+              </div>
+              <Link
+                href={`/${locale}/assets?productId=${product.id}`}
+                className="border-cyan/40 text-cyan hover:bg-cyan/10 rounded-lg border px-3 py-1.5 text-[12px] font-semibold transition-colors"
+              >
+                View in /assets
+              </Link>
+              <button
+                type="button"
+                disabled={regeneratePending}
+                onClick={async () => {
+                  setRegeneratePending(true);
+                  setRegenerateError(null);
+                  const r = await triggerAiGeneration(product.id);
+                  setRegeneratePending(false);
+                  if (!r.ok) setRegenerateError(r.error ?? "generic");
+                }}
+                className="border-outline-variant text-on-surface-variant hover:text-on-surface rounded-lg border px-3 py-1.5 text-[12px] font-semibold transition-colors disabled:opacity-60"
+              >
+                {regeneratePending ? "Regenerating…" : "Regenerate"}
+              </button>
+              {regenerateError ? (
+                <p className="text-[11px] text-rose-300">Failed to regenerate</p>
+              ) : null}
+            </div>
+          ) : null}
         </div>
 
         <div className="bg-surface-lowest flex items-center justify-between border-t border-white/5 px-8 py-6">

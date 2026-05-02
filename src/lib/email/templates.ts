@@ -72,6 +72,18 @@ export async function loadOutreachTemplates(
     systemRows = fallback.filter((row) => row.source === "system_seed");
   }
 
+  // Preserve the original loadOutreachTemplates ordering so the
+  // composer dropdown looks identical to the pre-F006 baseline:
+  //   - system rows sorted by createdAt asc (insertion order ⇒
+  //     deterministic alphabetical-by-seed-script)
+  //   - user rows sorted by createdAt desc (newest authoring first)
+  systemRows = [...systemRows].sort(
+    (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+  );
+  const userRowsSorted = [...userRows].sort(
+    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+  );
+
   function adapt(row: (typeof primary)[number]): EmailTemplateOption {
     const scope: EmailTemplateScope = row.source === "system_seed" ? "system" : "user";
     return {
@@ -87,7 +99,7 @@ export async function loadOutreachTemplates(
     };
   }
 
-  return [...systemRows.map(adapt), ...userRows.map(adapt)];
+  return [...systemRows.map(adapt), ...userRowsSorted.map(adapt)];
 }
 
 export async function loadUserTemplates(

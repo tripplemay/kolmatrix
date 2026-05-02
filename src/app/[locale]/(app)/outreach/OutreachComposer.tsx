@@ -15,7 +15,7 @@
  *   7. Result summary (sent / mocked / failed, with per-KOL reasons)
  */
 import { useMemo, useRef, useState, useTransition, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/Button";
 import {
@@ -146,7 +146,21 @@ export function OutreachComposer({
     [selectedCampaign]
   );
 
-  const [templateId, setTemplateId] = useState<string>(data.templates[0]?.id ?? "");
+  // BL-025-F008: when /assets sends an email asset over via the
+  // `prefilledAssetId` query param, prefer it over the default
+  // first-template selection so the composer opens already focused
+  // on the chosen asset. Falls back to the first available template
+  // if the asset isn't visible (e.g. archived, cross-tenant, stale link).
+  const searchParamsHook = useSearchParams();
+  const prefilledAssetId = searchParamsHook?.get("prefilledAssetId") ?? null;
+  const initialTemplateId = useMemo(() => {
+    if (prefilledAssetId && data.templates.some((t) => t.id === prefilledAssetId)) {
+      return prefilledAssetId;
+    }
+    return data.templates[0]?.id ?? "";
+  }, [prefilledAssetId, data.templates]);
+
+  const [templateId, setTemplateId] = useState<string>(initialTemplateId);
   const activeTemplate: OutreachTemplateOption | null = useMemo(
     () => data.templates.find((t) => t.id === templateId) ?? null,
     [data.templates, templateId]

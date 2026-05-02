@@ -218,8 +218,8 @@ describe("BL-025-F005 · loadUsedIn", () => {
   it("counts email_log refs by both the asset id and metadata.migrated_from_email_template_id", async () => {
     await seedTenant(TENANT_A);
     const admin = getAdminPrisma();
-    // Native asset (post-F006 dual-write convention: email_template.id =
-    // asset.id). Insert a matching email_template + email_log.
+    // Native asset — F006 dual-write inserts the email_template
+    // mirror (id = asset.id) automatically; no manual mirror needed.
     const asset = await asTenant(TENANT_A, (tx) =>
       createAsset(tx, TENANT_A, {
         type: "email",
@@ -229,19 +229,6 @@ describe("BL-025-F005 · loadUsedIn", () => {
         status: "published",
       })
     );
-
-    await admin.emailTemplate.create({
-      data: {
-        id: asset.id,
-        tenantId: TENANT_A,
-        name: asset.name,
-        subject: seedEmail.subject,
-        body: seedEmail.body,
-        variables: [],
-        locale: "en",
-        type: "user",
-      },
-    });
 
     const seedKol = await admin.kol.create({
       data: {

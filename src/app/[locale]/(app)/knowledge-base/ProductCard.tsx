@@ -7,8 +7,15 @@
  * title → USP/audience line → status chips at the bottom. The chip state
  * is driven by `aiAssets.status` so the user sees generation in flight,
  * success counts, or a failure prompt without refreshing JSON.
+ *
+ * BL-025-F007: when assets are ready, the email + video chip rows
+ * become `next/link` anchors targeting `/assets?productId=…&types=…`
+ * so a click jumps to the asset library with the right filters
+ * pre-applied. Pending / failed / null states stay as static rows
+ * (no asset rows to navigate to yet).
  */
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
+import Link from "next/link";
 import { useState, useTransition } from "react";
 
 import { cn } from "@/lib/utils";
@@ -36,6 +43,7 @@ function pillClass(category: string): string {
 export function ProductCard({ product, onEdit, onDelete }: Props) {
   const t = useTranslations("knowledgeBase.card");
   const format = useFormatter();
+  const locale = useLocale();
   const [menuOpen, setMenuOpen] = useState(false);
   const [generatePending, startGenerate] = useTransition();
   const [generateError, setGenerateError] = useState<string | null>(null);
@@ -119,11 +127,15 @@ export function ProductCard({ product, onEdit, onDelete }: Props) {
               tone="emerald"
               icon="check_circle"
               label={t("emailTemplates", { count: emailCount })}
+              href={`/${locale}/assets?productId=${product.id}&types=email`}
+              ariaLabel={t("emailTemplates", { count: emailCount })}
             />
             <ChipRow
               tone="emerald"
               icon="check_circle"
               label={t("videoScripts", { count: videoCount })}
+              href={`/${locale}/assets?productId=${product.id}&types=video_script`}
+              ariaLabel={t("videoScripts", { count: videoCount })}
             />
           </>
         ) : assets?.status === "pending" ? (
@@ -182,6 +194,11 @@ interface ChipRowProps {
   icon: string;
   label: string;
   spin?: boolean;
+  /** When set, renders the row as a `next/link` anchor — used by
+   *  F007 to jump from the KB card into /assets with filters pre-applied. */
+  href?: string;
+  /** Tooltip / aria-label for the link variant. */
+  ariaLabel?: string;
 }
 
 const CHIP_TONE: Record<ChipRowProps["tone"], string> = {
@@ -191,9 +208,9 @@ const CHIP_TONE: Record<ChipRowProps["tone"], string> = {
   neutral: "text-on-surface-variant/60",
 };
 
-function ChipRow({ tone, icon, label, spin }: ChipRowProps) {
-  return (
-    <div className={cn("flex items-center gap-2 text-[12px] font-medium", CHIP_TONE[tone])}>
+function ChipRow({ tone, icon, label, spin, href, ariaLabel }: ChipRowProps) {
+  const inner = (
+    <>
       <span
         className={cn("material-symbols-outlined text-[18px]", spin && "animate-spin")}
         aria-hidden
@@ -201,6 +218,24 @@ function ChipRow({ tone, icon, label, spin }: ChipRowProps) {
         {icon}
       </span>
       <span>{label}</span>
-    </div>
+    </>
   );
+  const baseClass = cn("flex items-center gap-2 text-[12px] font-medium", CHIP_TONE[tone]);
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        title={ariaLabel ?? label}
+        aria-label={ariaLabel ?? label}
+        className={cn(
+          baseClass,
+          "hover:text-on-surface cursor-pointer transition-colors hover:opacity-90"
+        )}
+      >
+        {inner}
+      </Link>
+    );
+  }
+  return <div className={baseClass}>{inner}</div>;
 }

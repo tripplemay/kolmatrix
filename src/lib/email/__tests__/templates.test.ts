@@ -74,7 +74,10 @@ function makeAssetRow(opts: {
   productId?: string | null;
   productName?: string | null;
   content?: { subject?: string; body?: string; locale?: string; variables?: unknown };
+  createdAt?: Date;
+  updatedAt?: Date;
 }) {
+  const at = opts.createdAt ?? new Date("2026-04-30T00:00:00Z");
   return {
     id: opts.id ?? "11111111-1111-1111-1111-111111111111",
     name: opts.name ?? "Base template",
@@ -87,6 +90,8 @@ function makeAssetRow(opts: {
       locale: opts.content?.locale ?? "en",
       variables: opts.content?.variables ?? [],
     },
+    createdAt: at,
+    updatedAt: opts.updatedAt ?? at,
   };
 }
 
