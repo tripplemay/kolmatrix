@@ -27,6 +27,13 @@ type AssetTx = Prisma.TransactionClient & {
     update: ReturnType<typeof vi.fn>;
     delete: ReturnType<typeof vi.fn>;
   };
+  // BL-025-F006 dual-write target — every email-typed mutation
+  // mirrors into email_template so the mocks must absorb the call.
+  emailTemplate: {
+    create: ReturnType<typeof vi.fn>;
+    updateMany: ReturnType<typeof vi.fn>;
+    deleteMany: ReturnType<typeof vi.fn>;
+  };
 };
 
 function makeTx(): AssetTx {
@@ -36,6 +43,11 @@ function makeTx(): AssetTx {
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+    },
+    emailTemplate: {
+      create: vi.fn().mockResolvedValue({}),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+      deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
   } as unknown as AssetTx;
 }
@@ -267,24 +279,54 @@ describe("archiveAsset", () => {
 });
 
 describe("deleteAsset", () => {
-  it("returns true when the row was deleted", async () => {
+  it("returns true when the row was deleted (and drops the email_template mirror first)", async () => {
     const tx = makeTx();
+    // F006 dual-write: deleteAsset reads metadata before deleting.
+    tx.asset.findUnique.mockResolvedValueOnce({
+      id: "asset-1",
+      type: "email",
+      metadata: {},
+    });
     tx.asset.delete.mockResolvedValueOnce({ id: "asset-1" });
 
     expect(await deleteAsset(tx, "asset-1")).toBe(true);
+    expect(tx.emailTemplate.deleteMany).toHaveBeenCalledWith({
+      where: { id: "asset-1" },
+    });
   });
 
-  it("returns false when Prisma raises P2025 (row missing) and rethrows other errors", async () => {
+  it("returns false when the asset is already gone and skips email_template delete", async () => {
     const tx = makeTx();
+    tx.asset.findUnique.mockResolvedValueOnce(null);
+    expect(await deleteAsset(tx, "missing")).toBe(false);
+    expect(tx.emailTemplate.deleteMany).not.toHaveBeenCalled();
+    expect(tx.asset.delete).not.toHaveBeenCalled();
+  });
+
+  it("rethrows non-P2025 errors from asset.delete (race-condition path)", async () => {
+    const tx = makeTx();
+    tx.asset.findUnique.mockResolvedValueOnce({
+      id: "asset-1",
+      type: "email",
+      metadata: {},
+    });
+    tx.asset.delete.mockRejectedValueOnce(new Error("boom"));
+    await expect(deleteAsset(tx, "asset-1")).rejects.toThrow("boom");
+  });
+
+  it("returns false when asset.delete races on P2025 even though findUnique saw the row", async () => {
+    const tx = makeTx();
+    tx.asset.findUnique.mockResolvedValueOnce({
+      id: "asset-1",
+      type: "video_script",
+      metadata: {},
+    });
     const p2025 = new Prisma.PrismaClientKnownRequestError("not found", {
       code: "P2025",
       clientVersion: "test",
     });
     tx.asset.delete.mockRejectedValueOnce(p2025);
-    expect(await deleteAsset(tx, "missing")).toBe(false);
-
-    tx.asset.delete.mockRejectedValueOnce(new Error("boom"));
-    await expect(deleteAsset(tx, "asset-1")).rejects.toThrow("boom");
+    expect(await deleteAsset(tx, "asset-1")).toBe(false);
   });
 });
 

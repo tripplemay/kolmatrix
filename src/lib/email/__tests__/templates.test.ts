@@ -29,6 +29,11 @@ type TemplateTx = Prisma.TransactionClient & {
     update: ReturnType<typeof vi.fn>;
     delete: ReturnType<typeof vi.fn>;
   };
+  // BL-025-F006: loadOutreachTemplates now delegates to
+  // loadAssetsForComposer which queries the unified asset table.
+  asset: {
+    findMany: ReturnType<typeof vi.fn>;
+  };
 };
 
 function makeRow(overrides: Partial<TemplateRow> = {}): TemplateRow {
@@ -54,24 +59,64 @@ function makeTx(overrides: Partial<Record<string, ReturnType<typeof vi.fn>>> = {
       update: vi.fn(),
       delete: vi.fn(),
     },
+    asset: {
+      findMany: vi.fn(),
+    },
   };
   Object.assign(tx.emailTemplate, overrides);
   return tx as TemplateTx;
 }
 
+function makeAssetRow(opts: {
+  id?: string;
+  name?: string;
+  source?: "ai_generated" | "user_created" | "imported" | "system_seed";
+  productId?: string | null;
+  productName?: string | null;
+  content?: { subject?: string; body?: string; locale?: string; variables?: unknown };
+}) {
+  return {
+    id: opts.id ?? "11111111-1111-1111-1111-111111111111",
+    name: opts.name ?? "Base template",
+    source: opts.source ?? "system_seed",
+    productId: opts.productId ?? null,
+    product: opts.productName ? { name: opts.productName } : null,
+    content: {
+      subject: opts.content?.subject ?? "Hi {{kol.name}}",
+      body: opts.content?.body ?? "Hello {{kol.handle}}",
+      locale: opts.content?.locale ?? "en",
+      variables: opts.content?.variables ?? [],
+    },
+  };
+}
+
 describe("email templates helpers", () => {
   it("loads system and user templates with locale fallback for system rows", async () => {
     const tx = makeTx();
-    tx.emailTemplate.findMany
-      .mockResolvedValueOnce([])
+    // First call (locale=zh): only the user row, no system seeds
+    // available in zh.
+    tx.asset.findMany
       .mockResolvedValueOnce([
-        makeRow({ tenantId: "tenant-a", type: "user", name: "My Draft" }),
+        makeAssetRow({
+          id: "user-1",
+          name: "My Draft",
+          source: "user_created",
+          content: { subject: "Hi {{kol.name}}", body: "Body", locale: "zh", variables: [] },
+        }),
       ])
-      .mockResolvedValueOnce([makeRow({ locale: "en", name: "Fallback EN" })]);
+      // Second call (locale=en fallback): one system seed in EN.
+      .mockResolvedValueOnce([
+        makeAssetRow({
+          id: "sys-1",
+          name: "Fallback EN",
+          source: "system_seed",
+          content: { subject: "Hi {{kol.name}}", body: "Body", locale: "en", variables: [] },
+        }),
+      ]);
 
     const result = await loadOutreachTemplates(tx, "tenant-a", "zh");
 
-    expect(tx.emailTemplate.findMany).toHaveBeenCalledTimes(3);
+    expect(tx.asset.findMany).toHaveBeenCalledTimes(2);
     expect(result.map((r) => r.name)).toEqual(["Fallback EN", "My Draft"]);
     expect(result[0]?.scope).toBe("system");
     expect(result[1]?.scope).toBe("user");

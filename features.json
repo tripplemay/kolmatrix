@@ -46,7 +46,7 @@
       "title": "/outreach composer 接通（loadAssetsForComposer 替 loadOutreachTemplates，dual-write 兼容期）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/lib/email/templates.ts:loadOutreachTemplates 改委托 loadAssetsForComposer(tenantId, 'email', locale)；新建 loadAssetsForComposer 走 withTenant + 查 Asset (type=email status=published OR tenantId=null system_seed) + locale filter + take 100 + orderBy source asc + updatedAt desc；composer dropdown 加 source label (AI/User/System) + product label；dual-write 兼容期：本批次 createAsset/updateAsset/archiveAsset 同步写 EmailTemplate 镜像（应用层 sync，不用 trigger）；守门 test tests/integration/composer-load-templates.test.ts 验证 union 查询 + locale filter + tenant 隔离 + dual-write 镜像；现有 send-queue / Resend 集成 EmailTemplate.id reference 仍工作。详见 spec §F006。"
     },
     {

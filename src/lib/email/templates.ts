@@ -1,5 +1,7 @@
 import type { Prisma } from "@prisma/client";
 
+import { loadAssetsForComposer } from "@/lib/assets/queries";
+
 export type EmailTemplateScope = "system" | "user";
 
 export interface EmailTemplateRecord {
@@ -36,62 +38,56 @@ function orderTemplates(rows: EmailTemplateRecord[]): EmailTemplateOption[] {
   return rows.map(toOption);
 }
 
+/**
+ * BL-025-F006 — composer reader now sources from the unified
+ * `asset` table (loadAssetsForComposer). The legacy email_template
+ * path remains for the dual-write window: every createAsset /
+ * updateAsset on type=email mirrors into email_template so
+ * email_log.template_id keeps pointing at a real row, and any
+ * caller that still queries email_template directly still sees
+ * fresh content.
+ *
+ * Adapter shape: AssetSource → EmailTemplateScope mapping. Anything
+ * with `tenantId IS NULL` (system_seed) is "system"; everything
+ * else is "user". The composer dropdown UI uses scope to label
+ * options, so the system / user split must round-trip through this
+ * helper.
+ *
+ * Locale fallback (zh → en when no zh system_seed exists) is kept
+ * to mirror the original behaviour: marketers running zh see
+ * English fallback templates rather than empty UI.
+ */
 export async function loadOutreachTemplates(
   tx: Prisma.TransactionClient,
   tenantId: string,
   locale: "en" | "zh"
 ): Promise<EmailTemplateOption[]> {
-  const [systemLocaleRows, userRows] = await Promise.all([
-    tx.emailTemplate.findMany({
-      where: { tenantId: null, locale },
-      select: {
-        id: true,
-        tenantId: true,
-        name: true,
-        subject: true,
-        body: true,
-        variables: true,
-        locale: true,
-        type: true,
-      },
-      orderBy: { createdAt: "asc" },
-    }),
-    tx.emailTemplate.findMany({
-      where: { tenantId, type: "user", locale },
-      select: {
-        id: true,
-        tenantId: true,
-        name: true,
-        subject: true,
-        body: true,
-        variables: true,
-        locale: true,
-        type: true,
-      },
-      orderBy: { createdAt: "desc" },
-    }),
-  ]);
+  const primary = await loadAssetsForComposer(tx, "email", locale);
 
-  let systemRows = orderTemplates(systemLocaleRows as EmailTemplateRecord[]);
+  let systemRows = primary.filter((row) => row.source === "system_seed");
+  const userRows = primary.filter((row) => row.source !== "system_seed");
+
   if (systemRows.length === 0 && locale !== "en") {
-    const fallbackRows = await tx.emailTemplate.findMany({
-      where: { tenantId: null, locale: "en" },
-      select: {
-        id: true,
-        tenantId: true,
-        name: true,
-        subject: true,
-        body: true,
-        variables: true,
-        locale: true,
-        type: true,
-      },
-      orderBy: { createdAt: "asc" },
-    });
-    systemRows = orderTemplates(fallbackRows as EmailTemplateRecord[]);
+    const fallback = await loadAssetsForComposer(tx, "email", "en");
+    systemRows = fallback.filter((row) => row.source === "system_seed");
   }
 
-  return [...systemRows, ...orderTemplates(userRows as EmailTemplateRecord[])];
+  function adapt(row: (typeof primary)[number]): EmailTemplateOption {
+    const scope: EmailTemplateScope = row.source === "system_seed" ? "system" : "user";
+    return {
+      id: row.id,
+      tenantId: scope === "system" ? null : tenantId,
+      name: row.name,
+      subject: row.subject,
+      body: row.body,
+      variables: row.variables,
+      locale: row.locale,
+      type: scope,
+      scope,
+    };
+  }
+
+  return [...systemRows.map(adapt), ...userRows.map(adapt)];
 }
 
 export async function loadUserTemplates(
