@@ -1,49 +1,77 @@
 {
-  "sprint": "BIx-mvp-polish-pass",
+  "sprint": "BL-025-asset-library",
   "features": [
     {
       "id": "F001",
-      "title": "/crm Header 3 个 disabled 控件清理（time toggle real / Export CSV impl / Manual log delete）",
+      "title": "Asset 表 schema + migration（含 EmailTemplate 数据迁移 + RLS + ROLLBACK SQL + dual-write 兼容期）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "/crm 时间 toggle（thisQuarter / Last 90d / allTime）3 个 button 全可点，按 created_at 范围 filter 4 个 CRM 组件（CrmKpiStrip/CrmPipelineBars/CrmFunnel/CrmRecentChanges），URL 参数 ?range=thisQuarter|last90d|allTime，default last90d；runCrmOverview 接受 range 参数；Export CSV 按钮真做 Server Action 生成 CRM 数据 CSV（KOL 列表 + 阶段 + kolCampaign + 金额）含 Content-Disposition; +Manual log 按钮从 CrmHeader 移除并删除 i18n key crm.header.manualLog*；tests/integration/crm-time-range.test.ts 验证 3 range × 4 组件；tests/integration/crm-export-csv.test.ts 验证 CSV 内容；visual baseline 重生（dashboard/crm 受影响）；staging git_sha 与本 commit 一致。"
+      "status": "pending",
+      "acceptance": "新建 prisma migration <ts>_add_asset_table 含 Asset model + 3 enum (AssetType / AssetSource / AssetStatus) + 3 索引 + RLS policy asset_tenant_isolation（tenantId IS NULL 全 tenant 可见 OR tenantId = current_setting）；独立 migration <ts>_migrate_email_template_to_asset 把 EmailTemplate 行迁移到 Asset (type=email, source=system_seed/user_created/ai_generated based on metadata)；ROLLBACK SQL 文件保留；跑 migration 后 SELECT count(*) FROM asset WHERE type='email' = SELECT count(*) FROM email_template；system_seed 5 套（en+zh = 10 行）正确迁移 tenantId IS NULL；用户/AI 模板按 tenant_id 正确迁移；RLS test：tenant A 看不到 tenant B asset，能看到 system_seed；守门 test tests/integration/asset-rls.test.ts ≥ 4 case；EmailTemplate 表暂保留（dual-write 兼容期，独立 cleanup migration 1 周后做不在本批次）。详见 spec §F001 + ADR-011。"
     },
     {
       "id": "F002",
-      "title": "Misc 6 项 polish（campaigns Owner filter / database Email btn / PDF 文案 / mock_sent fail-fast / AiSuggestions 已删 / dashboard newCampaign 按钮修复）",
+      "title": "src/lib/assets/* 后端核心（CRUD + Zod content schema 集中 + RLS-aware queries）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "/campaigns Owner filter 真做（取自 Campaign.ownerUserId，URL 参数 ?owner=<userId>，单 tenant 用户时 hide filter）；/database BulkActionBar Email 按钮 onClick → router.push('/outreach?kolIds=' + selectedKolIds.join(','))，/outreach 接收 ?kolIds=... 自动预选；/weekly-report PDF 帮助文案（button title='Save as PDF in the print dialog'，click 后 toast 提示）；邮件 mock_sent fail-fast（src/lib/email/resend.ts 在 NODE_ENV=production 下无 RESEND_API_KEY 时 throw 'RESEND_API_KEY missing in production'，dev 仍允许 mock_sent）；/campaigns AiSuggestionsCard 'Coming with B2' badge 已在 MVP-internal-demo-prep F007 处理（不重复）；Dashboard newCampaign 按钮修复（用户 2026-05-01 报告：GreetingBar GradientButton 无 onClick 也无路由跳转 → 点击无效；用户决议方案 A：GradientButton 加可选 href prop，render 分支 `href` 存在渲 next/link <Link> / 无 href 渲 <button>，disabled 或 loading 时 always 渲 <button>；GreetingBar 改用 <GradientButton href={`/${locale}/campaigns/new`} ...>；新增 GradientButton.test.tsx 2 个 it block 验证 href + href+disabled fallback；grep 全代码 <GradientButton 抓其他类似失效；staging 浏览器走查 zh+en 各一次跳转 PASS）；existing tests 不破坏；staging git_sha 与本 commit 一致。"
+      "status": "pending",
+      "acceptance": "新建 4 文件：schemas.ts (EmailContentSchema + VideoScriptContentSchema + ASSET_CONTENT_SCHEMAS 集中)、queries.ts (loadAssetsForListing/loadAssetDetail/loadAssetsForComposer/loadVariantTree/loadUsedIn 全走 withTenant RLS)、mutations.ts (createAsset/updateAsset/archiveAsset/deleteAsset 含 Zod content shape 校验)、types.ts (DTO)；createAsset/updateAsset 必须 Zod 校验 content type=email → EmailContentSchema 等；守门 test queries.test.ts + mutations.test.ts 各 ≥ 8 case；coverage ≥ 80% lines。详见 spec §F002。"
     },
     {
       "id": "F003",
-      "title": "11 页 critical paths edge states + error.tsx 兜底",
+      "title": "AI generate / regenerate / variant tree（aigcgateway + audit log）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "11 页（dashboard/discovery/database/kols-detail/knowledge-base/campaigns/campaigns-detail/outreach/crm/roi/weekly-report）每页加 error.tsx 兜底（display friendly error + reload CTA），关键 empty state（spec §F003 表格列出每页 critical empty + critical error）有 friendly 引导（不出现纯白屏 / Lorem ipsum）；tests/integration/edge-states-coverage.test.ts 验证 11 页 error.tsx 存在性；手工 spot check：dev 模式停 PG → 11 页全部 graceful（非崩溃）；staging git_sha 与本 commit 一致。"
+      "status": "pending",
+      "acceptance": "src/lib/products/generateAiAssets.ts 抽到 src/lib/assets/generators/email-generator.ts + video-script-generator.ts + 共用 aigcgateway-client.ts（统一 timeout/retry/quota log）；新建 src/app/[locale]/(app)/assets/actions.ts:generateAssetAction({productId, type, steeringPrompt?, parentAssetId?})；首次 generate (parentAssetId 未传) 新建 root Asset parentId=null；regenerate (parentAssetId 传) 新建 child parentId=parentAssetId 名后缀 v(n+1)；audit log action 'asset.generated' / 'asset.regenerated' 含 traceId/model/tokensUsed/steeringPrompt；守门 test tests/integration/asset-generate-flow.test.ts ≥ 6 case (首次/regenerate/steering/locale/failure/audit log)；aigcgateway 余额合理 (~0.001-0.005 USD/generate)。详见 spec §F003。"
     },
     {
       "id": "F004",
-      "title": "YouTube sync 配额优化（P1 ~89% + 真 engagement batch + Top 100 KOL latestVideos）",
+      "title": "/assets 页面三栏 — Filter sidebar / Grid / Detail panel（含抽 AssetCard/AssetTabs/StatusDot 3 新公共组件 + 可能 Combobox）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "search.list maxResults 10→50；DAILY_REGIONS 6→14（+GB/DE/BR/MX/TH/ID/IN/ES）；KEYWORD_POOL 每 region ≥ 12 词，dayOfYear%6 轮转 6 词；page 轮转 cursor 持久化 kol_sync_cursor 表 + migration + ROLLBACK SQL；publishedAfter 4 切片 dayOfYear%4 轮转 6 region × 100u = 600u/day；分层 refresh（Tier 1 top 50 by valueScore 每 3 天 / Tier 2 51-500 每 7 天 / Tier 3 500+ 每 21 天 / Flagged 必入），总日 ~150-200 KOL ~4u；Top 100 engagement batch（channels.list 2u + playlistItems.list 100u + videos.list 12u = 114u/day）写回 Kol.engagementRate + Kol.metadata.latestVideos；DailyLogLine schema 加 perMatrix + engagementBatchStats；tests/integration/sync-quota-optimization.test.ts 验证 14 region matrix + 池轮转 + 分层 refresh + engagement batch；staging 跑 7 天连续观察：每日 inserted ≥ 30 + 配额 8500-9200u + 0 errors；env var KOL_SYNC_PUBLISHED_AFTER_SLICES（默认 6，告警时降 4）；FILTER_MIN_SUBSCRIBERS 决议待 Planner 收用户答复（10K / 1K / env var 三选一）；staging git_sha 与本 commit 一致。",
-      "completed_at": "2026-05-02T11:55+0800",
-      "commit": "219983c"
+      "status": "pending",
+      "acceptance": "三栏布局 ≥1280px 并列 [240/flex-1/440] / <1280px detail 改 modal；Filter URL state 5 param 双向同步深链+刷新+后退；AssetCard hover quick actions 4 按钮浮层；AssetCard selected cyan ring + bg 加深；AssetCard 含 type chip + AI 徽章 + variant index 'vN of M' + used count + status dot；Sort 4 选项 / View toggle Grid+List / '+ New Asset' 3-step wizard / Detail panel 4 tabs / '...' menu 6 项 (email/5 项 video) / Send to Outreach 仅 email / Empty state 双 CTA；Pagination cursor + IntersectionObserver PAGE_SIZE 24；与 design-draft/BL-025-asset-library/variant-a-296k/code.html 视觉一致性 PASS；§F004.A 公共组件清单 100% 覆盖（grep src/app/[locale]/(app)/assets/ 0 inline bg-[#/rounded-[d/手写 button 反范式）；§F004.B 19 不得简化全实装 + 4 不得新增全无；3 新组件抽到 src/components/common/ + 单元 test；如新建 Combobox 落 src/components/ui/Combobox.tsx + 守门 test；visual baseline 重生 4 个；守门 test tests/e2e/assets-page.spec.ts ≥ 8 case。详见 spec §F004。"
     },
     {
       "id": "F005",
-      "title": "前端 perf Critical + High 六件套（next.config.ts / next/font / next/image / recharts dynamic / markdown dynamic / AppShellLayout island）",
+      "title": "Edit + Save + Versions tab + Used in tab",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "Part A next.config.ts 配 images.remotePatterns（YouTube/Twitch/TikTok/Bilibili CDN）+ formats avif/webp + optimizePackageImports recharts/@base-ui/react + serverExternalPackages @prisma/client/bcrypt/googleapis/resend + headers 6 项（X-Frame DENY / X-Content-Type nosniff / Referrer-Policy / Permissions-Policy / HSTS / CSP-Report-Only 一周观察期）；Part B Material Symbols 改 next/font 自托管子集（生成脚本 grep 全代码 icon name + 100+ 处 material-symbols-outlined 全渲染无字符方框 + 删 fonts.googleapis.com link）；Part C 7 处原生 <img> 替换 next/image（CampaignKolRow/KolHero/RecentVideosGrid/AvatarWithPlatformBadge/CampaignRow/SidebarUserChip/UserAvatarMenu，全部含 width/height 防 CLS + KolHero priority + 其他 lazy 默认）；Part D recharts 三处 dynamic（roi/RoiTrendChart + campaigns/[id]/EmailPerformanceChart + features/dashboard/EmailPerformanceChart）；Part E markdown dynamic 两处（weekly-report/WeeklyReportRenderer + outreach/templates/TemplateWorkspaceClient）；Part F AppShellLayout 拆 ActiveNavClient island（usePathname 仅在 island，外壳 server，sidebar 子树全 server）；npm run build + @next/bundle-analyzer 验证初始 JS 减 ≥ 200KB gzipped（audit 估 400-500KB 留余量）；curl -I https://staging.kol.guangai.ai/ 验证 6 头存在；Lighthouse 移动 perf ≥ 75；CSP Report-Only 一周观察期 violation log 0；visual baseline 重生（dashboard/campaigns/roi/kols-detail/login）；existing tests 不破坏；staging git_sha 与本 commit 一致。",
-      "completed_at": "2026-05-02T09:15+0800",
-      "commit": "05a4087"
+      "status": "pending",
+      "acceptance": "Email Edit subject + body + 变量 chip 工具条（{{kol.name}} / {{product.name}} / {{campaign.name}} / {{kol.handle}} / {{today_date}} 5 hardcoded token）正确光标位置插入；Video Edit Markdown 编辑（@uiw/react-md-editor 或 textarea + preview tab）；Save 行为：updateAsset 覆盖 / 'Save as new version' createAsset 复制 + parentId；变更未保存离开弹 confirm；Versions tree mini Git-graph 风格递归回溯 root → leaves；Restore version (新 user_created variant) / Compare with current (diff modal)；Used in 聚合 email_log 引用计数；守门 test tests/integration/asset-edit-versions.test.ts ≥ 6 case。详见 spec §F005。"
+    },
+    {
+      "id": "F006",
+      "title": "/outreach composer 接通（loadAssetsForComposer 替 loadOutreachTemplates，dual-write 兼容期）",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "src/lib/email/templates.ts:loadOutreachTemplates 改委托 loadAssetsForComposer(tenantId, 'email', locale)；新建 loadAssetsForComposer 走 withTenant + 查 Asset (type=email status=published OR tenantId=null system_seed) + locale filter + take 100 + orderBy source asc + updatedAt desc；composer dropdown 加 source label (AI/User/System) + product label；dual-write 兼容期：本批次 createAsset/updateAsset/archiveAsset 同步写 EmailTemplate 镜像（应用层 sync，不用 trigger）；守门 test tests/integration/composer-load-templates.test.ts 验证 union 查询 + locale filter + tenant 隔离 + dual-write 镜像；现有 send-queue / Resend 集成 EmailTemplate.id reference 仍工作。详见 spec §F006。"
+    },
+    {
+      "id": "F007",
+      "title": "/knowledge-base 集成（ProductCard chip 4 状态可点 + ProductModal 展示生成进度/结果预览）",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "ProductCard.tsx：emailCount/videoCount chip 改 <Link href=/assets?productId={id}&types=email/video_script>；hover 透明度变化+cursor-pointer+tooltip；4 状态 UI 一致：null='⏳ Generate AI assets' 点击触发 triggerAiGeneration / pending=spin+'Generating...' / ready=可点击 / failed=错误图标+Retry；ProductModal 编辑产品时 aiAssets.status='ready' 展示 'AI Assets Generated · 3 emails + 2 videos · [View in /assets] [Regenerate]'；跳 /assets?productId 自动 filter 应用；守门 test src/app/[locale]/(app)/knowledge-base/__tests__/ProductCard.test.tsx 4 状态 + 跳转；visual baseline 重生。详见 spec §F007。"
+    },
+    {
+      "id": "F008",
+      "title": "Send to /outreach（email asset 一键注入 composer，prefilled state）",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "Detail panel 'Send to outreach' 按钮仅 type=email 显示；点击 router.push('/outreach?prefilledAssetId={asset.id}')；OutreachComposer 加载时检查 query param prefilledAssetId 命中 → pre-select dropdown + auto-fill subject + body + toast 'Loaded template from /assets'；守门 test tests/e2e/asset-send-to-outreach.spec.ts 端到端。详见 spec §F008。"
+    },
+    {
+      "id": "F009",
+      "title": "Material Symbols subset 守门加固（hotfix bb637a1 follow-up — manifest 预入 BL-025 新 icon + grep pattern 6/7 + CI 守门 test + PR template + docs）",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "F009.1 BL-025 新 icon (folder_open/auto_awesome/restart_alt/file_copy/archive/unarchive/more_vert/compare_arrows/restore/movie 等 ~10 个) 入 scripts/material-symbols-icons-manifest.txt + 跑 regenerate script + verify woff2 含全部；F009.2 加 Pattern 6 (多行数组) + Pattern 7 (return statement，限定 icon 上下文)；F009.3 新建 tests/integration/material-symbols-coverage.test.ts ≥ 3 case (script discovers all manifest icons / woff2 includes all expected glyphs / no orphan callsites)；F009.4 .github/pull_request_template.md 加 Material Symbols icon checklist；F009.5 docs 沉淀 (docs/dev/rules.md 或 framework/harness/material-symbols-pattern.md 含 5 漏范式 + manifest 维护 + CI 守门)；staging /assets 渲染所有 icon 无字符方框 L2 走查。详见 spec §F009。"
     }
   ]
 }
