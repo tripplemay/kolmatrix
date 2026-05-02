@@ -1,0 +1,37 @@
+# Material Symbols icons referenced in code but missed by the
+# regenerate-material-symbols-subset.sh grep patterns. Append here whenever
+# an icon name is added in any of these forms (because the script grep can't
+# reliably catch them):
+#
+# - JSX prop:                <Component icon="name" />
+# - JSX ternary:             {cond ? "a" : "b"}
+# - Object value (key≠icon): { up: "trending_up", down: "trending_down" }
+# - Array element (multi-line): ["icon_a", "icon_b", "icon_c"]
+# - Function return:         return "name"
+# - Nullish coalescing:      meta?.icon ?? "fallback"
+#
+# Source: 2026-05-02 Planner deep sweep after prod字符方框 bugs surfaced
+# (BIx F005-B subset script missed these; users saw raw text instead of glyphs).
+# Each line: <icon_name>  # <where it's used>  <missed pattern>
+#
+# Lines starting with # are comments. Empty lines ignored.
+
+account_balance_wallet      # RoiKpiStrip.tsx:63                    | JSX icon prop
+auto_fix_high               # knowledge-base/page.tsx:81            | array element
+bookmark_added              # KolResultCard:166 + SavedToggleButton:50 | JSX ternary
+data_exploration            # CrmKpiStrip.tsx:39                    | JSX icon prop
+done_all                    # CrmFunnel.tsx:85                      | JSX ternary
+emoji_events                # RoiKpiStrip.tsx:101                   | JSX icon prop
+grid_view                   # discovery/SummaryBar.tsx:83           | JSX ternary
+history                     # knowledge-base ACTIVITY_ICONS + ActivityTimelineCard fallback | array + ?? fallback
+horizontal_rule             # knowledge-base/ProductCard.tsx:134    | JSX icon prop
+image                       # knowledge-base/page.tsx:84            | array element
+north_east                  # database/DatabaseInsightsClient.tsx:68 | function return
+person                      # layout/UserAvatarMenu.tsx:74          | JSX icon prop
+remove                      # ui/Checkbox.tsx:76                    | JSX ternary (indeterminate state)
+subdirectory_arrow_right    # CrmFunnel.tsx:85                      | JSX ternary
+trending_down               # common/StatCard.tsx:26                | object value (key=down)
+trending_flat               # common/StatCard.tsx:25                | object value (key=flat)
+video_library               # knowledge-base/page.tsx:82            | array element
+view_list                   # discovery/SummaryBar.tsx:83           | JSX ternary
+warning                     # roi/RoiInsightsPanel:137 + weekly-report/WeeklyReportInsightsPanel:89 | function return

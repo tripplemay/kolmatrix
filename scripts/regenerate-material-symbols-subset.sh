@@ -28,6 +28,8 @@ TMP_LIST="$(mktemp)"
 TMP_CSS="$(mktemp)"
 trap 'rm -f "$TMP_LIST" "$TMP_CSS"' EXIT
 
+MANIFEST_FILE="scripts/material-symbols-icons-manifest.txt"
+
 # Pattern 1: same-line `<span class="material-symbols-outlined ...">icon_name</span>`
 {
   grep -rohE 'material-symbols-outlined[^>]*>\s*[a-z_][a-z_0-9]*\s*<' src/ \
@@ -43,6 +45,23 @@ trap 'rm -f "$TMP_LIST" "$TMP_CSS"' EXIT
   grep -rohE '\bicon:\s*"[a-z_][a-z_0-9]*"' src/ \
     | grep -oE '"[a-z_][a-z_0-9]*"' \
     | tr -d '"'
+
+  # Pattern 4: JSX prop `icon="name"` (covers MenuItem / ChipRow / KpiStrip / etc.
+  # — the script's biggest historical blind spot per 2026-05-02 Planner sweep)
+  grep -rohE '\bicon="[a-z_][a-z_0-9]*"' src/ \
+    | grep -oE '"[a-z_][a-z_0-9]*"' \
+    | tr -d '"'
+
+  # Pattern 5: explicit manifest of icon names that all grep heuristics miss
+  # (JSX ternary in expression position, object value with key !== "icon",
+  # array elements, function return statements, ?? fallback strings).
+  # Maintained by hand: append icons + comment when adding a new dynamic
+  # callsite. Script tolerates missing file (fresh checkout / pre-2026-05-02
+  # branches) by skipping silently.
+  if [ -f "$MANIFEST_FILE" ]; then
+    sed -E 's/[[:space:]]*#.*$//' "$MANIFEST_FILE" \
+      | grep -E '^[a-z_][a-z_0-9]+$' || true
+  fi
 } | sort -u | grep -vE '^(cyan|purple|neutral|campaign_created|campaign_kol_added|campaign_kol_removed|campaign_kol_fee_updated|campaign_kol_status_changed|campaign_status_changed|campaign_revenue_recorded|kol_bulk_added_to_campaign|campaigns)$' > "$TMP_LIST"
 
 ICON_COUNT=$(wc -l < "$TMP_LIST" | tr -d ' ')
