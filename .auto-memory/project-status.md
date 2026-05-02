@@ -13,9 +13,9 @@ type: project
 ## Hotfix bb637a1（已推 main，等 prod redeploy）
 - BIx F005-B Material Symbols subset 漏 19 icon（5 类 grep 范式：JSX prop / 三元 / 对象值 / 数组 / return + ?? fallback），prod 用户字符方框
 - 已加 manifest + Pattern 4 + 重生 woff2（80 unique icons / 9216 bytes）；F009 守门加固加入 BL-025
-## Done 阶段 TODO（Planner 接力）
-1. 处理 framework/proposed-learnings.md 6 条（Reviewer 3 + Planner 3 — 本 commit 落地）
-2. /schedule 7-day BIx F004 staging follow-up agent（soft-watch acceptance）
+## Done 阶段 TODO + 用户手工待办
+1. ✅ 处理 framework/proposed-learnings.md 6 条（Reviewer 3 + Planner 3，commit 768ed21 落地）
+2. **用户手工 7 天后（~2026-05-09）检查 BIx F004 staging YouTube sync**（用户 2026-05-02 决议不做自动化）— SSH staging grep `/var/log/kolmatrix-kol-sync.log` 末尾 7 天 JSON：任一日 inserted < 30 / quota ≠ [8500,9200] / errors 非空 / engagementBatchStats 失败率 > 10% → 起 hotfix 或 reopen F004
 3. 装 @next/bundle-analyzer + Lighthouse 实测脚手架（O3-O4 数字证据补齐）—— 推迟到 BL-025 或独立小批次
 ## 关键决议（已 lock）
 - BL-025 架构方案 X（统一 Asset 表，ADR-011）+ MVP 时间不硬，BL-025 优先做（在 BL-020 之前）
