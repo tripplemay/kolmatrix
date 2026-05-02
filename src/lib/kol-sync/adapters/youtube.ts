@@ -25,11 +25,6 @@ import {
   type YoutubeClient,
 } from "../../../../scripts/seed-kol-from-youtube";
 import { pickDailyPage, type KolSyncCursorProvider } from "../cursor";
-import {
-  pickPublishedAfterDays,
-  publishedAfterIso,
-  PUBLISHED_AFTER_CORE_REGIONS,
-} from "../published-after";
 import type { HealthCheckResult, KolSyncAdapter, RawKolData, SyncParams } from "../types";
 
 // ---------------------------------------------------------------------
@@ -347,12 +342,6 @@ export interface YouTubeAdapterOpts {
   /** BIx-F004-P2: clock injection for `pickDailyPage`. Defaults to
    *  the real `Date()`; tests pin a value here. */
   now?: () => Date;
-  /** BIx-F004-P3: regions to include in the publishedAfter slice
-   *  phase (an extra search.list pass that surfaces "newly emerging"
-   *  channels). Defaults to `null` → phase disabled. The daily cron
-   *  passes `PUBLISHED_AFTER_CORE_REGIONS.slice(0, env count)` so a
-   *  quota-tight day can shrink to 4 regions and reclaim 200u. */
-  publishedAfterRegions?: readonly string[] | null;
 }
 
 export class YouTubeKolSyncAdapter implements KolSyncAdapter {
@@ -365,7 +354,6 @@ export class YouTubeKolSyncAdapter implements KolSyncAdapter {
   private readonly maxResults: number;
   private readonly cursorProvider: KolSyncCursorProvider | null;
   private readonly now: () => Date;
-  private readonly publishedAfterRegions: readonly string[] | null;
 
   constructor(opts: YouTubeAdapterOpts) {
     this.regions = opts.regions ?? DAILY_REGIONS;
@@ -378,7 +366,6 @@ export class YouTubeKolSyncAdapter implements KolSyncAdapter {
     this.maxResults = opts.maxResults ?? DAILY_MAX_RESULTS;
     this.cursorProvider = opts.cursorProvider ?? null;
     this.now = opts.now ?? (() => new Date());
-    this.publishedAfterRegions = opts.publishedAfterRegions ?? null;
     if (opts.client) {
       this.client = opts.client;
     } else if (opts.apiKey) {
@@ -442,8 +429,7 @@ export class YouTubeKolSyncAdapter implements KolSyncAdapter {
           region as KolSeedRegion,
           keyword,
           maxResults,
-          pageToken,
-          undefined
+          pageToken
         );
         // BIx-F004-P2: persist the cursor so tomorrow's run knows
         // which page to advance to. Errors here surface — we'd
@@ -465,48 +451,6 @@ export class YouTubeKolSyncAdapter implements KolSyncAdapter {
         }
       }
     }
-
-    // BIx-F004-P3: publishedAfter slice phase — surfaces "newly
-    // emerging" channels the default relevance ranking buries. One
-    // extra search.list per region in `publishedAfterRegions`, page 1,
-    // first keyword from today's rotation, with a sliding lookback
-    // window (90/180/365/730 days, dayOfYear%4). Skipped entirely
-    // when no override and per-call `region`/`keywords` aren't set
-    // (single-region calls don't want this batch overhead). Deduped
-    // against the main matrix via `seenIds`.
-    const phaseRegions = this.publishedAfterRegions;
-    const isFullMatrixCall = !params.region && !(params.keywords && params.keywords.length > 0);
-    if (phaseRegions && phaseRegions.length > 0 && isFullMatrixCall) {
-      const days = pickPublishedAfterDays(today);
-      const publishedAfter = publishedAfterIso(today, days);
-      for (const region of phaseRegions) {
-        const rotated = DAILY_KEYWORD_POOL_BY_REGION[region as DailyRegion]
-          ? pickDailyKeywords(region as DailyRegion, today)
-          : [];
-        const keyword = rotated[0];
-        if (!keyword) continue;
-        const search = await client.searchChannels(
-          region as KolSeedRegion,
-          keyword,
-          maxResults,
-          undefined,
-          publishedAfter
-        );
-        const fresh = search.ids.filter((id) => !seenIds.has(id));
-        for (const id of fresh) seenIds.add(id);
-        if (fresh.length === 0) continue;
-        const enriched = await client.fetchChannels(fresh);
-        for (const raw of enriched) {
-          const mapped = mapToRawKolData(raw, {
-            matrixRegion: region,
-            matrixKeyword: `${keyword}|after=${days}d`,
-            minSubscribers,
-          });
-          if (mapped) results.push(mapped);
-        }
-      }
-    }
-
     return results;
   }
 

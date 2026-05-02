@@ -1,11 +1,11 @@
 ---
 name: BL-020-security-mini-batch
-description: 前端审计 6 条安全整改 + 2 条 trivial UI 修复 mini-batch（CR-1/2/3 + H-S1/2/3 + UI-1 + UI-2）— 上线对外客户前最后硬门槛
+description: 前端审计 6 条安全整改 + 1 条 trivial UI 修复 mini-batch（CR-1/2/3 + H-S1/2/3 + UI-1）— 上线对外客户前最后硬门槛
 status: drafted, awaits BIx-mvp-polish-pass done + CSP Report-Only 一周观察期满
 created_by: johnsong (Planner)
 created_at: 2026-05-02
 estimated_effort: ~0.5-1 day Generator + 0.25 day Reviewer
-features_count: 8
+features_count: 7
 prerequisites:
   - BIx-mvp-polish-pass done（含 F005 perf 六件套 + CSP Report-Only 落地）
   - CSP Report-Only 一周观察期满 + violation log 收集（H-S3 切 enforce 前提）
@@ -13,7 +13,7 @@ prerequisites:
 trigger: BIx done + CSP 一周观察期满 + 用户决定启动（建议 ~2026-05-13）
 ---
 
-# BL-020 — 前端审计 6 条安全整改 + 2 条 trivial UI 修复 mini-batch
+# BL-020 — 前端审计 6 条安全整改 + 1 条 trivial UI 修复 mini-batch
 
 ## 1. 背景与目标
 
@@ -22,7 +22,6 @@ trigger: BIx done + CSP 一周观察期满 + 用户决定启动（建议 ~2026-0
 - `docs/reviews/frontend-audit-2026-05-01.md`（三 agent 并行前端审计：typescript-reviewer / security-reviewer / general-purpose-performance；约 37,500 行 TS/TSX，325 文件）
 - `backlog.json` BL-020（用户 2026-05-01 决议 14：6 项不进 BIx-mvp-polish-pass，单 mini-batch 排期；γ-2 决议：6 项合 1 条 backlog 条目）
 - Planner 2026-05-02 全 prod (6f33a55) 排查报告（UI-1 顺手并入）
-- Planner 2026-05-02 mock KOL prod 暴露排查（UI-2 顺手并入）
 
 ### 1.2 目标
 
@@ -31,10 +30,9 @@ trigger: BIx done + CSP 一周观察期满 + 用户决定启动（建议 ~2026-0
 **Definition of Done：**
 - 6 项安全（CR-1/2/3 + H-S1/2/3）全修，每项有守门 test 兜底
 - UI-1 Dashboard QuickActions Campaigns 卡片可点击，无虚假 'Coming Soon' badge
-- UI-2 prod /discovery 看不到 12 条 demo_seed mock KOL（env var 控制；staging 仍可见保留 demo 走查能力）
 - staging + prod 都 redeploy 完毕，烟测 30+ 条 checklist 全 PASS
 - CSP 从 Report-Only 切 enforce，violation log 0
-- signoff 报告明示「6 项安全 Critical/High + 2 项 UI 全部闭环」
+- signoff 报告明示「6 项安全 Critical/High + 1 项 UI 全部闭环」
 
 ### 1.3 非目标
 
@@ -55,9 +53,8 @@ trigger: BIx done + CSP 一周观察期满 + 用户决定启动（建议 ~2026-0
 | F005 H-S2 | 登录限流（@upstash/ratelimit + Redis） | High | ~2h |
 | F006 H-S3 | CSP Report-Only → enforce 切换 | High | ~1.5h |
 | F007 UI-1 | Dashboard QuickActions Campaigns 修复 | Trivial | ~10min |
-| F008 UI-2 | /discovery 过滤 demo_seed mock KOL | Trivial | ~30min |
 
-**总估时：** ~7h Generator + 2h Reviewer = ~1 day 走完
+**总估时：** ~6.5h Generator + 2h Reviewer = ~1 day 走完
 
 ---
 
@@ -323,64 +320,6 @@ const csp = [
 
 ---
 
-### F008 — UI-2 /discovery 过滤 demo_seed mock KOL
-
-**Executor：** generator
-**估时：** ~30min
-
-**当前问题：**
-- `prisma/seed.ts:46-228` 灌 12 条硬编码 demo KOL（GamerXia / SakuraYT / NeonHaze / KaiBytes / Mei Plays / Ryo Arcade / Aisha Streams / PixelPao / LumenArc / Janelytics / ForgeFalcon / Zeralite），全部 `emailSource = "demo_seed"`
-- `.github/workflows/seed-prod.yml` 2026-05-01 跑过 3 次（04:35 / 07:14 / 08:19 UTC）→ prod Demo Studio tenant 实际有这 12 条
-- `runDiscoverySearch`（src/app/[locale]/(app)/discovery/search.ts:68）的 `buildKolWhere` 无任何 `emailSource ≠ 'demo_seed'` 过滤 → Demo Studio 账号登录 prod /discovery 直接看到 12 条 mock，**对外客户接触面极不专业**
-- 不能直接删 seed：12 条 KOL 被 300 条 EmailLog（seed.ts:429-440）+ 10 条 KolCampaign（seed.ts:683-685）强引用，删了 demo composer / outreach Overview / weekly-report / dashboard email chart / crm pipeline 全空 → **整个 Demo Studio 演示链断**
-
-**修复方案（不动 seed，加 env-controlled 过滤）：**
-
-```ts
-// src/app/[locale]/(app)/discovery/search.ts (buildKolWhere 内)
-function buildKolWhere(filters: DiscoveryFilters): Prisma.KolWhereInput {
-  const where: Prisma.KolWhereInput = { /* 现有过滤 */ };
-
-  // BL-020 F008: hide demo_seed KOL from discovery on prod (env-controlled)
-  if (process.env.DISCOVERY_HIDE_DEMO_SEED === "true") {
-    where.emailSource = { not: "demo_seed" };
-  }
-
-  return where;
-}
-```
-
-**部署落地：**
-- prod `.env.production` 加 `DISCOVERY_HIDE_DEMO_SEED=true`（用户/Planner 操作）
-- staging `.env.staging` 加 `DISCOVERY_HIDE_DEMO_SEED=false`（让团队走查 staging 仍可见 12 条 mock 走通完整 demo 流）
-- dev `.env.local` 不写（默认 false / undefined）
-- 文档：`.env.example` 加注释说明该 flag 用途与默认值
-
-**注意 — Smart Match Dialog 同步审：**
-`src/lib/discovery/smart-match.ts` 也走 KOL 池查询。Generator 开工前必跑：
-```bash
-grep -rn "prisma\.kol\.find\|tx\.kol\.find" src/app/\[locale\]/\(app\)/discovery/ src/lib/discovery/
-```
-- 如 Smart Match KOL 池亦无过滤 → F008 范围扩展到 smart-match.ts 同样加 hide 逻辑（保持客户接触面一致）
-- 如已有过滤 / 不读 KOL 池 → F008 仅 search.ts 即可
-
-**Acceptance：**
-- `buildKolWhere` 加 env-controlled `emailSource: { not: "demo_seed" }` 过滤
-- Smart Match Dialog KOL 池审完毕（如有同样问题，同步修）
-- 守门 test：`tests/integration/discovery-hide-demo-seed.test.ts` 验证：
-  1. `DISCOVERY_HIDE_DEMO_SEED=true` 时 12 条 mock 0 出现
-  2. `DISCOVERY_HIDE_DEMO_SEED=false` 时 12 条 mock 全显
-  3. 同 tenant 的非 demo_seed KOL（如 YouTube sync 进来的）始终可见
-  4. 其它页面（campaigns / outreach / weekly-report / crm）的 demo 数据流 unaffected
-- staging（hide=false）走查：/discovery 仍看到 12 条 mock，团队 demo 流程完整
-- prod（hide=true）走查：登录 Demo Studio /discovery 看不到 12 条 mock；但 `/campaigns/[id]` KOL 列表 + outreach composer + weekly-report email chart 仍正常显示
-- 文档：spec § 决策记录 + `.env.example` 注释一致
-
-**为什么这个方案而非其它：**
-方案对比详见 backlog.json BL-020 description 与本会话裁决；选 env-controlled 过滤理由 = **客户接触面立刻去 mock + 不破坏内部演示链 + 为长期多租户隔离（独立 customer tenant）赢得时间**。直接删 seed 方案被否决（拆塌 Demo Studio composer/outreach/weekly-report/crm 5+ 演示路径）。
-
----
-
 ## 3. 依赖与执行顺序
 
 ### 3.1 前置依赖
@@ -394,13 +333,12 @@ grep -rn "prisma\.kol\.find\|tx\.kol\.find" src/app/\[locale\]/\(app\)/discovery
 按"独立性 → 影响面"排序，避免互相干扰：
 
 1. **F007 UI-1**（10min，最简单，立刻消除 UI 误导）
-2. **F008 UI-2**（30min，env var + where 过滤；prod 部署落 env 后立刻去 mock）
-3. **F001 CR-1**（30min，独立改 1 文件 + 1 test）
-4. **F004 H-S1**（30min，独立改 1 文件，但需 POC 验证 Prisma tagged template 在 SET LOCAL 可行）
-5. **F003 CR-3**（1h，独立 client component 拆分）
-6. **F002 CR-2**（1h，新建 sanitize lib + AiSuggestionsClient 改造）
-7. **F005 H-S2**（2h，最大改动，新建 rate-limit lib + login flow 改造，需先决 Upstash vs ioredis）
-8. **F006 H-S3**（1.5h，最后做 — 因为前面修代码会消化部分 CSP violation）
+2. **F001 CR-1**（30min，独立改 1 文件 + 1 test）
+3. **F004 H-S1**（30min，独立改 1 文件，但需 POC 验证 Prisma tagged template 在 SET LOCAL 可行）
+4. **F003 CR-3**（1h，独立 client component 拆分）
+5. **F002 CR-2**（1h，新建 sanitize lib + AiSuggestionsClient 改造）
+6. **F005 H-S2**（2h，最大改动，新建 rate-limit lib + login flow 改造，需先决 Upstash vs ioredis）
+7. **F006 H-S3**（1.5h，最后做 — 因为前面修代码会消化部分 CSP violation）
 
 ### 3.3 阻断点与裁决
 
@@ -442,9 +380,6 @@ grep -rn "prisma\.kol\.find\|tx\.kol\.find" src/app/\[locale\]/\(app\)/discovery
 - [ ] 限流 15 分钟后自动恢复
 - [ ] dashboard QuickActions 4 卡全可点 + 跳转正确
 - [ ] /campaigns 进入路径双向 OK（侧栏 + dashboard QuickActions）
-- [ ] prod /discovery 看不到 12 条 demo_seed mock（hide=true 生效）
-- [ ] staging /discovery 仍看到 12 条 mock（hide=false 保留 demo 走查能力）
-- [ ] prod 其它页面 demo 数据流不受 F008 影响（campaigns/outreach/weekly-report/crm 完整）
 - [ ] 守门 tests 全 PASS
 
 **烟测覆盖性（10+ 条）：** 11 页 critical paths + 关键 form / dialog 全跑通无 console error
@@ -464,7 +399,6 @@ grep -rn "prisma\.kol\.find\|tx\.kol\.find" src/app/\[locale\]/\(app\)/discovery
 | F004 Prisma tagged template 不支持 SET LOCAL | 中 | 中 | 选项 B 兜底（双重 validation） |
 | F002 sanitizeAiActionLink 误杀合法 link | 低 | 低 | 守门 test 覆盖 8 case + staging AI 实跑验证 |
 | F005 限流误杀真实用户（多人共享 IP） | 低 | 中 | key 用 email+IP 复合 + 滑动窗口 + 友好错误文案引导用户 |
-| F008 hide=true 误隐真 KOL（如真实 KOL 字段误标 demo_seed） | 低 | 中 | 守门 test 覆盖 case 3（YouTube sync 真 KOL emailSource ≠ demo_seed 始终可见）+ Smart Match 同步审 |
 
 **回滚预案：**
 - F006 CSP 切 enforce 出问题 → 一行 config 切回 `-Report-Only`
@@ -507,7 +441,6 @@ grep -rn "prisma\.kol\.find\|tx\.kol\.find" src/app/\[locale\]/\(app\)/discovery
 | 6 项合 1 条 backlog 条目（紧凑排期） | 2026-05-01 | 用户决议 (γ-2) |
 | CSP enforce 切换属本批次 acceptance | 2026-05-01 | spec §F006 |
 | UI-1 QuickActions 修复并入本批次顺手做 | 2026-05-02 | 用户决议（Planner 2026-05-02 全 prod 排查后） |
-| UI-2 /discovery 过滤 demo_seed mock KOL 并入本批次 | 2026-05-02 | 用户决议（Planner 2026-05-02 mock 暴露排查 + 4 方案对比后选 env-controlled 过滤；否决直接删 seed 因拆塌 demo 链） |
 
 ## 9. 参考文档
 

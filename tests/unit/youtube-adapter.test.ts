@@ -187,7 +187,7 @@ describe("YouTubeKolSyncAdapter · discover", () => {
     expect(client.searchChannels).toHaveBeenCalledTimes(1);
     // BIx-F004-P2 added an optional pageToken 4th arg; with no
     // cursorProvider the adapter passes `undefined`.
-    expect(client.searchChannels).toHaveBeenCalledWith("JP", "Vtuber", 25, undefined, undefined);
+    expect(client.searchChannels).toHaveBeenCalledWith("JP", "Vtuber", 25, undefined);
     // 1 fresh id + 1 shared = 2 rows.
     expect(data).toHaveLength(2);
   });
@@ -223,7 +223,7 @@ describe("YouTubeKolSyncAdapter · cursor (BIx-F004-P2 page rotation)", () => {
       keywordsByRegion: { US: ["gaming"] },
     });
     await adapter.discover({});
-    expect(client.searchChannels).toHaveBeenCalledWith("US", "gaming", 50, undefined, undefined);
+    expect(client.searchChannels).toHaveBeenCalledWith("US", "gaming", 50, undefined);
     expect(await cursor.get("US", "gaming")).toEqual({
       page: 1,
       nextPageToken: "tok-after-p1",
@@ -244,13 +244,7 @@ describe("YouTubeKolSyncAdapter · cursor (BIx-F004-P2 page rotation)", () => {
       keywordsByRegion: { US: ["gaming"] },
     });
     await adapter.discover({});
-    expect(client.searchChannels).toHaveBeenCalledWith(
-      "US",
-      "gaming",
-      50,
-      "tok-from-p1",
-      undefined
-    );
+    expect(client.searchChannels).toHaveBeenCalledWith("US", "gaming", 50, "tok-from-p1");
     expect(await cursor.get("US", "gaming")).toEqual({
       page: 2,
       nextPageToken: "tok-after-p2",
@@ -273,7 +267,7 @@ describe("YouTubeKolSyncAdapter · cursor (BIx-F004-P2 page rotation)", () => {
       keywordsByRegion: { US: ["gaming"] },
     });
     await adapter.discover({});
-    expect(client.searchChannels).toHaveBeenCalledWith("US", "gaming", 50, undefined, undefined);
+    expect(client.searchChannels).toHaveBeenCalledWith("US", "gaming", 50, undefined);
     // Cursor row reflects the actual page consumed (1, not the
     // intended 2) so the next 6-day cycle realigns naturally.
     expect(await cursor.get("US", "gaming")).toEqual({
@@ -292,7 +286,7 @@ describe("YouTubeKolSyncAdapter · cursor (BIx-F004-P2 page rotation)", () => {
       keywordsByRegion: { US: ["gaming"] },
     });
     await adapter.discover({});
-    expect(client.searchChannels).toHaveBeenCalledWith("US", "gaming", 50, undefined, undefined);
+    expect(client.searchChannels).toHaveBeenCalledWith("US", "gaming", 50, undefined);
   });
 });
 

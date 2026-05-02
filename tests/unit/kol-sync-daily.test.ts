@@ -52,11 +52,9 @@ describe("parseArgs", () => {
   });
 
   it("accepts --dry-run + --no-refresh + --refresh-batch", () => {
-    expect(parseArgs(["--dry-run", "--no-refresh", "--refresh-batch", "50"])).toEqual({
-      dryRun: true,
-      refreshBatch: 50,
-      noRefresh: true,
-    });
+    expect(
+      parseArgs(["--dry-run", "--no-refresh", "--refresh-batch", "50"])
+    ).toEqual({ dryRun: true, refreshBatch: 50, noRefresh: true });
   });
 
   it("rejects out-of-range refresh-batch", () => {
@@ -126,41 +124,20 @@ describe("runDaily · happy path", () => {
         findUnique: vi.fn(async () => ({ id: "tenant-1" })),
       },
       kol: {
-        // BIx-F004-P3: refresh now goes through `fetchTieredRefreshIds`
-        // which fans out into three findMany variants (top500 / tier3
-        // exclusion / flagged). Branch on the where shape so the
-        // happy-path keeps a deterministic two-id refresh batch.
-        findMany: vi.fn(async (args: { where?: Record<string, unknown> } = {}) => {
-          const where = (args.where ?? {}) as Record<string, unknown>;
-          // Flagged branch — return both rows so the suspicious
-          // injection is observable via 4 total upserts.
-          if (where.isSuspicious === true) {
-            return [{ externalId: "UC_a" }, { externalId: "UC_b" }];
-          }
-          // Tier 3 (id: { notIn: top500Ids }) → empty long-tail.
-          if (where.id) return [];
-          // Top-500 / embedding "touched" lookup → return ids+externalIds.
-          return [
-            { id: "k1", externalId: "UC_a" },
-            { id: "k2", externalId: "UC_b" },
-          ];
-        }),
+        findMany: vi.fn(async () => [
+          { externalId: "UC_a" },
+          { externalId: "UC_b" },
+        ]),
         findUnique: vi.fn(async () => {
           // First findUnique per externalId returns null → 'inserted'.
           // We can't easily track call sequence here without state; use
           // null to keep insert path simple.
           return null;
         }),
-        upsert: vi.fn(
-          async ({
-            where,
-          }: {
-            where: { tenantId_platform_externalId: { externalId: string } };
-          }) => {
-            upserts.push({ externalId: where.tenantId_platform_externalId.externalId });
-            return null;
-          }
-        ),
+        upsert: vi.fn(async ({ where }: { where: { tenantId_platform_externalId: { externalId: string } } }) => {
+          upserts.push({ externalId: where.tenantId_platform_externalId.externalId });
+          return null;
+        }),
       },
       // B7a-F001 embed hook entry — orchestrator queries
       // `prisma.kol.findMany` for ids touched, then calls
@@ -187,11 +164,12 @@ describe("runDaily · happy path", () => {
     expect(report.refresh?.totals.refreshCount).toBe(2);
     expect(report.errors).toEqual([]);
     // 4 upserts: 2 from discover + 2 from refresh, all hitting the same 2 ids.
-    expect(upserts.map((u) => u.externalId).sort()).toEqual(["UC_a", "UC_a", "UC_b", "UC_b"]);
-    // healthCheck (1) + youtube discover (9,000 — BIx-F004-P3 14-region
-    // matrix + publishedAfter phase) + refresh batch ⌈2/50⌉ = 1 →
-    // total 9,002.
-    expect(report.estimatedQuotaConsumed).toBe(9_002);
+    expect(upserts.map((u) => u.externalId).sort()).toEqual([
+      "UC_a", "UC_a", "UC_b", "UC_b",
+    ]);
+    // healthCheck (1) + youtube discover (1,800 since adapter.name ===
+    // "youtube") + refresh batch ⌈2/50⌉ = 1 → total 1,802.
+    expect(report.estimatedQuotaConsumed).toBe(1_802);
   });
 });
 

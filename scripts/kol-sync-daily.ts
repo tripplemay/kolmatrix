@@ -26,18 +26,25 @@
  */
 import "dotenv/config";
 
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, resolve } from "node:path";
 
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
-import { embedKolsForIds, type EmbedRunStats } from "../src/lib/embedding/kol-embed";
+import {
+  embedKolsForIds,
+  type EmbedRunStats,
+} from "../src/lib/embedding/kol-embed";
 import { YouTubeKolSyncAdapter } from "../src/lib/kol-sync/adapters/youtube";
 import { KolSyncDispatcher } from "../src/lib/kol-sync/dispatcher";
 import { importRawKolData, type ImportStats } from "../src/lib/kol-sync/import";
-import { PUBLISHED_AFTER_CORE_REGIONS } from "../src/lib/kol-sync/published-after";
-import { fetchTieredRefreshIds } from "../src/lib/kol-sync/refresh-selector";
 import {
   classifyDailyRun,
   countTrailingZeroDiscoverStreak,
@@ -134,13 +141,13 @@ function formatMarkdownReport(report: DailyRunReport): string {
   lines.push("");
   lines.push(`- Started: ${report.startedAt}`);
   lines.push(`- Ended:   ${report.endedAt}`);
-  lines.push(`- Estimated quota consumed: ${report.estimatedQuotaConsumed} units`);
+  lines.push(
+    `- Estimated quota consumed: ${report.estimatedQuotaConsumed} units`
+  );
   lines.push("");
   lines.push("## Adapter health");
   for (const [name, h] of Object.entries(report.health)) {
-    lines.push(
-      `- **${name}**: ${h.healthy ? "healthy" : "unhealthy"} ${JSON.stringify(h.details ?? {})}`
-    );
+    lines.push(`- **${name}**: ${h.healthy ? "healthy" : "unhealthy"} ${JSON.stringify(h.details ?? {})}`);
   }
   lines.push("");
   if (report.discover) {
@@ -188,7 +195,9 @@ export function buildLogLineFromReport(
     discoverCount: report.discover?.totals.discoverCount ?? 0,
     refreshCount: report.refresh?.totals.refreshCount ?? 0,
     inserted: report.importStats?.inserted ?? 0,
-    updated: (report.importStats?.updated ?? 0) + (report.refreshImportStats?.updated ?? 0),
+    updated:
+      (report.importStats?.updated ?? 0) +
+      (report.refreshImportStats?.updated ?? 0),
     skipped: report.importStats?.skipped ?? 0,
     dedupeSkipped: 0, // F005 will surface this once quality module lands
     estimatedQuotaConsumed: report.estimatedQuotaConsumed,
@@ -253,18 +262,19 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
           backoffsMs: DEFAULT_BACKOFFS_MS,
           onRetry: (attempt, err) => {
             const msg = err instanceof Error ? err.message : String(err);
-            console.warn(`[kol-sync-daily] discover retry #${attempt}: ${msg.slice(0, 200)}`);
+            console.warn(
+              `[kol-sync-daily] discover retry #${attempt}: ${msg.slice(0, 200)}`
+            );
           },
         },
       });
   if (discover) {
-    // Estimate: each YouTube adapter discover burns ~9,000u for the
-    // BIx-F004-P3 daily matrix — 14 region × 6 keyword × 100u
-    // (= 8,400u) for the main matrix + ~600u for the publishedAfter
-    // slice phase (6 core regions × 100u) when env permits. Other
-    // adapters add their own when they land.
-    estimatedQuotaConsumed +=
-      discover.outcomes.filter((o) => o.adapter === "youtube" && o.ok).length * 9_000;
+    // Estimate: each YouTube adapter discover call burns ~1,800u for
+    // the default daily matrix. Other adapters add their own when
+    // they land.
+    estimatedQuotaConsumed += discover.outcomes
+      .filter((o) => o.adapter === "youtube" && o.ok)
+      .length * 1_800;
     for (const o of discover.outcomes) {
       if (!o.ok) errors.push(`discover[${o.adapter}]: ${o.error}`);
     }
@@ -292,7 +302,9 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
           now: deps.now,
         });
       } catch (err) {
-        errors.push(`discover-import: ${err instanceof Error ? err.message : String(err)}`);
+        errors.push(
+          `discover-import: ${err instanceof Error ? err.message : String(err)}`
+        );
       }
     }
   }
@@ -305,16 +317,21 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
       where: { slug: deps.tenantSlug },
     });
     if (tenant) {
-      // BIx-F004-P3: pick via the tiered selector instead of FIFO so
-      // the top 50 by valueScore stay fresh on a 3-day cycle, the
-      // 51-500 cohort on 7 days, the long-tail on 21 days, and any
-      // flagged-as-suspicious row is forced into today's batch.
-      const staleIds = await fetchTieredRefreshIds(deps.prisma, {
-        tenantId: tenant.id,
-        platform: "youtube",
-        date: deps.now ? deps.now() : new Date(),
-        maxTotal: deps.refreshBatch,
+      // Pick the oldest-synced YouTube channels — channels.list can
+      // batch up to 50 ids per call so 200 IDs costs 4 units.
+      const stale = await deps.prisma.kol.findMany({
+        where: {
+          tenantId: tenant.id,
+          platform: "youtube",
+          externalId: { not: null },
+        },
+        orderBy: [{ lastSyncedAt: "asc" }],
+        take: deps.refreshBatch,
+        select: { externalId: true },
       });
+      const staleIds = stale
+        .map((r) => r.externalId)
+        .filter((id): id is string => Boolean(id));
       if (staleIds.length > 0) {
         const refreshReport = await dispatcher.runRefresh({
           perAdapterIds: { youtube: staleIds },
@@ -322,7 +339,9 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
             backoffsMs: DEFAULT_BACKOFFS_MS,
             onRetry: (attempt, err) => {
               const msg = err instanceof Error ? err.message : String(err);
-              console.warn(`[kol-sync-daily] refresh retry #${attempt}: ${msg.slice(0, 200)}`);
+              console.warn(
+                `[kol-sync-daily] refresh retry #${attempt}: ${msg.slice(0, 200)}`
+              );
             },
           },
         });
@@ -335,17 +354,25 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
         }
         // ~1u per ⌈ids/50⌉ batch.
         estimatedQuotaConsumed += Math.ceil(staleIds.length / 50);
-        const refreshedRaws = refreshReport.outcomes.flatMap((o) => (o.ok ? o.data : []));
+        const refreshedRaws = refreshReport.outcomes.flatMap((o) =>
+          o.ok ? o.data : []
+        );
         if (refreshedRaws.length > 0) {
           try {
-            refreshImportStats = await importRawKolData(deps.prisma, refreshedRaws, {
-              tenantId: tenant.id,
-              source: "youtube-api-daily",
-              isDemo: false,
-              now: deps.now,
-            });
+            refreshImportStats = await importRawKolData(
+              deps.prisma,
+              refreshedRaws,
+              {
+                tenantId: tenant.id,
+                source: "youtube-api-daily",
+                isDemo: false,
+                now: deps.now,
+              }
+            );
           } catch (err) {
-            errors.push(`refresh-import: ${err instanceof Error ? err.message : String(err)}`);
+            errors.push(
+              `refresh-import: ${err instanceof Error ? err.message : String(err)}`
+            );
           }
         }
       }
@@ -377,7 +404,9 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
             logger: (m) => console.log(m),
           });
           if (embedStats.failed > 0) {
-            errors.push(`embed-hook: ${embedStats.failed}/${embedStats.scanned} failed`);
+            errors.push(
+              `embed-hook: ${embedStats.failed}/${embedStats.scanned} failed`
+            );
           }
         }
       }
@@ -394,7 +423,9 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
     startedAt,
     endedAt: new Date().toISOString(),
     health,
-    discover: discover ? { outcomes: discover.outcomes, totals: discover.totals } : null,
+    discover: discover
+      ? { outcomes: discover.outcomes, totals: discover.totals }
+      : null,
     refresh,
     importStats,
     refreshImportStats,
@@ -409,7 +440,8 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
 // ---------------------------------------------------------------------
 
 const REPORT_DIR_REL = "docs/test-reports";
-const STRUCTURED_LOG_PATH = process.env.KOL_SYNC_LOG_PATH ?? "/var/log/kolmatrix-kol-sync.log";
+const STRUCTURED_LOG_PATH =
+  process.env.KOL_SYNC_LOG_PATH ?? "/var/log/kolmatrix-kol-sync.log";
 
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
@@ -418,26 +450,18 @@ async function main(): Promise<void> {
   );
 
   const apiKey = process.env.YOUTUBE_API_KEY;
-  // BIx-F004-P3: publishedAfter slice phase — 6 core regions by
-  // default, falls back to 4 when quota is tight (env override).
-  // 0 disables the phase. Invalid → spec default of 6.
-  const sliceCountEnv = Number(process.env.KOL_SYNC_PUBLISHED_AFTER_SLICES);
-  const sliceCount =
-    Number.isFinite(sliceCountEnv) &&
-    sliceCountEnv >= 0 &&
-    sliceCountEnv <= PUBLISHED_AFTER_CORE_REGIONS.length
-      ? sliceCountEnv
-      : PUBLISHED_AFTER_CORE_REGIONS.length;
-  const publishedAfterRegions =
-    sliceCount > 0 ? PUBLISHED_AFTER_CORE_REGIONS.slice(0, sliceCount) : null;
-
-  const adapters: KolSyncAdapter[] = [new YouTubeKolSyncAdapter({ apiKey, publishedAfterRegions })];
+  const adapters: KolSyncAdapter[] = [
+    new YouTubeKolSyncAdapter({ apiKey }),
+  ];
 
   let prisma: PrismaClient | null = null;
   if (!args.dryRun) {
-    const conn = process.env.DATABASE_ADMIN_URL ?? process.env.DATABASE_URL;
+    const conn =
+      process.env.DATABASE_ADMIN_URL ?? process.env.DATABASE_URL;
     if (!conn) {
-      console.error("[kol-sync-daily] DATABASE_URL not set — refusing to run without a DB");
+      console.error(
+        "[kol-sync-daily] DATABASE_URL not set — refusing to run without a DB"
+      );
       process.exitCode = 0; // cron-friendly: don't page on env mishap
       return;
     }
@@ -459,7 +483,9 @@ async function main(): Promise<void> {
   } catch (err) {
     // Outermost guard so cron always sees exit 0. F004 will pipe the
     // error into the structured log + alerting.
-    console.error(`[kol-sync-daily] fatal: ${err instanceof Error ? err.message : err}`);
+    console.error(
+      `[kol-sync-daily] fatal: ${err instanceof Error ? err.message : err}`
+    );
     process.exitCode = 0;
     return;
   } finally {
@@ -472,7 +498,9 @@ async function main(): Promise<void> {
   let priorStreak = 0;
   try {
     if (existsSync(STRUCTURED_LOG_PATH)) {
-      priorStreak = countTrailingZeroDiscoverStreak(readFileSync(STRUCTURED_LOG_PATH, "utf8"));
+      priorStreak = countTrailingZeroDiscoverStreak(
+        readFileSync(STRUCTURED_LOG_PATH, "utf8")
+      );
     }
   } catch (err) {
     console.warn(
@@ -490,7 +518,12 @@ async function main(): Promise<void> {
       `[kol-sync-daily] could not write structured log to ${STRUCTURED_LOG_PATH}: ${err instanceof Error ? err.message : err}`
     );
   }
-  const reportPath = resolve(__dirname, "..", REPORT_DIR_REL, `kol-sync-daily-${report.date}.md`);
+  const reportPath = resolve(
+    __dirname,
+    "..",
+    REPORT_DIR_REL,
+    `kol-sync-daily-${report.date}.md`
+  );
   mkdirSync(dirname(reportPath), { recursive: true });
   writeFileSync(reportPath, formatMarkdownReport(report), "utf8");
 
