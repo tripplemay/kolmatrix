@@ -62,13 +62,13 @@ trigger: BIx 验收 done + Stitch 设计稿就绪 + 用户决议启动
 | F001 | Asset 表 schema + migration（含 EmailTemplate 迁移 + RLS） | ~1 day | — |
 | F002 | src/lib/assets/* 后端核心（CRUD + Zod schema + RLS-aware queries） | ~0.5 day | F001 |
 | F003 | AI generate / regenerate / variant tree（aigcgateway + audit log） | ~1 day | F002 |
-| F004 | `/assets` 页面 — Filter sidebar + Grid + Detail panel（依 Stitch 稿实装） | ~1.5 day | F002, Stitch 稿 |
+| F004 | `/assets` 页面 — Filter sidebar + Grid + Detail panel（依 Stitch 稿；含抽 AssetCard/AssetTabs/StatusDot 3 个新公共组件 + 可能 Combobox） | ~1.5-1.75 day | F002, Stitch 稿 |
 | F005 | `/assets` Edit + Save + Versions tab + Used in tab | ~0.5 day | F004 |
 | F006 | /outreach composer 接通（loadAssetsForComposer 替 loadOutreachTemplates，dual-write 兼容期） | ~0.5 day | F002 |
 | F007 | /knowledge-base 集成（ProductCard chip 可点跳 /assets?productId=xxx + ProductModal 显示生成进度/结果预览） | ~0.25 day | F004 |
 | F008 | Send to /outreach（email asset 一键注入 composer，prefilled state） | ~0.25 day | F006, F004 |
 
-**总估时：** ~5.5 day Generator + 1 day Reviewer
+**总估时：** ~5.5-5.75 day Generator + 1 day Reviewer（F004 加 0.25d 抽组件 buffer）
 
 ---
 
@@ -199,11 +199,102 @@ auditLog.create({
 ### F004 — `/assets` 页面 三栏布局
 
 **Executor：** generator
-**估时：** ~1.5 day
+**估时：** ~1.5-1.75 day（含抽出 3 个新公共组件 AssetCard / AssetTabs / StatusDot；如已存在等价物则取消）
 
-**设计源：** `design-draft/BL-025-asset-library/variant-a-296k/code.html` + `screen.png`（full state 主参考） + `variant-a-260k/screen.png`（empty state CTA 模式参考；其它创意发挥不采纳，详见末尾"Stitch 偏差对照"）。
+**设计源：** `design-draft/BL-025-asset-library/variant-a-296k/code.html` + `screen.png`（full state 主参考） + `variant-a-260k/screen.png`（empty state CTA 模式参考；其它创意发挥不采纳，详见末尾"Stitch 偏差对照"）。**真实参照物是 HTML（用浏览器打开看像素级渲染）；PNG 仅作索引用，详见 `framework/harness/ui-fidelity-guardrail.md` §1.1。**
+
+#### F004.A 必用公共组件清单（硬要求，违反 = Reviewer 拒收）
+
+**所有 UI 元素必须用以下现有公共组件或新抽组件实装，禁止 inline 手写 `<button> + Tailwind className`。**
+
+**容器 / 布局：**
+- `@/components/common/GlassPanel` — 所有半透明容器（filter sidebar / detail panel / asset card 容器）
+- `@/components/common/SectionHeader` — 每个 section 顶（"Filters" / "Type" / "Status" / "Source"）
+- `AppShellLayout`（BIx F005 拆出的 island）— 严格复用左 sidebar 240px + topbar 64px，不重新实现
+
+**按钮：**
+- `@/components/common/GradientButton` — 所有 cyan 渐变 CTA：`+ New Asset` / `Generate from product` / `Send to Outreach` / wizard "Generate" 按钮
+- `@/components/common/SecondaryButton` — 次级按钮：`Create blank` / `Cancel` / wizard "Continue"
+- `@/components/common/GhostButton` — 三级 / 工具按钮：hover quick actions（Edit / Duplicate / Archive / Delete）/ "..." menu items
+- `@/components/common/ChipButton` — Filter chips 全部（Type / Status / Source / Active filter breadcrumb，含 × 删除）
+
+**表单 / 输入：**
+- `@/components/ui/Input` — search 输入框 / asset name inline 编辑 / subject 输入框 / steering prompt textarea
+- `@/components/ui/Select` — Sort dropdown
+- `@/components/ui/Checkbox` — 如需 multiselect（chip 内部已含态切换则不必）
+- `@/components/ui/Dialog` — `NewAssetModal` / `RegenerateVariantPopup` / mobile detail-as-modal / Confirm dialogs
+- `@/components/ui/Table` — 不在此页用（grid 不是表格）；List view toggle 暂时也用 grid 容器变 1 列即可
+
+**Asset 专属组件（如不存在需先抽出到 `src/components/common/`，列入 F004 子任务）：**
+- `AssetCard.tsx`（新抽）— 网格卡片 + Hover quick actions overlay；接受 props { asset, isSelected, onSelect, onQuickAction }
+- `AssetTabs.tsx`（新抽）— Detail panel 4 tabs 切换器；接受 props { tabs, activeTab, onChange }
+- `StatusDot.tsx`（新抽 or 复用 `StatusBadge`）— 资产状态绿/黄/灰圆点
+
+**变量 token / 标签：**
+- `@/components/common/TagChip` — AI 徽章（"AI" 渐变小标） + variant index "v3 of 4" + product label
+- `@/components/common/StatusBadge` — Draft/Published/Archived 状态视觉态（如不够小可用 StatusDot 新组件）
+
+**Combobox：** 项目当前**无 Combobox 抽象**。Generator 开工前两选一：
+- 选项 A：用 `@/components/ui/Select` 演化（单选 + 搜索过滤；如需多选搜索另加）
+- 选项 B：抽出 `src/components/ui/Combobox.tsx` 基于 `@base-ui/react`（BIx F005 已 optimizePackageImports `@base-ui/react`），先完成 Combobox 守门 test 再用
+- 决议写入 generator_handoff，Planner 不预判（实装时数据/复杂度决定）
+
+**禁止行为（违反 = Reviewer 拒收）：**
+1. 手写 `<button>` + Tailwind className（必须 GradientButton / SecondaryButton / GhostButton / ChipButton 之一）
+2. 手写 `<dialog>` + backdrop（必须 Dialog 组件）
+3. inline `<div className="bg-[...]/85 backdrop-blur-... rounded-[16px] ...">`（必须 GlassPanel）
+4. 拷贝 Stitch HTML 的 className 直接用（设计稿是参照物，组件是实装单元）
+5. 不抽组件直接 inline 渲染 AssetCard（必须新建 AssetCard.tsx）
+
+#### F004.B 不得简化 / 不得新增的元素清单
+
+**不得简化的 19 元素**（Generator 若想删减须发 pre-impl 审计请求 → Planner 裁决，参考 `framework/harness/pre-impl-adjudication.md`）：
+
+1. Filter sidebar "Filters" 标题 + "Clear all" 文字按钮顶部
+2. Product combobox + 其下方计数副文本 "12 assets in this product"
+3. Type chip 含 ghost "More coming" 提示扩展性（即便 disabled）
+4. Status 4 选项（All / Draft / Published / Archived）全保留
+5. Source 3 选项（AI Generated / User Created / Imported）全保留
+6. Search 输入框 + placeholder + 防抖更新 URL
+7. Active filter breadcrumb chips（每条含 × 单删按钮）
+8. Sort dropdown 4 选项（Recent / Name / Used most / Type）
+9. Grid/List view toggle（即便 List view 实装与 Grid 共用容器）
+10. "+ New Asset" cyan 渐变 CTA（不是普通 SecondaryButton）
+11. AssetCard type chip + AI 徽章 + variant index "vN of M" + used count + status dot 5 元数据全显
+12. AssetCard hover quick actions 4 按钮浮层（Edit / Duplicate / Archive / Delete）
+13. Detail panel close × + asset name inline 编辑（点 name 转 input）
+14. Detail panel "..." More menu 6 项（email：Regenerate / Export Markdown / Copy / Send to Outreach / Archive / Delete；video 5 项无 Send to Outreach）
+15. Detail panel 4 tabs（Preview / Edit / Versions / Used in）含 active 态下边线
+16. Sticky bottom action bar（Regenerate 灰按钮 + Send to Outreach 渐变 CTA，仅 email type）
+17. Empty state 玻璃拟态 folder icon + 渐变光晕 + 双 CTA
+18. 3-step New Asset wizard（Product+Type → Steering prompt → Preview & Save）
+19. Steering prompt 6 个速选 chip（emphasize affordability / Gen Z / formal / casual / urgency / social proof）
+
+**不得新增的 4 元素**（Stitch 创意发挥，本批次 spec 不采纳）：
+
+1. Filter sidebar "Asset Types" 列表（Images / Videos / Documents / 3D Models）—— 超 ADR-011 enum
+2. Filter sidebar "Campaign Tags" section —— 不在 5 filter 范围
+3. App Shell sidebar 任何不在 8 nav 项内的新链接（Stitch 出现重复 Products 是 bug）
+4. 任何 ADR-011 enum 之外的资产 type chip（包括 Image / Document / Model / Audio）
+
+#### F004.C Visual baseline 硬性要求
+
+- `tests/e2e/visual-regression.spec.ts` 加 **4 个新 baseline**：
+  1. `/assets-full-state-3col`（3 列布局 + 选中卡片 + detail panel Preview tab）
+  2. `/assets-empty-state-double-cta`
+  3. `/assets-new-asset-wizard-step1` + `-step3`
+  4. `/assets-detail-as-modal-mobile`（< 1280px 模式）
+- 跨平台限制（仅 Linux 跑）继承 BL-015 现有约束
+- L2 Reviewer 浏览器并排验证：左侧打开 `design-draft/BL-025-asset-library/variant-a-296k/code.html`（用浏览器，不是缩略 PNG），右侧 staging `/assets`，逐 section 对（颜色 / 圆角 / 阴影 / 间距 px 对齐）
+- 任何视觉差 > 5%（Reviewer 主观判断）在 L2 → fixing 轮回开
+- 完成后 `npm run test:e2e -- --update-snapshots` 重生 baseline，新 PNG 一并 commit
+
+---
 
 **路由：** `src/app/[locale]/(app)/assets/page.tsx`（Server Component）+ `'use client'` 子组件（Filter / Grid / Detail Panel 都需 client interactivity）
+
+> ⚠️ **以下子组件章节中所有 Tailwind className / JSX 代码片段仅作"视觉参照"使用，不是实装指令。**
+> 实装时必须按 §F004.A 用现有公共组件 + variant prop 表达；如片段中出现 inline `bg-[#xxx]` / `rounded-[Npx]` / `<button className="...">`，应转译为对应组件调用。例：`<button className="bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] ...">+ New Asset</button>` → `<GradientButton icon="add">New Asset</GradientButton>`；颜色 / 圆角 / 阴影由组件 variant 内部封装，不重写。Reviewer 在 L1 typecheck 阶段会 grep 检查 `src/app/[locale]/(app)/assets/` 下任何匹配 `bg-\[#` / `rounded-\[\d` 的 inline className 必须有合理 exception 注释（如全新组件抽出过程中过渡态）。
 
 #### 三栏布局结构
 
@@ -486,6 +577,11 @@ export function useAssetFilters() {
 
 #### Acceptance（具体）
 
+- [ ] **§F004.A 公共组件清单 100% 覆盖**：grep `src/app/[locale]/(app)/assets/` 下 0 个 inline `bg-\[#` / `rounded-\[\d` / 手写 `<button>` 反范式（exception 注释除外）
+- [ ] **§F004.B "不得简化" 19 元素全实装**（Reviewer L2 逐项 check）
+- [ ] **§F004.B "不得新增" 4 元素全无**（Reviewer L2 逐项 check）
+- [ ] AssetCard / AssetTabs / StatusDot 3 个新组件已抽到 `src/components/common/` + 单独单元 test
+- [ ] 如新建 Combobox 组件，已落 `src/components/ui/Combobox.tsx` + 守门 test
 - [ ] 三栏布局 ≥ 1280px 并列 / < 1280px detail 改 modal
 - [ ] Filter URL state 5 个 param 全双向同步（深链 + 刷新 + 浏览器后退）
 - [ ] AssetCard hover quick actions 浮出（Edit / Duplicate / Archive / Delete）
