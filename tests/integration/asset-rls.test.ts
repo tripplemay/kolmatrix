@@ -73,13 +73,12 @@ async function seedAsset(opts: {
       name: opts.name ?? "Untitled Asset",
       source: opts.source ?? "user_created",
       status: opts.status ?? "published",
-      content:
-        opts.content ?? {
-          subject: "Hello",
-          body: "Body",
-          locale: "en",
-          variables: [],
-        },
+      content: opts.content ?? {
+        subject: "Hello",
+        body: "Body",
+        locale: "en",
+        variables: [],
+      },
     },
   });
 }
@@ -274,12 +273,8 @@ describe("BL-025-F001 · EmailTemplate → Asset migration parity", () => {
       [sysAssetEn.id, sysAssetZh.id, userAsset.id].sort()
     );
 
-    const bRows = await asTenant(TENANT_B, (tx) =>
-      tx.asset.findMany({ select: { id: true } })
-    );
-    expect(bRows.map((r) => r.id).sort()).toEqual(
-      [sysAssetEn.id, sysAssetZh.id].sort()
-    );
+    const bRows = await asTenant(TENANT_B, (tx) => tx.asset.findMany({ select: { id: true } }));
+    expect(bRows.map((r) => r.id).sort()).toEqual([sysAssetEn.id, sysAssetZh.id].sort());
   });
 
   it("is idempotent — re-running the copy SQL does not duplicate rows", async () => {

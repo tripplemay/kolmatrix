@@ -14,7 +14,7 @@
       "title": "src/lib/assets/* 后端核心（CRUD + Zod content schema 集中 + RLS-aware queries）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新建 4 文件：schemas.ts (EmailContentSchema + VideoScriptContentSchema + ASSET_CONTENT_SCHEMAS 集中)、queries.ts (loadAssetsForListing/loadAssetDetail/loadAssetsForComposer/loadVariantTree/loadUsedIn 全走 withTenant RLS)、mutations.ts (createAsset/updateAsset/archiveAsset/deleteAsset 含 Zod content shape 校验)、types.ts (DTO)；createAsset/updateAsset 必须 Zod 校验 content type=email → EmailContentSchema 等；守门 test queries.test.ts + mutations.test.ts 各 ≥ 8 case；coverage ≥ 80% lines。详见 spec §F002。"
     },
     {
