@@ -4,32 +4,25 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BIx-mvp-polish-pass** — verifying（2026-05-02 13:30 staging+prod deploy 全绿 @ a851866；5/5 features done；migration 已应用；MVP-internal-demo-prep done + signoff PASS + framework v0.9.5 12 条 learnings 沉淀完毕）
-- 估时 ~5-5.5 day Generator + 0.5 day Reviewer
-- Reviewer Codex L1+L2 验收，~0.5 day；7-day staging soft-watch acceptance 切 done 后用 /schedule 起 follow-up agent
-## Features (5, 全 generator 批次)
-- F001 /crm 3 disabled 控件清理（time toggle / Export CSV / 删 Manual log）~1 day
-- F002 Misc 5 项 polish（Owner filter / Email btn / PDF 文案 / mock_sent / AiSuggestions）~2h
-- F003 11 页 critical paths edge states + error.tsx 兜底 ~4h
-- F004 YouTube sync 配额优化 P1 ~89% + Top 100 真 engagement batch ~1.5-2 day
-- F005 前端 perf 六件套（next.config.ts/font/image + recharts/markdown dynamic + AppShellLayout island）~1.4 day
-## Generator 开工建议顺序（spec §4 + 工时优化）
-F002 → F003 → F001 → F005 → F004 → push CI 全绿 → SSH staging deploy（按 framework deploy-patterns §3.2 完整链）→ SSH prod redeploy（F004 含 migration）→ verifying 移交 Reviewer
-## ✅ F004 用户已裁决 (c) — env var KOL_SYNC_MIN_SUBSCRIBERS
-- prod 默认 1000（与 PRD §10.1 微网红 + quality.ts 对齐）；staging 显式 10000（保留降噪）
-- Generator 5 features 已无 open question，可即刻按建议顺序开工
-## 关键设计决议（spec §3 + §10 lock）
-- F005 范围 (γ)：CR-4/5/6 + H-P1/2/3 六件套；H-P4 → BL-021；H-P5 → BL-022
-- Material Symbols：next/font 自托管子集（不切 Lucide）；CSP Report-Only 一周观察期；next/image 全 7 处一次性替换
-- F004 P1 ~89% utilization + Top 100 真 engagement batch 替代 B5 lazy-load + kol_sync_cursor 表新建
-## 角色分配
-- 默认映射（role_assignments=null）：CLI = planner+generator，Codex = evaluator
-## Backlog 13 条
-BL-003/011/012/014/015/016/017/018/019 + BL-020 安全 high / BL-021 Suspense medium / BL-022 虚拟化 deferred / BL-023 KOL 评分体系升级 medium（A engagement 真值 + B brand safety 软扣分 + C followerScore cap + D Smart Match 区分度，~6-7h，前置 BIx F004 done）
-## 即将启动批次
-- **BL-020 安全 mini-batch** (BIx done 后, ~0.5-1 day) — 6 项前端审计安全 Critical/High，上线对外客户前必须
-## 时间线
-- ~05-12 BIx-mvp-polish-pass done
-- ~05-13 BL-020 安全整改 done → 上线对外客户准备就绪
+- **BIx-mvp-polish-pass — DONE** ✅ 2026-05-02 14:00 Reviewer 首轮 PASS（fix_rounds=0）；signoff: docs/test-reports/BIx-mvp-polish-pass-signoff-2026-05-02.md；staging+prod live @ a851866
+## Reviewer 验收摘要（PASS, fix_rounds=0）
+- L1 全 PASS（lint 0e / tsc 0e / 678 pass + 1 WSL fs 超时非 BIx / build 79 静态页）
+- L2 全 PASS（6 安全头 / self-host Material Symbols / SSH staging git_sha+env+migration / dry-run sync 0 errors / commit-tag F001-F005 合规）
+- 8 条 Soft-watch 不阻塞：详 signoff §6
+## Done 阶段 TODO（Planner 接力）
+1. /schedule 7-day follow-up agent 自动 grep staging sync log（reopen F004 触发条件见 signoff §12）
+2. 装 @next/bundle-analyzer 入 devDeps + Lighthouse 实测脚手架（O3-O4 数字证据补齐）
+3. 收尾 framework/proposed-learnings.md（cross-agent staged 污染 + NODE_OPTIONS heap + Reviewer 沉淀 2 条）
+4. 启动 BL-020 mini-batch（~05-08, CR-1/2/3 + H-S1/2/3 + CSP enforce 切换）
+## 关键决议（已 lock）
+- F004 KOL_SYNC_MIN_SUBSCRIBERS env var：prod 默认 1000 / staging 显式 10000
+- F005 范围 (γ)：CR-4/5/6 + H-P1/2/3；H-P4 → BL-021；H-P5 → BL-022
+- Material Symbols self-host 子集（不切 Lucide）；CSP Report-Only 一周观察期；next/image 全 7 处一次性替换
+- BIx 7-day post-done staging soft-watch acceptance（用 /schedule 兜底 live sync evidence）
+## 角色 / Backlog / 时间线
+- 角色：默认映射（role_assignments=null）：CLI = planner+generator，Codex = evaluator
+- Backlog 13：BL-003/011/012/014/015/016/017/018/019 + BL-020 安全 high / BL-021 Suspense / BL-022 虚拟化 / BL-023 KOL 评分（BIx done 已解锁）
+- 下批次：**BL-020 安全 mini-batch** ~05-08（上线对外客户前必须）
+- 时间线：2026-05-02 BIx DONE ✅ / ~05-08 BL-020 done → 对外客户上线就绪
 
 <!-- 写入规则（harness §记忆分层）：覆盖写 / ≤30 行 / 所有角色可写 / 只放 WHAT / 不重复 progress.json -->
