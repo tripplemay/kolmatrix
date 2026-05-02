@@ -94,12 +94,15 @@ describe("classifyChannel", () => {
     expect(out.channelId).toBe("UC_real");
   });
 
-  it("status=below_threshold when subs < 10K", () => {
+  it("status=below_threshold when subs < default threshold (1K post BIx-F004-P1)", () => {
+    // BIx-F004-P1 lowered the default 10_000 → 1_000 (PRD §10.1 micro-
+    // influencer floor). Fixture lives below the new default so the
+    // "below threshold" intent of the test still holds.
     const out = classifyChannel(
       {
         id: "UC_micro",
         snippet: {},
-        statistics: { subscriberCount: "5000", videoCount: "100" },
+        statistics: { subscriberCount: "500", videoCount: "100" },
         topicDetails: { topicCategories: ["https://en.wikipedia.org/wiki/Action_game"] },
       },
       entry
@@ -186,7 +189,8 @@ describe("runValidate", () => {
           return {
             id: "UC_micro",
             snippet: {},
-            statistics: { subscriberCount: "1500", videoCount: "30" },
+            // BIx-F004-P1: < 1K to stay below the new default threshold.
+            statistics: { subscriberCount: "500", videoCount: "30" },
             topicDetails: {
               topicCategories: ["https://en.wikipedia.org/wiki/Action_game"],
             },
