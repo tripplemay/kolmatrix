@@ -24,6 +24,7 @@ import {
   type Region as KolSeedRegion,
   type YoutubeClient,
 } from "../../../../scripts/seed-kol-from-youtube";
+import { pickDailyPage, type KolSyncCursorProvider } from "../cursor";
 import type { HealthCheckResult, KolSyncAdapter, RawKolData, SyncParams } from "../types";
 
 // ---------------------------------------------------------------------
@@ -331,6 +332,16 @@ export interface YouTubeAdapterOpts {
   regions?: readonly string[];
   keywordsByRegion?: Readonly<Record<string, readonly string[]>>;
   maxResults?: number;
+  /** BIx-F004-P2: page-rotation cursor store. When supplied, daily
+   *  cron pulls page 1 → 2 → 3 over a 6-day cycle (`pickDailyPage`)
+   *  instead of always pulling page 1. Wire `prismaKolSyncCursor
+   *  Provider(prisma)` from production callers; unit tests use
+   *  `inMemoryKolSyncCursorProvider()`. Omit to keep page-1-only
+   *  behaviour (one-shot scripts / tests that never rotate). */
+  cursorProvider?: KolSyncCursorProvider;
+  /** BIx-F004-P2: clock injection for `pickDailyPage`. Defaults to
+   *  the real `Date()`; tests pin a value here. */
+  now?: () => Date;
 }
 
 export class YouTubeKolSyncAdapter implements KolSyncAdapter {
@@ -341,6 +352,8 @@ export class YouTubeKolSyncAdapter implements KolSyncAdapter {
   private readonly regions: readonly string[];
   private readonly keywordsByRegion: Readonly<Record<string, readonly string[]>> | null;
   private readonly maxResults: number;
+  private readonly cursorProvider: KolSyncCursorProvider | null;
+  private readonly now: () => Date;
 
   constructor(opts: YouTubeAdapterOpts) {
     this.regions = opts.regions ?? DAILY_REGIONS;
@@ -351,6 +364,8 @@ export class YouTubeKolSyncAdapter implements KolSyncAdapter {
     // (tests / one-shot scripts).
     this.keywordsByRegion = opts.keywordsByRegion ?? null;
     this.maxResults = opts.maxResults ?? DAILY_MAX_RESULTS;
+    this.cursorProvider = opts.cursorProvider ?? null;
+    this.now = opts.now ?? (() => new Date());
     if (opts.client) {
       this.client = opts.client;
     } else if (opts.apiKey) {
@@ -365,7 +380,11 @@ export class YouTubeKolSyncAdapter implements KolSyncAdapter {
     const regions = params.region ? [params.region] : this.regions;
     const maxResults = params.maxResults ?? this.maxResults;
     const minSubscribers = params.minSubscribers ?? getFilterMinSubscribers();
-    const today = new Date();
+    const today = this.now();
+    // BIx-F004-P2: which page (1/2/3) the cron should hit today.
+    // Only meaningful when a cursor provider is wired — without one
+    // we always call page 1.
+    const targetPage = pickDailyPage(today);
 
     // Dedupe across (region, keyword) so popular channels don't
     // double-bill the channels.list quota when multiple queries hit
@@ -384,12 +403,45 @@ export class YouTubeKolSyncAdapter implements KolSyncAdapter {
               ? pickDailyKeywords(region as DailyRegion, today)
               : []));
       for (const keyword of keywords) {
+        // BIx-F004-P2: derive pageToken for `targetPage` from the
+        // cursor store. Page 1 always uses no token. Page 2/3 use
+        // the cursor's `nextPageToken` only when the stored `page`
+        // is exactly `targetPage - 1` — otherwise we'd skip a page
+        // (e.g. cron missed yesterday). On a mismatch we fall back
+        // to page 1 to keep the data path safe; the cursor self-
+        // heals on the next 6-day cycle.
+        let pageToken: string | undefined;
+        let actualPage: number = targetPage;
+        if (this.cursorProvider && targetPage > 1) {
+          const cursor = await this.cursorProvider.get(region, keyword);
+          if (cursor.page === targetPage - 1 && cursor.nextPageToken) {
+            pageToken = cursor.nextPageToken;
+          } else {
+            actualPage = 1;
+          }
+        }
         // Cast: SyncParams.region is widened to string for portability
         // across adapters; the kol-seed-redo client predates B6 and
         // narrows to its own Region enum. The DAILY_REGIONS used by
         // this adapter are a subset of that enum, so the cast is
         // sound at runtime.
-        const search = await client.searchChannels(region as KolSeedRegion, keyword, maxResults);
+        const search = await client.searchChannels(
+          region as KolSeedRegion,
+          keyword,
+          maxResults,
+          pageToken
+        );
+        // BIx-F004-P2: persist the cursor so tomorrow's run knows
+        // which page to advance to. Errors here surface — we'd
+        // rather fail loudly than silently regress to page-1-only.
+        if (this.cursorProvider) {
+          await this.cursorProvider.set(
+            region,
+            keyword,
+            actualPage,
+            search.nextPageToken ?? null
+          );
+        }
         const fresh = search.ids.filter((id) => !seenIds.has(id));
         for (const id of fresh) seenIds.add(id);
         if (fresh.length === 0) continue;

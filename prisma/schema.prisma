@@ -534,3 +534,26 @@ model WeeklyReport {
   @@index([tenantId, weekEnd(sort: Desc)])
   @@map("weekly_report")
 }
+
+// ============================================================
+// BIx-mvp-polish-pass F004-P2 · Daily-cron page-rotation cursor.
+//
+// Records the last `nextPageToken` returned by YouTube `search.list`
+// for each (region, keyword) pair in the daily matrix so the cron
+// can rotate page 1 → 2 → 3 over a 6-day cycle (see
+// `pickDailyPage` + `pickDailyKeywords` in
+// src/lib/kol-sync/adapters/youtube.ts). No tenant scope: discovery
+// is platform-level, not tenant-owned.
+// ============================================================
+
+model KolSyncCursor {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  region        String
+  keyword       String
+  page          Int      @default(1) @db.SmallInt
+  nextPageToken String?  @map("next_page_token")
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([region, keyword], map: "kol_sync_cursor_region_keyword_key")
+  @@map("kol_sync_cursor")
+}

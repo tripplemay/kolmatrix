@@ -15,6 +15,7 @@ import {
   YouTubeKolSyncAdapter,
   mapToRawKolData,
 } from "@/lib/kol-sync/adapters/youtube";
+import { inMemoryKolSyncCursorProvider } from "@/lib/kol-sync/cursor";
 import type { YoutubeClient } from "@/../scripts/seed-kol-from-youtube";
 
 const STUB_NOW = () => "2026-04-28T08:30:00.000Z";
@@ -184,9 +185,108 @@ describe("YouTubeKolSyncAdapter · discover", () => {
       maxResults: 25,
     });
     expect(client.searchChannels).toHaveBeenCalledTimes(1);
-    expect(client.searchChannels).toHaveBeenCalledWith("JP", "Vtuber", 25);
+    // BIx-F004-P2 added an optional pageToken 4th arg; with no
+    // cursorProvider the adapter passes `undefined`.
+    expect(client.searchChannels).toHaveBeenCalledWith("JP", "Vtuber", 25, undefined);
     // 1 fresh id + 1 shared = 2 rows.
     expect(data).toHaveLength(2);
+  });
+});
+
+describe("YouTubeKolSyncAdapter · cursor (BIx-F004-P2 page rotation)", () => {
+  function makeStubClient(nextPageToken: string | null = "tok-next") {
+    return {
+      searchChannels: vi.fn(async (region: string, keyword: string) => ({
+        ids: [`UC_${region}_${keyword.replace(/\s+/g, "_")}`],
+        nextPageToken,
+      })),
+      fetchChannels: vi.fn(async (ids: readonly string[]) =>
+        ids.map((id) => ({ ...fullChannel({ id }) }))
+      ),
+    } satisfies YoutubeClient;
+  }
+
+  // Pin to dayOfYear=1 (cyclePos 1 → page 1) and dayOfYear=4
+  // (cyclePos 4 → page 2) so the cursor branches are deterministic.
+  const day1 = new Date(Date.UTC(2026, 0, 1)); // page 1
+  const day4 = new Date(Date.UTC(2026, 0, 4)); // page 2
+
+  it("page-1 days call searchChannels with no pageToken and persist {page:1, nextPageToken}", async () => {
+    const client = makeStubClient("tok-after-p1");
+    const cursor = inMemoryKolSyncCursorProvider();
+    const adapter = new YouTubeKolSyncAdapter({
+      apiKey: "key",
+      client,
+      cursorProvider: cursor,
+      now: () => day1,
+      regions: ["US"],
+      keywordsByRegion: { US: ["gaming"] },
+    });
+    await adapter.discover({});
+    expect(client.searchChannels).toHaveBeenCalledWith("US", "gaming", 50, undefined);
+    expect(await cursor.get("US", "gaming")).toEqual({
+      page: 1,
+      nextPageToken: "tok-after-p1",
+    });
+  });
+
+  it("page-2 day with valid page-1 cursor uses the stored nextPageToken", async () => {
+    const client = makeStubClient("tok-after-p2");
+    const cursor = inMemoryKolSyncCursorProvider(
+      new Map([["US::gaming", { page: 1, nextPageToken: "tok-from-p1" }]])
+    );
+    const adapter = new YouTubeKolSyncAdapter({
+      apiKey: "key",
+      client,
+      cursorProvider: cursor,
+      now: () => day4,
+      regions: ["US"],
+      keywordsByRegion: { US: ["gaming"] },
+    });
+    await adapter.discover({});
+    expect(client.searchChannels).toHaveBeenCalledWith("US", "gaming", 50, "tok-from-p1");
+    expect(await cursor.get("US", "gaming")).toEqual({
+      page: 2,
+      nextPageToken: "tok-after-p2",
+    });
+  });
+
+  it("page-2 day without a matching page-1 cursor self-heals to page 1", async () => {
+    const client = makeStubClient("tok-fresh-p1");
+    // Cursor is at page 3 (mismatch — gap in cron), so we shouldn't
+    // forward its token; instead reset to page 1.
+    const cursor = inMemoryKolSyncCursorProvider(
+      new Map([["US::gaming", { page: 3, nextPageToken: "stale" }]])
+    );
+    const adapter = new YouTubeKolSyncAdapter({
+      apiKey: "key",
+      client,
+      cursorProvider: cursor,
+      now: () => day4,
+      regions: ["US"],
+      keywordsByRegion: { US: ["gaming"] },
+    });
+    await adapter.discover({});
+    expect(client.searchChannels).toHaveBeenCalledWith("US", "gaming", 50, undefined);
+    // Cursor row reflects the actual page consumed (1, not the
+    // intended 2) so the next 6-day cycle realigns naturally.
+    expect(await cursor.get("US", "gaming")).toEqual({
+      page: 1,
+      nextPageToken: "tok-fresh-p1",
+    });
+  });
+
+  it("absence of cursorProvider leaves search.list at page 1 forever", async () => {
+    const client = makeStubClient("ignored");
+    const adapter = new YouTubeKolSyncAdapter({
+      apiKey: "key",
+      client,
+      now: () => day4, // would be page 2 if cursor were wired
+      regions: ["US"],
+      keywordsByRegion: { US: ["gaming"] },
+    });
+    await adapter.discover({});
+    expect(client.searchChannels).toHaveBeenCalledWith("US", "gaming", 50, undefined);
   });
 });
 
