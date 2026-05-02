@@ -42,15 +42,7 @@ describe("parseArgs", () => {
 
   it("accepts --dry-run + --region + --max-results + --max-pages", () => {
     expect(
-      parseArgs([
-        "--dry-run",
-        "--region",
-        "US",
-        "--max-results",
-        "25",
-        "--max-pages",
-        "3",
-      ])
+      parseArgs(["--dry-run", "--region", "US", "--max-results", "25", "--max-pages", "3"])
     ).toEqual({
       dryRun: true,
       region: "US",
@@ -286,9 +278,7 @@ describe("withRetry", () => {
     const fn = vi.fn(async () => {
       throw new Error("permanent");
     });
-    await expect(
-      withRetry(fn, { backoffsMs: [1, 1, 1], sleep })
-    ).rejects.toThrow(/permanent/);
+    await expect(withRetry(fn, { backoffsMs: [1, 1, 1], sleep })).rejects.toThrow(/permanent/);
     // 1 initial + 3 retries.
     expect(fn).toHaveBeenCalledTimes(4);
   });
@@ -331,9 +321,7 @@ describe("runCrawl + formatOutputJson", () => {
         };
       }),
       fetchChannels: vi.fn(async (ids: string[]) =>
-        ids.map((id: string) =>
-          stubChannel(id, id === "SHARED_ID" ? "US" : id.split("-")[0]!)
-        )
+        ids.map((id: string) => stubChannel(id, id === "SHARED_ID" ? "US" : id.split("-")[0]!))
       ),
     };
 
@@ -385,9 +373,7 @@ describe("runCrawl + formatOutputJson", () => {
           nextPageToken: isFirstPage ? "TOK" : null,
         };
       }),
-      fetchChannels: vi.fn(async (ids: string[]) =>
-        ids.map((id: string) => stubChannel(id, "JP"))
-      ),
+      fetchChannels: vi.fn(async (ids: string[]) => ids.map((id: string) => stubChannel(id, "JP"))),
     };
 
     const report = await runCrawl(
