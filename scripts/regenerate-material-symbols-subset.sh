@@ -58,6 +58,15 @@ MANIFEST_FILE="scripts/material-symbols-icons-manifest.txt"
   # Maintained by hand: append icons + comment when adding a new dynamic
   # callsite. Script tolerates missing file (fresh checkout / pre-2026-05-02
   # branches) by skipping silently.
+  #
+  # BL-025-F009 sweep retro: aggressive patterns 6 (array elements) +
+  # 7 (return statements) tested at ~219 false-positive matches vs ~88
+  # legitimate icons; the manifest+grep mix tracks reality more
+  # cleanly than yet-more-permissive grep. New dynamic callsites
+  # (multi-line array literals, return "icon" in non-icon-named
+  # functions, ?? fallback strings) keep landing in
+  # scripts/material-symbols-icons-manifest.txt with a one-line
+  # comment pointing back at the call site.
   if [ -f "$MANIFEST_FILE" ]; then
     sed -E 's/[[:space:]]*#.*$//' "$MANIFEST_FILE" \
       | grep -E '^[a-z_][a-z_0-9]+$' || true

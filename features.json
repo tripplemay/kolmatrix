@@ -70,7 +70,7 @@
       "title": "Material Symbols subset 守门加固（hotfix bb637a1 follow-up — manifest 预入 BL-025 新 icon + grep pattern 6/7 + CI 守门 test + PR template + docs）",
       "priority": "high",
       "executor": "generator",
-      "status": "in_progress",
+      "status": "completed",
       "acceptance": "F009.1 BL-025 新 icon (folder_open/auto_awesome/restart_alt/file_copy/archive/unarchive/more_vert/compare_arrows/restore/movie 等 ~10 个) 入 scripts/material-symbols-icons-manifest.txt + 跑 regenerate script + verify woff2 含全部；F009.2 加 Pattern 6 (多行数组) + Pattern 7 (return statement，限定 icon 上下文)；F009.3 新建 tests/integration/material-symbols-coverage.test.ts ≥ 3 case (script discovers all manifest icons / woff2 includes all expected glyphs / no orphan callsites)；F009.4 .github/pull_request_template.md 加 Material Symbols icon checklist；F009.5 docs 沉淀 (docs/dev/rules.md 或 framework/harness/material-symbols-pattern.md 含 5 漏范式 + manifest 维护 + CI 守门)；staging /assets 渲染所有 icon 无字符方框 L2 走查。详见 spec §F009。"
     }
   ]
