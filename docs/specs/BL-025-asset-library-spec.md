@@ -5,7 +5,7 @@ status: drafted-complete（含 Stitch 设计稿对照 §F004 UI 实装）, await
 created_by: johnsong (Planner)
 created_at: 2026-05-02
 estimated_effort: ~5 day Generator + 1 day Reviewer
-features_count: 8
+features_count: 9
 prerequisites:
   - BIx-mvp-polish-pass done + Reviewer signoff PASS
   - prod redeploy BIx 完成（含 F004 sync infra 稳定运行 ≥ 2 day 不挂）
@@ -41,6 +41,7 @@ trigger: BIx 验收 done + Stitch 设计稿就绪 + 用户决议启动
 - ProductCard chip 可点击 → 跳 `/assets?productId=xxx`
 - 视频脚本 Plain text + Markdown 编辑 + 复制到剪贴板 + 导出 Markdown
 - /assets 页面与 design-draft/BL-025-asset-library/variant-a-296k 视觉一致性 PASS（颜色 / 圆角 / 阴影 / 玻璃拟态对照）
+- F009 Material Symbols subset 守门加固完成：BL-025 新 icon 入 manifest + grep pattern 加固 + CI test 守门 + PR template 加 checklist + docs 沉淀
 - Audit log 记录 generate / regenerate（traceId + model + tokens + steeringPrompt）
 - staging + prod redeploy 跑通 + L2 烟测 30+ 条 checklist 全 PASS
 
@@ -67,8 +68,9 @@ trigger: BIx 验收 done + Stitch 设计稿就绪 + 用户决议启动
 | F006 | /outreach composer 接通（loadAssetsForComposer 替 loadOutreachTemplates，dual-write 兼容期） | ~0.5 day | F002 |
 | F007 | /knowledge-base 集成（ProductCard chip 可点跳 /assets?productId=xxx + ProductModal 显示生成进度/结果预览） | ~0.25 day | F004 |
 | F008 | Send to /outreach（email asset 一键注入 composer，prefilled state） | ~0.25 day | F006, F004 |
+| F009 | Material Symbols subset 守门加固 + BL-025 新 icon 入 manifest（hotfix bb637a1 follow-up） | ~0.25 day | hotfix bb637a1 已推 |
 
-**总估时：** ~5.5-5.75 day Generator + 1 day Reviewer（F004 加 0.25d 抽组件 buffer）
+**总估时：** ~5.75-6 day Generator + 1 day Reviewer（F004 抽组件 + F009 守门 buffer）
 
 ---
 
@@ -734,6 +736,103 @@ async function loadAssetsForComposer(tenantId, type, locale?) {
 
 ---
 
+### F009 — Material Symbols subset 守门加固
+
+**Executor：** generator
+**估时：** ~0.25 day
+
+**背景：** 2026-05-02 prod hotfix `bb637a1` 修了 BIx F005-B subset 脚本漏 19 icon 的问题（用户截图发现 TRENDING_FLAT / bookmark_added 等显字符方框）。Hotfix 用 manifest 文件硬列 19 漏 icon + 加 grep pattern 4 抓 JSX prop `icon="name"`。本 feature 在 BL-025 范围内做**完整守门加固**，避免未来 BL-025 / BL-026 / etc 再加 icon 时重蹈覆辙。
+
+**F009.1 — BL-025 新增 icon 入 manifest（开工前预入）**
+
+BL-025 spec §F004 / F005 / 已规划 UI 涉及的 Material Symbols icon（部分可能 grep pattern 抓不到，开工前预入 `scripts/material-symbols-icons-manifest.txt`）：
+- `folder_open` — empty state 玻璃拟态 folder（Stitch screen.png 显示）
+- `auto_awesome` — empty state CTA + AI 徽章
+- `restart_alt` — Detail panel "Regenerate variant" 按钮（may render as "refresh" 但需确认 final icon name）
+- `file_copy` — Hover quick action "Duplicate"
+- `archive` — Hover quick action "Archive"
+- `unarchive` — 解归档按钮（如有）
+- `more_vert` — Detail panel "..." More menu trigger
+- `compare_arrows` — Versions tab "Compare with current" action
+- `restore` — Versions tab "Restore this version" action
+- `movie` — Video asset type icon
+- `chip` / `more_horiz` — 备选
+
+Generator 开工前 grep BL-025 实际选用 icon 名 → 与 manifest diff → 缺则补 → 跑 regenerate script + verify woff2 含全部新 icon。
+
+**F009.2 — 加 grep pattern（多 icon name 范式覆盖）**
+
+`scripts/regenerate-material-symbols-subset.sh` 增 pattern 6/7（hotfix bb637a1 已加 4/5）：
+- Pattern 6: 数组元素跨行 `\["[a-z_][a-z_0-9]+"`（catches multi-line array literals like `ACTIVITY_ICONS`）
+- Pattern 7: 函数 return statement `return\s+"[a-z_][a-z_0-9]+";` + 限定上下文（function 含 "icon" 关键字 in name 或 return type 提示）
+
+注意：grep pattern 永不可能 100% 兜住所有动态 case，**manifest 是 source of truth**；pattern 仅减少 manifest 维护负担。
+
+**F009.3 — CI 守门 test**
+
+新建 `tests/integration/material-symbols-coverage.test.ts`：
+```ts
+describe("material-symbols subset coverage", () => {
+  it("regenerate script discovers all manifest icons", () => {
+    const manifest = readManifest();
+    const discovered = runScript({ outputOnly: true });
+    const missing = manifest.filter(icon => !discovered.includes(icon));
+    expect(missing).toEqual([]);
+  });
+
+  it("woff2 file includes all expected glyphs", () => {
+    // 用 fontkit 或 opentype.js 解析 woff2，验证 80+ glyph 全在
+    const font = parseWoff2("src/app/fonts/material-symbols-outlined.woff2");
+    const expectedIcons = readManifest().concat(readGrepResult());
+    for (const icon of expectedIcons) {
+      const codepoint = materialSymbolNameToCodepoint(icon);
+      expect(font.hasGlyph(codepoint)).toBe(true);
+    }
+  });
+
+  it("no callsite references icon outside manifest+grep result", () => {
+    const allRefs = grepAllIconReferences(); // includes 5 missed pattern types
+    const known = readManifest().concat(grepResult());
+    const orphans = allRefs.filter(r => !known.includes(r));
+    expect(orphans).toEqual([]); // 任何漏 fail
+  });
+});
+```
+
+CI 跑此 test → 缺 manifest icon / orphan callsite → fail → PR 阻塞 merge。
+
+**F009.4 — PR template 加硬性 checklist**
+
+`.github/pull_request_template.md` 加 section（如已存在则插入）：
+```markdown
+### Material Symbols icon 增减
+- [ ] 不涉及（无 material-symbols icon 改动）
+- [ ] 涉及 — 已确认：
+  - [ ] 新 icon 用 inline `<span class="material-symbols-outlined">name</span>` 或 `icon: "name"` 形式（grep pattern 可抓）
+  - [ ] OR 新 icon 是 JSX prop `icon="name"` / 三元 / 数组 / return / `??` fallback → 已加入 `scripts/material-symbols-icons-manifest.txt`
+  - [ ] 已跑 `./scripts/regenerate-material-symbols-subset.sh` 重生 woff2
+  - [ ] CI material-symbols-coverage test 通过
+```
+
+**F009.5 — docs 更新**
+
+更新 `docs/dev/rules.md`（或新增 `framework/harness/material-symbols-pattern.md`）记录：
+- 5 类 icon name 漏的范式 + 各自要怎么处理
+- manifest 文件作用 + 维护方式
+- regenerate script 何时跑 + CI 守门
+- 沉淀来源（2026-05-02 prod 字符方框 bug → BIx F005-B 验收 gap）
+
+**Acceptance：**
+- F009.1 BL-025 新 icon ~10 个全部入 manifest，regenerate 跑通 woff2 含全部
+- F009.2 pattern 6/7 加完，verify 数组元素 + return statement 形式 icon 自动捕获
+- F009.3 守门 test 跑绿（包括人为构造 manifest 缺一项 → test 必须 fail 才算 test 有效）
+- F009.4 PR template 改完，下个 PR 看到 checklist
+- F009.5 文档 commit，引用从 framework/harness/learnings.md（如有）
+- 守门 test：`tests/integration/material-symbols-coverage.test.ts` 含 ≥ 3 case
+- staging /assets 页面渲染所有 icon 无字符方框（L2 走查）
+
+---
+
 ## 3. 依赖与执行顺序
 
 ### 3.1 前置依赖
@@ -755,6 +854,7 @@ async function loadAssetsForComposer(tenantId, type, locale?) {
 6. **F006** — /outreach composer 接通（依 F002 query；与 F004 并行）
 7. **F007** — /knowledge-base 集成（依 F004 路由；最后做）
 8. **F008** — Send to /outreach（依 F006 + F004；最后做）
+9. **F009** — Material Symbols subset 守门加固（开工前先做 §F009.1 manifest 预入新 icon；§F009.2-5 在 BL-025 主要功能 done 前做完）
 
 ### 3.3 阻断点与裁决
 
