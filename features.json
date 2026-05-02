@@ -6,7 +6,7 @@
       "title": "Asset 表 schema + migration（含 EmailTemplate 数据迁移 + RLS + ROLLBACK SQL + dual-write 兼容期）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新建 prisma migration <ts>_add_asset_table 含 Asset model + 3 enum (AssetType / AssetSource / AssetStatus) + 3 索引 + RLS policy asset_tenant_isolation（tenantId IS NULL 全 tenant 可见 OR tenantId = current_setting）；独立 migration <ts>_migrate_email_template_to_asset 把 EmailTemplate 行迁移到 Asset (type=email, source=system_seed/user_created/ai_generated based on metadata)；ROLLBACK SQL 文件保留；跑 migration 后 SELECT count(*) FROM asset WHERE type='email' = SELECT count(*) FROM email_template；system_seed 5 套（en+zh = 10 行）正确迁移 tenantId IS NULL；用户/AI 模板按 tenant_id 正确迁移；RLS test：tenant A 看不到 tenant B asset，能看到 system_seed；守门 test tests/integration/asset-rls.test.ts ≥ 4 case；EmailTemplate 表暂保留（dual-write 兼容期，独立 cleanup migration 1 周后做不在本批次）。详见 spec §F001 + ADR-011。"
     },
     {

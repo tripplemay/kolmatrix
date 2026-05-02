@@ -37,6 +37,7 @@ model Tenant {
   campaignMetrics CampaignMetric[]
   weeklyReports   WeeklyReport[]
   savedSearches   SavedSearch[]
+  assets          Asset[]
 
   @@map("tenant")
 }
@@ -60,6 +61,7 @@ model User {
   campaignsOwned Campaign[]     @relation("CampaignOwner")
   weeklyReports  WeeklyReport[] @relation("WeeklyReportCreator")
   savedSearches  SavedSearch[]
+  assetsCreated  Asset[]        @relation("AssetCreator")
 
   @@index([tenantId])
   @@map("user")
@@ -470,6 +472,7 @@ model Product {
 
   tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   campaigns Campaign[]
+  assets    Asset[]
 
   @@index([tenantId])
   @@map("product")
@@ -556,4 +559,66 @@ model KolSyncCursor {
 
   @@unique([region, keyword], map: "kol_sync_cursor_region_keyword_key")
   @@map("kol_sync_cursor")
+}
+
+// ============================================================
+// BL-025 · Unified Asset table (素材中心 / Asset Library)
+//
+// ADR-011 方案 X: single Asset table, type enum + content JSONB
+// multipolymorphism, parentId for variant tree (regenerate without
+// overwriting). EmailTemplate rows migrate in a follow-up
+// migration; both tables coexist during a 1-sprint dual-write
+// window (loadAssetsForComposer reads Asset, mutations.ts writes
+// to both — see F006). The independent EmailTemplate cleanup
+// migration lives outside BL-025.
+//
+// RLS policy: tenant_id IS NULL means system_seed visible across
+// tenants (same shape as email_template's union policy). The Zod
+// schemas in src/lib/assets/schemas.ts (F002) constrain the JSONB
+// content per-type since Postgres can't enforce that shape.
+// ============================================================
+
+enum AssetType {
+  email
+  video_script
+}
+
+enum AssetSource {
+  ai_generated
+  user_created
+  imported
+  system_seed
+}
+
+enum AssetStatus {
+  draft
+  published
+  archived
+}
+
+model Asset {
+  id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String?     @map("tenant_id") @db.Uuid
+  productId String?     @map("product_id")
+  type      AssetType
+  name      String      @db.VarChar(200)
+  content   Json        @db.JsonB
+  source    AssetSource
+  parentId  String?     @map("parent_id") @db.Uuid
+  status    AssetStatus @default(draft)
+  metadata  Json        @default("{}") @db.JsonB
+  createdBy String?     @map("created_by") @db.Uuid
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime    @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant        Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product       Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  parent        Asset?   @relation("AssetVariants", fields: [parentId], references: [id], onDelete: SetNull)
+  variants      Asset[]  @relation("AssetVariants")
+  createdByUser User?    @relation("AssetCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, type, status])
+  @@index([tenantId, productId])
+  @@index([parentId])
+  @@map("asset")
 }
