@@ -33,12 +33,7 @@ export interface KolSyncCursorProvider {
   /** Upsert the cursor for `(region, keyword)`. Caller passes the
    *  page just *consumed* and the `nextPageToken` returned by
    *  YouTube; the table row reflects "what to use next time". */
-  set(
-    region: string,
-    keyword: string,
-    page: number,
-    nextPageToken: string | null
-  ): Promise<void>;
+  set(region: string, keyword: string, page: number, nextPageToken: string | null): Promise<void>;
 }
 
 /**
@@ -48,9 +43,7 @@ export interface KolSyncCursorProvider {
  * tallies it as a failed adapter run instead of silently degrading
  * to page-1-forever.
  */
-export function prismaKolSyncCursorProvider(
-  prisma: PrismaClient
-): KolSyncCursorProvider {
+export function prismaKolSyncCursorProvider(prisma: PrismaClient): KolSyncCursorProvider {
   return {
     async get(region, keyword) {
       const row = await prisma.kolSyncCursor.findUnique({

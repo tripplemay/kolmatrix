@@ -435,12 +435,7 @@ export class YouTubeKolSyncAdapter implements KolSyncAdapter {
         // which page to advance to. Errors here surface — we'd
         // rather fail loudly than silently regress to page-1-only.
         if (this.cursorProvider) {
-          await this.cursorProvider.set(
-            region,
-            keyword,
-            actualPage,
-            search.nextPageToken ?? null
-          );
+          await this.cursorProvider.set(region, keyword, actualPage, search.nextPageToken ?? null);
         }
         const fresh = search.ids.filter((id) => !seenIds.has(id));
         for (const id of fresh) seenIds.add(id);

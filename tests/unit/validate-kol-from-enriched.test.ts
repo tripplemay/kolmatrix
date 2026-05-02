@@ -132,10 +132,7 @@ describe("classifyChannel", () => {
   });
 
   it("status=no_statistics when channel exists but has no stats block", () => {
-    const out = classifyChannel(
-      { id: "UC_dead", snippet: { country: "JP" } },
-      entry
-    );
+    const out = classifyChannel({ id: "UC_dead", snippet: { country: "JP" } }, entry);
     expect(out.status).toBe("no_statistics");
     expect(out.channelId).toBe("UC_dead");
   });
@@ -212,11 +209,7 @@ describe("runValidate", () => {
       "below_threshold",
       "handle_not_found",
     ]);
-    expect(seen).toEqual([
-      "1:real_kol",
-      "2:below_threshold",
-      "3:handle_not_found",
-    ]);
+    expect(seen).toEqual(["1:real_kol", "2:below_threshold", "3:handle_not_found"]);
   });
 
   it("treats persistent fetch errors as handle_not_found", async () => {
@@ -237,24 +230,52 @@ describe("summarize", () => {
   it("counts every status and surfaces real KOLs sorted desc by subs", () => {
     const summary = summarize([
       {
-        idx: 1, enrichedName: "A", handle: "@a", enrichedFollowers: 1000,
-        liveSubscriberCount: 50_000, liveVideoCount: 100, liveCountry: "US",
-        liveTopicCategories: [], status: "real_kol", channelId: "UC_a",
+        idx: 1,
+        enrichedName: "A",
+        handle: "@a",
+        enrichedFollowers: 1000,
+        liveSubscriberCount: 50_000,
+        liveVideoCount: 100,
+        liveCountry: "US",
+        liveTopicCategories: [],
+        status: "real_kol",
+        channelId: "UC_a",
       },
       {
-        idx: 2, enrichedName: "B", handle: "@b", enrichedFollowers: 2000,
-        liveSubscriberCount: 200_000, liveVideoCount: 200, liveCountry: "US",
-        liveTopicCategories: [], status: "real_kol", channelId: "UC_b",
+        idx: 2,
+        enrichedName: "B",
+        handle: "@b",
+        enrichedFollowers: 2000,
+        liveSubscriberCount: 200_000,
+        liveVideoCount: 200,
+        liveCountry: "US",
+        liveTopicCategories: [],
+        status: "real_kol",
+        channelId: "UC_b",
       },
       {
-        idx: 3, enrichedName: "C", handle: "@c", enrichedFollowers: 100,
-        liveSubscriberCount: 500, liveVideoCount: 10, liveCountry: null,
-        liveTopicCategories: [], status: "below_threshold", channelId: "UC_c",
+        idx: 3,
+        enrichedName: "C",
+        handle: "@c",
+        enrichedFollowers: 100,
+        liveSubscriberCount: 500,
+        liveVideoCount: 10,
+        liveCountry: null,
+        liveTopicCategories: [],
+        status: "below_threshold",
+        channelId: "UC_c",
       },
       {
-        idx: 4, enrichedName: "D", handle: "@d", enrichedFollowers: 10,
-        liveSubscriberCount: null, liveVideoCount: null, liveCountry: null,
-        liveTopicCategories: null, status: "handle_not_found", channelId: null,
+        idx: 4,
+        enrichedName: "D",
+        handle: "@d",
+        enrichedFollowers: 10,
+        liveSubscriberCount: null,
+        liveVideoCount: null,
+        liveCountry: null,
+        liveTopicCategories: null,
+        status: "handle_not_found",
+        channelId: null,
       },
     ]);
     expect(summary.total).toBe(4);

@@ -8,10 +8,7 @@
  */
 import { describe, expect, it } from "vitest";
 
-import {
-  inMemoryKolSyncCursorProvider,
-  pickDailyPage,
-} from "@/lib/kol-sync/cursor";
+import { inMemoryKolSyncCursorProvider, pickDailyPage } from "@/lib/kol-sync/cursor";
 
 describe("pickDailyPage (BIx-F004-P2 6-day cycle)", () => {
   // dayOfYear computed via UTC; all asserts use UTC dates so they're
