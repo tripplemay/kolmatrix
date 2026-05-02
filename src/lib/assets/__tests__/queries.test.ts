@@ -79,10 +79,7 @@ describe("loadAssetsForListing", () => {
 
     const findManyArgs = tx.asset.findMany.mock.calls[0]![0];
     expect(findManyArgs.take).toBe(__TEST_ONLY__.MAX_PAGE_SIZE + 1);
-    expect(findManyArgs.orderBy).toEqual([
-      { updatedAt: "desc" },
-      { id: "desc" },
-    ]);
+    expect(findManyArgs.orderBy).toEqual([{ updatedAt: "desc" }, { id: "desc" }]);
     expect(result.items).toHaveLength(1);
     expect(result.items[0]!.id).toBe(baseRow.id);
     expect(result.total).toBe(1);
@@ -156,11 +153,7 @@ describe("loadAssetsForListing", () => {
 
     await loadAssetsForListing(tx, {}, { sort: "type" });
     const typeOrderBy = tx.asset.findMany.mock.calls[0]![0].orderBy;
-    expect(typeOrderBy).toEqual([
-      { type: "asc" },
-      { updatedAt: "desc" },
-      { id: "desc" },
-    ]);
+    expect(typeOrderBy).toEqual([{ type: "asc" }, { updatedAt: "desc" }, { id: "desc" }]);
   });
 
   it("annotates versionIndex / totalVariants from the sibling chain", async () => {
@@ -174,13 +167,11 @@ describe("loadAssetsForListing", () => {
       parentId: rootId,
       createdAt: new Date("2026-05-01T03:00:00Z"),
     };
-    tx.asset.findMany
-      .mockResolvedValueOnce([childRow])
-      .mockResolvedValueOnce([
-        { id: rootId, parentId: null, createdAt: new Date("2026-05-01T01:00:00Z") },
-        { id: childA, parentId: rootId, createdAt: new Date("2026-05-01T02:00:00Z") },
-        { id: childB, parentId: rootId, createdAt: new Date("2026-05-01T03:00:00Z") },
-      ]);
+    tx.asset.findMany.mockResolvedValueOnce([childRow]).mockResolvedValueOnce([
+      { id: rootId, parentId: null, createdAt: new Date("2026-05-01T01:00:00Z") },
+      { id: childA, parentId: rootId, createdAt: new Date("2026-05-01T02:00:00Z") },
+      { id: childB, parentId: rootId, createdAt: new Date("2026-05-01T03:00:00Z") },
+    ]);
     tx.asset.count.mockResolvedValueOnce(1);
 
     const result = await loadAssetsForListing(tx, {}, {});
@@ -237,10 +228,7 @@ describe("loadAssetsForComposer", () => {
       content: { path: ["locale"], equals: "en" },
     });
     expect(args.take).toBe(__TEST_ONLY__.COMPOSER_MAX_RESULTS);
-    expect(args.orderBy).toEqual([
-      { source: "asc" },
-      { updatedAt: "desc" },
-    ]);
+    expect(args.orderBy).toEqual([{ source: "asc" }, { updatedAt: "desc" }]);
     expect(rows[0]).toMatchObject({
       id: baseRow.id,
       subject: "Hi {{kol.name}}",

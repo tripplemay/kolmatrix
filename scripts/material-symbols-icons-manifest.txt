@@ -37,3 +37,21 @@ trending_flat               # common/StatCard.tsx:25                | object val
 video_library               # knowledge-base/page.tsx:82            | array element
 view_list                   # discovery/SummaryBar.tsx:83           | JSX ternary
 warning                     # roi/RoiInsightsPanel:137 + weekly-report/WeeklyReportInsightsPanel:89 | function return
+
+# BL-025 Asset Library — pre-added before F004 lands so the woff2
+# already carries them. Once F004 inlines these via Pattern 1/4, the
+# script's `sort -u` collapses the dupes; manifest entries become a
+# safety net for any AssetCard hover overlay / Versions tab actions
+# that end up in array literal or ?? fallback positions Pattern 1
+# can't see. Source: docs/specs/BL-025-asset-library-spec.md §F009.1.
+
+archive                     # AssetCard hover quick action / Detail panel "..." | JSX prop or array
+auto_awesome                # AssetsEmptyState CTA + AI 徽章 / NewAssetModal step-3 spinner | JSX prop
+compare_arrows              # AssetsDetailPanel Versions tab "Compare with current" | JSX prop
+file_copy                   # AssetCard hover quick action "Duplicate"            | JSX prop or array
+folder_open                 # AssetsEmptyState glass-folder icon                  | inline span
+movie                       # AssetCard type chip for video_script asset          | JSX ternary
+more_vert                   # AssetsDetailPanel "..." More menu trigger           | JSX prop
+restart_alt                 # AssetsDetailPanel sticky bottom bar Regenerate      | JSX prop
+restore                     # AssetsDetailPanel Versions tab "Restore this version" | JSX prop
+unarchive                   # AssetCard hover overlay archived-state toggle       | JSX prop or array

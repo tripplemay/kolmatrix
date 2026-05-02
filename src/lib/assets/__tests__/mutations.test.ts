@@ -243,9 +243,9 @@ describe("updateAsset", () => {
     const tx = makeTx();
     tx.asset.findUnique.mockResolvedValueOnce(null);
 
-    await expect(
-      updateAsset(tx, "ghost", { name: "x" })
-    ).rejects.toBeInstanceOf(AssetNotFoundError);
+    await expect(updateAsset(tx, "ghost", { name: "x" })).rejects.toBeInstanceOf(
+      AssetNotFoundError
+    );
   });
 });
 
@@ -257,9 +257,7 @@ describe("archiveAsset", () => {
       type: "email",
       status: "published",
     });
-    tx.asset.update.mockResolvedValueOnce(
-      createdRow({ id: "asset-1", status: "archived" })
-    );
+    tx.asset.update.mockResolvedValueOnce(createdRow({ id: "asset-1", status: "archived" }));
 
     const result = await archiveAsset(tx, "asset-1");
 

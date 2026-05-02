@@ -23,11 +23,7 @@
  */
 import type { AssetType, Prisma } from "@prisma/client";
 
-import {
-  decodeCursor,
-  encodeCursor,
-  type CursorPaginationParams,
-} from "@/lib/pagination/cursor";
+import { decodeCursor, encodeCursor, type CursorPaginationParams } from "@/lib/pagination/cursor";
 
 import type {
   AssetCard,
@@ -47,10 +43,7 @@ const MAX_PAGE_SIZE = 100;
 const COMPOSER_MAX_RESULTS = 100;
 const USED_IN_RECENT_LIMIT = 20;
 
-function previewFromContent(
-  type: AssetType,
-  content: Prisma.JsonValue
-): string {
+function previewFromContent(type: AssetType, content: Prisma.JsonValue): string {
   if (content == null || typeof content !== "object" || Array.isArray(content)) {
     return "";
   }
@@ -83,11 +76,7 @@ interface RawAssetRow {
   product: { name: string } | null;
 }
 
-function toCard(
-  row: RawAssetRow,
-  versionIndex: number,
-  totalVariants: number
-): AssetCard {
+function toCard(row: RawAssetRow, versionIndex: number, totalVariants: number): AssetCard {
   return {
     id: row.id,
     tenantId: row.tenantId,
@@ -137,9 +126,7 @@ function buildListWhere(filter: AssetFilter): Prisma.AssetWhereInput {
   return where;
 }
 
-function sortToOrderBy(
-  sort: AssetListSort
-): Prisma.AssetOrderByWithRelationInput[] {
+function sortToOrderBy(sort: AssetListSort): Prisma.AssetOrderByWithRelationInput[] {
   switch (sort) {
     case "name":
       return [{ name: "asc" }, { id: "asc" }];
@@ -199,11 +186,7 @@ export async function loadAssetsForListing(
     const last = visibleRows[visibleRows.length - 1]!;
     const sortField = sort === "name" ? "name" : sort === "type" ? "type" : "updatedAt";
     const sortValue =
-      sort === "name"
-        ? last.name
-        : sort === "type"
-          ? last.type
-          : last.updatedAt.toISOString();
+      sort === "name" ? last.name : sort === "type" ? last.type : last.updatedAt.toISOString();
     nextCursor = encodeCursor({ id: last.id, sortField, sortValue });
   }
 
@@ -226,10 +209,7 @@ async function annotateVariantInfo(
 
   const allInTrees = (await tx.asset.findMany({
     where: {
-      OR: [
-        { id: { in: Array.from(rootIds) } },
-        { parentId: { in: Array.from(rootIds) } },
-      ],
+      OR: [{ id: { in: Array.from(rootIds) } }, { parentId: { in: Array.from(rootIds) } }],
     },
     select: { id: true, parentId: true, createdAt: true },
     orderBy: { createdAt: "asc" },
@@ -408,9 +388,7 @@ export async function loadVariantTree(
       where: { parentId: { in: frontier } },
       select: { id: true },
     })) as Array<{ id: string }>;
-    frontier = children
-      .map((c) => c.id)
-      .filter((id) => !seenIds.has(id));
+    frontier = children.map((c) => c.id).filter((id) => !seenIds.has(id));
   }
 
   collected.sort(

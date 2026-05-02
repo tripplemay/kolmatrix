@@ -20,11 +20,7 @@
 import { type AssetSource, type AssetStatus, type AssetType, Prisma } from "@prisma/client";
 
 import { ASSET_CONTENT_SCHEMAS } from "./schemas";
-import type {
-  AssetDetail,
-  CreateAssetInput,
-  UpdateAssetPatch,
-} from "./types";
+import type { AssetDetail, CreateAssetInput, UpdateAssetPatch } from "./types";
 
 const MAX_VARIANT_DEPTH = 10;
 
@@ -225,18 +221,12 @@ export async function archiveAsset(
  * survive (they detach to a new root). Returns true if a row was
  * deleted, false if it never existed.
  */
-export async function deleteAsset(
-  tx: Prisma.TransactionClient,
-  assetId: string
-): Promise<boolean> {
+export async function deleteAsset(tx: Prisma.TransactionClient, assetId: string): Promise<boolean> {
   try {
     await tx.asset.delete({ where: { id: assetId } });
     return true;
   } catch (err) {
-    if (
-      err instanceof Prisma.PrismaClientKnownRequestError &&
-      err.code === "P2025"
-    ) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
       return false;
     }
     throw err;
