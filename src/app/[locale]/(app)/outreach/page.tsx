@@ -50,7 +50,10 @@ export default async function OutreachPage({ params, searchParams }: Props) {
   // here with `?kolIds=<id>,<id>` to pre-tick the composer's KOL list.
   const kolIdsRaw = asScalar(raw.kolIds);
   const preselectedKolIds = kolIdsRaw
-    ? kolIdsRaw.split(",").map((s) => s.trim()).filter(Boolean)
+    ? kolIdsRaw
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
     : undefined;
 
   const session = await auth();

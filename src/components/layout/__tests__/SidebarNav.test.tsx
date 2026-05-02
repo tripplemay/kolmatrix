@@ -3,6 +3,14 @@ import { describe, expect, it, vi } from "vitest";
 import { renderIntl } from "../../../../tests/utils/render-intl";
 import { SidebarNav } from "../SidebarNav";
 
+// BIx-mvp-polish-pass F005-F: SidebarNav now reads `usePathname()`
+// instead of receiving `activeId` as a prop, so each test pins the
+// pathname via this mock to drive aria-current selection.
+const pathnameRef = { value: "/en/dashboard" };
+vi.mock("next/navigation", () => ({
+  usePathname: () => pathnameRef.value,
+}));
+
 vi.mock("next/link", () => ({
   default: ({
     children,
@@ -20,7 +28,8 @@ vi.mock("next/link", () => ({
 
 describe("SidebarNav", () => {
   it("renders all 8 nav items with locale-prefixed hrefs", () => {
-    const { container } = renderIntl(<SidebarNav activeId="dashboard" />);
+    pathnameRef.value = "/en/dashboard";
+    const { container } = renderIntl(<SidebarNav />);
     const links = container.querySelectorAll("a[href]");
     expect(links.length).toBe(8);
     links.forEach((link) => {
@@ -29,7 +38,8 @@ describe("SidebarNav", () => {
   });
 
   it("marks the active item with aria-current='page' and passive items without", () => {
-    const { container } = renderIntl(<SidebarNav activeId="campaigns" />);
+    pathnameRef.value = "/en/campaigns";
+    const { container } = renderIntl(<SidebarNav />);
     const active = container.querySelector("a[aria-current='page']");
     expect(active?.textContent).toContain("Campaigns");
 
@@ -38,14 +48,16 @@ describe("SidebarNav", () => {
     expect(withAria).toHaveLength(1);
   });
 
-  it("puts aria-current on the matching item across different activeIds", () => {
-    const first = renderIntl(<SidebarNav activeId="dashboard" />);
+  it("puts aria-current on the matching item across different pathnames", () => {
+    pathnameRef.value = "/en/dashboard";
+    const first = renderIntl(<SidebarNav />);
     expect(first.container.querySelector("a[aria-current='page']")?.textContent).toContain(
       "Dashboard"
     );
     first.unmount();
 
-    const second = renderIntl(<SidebarNav activeId="analytics" />);
+    pathnameRef.value = "/en/roi";
+    const second = renderIntl(<SidebarNav />);
     expect(second.container.querySelector("a[aria-current='page']")?.textContent).toContain(
       "Analytics"
     );

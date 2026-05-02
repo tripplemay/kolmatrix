@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 
 import "../styles/globals.css";
 
@@ -8,6 +9,20 @@ const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
+});
+
+// BIx-mvp-polish-pass F005-B: Material Symbols self-hosted as a
+// 61-icon subset (~8KB). Keep the icon roster in sync — see
+// `scripts/regenerate-material-symbols-subset.sh` for the grep-based
+// regeneration recipe. The companion `.material-symbols-outlined`
+// CSS rules live in `src/styles/globals.css` and consume the
+// `--font-material-symbols` variable wired below.
+const materialSymbols = localFont({
+  src: "./fonts/material-symbols-outlined.woff2",
+  variable: "--font-material-symbols",
+  display: "swap",
+  weight: "100 700",
+  style: "normal",
 });
 
 export const metadata: Metadata = {
@@ -28,13 +43,10 @@ export default async function RootLayout({
   // (e.g. /shared/* anonymous report links).
   const locale = await getLocale();
   return (
-    <html lang={locale} className={`${inter.variable} h-full antialiased`}>
-      <head>
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-25..200"
-        />
-      </head>
+    <html
+      lang={locale}
+      className={`${inter.variable} ${materialSymbols.variable} h-full antialiased`}
+    >
       <body className="bg-background text-foreground flex min-h-full flex-col font-sans">
         {children}
       </body>

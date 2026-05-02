@@ -1,32 +1,35 @@
 /**
- * BM2-F010 · `<WeeklyReportRenderer>` (Planner adjudication §13.5 #1
- * — `"use client"` to avoid GFM-table SSR/CSR hydration drift).
+ * BM2-F010 / BIx-F005-E · `<WeeklyReportRenderer>` wrapper.
  *
- * Wraps `react-markdown` with `remark-gfm` so the AI's bullet/bold/
- * table output renders correctly. Tone-mapped via shared Tailwind
- * classes so the print stylesheet (`WeeklyReportPrintStyles`) can
- * drop colours uniformly.
+ * react-markdown + remark-gfm together pull in ~50KB gzipped that
+ * the rest of the weekly-report page never needs at SSR time.
+ * Gating the actual renderer behind next/dynamic with ssr:false
+ * also sidesteps the GFM-table hydration drift Planner §13.5 #1
+ * called out — the markdown subtree only ever exists on the client.
  */
 "use client";
 
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import dynamic from "next/dynamic";
 
 interface Props {
   markdown: string;
   className?: string;
 }
 
-export function WeeklyReportRenderer({ markdown, className }: Props) {
-  return (
-    <div
-      data-testid="weekly-report-markdown"
-      className={
-        "prose prose-invert max-w-none prose-headings:text-white prose-h2:text-lg prose-h2:font-bold prose-h2:uppercase prose-h2:tracking-wider prose-h2:text-cyan prose-strong:text-white prose-li:text-on-surface-variant prose-p:text-on-surface-variant prose-a:text-cyan " +
-        (className ?? "")
-      }
-    >
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
-    </div>
-  );
+const WeeklyReportRendererImpl = dynamic(
+  () => import("./WeeklyReportRendererImpl"),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="h-32 w-full animate-pulse rounded-lg bg-white/[0.02]"
+        aria-hidden
+        data-testid="weekly-report-markdown-loading"
+      />
+    ),
+  }
+);
+
+export function WeeklyReportRenderer(props: Props) {
+  return <WeeklyReportRendererImpl {...props} />;
 }

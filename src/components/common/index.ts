@@ -19,9 +19,5 @@ export { SectionHeader } from "./SectionHeader";
 export { StatCard } from "./StatCard";
 export { RingProgress, type RingProgressProps } from "./RingProgress";
 export { Sparkline, type SparklineProps } from "./Sparkline";
-export {
-  StatusBadge,
-  type StatusBadgeProps,
-  type StatusDomain,
-} from "./StatusBadge";
+export { StatusBadge, type StatusBadgeProps, type StatusDomain } from "./StatusBadge";
 export { TagChip } from "./TagChip";

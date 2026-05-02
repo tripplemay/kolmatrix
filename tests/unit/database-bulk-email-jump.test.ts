@@ -15,14 +15,17 @@ function buildOutreachJumpHref(locale: string, kolIds: string[]): string {
 
 function parseKolIdsParam(value: string | null | undefined): string[] {
   if (!value) return [];
-  return value.split(",").map((s) => s.trim()).filter(Boolean);
+  return value
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 describe("database → outreach jump URL (BIx-vf F002 P1-4)", () => {
   it("builds /<locale>/outreach?kolIds=a,b,c", () => {
-    expect(
-      buildOutreachJumpHref("en", ["aaa", "bbb", "ccc"])
-    ).toBe("/en/outreach?kolIds=aaa,bbb,ccc");
+    expect(buildOutreachJumpHref("en", ["aaa", "bbb", "ccc"])).toBe(
+      "/en/outreach?kolIds=aaa,bbb,ccc"
+    );
   });
 
   it("falls back to /<locale>/database when nothing is selected", () => {
@@ -37,10 +40,7 @@ describe("database → outreach jump URL (BIx-vf F002 P1-4)", () => {
   });
 
   it("round-trips an arbitrary multi-id selection", () => {
-    const ids = [
-      "11111111-2222-3333-4444-555555555555",
-      "22222222-3333-4444-5555-666666666666",
-    ];
+    const ids = ["11111111-2222-3333-4444-555555555555", "22222222-3333-4444-5555-666666666666"];
     const href = buildOutreachJumpHref("ja", ids);
     const url = new URL(href, "http://x.test");
     expect(parseKolIdsParam(url.searchParams.get("kolIds"))).toEqual(ids);

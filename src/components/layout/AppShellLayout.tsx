@@ -1,11 +1,20 @@
-"use client";
-
-import { useTranslations } from "next-intl";
-import { usePathname } from "next/navigation";
-
+/**
+ * BIx-mvp-polish-pass F005-F · App shell layout (server component).
+ *
+ * Previously this entire subtree (`Sidebar` + `Topbar` + everything
+ * underneath) was a Client Component just so we could call
+ * `usePathname()` once for active-nav highlighting + page-title
+ * derivation. The active-nav read is now contained in:
+ *
+ *   - `SidebarNav` (already a CC; pulls `usePathname` directly)
+ *   - `PageTitleClient` (leaf client island, ~30 lines)
+ *
+ * which lets this shell + Sidebar + Topbar regress to server
+ * components, knocking the static logo / icons / user chip out of
+ * the client bundle.
+ */
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
-import { deriveActiveNav, NAV_ITEMS } from "./nav-config";
 
 interface AppShellLayoutProps {
   children: React.ReactNode;
@@ -20,22 +29,11 @@ export function AppShellLayout({
   unreadNotifications,
   onSignOut,
 }: AppShellLayoutProps) {
-  const pathname = usePathname() ?? "/dashboard";
-  const activeId = deriveActiveNav(pathname);
-  const t = useTranslations("nav");
-  const activeItem = NAV_ITEMS.find((n) => n.id === activeId);
-  const pageTitle = activeItem ? t(activeItem.i18nKey.replace(/^nav\./, "")) : "";
-
   return (
     <div className="bg-navy-base min-h-screen">
-      <Sidebar activeId={activeId} user={user} />
+      <Sidebar user={user} />
       <div className="ml-[240px] flex min-h-screen flex-col">
-        <Topbar
-          pageTitle={pageTitle}
-          user={user}
-          unreadNotifications={unreadNotifications}
-          onSignOut={onSignOut}
-        />
+        <Topbar user={user} unreadNotifications={unreadNotifications} onSignOut={onSignOut} />
         <main className="flex-1 px-8 py-6">{children}</main>
       </div>
     </div>

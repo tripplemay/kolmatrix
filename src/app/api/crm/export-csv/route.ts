@@ -11,12 +11,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { withTenant } from "@/lib/db";
-import {
-  DEFAULT_CRM_RANGE,
-  isCrmRange,
-  rangeStart,
-  type CrmRange,
-} from "@/lib/crm/overview";
+import { DEFAULT_CRM_RANGE, isCrmRange, rangeStart, type CrmRange } from "@/lib/crm/overview";
 
 export const dynamic = "force-dynamic";
 
@@ -105,9 +100,7 @@ export async function GET(req: Request): Promise<Response> {
 
     const dataRows = kols.map((k) => {
       const totalSpend = k.kolCampaigns
-        .filter((kc) =>
-          (ENGAGEMENT_STATUSES as readonly string[]).includes(kc.status)
-        )
+        .filter((kc) => (ENGAGEMENT_STATUSES as readonly string[]).includes(kc.status))
         .reduce((acc, kc) => acc + (kc.kolFee ? Number(kc.kolFee.toString()) : 0), 0);
       return [
         k.id,

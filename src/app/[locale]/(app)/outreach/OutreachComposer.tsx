@@ -27,13 +27,7 @@ import {
   DialogPortal,
   DialogTitle,
 } from "@/components/ui/Dialog";
-import {
-  FieldError,
-  FieldHint,
-  Input,
-  Label,
-  Textarea,
-} from "@/components/ui/Input";
+import { FieldError, FieldHint, Input, Label, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { StatusBadge } from "@/components/common/StatusBadge";
@@ -130,9 +124,7 @@ export function OutreachComposer({
   labels,
 }: Props) {
   const router = useRouter();
-  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(
-    activeCampaignId
-  );
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(activeCampaignId);
   const selectedCampaign = data.selectedCampaign;
 
   // KOL selection state — only enable KOLs with email. Parent page
@@ -144,9 +136,7 @@ export function OutreachComposer({
   const [checked, setChecked] = useState<Set<string>>(() => {
     if (!preselectedKolIds?.length) return new Set();
     const visibleIds = new Set(
-      (data.selectedCampaign?.kols ?? [])
-        .filter((k) => !!k.email)
-        .map((k) => k.kolId)
+      (data.selectedCampaign?.kols ?? []).filter((k) => !!k.email).map((k) => k.kolId)
     );
     return new Set(preselectedKolIds.filter((id) => visibleIds.has(id)));
   });
@@ -156,9 +146,7 @@ export function OutreachComposer({
     [selectedCampaign]
   );
 
-  const [templateId, setTemplateId] = useState<string>(
-    data.templates[0]?.id ?? ""
-  );
+  const [templateId, setTemplateId] = useState<string>(data.templates[0]?.id ?? "");
   const activeTemplate: OutreachTemplateOption | null = useMemo(
     () => data.templates.find((t) => t.id === templateId) ?? null,
     [data.templates, templateId]
@@ -167,9 +155,8 @@ export function OutreachComposer({
   // Preview uses the first selected / first available KOL for variable
   // substitution. Server-side send will substitute per-row.
   const previewKol =
-    (checked.size > 0
-      ? selectableKols.find((k) => checked.has(k.kolId))
-      : selectableKols[0]) ?? null;
+    (checked.size > 0 ? selectableKols.find((k) => checked.has(k.kolId)) : selectableKols[0]) ??
+    null;
 
   const previewVars = useMemo(
     () => ({
@@ -197,11 +184,7 @@ export function OutreachComposer({
   const activeBody = overrideTemplate?.body ?? activeTemplate?.body ?? "";
 
   const preview = useMemo(
-    () =>
-      substituteSubjectAndBody(
-        { subject: activeSubject, body: activeBody },
-        previewVars
-      ),
+    () => substituteSubjectAndBody({ subject: activeSubject, body: activeBody }, previewVars),
     [activeSubject, activeBody, previewVars]
   );
 
@@ -331,16 +314,13 @@ export function OutreachComposer({
     <section
       id="composer"
       data-testid="outreach-composer"
-      className="glass-panel rounded-2xl border border-cyan/20 p-6 shadow-[0_0_30px_rgba(0,229,255,0.05)]"
+      className="glass-panel border-cyan/20 rounded-2xl border p-6 shadow-[0_0_30px_rgba(0,229,255,0.05)]"
     >
       <header className="mb-6">
-        <h2
-          data-testid="outreach-composer-title"
-          className="text-xl font-bold text-white"
-        >
+        <h2 data-testid="outreach-composer-title" className="text-xl font-bold text-white">
           {labels.title}
         </h2>
-        <p className="text-sm text-on-surface-variant">{labels.subtitle}</p>
+        <p className="text-on-surface-variant text-sm">{labels.subtitle}</p>
       </header>
 
       <div className="grid gap-5 md:grid-cols-2">
@@ -356,9 +336,7 @@ export function OutreachComposer({
               const next = e.target.value;
               setSelectedCampaignId(next || null);
               const url =
-                next === ""
-                  ? `/${locale}/outreach`
-                  : `/${locale}/outreach?campaignId=${next}`;
+                next === "" ? `/${locale}/outreach` : `/${locale}/outreach?campaignId=${next}`;
               router.push(url);
             }}
           >
@@ -439,9 +417,9 @@ export function OutreachComposer({
           <Label>{labels.previewTitle}</Label>
           <div
             data-testid="outreach-preview-panel"
-            className="rounded-xl border border-outline-variant/60 bg-surface/30 p-4"
+            className="border-outline-variant/60 bg-surface/30 rounded-xl border p-4"
           >
-            <p className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
+            <p className="text-on-surface-variant text-[11px] font-bold tracking-widest uppercase">
               {labels.previewSubject}
             </p>
             <p
@@ -450,17 +428,17 @@ export function OutreachComposer({
             >
               {preview.subject || "—"}
             </p>
-            <p className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
+            <p className="text-on-surface-variant text-[11px] font-bold tracking-widest uppercase">
               {labels.previewBody}
             </p>
             <pre
               data-testid="outreach-preview-body"
-              className="mt-1 whitespace-pre-wrap text-sm text-on-surface"
+              className="text-on-surface mt-1 text-sm whitespace-pre-wrap"
             >
               {preview.body || "—"}
             </pre>
             {preview.missing.length > 0 ? (
-              <p className="mt-3 rounded border border-warning/40 bg-warning/10 px-2 py-1 text-[11px] text-warning">
+              <p className="border-warning/40 bg-warning/10 text-warning mt-3 rounded border px-2 py-1 text-[11px]">
                 {labels.missingTokensWarningTemplate.replace(
                   "{tokens}",
                   preview.missing.join(", ")
@@ -473,33 +451,23 @@ export function OutreachComposer({
               variant="secondary"
               size="sm"
               onClick={runCustomize}
-              disabled={
-                !previewKol || !activeTemplate || !selectedCampaign || aiPending
-              }
+              disabled={!previewKol || !activeTemplate || !selectedCampaign || aiPending}
               data-testid="outreach-ai-customize-trigger"
             >
-              <span
-                className="material-symbols-outlined text-[16px]"
-                aria-hidden
-              >
+              <span className="material-symbols-outlined text-[16px]" aria-hidden>
                 auto_awesome
               </span>
               {aiPending ? labels.aiCustomizePending : labels.aiCustomizeButton}
             </Button>
             {overrideTemplate?.fromAi ? (
-              <StatusBadge
-                domain="email"
-                status="sent"
-                label="AI"
-                pulse
-              />
+              <StatusBadge domain="email" status="sent" label="AI" pulse />
             ) : null}
           </div>
         </div>
       ) : null}
 
       <div className="mt-8 flex items-center justify-between gap-4 border-t border-white/5 pt-5">
-        <div className="text-sm text-on-surface-variant">
+        <div className="text-on-surface-variant text-sm">
           {labels.kolSelectedTemplate
             .replace("{count}", String(checked.size))
             .replace("{total}", String(selectableKols.length))}
@@ -507,19 +475,11 @@ export function OutreachComposer({
         <Button
           variant="primary-gradient"
           size="md"
-          disabled={
-            !selectedCampaign ||
-            !activeTemplate ||
-            checked.size === 0 ||
-            sendPending
-          }
+          disabled={!selectedCampaign || !activeTemplate || checked.size === 0 || sendPending}
           onClick={doSend}
           data-testid="outreach-send-button"
         >
-          <span
-            className="material-symbols-outlined text-[18px]"
-            aria-hidden
-          >
+          <span className="material-symbols-outlined text-[18px]" aria-hidden>
             send
           </span>
           {sendPending ? labels.sendPending : labels.sendButton}
@@ -529,7 +489,7 @@ export function OutreachComposer({
       {sendError ? (
         <p
           data-testid="outreach-send-error"
-          className="mt-3 rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-sm text-error"
+          className="border-error/30 bg-error/10 text-error mt-3 rounded-lg border px-3 py-2 text-sm"
         >
           {labels.errorLabels[sendError] ?? labels.errorLabels.generic}
         </p>
@@ -538,30 +498,21 @@ export function OutreachComposer({
       {sendResult ? (
         <div
           data-testid="outreach-send-result"
-          className="mt-5 flex flex-col gap-3 rounded-xl border border-cyan/30 bg-cyan/5 p-4"
+          className="border-cyan/30 bg-cyan/5 mt-5 flex flex-col gap-3 rounded-xl border p-4"
         >
           <div className="flex flex-wrap gap-3 text-sm font-semibold">
             <span className="text-emerald-300">
-              {labels.resultSentCountTemplate.replace(
-                "{count}",
-                String(sendResult.sent)
-              )}
+              {labels.resultSentCountTemplate.replace("{count}", String(sendResult.sent))}
             </span>
             <span className="text-cyan">
-              {labels.resultMockedCountTemplate.replace(
-                "{count}",
-                String(sendResult.mocked)
-              )}
+              {labels.resultMockedCountTemplate.replace("{count}", String(sendResult.mocked))}
             </span>
             <span className="text-error">
-              {labels.resultFailedCountTemplate.replace(
-                "{count}",
-                String(sendResult.failed)
-              )}
+              {labels.resultFailedCountTemplate.replace("{count}", String(sendResult.failed))}
             </span>
           </div>
           {sendResult.items.some((i) => i.status === "failed") ? (
-            <ul className="flex flex-col gap-1 text-xs text-on-surface-variant">
+            <ul className="text-on-surface-variant flex flex-col gap-1 text-xs">
               {sendResult.items
                 .filter((i) => i.status === "failed")
                 .map((i) => (
@@ -624,8 +575,7 @@ function KolRowTable({
   labels: Labels;
 }) {
   const selectable = kols.filter((k) => !!k.email);
-  const allSelected =
-    selectable.length > 0 && selectable.every((k) => checked.has(k.kolId));
+  const allSelected = selectable.length > 0 && selectable.every((k) => checked.has(k.kolId));
   const someSelected = selectable.some((k) => checked.has(k.kolId));
 
   return (
@@ -633,18 +583,16 @@ function KolRowTable({
       <div className="mb-3 flex items-center justify-between">
         <Label>{labels.kolSection}</Label>
         {selectable.length === 0 ? (
-          <span className="text-xs text-on-surface-variant">
-            {labels.noSelectableKols}
-          </span>
+          <span className="text-on-surface-variant text-xs">{labels.noSelectableKols}</span>
         ) : null}
       </div>
-      <div className="overflow-hidden rounded-xl border border-white/5 bg-surface/30">
+      <div className="bg-surface/30 overflow-hidden rounded-xl border border-white/5">
         <table
           data-testid="outreach-kol-table"
           className="w-full border-collapse text-left text-sm"
         >
           <thead>
-            <tr className="border-b border-white/5 text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
+            <tr className="text-on-surface-variant border-b border-white/5 text-[11px] font-bold tracking-widest uppercase">
               <th className="w-12 px-4 py-3">
                 <Checkbox
                   aria-label={labels.selectAllLabel}
@@ -720,7 +668,7 @@ function KolRow({
 
   return (
     <tr
-      className="border-b border-white/5 text-sm text-on-surface last:border-none hover:bg-white/[0.03]"
+      className="text-on-surface border-b border-white/5 text-sm last:border-none hover:bg-white/[0.03]"
       data-testid="outreach-kol-row"
       data-kol-id={kol.kolId}
     >
@@ -734,14 +682,14 @@ function KolRow({
         ) : (
           <span
             title={labels.noEmailTooltip}
-            className="block h-5 w-5 rounded border border-outline-variant/60 opacity-50"
+            className="border-outline-variant/60 block h-5 w-5 rounded border opacity-50"
           />
         )}
       </td>
       <td className="px-4 py-3">
         <div className="flex flex-col">
           <span className="font-semibold text-white">{kol.displayName}</span>
-          <span className="text-xs text-on-surface-variant">
+          <span className="text-on-surface-variant text-xs">
             @{kol.handle} · {kol.platform}
           </span>
         </div>
@@ -781,28 +729,21 @@ function KolRow({
               </Button>
             </div>
             <FieldError>
-              {patchError
-                ? labels.errorLabels[patchError] ?? labels.addEmailInvalid
-                : null}
+              {patchError ? (labels.errorLabels[patchError] ?? labels.addEmailInvalid) : null}
             </FieldError>
           </div>
         ) : hasEmail ? (
-          <span className="text-xs text-on-surface">{currentEmail}</span>
+          <span className="text-on-surface text-xs">{currentEmail}</span>
         ) : (
           <div className="flex flex-col gap-1">
-            <span className="text-xs italic text-on-surface-variant/70">
-              {labels.noEmail}
-            </span>
+            <span className="text-on-surface-variant/70 text-xs italic">{labels.noEmail}</span>
             <Button
               size="sm"
               variant="ghost"
               onClick={() => setEditingEmail(true)}
               data-testid="outreach-add-email-button"
             >
-              <span
-                className="material-symbols-outlined text-[14px]"
-                aria-hidden
-              >
+              <span className="material-symbols-outlined text-[14px]" aria-hidden>
                 edit
               </span>
               {labels.addEmailButton}
@@ -882,31 +823,24 @@ function AiCustomizeDialog({
             </button>
           </DialogHeader>
           <div className="grid max-h-[60vh] grid-cols-1 gap-4 overflow-y-auto px-5 py-4 md:grid-cols-2">
-            <div className="rounded-xl border border-white/5 bg-surface/30 p-3">
-              <p className="mb-2 text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
+            <div className="bg-surface/30 rounded-xl border border-white/5 p-3">
+              <p className="text-on-surface-variant mb-2 text-[11px] font-bold tracking-widest uppercase">
                 {labels.aiCustomizeOriginal}
               </p>
-              <p className="mb-3 text-sm font-semibold text-white">
-                {originalSubject || "—"}
-              </p>
-              <pre className="whitespace-pre-wrap text-xs text-on-surface">
+              <p className="mb-3 text-sm font-semibold text-white">{originalSubject || "—"}</p>
+              <pre className="text-on-surface text-xs whitespace-pre-wrap">
                 {originalBody || "—"}
               </pre>
             </div>
-            <div className="rounded-xl border border-cyan/30 bg-cyan/5 p-3">
-              <p className="mb-2 flex items-center gap-1 text-[11px] font-bold uppercase tracking-widest text-cyan">
-                <span
-                  className="material-symbols-outlined text-[14px]"
-                  aria-hidden
-                >
+            <div className="border-cyan/30 bg-cyan/5 rounded-xl border p-3">
+              <p className="text-cyan mb-2 flex items-center gap-1 text-[11px] font-bold tracking-widest uppercase">
+                <span className="material-symbols-outlined text-[14px]" aria-hidden>
                   auto_awesome
                 </span>
                 {labels.aiCustomizeAi}
               </p>
               {pending ? (
-                <p className="text-xs text-on-surface-variant">
-                  {labels.aiCustomizePending}
-                </p>
+                <p className="text-on-surface-variant text-xs">{labels.aiCustomizePending}</p>
               ) : state.ok ? (
                 <div className="flex flex-col gap-2">
                   <Input
@@ -926,12 +860,12 @@ function AiCustomizeDialog({
                 <p
                   role="alert"
                   data-testid="outreach-ai-customize-error"
-                  className="rounded border border-error/30 bg-error/10 px-2 py-1 text-xs text-error"
+                  className="border-error/30 bg-error/10 text-error rounded border px-2 py-1 text-xs"
                 >
                   {labels.errorLabels[state.error] ?? labels.errorLabels.generic}
                 </p>
               ) : (
-                <p className="text-xs text-on-surface-variant">—</p>
+                <p className="text-on-surface-variant text-xs">—</p>
               )}
             </div>
           </div>
@@ -951,9 +885,7 @@ function AiCustomizeDialog({
               disabled={!state.ok || pending || savePending}
               data-testid="outreach-ai-customize-save-template"
             >
-              {savePending
-                ? labels.aiCustomizeSavePending
-                : labels.aiCustomizeSaveAsTemplate}
+              {savePending ? labels.aiCustomizeSavePending : labels.aiCustomizeSaveAsTemplate}
             </Button>
             <Button
               variant="primary-gradient"
@@ -966,7 +898,7 @@ function AiCustomizeDialog({
             </Button>
           </DialogFooter>
           {saveError ? (
-            <p className="px-5 pb-4 text-xs text-error" role="alert">
+            <p className="text-error px-5 pb-4 text-xs" role="alert">
               {labels.errorLabels[saveError] ?? labels.errorLabels.generic}
             </p>
           ) : null}

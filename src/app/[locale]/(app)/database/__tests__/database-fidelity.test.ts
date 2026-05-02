@@ -44,9 +44,7 @@ describe("/database fidelity guards (MVP-vf-F003)", () => {
       ["database-import", "importTooltip"],
       ["database-add-kol", "addKolTooltip"],
     ] as const) {
-      const block = page.match(
-        new RegExp(`<Button[\\s\\S]*?data-testid="${testid}"[\\s\\S]*?>`)
-      );
+      const block = page.match(new RegExp(`<Button[\\s\\S]*?data-testid="${testid}"[\\s\\S]*?>`));
       expect(block, `Button ${testid} block`).not.toBeNull();
       expect(block![0]).toMatch(/disabled/);
       expect(block![0]).toMatch(new RegExp(`tHeader\\("${tooltipKey}"\\)`));
@@ -86,17 +84,13 @@ describe("/database fidelity guards (MVP-vf-F003)", () => {
     // it routes to /outreach with `?kolIds=` preselection. Only the
     // Delete button keeps the disabled-with-tooltip placeholder
     // shape until B6 ships destructive bulk actions.
-    const emailBlock = bar.match(
-      /<Button[\s\S]*?data-testid="bulk-bar-email"[\s\S]*?>/
-    );
+    const emailBlock = bar.match(/<Button[\s\S]*?data-testid="bulk-bar-email"[\s\S]*?>/);
     expect(emailBlock, "BulkActionBar bulk-bar-email block").not.toBeNull();
     expect(emailBlock![0]).toMatch(/onClick=\{onEmail\}/);
     expect(emailBlock![0]).toMatch(/t\("emailTooltip"\)/);
     expect(emailBlock![0]).not.toMatch(/disabled\b/);
 
-    const deleteBlock = bar.match(
-      /<Button[\s\S]*?data-testid="bulk-bar-delete"[\s\S]*?>/
-    );
+    const deleteBlock = bar.match(/<Button[\s\S]*?data-testid="bulk-bar-delete"[\s\S]*?>/);
     expect(deleteBlock, "BulkActionBar bulk-bar-delete block").not.toBeNull();
     expect(deleteBlock![0]).toMatch(/disabled/);
     expect(deleteBlock![0]).toMatch(/t\("deleteTooltip"\)/);

@@ -9,6 +9,7 @@
  * YouTube + the DB.
  */
 import { getTranslations } from "next-intl/server";
+import Image from "next/image";
 
 import { GlassPanel } from "@/components/common";
 import type { RecentVideoItem } from "@/lib/kol-detail/recent-videos";
@@ -43,8 +44,14 @@ export async function RecentVideosGrid(props: Props) {
               data-testid={`kol-recent-video-${v.videoId}`}
             >
               {v.thumbnailUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={v.thumbnailUrl} alt="" className="aspect-video w-full object-cover" />
+                <Image
+                  src={v.thumbnailUrl}
+                  alt=""
+                  width={320}
+                  height={180}
+                  loading="lazy"
+                  className="aspect-video w-full object-cover"
+                />
               ) : (
                 <div className="text-on-surface-variant/40 flex aspect-video w-full items-center justify-center">
                   <span className="material-symbols-outlined" aria-hidden>

@@ -26,10 +26,7 @@ import { useCallback, useMemo, useState } from "react";
 import { StatusBadge } from "@/components/common";
 import { Checkbox, Table, TBody, TCell, THead, TRow } from "@/components/ui";
 
-import {
-  AddToCampaignDialog,
-  type BulkAddResult,
-} from "./AddToCampaignDialog";
+import { AddToCampaignDialog, type BulkAddResult } from "./AddToCampaignDialog";
 import { BulkActionBar } from "./BulkActionBar";
 import type { DatabaseKolRow } from "./search";
 
@@ -60,11 +57,7 @@ function initialsOf(name: string): string {
   return trimmed.slice(0, 2).toUpperCase();
 }
 
-export function DatabaseTableClient({
-  rows,
-  locale,
-  rowFormatted,
-}: Props) {
+export function DatabaseTableClient({ rows, locale, rowFormatted }: Props) {
   const tTable = useTranslations("database.table");
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -98,23 +91,20 @@ export function DatabaseTableClient({
 
   const clearAll = useCallback(() => setSelected(new Set()), []);
 
-  const onAdded = useCallback<(result: BulkAddResult) => void>(
-    () => {
-      clearAll();
-      // Server data drives the count cards / status pills — refresh so
-      // the next render reflects the new audit_log + spendTotal state
-      // without requiring a hard navigation.
-      router.refresh();
-    },
-    [clearAll, router]
-  );
+  const onAdded = useCallback<(result: BulkAddResult) => void>(() => {
+    clearAll();
+    // Server data drives the count cards / status pills — refresh so
+    // the next render reflects the new audit_log + spendTotal state
+    // without requiring a hard navigation.
+    router.refresh();
+  }, [clearAll, router]);
 
   const selectedIds = useMemo(() => Array.from(selected), [selected]);
 
   return (
     <>
       <div
-        className="glass-panel overflow-hidden rounded-2xl border border-on-surface/5"
+        className="glass-panel border-on-surface/5 overflow-hidden rounded-2xl border"
         data-testid="database-table-wrapper"
       >
         <Table data-testid="database-table">
@@ -160,18 +150,11 @@ export function DatabaseTableClient({
                     />
                   </TCell>
                   <TCell>
-                    <Link
-                      href={`/${locale}/kols/${kol.id}`}
-                      className="flex items-center gap-3"
-                    >
-                      <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-cyan-fixed-dim to-cyan-soft text-xs font-bold text-on-primary">
+                    <Link href={`/${locale}/kols/${kol.id}`} className="flex items-center gap-3">
+                      <span className="from-cyan-fixed-dim to-cyan-soft text-on-primary flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br text-xs font-bold">
                         {kol.avatarUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={kol.avatarUrl}
-                            alt=""
-                            className="h-full w-full object-cover"
-                          />
+                          <img src={kol.avatarUrl} alt="" className="h-full w-full object-cover" />
                         ) : (
                           initialsOf(kol.displayName)
                         )}
@@ -180,25 +163,25 @@ export function DatabaseTableClient({
                         <span className="block truncate font-semibold text-white">
                           {kol.displayName}
                         </span>
-                        <span className="block truncate text-xs text-on-surface-variant">
+                        <span className="text-on-surface-variant block truncate text-xs">
                           @{kol.handle}
                         </span>
                       </span>
                     </Link>
                   </TCell>
                   <TCell>
-                    <span className="inline-flex items-center rounded bg-surface-high px-2 py-0.5 text-[11px] uppercase tracking-wide text-on-surface-variant">
+                    <span className="bg-surface-high text-on-surface-variant inline-flex items-center rounded px-2 py-0.5 text-[11px] tracking-wide uppercase">
                       {kol.platform}
                     </span>
                   </TCell>
                   <TCell align="right">
-                    <p className="font-bold tabular-nums text-white">
+                    <p className="font-bold text-white tabular-nums">
                       {fmt?.followersLabel ?? kol.followerCount}
                     </p>
                   </TCell>
                   <TCell align="center">
                     {kol.valueScore != null ? (
-                      <span className="inline-flex h-7 items-center rounded-full bg-cyan/10 px-3 text-xs font-bold text-cyan ring-1 ring-cyan/20">
+                      <span className="bg-cyan/10 text-cyan ring-cyan/20 inline-flex h-7 items-center rounded-full px-3 text-xs font-bold ring-1">
                         {kol.valueScore}
                       </span>
                     ) : (
@@ -213,9 +196,7 @@ export function DatabaseTableClient({
                     />
                   </TCell>
                   <TCell>
-                    <span className="text-xs text-on-surface-variant">
-                      {fmt?.dateLabel ?? "—"}
-                    </span>
+                    <span className="text-on-surface-variant text-xs">{fmt?.dateLabel ?? "—"}</span>
                   </TCell>
                 </TRow>
               );

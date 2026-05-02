@@ -185,3 +185,31 @@
   background: linear-gradient(135deg, var(--color-cyan-fixed-dim) 0%, var(--color-cyan-soft) 100%);
   color: var(--color-on-primary);
 }
+
+/* ============================================================
+   Material Symbols Outlined — self-hosted subset (F005 Part B)
+
+   The woff2 itself is loaded by `next/font/local` in
+   `src/app/layout.tsx`, which exposes the family via
+   `--font-material-symbols`. These rules port the icon-rendering
+   declarations Google's Fonts CSS used to inject (ligature lookup,
+   default sizing, antialiasing, etc.) so the existing 100+
+   `<span class="material-symbols-outlined">` callsites keep working
+   with no JSX changes.
+   ============================================================ */
+.material-symbols-outlined {
+  font-family: var(--font-material-symbols), sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: "liga";
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+}

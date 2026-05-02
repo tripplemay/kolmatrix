@@ -5,6 +5,8 @@
  * 表都走此结构。status dot 用语义色标记状态。
  * HTML 源：dashboard.html:269-295。
  */
+import Image from "next/image";
+
 import { cn } from "@/lib/utils";
 
 type Status = "active" | "paused" | "draft" | "completed";
@@ -58,8 +60,7 @@ export function CampaignRow(props: CampaignRowProps) {
       <div className="flex min-w-0 items-center gap-3 sm:w-1/3">
         <div className="bg-surface-highest relative h-12 w-12 shrink-0 overflow-hidden rounded-[10px]">
           {logo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={logo} alt="" className="h-full w-full object-cover" />
+            <Image src={logo} alt="" fill sizes="48px" className="object-cover" />
           ) : (
             <span
               className="material-symbols-outlined text-on-surface-variant flex h-full w-full items-center justify-center text-lg"

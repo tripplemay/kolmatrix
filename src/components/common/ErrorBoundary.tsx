@@ -56,17 +56,14 @@ export function ErrorBoundary({ error, reset, scope }: ErrorBoundaryProps) {
     >
       <GlassPanel padding="lg" rounded="2xl" tone="neutral" className="w-full text-center">
         <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-rose-400/30 bg-rose-500/10">
-          <span
-            className="material-symbols-outlined text-[32px] text-rose-300"
-            aria-hidden
-          >
+          <span className="material-symbols-outlined text-[32px] text-rose-300" aria-hidden>
             error
           </span>
         </div>
         <h1 className="mb-2 text-2xl font-bold text-white">{t("title")}</h1>
-        <p className="mb-6 text-sm text-on-surface-variant">{t("body")}</p>
+        <p className="text-on-surface-variant mb-6 text-sm">{t("body")}</p>
         {error.digest ? (
-          <p className="mb-6 font-mono text-[10px] text-on-surface-variant/60">
+          <p className="text-on-surface-variant/60 mb-6 font-mono text-[10px]">
             ref · {error.digest}
           </p>
         ) : null}
@@ -75,14 +72,14 @@ export function ErrorBoundary({ error, reset, scope }: ErrorBoundaryProps) {
             type="button"
             onClick={reset}
             data-testid="route-error-retry"
-            className="rounded-xl border border-cyan/30 bg-cyan/15 px-5 py-2.5 text-xs font-bold text-cyan transition-colors hover:border-cyan hover:bg-cyan/20"
+            className="border-cyan/30 bg-cyan/15 text-cyan hover:border-cyan hover:bg-cyan/20 rounded-xl border px-5 py-2.5 text-xs font-bold transition-colors"
           >
             {t("retry")}
           </button>
           <Link
             href="/"
             data-testid="route-error-home"
-            className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-bold text-on-surface-variant transition-colors hover:text-white"
+            className="text-on-surface-variant rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-bold transition-colors hover:text-white"
           >
             {t("backHome")}
           </Link>

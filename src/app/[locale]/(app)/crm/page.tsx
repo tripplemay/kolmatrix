@@ -13,12 +13,7 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import {
-  DEFAULT_CRM_RANGE,
-  isCrmRange,
-  runCrmOverview,
-  type CrmRange,
-} from "@/lib/crm/overview";
+import { DEFAULT_CRM_RANGE, isCrmRange, runCrmOverview, type CrmRange } from "@/lib/crm/overview";
 
 import { CrmFunnel } from "./CrmFunnel";
 import { CrmHeader } from "./CrmHeader";
@@ -54,28 +49,14 @@ export default async function CrmPage({ params, searchParams }: Props) {
   const basePath = `/${locale}/crm`;
 
   return (
-    <div
-      className="mx-auto flex max-w-[1600px] flex-col gap-6 pb-16"
-      data-testid="crm-page"
-    >
-      <CrmHeader
-        title={t("title")}
-        subtitle={t("subtitle")}
-        basePath={basePath}
-        range={range}
-      />
+    <div className="mx-auto flex max-w-[1600px] flex-col gap-6 pb-16" data-testid="crm-page">
+      <CrmHeader title={t("title")} subtitle={t("subtitle")} basePath={basePath} range={range} />
 
       <CrmKpiStrip kpi={overview.collabKpi} />
 
-      <section
-        className="grid grid-cols-1 gap-6 lg:grid-cols-10"
-        data-testid="crm-section-b"
-      >
+      <section className="grid grid-cols-1 gap-6 lg:grid-cols-10" data-testid="crm-section-b">
         <div className="lg:col-span-6">
-          <CrmPipelineBars
-            buckets={overview.stageDistribution}
-            locale={locale}
-          />
+          <CrmPipelineBars buckets={overview.stageDistribution} locale={locale} />
         </div>
         <div className="lg:col-span-4">
           <CrmFunnel steps={overview.funnelMetrics.steps} />

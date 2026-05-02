@@ -75,9 +75,7 @@ describe("/api/crm/export-csv (BIx-vf F001)", () => {
     });
 
     const { GET } = await import("@/app/api/crm/export-csv/route");
-    const res = await GET(
-      new Request(`http://test.local/api/crm/export-csv?range=allTime`)
-    );
+    const res = await GET(new Request(`http://test.local/api/crm/export-csv?range=allTime`));
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toMatch(/text\/csv/);
     const disposition = res.headers.get("Content-Disposition") ?? "";
@@ -127,9 +125,7 @@ describe("/api/crm/export-csv (BIx-vf F001)", () => {
     });
 
     const { GET } = await import("@/app/api/crm/export-csv/route");
-    const res = await GET(
-      new Request("http://test.local/api/crm/export-csv?range=garbage")
-    );
+    const res = await GET(new Request("http://test.local/api/crm/export-csv?range=garbage"));
     const body = await res.text();
     const lines = body.split("\n").filter(Boolean);
     // Only the fresh KOL should be in the CSV (last90d default after

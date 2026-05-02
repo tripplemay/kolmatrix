@@ -34,13 +34,7 @@ export interface CampaignsListKpis {
 }
 
 const ACTIVE_STATUS = "active";
-const PIPELINE_STATUSES = [
-  "pending",
-  "contacted",
-  "quoted",
-  "signed",
-  "delivered",
-] as const;
+const PIPELINE_STATUSES = ["pending", "contacted", "quoted", "signed", "delivered"] as const;
 const REPLY_STATUSES = ["replied"] as const;
 
 /**
@@ -72,9 +66,7 @@ export interface CampaignOwnerOption {
  * Returns `[]` when the tenant only has a single user (caller can hide
  * the filter altogether).
  */
-export async function loadCampaignOwners(
-  tenantId: string
-): Promise<CampaignOwnerOption[]> {
+export async function loadCampaignOwners(tenantId: string): Promise<CampaignOwnerOption[]> {
   return withTenant(tenantId, async (tx) => {
     const userCount = await tx.user.count();
     if (userCount <= 1) return [];
@@ -92,16 +84,9 @@ export async function loadCampaignOwners(
   });
 }
 
-export async function loadCampaignsListKpis(
-  tenantId: string
-): Promise<CampaignsListKpis> {
+export async function loadCampaignsListKpis(tenantId: string): Promise<CampaignsListKpis> {
   return withTenant(tenantId, async (tx) => {
-    const [
-      activeCampaigns,
-      kolsInPipeline,
-      replyAgg,
-      reach,
-    ] = await Promise.all([
+    const [activeCampaigns, kolsInPipeline, replyAgg, reach] = await Promise.all([
       tx.campaign.count({ where: { status: ACTIVE_STATUS } }),
       tx.kolCampaign.count({
         where: { status: { in: [...PIPELINE_STATUSES] } },

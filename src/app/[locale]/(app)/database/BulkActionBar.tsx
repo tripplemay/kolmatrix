@@ -37,15 +37,12 @@ export function BulkActionBar({ count, onAddToCampaign, onEmail, onClear }: Prop
       aria-label="Bulk actions"
       data-testid="database-bulk-bar"
     >
-      <div className="glass-panel flex min-w-[520px] items-center gap-6 rounded-2xl border border-white/10 bg-navy-base/70 px-6 py-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
+      <div className="glass-panel bg-navy-base/70 flex min-w-[520px] items-center gap-6 rounded-2xl border border-white/10 px-6 py-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
         <div className="flex items-center gap-3 border-r border-white/10 pr-6">
-          <span
-            className="text-2xl font-bold text-cyan"
-            data-testid="bulk-bar-count"
-          >
+          <span className="text-cyan text-2xl font-bold" data-testid="bulk-bar-count">
             {count}
           </span>
-          <span className="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
+          <span className="text-on-surface-variant text-xs font-semibold tracking-wider uppercase">
             {t("selected")}
           </span>
         </div>
@@ -86,7 +83,7 @@ export function BulkActionBar({ count, onAddToCampaign, onEmail, onClear }: Prop
         <button
           type="button"
           onClick={onClear}
-          className="ml-auto text-xs text-on-surface-variant hover:text-cyan"
+          className="text-on-surface-variant hover:text-cyan ml-auto text-xs"
           data-testid="bulk-bar-clear"
         >
           {t("clear")}

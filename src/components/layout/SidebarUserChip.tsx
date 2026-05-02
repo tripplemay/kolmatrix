@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 interface SidebarUserChipProps {
   name: string;
   role: string;
@@ -10,8 +12,7 @@ export function SidebarUserChip({ name, role, avatarUrl }: SidebarUserChipProps)
     <div className="bg-surface-low/60 mt-auto flex items-center gap-3 rounded-[12px] px-3 py-2.5">
       <div className="bg-surface-high relative h-9 w-9 shrink-0 overflow-hidden rounded-full">
         {avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+          <Image src={avatarUrl} alt="" fill sizes="36px" className="object-cover" />
         ) : (
           <div className="gradient-cta flex h-full w-full items-center justify-center">
             <span className="text-navy-base text-sm font-bold">{initial}</span>

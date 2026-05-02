@@ -2,10 +2,9 @@
 
 import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 
 import { Button } from "@/components/ui/Button";
+import { TemplateBodyMarkdown } from "./TemplateBodyMarkdown";
 import {
   Dialog,
   DialogBackdrop,
@@ -492,9 +491,7 @@ export function TemplateWorkspaceClient({
                 <div className="text-[14px] font-bold text-gray-900">{preview.subject}</div>
               </div>
               <div className="prose prose-sm max-w-none prose-p:my-4 prose-p:leading-7">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {preview.body}
-                </ReactMarkdown>
+                <TemplateBodyMarkdown body={preview.body} />
               </div>
               <div className="mt-8 border-t border-gray-100 pt-6">
                 <p className="text-center text-[11px] italic text-gray-400">

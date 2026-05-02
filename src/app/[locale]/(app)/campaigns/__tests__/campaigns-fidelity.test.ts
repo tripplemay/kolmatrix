@@ -62,7 +62,9 @@ describe("/campaigns fidelity guards (MVP-vf-F004)", () => {
     expect(fb).toMatch(/name="owner"/);
     expect(fb).toMatch(/t\("anyOwner"\)/);
     // The disabled fallback Select is still in the file for solo tenants.
-    const fallback = fb.match(/<Select[\s\S]*?disabled[\s\S]*?ownerTooltip[\s\S]*?campaigns-owner-select/);
+    const fallback = fb.match(
+      /<Select[\s\S]*?disabled[\s\S]*?ownerTooltip[\s\S]*?campaigns-owner-select/
+    );
     expect(fallback, "solo-tenant fallback Select").not.toBeNull();
   });
 

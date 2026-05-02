@@ -8,6 +8,7 @@
  * on change) and the kolFee input (onBlur save) — no broader state
  * leaks to the parent panel.
  */
+import Image from "next/image";
 import { useState } from "react";
 
 import { Input, Select, TCell, TRow } from "@/components/ui";
@@ -113,8 +114,13 @@ export function CampaignKolRow({
             className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-cyan-fixed-dim to-cyan-soft text-xs font-bold text-on-primary"
           >
             {row.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={row.avatarUrl} alt="" className="h-full w-full object-cover" />
+              <Image
+                src={row.avatarUrl}
+                alt=""
+                width={36}
+                height={36}
+                className="h-full w-full object-cover"
+              />
             ) : (
               avatarInitials(row.displayName)
             )}

@@ -19,14 +19,8 @@ import { getTranslations } from "next-intl/server";
 
 import { ChipButton } from "@/components/common";
 import { Button, Input, Select } from "@/components/ui";
-import {
-  CAMPAIGN_STATUS_VALUES,
-  type CampaignStatus,
-} from "@/lib/campaigns/status";
-import {
-  serializeCampaignFilters,
-  type CampaignListFilters,
-} from "@/lib/campaigns/filters";
+import { CAMPAIGN_STATUS_VALUES, type CampaignStatus } from "@/lib/campaigns/status";
+import { serializeCampaignFilters, type CampaignListFilters } from "@/lib/campaigns/filters";
 import { DISCOVERY_REGIONS } from "@/lib/kol/filters";
 
 interface OwnerOption {
@@ -47,12 +41,7 @@ interface Props {
   owners: OwnerOption[];
 }
 
-export async function CampaignsFilterBar({
-  filters,
-  basePath,
-  knownGames,
-  owners,
-}: Props) {
+export async function CampaignsFilterBar({ filters, basePath, knownGames, owners }: Props) {
   const t = await getTranslations("campaigns.filters");
   const tStatus = await getTranslations("campaigns.status");
   const tRegions = await getTranslations("discovery.regions");
@@ -91,12 +80,9 @@ export async function CampaignsFilterBar({
       method="get"
       role="search"
       data-testid="campaigns-filters"
-      className="glass-panel space-y-4 rounded-xl border border-on-surface/5 p-5"
+      className="glass-panel border-on-surface/5 space-y-4 rounded-xl border p-5"
     >
-      <div
-        className="flex flex-wrap items-center gap-2"
-        data-testid="campaigns-status-chips"
-      >
+      <div className="flex flex-wrap items-center gap-2" data-testid="campaigns-status-chips">
         {(["all", ...CAMPAIGN_STATUS_VALUES] as const).map((s) => {
           const pressed =
             s === "all"
@@ -220,16 +206,12 @@ export async function CampaignsFilterBar({
           <a
             href={basePath}
             data-testid="campaigns-filters-clear"
-            className="text-xs font-medium text-on-surface-variant transition-colors hover:text-cyan"
+            className="text-on-surface-variant hover:text-cyan text-xs font-medium transition-colors"
           >
             {t("clearAll")}
           </a>
         ) : null}
-        <Button
-          type="submit"
-          variant="primary-gradient"
-          data-testid="campaigns-filters-apply"
-        >
+        <Button type="submit" variant="primary-gradient" data-testid="campaigns-filters-apply">
           {t("apply")}
         </Button>
       </div>
@@ -248,7 +230,7 @@ function Field({
 }) {
   return (
     <div className={`space-y-1 ${className ?? ""}`}>
-      <span className="block text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
+      <span className="text-on-surface-variant block text-[11px] font-semibold tracking-wider uppercase">
         {label}
       </span>
       {children}

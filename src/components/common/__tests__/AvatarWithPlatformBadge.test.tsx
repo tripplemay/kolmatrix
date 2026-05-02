@@ -20,10 +20,17 @@ describe("AvatarWithPlatformBadge", () => {
   });
 
   it("renders an <img> when src is provided", () => {
+    // BIx-mvp-polish-pass F005-C: AvatarWithPlatformBadge now wraps
+    // the source in `next/image`, which rewrites the rendered <img>
+    // src to `/_next/image?url=<encoded>&w=...&q=...`. The original
+    // URL is preserved inside the `url` query param.
     const { container } = render(
       <AvatarWithPlatformBadge name="g" src="https://cdn.test/a.png" alt="g" />
     );
     const img = container.querySelector("img");
-    expect(img?.getAttribute("src")).toBe("https://cdn.test/a.png");
+    const src = img?.getAttribute("src") ?? "";
+    expect(src).toMatch(/\/_next\/image/);
+    const url = new URL(src, "http://localhost").searchParams.get("url");
+    expect(url).toBe("https://cdn.test/a.png");
   });
 });

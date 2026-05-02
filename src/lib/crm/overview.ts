@@ -86,10 +86,7 @@ interface AuditPayload {
   after?: { relationshipStatus?: string };
 }
 
-function readStatusFromPayload(
-  payload: unknown,
-  side: "before" | "after"
-): string | null {
+function readStatusFromPayload(payload: unknown, side: "before" | "after"): string | null {
   if (!payload || typeof payload !== "object") return null;
   const inner = (payload as AuditPayload)[side];
   if (!inner || typeof inner !== "object") return null;
@@ -186,17 +183,11 @@ export async function runCrmOverview(
   // somehow ended up referencing (defence in depth).
   const actorIds = Array.from(
     new Set(
-      recentRaw
-        .map((r) => r.actorUserId)
-        .filter((id): id is string => typeof id === "string")
+      recentRaw.map((r) => r.actorUserId).filter((id): id is string => typeof id === "string")
     )
   );
   const kolIds = Array.from(
-    new Set(
-      recentRaw
-        .map((r) => r.resourceId)
-        .filter((id): id is string => typeof id === "string")
-    )
+    new Set(recentRaw.map((r) => r.resourceId).filter((id): id is string => typeof id === "string"))
   );
 
   const lookups = await withTenant(tenantId, async (tx) => {
@@ -216,12 +207,7 @@ export async function runCrmOverview(
     ]);
     return {
       userById: new Map(users.map((u) => [u.id, u.name])),
-      kolById: new Map(
-        kols.map((k) => [
-          k.id,
-          { name: k.displayName, avatarUrl: k.avatarUrl },
-        ])
-      ),
+      kolById: new Map(kols.map((k) => [k.id, { name: k.displayName, avatarUrl: k.avatarUrl }])),
     };
   });
 
@@ -229,9 +215,7 @@ export async function runCrmOverview(
     const kolInfo = r.resourceId ? lookups.kolById.get(r.resourceId) : null;
     return {
       actorId: r.actorUserId ?? null,
-      actorName: r.actorUserId
-        ? lookups.userById.get(r.actorUserId) ?? null
-        : null,
+      actorName: r.actorUserId ? (lookups.userById.get(r.actorUserId) ?? null) : null,
       kolId: r.resourceId ?? null,
       kolName: kolInfo?.name ?? null,
       kolAvatarUrl: kolInfo?.avatarUrl ?? null,
@@ -242,16 +226,10 @@ export async function runCrmOverview(
   });
 
   const longTermPartners =
-    tenantBlock.stageDistribution.find((b) => b.status === "long_term")
-      ?.count ?? 0;
-  const totalPipeline = tenantBlock.stageDistribution.reduce(
-    (acc, b) => acc + b.count,
-    0
-  );
+    tenantBlock.stageDistribution.find((b) => b.status === "long_term")?.count ?? 0;
+  const totalPipeline = tenantBlock.stageDistribution.reduce((acc, b) => acc + b.count, 0);
   const longTermRatio =
-    totalPipeline > 0
-      ? Math.round((longTermPartners / totalPipeline) * 1000) / 1000
-      : 0;
+    totalPipeline > 0 ? Math.round((longTermPartners / totalPipeline) * 1000) / 1000 : 0;
 
   return {
     stageDistribution: tenantBlock.stageDistribution,

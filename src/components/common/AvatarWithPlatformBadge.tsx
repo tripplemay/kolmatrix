@@ -5,6 +5,8 @@
  * 外部品牌色不 token 化）。HTML 源：kol-discovery.html:247-251。
  * 4 档尺寸（sm w-10 / md w-14 / lg w-16 / xl w-[140px]）匹配跨页用法。
  */
+import Image from "next/image";
+
 import { cn } from "@/lib/utils";
 
 type Size = "sm" | "md" | "lg" | "xl";
@@ -25,6 +27,16 @@ const AVATAR_SIZE: Record<Size, string> = {
   md: "h-14 w-14",
   lg: "h-16 w-16",
   xl: "h-[140px] w-[140px]",
+};
+
+// next/image `sizes` hint per size variant (BIx-F005-C). Value mirrors
+// the CSS `width` of the parent `<div>` so the responsive image
+// loader picks the smallest source that still fills the box.
+const AVATAR_SIZES_HINT: Record<Size, string> = {
+  sm: "40px",
+  md: "56px",
+  lg: "64px",
+  xl: "140px",
 };
 
 const BADGE_SIZE: Record<Size, string> = {
@@ -62,10 +74,15 @@ export function AvatarWithPlatformBadge({
         className
       )}
     >
-      <div className="bg-surface-high h-full w-full overflow-hidden rounded-full">
+      <div className="bg-surface-high relative h-full w-full overflow-hidden rounded-full">
         {src ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={src} alt={alt} className="h-full w-full object-cover" />
+          <Image
+            src={src}
+            alt={alt}
+            fill
+            sizes={AVATAR_SIZES_HINT[size]}
+            className="object-cover"
+          />
         ) : (
           <div className="gradient-cta flex h-full w-full items-center justify-center">
             <span className="text-navy-base text-sm font-bold">{initial}</span>

@@ -58,9 +58,7 @@ test.describe("/database fidelity (MVP-vf-F003)", () => {
     await expect(allPill).toHaveAttribute("aria-current", "true");
   });
 
-  test("Tier and Game filters are live enabled controls", async ({
-    page,
-  }) => {
+  test("Tier and Game filters are live enabled controls", async ({ page }) => {
     const filters = page.getByTestId("database-filters");
     const tier = filters.locator('select[name="tiers"]');
     const game = filters.locator('select[name="categories"]').nth(1);
@@ -80,9 +78,7 @@ test.describe("/database fidelity (MVP-vf-F003)", () => {
     await expect(panel.getByRole("heading", { level: 4 })).toHaveCount(3);
   });
 
-  test("Bulk Action Bar is absent on a fresh load (no ghost CTA)", async ({
-    page,
-  }) => {
+  test("Bulk Action Bar is absent on a fresh load (no ghost CTA)", async ({ page }) => {
     // BulkActionBar's `if (count === 0) return null` guard means it
     // never mounts on first render — the floating CTA only appears
     // after the user picks at least one row. This is the "no ghost
@@ -90,18 +86,13 @@ test.describe("/database fidelity (MVP-vf-F003)", () => {
     await expect(page.getByTestId("database-bulk-bar")).toHaveCount(0);
   });
 
-  test("Bulk Action Bar mounts after a row checkbox toggles (state contract)", async ({
-    page,
-  }) => {
+  test("Bulk Action Bar mounts after a row checkbox toggles (state contract)", async ({ page }) => {
     // Behavioural assertion: when at least one row is selected, the
     // BulkActionBar must mount. Auto-skips if the seed has no saved
     // KOLs (the empty-state path is still covered by the
     // "no ghost CTA" assertion above).
     const rowCount = await page.getByTestId("database-row").count();
-    test.skip(
-      rowCount === 0,
-      "No saved KOLs in seed — checkbox interaction path unreachable."
-    );
+    test.skip(rowCount === 0, "No saved KOLs in seed — checkbox interaction path unreachable.");
 
     // Base UI Checkbox renders as button[role="checkbox"]; use
     // getByRole rather than a CSS selector to avoid attribute-order
@@ -125,14 +116,8 @@ test.describe("/database fidelity (MVP-vf-F003)", () => {
     expect(await del.getAttribute("title")).toBeTruthy();
   });
 
-  test("header CTAs (Export / Import / Add KOL) are disabled placeholders", async ({
-    page,
-  }) => {
-    for (const testid of [
-      "database-export",
-      "database-import",
-      "database-add-kol",
-    ] as const) {
+  test("header CTAs (Export / Import / Add KOL) are disabled placeholders", async ({ page }) => {
+    for (const testid of ["database-export", "database-import", "database-add-kol"] as const) {
       const button = page.getByTestId(testid);
       await expect(button).toBeVisible();
       await expect(button).toBeDisabled();

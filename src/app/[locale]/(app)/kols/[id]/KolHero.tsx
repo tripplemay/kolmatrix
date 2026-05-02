@@ -6,6 +6,7 @@
  * className threshold.
  */
 import { getTranslations } from "next-intl/server";
+import Image from "next/image";
 
 interface Props {
   displayName: string;
@@ -45,8 +46,14 @@ export async function KolHero(props: Props) {
           aria-hidden
         >
           {props.avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={props.avatarUrl} alt="" className="h-full w-full object-cover" />
+            <Image
+              src={props.avatarUrl}
+              alt=""
+              width={120}
+              height={120}
+              priority
+              className="h-full w-full object-cover"
+            />
           ) : (
             <span>{initialsOf(props.displayName)}</span>
           )}

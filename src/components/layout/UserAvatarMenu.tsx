@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -40,10 +41,9 @@ export function UserAvatarMenu({ user, onSignOut }: UserAvatarMenuProps) {
         aria-haspopup="menu"
         aria-expanded={open}
       >
-        <div className="bg-surface-high h-8 w-8 overflow-hidden rounded-full">
+        <div className="bg-surface-high relative h-8 w-8 overflow-hidden rounded-full">
           {user.avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
+            <Image src={user.avatarUrl} alt="" fill sizes="32px" className="object-cover" />
           ) : (
             <div className="gradient-cta flex h-full w-full items-center justify-center">
               <span className="text-navy-base text-[13px] font-bold">{initial}</span>

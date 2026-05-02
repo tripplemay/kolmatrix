@@ -1,19 +1,24 @@
 "use client";
 
+/**
+ * BIx-mvp-polish-pass F005-F · The other half of the AppShellLayout
+ * → server-component refactor. SidebarNav now derives `activeId`
+ * itself via `usePathname()` instead of receiving it as a prop, so
+ * the parent shell can stay server-rendered.
+ */
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 
-import { NAV_ITEMS, type NavItemId } from "./nav-config";
+import { deriveActiveNav, NAV_ITEMS } from "./nav-config";
 
-interface SidebarNavProps {
-  activeId: NavItemId;
-}
-
-export function SidebarNav({ activeId }: SidebarNavProps) {
+export function SidebarNav() {
   const locale = useLocale();
   const t = useTranslations("nav");
+  const pathname = usePathname() ?? "/dashboard";
+  const activeId = deriveActiveNav(pathname);
   return (
     <nav aria-label="Primary" className="mt-8 flex-1">
       <ul className="flex flex-col gap-1">
