@@ -1,7 +1,7 @@
 ---
 name: BL-025-asset-library
 description: 素材中心 / Asset Library — 统一 Asset 表（方案 X，含 EmailTemplate migration）+ /assets 页面（filter/grid/detail panel）+ variant tree + AI generate/regenerate + /outreach composer 接通
-status: drafted（UI 实现段落待 Stitch 设计稿后补完）, awaits BIx-mvp-polish-pass done + signoff PASS
+status: drafted-complete（含 Stitch 设计稿对照 §F004 UI 实装）, awaits BIx-mvp-polish-pass done + signoff PASS
 created_by: johnsong (Planner)
 created_at: 2026-05-02
 estimated_effort: ~5 day Generator + 1 day Reviewer
@@ -40,6 +40,7 @@ trigger: BIx 验收 done + Stitch 设计稿就绪 + 用户决议启动
 - Variant tree 工作（regenerate 不覆盖原版，parentId 链可回溯）
 - ProductCard chip 可点击 → 跳 `/assets?productId=xxx`
 - 视频脚本 Plain text + Markdown 编辑 + 复制到剪贴板 + 导出 Markdown
+- /assets 页面与 design-draft/BL-025-asset-library/variant-a-296k 视觉一致性 PASS（颜色 / 圆角 / 阴影 / 玻璃拟态对照）
 - Audit log 记录 generate / regenerate（traceId + model + tokens + steeringPrompt）
 - staging + prod redeploy 跑通 + L2 烟测 30+ 条 checklist 全 PASS
 
@@ -200,31 +201,307 @@ auditLog.create({
 **Executor：** generator
 **估时：** ~1.5 day
 
-**🚧 待 Stitch 设计稿出图后补完此段细节。当前先列骨架：**
+**设计源：** `design-draft/BL-025-asset-library/variant-a-296k/code.html` + `screen.png`（full state 主参考） + `variant-a-260k/screen.png`（empty state CTA 模式参考；其它创意发挥不采纳，详见末尾"Stitch 偏差对照"）。
 
-**路由：** `src/app/[locale]/(app)/assets/page.tsx`（Server Component）
+**路由：** `src/app/[locale]/(app)/assets/page.tsx`（Server Component）+ `'use client'` 子组件（Filter / Grid / Detail Panel 都需 client interactivity）
 
-**布局：** 三栏 grid（240px / flex-1 / 440px），响应式 ≥ 1280px 三栏，< 1280px detail panel 改 modal 弹出
+#### 三栏布局结构
 
-**子组件（先占位，Stitch 稿出来后实装细节）：**
-- `AssetsFilterSidebar.tsx`（Product combobox / Type chip / Status chip / Source chip / Search）
-- `AssetsGrid.tsx`（卡片网格 + sort + view toggle + "+ New Asset" CTA）
-- `AssetCard.tsx`（type icon + status dot + name + product label + preview + variant 数 + used-in 数）
-- `AssetsDetailPanel.tsx`（Tabs: Preview / Edit / Versions / Used in + More menu）
-- `NewAssetModal.tsx`（Step 1 Product+Type → Step 2 steeringPrompt → Step 3 preview/save）
-- `RegenerateVariantPopup.tsx`（detail panel "..." menu 触发，可选 steering prompt）
+```tsx
+// src/app/[locale]/(app)/assets/page.tsx
+<AppShellLayout> {/* 复用 BIx F005 拆出的 island；左 sidebar 240px + topbar 64px */}
+  <main className="flex flex-1 overflow-hidden">
+    <AssetsFilterSidebar />              {/* 240px fixed */}
+    <AssetsMainColumn>                    {/* flex-1 */}
+      <AssetsActionBar />                 {/* breadcrumb + sort + view toggle + "+ New Asset" */}
+      <AssetsGrid />                      {/* 卡片网格或空态 */}
+    </AssetsMainColumn>
+    <AssetsDetailPanel />                {/* 440px，selected 时展开；< 1280px 改 modal */}
+  </main>
+</AppShellLayout>
+```
 
-**Filter URL state：** 通过 `?productId=&types=email,video&status=draft&search=` 同步 URL，支持深链与刷新保留
+**响应式断点：**
+- `≥ 1280px`：三栏并列 `[240px][flex-1][440px]`
+- `< 1280px`：detail panel 改 fullscreen modal 弹出（与 BIx F005 mobile 模式一致；用 `dialog` element + Tailwind `lg:hidden` / `lg:block` 切换）
 
-**Empty state：** "No assets yet" 插画 + 双 CTA（"Generate from product" / "Create blank"）
+#### AssetsFilterSidebar.tsx (左栏 240px)
 
-**Acceptance（Stitch 稿出来后补具体设计稿对照）：**
-- 三栏布局响应式（≥ 1280px 三栏；< 1280px detail 改 modal）
-- Filter URL state 同步 + 深链 PASS
-- Grid 渲染 ≤ 100 资产无明显卡顿（pagination cursor，PAGE_SIZE = 24）
-- Empty state 友好引导
-- 守门 test：`tests/e2e/assets-page.spec.ts` 含 8 case（filter URL state / grid render / detail panel switch / new asset modal / regenerate flow / empty state / mobile responsive guarded skip / a11y）
-- visual baseline 重生（新页面）
+**容器：**
+- `bg-[#060e20]` 背景（与全局 sidebar 一致但内嵌在 main 区域，所以 padding 24px + rounded-[16px] 包裹）
+- 顶部 "Filters" h2 + "Clear all" 文字按钮（点击重置全部 filter，URL → /assets）
+- vertical flex gap 24px
+
+**Product Combobox：**
+- 复用现有 design system 的 `<Combobox>`（如无则用 base-ui `<Combobox.Root>`）
+- 搜索 + 下拉，options：`{ value: productId, label: productName }` + 特殊项 `"all" / "unassigned"`
+- 选中后下方副文本显示 "12 assets in this product"（count from `loadAssetsForListing` total）
+
+**Type 多选 chip：**
+```tsx
+<ChipGroup multiselect>
+  <Chip value="email" icon="mail">Email</Chip>
+  <Chip value="video_script" icon="movie">Video</Chip>
+  <Chip disabled icon="add">More coming</Chip>  {/* ghost chip 提示扩展性 */}
+</ChipGroup>
+```
+- 选中态：`bg-[#00E5FF] text-[#001f24] font-semibold`
+- 未选：`bg-[#171f33] text-[#bac9cc] border border-[#3b494c]`
+- ghost：`opacity-40 cursor-not-allowed`
+
+**Status 单选 chip 组：** All / Draft / Published / Archived（同 chip 样式，单选）
+
+**Source 多选 chip：** AI Generated / User Created / Imported（多选）
+
+**Search 输入：**
+- pill shape `bg-[#2d3449] rounded-full h-10 px-4`
+- 左 search icon + placeholder "Search by name or content..."
+- 防抖 300ms 后更新 URL `?search=`
+
+#### AssetsActionBar.tsx (顶部栏)
+
+```tsx
+<div className="flex items-center justify-between px-6 py-4 gap-4">
+  {/* LEFT — breadcrumb of active filters */}
+  <div className="flex items-center gap-2 flex-wrap">
+    {filterChips.map(c => (
+      <button onClick={() => removeFilter(c)} className="bg-[#171f33] rounded-full px-3 py-1 text-xs text-[#bac9cc] hover:text-[#00E5FF] flex items-center gap-1">
+        {c.label} <span className="material-symbols-outlined text-[14px]">close</span>
+      </button>
+    ))}
+  </div>
+
+  {/* MIDDLE — sort dropdown */}
+  <Select defaultValue="recent">
+    <Option value="recent">Recent</Option>
+    <Option value="name">Name</Option>
+    <Option value="used_most">Used most</Option>
+    <Option value="type">Type</Option>
+  </Select>
+
+  {/* RIGHT — view toggle + new asset CTA */}
+  <div className="flex items-center gap-2">
+    <ToggleGroup value={view} onChange={setView}>
+      <ToggleItem value="grid"><material-symbols>grid_view</material-symbols></ToggleItem>
+      <ToggleItem value="list"><material-symbols>view_list</material-symbols></ToggleItem>
+    </ToggleGroup>
+    <button className="bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] text-[#001f24] rounded-[10px] px-4 py-2 text-sm font-bold">
+      <span className="material-symbols-outlined">add</span> New Asset
+    </button>
+  </div>
+</div>
+```
+
+#### AssetsGrid.tsx + AssetCard.tsx
+
+**Grid 容器：** `grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5 p-6`
+
+**AssetCard 组件结构：**
+```tsx
+<button onClick={() => selectAsset(asset.id)}
+        className={cn(
+          "rounded-[16px] p-5 text-left flex flex-col gap-3 transition-all",
+          "bg-[#161A20] border border-[rgba(186,201,204,0.08)]",
+          "hover:bg-[#1d242e] hover:border-[rgba(0,229,255,0.3)]",
+          isSelected && "ring-2 ring-[#00E5FF] bg-[#1d242e]"
+        )}>
+  {/* Header: type icon + status dot + AI badge */}
+  <div className="flex items-center justify-between">
+    <span className={cn(
+      "inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[11px] font-semibold",
+      asset.type === 'email' ? "bg-[rgba(0,229,255,0.15)] text-[#00E5FF]" : "bg-[rgba(157,80,255,0.15)] text-[#9D50FF]"
+    )}>
+      <material-symbols>{asset.type === 'email' ? 'mail' : 'movie'}</material-symbols>
+      {asset.type === 'email' ? 'Email' : 'Script'}
+    </span>
+    {asset.source === 'ai_generated' && (
+      <span className="text-[10px] font-bold tracking-[0.1em] text-[#00E5FF] bg-gradient-to-br from-[rgba(0,229,255,0.2)] to-[rgba(195,245,255,0.1)] px-1.5 py-0.5 rounded">AI</span>
+    )}
+  </div>
+
+  {/* Title (2 line clamp) + product + relative time */}
+  <h3 className="text-white font-semibold text-sm line-clamp-2">{asset.name}</h3>
+  <p className="text-[#bac9cc] text-xs">
+    {asset.productName} · {relativeTime(asset.updatedAt)}
+  </p>
+
+  {/* Content preview (3 line clamp) */}
+  <p className="text-[#6B7280] text-xs line-clamp-3 font-mono">
+    {asset.contentPreview}
+  </p>
+
+  {/* Footer metadata */}
+  <div className="flex items-center justify-between text-[11px] text-[#6B7280] pt-3 border-t border-[rgba(186,201,204,0.08)]">
+    <span>v{asset.versionIndex} of {asset.totalVariants}</span>
+    <span>used {asset.usedInCount}×</span>
+    <StatusDot status={asset.status} />  {/* 绿/黄/灰圆点 */}
+  </div>
+</button>
+```
+
+**Hover quick actions（浮层）：** 卡片右上角 hover 时浮出 4 个圆形按钮 `Edit / Duplicate / Archive / Delete`（每个 32px 圆形 `bg-[#2d3449]/80 backdrop-blur-md hover:bg-[#00E5FF]/20`）
+
+**空态（asset 总数 0）：**
+```tsx
+<EmptyState>
+  <div className="flex flex-col items-center gap-4 py-20">
+    {/* 玻璃拟态文件夹 icon + 渐变发光 */}
+    <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-[#00daf3]/30 to-[#9D50FF]/20 backdrop-blur-md flex items-center justify-center shadow-[0_0_60px_rgba(0,229,255,0.2)]">
+      <material-symbols className="text-5xl text-white">folder_open</material-symbols>
+    </div>
+    <h2 className="text-2xl font-bold text-white">No assets yet</h2>
+    <p className="text-[#bac9cc] text-center max-w-md">
+      Your creative vault is currently empty. Start by generating AI-native marketing assets from your products or create a blank container.
+    </p>
+    <div className="flex gap-3 mt-4">
+      <button className="bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] text-[#001f24] rounded-[10px] px-5 py-3 font-bold flex items-center gap-2">
+        <material-symbols>auto_awesome</material-symbols> Generate from product
+      </button>
+      <button className="bg-[#171f33] text-white rounded-[10px] px-5 py-3 font-semibold flex items-center gap-2 border border-[#3b494c]">
+        <material-symbols>add</material-symbols> Create blank
+      </button>
+    </div>
+  </div>
+</EmptyState>
+```
+
+#### AssetsDetailPanel.tsx (右栏 440px)
+
+**容器：** `bg-[#0e1424] border-l border-[rgba(186,201,204,0.08)] flex flex-col h-full`
+
+**Header（固定顶部，64px）：**
+- Close × 按钮（左）
+- type icon + asset name（可点击编辑，转成 inline input）
+- 右上角 "..." More menu → dropdown:
+  - Regenerate variant（with optional steering prompt popup）
+  - Export Markdown
+  - Copy to clipboard
+  - Send to /outreach（仅 email type 显示）
+  - Archive
+  - Delete
+
+**Tabs 行（4 个）：**
+```tsx
+<div className="flex border-b border-[rgba(186,201,204,0.08)] px-6">
+  {['Preview', 'Edit', 'Versions', 'Used in'].map(tab => (
+    <button className={cn(
+      "pb-3 pt-4 px-4 text-sm font-medium transition-colors",
+      activeTab === tab
+        ? "text-[#00E5FF] font-semibold border-b-2 border-[#00E5FF]"
+        : "text-[#bac9cc] hover:text-white"
+    )}>{tab}</button>
+  ))}
+</div>
+```
+
+**Preview Tab 内容：**
+- Email：`<h2>` 渲 subject + `<div>` 渲 body（变量 token `{{kol.name}}` 用 `<span class="bg-[#00E5FF]/10 text-[#00E5FF] px-1 rounded">` 高亮）
+- Video：title + script Markdown 渲染（用 `react-markdown` + 项目 syntax highlighter）
+
+**Edit / Versions / Used in Tab：** 详见 F005
+
+**底部 sticky action bar：**
+```tsx
+<div className="sticky bottom-0 bg-[#0e1424]/95 backdrop-blur-md border-t border-[rgba(186,201,204,0.08)] p-4 flex gap-2">
+  <button className="flex-1 bg-[#171f33] text-white rounded-[10px] py-2.5 font-medium">
+    <material-symbols>refresh</material-symbols> Regenerate
+  </button>
+  {asset.type === 'email' && (
+    <button className="flex-1 bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] text-[#001f24] rounded-[10px] py-2.5 font-bold">
+      <material-symbols>send</material-symbols> Send to Outreach
+    </button>
+  )}
+</div>
+```
+
+#### NewAssetModal.tsx (3-step wizard)
+
+**Step 1 — Product + Type：**
+- Product Combobox（默认从 URL `?productId=` 预填）
+- Type chip 单选（email / video_script）
+- "Continue" 按钮
+
+**Step 2 — Steering prompt（可选）：**
+- textarea "Optional: steer the AI generation"
+- 速选 chip 组：`emphasize affordability` / `for Gen Z audience` / `formal tone` / `casual tone` / `urgency` / `social proof`
+- "Generate" 按钮（青色渐变）
+
+**Step 3 — Preview + Save：**
+- 加载动画（spinner + "Generating with claude-haiku-4.5...")
+- 完成后预览生成内容（subject + body 或 title + script）
+- 底部："Save & Edit" / "Regenerate" / "Discard"
+
+#### RegenerateVariantPopup.tsx
+
+Detail panel "..." menu → "Regenerate variant" 触发：
+- 小 popup（width 320px）含可选 steering prompt + "Regenerate" 按钮
+- 生成后新 asset.parentId = currentAssetId, name 自增 "v(n+1)"
+- 自动切到新版本展示
+
+#### Filter URL state 实现
+
+```ts
+// src/app/[locale]/(app)/assets/use-filter-state.ts (client hook)
+export function useAssetFilters() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const filters: AssetFilters = useMemo(() => ({
+    productId: searchParams.get('productId') ?? undefined,
+    types: searchParams.get('types')?.split(',') as AssetType[] | undefined,
+    status: searchParams.get('status') as AssetStatus | undefined,
+    sources: searchParams.get('sources')?.split(',') as AssetSource[] | undefined,
+    search: searchParams.get('search') ?? undefined,
+    sort: (searchParams.get('sort') ?? 'recent') as 'recent' | 'name' | 'used_most' | 'type',
+    view: (searchParams.get('view') ?? 'grid') as 'grid' | 'list',
+  }), [searchParams]);
+
+  const update = (patch: Partial<AssetFilters>) => {
+    const sp = new URLSearchParams(searchParams);
+    Object.entries(patch).forEach(([k, v]) => {
+      if (v == null || v === '' || (Array.isArray(v) && v.length === 0)) sp.delete(k);
+      else sp.set(k, Array.isArray(v) ? v.join(',') : String(v));
+    });
+    router.push(`/assets?${sp.toString()}`, { scroll: false });
+  };
+
+  return { filters, update, clearAll: () => router.push('/assets') };
+}
+```
+
+#### Pagination
+
+- PAGE_SIZE = 24
+- cursor-based（用现有 `createCursorPaginator` from `src/lib/pagination/`）
+- 触底加载（IntersectionObserver 在 grid 末尾）
+
+#### Stitch 设计稿偏差对照（**不采纳**）
+
+| Stitch 加的 | 我们的 spec | 处理 |
+|---|---|---|
+| 空态 sidebar 加 "Asset Types: Images / Videos / Documents / 3D Models" 列表 | ADR-011 enum 仅 `email` + `video_script` + 未来扩展 | **删除该 section**，empty state 只展示主区 CTA |
+| 空态 sidebar 加 "Campaign Tags" filter | spec 只 5 个 filter | **删除**，未来如需要再 BL 评估 |
+| 空态 sidebar 出现 2 个 "Products" 项 | App Shell 8 项 nav 是 canonical（[design-draft/design-system.md] 锁定）| **按 App Shell 严格实装**，无重复 |
+| Type chip "Video" | spec 内部 enum = `video_script`，UI label = "Video" | 内部 `video_script` / UI label `Video`（i18n key） |
+
+#### Acceptance（具体）
+
+- [ ] 三栏布局 ≥ 1280px 并列 / < 1280px detail 改 modal
+- [ ] Filter URL state 5 个 param 全双向同步（深链 + 刷新 + 浏览器后退）
+- [ ] AssetCard hover quick actions 浮出（Edit / Duplicate / Archive / Delete）
+- [ ] AssetCard selected 时 cyan ring + bg 加深
+- [ ] AssetCard 含 type chip + AI 徽章（仅 ai_generated）+ version index `vN of M` + used count
+- [ ] Sort dropdown 4 选项工作（Recent / Name / Used most / Type）
+- [ ] View toggle Grid ↔ List 切换 + URL 同步
+- [ ] "+ New Asset" 3-step wizard（Product+Type → Steering prompt → Preview & Save）
+- [ ] Detail panel 4 tabs 切换平滑
+- [ ] Detail panel "..." More menu 6 项（email / 5 项 video）
+- [ ] Send to Outreach 按钮仅 email asset 显示
+- [ ] Empty state（asset count = 0）"Generate from product" + "Create blank" 双 CTA
+- [ ] Pagination cursor + IntersectionObserver 触底加载
+- [ ] 与 design-draft/BL-025-asset-library/variant-a-296k/code.html 视觉一致性 PASS（关键颜色 / 圆角 / 阴影对照）
+- [ ] visual baseline 重生
+- [ ] 守门 test：`tests/e2e/assets-page.spec.ts` 含 8 case（filter URL state / grid render / detail panel switch / new asset wizard / regenerate flow / empty state / mobile detail-as-modal / a11y）
 
 ---
 
@@ -520,6 +797,8 @@ async function loadAssetsForComposer(tenantId, type, locale?) {
 ## 9. 参考文档
 
 - [ADR-011 Unified Asset Table vs Typed Tables](../adr/ADR-011-unified-asset-table-vs-typed-tables.md) —— 架构决策
+- `design-draft/BL-025-asset-library/variant-a-296k/` —— Stitch 设计稿（full state 主参考；code.html / screen.png / DESIGN.md）
+- `design-draft/BL-025-asset-library/variant-a-260k/` —— Stitch 设计稿（empty state CTA 模式参考）
 - `src/lib/products/generateAiAssets.ts` —— 现有 AI 生成逻辑（F003 复用）
 - `src/lib/email/templates.ts:loadOutreachTemplates` —— F006 改造目标
 - `prisma/schema.prisma:EmailTemplate` —— F001 migration 源

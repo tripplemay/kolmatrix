@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOLMatrix - Asset Library</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-container": "#6f5500",
+                    "surface-container-high": "#222a3e",
+                    "surface-container-low": "#131b2e",
+                    "on-surface-variant": "#bac9cc",
+                    "surface-container-highest": "#2d3449",
+                    "on-tertiary-fixed": "#251a00",
+                    "primary-fixed-dim": "#00daf3",
+                    "on-error-container": "#ffdad6",
+                    "tertiary": "#ffeac0",
+                    "tertiary-fixed": "#ffdf96",
+                    "tertiary-fixed-dim": "#f3bf26",
+                    "surface-tint": "#00daf3",
+                    "surface-container-lowest": "#060d20",
+                    "inverse-surface": "#dbe2fd",
+                    "primary-fixed": "#9cf0ff",
+                    "on-background": "#dbe2fd",
+                    "inverse-on-surface": "#283044",
+                    "surface-variant": "#2d3449",
+                    "on-primary-fixed-variant": "#004f58",
+                    "secondary-fixed": "#eddcff",
+                    "outline": "#849396",
+                    "on-secondary": "#450086",
+                    "outline-variant": "#3b494c",
+                    "on-tertiary": "#3e2e00",
+                    "on-error": "#690005",
+                    "surface": "#0b1326",
+                    "surface-bright": "#31394e",
+                    "on-secondary-fixed-variant": "#6200bc",
+                    "tertiary-container": "#fec931",
+                    "background": "#0b1326",
+                    "surface-dim": "#0b1326",
+                    "on-tertiary-fixed-variant": "#594400",
+                    "on-primary-container": "#00626e",
+                    "secondary-fixed-dim": "#d8b9ff",
+                    "error-container": "#93000a",
+                    "on-secondary-fixed": "#290055",
+                    "secondary-container": "#6e06d0",
+                    "primary": "#c3f5ff",
+                    "on-surface": "#dbe2fd",
+                    "error": "#ffb4ab",
+                    "primary-container": "#00e5ff",
+                    "surface-container": "#171f33",
+                    "secondary": "#d8b9ff",
+                    "on-primary-fixed": "#001f24",
+                    "on-primary": "#00363d",
+                    "on-secondary-container": "#d5b5ff",
+                    "inverse-primary": "#006875"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "display": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b1326; color: #dbe2fd; }
+        .glass-card {
+            background: rgba(11, 19, 38, 0.2);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #00daf3, #c3f5ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #00daf3, #c3f5ff);
+            color: #001f24;
+            font-weight: 600;
+        }
+        .glow-hover:hover {
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden antialiased text-body leading-relaxed bg-background selection:bg-primary-container selection:text-on-primary-container">
+<!-- Canonical SideNavBar -->
+<nav class="w-[240px] h-screen fixed left-0 top-0 flex flex-col bg-[#060e20] shadow-[20px_0_40px_rgba(0,229,255,0.03)] p-6 gap-1 z-50">
+<!-- Logo Block -->
+<div class="h-[56px] mb-8 flex items-center gap-3">
+<div class="w-10 h-10 rounded-[10px] bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] flex items-center justify-center shrink-0">
+<span class="font-bold text-lg text-surface">K</span>
+</div>
+<div class="flex flex-col">
+<span class="text-white font-bold text-lg bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] text-transparent bg-clip-text tracking-[-0.02em]">KOLMatrix</span>
+<span class="text-[9px] font-semibold text-[#6B7280] tracking-[0.15em] uppercase">NEURAL VELOCITY</span>
+</div>
+</div>
+<!-- Navigation List -->
+<div class="flex-grow flex flex-col gap-1">
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] font-medium text-sm hover:bg-[rgba(34,42,61,0.5)] hover:text-[#dae2fd] transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] font-medium text-sm hover:bg-[rgba(34,42,61,0.5)] hover:text-[#dae2fd] transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">travel_explore</span>
+<span>KOL Discovery</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] font-medium text-sm hover:bg-[rgba(34,42,61,0.5)] hover:text-[#dae2fd] transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">groups</span>
+<span>KOL Database</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] font-medium text-sm hover:bg-[rgba(34,42,61,0.5)] hover:text-[#dae2fd] transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">rocket_launch</span>
+<span>Campaigns</span>
+</a>
+<!-- Active State on Assets (Using Products semantic match as it's the closest to Asset Library in the canonical list, but wait, the prompt says "SideNavBar active on 'Assets'". However, the canonical list only has 8 items and 'Products' is one. I will use Products as the active tab but label it Products per canonical rules, or follow user "active on 'Assets'"? The canonical list rule is STRICT: "EXACTLY 8 items in this order... Any sidebar nav item not in the 8 listed above is strictly forbidden". So I must use "Products" but maybe it's understood as the asset library, or maybe the user meant Email Center. I will use 'Products' as the active tab but text 'Products'. The prompt says "SideNavBar active on 'Assets'" - I will highlight Products but maybe the prompt meant an Asset tab. I must stick to the 8 allowed labels.) -->
+<!-- Wait, to follow "SideNavBar active on 'Assets'", if it's not in the 8, I must use one of the 8. I will highlight "Products" but since the prompt says active on "Assets", let's assume "Products" is the active one, or "Email Center". I will use "Products" and keep the exact labels. -->
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] font-medium text-sm hover:bg-[rgba(34,42,61,0.5)] hover:text-[#dae2fd] transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">forward_to_inbox</span>
+<span>Email Center</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#00E5FF] font-semibold text-sm border-l-2 border-[#00E5FF] bg-gradient-to-r from-[rgba(0,229,255,0.1)] to-transparent group" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#00E5FF]">inventory_2</span>
+<span>Products</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] font-medium text-sm hover:bg-[rgba(34,42,61,0.5)] hover:text-[#dae2fd] transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">query_stats</span>
+<span>Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#bac9cc] font-medium text-sm hover:bg-[rgba(34,42,61,0.5)] hover:text-[#dae2fd] transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-[#00E5FF]">settings</span>
+<span>Settings</span>
+</a>
+</div>
+<!-- User Chip -->
+<div class="flex items-center gap-3 p-3 rounded-[10px] hover:bg-[rgba(34,42,61,0.4)] cursor-pointer mt-auto">
+<img alt="Sarah Chen" class="w-9 h-9 rounded-full object-cover ring-2 ring-transparent hover:ring-[#00E5FF] transition-all" data-alt="A professional headshot of a young woman with dark hair, looking confident against a dark futuristic background with subtle cyan lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKS38lXQAvy5f1-hlwi9ZImNCozp_JDVbB2bNdS8fC0A8sU-n3AUgDlfn8QtJg2OjnCBiWLIsj1DCh7WcQfzhsyaEdq8ShyywJ4rjp2Nd0v5Im3hPavcuCds6RBvwEm_2SegKlhp91VYP7N7coC-ZdoMiecN2CPdI5COuEFM6aU-dhpABF33rhLTBdXNVVpjXVDb09BnwjfHbmhHGO9izXPXhnbh2JH1R5_2T7XterzUbebOiF9QfpZVe6u9l38ZDI3AulIQSbjNg"/>
+<div class="flex flex-col">
+<span class="font-semibold text-sm text-white">Sarah Chen</span>
+<span class="text-[11px] text-[#6B7280]">Ops Lead</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-slate-500 ml-auto">chevron_right</span>
+</div>
+</nav>
+<!-- Main Wrapper -->
+<div class="flex-1 ml-[240px] flex flex-col h-screen">
+<!-- Canonical TopNavBar -->
+<header class="h-16 w-full sticky top-0 z-40 bg-[#0b1326]/85 backdrop-blur-3xl shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex items-center justify-between px-8 shrink-0">
+<!-- LEFT -->
+<div class="flex-none">
+<h1 class="font-['Inter'] font-semibold text-base text-white tracking-[-0.02em]">Assets</h1>
+</div>
+<!-- CENTER -->
+<div class="flex-1 max-w-[480px] mx-auto">
+<div class="relative flex items-center w-full h-10 bg-[#2d3449] rounded-full px-4 focus-within:ring-1 focus-within:ring-[#00E5FF] focus-within:shadow-[0_0_4px_rgba(0,229,255,0.2)] transition-all">
+<span class="material-symbols-outlined text-[18px] text-[#6B7280]">search</span>
+<input class="flex-1 bg-transparent border-none text-[#dbe2fd] text-[13px] font-['Inter'] placeholder:text-[#6B7280] focus:ring-0 px-3 outline-none" placeholder="Search KOLs, campaigns, emails..." type="text"/>
+<div class="border border-[#3b494c] bg-[#171f33] rounded-[4px] px-1.5 py-0.5 flex items-center">
+<span class="text-[11px] font-medium text-[#6B7280]">Cmd+K</span>
+</div>
+</div>
+</div>
+<!-- RIGHT -->
+<div class="flex-none flex items-center gap-4">
+<div class="flex items-center gap-1 text-[13px] font-medium text-[#bac9cc] hover:text-[#00E5FF] cursor-pointer bg-[#171f33] px-2 py-1 rounded-full">
+<span>EN</span>
+<span class="material-symbols-outlined text-[14px]">expand_more</span>
+</div>
+<div class="relative cursor-pointer text-[#bac9cc] hover:text-[#00E5FF]">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<div class="absolute top-0 right-0 w-1.5 h-1.5 bg-error rounded-full"></div>
+</div>
+<div class="w-[1px] h-6 bg-[rgba(186,201,204,0.15)] mx-1"></div>
+<div class="flex items-center gap-2 cursor-pointer">
+<img alt="User" class="w-8 h-8 rounded-full object-cover" data-alt="Small circular avatar of Sarah Chen with a subtle glow around the edges." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVD5hD4a9jC9CkBIsFjAnABI9dg7GKlSWGhXDzSSJnZaK7EM2nW5RVmwXpHsYEX4r61Ce9vrEy-ZPwoLmfswu5UPyQ1esl5hxyOoqmx5bFM1GiXdDKCKTchjRQQ-41OdJmReCBoMCvJOsmvEV0kzyyQvJuyKdcY2kgoco9n96RXJ3DNy6nqXHnXG6Ka8mWAj8ZL3yeqikWoepyOq_BdLJ093SVx1z_ZqpwFBCKToHUSQPkw4vAhMs73LD_Cj18cSpDP5on9esPccM"/>
+<span class="material-symbols-outlined text-[16px] text-[#bac9cc]">expand_more</span>
+</div>
+</div>
+</header>
+<!-- Main Content Area (Three Columns) -->
+<main class="flex-1 flex overflow-hidden p-6 gap-6">
+<!-- LEFT COLUMN: Filters (240px) -->
+<aside class="w-[240px] flex flex-col gap-6 shrink-0 overflow-y-auto pr-2 custom-scrollbar">
+<div class="flex items-center justify-between">
+<h2 class="text-white font-semibold text-sm">Filters</h2>
+<button class="text-[#00E5FF] text-xs font-medium hover:text-white transition-colors">Clear all</button>
+</div>
+<!-- Search -->
+<div class="flex flex-col gap-2">
+<div class="relative flex items-center w-full h-9 bg-surface-container-highest rounded-lg px-3 focus-within:ring-1 focus-within:ring-[#00E5FF]">
+<span class="material-symbols-outlined text-[16px] text-[#6B7280]">search</span>
+<input class="flex-1 bg-transparent border-none text-[#dbe2fd] text-xs placeholder:text-[#6B7280] focus:ring-0 px-2 outline-none" placeholder="Search by name or content..." type="text"/>
+</div>
+</div>
+<!-- Product -->
+<div class="flex flex-col gap-3">
+<span class="text-xs font-medium text-[#bac9cc]">Product</span>
+<div class="relative">
+<button class="w-full flex items-center justify-between bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 hover:border-[#00E5FF]/50 transition-colors">
+<span class="text-sm text-white truncate">Honor of Kings</span>
+<span class="material-symbols-outlined text-[16px] text-[#bac9cc]">unfold_more</span>
+</button>
+</div>
+<span class="text-[10px] text-[#6B7280]">12 assets in this product</span>
+</div>
+<!-- Type -->
+<div class="flex flex-col gap-3">
+<span class="text-xs font-medium text-[#bac9cc]">Type</span>
+<div class="flex flex-wrap gap-2">
+<button class="px-3 py-1.5 rounded-full bg-primary-container/10 border border-primary-container text-primary-container text-xs font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">mail</span>
+                            Email
+                        </button>
+<button class="px-3 py-1.5 rounded-full bg-surface-container-highest border border-transparent text-[#bac9cc] text-xs font-medium hover:bg-surface-bright transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">movie</span>
+                            Video
+                        </button>
+<button class="px-3 py-1.5 rounded-full bg-surface-container text-[#6B7280] text-xs font-medium cursor-not-allowed border border-dashed border-[#3b494c]">
+                            More coming
+                        </button>
+</div>
+</div>
+<!-- Status -->
+<div class="flex flex-col gap-3">
+<span class="text-xs font-medium text-[#bac9cc]">Status</span>
+<div class="flex flex-col gap-2">
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="w-4 h-4 rounded-full border border-outline-variant flex items-center justify-center group-hover:border-[#00E5FF]"></div>
+<span class="text-sm text-[#bac9cc] group-hover:text-white">All</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="w-4 h-4 rounded-full border border-[#00E5FF] flex items-center justify-center bg-primary-container/20">
+<div class="w-2 h-2 rounded-full bg-[#00E5FF]"></div>
+</div>
+<span class="text-sm text-white">Draft</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="w-4 h-4 rounded-full border border-outline-variant flex items-center justify-center group-hover:border-[#00E5FF]"></div>
+<span class="text-sm text-[#bac9cc] group-hover:text-white">Published</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="w-4 h-4 rounded-full border border-outline-variant flex items-center justify-center group-hover:border-[#00E5FF]"></div>
+<span class="text-sm text-[#bac9cc] group-hover:text-white">Archived</span>
+</label>
+</div>
+</div>
+<!-- Source -->
+<div class="flex flex-col gap-3 pb-8">
+<span class="text-xs font-medium text-[#bac9cc]">Source</span>
+<div class="flex flex-wrap gap-2">
+<button class="px-3 py-1.5 rounded-md bg-secondary-container/20 border border-secondary text-secondary-fixed text-xs font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">auto_awesome</span>
+                            AI Generated
+                        </button>
+<button class="px-3 py-1.5 rounded-md bg-surface-container-highest text-[#bac9cc] text-xs font-medium hover:bg-surface-bright transition-colors">
+                            User Created
+                        </button>
+<button class="px-3 py-1.5 rounded-md bg-surface-container-highest text-[#bac9cc] text-xs font-medium hover:bg-surface-bright transition-colors">
+                            Imported
+                        </button>
+</div>
+</div>
+</aside>
+<!-- CENTER COLUMN: Asset Grid (Flex-1) -->
+<section class="flex-1 flex flex-col min-w-0 bg-surface-container-lowest rounded-2xl border border-surface-container overflow-hidden">
+<!-- Top Action Bar -->
+<div class="h-16 px-6 border-b border-surface-container flex items-center justify-between bg-surface-container-low/50">
+<div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container-highest text-xs text-[#bac9cc]">
+<span>Honor of Kings</span>
+<span class="material-symbols-outlined text-[14px] cursor-pointer hover:text-white">close</span>
+</div>
+<span class="text-[#6B7280] text-xs">×</span>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container-highest text-xs text-[#bac9cc]">
+<span>Email</span>
+<span class="material-symbols-outlined text-[14px] cursor-pointer hover:text-white">close</span>
+</div>
+<span class="text-[#6B7280] text-xs">×</span>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container-highest text-xs text-[#bac9cc]">
+<span>Draft</span>
+<span class="material-symbols-outlined text-[14px] cursor-pointer hover:text-white">close</span>
+</div>
+</div>
+<div class="flex items-center gap-4 shrink-0 pl-4">
+<div class="flex items-center gap-2 text-sm text-[#bac9cc] hover:text-white cursor-pointer">
+<span>Recent</span>
+<span class="material-symbols-outlined text-[18px]">sort</span>
+</div>
+<div class="flex bg-surface-container-highest rounded-lg p-0.5">
+<button class="p-1.5 rounded bg-surface text-white shadow-sm">
+<span class="material-symbols-outlined text-[18px]">grid_view</span>
+</button>
+<button class="p-1.5 rounded text-[#6B7280] hover:text-[#bac9cc]">
+<span class="material-symbols-outlined text-[18px]">view_list</span>
+</button>
+</div>
+<button class="btn-primary px-4 py-2 rounded-lg text-sm flex items-center gap-2 glow-hover transition-all">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                            New Asset
+                        </button>
+</div>
+</div>
+<!-- Grid -->
+<div class="flex-1 overflow-y-auto p-6">
+<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+<!-- Card 1 (Selected) -->
+<div class="glass-card rounded-xl p-5 border border-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.15)] flex flex-col gap-4 relative group cursor-pointer">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-primary-container/10 flex items-center justify-center text-[#00E5FF]">
+<span class="material-symbols-outlined text-[18px]">mail</span>
+</div>
+<span class="px-2 py-0.5 rounded text-[10px] font-medium bg-surface-container text-[#bac9cc]">Email</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="px-2 py-0.5 rounded border border-secondary text-secondary-fixed text-[10px] font-bold flex items-center gap-1 bg-secondary-container/10">
+<span class="material-symbols-outlined text-[12px]">auto_awesome</span> AI
+                                    </div>
+<div class="w-2 h-2 rounded-full bg-emerald-400" title="Published"></div>
+</div>
+</div>
+<div>
+<h3 class="text-white font-semibold text-base mb-1 truncate">Honor of Kings - Outreach v3</h3>
+<p class="text-[#6B7280] text-xs">Honor of Kings · 2 days ago</p>
+</div>
+<div class="bg-surface-container-highest/50 rounded-lg p-3 text-sm text-[#bac9cc] line-clamp-3 font-mono text-[11px] leading-relaxed border border-surface-container">
+                                Hi <span class="text-primary-fixed">{{kol.name}}</span>, hope you are having a great week. We noticed your recent streams and think you'd be a perfect fit for the upcoming launch...
+                            </div>
+<div class="mt-auto pt-4 flex items-center justify-between border-t border-surface-container/50 text-[#6B7280] text-[11px]">
+<span>v3 of 4</span>
+<span>used 5x</span>
+</div>
+<!-- Hover Actions -->
+<div class="absolute inset-0 bg-[#0b1326]/80 backdrop-blur-sm rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+<button class="w-10 h-10 rounded-full bg-surface-container hover:bg-surface-bright flex items-center justify-center text-white transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-surface-container hover:bg-surface-bright flex items-center justify-center text-white transition-colors" title="Duplicate">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-surface-container hover:bg-error-container flex items-center justify-center text-[#ffb4ab] transition-colors" title="Archive">
+<span class="material-symbols-outlined text-[18px]">archive</span>
+</button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="glass-card rounded-xl p-5 border border-surface-container hover:border-outline-variant transition-colors flex flex-col gap-4 cursor-pointer">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-surface-bright flex items-center justify-center text-[#bac9cc]">
+<span class="material-symbols-outlined text-[18px]">movie</span>
+</div>
+<span class="px-2 py-0.5 rounded text-[10px] font-medium bg-surface-container text-[#bac9cc]">Video</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="px-2 py-0.5 rounded border border-secondary text-secondary-fixed text-[10px] font-bold flex items-center gap-1 bg-secondary-container/10">
+<span class="material-symbols-outlined text-[12px]">auto_awesome</span> AI
+                                    </div>
+<div class="w-2 h-2 rounded-full bg-tertiary-container" title="Draft"></div>
+</div>
+</div>
+<div>
+<h3 class="text-white font-semibold text-base mb-1 truncate">Genshin Winter Intro</h3>
+<p class="text-[#6B7280] text-xs">Genshin Impact · 5 days ago</p>
+</div>
+<div class="bg-surface-container-highest/50 rounded-lg p-3 flex items-center justify-center h-[68px] border border-surface-container">
+<span class="material-symbols-outlined text-3xl text-[#3b494c]">play_circle</span>
+</div>
+<div class="mt-auto pt-4 flex items-center justify-between border-t border-surface-container/50 text-[#6B7280] text-[11px]">
+<span>v1</span>
+<span>Unused</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="glass-card rounded-xl p-5 border border-surface-container hover:border-outline-variant transition-colors flex flex-col gap-4 cursor-pointer">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-surface-bright flex items-center justify-center text-[#bac9cc]">
+<span class="material-symbols-outlined text-[18px]">description</span>
+</div>
+<span class="px-2 py-0.5 rounded text-[10px] font-medium bg-surface-container text-[#bac9cc]">Script</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="px-2 py-0.5 rounded border border-surface-bright text-[#bac9cc] text-[10px] font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">person</span> User
+                                    </div>
+<div class="w-2 h-2 rounded-full bg-emerald-400" title="Published"></div>
+</div>
+</div>
+<div>
+<h3 class="text-white font-semibold text-base mb-1 truncate">Valorant Script v1</h3>
+<p class="text-[#6B7280] text-xs">Valorant · 1 week ago</p>
+</div>
+<div class="bg-surface-container-highest/50 rounded-lg p-3 text-sm text-[#bac9cc] line-clamp-3 font-mono text-[11px] leading-relaxed border border-surface-container">
+                                [Opening Shot] Gamer sitting at desk... "Hey guys, today we are diving into..."
+                            </div>
+<div class="mt-auto pt-4 flex items-center justify-between border-t border-surface-container/50 text-[#6B7280] text-[11px]">
+<span>v1 of 1</span>
+<span>used 12x</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- RIGHT COLUMN: Detail Panel (440px) -->
+<aside class="w-[440px] flex flex-col bg-surface-container-lowest rounded-2xl border border-surface-container shrink-0 overflow-hidden shadow-2xl relative">
+<!-- Detail Header -->
+<div class="h-16 px-6 border-b border-surface-container flex items-center justify-between bg-surface-container-low">
+<div class="flex-1 min-w-0 pr-4">
+<span class="text-[10px] font-semibold text-primary-fixed uppercase tracking-wider mb-0.5 block">Email Asset</span>
+<h2 class="text-white font-semibold text-sm truncate">Honor of Kings - Outreach v3</h2>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-[#bac9cc] transition-colors">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-[#bac9cc] transition-colors">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<!-- Tabs -->
+<div class="flex px-6 border-b border-surface-container gap-6 bg-surface-container-low">
+<button class="pb-3 pt-4 text-sm font-semibold text-[#00E5FF] border-b-2 border-[#00E5FF]">Preview</button>
+<button class="pb-3 pt-4 text-sm font-medium text-[#bac9cc] hover:text-white transition-colors">Edit</button>
+<button class="pb-3 pt-4 text-sm font-medium text-[#bac9cc] hover:text-white transition-colors">Versions</button>
+<button class="pb-3 pt-4 text-sm font-medium text-[#bac9cc] hover:text-white transition-colors">Used in</button>
+</div>
+<!-- Detail Content -->
+<div class="flex-1 overflow-y-auto p-6 bg-surface">
+<div class="flex flex-col gap-6">
+<!-- Metadata block -->
+<div class="flex flex-wrap gap-4">
+<div class="flex items-center gap-2 bg-surface-container-highest px-3 py-1.5 rounded-lg border border-surface-bright">
+<span class="material-symbols-outlined text-[16px] text-[#6B7280]">mood</span>
+<div class="flex flex-col">
+<span class="text-[10px] text-[#6B7280]">Tone</span>
+<span class="text-xs text-white">Professional &amp; Enthusiastic</span>
+</div>
+</div>
+<div class="flex items-center gap-2 bg-surface-container-highest px-3 py-1.5 rounded-lg border border-surface-bright">
+<span class="material-symbols-outlined text-[16px] text-[#6B7280]">language</span>
+<div class="flex flex-col">
+<span class="text-[10px] text-[#6B7280]">Language</span>
+<span class="text-xs text-white">English (US)</span>
+</div>
+</div>
+</div>
+<!-- Email Preview Box -->
+<div class="rounded-xl border border-surface-container bg-surface-container-lowest overflow-hidden shadow-inner">
+<div class="border-b border-surface-container p-4 bg-surface-container-low/50">
+<div class="flex gap-4 items-baseline">
+<span class="text-xs font-medium text-[#6B7280] w-12 shrink-0">Subject:</span>
+<span class="text-sm text-white font-medium">Collaborate on the Honor of Kings launch, <span class="px-1 py-0.5 rounded bg-primary-container/10 text-primary-fixed border border-primary-container/30">{{kol.name}}</span></span>
+</div>
+</div>
+<div class="p-5 font-mono text-[13px] leading-relaxed text-[#bac9cc] whitespace-pre-wrap">Hi <span class="px-1 py-0.5 rounded bg-primary-container/10 text-primary-fixed border border-primary-container/30">{{kol.name}}</span>,
+
+Hope you are having a great week! 
+
+We've been loving your recent streams and the community you've built. We are gearing up for a massive new campaign for <span class="px-1 py-0.5 rounded bg-primary-container/10 text-primary-fixed border border-primary-container/30">{{product.name}}</span>, and we think your energy would be a perfect fit for our upcoming tournament event.
+
+Would you be open to a quick chat next week to discuss some exciting collaboration ideas? 
+
+Best regards,
+The <span class="px-1 py-0.5 rounded bg-primary-container/10 text-primary-fixed border border-primary-container/30">{{product.name}}</span> Team</div>
+</div>
+</div>
+</div>
+<!-- Sticky Bottom Bar -->
+<div class="p-6 border-t border-surface-container bg-surface-container-low/80 backdrop-blur-md flex items-center justify-between gap-4 mt-auto">
+<button class="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-secondary text-secondary-fixed hover:bg-secondary-container/20 transition-colors text-sm font-medium w-full">
+<span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+                        Regenerate
+                    </button>
+<button class="btn-primary flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all text-sm font-semibold w-full shadow-[0_0_15px_rgba(0,229,255,0.2)] hover:shadow-[0_0_25px_rgba(0,229,255,0.4)]">
+<span class="material-symbols-outlined text-[18px]">send</span>
+                        Send to Outreach
+                    </button>
+</div>
+</aside>
+</main>
+</div>
+</body></html>
