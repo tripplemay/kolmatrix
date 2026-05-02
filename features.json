@@ -30,8 +30,10 @@
       "title": "YouTube sync 配额优化（P1 ~89% + 真 engagement batch + Top 100 KOL latestVideos）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
-      "acceptance": "search.list maxResults 10→50；DAILY_REGIONS 6→14（+GB/DE/BR/MX/TH/ID/IN/ES）；KEYWORD_POOL 每 region ≥ 12 词，dayOfYear%6 轮转 6 词；page 轮转 cursor 持久化 kol_sync_cursor 表 + migration + ROLLBACK SQL；publishedAfter 4 切片 dayOfYear%4 轮转 6 region × 100u = 600u/day；分层 refresh（Tier 1 top 50 by valueScore 每 3 天 / Tier 2 51-500 每 7 天 / Tier 3 500+ 每 21 天 / Flagged 必入），总日 ~150-200 KOL ~4u；Top 100 engagement batch（channels.list 2u + playlistItems.list 100u + videos.list 12u = 114u/day）写回 Kol.engagementRate + Kol.metadata.latestVideos；DailyLogLine schema 加 perMatrix + engagementBatchStats；tests/integration/sync-quota-optimization.test.ts 验证 14 region matrix + 池轮转 + 分层 refresh + engagement batch；staging 跑 7 天连续观察：每日 inserted ≥ 30 + 配额 8500-9200u + 0 errors；env var KOL_SYNC_PUBLISHED_AFTER_SLICES（默认 6，告警时降 4）；FILTER_MIN_SUBSCRIBERS 决议待 Planner 收用户答复（10K / 1K / env var 三选一）；staging git_sha 与本 commit 一致。"
+      "status": "done",
+      "acceptance": "search.list maxResults 10→50；DAILY_REGIONS 6→14（+GB/DE/BR/MX/TH/ID/IN/ES）；KEYWORD_POOL 每 region ≥ 12 词，dayOfYear%6 轮转 6 词；page 轮转 cursor 持久化 kol_sync_cursor 表 + migration + ROLLBACK SQL；publishedAfter 4 切片 dayOfYear%4 轮转 6 region × 100u = 600u/day；分层 refresh（Tier 1 top 50 by valueScore 每 3 天 / Tier 2 51-500 每 7 天 / Tier 3 500+ 每 21 天 / Flagged 必入），总日 ~150-200 KOL ~4u；Top 100 engagement batch（channels.list 2u + playlistItems.list 100u + videos.list 12u = 114u/day）写回 Kol.engagementRate + Kol.metadata.latestVideos；DailyLogLine schema 加 perMatrix + engagementBatchStats；tests/integration/sync-quota-optimization.test.ts 验证 14 region matrix + 池轮转 + 分层 refresh + engagement batch；staging 跑 7 天连续观察：每日 inserted ≥ 30 + 配额 8500-9200u + 0 errors；env var KOL_SYNC_PUBLISHED_AFTER_SLICES（默认 6，告警时降 4）；FILTER_MIN_SUBSCRIBERS 决议待 Planner 收用户答复（10K / 1K / env var 三选一）；staging git_sha 与本 commit 一致。",
+      "completed_at": "2026-05-02T11:55+0800",
+      "commit": "219983c"
     },
     {
       "id": "F005",
