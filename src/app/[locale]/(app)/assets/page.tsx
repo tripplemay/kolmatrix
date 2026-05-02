@@ -3,11 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { withTenant } from "@/lib/db";
 import { loadAssetsForListing } from "@/lib/assets/queries";
-import {
-  readAssetFiltersFromQuery,
-  toAssetFilter,
-  type AssetUrlState,
-} from "./use-filter-state";
+import { readAssetFiltersFromQuery, toAssetFilter, type AssetUrlState } from "./use-filter-state";
 
 import { AssetsClient } from "./AssetsClient";
 
@@ -53,11 +49,5 @@ export default async function AssetsPage({ params, searchParams }: Props) {
     ),
   ]);
 
-  return (
-    <AssetsClient
-      initialListing={listing}
-      products={products}
-      initialState={initialState}
-    />
-  );
+  return <AssetsClient initialListing={listing} products={products} initialState={initialState} />;
 }

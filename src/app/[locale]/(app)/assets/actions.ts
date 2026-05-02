@@ -26,7 +26,14 @@ import { z, ZodError } from "zod";
 import { auth } from "@/auth";
 import { withTenant } from "@/lib/db";
 import { logAudit } from "@/lib/audit/log";
-import { createAsset } from "@/lib/assets/mutations";
+import {
+  createAsset,
+  updateAsset,
+  AssetNotFoundError,
+  AssetVariantDepthError,
+} from "@/lib/assets/mutations";
+import { loadAssetDetail, loadVariantTree, loadUsedIn } from "@/lib/assets/queries";
+import type { AssetDetail, UsedInSummary, VariantTreeNode } from "@/lib/assets/types";
 import {
   generateEmailContent,
   EmailContentParseError,
@@ -281,4 +288,256 @@ export async function generateAssetAction(rawInput: unknown): Promise<GenerateAs
     assetId,
     parentAssetId: parsed.parentAssetId ?? null,
   };
+}
+
+// ---- BL-025-F005 · update + save-as-variant + variant tree / used-in loaders ----
+
+const UpdateInputSchema = z.object({
+  assetId: z.string().uuid(),
+  patch: z
+    .object({
+      name: z.string().min(1).max(200).optional(),
+      content: z.unknown().optional(),
+      status: z.enum(["draft", "published", "archived"]).optional(),
+    })
+    .refine((p) => p.name !== undefined || p.content !== undefined || p.status !== undefined, {
+      message: "At least one of name / content / status must be set",
+    }),
+});
+
+export type UpdateAssetInput = z.input<typeof UpdateInputSchema>;
+
+export interface UpdateAssetSuccess {
+  ok: true;
+  asset: AssetDetail;
+}
+
+export interface UpdateAssetFailure {
+  ok: false;
+  error: string;
+  code: "unauthorized" | "validation" | "asset_not_found" | "content_invalid" | "internal";
+}
+
+export type UpdateAssetResult = UpdateAssetSuccess | UpdateAssetFailure;
+
+export async function updateAssetAction(rawInput: unknown): Promise<UpdateAssetResult> {
+  let parsed: z.infer<typeof UpdateInputSchema>;
+  try {
+    parsed = UpdateInputSchema.parse(rawInput);
+  } catch (err) {
+    if (err instanceof ZodError) {
+      return {
+        ok: false,
+        error: err.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; "),
+        code: "validation",
+      };
+    }
+    return { ok: false, error: "invalid input", code: "validation" };
+  }
+
+  const session = await auth();
+  const tenantId = session?.user?.tenantId;
+  const userId = session?.user?.id;
+  if (!session?.user || !tenantId || !userId) {
+    return { ok: false, error: "Not signed in", code: "unauthorized" };
+  }
+
+  try {
+    const result = await withTenant(tenantId, async (tx) => {
+      const before = await loadAssetDetail(tx, parsed.assetId);
+      if (!before) return { kind: "no_asset" as const };
+      const after = await updateAsset(tx, parsed.assetId, parsed.patch);
+      return { kind: "ok" as const, before, after };
+    });
+    if (result.kind === "no_asset") {
+      return { ok: false, error: "Asset not found", code: "asset_not_found" };
+    }
+
+    await logAudit({
+      actorId: userId,
+      action: "asset.updated",
+      targetType: "asset",
+      targetId: result.after.id,
+      tenantId,
+      before: {
+        name: result.before.name,
+        status: result.before.status,
+      },
+      after: {
+        name: result.after.name,
+        status: result.after.status,
+        contentChanged: parsed.patch.content !== undefined,
+      },
+    });
+
+    return { ok: true, asset: result.after };
+  } catch (err) {
+    if (err instanceof AssetNotFoundError) {
+      return { ok: false, error: err.message, code: "asset_not_found" };
+    }
+    if (err instanceof ZodError) {
+      return {
+        ok: false,
+        error: "Content shape rejected by Zod",
+        code: "content_invalid",
+      };
+    }
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+      code: "internal",
+    };
+  }
+}
+
+const SaveAsVariantInputSchema = z.object({
+  parentAssetId: z.string().uuid(),
+  name: z.string().min(1).max(200).optional(),
+  content: z.unknown(),
+});
+
+export type SaveAssetAsVariantInput = z.input<typeof SaveAsVariantInputSchema>;
+
+export interface SaveAsVariantSuccess {
+  ok: true;
+  asset: AssetDetail;
+}
+
+export interface SaveAsVariantFailure {
+  ok: false;
+  error: string;
+  code:
+    | "unauthorized"
+    | "validation"
+    | "parent_not_found"
+    | "depth_exceeded"
+    | "content_invalid"
+    | "internal";
+}
+
+export type SaveAssetAsVariantResult = SaveAsVariantSuccess | SaveAsVariantFailure;
+
+function bumpVersionSuffix(name: string, ordinal: number): string {
+  return name.replace(/\s+v\d+$/i, "") + ` v${ordinal}`;
+}
+
+export async function saveAssetAsVariantAction(
+  rawInput: unknown
+): Promise<SaveAssetAsVariantResult> {
+  let parsed: z.infer<typeof SaveAsVariantInputSchema>;
+  try {
+    parsed = SaveAsVariantInputSchema.parse(rawInput);
+  } catch (err) {
+    if (err instanceof ZodError) {
+      return {
+        ok: false,
+        error: err.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; "),
+        code: "validation",
+      };
+    }
+    return { ok: false, error: "invalid input", code: "validation" };
+  }
+
+  const session = await auth();
+  const tenantId = session?.user?.tenantId;
+  const userId = session?.user?.id;
+  if (!session?.user || !tenantId || !userId) {
+    return { ok: false, error: "Not signed in", code: "unauthorized" };
+  }
+
+  try {
+    const result = await withTenant(tenantId, async (tx) => {
+      const parent = await loadAssetDetail(tx, parsed.parentAssetId);
+      if (!parent) return { kind: "no_parent" as const };
+      const rootId = parent.parentId ?? parent.id;
+      const siblings = await tx.asset.count({
+        where: { OR: [{ id: rootId }, { parentId: rootId }] },
+      });
+      const ordinal = siblings + 1;
+      const detail = await createAsset(tx, tenantId, {
+        productId: parent.productId,
+        type: parent.type,
+        name: parsed.name ?? bumpVersionSuffix(parent.name, ordinal),
+        content: parsed.content,
+        source: "user_created",
+        status: "draft",
+        parentAssetId: parent.id,
+        createdBy: userId,
+        metadata: {
+          savedFromAssetId: parent.id,
+          savedAt: new Date().toISOString(),
+        },
+      });
+      return { kind: "ok" as const, parent, detail };
+    });
+
+    if (result.kind === "no_parent") {
+      return { ok: false, error: "Parent asset not found", code: "parent_not_found" };
+    }
+
+    await logAudit({
+      actorId: userId,
+      action: "asset.variant_saved",
+      targetType: "asset",
+      targetId: result.detail.id,
+      tenantId,
+      after: {
+        assetId: result.detail.id,
+        parentAssetId: result.parent.id,
+        type: result.detail.type,
+        productId: result.detail.productId,
+      },
+    });
+
+    return { ok: true, asset: result.detail };
+  } catch (err) {
+    if (err instanceof AssetVariantDepthError) {
+      return { ok: false, error: err.message, code: "depth_exceeded" };
+    }
+    if (err instanceof AssetNotFoundError) {
+      return { ok: false, error: err.message, code: "parent_not_found" };
+    }
+    if (err instanceof ZodError) {
+      return {
+        ok: false,
+        error: "Content shape rejected by Zod",
+        code: "content_invalid",
+      };
+    }
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+      code: "internal",
+    };
+  }
+}
+
+// Read-only loaders surfaced through server actions so the detail
+// panel can hot-load Versions / Used-in data when the active tab
+// changes (avoids duplicating the queries in two places).
+
+export async function loadVariantTreeAction(
+  assetId: string
+): Promise<{ ok: true; nodes: VariantTreeNode[] } | { ok: false; error: string }> {
+  const session = await auth();
+  const tenantId = session?.user?.tenantId;
+  if (!tenantId) return { ok: false, error: "Not signed in" };
+  if (typeof assetId !== "string" || assetId.length === 0) {
+    return { ok: false, error: "Invalid assetId" };
+  }
+  const nodes = await withTenant(tenantId, (tx) => loadVariantTree(tx, assetId));
+  return { ok: true, nodes };
+}
+
+export async function loadUsedInAction(
+  assetId: string
+): Promise<{ ok: true; summary: UsedInSummary } | { ok: false; error: string }> {
+  const session = await auth();
+  const tenantId = session?.user?.tenantId;
+  if (!tenantId) return { ok: false, error: "Not signed in" };
+  if (typeof assetId !== "string" || assetId.length === 0) {
+    return { ok: false, error: "Invalid assetId" };
+  }
+  const summary = await withTenant(tenantId, (tx) => loadUsedIn(tx, assetId));
+  return { ok: true, summary };
 }

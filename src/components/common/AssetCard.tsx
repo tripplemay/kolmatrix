@@ -63,7 +63,13 @@ function relativeTime(date: Date): string {
   return `${Math.floor(months / 12)}y ago`;
 }
 
-export function AssetCard({ asset, isSelected, onSelect, onQuickAction, className }: AssetCardProps) {
+export function AssetCard({
+  asset,
+  isSelected,
+  onSelect,
+  onQuickAction,
+  className,
+}: AssetCardProps) {
   const updatedAt = asset.updatedAt instanceof Date ? asset.updatedAt : new Date(asset.updatedAt);
 
   return (
@@ -76,7 +82,7 @@ export function AssetCard({ asset, isSelected, onSelect, onQuickAction, classNam
           "flex w-full flex-col gap-3 rounded-2xl border p-5 text-left transition-all",
           "border-outline-variant bg-surface-container/40",
           "hover:border-cyan/30 hover:bg-surface-container",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan/40",
+          "focus-visible:ring-cyan/40 focus-visible:ring-2 focus-visible:outline-none",
           isSelected && "ring-cyan border-cyan/60 bg-surface-container ring-2"
         )}
       >
@@ -92,26 +98,24 @@ export function AssetCard({ asset, isSelected, onSelect, onQuickAction, classNam
               </span>
             }
           />
-          {asset.source === "ai_generated" ? (
-            <TagChip label="AI" tone="cyan" size="xs" />
-          ) : null}
+          {asset.source === "ai_generated" ? <TagChip label="AI" tone="cyan" size="xs" /> : null}
         </div>
 
         {/* Title + product · time */}
-        <h3 className="line-clamp-2 text-sm font-semibold text-on-surface">{asset.name}</h3>
-        <p className="text-xs text-on-surface-variant">
+        <h3 className="text-on-surface line-clamp-2 text-sm font-semibold">{asset.name}</h3>
+        <p className="text-on-surface-variant text-xs">
           {asset.productName ?? "No product"} · {relativeTime(updatedAt)}
         </p>
 
         {/* Content preview */}
         {asset.contentPreview ? (
-          <p className="line-clamp-3 font-mono text-xs text-on-surface-variant/70">
+          <p className="text-on-surface-variant/70 line-clamp-3 font-mono text-xs">
             {asset.contentPreview}
           </p>
         ) : null}
 
         {/* Footer metadata */}
-        <div className="border-outline-variant/60 flex items-center justify-between border-t pt-3 text-[11px] text-on-surface-variant">
+        <div className="border-outline-variant/60 text-on-surface-variant flex items-center justify-between border-t pt-3 text-[11px]">
           <span>
             v{asset.versionIndex} of {asset.totalVariants}
           </span>
@@ -124,7 +128,7 @@ export function AssetCard({ asset, isSelected, onSelect, onQuickAction, classNam
       {onQuickAction ? (
         <div
           className={cn(
-            "pointer-events-none absolute right-3 top-3 flex gap-1.5 opacity-0 transition-opacity",
+            "pointer-events-none absolute top-3 right-3 flex gap-1.5 opacity-0 transition-opacity",
             "group-hover:pointer-events-auto group-hover:opacity-100",
             "focus-within:pointer-events-auto focus-within:opacity-100"
           )}
@@ -142,7 +146,7 @@ export function AssetCard({ asset, isSelected, onSelect, onQuickAction, classNam
                 "flex h-8 w-8 items-center justify-center rounded-full border backdrop-blur",
                 "border-outline-variant bg-surface-container/80 text-on-surface-variant",
                 "hover:border-cyan/40 hover:bg-cyan/10 hover:text-cyan",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan/40"
+                "focus-visible:ring-cyan/40 focus-visible:ring-2 focus-visible:outline-none"
               )}
             >
               <span className="material-symbols-outlined text-[16px]" aria-hidden>

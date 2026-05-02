@@ -86,7 +86,7 @@ export function Combobox({
               "border-outline-variant bg-surface text-on-surface"
             )}
           >
-            <BaseCombobox.Empty className="px-3 py-2 text-xs text-on-surface-variant">
+            <BaseCombobox.Empty className="text-on-surface-variant px-3 py-2 text-xs">
               {emptyMessage}
             </BaseCombobox.Empty>
             <BaseCombobox.List>
@@ -97,7 +97,7 @@ export function Combobox({
                   className={cn(
                     "flex cursor-pointer items-center justify-between gap-3 rounded-md px-3 py-2 text-sm",
                     "data-[highlighted]:bg-cyan/10 data-[highlighted]:text-cyan",
-                    "data-[selected]:bg-cyan/15 data-[selected]:font-medium data-[selected]:text-cyan"
+                    "data-[selected]:bg-cyan/15 data-[selected]:text-cyan data-[selected]:font-medium"
                   )}
                 >
                   <span className="truncate">{item.label}</span>

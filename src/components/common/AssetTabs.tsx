@@ -47,7 +47,11 @@ export function AssetTabs<T extends string>({
   }
 
   return (
-    <div role="tablist" aria-label={ariaLabel} className={cn("flex border-b border-outline-variant", className)}>
+    <div
+      role="tablist"
+      aria-label={ariaLabel}
+      className={cn("border-outline-variant flex border-b", className)}
+    >
       {tabs.map((tab, idx) => {
         const isActive = tab.id === activeTab;
         return (
@@ -62,8 +66,8 @@ export function AssetTabs<T extends string>({
             onClick={() => !tab.disabled && onChange(tab.id)}
             onKeyDown={(e) => handleKeyDown(e, idx)}
             className={cn(
-              "px-4 pb-3 pt-4 text-sm font-medium transition-colors",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan/40",
+              "px-4 pt-4 pb-3 text-sm font-medium transition-colors",
+              "focus-visible:ring-cyan/40 focus-visible:ring-2 focus-visible:outline-none",
               isActive
                 ? "border-cyan text-cyan -mb-px border-b-2 font-semibold"
                 : "text-on-surface-variant hover:text-on-surface",

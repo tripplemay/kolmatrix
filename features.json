@@ -38,7 +38,7 @@
       "title": "Edit + Save + Versions tab + Used in tab",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Email Edit subject + body + 变量 chip 工具条（{{kol.name}} / {{product.name}} / {{campaign.name}} / {{kol.handle}} / {{today_date}} 5 hardcoded token）正确光标位置插入；Video Edit Markdown 编辑（@uiw/react-md-editor 或 textarea + preview tab）；Save 行为：updateAsset 覆盖 / 'Save as new version' createAsset 复制 + parentId；变更未保存离开弹 confirm；Versions tree mini Git-graph 风格递归回溯 root → leaves；Restore version (新 user_created variant) / Compare with current (diff modal)；Used in 聚合 email_log 引用计数；守门 test tests/integration/asset-edit-versions.test.ts ≥ 6 case。详见 spec §F005。"
     },
     {

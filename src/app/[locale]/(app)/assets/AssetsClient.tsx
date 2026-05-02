@@ -21,6 +21,7 @@
  * sticky bottom action bar, empty state double-CTA — is in scope.
  */
 import { useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 
 import {
   AssetCard,
@@ -55,6 +56,9 @@ import type {
 import { cn } from "@/lib/utils";
 
 import { generateAssetAction } from "./actions";
+import { EditTab } from "./_panel/EditTab";
+import { UsedInTab } from "./_panel/UsedInTab";
+import { VersionsTab } from "./_panel/VersionsTab";
 import {
   ASSET_LIST_SORTS,
   ASSET_LIST_VIEWS,
@@ -66,9 +70,9 @@ type AssetTabId = "preview" | "edit" | "versions" | "used_in";
 
 const TAB_CONFIG: ReadonlyArray<{ id: AssetTabId; label: string; disabled?: boolean }> = [
   { id: "preview", label: "Preview" },
-  { id: "edit", label: "Edit", disabled: true },
-  { id: "versions", label: "Versions", disabled: true },
-  { id: "used_in", label: "Used in", disabled: true },
+  { id: "edit", label: "Edit" },
+  { id: "versions", label: "Versions" },
+  { id: "used_in", label: "Used in" },
 ];
 
 const SORT_LABEL: Record<(typeof ASSET_LIST_SORTS)[number], string> = {
@@ -102,12 +106,22 @@ interface Props {
 }
 
 export function AssetsClient({ initialListing, products }: Props) {
+  const router = useRouter();
   const { state, update, clearAll } = useAssetFilters();
   const [, startTransition] = useTransition();
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(
     initialListing.items[0]?.id ?? null
   );
   const [wizardOpen, setWizardOpen] = useState(false);
+
+  // After any mutation that changed the visible listing (save / save-
+  // as-variant / restore), reload the server data. Plain
+  // router.refresh re-runs the parent Server Component without
+  // scrolling.
+  function handleAssetMutated(newAssetId?: string) {
+    if (newAssetId) setSelectedAssetId(newAssetId);
+    router.refresh();
+  }
 
   const selected = useMemo<AssetCardData | null>(() => {
     if (!selectedAssetId) return null;
@@ -199,6 +213,7 @@ export function AssetsClient({ initialListing, products }: Props) {
       <AssetsDetailPanel
         asset={selected ?? null}
         onClose={() => setSelectedAssetId(null)}
+        onAssetMutated={handleAssetMutated}
       />
 
       <NewAssetDialog
@@ -240,7 +255,7 @@ function AssetsFilterSidebar({
       </div>
 
       <div className="flex flex-col gap-2">
-        <span className="text-xs font-medium text-on-surface-variant">Search</span>
+        <span className="text-on-surface-variant text-xs font-medium">Search</span>
         <Input
           placeholder="Search by name…"
           defaultValue={state.search ?? ""}
@@ -252,7 +267,7 @@ function AssetsFilterSidebar({
       </div>
 
       <div className="flex flex-col gap-3">
-        <span className="text-xs font-medium text-on-surface-variant">Product</span>
+        <span className="text-on-surface-variant text-xs font-medium">Product</span>
         <Combobox
           items={productOptions}
           value={state.productId ?? null}
@@ -261,14 +276,14 @@ function AssetsFilterSidebar({
           ariaLabel="Filter by product"
         />
         {state.productId ? (
-          <span className="text-[10px] text-on-surface-variant">
+          <span className="text-on-surface-variant text-[10px]">
             {productCount} {productCount === 1 ? "asset" : "assets"} in this product
           </span>
         ) : null}
       </div>
 
       <div className="flex flex-col gap-3">
-        <span className="text-xs font-medium text-on-surface-variant">Type</span>
+        <span className="text-on-surface-variant text-xs font-medium">Type</span>
         <div className="flex flex-wrap gap-2">
           {TYPE_OPTIONS.map((opt) => {
             const pressed = (state.types ?? []).includes(opt.value);
@@ -278,9 +293,7 @@ function AssetsFilterSidebar({
                 pressed={pressed}
                 onClick={() => {
                   const cur = state.types ?? [];
-                  const next = pressed
-                    ? cur.filter((t) => t !== opt.value)
-                    : [...cur, opt.value];
+                  const next = pressed ? cur.filter((t) => t !== opt.value) : [...cur, opt.value];
                   update({ types: next });
                 }}
               >
@@ -298,7 +311,7 @@ function AssetsFilterSidebar({
       </div>
 
       <div className="flex flex-col gap-3">
-        <span className="text-xs font-medium text-on-surface-variant">Status</span>
+        <span className="text-on-surface-variant text-xs font-medium">Status</span>
         <div className="flex flex-col gap-2">
           {[{ value: null as AssetStatus | null, label: "All" }, ...STATUS_OPTIONS].map((opt) => {
             const checked = (opt.value ?? null) === (state.status ?? null);
@@ -316,7 +329,9 @@ function AssetsFilterSidebar({
                 <span
                   className={cn(
                     "flex h-4 w-4 items-center justify-center rounded-full border",
-                    checked ? "border-cyan bg-cyan/20" : "border-outline-variant group-hover:border-cyan/60"
+                    checked
+                      ? "border-cyan bg-cyan/20"
+                      : "border-outline-variant group-hover:border-cyan/60"
                   )}
                 >
                   {checked ? <span className="bg-cyan h-2 w-2 rounded-full" /> : null}
@@ -329,7 +344,7 @@ function AssetsFilterSidebar({
       </div>
 
       <div className="flex flex-col gap-3 pb-8">
-        <span className="text-xs font-medium text-on-surface-variant">Source</span>
+        <span className="text-on-surface-variant text-xs font-medium">Source</span>
         <div className="flex flex-wrap gap-2">
           {SOURCE_OPTIONS.map((opt) => {
             const pressed = (state.sources ?? []).includes(opt.value);
@@ -339,9 +354,7 @@ function AssetsFilterSidebar({
                 pressed={pressed}
                 onClick={() => {
                   const cur = state.sources ?? [];
-                  const next = pressed
-                    ? cur.filter((s) => s !== opt.value)
-                    : [...cur, opt.value];
+                  const next = pressed ? cur.filter((s) => s !== opt.value) : [...cur, opt.value];
                   update({ sources: next });
                 }}
               >
@@ -367,7 +380,7 @@ function AssetsActionBar({ breadcrumb, state, update, onNewAsset }: ActionBarPro
     <div className="border-outline-variant flex h-16 items-center justify-between gap-4 border-b px-6">
       <div className="no-scrollbar flex flex-1 items-center gap-2 overflow-x-auto">
         {breadcrumb.length === 0 ? (
-          <span className="text-xs text-on-surface-variant">No filters applied</span>
+          <span className="text-on-surface-variant text-xs">No filters applied</span>
         ) : (
           breadcrumb.map((chip) => (
             <ChipButton key={chip.key} removable onClick={chip.onRemove} pressed>
@@ -474,14 +487,14 @@ function AssetsEmptyState({
           "bg-cyan/20 from-cyan/30 to-purple/20 bg-gradient-to-br shadow-[0_0_60px_rgba(0,229,255,0.18)]"
         )}
       >
-        <span className="material-symbols-outlined text-5xl text-on-surface" aria-hidden>
+        <span className="material-symbols-outlined text-on-surface text-5xl" aria-hidden>
           folder_open
         </span>
       </div>
       <SectionHeader title="No assets yet" as="h2" />
-      <p className="max-w-md text-sm text-on-surface-variant">
-        Your creative vault is empty. Start by generating AI marketing assets from a product
-        or create a blank container.
+      <p className="text-on-surface-variant max-w-md text-sm">
+        Your creative vault is empty. Start by generating AI marketing assets from a product or
+        create a blank container.
       </p>
       <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
         <GradientButton
@@ -512,21 +525,51 @@ function AssetsEmptyState({
 interface DetailPanelProps {
   asset: AssetCardData | AssetDetail | null;
   onClose: () => void;
+  onAssetMutated: () => void;
 }
 
-function AssetsDetailPanel({ asset, onClose }: DetailPanelProps) {
-  const [activeTab, setActiveTab] = useState<AssetTabId>("preview");
-
+function AssetsDetailPanel({ asset, onClose, onAssetMutated }: DetailPanelProps) {
   if (!asset) {
     return (
       <aside className="border-outline-variant bg-surface-container-low/40 hidden w-[440px] shrink-0 items-center justify-center rounded-2xl border lg:flex">
-        <p className="text-sm text-on-surface-variant">Select an asset to preview</p>
+        <p className="text-on-surface-variant text-sm">Select an asset to preview</p>
       </aside>
     );
   }
 
   return (
     <aside className="border-outline-variant bg-surface-container-low hidden w-[440px] shrink-0 flex-col overflow-hidden rounded-2xl border lg:flex">
+      {/* Inner panel keyed on asset.id — remount resets activeTab +
+          tab-local state without an effect-driven reset. */}
+      <DetailPanelInner
+        key={asset.id}
+        asset={asset}
+        onClose={onClose}
+        onAssetMutated={onAssetMutated}
+      />
+    </aside>
+  );
+}
+
+interface DetailPanelInnerProps {
+  asset: AssetCardData | AssetDetail;
+  onClose: () => void;
+  onAssetMutated: () => void;
+}
+
+function DetailPanelInner({ asset, onClose, onAssetMutated }: DetailPanelInnerProps) {
+  const [activeTab, setActiveTab] = useState<AssetTabId>("preview");
+
+  // Best-effort hydration: if the asset object came from the listing
+  // (AssetCardData has only contentPreview), we expose a structured
+  // content placeholder. EditTab tolerates both shapes.
+  const initialContent: Record<string, unknown> | null =
+    "content" in asset && asset.content && typeof asset.content === "object" && !Array.isArray(asset.content)
+      ? (asset.content as Record<string, unknown>)
+      : null;
+
+  return (
+    <>
       <header className="border-outline-variant flex items-center gap-3 border-b px-5 py-4">
         <button
           type="button"
@@ -539,16 +582,12 @@ function AssetsDetailPanel({ asset, onClose }: DetailPanelProps) {
           </span>
         </button>
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-sm font-semibold text-on-surface">{asset.name}</h2>
-          <p className="truncate text-xs text-on-surface-variant">
+          <h2 className="text-on-surface truncate text-sm font-semibold">{asset.name}</h2>
+          <p className="text-on-surface-variant truncate text-xs">
             {asset.productName ?? "No product"}
           </p>
         </div>
-        <TagChip
-          label={asset.source === "ai_generated" ? "AI" : "User"}
-          tone="cyan"
-          size="xs"
-        />
+        <TagChip label={asset.source === "ai_generated" ? "AI" : "User"} tone="cyan" size="xs" />
       </header>
 
       <AssetTabs<AssetTabId>
@@ -559,13 +598,18 @@ function AssetsDetailPanel({ asset, onClose }: DetailPanelProps) {
       />
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
-        {activeTab === "preview" ? (
-          <DetailPreview asset={asset} />
-        ) : (
-          <p className="text-sm text-on-surface-variant">
-            This tab lands in F005 — Edit / Versions / Used in.
-          </p>
-        )}
+        {activeTab === "preview" ? <DetailPreview asset={asset} /> : null}
+        {activeTab === "edit" ? (
+          <EditTab
+            asset={asset}
+            initialContent={initialContent}
+            onSaved={onAssetMutated}
+          />
+        ) : null}
+        {activeTab === "versions" ? (
+          <VersionsTab asset={asset} onRestore={onAssetMutated} />
+        ) : null}
+        {activeTab === "used_in" ? <UsedInTab asset={asset} /> : null}
       </div>
 
       <footer className="border-outline-variant bg-surface-container-low/95 sticky bottom-0 flex gap-2 border-t p-4 backdrop-blur">
@@ -590,20 +634,20 @@ function AssetsDetailPanel({ asset, onClose }: DetailPanelProps) {
           </GradientButton>
         ) : null}
       </footer>
-    </aside>
+    </>
   );
 }
 
 function DetailPreview({ asset }: { asset: AssetCardData | AssetDetail }) {
   if (asset.contentPreview) {
     return (
-      <pre className="bg-surface-container/40 whitespace-pre-wrap rounded-md p-3 font-mono text-xs text-on-surface">
+      <pre className="bg-surface-container/40 text-on-surface rounded-md p-3 font-mono text-xs whitespace-pre-wrap">
         {asset.contentPreview}
       </pre>
     );
   }
   return (
-    <p className="text-sm text-on-surface-variant">
+    <p className="text-on-surface-variant text-sm">
       Preview will surface once F005 wires the full content render.
     </p>
   );
@@ -654,7 +698,7 @@ function NewAssetDialog({ open, onOpenChange, products, defaultProductId }: NewA
           </DialogHeader>
           <div className="flex flex-col gap-4 px-5 py-4">
             <div className="flex flex-col gap-2">
-              <span className="text-xs font-medium text-on-surface-variant">Product</span>
+              <span className="text-on-surface-variant text-xs font-medium">Product</span>
               <Combobox
                 items={products.map((p) => ({ value: p.id, label: p.name }))}
                 value={productId}
@@ -663,7 +707,7 @@ function NewAssetDialog({ open, onOpenChange, products, defaultProductId }: NewA
               />
             </div>
             <div className="flex flex-col gap-2">
-              <span className="text-xs font-medium text-on-surface-variant">Type</span>
+              <span className="text-on-surface-variant text-xs font-medium">Type</span>
               <div className="flex gap-2">
                 {TYPE_OPTIONS.map((opt) => (
                   <ChipButton
@@ -680,7 +724,7 @@ function NewAssetDialog({ open, onOpenChange, products, defaultProductId }: NewA
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <span className="text-xs font-medium text-on-surface-variant">
+              <span className="text-on-surface-variant text-xs font-medium">
                 Steering prompt (optional)
               </span>
               <Input

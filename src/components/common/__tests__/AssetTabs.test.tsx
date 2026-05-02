@@ -13,14 +13,8 @@ const TABS = [
 describe("AssetTabs", () => {
   it("renders every tab and marks the active one with aria-selected", () => {
     render(<AssetTabs tabs={TABS} activeTab="preview" onChange={() => {}} />);
-    expect(screen.getByRole("tab", { name: "Preview" })).toHaveAttribute(
-      "aria-selected",
-      "true"
-    );
-    expect(screen.getByRole("tab", { name: "Edit" })).toHaveAttribute(
-      "aria-selected",
-      "false"
-    );
+    expect(screen.getByRole("tab", { name: "Preview" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Edit" })).toHaveAttribute("aria-selected", "false");
   });
 
   it("invokes onChange with the clicked tab id", () => {
