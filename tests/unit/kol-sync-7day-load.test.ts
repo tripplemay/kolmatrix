@@ -29,7 +29,10 @@ import {
 } from "@/lib/kol-sync/log";
 import type { RawKolData } from "@/lib/kol-sync/types";
 
-const QUOTA_WARN_THRESHOLD = 3_000;
+// BIx-F004-P5 raised this to 9,500u (was 3,000u) once the daily
+// matrix expanded to ~9,000u nominal. Mirror it locally so the load
+// sim asserts the same "within budget" boundary the runbook does.
+const QUOTA_WARN_THRESHOLD = 9_500;
 
 interface SimulatedDay {
   /** The set of channels the upstream "would" return on this run. */

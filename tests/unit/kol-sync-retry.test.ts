@@ -112,10 +112,10 @@ describe("classifyDailyRun", () => {
     expect(out.durationMs).toBe(46_000);
   });
 
-  it("WARN when quota_consumed > 3,000", () => {
-    const out = classifyDailyRun(baseInput({ estimatedQuotaConsumed: 4_500 }));
+  it("WARN when quota_consumed > 9,500 (BIx-F004-P5 raised threshold)", () => {
+    const out = classifyDailyRun(baseInput({ estimatedQuotaConsumed: 9_700 }));
     expect(out.level).toBe("WARN");
-    expect(out.alerts.some((a) => a.includes("quota_consumed=4500"))).toBe(true);
+    expect(out.alerts.some((a) => a.includes("quota_consumed=9700"))).toBe(true);
   });
 
   it("WARN on a single zero-discover day, ALERT on the third in a row", () => {

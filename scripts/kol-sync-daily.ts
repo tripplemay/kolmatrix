@@ -35,6 +35,12 @@ import { PrismaClient } from "@prisma/client";
 import { embedKolsForIds, type EmbedRunStats } from "../src/lib/embedding/kol-embed";
 import { YouTubeKolSyncAdapter } from "../src/lib/kol-sync/adapters/youtube";
 import { KolSyncDispatcher } from "../src/lib/kol-sync/dispatcher";
+import {
+  runEngagementBatch,
+  type EngagementBatchClient,
+  type EngagementBatchResult,
+} from "../src/lib/kol-sync/engagement-batch";
+import { createEngagementBatchClient } from "../src/lib/kol-sync/engagement-batch-client";
 import { importRawKolData, type ImportStats } from "../src/lib/kol-sync/import";
 import { PUBLISHED_AFTER_CORE_REGIONS } from "../src/lib/kol-sync/published-after";
 import { fetchTieredRefreshIds } from "../src/lib/kol-sync/refresh-selector";
@@ -43,6 +49,7 @@ import {
   countTrailingZeroDiscoverStreak,
   formatDailyLogLineJson,
   type DailyLogLine,
+  type PerMatrixEntry,
 } from "../src/lib/kol-sync/log";
 import { DEFAULT_BACKOFFS_MS } from "../src/lib/kol-sync/retry";
 import type {
@@ -107,8 +114,21 @@ interface DailyRunReport {
   } | null;
   importStats: ImportStats | null;
   refreshImportStats: ImportStats | null;
+  /** BIx-F004-P5 — per-(region, keyword) cell stats collected from
+   *  the adapter's onMatrixCell callback. Empty when the adapter
+   *  doesn't emit them (mock / dryRun). */
+  perMatrix: PerMatrixEntry[];
   /** B7a-F001 — embedding hook results (audit lock #8:B, soft phase). */
   embedStats: EmbedRunStats | null;
+  /** BIx-F004-P4 — Top 100 KOL engagement batch summary. `null` when
+   *  the phase didn't run (dryRun / no client / no eligible KOL). */
+  engagementBatch: {
+    topKolsProcessed: number;
+    engagementUpdated: number;
+    latestVideosUpdated: number;
+    channelsWithoutPlaylist: number;
+    apiCallStats: EngagementBatchResult["apiCallStats"];
+  } | null;
   errors: string[];
   /** Best-effort estimate based on adapter knowledge; F004 will
    *  replace this with a real counter once retry tracking lands. */
@@ -165,6 +185,29 @@ function formatMarkdownReport(report: DailyRunReport): string {
     lines.push("");
   }
   formatEmbedSection(report, lines);
+  if (report.engagementBatch) {
+    const eb = report.engagementBatch;
+    lines.push("## Engagement batch (BIx-F004-P4)");
+    lines.push(
+      `- Top KOL processed: ${eb.topKolsProcessed} | engagement updated: ${eb.engagementUpdated} | latestVideos updated: ${eb.latestVideosUpdated} | without playlist: ${eb.channelsWithoutPlaylist}`
+    );
+    lines.push(
+      `- API calls — channels.list: ${eb.apiCallStats.channels} | playlistItems.list: ${eb.apiCallStats.playlistItems} | videos.list: ${eb.apiCallStats.videos}`
+    );
+    lines.push("");
+  }
+  if (report.perMatrix.length > 0) {
+    const totalFound = report.perMatrix.reduce((s, e) => s + e.found, 0);
+    const totalRejections = report.perMatrix.reduce(
+      (s, e) => s + e.filterRejections,
+      0
+    );
+    lines.push("## Per-matrix (BIx-F004-P5)");
+    lines.push(
+      `- Cells: ${report.perMatrix.length} | found: ${totalFound} | filterRejections: ${totalRejections}`
+    );
+    lines.push("");
+  }
   if (report.errors.length > 0) {
     lines.push("## Errors");
     for (const e of report.errors) lines.push(`- ${e}`);
@@ -195,6 +238,8 @@ export function buildLogLineFromReport(
     estimatedQuotaRemaining: Math.max(0, 10_000 - report.estimatedQuotaConsumed),
     errors: report.errors,
     zeroDiscoverStreakBefore,
+    perMatrix: report.perMatrix.length > 0 ? report.perMatrix : undefined,
+    engagementBatchStats: report.engagementBatch ?? undefined,
   });
 }
 
@@ -214,10 +259,25 @@ export interface DailyRunDeps {
    *  a synchronous sleep). When undefined the orchestrator uses the
    *  spec-mandated schedule. */
   retry?: import("../src/lib/kol-sync/retry").RetryOpts;
+  /** BIx-F004-P4 — engagement batch client. `undefined` skips the
+   *  phase (used in tests + when the API key is missing). */
+  engagementBatchClient?: EngagementBatchClient;
+  /** BIx-F004-P4 — top-N cap for the engagement batch. Default 100. */
+  engagementBatchTopN?: number;
+  /** BIx-F004-P5 — collector for per-cell observability events.
+   *  Caller wires the YouTube adapter's `onMatrixCell` to push into
+   *  this array; the orchestrator surfaces it on the report so the
+   *  daily log line picks it up. */
+  perMatrixCollector?: PerMatrixEntry[];
 }
 
 export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
   const startedAt = new Date().toISOString();
+  // BIx-F004-P5: per-cell stats are pushed by the YouTube adapter via
+  // its `onMatrixCell` callback (caller wires it in main()); the
+  // collector is shared via this array reference so what's reported
+  // is exactly what the adapter emitted.
+  const perMatrix = deps.perMatrixCollector ?? [];
   const dispatcher = new KolSyncDispatcher(deps.adapters);
   const errors: string[] = [];
   let estimatedQuotaConsumed = 0;
@@ -239,7 +299,9 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
       refresh: null,
       importStats: null,
       refreshImportStats: null,
+      perMatrix,
       embedStats: null,
+      engagementBatch: null,
       errors,
       estimatedQuotaConsumed,
     };
@@ -352,6 +414,86 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
     }
   }
 
+  // ---- ENGAGEMENT BATCH (BIx-F004-P4) ----
+  // Pre-compute real engagementRate + cache the 6 most-recent videos
+  // for the top 100 KOL by valueScore. Replaces B5-F004's per-page
+  // lazy-load (100u/click) with a daily ~114u amortised batch.
+  // Soft-fails: thrown errors surface in `errors` but never abort
+  // the run.
+  let engagementBatch: DailyRunReport["engagementBatch"] = null;
+  if (deps.prisma && !deps.dryRun && deps.engagementBatchClient) {
+    try {
+      const tenant = await deps.prisma.tenant.findUnique({
+        where: { slug: deps.tenantSlug },
+      });
+      if (tenant) {
+        const topN = deps.engagementBatchTopN ?? 100;
+        const top = await deps.prisma.kol.findMany({
+          where: {
+            tenantId: tenant.id,
+            platform: "youtube",
+            externalId: { not: null },
+          },
+          orderBy: [{ valueScore: { sort: "desc", nulls: "last" } }, { id: "asc" }],
+          take: topN,
+          select: { id: true, externalId: true, metadata: true },
+        });
+        const topChannels = top
+          .filter((r): r is typeof r & { externalId: string } => Boolean(r.externalId))
+          .map((r) => ({ kolId: r.id, externalId: r.externalId }));
+        if (topChannels.length > 0) {
+          const result = await runEngagementBatch({
+            topChannels,
+            client: deps.engagementBatchClient,
+          });
+          let engagementUpdated = 0;
+          let latestVideosUpdated = 0;
+          const metaByKolId = new Map<string, unknown>(top.map((r) => [r.id, r.metadata]));
+          for (const u of result.updates) {
+            const prevMeta = metaByKolId.get(u.kolId);
+            const merged = mergeLatestVideos(prevMeta, u.latestVideos);
+            try {
+              await deps.prisma.kol.update({
+                where: { id: u.kolId },
+                data: {
+                  engagementRate: u.engagementRate,
+                  metadata: merged as Parameters<
+                    NonNullable<typeof deps.prisma>["kol"]["update"]
+                  >[0]["data"]["metadata"],
+                },
+              });
+              if (u.engagementRate !== null) engagementUpdated += 1;
+              if (u.latestVideos.length > 0) latestVideosUpdated += 1;
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : String(err);
+              console.warn(
+                `[kol-sync-daily] engagement-batch update ${u.kolId}: ${msg.slice(0, 200)}`
+              );
+            }
+          }
+          engagementBatch = {
+            topKolsProcessed: result.topKolsProcessed,
+            engagementUpdated,
+            latestVideosUpdated,
+            channelsWithoutPlaylist: result.channelsWithoutPlaylist,
+            apiCallStats: result.apiCallStats,
+          };
+          // Real quota cost from API counters — more accurate than
+          // the discover/refresh estimates.
+          const cost =
+            result.apiCallStats.channels +
+            result.apiCallStats.playlistItems +
+            result.apiCallStats.videos;
+          estimatedQuotaConsumed += cost;
+        }
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`[kol-sync-daily] engagement-batch failed: ${msg.slice(0, 200)}`);
+      errors.push(`engagement-batch: ${msg.slice(0, 200)}`);
+    }
+  }
+
   // ---- EMBED HOOK (B7a-F001 audit lock #8:B) ----
   // Soft phase: embedding failures degrade to "vectors stale by one
   // day" but never abort the sync. We pull every kol id touched in
@@ -398,10 +540,37 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
     refresh,
     importStats,
     refreshImportStats,
+    perMatrix,
     embedStats,
+    engagementBatch,
     errors,
     estimatedQuotaConsumed,
   };
+}
+
+/**
+ * BIx-F004-P4 · merge `latestVideos` into a Kol.metadata blob,
+ * preserving all existing keys. Defensive against malformed prior
+ * payloads — non-object metadata is treated as "start fresh".
+ */
+function mergeLatestVideos(
+  prev: unknown,
+  latestVideos: ReadonlyArray<{
+    videoId: string;
+    title: string;
+    thumbnailUrl: string | null;
+    viewCount: number;
+    likeCount: number;
+    commentCount: number;
+    publishedAt: string | null;
+  }>
+): Record<string, unknown> {
+  const base =
+    prev && typeof prev === "object" && !Array.isArray(prev)
+      ? { ...(prev as Record<string, unknown>) }
+      : {};
+  base.latestVideos = latestVideos;
+  return base;
 }
 
 // ---------------------------------------------------------------------
@@ -431,7 +600,23 @@ async function main(): Promise<void> {
   const publishedAfterRegions =
     sliceCount > 0 ? PUBLISHED_AFTER_CORE_REGIONS.slice(0, sliceCount) : null;
 
-  const adapters: KolSyncAdapter[] = [new YouTubeKolSyncAdapter({ apiKey, publishedAfterRegions })];
+  // BIx-F004-P5: per-cell observability collector. Adapter pushes
+  // each (region, keyword) iteration's stats here; runDaily picks up
+  // the array via `perMatrixCollector` and surfaces it on the report.
+  const perMatrixCollector: PerMatrixEntry[] = [];
+  const adapters: KolSyncAdapter[] = [
+    new YouTubeKolSyncAdapter({
+      apiKey,
+      publishedAfterRegions,
+      onMatrixCell: (e) => perMatrixCollector.push(e),
+    }),
+  ];
+
+  // BIx-F004-P4: engagement batch client (skipped when key is
+  // missing — discover/refresh still complete).
+  const engagementBatchClient: EngagementBatchClient | undefined = apiKey
+    ? createEngagementBatchClient(apiKey)
+    : undefined;
 
   let prisma: PrismaClient | null = null;
   if (!args.dryRun) {
@@ -455,6 +640,8 @@ async function main(): Promise<void> {
       dryRun: args.dryRun,
       refreshBatch: args.refreshBatch,
       noRefresh: args.noRefresh,
+      engagementBatchClient,
+      perMatrixCollector,
     });
   } catch (err) {
     // Outermost guard so cron always sees exit 0. F004 will pipe the

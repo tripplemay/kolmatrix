@@ -46,16 +46,16 @@ describe("runEngagementBatch", () => {
   function stubClient(): EngagementBatchClient {
     return {
       // 50-id batches → 1 call for ≤ 50, 2 for 51-100, etc.
-      fetchUploadsPlaylists: vi.fn(async (ids) => {
+      fetchUploadsPlaylists: vi.fn(async (ids: readonly string[]) => {
         const map = new Map<string, string>();
         for (const id of ids) map.set(id, `PL_${id}`);
         return map;
       }),
-      fetchPlaylistVideoIds: vi.fn(async (playlistId, max) => {
+      fetchPlaylistVideoIds: vi.fn(async (playlistId: string, max: number) => {
         const channelId = playlistId.replace(/^PL_/, "");
         return Array.from({ length: max }, (_, i) => `${channelId}_v${i}`);
       }),
-      fetchVideoStats: vi.fn(async (ids) =>
+      fetchVideoStats: vi.fn(async (ids: readonly string[]) =>
         ids.map((id, i) =>
           vid({
             videoId: id,
@@ -102,7 +102,7 @@ describe("runEngagementBatch", () => {
     const client: EngagementBatchClient = {
       fetchUploadsPlaylists: vi.fn(async () => new Map([["UC_with", "PL_with"]])),
       fetchPlaylistVideoIds: vi.fn(async () => ["v1", "v2"]),
-      fetchVideoStats: vi.fn(async (ids) =>
+      fetchVideoStats: vi.fn(async (ids: readonly string[]) =>
         ids.map((id) => vid({ videoId: id, viewCount: 1000, likeCount: 100 }))
       ),
     };
@@ -124,10 +124,12 @@ describe("runEngagementBatch", () => {
 
   it("dedupes overlapping video ids across channels (collab credit)", async () => {
     const client: EngagementBatchClient = {
-      fetchUploadsPlaylists: vi.fn(async (ids) => new Map(ids.map((id) => [id, `PL_${id}`]))),
+      fetchUploadsPlaylists: vi.fn(async (ids: readonly string[]) =>
+        new Map(ids.map((id) => [id, `PL_${id}`]))
+      ),
       // Both channels surface the same video "v_shared".
       fetchPlaylistVideoIds: vi.fn(async () => ["v_shared", "v_unique"]),
-      fetchVideoStats: vi.fn(async (ids) =>
+      fetchVideoStats: vi.fn(async (ids: readonly string[]) =>
         ids.map((id) => vid({ videoId: id, viewCount: 1000, likeCount: 50 }))
       ),
     };
@@ -151,14 +153,16 @@ describe("runEngagementBatch", () => {
 
   it("surfaces a playlist call error as an empty videos list (no crash)", async () => {
     const client: EngagementBatchClient = {
-      fetchUploadsPlaylists: vi.fn(async (ids) => new Map(ids.map((id) => [id, `PL_${id}`]))),
+      fetchUploadsPlaylists: vi.fn(async (ids: readonly string[]) =>
+        new Map(ids.map((id) => [id, `PL_${id}`]))
+      ),
       fetchPlaylistVideoIds: vi
         .fn()
         .mockImplementationOnce(async () => ["v1"])
         .mockImplementationOnce(async () => {
           throw new Error("403 quota");
         }),
-      fetchVideoStats: vi.fn(async (ids) =>
+      fetchVideoStats: vi.fn(async (ids: readonly string[]) =>
         ids.map((id) => vid({ videoId: id, viewCount: 1000, likeCount: 100 }))
       ),
     };

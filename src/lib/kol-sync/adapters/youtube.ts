@@ -25,6 +25,7 @@ import {
   type YoutubeClient,
 } from "../../../../scripts/seed-kol-from-youtube";
 import { pickDailyPage, type KolSyncCursorProvider } from "../cursor";
+import type { PerMatrixEntry } from "../log";
 import {
   pickPublishedAfterDays,
   publishedAfterIso,
@@ -353,6 +354,12 @@ export interface YouTubeAdapterOpts {
    *  passes `PUBLISHED_AFTER_CORE_REGIONS.slice(0, env count)` so a
    *  quota-tight day can shrink to 4 regions and reclaim 200u. */
   publishedAfterRegions?: readonly string[] | null;
+  /** BIx-F004-P5: per-cell observability hook. Fires once per
+   *  (region, keyword) iteration with the raw counts the daily log
+   *  serializes into `perMatrix`. The phase loop also fires this for
+   *  publishedAfter cells so a single log line can attribute
+   *  rejections by source. Omit to opt out (no-op). */
+  onMatrixCell?: (entry: PerMatrixEntry) => void;
 }
 
 export class YouTubeKolSyncAdapter implements KolSyncAdapter {
@@ -366,6 +373,7 @@ export class YouTubeKolSyncAdapter implements KolSyncAdapter {
   private readonly cursorProvider: KolSyncCursorProvider | null;
   private readonly now: () => Date;
   private readonly publishedAfterRegions: readonly string[] | null;
+  private readonly onMatrixCell: ((entry: PerMatrixEntry) => void) | null;
 
   constructor(opts: YouTubeAdapterOpts) {
     this.regions = opts.regions ?? DAILY_REGIONS;
@@ -379,6 +387,7 @@ export class YouTubeKolSyncAdapter implements KolSyncAdapter {
     this.cursorProvider = opts.cursorProvider ?? null;
     this.now = opts.now ?? (() => new Date());
     this.publishedAfterRegions = opts.publishedAfterRegions ?? null;
+    this.onMatrixCell = opts.onMatrixCell ?? null;
     if (opts.client) {
       this.client = opts.client;
     } else if (opts.apiKey) {
@@ -453,16 +462,32 @@ export class YouTubeKolSyncAdapter implements KolSyncAdapter {
         }
         const fresh = search.ids.filter((id) => !seenIds.has(id));
         for (const id of fresh) seenIds.add(id);
-        if (fresh.length === 0) continue;
-        const enriched = await client.fetchChannels(fresh);
-        for (const raw of enriched) {
-          const mapped = mapToRawKolData(raw, {
-            matrixRegion: region,
-            matrixKeyword: keyword,
-            minSubscribers,
-          });
-          if (mapped) results.push(mapped);
+        let cellAccepted = 0;
+        if (fresh.length > 0) {
+          const enriched = await client.fetchChannels(fresh);
+          for (const raw of enriched) {
+            const mapped = mapToRawKolData(raw, {
+              matrixRegion: region,
+              matrixKeyword: keyword,
+              minSubscribers,
+            });
+            if (mapped) {
+              results.push(mapped);
+              cellAccepted += 1;
+            }
+          }
         }
+        // BIx-F004-P5: per-cell observability. Reports raw / dedupe /
+        // rejection counts so the daily log can attribute zero-yield
+        // matrix days to a specific cell instead of the whole adapter.
+        this.onMatrixCell?.({
+          region,
+          keyword,
+          page: actualPage,
+          found: search.ids.length,
+          newAfterDedupe: fresh.length,
+          filterRejections: fresh.length - cellAccepted,
+        });
       }
     }
 
@@ -494,16 +519,32 @@ export class YouTubeKolSyncAdapter implements KolSyncAdapter {
         );
         const fresh = search.ids.filter((id) => !seenIds.has(id));
         for (const id of fresh) seenIds.add(id);
-        if (fresh.length === 0) continue;
-        const enriched = await client.fetchChannels(fresh);
-        for (const raw of enriched) {
-          const mapped = mapToRawKolData(raw, {
-            matrixRegion: region,
-            matrixKeyword: `${keyword}|after=${days}d`,
-            minSubscribers,
-          });
-          if (mapped) results.push(mapped);
+        let cellAccepted = 0;
+        if (fresh.length > 0) {
+          const enriched = await client.fetchChannels(fresh);
+          for (const raw of enriched) {
+            const mapped = mapToRawKolData(raw, {
+              matrixRegion: region,
+              matrixKeyword: `${keyword}|after=${days}d`,
+              minSubscribers,
+            });
+            if (mapped) {
+              results.push(mapped);
+              cellAccepted += 1;
+            }
+          }
         }
+        // BIx-F004-P5: report the publishedAfter cell on the same
+        // observability channel as the main matrix; the keyword carries
+        // the `|after=…d` suffix so consumers can split by phase.
+        this.onMatrixCell?.({
+          region,
+          keyword: `${keyword}|after=${days}d`,
+          page: 1,
+          found: search.ids.length,
+          newAfterDedupe: fresh.length,
+          filterRejections: fresh.length - cellAccepted,
+        });
       }
     }
 

@@ -17,6 +17,26 @@
 
 export type LogLevel = "INFO" | "WARN" | "ALERT";
 
+/** BIx-F004-P5 · per-(region, keyword) discover observability row. */
+export interface PerMatrixEntry {
+  region: string;
+  keyword: string;
+  /** Page reached on this run (1, 2, or 3 — see BIx-F004-P2 cursor). */
+  page: number;
+  found: number;
+  newAfterDedupe: number;
+  filterRejections: number;
+}
+
+/** BIx-F004-P5 · summary of the top-100 engagement batch run. */
+export interface EngagementBatchStats {
+  topKolsProcessed: number;
+  engagementUpdated: number;
+  latestVideosUpdated: number;
+  channelsWithoutPlaylist: number;
+  apiCallStats: { channels: number; playlistItems: number; videos: number };
+}
+
 export interface DailyLogLineInput {
   timestamp: string;
   endedAt: string;
@@ -36,6 +56,12 @@ export interface DailyLogLineInput {
   /** Streak of prior days with discoverCount = 0. The current run is
    *  not yet included (caller passes 0 on a fresh deployment). */
   zeroDiscoverStreakBefore: number;
+  /** BIx-F004-P5 · per-cell discover stats. Optional so older log
+   *  consumers / dry-runs that don't track this still serialize. */
+  perMatrix?: readonly PerMatrixEntry[];
+  /** BIx-F004-P5 · engagement batch summary. Optional for the same
+   *  reason as `perMatrix`. */
+  engagementBatchStats?: EngagementBatchStats;
 }
 
 export interface DailyLogLine extends DailyLogLineInput {
@@ -44,7 +70,10 @@ export interface DailyLogLine extends DailyLogLineInput {
   alerts: readonly string[];
 }
 
-const QUOTA_WARN_THRESHOLD = 3_000;
+// BIx-F004-P5 · BIx-F004 lifted nominal day to ~9,000u (matrix +
+// publishedAfter + engagement batch). Threshold sits ~500u above the
+// observed P95 so a "runaway adapter" still trips it.
+const QUOTA_WARN_THRESHOLD = 9_500;
 const ZERO_DISCOVER_ALERT_STREAK = 3; // 3 days in a row → ALERT
 const DURATION_WARN_MS = 300_000; // 5 min
 
