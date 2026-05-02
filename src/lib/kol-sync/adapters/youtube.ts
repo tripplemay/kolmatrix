@@ -17,57 +17,297 @@
 import type { youtube_v3 } from "googleapis";
 
 import {
-  FILTER_MIN_SUBSCRIBERS,
   FILTER_MIN_VIDEOS,
   createYoutubeClient,
+  getFilterMinSubscribers,
   isGamingTopic,
   type Region as KolSeedRegion,
   type YoutubeClient,
 } from "../../../../scripts/seed-kol-from-youtube";
-import type {
-  HealthCheckResult,
-  KolSyncAdapter,
-  RawKolData,
-  SyncParams,
-} from "../types";
+import type { HealthCheckResult, KolSyncAdapter, RawKolData, SyncParams } from "../types";
 
 // ---------------------------------------------------------------------
 // Daily matrix — what the adapter walks when SyncParams omits region.
+// BIx-F004-P1: 6 → 14 region matrix; per-region keyword pool of 12
+// rotated 6-at-a-time by day-of-year; per-page cap 10 → 50.
 // ---------------------------------------------------------------------
 
-export type DailyRegion = "CN" | "HK" | "TW" | "US" | "JP" | "KR";
+export type DailyRegion =
+  | "CN"
+  | "HK"
+  | "TW"
+  | "US"
+  | "GB"
+  | "DE"
+  | "ES"
+  | "BR"
+  | "MX"
+  | "JP"
+  | "KR"
+  | "TH"
+  | "ID"
+  | "IN";
 
-/** Six regions chosen to (a) keep the 中文区 supply up while the
- *  kol-seed-redo carry-forward gate (≥150 by 2026-05-03) is still
- *  open, and (b) refresh the major game-community markets. ES / GB
- *  are intentionally excluded from the daily matrix — they were
- *  covered by the kol-seed-redo one-shot crawl, and adding them
- *  wouldn't move the carry-forward needle. */
+/** 14 regions — covers Chinese / Anglo / European / Latin / SEA /
+ *  South Asian gaming-creator pools. Combined with the day-of-year
+ *  keyword rotation below, this lifts daily quota utilization from
+ *  ~18% to ~91%. ISO-3166-1 alpha-2 codes go straight into
+ *  `search.list?regionCode=…`. */
 export const DAILY_REGIONS: readonly DailyRegion[] = [
   "CN",
   "HK",
   "TW",
   "US",
+  "GB",
+  "DE",
+  "ES",
+  "BR",
+  "MX",
   "JP",
   "KR",
+  "TH",
+  "ID",
+  "IN",
 ];
 
-/** Three keywords per region — chosen to be more specific than the
- *  kol-seed-redo broad terms ("gaming"/"游戏") so we surface fresh
- *  channels the matrix hasn't already seen. */
-export const DAILY_KEYWORDS_BY_REGION: Record<DailyRegion, readonly string[]> = {
-  CN: ["游戏直播", "Steam", "手游推荐"],
-  HK: ["游戏直播", "Steam", "手游推荐"],
-  TW: ["游戏直播", "Steam", "手游推荐"],
-  US: ["gaming", "esports", "let's play"],
-  JP: ["ゲーム", "Vtuber", "実況"],
-  KR: ["게임", "스트리머", "esports"],
+/** Per-region keyword pool — 12 game-creator vertical terms. Each cron
+ *  day picks 6 by `dayOfYear % 2` (0 → indices 0–5, 1 → indices 6–11)
+ *  so a full rotation covers the pool every 2 days. Verticals cover
+ *  MOBA / FPS / RPG / 二次元 / live / commentary / strategy / Vtuber /
+ *  review / speedrun / VR / mobile / indie. */
+export const DAILY_KEYWORD_POOL_BY_REGION: Record<DailyRegion, readonly string[]> = {
+  CN: [
+    "游戏直播",
+    "Steam",
+    "手游推荐",
+    "电竞解说",
+    "游戏攻略",
+    "速通",
+    "二次元游戏",
+    "Vtuber",
+    "MOBA",
+    "FPS",
+    "原神",
+    "独立游戏",
+  ],
+  HK: [
+    "游戏直播",
+    "Steam",
+    "手游推荐",
+    "電競",
+    "Game 攻略",
+    "速通",
+    "二次元",
+    "Vtuber",
+    "MOBA",
+    "FPS",
+    "原神",
+    "獨立遊戲",
+  ],
+  TW: [
+    "遊戲直播",
+    "Steam",
+    "手遊推薦",
+    "電競",
+    "遊戲攻略",
+    "速通",
+    "二次元",
+    "Vtuber",
+    "MOBA",
+    "FPS",
+    "原神",
+    "獨立遊戲",
+  ],
+  US: [
+    "gaming",
+    "esports",
+    "let's play",
+    "FPS gameplay",
+    "MOBA",
+    "RPG playthrough",
+    "speedrun",
+    "indie game",
+    "VR gaming",
+    "mobile gaming",
+    "game review",
+    "twitch streamer",
+  ],
+  GB: [
+    "gaming",
+    "esports",
+    "let's play",
+    "FPS",
+    "MOBA",
+    "RPG",
+    "speedrun",
+    "indie",
+    "VR",
+    "mobile gaming",
+    "game review",
+    "streamer",
+  ],
+  DE: [
+    "Gaming",
+    "esports",
+    "Let's Play",
+    "Gameplay",
+    "MOBA",
+    "Rollenspiel",
+    "Speedrun",
+    "Indie Spiel",
+    "VR Gaming",
+    "Mobile Gaming",
+    "Spielereview",
+    "Streamer",
+  ],
+  ES: [
+    "juegos",
+    "gaming",
+    "esports",
+    "videojuegos",
+    "MOBA",
+    "FPS",
+    "rol",
+    "speedrun",
+    "indie",
+    "móviles",
+    "análisis juego",
+    "streamer",
+  ],
+  BR: [
+    "jogos",
+    "gameplay",
+    "esports",
+    "Let's Play",
+    "MOBA",
+    "FPS",
+    "RPG",
+    "speedrun",
+    "indie",
+    "mobile",
+    "análise de jogo",
+    "streamer",
+  ],
+  MX: [
+    "videojuegos",
+    "gameplay",
+    "esports",
+    "gaming",
+    "MOBA",
+    "FPS",
+    "rol",
+    "speedrun",
+    "indie",
+    "móviles",
+    "reseña",
+    "streamer",
+  ],
+  JP: [
+    "ゲーム",
+    "実況",
+    "Vtuber",
+    "ゲーム実況",
+    "esports",
+    "FPS",
+    "RPG",
+    "速攻",
+    "インディーゲーム",
+    "VR",
+    "モバイルゲーム",
+    "ゲームレビュー",
+  ],
+  KR: [
+    "게임",
+    "스트리머",
+    "esports",
+    "방송",
+    "프로게이머",
+    "FPS",
+    "RPG",
+    "스피드런",
+    "인디게임",
+    "VR",
+    "모바일게임",
+    "게임리뷰",
+  ],
+  TH: [
+    "เกม",
+    "เกมมิ่ง",
+    "esports",
+    "สตรีมเมอร์",
+    "MOBA",
+    "FPS",
+    "RPG",
+    "เกมมือถือ",
+    "speedrun",
+    "อินดี้",
+    "รีวิวเกม",
+    "Vtuber",
+  ],
+  ID: [
+    "gaming",
+    "game",
+    "esports",
+    "streamer",
+    "MOBA",
+    "FPS",
+    "RPG",
+    "Mobile Legends",
+    "speedrun",
+    "indie",
+    "review game",
+    "let's play",
+  ],
+  IN: [
+    "gaming",
+    "esports",
+    "gameplay",
+    "BGMI",
+    "Free Fire",
+    "FPS",
+    "MOBA",
+    "RPG",
+    "speedrun",
+    "indie",
+    "game review",
+    "streamer",
+  ],
 };
 
-/** Per-page result cap — `search.list` ignores anything > 50, but the
- *  daily spec wants smaller pages so the dispatcher's 1,800u/day
- *  budget is predictable. */
-export const DAILY_MAX_RESULTS = 10;
+/**
+ * Pick today's 6 keywords for a region from the 12-deep pool.
+ * Rotation = `dayOfYear % 2` → indices 0–5 (even days) or 6–11 (odd
+ * days). Two-day cycle covers the full vertical rotation; combined
+ * with the publishedAfter slice cycle (F004-P3) the matrix surfaces
+ * different cohorts every day. Pure / deterministic / unit-testable.
+ */
+export function pickDailyKeywords(region: DailyRegion, date: Date = new Date()): readonly string[] {
+  const pool = DAILY_KEYWORD_POOL_BY_REGION[region] ?? [];
+  if (pool.length === 0) return [];
+  const start = Date.UTC(date.getUTCFullYear(), 0, 0);
+  const diff = date.getTime() - start;
+  const dayOfYear = Math.floor(diff / 86_400_000);
+  const half = Math.floor(pool.length / 2);
+  const offset = (dayOfYear % 2) * half;
+  return pool.slice(offset, offset + half);
+}
+
+/** Per-page cap. F004-P1 lifted 10 → 50 (`search.list` API maximum)
+ *  so each 100u call returns 5× more candidates without changing
+ *  the per-call quota. */
+export const DAILY_MAX_RESULTS = 50;
+
+/**
+ * @deprecated kept as alias for back-compat with snapshot tests; new
+ * code reads `pickDailyKeywords(region, today)` for the rotation. The
+ * exported map still resolves via the pool so the shape is stable.
+ */
+export const DAILY_KEYWORDS_BY_REGION: Record<DailyRegion, readonly string[]> = Object.fromEntries(
+  (Object.keys(DAILY_KEYWORD_POOL_BY_REGION) as DailyRegion[]).map((r) => [
+    r,
+    DAILY_KEYWORD_POOL_BY_REGION[r],
+  ])
+) as Record<DailyRegion, readonly string[]>;
 
 /** A well-known stable channel used by `healthCheck()` to confirm
  *  API key + quota + JSON shape with one unit. YouTube Spotlight has
@@ -99,14 +339,17 @@ export class YouTubeKolSyncAdapter implements KolSyncAdapter {
 
   private readonly client: YoutubeClient | null;
   private readonly regions: readonly string[];
-  private readonly keywordsByRegion: Readonly<Record<string, readonly string[]>>;
+  private readonly keywordsByRegion: Readonly<Record<string, readonly string[]>> | null;
   private readonly maxResults: number;
 
   constructor(opts: YouTubeAdapterOpts) {
     this.regions = opts.regions ?? DAILY_REGIONS;
-    this.keywordsByRegion =
-      opts.keywordsByRegion ??
-      (DAILY_KEYWORDS_BY_REGION as Readonly<Record<string, readonly string[]>>);
+    // BIx-F004-P1: when callers don't override, leave the keyword
+    // resolution lazy — `discover()` calls `pickDailyKeywords()` per
+    // region for today's rotation. The static `keywordsByRegion`
+    // record below is only consulted when an override is supplied
+    // (tests / one-shot scripts).
+    this.keywordsByRegion = opts.keywordsByRegion ?? null;
     this.maxResults = opts.maxResults ?? DAILY_MAX_RESULTS;
     if (opts.client) {
       this.client = opts.client;
@@ -121,7 +364,8 @@ export class YouTubeKolSyncAdapter implements KolSyncAdapter {
     const client = this.requireClient();
     const regions = params.region ? [params.region] : this.regions;
     const maxResults = params.maxResults ?? this.maxResults;
-    const minSubscribers = params.minSubscribers ?? FILTER_MIN_SUBSCRIBERS;
+    const minSubscribers = params.minSubscribers ?? getFilterMinSubscribers();
+    const today = new Date();
 
     // Dedupe across (region, keyword) so popular channels don't
     // double-bill the channels.list quota when multiple queries hit
@@ -130,21 +374,22 @@ export class YouTubeKolSyncAdapter implements KolSyncAdapter {
     const results: RawKolData[] = [];
 
     for (const region of regions) {
+      // Keyword resolution priority: per-call override → constructor
+      // override → today's rotation from the per-region pool.
       const keywords =
         params.keywords && params.keywords.length > 0
           ? params.keywords
-          : this.keywordsByRegion[region] ?? [];
+          : (this.keywordsByRegion?.[region] ??
+            (DAILY_KEYWORD_POOL_BY_REGION[region as DailyRegion]
+              ? pickDailyKeywords(region as DailyRegion, today)
+              : []));
       for (const keyword of keywords) {
         // Cast: SyncParams.region is widened to string for portability
         // across adapters; the kol-seed-redo client predates B6 and
         // narrows to its own Region enum. The DAILY_REGIONS used by
         // this adapter are a subset of that enum, so the cast is
         // sound at runtime.
-        const search = await client.searchChannels(
-          region as KolSeedRegion,
-          keyword,
-          maxResults
-        );
+        const search = await client.searchChannels(region as KolSeedRegion, keyword, maxResults);
         const fresh = search.ids.filter((id) => !seenIds.has(id));
         for (const id of fresh) seenIds.add(id);
         if (fresh.length === 0) continue;
@@ -177,7 +422,7 @@ export class YouTubeKolSyncAdapter implements KolSyncAdapter {
         const mapped = mapToRawKolData(raw, {
           matrixRegion: null,
           matrixKeyword: null,
-          minSubscribers: FILTER_MIN_SUBSCRIBERS,
+          minSubscribers: getFilterMinSubscribers(),
         });
         if (mapped) out.push(mapped);
       }
@@ -264,8 +509,7 @@ export function mapToRawKolData(
     description,
     country: snippet.country ?? null,
     language: snippet.defaultLanguage ?? null,
-    thumbnailUrl:
-      snippet.thumbnails?.high?.url ?? snippet.thumbnails?.default?.url ?? null,
+    thumbnailUrl: snippet.thumbnails?.high?.url ?? snippet.thumbnails?.default?.url ?? null,
     bannerUrl: branding.image?.bannerExternalUrl ?? null,
     subscriberCount,
     videoCount,

@@ -120,23 +120,25 @@ describe("mapToRawKolData (pure)", () => {
   });
 });
 
-describe("YouTubeKolSyncAdapter · matrix defaults", () => {
-  it("daily matrix is 6 region × 3 keyword × 10 results = 1,800u worst-case", () => {
-    expect(DAILY_REGIONS).toHaveLength(6);
+describe("YouTubeKolSyncAdapter · matrix defaults (BIx-F004-P1: 14 region × 6 keyword)", () => {
+  it("daily matrix is 14 region × 6 keyword × 50 results = 8,400u worst-case", () => {
+    expect(DAILY_REGIONS).toHaveLength(14);
+    // Pool is 12 keywords / region; pickDailyKeywords returns 6 per day.
     for (const r of DAILY_REGIONS) {
-      expect(DAILY_KEYWORDS_BY_REGION[r]).toHaveLength(3);
+      expect(DAILY_KEYWORDS_BY_REGION[r]).toHaveLength(12);
     }
-    // 6 × 3 = 18 search.list calls × 100u = 1,800u
-    const calls =
-      DAILY_REGIONS.reduce((sum, r) => sum + DAILY_KEYWORDS_BY_REGION[r].length, 0);
-    expect(calls).toBe(18);
-    expect(calls * 100).toBe(1_800);
+    // 14 region × 6 keyword (today's rotation slice) = 84 search.list
+    // calls × 100u = 8,400u — base cost before publishedAfter slices
+    // and engagement batch.
+    const callsPerDay = DAILY_REGIONS.length * 6;
+    expect(callsPerDay).toBe(84);
+    expect(callsPerDay * 100).toBe(8_400);
   });
 
-  it("Chinese-region keywords are present in CN/HK/TW (carry-forward补缺口)", () => {
-    for (const r of ["CN", "HK", "TW"] as const) {
-      expect(DAILY_KEYWORDS_BY_REGION[r]).toContain("游戏直播");
-    }
+  it("Chinese-region pool keeps the carry-forward seed terms (CN/HK/TW)", () => {
+    expect(DAILY_KEYWORDS_BY_REGION.CN).toContain("游戏直播");
+    expect(DAILY_KEYWORDS_BY_REGION.HK).toContain("游戏直播");
+    expect(DAILY_KEYWORDS_BY_REGION.TW).toContain("遊戲直播");
   });
 });
 
@@ -163,12 +165,13 @@ describe("YouTubeKolSyncAdapter · discover", () => {
     const client = stubClient();
     const adapter = new YouTubeKolSyncAdapter({ apiKey: "key", client });
     const data = await adapter.discover({});
-    // 18 search calls (6 region × 3 keyword).
-    expect(client.searchChannels).toHaveBeenCalledTimes(18);
+    // BIx-F004-P1: 14 region × 6 keyword (today's pickDailyKeywords
+    // slice from a 12-keyword pool) = 84 search.list calls.
+    expect(client.searchChannels).toHaveBeenCalledTimes(84);
     // UC_SHARED appears in every search but is fetched only once.
     expect(data.filter((d) => d.externalId === "UC_SHARED")).toHaveLength(1);
-    // 18 unique per-keyword ids + 1 shared = 19 RawKolData rows.
-    expect(data).toHaveLength(19);
+    // 84 unique per-(region,keyword) ids + 1 shared = 85 rows.
+    expect(data).toHaveLength(85);
     expect(data.every((d) => d.platform === "youtube")).toBe(true);
   });
 

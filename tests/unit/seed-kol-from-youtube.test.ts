@@ -172,9 +172,12 @@ describe("mapChannel", () => {
   });
 
   it("drops channels under the subscriber threshold", () => {
+    // BIx-F004-P1 lowered the default threshold 10_000 → 1_000 to honour
+    // PRD §10.1 micro-influencer floor; fixture now sits below the new
+    // default so the "below threshold returns null" intent still holds.
     const tiny = {
       ...baseRaw,
-      statistics: { ...baseRaw.statistics, subscriberCount: "9999" },
+      statistics: { ...baseRaw.statistics, subscriberCount: "999" },
     };
     expect(mapChannel(tiny, "US", "gaming")).toBeNull();
   });

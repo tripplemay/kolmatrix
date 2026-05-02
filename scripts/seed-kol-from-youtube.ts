@@ -42,20 +42,32 @@ import { google, youtube_v3 } from "googleapis";
 // Matrix config — 8 regions × 5 language-appropriate gaming keywords.
 // ---------------------------------------------------------------------
 
-export type Region = "CN" | "HK" | "TW" | "US" | "GB" | "JP" | "KR" | "ES";
+export type Region =
+  | "CN"
+  | "HK"
+  | "TW"
+  | "US"
+  | "GB"
+  | "JP"
+  | "KR"
+  | "ES"
+  // BIx-F004-P1: daily matrix expanded 6→14 regions to lift discovery
+  // density (8% → ~91% of daily quota). These ISO-3166-1 alpha-2 codes
+  // are accepted directly by YouTube `search.list?regionCode=…`.
+  | "DE"
+  | "BR"
+  | "MX"
+  | "TH"
+  | "ID"
+  | "IN";
 
-export const ALL_REGIONS: readonly Region[] = [
-  "CN",
-  "HK",
-  "TW",
-  "US",
-  "GB",
-  "JP",
-  "KR",
-  "ES",
-];
+export const ALL_REGIONS: readonly Region[] = ["CN", "HK", "TW", "US", "GB", "JP", "KR", "ES"];
 
-const KEYWORDS_BY_REGION: Record<Region, readonly string[]> = {
+// One-shot seed script only walks the original 8 ALL_REGIONS — daily
+// cron uses the wider 14-region matrix in `src/lib/kol-sync/adapters/
+// youtube.ts`. `Partial<Record<…>>` keeps the type honest so adding
+// a new code to `Region` doesn't fail-stop here.
+const KEYWORDS_BY_REGION: Partial<Record<Region, readonly string[]>> = {
   CN: ["游戏", "电竞", "手游", "主播", "实况"],
   HK: ["游戏", "电竞", "手游", "主播", "实况"],
   TW: ["游戏", "电竞", "手游", "主播", "实况"],
@@ -66,7 +78,37 @@ const KEYWORDS_BY_REGION: Record<Region, readonly string[]> = {
   ES: ["juegos", "gaming", "esports", "streamer", "videojuegos"],
 };
 
-export const FILTER_MIN_SUBSCRIBERS = 10_000;
+/**
+ * BIx-F004-P1 · `KOL_SYNC_MIN_SUBSCRIBERS` env-var hook.
+ *
+ * Per spec §F004 and the 2026-05-01 user decision (c), the minimum-
+ * subscribers filter is now environment-driven so prod and staging
+ * can carry different thresholds without code edits:
+ *
+ *   - prod      → unset (or `1000`) → matches PRD §10.1 micro-influencer
+ *                 floor + `quality.ts` 1K signal.
+ *   - staging   → `KOL_SYNC_MIN_SUBSCRIBERS=10000` (kept higher for
+ *                 noise reduction; staging data set stays curated).
+ *
+ * Defaulting to `1000` instead of the legacy `10_000` was an
+ * intentional product decision — prior seed runs over-filtered the
+ * micro-influencer band PRD asked us to cover.
+ */
+export function getFilterMinSubscribers(): number {
+  const raw = process.env.KOL_SYNC_MIN_SUBSCRIBERS;
+  if (!raw) return 1_000;
+  const n = parseInt(raw, 10);
+  return Number.isFinite(n) && n > 0 ? n : 1_000;
+}
+/**
+ * @deprecated Use `getFilterMinSubscribers()` so the env-var hook is
+ * honoured. Re-exported as a number constant solely so existing
+ * snapshot tests / fixtures that imported the symbol keep type-
+ * checking; the value is captured at module load and reflects the
+ * env at process start. Callers in hot paths (adapter / seeder)
+ * already migrated to the function form.
+ */
+export const FILTER_MIN_SUBSCRIBERS = getFilterMinSubscribers();
 export const FILTER_MIN_VIDEOS = 30;
 
 /**
@@ -160,9 +202,7 @@ export function parseArgs(argv: readonly string[]): CliArgs {
     } else if (a === "--region") {
       const v = argv[++i] ?? "";
       if (!isRegion(v)) {
-        throw new Error(
-          `--region must be one of ${ALL_REGIONS.join("|")}, got "${v}"`
-        );
+        throw new Error(`--region must be one of ${ALL_REGIONS.join("|")}, got "${v}"`);
       }
       args.region = v;
     } else if (a === "--max-results") {
@@ -192,10 +232,7 @@ function isRegion(v: string): v is Region {
 
 export function buildRunPlan(args: CliArgs): RunPlan {
   const regions = args.region ? [args.region] : ALL_REGIONS;
-  const totalQueries = regions.reduce(
-    (sum, r) => sum + KEYWORDS_BY_REGION[r].length,
-    0
-  );
+  const totalQueries = regions.reduce((sum, r) => sum + (KEYWORDS_BY_REGION[r]?.length ?? 0), 0);
   const totalSearchCalls = totalQueries * args.maxPagesPerQuery;
   const totalSearchQuotaUnits = totalSearchCalls * 100;
   const worstCaseChannels = totalSearchCalls * args.maxResultsPerQuery;
@@ -208,8 +245,7 @@ export function buildRunPlan(args: CliArgs): RunPlan {
     totalSearchQuotaUnits,
     worstCaseChannelCalls,
     worstCaseChannelQuotaUnits,
-    totalQuotaUnitsWorstCase:
-      totalSearchQuotaUnits + worstCaseChannelQuotaUnits,
+    totalQuotaUnitsWorstCase: totalSearchQuotaUnits + worstCaseChannelQuotaUnits,
   };
 }
 
@@ -235,7 +271,7 @@ export function mapChannel(
   const viewCount = parseIntSafe(stats.viewCount);
 
   if (!id) return null;
-  if (subscriberCount < FILTER_MIN_SUBSCRIBERS) return null;
+  if (subscriberCount < getFilterMinSubscribers()) return null;
   if (videoCount < FILTER_MIN_VIDEOS) return null;
   const description = (snippet.description ?? "").trim();
   if (description.length === 0) return null;
@@ -250,10 +286,7 @@ export function mapChannel(
     country: snippet.country ?? null,
     defaultLanguage: snippet.defaultLanguage ?? null,
     publishedAt: snippet.publishedAt ?? null,
-    thumbnailUrl:
-      snippet.thumbnails?.high?.url ??
-      snippet.thumbnails?.default?.url ??
-      null,
+    thumbnailUrl: snippet.thumbnails?.high?.url ?? snippet.thumbnails?.default?.url ?? null,
     bannerUrl: branding.image?.bannerExternalUrl ?? null,
     subscriberCount,
     videoCount,
@@ -280,10 +313,7 @@ function parseIntSafe(v: string | number | null | undefined): number {
 // keep importing from the same surface.
 // ---------------------------------------------------------------------
 
-import {
-  withRetry,
-  type RetryOpts,
-} from "../src/lib/kol-sync/retry";
+import { withRetry, type RetryOpts } from "../src/lib/kol-sync/retry";
 
 export { withRetry, type RetryOpts };
 
@@ -355,7 +385,7 @@ export interface RunReport {
   channelCallsExecuted: number;
   uniqueChannelsSeen: number;
   channelsAcceptedByFilters: number;
-  perRegion: Record<Region, number>;
+  perRegion: Partial<Record<Region, number>>;
   startedAt: string;
   endedAt: string;
 }
@@ -370,34 +400,32 @@ export interface RunOpts {
   retry?: RetryOpts;
 }
 
-export async function runCrawl(
-  args: CliArgs,
-  opts: RunOpts
-): Promise<RunReport> {
+export async function runCrawl(args: CliArgs, opts: RunOpts): Promise<RunReport> {
   const plan = buildRunPlan(args);
   const startedAt = new Date().toISOString();
   const seenChannelIds = new Set<string>();
   const collectedChannels: EnrichedChannel[] = [];
-  const perRegion: Record<Region, number> = {
-    CN: 0, HK: 0, TW: 0, US: 0, GB: 0, JP: 0, KR: 0, ES: 0,
+  const perRegion: Partial<Record<Region, number>> = {
+    CN: 0,
+    HK: 0,
+    TW: 0,
+    US: 0,
+    GB: 0,
+    JP: 0,
+    KR: 0,
+    ES: 0,
   };
   let searchCallsExecuted = 0;
   let channelCallsExecuted = 0;
   let acceptedByFilters = 0;
 
   for (const region of plan.regions) {
-    const keywords = KEYWORDS_BY_REGION[region];
+    const keywords = KEYWORDS_BY_REGION[region] ?? [];
     for (const keyword of keywords) {
       let pageToken: string | undefined = undefined;
       for (let page = 0; page < args.maxPagesPerQuery; page += 1) {
         const search: SearchPage = await withRetry(
-          () =>
-            opts.client.searchChannels(
-              region,
-              keyword,
-              args.maxResultsPerQuery,
-              pageToken
-            ),
+          () => opts.client.searchChannels(region, keyword, args.maxResultsPerQuery, pageToken),
           opts.retry
         );
         searchCallsExecuted += 1;
@@ -409,17 +437,14 @@ export async function runCrawl(
         // channels.list takes up to 50 IDs/call.
         for (let i = 0; i < newIds.length; i += 50) {
           const slice = newIds.slice(i, i + 50);
-          const raw = await withRetry(
-            () => opts.client.fetchChannels(slice),
-            opts.retry
-          );
+          const raw = await withRetry(() => opts.client.fetchChannels(slice), opts.retry);
           channelCallsExecuted += 1;
           opts.onApiCall?.("channels", 1);
           for (const r of raw) {
             const mapped = mapChannel(r, region, keyword);
             if (!mapped) continue;
             acceptedByFilters += 1;
-            perRegion[region] += 1;
+            perRegion[region] = (perRegion[region] ?? 0) + 1;
             collectedChannels.push(mapped);
             opts.onChannel?.(mapped);
           }
@@ -470,8 +495,7 @@ export function formatOutputJson(report: RunReport): string {
         quota: {
           searchCallsExecuted: report.searchCallsExecuted,
           channelCallsExecuted: report.channelCallsExecuted,
-          totalQuotaUnitsConsumed:
-            report.searchCallsExecuted * 100 + report.channelCallsExecuted,
+          totalQuotaUnitsConsumed: report.searchCallsExecuted * 100 + report.channelCallsExecuted,
         },
         counts: {
           uniqueChannelsSeen: report.uniqueChannelsSeen,
@@ -500,7 +524,7 @@ async function main(): Promise<void> {
     `[seed-kol-youtube] plan: search=${plan.totalSearchCalls} calls × 100u = ${plan.totalSearchQuotaUnits}u, channels (worst case)=${plan.worstCaseChannelCalls} calls × 1u = ${plan.worstCaseChannelQuotaUnits}u, total worst-case ${plan.totalQuotaUnitsWorstCase}u (free tier 10,000u/day)`
   );
   console.log(
-    `[seed-kol-youtube] filters: subscriberCount ≥ ${FILTER_MIN_SUBSCRIBERS.toLocaleString()}, videoCount ≥ ${FILTER_MIN_VIDEOS}, description non-empty`
+    `[seed-kol-youtube] filters: subscriberCount ≥ ${getFilterMinSubscribers().toLocaleString()}, videoCount ≥ ${FILTER_MIN_VIDEOS}, description non-empty`
   );
 
   if (args.dryRun) {
@@ -546,9 +570,7 @@ async function main(): Promise<void> {
     retry: {
       onRetry: (attempt, err) => {
         const msg = err instanceof Error ? err.message : String(err);
-        console.warn(
-          `[seed-kol-youtube] retry #${attempt} after error: ${msg.slice(0, 200)}`
-        );
+        console.warn(`[seed-kol-youtube] retry #${attempt} after error: ${msg.slice(0, 200)}`);
       },
     },
   });
@@ -570,9 +592,7 @@ async function main(): Promise<void> {
 
 if (require.main === module) {
   main().catch((err) => {
-    console.error(
-      `[seed-kol-youtube] fatal: ${err instanceof Error ? err.message : err}`
-    );
+    console.error(`[seed-kol-youtube] fatal: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
   });
 }
