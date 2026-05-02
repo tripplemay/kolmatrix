@@ -15,6 +15,8 @@
 # Each line: <icon_name>  # <where it's used>  <missed pattern>
 #
 # Lines starting with # are comments. Empty lines ignored.
+# CI guard reminder: after editing this file, run regenerate-material-symbols-subset.sh
+# locally (or wait for next baseline workflow) and commit the resulting woff2 update.
 
 account_balance_wallet      # RoiKpiStrip.tsx:63                    | JSX icon prop
 auto_fix_high               # knowledge-base/page.tsx:81            | array element
