@@ -78,8 +78,7 @@ const ZERO_DISCOVER_ALERT_STREAK = 3; // 3 days in a row → ALERT
 const DURATION_WARN_MS = 300_000; // 5 min
 
 export function classifyDailyRun(input: DailyLogLineInput): DailyLogLine {
-  const durationMs =
-    new Date(input.endedAt).getTime() - new Date(input.timestamp).getTime();
+  const durationMs = new Date(input.endedAt).getTime() - new Date(input.timestamp).getTime();
   const alerts: string[] = [];
   if (input.estimatedQuotaConsumed > QUOTA_WARN_THRESHOLD) {
     alerts.push(
@@ -88,9 +87,7 @@ export function classifyDailyRun(input: DailyLogLineInput): DailyLogLine {
   }
   if (input.discoverCount === 0) {
     const futureStreak = input.zeroDiscoverStreakBefore + 1;
-    alerts.push(
-      `discover_count=0 (streak=${futureStreak}/${ZERO_DISCOVER_ALERT_STREAK})`
-    );
+    alerts.push(`discover_count=0 (streak=${futureStreak}/${ZERO_DISCOVER_ALERT_STREAK})`);
   }
   if (input.errors.length > 0) {
     alerts.push(`errors=${input.errors.length}`);

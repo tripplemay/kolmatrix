@@ -198,10 +198,7 @@ function formatMarkdownReport(report: DailyRunReport): string {
   }
   if (report.perMatrix.length > 0) {
     const totalFound = report.perMatrix.reduce((s, e) => s + e.found, 0);
-    const totalRejections = report.perMatrix.reduce(
-      (s, e) => s + e.filterRejections,
-      0
-    );
+    const totalRejections = report.perMatrix.reduce((s, e) => s + e.filterRejections, 0);
     lines.push("## Per-matrix (BIx-F004-P5)");
     lines.push(
       `- Cells: ${report.perMatrix.length} | found: ${totalFound} | filterRejections: ${totalRejections}`

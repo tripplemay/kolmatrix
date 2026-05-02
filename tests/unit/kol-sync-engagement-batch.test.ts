@@ -124,8 +124,8 @@ describe("runEngagementBatch", () => {
 
   it("dedupes overlapping video ids across channels (collab credit)", async () => {
     const client: EngagementBatchClient = {
-      fetchUploadsPlaylists: vi.fn(async (ids: readonly string[]) =>
-        new Map(ids.map((id) => [id, `PL_${id}`]))
+      fetchUploadsPlaylists: vi.fn(
+        async (ids: readonly string[]) => new Map(ids.map((id) => [id, `PL_${id}`]))
       ),
       // Both channels surface the same video "v_shared".
       fetchPlaylistVideoIds: vi.fn(async () => ["v_shared", "v_unique"]),
@@ -153,8 +153,8 @@ describe("runEngagementBatch", () => {
 
   it("surfaces a playlist call error as an empty videos list (no crash)", async () => {
     const client: EngagementBatchClient = {
-      fetchUploadsPlaylists: vi.fn(async (ids: readonly string[]) =>
-        new Map(ids.map((id) => [id, `PL_${id}`]))
+      fetchUploadsPlaylists: vi.fn(
+        async (ids: readonly string[]) => new Map(ids.map((id) => [id, `PL_${id}`]))
       ),
       fetchPlaylistVideoIds: vi
         .fn()

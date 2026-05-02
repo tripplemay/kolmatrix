@@ -30,14 +30,8 @@ import {
   publishedAfterIso,
 } from "@/lib/kol-sync/published-after";
 import { pickTieredRefreshIds } from "@/lib/kol-sync/refresh-selector";
-import {
-  runEngagementBatch,
-  type EngagementBatchClient,
-} from "@/lib/kol-sync/engagement-batch";
-import {
-  classifyDailyRun,
-  type PerMatrixEntry,
-} from "@/lib/kol-sync/log";
+import { runEngagementBatch, type EngagementBatchClient } from "@/lib/kol-sync/engagement-batch";
+import { classifyDailyRun, type PerMatrixEntry } from "@/lib/kol-sync/log";
 import type { YoutubeClient } from "@/../scripts/seed-kol-from-youtube";
 
 function fullChannel(id: string) {
@@ -160,9 +154,11 @@ describe("BIx-F004 quota optimization · tiered refresh prioritisation (P3)", ()
     });
     // Flagged first, then tier 1 slice, then tier 2 slice.
     expect(out[0]).toBe("FLAG_X");
-    expect(out.slice(1).every((id) => id.startsWith("T1_") || id.startsWith("T2_") || id.startsWith("T3_"))).toBe(
-      true
-    );
+    expect(
+      out
+        .slice(1)
+        .every((id) => id.startsWith("T1_") || id.startsWith("T2_") || id.startsWith("T3_"))
+    ).toBe(true);
     expect(out.length).toBeLessThanOrEqual(200);
   });
 });
@@ -170,8 +166,8 @@ describe("BIx-F004 quota optimization · tiered refresh prioritisation (P3)", ()
 describe("BIx-F004 quota optimization · engagement batch + log line (P4+P5)", () => {
   it("engagement batch result feeds back into classifyDailyRun via engagementBatchStats", async () => {
     const client: EngagementBatchClient = {
-      fetchUploadsPlaylists: vi.fn(async (ids: readonly string[]) =>
-        new Map(ids.map((id) => [id, `PL_${id}`]))
+      fetchUploadsPlaylists: vi.fn(
+        async (ids: readonly string[]) => new Map(ids.map((id) => [id, `PL_${id}`]))
       ),
       fetchPlaylistVideoIds: vi.fn(async () => ["v1", "v2", "v3", "v4", "v5", "v6"]),
       fetchVideoStats: vi.fn(async (ids: readonly string[]) =>
@@ -211,7 +207,14 @@ describe("BIx-F004 quota optimization · engagement batch + log line (P4+P5)", (
       errors: [],
       zeroDiscoverStreakBefore: 0,
       perMatrix: [
-        { region: "US", keyword: "gaming", page: 1, found: 50, newAfterDedupe: 48, filterRejections: 12 },
+        {
+          region: "US",
+          keyword: "gaming",
+          page: 1,
+          found: 50,
+          newAfterDedupe: 48,
+          filterRejections: 12,
+        },
       ],
       engagementBatchStats: {
         topKolsProcessed: result.topKolsProcessed,

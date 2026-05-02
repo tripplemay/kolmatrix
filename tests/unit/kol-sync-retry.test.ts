@@ -19,10 +19,7 @@ import {
   formatDailyLogLineJson,
   type DailyLogLineInput,
 } from "@/lib/kol-sync/log";
-import {
-  DEFAULT_BACKOFFS_MS,
-  withRetry,
-} from "@/lib/kol-sync/retry";
+import { DEFAULT_BACKOFFS_MS, withRetry } from "@/lib/kol-sync/retry";
 
 describe("withRetry", () => {
   it("returns the first successful result without sleeping", async () => {
@@ -65,9 +62,7 @@ describe("withRetry", () => {
     const fn = vi.fn(async () => {
       throw new Error("permanent");
     });
-    await expect(
-      withRetry(fn, { backoffsMs: [1, 1, 1], sleep })
-    ).rejects.toThrow(/permanent/);
+    await expect(withRetry(fn, { backoffsMs: [1, 1, 1], sleep })).rejects.toThrow(/permanent/);
     // 1 initial attempt + 3 retries = 4 calls.
     expect(fn).toHaveBeenCalledTimes(4);
   });
@@ -79,9 +74,9 @@ describe("withRetry", () => {
 
       throw "plain-string";
     });
-    await expect(
-      withRetry(fn, { backoffsMs: [], sleep: async () => {} })
-    ).rejects.toBeInstanceOf(Error);
+    await expect(withRetry(fn, { backoffsMs: [], sleep: async () => {} })).rejects.toBeInstanceOf(
+      Error
+    );
   });
 });
 
@@ -119,20 +114,14 @@ describe("classifyDailyRun", () => {
   });
 
   it("WARN on a single zero-discover day, ALERT on the third in a row", () => {
-    const day1 = classifyDailyRun(
-      baseInput({ discoverCount: 0, zeroDiscoverStreakBefore: 0 })
-    );
+    const day1 = classifyDailyRun(baseInput({ discoverCount: 0, zeroDiscoverStreakBefore: 0 }));
     expect(day1.level).toBe("WARN");
     expect(day1.alerts.some((a) => a.includes("streak=1/3"))).toBe(true);
 
-    const day2 = classifyDailyRun(
-      baseInput({ discoverCount: 0, zeroDiscoverStreakBefore: 1 })
-    );
+    const day2 = classifyDailyRun(baseInput({ discoverCount: 0, zeroDiscoverStreakBefore: 1 }));
     expect(day2.level).toBe("WARN");
 
-    const day3 = classifyDailyRun(
-      baseInput({ discoverCount: 0, zeroDiscoverStreakBefore: 2 })
-    );
+    const day3 = classifyDailyRun(baseInput({ discoverCount: 0, zeroDiscoverStreakBefore: 2 }));
     expect(day3.level).toBe("ALERT");
     expect(day3.alerts.some((a) => a.includes("streak=3/3"))).toBe(true);
   });
@@ -190,7 +179,9 @@ describe("countTrailingZeroDiscoverStreak", () => {
   });
 
   it("accepts both discoverCount and discover_count keys (legacy compat)", () => {
-    const log = [JSON.stringify({ discover_count: 0 }), JSON.stringify({ discover_count: 0 })].join("\n");
+    const log = [JSON.stringify({ discover_count: 0 }), JSON.stringify({ discover_count: 0 })].join(
+      "\n"
+    );
     expect(countTrailingZeroDiscoverStreak(log)).toBe(2);
   });
 });
