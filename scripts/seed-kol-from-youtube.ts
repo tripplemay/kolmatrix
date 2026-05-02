@@ -331,7 +331,10 @@ export interface YoutubeClient {
     region: Region,
     keyword: string,
     maxResults: number,
-    pageToken?: string
+    pageToken?: string,
+    /** BIx-F004-P3: RFC-3339 lower bound on video upload date.
+     *  Forwarded to search.list `publishedAfter`. */
+    publishedAfter?: string
   ): Promise<SearchPage>;
   fetchChannels(ids: string[]): Promise<youtube_v3.Schema$Channel[]>;
 }
@@ -339,7 +342,7 @@ export interface YoutubeClient {
 export function createYoutubeClient(apiKey: string): YoutubeClient {
   const yt = google.youtube({ version: "v3", auth: apiKey });
   return {
-    async searchChannels(region, keyword, maxResults, pageToken) {
+    async searchChannels(region, keyword, maxResults, pageToken, publishedAfter) {
       // NOTE: `videoCategoryId` is only honoured by search.list when
       // type=video; combining it with type=channel returns
       // 400 "Request contains an invalid argument". We instead lean on
@@ -352,6 +355,7 @@ export function createYoutubeClient(apiKey: string): YoutubeClient {
         type: ["channel"],
         maxResults,
         ...(pageToken ? { pageToken } : {}),
+        ...(publishedAfter ? { publishedAfter } : {}),
       });
       const items = res.data.items ?? [];
       const ids = items
