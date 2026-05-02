@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "MVP 上线前最后 polish - /crm 3 disabled controls 真做（time toggle / Export CSV / 删 Manual log）+ 5 项 misc 文案/小修（campaigns Owner filter / database Email btn / PDF 文案 / mock_sent fail-fast / AiSuggestions badge 已删）+ 11 页 critical paths edge states（error.tsx 兜底 + 关键 empty state）+ YouTube sync 配额优化 P1 ~89%（14 region + keyword pool 轮转 + 分层 refresh + Top 100 真 engagement batch）+ 前端 perf 六件套 F005（next.config.ts 全配 + Material Symbols next/font 自托管 + 7 处 next/image + recharts dynamic ×3 + markdown dynamic ×2 + AppShellLayout 拆 island）。Definition of Done = 5 features 全 PASS + Reviewer L1+L2 签收 + 初始 JS ≥ -200KB + Lighthouse 移动 perf ≥ 75 + CSP Report-Only 1 周观察期就位。",
   "total_features": 5,
-  "completed_features": 0,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "BIx-mvp-polish-pass",
-  "last_updated": "2026-05-01T19:15+0800",
+  "last_updated": "2026-05-02T09:15+0800",
   "reference_docs": [
     "docs/specs/BIx-mvp-polish-pass-spec.md",
     "docs/product/MVP-polish-audit-2026-04-30.md",
