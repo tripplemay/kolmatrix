@@ -88,6 +88,11 @@ export function deriveActiveNav(pathname: string): NavItemId {
   if (path.startsWith("/emails")) return "email-center";
   if (path.startsWith("/crm")) return "email-center";
   if (path.startsWith("/knowledge-base")) return "knowledge-base";
+  // BL-025-F004 — /assets is reached from /knowledge-base ProductCard
+  // chips (F007) and from /outreach Send-to-outreach (F008). It lives
+  // under the Knowledge Base nav surface; we cannot add a new top-level
+  // nav item per spec §F004.B (canonical 8-item rule).
+  if (path.startsWith("/assets")) return "knowledge-base";
   // Analytics primary route is /roi (BM2-F009). /analytics is kept
   // for any legacy URL inbound; /weekly-report (BM2-F010) is part of
   // the same surface area.

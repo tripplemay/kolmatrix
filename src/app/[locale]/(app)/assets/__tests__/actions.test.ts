@@ -24,9 +24,9 @@ vi.mock("@/lib/assets/mutations", () => ({
 
 const generateEmailContentMock = vi.fn();
 vi.mock("@/lib/assets/generators/email-generator", async () => {
-  const actual = await vi.importActual<
-    typeof import("@/lib/assets/generators/email-generator")
-  >("@/lib/assets/generators/email-generator");
+  const actual = await vi.importActual<typeof import("@/lib/assets/generators/email-generator")>(
+    "@/lib/assets/generators/email-generator"
+  );
   return {
     ...actual,
     generateEmailContent: (...args: unknown[]) => generateEmailContentMock(...args),
@@ -40,19 +40,14 @@ vi.mock("@/lib/assets/generators/video-script-generator", async () => {
   >("@/lib/assets/generators/video-script-generator");
   return {
     ...actual,
-    generateVideoScriptContent: (...args: unknown[]) =>
-      generateVideoScriptContentMock(...args),
+    generateVideoScriptContent: (...args: unknown[]) => generateVideoScriptContentMock(...args),
   };
 });
 
 const { generateAssetAction } = await import("../actions");
-const {
-  AigcGatewayConfigError,
-  AigcGatewayTimeoutError,
-} = await import("@/lib/assets/generators/aigcgateway-client");
-const { EmailContentParseError } = await import(
-  "@/lib/assets/generators/email-generator"
-);
+const { AigcGatewayConfigError, AigcGatewayTimeoutError } =
+  await import("@/lib/assets/generators/aigcgateway-client");
+const { EmailContentParseError } = await import("@/lib/assets/generators/email-generator");
 
 const TENANT_ID = "11111111-2222-3333-4444-555555555555";
 const USER_ID = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
@@ -103,7 +98,12 @@ function stubProductLookup({
   variantOrdinal,
 }: {
   product: typeof product | null;
-  parent?: { id: string; name: string; type: "email" | "video_script"; parentId: string | null } | null;
+  parent?: {
+    id: string;
+    name: string;
+    type: "email" | "video_script";
+    parentId: string | null;
+  } | null;
   variantOrdinal?: number;
 }) {
   withTenantMock.mockImplementationOnce(
@@ -257,9 +257,7 @@ describe("generateAssetAction", () => {
   it("translates AigcGatewayTimeoutError → ai_timeout (no audit log written)", async () => {
     authedSession();
     stubProductLookup({ product });
-    generateEmailContentMock.mockRejectedValueOnce(
-      new AigcGatewayTimeoutError(15_000)
-    );
+    generateEmailContentMock.mockRejectedValueOnce(new AigcGatewayTimeoutError(15_000));
 
     const res = await generateAssetAction({
       productId: PRODUCT_ID,

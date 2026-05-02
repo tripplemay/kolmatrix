@@ -74,9 +74,9 @@ describe("generateVideoScriptContent", () => {
       .fn()
       .mockResolvedValueOnce(chatResponse(JSON.stringify({ title: "no script" })));
 
-    await expect(
-      generateVideoScriptContent({ product, fetchImpl })
-    ).rejects.toBeInstanceOf(VideoScriptContentParseError);
+    await expect(generateVideoScriptContent({ product, fetchImpl })).rejects.toBeInstanceOf(
+      VideoScriptContentParseError
+    );
   });
 
   it("buildUserPrompt swaps the format hint line for tiktok_15s", () => {

@@ -16,11 +16,7 @@ import {
   runChatCompletion,
 } from "../aigcgateway-client";
 
-const ENV_KEYS = [
-  "AIGCGATEWAY_BASE_URL",
-  "AIGCGATEWAY_API_KEY",
-  "AIGC_TIMEOUT_MS",
-] as const;
+const ENV_KEYS = ["AIGCGATEWAY_BASE_URL", "AIGCGATEWAY_API_KEY", "AIGC_TIMEOUT_MS"] as const;
 let savedEnv: Record<(typeof ENV_KEYS)[number], string | undefined>;
 
 beforeEach(() => {
@@ -88,9 +84,7 @@ describe("runChatCompletion", () => {
     expect(call[0]).toBe("https://aigc.test/v1/chat/completions");
     const init = call[1] as RequestInit;
     expect(init.method).toBe("POST");
-    expect((init.headers as Record<string, string>).Authorization).toBe(
-      "Bearer test-key"
-    );
+    expect((init.headers as Record<string, string>).Authorization).toBe("Bearer test-key");
     const sentBody = JSON.parse(init.body as string);
     expect(sentBody.response_format).toEqual({ type: "json_object" });
   });

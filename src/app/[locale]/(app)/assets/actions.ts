@@ -90,9 +90,7 @@ function deriveAssetName(
   return `${productName} — Script v1`;
 }
 
-export async function generateAssetAction(
-  rawInput: unknown
-): Promise<GenerateAssetResult> {
+export async function generateAssetAction(rawInput: unknown): Promise<GenerateAssetResult> {
   let parsed: z.infer<typeof InputSchema>;
   try {
     parsed = InputSchema.parse(rawInput);
@@ -131,9 +129,8 @@ export async function generateAssetAction(
     });
     if (!product) return { kind: "no_product" as const };
 
-    let parent:
-      | { id: string; name: string; type: AssetType; parentId: string | null }
-      | null = null;
+    let parent: { id: string; name: string; type: AssetType; parentId: string | null } | null =
+      null;
     let variantOrdinal = 1;
     if (parsed.parentAssetId) {
       const found = (await tx.asset.findUnique({
@@ -169,9 +166,12 @@ export async function generateAssetAction(
 
   // Phase 2 — AI generation outside the DB tx (no holding a row lock
   // open across a 5-15s network call).
-  let generated:
-    | { contentJson: unknown; usage: { totalTokens: number }; traceId: string | null; model: string }
-    | null = null;
+  let generated: {
+    contentJson: unknown;
+    usage: { totalTokens: number };
+    traceId: string | null;
+    model: string;
+  } | null = null;
   try {
     if (parsed.type === "email") {
       const r = await generateEmailContent({
@@ -211,10 +211,7 @@ export async function generateAssetAction(
     if (err instanceof AigcGatewayResponseError) {
       return { ok: false, error: err.message, code: "ai_response" };
     }
-    if (
-      err instanceof EmailContentParseError ||
-      err instanceof VideoScriptContentParseError
-    ) {
+    if (err instanceof EmailContentParseError || err instanceof VideoScriptContentParseError) {
       return {
         ok: false,
         error: "AI returned an unparseable response",

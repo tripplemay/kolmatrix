@@ -80,9 +80,7 @@ function buildUserPrompt(input: GenerateVideoScriptContentInput): string {
   return lines.filter((l) => l !== null).join("\n");
 }
 
-function parseVideoScriptContent(
-  raw: string
-): AssetContentByType["video_script"] {
+function parseVideoScriptContent(raw: string): AssetContentByType["video_script"] {
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
@@ -96,8 +94,7 @@ function parseVideoScriptContent(
     !Array.isArray(parsed) &&
     Array.isArray((parsed as { videoScripts?: unknown }).videoScripts)
   ) {
-    candidate =
-      (parsed as { videoScripts: unknown[] }).videoScripts[0] ?? null;
+    candidate = (parsed as { videoScripts: unknown[] }).videoScripts[0] ?? null;
   }
   if (candidate == null || typeof candidate !== "object") {
     throw new VideoScriptContentParseError(raw, new Error("not a JSON object"));

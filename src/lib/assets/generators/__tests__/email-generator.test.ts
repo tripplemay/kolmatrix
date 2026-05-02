@@ -13,11 +13,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-  EmailContentParseError,
-  generateEmailContent,
-  __TEST_ONLY__,
-} from "../email-generator";
+import { EmailContentParseError, generateEmailContent, __TEST_ONLY__ } from "../email-generator";
 
 beforeEach(() => {
   process.env.AIGCGATEWAY_BASE_URL = "https://aigc.test";
@@ -74,9 +70,7 @@ describe("generateEmailContent", () => {
     const fetchImpl = vi.fn().mockResolvedValueOnce(
       chatResponse(
         JSON.stringify({
-          emailTemplates: [
-            { subject: "Hi", body: "Body", locale: "en", variables: [] },
-          ],
+          emailTemplates: [{ subject: "Hi", body: "Body", locale: "en", variables: [] }],
           videoScripts: [],
         })
       )
@@ -107,13 +101,11 @@ describe("generateEmailContent", () => {
   });
 
   it("throws EmailContentParseError on non-JSON content (no silent empty)", async () => {
-    const fetchImpl = vi
-      .fn()
-      .mockResolvedValueOnce(chatResponse("definitely not json"));
+    const fetchImpl = vi.fn().mockResolvedValueOnce(chatResponse("definitely not json"));
 
-    await expect(
-      generateEmailContent({ product, fetchImpl })
-    ).rejects.toBeInstanceOf(EmailContentParseError);
+    await expect(generateEmailContent({ product, fetchImpl })).rejects.toBeInstanceOf(
+      EmailContentParseError
+    );
   });
 
   it("throws EmailContentParseError when required Zod fields are missing", async () => {
@@ -121,15 +113,13 @@ describe("generateEmailContent", () => {
       .fn()
       .mockResolvedValueOnce(chatResponse(JSON.stringify({ subject: "no body" })));
 
-    await expect(
-      generateEmailContent({ product, fetchImpl })
-    ).rejects.toBeInstanceOf(EmailContentParseError);
+    await expect(generateEmailContent({ product, fetchImpl })).rejects.toBeInstanceOf(
+      EmailContentParseError
+    );
   });
 
   it("__TEST_ONLY__.parseEmailContent injects defaults when locale/variables absent", () => {
-    const out = __TEST_ONLY__.parseEmailContent(
-      JSON.stringify({ subject: "Hi", body: "Body" })
-    );
+    const out = __TEST_ONLY__.parseEmailContent(JSON.stringify({ subject: "Hi", body: "Body" }));
     expect(out.locale).toBe("en");
     expect(out.variables).toEqual([]);
   });

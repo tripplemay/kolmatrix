@@ -165,10 +165,7 @@ export async function runChatCompletion(
       };
     }
     if (!resp.ok) {
-      throw new AigcGatewayResponseError(
-        `aigcgateway responded ${resp.status}`,
-        resp.status
-      );
+      throw new AigcGatewayResponseError(`aigcgateway responded ${resp.status}`, resp.status);
     }
 
     const json = (await resp.json()) as RawChatCompletionResponse;
@@ -191,7 +188,7 @@ export async function runChatCompletion(
       result: {
         rawContent,
         usage,
-        model: json.model ?? requestBody.model as string,
+        model: json.model ?? (requestBody.model as string),
         traceId: json.id ?? null,
       },
     };
@@ -204,10 +201,7 @@ export async function runChatCompletion(
   const second = await attempt();
   if (!second.retry) return second.result;
 
-  throw new AigcGatewayResponseError(
-    "aigcgateway 5xx / network error after retry",
-    null
-  );
+  throw new AigcGatewayResponseError("aigcgateway 5xx / network error after retry", null);
 }
 
 export const __TEST_ONLY__ = {

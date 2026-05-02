@@ -73,9 +73,7 @@ function buildUserPrompt(input: GenerateEmailContentInput): string {
   return lines.filter((l) => l !== null).join("\n");
 }
 
-function parseEmailContent(
-  raw: string
-): AssetContentByType["email"] {
+function parseEmailContent(raw: string): AssetContentByType["email"] {
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
@@ -93,8 +91,7 @@ function parseEmailContent(
     !Array.isArray(parsed) &&
     Array.isArray((parsed as { emailTemplates?: unknown }).emailTemplates)
   ) {
-    candidate =
-      (parsed as { emailTemplates: unknown[] }).emailTemplates[0] ?? null;
+    candidate = (parsed as { emailTemplates: unknown[] }).emailTemplates[0] ?? null;
   }
   if (candidate == null || typeof candidate !== "object") {
     throw new EmailContentParseError(raw, new Error("not a JSON object"));
