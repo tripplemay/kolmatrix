@@ -92,6 +92,20 @@ export default defineConfig({
         // Action-not-configured branches via integration specs
         // (tests/integration/b5-topic-cloud.test.ts per spec §F006).
         "src/lib/kol-detail/topic-cloud.ts",
+        // BIx-F004-P3 Prisma-backed cursor + tier orchestrator. The
+        // pure helpers (pickDailyPage / pickBucketSlice /
+        // pickTieredRefreshIds / inMemory cursor) are unit-tested
+        // exhaustively; the prismaKolSyncCursorProvider /
+        // fetchTieredRefreshIds Prisma fan-outs are exercised end-
+        // to-end by tests/integration/sync-quota-optimization.test.ts.
+        "src/lib/kol-sync/refresh-selector.ts",
+        // BIx-F004-P4 googleapis-backed engagement client. Pure
+        // orchestrator (runEngagementBatch / computeEngagementRate)
+        // is unit-tested; the createEngagementBatchClient adapter
+        // calls youtube.channels/playlistItems/videos directly and is
+        // covered by the integration smoke when the live API key
+        // is set (gated by YOUTUBE_API_TEST=true).
+        "src/lib/kol-sync/engagement-batch-client.ts",
       ],
       thresholds: {
         lines: 80,
