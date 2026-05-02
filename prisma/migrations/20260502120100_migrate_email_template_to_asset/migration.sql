@@ -79,10 +79,8 @@ BEGIN
   END IF;
 END $$;
 
--- ROLLBACK -------------------------------------------------------
--- Removes the migrated rows only (rows tagged with
--- metadata.migrated_from_email_template_id). Native Asset rows from
--- F002+ usage are untouched.
+-- ROLLBACK: delete only the rows tagged with the migration marker;
+-- native Asset rows created by F002+ usage stay untouched.
 --
 -- DELETE FROM "asset"
 --   WHERE metadata ? 'migrated_from_email_template_id';

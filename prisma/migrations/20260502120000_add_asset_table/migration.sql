@@ -83,10 +83,10 @@ CREATE POLICY asset_tenant_isolation ON "asset"
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON "asset" TO kolmatrix_app;
 
--- ROLLBACK -------------------------------------------------------
--- Run if the migration needs to be reverted. The follow-up migration
--- 20260502120100_migrate_email_template_to_asset must be rolled back
--- first (DELETE FROM asset) so DROP TABLE has no FK dependents.
+-- ROLLBACK: drop policy + table + 3 enum types. The follow-up
+-- migration 20260502120100_migrate_email_template_to_asset must be
+-- rolled back first (its own ROLLBACK section deletes the migrated
+-- rows) so DROP TABLE asset CASCADE has no FK dependents that matter.
 --
 -- DROP POLICY IF EXISTS asset_tenant_isolation ON "asset";
 -- ALTER TABLE "asset" DISABLE ROW LEVEL SECURITY;
