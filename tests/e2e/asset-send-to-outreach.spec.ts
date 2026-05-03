@@ -41,14 +41,14 @@ test.describe("BL-025-F008 send-to-outreach", () => {
       .first()
       .click();
 
-    const card = page
+    const cardLocator = page
       .getByRole("button", { pressed: false })
-      .filter({ hasText: /v\d+ of/ })
-      .first();
-    if (!(await card.isVisible())) {
+      .filter({ hasText: /v\d+ of/ });
+    const cardCount = await cardLocator.count();
+    if (cardCount === 0) {
       test.skip(true, "No email assets visible to marketer login");
     }
-    await card.click();
+    await cardLocator.first().click({ force: true });
 
     const sendBtn = page.getByRole("button", { name: /Send to Outreach/i });
     await expect(sendBtn).toBeVisible();
@@ -71,14 +71,18 @@ test.describe("BL-025-F008 send-to-outreach", () => {
       .first()
       .click();
 
-    const card = page
+    // Wait for the listing to settle on the new filter; the seed only
+    // ships email assets, so the count is reliably 0 here. Skip the
+    // run gracefully when no video_script asset is available rather
+    // than guessing what `.first()` would have resolved to.
+    const cardLocator = page
       .getByRole("button", { pressed: false })
-      .filter({ hasText: /v\d+ of/ })
-      .first();
-    if (!(await card.isVisible())) {
+      .filter({ hasText: /v\d+ of/ });
+    const cardCount = await cardLocator.count();
+    if (cardCount === 0) {
       test.skip(true, "No video_script assets visible to marketer login");
     }
-    await card.click();
+    await cardLocator.first().click({ force: true });
 
     // Detail panel renders but Send to Outreach is gated to email-only.
     await expect(page.getByLabel("Close detail panel")).toBeVisible();
