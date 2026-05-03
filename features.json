@@ -14,7 +14,7 @@
       "title": "/assets 三栏 → 双栏 + Detail right drawer + Filter top dropdown",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "删除 AssetsFilterSidebar (lines 416-556 of AssetsClient.tsx)；ActionBar 加 Filter ▾ GhostButton + Dialog popover 浮层（含 search Input debounce 300ms / Product Combobox / Type ChipButton 多选 / Status radio Archived 默认折叠 / Source ChipButton 多选 / Clear all + Done 按钮）；Detail panel 改 right slide-over drawer 520px + 半透明 backdrop 点击关闭 + Esc 关闭；mobile <768px drawer 全屏；grid 列数改 1/2/3/4 (xl:4)；e2e tests/e2e/assets-page.spec.ts 既有 8 case 重新跑通 + 新增 filter dropdown / drawer / mobile 全屏行为 case；visual baseline 4 个新（en-assets / en-assets-drawer-open / en-assets-filter-dropdown / en-assets-empty-system-seed 后者 F004 提供数据）；估 1585 → ~1100 LoC AssetsClient.tsx；coverage ≥80% lib/assets 不退化。详见 spec §F002 + ADR-012。"
     },
     {

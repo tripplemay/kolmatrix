@@ -23,7 +23,6 @@ import {
   AssetTabs,
   ChipButton,
   GhostButton,
-  GlassPanel,
   GradientButton,
   SecondaryButton,
   SectionHeader,
@@ -33,6 +32,7 @@ import { Combobox } from "@/components/ui/Combobox";
 import {
   Dialog,
   DialogBackdrop,
+  DialogFooter,
   DialogHeader,
   DialogPanel,
   DialogPortal,
@@ -123,6 +123,8 @@ export function AssetsClient({ initialListing, products }: Props) {
   const [confirmDelete, setConfirmDelete] = useState<{
     asset: AssetCardData;
   } | null>(null);
+  // BL-026-F002 — top filter dropdown replaces the old left sidebar.
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
 
   // F004 patch — infinite scroll. The server component hands us page
   // 1; we extend it with page 2..N as the sentinel intersects. Reset
@@ -320,21 +322,14 @@ export function AssetsClient({ initialListing, products }: Props) {
   }, [products, state, update]);
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-1 gap-6 overflow-hidden p-6">
-      <AssetsFilterSidebar
-        state={state}
-        update={(p) => startTransition(() => update(p))}
-        clearAll={() => startTransition(clearAll)}
-        productOptions={productOptions}
-        productCount={initialListing.total}
-      />
-
+    <div className="flex h-[calc(100vh-4rem)] flex-1 flex-col overflow-hidden p-6">
       <section className="border-outline-variant bg-surface-container-low/50 flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border">
         <AssetsActionBar
           breadcrumb={filtersBreadcrumb}
           state={state}
           update={(p) => startTransition(() => update(p))}
           onNewAsset={() => setWizardOpen(true)}
+          onOpenFilter={() => setFilterDialogOpen(true)}
         />
 
         {allItems.length === 0 ? (
@@ -357,7 +352,17 @@ export function AssetsClient({ initialListing, products }: Props) {
         )}
       </section>
 
-      <AssetsDetailPanel
+      <AssetsFilterDialog
+        open={filterDialogOpen}
+        onOpenChange={setFilterDialogOpen}
+        state={state}
+        update={(p) => startTransition(() => update(p))}
+        clearAll={() => startTransition(clearAll)}
+        productOptions={productOptions}
+        productCount={initialListing.total}
+      />
+
+      <AssetsDetailDrawer
         asset={selected ?? null}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -413,7 +418,9 @@ export function AssetsClient({ initialListing, products }: Props) {
   );
 }
 
-interface FilterSidebarProps {
+interface FilterDialogProps {
+  open: boolean;
+  onOpenChange: (next: boolean) => void;
   state: ReturnType<typeof useAssetFilters>["state"];
   update: ReturnType<typeof useAssetFilters>["update"];
   clearAll: () => void;
@@ -421,137 +428,190 @@ interface FilterSidebarProps {
   productCount: number;
 }
 
-function AssetsFilterSidebar({
+// BL-026-F002 — top filter dropdown replaces the old left sidebar.
+// Search input debounces 300ms (BL-025 used onBlur). Archived status
+// hides behind a "Show archived" toggle to keep the steady-state list
+// short for the marketer's most common filters.
+function AssetsFilterDialog({
+  open,
+  onOpenChange,
   state,
   update,
   clearAll,
   productOptions,
   productCount,
-}: FilterSidebarProps) {
+}: FilterDialogProps) {
+  const [searchDraft, setSearchDraft] = useState(state.search ?? "");
+  const [searchSyncedTo, setSearchSyncedTo] = useState(state.search ?? "");
+  const [showArchived, setShowArchived] = useState(state.status === "archived");
+  const [archivedSyncedTo, setArchivedSyncedTo] = useState<string | null | undefined>(
+    state.status
+  );
+
+  // Sync local draft when URL state changes externally (Clear all,
+  // breadcrumb chip remove). Prop-comparison-during-render pattern
+  // avoids the react-hooks/set-state-in-effect lint.
+  if (searchSyncedTo !== (state.search ?? "")) {
+    setSearchSyncedTo(state.search ?? "");
+    setSearchDraft(state.search ?? "");
+  }
+  if (archivedSyncedTo !== state.status) {
+    setArchivedSyncedTo(state.status);
+    if (state.status === "archived") setShowArchived(true);
+  }
+
+  // 300ms debounced URL push so the listing doesn't refresh per keystroke.
+  useEffect(() => {
+    if (searchDraft === (state.search ?? "")) return;
+    const handle = window.setTimeout(() => {
+      update({ search: searchDraft.trim() || null });
+    }, 300);
+    return () => window.clearTimeout(handle);
+  }, [searchDraft, state.search, update]);
+
+  const visibleStatusOptions = showArchived
+    ? [{ value: null as AssetStatus | null, label: "All" }, ...STATUS_OPTIONS]
+    : [
+        { value: null as AssetStatus | null, label: "All" },
+        ...STATUS_OPTIONS.filter((o) => o.value !== "archived"),
+      ];
+
   return (
-    <GlassPanel
-      padding="md"
-      rounded="2xl"
-      className="custom-scrollbar flex w-[240px] shrink-0 flex-col gap-6 overflow-y-auto"
-    >
-      <div className="flex items-center justify-between">
-        <SectionHeader title="Filters" as="h3" />
-        <GhostButton size="sm" onClick={clearAll}>
-          Clear all
-        </GhostButton>
-      </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogPortal>
+        <DialogBackdrop />
+        <DialogPanel size="md" data-testid="assets-filter-dialog">
+          <DialogHeader>
+            <DialogTitle>Filters</DialogTitle>
+          </DialogHeader>
+          <div className="custom-scrollbar flex max-h-[70vh] flex-col gap-5 overflow-y-auto px-5 py-4">
+            <div className="flex flex-col gap-2">
+              <span className="text-on-surface-variant text-xs font-medium">Search</span>
+              <Input
+                placeholder="Search by name…"
+                value={searchDraft}
+                onChange={(e) => setSearchDraft(e.currentTarget.value)}
+                data-testid="assets-filter-search"
+              />
+            </div>
 
-      <div className="flex flex-col gap-2">
-        <span className="text-on-surface-variant text-xs font-medium">Search</span>
-        <Input
-          placeholder="Search by name…"
-          defaultValue={state.search ?? ""}
-          onBlur={(e) => {
-            const next = e.currentTarget.value.trim();
-            if ((state.search ?? "") !== next) update({ search: next || null });
-          }}
-        />
-      </div>
-
-      <div className="flex flex-col gap-3">
-        <span className="text-on-surface-variant text-xs font-medium">Product</span>
-        <Combobox
-          items={productOptions}
-          value={state.productId ?? null}
-          onChange={(next) => update({ productId: next })}
-          placeholder="All products"
-          ariaLabel="Filter by product"
-        />
-        {state.productId ? (
-          <span className="text-on-surface-variant text-[10px]">
-            {productCount} {productCount === 1 ? "asset" : "assets"} in this product
-          </span>
-        ) : null}
-      </div>
-
-      <div className="flex flex-col gap-3">
-        <span className="text-on-surface-variant text-xs font-medium">Type</span>
-        <div className="flex flex-wrap gap-2">
-          {TYPE_OPTIONS.map((opt) => {
-            const pressed = (state.types ?? []).includes(opt.value);
-            return (
-              <ChipButton
-                key={opt.value}
-                pressed={pressed}
-                onClick={() => {
-                  const cur = state.types ?? [];
-                  const next = pressed ? cur.filter((t) => t !== opt.value) : [...cur, opt.value];
-                  update({ types: next });
-                }}
-              >
-                <span className="material-symbols-outlined text-[14px]" aria-hidden>
-                  {opt.icon}
+            <div className="flex flex-col gap-3">
+              <span className="text-on-surface-variant text-xs font-medium">Product</span>
+              <Combobox
+                items={productOptions}
+                value={state.productId ?? null}
+                onChange={(next) => update({ productId: next })}
+                placeholder="All products"
+                ariaLabel="Filter by product"
+              />
+              {state.productId ? (
+                <span className="text-on-surface-variant text-[10px]">
+                  {productCount} {productCount === 1 ? "asset" : "assets"} in this product
                 </span>
-                {opt.label}
-              </ChipButton>
-            );
-          })}
-          <ChipButton disabled aria-disabled className="opacity-50">
-            More coming
-          </ChipButton>
-        </div>
-      </div>
+              ) : null}
+            </div>
 
-      <div className="flex flex-col gap-3">
-        <span className="text-on-surface-variant text-xs font-medium">Status</span>
-        <div className="flex flex-col gap-2">
-          {[{ value: null as AssetStatus | null, label: "All" }, ...STATUS_OPTIONS].map((opt) => {
-            const checked = (opt.value ?? null) === (state.status ?? null);
-            return (
-              <button
-                key={String(opt.value)}
-                type="button"
-                onClick={() => update({ status: opt.value })}
-                aria-pressed={checked}
-                className={cn(
-                  "group flex items-center gap-3 text-sm transition-colors",
-                  checked ? "text-on-surface" : "text-on-surface-variant hover:text-on-surface"
-                )}
-              >
-                <span
-                  className={cn(
-                    "flex h-4 w-4 items-center justify-center rounded-full border",
-                    checked
-                      ? "border-cyan bg-cyan/20"
-                      : "border-outline-variant group-hover:border-cyan/60"
-                  )}
+            <div className="flex flex-col gap-3">
+              <span className="text-on-surface-variant text-xs font-medium">Type</span>
+              <div className="flex flex-wrap gap-2">
+                {TYPE_OPTIONS.map((opt) => {
+                  const pressed = (state.types ?? []).includes(opt.value);
+                  return (
+                    <ChipButton
+                      key={opt.value}
+                      pressed={pressed}
+                      onClick={() => {
+                        const cur = state.types ?? [];
+                        const next = pressed
+                          ? cur.filter((t) => t !== opt.value)
+                          : [...cur, opt.value];
+                        update({ types: next });
+                      }}
+                    >
+                      <span className="material-symbols-outlined text-[14px]" aria-hidden>
+                        {opt.icon}
+                      </span>
+                      {opt.label}
+                    </ChipButton>
+                  );
+                })}
+                <ChipButton disabled aria-disabled className="opacity-50">
+                  More coming
+                </ChipButton>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <span className="text-on-surface-variant text-xs font-medium">Status</span>
+              <div className="flex flex-col gap-2">
+                {visibleStatusOptions.map((opt) => {
+                  const checked = (opt.value ?? null) === (state.status ?? null);
+                  return (
+                    <button
+                      key={String(opt.value)}
+                      type="button"
+                      onClick={() => update({ status: opt.value })}
+                      aria-pressed={checked}
+                      className={cn(
+                        "group flex items-center gap-3 text-sm transition-colors",
+                        checked ? "text-on-surface" : "text-on-surface-variant hover:text-on-surface"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "flex h-4 w-4 items-center justify-center rounded-full border",
+                          checked
+                            ? "border-cyan bg-cyan/20"
+                            : "border-outline-variant group-hover:border-cyan/60"
+                        )}
+                      >
+                        {checked ? <span className="bg-cyan h-2 w-2 rounded-full" /> : null}
+                      </span>
+                      {opt.label}
+                    </button>
+                  );
+                })}
+                <GhostButton
+                  size="sm"
+                  onClick={() => setShowArchived((s) => !s)}
+                  className="self-start"
                 >
-                  {checked ? <span className="bg-cyan h-2 w-2 rounded-full" /> : null}
-                </span>
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+                  {showArchived ? "Hide archived" : "Show archived"}
+                </GhostButton>
+              </div>
+            </div>
 
-      <div className="flex flex-col gap-3 pb-8">
-        <span className="text-on-surface-variant text-xs font-medium">Source</span>
-        <div className="flex flex-wrap gap-2">
-          {SOURCE_OPTIONS.map((opt) => {
-            const pressed = (state.sources ?? []).includes(opt.value);
-            return (
-              <ChipButton
-                key={opt.value}
-                pressed={pressed}
-                onClick={() => {
-                  const cur = state.sources ?? [];
-                  const next = pressed ? cur.filter((s) => s !== opt.value) : [...cur, opt.value];
-                  update({ sources: next });
-                }}
-              >
-                {opt.label}
-              </ChipButton>
-            );
-          })}
-        </div>
-      </div>
-    </GlassPanel>
+            <div className="flex flex-col gap-3 pb-2">
+              <span className="text-on-surface-variant text-xs font-medium">Source</span>
+              <div className="flex flex-wrap gap-2">
+                {SOURCE_OPTIONS.map((opt) => {
+                  const pressed = (state.sources ?? []).includes(opt.value);
+                  return (
+                    <ChipButton
+                      key={opt.value}
+                      pressed={pressed}
+                      onClick={() => {
+                        const cur = state.sources ?? [];
+                        const next = pressed
+                          ? cur.filter((s) => s !== opt.value)
+                          : [...cur, opt.value];
+                        update({ sources: next });
+                      }}
+                    >
+                      {opt.label}
+                    </ChipButton>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <GhostButton onClick={clearAll}>Clear all</GhostButton>
+            <GradientButton onClick={() => onOpenChange(false)}>Done</GradientButton>
+          </DialogFooter>
+        </DialogPanel>
+      </DialogPortal>
+    </Dialog>
   );
 }
 
@@ -560,11 +620,30 @@ interface ActionBarProps {
   state: ReturnType<typeof useAssetFilters>["state"];
   update: ReturnType<typeof useAssetFilters>["update"];
   onNewAsset: () => void;
+  onOpenFilter: () => void;
 }
 
-function AssetsActionBar({ breadcrumb, state, update, onNewAsset }: ActionBarProps) {
+function AssetsActionBar({ breadcrumb, state, update, onNewAsset, onOpenFilter }: ActionBarProps) {
   return (
     <div className="border-outline-variant flex h-16 items-center justify-between gap-4 border-b px-6">
+      <div className="flex shrink-0 items-center gap-3">
+        <GhostButton
+          icon={
+            <span className="material-symbols-outlined text-[16px]" aria-hidden>
+              filter_alt
+            </span>
+          }
+          iconPosition="left"
+          onClick={onOpenFilter}
+          data-testid="assets-filter-trigger"
+        >
+          Filter
+          <span className="material-symbols-outlined ml-1 text-[14px]" aria-hidden>
+            arrow_drop_down
+          </span>
+        </GhostButton>
+      </div>
+
       <div className="no-scrollbar flex flex-1 items-center gap-2 overflow-x-auto">
         {breadcrumb.length === 0 ? (
           <span className="text-on-surface-variant text-xs">No filters applied</span>
@@ -658,7 +737,9 @@ function AssetsGrid({
       <div
         className={cn(
           "gap-5",
-          view === "grid" ? "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3" : "flex flex-col"
+          view === "grid"
+            ? "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+            : "flex flex-col"
         )}
       >
         {items.map((asset) => (
@@ -743,7 +824,7 @@ function AssetsEmptyState({
   );
 }
 
-interface DetailPanelProps {
+interface DetailDrawerProps {
   asset: AssetCardData | AssetDetail | null;
   activeTab: AssetTabId;
   onTabChange: (next: AssetTabId) => void;
@@ -753,7 +834,10 @@ interface DetailPanelProps {
   pendingActionAssetId: string | null;
 }
 
-function AssetsDetailPanel({
+// BL-026-F002 — right slide-over (520px) replaces the permanently-
+// docked aside. Backdrop is lighter (bg-black/30) than the modal
+// dialogs above so the grid behind stays partially visible.
+function AssetsDetailDrawer({
   asset,
   activeTab,
   onTabChange,
@@ -761,30 +845,38 @@ function AssetsDetailPanel({
   onAssetMutated,
   onMoreAction,
   pendingActionAssetId,
-}: DetailPanelProps) {
-  if (!asset) {
-    return (
-      <aside className="border-outline-variant bg-surface-container-low/40 hidden w-[440px] shrink-0 items-center justify-center rounded-2xl border lg:flex">
-        <p className="text-on-surface-variant text-sm">Select an asset to preview</p>
-      </aside>
-    );
-  }
-
+}: DetailDrawerProps) {
   return (
-    <aside className="border-outline-variant bg-surface-container-low hidden w-[440px] shrink-0 flex-col overflow-hidden rounded-2xl border lg:flex">
-      {/* Inner panel keyed on asset.id — remount resets tab-local state
-          (Edit draft, Versions cache) when switching assets. */}
-      <DetailPanelInner
-        key={asset.id}
-        asset={asset}
-        activeTab={activeTab}
-        onTabChange={onTabChange}
-        onClose={onClose}
-        onAssetMutated={onAssetMutated}
-        onMoreAction={onMoreAction}
-        pending={pendingActionAssetId === asset.id}
-      />
-    </aside>
+    <Dialog
+      open={asset !== null}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+    >
+      <DialogPortal>
+        <DialogBackdrop className="bg-black/30 backdrop-blur-sm" />
+        <DialogPanel
+          variant="slideOver"
+          className="bg-surface-container-low"
+          data-testid="assets-detail-drawer"
+        >
+          {asset ? (
+            // Inner panel keyed on asset.id — remount resets tab-local
+            // state (Edit draft, Versions cache) when switching assets.
+            <DetailPanelInner
+              key={asset.id}
+              asset={asset}
+              activeTab={activeTab}
+              onTabChange={onTabChange}
+              onClose={onClose}
+              onAssetMutated={onAssetMutated}
+              onMoreAction={onMoreAction}
+              pending={pendingActionAssetId === asset.id}
+            />
+          ) : null}
+        </DialogPanel>
+      </DialogPortal>
+    </Dialog>
   );
 }
 

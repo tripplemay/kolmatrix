@@ -49,8 +49,11 @@ export const DialogBackdrop = forwardRef<HTMLDivElement, DialogBackdropProps>(
 );
 
 interface DialogPanelProps extends React.HTMLAttributes<HTMLDivElement> {
-  /** Max-width preset; passes through to the outer panel. */
+  /** Max-width preset (centered variant only); ignored in slideOver. */
   size?: "sm" | "md" | "lg";
+  /** Layout variant. `slideOver` anchors the panel to the right edge
+   * as a 520px drawer (mobile auto-fullscreen via `max-w-full`). */
+  variant?: "centered" | "slideOver";
 }
 
 const PANEL_SIZE: Record<NonNullable<DialogPanelProps["size"]>, string> = {
@@ -60,7 +63,23 @@ const PANEL_SIZE: Record<NonNullable<DialogPanelProps["size"]>, string> = {
 };
 
 export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
-  function DialogPanel({ className, size = "md", children, ...rest }, ref) {
+  function DialogPanel({ className, size = "md", variant = "centered", children, ...rest }, ref) {
+    if (variant === "slideOver") {
+      return (
+        <BaseDialog.Popup
+          ref={ref}
+          className={cn(
+            "glass-panel fixed inset-y-0 right-0 z-50 flex w-[520px] max-w-full flex-col overflow-hidden border-l border-on-surface/10 shadow-[0_30px_80px_rgba(0,0,0,0.5)]",
+            "transition-transform duration-200 ease-out",
+            "data-[starting-style]:translate-x-full data-[ending-style]:translate-x-full",
+            className
+          )}
+          {...rest}
+        >
+          {children}
+        </BaseDialog.Popup>
+      );
+    }
     return (
       <BaseDialog.Popup
         ref={ref}
