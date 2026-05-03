@@ -26,6 +26,7 @@ import {
   GradientButton,
   SecondaryButton,
   SectionHeader,
+  StatusDot,
   TagChip,
 } from "@/components/common";
 import { Combobox } from "@/components/ui/Combobox";
@@ -47,6 +48,7 @@ import type {
   AssetSource,
   AssetStatus,
   AssetType,
+  VariantTreeNode,
 } from "@/lib/assets/types";
 import { cn } from "@/lib/utils";
 
@@ -57,11 +59,12 @@ import {
   duplicateAssetAction,
   generateAssetAction,
   loadMoreAssetsAction,
+  loadVariantTreeAction,
+  saveAssetAsVariantAction,
   updateAssetAction,
 } from "./actions";
 import { EditTab } from "./_panel/EditTab";
 import { UsedInTab } from "./_panel/UsedInTab";
-import { VersionsTab } from "./_panel/VersionsTab";
 import {
   ASSET_LIST_SORTS,
   ASSET_LIST_VIEWS,
@@ -70,12 +73,13 @@ import {
   type AssetListView,
 } from "./use-filter-state";
 
-type AssetTabId = "preview" | "edit" | "versions" | "used_in";
+// BL-026-F003 — Versions tab folded into the Preview tab as a top-of-
+// pane VariantSwitcher dropdown (only visible when totalVariants > 1).
+type AssetTabId = "preview" | "edit" | "used_in";
 
 const TAB_CONFIG: ReadonlyArray<{ id: AssetTabId; label: string; disabled?: boolean }> = [
   { id: "preview", label: "Preview" },
   { id: "edit", label: "Edit" },
-  { id: "versions", label: "Versions" },
   { id: "used_in", label: "Used in" },
 ];
 
@@ -372,6 +376,13 @@ export function AssetsClient({ initialListing, products }: Props) {
         onAssetMutated={handleAssetMutated}
         onMoreAction={(action) => {
           if (selected) handleQuickAction(selected, action);
+        }}
+        onSelectVariant={(assetId) => {
+          // BL-026-F003 — keep the drawer open, swap the asset, stay on
+          // the Preview tab. router.refresh isn't needed here (no DB
+          // mutation).
+          setSelectedAssetId(assetId);
+          setActiveTab("preview");
         }}
         pendingActionAssetId={pendingActionAssetId}
       />
@@ -833,6 +844,9 @@ interface DetailDrawerProps {
   onClose: () => void;
   onAssetMutated: (newAssetId?: string) => void;
   onMoreAction: (action: AssetCardQuickAction) => void;
+  /** BL-026-F003 — VariantSwitcher inside the Preview tab calls this
+   * to switch the drawer's view to a sibling variant without a fork. */
+  onSelectVariant: (assetId: string) => void;
   pendingActionAssetId: string | null;
 }
 
@@ -846,6 +860,7 @@ function AssetsDetailDrawer({
   onClose,
   onAssetMutated,
   onMoreAction,
+  onSelectVariant,
   pendingActionAssetId,
 }: DetailDrawerProps) {
   return (
@@ -864,7 +879,7 @@ function AssetsDetailDrawer({
         >
           {asset ? (
             // Inner panel keyed on asset.id — remount resets tab-local
-            // state (Edit draft, Versions cache) when switching assets.
+            // state (Edit draft) when switching assets / variants.
             <DetailPanelInner
               key={asset.id}
               asset={asset}
@@ -873,6 +888,7 @@ function AssetsDetailDrawer({
               onClose={onClose}
               onAssetMutated={onAssetMutated}
               onMoreAction={onMoreAction}
+              onSelectVariant={onSelectVariant}
               pending={pendingActionAssetId === asset.id}
             />
           ) : null}
@@ -889,6 +905,7 @@ interface DetailPanelInnerProps {
   onClose: () => void;
   onAssetMutated: (newAssetId?: string) => void;
   onMoreAction: (action: AssetCardQuickAction) => void;
+  onSelectVariant: (assetId: string) => void;
   pending: boolean;
 }
 
@@ -899,6 +916,7 @@ function DetailPanelInner({
   onClose,
   onAssetMutated,
   onMoreAction,
+  onSelectVariant,
   pending,
 }: DetailPanelInnerProps) {
   const router = useRouter();
@@ -961,16 +979,19 @@ function DetailPanelInner({
       />
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
-        {activeTab === "preview" ? <DetailPreview asset={asset} /> : null}
+        {activeTab === "preview" ? (
+          <DetailPreview
+            asset={asset}
+            onSelectVariant={onSelectVariant}
+            onAssetMutated={onAssetMutated}
+          />
+        ) : null}
         {activeTab === "edit" ? (
           <EditTab
             asset={asset}
             initialContent={initialContent}
             onSaved={onAssetMutated}
           />
-        ) : null}
-        {activeTab === "versions" ? (
-          <VersionsTab asset={asset} onRestore={onAssetMutated} />
         ) : null}
         {activeTab === "used_in" ? <UsedInTab asset={asset} /> : null}
       </div>
@@ -1199,18 +1220,164 @@ function RegenerateVariantPopup({
   );
 }
 
-function DetailPreview({ asset }: { asset: AssetCardData | AssetDetail }) {
-  if (asset.contentPreview) {
-    return (
-      <pre className="bg-surface-container/40 text-on-surface rounded-md p-3 font-mono text-xs whitespace-pre-wrap">
-        {asset.contentPreview}
-      </pre>
-    );
-  }
+interface DetailPreviewProps {
+  asset: AssetCardData | AssetDetail;
+  onSelectVariant: (assetId: string) => void;
+  onAssetMutated: (newAssetId?: string) => void;
+}
+
+function DetailPreview({ asset, onSelectVariant, onAssetMutated }: DetailPreviewProps) {
   return (
-    <p className="text-on-surface-variant text-sm">
-      Preview will surface once F005 wires the full content render.
-    </p>
+    <div className="flex flex-col gap-3">
+      {asset.totalVariants > 1 ? (
+        <VariantSwitcher
+          asset={asset}
+          onSelectVariant={onSelectVariant}
+          onAssetMutated={onAssetMutated}
+        />
+      ) : null}
+      {asset.contentPreview ? (
+        <pre className="bg-surface-container/40 text-on-surface rounded-md p-3 font-mono text-xs whitespace-pre-wrap">
+          {asset.contentPreview}
+        </pre>
+      ) : (
+        <p className="text-on-surface-variant text-sm">
+          Preview will surface once F005 wires the full content render.
+        </p>
+      )}
+    </div>
+  );
+}
+
+interface VariantSwitcherProps {
+  asset: AssetCardData | AssetDetail;
+  onSelectVariant: (assetId: string) => void;
+  onAssetMutated: (newAssetId?: string) => void;
+}
+
+// BL-026-F003 — replaces the old VersionsTab. Renders only when the
+// active asset belongs to a multi-variant tree. Menu items each carry
+// a Restore action that forks a new variant from the chosen node;
+// clicking elsewhere on the row switches the drawer's view to that
+// variant (no fork).
+function VariantSwitcher({ asset, onSelectVariant, onAssetMutated }: VariantSwitcherProps) {
+  const [nodes, setNodes] = useState<VariantTreeNode[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    let alive = true;
+    void (async () => {
+      const r = await loadVariantTreeAction(asset.id);
+      if (!alive) return;
+      if (!r.ok) setError(r.error);
+      else setNodes(r.nodes);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [asset.id]);
+
+  function handleRestore(node: VariantTreeNode) {
+    startTransition(async () => {
+      setError(null);
+      // F003.D Option A — server falls back to parent.content when we
+      // omit `content`, which is what we want for a Restore (clone the
+      // chosen node's content into a fresh variant).
+      const r = await saveAssetAsVariantAction({ parentAssetId: node.id });
+      if (!r.ok) {
+        setError(r.error);
+        return;
+      }
+      onAssetMutated(r.asset.id);
+    });
+  }
+
+  if (nodes === null || nodes.length <= 1) {
+    return null;
+  }
+
+  const currentIndex = nodes.findIndex((n) => n.id === asset.id);
+  const safeCurrent = currentIndex >= 0 ? currentIndex + 1 : asset.versionIndex;
+  const total = nodes.length;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Menu.Root>
+        <Menu.Trigger
+          data-testid="variant-switcher-trigger"
+          className={cn(
+            "border-outline-variant bg-surface-container/40 text-on-surface flex items-center gap-2 self-start rounded-lg border px-3 py-2 text-xs font-medium",
+            "hover:border-cyan/40 hover:text-cyan",
+            "focus-visible:ring-cyan/40 focus-visible:ring-2 focus-visible:outline-none"
+          )}
+        >
+          <span className="material-symbols-outlined text-[14px]" aria-hidden>
+            account_tree
+          </span>
+          v{safeCurrent} of {total}
+          <span className="material-symbols-outlined text-[14px]" aria-hidden>
+            arrow_drop_down
+          </span>
+        </Menu.Trigger>
+        <Menu.Portal>
+          <Menu.Positioner sideOffset={4} align="start">
+            <Menu.Popup
+              className={cn(
+                "border-outline-variant bg-surface text-on-surface z-50 min-w-[300px] max-w-[420px] rounded-lg border p-1 shadow-lg"
+              )}
+              data-testid="variant-switcher-popup"
+            >
+              {nodes.map((node, idx) => {
+                const isCurrent = node.id === asset.id;
+                return (
+                  <Menu.Item
+                    key={node.id}
+                    onClick={() => {
+                      if (!isCurrent) onSelectVariant(node.id);
+                    }}
+                    className={cn(
+                      "flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-xs",
+                      "data-[highlighted]:bg-cyan/10 data-[highlighted]:text-cyan",
+                      isCurrent && "bg-cyan/5"
+                    )}
+                  >
+                    <span className="font-semibold">v{idx + 1}</span>
+                    <span className="min-w-0 flex-1 truncate">{node.name}</span>
+                    <TagChip
+                      label={node.source === "ai_generated" ? "AI" : "User"}
+                      tone={node.source === "ai_generated" ? "cyan" : "neutral"}
+                      size="xs"
+                    />
+                    <StatusDot status={node.status} />
+                    {isCurrent ? (
+                      <span className="text-on-surface-variant text-[10px]">current</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRestore(node);
+                        }}
+                        disabled={isPending}
+                        className={cn(
+                          "border-outline-variant text-on-surface-variant rounded border px-2 py-0.5 text-[10px] font-medium",
+                          "hover:border-cyan/40 hover:text-cyan",
+                          isPending && "cursor-wait opacity-60"
+                        )}
+                      >
+                        Restore
+                      </button>
+                    )}
+                  </Menu.Item>
+                );
+              })}
+            </Menu.Popup>
+          </Menu.Positioner>
+        </Menu.Portal>
+      </Menu.Root>
+      {error ? <p className="text-xs text-red-400">{error}</p> : null}
+    </div>
   );
 }
 

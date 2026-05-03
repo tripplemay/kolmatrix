@@ -408,7 +408,13 @@ export async function updateAssetAction(rawInput: unknown): Promise<UpdateAssetR
 const SaveAsVariantInputSchema = z.object({
   parentAssetId: z.string().uuid(),
   name: z.string().min(1).max(200).optional(),
-  content: z.unknown(),
+  // BL-026-F003.D Option A: content optional. When undefined, the
+  // server falls back to the parent's existing content — closes the
+  // BL-025 Restore-from-VersionsTab bug where a `content: {}` payload
+  // wrote a blank asset (the variant tree only carries metadata, not
+  // content, so the UI couldn't pass real content without an extra
+  // round-trip).
+  content: z.unknown().optional(),
 });
 
 export type SaveAssetAsVariantInput = z.input<typeof SaveAsVariantInputSchema>;
@@ -473,7 +479,10 @@ export async function saveAssetAsVariantAction(
         productId: parent.productId,
         type: parent.type,
         name: parsed.name ?? bumpVersionSuffix(parent.name, ordinal),
-        content: parsed.content,
+        // F003.D Option A: copy parent's content when caller omits it.
+        // VariantSwitcher → Restore relies on this; EditTab callers
+        // continue to pass real edited content.
+        content: parsed.content !== undefined ? parsed.content : parent.content,
         source: "user_created",
         status: "draft",
         parentAssetId: parent.id,

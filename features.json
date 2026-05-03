@@ -22,8 +22,8 @@
       "title": "variant tree 折到 Preview tab 顶部下拉 + 4 → 3 tabs",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
-      "acceptance": "删除文件 src/app/[locale]/(app)/assets/_panel/VersionsTab.tsx；TAB_CONFIG 从 4 项改 3 项 (preview/edit/used_in)；AssetTabId type 移除 versions；DetailPreview 顶部加 VariantSwitcher 子组件（仅 totalVariants > 1 时显示，base-ui Menu primitive 列出 v1/v2/...，每项含 v 编号 + name + source TagChip + status StatusDot + Restore button）；EditTab 'Save as new version' 改 GhostButton size=sm（视觉降级）；删除 'Compare with current — coming with F005 polish' 假按钮（VersionsTab 删除时自然消失）；修 BL-025 saveAssetAsVariantAction Restore content 空对象 bug：Generator 实装时二选一（A. server action 默认从 parent 复制 content / B. 前端 loadVariantTreeAction 返回 content 字段后传完整 content），落 handoff；新单元 test AssetsClient.test.tsx 验证 tabs 仅 3 个 + variant switcher 渲染条件；e2e drawer 内 tabs 切换 + variant switcher 行为。详见 spec §F003。"
+      "status": "completed",
+      "acceptance": "删除文件 src/app/[locale]/(app)/assets/_panel/VersionsTab.tsx；TAB_CONFIG 从 4 项改 3 项 (preview/edit/used_in)；AssetTabId type 移除 versions；DetailPreview 顶部加 VariantSwitcher 子组件（仅 totalVariants > 1 时显示，base-ui Menu primitive 列出 v1/v2/...，每项含 v 编号 + name + source TagChip + status StatusDot + Restore button）；EditTab 'Save as new version' 改 GhostButton size=sm（视觉降级）；删除 'Compare with current — coming with F005 polish' 假按钮（VersionsTab 删除时自然消失）；修 BL-025 saveAssetAsVariantAction Restore content 空对象 bug：Generator 选 Option A — server action SaveAsVariantInputSchema content 改 optional，content !== undefined 时用 caller 传值，否则 fallback parent.content（VariantSwitcher Restore 不传 content 自然走 fallback；EditTab 真实编辑路径仍传值）；新单元 test AssetsClient.test.tsx 验证 tabs 仅 3 个 + variant switcher 渲染条件；e2e drawer 内 tabs 切换 + variant switcher 行为。详见 spec §F003。"
     },
     {
       "id": "F004",

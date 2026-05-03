@@ -23,7 +23,7 @@
  */
 import { useRef, useState, useTransition } from "react";
 
-import { ChipButton, GhostButton, GradientButton, SecondaryButton } from "@/components/common";
+import { ChipButton, GhostButton, GradientButton } from "@/components/common";
 import { Input } from "@/components/ui/Input";
 import type { AssetCard, AssetDetail } from "@/lib/assets/types";
 
@@ -242,9 +242,9 @@ function EmailEditor({
           Reset
         </GhostButton>
         <div className="flex gap-2">
-          <SecondaryButton onClick={handleSaveAsVariant} disabled={!dirty || isPending}>
+          <GhostButton size="sm" onClick={handleSaveAsVariant} disabled={!dirty || isPending}>
             Save as new version
-          </SecondaryButton>
+          </GhostButton>
           <GradientButton onClick={handleSave} disabled={!dirty || isPending}>
             {isPending ? "Saving…" : "Save"}
           </GradientButton>
@@ -348,9 +348,9 @@ function VideoEditor({
           Reset
         </GhostButton>
         <div className="flex gap-2">
-          <SecondaryButton onClick={handleSaveAsVariant} disabled={!dirty || isPending}>
+          <GhostButton size="sm" onClick={handleSaveAsVariant} disabled={!dirty || isPending}>
             Save as new version
-          </SecondaryButton>
+          </GhostButton>
           <GradientButton onClick={handleSave} disabled={!dirty || isPending}>
             {isPending ? "Saving…" : "Save"}
           </GradientButton>
