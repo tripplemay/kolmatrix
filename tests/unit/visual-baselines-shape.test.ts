@@ -28,6 +28,11 @@ const REPO_ROOT = resolve(__dirname, "../..");
 // en-assets-empty-system-seed per spec §S1.6) get added by Reviewer
 // after triggering the "Update visual baselines" workflow against
 // the redeployed staging environment.
+//
+// BL-026-F005: en-outreach.png removed — OutreachComposer's
+// template picker swapped the <Select> dropdown for a search +
+// product filter row + scrollable list (TemplatePicker component).
+// Reviewer regenerates after staging deploy.
 const EXPECTED_BASELINES = [
   "dashboard.png",
   "en-campaign-detail.png",
@@ -39,7 +44,6 @@ const EXPECTED_BASELINES = [
   "en-kols-detail.png",
   "en-login.png",
   "en-outreach-templates.png",
-  "en-outreach.png",
   "en-request-access.png",
   "en-roi.png",
   "en-weekly-report.png",
@@ -72,7 +76,7 @@ function baselineWidths(): Array<{ name: string; width: number }> {
 }
 
 describe("visual baseline collection (MVP-vf-F007)", () => {
-  it("git tracks exactly the 15 baseline PNGs the spec covers", () => {
+  it("git tracks exactly the 14 baseline PNGs the spec covers", () => {
     expect(gitTrackedBaselines()).toEqual([...EXPECTED_BASELINES].sort());
   });
 
