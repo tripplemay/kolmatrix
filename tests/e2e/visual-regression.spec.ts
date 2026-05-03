@@ -383,29 +383,15 @@ test.describe("Authenticated BM2 visual regression", () => {
     });
   });
 
-  test("outreach full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
-    test.skip(
-      shouldSkipMissingBaseline("en-outreach.png", test.info()),
-      "Baseline en-outreach.png missing — run the 'Update visual baselines' workflow."
-    );
-    await login(page);
-    await page.goto("/en/outreach");
-    await page.waitForSelector('[data-testid="outreach-page"]');
-    await fontsReady(page);
+  // BM2-F006 outreach test removed in BL-026: the en-outreach.png
+  // baseline was regen'd with masks for the new TemplatePicker
+  // composer (preview-subject / preview-body) instead of the old
+  // BM2 page (recent-replies / domain-health). Authoritative test
+  // for en-outreach.png lives in the "Authenticated BL-026 visual
+  // regression" describe block below; keeping two definitions on
+  // the same baseline filename caused the BM2 mask-mismatch failure
+  // observed on CI run 25277266277.
 
-    // Reply rows + domain reputation + recent activity rotate per
-    // tenant — mask them and rely on the section chrome.
-    const replies = page.getByTestId("outreach-recent-replies");
-    const domain = page.getByTestId("outreach-domain-health");
-
-    await expect(page).toHaveScreenshot("en-outreach.png", {
-      fullPage: true,
-      animations: "disabled",
-      mask: [replies, domain],
-      threshold: 0.02,
-      maxDiffPixels: 8000,
-    });
-  });
 
   test("outreach template library full-page screenshot diffs < 2% vs baseline", async ({
     page,
