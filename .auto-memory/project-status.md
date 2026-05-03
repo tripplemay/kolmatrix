@@ -3,27 +3,26 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
+## 🔨 BL-030 KB → Asset 数据通路完整迁移 — BUILDING 2026-05-04
+- 触发：用户 prod 反馈 KB 为 Clash Royale 生成显示成功但 /assets 库 0 行；DB 验 5 产品 35 条素材流落 Product.aiAssets JSON。ADR-011 §Context 13-19 同 bug，BL-025 scope miss 未迁 KB 路径。
+- 5 features 全 executor:generator F001 重写 generateAiAssets 写 Asset 表 / F002 KB UI 切数据源 / F003 backfill 脚本 / F004 测试 / F005 部署 handoff；spec docs/specs/BL-030-kb-asset-bridge-migration-spec.md
+- D1-D5 全 A 锁定：Asset.status=published / 语义命名（Initial outreach/Follow-up/Signing invitation/YouTube 60s/TikTok 15s）/ Product.aiAssets 缩水保留 status / 独立 backfill 脚本 dry-run+idempotent / 顺带修 audit log（asset.generated）
 ## ✅ BL-027 Asset Followup + Icon Hotfix + Framework v0.9.7 — DONE 2026-05-03
-- 7/7 features Reviewer 首轮 PASS（fix_rounds=0）；signoff: docs/test-reports/BL-027-asset-followup-icon-hotfix-signoff-2026-05-03.md
-- 主分支 HEAD: b8a368d；staging git_sha=65a2b60 == main building HEAD ✅；CI 8/8 PASS @ 65a2b60（run 25280391294）
-- F002 woff2 9716→9976 bytes (+filter_alt + arrow_drop_down) / F003 case #7 反向 + 负向手动验证 / F004 hook 6 case PASS / F005 PR 2-of-N / F006 17 cases 闭 BL-026 S2/S3/S4 / F007 environment.md S10/S11
-- 4 visual baseline 重生入 git；本机 npm test **783/783 = 100%**（罕见无 WSL flake）
-- 5 Soft-watch 不阻塞：S1 spec 写 rules.md/实装 setup.md §9.5（持续坑）/ S2 DevTools 浏览器走查待用户 redeploy 后兜底 / S3 WSL Docker pgvector TLS timeout (CI testcontainers 已通) / S4 2 baseline 字节数没变 (mask 预期非 bug) / S5 Prod 仍 a9c4ef8 等用户 SSH redeploy
-## ✅ BL-026 Asset UX Redesign — DONE 2026-05-03
-- 6/6 features PASS；ADR-012 Outreach-First；S2/S3/S4 在 BL-027 闭；S10/S11 已修
-## ✅ BL-025 素材中心 — DONE 2026-05-03
-- 9/9 features PASS；ADR-011 统一 Asset 表 + EmailTemplate dual-write — 不动
-## ✅ Framework v0.9.6 — DONE（v0.9.7 在 BL-027 done 后 Planner 处理）
+- 7/7 PASS fix_rounds=0；signoff 2026-05-03；CI 8/8 @ 65a2b60；本机 npm test 783/783；4 visual baseline 重生
+- v0.9.7 三 learnings 已沉淀（commit ec41656）：material-symbols 四层守门 + planner 铁律 3「spec ls 实物」+ signoff template §6 Soft-watch + §10 Learnings
+- 5 Soft-watch 全 low/medium 不阻塞 done；S5 prod 仍 a9c4ef8 等用户 redeploy
+## ✅ BL-025 素材中心 / BL-026 Asset UX Redesign — DONE 2026-05-03（ADR-011/012 lock 不动）
+## ✅ Framework v0.9.6 / v0.9.7 — DONE
 ## 用户手工待办（按优先级）
-1. **BL-027 done 后 redeploy prod（高，icon bug 上线前阻塞）** — current a9c4ef8（含 icon bug），切 b8a368d 触发 deploy 修 icon + framework v0.9.7 4 层守门上线；redeploy 后 5min 手动浏览 https://staging.kol.guangai.ai/en/assets ActionBar 验 filter_alt / arrow_drop_down 渲染（非字面文字）
+1. **BL-030 done 后合并发布（与 BL-027 icon hotfix 一起 redeploy prod，单次操作）** — 顺序：pg_dump backup → GitHub Actions Deploy main → SSH 跑 backfill dry-run → --execute → 浏览器三验（KB chip / /assets 35 新 Asset / composer 选 product 见 3 email）
 2. ~2026-05-09 BIx F004 staging YouTube sync 走查
-3. @next/bundle-analyzer + Lighthouse 实测脚手架 → 推迟到独立小批次
+3. @next/bundle-analyzer + Lighthouse 推迟独立批次
 ## 关键决议（已 lock）
-- BL-025 ADR-011 / BL-026 ADR-012 — 不动
-- BL-027 four-layer 守门：CI case + pre-commit hook + PR template + manifest 叠加（icon bug 不能再发）
+- BL-030 D1-D5：published / 语义化命名 / aiAssets 缩水保留 / 独立 backfill / 顺带修 audit
+- BL-025 ADR-011 / BL-026 ADR-012 / BL-027 四层守门 — 不动
 ## 角色 / Backlog / 时间线
-- 默认映射（role_assignments=null）：CLI = planner+generator，Codex = evaluator
-- Backlog 17 条：BL-020 high / BL-021 medium / BL-023 medium / BL-024 medium / BL-029-i18n（原 BL-027 重号已避） / BL-028 low / 余 11 deferred
-- 时间线：05-03 BL-025+v0.9.6+BL-026+BL-027 ✅ → 05-04 BL-020 → 05-08~09 BL-024 → 05-13 上线对外（不变）
+- 默认映射（role_assignments=null）：CLI=planner+generator，Codex=evaluator
+- Backlog 17 条：BL-020 high / BL-021 medium / BL-023/024 medium / 余 deferred
+- 时间线：05-04 BL-030 → 05-04~05 redeploy → 05-05 BL-020 → 05-13 上线对外（不变）
 
 <!-- 写入规则（harness §记忆分层）：覆盖写 / ≤30 行 / 所有角色可写 / 只放 WHAT / 不重复 progress.json -->
