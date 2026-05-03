@@ -559,83 +559,161 @@ test.describe("Authenticated BM2 visual regression", () => {
   });
 });
 
-// BL-025-F004 § F004.C — Asset Library visual baselines.
+// BL-026-F002/F004/F005 — Asset Library + Outreach Composer
+// visual baselines (post-UX-redesign, ADR-012 Outreach-First).
 //
-// Baselines first regen via update-visual-baselines workflow run
-// 25270711426 (2026-05-03), commit ead815a. Initial scaffold +
-// follow-up signoff:
-// docs/test-reports/BL-025-asset-library-signoff-2026-05-03.md
-// (Soft-watch S3).
-// covers the two flows that work without source-level data-testid
-// additions — full-state 3-column shell + wizard step-1.
+// Replaces the BL-025 baselines that were deleted when the layout
+// flipped:
+//   - en-assets.png        — 2-col grid (drawer closed) replaces 3-col
+//   - en-assets-drawer-open.png — right slide-over drawer state
+//   - en-assets-filter-dropdown.png — Filter ▾ popover state
+//   - en-assets-empty-system-seed.png — welcome mode (skipped if
+//     the staging tenant already has user-owned assets)
+//   - en-outreach.png      — composer's new search + product filter
+//     row replaced the old <Select> dropdown; visual baseline
+//     re-anchors so future composer regressions trip the gate.
 //
-// Deferred (need source-level scaffold first):
-//   - assets-empty-state — currently no data-testid on the empty
-//     state container; also requires a tenant with zero published
-//     assets which the seed always provides via system_seed templates.
-//   - wizard-step3 — requires advancing through Step 1 → Step 2 →
-//     Generate which calls aigcgateway. Visual baseline can stub
-//     the AI call but the test runner needs a deterministic preview
-//     payload first.
-//   - detail-as-modal-mobile — pending Soft-watch S2 fix
-//     (currently <1024px hides the panel rather than rendering a
-//     modal).
-//
-// All three tracked in next-batch backlog as BL-025-followup.
-test.describe("Authenticated BL-025 visual regression", () => {
+// Spec docs/specs/BL-026-asset-ux-redesign-spec.md §S1.6 enumerates
+// the 5; signoff (Reviewer follow-up after workflow run lands PNGs)
+// will close the loop in docs/test-reports/BL-026-asset-ux-redesign-
+// signoff-2026-05-03.md.
+test.describe("Authenticated BL-026 visual regression", () => {
   test.skip(
     process.platform !== "linux",
     "Visual regression baseline is Linux-canonical (CI + WSL). Non-Linux runs skip."
   );
 
-  test("assets-full-state-3col diffs < 2% vs baseline", async ({ page }) => {
+  test("en-assets (2-col grid drawer-closed) diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
       shouldSkipMissingBaseline("en-assets.png"),
       "Baseline en-assets.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
     await page.goto("/en/assets");
-    // assets-sentinel renders only when AssetsGrid has items;
-    // the seed ships ≥10 system_seed email templates (BL-025-F001
-    // migration), so the grid path is the canonical full-state.
+    // assets-sentinel renders only when the grid has items; staging
+    // marketer tenant carries ≥10 system_seed email templates from
+    // BL-025-F001 migration, so this is the canonical full-state.
+    // F002 changed selectedAssetId to start at null so the drawer
+    // does NOT auto-open on first render — fresh load = drawer
+    // closed = 2-col grid spans full width.
     await page.waitForSelector('[data-testid="assets-sentinel"]');
     await fontsReady(page);
 
-    // Mask seed-rotating regions: filter chip breadcrumb (depends
-    // on default URL params), grid card list (asset names + content
-    // previews are seed-bound), and detail panel preview (subject /
-    // body content drifts per seed run). Sidebar filter labels and
-    // shell chrome stay unmasked as the visual signal.
-    const sentinel = page.getByTestId("assets-sentinel");
+    // Mask the grid contents (seed-bound asset names / content
+    // previews drift per run). Sentinel stays unmasked since it
+    // renders fixed "End of results" / spinner chrome only.
+    const grid = page.locator('[data-testid="assets-grid"], main >> css=section').first();
 
     await expect(page).toHaveScreenshot("en-assets.png", {
       fullPage: true,
       animations: "disabled",
-      mask: [sentinel],
+      mask: [grid],
       threshold: 0.02,
       maxDiffPixels: 8000,
     });
   });
 
-  test("assets-wizard-step1 diffs < 2% vs baseline", async ({ page }) => {
+  test("en-assets-drawer-open (detail right slide-over) diffs < 2% vs baseline", async ({
+    page,
+  }) => {
     test.skip(
-      shouldSkipMissingBaseline("en-assets-wizard-step1.png"),
-      "Baseline en-assets-wizard-step1.png missing — run the 'Update visual baselines' workflow."
+      shouldSkipMissingBaseline("en-assets-drawer-open.png"),
+      "Baseline en-assets-drawer-open.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
     await page.goto("/en/assets");
     await page.waitForSelector('[data-testid="assets-sentinel"]');
-    await page.getByRole("button", { name: /New Asset/i }).click();
-    await page.waitForSelector('[data-testid="new-asset-wizard"]');
-    // Wizard has no async data fetch on Step 1, but the dialog
-    // animation can still race the screenshot. animations: "disabled"
-    // below covers it; the explicit text wait below pins the step.
-    await page.getByText(/Step 1 of 3/).waitFor();
+    // Click the first AssetCard (semantic role=button per F006.A).
+    await page.locator('[role="button"][aria-label]').first().click();
+    await page.waitForSelector('[data-testid="assets-detail-drawer"]');
     await fontsReady(page);
 
-    await expect(page).toHaveScreenshot("en-assets-wizard-step1.png", {
+    const drawer = page.getByTestId("assets-detail-drawer");
+
+    await expect(page).toHaveScreenshot("en-assets-drawer-open.png", {
       fullPage: true,
       animations: "disabled",
+      mask: [drawer],
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
+  });
+
+  test("en-assets-filter-dropdown (Filter ▾ popover open) diffs < 2% vs baseline", async ({
+    page,
+  }) => {
+    test.skip(
+      shouldSkipMissingBaseline("en-assets-filter-dropdown.png"),
+      "Baseline en-assets-filter-dropdown.png missing — run the 'Update visual baselines' workflow."
+    );
+    await login(page);
+    await page.goto("/en/assets");
+    await page.waitForSelector('[data-testid="assets-sentinel"]');
+    await page.getByTestId("assets-filter-trigger").click();
+    await page.waitForSelector('[data-testid="assets-filter-dialog"]');
+    await fontsReady(page);
+
+    await expect(page).toHaveScreenshot("en-assets-filter-dropdown.png", {
+      fullPage: true,
+      animations: "disabled",
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
+  });
+
+  test("en-assets-empty-system-seed (welcome mode) diffs < 2% vs baseline", async ({ page }) => {
+    test.skip(
+      shouldSkipMissingBaseline("en-assets-empty-system-seed.png"),
+      "Baseline en-assets-empty-system-seed.png missing — run the 'Update visual baselines' workflow."
+    );
+    await login(page);
+    await page.goto("/en/assets");
+    // F004 welcome mode triggers when user-owned assets count = 0.
+    // Staging marketer tenant may already have user_created assets
+    // from BL-025 testing — in that case skip rather than capture
+    // the wrong layout. The baseline is generated when an empty
+    // tenant runs through the workflow (one-time setup).
+    const banner = page.getByTestId("assets-welcome-banner");
+    if ((await banner.count()) === 0) {
+      test.skip(true, "Tenant has user-owned assets — welcome mode N/A in current staging seed");
+    }
+    await page.waitForSelector('[data-testid="assets-sentinel"]');
+    await fontsReady(page);
+
+    const grid = page.locator('[data-testid="assets-grid"], main >> css=section').first();
+
+    await expect(page).toHaveScreenshot("en-assets-empty-system-seed.png", {
+      fullPage: true,
+      animations: "disabled",
+      mask: [grid],
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
+  });
+
+  test("en-outreach (composer search + product filter) diffs < 2% vs baseline", async ({
+    page,
+  }) => {
+    test.skip(
+      shouldSkipMissingBaseline("en-outreach.png"),
+      "Baseline en-outreach.png missing — run the 'Update visual baselines' workflow."
+    );
+    await login(page);
+    await page.goto("/en/outreach");
+    await page.waitForSelector('[data-testid="outreach-composer"]');
+    await fontsReady(page);
+
+    // Mask the live preview panes (subject + body render against
+    // the first selectable KOL whose name + variable substitution
+    // shifts per seed). The composer chrome (search / product
+    // filter / TemplatePicker rows) is the visual signal.
+    const previewSubject = page.getByTestId("outreach-preview-subject");
+    const previewBody = page.getByTestId("outreach-preview-body");
+
+    await expect(page).toHaveScreenshot("en-outreach.png", {
+      fullPage: true,
+      animations: "disabled",
+      mask: [previewSubject, previewBody],
       threshold: 0.02,
       maxDiffPixels: 8000,
     });

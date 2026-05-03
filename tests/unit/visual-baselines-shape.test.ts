@@ -21,20 +21,19 @@ import { describe, expect, it } from "vitest";
 
 const REPO_ROOT = resolve(__dirname, "../..");
 
-// BL-026-F002: en-assets.png + en-assets-wizard-step1.png removed —
-// the /assets layout flipped from 3-col aside to 2-col + right
-// drawer + top filter dropdown. The 4 new BL-026 baselines (en-
-// assets / en-assets-drawer-open / en-assets-filter-dropdown /
-// en-assets-empty-system-seed per spec §S1.6) get added by Reviewer
-// after triggering the "Update visual baselines" workflow against
-// the redeployed staging environment.
-//
-// BL-026-F005: en-outreach.png removed — OutreachComposer's
-// template picker swapped the <Select> dropdown for a search +
-// product filter row + scrollable list (TemplatePicker component).
-// Reviewer regenerates after staging deploy.
+// BL-026-F002/F004/F005 Reviewer follow-up: 5 new baselines added
+// for the post-redesign /assets shell + /outreach composer (per
+// spec §S1.6). en-assets-wizard-step1.png stays deleted (the wizard
+// dialog still opens but the underlying page chrome shifted enough
+// that the BL-025 baseline wasn't a reliable comparison anymore;
+// not in the new 5 because the wizard is the same primitive Step 1
+// dialog covered by the assets-page e2e suite).
 const EXPECTED_BASELINES = [
   "dashboard.png",
+  "en-assets-drawer-open.png",
+  "en-assets-empty-system-seed.png",
+  "en-assets-filter-dropdown.png",
+  "en-assets.png",
   "en-campaign-detail.png",
   "en-campaigns.png",
   "en-crm.png",
@@ -44,6 +43,7 @@ const EXPECTED_BASELINES = [
   "en-kols-detail.png",
   "en-login.png",
   "en-outreach-templates.png",
+  "en-outreach.png",
   "en-request-access.png",
   "en-roi.png",
   "en-weekly-report.png",
@@ -76,7 +76,7 @@ function baselineWidths(): Array<{ name: string; width: number }> {
 }
 
 describe("visual baseline collection (MVP-vf-F007)", () => {
-  it("git tracks exactly the 14 baseline PNGs the spec covers", () => {
+  it("git tracks exactly the 19 baseline PNGs the spec covers", () => {
     expect(gitTrackedBaselines()).toEqual([...EXPECTED_BASELINES].sort());
   });
 
