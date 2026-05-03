@@ -64,6 +64,30 @@ type: reference
 | CI/CD | GitHub Actions `deploy-prod.yml` → SSH（`PROD_SSH_KEY` secret）→ `cd /opt/kolmatrix && ./scripts/deploy-prod.sh` |
 | 首次 bootstrap | 2026-04-20 完成（Generator 手动 clone + npm ci + migrate + build + nginx + certbot + pm2 save + pm2 startup systemd） |
 
+## Staging 服务器（与 prod 同 VM 上独立 PM2 instance）
+
+| 项目 | 值 |
+|---|---|
+| 机型 | 同 prod 主机（共 e2-highmem-2 16GB RAM 主机的 8GB RAM 子集 — staging build 触发 OOM 阈值 ≈ 4GB Node heap，超出默认 1.6GB；prod 不受此限。BL-027-F007 修正：早期 environment 误记为 16GB） |
+| 部署路径 | `/opt/kolmatrix-staging` |
+| Env 文件 | `/opt/kolmatrix-staging/.env.staging`（同 prod 0640 权限） |
+| PM2 | app 名 `kolmatrix-staging`，listen `localhost:3002`；systemd unit 复用 `pm2-tripplezhou.service` |
+| Nginx | `/etc/nginx/conf.d/kolmatrix-staging.conf` — `staging.kol.guangai.ai:443` → `127.0.0.1:3002` |
+| TLS 证书 | Let's Encrypt `staging.kol.guangai.ai`（同 certbot auto-renew） |
+| Postgres | 共用 prod Postgres 实例；DB 名 `kolmatrix_staging`，角色同 prod（kolmatrix + kolmatrix_app） |
+| Redis | 共用 prod Redis 实例，db index `2`（aigcgateway 0 / prod 1 / staging 2） |
+| Health URL | `https://staging.kol.guangai.ai/api/health` |
+
+### Staging build OOM 兜底（NODE_OPTIONS 必带）
+
+> **BL-027-F007 修正（S10）：** staging RAM 8GB（不是 16GB）。Node 默认 old-space ≈ 1.6GB，`npm run build` 在 staging 会 OOM。SSH 部署时 build 步骤必须带 `NODE_OPTIONS=--max-old-space-size=4096`：
+
+```bash
+NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) npm run build
+```
+
+`framework/harness/deploy-patterns.md §3.2 step 6` 已固化此命令；本节是给读者的"为什么必须这么写"解释。Prod 的 16GB RAM 不受此限制，但同样写带 NODE_OPTIONS 的命令是无害的。
+
 ## 扩容信号
 
 - RAM 接近 14GB、CPU 持续 >70%、或 KOL 采集 worker 影响 aigcgateway 响应时，拆独立 VM。
