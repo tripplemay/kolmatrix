@@ -133,7 +133,7 @@ export async function loadProductAssetCounts(
 
 **`ProductCard.tsx`：** `emailCount`/`videoCount` 改从 `product.assetCounts` 读，删除 `aiAssets.emailTemplates.length` 引用（line 63-64）。
 
-**`ProductModal.tsx` "AI Assets Generated" 面板（line 246-280）：** 新增 server action `loadProductAssets(productId)` 返回该 product 下所有 Asset 列表，渲染条目（name + status badge + 跳转 /assets/{id}）。`aiReady` 判断改为 `aiAssets?.status === "ready"`（仅 status 字段，不读 content）。
+**`ProductModal.tsx` "AI Assets Generated" 面板（line 246-280）：** 新增 server action `loadProductAssets(productId)` 返回该 product 下所有 Asset 列表，渲染条目（name + status badge + 跳 `/assets?productId={productId}` 过滤页 — 项目无 `/assets/{id}` 单独 detail 页，asset 详情通过 list page 选中后右侧 drawer 打开。**v0.9.8 修订：原写 `/assets/{id}` 表述与项目实际路由结构不符，Generator 实装已正确链 list page 过滤参数；本表述同步纠正**）。`aiReady` 判断改为 `aiAssets?.status === "ready"`（仅 status 字段，不读 content）。
 
 ### 3.6 Backfill 脚本（F003）
 
