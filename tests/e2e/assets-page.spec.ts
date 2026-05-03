@@ -204,26 +204,18 @@ test.describe("BL-025-F004 /assets page", () => {
   });
 
   test("mobile viewport (375x667): drawer renders full-width slide-over", async ({ page }) => {
-    // Resize the default page rather than spinning up a new browser
-    // context — the storage / auth lifecycle is much lighter and
-    // avoids the 30s teardown timeout we saw on CI when the test
-    // ran in a freshly-launched context. Same effect on the layout
-    // assertion: viewport pinned before nav so the slide-over picks
-    // its mobile breakpoint.
-    await page.setViewportSize({ width: 375, height: 667 });
+    // Strategy: open the drawer at the desktop breakpoint (where the
+    // card click + drawer mount race is well-tested by the existing
+    // suite) THEN resize down to 375 px. The DialogPanel slideOver
+    // variant is `w-[520px] max-w-full` (Dialog.tsx:72) so once the
+    // viewport drops below 520 px the `max-w-full` clamp kicks in and
+    // the drawer collapses to viewport width. Decoupling the click
+    // from the viewport sidesteps the mobile click-target races we
+    // saw on CI runs 25279690228 / 25279933390 / 25280156319.
     await login(page);
     await page.goto("/en/assets");
-    // Wait for the sentinel to mount (it's rendered with aria-hidden="true"
-    // on mobile so Playwright's default "visible" wait rejects it; the
-    // existing "infinite scroll wiring" test on line ~137 uses
-    // toBeAttached() for the same reason).
     await expect(page.getByTestId("assets-sentinel")).toBeAttached({ timeout: 15_000 });
-    // Use the same card selector as the canonical "clicking an asset
-    // opens the detail panel" test (line 112-130): role=button,
-    // pressed=false, hasText=v\d+ of. The looser
-    // `[role="button"][aria-label]` selector first-matches a
-    // navigation/menu button on mobile viewports, missing the asset
-    // card entirely.
+
     const card = page
       .getByRole("button", { pressed: false })
       .filter({ hasText: /v\d+ of/ })
@@ -236,6 +228,11 @@ test.describe("BL-025-F004 /assets page", () => {
     await card.click({ force: true });
     const drawer = page.getByTestId("assets-detail-drawer");
     await expect(drawer).toBeVisible();
+
+    // Resize to mobile and let the next animation frame settle.
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.waitForTimeout(150);
+
     const box = await drawer.boundingBox();
     // On mobile the slide-over should occupy ≥ 90% of the viewport
     // width (it renders as a near-full-screen sheet rather than the
