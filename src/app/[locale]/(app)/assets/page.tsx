@@ -36,7 +36,21 @@ export default async function AssetsPage({ params, searchParams }: Props) {
   const initialState: AssetUrlState = readAssetFiltersFromQuery(url);
   const filter = toAssetFilter(initialState);
 
-  const [listing, products] = await Promise.all([
+  // BL-026-F004 — welcome mode kicks in when the tenant has zero
+  // user-owned assets (user_created + ai_generated). The system_seed
+  // grid then doubles as an empty-state walkthrough: marketers can
+  // browse / Save-to-library / send straight to /outreach without
+  // staring at a blank shell. We skip the welcome detection if the
+  // caller's URL filter narrows by source/type/etc. (their explicit
+  // intent is "show me filtered slice", not "first impression").
+  const filterIsBroad =
+    !filter.productId &&
+    !filter.search &&
+    !filter.status &&
+    (!filter.types || filter.types.length === 0) &&
+    (!filter.sources || filter.sources.length === 0);
+
+  const [listing, products, userOwnedCount] = await Promise.all([
     withTenant(tenantId, (tx) =>
       loadAssetsForListing(tx, filter, { sort: initialState.sort, limit: 24 })
     ),
@@ -47,7 +61,41 @@ export default async function AssetsPage({ params, searchParams }: Props) {
         take: 200,
       })
     ),
+    filterIsBroad
+      ? withTenant(tenantId, (tx) =>
+          tx.asset.count({
+            where: {
+              tenantId,
+              source: { in: ["user_created", "ai_generated", "imported"] },
+            },
+          })
+        )
+      : Promise.resolve(1), // non-zero shortcut so welcome mode stays off
   ]);
 
-  return <AssetsClient initialListing={listing} products={products} initialState={initialState} />;
+  const mode: "normal" | "welcome" = userOwnedCount === 0 ? "welcome" : "normal";
+
+  // In welcome mode, replace the listing with system_seed-only assets
+  // so the grid shows only the curated templates the marketer can
+  // adopt; the AssetsClient banner + Save-to-library footer key off
+  // `mode` to surface the welcoming chrome.
+  let effectiveListing = listing;
+  if (mode === "welcome") {
+    effectiveListing = await withTenant(tenantId, (tx) =>
+      loadAssetsForListing(
+        tx,
+        { ...filter, sources: ["system_seed"] },
+        { sort: initialState.sort, limit: 24 }
+      )
+    );
+  }
+
+  return (
+    <AssetsClient
+      initialListing={effectiveListing}
+      products={products}
+      initialState={initialState}
+      mode={mode}
+    />
+  );
 }

@@ -30,7 +30,7 @@
       "title": "Empty state 改 system_seed 模板展示（welcome mode）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "AssetsEmptyState 删除 'Create blank' 假按钮（onCreate prop 一并删）；page.tsx Server Component 加 mode='normal'|'welcome' 字段（empty tenant fallback 到 system_seed 展示）；welcome mode 顶部 banner 'Welcome — these 5 templates ship with KOLMatrix...' + Generate from product CTA 浮在右；Grid 显示 5 套 system_seed 模板（emerald TagChip + System label）；system_seed asset hover quick actions 仅显示 Duplicate（AssetCard 加 readOnly?: boolean prop）；drawer 内 system_seed asset 'Send to outreach' 按钮改 'Save to my library'（Duplicate 到本 tenant）；守门 test tests/integration/assets-empty-welcome.test.ts 验证 fallback 逻辑；e2e empty tenant 进 /assets 看到 5 套模板 + welcome banner。详见 spec §F004。"
     },
     {

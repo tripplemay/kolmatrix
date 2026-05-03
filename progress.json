@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-026 Asset UX Redesign + Outreach-First 心智重排：推翻 BL-025 §F004.B 部分（sidebar / 4 tabs / Create blank 假按钮），改三栏 → 双栏 + Right Drawer + Top Filter Dropdown / variant tree 折到 Preview tab 顶部下拉 / Empty state 改 system_seed 5 套模板展示 / /outreach composer 加 search + product filter（轻量增强，反向 Send to outreach 视觉降级）/ AssetCard 信息层次重排 + Sort 加 used_most + UsedIn JOIN names + Wizard 成本提示+失败路径。Definition of Done = 6 features 全 PASS + Reviewer L1+L2 签收 + visual baseline 4 个新入库 + staging+prod redeploy + L2 走查 30+ checklist 全 PASS。",
   "total_features": 6,
-  "completed_features": 3,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "BL-026-asset-ux-redesign",
-  "last_updated": "2026-05-03T16:25+0800",
+  "last_updated": "2026-05-03T16:50+0800",
   "reference_docs": [
     "docs/specs/BL-026-asset-ux-redesign-spec.md",
     "docs/adr/ADR-012-assets-ux-redesign-outreach-first.md",

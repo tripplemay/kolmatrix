@@ -41,6 +41,11 @@ interface AssetCardProps {
   /** Disable hover quick-action overlay while a duplicate / archive /
    * delete server action is in flight against this card. */
   pending?: boolean;
+  /** BL-026-F004 — system_seed cards (and other tenant-immutable
+   * sources) only allow Duplicate. Edit / Archive / Delete are
+   * filtered from the hover overlay so the marketer can't try a
+   * server action that would 403. */
+  readOnly?: boolean;
   className?: string;
 }
 
@@ -72,9 +77,13 @@ export function AssetCard({
   onSelect,
   onQuickAction,
   pending,
+  readOnly,
   className,
 }: AssetCardProps) {
   const updatedAt = asset.updatedAt instanceof Date ? asset.updatedAt : new Date(asset.updatedAt);
+  const visibleQuickActions = readOnly
+    ? QUICK_ACTIONS.filter((a) => a.id === "duplicate")
+    : QUICK_ACTIONS;
 
   return (
     <div className={cn("group relative", className)}>
@@ -137,7 +146,7 @@ export function AssetCard({
             "focus-within:pointer-events-auto focus-within:opacity-100"
           )}
         >
-          {QUICK_ACTIONS.map((action) => (
+          {visibleQuickActions.map((action) => (
             <button
               key={action.id}
               type="button"

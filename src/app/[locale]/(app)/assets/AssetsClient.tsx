@@ -111,9 +111,13 @@ interface Props {
   initialListing: AssetListResult;
   products: ReadonlyArray<{ id: string; name: string }>;
   initialState: ReturnType<typeof useAssetFilters>["state"];
+  /** BL-026-F004 — `welcome` shows the system_seed grid with a banner
+   * for tenants that have zero user-owned assets. `normal` is the
+   * standard mixed listing. */
+  mode?: "normal" | "welcome";
 }
 
-export function AssetsClient({ initialListing, products }: Props) {
+export function AssetsClient({ initialListing, products, mode = "normal" }: Props) {
   const router = useRouter();
   const { state, update, clearAll } = useAssetFilters();
   const [, startTransition] = useTransition();
@@ -329,6 +333,10 @@ export function AssetsClient({ initialListing, products }: Props) {
 
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-1 flex-col overflow-hidden p-6">
+      {mode === "welcome" ? (
+        <WelcomeBanner onGenerate={() => setWizardOpen(true)} />
+      ) : null}
+
       <section className="border-outline-variant bg-surface-container-low/50 flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border">
         <AssetsActionBar
           breadcrumb={filtersBreadcrumb}
@@ -339,10 +347,7 @@ export function AssetsClient({ initialListing, products }: Props) {
         />
 
         {allItems.length === 0 ? (
-          <AssetsEmptyState
-            onCreate={() => setWizardOpen(true)}
-            onGenerate={() => setWizardOpen(true)}
-          />
+          <AssetsEmptyState onGenerate={() => setWizardOpen(true)} />
         ) : (
           <AssetsGrid
             items={allItems}
@@ -763,6 +768,10 @@ function AssetsGrid({
             onSelect={() => onSelect(asset.id === selectedAssetId ? null : asset.id)}
             onQuickAction={(action) => onQuickAction(asset, action)}
             pending={pendingActionAssetId === asset.id}
+            // BL-026-F004 — system_seed assets are tenant-immutable.
+            // Hover overlay restricted to Duplicate; the drawer
+            // footer swaps Send-to-Outreach for Save-to-my-library.
+            readOnly={asset.source === "system_seed"}
           />
         ))}
         {loadingMore
@@ -787,13 +796,45 @@ function AssetsGrid({
   );
 }
 
-function AssetsEmptyState({
-  onCreate,
-  onGenerate,
-}: {
-  onCreate: () => void;
-  onGenerate: () => void;
-}) {
+// BL-026-F004 — top-of-page banner that frames the system_seed grid
+// as a "welcome / sample templates" wizard rather than an empty state.
+// Sits above the section box so the action bar stays the same shape.
+function WelcomeBanner({ onGenerate }: { onGenerate: () => void }) {
+  return (
+    <div
+      data-testid="assets-welcome-banner"
+      className={cn(
+        "border-cyan/30 bg-cyan/5 mb-4 flex flex-col gap-3 rounded-2xl border p-4",
+        "sm:flex-row sm:items-center sm:justify-between"
+      )}
+    >
+      <div className="flex flex-col gap-1">
+        <h2 className="text-on-surface text-base font-semibold">
+          Welcome — these 5 templates ship with KOLMatrix.
+        </h2>
+        <p className="text-on-surface-variant text-xs">
+          Browse, copy one to your library, or generate your own from a product.
+        </p>
+      </div>
+      <GradientButton
+        icon={
+          <span className="material-symbols-outlined text-[16px]" aria-hidden>
+            auto_awesome
+          </span>
+        }
+        onClick={onGenerate}
+      >
+        Generate from product
+      </GradientButton>
+    </div>
+  );
+}
+
+// BL-026-F004 — "Create blank" CTA removed (assetless creation never
+// shipped); only the AI generate path remains. The welcome-mode
+// system_seed grid is the new positive-path empty fallback (see
+// AssetsClient render branch + page.tsx mode detection).
+function AssetsEmptyState({ onGenerate }: { onGenerate: () => void }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-20 text-center">
       <div
@@ -806,10 +847,9 @@ function AssetsEmptyState({
           folder_open
         </span>
       </div>
-      <SectionHeader title="No assets yet" as="h2" />
+      <SectionHeader title="No assets match this filter" as="h2" />
       <p className="text-on-surface-variant max-w-md text-sm">
-        Your creative vault is empty. Start by generating AI marketing assets from a product or
-        create a blank container.
+        Adjust the filter or generate a new asset from a product.
       </p>
       <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
         <GradientButton
@@ -822,16 +862,6 @@ function AssetsEmptyState({
         >
           Generate from product
         </GradientButton>
-        <SecondaryButton
-          icon={
-            <span className="material-symbols-outlined text-[18px]" aria-hidden>
-              add
-            </span>
-          }
-          onClick={onCreate}
-        >
-          Create blank
-        </SecondaryButton>
       </div>
     </div>
   );
@@ -997,31 +1027,52 @@ function DetailPanelInner({
       </div>
 
       <footer className="border-outline-variant bg-surface-container-low/95 sticky bottom-0 flex gap-2 border-t p-4 backdrop-blur">
-        <SecondaryButton
-          icon={
-            <span className="material-symbols-outlined text-[16px]" aria-hidden>
-              restart_alt
-            </span>
-          }
-          onClick={() => setRegenerateOpen(true)}
-          disabled={pending}
-        >
-          Regenerate
-        </SecondaryButton>
-        {asset.type === "email" ? (
+        {asset.source === "system_seed" ? (
+          // BL-026-F004 — system_seed templates are tenant-immutable.
+          // Primary CTA is "Save to my library" (Duplicate into the
+          // caller's tenant), so the marketer can edit + send.
+          // Regenerate is hidden because there's no parent the
+          // generator could fork from inside this tenant's RLS scope.
           <GradientButton
             icon={
               <span className="material-symbols-outlined text-[16px]" aria-hidden>
-                send
+                file_copy
               </span>
             }
-            onClick={() =>
-              router.push(`/${locale}/outreach?prefilledAssetId=${asset.id}`)
-            }
+            onClick={() => onMoreAction("duplicate")}
+            disabled={pending}
           >
-            Send to Outreach
+            Save to my library
           </GradientButton>
-        ) : null}
+        ) : (
+          <>
+            <SecondaryButton
+              icon={
+                <span className="material-symbols-outlined text-[16px]" aria-hidden>
+                  restart_alt
+                </span>
+              }
+              onClick={() => setRegenerateOpen(true)}
+              disabled={pending}
+            >
+              Regenerate
+            </SecondaryButton>
+            {asset.type === "email" ? (
+              <GradientButton
+                icon={
+                  <span className="material-symbols-outlined text-[16px]" aria-hidden>
+                    send
+                  </span>
+                }
+                onClick={() =>
+                  router.push(`/${locale}/outreach?prefilledAssetId=${asset.id}`)
+                }
+              >
+                Send to Outreach
+              </GradientButton>
+            ) : null}
+          </>
+        )}
       </footer>
 
       <RegenerateVariantPopup
