@@ -13,6 +13,13 @@ export interface EmailTemplateRecord {
   variables: Prisma.JsonValue;
   locale: string;
   type: string;
+  /** BL-026-F005 — productId/productName flow through from the
+   * underlying asset row so the /outreach composer can offer a
+   * Product filter Combobox without re-querying. Legacy email_template
+   * loaders (loadUserTemplates / loadSystemTemplates) leave these
+   * null — they don't carry product attachment in the legacy schema. */
+  productId?: string | null;
+  productName?: string | null;
 }
 
 export interface EmailTemplateOption extends EmailTemplateRecord {
@@ -96,6 +103,8 @@ export async function loadOutreachTemplates(
       locale: row.locale,
       type: scope,
       scope,
+      productId: row.productId,
+      productName: row.productName,
     };
   }
 

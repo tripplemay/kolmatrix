@@ -1058,18 +1058,24 @@ function DetailPanelInner({
               Regenerate
             </SecondaryButton>
             {asset.type === "email" ? (
-              <GradientButton
+              // BL-026-F005 — visual degrade from GradientButton to
+              // GhostButton: /outreach is now the primary creation
+              // surface (with its own search + product filter), so
+              // the reverse "Send to Outreach" path is preserved but
+              // de-emphasised. ADR-012 §Decision §1 — Outreach-First.
+              <GhostButton
                 icon={
                   <span className="material-symbols-outlined text-[16px]" aria-hidden>
                     send
                   </span>
                 }
+                iconPosition="left"
                 onClick={() =>
                   router.push(`/${locale}/outreach?prefilledAssetId=${asset.id}`)
                 }
               >
                 Send to Outreach
-              </GradientButton>
+              </GhostButton>
             ) : null}
           </>
         )}

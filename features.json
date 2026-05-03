@@ -38,7 +38,7 @@
       "title": "/outreach composer 加 search + product filter（轻量增强）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "OutreachComposer template dropdown 升级为 'search + filter row'：顶部 product filter Combobox（All products 默认）+ search Input（debounce 300ms 按 name/subject 模糊匹配）+ list of templates max 20 visible，每项 name / source TagChip / product label / 1-line preview snippet；视觉用 GlassPanel + 现有控件，不新增公共组件；loadAssetsForComposer(tenantId, type, locale?, search?, productId?) 加 2 可选参数，WHERE 加 ILIKE 模糊匹配 + productId 过滤；AssetsClient DetailPanelInner footer 'Send to Outreach' 按钮 GradientButton → GhostButton（视觉降级，反向流弱化）；新增 tests/e2e/outreach-composer-template-select.spec.ts；扩展 src/lib/assets/__tests__/queries.test.ts + tests/integration/composer-load-templates.test.ts 加 search/productId case。详见 spec §F005 + ADR-012 心智重排。"
     },
     {

@@ -275,18 +275,41 @@ export interface ComposerAssetOption {
  * (system_seed first since system_seed < user_created < ai_generated
  * lexically) then updatedAt desc within each band.
  *
+ * BL-026-F005 — added optional `search` (case-insensitive name
+ * substring match) and `productId` filters so the /outreach
+ * composer's new search + product filter row can narrow at the DB
+ * level when wired up. The composer UI currently does client-side
+ * filtering against the initial 100-row payload (light path); these
+ * params land server-side first so the future "incremental search"
+ * upgrade (server action calling this with `search`) is a one-line
+ * swap.
+ *
  * Returns up to COMPOSER_MAX_RESULTS — enough that the dropdown
- * never truncates real-world tenant content; F005's library page is
+ * never truncates real-world tenant content; the /assets page is
  * the place to browse beyond that ceiling.
  */
 export async function loadAssetsForComposer(
   tx: Prisma.TransactionClient,
   type: AssetType,
-  locale?: string
+  locale?: string,
+  search?: string,
+  productId?: string
 ): Promise<ComposerAssetOption[]> {
   const where: Prisma.AssetWhereInput = { type, status: "published" };
   if (locale) {
     where.content = { path: ["locale"], equals: locale } as Prisma.JsonNullableFilter<"Asset">;
+  }
+  if (search && search.trim().length > 0) {
+    // ILIKE on name. content->>'subject' is harder to filter through
+    // Prisma's JSON path operators (no built-in case-insensitive
+    // contains for JsonFilter), so name is the matchable surface for
+    // now — content body match would need either $queryRaw or a
+    // generated `subject` column. Library names are descriptive
+    // enough that this rarely bites for the marketer search use case.
+    where.name = { contains: search.trim(), mode: "insensitive" };
+  }
+  if (productId) {
+    where.productId = productId;
   }
 
   const rows = (await tx.asset.findMany({

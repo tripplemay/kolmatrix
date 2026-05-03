@@ -39,6 +39,10 @@ export interface OutreachTemplateOption {
   locale: string;
   type: string;
   scope: "system" | "user";
+  /** BL-026-F005 — pulled in from EmailTemplateOption so the composer
+   * can offer a Product filter without an extra query. */
+  productId?: string | null;
+  productName?: string | null;
 }
 
 export interface OutreachComposerData {

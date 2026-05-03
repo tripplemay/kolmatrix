@@ -18,6 +18,7 @@ import { useMemo, useRef, useState, useTransition, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/Button";
+import { Combobox } from "@/components/ui/Combobox";
 import {
   Dialog,
   DialogBackdrop,
@@ -31,7 +32,9 @@ import { FieldError, FieldHint, Input, Label, Textarea } from "@/components/ui/I
 import { Select } from "@/components/ui/Select";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { StatusBadge } from "@/components/common/StatusBadge";
+import { TagChip } from "@/components/common/TagChip";
 import { substituteSubjectAndBody } from "@/lib/email/variable-substitute";
+import { cn } from "@/lib/utils";
 
 import {
   customizeAction,
@@ -409,44 +412,23 @@ export function OutreachComposer({
           </Select>
         </div>
 
-        <div>
-          <Label htmlFor="outreach-template-select" required>
-            {labels.templateLabel}
-          </Label>
-          <Select
-            id="outreach-template-select"
-            data-testid="outreach-template-select"
-            value={templateId}
-            onChange={(e) => {
-              setTemplateId(e.target.value);
+        <div className="md:col-span-1">
+          <Label required>{labels.templateLabel}</Label>
+          {/* BL-026-F005 — search + product filter row replaces the
+              <Select> dropdown. Templates are filtered client-side
+              against the initial up-to-100-row payload (light path);
+              loadAssetsForComposer accepts the same params for a
+              future incremental-search server upgrade. */}
+          <TemplatePicker
+            templates={data.templates}
+            templateId={templateId}
+            onSelect={(id) => {
+              setTemplateId(id);
               setOverrideTemplate(null);
             }}
-            disabled={data.templates.length === 0}
-          >
-            <option value="">{labels.templatePlaceholder}</option>
-            {data.templates.filter((t) => t.scope === "system").length > 0 ? (
-              <optgroup label={labels.templateSystemGroup}>
-                {data.templates
-                  .filter((t) => t.scope === "system")
-                  .map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name} ({t.locale})
-                    </option>
-                  ))}
-              </optgroup>
-            ) : null}
-            {data.templates.filter((t) => t.scope === "user").length > 0 ? (
-              <optgroup label={labels.templateUserGroup}>
-                {data.templates
-                  .filter((t) => t.scope === "user")
-                  .map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name} ({t.locale})
-                    </option>
-                  ))}
-              </optgroup>
-            ) : null}
-          </Select>
+            templateSystemGroup={labels.templateSystemGroup}
+            templateUserGroup={labels.templateUserGroup}
+          />
         </div>
       </div>
 
@@ -963,5 +945,145 @@ function AiCustomizeDialog({
         </DialogPanel>
       </DialogPortal>
     </Dialog>
+  );
+}
+
+// ---- BL-026-F005 · Template picker (search + product filter) -------
+
+interface TemplatePickerProps {
+  templates: OutreachTemplateOption[];
+  templateId: string;
+  onSelect: (id: string) => void;
+  templateSystemGroup: string;
+  templateUserGroup: string;
+}
+
+function TemplatePicker({
+  templates,
+  templateId,
+  onSelect,
+  templateSystemGroup,
+  templateUserGroup,
+}: TemplatePickerProps) {
+  const [productFilter, setProductFilter] = useState<string | null>(null);
+  const [searchDraft, setSearchDraft] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // 300ms debounce so the list doesn't reflow per keystroke.
+  useEffect(() => {
+    const handle = window.setTimeout(() => setSearchQuery(searchDraft), 300);
+    return () => window.clearTimeout(handle);
+  }, [searchDraft]);
+
+  const productOptions = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const t of templates) {
+      if (t.productId && t.productName && !seen.has(t.productId)) {
+        seen.set(t.productId, t.productName);
+      }
+    }
+    return Array.from(seen, ([value, label]) => ({ value, label })).sort((a, b) =>
+      a.label.localeCompare(b.label)
+    );
+  }, [templates]);
+
+  const filteredTemplates = useMemo(() => {
+    let items: OutreachTemplateOption[] = [...templates];
+    if (productFilter) {
+      items = items.filter((t) => t.productId === productFilter);
+    }
+    const q = searchQuery.trim().toLowerCase();
+    if (q.length > 0) {
+      items = items.filter(
+        (t) =>
+          t.name.toLowerCase().includes(q) ||
+          (t.subject ?? "").toLowerCase().includes(q)
+      );
+    }
+    return items.slice(0, 20);
+  }, [templates, productFilter, searchQuery]);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Combobox
+          items={productOptions}
+          value={productFilter}
+          onChange={setProductFilter}
+          placeholder="All products"
+          ariaLabel="Filter templates by product"
+        />
+        <Input
+          value={searchDraft}
+          onChange={(e) => setSearchDraft(e.currentTarget.value)}
+          placeholder="Search templates…"
+          aria-label="Search templates"
+          data-testid="outreach-template-search"
+        />
+      </div>
+      <ul
+        role="listbox"
+        aria-label="Email templates"
+        data-testid="outreach-template-list"
+        className={cn(
+          "border-outline-variant bg-surface/30 max-h-[280px] overflow-y-auto rounded-xl border"
+        )}
+      >
+        {templates.length === 0 ? (
+          <li className="text-on-surface-variant p-3 text-xs">No templates available yet.</li>
+        ) : filteredTemplates.length === 0 ? (
+          <li className="text-on-surface-variant p-3 text-xs">
+            No matches — try clearing the filters.
+          </li>
+        ) : (
+          filteredTemplates.map((t) => {
+            const selected = t.id === templateId;
+            return (
+              <li
+                key={t.id}
+                role="option"
+                aria-selected={selected}
+                data-testid="outreach-template-option"
+                data-template-id={t.id}
+                onClick={() => onSelect(t.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onSelect(t.id);
+                  }
+                }}
+                tabIndex={0}
+                className={cn(
+                  "border-outline-variant/40 flex cursor-pointer flex-col gap-1 border-b p-3 text-sm last:border-b-0",
+                  "hover:bg-cyan/5 focus-visible:bg-cyan/10",
+                  "focus-visible:ring-cyan/40 focus-visible:ring-2 focus-visible:outline-none",
+                  selected && "bg-cyan/10 border-l-2 border-l-cyan"
+                )}
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-on-surface font-medium">{t.name}</span>
+                  <TagChip
+                    label={t.scope === "system" ? templateSystemGroup : templateUserGroup}
+                    tone={t.scope === "system" ? "cyan" : "neutral"}
+                    size="xs"
+                  />
+                  {t.productName ? (
+                    <span className="text-on-surface-variant text-[11px]">
+                      · {t.productName}
+                    </span>
+                  ) : null}
+                  <span className="text-on-surface-variant ml-auto text-[10px] uppercase">
+                    {t.locale}
+                  </span>
+                </div>
+                {t.subject ? (
+                  <p className="text-on-surface-variant line-clamp-1 text-xs">{t.subject}</p>
+                ) : null}
+              </li>
+            );
+          })
+        )}
+      </ul>
+    </div>
   );
 }
