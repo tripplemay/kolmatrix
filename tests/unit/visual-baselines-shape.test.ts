@@ -23,6 +23,8 @@ const REPO_ROOT = resolve(__dirname, "../..");
 
 const EXPECTED_BASELINES = [
   "dashboard.png",
+  "en-assets-wizard-step1.png",
+  "en-assets.png",
   "en-campaign-detail.png",
   "en-campaigns.png",
   "en-crm.png",
@@ -65,7 +67,7 @@ function baselineWidths(): Array<{ name: string; width: number }> {
 }
 
 describe("visual baseline collection (MVP-vf-F007)", () => {
-  it("git tracks exactly the 15 baseline PNGs the spec covers", () => {
+  it("git tracks exactly the 17 baseline PNGs the spec covers", () => {
     expect(gitTrackedBaselines()).toEqual([...EXPECTED_BASELINES].sort());
   });
 
