@@ -12,6 +12,7 @@ export default defineConfig({
     testTimeout: 60_000,
     include: [
       "src/**/__tests__/**/*.{test,spec}.{ts,tsx}",
+      "scripts/**/__tests__/**/*.{test,spec}.{ts,tsx}",
       "tests/unit/**/*.{test,spec}.{ts,tsx}",
       "tests/__example/**/*.{test,spec}.{ts,tsx}",
     ],

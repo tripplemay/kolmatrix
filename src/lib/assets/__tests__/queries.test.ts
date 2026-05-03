@@ -14,6 +14,7 @@ import {
   loadAssetDetail,
   loadAssetsForComposer,
   loadAssetsForListing,
+  loadProductAssetCounts,
   loadUsedIn,
   loadVariantTree,
   __TEST_ONLY__,
@@ -24,6 +25,7 @@ type AssetTx = Prisma.TransactionClient & {
     findMany: ReturnType<typeof vi.fn>;
     findUnique: ReturnType<typeof vi.fn>;
     count: ReturnType<typeof vi.fn>;
+    groupBy: ReturnType<typeof vi.fn>;
   };
   emailLog: {
     findMany: ReturnType<typeof vi.fn>;
@@ -37,6 +39,7 @@ function makeTx(): AssetTx {
       findMany: vi.fn(),
       findUnique: vi.fn(),
       count: vi.fn(),
+      groupBy: vi.fn(),
     },
     emailLog: {
       findMany: vi.fn(),
@@ -395,5 +398,61 @@ describe("__TEST_ONLY__ helpers", () => {
     ).toBe("T — Sc");
     expect(__TEST_ONLY__.previewFromContent("email", null)).toBe("");
     expect(__TEST_ONLY__.previewFromContent("email", [])).toBe("");
+  });
+});
+
+// BL-030-F002 — loadProductAssetCounts powers the KB grid chips. The
+// helper runs a single Prisma groupBy and shapes the result into a
+// Map<productId, {emailCount, videoCount}>. Mock the tx so we can
+// assert: (a) the where clause filters status=published + productId
+// in the input list; (b) every productId in the input lands in the
+// returned Map even when no Asset rows match (default {0,0}); (c)
+// types collapse correctly when both email + video_script rows exist
+// for the same product.
+describe("loadProductAssetCounts", () => {
+  it("returns an empty Map and skips the DB roundtrip when productIds is empty", async () => {
+    const tx = makeTx();
+
+    const result = await loadProductAssetCounts(tx, []);
+
+    expect(result.size).toBe(0);
+    expect(tx.asset.groupBy).not.toHaveBeenCalled();
+  });
+
+  it("aggregates email + video_script counts per product and zero-fills missing rows", async () => {
+    const tx = makeTx();
+    tx.asset.groupBy.mockResolvedValueOnce([
+      { productId: "p1", type: "email", _count: { _all: 3 } },
+      { productId: "p1", type: "video_script", _count: { _all: 2 } },
+      { productId: "p2", type: "email", _count: { _all: 1 } },
+      // p3 has no rows — should still appear in the Map with {0,0}.
+    ]);
+
+    const result = await loadProductAssetCounts(tx, ["p1", "p2", "p3"]);
+
+    expect(result.get("p1")).toEqual({ emailCount: 3, videoCount: 2 });
+    expect(result.get("p2")).toEqual({ emailCount: 1, videoCount: 0 });
+    expect(result.get("p3")).toEqual({ emailCount: 0, videoCount: 0 });
+
+    const args = tx.asset.groupBy.mock.calls[0]![0];
+    expect(args.by).toEqual(["productId", "type"]);
+    expect(args.where).toEqual({
+      productId: { in: ["p1", "p2", "p3"] },
+      status: "published",
+    });
+  });
+
+  it("ignores groupBy rows whose productId is null (system_seed without product binding)", async () => {
+    const tx = makeTx();
+    tx.asset.groupBy.mockResolvedValueOnce([
+      { productId: null, type: "email", _count: { _all: 5 } },
+      { productId: "p1", type: "email", _count: { _all: 1 } },
+    ]);
+
+    const result = await loadProductAssetCounts(tx, ["p1"]);
+
+    // Only p1 entry exists; the null-productId row didn't bleed in.
+    expect(result.size).toBe(1);
+    expect(result.get("p1")).toEqual({ emailCount: 1, videoCount: 0 });
   });
 });
