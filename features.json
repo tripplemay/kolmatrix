@@ -6,7 +6,7 @@
       "title": "重写 generateAiAssets：写 Asset 表 + 缩水 Product.aiAssets + 5 条 logAudit",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/lib/products/generateAiAssets.ts 改写：parseAndValidate 后在 withTenant 内调 createAsset 5 次（按 spec §3.1 命名表：'{productName} — Initial outreach' / Follow-up / Signing invitation / YouTube 60s / TikTok 15s），type=email/video_script，source='ai_generated'，status='published'（D1），productId 透传，metadata 含 source='kb_generation'+productId+templateRole+generatedAt+traceId（spec §3.3）；同 tx 内 product.update 把 aiAssets 缩水为 {status:'ready', generatedAt}（D3，删 emailTemplates/videoScripts 字段写入）；withTenant 完成后 5 条 logAudit({action:'asset.generated', targetType:'asset', targetId, tenantId, after}) 与 generateAssetAction 一致（D5）；GenerateAiAssetsInput 加 actorUserId:string 字段（必传），knowledge-base/actions.ts 三处 void generateAiAssets 调用补传 userId；TypeScript ProductAiAssets 类型缩水（删 ProductAiAssetContent 部分）；npm run lint + npx tsc --noEmit 全绿。详见 spec §3.4-3.8。"
     },
     {
@@ -14,7 +14,7 @@
       "title": "KB UI 切换数据源（ProductCard chip + ProductModal AI 面板改读 Asset 表）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/lib/assets/queries.ts 新增 loadProductAssetCounts(tx, productIds[]) → Map<productId,{emailCount,videoCount}>，单次 Prisma groupBy 查询；src/app/[locale]/(app)/knowledge-base/page.tsx 在 Promise.all 加 withTenant 调 loadProductAssetCounts，把 counts 注入 product DTO（types.ts 加 assetCounts 字段）；ProductCard.tsx 删 line 63-64 'assets.emailTemplates.length' 引用，emailCount/videoCount 改从 product.assetCounts 读；ProductModal.tsx 'AI Assets Generated' 面板（line 246-280）：aiReady 判断改为 aiAssets?.status==='ready'（仅 status 字段，不读 content），新增 server action loadProductAssets(productId) 返回 Asset 列表，渲染条目（name + status badge + 跳转 /assets/{id}）；npm run lint + tsc 全绿。详见 spec §3.5。"
     },
     {
@@ -22,7 +22,7 @@
       "title": "Backfill 脚本 scripts/migrate-product-aiassets-to-asset.ts (dry-run + idempotent)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新建 scripts/migrate-product-aiassets-to-asset.ts，用 npx tsx 运行；默认 dry-run 仅打印将创建的 Asset 数量+不实际写入，--execute 标志才实跑；算法（spec §3.6）：withPlatformAdmin 扫所有 product WHERE aiAssets->>'status'='ready' AND (aiAssets ? 'emailTemplates' OR aiAssets ? 'videoScripts')，按 product 用 withTenant(product.tenantId,...) 包裹 createAsset；幂等性：检查 Asset WHERE source='ai_generated' AND product_id=X AND metadata->'backfilledFrom'->>'index'=i AND ->>'sourceField'=field 是否存在，存在跳过；createAsset 全成功后 product.update 缩水 aiAssets={status:'ready', generatedAt:原值或 product.updatedAt}；输出 stats（扫描产品 / 跳过 / 创建 / 失败）；脚本入口含 README header（用法+回滚）；shebang+chmod+x；本地 testcontainers 跑 dry-run 5 fixture product → 35 Asset 计数正确，实跑 → 35 Asset 入库 + Product.aiAssets content 字段为空，重跑 --execute → 计数不变（idempotent）。详见 spec §3.6。"
     },
     {
@@ -30,7 +30,7 @@
       "title": "Tests: generateAiAssets 单测改写 + KB ProductCard 测试 + backfill 集成测试 + loadProductAssetCounts 单测",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/lib/products/__tests__/generateAiAssets.test.ts 改写：mock fetch 返回 valid JSON，断 5 次 createAsset 调用（type/name/source/status/productId/metadata 全匹配 spec §3.1+§3.3）+ 1 次 product.update（aiAssets 缩水 shape）+ 5 次 logAudit（action='asset.generated' + after.productId）；src/app/[locale]/(app)/knowledge-base/__tests__/ProductCard.test.tsx fixture 改用 product.assetCounts={emailCount:3,videoCount:2}，断 chip 渲染数字；新建 scripts/__tests__/migrate-product-aiassets-to-asset.test.ts 至少 4 case：dry-run 不写 + 实跑 5 product 创建 35 Asset + 重跑 --execute 计数不变 + 已部分 Asset 存在的 product 跳过已有；src/lib/assets/__tests__/queries.test.ts 加 loadProductAssetCounts 至少 3 case（多 product 多 type 混合 / 空 productIds 数组返回空 Map / RLS 隔离不同 tenant）；npm test 本地全绿（包括新加 case），CI 全绿。详见 spec §7。"
     },
     {
@@ -38,7 +38,7 @@
       "title": "部署 + 验收 checklist + handoff 文档",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Generator 在 building 完成后写 docs/specs/BL-030-deploy-checklist.md（或在 spec §8 基础上补完）：staging 部署后手动 E2E（spec §7.4 三步：KB 创建新 product+Generate / /assets 见 5 新 Asset / composer 选 product 见 3 email）；handoff 文档列明 prod 操作顺序（spec §8）：pg_dump backup → GitHub Actions Deploy → ssh pre-flight node tsx --version → dry-run script → 实跑 --execute → 浏览器 5 验证；列出 5 个已知 prod product id（cmomf69bw00042pbn4rix3zls Clash Royale / cmomf69br00032pbnqn1vzg7x Pokemon Go / cmomf69bf00022pbnen1pw3lz PUBG Mobile / cmomf69b300012pbnyieorz9c Genshin Impact / cmomf69am00002pbnvswtfep3 Honor of Kings 全 tenantId 2b1dcaa2-f35a-4188-8ff6-82453f39e3d5），Backfill 跑后预期 35 Asset 行；progress.json status 切 verifying，generator_handoff 含完整执行报告。"
     }
   ]
