@@ -42,6 +42,11 @@ const DEFAULT_PAGE_SIZE = 24;
 const MAX_PAGE_SIZE = 100;
 const COMPOSER_MAX_RESULTS = 100;
 const USED_IN_RECENT_LIMIT = 20;
+// BL-026-F006.C — sort=used_most fetches up to this many matching
+// assets to memory before in-memory ranking. Tenants beyond this cap
+// see only the first cap rows ranked. ~500 is comfortably above
+// realistic tenant asset counts during the MVP window.
+const USED_MOST_SCAN_CAP = 500;
 
 function previewFromContent(type: AssetType, content: Prisma.JsonValue): string {
   if (content == null || typeof content !== "object" || Array.isArray(content)) {
@@ -132,6 +137,12 @@ function sortToOrderBy(sort: AssetListSort): Prisma.AssetOrderByWithRelationInpu
       return [{ name: "asc" }, { id: "asc" }];
     case "type":
       return [{ type: "asc" }, { updatedAt: "desc" }, { id: "desc" }];
+    case "used_most":
+      // Handled outside Prisma's findMany — see loadAssetsForListing
+      // sort branch. Returning recent ordering as a safe fallback in
+      // case this ever runs through findMany unexpectedly (it
+      // shouldn't — caller short-circuits).
+      return [{ updatedAt: "desc" }, { id: "desc" }];
     case "recent":
     default:
       return [{ updatedAt: "desc" }, { id: "desc" }];
@@ -155,6 +166,60 @@ export async function loadAssetsForListing(
   const orderBy = sortToOrderBy(sort);
   const requestedLimit = pagination.limit ?? DEFAULT_PAGE_SIZE;
   const limit = Math.max(1, Math.min(requestedLimit, MAX_PAGE_SIZE));
+
+  // BL-026-F006.C — `used_most` ranks by email_log usage count via
+  // the F006 dual-write convention (asset.id = email_template.id =
+  // email_log.template_id). Prisma can't `_count` an Asset → EmailLog
+  // relation because the FK on email_log.template_id targets
+  // email_template (legacy), so we aggregate counts in JS:
+  //
+  //   1. groupBy email_log over template_id
+  //   2. fetch all matching assets up to a USED_MOST_SCAN_CAP safety
+  //      limit (no cursor — the in-memory sort means cursor pagination
+  //      can't preserve order across pages)
+  //   3. sort in JS by count desc + updatedAt desc tie-break
+  //   4. slice to the requested limit
+  //
+  // Trade-off: tenants with > USED_MOST_SCAN_CAP assets will see only
+  // the top by `_count` order across the first cap. Acceptable for
+  // MVP scale; the future upgrade path is a generated `usage_count`
+  // column on Asset (computed via trigger) so Prisma can sort
+  // natively.
+  if (sort === "used_most") {
+    const counts = await tx.emailLog.groupBy({
+      by: ["templateId"],
+      _count: { _all: true },
+      where: { templateId: { not: null } },
+    });
+    const countByAsset = new Map<string, number>();
+    for (const c of counts) {
+      if (c.templateId) countByAsset.set(c.templateId, c._count._all);
+    }
+
+    const allRows = (await tx.asset.findMany({
+      where,
+      select: ASSET_SELECT,
+      take: USED_MOST_SCAN_CAP,
+    })) as RawAssetRow[];
+
+    allRows.sort((a, b) => {
+      const ca = countByAsset.get(a.id) ?? 0;
+      const cb = countByAsset.get(b.id) ?? 0;
+      if (cb !== ca) return cb - ca;
+      return b.updatedAt.getTime() - a.updatedAt.getTime();
+    });
+
+    const visibleRows = allRows.slice(0, limit);
+    const items = await annotateVariantInfo(tx, visibleRows);
+    return {
+      items,
+      // Cursor pagination is incompatible with in-memory sort;
+      // surface "no more pages" so the client doesn't try.
+      nextCursor: null,
+      hasMore: false,
+      total: allRows.length,
+    };
+  }
 
   const findManyArgs: Prisma.AssetFindManyArgs = {
     where,
@@ -465,6 +530,10 @@ export async function loadUsedIn(
   const ids = Array.from(candidateIds);
   const [total, recentRows] = await Promise.all([
     tx.emailLog.count({ where: { templateId: { in: ids } } }),
+    // BL-026-F006.D — JOIN campaign.name + kol.displayName so the
+    // UsedInTab can render real names instead of UUID-prefix
+    // placeholders. The tab's link buttons need both the id (for
+    // routing) and the name (for display).
     tx.emailLog.findMany({
       where: { templateId: { in: ids } },
       select: {
@@ -472,6 +541,8 @@ export async function loadUsedIn(
         createdAt: true,
         campaignId: true,
         kolId: true,
+        campaign: { select: { name: true } },
+        kol: { select: { displayName: true } },
       },
       orderBy: { createdAt: "desc" },
       take: USED_IN_RECENT_LIMIT,
@@ -483,7 +554,9 @@ export async function loadUsedIn(
     resourceId: row.id,
     occurredAt: row.createdAt,
     campaignId: row.campaignId,
+    campaignName: row.campaign?.name ?? null,
     kolId: row.kolId,
+    kolName: row.kol?.displayName ?? null,
   }));
 
   return { total, recent };

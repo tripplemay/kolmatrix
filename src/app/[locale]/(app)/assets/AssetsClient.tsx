@@ -87,6 +87,7 @@ const SORT_LABEL: Record<(typeof ASSET_LIST_SORTS)[number], string> = {
   recent: "Recent",
   name: "Name",
   type: "Type",
+  used_most: "Most used",
 };
 
 const TYPE_OPTIONS: ReadonlyArray<{ value: AssetType; label: string; icon: string }> = [
@@ -355,6 +356,11 @@ export function AssetsClient({ initialListing, products, mode = "normal" }: Prop
             selectedAssetId={selectedAssetId}
             onSelect={handleSelect}
             onQuickAction={handleQuickAction}
+            onProductClick={(productId) => {
+              // BL-026-F006.A — product link in AssetCard footer
+              // routes back here to narrow the listing.
+              startTransition(() => update({ productId }));
+            }}
             pendingActionAssetId={pendingActionAssetId}
             loadingMore={loadingMore}
             hasMore={hasMore}
@@ -733,6 +739,9 @@ interface GridProps {
   selectedAssetId: string | null;
   onSelect: (id: string | null) => void;
   onQuickAction: (asset: AssetCardData, action: AssetCardQuickAction) => void;
+  /** BL-026-F006.A — product-link callback fired from AssetCard
+   * footer; parent narrows the listing by productId. */
+  onProductClick: (productId: string) => void;
   pendingActionAssetId: string | null;
   loadingMore: boolean;
   hasMore: boolean;
@@ -745,6 +754,7 @@ function AssetsGrid({
   selectedAssetId,
   onSelect,
   onQuickAction,
+  onProductClick,
   pendingActionAssetId,
   loadingMore,
   hasMore,
@@ -767,6 +777,7 @@ function AssetsGrid({
             isSelected={asset.id === selectedAssetId}
             onSelect={() => onSelect(asset.id === selectedAssetId ? null : asset.id)}
             onQuickAction={(action) => onQuickAction(asset, action)}
+            onProductClick={onProductClick}
             pending={pendingActionAssetId === asset.id}
             // BL-026-F004 — system_seed assets are tenant-immutable.
             // Hover overlay restricted to Duplicate; the drawer
@@ -1646,7 +1657,13 @@ function NewAssetDialog({
             ) : null}
 
             {state.step === 3 ? (
-              <WizardStep3 busy={state.busy} generated={state.generated} error={state.error} />
+              <WizardStep3
+                busy={state.busy}
+                generated={state.generated}
+                error={state.error}
+                onBack={() => dispatch({ kind: "GO_BACK" })}
+                onTryAgain={() => void handleRegenerate()}
+              />
             ) : null}
 
             {state.error && state.step !== 3 ? (
@@ -1789,9 +1806,12 @@ interface WizardStep3Props {
   busy: boolean;
   generated: AssetDetail | null;
   error: string | null;
+  /** BL-026-F006.F — error-state recovery callbacks. */
+  onBack: () => void;
+  onTryAgain: () => void;
 }
 
-function WizardStep3({ busy, generated, error }: WizardStep3Props) {
+function WizardStep3({ busy, generated, error, onBack, onTryAgain }: WizardStep3Props) {
   if (busy) {
     return (
       <div className="flex min-h-[180px] flex-col items-center justify-center gap-3 py-6">
@@ -1809,13 +1829,23 @@ function WizardStep3({ busy, generated, error }: WizardStep3Props) {
   }
 
   if (error) {
+    // BL-026-F006.F — friendlier error copy + dual recovery
+    // buttons (Back to Step 2 to edit prompt / Try again to
+    // re-fire the generator). The wizard footer's Discard +
+    // Regenerate remain available too for consistency.
     return (
-      <div className="flex min-h-[120px] flex-col items-center justify-center gap-2 py-6">
+      <div className="flex min-h-[160px] flex-col items-center justify-center gap-3 py-6">
         <span className="material-symbols-outlined text-red-300 text-[24px]" aria-hidden>
           error
         </span>
-        <p className="text-xs text-red-300">{error}</p>
-        <p className="text-on-surface-variant text-[11px]">Click Regenerate to try again.</p>
+        <p className="text-on-surface text-center text-xs">
+          Generation failed: <span className="text-red-300">{error}</span>. Try editing your
+          prompt or regenerating.
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <SecondaryButton onClick={onBack}>← Back to Step 2 — edit prompt</SecondaryButton>
+          <GradientButton onClick={onTryAgain}>Try again</GradientButton>
+        </div>
       </div>
     );
   }
@@ -1886,10 +1916,19 @@ function WizardFooter({
     );
   }
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-      <SecondaryButton onClick={onDiscard} disabled={busy}>
-        Discard
-      </SecondaryButton>
+    <div className="flex flex-wrap items-end justify-between gap-2 pt-1">
+      <div className="flex flex-col gap-1">
+        {/* BL-026-F006.E — explicit cost hint above Discard so the
+            marketer doesn't churn drafts unaware that each Generate
+            burns aigcgateway tokens. Numbers tracked from claude-
+            haiku-4.5 average usage in BL-025 audit logs. */}
+        <p className="text-on-surface-variant text-[10px]">
+          Discards generated draft (this cost ~$0.001-0.005)
+        </p>
+        <SecondaryButton onClick={onDiscard} disabled={busy}>
+          Discard
+        </SecondaryButton>
+      </div>
       <div className="flex gap-2">
         <SecondaryButton onClick={onRegenerate} disabled={busy}>
           Regenerate

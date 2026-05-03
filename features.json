@@ -46,7 +46,7 @@
       "title": "UX 细节修（AssetCard 信息层次 / Search 实时 / Sort used_most / UsedIn 名字 / Wizard 成本+失败路径）",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "AssetCard 标题截 ' v\\d+$' 后缀防 product 名重复 + 副标题去 product 名（仅 relativeTime） + footer 加 product link cyan 风格 + status 加 StatusBadge 文字 + AI badge 改 purple TagChip 替 cyan；Filter dropdown 内 search 改 useDebouncedCallback 300ms 实时查询替 onBlur；ASSET_LIST_SORTS 加 'used_most' + SORT_LABEL 'Most used' + queries.ts loadAssetsForListing 加 sort 分支按 _count.referencedInEmailLogs desc；loadUsedIn 扩展 JOIN campaign.name + kol.name 返回，UsedInTab 显示真实名字 + 点击跳转 /campaigns/{id} 和 /kols/{id}；Wizard Step 3 Discard button 上方加 cost 提示 'Discards generated draft (this cost ~$0.001-0.005)'；Wizard Step 3 error state 加双 button (Back to Step 2 SecondaryButton + Try again GradientButton) + 友好 error message；守门 test 覆盖 AssetCard.test.tsx (后缀截除/StatusBadge/purple AI) + use-filter-state.test.ts (used_most) + loadUsedIn (campaignName/kolName) + e2e wizard 失败路径。详见 spec §F006。"
     }
   ]

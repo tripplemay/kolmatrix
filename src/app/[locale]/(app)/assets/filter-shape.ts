@@ -20,7 +20,11 @@ import type {
   AssetType,
 } from "@/lib/assets/types";
 
-export const ASSET_LIST_SORTS = ["recent", "name", "type"] as const;
+// BL-026-F006.C — `used_most` ranks assets by email_log usage count
+// (template_id matches asset.id via the F006 dual-write convention).
+// Implementation lives in queries.ts loadAssetsForListing's sort
+// branch; the type is added here so the URL parser accepts it.
+export const ASSET_LIST_SORTS = ["recent", "name", "type", "used_most"] as const;
 export const ASSET_LIST_VIEWS = ["grid", "list"] as const;
 export type AssetListView = (typeof ASSET_LIST_VIEWS)[number];
 

@@ -1,25 +1,36 @@
 "use client";
 
 /**
- * BL-025-F004 · `<AssetCard>` — grid card for the /assets listing.
+ * BL-025-F004 / BL-026-F006 · `<AssetCard>` — grid card for the
+ * /assets listing.
  *
  * Renders the metadata strip the spec calls for (type chip + AI
  * badge + variant index + used count + status dot) in a layout that
  * matches design-draft/BL-025-asset-library/variant-a-296k. Hover
- * surfaces a quick-action overlay with 4 buttons (edit / duplicate /
- * archive / delete) so the user can act without opening the detail
- * panel.
+ * surfaces a quick-action overlay so the marketer can act without
+ * opening the detail panel.
+ *
+ * BL-026-F006 information layout updates:
+ *   - Title strips trailing ` v\d+` so "Acme — Email v1" renders as
+ *     "Acme — Email" (variant info already lives in the footer).
+ *   - Subtitle drops the product name and surfaces only relative
+ *     time — the product becomes a cyan link in the footer that
+ *     filters the listing by productId.
+ *   - Status: StatusDot pairs with an uppercase status text label
+ *     so colour-blind marketers don't rely solely on the dot tint.
+ *   - AI badge: `purple` tone instead of `cyan` to disambiguate
+ *     from the email type chip.
  *
  * Selected state is parent-driven (parent owns which asset is
- * highlighted). The card is itself a `<button>` so keyboard / screen
- * reader users get the same affordance as mouse — enter activates,
- * focus ring is the cyan-glow standard.
+ * highlighted). Outer wrapper is a `<div>` with role="button" so
+ * the footer can host a real cyan link without the HTML invalidity
+ * of nesting interactive elements inside a `<button>`.
  */
-import type { AssetCard as AssetCardData } from "@/lib/assets/types";
+import type { AssetCard as AssetCardData, AssetStatus } from "@/lib/assets/types";
 import { cn } from "@/lib/utils";
 
-import { TagChip } from "./TagChip";
 import { StatusDot } from "./StatusDot";
+import { TagChip } from "./TagChip";
 
 const TYPE_LABEL: Record<AssetCardData["type"], string> = {
   email: "Email",
@@ -31,6 +42,12 @@ const TYPE_ICON: Record<AssetCardData["type"], string> = {
   video_script: "movie",
 };
 
+const STATUS_LABEL: Record<AssetStatus, string> = {
+  draft: "Draft",
+  published: "Published",
+  archived: "Archived",
+};
+
 export type AssetCardQuickAction = "edit" | "duplicate" | "archive" | "delete";
 
 interface AssetCardProps {
@@ -38,6 +55,12 @@ interface AssetCardProps {
   isSelected: boolean;
   onSelect: () => void;
   onQuickAction?: (action: AssetCardQuickAction) => void;
+  /** BL-026-F006 — optional product-link callback. When set, the
+   * footer renders the product name as a cyan link that filters
+   * the listing to this product (parent typically wires this to
+   * `update({ productId })`). When absent, the product name shows
+   * as plain text. */
+  onProductClick?: (productId: string) => void;
   /** Disable hover quick-action overlay while a duplicate / archive /
    * delete server action is in flight against this card. */
   pending?: boolean;
@@ -71,11 +94,16 @@ function relativeTime(date: Date): string {
   return `${Math.floor(months / 12)}y ago`;
 }
 
+function stripTrailingVersion(name: string): string {
+  return name.replace(/\s+v\d+$/i, "");
+}
+
 export function AssetCard({
   asset,
   isSelected,
   onSelect,
   onQuickAction,
+  onProductClick,
   pending,
   readOnly,
   className,
@@ -84,15 +112,29 @@ export function AssetCard({
   const visibleQuickActions = readOnly
     ? QUICK_ACTIONS.filter((a) => a.id === "duplicate")
     : QUICK_ACTIONS;
+  const titleClean = stripTrailingVersion(asset.name);
+
+  function handleCardClick() {
+    onSelect();
+  }
+  function handleCardKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onSelect();
+    }
+  }
 
   return (
     <div className={cn("group relative", className)}>
-      <button
-        type="button"
-        onClick={onSelect}
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={handleCardClick}
+        onKeyDown={handleCardKeyDown}
         aria-pressed={isSelected}
+        aria-label={asset.name}
         className={cn(
-          "flex w-full flex-col gap-3 rounded-2xl border p-5 text-left transition-all",
+          "flex w-full cursor-pointer flex-col gap-3 rounded-2xl border p-5 text-left transition-all",
           "border-outline-variant bg-surface-container/40",
           "hover:border-cyan/30 hover:bg-surface-container",
           "focus-visible:ring-cyan/40 focus-visible:ring-2 focus-visible:outline-none",
@@ -111,14 +153,14 @@ export function AssetCard({
               </span>
             }
           />
-          {asset.source === "ai_generated" ? <TagChip label="AI" tone="cyan" size="xs" /> : null}
+          {asset.source === "ai_generated" ? (
+            <TagChip label="AI" tone="purple" size="xs" />
+          ) : null}
         </div>
 
-        {/* Title + product · time */}
-        <h3 className="text-on-surface line-clamp-2 text-sm font-semibold">{asset.name}</h3>
-        <p className="text-on-surface-variant text-xs">
-          {asset.productName ?? "No product"} · {relativeTime(updatedAt)}
-        </p>
+        {/* Title (trailing v\d+ stripped) + relative time only */}
+        <h3 className="text-on-surface line-clamp-2 text-sm font-semibold">{titleClean}</h3>
+        <p className="text-on-surface-variant text-xs">{relativeTime(updatedAt)}</p>
 
         {/* Content preview */}
         {asset.contentPreview ? (
@@ -127,16 +169,52 @@ export function AssetCard({
           </p>
         ) : null}
 
-        {/* Footer metadata */}
-        <div className="border-outline-variant/60 text-on-surface-variant flex items-center justify-between border-t pt-3 text-[11px]">
-          <span>
+        {/* Footer metadata: product link · variant · status */}
+        <div className="border-outline-variant/60 text-on-surface-variant flex items-center gap-3 border-t pt-3 text-[11px]">
+          {asset.productName && asset.productId && onProductClick ? (
+            <span
+              role="link"
+              tabIndex={0}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (asset.productId) onProductClick(asset.productId);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (asset.productId) onProductClick(asset.productId);
+                }
+              }}
+              title={asset.productName}
+              className={cn(
+                "text-cyan/80 cursor-pointer truncate",
+                "hover:text-cyan hover:underline",
+                "focus-visible:ring-cyan/40 focus-visible:ring-2 focus-visible:outline-none"
+              )}
+            >
+              {asset.productName}
+            </span>
+          ) : asset.productName ? (
+            <span className="truncate" title={asset.productName}>
+              {asset.productName}
+            </span>
+          ) : (
+            <span className="text-on-surface-variant/50">No product</span>
+          )}
+          <span className="ml-auto whitespace-nowrap">
             v{asset.versionIndex} of {asset.totalVariants}
           </span>
-          <StatusDot status={asset.status} />
+          <span className="flex items-center gap-1.5 whitespace-nowrap">
+            <StatusDot status={asset.status} />
+            <span className="text-[10px] font-medium uppercase tracking-wide">
+              {STATUS_LABEL[asset.status]}
+            </span>
+          </span>
         </div>
-      </button>
+      </div>
 
-      {/* Hover quick actions overlay (rendered outside the main button so
+      {/* Hover quick actions overlay (rendered outside the card div so
           it doesn't trigger the parent click). */}
       {onQuickAction ? (
         <div
@@ -177,3 +255,4 @@ export function AssetCard({
 }
 
 AssetCard.relativeTime = relativeTime;
+AssetCard.stripTrailingVersion = stripTrailingVersion;

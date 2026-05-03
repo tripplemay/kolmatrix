@@ -40,7 +40,9 @@ export interface AssetFilter {
   search?: string;
 }
 
-export type AssetListSort = "recent" | "name" | "type";
+// BL-026-F006.C — added "used_most" — orders by email_log usage
+// count (asset.id ⇋ email_log.template_id via dual-write).
+export type AssetListSort = "recent" | "name" | "type" | "used_most";
 
 export interface AssetListPagination {
   cursor?: string;
@@ -70,7 +72,12 @@ export interface UsedInEntry {
   resourceId: string;
   occurredAt: Date;
   campaignId: string | null;
+  /** BL-026-F006.D — JOIN'd campaign name (null when the email_log
+   * has no campaignId). Eliminates the BL-025 UUID-prefix display. */
+  campaignName: string | null;
   kolId: string | null;
+  /** BL-026-F006.D — JOIN'd KOL displayName. */
+  kolName: string | null;
 }
 
 export interface UsedInSummary {

@@ -571,7 +571,7 @@ const LoadMoreInputSchema = z.object({
     search: z.string().optional(),
   }),
   cursor: z.string().min(1),
-  sort: z.enum(["recent", "name", "type"]).default("recent"),
+  sort: z.enum(["recent", "name", "type", "used_most"]).default("recent"),
   limit: z.number().int().min(1).max(60).default(24),
 });
 
