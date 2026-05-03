@@ -3,27 +3,26 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ✅ BL-026 Asset UX Redesign + Outreach-First — DONE 2026-05-03
-- 6/6 features Reviewer 首轮 PASS（fix_rounds=0）；signoff: docs/test-reports/BL-026-asset-ux-redesign-signoff-2026-05-03.md
-- 主分支 HEAD: 05d0c80（CI 8/8 PASS 闭环）；staging git_sha=5b41d9a 不变（Reviewer follow-up 全是 test scaffolding 不影响 build artifacts）
-- Visual baseline 5 个新（en-assets / -drawer-open / -filter-dropdown / -empty-system-seed / en-outreach）入 git；EXPECTED_BASELINES 14→19
-- 12 条 Soft-watch 不阻塞：S1 grid breakpoint 微偏 / S2-S4 e2e+integration test 缺（移交 BL-026-followup mini-batch）/ S5-S6 spec primitive 偏 / S7-S9 trade-off / S10-S11 environment.md 待更正 / S12 prod redeploy 等用户
-## ✅ BL-025 素材中心 / Asset Library — DONE 2026-05-03
-- 9/9 features PASS（fix_rounds=0）；signoff: docs/test-reports/BL-025-asset-library-signoff-2026-05-03.md
-- BL-026 重构 §F004.B（sidebar/4 tabs/Create blank 删）后端层 + Material Symbols 守门保留
-## ✅ Framework v0.9.6 — DONE 2026-05-03
-- 8 条 proposed-learnings 全部 Planner 预判落地（commit 83205d4）
+## 当前批次
+- **BL-027 BL-026 Followup + Asset Icon Hotfix + Framework v0.9.7** — 启动 building（2026-05-03）；prod /assets ActionBar 渲染字面 FILTER_ALT/ARROW_DROP_DOWN 字面字符（BL-026 F002 加 icon 没跑 regen script 漏 woff2 glyph）+ BL-026 Soft-watch S2/S3/S4/S10/S11 收尾 + framework 4 layer hardening
+- 7 features：F001 Planner artifact 已 done / F002 woff2 hotfix + visual baseline 重生 / F003 F009 反向 CI case / F004 pre-commit hook 自动 regen / F005 PR template 强化 / F006 S2+S3+S4 测试补 / F007 environment.md S10+S11；估 ~1.5-1.75 day
+- prod git_sha=a9c4ef8（含 icon bug，等本批次 done 后用户 redeploy）
+## ✅ BL-026 Asset UX Redesign — DONE 2026-05-03
+- 6/6 features Reviewer 首轮 PASS（fix_rounds=0）；signoff: docs/test-reports/BL-026-asset-ux-redesign-signoff-2026-05-03.md；12 Soft-watch 中 S1/S5-S9 不阻塞，S2-S4/S10-S11 在 BL-027 收尾
+## ✅ BL-025 素材中心 — DONE 2026-05-03
+- 9/9 features PASS；ADR-011 统一 Asset 表 + EmailTemplate dual-write — 不动
+## ✅ Framework v0.9.6 — DONE 2026-05-03（v0.9.7 在 BL-027 done 阶段 Planner 处理）
 ## 用户手工待办（按优先级）
-1. **Prod redeploy（高，BL-025+BL-026 上线前阻塞）** — GitHub Actions → "Deploy to Production" → Run workflow on main，把 c302eb4..05d0c80（BL-025 + BL-026 + hotfix bb637a1 + deploy script prisma generate hotfix）一并上 prod
+1. **BL-027 done 后再 redeploy prod** — current a9c4ef8（含 icon bug），BL-027 done 后切新 commit 触发 deploy 修 icon + 4 layer guard 上线
 2. ~2026-05-09 BIx F004 staging YouTube sync 走查 — SSH grep `/var/log/kolmatrix-kol-sync.log` 末 7 天 JSON
-3. environment.md 更正 staging RAM 8GB（非 16GB） + 加 NODE_OPTIONS=--max-old-space-size=4096 部署步骤注释
+3. @next/bundle-analyzer + Lighthouse 实测脚手架 → 推迟到独立小批次
 ## 关键决议（已 lock）
 - BL-025 ADR-011 统一 Asset 表 + EmailTemplate dual-write — 不动
 - BL-026 ADR-012 Outreach-First 心智重排 — 不动
-- F003.D Restore bug → Option A（server action 默认从 parent 复制 content）
+- BL-027（2026-05-03）：Generator 走完整流程（不 Planner shortcut）/ 最严格 framework 沉淀（4 layer：PR template + pre-commit hook + CI 反向 case + L2 spot check）/ 合并 BL-026-followup
 ## 角色 / Backlog / 时间线
 - 默认映射（role_assignments=null）：CLI = planner+generator，Codex = evaluator
-- Backlog 18 条：BL-026-followup（test backfill + visual playwright-quirks 沉淀）/ BL-020 high / BL-021 medium / BL-023 medium / BL-024 medium / BL-027-i18n low / BL-028 low / 余 11 deferred
-- 时间线：05-03 BL-025 ✅ + framework v0.9.6 ✅ + BL-026 ✅ → 05-04 BL-020 启动 → 05-08~09 BL-024 done → 05-13 上线对外（不变）
+- Backlog 17 条：BL-020 high / BL-021 medium / BL-023 medium / BL-024 medium / BL-027-i18n（重号警告：BL-027 暂用为本 hotfix 批次，i18n 候选改名 BL-029） / BL-028 low / 余 11 deferred
+- 时间线：05-03 BL-025+v0.9.6+BL-026 ✅ + BL-027 启动 → 05-05 BL-027 done → 05-06 prod redeploy + BL-020 → 05-08~09 BL-024 → 05-13 上线对外（不变）
 
 <!-- 写入规则（harness §记忆分层）：覆盖写 / ≤30 行 / 所有角色可写 / 只放 WHAT / 不重复 progress.json -->

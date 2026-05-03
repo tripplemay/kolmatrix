@@ -1,53 +1,61 @@
 {
-  "sprint": "BL-026-asset-ux-redesign",
+  "sprint": "BL-027-asset-followup-icon-hotfix",
   "features": [
     {
       "id": "F001",
-      "title": "ADR-012 + BL-026 spec 起草（Planning artifact）",
+      "title": "BL-027 spec 起草（Planning artifact）",
       "priority": "high",
       "executor": "generator",
       "status": "completed",
-      "acceptance": "docs/adr/ADR-012-assets-ux-redesign-outreach-first.md 已写入并入 git，Status=Accepted；docs/adr/README.md 加 ADR-012 + ADR-011 索引；docs/specs/BL-026-asset-ux-redesign-spec.md 完整 §S1 4 段（按 v0.9.6 [#5] 自审 checklist）+ §F001-F006 + §S2-7 全段。0 LoC。本 feature 在批次启动时已由 Planner 落地完成。详见 ADR-012 + spec §F001。"
+      "acceptance": "docs/specs/BL-027-asset-followup-icon-hotfix-spec.md 起草完成（含 §S1-S8 + §F001-F007 详细 acceptance + §S2-S6 数据/部署/30+ checklist/风险/时间线/Out-of-Scope）；features.json sprint=BL-027 含 7 features F001=completed/F002-F007=pending；progress.json status=building / completed_features=1 / generator_handoff 含执行顺序+约束+风险；.auto-memory/project-status.md 反映 BL-027 starting + prod a9c4ef8 含 icon bug。0 LoC。本 feature 在批次启动时已由 Planner 落地完成。详见 spec §F001。"
     },
     {
       "id": "F002",
-      "title": "/assets 三栏 → 双栏 + Detail right drawer + Filter top dropdown",
+      "title": "Icon hotfix: woff2 regen + 4 visual baseline 重生（filter_alt + arrow_drop_down）",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "删除 AssetsFilterSidebar (lines 416-556 of AssetsClient.tsx)；ActionBar 加 Filter ▾ GhostButton + Dialog popover 浮层（含 search Input debounce 300ms / Product Combobox / Type ChipButton 多选 / Status radio Archived 默认折叠 / Source ChipButton 多选 / Clear all + Done 按钮）；Detail panel 改 right slide-over drawer 520px + 半透明 backdrop 点击关闭 + Esc 关闭；mobile <768px drawer 全屏；grid 列数改 1/2/3/4 (xl:4)；e2e tests/e2e/assets-page.spec.ts 既有 8 case 重新跑通 + 新增 filter dropdown / drawer / mobile 全屏行为 case；visual baseline 4 个新（en-assets / en-assets-drawer-open / en-assets-filter-dropdown / en-assets-empty-system-seed 后者 F004 提供数据）；估 1585 → ~1100 LoC AssetsClient.tsx；coverage ≥80% lib/assets 不退化。详见 spec §F002 + ADR-012。"
+      "status": "pending",
+      "acceptance": "跑 bash scripts/regenerate-material-symbols-subset.sh，验证 stdout 含 'discovered N unique icons' 且 N 包含 filter_alt + arrow_drop_down（Pattern 2 命中）；commit src/app/fonts/material-symbols-outlined.woff2 增量（9716 → 9976 bytes ≈ 2 新 glyph）；commit message 'fix(BL-027-F002): regenerate material-symbols woff2 to include filter_alt + arrow_drop_down'；触发 gh workflow run update-visual-baselines.yml --ref main 后 4 baseline 重生（en-assets / -drawer-open / -filter-dropdown / -empty-system-seed）入 main；workflow GITHUB_TOKEN push 不触发下游 CI per deploy-patterns.md §4.1，按需 chore retrigger；staging deploy 后浏览器开 /en/assets 走查 ActionBar Filter 按钮渲染 filter_alt icon glyph + Sort 渲染 arrow_drop_down + DevTools Inspect computed style font-family='Material Symbols Outlined'。详见 spec §F002。"
     },
     {
       "id": "F003",
-      "title": "variant tree 折到 Preview tab 顶部下拉 + 4 → 3 tabs",
+      "title": "F009 守门 test 加反向覆盖 case (woff2 ≡ script output)",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "删除文件 src/app/[locale]/(app)/assets/_panel/VersionsTab.tsx；TAB_CONFIG 从 4 项改 3 项 (preview/edit/used_in)；AssetTabId type 移除 versions；DetailPreview 顶部加 VariantSwitcher 子组件（仅 totalVariants > 1 时显示，base-ui Menu primitive 列出 v1/v2/...，每项含 v 编号 + name + source TagChip + status StatusDot + Restore button）；EditTab 'Save as new version' 改 GhostButton size=sm（视觉降级）；删除 'Compare with current — coming with F005 polish' 假按钮（VersionsTab 删除时自然消失）；修 BL-025 saveAssetAsVariantAction Restore content 空对象 bug：Generator 选 Option A — server action SaveAsVariantInputSchema content 改 optional，content !== undefined 时用 caller 传值，否则 fallback parent.content（VariantSwitcher Restore 不传 content 自然走 fallback；EditTab 真实编辑路径仍传值）；新单元 test AssetsClient.test.tsx 验证 tabs 仅 3 个 + variant switcher 渲染条件；e2e drawer 内 tabs 切换 + variant switcher 行为。详见 spec §F003。"
+      "status": "pending",
+      "acceptance": "tests/integration/material-symbols-coverage.test.ts 加新 case #7 'woff2 is up-to-date — regen script run produces no diff vs committed woff2'：用 fs.readFileSync(WOFF2) Buffer.equals 比较 script 跑前后 woff2 字节相同；失败信息明确 'Run bash scripts/regenerate-material-symbols-subset.sh and commit the updated woff2'；本批次 F002 commit woff2 后跑 case #7 → PASS；手动 mv woff2 woff2.bak 验证 → 应 FAIL with 清晰信息（仅本地，不 commit）；npm run test:integration 跑全 7 case 全 PASS（原 6 + 新 1）。详见 spec §F003。"
     },
     {
       "id": "F004",
-      "title": "Empty state 改 system_seed 模板展示（welcome mode）",
+      "title": "Pre-commit hook 自动 regen woff2 when icons change",
       "priority": "high",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "AssetsEmptyState 删除 'Create blank' 假按钮（onCreate prop 一并删）；page.tsx Server Component 加 mode='normal'|'welcome' 字段（empty tenant fallback 到 system_seed 展示）；welcome mode 顶部 banner 'Welcome — these 5 templates ship with KOLMatrix...' + Generate from product CTA 浮在右；Grid 显示 5 套 system_seed 模板（emerald TagChip + System label）；system_seed asset hover quick actions 仅显示 Duplicate（AssetCard 加 readOnly?: boolean prop）；drawer 内 system_seed asset 'Send to outreach' 按钮改 'Save to my library'（Duplicate 到本 tenant）；守门 test tests/integration/assets-empty-welcome.test.ts 验证 fallback 逻辑；e2e empty tenant 进 /assets 看到 5 套模板 + welcome banner。详见 spec §F004。"
+      "status": "pending",
+      "acceptance": "扩展 framework/templates/pre-commit-hook.sh（现 38 行 STATE_FILES 校验之后加 'Material Symbols subset coverage' section）：检测 git diff --cached --name-only 含 src/**/*.tsx|*.ts|scripts/material-symbols-icons-manifest.txt 改动 + 该文件 grep 含 material-symbols-outlined → 跑 script + sha256sum diff woff2，woff2 改变但未 staged → reject commit + print 'git add src/app/fonts/material-symbols-outlined.woff2'；woff2 改变且已 staged → PASS；woff2 不变 → PASS；新建 tests/integration/pre-commit-hook.test.ts 至少 3 case (happy no-icon / icon staged / icon unstaged 拒) 通过 child_process.execSync mock git diff；docs/dev/rules.md 加 hook 启用说明 'cp framework/templates/pre-commit-hook.sh .git/hooks/pre-commit && chmod +x'；hook 顶部 comment 块加 v0.9.7 BL-027-F004 来源标注。详见 spec §F004。"
     },
     {
       "id": "F005",
-      "title": "/outreach composer 加 search + product filter（轻量增强）",
-      "priority": "high",
+      "title": "PR template Material Symbols checklist 强化（统一 static + dynamic 都需 script）",
+      "priority": "medium",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "OutreachComposer template dropdown 升级为 'search + filter row'：顶部 product filter Combobox（All products 默认）+ search Input（debounce 300ms 按 name/subject 模糊匹配）+ list of templates max 20 visible，每项 name / source TagChip / product label / 1-line preview snippet；视觉用 GlassPanel + 现有控件，不新增公共组件；loadAssetsForComposer(tenantId, type, locale?, search?, productId?) 加 2 可选参数，WHERE 加 ILIKE 模糊匹配 + productId 过滤；AssetsClient DetailPanelInner footer 'Send to Outreach' 按钮 GradientButton → GhostButton（视觉降级，反向流弱化）；新增 tests/e2e/outreach-composer-template-select.spec.ts；扩展 src/lib/assets/__tests__/queries.test.ts + tests/integration/composer-load-templates.test.ts 加 search/productId case。详见 spec §F005 + ADR-012 心智重排。"
+      "status": "pending",
+      "acceptance": ".github/pull_request_template.md 删除当前 §'Material Symbols icon changes' 三选一结构（lines 18-44 的 Static usage only 路径），改 2 选一 + 子 checkbox：(1) Not applicable / (2) Has icon changes 含 3 子项（manifest 更新如果 dynamic / 跑 script + commit woff2 / npm run test:integration material-symbols-coverage 全过）；模板顶部 comment 块更新来源标注 'BL-025-F009 + BL-027-F005'；commit message 含 BL-027-F005 标签；GitHub 自动渲染新 template 在新 PR 中验证。详见 spec §F005。"
     },
     {
       "id": "F006",
-      "title": "UX 细节修（AssetCard 信息层次 / Search 实时 / Sort used_most / UsedIn 名字 / Wizard 成本+失败路径）",
+      "title": "BL-026 Soft-watch test backfill (S2 + S3 + S4)",
       "priority": "medium",
       "executor": "generator",
-      "status": "completed",
-      "acceptance": "AssetCard 标题截 ' v\\d+$' 后缀防 product 名重复 + 副标题去 product 名（仅 relativeTime） + footer 加 product link cyan 风格 + status 加 StatusBadge 文字 + AI badge 改 purple TagChip 替 cyan；Filter dropdown 内 search 改 useDebouncedCallback 300ms 实时查询替 onBlur；ASSET_LIST_SORTS 加 'used_most' + SORT_LABEL 'Most used' + queries.ts loadAssetsForListing 加 sort 分支按 _count.referencedInEmailLogs desc；loadUsedIn 扩展 JOIN campaign.name + kol.name 返回，UsedInTab 显示真实名字 + 点击跳转 /campaigns/{id} 和 /kols/{id}；Wizard Step 3 Discard button 上方加 cost 提示 'Discards generated draft (this cost ~$0.001-0.005)'；Wizard Step 3 error state 加双 button (Back to Step 2 SecondaryButton + Try again GradientButton) + 友好 error message；守门 test 覆盖 AssetCard.test.tsx (后缀截除/StatusBadge/purple AI) + use-filter-state.test.ts (used_most) + loadUsedIn (campaignName/kolName) + e2e wizard 失败路径。详见 spec §F006。"
+      "status": "pending",
+      "acceptance": "S2: tests/e2e/assets-page.spec.ts 加 3 类新 case (filter dropdown 行为 / drawer 打开关闭 backdrop+Esc / mobile <768px viewport drawer 全屏)，既有 8 case 跑通；S3: 新建 tests/integration/assets-empty-welcome.test.ts 5 case (empty tenant→mode='welcome' / 含 user_created→mode='normal' / welcome 含 5 套 system_seed / banner 文案 / system_seed readOnly=true quick actions 仅 Duplicate)；S4: 新建 tests/e2e/outreach-composer-template-select.spec.ts 3 case (happy path / product filter / search debounce 验证 ≤1 fetch in 300ms)；S4: queries.test.ts + composer-load-templates.test.ts 各加 2 case (loadAssetsForComposer search 匹配 name + productId filter)；CI 全绿。详见 spec §F006。"
+    },
+    {
+      "id": "F007",
+      "title": "environment.md 修正 (S10 staging RAM + S11 NODE_OPTIONS 注释)",
+      "priority": "low",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": ".auto-memory/environment.md 加 §'Staging 服务器'（如无）含 RAM 8GB（不是 16GB）+ 部署路径 + Env 文件 + PM2 + Postgres + Redis；§'扩容信号'之前加 §'Staging build OOM 兜底'：'NODE_OPTIONS=--max-old-space-size=4096 npm run build（staging RAM 8GB，默认 1.6GB heap 在 build OOM；prod 16GB 不受此限）'；同步验证 framework/harness/deploy-patterns.md §3.2 step 6 已含 NODE_OPTIONS（已沉淀仅 environment 需更正）。详见 spec §F007。"
     }
   ]
 }
