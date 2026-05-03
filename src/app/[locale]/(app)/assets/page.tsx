@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { withTenant } from "@/lib/db";
 import { loadAssetsForListing } from "@/lib/assets/queries";
-import { readAssetFiltersFromQuery, toAssetFilter, type AssetUrlState } from "./use-filter-state";
+import { readAssetFiltersFromQuery, toAssetFilter, type AssetUrlState } from "./filter-shape";
 
 import { AssetsClient } from "./AssetsClient";
 
