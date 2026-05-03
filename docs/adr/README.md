@@ -66,6 +66,8 @@ Proposed ──► Accepted ──► [Deprecated | Superseded by ADR-YYY]
 | [008](./ADR-008-strict-manual-verification-mode.md) | Strict Manual Verification Mode | BI1 前 B0 用严格手工替代自动化测试 | Accepted | 2026-04-19 |
 | [009](./ADR-009-aigcgateway-integration.md) | AI Gateway Integration Strategy | @guangai/aigc-sdk + 同 VM 内网 + 3 档模型 + Action prompt + $100/月 | Accepted | 2026-04-19 |
 | [010](./ADR-010-domain-strategy-kolquest-com.md) | Domain Strategy — kolquest.com | 注册 kolquest.com 作品牌+发件域；主站暂不迁移；根域直发 | Accepted | 2026-04-19 |
+| [011](./ADR-011-unified-asset-table-vs-typed-tables.md) | Unified Asset Table | 单 Asset 表 + type enum + content JSONB；EmailTemplate dual-write 兼容期 | Accepted | 2026-05-02 |
+| [012](./ADR-012-assets-ux-redesign-outreach-first.md) | Assets UX Redesign — Outreach-First | 推翻 §F004.B 部分（sidebar / 4 tabs / Create blank）；drawer + top filter dropdown + composer 增强 | Accepted | 2026-05-03 |
 
 ## 按主题索引
 
@@ -81,9 +83,11 @@ Proposed ──► Accepted ──► [Deprecated | Superseded by ADR-YYY]
 - [ADR-003](./ADR-003-pixel-perfect-visual-standard.md) 视觉还原标准
 - [ADR-004](./ADR-004-f010-component-library-lock.md) 组件库锁定
 - [ADR-005](./ADR-005-f007-component-adoption-criteria.md) 组件使用口径
+- [ADR-012](./ADR-012-assets-ux-redesign-outreach-first.md) BL-026 /assets UX 重设计（推翻 BL-025 §F004.B 部分）
 
 ### 数据与安全
 - [ADR-007](./ADR-007-multi-tenant-rls-strategy.md) 多租户隔离
+- [ADR-011](./ADR-011-unified-asset-table-vs-typed-tables.md) 统一 Asset 表 schema（BL-025 前置）
 
 ### 外部服务集成
 - [ADR-009](./ADR-009-aigcgateway-integration.md) AI 网关集成（B2 前置）
