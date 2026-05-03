@@ -218,8 +218,20 @@ test.describe("BL-025-F004 /assets page", () => {
     // existing "infinite scroll wiring" test on line ~137 uses
     // toBeAttached() for the same reason).
     await expect(page.getByTestId("assets-sentinel")).toBeAttached({ timeout: 15_000 });
-    const card = page.locator('[role="button"][aria-label]').first();
-    const cardCount = await card.count();
+    // Use the same card selector as the canonical "clicking an asset
+    // opens the detail panel" test (line 112-130): role=button,
+    // pressed=false, hasText=v\d+ of. The looser
+    // `[role="button"][aria-label]` selector first-matches a
+    // navigation/menu button on mobile viewports, missing the asset
+    // card entirely.
+    const card = page
+      .getByRole("button", { pressed: false })
+      .filter({ hasText: /v\d+ of/ })
+      .first();
+    const cardCount = await page
+      .getByRole("button", { pressed: false })
+      .filter({ hasText: /v\d+ of/ })
+      .count();
     if (cardCount === 0) test.skip(true, "No assets visible to marketer login");
     await card.click({ force: true });
     const drawer = page.getByTestId("assets-detail-drawer");
