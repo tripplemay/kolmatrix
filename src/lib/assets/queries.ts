@@ -562,6 +562,146 @@ export async function loadUsedIn(
   return { total, recent };
 }
 
+/**
+ * BL-030-F002 — count published email + video_script Assets per product
+ * for the KB grid chip rows. The KB page (page.tsx) calls this once
+ * inside its withTenant scope and injects the counts into each
+ * ProductListItem so ProductCard can read product.assetCounts without
+ * an extra round-trip per card.
+ *
+ * Filtering rules:
+ *  - status='published' matches what KB generation writes (D1) and
+ *    what the composer reads — chip counts shouldn't include archived
+ *    or draft rows the user has hidden / hasn't promoted.
+ *  - source is unfiltered: any Asset row tied to the product counts
+ *    (ai_generated, user_created, imported), so the chip reflects
+ *    "what's live in /assets for this product" not just KB output.
+ *
+ * Empty productIds → empty Map (single-line short-circuit; Prisma
+ * groupBy with `productId in []` would still execute and return
+ * nothing, but skipping the query saves a roundtrip).
+ */
+export interface ProductAssetCounts {
+  emailCount: number;
+  videoCount: number;
+}
+
+export async function loadProductAssetCounts(
+  tx: Prisma.TransactionClient,
+  productIds: string[]
+): Promise<Map<string, ProductAssetCounts>> {
+  const result = new Map<string, ProductAssetCounts>();
+  if (productIds.length === 0) return result;
+
+  const groups = await tx.asset.groupBy({
+    by: ["productId", "type"],
+    where: {
+      productId: { in: productIds },
+      status: "published",
+    },
+    _count: { _all: true },
+  });
+
+  for (const productId of productIds) {
+    result.set(productId, { emailCount: 0, videoCount: 0 });
+  }
+  for (const g of groups) {
+    if (!g.productId) continue;
+    const slot = result.get(g.productId);
+    if (!slot) continue;
+    if (g.type === "email") slot.emailCount = g._count._all;
+    else if (g.type === "video_script") slot.videoCount = g._count._all;
+  }
+  return result;
+}
+
+/**
+ * BL-030-F002 — list a product's Assets for the ProductModal panel.
+ * Sorted by templateRole (initial → follow_up → signing → youtube →
+ * tiktok via metadata.templateRole when present, falling back to
+ * createdAt asc) so the panel shows them in a stable, predictable
+ * order. Returns lightweight shape (id / type / name / status) — the
+ * panel doesn't need full content; clicking the row jumps to /assets.
+ */
+export interface ProductAssetListItem {
+  id: string;
+  type: AssetType;
+  name: string;
+  status: AssetCard["status"];
+  source: AssetCard["source"];
+  templateRole: string | null;
+  createdAt: Date;
+}
+
+const TEMPLATE_ROLE_ORDER = [
+  "initial_outreach",
+  "follow_up",
+  "signing_invitation",
+  "youtube_60s",
+  "tiktok_15s",
+] as const;
+
+export async function loadProductAssets(
+  tx: Prisma.TransactionClient,
+  productId: string
+): Promise<ProductAssetListItem[]> {
+  const rows = (await tx.asset.findMany({
+    where: { productId, status: { not: "archived" } },
+    select: {
+      id: true,
+      type: true,
+      name: true,
+      status: true,
+      source: true,
+      metadata: true,
+      createdAt: true,
+    },
+    orderBy: [{ createdAt: "asc" }],
+  })) as Array<{
+    id: string;
+    type: AssetType;
+    name: string;
+    status: AssetCard["status"];
+    source: AssetCard["source"];
+    metadata: Prisma.JsonValue;
+    createdAt: Date;
+  }>;
+
+  const items = rows.map((row) => {
+    let templateRole: string | null = null;
+    if (row.metadata && typeof row.metadata === "object" && !Array.isArray(row.metadata)) {
+      const m = row.metadata as Record<string, unknown>;
+      if (typeof m.templateRole === "string") templateRole = m.templateRole;
+    }
+    return {
+      id: row.id,
+      type: row.type,
+      name: row.name,
+      status: row.status,
+      source: row.source,
+      templateRole,
+      createdAt: row.createdAt,
+    };
+  });
+
+  items.sort((a, b) => {
+    const ai = a.templateRole
+      ? TEMPLATE_ROLE_ORDER.indexOf(a.templateRole as (typeof TEMPLATE_ROLE_ORDER)[number])
+      : -1;
+    const bi = b.templateRole
+      ? TEMPLATE_ROLE_ORDER.indexOf(b.templateRole as (typeof TEMPLATE_ROLE_ORDER)[number])
+      : -1;
+    const aHasRole = ai >= 0;
+    const bHasRole = bi >= 0;
+    if (aHasRole && bHasRole) return ai - bi;
+    if (aHasRole) return -1;
+    if (bHasRole) return 1;
+    return a.createdAt.getTime() - b.createdAt.getTime();
+  });
+
+  return items;
+}
+
 export const __TEST_ONLY__ = {
   MAX_VARIANT_DEPTH,
   DEFAULT_PAGE_SIZE,

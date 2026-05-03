@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { loadProductAssetCounts } from "@/lib/assets/queries";
 import { withTenant } from "@/lib/db";
 import type { ProductAiAssets } from "@/lib/products/generateAiAssets";
 
@@ -20,12 +21,21 @@ export default async function KnowledgeBasePage({ params }: Props) {
   const tenantId = session?.user?.tenantId;
   if (!tenantId) redirect("/login");
 
-  const rows = await withTenant(tenantId, (tx) =>
-    tx.product.findMany({
+  // BL-030-F002 — loadProductAssetCounts shares the same withTenant
+  // tx as the product list so the chip counts honor RLS and avoid an
+  // extra round-trip per card. groupBy runs once over the visible
+  // page (≤100 products).
+  const { rows, assetCounts } = await withTenant(tenantId, async (tx) => {
+    const productRows = await tx.product.findMany({
       orderBy: { createdAt: "desc" },
       take: 100,
-    })
-  );
+    });
+    const counts = await loadProductAssetCounts(
+      tx,
+      productRows.map((r) => r.id)
+    );
+    return { rows: productRows, assetCounts: counts };
+  });
 
   const products: ProductListItem[] = rows.map((r) => ({
     id: r.id,
@@ -36,6 +46,7 @@ export default async function KnowledgeBasePage({ params }: Props) {
     downloadUrl: r.downloadUrl,
     launchDate: r.launchDate ? r.launchDate.toISOString() : null,
     aiAssets: r.aiAssets as ProductAiAssets | null,
+    assetCounts: assetCounts.get(r.id) ?? { emailCount: 0, videoCount: 0 },
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));

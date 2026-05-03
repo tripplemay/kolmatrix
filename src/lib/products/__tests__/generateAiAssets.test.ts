@@ -1,15 +1,31 @@
+/**
+ * BM1-F003 (rewritten by BL-030-F001) · generateAiAssets unit spec.
+ *
+ * The generator now writes 5 rows into the unified Asset table
+ * (3 email + 2 video_script, source=ai_generated, status=published)
+ * via createAsset, shrinks Product.aiAssets to {status,generatedAt},
+ * and emits one logAudit entry per Asset (action='asset.generated').
+ * This spec mocks createAsset + logAudit + the withTenant tx so the
+ * generator can be exercised without a real Testcontainers instance.
+ */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock the DB surface so the generator can be exercised without a real
-// Testcontainers instance. We capture the updates passed into product.update
-// so each test can assert the payload shape.
-const updates: Array<{ where: { id: string }; data: { aiAssets: unknown } }> = [];
+const productUpdates: Array<{ where: { id: string }; data: { aiAssets: unknown } }> = [];
 
-vi.mock("@/lib/db", async () => {
+const createAssetCalls: Array<{
+  tenantId: string | null;
+  input: Record<string, unknown>;
+}> = [];
+
+const logAuditCalls: Array<Record<string, unknown>> = [];
+
+let createAssetIdCursor = 0;
+
+vi.mock("@/lib/db", () => {
   const Prisma = { InputJsonObject: Object };
   return {
     Prisma,
-    withTenant: async (
+    withTenant: async <T>(
       _tenantId: string,
       fn: (tx: {
         product: {
@@ -18,18 +34,55 @@ vi.mock("@/lib/db", async () => {
             data: { aiAssets: unknown };
           }) => Promise<void>;
         };
-      }) => Promise<void>
-    ) => {
-      await fn({
+      }) => Promise<T>
+    ): Promise<T> => {
+      return fn({
         product: {
           update: async (args) => {
-            updates.push(args);
+            productUpdates.push(args);
           },
         },
       });
     },
   };
 });
+
+vi.mock("@/lib/assets/mutations", () => ({
+  createAsset: async (
+    _tx: unknown,
+    tenantId: string | null,
+    input: Record<string, unknown>
+  ) => {
+    createAssetIdCursor += 1;
+    const id = `asset-${createAssetIdCursor}`;
+    createAssetCalls.push({ tenantId, input });
+    return {
+      id,
+      tenantId,
+      productId: input.productId ?? null,
+      productName: null,
+      type: input.type,
+      name: input.name,
+      source: input.source,
+      status: input.status ?? "draft",
+      parentId: null,
+      versionIndex: 1,
+      totalVariants: 1,
+      contentPreview: "",
+      content: input.content,
+      metadata: input.metadata ?? {},
+      createdBy: input.createdBy ?? null,
+      createdAt: new Date("2026-05-04T00:00:00Z"),
+      updatedAt: new Date("2026-05-04T00:00:00Z"),
+    };
+  },
+}));
+
+vi.mock("@/lib/audit/log", () => ({
+  logAudit: async (data: Record<string, unknown>) => {
+    logAuditCalls.push(data);
+  },
+}));
 
 type FetchArgs = Parameters<typeof fetch>;
 
@@ -54,9 +107,13 @@ function rejectingFetch() {
   });
 }
 
+const TENANT = "11111111-1111-1111-1111-111111111111";
+const ACTOR = "22222222-2222-2222-2222-222222222222";
+
 const BASE_INPUT = {
   productId: "prod-1",
-  tenantId: "11111111-1111-1111-1111-111111111111",
+  tenantId: TENANT,
+  actorUserId: ACTOR,
   name: "Honor of Kings",
   category: "MOBA",
   targetAudience: "Mobile gamers",
@@ -64,39 +121,124 @@ const BASE_INPUT = {
   downloadUrl: "https://example.com",
 };
 
+const VALID_AI_RESPONSE = {
+  id: "trace-abc",
+  choices: [
+    {
+      message: {
+        content: JSON.stringify({
+          emailTemplates: [
+            { subject: "Initial subject", body: "Initial body" },
+            { subject: "Follow subject", body: "Follow body" },
+            { subject: "Sign subject", body: "Sign body" },
+          ],
+          videoScripts: [
+            { title: "YT 60s", script: "Pan over hero..." },
+            { title: "TikTok 15s", script: "Quick hook..." },
+          ],
+        }),
+      },
+    },
+  ],
+};
+
 beforeEach(() => {
-  updates.length = 0;
+  productUpdates.length = 0;
+  createAssetCalls.length = 0;
+  logAuditCalls.length = 0;
+  createAssetIdCursor = 0;
   process.env.AIGCGATEWAY_BASE_URL = "http://fake-gateway";
   process.env.AIGCGATEWAY_API_KEY = "sk-test";
 });
 
-describe("generateAiAssets", () => {
-  it("writes ready assets with parsed emailTemplates + videoScripts", async () => {
+describe("generateAiAssets — happy path (BL-030-F001)", () => {
+  it("writes 5 Asset rows + 1 product.update + 5 logAudit entries", async () => {
     const { generateAiAssets } = await import("../generateAiAssets");
-    const fetcher = mockFetch({
-      id: "trace-abc",
-      choices: [
-        {
-          message: {
-            content: JSON.stringify({
-              emailTemplates: [
-                { subject: "a", body: "A" },
-                { subject: "b", body: "B" },
-                { subject: "c", body: "C" },
-              ],
-              videoScripts: [
-                { title: "y1", script: "..." },
-                { title: "y2", script: "..." },
-              ],
-            }),
-          },
-        },
-      ],
-    });
+    const fetcher = mockFetch(VALID_AI_RESPONSE);
 
     await generateAiAssets(BASE_INPUT, { fetchImpl: fetcher as unknown as typeof fetch });
 
     expect(fetcher).toHaveBeenCalledTimes(1);
+
+    // 5 createAsset calls — 3 emails + 2 videos in the spec §3.1 order.
+    expect(createAssetCalls).toHaveLength(5);
+    const emails = createAssetCalls.slice(0, 3);
+    const videos = createAssetCalls.slice(3, 5);
+
+    expect(emails.map((c) => c.input.name)).toEqual([
+      "Honor of Kings — Initial outreach",
+      "Honor of Kings — Follow-up",
+      "Honor of Kings — Signing invitation",
+    ]);
+    expect(videos.map((c) => c.input.name)).toEqual([
+      "Honor of Kings — YouTube 60s",
+      "Honor of Kings — TikTok 15s",
+    ]);
+
+    for (const c of emails) {
+      expect(c.tenantId).toBe(TENANT);
+      expect(c.input.type).toBe("email");
+      expect(c.input.source).toBe("ai_generated");
+      expect(c.input.status).toBe("published");
+      expect(c.input.productId).toBe("prod-1");
+      expect(c.input.createdBy).toBe(ACTOR);
+      const content = c.input.content as Record<string, unknown>;
+      expect(content.locale).toBe("en");
+      expect(content.variables).toEqual([]);
+      const md = c.input.metadata as Record<string, unknown>;
+      expect(md.source).toBe("kb_generation");
+      expect(md.productId).toBe("prod-1");
+      expect(md.traceId).toBe("trace-abc");
+      expect(typeof md.generatedAt).toBe("string");
+    }
+    expect((emails[0]!.input.metadata as Record<string, unknown>).templateRole).toBe(
+      "initial_outreach"
+    );
+    expect((emails[1]!.input.metadata as Record<string, unknown>).templateRole).toBe("follow_up");
+    expect((emails[2]!.input.metadata as Record<string, unknown>).templateRole).toBe(
+      "signing_invitation"
+    );
+
+    for (const c of videos) {
+      expect(c.input.type).toBe("video_script");
+      expect(c.input.source).toBe("ai_generated");
+      expect(c.input.status).toBe("published");
+    }
+    expect((videos[0]!.input.metadata as Record<string, unknown>).templateRole).toBe(
+      "youtube_60s"
+    );
+    expect((videos[1]!.input.metadata as Record<string, unknown>).templateRole).toBe(
+      "tiktok_15s"
+    );
+
+    // Product.aiAssets shrunk to {status,generatedAt} — no content fields.
+    expect(productUpdates).toHaveLength(1);
+    const aiAssets = productUpdates[0]!.data.aiAssets as Record<string, unknown>;
+    expect(aiAssets.status).toBe("ready");
+    expect(typeof aiAssets.generatedAt).toBe("string");
+    expect(aiAssets.emailTemplates).toBeUndefined();
+    expect(aiAssets.videoScripts).toBeUndefined();
+    expect(aiAssets.traceId).toBeUndefined();
+
+    // 5 audit entries, one per Asset.
+    expect(logAuditCalls).toHaveLength(5);
+    for (const entry of logAuditCalls) {
+      expect(entry.actorId).toBe(ACTOR);
+      expect(entry.action).toBe("asset.generated");
+      expect(entry.targetType).toBe("asset");
+      expect(entry.tenantId).toBe(TENANT);
+      const after = entry.after as Record<string, unknown>;
+      expect(after.productId).toBe("prod-1");
+      expect(after.source).toBe("kb_generation");
+    }
+  });
+
+  it("requestBody passes product fields through to aigcgateway prompt", async () => {
+    const { generateAiAssets } = await import("../generateAiAssets");
+    const fetcher = mockFetch(VALID_AI_RESPONSE);
+
+    await generateAiAssets(BASE_INPUT, { fetchImpl: fetcher as unknown as typeof fetch });
+
     const [urlArg, initArg] = fetcher.mock.calls[0]!;
     expect(String(urlArg)).toBe("http://fake-gateway/v1/chat/completions");
     const init = initArg as RequestInit;
@@ -110,53 +252,50 @@ describe("generateAiAssets", () => {
     expect(reqBody.messages[0].role).toBe("system");
     expect(reqBody.messages[1].content).toContain("Honor of Kings");
     expect(reqBody.messages[1].content).toContain("Daily tournaments");
-
-    expect(updates).toHaveLength(1);
-    const assets = updates[0]!.data.aiAssets as Record<string, unknown>;
-    expect(assets.status).toBe("ready");
-    expect((assets.emailTemplates as unknown[])).toHaveLength(3);
-    expect((assets.videoScripts as unknown[])).toHaveLength(2);
-    expect(assets.traceId).toBe("trace-abc");
-    expect(typeof assets.generatedAt).toBe("string");
   });
+});
 
-  it("writes a failed marker when env vars are missing", async () => {
+describe("generateAiAssets — failure paths write a failed marker, no Asset rows", () => {
+  it("env vars missing", async () => {
     delete process.env.AIGCGATEWAY_API_KEY;
     const { generateAiAssets } = await import("../generateAiAssets");
 
     await generateAiAssets(BASE_INPUT);
 
-    expect(updates).toHaveLength(1);
-    const assets = updates[0]!.data.aiAssets as Record<string, unknown>;
-    expect(assets.status).toBe("failed");
-    expect(String(assets.error)).toContain("AIGCGATEWAY");
+    expect(createAssetCalls).toHaveLength(0);
+    expect(logAuditCalls).toHaveLength(0);
+    expect(productUpdates).toHaveLength(1);
+    const aiAssets = productUpdates[0]!.data.aiAssets as Record<string, unknown>;
+    expect(aiAssets.status).toBe("failed");
+    expect(String(aiAssets.error)).toContain("AIGCGATEWAY");
   });
 
-  it("writes a failed marker on non-2xx response", async () => {
+  it("non-2xx response", async () => {
     const { generateAiAssets } = await import("../generateAiAssets");
     const fetcher = mockFetch({}, { ok: false, status: 503 });
 
     await generateAiAssets(BASE_INPUT, { fetchImpl: fetcher as unknown as typeof fetch });
 
-    expect(updates).toHaveLength(1);
-    const assets = updates[0]!.data.aiAssets as Record<string, unknown>;
-    expect(assets.status).toBe("failed");
-    expect(String(assets.error)).toMatch(/503/);
+    expect(createAssetCalls).toHaveLength(0);
+    expect(logAuditCalls).toHaveLength(0);
+    const aiAssets = productUpdates[0]!.data.aiAssets as Record<string, unknown>;
+    expect(aiAssets.status).toBe("failed");
+    expect(String(aiAssets.error)).toMatch(/503/);
   });
 
-  it("writes a failed marker when fetch throws", async () => {
+  it("network throw", async () => {
     const { generateAiAssets } = await import("../generateAiAssets");
     const fetcher = rejectingFetch();
 
     await generateAiAssets(BASE_INPUT, { fetchImpl: fetcher as unknown as typeof fetch });
 
-    expect(updates).toHaveLength(1);
-    const assets = updates[0]!.data.aiAssets as Record<string, unknown>;
-    expect(assets.status).toBe("failed");
-    expect(String(assets.error)).toContain("network down");
+    expect(createAssetCalls).toHaveLength(0);
+    const aiAssets = productUpdates[0]!.data.aiAssets as Record<string, unknown>;
+    expect(aiAssets.status).toBe("failed");
+    expect(String(aiAssets.error)).toContain("network down");
   });
 
-  it("writes a failed marker when AI content is not JSON", async () => {
+  it("non-JSON content", async () => {
     const { generateAiAssets } = await import("../generateAiAssets");
     const fetcher = mockFetch({
       choices: [{ message: { content: "totally freeform reply" } }],
@@ -164,12 +303,12 @@ describe("generateAiAssets", () => {
 
     await generateAiAssets(BASE_INPUT, { fetchImpl: fetcher as unknown as typeof fetch });
 
-    const assets = updates[0]!.data.aiAssets as Record<string, unknown>;
-    expect(assets.status).toBe("failed");
-    expect(String(assets.error)).toMatch(/JSON/i);
+    const aiAssets = productUpdates[0]!.data.aiAssets as Record<string, unknown>;
+    expect(aiAssets.status).toBe("failed");
+    expect(String(aiAssets.error)).toMatch(/JSON/i);
   });
 
-  it("writes a failed marker when emailTemplates is missing", async () => {
+  it("missing emailTemplates", async () => {
     const { generateAiAssets } = await import("../generateAiAssets");
     const fetcher = mockFetch({
       choices: [
@@ -185,12 +324,13 @@ describe("generateAiAssets", () => {
 
     await generateAiAssets(BASE_INPUT, { fetchImpl: fetcher as unknown as typeof fetch });
 
-    const assets = updates[0]!.data.aiAssets as Record<string, unknown>;
-    expect(assets.status).toBe("failed");
-    expect(String(assets.error)).toContain("emailTemplates");
+    expect(createAssetCalls).toHaveLength(0);
+    const aiAssets = productUpdates[0]!.data.aiAssets as Record<string, unknown>;
+    expect(aiAssets.status).toBe("failed");
+    expect(String(aiAssets.error)).toContain("emailTemplates");
   });
 
-  it("writes a failed marker when videoScripts is missing", async () => {
+  it("missing videoScripts", async () => {
     const { generateAiAssets } = await import("../generateAiAssets");
     const fetcher = mockFetch({
       choices: [
@@ -206,19 +346,20 @@ describe("generateAiAssets", () => {
 
     await generateAiAssets(BASE_INPUT, { fetchImpl: fetcher as unknown as typeof fetch });
 
-    const assets = updates[0]!.data.aiAssets as Record<string, unknown>;
-    expect(assets.status).toBe("failed");
-    expect(String(assets.error)).toContain("videoScripts");
+    expect(createAssetCalls).toHaveLength(0);
+    const aiAssets = productUpdates[0]!.data.aiAssets as Record<string, unknown>;
+    expect(aiAssets.status).toBe("failed");
+    expect(String(aiAssets.error)).toContain("videoScripts");
   });
 
-  it("writes a failed marker when an emailTemplate entry is malformed", async () => {
+  it("malformed email entry (missing body)", async () => {
     const { generateAiAssets } = await import("../generateAiAssets");
     const fetcher = mockFetch({
       choices: [
         {
           message: {
             content: JSON.stringify({
-              emailTemplates: [{ subject: "a" }], // missing body
+              emailTemplates: [{ subject: "a" }],
               videoScripts: [{ title: "a", script: "b" }],
             }),
           },
@@ -228,21 +369,19 @@ describe("generateAiAssets", () => {
 
     await generateAiAssets(BASE_INPUT, { fetchImpl: fetcher as unknown as typeof fetch });
 
-    const assets = updates[0]!.data.aiAssets as Record<string, unknown>;
-    expect(assets.status).toBe("failed");
-    expect(String(assets.error)).toMatch(/emailTemplates\[0\]/);
+    expect(createAssetCalls).toHaveLength(0);
+    const aiAssets = productUpdates[0]!.data.aiAssets as Record<string, unknown>;
+    expect(aiAssets.status).toBe("failed");
+    expect(String(aiAssets.error)).toMatch(/emailTemplates\[0\]/);
   });
 });
 
 describe("markAiAssetsPending", () => {
   it("writes {status: pending, requestedAt}", async () => {
     const { markAiAssetsPending } = await import("../generateAiAssets");
-    await markAiAssetsPending(
-      "11111111-1111-1111-1111-111111111111",
-      "prod-2"
-    );
-    const assets = updates[0]!.data.aiAssets as Record<string, unknown>;
-    expect(assets.status).toBe("pending");
-    expect(typeof assets.requestedAt).toBe("string");
+    await markAiAssetsPending(TENANT, "prod-2");
+    const aiAssets = productUpdates[0]!.data.aiAssets as Record<string, unknown>;
+    expect(aiAssets.status).toBe("pending");
+    expect(typeof aiAssets.requestedAt).toBe("string");
   });
 });

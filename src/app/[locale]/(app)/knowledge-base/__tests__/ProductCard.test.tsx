@@ -1,11 +1,18 @@
 /**
- * BL-025-F007 · ProductCard 4-state spec + chip-link rendering.
+ * BL-025-F007 (updated by BL-030-F002) · ProductCard 4-state spec +
+ * chip-link rendering.
  *
- * Confirms the chip rows behave correctly across the four
- * aiAssets state buckets the spec calls out and that the ready-state
- * email/video chips become next/link anchors pointing at /assets
- * with the right query string. The actions module is mocked so the
- * test never reaches the server action layer.
+ * Confirms the chip rows behave correctly across the four aiAssets
+ * state buckets the spec calls out and that the ready-state email /
+ * video chips become next/link anchors pointing at /assets with the
+ * right query string. Post BL-030-F002 the chip counts come from the
+ * new product.assetCounts DTO (populated server-side in page.tsx via
+ * loadProductAssetCounts), not the legacy aiAssets.emailTemplates
+ * arrays which were removed when Product.aiAssets shrank to a status
+ * tracker (BL-030-F001).
+ *
+ * The actions module is mocked so the test never reaches the server
+ * action layer.
  */
 import { render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
@@ -58,6 +65,7 @@ const baseProduct: ProductListItem = {
   downloadUrl: "https://example.com/download",
   launchDate: null,
   aiAssets: null,
+  assetCounts: { emailCount: 0, videoCount: 0 },
   createdAt: new Date("2026-04-30T00:00:00Z").toISOString(),
   updatedAt: new Date("2026-04-30T00:00:00Z").toISOString(),
 };
@@ -91,22 +99,14 @@ describe("ProductCard 4 states", () => {
     expect(screen.getByText(/Retry AI generation/)).toBeInTheDocument();
   });
 
-  it("ready aiAssets → email + video chips render as Links to /assets with productId + types", () => {
+  it("ready aiAssets + assetCounts → email + video chips render as Links with the count from assetCounts", () => {
     renderCard({
       ...baseProduct,
       aiAssets: {
         status: "ready",
-        emailTemplates: [
-          { subject: "S1", body: "B1" },
-          { subject: "S2", body: "B2" },
-          { subject: "S3", body: "B3" },
-        ],
-        videoScripts: [
-          { title: "V1", script: "X" },
-          { title: "V2", script: "Y" },
-        ],
         generatedAt: new Date().toISOString(),
       },
+      assetCounts: { emailCount: 3, videoCount: 2 },
     });
     const emailLink = screen.getByRole("link", { name: /3 email templates/i });
     expect(emailLink).toHaveAttribute(
@@ -118,5 +118,22 @@ describe("ProductCard 4 states", () => {
       "href",
       `/en/assets?productId=${baseProduct.id}&types=video_script`
     );
+  });
+
+  it("ready aiAssets but assetCounts={0,0} → chips render as 0 (drift between status='ready' and Asset rows is the backfill window)", () => {
+    renderCard({
+      ...baseProduct,
+      aiAssets: {
+        status: "ready",
+        generatedAt: new Date().toISOString(),
+      },
+      assetCounts: { emailCount: 0, videoCount: 0 },
+    });
+    expect(
+      screen.getByRole("link", { name: /0 email templates/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /0 video scripts/i })
+    ).toBeInTheDocument();
   });
 });

@@ -3,6 +3,10 @@
 import { revalidatePath } from "next/cache";
 
 import { auth } from "@/auth";
+import {
+  loadProductAssets,
+  type ProductAssetListItem,
+} from "@/lib/assets/queries";
 import { withTenant } from "@/lib/db";
 import { logEvent } from "@/lib/events/log";
 import { generateAiAssets, markAiAssetsPending } from "@/lib/products/generateAiAssets";
@@ -46,7 +50,11 @@ export async function createProduct(
   const session = await auth();
   const tenantId = session?.user?.tenantId;
   const userId = session?.user?.id;
-  if (!tenantId || !UUID_RE.test(tenantId)) {
+  // BL-030-F001 — userId is now load-bearing (passed to
+  // generateAiAssets.actorUserId for createAsset.createdBy + audit
+  // attribution). Harden the check so a session missing user.id
+  // can't slip through into a downstream "actorId: undefined" write.
+  if (!tenantId || !UUID_RE.test(tenantId) || !userId) {
     return { ok: false, error: "unauthorized" };
   }
 
@@ -92,13 +100,15 @@ export async function createProduct(
 
     if (data.generateImmediately) {
       await markAiAssetsPending(tenantId, product.id);
-      // Fire-and-forget: the product is already saved, AI generation updates
-      // aiAssets in the background. We detach via `void` so the Server Action
-      // response returns immediately; the user refreshes to see the final
-      // state (MVP — BM2 will stream updates via a job queue worker).
+      // Fire-and-forget: the product is already saved, AI generation
+      // writes to the Asset table + shrinks Product.aiAssets to a
+      // status tracker in the background (BL-030-F001). We detach via
+      // `void` so the Server Action response returns immediately; the
+      // user refreshes to see the final state.
       void generateAiAssets({
         productId: product.id,
         tenantId,
+        actorUserId: userId,
         name: product.name,
         category: product.category,
         targetAudience: product.targetAudience,
@@ -123,7 +133,7 @@ export async function updateProduct(
   const session = await auth();
   const tenantId = session?.user?.tenantId;
   const userId = session?.user?.id;
-  if (!tenantId || !UUID_RE.test(tenantId)) {
+  if (!tenantId || !UUID_RE.test(tenantId) || !userId) {
     return { ok: false, error: "unauthorized" };
   }
 
@@ -177,6 +187,7 @@ export async function updateProduct(
       void generateAiAssets({
         productId: product.id,
         tenantId,
+        actorUserId: userId,
         name: product.name,
         category: product.category,
         targetAudience: product.targetAudience,
@@ -207,7 +218,7 @@ export async function triggerAiGeneration(
   const tenantId = session?.user?.tenantId;
   const userId = session?.user?.id;
   const normalizedProductId = normalizeProductId(productId);
-  if (!tenantId || !UUID_RE.test(tenantId) || !normalizedProductId) {
+  if (!tenantId || !UUID_RE.test(tenantId) || !normalizedProductId || !userId) {
     return { ok: false, error: "unauthorized" };
   }
 
@@ -235,6 +246,7 @@ export async function triggerAiGeneration(
     void generateAiAssets({
       productId: product.id,
       tenantId,
+      actorUserId: userId,
       name: product.name,
       category: product.category,
       targetAudience: product.targetAudience,
@@ -285,5 +297,37 @@ export async function deleteProduct(productId: string): Promise<{ ok: boolean }>
   } catch (err) {
     console.error("[knowledge-base] deleteProduct failed:", err);
     return { ok: false };
+  }
+}
+
+// BL-030-F002 — ProductModal lazy-loads the per-product Asset list
+// when the modal opens so the "AI Assets Generated" panel can render
+// real Asset rows (name + status + jump link) instead of the legacy
+// `aiAssets.emailTemplates.length` count text. The action is read-only
+// and runs inside withTenant for RLS scope.
+export type LoadProductAssetsResult =
+  | { ok: true; assets: ProductAssetListItem[] }
+  | { ok: false; error: "unauthorized" | "invalid_input" | "generic" };
+
+export async function loadProductAssetsAction(
+  productId: string
+): Promise<LoadProductAssetsResult> {
+  const session = await auth();
+  const tenantId = session?.user?.tenantId;
+  const normalizedProductId = normalizeProductId(productId);
+  if (!tenantId || !UUID_RE.test(tenantId)) {
+    return { ok: false, error: "unauthorized" };
+  }
+  if (!normalizedProductId) {
+    return { ok: false, error: "invalid_input" };
+  }
+  try {
+    const assets = await withTenant(tenantId, (tx) =>
+      loadProductAssets(tx, normalizedProductId)
+    );
+    return { ok: true, assets };
+  } catch (err) {
+    console.error("[knowledge-base] loadProductAssetsAction failed:", err);
+    return { ok: false, error: "generic" };
   }
 }

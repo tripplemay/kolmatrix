@@ -60,8 +60,12 @@ export function ProductCard({ product, onEdit, onDelete }: Props) {
     });
   };
 
-  const emailCount = assets && assets.status === "ready" ? assets.emailTemplates.length : 0;
-  const videoCount = assets && assets.status === "ready" ? assets.videoScripts.length : 0;
+  // BL-030-F002 — counts come from the unified Asset table via
+  // loadProductAssetCounts (server-side, in page.tsx). The legacy
+  // assets.emailTemplates / videoScripts arrays were removed when
+  // Product.aiAssets shrank to a status tracker (BL-030-F001).
+  const emailCount = product.assetCounts.emailCount;
+  const videoCount = product.assetCounts.videoCount;
 
   return (
     <div

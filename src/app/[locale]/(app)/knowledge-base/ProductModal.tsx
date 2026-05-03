@@ -15,9 +15,15 @@ import { useActionState, useEffect, useId, useRef, useState, type MouseEvent } f
 import { cn } from "@/lib/utils";
 import { PRODUCT_PLATFORMS, type ProductPlatform } from "@/lib/products/schema";
 
-import { createProduct, triggerAiGeneration, updateProduct } from "./actions";
+import {
+  createProduct,
+  loadProductAssetsAction,
+  triggerAiGeneration,
+  updateProduct,
+} from "./actions";
 import type { ProductListItem } from "./types";
 import type { CreateProductState } from "@/lib/products/schema";
+import type { ProductAssetListItem } from "@/lib/assets/queries";
 
 const initialState: CreateProductState = { ok: false };
 
@@ -48,7 +54,13 @@ export function ProductModal({ onClose, onCreated, product }: Props) {
   // BL-025-F007 — AI Assets Generated panel + Regenerate trigger.
   const [regeneratePending, setRegeneratePending] = useState(false);
   const [regenerateError, setRegenerateError] = useState<string | null>(null);
-  const aiReady = isEdit && product?.aiAssets?.status === "ready" ? product.aiAssets : null;
+  // BL-030-F002 — aiReady is now a pure status check (the legacy
+  // emailTemplates / videoScripts arrays are gone post BL-030-F001).
+  // Asset rows live in the unified Asset table and are loaded lazily
+  // via loadProductAssetsAction when the modal opens.
+  const aiReady = isEdit && product?.aiAssets?.status === "ready";
+  const [assetList, setAssetList] = useState<ProductAssetListItem[] | null>(null);
+  const [assetLoadError, setAssetLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (state.ok) {
@@ -64,6 +76,30 @@ export function ProductModal({ onClose, onCreated, product }: Props) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  // BL-030-F002 — lazy-load Asset rows when the modal opens for an
+  // already-generated product. We only fetch when aiReady is true
+  // (status='ready'); pending / failed / null states show the legacy
+  // generate trigger instead. Effect avoids the synchronous setState
+  // pattern by only writing when the async response resolves —
+  // initial render uses the useState defaults (null / null) and the
+  // async write also clears the prior error.
+  useEffect(() => {
+    if (!aiReady || !product) return;
+    let cancelled = false;
+    void loadProductAssetsAction(product.id).then((res) => {
+      if (cancelled) return;
+      if (res.ok) {
+        setAssetList(res.assets);
+        setAssetLoadError(null);
+      } else {
+        setAssetLoadError(res.error);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [aiReady, product]);
 
   const togglePlatform = (p: ProductPlatform) => {
     setPlatforms((prev) => (prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]));
@@ -238,38 +274,86 @@ export function ProductModal({ onClose, onCreated, product }: Props) {
           <p className="text-on-surface-variant/60 text-[11px]">{t("modal.requiredNote")}</p>
 
           {aiReady && product ? (
-            <div className="border-cyan/30 bg-cyan/5 mt-2 flex flex-wrap items-center gap-3 rounded-lg border p-4">
-              <span className="material-symbols-outlined text-cyan text-[20px]" aria-hidden>
-                auto_awesome
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-on-surface text-[13px] font-semibold">AI Assets Generated</p>
-                <p className="text-on-surface-variant text-[11px]">
-                  {aiReady.emailTemplates.length} emails · {aiReady.videoScripts.length} videos
-                </p>
+            <div className="border-cyan/30 bg-cyan/5 mt-2 space-y-3 rounded-lg border p-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="material-symbols-outlined text-cyan text-[20px]" aria-hidden>
+                  auto_awesome
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-on-surface text-[13px] font-semibold">AI Assets Generated</p>
+                  <p className="text-on-surface-variant text-[11px]">
+                    {product.assetCounts.emailCount} emails · {product.assetCounts.videoCount}{" "}
+                    videos
+                  </p>
+                </div>
+                <Link
+                  href={`/${locale}/assets?productId=${product.id}`}
+                  className="border-cyan/40 text-cyan hover:bg-cyan/10 rounded-lg border px-3 py-1.5 text-[12px] font-semibold transition-colors"
+                >
+                  View in /assets
+                </Link>
+                <button
+                  type="button"
+                  disabled={regeneratePending}
+                  onClick={async () => {
+                    setRegeneratePending(true);
+                    setRegenerateError(null);
+                    const r = await triggerAiGeneration(product.id);
+                    setRegeneratePending(false);
+                    if (!r.ok) setRegenerateError(r.error ?? "generic");
+                  }}
+                  className="border-outline-variant text-on-surface-variant hover:text-on-surface rounded-lg border px-3 py-1.5 text-[12px] font-semibold transition-colors disabled:opacity-60"
+                >
+                  {regeneratePending ? "Regenerating…" : "Regenerate"}
+                </button>
+                {regenerateError ? (
+                  <p className="text-[11px] text-rose-300">Failed to regenerate</p>
+                ) : null}
               </div>
-              <Link
-                href={`/${locale}/assets?productId=${product.id}`}
-                className="border-cyan/40 text-cyan hover:bg-cyan/10 rounded-lg border px-3 py-1.5 text-[12px] font-semibold transition-colors"
-              >
-                View in /assets
-              </Link>
-              <button
-                type="button"
-                disabled={regeneratePending}
-                onClick={async () => {
-                  setRegeneratePending(true);
-                  setRegenerateError(null);
-                  const r = await triggerAiGeneration(product.id);
-                  setRegeneratePending(false);
-                  if (!r.ok) setRegenerateError(r.error ?? "generic");
-                }}
-                className="border-outline-variant text-on-surface-variant hover:text-on-surface rounded-lg border px-3 py-1.5 text-[12px] font-semibold transition-colors disabled:opacity-60"
-              >
-                {regeneratePending ? "Regenerating…" : "Regenerate"}
-              </button>
-              {regenerateError ? (
-                <p className="text-[11px] text-rose-300">Failed to regenerate</p>
+              {assetList === null && !assetLoadError ? (
+                <p className="text-on-surface-variant/70 text-[11px]">Loading assets…</p>
+              ) : assetLoadError ? (
+                <p className="text-[11px] text-rose-300">Failed to load assets</p>
+              ) : assetList && assetList.length > 0 ? (
+                <ul
+                  className="divide-outline-variant/40 divide-y rounded-md border border-white/5 bg-black/20"
+                  data-testid="product-modal-asset-list"
+                >
+                  {assetList.map((a) => (
+                    <li key={a.id} className="flex items-center gap-3 px-3 py-2">
+                      <span
+                        className={cn(
+                          "material-symbols-outlined text-[16px]",
+                          a.type === "email" ? "text-cyan" : "text-purple"
+                        )}
+                        aria-hidden
+                      >
+                        {a.type === "email" ? "mail" : "movie"}
+                      </span>
+                      <span className="text-on-surface min-w-0 flex-1 truncate text-[12px]">
+                        {a.name}
+                      </span>
+                      <span
+                        className={cn(
+                          "rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+                          a.status === "published"
+                            ? "bg-emerald-400/10 text-emerald-300"
+                            : a.status === "draft"
+                              ? "bg-amber-400/10 text-amber-300"
+                              : "bg-slate-700/40 text-on-surface-variant"
+                        )}
+                      >
+                        {a.status}
+                      </span>
+                      <Link
+                        href={`/${locale}/assets?productId=${product.id}`}
+                        className="text-cyan hover:text-on-surface text-[11px] font-semibold transition-colors"
+                      >
+                        Open
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               ) : null}
             </div>
           ) : null}
