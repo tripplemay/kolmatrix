@@ -24,6 +24,7 @@ import {
   deleteAsset,
   updateAsset,
 } from "@/lib/assets/mutations";
+import { loadAssetsForComposer } from "@/lib/assets/queries";
 
 import {
   asTenant,
@@ -248,6 +249,86 @@ describe("BL-025-F006 · loadOutreachTemplates delegates to asset table", () => 
       loadOutreachTemplates(tx, TENANT_A, "zh")
     );
     expect(rows.find((r) => r.scope === "system" && r.locale === "en")).toBeDefined();
+  });
+});
+
+// BL-027-F006.D · S4 Soft-watch backfill — loadAssetsForComposer
+// search + productId filter at the integration layer (queries.test.ts
+// covers the same predicate translation against a stubbed Prisma; this
+// suite hits the real where + ILIKE on Postgres).
+describe("BL-027-F006.D · loadAssetsForComposer search + productId filters", () => {
+  it("filters by case-insensitive name match (search arg)", async () => {
+    await seedTenant(TENANT_A);
+    const admin = getAdminPrisma();
+    await admin.asset.create({
+      data: {
+        tenantId: TENANT_A,
+        type: "email",
+        name: "Welcome to KOLMatrix",
+        content: { ...seedEmail, locale: "en" } as Prisma.InputJsonValue,
+        source: "user_created",
+        status: "published",
+      },
+    });
+    await admin.asset.create({
+      data: {
+        tenantId: TENANT_A,
+        type: "email",
+        name: "Goodbye for now",
+        content: { ...seedEmail, locale: "en" } as Prisma.InputJsonValue,
+        source: "user_created",
+        status: "published",
+      },
+    });
+
+    const rows = await asTenant(TENANT_A, (tx) =>
+      loadAssetsForComposer(tx, "email", "en", "welcome")
+    );
+    const names = rows.map((r) => r.name);
+    expect(names).toContain("Welcome to KOLMatrix");
+    expect(names).not.toContain("Goodbye for now");
+  });
+
+  it("filters by exact productId (compound with locale + search)", async () => {
+    await seedTenant(TENANT_A);
+    const admin = getAdminPrisma();
+    const product = await admin.product.create({
+      data: {
+        tenantId: TENANT_A,
+        name: "Demo Product",
+        category: "Game",
+        uniqueSellingPoints: "Compact USP for filter test",
+      },
+    });
+    await admin.asset.create({
+      data: {
+        tenantId: TENANT_A,
+        productId: product.id,
+        type: "email",
+        name: "Product-tied Outreach",
+        content: { ...seedEmail, locale: "en" } as Prisma.InputJsonValue,
+        source: "user_created",
+        status: "published",
+      },
+    });
+    await admin.asset.create({
+      data: {
+        tenantId: TENANT_A,
+        productId: null,
+        type: "email",
+        name: "Untied Outreach",
+        content: { ...seedEmail, locale: "en" } as Prisma.InputJsonValue,
+        source: "user_created",
+        status: "published",
+      },
+    });
+
+    const rows = await asTenant(TENANT_A, (tx) =>
+      loadAssetsForComposer(tx, "email", "en", undefined, product.id)
+    );
+    const names = rows.map((r) => r.name);
+    expect(names).toContain("Product-tied Outreach");
+    expect(names).not.toContain("Untied Outreach");
   });
 });
 

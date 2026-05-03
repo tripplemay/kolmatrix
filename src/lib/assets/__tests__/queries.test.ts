@@ -247,6 +247,38 @@ describe("loadAssetsForComposer", () => {
     const where = tx.asset.findMany.mock.calls[0]![0].where;
     expect(where).toEqual({ type: "email", status: "published" });
   });
+
+  // BL-027-F006.D · S4 Soft-watch backfill — search + productId filter
+  // params reach the Prisma where as ILIKE name match + exact productId.
+  it("translates a search arg into ILIKE name match (insensitive contains, trimmed)", async () => {
+    const tx = makeTx();
+    tx.asset.findMany.mockResolvedValueOnce([]);
+
+    await loadAssetsForComposer(tx, "email", "en", "  Welcome  ");
+
+    const where = tx.asset.findMany.mock.calls[0]![0].where;
+    expect(where).toMatchObject({
+      type: "email",
+      status: "published",
+      name: { contains: "Welcome", mode: "insensitive" },
+    });
+    expect(where.content).toEqual({ path: ["locale"], equals: "en" });
+  });
+
+  it("translates a productId arg into an exact productId predicate (compound with locale + search)", async () => {
+    const tx = makeTx();
+    tx.asset.findMany.mockResolvedValueOnce([]);
+
+    await loadAssetsForComposer(tx, "email", "en", "intro", "prod-42");
+
+    const where = tx.asset.findMany.mock.calls[0]![0].where;
+    expect(where).toMatchObject({
+      type: "email",
+      status: "published",
+      productId: "prod-42",
+      name: { contains: "intro", mode: "insensitive" },
+    });
+  });
 });
 
 describe("loadVariantTree", () => {
