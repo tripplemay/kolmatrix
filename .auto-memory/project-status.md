@@ -4,9 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 当前批次
-- **BL-027 BL-026 Followup + Asset Icon Hotfix + Framework v0.9.7** — 启动 building（2026-05-03）；prod /assets ActionBar 渲染字面 FILTER_ALT/ARROW_DROP_DOWN 字面字符（BL-026 F002 加 icon 没跑 regen script 漏 woff2 glyph）+ BL-026 Soft-watch S2/S3/S4/S10/S11 收尾 + framework 4 layer hardening
-- 7 features：F001 Planner artifact 已 done / F002 woff2 hotfix + visual baseline 重生 / F003 F009 反向 CI case / F004 pre-commit hook 自动 regen / F005 PR template 强化 / F006 S2+S3+S4 测试补 / F007 environment.md S10+S11；估 ~1.5-1.75 day
-- prod git_sha=a9c4ef8（含 icon bug，等本批次 done 后用户 redeploy）
+- **BL-027 BL-026 Followup + Asset Icon Hotfix + Framework v0.9.7** — building → verifying（2026-05-03 21:40）；7/7 features 完成，staging 已部署 @ 65a2b60
+- F002 woff2 hotfix done / F003 F009 反向 CI case done / F004 pre-commit hook + 6-case test done / F005 PR template 2-of-N done / F006 S2/S3/S4 测试补 (5 e2e + 5 integration + 3 e2e + 2 unit + 2 integration) done / F007 environment.md S10+S11 done
+- prod git_sha=a9c4ef8（含 icon bug，等本批次 Reviewer 签收 + done 后用户 redeploy 至 65a2b60+）
+- staging git_sha=65a2b60 == main HEAD ✅
 ## ✅ BL-026 Asset UX Redesign — DONE 2026-05-03
 - 6/6 features Reviewer 首轮 PASS（fix_rounds=0）；signoff: docs/test-reports/BL-026-asset-ux-redesign-signoff-2026-05-03.md；12 Soft-watch 中 S1/S5-S9 不阻塞，S2-S4/S10-S11 在 BL-027 收尾
 ## ✅ BL-025 素材中心 — DONE 2026-05-03
