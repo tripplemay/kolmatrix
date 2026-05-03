@@ -83,20 +83,26 @@ function baselineExists(name: string): boolean {
  * "missing" / "changed"), the test must run end-to-end so
  * `expect(page).toHaveScreenshot(name)` writes the baseline file.
  */
-function shouldSkipMissingBaseline(name: string): boolean {
-  // BL-026-F003 fix: Playwright 1.39+ defaults `updateSnapshots` to
-  // "missing", which made the previous `info.config.updateSnapshots
-  // !== "none"` heuristic permanently true on CI — letting missing-
-  // baseline tests run + fail (Playwright wrote a draft but the
-  // assertion still flipped red).
+function shouldSkipMissingBaseline(
+  name: string,
+  info: { config: { updateSnapshots?: string } }
+): boolean {
+  // BL-026-followup fix: argv-only check (commit 700b1b2) returned
+  // false in Playwright worker processes — the worker's process.argv
+  // doesn't carry the parent's `--update-snapshots` flag, so the
+  // update-visual-baselines workflow itself was skipping the
+  // missing-baseline tests it was supposed to capture (workflow run
+  // 25276845454 shipped 6 skips instead of 6 captures).
   //
-  // Correct contract: regenerate ONLY when the operator explicitly
-  // passes `--update-snapshots` on the CLI (the
-  // `update-visual-baselines` workflow does this). Otherwise, skip
-  // missing-baseline tests so the suite stays green between a spec
-  // change landing and the workflow run that captures the new shot.
-  const argvRegenerating = process.argv.includes("--update-snapshots");
-  if (argvRegenerating) return false;
+  // Correct discriminator: `test.info().config.updateSnapshots`
+  // exposes Playwright's resolved mode. Defaults to "missing" in 1.39+
+  // (writes missing baseline AND fails the assertion — which we don't
+  // want during regular CI). Explicit `--update-snapshots` flips it
+  // to "all" (or "changed" for `--update-snapshots=changed`); only
+  // those two modes mean "operator wants regen" and the test must
+  // run end-to-end so Playwright captures the snapshot.
+  const mode = info.config.updateSnapshots ?? "missing";
+  if (mode === "all" || mode === "changed") return false;
   return !baselineExists(name);
 }
 
@@ -150,7 +156,7 @@ test.describe("Authenticated BM1 visual regression", () => {
 
   test("dashboard full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
-      shouldSkipMissingBaseline("dashboard.png"),
+      shouldSkipMissingBaseline("dashboard.png", test.info()),
       "Baseline dashboard.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
@@ -180,7 +186,7 @@ test.describe("Authenticated BM1 visual regression", () => {
 
   test("knowledge-base full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
-      shouldSkipMissingBaseline("en-knowledge-base.png"),
+      shouldSkipMissingBaseline("en-knowledge-base.png", test.info()),
       "Baseline en-knowledge-base.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
@@ -205,7 +211,7 @@ test.describe("Authenticated BM1 visual regression", () => {
 
   test("discovery full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
-      shouldSkipMissingBaseline("en-discovery.png"),
+      shouldSkipMissingBaseline("en-discovery.png", test.info()),
       "Baseline en-discovery.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
@@ -249,7 +255,7 @@ test.describe("Authenticated BM1 visual regression", () => {
 
   test("database full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
-      shouldSkipMissingBaseline("en-database.png"),
+      shouldSkipMissingBaseline("en-database.png", test.info()),
       "Baseline en-database.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
@@ -285,7 +291,7 @@ test.describe("Authenticated BM2 visual regression", () => {
 
   test("campaigns list full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
-      shouldSkipMissingBaseline("en-campaigns.png"),
+      shouldSkipMissingBaseline("en-campaigns.png", test.info()),
       "Baseline en-campaigns.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
@@ -317,7 +323,7 @@ test.describe("Authenticated BM2 visual regression", () => {
 
   test("campaign detail full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
-      shouldSkipMissingBaseline("en-campaign-detail.png"),
+      shouldSkipMissingBaseline("en-campaign-detail.png", test.info()),
       "Baseline en-campaign-detail.png missing — run the 'Update visual baselines' workflow."
     );
     // CI cold-compile of /campaigns/:id is the slowest authenticated
@@ -378,7 +384,7 @@ test.describe("Authenticated BM2 visual regression", () => {
 
   test("outreach full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
-      shouldSkipMissingBaseline("en-outreach.png"),
+      shouldSkipMissingBaseline("en-outreach.png", test.info()),
       "Baseline en-outreach.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
@@ -421,7 +427,7 @@ test.describe("Authenticated BM2 visual regression", () => {
 
   test("crm full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
-      shouldSkipMissingBaseline("en-crm.png"),
+      shouldSkipMissingBaseline("en-crm.png", test.info()),
       "Baseline en-crm.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
@@ -445,7 +451,7 @@ test.describe("Authenticated BM2 visual regression", () => {
 
   test("roi full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
-      shouldSkipMissingBaseline("en-roi.png"),
+      shouldSkipMissingBaseline("en-roi.png", test.info()),
       "Baseline en-roi.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
@@ -473,7 +479,7 @@ test.describe("Authenticated BM2 visual regression", () => {
     page,
   }) => {
     test.skip(
-      shouldSkipMissingBaseline("en-weekly-report.png"),
+      shouldSkipMissingBaseline("en-weekly-report.png", test.info()),
       "Baseline en-weekly-report.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
@@ -506,7 +512,7 @@ test.describe("Authenticated BM2 visual regression", () => {
   // [data-testid="kol-card"] is always present.
   test("kols-detail full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
-      shouldSkipMissingBaseline("en-kols-detail.png"),
+      shouldSkipMissingBaseline("en-kols-detail.png", test.info()),
       "Baseline en-kols-detail.png missing — run the 'Update visual baselines' workflow."
     );
     test.setTimeout(90_000);
@@ -585,7 +591,7 @@ test.describe("Authenticated BL-026 visual regression", () => {
 
   test("en-assets (2-col grid drawer-closed) diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
-      shouldSkipMissingBaseline("en-assets.png"),
+      shouldSkipMissingBaseline("en-assets.png", test.info()),
       "Baseline en-assets.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
@@ -617,7 +623,7 @@ test.describe("Authenticated BL-026 visual regression", () => {
     page,
   }) => {
     test.skip(
-      shouldSkipMissingBaseline("en-assets-drawer-open.png"),
+      shouldSkipMissingBaseline("en-assets-drawer-open.png", test.info()),
       "Baseline en-assets-drawer-open.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
@@ -643,7 +649,7 @@ test.describe("Authenticated BL-026 visual regression", () => {
     page,
   }) => {
     test.skip(
-      shouldSkipMissingBaseline("en-assets-filter-dropdown.png"),
+      shouldSkipMissingBaseline("en-assets-filter-dropdown.png", test.info()),
       "Baseline en-assets-filter-dropdown.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
@@ -663,7 +669,7 @@ test.describe("Authenticated BL-026 visual regression", () => {
 
   test("en-assets-empty-system-seed (welcome mode) diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
-      shouldSkipMissingBaseline("en-assets-empty-system-seed.png"),
+      shouldSkipMissingBaseline("en-assets-empty-system-seed.png", test.info()),
       "Baseline en-assets-empty-system-seed.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
@@ -695,7 +701,7 @@ test.describe("Authenticated BL-026 visual regression", () => {
     page,
   }) => {
     test.skip(
-      shouldSkipMissingBaseline("en-outreach.png"),
+      shouldSkipMissingBaseline("en-outreach.png", test.info()),
       "Baseline en-outreach.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
@@ -733,7 +739,7 @@ test.describe("Auth cinematic — visual regression", () => {
 
   test("/en/login full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
-      shouldSkipMissingBaseline("en-login.png"),
+      shouldSkipMissingBaseline("en-login.png", test.info()),
       "Baseline en-login.png missing — run the 'Update visual baselines' workflow."
     );
     await page.goto("/en/login");
@@ -750,7 +756,7 @@ test.describe("Auth cinematic — visual regression", () => {
 
   test("/zh/login full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
-      shouldSkipMissingBaseline("zh-login.png"),
+      shouldSkipMissingBaseline("zh-login.png", test.info()),
       "Baseline zh-login.png missing — run the 'Update visual baselines' workflow."
     );
     await page.goto("/zh/login");
@@ -767,7 +773,7 @@ test.describe("Auth cinematic — visual regression", () => {
 
   test("/en/request-access full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
-      shouldSkipMissingBaseline("en-request-access.png"),
+      shouldSkipMissingBaseline("en-request-access.png", test.info()),
       "Baseline en-request-access.png missing — run the 'Update visual baselines' workflow."
     );
     await page.goto("/en/request-access");
