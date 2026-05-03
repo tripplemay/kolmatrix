@@ -1,5 +1,6 @@
 /**
- * BM2-F011 — Visual regression baselines for BM1 + BM2 pages.
+ * BM2-F011 / BL-026-followup — Visual regression baselines for BM1
+ * + BM2 + BL-026 pages.
  *
  * Captures full-page screenshots against the baselines committed at
  * `tests/screenshots/baseline/*.png` (path configured via
