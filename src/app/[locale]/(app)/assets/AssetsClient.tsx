@@ -113,9 +113,11 @@ export function AssetsClient({ initialListing, products }: Props) {
   const router = useRouter();
   const { state, update, clearAll } = useAssetFilters();
   const [, startTransition] = useTransition();
-  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(
-    initialListing.items[0]?.id ?? null
-  );
+  // BL-026-F002 — drawer-mode means selection auto-opens the right
+  // slide-over. We start with `null` so the page lands grid-first;
+  // older 3-col code seeded with `items[0]?.id` because the aside was
+  // permanently visible.
+  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<AssetTabId>("preview");
   const [wizardOpen, setWizardOpen] = useState(false);
   const [pendingActionAssetId, setPendingActionAssetId] = useState<string | null>(null);

@@ -21,10 +21,15 @@ import { describe, expect, it } from "vitest";
 
 const REPO_ROOT = resolve(__dirname, "../..");
 
+// BL-026-F002: en-assets.png + en-assets-wizard-step1.png removed —
+// the /assets layout flipped from 3-col aside to 2-col + right
+// drawer + top filter dropdown. The 4 new BL-026 baselines (en-
+// assets / en-assets-drawer-open / en-assets-filter-dropdown /
+// en-assets-empty-system-seed per spec §S1.6) get added by Reviewer
+// after triggering the "Update visual baselines" workflow against
+// the redeployed staging environment.
 const EXPECTED_BASELINES = [
   "dashboard.png",
-  "en-assets-wizard-step1.png",
-  "en-assets.png",
   "en-campaign-detail.png",
   "en-campaigns.png",
   "en-crm.png",
@@ -67,7 +72,7 @@ function baselineWidths(): Array<{ name: string; width: number }> {
 }
 
 describe("visual baseline collection (MVP-vf-F007)", () => {
-  it("git tracks exactly the 17 baseline PNGs the spec covers", () => {
+  it("git tracks exactly the 15 baseline PNGs the spec covers", () => {
     expect(gitTrackedBaselines()).toEqual([...EXPECTED_BASELINES].sort());
   });
 
