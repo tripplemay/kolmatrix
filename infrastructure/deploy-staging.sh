@@ -6,10 +6,11 @@
 # Sequence:
 #   1) git pull --ff-only origin main
 #   2) npm ci --include=dev
-#   3) npx prisma migrate deploy
-#   4) next build (with 4G old-space to avoid OOM)
-#   5) pm2 restart kolmatrix-staging --update-env
-#   6) curl /api/health and print structured JSON
+#   3) npx prisma generate (NODE_ENV=production may skip postinstall, see BL-025-F001 follow-up)
+#   4) npx prisma migrate deploy
+#   5) next build (with 4G old-space to avoid OOM)
+#   6) pm2 restart kolmatrix-staging --update-env
+#   7) curl /api/health and print structured JSON
 
 set -euo pipefail
 
@@ -48,20 +49,27 @@ git pull --ff-only origin main
 HEAD_SHA="$(git rev-parse --short HEAD)"
 echo "   HEAD=$HEAD_SHA"
 
-echo "── 2/6 npm ci --include=dev"
+echo "── 2/7 npm ci --include=dev"
 npm ci --include=dev
 
-echo "── 3/6 prisma migrate deploy"
+# Explicit prisma generate: NODE_ENV=production in .env.staging causes npm to
+# skip the package.json `postinstall: prisma generate` hook on this VM, leaving
+# node_modules/.prisma/client/ absent → next build typecheck fails to resolve
+# `import { PrismaClient } from "@prisma/client"`. (BL-025-F001 follow-up.)
+echo "── 3/7 prisma generate"
+npx prisma generate
+
+echo "── 4/7 prisma migrate deploy"
 npx prisma migrate deploy
 
-echo "── 4/6 next build"
+echo "── 5/7 next build"
 node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build
 
-echo "── 5/6 pm2 restart $APP_NAME --update-env"
+echo "── 6/7 pm2 restart $APP_NAME --update-env"
 pm2 restart "$APP_NAME" --update-env >/dev/null
 pm2 describe "$APP_NAME" | sed -n '1,40p'
 
-echo "── 6/6 health check"
+echo "── 7/7 health check"
 HEALTH_JSON="$(curl -fsS "$HEALTH_URL")"
 echo "$HEALTH_JSON" | python3 -m json.tool
 

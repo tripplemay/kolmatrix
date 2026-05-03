@@ -8,11 +8,12 @@
 #   2. pg_dump + gzip under /opt/kolmatrix-backups/  (unless SKIP_BACKUP=true)
 #   3. git fetch + checkout $GIT_SHA
 #   4. npm ci (dev deps needed for `next build`)
-#   5. npx prisma migrate deploy — failure aborts before PM2 touches new code
-#   6. npm run build
-#   7. pm2 reload kolmatrix --update-env  (zero-downtime)
-#   8. scripts/healthcheck.sh — 5× / 3s retry against /api/health
-#   9. healthcheck fail → scripts/rollback.sh, exit 1
+#   5. npx prisma generate (NODE_ENV=production skips postinstall — BL-025-F001 follow-up)
+#   6. npx prisma migrate deploy — failure aborts before PM2 touches new code
+#   7. npm run build
+#   8. pm2 reload kolmatrix --update-env  (zero-downtime)
+#   9. scripts/healthcheck.sh — 5× / 3s retry against /api/health
+#  10. healthcheck fail → scripts/rollback.sh, exit 1
 #
 # `set -e` means any step's non-zero exit halts the deploy. The one
 # explicit `|| { rollback.sh; exit 1; }` is scoped to the healthcheck
@@ -49,13 +50,20 @@ echo "── 3/8  git fetch + checkout $GIT_SHA"
 git fetch --all --prune
 git checkout "${GIT_SHA:-origin/main}"
 
-echo "── 4/8  npm ci"
+echo "── 4/9  npm ci"
 npm ci --production=false
 
-echo "── 5/8  prisma migrate deploy"
+# Explicit prisma generate: NODE_ENV=production on the VPS makes npm skip the
+# package.json `postinstall: prisma generate` hook, leaving node_modules/.prisma/client/
+# absent → next build typecheck fails to resolve `@prisma/client`. (BL-025-F001 follow-up;
+# previously masked because earlier batches didn't add new model fields imported at build time.)
+echo "── 5/9  prisma generate"
+npx prisma generate
+
+echo "── 6/9  prisma migrate deploy"
 npx prisma migrate deploy
 
-echo "── 6/8  next build"
+echo "── 7/9  next build"
 # Node default old-gen heap is 2 GB; the TypeScript-check pass on the
 # current codebase + Next 16 Turbopack pipeline OOMs at ~2 GB.
 # NODE_OPTIONS prefix didn't reach Next's worker fork through
@@ -63,10 +71,10 @@ echo "── 6/8  next build"
 # lands in the parent's execArgv and child workers inherit it.
 node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build
 
-echo "── 7/8  pm2 reload kolmatrix (zero-downtime)"
+echo "── 8/9  pm2 reload kolmatrix (zero-downtime)"
 pm2 reload kolmatrix --update-env
 
-echo "── 8/8  healthcheck"
+echo "── 9/9  healthcheck"
 if "$REPO_DIR/scripts/healthcheck.sh"; then
   echo "✅ Deploy successful: $GIT_SHA"
   exit 0
