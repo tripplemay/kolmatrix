@@ -326,6 +326,7 @@ git status --short docs/test-reports/ docs/test-cases/ .auto-memory/
 9. 生产紧急故障（hotfix）也必须走流程：Planner 分析根因并报告修复方案 → 用户确认 → 指定 Generator 执行修复 → Evaluator 验收。Planner 不得直接修改产品代码，即使是一行代码
 10. 任何 spec-driven 工作必须有 `features.json` feature 号归属。无归属的代码修改 = 越界（commit message 的 `feat(<batch>-F<num>):` 标签必须能对应 features.json 实际条目，否则 Reviewer 拒绝签收）。详见 `framework/harness/pre-impl-adjudication.md` §4.6 §4.7 anti-patterns
 11. 状态机 JSON 文件（`progress.json` / `features.json` / `backlog.json`）写入后，commit 前必须跑 `python3 -c "import json; json.load(open('<file>'))"` 校验。建议 `.git/hooks/pre-commit` 加自动校验，挂钩失败拒提交。来源：MVP commit b44b79d（progress.json session_notes 块缺一个 `}` 进入 main 持续 N 小时未发现，下游工具 parse 即挂）
+12. **任何 commit 前必须先跑 `git diff --cached --name-only` 确认 staged 索引仅含本 commit 应包含的文件。** `git commit` 默认提交 staged 索引中**全部内容**，无视 `git add <pathspec>` 之后的限制（pathspec 仅约束 add，commit 时索引已成既定）。多角色同工作树并行时，另一 agent 可能已 `git add` 自己的 WIP 文件但未 commit；本 agent 误以为 add 了自己文件就只 commit 自己文件，结果把对方 WIP 一并打包推 main，违反铁律 #10 commit-tag 一致性。来源：BIx commit 3da4248（Planner docs-only commit 误把 Generator F004-P3 在制 9 文件一并打包，需 revert + 重做留 audit noise）
 
 ## 框架提案规则
 

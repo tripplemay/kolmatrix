@@ -5,7 +5,7 @@
   "completed_features": 9,
   "fix_rounds": 0,
   "current_sprint": "BL-025-asset-library",
-  "last_updated": "2026-05-03T14:25+0800",
+  "last_updated": "2026-05-03T15:00+0800",
   "reference_docs": [
     "docs/specs/BL-025-asset-library-spec.md",
     "docs/adr/ADR-011-unified-asset-table-vs-typed-tables.md",
@@ -23,7 +23,7 @@
     "spec": "docs/specs/BL-025-asset-library-spec.md",
     "test_cases": null,
     "signoff": "docs/test-reports/BL-025-asset-library-signoff-2026-05-03.md",
-    "framework_reviewed": false
+    "framework_reviewed": true
   },
   "role_assignments": null,
   "evaluator_feedback": null,

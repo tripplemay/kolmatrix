@@ -6,6 +6,10 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./tests/setup.ts"],
+    // WSL2 跨 /mnt/c/... fs 慢，全代码 fast-glob 在默认 5_000ms 偶发 fail
+    // (BIx F005 + BL-025 verifying 两次踩同根因)。CI Linux 容器无此问题。
+    // 60s 是上限不是下限，快测试仍快完。来源：framework CHANGELOG v0.9.6 [#1]。
+    testTimeout: 60_000,
     include: [
       "src/**/__tests__/**/*.{test,spec}.{ts,tsx}",
       "tests/unit/**/*.{test,spec}.{ts,tsx}",
