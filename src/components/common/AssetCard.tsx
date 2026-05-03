@@ -38,6 +38,9 @@ interface AssetCardProps {
   isSelected: boolean;
   onSelect: () => void;
   onQuickAction?: (action: AssetCardQuickAction) => void;
+  /** Disable hover quick-action overlay while a duplicate / archive /
+   * delete server action is in flight against this card. */
+  pending?: boolean;
   className?: string;
 }
 
@@ -68,6 +71,7 @@ export function AssetCard({
   isSelected,
   onSelect,
   onQuickAction,
+  pending,
   className,
 }: AssetCardProps) {
   const updatedAt = asset.updatedAt instanceof Date ? asset.updatedAt : new Date(asset.updatedAt);
@@ -138,15 +142,18 @@ export function AssetCard({
               key={action.id}
               type="button"
               aria-label={action.label}
+              disabled={pending}
               onClick={(e) => {
                 e.stopPropagation();
+                if (pending) return;
                 onQuickAction(action.id);
               }}
               className={cn(
                 "flex h-8 w-8 items-center justify-center rounded-full border backdrop-blur",
                 "border-outline-variant bg-surface-container/80 text-on-surface-variant",
                 "hover:border-cyan/40 hover:bg-cyan/10 hover:text-cyan",
-                "focus-visible:ring-cyan/40 focus-visible:ring-2 focus-visible:outline-none"
+                "focus-visible:ring-cyan/40 focus-visible:ring-2 focus-visible:outline-none",
+                pending && "cursor-wait opacity-60"
               )}
             >
               <span className="material-symbols-outlined text-[16px]" aria-hidden>

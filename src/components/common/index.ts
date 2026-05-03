@@ -8,7 +8,7 @@ export { ActivityFeedItem } from "./ActivityFeedItem";
 export { AiScoreBadge } from "./AiScoreBadge";
 export { AvatarWithPlatformBadge } from "./AvatarWithPlatformBadge";
 export { CampaignRow } from "./CampaignRow";
-export { AssetCard } from "./AssetCard";
+export { AssetCard, type AssetCardQuickAction } from "./AssetCard";
 export { AssetTabs } from "./AssetTabs";
 export { ChipButton, type ChipButtonProps } from "./ChipButton";
 export { ErrorBoundary, type ErrorBoundaryProps } from "./ErrorBoundary";

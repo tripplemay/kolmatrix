@@ -16,6 +16,7 @@ import {
   AssetVariantDepthError,
   createAsset,
   deleteAsset,
+  duplicateAsset,
   updateAsset,
   __TEST_ONLY__,
 } from "../mutations";
@@ -327,6 +328,99 @@ describe("deleteAsset", () => {
     });
     tx.asset.delete.mockRejectedValueOnce(p2025);
     expect(await deleteAsset(tx, "asset-1")).toBe(false);
+  });
+});
+
+describe("duplicateAsset", () => {
+  it("clones an email asset to a new draft root with a (copy) suffix and mirrors to email_template", async () => {
+    const tx = makeTx();
+    tx.asset.findUnique.mockResolvedValueOnce({
+      id: "source-1",
+      productId: "prod-1",
+      type: "email",
+      name: "Welcome v3",
+      content: validEmail,
+      metadata: { traceId: "trace-x", model: "claude-haiku-4.5" },
+    });
+    tx.asset.create.mockResolvedValueOnce(
+      createdRow({
+        id: "copy-1",
+        productId: "prod-1",
+        name: "Welcome v3 (copy)",
+        content: validEmail,
+        metadata: {
+          traceId: "trace-x",
+          model: "claude-haiku-4.5",
+          duplicatedFromAssetId: "source-1",
+        },
+      })
+    );
+
+    const result = await duplicateAsset(tx, TENANT_A, "source-1", { createdBy: "user-1" });
+
+    expect(result.name).toBe("Welcome v3 (copy)");
+    expect(result.parentId).toBeNull();
+    const createCall = tx.asset.create.mock.calls[0]![0];
+    expect(createCall.data.parentId).toBeNull();
+    expect(createCall.data.source).toBe("user_created");
+    expect(createCall.data.status).toBe("draft");
+    expect(createCall.data.productId).toBe("prod-1");
+    expect(createCall.data.metadata.duplicatedFromAssetId).toBe("source-1");
+    expect(createCall.data.metadata.traceId).toBe("trace-x");
+    expect(createCall.data.createdBy).toBe("user-1");
+    expect(tx.emailTemplate.create).toHaveBeenCalledTimes(1);
+  });
+
+  it("clones a video_script asset and skips the email_template mirror", async () => {
+    const tx = makeTx();
+    tx.asset.findUnique.mockResolvedValueOnce({
+      id: "source-2",
+      productId: "prod-2",
+      type: "video_script",
+      name: "TikTok hook",
+      content: validVideo,
+      metadata: {},
+    });
+    tx.asset.create.mockResolvedValueOnce(
+      createdRow({
+        id: "copy-2",
+        productId: "prod-2",
+        type: "video_script",
+        name: "TikTok hook (copy)",
+        content: validVideo,
+      })
+    );
+
+    const result = await duplicateAsset(tx, TENANT_A, "source-2");
+
+    expect(result.type).toBe("video_script");
+    expect(tx.emailTemplate.create).not.toHaveBeenCalled();
+  });
+
+  it("collapses repeated (copy) suffixes so a duplicate-of-a-duplicate stays single-suffixed", async () => {
+    const tx = makeTx();
+    tx.asset.findUnique.mockResolvedValueOnce({
+      id: "source-3",
+      productId: null,
+      type: "email",
+      name: "Welcome (copy)",
+      content: validEmail,
+      metadata: {},
+    });
+    tx.asset.create.mockResolvedValueOnce(createdRow({ id: "copy-3", name: "Welcome (copy)" }));
+
+    await duplicateAsset(tx, TENANT_A, "source-3");
+
+    const createCall = tx.asset.create.mock.calls[0]![0];
+    expect(createCall.data.name).toBe("Welcome (copy)");
+  });
+
+  it("throws AssetNotFoundError when the source asset is missing", async () => {
+    const tx = makeTx();
+    tx.asset.findUnique.mockResolvedValueOnce(null);
+    await expect(duplicateAsset(tx, TENANT_A, "missing-source")).rejects.toBeInstanceOf(
+      AssetNotFoundError
+    );
   });
 });
 

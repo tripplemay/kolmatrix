@@ -178,6 +178,7 @@ describe("generateAssetAction", () => {
       ok: true,
       assetId: NEW_ASSET_ID,
       parentAssetId: null,
+      asset: { id: NEW_ASSET_ID },
     });
     const createCall = createAssetMock.mock.calls[0]![2];
     expect(createCall.source).toBe("ai_generated");

@@ -29,11 +29,25 @@ import { logAudit } from "@/lib/audit/log";
 import {
   createAsset,
   updateAsset,
+  archiveAsset,
+  duplicateAsset,
+  deleteAsset,
   AssetNotFoundError,
   AssetVariantDepthError,
 } from "@/lib/assets/mutations";
-import { loadAssetDetail, loadVariantTree, loadUsedIn } from "@/lib/assets/queries";
-import type { AssetDetail, UsedInSummary, VariantTreeNode } from "@/lib/assets/types";
+import {
+  loadAssetDetail,
+  loadAssetsForListing,
+  loadVariantTree,
+  loadUsedIn,
+} from "@/lib/assets/queries";
+import type {
+  AssetDetail,
+  AssetListResult,
+  AssetListSort,
+  UsedInSummary,
+  VariantTreeNode,
+} from "@/lib/assets/types";
 import {
   generateEmailContent,
   EmailContentParseError,
@@ -64,6 +78,7 @@ export interface GenerateAssetSuccess {
   ok: true;
   assetId: string;
   parentAssetId: string | null;
+  asset: AssetDetail;
 }
 
 export interface GenerateAssetFailure {
@@ -237,8 +252,8 @@ export async function generateAssetAction(rawInput: unknown): Promise<GenerateAs
   }
 
   // Phase 3 — persist + audit inside withTenant.
-  const assetId = await withTenant(tenantId, async (tx) => {
-    const detail = await createAsset(tx, tenantId, {
+  const detail = await withTenant(tenantId, async (tx) => {
+    return createAsset(tx, tenantId, {
       type: parsed.type,
       name: deriveAssetName(
         parsed.type,
@@ -261,17 +276,16 @@ export async function generateAssetAction(rawInput: unknown): Promise<GenerateAs
         generatedAt: new Date().toISOString(),
       },
     });
-    return detail.id;
   });
 
   await logAudit({
     actorId: userId,
     action: parsed.parentAssetId ? "asset.regenerated" : "asset.generated",
     targetType: "asset",
-    targetId: assetId,
+    targetId: detail.id,
     tenantId,
     after: {
-      assetId,
+      assetId: detail.id,
       productId: ctx.product.id,
       type: parsed.type,
       traceId: generated.traceId ?? null,
@@ -285,8 +299,9 @@ export async function generateAssetAction(rawInput: unknown): Promise<GenerateAs
 
   return {
     ok: true,
-    assetId,
+    assetId: detail.id,
     parentAssetId: parsed.parentAssetId ?? null,
+    asset: detail,
   };
 }
 
@@ -529,6 +544,73 @@ export async function loadVariantTreeAction(
   return { ok: true, nodes };
 }
 
+// ---- BL-025-F004 patch · loadMoreAssetsAction (infinite scroll) ----
+//
+// Client sentinel intersects → fetch the next page from the same
+// filter+sort+cursor the server component used. Cursor is opaque
+// (encodeCursor in queries.ts handles ordering) so we just pass it
+// through. Filter is shaped by toAssetFilter on the client.
+
+const LoadMoreInputSchema = z.object({
+  filter: z.object({
+    types: z.array(z.enum(["email", "video_script"])).optional(),
+    statuses: z.array(z.enum(["draft", "published", "archived"])).optional(),
+    sources: z
+      .array(z.enum(["ai_generated", "user_created", "imported", "system_seed"]))
+      .optional(),
+    productId: z.string().optional(),
+    search: z.string().optional(),
+  }),
+  cursor: z.string().min(1),
+  sort: z.enum(["recent", "name", "type"]).default("recent"),
+  limit: z.number().int().min(1).max(60).default(24),
+});
+
+export type LoadMoreAssetsInput = z.input<typeof LoadMoreInputSchema>;
+
+export type LoadMoreAssetsResult =
+  | { ok: true; page: AssetListResult }
+  | { ok: false; error: string; code: "unauthorized" | "validation" | "internal" };
+
+export async function loadMoreAssetsAction(
+  rawInput: unknown
+): Promise<LoadMoreAssetsResult> {
+  let parsed: z.infer<typeof LoadMoreInputSchema>;
+  try {
+    parsed = LoadMoreInputSchema.parse(rawInput);
+  } catch (err) {
+    if (err instanceof ZodError) {
+      return {
+        ok: false,
+        error: err.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; "),
+        code: "validation",
+      };
+    }
+    return { ok: false, error: "invalid input", code: "validation" };
+  }
+
+  const session = await auth();
+  const tenantId = session?.user?.tenantId;
+  if (!tenantId) return { ok: false, error: "Not signed in", code: "unauthorized" };
+
+  try {
+    const page = await withTenant(tenantId, (tx) =>
+      loadAssetsForListing(tx, parsed.filter, {
+        cursor: parsed.cursor,
+        sort: parsed.sort as AssetListSort,
+        limit: parsed.limit,
+      })
+    );
+    return { ok: true, page };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+      code: "internal",
+    };
+  }
+}
+
 export async function loadUsedInAction(
   assetId: string
 ): Promise<{ ok: true; summary: UsedInSummary } | { ok: false; error: string }> {
@@ -540,4 +622,289 @@ export async function loadUsedInAction(
   }
   const summary = await withTenant(tenantId, (tx) => loadUsedIn(tx, assetId));
   return { ok: true, summary };
+}
+
+// ---- BL-025-F005 patch · archive / duplicate / delete server actions ----
+//
+// AssetCard quick-action overlay + detail-panel "..." menu both call
+// these. They share the same auth + RLS shape as updateAssetAction and
+// audit each branch with a distinct action tag so admin tooling can
+// surface "user X archived asset Y at T" without parsing free text.
+
+const AssetIdInputSchema = z.object({
+  assetId: z.string().uuid(),
+});
+
+export type AssetIdInput = z.input<typeof AssetIdInputSchema>;
+
+interface MutationActionFailure {
+  ok: false;
+  error: string;
+  code: "unauthorized" | "validation" | "asset_not_found" | "internal";
+}
+
+export interface ArchiveAssetSuccess {
+  ok: true;
+  asset: AssetDetail;
+}
+
+export type ArchiveAssetResult = ArchiveAssetSuccess | MutationActionFailure;
+
+export async function archiveAssetAction(rawInput: unknown): Promise<ArchiveAssetResult> {
+  let parsed: AssetIdInput;
+  try {
+    parsed = AssetIdInputSchema.parse(rawInput);
+  } catch (err) {
+    if (err instanceof ZodError) {
+      return {
+        ok: false,
+        error: err.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; "),
+        code: "validation",
+      };
+    }
+    return { ok: false, error: "invalid input", code: "validation" };
+  }
+
+  const session = await auth();
+  const tenantId = session?.user?.tenantId;
+  const userId = session?.user?.id;
+  if (!session?.user || !tenantId || !userId) {
+    return { ok: false, error: "Not signed in", code: "unauthorized" };
+  }
+
+  try {
+    const result = await withTenant(tenantId, async (tx) => {
+      const before = await loadAssetDetail(tx, parsed.assetId);
+      if (!before) return { kind: "no_asset" as const };
+      const after = await archiveAsset(tx, parsed.assetId);
+      return { kind: "ok" as const, before, after };
+    });
+    if (result.kind === "no_asset") {
+      return { ok: false, error: "Asset not found", code: "asset_not_found" };
+    }
+
+    await logAudit({
+      actorId: userId,
+      action: "asset.archived",
+      targetType: "asset",
+      targetId: result.after.id,
+      tenantId,
+      before: { status: result.before.status },
+      after: { status: result.after.status },
+    });
+
+    return { ok: true, asset: result.after };
+  } catch (err) {
+    if (err instanceof AssetNotFoundError) {
+      return { ok: false, error: err.message, code: "asset_not_found" };
+    }
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+      code: "internal",
+    };
+  }
+}
+
+export interface DuplicateAssetSuccess {
+  ok: true;
+  asset: AssetDetail;
+}
+
+export type DuplicateAssetResult = DuplicateAssetSuccess | MutationActionFailure;
+
+export async function duplicateAssetAction(rawInput: unknown): Promise<DuplicateAssetResult> {
+  let parsed: AssetIdInput;
+  try {
+    parsed = AssetIdInputSchema.parse(rawInput);
+  } catch (err) {
+    if (err instanceof ZodError) {
+      return {
+        ok: false,
+        error: err.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; "),
+        code: "validation",
+      };
+    }
+    return { ok: false, error: "invalid input", code: "validation" };
+  }
+
+  const session = await auth();
+  const tenantId = session?.user?.tenantId;
+  const userId = session?.user?.id;
+  if (!session?.user || !tenantId || !userId) {
+    return { ok: false, error: "Not signed in", code: "unauthorized" };
+  }
+
+  try {
+    const result = await withTenant(tenantId, async (tx) => {
+      const source = await loadAssetDetail(tx, parsed.assetId);
+      if (!source) return { kind: "no_asset" as const };
+      const copy = await duplicateAsset(tx, tenantId, parsed.assetId, { createdBy: userId });
+      return { kind: "ok" as const, source, copy };
+    });
+    if (result.kind === "no_asset") {
+      return { ok: false, error: "Asset not found", code: "asset_not_found" };
+    }
+
+    await logAudit({
+      actorId: userId,
+      action: "asset.duplicated",
+      targetType: "asset",
+      targetId: result.copy.id,
+      tenantId,
+      after: {
+        assetId: result.copy.id,
+        sourceAssetId: result.source.id,
+        type: result.copy.type,
+        productId: result.copy.productId,
+      },
+    });
+
+    return { ok: true, asset: result.copy };
+  } catch (err) {
+    if (err instanceof AssetNotFoundError) {
+      return { ok: false, error: err.message, code: "asset_not_found" };
+    }
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+      code: "internal",
+    };
+  }
+}
+
+export interface DeleteAssetSuccess {
+  ok: true;
+  assetId: string;
+}
+
+export type DeleteAssetResult = DeleteAssetSuccess | MutationActionFailure;
+
+/**
+ * Wizard "Discard" path: when the user generates a draft preview but
+ * decides not to keep it, we hard-delete the row and audit-log it as
+ * `asset.generated_discarded` instead of the regular `asset.deleted`.
+ * Same auth + RLS shape as deleteAssetAction; the audit tag lets cost
+ * tooling separate "user generated and abandoned" from "user deleted
+ * a curated asset they had been using" (which is much rarer / more
+ * meaningful for the lifecycle dashboard).
+ */
+export async function discardGeneratedAssetAction(
+  rawInput: unknown
+): Promise<DeleteAssetResult> {
+  let parsed: AssetIdInput;
+  try {
+    parsed = AssetIdInputSchema.parse(rawInput);
+  } catch (err) {
+    if (err instanceof ZodError) {
+      return {
+        ok: false,
+        error: err.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; "),
+        code: "validation",
+      };
+    }
+    return { ok: false, error: "invalid input", code: "validation" };
+  }
+
+  const session = await auth();
+  const tenantId = session?.user?.tenantId;
+  const userId = session?.user?.id;
+  if (!session?.user || !tenantId || !userId) {
+    return { ok: false, error: "Not signed in", code: "unauthorized" };
+  }
+
+  try {
+    const result = await withTenant(tenantId, async (tx) => {
+      const before = await loadAssetDetail(tx, parsed.assetId);
+      if (!before) return { kind: "no_asset" as const };
+      const removed = await deleteAsset(tx, parsed.assetId);
+      return { kind: "ok" as const, before, removed };
+    });
+    if (result.kind === "no_asset" || !result.removed) {
+      return { ok: false, error: "Asset not found", code: "asset_not_found" };
+    }
+
+    const beforeMeta =
+      result.before.metadata && typeof result.before.metadata === "object"
+        ? (result.before.metadata as Record<string, unknown>)
+        : {};
+    await logAudit({
+      actorId: userId,
+      action: "asset.generated_discarded",
+      targetType: "asset",
+      targetId: result.before.id,
+      tenantId,
+      before: {
+        name: result.before.name,
+        type: result.before.type,
+        traceId: typeof beforeMeta.traceId === "string" ? beforeMeta.traceId : null,
+        model: typeof beforeMeta.model === "string" ? beforeMeta.model : null,
+        tokensUsed: typeof beforeMeta.tokensUsed === "number" ? beforeMeta.tokensUsed : null,
+      },
+    });
+
+    return { ok: true, assetId: result.before.id };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+      code: "internal",
+    };
+  }
+}
+
+export async function deleteAssetAction(rawInput: unknown): Promise<DeleteAssetResult> {
+  let parsed: AssetIdInput;
+  try {
+    parsed = AssetIdInputSchema.parse(rawInput);
+  } catch (err) {
+    if (err instanceof ZodError) {
+      return {
+        ok: false,
+        error: err.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; "),
+        code: "validation",
+      };
+    }
+    return { ok: false, error: "invalid input", code: "validation" };
+  }
+
+  const session = await auth();
+  const tenantId = session?.user?.tenantId;
+  const userId = session?.user?.id;
+  if (!session?.user || !tenantId || !userId) {
+    return { ok: false, error: "Not signed in", code: "unauthorized" };
+  }
+
+  try {
+    const result = await withTenant(tenantId, async (tx) => {
+      const before = await loadAssetDetail(tx, parsed.assetId);
+      if (!before) return { kind: "no_asset" as const };
+      const removed = await deleteAsset(tx, parsed.assetId);
+      return { kind: "ok" as const, before, removed };
+    });
+    if (result.kind === "no_asset" || !result.removed) {
+      return { ok: false, error: "Asset not found", code: "asset_not_found" };
+    }
+
+    await logAudit({
+      actorId: userId,
+      action: "asset.deleted",
+      targetType: "asset",
+      targetId: result.before.id,
+      tenantId,
+      before: {
+        name: result.before.name,
+        type: result.before.type,
+        status: result.before.status,
+      },
+    });
+
+    return { ok: true, assetId: result.before.id };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+      code: "internal",
+    };
+  }
 }

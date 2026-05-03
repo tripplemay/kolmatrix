@@ -359,6 +359,66 @@ export async function archiveAsset(
 }
 
 /**
+ * Deep-copy an asset to a new draft. The duplicate becomes a new root
+ * (parentId=null) — we deliberately do NOT inherit the source's variant
+ * chain, otherwise duplicating a leaf would cause the leaf and the
+ * duplicate to be siblings under the same root, polluting variant
+ * counts. Source content / type / productId / metadata.duplicatedFrom
+ * carry over; status resets to draft so the user can review before
+ * publishing.
+ *
+ * F006 dual-write applies via createAsset's existing mirror path, so
+ * email duplicates land in email_template too.
+ */
+export async function duplicateAsset(
+  tx: Prisma.TransactionClient,
+  tenantId: string | null,
+  sourceAssetId: string,
+  opts: { createdBy?: string | null } = {}
+): Promise<AssetDetail> {
+  const source = (await tx.asset.findUnique({
+    where: { id: sourceAssetId },
+    select: {
+      id: true,
+      productId: true,
+      type: true,
+      name: true,
+      content: true,
+      metadata: true,
+    },
+  })) as {
+    id: string;
+    productId: string | null;
+    type: AssetType;
+    name: string;
+    content: Prisma.JsonValue;
+    metadata: Prisma.JsonValue;
+  } | null;
+  if (!source) throw new AssetNotFoundError(sourceAssetId);
+
+  const sourceMeta =
+    source.metadata && typeof source.metadata === "object" && !Array.isArray(source.metadata)
+      ? (source.metadata as Record<string, unknown>)
+      : {};
+
+  return createAsset(tx, tenantId, {
+    productId: source.productId,
+    type: source.type,
+    name: `${source.name.replace(/\s+\(copy\)\s*$/i, "")} (copy)`,
+    content: source.content,
+    source: "user_created",
+    status: "draft",
+    parentAssetId: null,
+    createdBy: opts.createdBy ?? null,
+    metadata: {
+      ...sourceMeta,
+      duplicatedFromAssetId: source.id,
+      duplicatedAt: new Date().toISOString(),
+    } as Prisma.InputJsonValue,
+  });
+}
+
+/**
  * Hard delete. Caller decides whether to use this vs archiveAsset —
  * the variant tree's `parentId` FK is ON DELETE SET NULL so children
  * survive (they detach to a new root). Returns true if a row was

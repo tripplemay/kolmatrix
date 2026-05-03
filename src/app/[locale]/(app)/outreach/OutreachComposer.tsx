@@ -153,12 +153,41 @@ export function OutreachComposer({
   // if the asset isn't visible (e.g. archived, cross-tenant, stale link).
   const searchParamsHook = useSearchParams();
   const prefilledAssetId = searchParamsHook?.get("prefilledAssetId") ?? null;
-  const initialTemplateId = useMemo(() => {
-    if (prefilledAssetId && data.templates.some((t) => t.id === prefilledAssetId)) {
-      return prefilledAssetId;
+  const prefilledMatch = useMemo(
+    () =>
+      prefilledAssetId
+        ? (data.templates.find((t) => t.id === prefilledAssetId) ?? null)
+        : null,
+    [prefilledAssetId, data.templates]
+  );
+  const initialTemplateId = prefilledMatch?.id ?? data.templates[0]?.id ?? "";
+
+  // Toast banner — non-null while the user lands from /assets so they
+  // see confirmation (or a fallback if the link is stale). Derived
+  // from inputs + a dismiss flag so we don't need a synchronous
+  // setState inside useEffect (lint rule react-hooks/set-state-in-effect).
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  const prefilledBanner = useMemo<{
+    kind: "ok" | "missing";
+    text: string;
+  } | null>(() => {
+    if (bannerDismissed || !prefilledAssetId) return null;
+    if (prefilledMatch) {
+      return {
+        kind: "ok",
+        text: `Loaded template from /assets · ${prefilledMatch.name}`,
+      };
     }
-    return data.templates[0]?.id ?? "";
-  }, [prefilledAssetId, data.templates]);
+    return {
+      kind: "missing",
+      text: "Template not available — falling back to default",
+    };
+  }, [bannerDismissed, prefilledAssetId, prefilledMatch]);
+  useEffect(() => {
+    if (!prefilledBanner) return;
+    const handle = window.setTimeout(() => setBannerDismissed(true), 4000);
+    return () => window.clearTimeout(handle);
+  }, [prefilledBanner]);
 
   const [templateId, setTemplateId] = useState<string>(initialTemplateId);
   const activeTemplate: OutreachTemplateOption | null = useMemo(
@@ -336,6 +365,21 @@ export function OutreachComposer({
         </h2>
         <p className="text-on-surface-variant text-sm">{labels.subtitle}</p>
       </header>
+
+      {prefilledBanner ? (
+        <div
+          role="status"
+          aria-live="polite"
+          data-testid="outreach-prefilled-banner"
+          className={
+            prefilledBanner.kind === "ok"
+              ? "border-cyan/40 bg-cyan/10 text-on-surface mb-4 rounded-lg border px-3 py-2 text-xs"
+              : "mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100"
+          }
+        >
+          {prefilledBanner.text}
+        </div>
+      ) : null}
 
       <div className="grid gap-5 md:grid-cols-2">
         <div>
