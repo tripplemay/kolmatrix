@@ -556,6 +556,86 @@ test.describe("Authenticated BM2 visual regression", () => {
   });
 });
 
+// BL-025-F004 § F004.C — Asset Library visual baselines.
+//
+// Initial Reviewer follow-up scaffold (Soft-watch S3, signoff
+// docs/test-reports/BL-025-asset-library-signoff-2026-05-03.md):
+// covers the two flows that work without source-level data-testid
+// additions — full-state 3-column shell + wizard step-1.
+//
+// Deferred (need source-level scaffold first):
+//   - assets-empty-state — currently no data-testid on the empty
+//     state container; also requires a tenant with zero published
+//     assets which the seed always provides via system_seed templates.
+//   - wizard-step3 — requires advancing through Step 1 → Step 2 →
+//     Generate which calls aigcgateway. Visual baseline can stub
+//     the AI call but the test runner needs a deterministic preview
+//     payload first.
+//   - detail-as-modal-mobile — pending Soft-watch S2 fix
+//     (currently <1024px hides the panel rather than rendering a
+//     modal).
+//
+// All three tracked in next-batch backlog as BL-025-followup.
+test.describe("Authenticated BL-025 visual regression", () => {
+  test.skip(
+    process.platform !== "linux",
+    "Visual regression baseline is Linux-canonical (CI + WSL). Non-Linux runs skip."
+  );
+
+  test("assets-full-state-3col diffs < 2% vs baseline", async ({ page }) => {
+    test.skip(
+      shouldSkipMissingBaseline("en-assets.png", test.info()),
+      "Baseline en-assets.png missing — run the 'Update visual baselines' workflow."
+    );
+    await login(page);
+    await page.goto("/en/assets");
+    // assets-sentinel renders only when AssetsGrid has items;
+    // the seed ships ≥10 system_seed email templates (BL-025-F001
+    // migration), so the grid path is the canonical full-state.
+    await page.waitForSelector('[data-testid="assets-sentinel"]');
+    await fontsReady(page);
+
+    // Mask seed-rotating regions: filter chip breadcrumb (depends
+    // on default URL params), grid card list (asset names + content
+    // previews are seed-bound), and detail panel preview (subject /
+    // body content drifts per seed run). Sidebar filter labels and
+    // shell chrome stay unmasked as the visual signal.
+    const sentinel = page.getByTestId("assets-sentinel");
+
+    await expect(page).toHaveScreenshot("en-assets.png", {
+      fullPage: true,
+      animations: "disabled",
+      mask: [sentinel],
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
+  });
+
+  test("assets-wizard-step1 diffs < 2% vs baseline", async ({ page }) => {
+    test.skip(
+      shouldSkipMissingBaseline("en-assets-wizard-step1.png", test.info()),
+      "Baseline en-assets-wizard-step1.png missing — run the 'Update visual baselines' workflow."
+    );
+    await login(page);
+    await page.goto("/en/assets");
+    await page.waitForSelector('[data-testid="assets-sentinel"]');
+    await page.getByRole("button", { name: /New Asset/i }).click();
+    await page.waitForSelector('[data-testid="new-asset-wizard"]');
+    // Wizard has no async data fetch on Step 1, but the dialog
+    // animation can still race the screenshot. animations: "disabled"
+    // below covers it; the explicit text wait below pins the step.
+    await page.getByText(/Step 1 of 3/).waitFor();
+    await fontsReady(page);
+
+    await expect(page).toHaveScreenshot("en-assets-wizard-step1.png", {
+      fullPage: true,
+      animations: "disabled",
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
+  });
+});
+
 // BAux1-F004 — Authless visual baselines for the cinematic auth pages.
 // Both pages are server components rendering i18n-sourced static text
 // (LoginBrandOverlay, LoginForm, RequestAccessBrandOverlay,
