@@ -213,7 +213,11 @@ test.describe("BL-025-F004 /assets page", () => {
     await page.setViewportSize({ width: 375, height: 667 });
     await login(page);
     await page.goto("/en/assets");
-    await page.waitForSelector('[data-testid="assets-sentinel"]', { timeout: 15_000 });
+    // Wait for the sentinel to mount (it's rendered with aria-hidden="true"
+    // on mobile so Playwright's default "visible" wait rejects it; the
+    // existing "infinite scroll wiring" test on line ~137 uses
+    // toBeAttached() for the same reason).
+    await expect(page.getByTestId("assets-sentinel")).toBeAttached({ timeout: 15_000 });
     const card = page.locator('[role="button"][aria-label]').first();
     const cardCount = await card.count();
     if (cardCount === 0) test.skip(true, "No assets visible to marketer login");
