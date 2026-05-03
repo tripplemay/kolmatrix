@@ -558,8 +558,11 @@ test.describe("Authenticated BM2 visual regression", () => {
 
 // BL-025-F004 § F004.C — Asset Library visual baselines.
 //
-// Initial Reviewer follow-up scaffold (Soft-watch S3, signoff
-// docs/test-reports/BL-025-asset-library-signoff-2026-05-03.md):
+// Baselines first regen via update-visual-baselines workflow run
+// 25270711426 (2026-05-03), commit ead815a. Initial scaffold +
+// follow-up signoff:
+// docs/test-reports/BL-025-asset-library-signoff-2026-05-03.md
+// (Soft-watch S3).
 // covers the two flows that work without source-level data-testid
 // additions — full-state 3-column shell + wizard step-1.
 //
