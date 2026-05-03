@@ -130,6 +130,24 @@ WSL2 对 Windows NTFS 的 `inotify` 不可靠。解决方案：把仓库迁到 L
 
 ---
 
+## 9.5 启用 pre-commit hook（推荐）
+
+仓库根 `framework/templates/pre-commit-hook.sh` 是多功能 hook，覆盖：
+
+1. **状态机 JSON 校验**（铁律 #11）：`progress.json` / `features.json` / `backlog.json` 在 commit 前自动 `python3 json.load` 解析，挂钩失败拒提交。
+2. **Material Symbols subset 守门**（BL-027-F004 / framework v0.9.7）：当 staged 文件含 icon callsite（`material-symbols-outlined` 或 `scripts/material-symbols-icons-manifest.txt`）时，自动跑 `scripts/regenerate-material-symbols-subset.sh`，若 woff2 字节有变化但未 staged → 拒提交并提示 `git add src/app/fonts/material-symbols-outlined.woff2`。
+
+启用方法（fresh clone 后跑一次）：
+
+```bash
+cp framework/templates/pre-commit-hook.sh .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+```
+
+**Bypass（仅紧急情况）：** `git commit --no-verify` —— 不建议；CI 仍会用反向 case 兜底（`tests/integration/material-symbols-coverage.test.ts` case #7）。
+
+---
+
 ## 10. 下一步
 
 - 读 [docs/dev/architecture.md](./architecture.md) 了解架构
