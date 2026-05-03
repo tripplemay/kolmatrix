@@ -23,7 +23,10 @@ const baseAsset = {
 describe("AssetCard", () => {
   it("renders title + product name + variant index + status dot", () => {
     render(<AssetCard asset={baseAsset} isSelected={false} onSelect={() => {}} />);
-    expect(screen.getByText("Welcome Email v1")).toBeInTheDocument();
+    // BL-026-F006.A — title strips trailing ` v\d+` to avoid the
+    // duplication with the v{n} of {total} footer; aria-label keeps
+    // the original full name for screen reader continuity.
+    expect(screen.getByText("Welcome Email")).toBeInTheDocument();
     expect(screen.getByText(/Honor of Kings/)).toBeInTheDocument();
     expect(screen.getByText("v1 of 3")).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Draft" })).toBeInTheDocument();
