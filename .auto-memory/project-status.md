@@ -3,15 +3,14 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔨 BL-031 Composer locale + product filter + backfill RLS hotfix — BUILDING 2026-05-04
+## 🔍 BL-031 Composer locale + product filter + backfill RLS hotfix — VERIFYING 2026-05-04
 - 触发：BL-030 部署 + backfill done 后用户报 prod /zh/outreach 选 PUBG Mobile campaign 模板列表只见系统模板
-- Phase 1 调研：4 项问题。Bug A loadAssetsForComposer locale 过滤误及 user/ai_generated；Bug B Planner BL-030 SQL backfill 绕了 dualWriteEmailTemplate → 15 条 ai_generated 无 email_template 镜像（FK 隐患未爆）；Bug C composer 不按 selectedCampaign auto-productFilter；Bug D BL-030 backfill 脚本 scanProducts withPlatformAdmin RLS 不解 product 表
-- **Bug B 已 Planner 在 BL-031 启动前 SQL ops 修补** — 15 条镜像入 email_template，FK 安全
-- 4 features 全 generator：F001 Bug A locale OR 切分 / F002 Bug C productFilter 自动同步 / F003 Bug D scanProducts per-tenant 扫 + 新建 framework/harness/database-patterns.md / F004 handoff
-- spec docs/specs/BL-031-composer-locale-product-filter-hotfix-spec.md
-## ✅ BL-030 KB → Asset 数据通路完整迁移 — DONE 2026-05-04
-- 5/5 PASS；prod redeploy + Planner backfill 25 行入库
-- BL-031 含 BL-030 backfill 脚本 RLS 残留修复（提案从 proposed-learnings 转为本批次 F003）
+- 4 features 全 done @ c1405c7：F001 locale OR 切分 / F002 productFilter 自动同步 (useProductFilter hook) / F003 scanProducts per-tenant + ::uuid cast 修 + database-patterns.md §4 / F004 handoff
+- staging git_sha c1405c7 ✓ + scanProducts dry-run 3 product / 9+6 assets / 0 fails ✓
+- Bug B 已 Planner 在 BL-031 启动前 SQL ops 修补 — 15 条镜像入 email_template，FK 安全
+- F003 staging 二跑发现延伸 bug：existingBackfilledAsset ::uuid cast vs Product.id (cuid TEXT)，c1405c7 修。BL-030 prod 没暴露因 scanProducts 当时返 0
+- spec docs/specs/BL-031-composer-locale-product-filter-hotfix-spec.md / Reviewer L1+L2 待跑
+## ✅ BL-030 KB → Asset 数据通路完整迁移 — DONE 2026-05-04（5/5 + prod backfill 25 行；脚本 RLS 残留转入 BL-031-F003）
 ## ✅ BL-027 Asset Followup + Icon Hotfix + Framework v0.9.7 — DONE
 ## ✅ BL-025 / BL-026 — DONE 2026-05-03（ADR-011/012 lock）
 ## ✅ Framework v0.9.6 / v0.9.7 / v0.9.8 — DONE

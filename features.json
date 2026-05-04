@@ -6,7 +6,7 @@
       "title": "loadAssetsForComposer locale 过滤改 source 切分（user-owned 不受 UI locale 限）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "src/lib/assets/queries.ts loadAssetsForComposer line 363-366 改 where 构造按 spec §D1：locale 存在时用 OR 组合 [{ source: { not: 'system_seed' } }, { content: { path: ['locale'], equals: locale } }]；search/productId 过滤照旧 AND 复合；type+status 仍在 root；src/lib/assets/__tests__/queries.test.ts loadAssetsForComposer describe 块加 4 case：(1) zh locale 时 ai_generated en 行返回 + system_seed zh 返回 + system_seed en 不返回；(2) en locale 时 ai_generated en 返回 + system_seed en 返回 + system_seed zh 不返回；(3) 同时 productId='X' 过滤后只返该 product 的 ai_generated；(4) search 过滤跨 source 工作；既有 4 case (loadAssetsForComposer describe)不动；npm run lint + npx tsc --noEmit 全绿；testcontainers run 全绿。详见 spec §D1。"
     },
     {
@@ -14,7 +14,7 @@
       "title": "OutreachComposer productFilter 默认 = selectedCampaign.productId（D2）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "src/app/[locale]/(app)/outreach/OutreachComposer.tsx line 968 productFilter 初值改为 useState(selectedCampaign?.productId ?? null)；新增 useEffect 监听 selectedCampaignId 变化时同步 productFilter（仅当用户未手动修改 — 用 userTouchedFilterRef 区分）；selectedCampaign 切换后 productFilter 重置为 new productId（除非 userTouched）；测试加 src/app/[locale]/(app)/outreach/__tests__/OutreachComposer-productFilter.test.tsx 至少 4 case：(1) mount 后 productFilter === selectedCampaign.productId；(2) 切 selectedCampaignId 后 productFilter 跟着切；(3) 用户手动 setProductFilter 后切 campaign productFilter 不被自动覆盖；(4) selectedCampaign.productId 为 null 时 productFilter null 不崩；npm run lint + tsc 全绿；既有 OutreachComposer 测试不破坏。详见 spec §D2。"
     },
     {
@@ -22,7 +22,7 @@
       "title": "Backfill 脚本 scanProducts 改 per-tenant 扫 + 新建 framework/harness/database-patterns.md（D3+D4）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "scripts/migrate-product-aiassets-to-asset.ts 改：scanProducts 不再用 withPlatformAdmin，改为：(a) 一次 prisma.tenant.findMany({select:{id:true}}) 用 withPlatformAdmin（user 表/tenant 表 RLS 不阻 platform_admin） — **除非 tenant 表 RLS 也不认 is_platform_admin；若不认则改 raw $queryRaw 'SELECT id FROM tenant' 在 prisma.$transaction 内带 SET LOCAL row_security = off** （Generator 视实测调整，结果以扫到所有 tenant 为准）；(b) 对每个 tenantId 调 withTenant + 内查 product WHERE ai_assets->>'status'='ready' AND (...) 累加 ProductScanRow；(c) 累加结果返回；scripts/__tests__/migrate-product-aiassets-to-asset.test.ts 加 1 case 'multi-tenant scan'：fixture 2 tenant × 1 product 各 → scanProducts 返回 2 行；既有 4 case 不动；新建 framework/harness/database-patterns.md 含 §RLS 旁路矩阵（按 spec §D4 表格 + 决策树 'cross-tenant ops 一律走 sudo postgres'），≤80 行；npm run lint + tsc + 全测试绿。详见 spec §D3+§D4。"
     },
     {
@@ -30,7 +30,7 @@
       "title": "部署 + 验收 handoff 文档",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "Generator 在 building 完成后 progress.json generator_handoff 写完整执行报告（commit list + CI run + staging deploy git_sha + 实测验证脚本扫到 1 tenant 5 product）+ 写明 Reviewer L2 必跑：(1) staging 浏览器 /zh/outreach 选 PUBG Mobile — Season 30 → 模板自动到 3 个 email；(2) 切 product filter 全部 → 看到 15+5；(3) 切 campaign → productFilter 自动跟切；(4) Reviewer Send Test 选一个 ai_generated 模板验 batch-send.ts 不撞 FK；progress.json status 切 verifying；spec §6 部署顺序仅 redeploy + 浏览器三验（无新 backfill）。详见 spec §6。"
     }
   ]
