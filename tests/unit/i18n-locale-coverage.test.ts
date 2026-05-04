@@ -179,6 +179,13 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   // MVP-internal-demo-prep-F001: "CPI" is a marketing acronym kept
   // verbatim across locales (en/zh/ja/ko/es intentional).
   "dashboard.cpi.cpiLabel",
+  // BL-033-F004: "KOL" is the canonical industry acronym (Key Opinion
+  // Leader) kept verbatim across all 5 locales; no localized equivalent
+  // is in common use in zh/ja/ko/es marketing copy.
+  "assets.usedIn.kolFallback",
+  // BL-033-F004: "AI" tag chip — the acronym is identical to en in
+  // zh/ja/ko (Spanish localizes to "IA"). Industry-standard.
+  "assets.card.tagAi",
 ]);
 
 const en = load("en");
