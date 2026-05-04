@@ -26,7 +26,7 @@ type: project
 - BL-033/032/031/030/025-027 / v0.9.6-v0.9.10 — 不动
 ## 角色 / Backlog / 时间线
 - 默认映射（role_assignments=null）：CLI=planner+generator，Codex=evaluator
-- Backlog 19 条（含 BL-040 targetAudience required + BL-041 Dashboard PRD §4.1 三元素）+ BL-014 ja/ko/es 人工审核
-- 时间线：05-04 BL-020 → 05-05 BL-024 (A/B/C 必做) → 05-06 BL-040+BL-041 → 05-13 上线对外（不变）
+- Backlog 21 条（含 BL-034 后端深度安全 5 CRIT + BL-035 后端 11 HIGH 来自 backend-full-scan-2026-05-04 audit；BL-040/041 PRD 偏差；BL-014 ja/ko/es 人工审核）
+- 时间线：05-04 BL-020（前端安全）→ 05-05~07 BL-034（后端 5 CRIT + 3 顺带）→ 05-08~10 BL-035（后端 11 HIGH）→ 05-11 BL-024（A/B/C 必做）→ 05-12 BL-040+BL-041 → **05-13 上线对外**（紧贴）
 
 <!-- 写入规则（harness §记忆分层）：覆盖写 / ≤30 行 / 所有角色可写 / 只放 WHAT / 不重复 progress.json -->
