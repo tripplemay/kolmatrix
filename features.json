@@ -14,7 +14,7 @@
       "title": "CRIT-2 seed.ts NODE_ENV='production' 守卫 + 密码从 SEED_ADMIN_PASSWORD env 读",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "prisma/seed.ts 顶部加 if (process.env.NODE_ENV === 'production') throw new Error('[seed] Forbidden in production...')；line 13 + line 230（marketer 账户）密码常量改为 const SEED_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? 'KOLM@2026!'，无 env var 时 console.warn 一行；.env.example 加 SEED_ADMIN_PASSWORD='KOLM@2026!' 行；NODE_ENV=production npx prisma db seed 立即 throw + 错误信息含 'Forbidden in production'；NODE_ENV=development npx prisma db seed 正常完成；新增 prisma/__tests__/seed-guard.test.ts ≥2 case（prod throw + dev custom password）— 如 seed.ts 不易模块化测试，acceptance 退到 grep + manual run 两条；npm run lint + tsc + test 全绿。详见 spec §F002。"
     },
     {
