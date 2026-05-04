@@ -7,8 +7,8 @@ type: project
 - 4/4 PASS：F001 Checkbox keepMounted 删 / F002 SubstituteVariables.date 必填 + 5th mapping [DATE]→{{date}} + 3 调用站补传 / F003 AiPlaceholderViolationError per-segment validation / F004 5 messages 命名空间 + 3 components refactor + i18n 错误 toast
 - BL-032 Soft-watch 双关：S1（[DATE] token）✅ + S2（server-side validation）✅
 - L1：tsc 0 / lint 0 / 818 tests PASS / 118 files；L2：staging git_sha=e2c1832 + DB ok；CI 25322699297 全 8 jobs success
-- 待用户手工：prod redeploy + F002 backfill 1 行（spec §5.1，幂等）+ 浏览器三验（unchecked checkbox 无 ✓ / /zh/assets 全中文 / Send Test 含日期）
-- Soft-watch：S1（low）F002 prod backfill 待跑 / S2（low）ja/ko/es 机译质量入 BL-014 人审 / S3（medium）F003 prod 真 AI 触发后查 audit_log
+- prod redeploy 已落 @ 260d1e4；**F002 backfill 已 Planner 跑（1 行 Clash Royale—Signing invitation [DATE]→{{date}}，走 updateAsset mutation，dualWriteOnUpdate 自动镜像 email_template，v0.9.9 铁律 5 第二次按规矩跑数据迁移验证有效）**
+- Soft-watch 剩 2（S1 已闭环）：S2（low）ja/ko/es 机译质量入 BL-014 人审 / S3（medium）F003 prod 真 AI 触发后查 audit_log
 ## ✅ BL-032 KB AI prompt placeholder 标准化 — DONE 2026-05-04（首轮 PASS @ cc1658d；prod backfill 25 行已跑）
 ## ✅ BL-031 Composer locale + product filter — DONE 2026-05-04（首轮 PASS @ c1405c7）
 ## ✅ BL-030 KB → Asset 数据通路完整迁移 — DONE 2026-05-04
@@ -16,7 +16,7 @@ type: project
 ## ✅ BL-025 / BL-026 — DONE 2026-05-03（ADR-011/012 lock）
 ## ✅ Framework v0.9.6 / v0.9.7 / v0.9.8 / v0.9.9 — DONE
 ## 用户手工待办（按优先级）
-1. **BL-033 prod 闭环**：GH Actions Deploy to Production → SSH 跑 `npx tsx scripts/convert-bracket-tokens-to-mustache.ts --execute` → 浏览器三验
+1. **BL-033 浏览器三验**（数据已落 backfill 已跑，仅 UX 确认）：/zh/outreach unchecked checkbox 无 ✓ / /zh/assets 全中文 / Send Test 收件箱含 KOL 实名 + 日期 yyyy-mm-dd
 2. ~2026-05-09 BIx F004 staging YouTube sync 走查
 3. @next/bundle-analyzer + Lighthouse 推迟独立批次
 ## 关键决议（已 lock）
