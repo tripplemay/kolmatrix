@@ -115,11 +115,18 @@ sudo vi /opt/kolmatrix-staging/.env.staging   # 或 /opt/kolmatrix/.env.producti
 pm2 reload kolmatrix-staging --update-env     # 或 pm2 reload kolmatrix --update-env
 ```
 
-DB 已 seed？**未**。prod DB 是空壳（迁移已 apply，无业务数据）。首次登录 flow 依赖 Sarah Chen / Admin 种子；真正上线时：
+**Prod DB 当前数据状态（2026-05-04 audit 后修正）：**
+- `npm run db:seed` 仍**未跑**（系统种子模板 / Admin / Sarah Chen 等基础数据缺失）
+- 但 prod DB **已含业务数据**：5 个用户创建的 Product（Clash Royale / Pokemon Go / PUBG Mobile / Genshin Impact / Honor of Kings 全 tenant `2b1d...3d5`），Asset 表 26 条 ai_generated 邮件 + video_script（来自 BL-025 Wizard 路径 + BL-030 KB→Asset backfill），EmailTemplate 表 17 条 user-type 镜像（dual-write），Campaign / Kol_campaign 等关联表对应数据；BL-031 SQL ops 镜像 1 行 + BL-032 backfill 25 行 bracket→mustache 已合并入此体系
+
+**对外邀请客户前必须澄清：** 当前 prod DB ≠ "干净空壳"，含部分用户既有数据 + backfill 修复。如要给真客户进 demo，建议：
+1. 跑 `db:seed` 补足系统模板（10 system_seed email 已在 — 由 BL-025 migration 写入；其它种子如 Sarah Chen 等仍缺）
+2. 决定是否清掉现 5 个 tenant 的"内部测试"数据（如不影响真客户隔离则保留）
+
 ```bash
+# 运行 seed（幂等，upsert + 自然键，不会破坏现有 tenant 数据）
 ssh tripplezhou@34.180.93.185 'cd /opt/kolmatrix && npm run db:seed'
 ```
-（幂等：用 upsert + 自然键）
 
 ## 部署触发方式（F003 DoD）
 
