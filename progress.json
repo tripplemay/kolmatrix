@@ -2,7 +2,7 @@
   "status": "building",
   "user_goal": "BL-034 后端深度安全 / 数据隔离收尾批次 — prod 上线 2026-05-13 前必修。8 features 全 generator：F001 CRIT-1 DB 角色密码 migration 改造（PASSWORD NULL + deploy-prod.sh ALTER ROLE 注入 + .env.example 占位）/ F002 CRIT-2 seed.ts NODE_ENV='production' 守卫 + SEED_ADMIN_PASSWORD env / F003 CRIT-3 audit_log + event_log 加 RLS policy（v0.9.11 §database-patterns.md §8 默认模板 dogfood）+ logAudit 走 withTenant + ai-suggestions findMany +tenantId / F004 CRIT-4 embedAllKols Prisma.sql tagged + assertUuid + deleted_at 过滤 + kol_embedding_active_idx partial index + kolCosineTopKSql 同步 / F005 CRIT-5 9 max_tokens + 4 XML tag wrap + per-tenant 日成本上限（v0.9.11 §ai-action-contract.md §4 dogfood）/ F006 AI-H5 validateNoBracketPlaceholders 提 src/lib/ai/placeholder-guard.ts 共享 + email-generator + video-script-generator 同步挂 / F007 AUTH-H4 health.ts execSync cache + HEALTH_DETAIL_TOKEN 守卫 / F008 AUTH-H6+DB-H4 is_platform_admin NULLIF migration（与 BL-020 F006 CSP 同模式 1 周 staging 观察）。Definition of Done = 8 PASS + Reviewer L1+L2 + 5 user 手工待办（spec §6.1 SSH prod/staging KOLMATRIX_APP_PASSWORD + HEALTH_DETAIL_TOKEN + AI_DAILY_COST_USD_PER_TENANT_MAX + F008 1 周观察 + F003 audit_log RLS prod 验）。来源：docs/reviews/backend-full-scan-2026-05-04.md §1 (5 CRIT) + §2 AUTH-H4/H6 + AI-H5 + DB-H4。预估 2-3 day building + 0.5 day verifying。",
   "total_features": 8,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
   "current_sprint": "BL-034-backend-deep-security-and-data-isolation",
   "last_updated": "2026-05-05T01:30+0800",

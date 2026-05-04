@@ -22,7 +22,7 @@
       "title": "CRIT-3 audit_log + event_log 加 RLS policy + logAudit 走 withTenant + ai-suggestions-actions findMany +tenantId（v0.9.11 dogfood — database-patterns.md §8 默认模板）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "新建 prisma migration 20260505010000_audit_event_log_rls，含 ALTER TABLE audit_log + event_log ENABLE ROW LEVEL SECURITY + CREATE POLICY <table>_tenant_isolation USING (tenant_id IS NULL OR tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)（套 v0.9.11 §8 默认模板）；src/lib/audit/log.ts logAudit 改走 withTenant(data.tenantId, tx => tx.auditLog.create) — platform-level 事件（无 tenantId）走兜底分支 console.warn + admin client write tenant_id=NULL；src/app/[locale]/(app)/campaigns/[id]/ai-suggestions-actions.ts:64 tx.auditLog.findMany where 加 tenantId 过滤（defense-in-depth）；Generator 开工前 grep -rn 'logAudit(' src/ 列出全部调用方 + 核查 tenantId 来源，缺 tenantId 的调用方按 platform 分支；新增 tests/integration/audit-log-rls.test.ts ≥3 case via testcontainer（A 写 B 读 0；platform-level 写跨租户读 0；ai-suggestions findMany 路径跨租户读 0 即使 resourceId 命中）+ tests/integration/event-log-rls.test.ts ≥2 case；npm run lint + tsc + test 全绿；CI 全绿。详见 spec §F003 + §6.1 user 手工待办 #5。"
     },
     {
