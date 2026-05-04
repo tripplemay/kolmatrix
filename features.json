@@ -1,37 +1,69 @@
 {
-  "sprint": "BL-033-quality-followups-and-assets-i18n",
+  "sprint": "BL-020-frontend-security-hardening-and-trivial-ui",
   "features": [
     {
       "id": "F001",
-      "title": "Checkbox unchecked 视觉 hotfix（删 keepMounted + 测试 gap 补）",
+      "title": "CR-1 productId UUID 校验（normalizeProductId 加 UUID_RE）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "src/components/ui/Checkbox.tsx line 69 删 'keepMounted' 单 prop（其它不动）；src/components/ui/__tests__/Checkbox.test.tsx 加至少 2 case：(1) 'renders no glyph when unchecked-not-indeterminate' — render 不传 checked/defaultChecked/indeterminate，断言 container.textContent !contain 'check' && !contain 'remove'；(2) 'removes glyph when transitioning checked→unchecked' — 用 rerender 从 checked={true} 切到 checked={false}，断言初始 textContent 含 'check'，rerender 后不含；既有 5 case 不破坏；npm run lint + npx tsc --noEmit 全绿；测试 pool=forks 跑通。详见 spec §D1。"
+      "status": "pending",
+      "acceptance": "src/app/[locale]/(app)/knowledge-base/actions.ts normalizeProductId 函数（line 19-23）加 UUID_RE 校验：在现有 trim+length 检查后加 if (!UUID_RE.test(productId)) return null（UUID_RE 同文件 line 21 已有，复用不重定义）；既有 createProduct/updateProduct/triggerAiGeneration/deleteProduct 4 调用方已检查 !productId → 走 invalid_input 流程不需改；__tests__/actions.test.ts 加 ≥3 case：(1) valid uuid 通过；(2) 非 uuid 字符串（如 'xxx'）返 null + 上层 invalid_input；(3) 含 path traversal 字符（如 '../etc/passwd'）返 null；既有 case 不破坏；npm run lint + npx tsc --noEmit 全绿。详见 spec §F001 + D7。"
     },
     {
       "id": "F002",
-      "title": "{{date}} token 加入 SubstituteVariables + KB prompt + backfill 残留 [DATE]",
+      "title": "CR-2 AI URL 路径白名单（safeAiActionLink helper）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "src/lib/email/variable-substitute.ts SubstituteVariables interface 加 date: string 字段（必填，ISO yyyy-mm-dd）；resolve 函数无需改（已支持顶层路径 'date'）；src/lib/email/composer-data.ts 或 batch-send.ts 实际调 substituteSubjectAndBody 处补传 date = new Date().toISOString().slice(0,10)；TypeScript 编译期校验所有调用点；src/lib/email/__tests__/variable-substitute.test.ts 加 ≥2 case 覆盖 {{date}} 替换 + missing date fallback；src/lib/products/generateAiAssets.ts userMessage 现有 token 列表（spec §D1）追加 '{{date}} for the current date (formatted as yyyy-mm-dd, e.g. 2026-05-04)' 段落；scripts/convert-bracket-tokens-to-mustache.ts 扩展映射表加 '[DATE]' → '{{date}}'（第 5 个映射），既有 4 映射不动；测试加 1 case 验证 [DATE] 转换 + 既有 4 case 不变；npm test 全绿；CI 全绿。详见 spec §D2。"
+      "status": "pending",
+      "acceptance": "新建 src/lib/ai/safe-link.ts 实现 safeAiActionLink(actionLink: unknown): string 按 spec §D2 算法：拒绝非字符串 / protocol-relative '//' / 任何 'protocol:' / 不以 / 起首 / 含 '..' / 不匹配 SAFE_PATH_RE 白名单（campaigns / kols/{cuid} / assets / outreach / database / knowledge-base） → 全部 fallback 到 '/campaigns'；新建 src/lib/ai/__tests__/safe-link.test.ts ≥6 case 覆盖：valid /campaigns / valid /campaigns/{cuid} / //evil.com fallback / javascript:alert(1) fallback / /../admin fallback / 非字符串/null/undefined fallback；src/app/[locale]/(app)/campaigns/[id]/AiSuggestionsClient.tsx line 150 改 import safeAiActionLink + href={`/${locale}${safeAiActionLink(s.action_link)}`}；既有 5 个 AiSuggestionsClient 测试加 1 case 覆盖含 invalid action_link 的渲染回退；npm run lint + tsc + 测试全绿。详见 spec §D2。"
     },
     {
       "id": "F003",
-      "title": "Server-side AI 输出 placeholder validation 兜底（v0.9.9 §3 落地）",
-      "priority": "medium",
+      "title": "CR-3 dangerouslySetInnerHTML 反范式清理",
+      "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "src/lib/products/generateAiAssets.ts 新增 AiPlaceholderViolationError extends Error 类（导出）；新增 validateNoBracketPlaceholders(parsed) 内部函数，算法（spec §D3）：遍历 emailTemplates + videoScripts subject/body/title/script 全文本，对每段跑 BRACKET_RE = /\\[[A-Z][a-zA-Z ]+\\]/g 和 MUSTACHE_RE = /\\{\\{[a-z][a-zA-Z0-9_.]+\\}\\}/g；若 brackets.length>0 且 mustaches.length===0 → throw AiPlaceholderViolationError；generateAiAssets 在 parseAndValidate 后立即调 validateNoBracketPlaceholders；既有 try/catch 自然处理（writeFailure → status='failed' + audit）；不 retry；src/lib/products/__tests__/generateAiAssets.test.ts 加 3 case：(1) mock fetch 返 [Creator Name] 无 mustache → AiPlaceholderViolationError 抛出 + Product.aiAssets.status='failed' + createAsset 不调用；(2) 文本中合法字面 [Press Release] 但同时含 {{kol.name}} → 不误报，正常通过；(3) 全 mustache 输出 → 与现有路径一致；npm run lint + tsc + 测试全绿。详见 spec §D3。"
+      "status": "pending",
+      "acceptance": "src/app/[locale]/(app)/discovery/FilterSidebar.tsx line 344 删 dangerouslySetInnerHTML：Generator 读 line 340-360 上下文判断当前是 inline <style> / HTML 文本 / SVG raw 中哪一种，替换为相应 Tailwind class / styled-jsx / React children / SVG JSX；grep dangerouslySetInnerHTML in src/ 必须返回 0 行（grep -rn 'dangerouslySetInnerHTML' src）；既有 FilterSidebar 测试同步更新（如断言 inline <style> 标签存在的需移除或改为 className 检测）；视觉效果在 staging /zh/discovery 验证不变；npm run lint + tsc + 测试全绿。详见 spec §D6。"
     },
     {
       "id": "F004",
-      "title": "/assets 页 i18n 完整接入（5 messages 命名空间 + AssetsClient 重构 + 错误码联动）",
+      "title": "H-S1 SQL 注入参数化（withTenant + withPlatformAdmin set_config 重写）",
       "priority": "high",
       "executor": "generator",
-      "status": "done",
-      "acceptance": "messages/{en,zh,ja,ko,es}.json 5 文件均加 assets 命名空间，schema 按 spec §D4（page/filters/sources/types/statuses/tabs/wizard/card/welcome/toasts/errors 11 个 sub-namespace；errors 含 12 actions.ts code key）；en+zh 手填地道翻译；ja/ko/es 用 LLM 批量翻译，文件顶部 // 注释标 'BL-033-F004 machine-translated, 待 BL-014 人工审核'；src/app/[locale]/(app)/assets/AssetsClient.tsx 替换全部硬编码英文（SORT_OPTIONS / TYPE_OPTIONS / STATUS_OPTIONS / SOURCE_OPTIONS labels / Wizard 三步标题 + 按钮 / setStatusMessage 4 处 toast / aria-label / placeholder / 空状态文案 / WelcomeBanner / AssetsEmptyState 等共 60+ 处）改用 useTranslations('assets') t() 调用；handleQuickAction / handleConfirmDelete 等 result.code 处理改用 t(`errors.${result.code}`)（Q2=B 错误 toast i18n）；src/app/[locale]/(app)/assets/_panel/EditTab.tsx + UsedInTab.tsx 同步替换；既有 __tests__/*.test.tsx 测试 mock useTranslations 用 vi.mock('next-intl') 返回 identity function；npm run lint + tsc + 测试全绿；CI 全绿；不重生 visual baseline（Q4=B）。详见 spec §D4。"
+      "status": "pending",
+      "acceptance": "src/lib/db.ts line 60 withTenant 改 tx.$executeRawUnsafe(\\`SET LOCAL...\\`) 为 tx.$executeRaw\\`SELECT set_config('app.tenant_id', ${tenantId}, true)\\` 走 Prisma 参数化；line 76 withPlatformAdmin 同步改为 tx.$executeRaw\\`SELECT set_config('app.is_platform_admin', 'true', true)\\`；保留 assertUuid(tenantId, 'tenantId') 作 defense-in-depth；新增 src/lib/__tests__/db.test.ts（如不存在则建）≥3 integration case via testcontainer：(1) withTenant tenant A 写 row → 切 tenant B 读返 0（RLS 仍 enforce）；(2) withTenant 注入 attempt（如 tenantId 含 '; DROP TABLE asset --'）→ assertUuid 抛 + 不到 set_config 层；(3) withPlatformAdmin 在 user 表 RLS 旁路工作（auth credentials 流验证）；现有依赖 withTenant 的 N 多 unit/integration 测试不应被破坏（CI 全绿）；npm run lint + tsc + 测试全绿。详见 spec §D1。"
+    },
+    {
+      "id": "F005",
+      "title": "H-S2 Login rate-limit + Redis infra 全栈（ioredis + rate-limiter-flexible）",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "npm install ioredis rate-limiter-flexible（生产依赖）；新建 src/lib/redis.ts shared client 含 getRedis() singleton + pingRedis() health probe（spec §D3 30 行实现）；新建 src/lib/rate-limit.ts 含 rateLimitLogin(ip): {ok:true,remaining}|{ok:false,retryAfter}（5 attempts/60s sliding window + 5min block + Redis down fail-open + DISABLE_LOGIN_RATELIMIT escape hatch）；src/app/api/health/route.ts redis 字段从 hardcoded 'not_used' 改为 await pingRedis() 返 'ok'+latencyMs / 'error'+message；src/app/[locale]/login/actions.ts（或同等 NextAuth credentials provider 实装位置）在 bcrypt 之前调 rateLimitLogin(ip) — ip 从 next/headers x-forwarded-for 取；测试 src/lib/__tests__/rate-limit.test.ts ≥4 case via Redis testcontainer：连续 5 fail → 6th 返 retryAfter / 等 60s 重置 / Redis disconnect → fail-open / DISABLE_LOGIN_RATELIMIT=true short-circuit；src/app/[locale]/login/__tests__/actions.test.ts 加 1 集成 case 验证 rate-limit 接入；src/app/api/health/__tests__/route.test.ts fixture 改 expect redis.status 不再是 'not_used'；package.json + package-lock.json 含新依赖；npm run lint + tsc + 测试全绿；CI 全绿（注意 vitest config 已有 testcontainers 支持）；prisma generate 前置（v0.9.10 evaluator §15）。详见 spec §D3 + D8。"
+    },
+    {
+      "id": "F006",
+      "title": "H-S3 CSP enforce 切换（next.config.ts Report-Only → 强制）",
+      "priority": "medium",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "next.config.ts line 71 'Content-Security-Policy-Report-Only' 改 'Content-Security-Policy'（删 -Report-Only 后缀）；line 68 注释更新为 'CSP enforce mode (v0.9.10+ — BL-020-F006 切换 2026-05-04)'；现有 directives 数组（CSP value 内容）不动 — 仅 mode 切换；Reviewer L2 部分（不卡 1 周观察期）：staging 部署后 5min 浏览器主路径 walk（/dashboard /knowledge-base /assets /outreach /campaigns /discovery）DevTools Console 不见新 CSP violation；spec §6.3 1 周观察期作 Soft-watch 入项目状态，由用户驱动 prod redeploy 时机；npm run lint + tsc + 测试全绿（无新测试 — config 改动）。详见 spec §D4。"
+    },
+    {
+      "id": "F007",
+      "title": "UI-1 Dashboard QuickActions Campaigns 卡解禁",
+      "priority": "medium",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "src/features/dashboard/QuickActions.tsx line 25 ACTIONS 数组中 { key: 'campaigns', href: null, ... } 改为 href: '/campaigns'；既有 'disabled = a.href === null' 判据自动失效（href 非 null）；既有 disabled 时显 Coming soon tooltip 路径自然不触发；__tests__/QuickActions.test.tsx 既有 case 同步更新（如 expect campaigns 卡 disabled 改为可点击 + href 断言）；浏览器手验：/zh/dashboard 点 campaigns 卡 → 跳 /zh/campaigns（next-intl locale prefix 由路由自处理）；npm run lint + tsc + 测试全绿。详见 spec §F007 + D7。"
+    },
+    {
+      "id": "F008",
+      "title": "UI-2 demo_seed mock KOL env-var 过滤",
+      "priority": "medium",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "src/lib/kol/filters.ts buildKolWhere 函数（line 387）AND 数组追加：if (process.env.HIDE_DEMO_SEED_KOLS === 'true') and.push({ emailSource: { not: 'demo_seed' } })；位置在现有 deletedAt:null + isSuspicious:false 等基础过滤之后、search 之前；.env.example 加 HIDE_DEMO_SEED_KOLS='false' + docstring 'set to \"true\" in production to hide demo_seed mock KOLs (300 EmailLog + 10 KolCampaign 强引用，不能删 seed)'；测试 src/lib/kol/__tests__/filters.test.ts 加 ≥2 case：(1) env=true 时 where AND 含 emailSource not demo_seed；(2) env=false 时 AND 不含此条件；用户 SSH prod 加 .env.production 项 + pm2 reload --update-env 是 spec §D5 部署 step（Generator 不操作）；npm run lint + tsc + 测试全绿。详见 spec §D5。"
     }
   ]
 }
