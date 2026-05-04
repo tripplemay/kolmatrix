@@ -10,13 +10,37 @@
  *   - 4 outreach/followup/accept/decline email templates
  *
  * Re-running the seed is idempotent via `upsert` on natural keys.
- * Password for both seeded users: KOLM@2026!
+ * Password for both seeded users: SEED_ADMIN_PASSWORD env (default "KOLM@2026!").
+ *   - Local dev: leave unset, default applies + console.warn.
+ *   - Prod: NODE_ENV=production hard-throws below; do NOT seed prod.
  */
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 import { seedSystemTemplates } from "../scripts/seed-email-templates";
+
+// BL-034 F002: hard guard against accidental prod seed. Demo accounts use a
+// well-known password — running this against prod would create
+// admin@kolmatrix.local / marketer@kolmatrix.local with that password
+// instantly. If you really need to seed prod, override NODE_ENV at the
+// command line (and accept the consequences).
+if (process.env.NODE_ENV === "production") {
+  throw new Error(
+    "[seed] Forbidden in production. Seed creates demo accounts with known passwords. " +
+      "If you really need to seed prod, set NODE_ENV=development on the seed command line.",
+  );
+}
+
+// BL-034 F002: allow overriding the demo password via env var so local dev
+// teams that share a database can keep credentials out of git/history.
+const SEED_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? "KOLM@2026!";
+if (!process.env.SEED_ADMIN_PASSWORD) {
+  console.warn(
+    "[seed] Using default password 'KOLM@2026!' (no SEED_ADMIN_PASSWORD env). " +
+      "Local dev OK, do NOT commit/share.",
+  );
+}
 
 // Seed bootstraps the first tenant, so it needs to write before any
 // tenant context exists. Use the admin URL (superuser) so RLS is bypassed.
@@ -227,7 +251,7 @@ const KOLS: KolSeed[] = [
 ];
 
 async function main() {
-  const passwordHash = await bcrypt.hash("KOLM@2026!", 12);
+  const passwordHash = await bcrypt.hash(SEED_PASSWORD, 12);
 
   const tenant = await prisma.tenant.upsert({
     where: { slug: "demo" },
