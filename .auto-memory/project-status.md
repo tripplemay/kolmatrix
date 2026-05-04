@@ -3,12 +3,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔍 BL-033 质量收尾合集（Checkbox + KB pipeline + /assets i18n）— VERIFYING 2026-05-04 @ 8eed529
-- 4/4 features building done @ 8eed529；staging deployed + health 200 git_sha=8eed529 + DB ok
+## 🔍 BL-033 质量收尾合集（Checkbox + KB pipeline + /assets i18n）— VERIFYING 2026-05-04 @ e2c1832
+- 4/4 features building done @ e2c1832；staging deployed + health 200 git_sha=e2c1832 + DB ok；CI 25322699297 绿
 - F001 Checkbox keepMounted 删 + 7/7 测试 PASS；F002 SubstituteVariables.date 必填 + 3 调用站补 + scripts/convert 5th 映射 [DATE]→{{date}} 关 BL-032 S1；F003 AiPlaceholderViolationError + per-segment validation + 3 case；F004 5 messages 命名空间 + AssetsClient/EditTab/UsedInTab refactor + localizeErrorCode 错误 toast i18n + ja/ko/es 标 _machineTranslated 待 BL-014
-- 35 BL-033 单测 + 32 既有 assets action 测试全绿；npx tsc --noEmit + npm run lint 0 errors（仅 1 既有 youtube.ts 警告）
+- 35 BL-033 + 32 assets action + 16 i18n CI 守门测试全绿；tsc + lint 0 errors（仅 1 既有 youtube.ts 警告）
 - spec docs/specs/BL-033-quality-followups-and-assets-i18n-spec.md
-- 3 commits：31d47cc(F001) / 8c7271e(F002+F003) / 8eed529(F004) 已推 main，CI 触发
+- 4 commits：31d47cc(F001) / 8c7271e(F002+F003) / 8eed529(F004) / e2c1832(F004 CI 守门 fix — KOL/AI allowlist + ICU plural parity 包裹) 已推 main，CI 绿
 ## ✅ BL-032 KB AI prompt placeholder 标准化 — DONE 2026-05-04（首轮 PASS @ cc1658d；prod backfill 25 行已跑）
 - v0.9.9 铁律 5 第一次按规矩跑数据迁移验证有效（updateAsset mutation 路径，0 副作用漏洞）
 ## ✅ BL-031 Composer locale + product filter — DONE 2026-05-04（首轮 PASS @ c1405c7）
