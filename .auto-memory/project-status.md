@@ -3,12 +3,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔨 BL-032 KB AI prompt placeholder 标准化 + 历史数据 backfill — BUILDING 2026-05-04
-- 触发：BL-031 done + prod redeploy d23ef70 后用户 send test，邮件正文出现字面 [Creator Name] [Your Name] 未替换
-- Phase 1 调研：variable-substitute.ts 仅认 {{token}} Mustache；KB AI prompt 未指定规约 → AI 用方括号；prod 15/16 ai_generated emails 走 5 种方括号变体
-- D1-D4 锁定：F001 prompt 加 Mustache token 强制规约 + 禁用 [...]；F002 backfill 走 updateAsset mutation（不重蹈 BL-030 SQL ops 漏 dual-write）；[DATE]/video bracket/已发邮件/多语种 prompt 全 out of scope
-- 3 features 全 generator：F001 prompt + unit test / F002 script per-tenant + integration test / F003 handoff
+## 🧪 BL-032 KB AI prompt placeholder 标准化 + 历史数据 backfill — VERIFYING 2026-05-04 @ cc1658d
+- 3/3 features Generator done: F001 prompt + 11/11 unit test (e265d6b) / F002 backfill 脚本 + 7/7 unit test (cc1658d) / F003 staging deploy + dry-run + handoff
+- staging git_sha=cc1658d 与 main HEAD 一致；dry-run 0 candidates（staging 干净 DB；prod 15 行待部署后 backfill）
+- 等 Reviewer L1+L2：L1 单测复跑 + 代码审查；L2 staging 创建新 product 触发 Generate AI assets 验证 prompt 修生效（新 email content 含 mustache token）
 - spec docs/specs/BL-032-ai-prompt-token-fix-and-backfill-spec.md
+- 角色冲突仲裁（C 方案）：./generator.md 矩阵化（commit 1bef058）— 单元/集成 Generator 写 + Evaluator 跑；E2E/压测/审计 = Evaluator 全程
 ## ✅ BL-031 Composer locale + product filter + backfill RLS — DONE 2026-05-04（首轮 PASS @ c1405c7）
 - prod 已 redeploy d23ef70；用户 send test 验证 FK 不撞但暴露 placeholder bug → BL-032
 - 4 framework v0.9.9 候选 + 1 BL-030 SQL ops 反思 + 1 BL-032 prompt 约束 — 合并待 BL-032 done 处理
