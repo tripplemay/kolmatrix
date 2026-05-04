@@ -3,6 +3,7 @@
 import { useCallback, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui";
+import { safeAiActionLink } from "@/lib/ai/safe-link";
 
 import { generateCampaignSuggestionsAction } from "./ai-suggestions-actions";
 
@@ -147,7 +148,7 @@ export function AiSuggestionsClient({
               <p className="mt-1 text-sm font-semibold text-white">{s.title}</p>
               <p className="mt-1 text-xs text-on-surface">{s.description}</p>
               <a
-                href={`/${locale}${s.action_link.startsWith("/") ? s.action_link : "/campaigns"}`}
+                href={`/${locale}${safeAiActionLink(s.action_link)}`}
                 className="mt-2 inline-flex text-xs font-semibold text-cyan hover:underline"
                 data-testid="campaign-suggestion-link"
               >
