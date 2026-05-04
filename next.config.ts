@@ -64,11 +64,13 @@ const nextConfig: NextConfig = {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",
           },
-          // Report-Only for a one-week observation window. Next batch
-          // (BL-020) will flip this to `Content-Security-Policy` once
-          // the report log is reviewed.
+          // CSP enforce mode (v0.9.10+ — BL-020-F006 切换 2026-05-04
+          // after the F005 prod-mvp audit completed; staging will run
+          // the previous Report-Only directives unchanged for one week
+          // so any belated violation surfaces in DevTools before the
+          // next prod redeploy).
           {
-            key: "Content-Security-Policy-Report-Only",
+            key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
