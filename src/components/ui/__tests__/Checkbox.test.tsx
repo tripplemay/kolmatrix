@@ -4,6 +4,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import { Checkbox } from "../Checkbox";
 
+// BL-033-F001: keepMounted removed → Indicator renders nothing in unchecked-not-indeterminate.
+
 describe("Checkbox", () => {
   it("defaults to unchecked and fires onCheckedChange on click", async () => {
     const onCheckedChange = vi.fn();
@@ -45,6 +47,24 @@ describe("Checkbox", () => {
       <Checkbox defaultChecked aria-label="checked" />
     );
     expect(container.textContent).toContain("check");
+  });
+
+  it("renders no glyph when unchecked-not-indeterminate", () => {
+    const { container } = render(
+      <Checkbox aria-label="empty box" />
+    );
+    expect(container.textContent).not.toContain("check");
+    expect(container.textContent).not.toContain("remove");
+  });
+
+  it("removes glyph when transitioning checked→unchecked", () => {
+    const { container, rerender } = render(
+      <Checkbox checked aria-label="toggling" />
+    );
+    expect(container.textContent).toContain("check");
+    rerender(<Checkbox checked={false} aria-label="toggling" />);
+    expect(container.textContent).not.toContain("check");
+    expect(container.textContent).not.toContain("remove");
   });
 
   it("honours disabled and drops the onChange", async () => {

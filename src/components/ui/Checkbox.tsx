@@ -66,7 +66,6 @@ export const Checkbox = forwardRef<HTMLButtonElement, CheckboxProps>(
         {...aria}
       >
         <BaseCheckbox.Indicator
-          keepMounted
           className="flex h-full w-full items-center justify-center"
         >
           <span
