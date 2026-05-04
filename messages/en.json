@@ -57,7 +57,8 @@
       "requestAccessLink": "Request access",
       "errorInvalidCredentials": "Invalid email or password.",
       "errorMissingFields": "Email and password are required.",
-      "errorGeneric": "Authentication failed. Please try again."
+      "errorGeneric": "Authentication failed. Please try again.",
+      "errorRateLimited": "Too many attempts. Retry after {retryAfter}s."
     },
     "requestAccess": {
       "eyebrow": "OPERATOR PROGRAM · BY INVITE",

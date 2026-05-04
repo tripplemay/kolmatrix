@@ -57,7 +57,8 @@
       "requestAccessLink": "アクセスを申請する",
       "errorInvalidCredentials": "メールアドレスまたはパスワードが正しくありません。",
       "errorMissingFields": "メールアドレスとパスワードは必須です。",
-      "errorGeneric": "認証に失敗しました。もう一度お試しください。"
+      "errorGeneric": "認証に失敗しました。もう一度お試しください。",
+      "errorRateLimited": "試行回数が多すぎます。{retryAfter}秒後に再試行してください。"
     },
     "requestAccess": {
       "eyebrow": "オペレータープログラム · 招待制",

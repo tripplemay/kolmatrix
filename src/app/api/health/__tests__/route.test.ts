@@ -9,8 +9,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const queryRaw = vi.fn<(strings: TemplateStringsArray) => Promise<unknown>>();
 const execSyncMock = vi.fn<(cmd: string) => string>();
+const pingRedisMock = vi.fn<() => Promise<{ ok: boolean; latencyMs?: number; error?: string }>>();
 const transactionRun = vi.fn(async (fn: (tx: unknown) => unknown) =>
-  fn({ $executeRawUnsafe: vi.fn() })
+  fn({ $executeRaw: vi.fn() })
 );
 
 vi.mock("@prisma/client", () => {
@@ -24,6 +25,9 @@ vi.mock("@prisma/adapter-pg", () => {
   class PrismaPg {}
   return { PrismaPg };
 });
+vi.mock("@/lib/redis", () => ({
+  pingRedis: () => pingRedisMock(),
+}));
 vi.mock("node:child_process", () => ({
   execSync: execSyncMock,
   default: { execSync: execSyncMock },
@@ -38,6 +42,8 @@ beforeEach(() => {
   transactionRun.mockClear();
   execSyncMock.mockReset();
   execSyncMock.mockReturnValue("unithead\n");
+  pingRedisMock.mockReset();
+  pingRedisMock.mockResolvedValue({ ok: true, latencyMs: 2 });
 });
 
 describe("GET /api/health", () => {
@@ -56,7 +62,7 @@ describe("GET /api/health", () => {
     expect(body.status).toBe("healthy");
     expect(body.version).toMatch(/^\d+\.\d+\.\d+/);
     expect(body.checks.database.status).toBe("ok");
-    expect(body.checks.redis.status).toBe("not_used");
+    expect(body.checks.redis.status).toBe("ok");
     expect(body.uptime_seconds).toBeGreaterThanOrEqual(0);
     expect(() => new Date(body.timestamp).toISOString()).not.toThrow();
   });
@@ -72,6 +78,20 @@ describe("GET /api/health", () => {
     expect(body.status).toBe("unhealthy");
     expect(body.checks.database.status).toBe("error");
     expect(body.checks.database.error).toMatch(/ECONNREFUSED/);
+  });
+
+  it("returns 503 + redis.status=error when Redis ping fails", async () => {
+    queryRaw.mockResolvedValueOnce([{ "?column?": 1 }]);
+    pingRedisMock.mockResolvedValueOnce({ ok: false, error: "ETIMEDOUT" });
+    const res = await GET();
+    expect(res.status).toBe(503);
+    const body = (await res.json()) as {
+      status: string;
+      checks: { redis: { status: string; error?: string } };
+    };
+    expect(body.status).toBe("unhealthy");
+    expect(body.checks.redis.status).toBe("error");
+    expect(body.checks.redis.error).toBe("ETIMEDOUT");
   });
 
   it("falls back to GIT_SHA env when git HEAD cannot be resolved", async () => {

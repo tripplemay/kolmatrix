@@ -8,12 +8,13 @@ import { loginAction, type LoginState } from "@/app/[locale]/login/actions";
 
 const initial: LoginState = {};
 
-type LoginErrorKey = "missing_fields" | "invalid_credentials" | "generic";
+type LoginErrorKey = "missing_fields" | "invalid_credentials" | "generic" | "rate_limited";
 
 const ERROR_TO_I18N: Record<LoginErrorKey, string> = {
   missing_fields: "errorMissingFields",
   invalid_credentials: "errorInvalidCredentials",
   generic: "errorGeneric",
+  rate_limited: "errorRateLimited",
 };
 
 export function LoginForm() {
@@ -21,7 +22,12 @@ export function LoginForm() {
   const [state, formAction, pending] = useActionState(loginAction, initial);
 
   const errorKey = (state.error ?? null) as LoginErrorKey | null;
-  const errorMessage = errorKey && ERROR_TO_I18N[errorKey] ? t(ERROR_TO_I18N[errorKey]) : null;
+  const errorMessage =
+    errorKey && ERROR_TO_I18N[errorKey]
+      ? t(ERROR_TO_I18N[errorKey], {
+          retryAfter: state.retryAfter ?? 0,
+        })
+      : null;
 
   return (
     <div className="flex w-full max-w-[400px] flex-col space-y-10">

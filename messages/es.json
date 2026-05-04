@@ -57,7 +57,8 @@
       "requestAccessLink": "Solicitar acceso",
       "errorInvalidCredentials": "Correo electrónico o contraseña no válidos.",
       "errorMissingFields": "Se requieren el correo electrónico y la contraseña.",
-      "errorGeneric": "Error de autenticación. Por favor, inténtalo de nuevo."
+      "errorGeneric": "Error de autenticación. Por favor, inténtalo de nuevo.",
+      "errorRateLimited": "Demasiados intentos. Vuelve a intentarlo en {retryAfter}s."
     },
     "requestAccess": {
       "eyebrow": "PROGRAMA DE OPERADORES · POR INVITACIÓN",

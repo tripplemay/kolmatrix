@@ -1,14 +1,27 @@
 "use server";
 
 import { AuthError } from "next-auth";
+import { headers } from "next/headers";
 import { getLocale } from "next-intl/server";
 
 import { signIn } from "@/auth";
 import { isLocale, routing } from "@/i18n/routing";
+import { rateLimitLogin } from "@/lib/rate-limit";
 
 export type LoginState = {
   error?: string;
+  retryAfter?: number;
 };
+
+async function getClientIp(): Promise<string> {
+  const h = await headers();
+  const xff = h.get("x-forwarded-for");
+  if (xff) {
+    const first = xff.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  return h.get("x-real-ip")?.trim() || "unknown";
+}
 
 export async function loginAction(_prev: LoginState, formData: FormData): Promise<LoginState> {
   const email = String(formData.get("email") ?? "").trim();
@@ -16,6 +29,13 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
 
   if (!email || !password) {
     return { error: "missing_fields" };
+  }
+
+  // BL-020-F005 (H-S2): rate-limit BEFORE bcrypt — locking out at the
+  // credential check would still let an attacker pin CPU on the hash.
+  const rl = await rateLimitLogin(await getClientIp());
+  if (!rl.ok) {
+    return { error: "rate_limited", retryAfter: rl.retryAfter };
   }
 
   // BM1-F009 fix: redirect to a locale-prefixed path so the post-login

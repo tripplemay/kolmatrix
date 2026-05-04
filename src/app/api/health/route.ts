@@ -7,7 +7,8 @@
  *
  * Checks returned:
  *   - database: Prisma `SELECT 1` + round-trip latency
- *   - redis:    stub until B5 wires BullMQ (spec §F001 "BI2 期间可 stub 返回 ok")
+ *   - redis:    ioredis PING + round-trip latency (active use since
+ *               BL-020-F005 wired login rate limit on this same client)
  *
  * Auth: `/api/**` is excluded by the middleware matcher in
  * src/middleware.ts, so this endpoint is unauthenticated by design.
@@ -21,14 +22,14 @@ import packageJson from "../../../../package.json";
 import { execSync } from "node:child_process";
 
 import { prisma } from "@/lib/db";
+import { pingRedis } from "@/lib/redis";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic"; // never cache
 
 type CheckOk = { status: "ok"; latency_ms: number };
 type CheckError = { status: "error"; latency_ms: number; error: string };
-type CheckNotUsed = { status: "not_used"; note: string };
-type Check = CheckOk | CheckError | CheckNotUsed;
+type Check = CheckOk | CheckError;
 
 // Bound the DB probe so the endpoint itself stays fast even when
 // postgres is unreachable. Without this, Prisma waits on the TCP
@@ -58,12 +59,27 @@ async function checkDatabase(): Promise<CheckOk | CheckError> {
   }
 }
 
-function checkRedis(): CheckNotUsed {
-  return { status: "not_used", note: "BullMQ enables when production scale demands" };
+async function checkRedis(): Promise<CheckOk | CheckError> {
+  // BL-020-F005: Redis is now in active use (login rate limit). Probe via
+  // ioredis ping; the same client backs the rate-limiter so a healthy
+  // probe means /login's defence-in-depth layer is functional.
+  const start = performance.now();
+  const result = await pingRedis();
+  if (result.ok) {
+    return {
+      status: "ok",
+      latency_ms: result.latencyMs ?? Math.round(performance.now() - start),
+    };
+  }
+  return {
+    status: "error",
+    latency_ms: Math.round(performance.now() - start),
+    error: result.error ?? "unknown",
+  };
 }
 
 function isHealthy(checks: Record<string, Check>): boolean {
-  return Object.values(checks).every((c) => c.status === "ok" || c.status === "not_used");
+  return Object.values(checks).every((c) => c.status === "ok");
 }
 
 function resolveGitSha(): string {
@@ -83,8 +99,7 @@ function resolveGitSha(): string {
 }
 
 export async function GET(): Promise<Response> {
-  const [database] = await Promise.all([checkDatabase()]);
-  const redis = checkRedis();
+  const [database, redis] = await Promise.all([checkDatabase(), checkRedis()]);
 
   const checks: Record<string, Check> = { database, redis };
   const healthy = isHealthy(checks);
