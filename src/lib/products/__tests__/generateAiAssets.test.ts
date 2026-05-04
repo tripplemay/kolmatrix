@@ -255,6 +255,57 @@ describe("generateAiAssets — happy path (BL-030-F001)", () => {
   });
 });
 
+describe("generateAiAssets — F001 prompt instructs Mustache tokens (BL-032)", () => {
+  it("prompt 含 'Use these EXACT Mustache tokens' + AI 返回 mustache 字面 pass through 到 createAsset.content", async () => {
+    const { generateAiAssets } = await import("../generateAiAssets");
+    const fetcher = mockFetch({
+      id: "trace-mustache",
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              emailTemplates: [
+                {
+                  subject: "Hi {{kol.name}}",
+                  body: "Hi {{kol.name}}, check out {{product.name}}.\n—{{marketer.name}}",
+                },
+                { subject: "Follow {{kol.name}}", body: "Following up, {{kol.name}}." },
+                { subject: "Sign {{kol.name}}", body: "Sign now, {{kol.name}}!" },
+              ],
+              videoScripts: [
+                { title: "YT 60s", script: "..." },
+                { title: "TikTok 15s", script: "..." },
+              ],
+            }),
+          },
+        },
+      ],
+    });
+
+    await generateAiAssets(BASE_INPUT, { fetchImpl: fetcher as unknown as typeof fetch });
+
+    // Prompt verification — D1 anchor phrase + 5 token names sent to the AI.
+    const init = fetcher.mock.calls[0]![1] as RequestInit;
+    const reqBody = JSON.parse(String(init.body));
+    const promptText = String(reqBody.messages[1].content);
+    expect(promptText).toContain("Use these EXACT Mustache tokens");
+    expect(promptText).toContain("{{kol.name}}");
+    expect(promptText).toContain("{{product.name}}");
+    expect(promptText).toContain("{{product.category}}");
+    expect(promptText).toContain("{{product.usp}}");
+    expect(promptText).toContain("{{marketer.name}}");
+    expect(promptText).toContain("do not use square brackets");
+
+    // Pass-through verification — AI's mustache literals end up in createAsset.content.
+    expect(createAssetCalls).toHaveLength(5);
+    const firstEmailContent = createAssetCalls[0]!.input.content as Record<string, unknown>;
+    expect(String(firstEmailContent.subject)).toContain("{{kol.name}}");
+    expect(String(firstEmailContent.body)).toContain("{{kol.name}}");
+    expect(String(firstEmailContent.body)).toContain("{{product.name}}");
+    expect(String(firstEmailContent.body)).toContain("{{marketer.name}}");
+  });
+});
+
 describe("generateAiAssets — failure paths write a failed marker, no Asset rows", () => {
   it("env vars missing", async () => {
     delete process.env.AIGCGATEWAY_API_KEY;

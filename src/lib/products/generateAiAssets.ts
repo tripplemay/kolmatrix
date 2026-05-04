@@ -149,7 +149,15 @@ export async function generateAiAssets(
     `\nGenerate exactly:\n` +
     `- 3 email templates (initial KOL outreach / follow-up / signing invitation): each with {subject, body} in markdown.\n` +
     `- 2 video scripts (60-second YouTube promo / 15-second TikTok short): each with {title, script}.\n` +
-    `\nReturn strict JSON: { "emailTemplates": [{"subject": "...", "body": "..."}], "videoScripts": [{"title": "...", "script": "..."}] }.`;
+    `\nReturn strict JSON: { "emailTemplates": [{"subject": "...", "body": "..."}], "videoScripts": [{"title": "...", "script": "..."}] }.\n` +
+    // BL-032-F001 §D1 — substitution layer only recognizes Mustache; constrain the AI explicitly.
+    `\nUse these EXACT Mustache tokens in subject/body where personalization is needed; do not use square brackets like [Creator Name] or [Your Name] (the system substitution layer only recognizes Mustache):\n` +
+    `- {{kol.name}} for the creator/KOL recipient name\n` +
+    `- {{product.name}} for the product/game name\n` +
+    `- {{product.category}} for the product category  \n` +
+    `- {{product.usp}} for the product unique selling points\n` +
+    `- {{marketer.name}} for the sender/marketer signature\n` +
+    `\nExample: "Hi {{kol.name}}, ..." / "—{{marketer.name}}".`;
 
   const body = {
     model: DEFAULT_MODEL,
