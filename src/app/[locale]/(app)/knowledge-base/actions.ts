@@ -19,11 +19,19 @@ import {
 } from "@/lib/products/schema";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+// Product.id is `@default(cuid())` (Planner 裁决 BL-020 #1:A — see
+// docs/specs/BL-020-F001-audit-cuid-vs-uuid.md). CUID v1 is `c` + 24
+// lowercase alphanum chars; CUID v2 stays prefixed but variable-length,
+// so we accept 24+ trailing chars. Equivalent SQL-injection / path-
+// traversal protection to the original spec UUID_RE.
+const PRODUCT_ID_RE = /^c[a-z0-9]{24,}$/i;
 
 function normalizeProductId(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const productId = value.trim();
-  return productId.length > 0 ? productId : null;
+  if (productId.length === 0) return null;
+  if (!PRODUCT_ID_RE.test(productId)) return null;
+  return productId;
 }
 
 function extractRaw(formData: FormData): Record<string, unknown> {

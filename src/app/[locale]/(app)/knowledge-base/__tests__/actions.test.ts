@@ -223,4 +223,48 @@ describe("knowledge-base product actions", () => {
     expect(withTenant).not.toHaveBeenCalled();
     expect(generateAiAssets).not.toHaveBeenCalled();
   });
+
+  // ----- BL-020-F001: PRODUCT_ID_RE (CUID format) negative cases ------
+
+  it("updateProduct rejects a non-CUID productId without reaching Prisma", async () => {
+    authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
+
+    const res = await updateProduct(
+      { ok: false },
+      buildFormData({ productId: "xxx-not-a-cuid" })
+    );
+
+    expect(res).toEqual({ ok: false, error: "invalid_input" });
+    expect(withTenant).not.toHaveBeenCalled();
+  });
+
+  it("deleteProduct rejects a path-traversal productId without reaching Prisma", async () => {
+    authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
+
+    const res = await deleteProduct("../../../etc/passwd");
+
+    expect(res).toEqual({ ok: false });
+    expect(withTenant).not.toHaveBeenCalled();
+  });
+
+  it("triggerAiGeneration rejects a SQL-injection-shaped productId without reaching Prisma", async () => {
+    authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
+
+    const res = await triggerAiGeneration(
+      "cmab12cd30001g8l5h3n2q9r'; DROP TABLE product; --"
+    );
+
+    expect(res).toEqual({ ok: false, error: "unauthorized" });
+    expect(withTenant).not.toHaveBeenCalled();
+    expect(generateAiAssets).not.toHaveBeenCalled();
+  });
+
+  it("deleteProduct rejects a non-string productId (number coerced) without reaching Prisma", async () => {
+    authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
+
+    const res = await deleteProduct(12345 as unknown as string);
+
+    expect(res).toEqual({ ok: false });
+    expect(withTenant).not.toHaveBeenCalled();
+  });
 });
