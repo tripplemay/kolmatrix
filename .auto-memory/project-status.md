@@ -3,13 +3,14 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔍 BL-031 Composer locale + product filter + backfill RLS hotfix — VERIFYING 2026-05-04
-- 触发：BL-030 部署 + backfill done 后用户报 prod /zh/outreach 选 PUBG Mobile campaign 模板列表只见系统模板
-- 4 features 全 done @ c1405c7：F001 locale OR 切分 / F002 productFilter 自动同步 (useProductFilter hook) / F003 scanProducts per-tenant + ::uuid cast 修 + database-patterns.md §4 / F004 handoff
-- staging git_sha c1405c7 ✓ + scanProducts dry-run 3 product / 9+6 assets / 0 fails ✓
-- Bug B 已 Planner 在 BL-031 启动前 SQL ops 修补 — 15 条镜像入 email_template，FK 安全
-- F003 staging 二跑发现延伸 bug：existingBackfilledAsset ::uuid cast vs Product.id (cuid TEXT)，c1405c7 修。BL-030 prod 没暴露因 scanProducts 当时返 0
-- spec docs/specs/BL-031-composer-locale-product-filter-hotfix-spec.md / Reviewer L1+L2 待跑
+## ✅ BL-031 Composer locale + product filter + backfill RLS hotfix — DONE 2026-05-04（Reviewer first-round PASS @ c1405c7）
+- 4 features 全 PASS：F001 locale OR / F002 productFilter hook / F003 per-tenant + ::uuid cast 修 + database-patterns.md §4 / F004 handoff
+- L1: lint 0 / tsc 0 / 802 测试全绿 / CI 双绿；L2 staging: F001 SQL 等价验证 (AFTER_zh=6 vs BEFORE_zh=5) / 真实 Send Test sent=1（providerMessageId 38c8fbc7-...，tripplezhou@gmail.com 收件）/ FK 不撞
+- Bug B 同源 staging 1 行 orphan asset 已 Reviewer SQL ops 镜像（用户 C1b 破例授权代办 Planner ops）— 与 prod 15 行处理一致
+- Soft-watch 3 项（详见 signoff）：S1 F002 hook userTouched vs page.tsx key 重挂载并存 / S2 dualWrite/send 路径 id 翻译不对称（系统性，入 backlog）/ S3 staging email_log+1 副作用（演示前重置）
+- Framework learnings 4 项（done 阶段处理）：跨表迁移 id 翻译沉淀 / mock-only test 不抓 schema 类型不匹配 / Reviewer 越界 ops 框架澄清 / signoff 模板加 L2+ops 副作用节
+- spec docs/specs/BL-031-...-spec.md / signoff docs/test-reports/BL-031-...-signoff-2026-05-04.md
+- 待用户：GitHub Actions Deploy → main + prod 浏览器三验（spec §6 step 3）
 ## ✅ BL-030 KB → Asset 数据通路完整迁移 — DONE 2026-05-04（5/5 + prod backfill 25 行；脚本 RLS 残留转入 BL-031-F003）
 ## ✅ BL-027 Asset Followup + Icon Hotfix + Framework v0.9.7 — DONE
 ## ✅ BL-025 / BL-026 — DONE 2026-05-03（ADR-011/012 lock）
