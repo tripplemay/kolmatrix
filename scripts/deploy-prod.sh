@@ -63,6 +63,23 @@ npx prisma generate
 echo "── 6/9  prisma migrate deploy"
 npx prisma migrate deploy
 
+# F001: rotate kolmatrix_app role password on every deploy (idempotent).
+# Reads KOLMATRIX_APP_PASSWORD from .env.production via the SSH workflow's
+# `set -a; source .env.production; set +a` (added in the GH Actions step).
+# Skipped silently when the env var is empty so local-dev / first-bootstrap
+# runs don't break.
+if [ -n "${KOLMATRIX_APP_PASSWORD:-}" ]; then
+  echo "   • rotating kolmatrix_app password (idempotent)"
+  PGPASSWORD="${POSTGRES_SUPERUSER_PASSWORD:-${PGPASSWORD:-}}" psql \
+    -h "${DB_HOST:-localhost}" \
+    -U "${POSTGRES_SUPERUSER:-kolmatrix}" \
+    -d "${POSTGRES_DB:-kolmatrix}" \
+    -v "ON_ERROR_STOP=1" \
+    -c "ALTER ROLE kolmatrix_app WITH PASSWORD '$KOLMATRIX_APP_PASSWORD';"
+else
+  echo "   ⚠️  KOLMATRIX_APP_PASSWORD unset — skipping app-role password rotation"
+fi
+
 echo "── 7/9  next build"
 # Node default old-gen heap is 2 GB; the TypeScript-check pass on the
 # current codebase + Next 16 Turbopack pipeline OOMs at ~2 GB.
