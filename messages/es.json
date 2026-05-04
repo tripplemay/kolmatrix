@@ -1232,5 +1232,212 @@
       "cost": "Coste de generación: ${amount}",
       "poweredBy": "Impulsado por KOLMatrix · Insights y datos de Discovery"
     }
+  },
+  "assets": {
+    "_machineTranslated": "BL-033-F004 machine-translated, awaiting BL-014 human review",
+    "page": {
+      "actionBar": {
+        "filter": "Filtrar",
+        "noFiltersApplied": "Sin filtros aplicados",
+        "newAsset": "Nuevo activo",
+        "sortAriaLabel": "Ordenar"
+      },
+      "endOfResults": "Fin de los resultados"
+    },
+    "filters": {
+      "title": "Filtros",
+      "search": "Buscar",
+      "searchPlaceholder": "Buscar por nombre…",
+      "product": "Producto",
+      "allProducts": "Todos los productos",
+      "filterByProduct": "Filtrar por producto",
+      "productAssetCount": "{count, plural, one {# activo} other {# activos}} en este producto",
+      "type": "Tipo",
+      "moreComingSoon": "Próximamente",
+      "status": "Estado",
+      "source": "Origen",
+      "all": "Todos",
+      "showArchived": "Mostrar archivados",
+      "hideArchived": "Ocultar archivados",
+      "clearAll": "Limpiar todo",
+      "done": "Listo",
+      "removeChipAria": "Quitar filtro {label}"
+    },
+    "sort": {
+      "recent": "Reciente",
+      "name": "Nombre",
+      "type": "Tipo",
+      "used_most": "Más usados"
+    },
+    "sources": {
+      "ai_generated": "Generado por IA",
+      "user_created": "Creado por el usuario",
+      "imported": "Importado",
+      "system_seed": "Sistema"
+    },
+    "types": {
+      "email": "Correo",
+      "video_script": "Vídeo"
+    },
+    "statuses": {
+      "draft": "Borrador",
+      "published": "Publicado",
+      "archived": "Archivado"
+    },
+    "tabs": {
+      "preview": "Vista previa",
+      "edit": "Editar",
+      "used_in": "Usado en"
+    },
+    "view": {
+      "gridAria": "vista de cuadrícula",
+      "listAria": "vista de lista"
+    },
+    "wizard": {
+      "title": "Generar activo",
+      "stepIndicator": "Paso {step} de 3",
+      "step1": {
+        "product": "Producto",
+        "productPlaceholder": "Elige un producto",
+        "productAria": "Selector de producto del asistente",
+        "type": "Tipo"
+      },
+      "step2": {
+        "steeringLabel": "Indicación guía (opcional)",
+        "steeringPlaceholder": "Indica al modelo cómo debe sonar el activo: tono, audiencia, ganchos…",
+        "steeringAria": "Indicación guía",
+        "presetsHeading": "Preajustes rápidos",
+        "presets": {
+          "affordability": "Resaltar precio asequible",
+          "genZ": "Para audiencia Gen Z",
+          "formal": "Tono formal",
+          "casual": "Tono casual",
+          "urgency": "Resaltar urgencia",
+          "socialProof": "Usar prueba social"
+        }
+      },
+      "step3": {
+        "generating": "Generando con claude-haiku-4.5…",
+        "errorPrefix": "Generación fallida:",
+        "errorSuffix": ". Intenta editar la indicación o regenerar.",
+        "backToStep2": "← Volver al paso 2 — editar indicación",
+        "tryAgain": "Reintentar",
+        "draftPreview": "Vista previa del borrador",
+        "noSubject": "(sin asunto)",
+        "noTitle": "(sin título)"
+      },
+      "buttons": {
+        "cancel": "Cancelar",
+        "back": "← Atrás",
+        "continue": "Continuar →",
+        "generate": "Generar →",
+        "discard": "Descartar",
+        "regenerate": "Regenerar",
+        "regenerating": "Regenerando…",
+        "saveAndEdit": "Guardar y editar"
+      },
+      "discardCostHint": "Descarta el borrador generado (coste ~$0.001-0.005)"
+    },
+    "regenerate": {
+      "title": "Regenerar variante",
+      "body": "Se añadirá una nueva variante al árbol de este activo — la original se mantiene.",
+      "steeringPlaceholder": "Indicación guía opcional — ¿qué debería ser diferente?",
+      "steeringAria": "Indicación guía de regeneración",
+      "noProductError": "El activo no tiene producto asociado — no se puede regenerar.",
+      "cancel": "Cancelar",
+      "regenerate": "Regenerar",
+      "regenerating": "Regenerando…"
+    },
+    "card": {
+      "tagAi": "IA",
+      "tagUser": "Usuario",
+      "noProduct": "Sin producto"
+    },
+    "deleteDialog": {
+      "title": "¿Eliminar activo?",
+      "bodyPrefix": "Eliminar permanentemente ",
+      "bodySuffix": "? Esta acción no se puede deshacer.",
+      "cancel": "Cancelar",
+      "delete": "Eliminar"
+    },
+    "drawer": {
+      "closeAria": "Cerrar panel de detalle",
+      "moreActionsAria": "Más acciones",
+      "menu": {
+        "edit": "Editar",
+        "saveAsVariant": "Guardar como nueva variante",
+        "duplicate": "Duplicar",
+        "archive": "Archivar",
+        "restore": "Restaurar",
+        "delete": "Eliminar"
+      },
+      "footer": {
+        "saveToLibrary": "Guardar en mi biblioteca",
+        "regenerate": "Regenerar",
+        "sendToOutreach": "Enviar a Outreach"
+      }
+    },
+    "preview": {
+      "placeholder": "La vista previa completa aparecerá cuando F005 conecte el render.",
+      "variantSwitcherTriggerLabel": "v{current} de {total}",
+      "variantSwitcherCurrent": "actual",
+      "variantSwitcherRestore": "Restaurar"
+    },
+    "welcome": {
+      "bannerTitle": "Bienvenido — KOLMatrix incluye estas 5 plantillas.",
+      "bannerSubtitle": "Explora, copia una a tu biblioteca o genera la tuya desde un producto.",
+      "bannerCta": "Generar desde producto",
+      "emptyTitle": "Ningún activo coincide con este filtro",
+      "emptySubtitle": "Ajusta el filtro o genera un nuevo activo desde un producto.",
+      "emptyCta": "Generar desde producto"
+    },
+    "toasts": {
+      "duplicated": "Duplicado",
+      "duplicateFailed": "Duplicación fallida — {error}",
+      "archived": "Archivado",
+      "archiveFailed": "Archivado fallido — {error}",
+      "deleted": "Eliminado",
+      "deleteFailed": "Eliminación fallida — {error}",
+      "loadMoreFailed": "No se pudo cargar más — {error}"
+    },
+    "edit": {
+      "subject": "Asunto",
+      "body": "Cuerpo",
+      "localePrefix": "Idioma:",
+      "insertVariable": "Insertar variable",
+      "insertVariableAria": "Insertar {token}",
+      "title": "Título",
+      "script": "Guion",
+      "preview": "Vista previa",
+      "edit": "Editar",
+      "reset": "Restablecer",
+      "saveAsVariant": "Guardar como nueva versión",
+      "save": "Guardar",
+      "saving": "Guardando…"
+    },
+    "usedIn": {
+      "loading": "Cargando referencias…",
+      "empty": "Aún no se ha usado.",
+      "summaryPrefix": "Usado ",
+      "summaryMiddle": " {count, plural, one {vez} other {veces}} en ",
+      "summarySuffix": " envíos recientes.",
+      "campaignFallback": "Campaña",
+      "kolFallback": "KOL",
+      "directSend": "Envío directo"
+    },
+    "errors": {
+      "unauthorized": "Sesión expirada — vuelve a iniciar sesión.",
+      "validation": "Entrada inválida — revisa los campos resaltados.",
+      "asset_not_found": "Activo no encontrado — actualiza y vuelve a intentar.",
+      "product_not_found": "Producto no encontrado.",
+      "parent_not_found": "Activo principal no encontrado.",
+      "ai_config": "Pasarela de IA no configurada — contacta al administrador.",
+      "ai_timeout": "Tiempo de espera agotado en IA — vuelve a intentar.",
+      "ai_response": "Error de respuesta de IA — vuelve a intentar.",
+      "ai_parse": "La IA devolvió contenido mal formado — vuelve a intentar.",
+      "internal": "Algo salió mal — vuelve a intentar.",
+      "content_invalid": "Contenido del activo inválido — revisa el formato.",
+      "depth_exceeded": "Se alcanzó el límite de profundidad de variantes para este árbol."
+    }
   }
 }

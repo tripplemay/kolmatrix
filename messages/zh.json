@@ -1232,5 +1232,211 @@
         "status": "状态"
       }
     }
+  },
+  "assets": {
+    "page": {
+      "actionBar": {
+        "filter": "筛选",
+        "noFiltersApplied": "未应用筛选",
+        "newAsset": "新建素材",
+        "sortAriaLabel": "排序"
+      },
+      "endOfResults": "已到达列表底部"
+    },
+    "filters": {
+      "title": "筛选",
+      "search": "搜索",
+      "searchPlaceholder": "按名称搜索…",
+      "product": "产品",
+      "allProducts": "全部产品",
+      "filterByProduct": "按产品筛选",
+      "productAssetCount": "此产品下共有 # 条素材",
+      "type": "类型",
+      "moreComingSoon": "更多即将上线",
+      "status": "状态",
+      "source": "来源",
+      "all": "全部",
+      "showArchived": "显示已归档",
+      "hideArchived": "隐藏已归档",
+      "clearAll": "清空",
+      "done": "完成",
+      "removeChipAria": "移除筛选 {label}"
+    },
+    "sort": {
+      "recent": "最近",
+      "name": "名称",
+      "type": "类型",
+      "used_most": "使用最多"
+    },
+    "sources": {
+      "ai_generated": "AI 生成",
+      "user_created": "用户创建",
+      "imported": "导入",
+      "system_seed": "系统模板"
+    },
+    "types": {
+      "email": "邮件",
+      "video_script": "视频"
+    },
+    "statuses": {
+      "draft": "草稿",
+      "published": "已发布",
+      "archived": "已归档"
+    },
+    "tabs": {
+      "preview": "预览",
+      "edit": "编辑",
+      "used_in": "使用情况"
+    },
+    "view": {
+      "gridAria": "网格视图",
+      "listAria": "列表视图"
+    },
+    "wizard": {
+      "title": "生成素材",
+      "stepIndicator": "第 {step} 步，共 3 步",
+      "step1": {
+        "product": "产品",
+        "productPlaceholder": "选择一个产品",
+        "productAria": "向导产品选择器",
+        "type": "类型"
+      },
+      "step2": {
+        "steeringLabel": "引导提示（选填）",
+        "steeringPlaceholder": "告诉模型你希望素材呈现的语气、受众与亮点……",
+        "steeringAria": "引导提示",
+        "presetsHeading": "快速预设",
+        "presets": {
+          "affordability": "强调高性价比",
+          "genZ": "面向 Z 世代受众",
+          "formal": "正式语气",
+          "casual": "轻松语气",
+          "urgency": "突出紧迫感",
+          "socialProof": "使用社交证明"
+        }
+      },
+      "step3": {
+        "generating": "正在使用 claude-haiku-4.5 生成…",
+        "errorPrefix": "生成失败：",
+        "errorSuffix": "。请尝试调整提示或重新生成。",
+        "backToStep2": "← 返回第 2 步 — 编辑提示",
+        "tryAgain": "重试",
+        "draftPreview": "草稿预览",
+        "noSubject": "（无主题）",
+        "noTitle": "（无标题）"
+      },
+      "buttons": {
+        "cancel": "取消",
+        "back": "← 返回",
+        "continue": "继续 →",
+        "generate": "生成 →",
+        "discard": "丢弃",
+        "regenerate": "重新生成",
+        "regenerating": "重新生成中…",
+        "saveAndEdit": "保存并编辑"
+      },
+      "discardCostHint": "丢弃已生成草稿（本次成本约 $0.001-0.005）"
+    },
+    "regenerate": {
+      "title": "重新生成版本",
+      "body": "将在此素材的版本树中新增一个变体——原版保持不变。",
+      "steeringPlaceholder": "选填引导提示——希望调整哪些方面？",
+      "steeringAria": "重新生成引导提示",
+      "noProductError": "此素材未关联产品——无法重新生成。",
+      "cancel": "取消",
+      "regenerate": "重新生成",
+      "regenerating": "重新生成中…"
+    },
+    "card": {
+      "tagAi": "AI",
+      "tagUser": "用户",
+      "noProduct": "无关联产品"
+    },
+    "deleteDialog": {
+      "title": "删除素材？",
+      "bodyPrefix": "永久删除 ",
+      "bodySuffix": "？此操作不可撤销。",
+      "cancel": "取消",
+      "delete": "删除"
+    },
+    "drawer": {
+      "closeAria": "关闭详情面板",
+      "moreActionsAria": "更多操作",
+      "menu": {
+        "edit": "编辑",
+        "saveAsVariant": "另存为新版本",
+        "duplicate": "复制",
+        "archive": "归档",
+        "restore": "恢复",
+        "delete": "删除"
+      },
+      "footer": {
+        "saveToLibrary": "保存到我的库",
+        "regenerate": "重新生成",
+        "sendToOutreach": "发送到触达"
+      }
+    },
+    "preview": {
+      "placeholder": "完整内容预览将在 F005 接入后展示。",
+      "variantSwitcherTriggerLabel": "v{current}，共 {total}",
+      "variantSwitcherCurrent": "当前",
+      "variantSwitcherRestore": "恢复"
+    },
+    "welcome": {
+      "bannerTitle": "欢迎——KOLMatrix 内置 5 套模板。",
+      "bannerSubtitle": "浏览、复制到我的库，或基于产品生成你自己的素材。",
+      "bannerCta": "基于产品生成",
+      "emptyTitle": "没有匹配此筛选的素材",
+      "emptySubtitle": "调整筛选条件，或基于产品生成新素材。",
+      "emptyCta": "基于产品生成"
+    },
+    "toasts": {
+      "duplicated": "已复制",
+      "duplicateFailed": "复制失败 — {error}",
+      "archived": "已归档",
+      "archiveFailed": "归档失败 — {error}",
+      "deleted": "已删除",
+      "deleteFailed": "删除失败 — {error}",
+      "loadMoreFailed": "加载更多失败 — {error}"
+    },
+    "edit": {
+      "subject": "主题",
+      "body": "正文",
+      "localePrefix": "语言：",
+      "insertVariable": "插入变量",
+      "insertVariableAria": "插入 {token}",
+      "title": "标题",
+      "script": "脚本",
+      "preview": "预览",
+      "edit": "编辑",
+      "reset": "重置",
+      "saveAsVariant": "另存为新版本",
+      "save": "保存",
+      "saving": "保存中…"
+    },
+    "usedIn": {
+      "loading": "正在加载引用记录…",
+      "empty": "尚未使用。",
+      "summaryPrefix": "已使用 ",
+      "summaryMiddle": " 次，覆盖最近 ",
+      "summarySuffix": " 次发送。",
+      "campaignFallback": "活动",
+      "kolFallback": "KOL",
+      "directSend": "直接发送"
+    },
+    "errors": {
+      "unauthorized": "会话已过期 — 请重新登录。",
+      "validation": "输入无效 — 请检查标红字段。",
+      "asset_not_found": "素材未找到 — 请刷新后重试。",
+      "product_not_found": "产品不存在。",
+      "parent_not_found": "未找到父级素材。",
+      "ai_config": "AI 网关未配置 — 请联系管理员。",
+      "ai_timeout": "AI 超时 — 请重试。",
+      "ai_response": "AI 响应错误 — 请重试。",
+      "ai_parse": "AI 返回内容格式异常 — 请重试。",
+      "internal": "出错啦 — 请稍后重试。",
+      "content_invalid": "素材内容无效 — 请检查格式。",
+      "depth_exceeded": "此版本树已达深度上限。"
+    }
   }
 }

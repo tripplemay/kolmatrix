@@ -22,6 +22,7 @@
  * navigating away with unsaved changes triggers a confirm prompt.
  */
 import { useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 
 import { ChipButton, GhostButton, GradientButton } from "@/components/common";
 import { Input } from "@/components/ui/Input";
@@ -128,6 +129,7 @@ function EmailEditor({
   setError,
   onSaved,
 }: EditorPropsBase<EmailDraft>) {
+  const t = useTranslations("assets");
   const [draft, setDraft] = useState<EmailDraft>(initial);
   const bodyRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -195,7 +197,7 @@ function EmailEditor({
   return (
     <div className="flex flex-col gap-4">
       <label className="flex flex-col gap-1.5">
-        <span className="text-xs font-medium text-on-surface-variant">Subject</span>
+        <span className="text-xs font-medium text-on-surface-variant">{t("edit.subject")}</span>
         <Input
           value={draft.subject}
           onChange={(e) => setDraft((d) => ({ ...d, subject: e.currentTarget.value }))}
@@ -204,9 +206,9 @@ function EmailEditor({
 
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-on-surface-variant">Body</span>
+          <span className="text-xs font-medium text-on-surface-variant">{t("edit.body")}</span>
           <span className="text-[10px] text-on-surface-variant">
-            Locale: <code>{draft.locale}</code>
+            {t("edit.localePrefix")} <code>{draft.locale}</code>
           </span>
         </div>
         <textarea
@@ -220,11 +222,15 @@ function EmailEditor({
 
       <div className="flex flex-col gap-1.5">
         <span className="text-xs font-medium text-on-surface-variant">
-          Insert variable
+          {t("edit.insertVariable")}
         </span>
         <div className="flex flex-wrap gap-2">
           {EMAIL_VAR_TOKENS.map((token) => (
-            <ChipButton key={token} onClick={() => insertToken(token)} aria-label={`Insert ${token}`}>
+            <ChipButton
+              key={token}
+              onClick={() => insertToken(token)}
+              aria-label={t("edit.insertVariableAria", { token })}
+            >
               {token}
             </ChipButton>
           ))}
@@ -239,14 +245,14 @@ function EmailEditor({
           onClick={() => setDraft(initial)}
           disabled={!dirty || isPending}
         >
-          Reset
+          {t("edit.reset")}
         </GhostButton>
         <div className="flex gap-2">
           <GhostButton size="sm" onClick={handleSaveAsVariant} disabled={!dirty || isPending}>
-            Save as new version
+            {t("edit.saveAsVariant")}
           </GhostButton>
           <GradientButton onClick={handleSave} disabled={!dirty || isPending}>
-            {isPending ? "Saving…" : "Save"}
+            {isPending ? t("edit.saving") : t("edit.save")}
           </GradientButton>
         </div>
       </div>
@@ -263,6 +269,7 @@ function VideoEditor({
   setError,
   onSaved,
 }: EditorPropsBase<VideoDraft>) {
+  const t = useTranslations("assets");
   const [draft, setDraft] = useState<VideoDraft>(initial);
   const [previewMode, setPreviewMode] = useState(false);
 
@@ -309,7 +316,7 @@ function VideoEditor({
   return (
     <div className="flex flex-col gap-4">
       <label className="flex flex-col gap-1.5">
-        <span className="text-xs font-medium text-on-surface-variant">Title</span>
+        <span className="text-xs font-medium text-on-surface-variant">{t("edit.title")}</span>
         <Input
           value={draft.title}
           onChange={(e) => setDraft((d) => ({ ...d, title: e.currentTarget.value }))}
@@ -318,9 +325,9 @@ function VideoEditor({
 
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-on-surface-variant">Script</span>
+          <span className="text-xs font-medium text-on-surface-variant">{t("edit.script")}</span>
           <ChipButton pressed={previewMode} onClick={() => setPreviewMode((p) => !p)}>
-            {previewMode ? "Edit" : "Preview"}
+            {previewMode ? t("edit.edit") : t("edit.preview")}
           </ChipButton>
         </div>
         {previewMode ? (
@@ -345,14 +352,14 @@ function VideoEditor({
           onClick={() => setDraft(initial)}
           disabled={!dirty || isPending}
         >
-          Reset
+          {t("edit.reset")}
         </GhostButton>
         <div className="flex gap-2">
           <GhostButton size="sm" onClick={handleSaveAsVariant} disabled={!dirty || isPending}>
-            Save as new version
+            {t("edit.saveAsVariant")}
           </GhostButton>
           <GradientButton onClick={handleSave} disabled={!dirty || isPending}>
-            {isPending ? "Saving…" : "Save"}
+            {isPending ? t("edit.saving") : t("edit.save")}
           </GradientButton>
         </div>
       </div>

@@ -1232,5 +1232,212 @@
       "cost": "生成コスト: ${amount}",
       "poweredBy": "AIはKOLMatrixニューラルディスカバリーエンジンによって提供されています"
     }
+  },
+  "assets": {
+    "_machineTranslated": "BL-033-F004 machine-translated, awaiting BL-014 human review",
+    "page": {
+      "actionBar": {
+        "filter": "フィルター",
+        "noFiltersApplied": "フィルター未適用",
+        "newAsset": "新規アセット",
+        "sortAriaLabel": "並べ替え"
+      },
+      "endOfResults": "結果の末尾"
+    },
+    "filters": {
+      "title": "フィルター",
+      "search": "検索",
+      "searchPlaceholder": "名前で検索…",
+      "product": "製品",
+      "allProducts": "すべての製品",
+      "filterByProduct": "製品で絞り込み",
+      "productAssetCount": "この製品には # 件のアセットがあります",
+      "type": "種類",
+      "moreComingSoon": "近日公開",
+      "status": "ステータス",
+      "source": "ソース",
+      "all": "すべて",
+      "showArchived": "アーカイブを表示",
+      "hideArchived": "アーカイブを非表示",
+      "clearAll": "すべてクリア",
+      "done": "完了",
+      "removeChipAria": "{label} フィルターを削除"
+    },
+    "sort": {
+      "recent": "最近",
+      "name": "名前",
+      "type": "種類",
+      "used_most": "最も使用"
+    },
+    "sources": {
+      "ai_generated": "AI 生成",
+      "user_created": "ユーザー作成",
+      "imported": "インポート",
+      "system_seed": "システム"
+    },
+    "types": {
+      "email": "メール",
+      "video_script": "動画"
+    },
+    "statuses": {
+      "draft": "下書き",
+      "published": "公開済み",
+      "archived": "アーカイブ済み"
+    },
+    "tabs": {
+      "preview": "プレビュー",
+      "edit": "編集",
+      "used_in": "使用箇所"
+    },
+    "view": {
+      "gridAria": "グリッドビュー",
+      "listAria": "リストビュー"
+    },
+    "wizard": {
+      "title": "アセットを生成",
+      "stepIndicator": "ステップ {step} / 3",
+      "step1": {
+        "product": "製品",
+        "productPlaceholder": "製品を選択",
+        "productAria": "ウィザード製品セレクター",
+        "type": "種類"
+      },
+      "step2": {
+        "steeringLabel": "誘導プロンプト（任意）",
+        "steeringPlaceholder": "アセットのトーン、ターゲット層、フックをモデルに伝えてください…",
+        "steeringAria": "誘導プロンプト",
+        "presetsHeading": "クイックプリセット",
+        "presets": {
+          "affordability": "手頃な価格を強調",
+          "genZ": "Z 世代向け",
+          "formal": "フォーマルなトーン",
+          "casual": "カジュアルなトーン",
+          "urgency": "緊急性を強調",
+          "socialProof": "社会的証明を活用"
+        }
+      },
+      "step3": {
+        "generating": "claude-haiku-4.5 で生成中…",
+        "errorPrefix": "生成失敗:",
+        "errorSuffix": "。プロンプトを編集するか、再生成してください。",
+        "backToStep2": "← ステップ 2 に戻る — プロンプトを編集",
+        "tryAgain": "再試行",
+        "draftPreview": "下書きプレビュー",
+        "noSubject": "（件名なし）",
+        "noTitle": "（タイトルなし）"
+      },
+      "buttons": {
+        "cancel": "キャンセル",
+        "back": "← 戻る",
+        "continue": "続行 →",
+        "generate": "生成 →",
+        "discard": "破棄",
+        "regenerate": "再生成",
+        "regenerating": "再生成中…",
+        "saveAndEdit": "保存して編集"
+      },
+      "discardCostHint": "生成された下書きを破棄します（コスト約 $0.001-0.005）"
+    },
+    "regenerate": {
+      "title": "バリアントを再生成",
+      "body": "このアセットのツリーに新しいバリアントが追加されます — 元のものは残ります。",
+      "steeringPlaceholder": "任意の誘導プロンプト — 何を変更しますか？",
+      "steeringAria": "再生成誘導プロンプト",
+      "noProductError": "このアセットには製品が紐付いていないため、再生成できません。",
+      "cancel": "キャンセル",
+      "regenerate": "再生成",
+      "regenerating": "再生成中…"
+    },
+    "card": {
+      "tagAi": "AI",
+      "tagUser": "ユーザー",
+      "noProduct": "製品なし"
+    },
+    "deleteDialog": {
+      "title": "アセットを削除しますか？",
+      "bodyPrefix": "永久に削除します: ",
+      "bodySuffix": "。この操作は取り消せません。",
+      "cancel": "キャンセル",
+      "delete": "削除"
+    },
+    "drawer": {
+      "closeAria": "詳細パネルを閉じる",
+      "moreActionsAria": "その他のアクション",
+      "menu": {
+        "edit": "編集",
+        "saveAsVariant": "新しいバリアントとして保存",
+        "duplicate": "複製",
+        "archive": "アーカイブ",
+        "restore": "復元",
+        "delete": "削除"
+      },
+      "footer": {
+        "saveToLibrary": "ライブラリに保存",
+        "regenerate": "再生成",
+        "sendToOutreach": "Outreach に送信"
+      }
+    },
+    "preview": {
+      "placeholder": "完全なコンテンツのプレビューは F005 で接続されます。",
+      "variantSwitcherTriggerLabel": "v{current} / {total}",
+      "variantSwitcherCurrent": "現在",
+      "variantSwitcherRestore": "復元"
+    },
+    "welcome": {
+      "bannerTitle": "ようこそ — これら 5 つのテンプレートが KOLMatrix に同梱されています。",
+      "bannerSubtitle": "閲覧、ライブラリへのコピー、または製品からの独自生成が可能です。",
+      "bannerCta": "製品から生成",
+      "emptyTitle": "このフィルターに一致するアセットはありません",
+      "emptySubtitle": "フィルターを調整するか、製品から新しいアセットを生成してください。",
+      "emptyCta": "製品から生成"
+    },
+    "toasts": {
+      "duplicated": "複製しました",
+      "duplicateFailed": "複製に失敗しました — {error}",
+      "archived": "アーカイブしました",
+      "archiveFailed": "アーカイブに失敗しました — {error}",
+      "deleted": "削除しました",
+      "deleteFailed": "削除に失敗しました — {error}",
+      "loadMoreFailed": "追加読み込みに失敗しました — {error}"
+    },
+    "edit": {
+      "subject": "件名",
+      "body": "本文",
+      "localePrefix": "ロケール:",
+      "insertVariable": "変数を挿入",
+      "insertVariableAria": "{token} を挿入",
+      "title": "タイトル",
+      "script": "スクリプト",
+      "preview": "プレビュー",
+      "edit": "編集",
+      "reset": "リセット",
+      "saveAsVariant": "新しいバージョンとして保存",
+      "save": "保存",
+      "saving": "保存中…"
+    },
+    "usedIn": {
+      "loading": "参照を読み込み中…",
+      "empty": "未使用。",
+      "summaryPrefix": "使用回数: ",
+      "summaryMiddle": " 回 / 直近 ",
+      "summarySuffix": " 件の送信。",
+      "campaignFallback": "キャンペーン",
+      "kolFallback": "KOL",
+      "directSend": "直接送信"
+    },
+    "errors": {
+      "unauthorized": "セッションが切れました — 再ログインしてください。",
+      "validation": "入力が無効です — ハイライトされた項目を確認してください。",
+      "asset_not_found": "アセットが見つかりません — 更新して再試行してください。",
+      "product_not_found": "製品が見つかりません。",
+      "parent_not_found": "親アセットが見つかりません。",
+      "ai_config": "AI ゲートウェイが未設定です — 管理者に連絡してください。",
+      "ai_timeout": "AI がタイムアウトしました — 再試行してください。",
+      "ai_response": "AI レスポンスエラー — 再試行してください。",
+      "ai_parse": "AI から不正なコンテンツが返されました — 再試行してください。",
+      "internal": "問題が発生しました — 再試行してください。",
+      "content_invalid": "アセットコンテンツが無効です — フォーマットを確認してください。",
+      "depth_exceeded": "このツリーのバリアント深度上限に達しました。"
+    }
   }
 }

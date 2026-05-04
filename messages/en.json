@@ -1232,5 +1232,211 @@
         "status": "Status"
       }
     }
+  },
+  "assets": {
+    "page": {
+      "actionBar": {
+        "filter": "Filter",
+        "noFiltersApplied": "No filters applied",
+        "newAsset": "New Asset",
+        "sortAriaLabel": "Sort"
+      },
+      "endOfResults": "End of results"
+    },
+    "filters": {
+      "title": "Filters",
+      "search": "Search",
+      "searchPlaceholder": "Search by name…",
+      "product": "Product",
+      "allProducts": "All products",
+      "filterByProduct": "Filter by product",
+      "productAssetCount": "{count, plural, one {# asset} other {# assets}} in this product",
+      "type": "Type",
+      "moreComingSoon": "More coming",
+      "status": "Status",
+      "source": "Source",
+      "all": "All",
+      "showArchived": "Show archived",
+      "hideArchived": "Hide archived",
+      "clearAll": "Clear all",
+      "done": "Done",
+      "removeChipAria": "Remove {label} filter"
+    },
+    "sort": {
+      "recent": "Recent",
+      "name": "Name",
+      "type": "Type",
+      "used_most": "Most used"
+    },
+    "sources": {
+      "ai_generated": "AI Generated",
+      "user_created": "User Created",
+      "imported": "Imported",
+      "system_seed": "System"
+    },
+    "types": {
+      "email": "Email",
+      "video_script": "Video"
+    },
+    "statuses": {
+      "draft": "Draft",
+      "published": "Published",
+      "archived": "Archived"
+    },
+    "tabs": {
+      "preview": "Preview",
+      "edit": "Edit",
+      "used_in": "Used in"
+    },
+    "view": {
+      "gridAria": "grid view",
+      "listAria": "list view"
+    },
+    "wizard": {
+      "title": "Generate asset",
+      "stepIndicator": "Step {step} of 3",
+      "step1": {
+        "product": "Product",
+        "productPlaceholder": "Choose a product",
+        "productAria": "Wizard product picker",
+        "type": "Type"
+      },
+      "step2": {
+        "steeringLabel": "Steering prompt (optional)",
+        "steeringPlaceholder": "Tell the model how this asset should land — tone, audience, hooks…",
+        "steeringAria": "Steering prompt",
+        "presetsHeading": "Quick presets",
+        "presets": {
+          "affordability": "Emphasize affordability",
+          "genZ": "For Gen Z audience",
+          "formal": "Formal tone",
+          "casual": "Casual tone",
+          "urgency": "Highlight urgency",
+          "socialProof": "Use social proof"
+        }
+      },
+      "step3": {
+        "generating": "Generating with claude-haiku-4.5…",
+        "errorPrefix": "Generation failed:",
+        "errorSuffix": ". Try editing your prompt or regenerating.",
+        "backToStep2": "← Back to Step 2 — edit prompt",
+        "tryAgain": "Try again",
+        "draftPreview": "Draft preview",
+        "noSubject": "(no subject)",
+        "noTitle": "(no title)"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "back": "← Back",
+        "continue": "Continue →",
+        "generate": "Generate →",
+        "discard": "Discard",
+        "regenerate": "Regenerate",
+        "regenerating": "Regenerating…",
+        "saveAndEdit": "Save & Edit"
+      },
+      "discardCostHint": "Discards generated draft (this cost ~$0.001-0.005)"
+    },
+    "regenerate": {
+      "title": "Regenerate variant",
+      "body": "A new variant will be added to this asset's tree — the original stays put.",
+      "steeringPlaceholder": "Optional steering prompt — what should be different?",
+      "steeringAria": "Regenerate steering prompt",
+      "noProductError": "Asset has no product attached — cannot regenerate.",
+      "cancel": "Cancel",
+      "regenerate": "Regenerate",
+      "regenerating": "Regenerating…"
+    },
+    "card": {
+      "tagAi": "AI",
+      "tagUser": "User",
+      "noProduct": "No product"
+    },
+    "deleteDialog": {
+      "title": "Delete asset?",
+      "bodyPrefix": "Permanently delete ",
+      "bodySuffix": "? This action cannot be undone.",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "drawer": {
+      "closeAria": "Close detail panel",
+      "moreActionsAria": "More actions",
+      "menu": {
+        "edit": "Edit",
+        "saveAsVariant": "Save as new variant",
+        "duplicate": "Duplicate",
+        "archive": "Archive",
+        "restore": "Restore",
+        "delete": "Delete"
+      },
+      "footer": {
+        "saveToLibrary": "Save to my library",
+        "regenerate": "Regenerate",
+        "sendToOutreach": "Send to Outreach"
+      }
+    },
+    "preview": {
+      "placeholder": "Preview will surface once F005 wires the full content render.",
+      "variantSwitcherTriggerLabel": "v{current} of {total}",
+      "variantSwitcherCurrent": "current",
+      "variantSwitcherRestore": "Restore"
+    },
+    "welcome": {
+      "bannerTitle": "Welcome — these 5 templates ship with KOLMatrix.",
+      "bannerSubtitle": "Browse, copy one to your library, or generate your own from a product.",
+      "bannerCta": "Generate from product",
+      "emptyTitle": "No assets match this filter",
+      "emptySubtitle": "Adjust the filter or generate a new asset from a product.",
+      "emptyCta": "Generate from product"
+    },
+    "toasts": {
+      "duplicated": "Duplicated",
+      "duplicateFailed": "Duplicate failed — {error}",
+      "archived": "Archived",
+      "archiveFailed": "Archive failed — {error}",
+      "deleted": "Deleted",
+      "deleteFailed": "Delete failed — {error}",
+      "loadMoreFailed": "Failed to load more — {error}"
+    },
+    "edit": {
+      "subject": "Subject",
+      "body": "Body",
+      "localePrefix": "Locale:",
+      "insertVariable": "Insert variable",
+      "insertVariableAria": "Insert {token}",
+      "title": "Title",
+      "script": "Script",
+      "preview": "Preview",
+      "edit": "Edit",
+      "reset": "Reset",
+      "saveAsVariant": "Save as new version",
+      "save": "Save",
+      "saving": "Saving…"
+    },
+    "usedIn": {
+      "loading": "Loading references…",
+      "empty": "Not used yet.",
+      "summaryPrefix": "Used ",
+      "summaryMiddle": " {count, plural, one {time} other {times}} across ",
+      "summarySuffix": " recent sends.",
+      "campaignFallback": "Campaign",
+      "kolFallback": "KOL",
+      "directSend": "Direct send"
+    },
+    "errors": {
+      "unauthorized": "Session expired — please sign in again.",
+      "validation": "Invalid input — check the highlighted fields.",
+      "asset_not_found": "Asset not found — refresh and try again.",
+      "product_not_found": "Product not found.",
+      "parent_not_found": "Parent asset not found.",
+      "ai_config": "AI gateway not configured — contact admin.",
+      "ai_timeout": "AI timed out — please try again.",
+      "ai_response": "AI response error — please try again.",
+      "ai_parse": "AI returned malformed content — please try again.",
+      "internal": "Something went wrong — please retry.",
+      "content_invalid": "Asset content is invalid — please check formatting.",
+      "depth_exceeded": "Variant depth limit reached for this tree."
+    }
   }
 }

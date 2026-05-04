@@ -12,7 +12,7 @@
  * marketer can pivot directly into the related surface.
  */
 import Link from "next/link";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import type { AssetCard, UsedInSummary } from "@/lib/assets/types";
@@ -25,6 +25,7 @@ interface UsedInTabProps {
 
 export function UsedInTab({ asset }: UsedInTabProps) {
   const locale = useLocale();
+  const t = useTranslations("assets");
   const [summary, setSummary] = useState<UsedInSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,18 +46,21 @@ export function UsedInTab({ asset }: UsedInTabProps) {
     return <p className="text-xs text-red-400">{error}</p>;
   }
   if (summary === null) {
-    return <p className="text-sm text-on-surface-variant">Loading references…</p>;
+    return <p className="text-sm text-on-surface-variant">{t("usedIn.loading")}</p>;
   }
   if (summary.total === 0) {
-    return <p className="text-sm text-on-surface-variant">Not used yet.</p>;
+    return <p className="text-sm text-on-surface-variant">{t("usedIn.empty")}</p>;
   }
 
+  const recentCount = Math.min(summary.recent.length, 20);
   return (
     <div className="flex flex-col gap-3">
       <p className="text-xs text-on-surface-variant">
-        Used <strong className="text-on-surface">{summary.total}</strong> time
-        {summary.total === 1 ? "" : "s"} across {Math.min(summary.recent.length, 20)} recent
-        sends.
+        {t("usedIn.summaryPrefix")}
+        <strong className="text-on-surface">{summary.total}</strong>
+        {t("usedIn.summaryMiddle", { count: summary.total })}
+        {recentCount}
+        {t("usedIn.summarySuffix")}
       </p>
       <ul className="flex flex-col gap-2">
         {summary.recent.map((row) => (
@@ -71,10 +75,10 @@ export function UsedInTab({ asset }: UsedInTabProps) {
                   className="text-cyan/80 hover:text-cyan hover:underline truncate"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {row.campaignName ?? "Campaign"}
+                  {row.campaignName ?? t("usedIn.campaignFallback")}
                 </Link>
               ) : (
-                <span className="text-on-surface">Direct send</span>
+                <span className="text-on-surface">{t("usedIn.directSend")}</span>
               )}
               {row.kolId ? (
                 <>
@@ -84,7 +88,7 @@ export function UsedInTab({ asset }: UsedInTabProps) {
                     className="text-cyan/80 hover:text-cyan hover:underline truncate"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {row.kolName ?? "KOL"}
+                    {row.kolName ?? t("usedIn.kolFallback")}
                   </Link>
                 </>
               ) : null}

@@ -1232,5 +1232,212 @@
       "cost": "생성 비용: ${amount}",
       "poweredBy": "KOLMatrix Neural Discovery Engine으로 구동되는 AI"
     }
+  },
+  "assets": {
+    "_machineTranslated": "BL-033-F004 machine-translated, awaiting BL-014 human review",
+    "page": {
+      "actionBar": {
+        "filter": "필터",
+        "noFiltersApplied": "적용된 필터 없음",
+        "newAsset": "새 에셋",
+        "sortAriaLabel": "정렬"
+      },
+      "endOfResults": "결과 끝"
+    },
+    "filters": {
+      "title": "필터",
+      "search": "검색",
+      "searchPlaceholder": "이름으로 검색…",
+      "product": "제품",
+      "allProducts": "모든 제품",
+      "filterByProduct": "제품으로 필터링",
+      "productAssetCount": "이 제품에 # 개의 에셋이 있습니다",
+      "type": "유형",
+      "moreComingSoon": "더 많은 항목 출시 예정",
+      "status": "상태",
+      "source": "소스",
+      "all": "전체",
+      "showArchived": "보관됨 표시",
+      "hideArchived": "보관됨 숨기기",
+      "clearAll": "모두 지우기",
+      "done": "완료",
+      "removeChipAria": "{label} 필터 제거"
+    },
+    "sort": {
+      "recent": "최근",
+      "name": "이름",
+      "type": "유형",
+      "used_most": "가장 많이 사용"
+    },
+    "sources": {
+      "ai_generated": "AI 생성",
+      "user_created": "사용자 작성",
+      "imported": "가져옴",
+      "system_seed": "시스템"
+    },
+    "types": {
+      "email": "이메일",
+      "video_script": "비디오"
+    },
+    "statuses": {
+      "draft": "초안",
+      "published": "게시됨",
+      "archived": "보관됨"
+    },
+    "tabs": {
+      "preview": "미리보기",
+      "edit": "편집",
+      "used_in": "사용처"
+    },
+    "view": {
+      "gridAria": "그리드 보기",
+      "listAria": "리스트 보기"
+    },
+    "wizard": {
+      "title": "에셋 생성",
+      "stepIndicator": "{step}단계 / 3단계",
+      "step1": {
+        "product": "제품",
+        "productPlaceholder": "제품을 선택하세요",
+        "productAria": "위자드 제품 선택기",
+        "type": "유형"
+      },
+      "step2": {
+        "steeringLabel": "지시 프롬프트(선택)",
+        "steeringPlaceholder": "에셋의 톤, 청중, 후크를 모델에게 알려주세요…",
+        "steeringAria": "지시 프롬프트",
+        "presetsHeading": "빠른 프리셋",
+        "presets": {
+          "affordability": "경제성 강조",
+          "genZ": "Z세대 대상",
+          "formal": "격식 있는 톤",
+          "casual": "캐주얼한 톤",
+          "urgency": "긴급성 강조",
+          "socialProof": "사회적 증명 활용"
+        }
+      },
+      "step3": {
+        "generating": "claude-haiku-4.5로 생성 중…",
+        "errorPrefix": "생성 실패:",
+        "errorSuffix": ". 프롬프트를 편집하거나 다시 생성해 보세요.",
+        "backToStep2": "← 2단계로 돌아가기 — 프롬프트 편집",
+        "tryAgain": "다시 시도",
+        "draftPreview": "초안 미리보기",
+        "noSubject": "(제목 없음)",
+        "noTitle": "(제목 없음)"
+      },
+      "buttons": {
+        "cancel": "취소",
+        "back": "← 뒤로",
+        "continue": "계속 →",
+        "generate": "생성 →",
+        "discard": "버리기",
+        "regenerate": "다시 생성",
+        "regenerating": "다시 생성 중…",
+        "saveAndEdit": "저장 후 편집"
+      },
+      "discardCostHint": "생성된 초안 버리기 (비용 약 $0.001-0.005)"
+    },
+    "regenerate": {
+      "title": "변형 다시 생성",
+      "body": "이 에셋의 트리에 새로운 변형이 추가되며, 원본은 그대로 유지됩니다.",
+      "steeringPlaceholder": "선택적 지시 프롬프트 — 무엇을 변경할까요?",
+      "steeringAria": "다시 생성 지시 프롬프트",
+      "noProductError": "이 에셋은 제품이 연결되어 있지 않아 다시 생성할 수 없습니다.",
+      "cancel": "취소",
+      "regenerate": "다시 생성",
+      "regenerating": "다시 생성 중…"
+    },
+    "card": {
+      "tagAi": "AI",
+      "tagUser": "사용자",
+      "noProduct": "제품 없음"
+    },
+    "deleteDialog": {
+      "title": "에셋을 삭제할까요?",
+      "bodyPrefix": "영구적으로 삭제: ",
+      "bodySuffix": "? 이 작업은 취소할 수 없습니다.",
+      "cancel": "취소",
+      "delete": "삭제"
+    },
+    "drawer": {
+      "closeAria": "상세 패널 닫기",
+      "moreActionsAria": "추가 작업",
+      "menu": {
+        "edit": "편집",
+        "saveAsVariant": "새 변형으로 저장",
+        "duplicate": "복제",
+        "archive": "보관",
+        "restore": "복원",
+        "delete": "삭제"
+      },
+      "footer": {
+        "saveToLibrary": "내 라이브러리에 저장",
+        "regenerate": "다시 생성",
+        "sendToOutreach": "Outreach로 전송"
+      }
+    },
+    "preview": {
+      "placeholder": "전체 콘텐츠 미리보기는 F005에서 연결됩니다.",
+      "variantSwitcherTriggerLabel": "v{current} / {total}",
+      "variantSwitcherCurrent": "현재",
+      "variantSwitcherRestore": "복원"
+    },
+    "welcome": {
+      "bannerTitle": "환영합니다 — KOLMatrix에 5개의 템플릿이 기본 제공됩니다.",
+      "bannerSubtitle": "탐색하고 라이브러리에 복사하거나 제품에서 직접 생성해 보세요.",
+      "bannerCta": "제품에서 생성",
+      "emptyTitle": "이 필터와 일치하는 에셋이 없습니다",
+      "emptySubtitle": "필터를 조정하거나 제품에서 새 에셋을 생성하세요.",
+      "emptyCta": "제품에서 생성"
+    },
+    "toasts": {
+      "duplicated": "복제됨",
+      "duplicateFailed": "복제 실패 — {error}",
+      "archived": "보관됨",
+      "archiveFailed": "보관 실패 — {error}",
+      "deleted": "삭제됨",
+      "deleteFailed": "삭제 실패 — {error}",
+      "loadMoreFailed": "더 불러오기 실패 — {error}"
+    },
+    "edit": {
+      "subject": "제목",
+      "body": "본문",
+      "localePrefix": "로케일:",
+      "insertVariable": "변수 삽입",
+      "insertVariableAria": "{token} 삽입",
+      "title": "제목",
+      "script": "스크립트",
+      "preview": "미리보기",
+      "edit": "편집",
+      "reset": "초기화",
+      "saveAsVariant": "새 버전으로 저장",
+      "save": "저장",
+      "saving": "저장 중…"
+    },
+    "usedIn": {
+      "loading": "참조 로드 중…",
+      "empty": "아직 사용되지 않음.",
+      "summaryPrefix": "사용 횟수: ",
+      "summaryMiddle": " 회, 최근 ",
+      "summarySuffix": " 건의 발송에 걸쳐.",
+      "campaignFallback": "캠페인",
+      "kolFallback": "KOL",
+      "directSend": "직접 발송"
+    },
+    "errors": {
+      "unauthorized": "세션 만료 — 다시 로그인해 주세요.",
+      "validation": "잘못된 입력 — 강조된 항목을 확인하세요.",
+      "asset_not_found": "에셋을 찾을 수 없음 — 새로고침 후 재시도하세요.",
+      "product_not_found": "제품을 찾을 수 없습니다.",
+      "parent_not_found": "상위 에셋을 찾을 수 없습니다.",
+      "ai_config": "AI 게이트웨이 미설정 — 관리자에게 문의하세요.",
+      "ai_timeout": "AI 응답 시간 초과 — 다시 시도하세요.",
+      "ai_response": "AI 응답 오류 — 다시 시도하세요.",
+      "ai_parse": "AI가 잘못된 콘텐츠를 반환했습니다 — 다시 시도하세요.",
+      "internal": "문제가 발생했습니다 — 재시도하세요.",
+      "content_invalid": "에셋 콘텐츠가 잘못되었습니다 — 형식을 확인하세요.",
+      "depth_exceeded": "이 트리의 변형 깊이 한도에 도달했습니다."
+    }
   }
 }

@@ -14,7 +14,7 @@
  */
 import { useEffect, useMemo, useReducer, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Menu } from "@base-ui/react/menu";
 
 import {
@@ -77,36 +77,75 @@ import {
 // pane VariantSwitcher dropdown (only visible when totalVariants > 1).
 type AssetTabId = "preview" | "edit" | "used_in";
 
-const TAB_CONFIG: ReadonlyArray<{ id: AssetTabId; label: string; disabled?: boolean }> = [
-  { id: "preview", label: "Preview" },
-  { id: "edit", label: "Edit" },
-  { id: "used_in", label: "Used in" },
+// BL-033-F004 — keep value-only constants, render i18n labels at runtime.
+const TAB_IDS: ReadonlyArray<AssetTabId> = ["preview", "edit", "used_in"];
+
+const TYPE_OPTIONS: ReadonlyArray<{ value: AssetType; icon: string }> = [
+  { value: "email", icon: "mail" },
+  { value: "video_script", icon: "movie" },
 ];
 
-const SORT_LABEL: Record<(typeof ASSET_LIST_SORTS)[number], string> = {
-  recent: "Recent",
-  name: "Name",
-  type: "Type",
-  used_most: "Most used",
-};
+const STATUS_VALUES: ReadonlyArray<AssetStatus> = ["draft", "published", "archived"];
 
-const TYPE_OPTIONS: ReadonlyArray<{ value: AssetType; label: string; icon: string }> = [
-  { value: "email", label: "Email", icon: "mail" },
-  { value: "video_script", label: "Video", icon: "movie" },
+const SOURCE_VALUES: ReadonlyArray<AssetSource> = [
+  "ai_generated",
+  "user_created",
+  "imported",
+  "system_seed",
 ];
 
-const STATUS_OPTIONS: ReadonlyArray<{ value: AssetStatus; label: string }> = [
-  { value: "draft", label: "Draft" },
-  { value: "published", label: "Published" },
-  { value: "archived", label: "Archived" },
-];
+// BL-033-F004 — preset key list; labels resolved via t() at render time.
+const STEERING_PRESET_KEYS = [
+  "affordability",
+  "genZ",
+  "formal",
+  "casual",
+  "urgency",
+  "socialProof",
+] as const;
 
-const SOURCE_OPTIONS: ReadonlyArray<{ value: AssetSource; label: string }> = [
-  { value: "ai_generated", label: "AI Generated" },
-  { value: "user_created", label: "User Created" },
-  { value: "imported", label: "Imported" },
-  { value: "system_seed", label: "System" },
-];
+type StatusErrorCode =
+  | "unauthorized"
+  | "validation"
+  | "asset_not_found"
+  | "product_not_found"
+  | "parent_not_found"
+  | "ai_config"
+  | "ai_timeout"
+  | "ai_response"
+  | "ai_parse"
+  | "internal"
+  | "content_invalid"
+  | "depth_exceeded";
+
+const KNOWN_ERROR_CODES: ReadonlySet<string> = new Set([
+  "unauthorized",
+  "validation",
+  "asset_not_found",
+  "product_not_found",
+  "parent_not_found",
+  "ai_config",
+  "ai_timeout",
+  "ai_response",
+  "ai_parse",
+  "internal",
+  "content_invalid",
+  "depth_exceeded",
+]);
+
+// BL-033-F004 — actions.ts returns `{ok:false, error, code}`. Map the
+// code to a localized message when present; otherwise fall back to the
+// raw `error` field (server-side English, but better than blank).
+function localizeErrorCode(
+  t: ReturnType<typeof useTranslations>,
+  code: string | undefined,
+  fallback: string
+): string {
+  if (code && KNOWN_ERROR_CODES.has(code)) {
+    return t(`errors.${code as StatusErrorCode}`);
+  }
+  return fallback;
+}
 
 interface Props {
   initialListing: AssetListResult;
@@ -120,6 +159,7 @@ interface Props {
 
 export function AssetsClient({ initialListing, products, mode = "normal" }: Props) {
   const router = useRouter();
+  const t = useTranslations("assets");
   const { state, update, clearAll } = useAssetFilters();
   const [, startTransition] = useTransition();
   // BL-026-F002 — drawer-mode means selection auto-opens the right
@@ -195,10 +235,10 @@ export function AssetsClient({ initialListing, products, mode = "normal" }: Prop
       const result = await duplicateAssetAction({ assetId: asset.id });
       setPendingActionAssetId(null);
       if (!result.ok) {
-        setStatusMessage(`Duplicate failed — ${result.error}`);
+        setStatusMessage(t("toasts.duplicateFailed", { error: localizeErrorCode(t, result.code, result.error) }));
         return;
       }
-      setStatusMessage("Duplicated");
+      setStatusMessage(t("toasts.duplicated"));
       handleAssetMutated(result.asset.id);
       return;
     }
@@ -207,10 +247,10 @@ export function AssetsClient({ initialListing, products, mode = "normal" }: Prop
       const result = await archiveAssetAction({ assetId: asset.id });
       setPendingActionAssetId(null);
       if (!result.ok) {
-        setStatusMessage(`Archive failed — ${result.error}`);
+        setStatusMessage(t("toasts.archiveFailed", { error: localizeErrorCode(t, result.code, result.error) }));
         return;
       }
-      setStatusMessage("Archived");
+      setStatusMessage(t("toasts.archived"));
       handleAssetMutated(asset.id);
       return;
     }
@@ -227,10 +267,10 @@ export function AssetsClient({ initialListing, products, mode = "normal" }: Prop
     const result = await deleteAssetAction({ assetId: id });
     setPendingActionAssetId(null);
     if (!result.ok) {
-      setStatusMessage(`Delete failed — ${result.error}`);
+      setStatusMessage(t("toasts.deleteFailed", { error: localizeErrorCode(t, result.code, result.error) }));
       return;
     }
-    setStatusMessage("Deleted");
+    setStatusMessage(t("toasts.deleted"));
     if (selectedAssetId === id) {
       setSelectedAssetId(null);
       setActiveTab("preview");
@@ -272,7 +312,11 @@ export function AssetsClient({ initialListing, products, mode = "normal" }: Prop
             setCursor(result.page.nextCursor);
             setHasMore(result.page.hasMore);
           } else {
-            setStatusMessage(`Failed to load more — ${result.error}`);
+            setStatusMessage(
+              t("toasts.loadMoreFailed", {
+                error: localizeErrorCode(t, result.code, result.error),
+              })
+            );
             setHasMore(false);
           }
         })();
@@ -281,7 +325,7 @@ export function AssetsClient({ initialListing, products, mode = "normal" }: Prop
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasMore, cursor, loadingMore, state]);
+  }, [hasMore, cursor, loadingMore, state, t]);
 
   const productOptions = useMemo(
     () => products.map((p) => ({ value: p.id, label: p.name })),
@@ -298,27 +342,24 @@ export function AssetsClient({ initialListing, products, mode = "normal" }: Prop
         onRemove: () => update({ productId: null }),
       });
     }
-    for (const t of state.types ?? []) {
-      const opt = TYPE_OPTIONS.find((o) => o.value === t);
+    for (const tp of state.types ?? []) {
       chips.push({
-        key: `type-${t}`,
-        label: opt?.label ?? t,
-        onRemove: () => update({ types: (state.types ?? []).filter((x) => x !== t) }),
+        key: `type-${tp}`,
+        label: t(`types.${tp}`),
+        onRemove: () => update({ types: (state.types ?? []).filter((x) => x !== tp) }),
       });
     }
     if (state.status) {
-      const opt = STATUS_OPTIONS.find((o) => o.value === state.status);
       chips.push({
         key: `status-${state.status}`,
-        label: opt?.label ?? state.status,
+        label: t(`statuses.${state.status}`),
         onRemove: () => update({ status: null }),
       });
     }
     for (const s of state.sources ?? []) {
-      const opt = SOURCE_OPTIONS.find((o) => o.value === s);
       chips.push({
         key: `source-${s}`,
-        label: opt?.label ?? s,
+        label: t(`sources.${s}`),
         onRemove: () => update({ sources: (state.sources ?? []).filter((x) => x !== s) }),
       });
     }
@@ -330,7 +371,7 @@ export function AssetsClient({ initialListing, products, mode = "normal" }: Prop
       });
     }
     return chips;
-  }, [products, state, update]);
+  }, [products, state, update, t]);
 
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-1 flex-col overflow-hidden p-6">
@@ -412,16 +453,19 @@ export function AssetsClient({ initialListing, products, mode = "normal" }: Prop
             <DialogBackdrop />
             <DialogPanel size="sm">
               <DialogHeader>
-                <DialogTitle>Delete asset?</DialogTitle>
+                <DialogTitle>{t("deleteDialog.title")}</DialogTitle>
               </DialogHeader>
               <div className="flex flex-col gap-3 px-5 py-4">
                 <p className="text-on-surface text-sm">
-                  Permanently delete <span className="font-medium">{confirmDelete.asset.name}</span>?
-                  This action cannot be undone.
+                  {t("deleteDialog.bodyPrefix")}
+                  <span className="font-medium">{confirmDelete.asset.name}</span>
+                  {t("deleteDialog.bodySuffix")}
                 </p>
                 <div className="flex justify-end gap-2 pt-1">
-                  <SecondaryButton onClick={() => setConfirmDelete(null)}>Cancel</SecondaryButton>
-                  <GradientButton onClick={handleConfirmDelete}>Delete</GradientButton>
+                  <SecondaryButton onClick={() => setConfirmDelete(null)}>
+                    {t("deleteDialog.cancel")}
+                  </SecondaryButton>
+                  <GradientButton onClick={handleConfirmDelete}>{t("deleteDialog.delete")}</GradientButton>
                 </div>
               </div>
             </DialogPanel>
@@ -465,6 +509,7 @@ function AssetsFilterDialog({
   productOptions,
   productCount,
 }: FilterDialogProps) {
+  const t = useTranslations("assets");
   const [searchDraft, setSearchDraft] = useState(state.search ?? "");
   const [searchSyncedTo, setSearchSyncedTo] = useState(state.search ?? "");
   const [showArchived, setShowArchived] = useState(state.status === "archived");
@@ -493,12 +538,9 @@ function AssetsFilterDialog({
     return () => window.clearTimeout(handle);
   }, [searchDraft, state.search, update]);
 
-  const visibleStatusOptions = showArchived
-    ? [{ value: null as AssetStatus | null, label: "All" }, ...STATUS_OPTIONS]
-    : [
-        { value: null as AssetStatus | null, label: "All" },
-        ...STATUS_OPTIONS.filter((o) => o.value !== "archived"),
-      ];
+  const visibleStatusValues: ReadonlyArray<AssetStatus | null> = showArchived
+    ? [null, ...STATUS_VALUES]
+    : [null, ...STATUS_VALUES.filter((s) => s !== "archived")];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -506,13 +548,13 @@ function AssetsFilterDialog({
         <DialogBackdrop />
         <DialogPanel size="md" data-testid="assets-filter-dialog">
           <DialogHeader>
-            <DialogTitle>Filters</DialogTitle>
+            <DialogTitle>{t("filters.title")}</DialogTitle>
           </DialogHeader>
           <div className="custom-scrollbar flex max-h-[70vh] flex-col gap-5 overflow-y-auto px-5 py-4">
             <div className="flex flex-col gap-2">
-              <span className="text-on-surface-variant text-xs font-medium">Search</span>
+              <span className="text-on-surface-variant text-xs font-medium">{t("filters.search")}</span>
               <Input
-                placeholder="Search by name…"
+                placeholder={t("filters.searchPlaceholder")}
                 value={searchDraft}
                 onChange={(e) => setSearchDraft(e.currentTarget.value)}
                 data-testid="assets-filter-search"
@@ -520,23 +562,23 @@ function AssetsFilterDialog({
             </div>
 
             <div className="flex flex-col gap-3">
-              <span className="text-on-surface-variant text-xs font-medium">Product</span>
+              <span className="text-on-surface-variant text-xs font-medium">{t("filters.product")}</span>
               <Combobox
                 items={productOptions}
                 value={state.productId ?? null}
                 onChange={(next) => update({ productId: next })}
-                placeholder="All products"
-                ariaLabel="Filter by product"
+                placeholder={t("filters.allProducts")}
+                ariaLabel={t("filters.filterByProduct")}
               />
               {state.productId ? (
                 <span className="text-on-surface-variant text-[10px]">
-                  {productCount} {productCount === 1 ? "asset" : "assets"} in this product
+                  {t("filters.productAssetCount", { count: productCount })}
                 </span>
               ) : null}
             </div>
 
             <div className="flex flex-col gap-3">
-              <span className="text-on-surface-variant text-xs font-medium">Type</span>
+              <span className="text-on-surface-variant text-xs font-medium">{t("filters.type")}</span>
               <div className="flex flex-wrap gap-2">
                 {TYPE_OPTIONS.map((opt) => {
                   const pressed = (state.types ?? []).includes(opt.value);
@@ -547,7 +589,7 @@ function AssetsFilterDialog({
                       onClick={() => {
                         const cur = state.types ?? [];
                         const next = pressed
-                          ? cur.filter((t) => t !== opt.value)
+                          ? cur.filter((tp) => tp !== opt.value)
                           : [...cur, opt.value];
                         update({ types: next });
                       }}
@@ -555,26 +597,27 @@ function AssetsFilterDialog({
                       <span className="material-symbols-outlined text-[14px]" aria-hidden>
                         {opt.icon}
                       </span>
-                      {opt.label}
+                      {t(`types.${opt.value}`)}
                     </ChipButton>
                   );
                 })}
                 <ChipButton disabled aria-disabled className="opacity-50">
-                  More coming
+                  {t("filters.moreComingSoon")}
                 </ChipButton>
               </div>
             </div>
 
             <div className="flex flex-col gap-3">
-              <span className="text-on-surface-variant text-xs font-medium">Status</span>
+              <span className="text-on-surface-variant text-xs font-medium">{t("filters.status")}</span>
               <div className="flex flex-col gap-2">
-                {visibleStatusOptions.map((opt) => {
-                  const checked = (opt.value ?? null) === (state.status ?? null);
+                {visibleStatusValues.map((value) => {
+                  const checked = (value ?? null) === (state.status ?? null);
+                  const label = value === null ? t("filters.all") : t(`statuses.${value}`);
                   return (
                     <button
-                      key={String(opt.value)}
+                      key={String(value)}
                       type="button"
-                      onClick={() => update({ status: opt.value })}
+                      onClick={() => update({ status: value })}
                       aria-pressed={checked}
                       className={cn(
                         "group flex items-center gap-3 text-sm transition-colors",
@@ -591,7 +634,7 @@ function AssetsFilterDialog({
                       >
                         {checked ? <span className="bg-cyan h-2 w-2 rounded-full" /> : null}
                       </span>
-                      {opt.label}
+                      {label}
                     </button>
                   );
                 })}
@@ -600,29 +643,29 @@ function AssetsFilterDialog({
                   onClick={() => setShowArchived((s) => !s)}
                   className="self-start"
                 >
-                  {showArchived ? "Hide archived" : "Show archived"}
+                  {showArchived ? t("filters.hideArchived") : t("filters.showArchived")}
                 </GhostButton>
               </div>
             </div>
 
             <div className="flex flex-col gap-3 pb-2">
-              <span className="text-on-surface-variant text-xs font-medium">Source</span>
+              <span className="text-on-surface-variant text-xs font-medium">{t("filters.source")}</span>
               <div className="flex flex-wrap gap-2">
-                {SOURCE_OPTIONS.map((opt) => {
-                  const pressed = (state.sources ?? []).includes(opt.value);
+                {SOURCE_VALUES.map((value) => {
+                  const pressed = (state.sources ?? []).includes(value);
                   return (
                     <ChipButton
-                      key={opt.value}
+                      key={value}
                       pressed={pressed}
                       onClick={() => {
                         const cur = state.sources ?? [];
                         const next = pressed
-                          ? cur.filter((s) => s !== opt.value)
-                          : [...cur, opt.value];
+                          ? cur.filter((s) => s !== value)
+                          : [...cur, value];
                         update({ sources: next });
                       }}
                     >
-                      {opt.label}
+                      {t(`sources.${value}`)}
                     </ChipButton>
                   );
                 })}
@@ -630,8 +673,8 @@ function AssetsFilterDialog({
             </div>
           </div>
           <DialogFooter>
-            <GhostButton onClick={clearAll}>Clear all</GhostButton>
-            <GradientButton onClick={() => onOpenChange(false)}>Done</GradientButton>
+            <GhostButton onClick={clearAll}>{t("filters.clearAll")}</GhostButton>
+            <GradientButton onClick={() => onOpenChange(false)}>{t("filters.done")}</GradientButton>
           </DialogFooter>
         </DialogPanel>
       </DialogPortal>
@@ -648,6 +691,7 @@ interface ActionBarProps {
 }
 
 function AssetsActionBar({ breadcrumb, state, update, onNewAsset, onOpenFilter }: ActionBarProps) {
+  const t = useTranslations("assets");
   return (
     <div className="border-outline-variant flex h-16 items-center justify-between gap-4 border-b px-6">
       <div className="flex shrink-0 items-center gap-3">
@@ -661,7 +705,7 @@ function AssetsActionBar({ breadcrumb, state, update, onNewAsset, onOpenFilter }
           onClick={onOpenFilter}
           data-testid="assets-filter-trigger"
         >
-          Filter
+          {t("page.actionBar.filter")}
           <span className="material-symbols-outlined ml-1 text-[14px]" aria-hidden>
             arrow_drop_down
           </span>
@@ -670,7 +714,7 @@ function AssetsActionBar({ breadcrumb, state, update, onNewAsset, onOpenFilter }
 
       <div className="no-scrollbar flex flex-1 items-center gap-2 overflow-x-auto">
         {breadcrumb.length === 0 ? (
-          <span className="text-on-surface-variant text-xs">No filters applied</span>
+          <span className="text-on-surface-variant text-xs">{t("page.actionBar.noFiltersApplied")}</span>
         ) : (
           breadcrumb.map((chip) => (
             <ChipButton key={chip.key} removable onClick={chip.onRemove} pressed>
@@ -687,11 +731,11 @@ function AssetsActionBar({ breadcrumb, state, update, onNewAsset, onOpenFilter }
             update({ sort: e.currentTarget.value as (typeof ASSET_LIST_SORTS)[number] })
           }
           className="h-9 w-[120px]"
-          aria-label="Sort"
+          aria-label={t("page.actionBar.sortAriaLabel")}
         >
           {ASSET_LIST_SORTS.map((s) => (
             <option key={s} value={s}>
-              {SORT_LABEL[s]}
+              {t(`sort.${s}`)}
             </option>
           ))}
         </Select>
@@ -701,7 +745,7 @@ function AssetsActionBar({ breadcrumb, state, update, onNewAsset, onOpenFilter }
             <button
               key={v}
               type="button"
-              aria-label={`${v} view`}
+              aria-label={v === "grid" ? t("view.gridAria") : t("view.listAria")}
               aria-pressed={state.view === v}
               onClick={() => update({ view: v as AssetListView })}
               className={cn(
@@ -726,7 +770,7 @@ function AssetsActionBar({ breadcrumb, state, update, onNewAsset, onOpenFilter }
           }
           onClick={onNewAsset}
         >
-          New Asset
+          {t("page.actionBar.newAsset")}
         </GradientButton>
       </div>
     </div>
@@ -760,6 +804,7 @@ function AssetsGrid({
   hasMore,
   sentinelRef,
 }: GridProps) {
+  const t = useTranslations("assets");
   return (
     <div className="flex-1 overflow-y-auto p-6">
       <div
@@ -801,7 +846,7 @@ function AssetsGrid({
         aria-hidden={!hasMore}
         className="text-on-surface-variant mt-6 flex h-8 items-center justify-center text-[11px]"
       >
-        {hasMore ? null : items.length > 0 ? "End of results" : null}
+        {hasMore ? null : items.length > 0 ? t("page.endOfResults") : null}
       </div>
     </div>
   );
@@ -811,6 +856,7 @@ function AssetsGrid({
 // as a "welcome / sample templates" wizard rather than an empty state.
 // Sits above the section box so the action bar stays the same shape.
 function WelcomeBanner({ onGenerate }: { onGenerate: () => void }) {
+  const t = useTranslations("assets");
   return (
     <div
       data-testid="assets-welcome-banner"
@@ -821,10 +867,10 @@ function WelcomeBanner({ onGenerate }: { onGenerate: () => void }) {
     >
       <div className="flex flex-col gap-1">
         <h2 className="text-on-surface text-base font-semibold">
-          Welcome — these 5 templates ship with KOLMatrix.
+          {t("welcome.bannerTitle")}
         </h2>
         <p className="text-on-surface-variant text-xs">
-          Browse, copy one to your library, or generate your own from a product.
+          {t("welcome.bannerSubtitle")}
         </p>
       </div>
       <GradientButton
@@ -835,7 +881,7 @@ function WelcomeBanner({ onGenerate }: { onGenerate: () => void }) {
         }
         onClick={onGenerate}
       >
-        Generate from product
+        {t("welcome.bannerCta")}
       </GradientButton>
     </div>
   );
@@ -846,6 +892,7 @@ function WelcomeBanner({ onGenerate }: { onGenerate: () => void }) {
 // system_seed grid is the new positive-path empty fallback (see
 // AssetsClient render branch + page.tsx mode detection).
 function AssetsEmptyState({ onGenerate }: { onGenerate: () => void }) {
+  const t = useTranslations("assets");
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-20 text-center">
       <div
@@ -858,9 +905,9 @@ function AssetsEmptyState({ onGenerate }: { onGenerate: () => void }) {
           folder_open
         </span>
       </div>
-      <SectionHeader title="No assets match this filter" as="h2" />
+      <SectionHeader title={t("welcome.emptyTitle")} as="h2" />
       <p className="text-on-surface-variant max-w-md text-sm">
-        Adjust the filter or generate a new asset from a product.
+        {t("welcome.emptySubtitle")}
       </p>
       <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
         <GradientButton
@@ -871,7 +918,7 @@ function AssetsEmptyState({ onGenerate }: { onGenerate: () => void }) {
           }
           onClick={onGenerate}
         >
-          Generate from product
+          {t("welcome.emptyCta")}
         </GradientButton>
       </div>
     </div>
@@ -962,7 +1009,9 @@ function DetailPanelInner({
 }: DetailPanelInnerProps) {
   const router = useRouter();
   const locale = useLocale();
+  const t = useTranslations("assets");
   const [regenerateOpen, setRegenerateOpen] = useState(false);
+  const tabConfig = TAB_IDS.map((id) => ({ id, label: t(`tabs.${id}`) }));
 
   // Best-effort hydration: if the asset object came from the listing
   // (AssetCardData has only contentPreview), we expose a structured
@@ -985,7 +1034,7 @@ function DetailPanelInner({
       <header className="border-outline-variant flex items-center gap-3 border-b px-5 py-4">
         <button
           type="button"
-          aria-label="Close detail panel"
+          aria-label={t("drawer.closeAria")}
           onClick={onClose}
           className="text-on-surface-variant hover:text-on-surface"
         >
@@ -996,10 +1045,14 @@ function DetailPanelInner({
         <div className="min-w-0 flex-1">
           <h2 className="text-on-surface truncate text-sm font-semibold">{asset.name}</h2>
           <p className="text-on-surface-variant truncate text-xs">
-            {asset.productName ?? "No product"}
+            {asset.productName ?? t("card.noProduct")}
           </p>
         </div>
-        <TagChip label={asset.source === "ai_generated" ? "AI" : "User"} tone="cyan" size="xs" />
+        <TagChip
+          label={asset.source === "ai_generated" ? t("card.tagAi") : t("card.tagUser")}
+          tone="cyan"
+          size="xs"
+        />
         <DetailPanelMoreMenu
           asset={asset}
           pending={pending}
@@ -1013,7 +1066,7 @@ function DetailPanelInner({
       </header>
 
       <AssetTabs<AssetTabId>
-        tabs={TAB_CONFIG}
+        tabs={tabConfig}
         activeTab={activeTab}
         onChange={onTabChange}
         className="px-5"
@@ -1053,7 +1106,7 @@ function DetailPanelInner({
             onClick={() => onMoreAction("duplicate")}
             disabled={pending}
           >
-            Save to my library
+            {t("drawer.footer.saveToLibrary")}
           </GradientButton>
         ) : (
           <>
@@ -1066,7 +1119,7 @@ function DetailPanelInner({
               onClick={() => setRegenerateOpen(true)}
               disabled={pending}
             >
-              Regenerate
+              {t("drawer.footer.regenerate")}
             </SecondaryButton>
             {asset.type === "email" ? (
               // BL-026-F005 — visual degrade from GradientButton to
@@ -1085,7 +1138,7 @@ function DetailPanelInner({
                   router.push(`/${locale}/outreach?prefilledAssetId=${asset.id}`)
                 }
               >
-                Send to Outreach
+                {t("drawer.footer.sendToOutreach")}
               </GhostButton>
             ) : null}
           </>
@@ -1126,6 +1179,7 @@ function DetailPanelMoreMenu({
   onRestore,
   onDelete,
 }: DetailPanelMoreMenuProps) {
+  const t = useTranslations("assets");
   const isArchived = asset.status === "archived";
   const isEmail = asset.type === "email";
   return (
@@ -1136,7 +1190,7 @@ function DetailPanelMoreMenu({
           "hover:bg-surface-container/60 focus-visible:ring-cyan/40 focus-visible:ring-2 focus-visible:outline-none",
           pending && "cursor-wait opacity-60"
         )}
-        aria-label="More actions"
+        aria-label={t("drawer.moreActionsAria")}
         disabled={pending}
       >
         <span className="material-symbols-outlined text-[20px]" aria-hidden>
@@ -1150,21 +1204,21 @@ function DetailPanelMoreMenu({
               "border-outline-variant bg-surface text-on-surface z-50 min-w-[180px] rounded-lg border p-1 shadow-lg"
             )}
           >
-            <DetailMenuItem icon="edit" label="Edit" onClick={onEdit} />
+            <DetailMenuItem icon="edit" label={t("drawer.menu.edit")} onClick={onEdit} />
             {isEmail ? (
               <DetailMenuItem
                 icon="content_copy"
-                label="Save as new variant"
+                label={t("drawer.menu.saveAsVariant")}
                 onClick={onSaveAsVariant}
               />
             ) : null}
-            <DetailMenuItem icon="file_copy" label="Duplicate" onClick={onDuplicate} />
+            <DetailMenuItem icon="file_copy" label={t("drawer.menu.duplicate")} onClick={onDuplicate} />
             {isArchived ? (
-              <DetailMenuItem icon="unarchive" label="Restore" onClick={onRestore} />
+              <DetailMenuItem icon="unarchive" label={t("drawer.menu.restore")} onClick={onRestore} />
             ) : (
-              <DetailMenuItem icon="archive" label="Archive" onClick={onArchive} />
+              <DetailMenuItem icon="archive" label={t("drawer.menu.archive")} onClick={onArchive} />
             )}
-            <DetailMenuItem icon="delete" label="Delete" onClick={onDelete} danger />
+            <DetailMenuItem icon="delete" label={t("drawer.menu.delete")} onClick={onDelete} danger />
           </Menu.Popup>
         </Menu.Positioner>
       </Menu.Portal>
@@ -1213,6 +1267,7 @@ function RegenerateVariantPopup({
   asset,
   onRegenerated,
 }: RegenerateVariantPopupProps) {
+  const t = useTranslations("assets");
   const [steering, setSteering] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -1233,7 +1288,7 @@ function RegenerateVariantPopup({
   async function handleRegenerate() {
     if (busy) return;
     if (!asset.productId) {
-      setError("Asset has no product attached — cannot regenerate.");
+      setError(t("regenerate.noProductError"));
       return;
     }
     setBusy(true);
@@ -1246,7 +1301,7 @@ function RegenerateVariantPopup({
     });
     setBusy(false);
     if (!result.ok) {
-      setError(result.error);
+      setError(localizeErrorCode(t, result.code, result.error));
       return;
     }
     onRegenerated(result.assetId);
@@ -1258,27 +1313,27 @@ function RegenerateVariantPopup({
         <DialogBackdrop />
         <DialogPanel size="sm">
           <DialogHeader>
-            <DialogTitle>Regenerate variant</DialogTitle>
+            <DialogTitle>{t("regenerate.title")}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-3 px-5 py-4">
             <p className="text-on-surface-variant text-xs">
-              A new variant will be added to this asset&apos;s tree — the original stays put.
+              {t("regenerate.body")}
             </p>
             <textarea
               value={steering}
               onChange={(e) => setSteering(e.currentTarget.value)}
               rows={3}
-              placeholder="Optional steering prompt — what should be different?"
-              aria-label="Regenerate steering prompt"
+              placeholder={t("regenerate.steeringPlaceholder")}
+              aria-label={t("regenerate.steeringAria")}
               className="border-outline-variant bg-surface/40 text-on-surface placeholder:text-on-surface-variant focus:border-cyan focus:ring-cyan w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1"
             />
             {error ? <p className="text-xs text-red-400">{error}</p> : null}
             <div className="flex justify-end gap-2 pt-1">
               <SecondaryButton onClick={() => onOpenChange(false)} disabled={busy}>
-                Cancel
+                {t("regenerate.cancel")}
               </SecondaryButton>
               <GradientButton onClick={handleRegenerate} disabled={busy}>
-                {busy ? "Regenerating…" : "Regenerate"}
+                {busy ? t("regenerate.regenerating") : t("regenerate.regenerate")}
               </GradientButton>
             </div>
           </div>
@@ -1295,6 +1350,7 @@ interface DetailPreviewProps {
 }
 
 function DetailPreview({ asset, onSelectVariant, onAssetMutated }: DetailPreviewProps) {
+  const t = useTranslations("assets");
   return (
     <div className="flex flex-col gap-3">
       {asset.totalVariants > 1 ? (
@@ -1310,7 +1366,7 @@ function DetailPreview({ asset, onSelectVariant, onAssetMutated }: DetailPreview
         </pre>
       ) : (
         <p className="text-on-surface-variant text-sm">
-          Preview will surface once F005 wires the full content render.
+          {t("preview.placeholder")}
         </p>
       )}
     </div>
@@ -1329,6 +1385,7 @@ interface VariantSwitcherProps {
 // clicking elsewhere on the row switches the drawer's view to that
 // variant (no fork).
 function VariantSwitcher({ asset, onSelectVariant, onAssetMutated }: VariantSwitcherProps) {
+  const t = useTranslations("assets");
   const [nodes, setNodes] = useState<VariantTreeNode[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -1383,7 +1440,7 @@ function VariantSwitcher({ asset, onSelectVariant, onAssetMutated }: VariantSwit
           <span className="material-symbols-outlined text-[14px]" aria-hidden>
             account_tree
           </span>
-          v{safeCurrent} of {total}
+          {t("preview.variantSwitcherTriggerLabel", { current: safeCurrent, total })}
           <span className="material-symbols-outlined text-[14px]" aria-hidden>
             arrow_drop_down
           </span>
@@ -1413,13 +1470,13 @@ function VariantSwitcher({ asset, onSelectVariant, onAssetMutated }: VariantSwit
                     <span className="font-semibold">v{idx + 1}</span>
                     <span className="min-w-0 flex-1 truncate">{node.name}</span>
                     <TagChip
-                      label={node.source === "ai_generated" ? "AI" : "User"}
+                      label={node.source === "ai_generated" ? t("card.tagAi") : t("card.tagUser")}
                       tone={node.source === "ai_generated" ? "cyan" : "neutral"}
                       size="xs"
                     />
                     <StatusDot status={node.status} />
                     {isCurrent ? (
-                      <span className="text-on-surface-variant text-[10px]">current</span>
+                      <span className="text-on-surface-variant text-[10px]">{t("preview.variantSwitcherCurrent")}</span>
                     ) : (
                       <button
                         type="button"
@@ -1434,7 +1491,7 @@ function VariantSwitcher({ asset, onSelectVariant, onAssetMutated }: VariantSwit
                           isPending && "cursor-wait opacity-60"
                         )}
                       >
-                        Restore
+                        {t("preview.variantSwitcherRestore")}
                       </button>
                     )}
                   </Menu.Item>
@@ -1458,17 +1515,6 @@ interface NewAssetDialogProps {
    * navigate to the new asset's detail panel. */
   onSaved: (assetId: string) => void;
 }
-
-// Spec §F004 19th element: Step-2 textarea seeds with up to six
-// preset suggestions the user can click to drop into the prompt.
-const STEERING_PRESETS: ReadonlyArray<string> = [
-  "Emphasize affordability",
-  "For Gen Z audience",
-  "Formal tone",
-  "Casual tone",
-  "Highlight urgency",
-  "Use social proof",
-];
 
 type WizardStep = 1 | 2 | 3;
 
@@ -1542,16 +1588,19 @@ interface PreviewSnapshot {
   secondary: string;
 }
 
-function previewFromAsset(asset: AssetDetail): PreviewSnapshot {
+function previewFromAsset(
+  asset: AssetDetail,
+  t: ReturnType<typeof useTranslations>
+): PreviewSnapshot {
   const c = (asset.content ?? {}) as Record<string, unknown>;
   if (asset.type === "email") {
     return {
-      primary: typeof c.subject === "string" ? c.subject : "(no subject)",
+      primary: typeof c.subject === "string" ? c.subject : t("wizard.step3.noSubject"),
       secondary: typeof c.body === "string" ? c.body : "",
     };
   }
   return {
-    primary: typeof c.title === "string" ? c.title : "(no title)",
+    primary: typeof c.title === "string" ? c.title : t("wizard.step3.noTitle"),
     secondary: typeof c.script === "string" ? c.script : "",
   };
 }
@@ -1563,6 +1612,7 @@ function NewAssetDialog({
   defaultProductId,
   onSaved,
 }: NewAssetDialogProps) {
+  const t = useTranslations("assets");
   const [state, dispatch] = useReducer(wizardReducer, defaultProductId, initialWizardState);
 
   // Reset whenever the dialog opens so a closed-then-reopened wizard
@@ -1580,7 +1630,7 @@ function NewAssetDialog({
       steeringPrompt: state.steering.trim() || undefined,
     });
     if (!result.ok) {
-      dispatch({ kind: "GENERATE_FAIL", error: result.error });
+      dispatch({ kind: "GENERATE_FAIL", error: localizeErrorCode(t, result.code, result.error) });
       return;
     }
     dispatch({ kind: "GENERATE_OK", asset: result.asset });
@@ -1615,7 +1665,7 @@ function NewAssetDialog({
       steeringPrompt: state.steering.trim() || undefined,
     });
     if (!result.ok) {
-      dispatch({ kind: "GENERATE_FAIL", error: result.error });
+      dispatch({ kind: "GENERATE_FAIL", error: localizeErrorCode(t, result.code, result.error) });
       return;
     }
     dispatch({ kind: "GENERATE_OK", asset: result.asset });
@@ -1634,7 +1684,7 @@ function NewAssetDialog({
         <DialogBackdrop />
         <DialogPanel size="md">
           <DialogHeader>
-            <DialogTitle>Generate asset</DialogTitle>
+            <DialogTitle>{t("wizard.title")}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-5 px-5 py-4" data-testid="new-asset-wizard">
             <WizardStepIndicator step={state.step} />
@@ -1697,9 +1747,11 @@ function NewAssetDialog({
 }
 
 function WizardStepIndicator({ step }: { step: WizardStep }) {
+  const t = useTranslations("assets");
+  const label = t("wizard.stepIndicator", { step });
   return (
-    <div className="flex items-center gap-3" aria-label={`Step ${step} of 3`}>
-      <span className="text-on-surface-variant text-xs font-medium">Step {step} of 3</span>
+    <div className="flex items-center gap-3" aria-label={label}>
+      <span className="text-on-surface-variant text-xs font-medium">{label}</span>
       <div className="flex items-center gap-1.5" role="presentation">
         {[1, 2, 3].map((n) => (
           <span
@@ -1724,20 +1776,21 @@ interface WizardStep1Props {
 }
 
 function WizardStep1({ products, productId, type, onSetProduct, onSetType }: WizardStep1Props) {
+  const t = useTranslations("assets");
   return (
     <>
       <div className="flex flex-col gap-2">
-        <span className="text-on-surface-variant text-xs font-medium">Product</span>
+        <span className="text-on-surface-variant text-xs font-medium">{t("wizard.step1.product")}</span>
         <Combobox
           items={products.map((p) => ({ value: p.id, label: p.name }))}
           value={productId}
           onChange={onSetProduct}
-          placeholder="Choose a product"
-          ariaLabel="Wizard product picker"
+          placeholder={t("wizard.step1.productPlaceholder")}
+          ariaLabel={t("wizard.step1.productAria")}
         />
       </div>
       <div className="flex flex-col gap-2">
-        <span className="text-on-surface-variant text-xs font-medium">Type</span>
+        <span className="text-on-surface-variant text-xs font-medium">{t("wizard.step1.type")}</span>
         <div className="flex gap-2">
           {TYPE_OPTIONS.map((opt) => (
             <ChipButton
@@ -1748,7 +1801,7 @@ function WizardStep1({ products, productId, type, onSetProduct, onSetType }: Wiz
               <span className="material-symbols-outlined text-[14px]" aria-hidden>
                 {opt.icon}
               </span>
-              {opt.label}
+              {t(`types.${opt.value}`)}
             </ChipButton>
           ))}
         </div>
@@ -1763,6 +1816,7 @@ interface WizardStep2Props {
 }
 
 function WizardStep2({ steering, onSetSteering }: WizardStep2Props) {
+  const t = useTranslations("assets");
   function applyPreset(text: string) {
     const trimmed = steering.trim();
     if (!trimmed) {
@@ -1777,25 +1831,30 @@ function WizardStep2({ steering, onSetSteering }: WizardStep2Props) {
     <>
       <div className="flex flex-col gap-2">
         <span className="text-on-surface-variant text-xs font-medium">
-          Steering prompt (optional)
+          {t("wizard.step2.steeringLabel")}
         </span>
         <textarea
           value={steering}
           onChange={(e) => onSetSteering(e.currentTarget.value)}
           rows={4}
-          placeholder="Tell the model how this asset should land — tone, audience, hooks…"
-          aria-label="Steering prompt"
+          placeholder={t("wizard.step2.steeringPlaceholder")}
+          aria-label={t("wizard.step2.steeringAria")}
           className="border-outline-variant bg-surface/40 text-on-surface placeholder:text-on-surface-variant focus:border-cyan focus:ring-cyan w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1"
         />
       </div>
       <div className="flex flex-col gap-2">
-        <span className="text-on-surface-variant text-[11px] font-medium">Quick presets</span>
+        <span className="text-on-surface-variant text-[11px] font-medium">
+          {t("wizard.step2.presetsHeading")}
+        </span>
         <div className="flex flex-wrap gap-2">
-          {STEERING_PRESETS.map((preset) => (
-            <ChipButton key={preset} onClick={() => applyPreset(preset)}>
-              {preset}
-            </ChipButton>
-          ))}
+          {STEERING_PRESET_KEYS.map((key) => {
+            const label = t(`wizard.step2.presets.${key}`);
+            return (
+              <ChipButton key={key} onClick={() => applyPreset(label)}>
+                {label}
+              </ChipButton>
+            );
+          })}
         </div>
       </div>
     </>
@@ -1812,6 +1871,7 @@ interface WizardStep3Props {
 }
 
 function WizardStep3({ busy, generated, error, onBack, onTryAgain }: WizardStep3Props) {
+  const t = useTranslations("assets");
   if (busy) {
     return (
       <div className="flex min-h-[180px] flex-col items-center justify-center gap-3 py-6">
@@ -1822,7 +1882,7 @@ function WizardStep3({ busy, generated, error, onBack, onTryAgain }: WizardStep3
           progress_activity
         </span>
         <span className="text-on-surface-variant text-xs">
-          Generating with claude-haiku-4.5…
+          {t("wizard.step3.generating")}
         </span>
       </div>
     );
@@ -1839,28 +1899,28 @@ function WizardStep3({ busy, generated, error, onBack, onTryAgain }: WizardStep3
           error
         </span>
         <p className="text-on-surface text-center text-xs">
-          Generation failed: <span className="text-red-300">{error}</span>. Try editing your
-          prompt or regenerating.
+          {t("wizard.step3.errorPrefix")} <span className="text-red-300">{error}</span>
+          {t("wizard.step3.errorSuffix")}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-2">
-          <SecondaryButton onClick={onBack}>← Back to Step 2 — edit prompt</SecondaryButton>
-          <GradientButton onClick={onTryAgain}>Try again</GradientButton>
+          <SecondaryButton onClick={onBack}>{t("wizard.step3.backToStep2")}</SecondaryButton>
+          <GradientButton onClick={onTryAgain}>{t("wizard.step3.tryAgain")}</GradientButton>
         </div>
       </div>
     );
   }
 
   if (!generated) return null;
-  const preview = previewFromAsset(generated);
+  const preview = previewFromAsset(generated, t);
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <TagChip
-          label={generated.type === "email" ? "Email" : "Video"}
+          label={t(`types.${generated.type}`)}
           tone={generated.type === "email" ? "cyan" : "purple"}
           size="xs"
         />
-        <span className="text-on-surface-variant text-[11px]">Draft preview</span>
+        <span className="text-on-surface-variant text-[11px]">{t("wizard.step3.draftPreview")}</span>
       </div>
       <div className="border-outline-variant/60 bg-surface/40 flex flex-col gap-2 rounded-lg border p-3">
         <p className="text-on-surface text-sm font-medium">{preview.primary}</p>
@@ -1897,12 +1957,13 @@ function WizardFooter({
   onRegenerate,
   onSaveAndEdit,
 }: WizardFooterProps) {
+  const t = useTranslations("assets");
   if (step === 1) {
     return (
       <div className="flex justify-end gap-2 pt-1">
-        <SecondaryButton onClick={onCancel}>Cancel</SecondaryButton>
+        <SecondaryButton onClick={onCancel}>{t("wizard.buttons.cancel")}</SecondaryButton>
         <GradientButton onClick={onContinue} disabled={!canContinue}>
-          Continue →
+          {t("wizard.buttons.continue")}
         </GradientButton>
       </div>
     );
@@ -1910,8 +1971,8 @@ function WizardFooter({
   if (step === 2) {
     return (
       <div className="flex justify-between gap-2 pt-1">
-        <SecondaryButton onClick={onBack}>← Back</SecondaryButton>
-        <GradientButton onClick={onContinue}>Generate →</GradientButton>
+        <SecondaryButton onClick={onBack}>{t("wizard.buttons.back")}</SecondaryButton>
+        <GradientButton onClick={onContinue}>{t("wizard.buttons.generate")}</GradientButton>
       </div>
     );
   }
@@ -1923,18 +1984,18 @@ function WizardFooter({
             burns aigcgateway tokens. Numbers tracked from claude-
             haiku-4.5 average usage in BL-025 audit logs. */}
         <p className="text-on-surface-variant text-[10px]">
-          Discards generated draft (this cost ~$0.001-0.005)
+          {t("wizard.discardCostHint")}
         </p>
         <SecondaryButton onClick={onDiscard} disabled={busy}>
-          Discard
+          {t("wizard.buttons.discard")}
         </SecondaryButton>
       </div>
       <div className="flex gap-2">
         <SecondaryButton onClick={onRegenerate} disabled={busy}>
-          Regenerate
+          {t("wizard.buttons.regenerate")}
         </SecondaryButton>
         <GradientButton onClick={onSaveAndEdit} disabled={busy || !hasGenerated}>
-          Save & Edit
+          {t("wizard.buttons.saveAndEdit")}
         </GradientButton>
       </div>
     </div>
