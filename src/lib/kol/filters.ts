@@ -393,6 +393,13 @@ export function buildKolWhere(filters: DiscoveryFilters): Prisma.KolWhereInput {
     // audit trail in `metadata.flags` is preserved for forensics.
     { isSuspicious: false },
   ];
+  // BL-020-F008: prod env hides demo_seed mock KOLs (12 rows) from the
+  // Discovery list. Staging keeps them visible so the demo flow remains
+  // exercisable. Cannot delete the seeds themselves — 300 EmailLog +
+  // 10 KolCampaign rows reference them under FK.
+  if (process.env.HIDE_DEMO_SEED_KOLS === "true") {
+    and.push({ emailSource: { not: "demo_seed" } });
+  }
   if (!filters.includeNonGaming) {
     and.push({ isGaming: true });
   }

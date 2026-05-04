@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import {
   BRAND_SAFETY_RATINGS,
@@ -330,6 +330,42 @@ describe("buildKolWhere()", () => {
       expect.arrayContaining(["US", "CA", "AU", "NZ", "FJ", "PG", "WS", "TO"])
     );
     expect(cc!.countryCode.in.length).toBe(8);
+  });
+
+  describe("BL-020-F008 — HIDE_DEMO_SEED_KOLS env var", () => {
+    const ORIGINAL = process.env.HIDE_DEMO_SEED_KOLS;
+    afterEach(() => {
+      if (ORIGINAL === undefined) {
+        delete process.env.HIDE_DEMO_SEED_KOLS;
+      } else {
+        process.env.HIDE_DEMO_SEED_KOLS = ORIGINAL;
+      }
+    });
+
+    it("appends emailSource not demo_seed when env=true", () => {
+      process.env.HIDE_DEMO_SEED_KOLS = "true";
+      const where = buildKolWhere(empty);
+      const clauses = where.AND as Record<string, unknown>[];
+      const demoSeedClause = clauses.find(
+        (c) => "emailSource" in c
+      ) as { emailSource: { not: string } } | undefined;
+      expect(demoSeedClause).toBeDefined();
+      expect(demoSeedClause!.emailSource).toEqual({ not: "demo_seed" });
+    });
+
+    it("does not append the emailSource clause when env=false", () => {
+      process.env.HIDE_DEMO_SEED_KOLS = "false";
+      const where = buildKolWhere(empty);
+      const clauses = where.AND as Record<string, unknown>[];
+      expect(clauses.some((c) => "emailSource" in c)).toBe(false);
+    });
+
+    it("does not append the emailSource clause when env is unset", () => {
+      delete process.env.HIDE_DEMO_SEED_KOLS;
+      const where = buildKolWhere(empty);
+      const clauses = where.AND as Record<string, unknown>[];
+      expect(clauses.some((c) => "emailSource" in c)).toBe(false);
+    });
   });
 });
 
