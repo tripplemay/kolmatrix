@@ -35,6 +35,11 @@ const productUpdateCalls: ProductUpdateCall[] = [];
 
 // `existingBackfilledAsset` keys: `${tenantId}|${productId}|${sourceField}|${index}`
 const existingBackfilled = new Set<string>();
+// BL-031-F003 (D3) — per-tenant fixture for the new multi-tenant
+// scanProducts test. Maps tenantId → ProductScanRow[]. The withTenant
+// $queryRaw mock branches on the SQL text: a "FROM asset" call is
+// the idempotency check; a "FROM product" call is the new scan path.
+const productScanByTenant = new Map<string, unknown[]>();
 let createdAssetCursor = 0;
 
 function existingKey(
@@ -47,26 +52,39 @@ function existingKey(
 }
 
 vi.mock("@/lib/db", () => ({
+  // BL-031-F003 (D3): scanProducts now reads `tenant.findMany` on the
+  // base prisma client (tenant table has no RLS). The mock returns
+  // whatever each test sets via `prisma.tenant.findMany.mockResolvedValueOnce`.
+  prisma: {
+    tenant: {
+      findMany: vi.fn(),
+    },
+  },
   withTenant: async <T>(
     tenantId: string,
     fn: (tx: unknown) => Promise<T>
   ): Promise<T> => {
     const tx = {
-      // Backfill calls $queryRaw to check idempotency. The script
-      // template-tags the call with productId / sourceField / index;
-      // here we reconstruct the key from the values array Prisma
-      // passes through. For the purpose of this mock we don't parse
-      // the SQL — we trust the call shape and read positional args.
+      // The script issues two distinct $queryRaw calls now:
+      //   - Idempotency check on `asset` (3 positional args:
+      //     productId, sourceField, indexStr).
+      //   - Per-tenant product scan on `product` (no positional args).
+      // Branch on the SQL text so both shapes work without breaking
+      // the existing tests.
       $queryRaw: async (
-        _strings: TemplateStringsArray,
-        productId: string,
-        sourceField: string,
-        indexStr: string
-      ): Promise<Array<{ id: string }>> => {
-        const key = existingKey(tenantId, productId, sourceField, parseInt(indexStr, 10));
-        return existingBackfilled.has(key)
-          ? [{ id: `existing-${key}` }]
-          : [];
+        strings: TemplateStringsArray,
+        ...values: unknown[]
+      ): Promise<unknown[]> => {
+        const sql = strings.join(" ");
+        if (sql.includes("FROM asset")) {
+          const [productId, sourceField, indexStr] = values as [string, string, string];
+          const key = existingKey(tenantId, productId, sourceField, parseInt(indexStr, 10));
+          return existingBackfilled.has(key) ? [{ id: `existing-${key}` }] : [];
+        }
+        if (sql.includes("FROM product")) {
+          return productScanByTenant.get(tenantId) ?? [];
+        }
+        return [];
       },
       product: {
         update: async (args: ProductUpdateCall): Promise<void> => {
@@ -77,7 +95,9 @@ vi.mock("@/lib/db", () => ({
     return fn(tx);
   },
   withPlatformAdmin: async () => {
-    throw new Error("withPlatformAdmin should be invoked through scanProducts mock, not directly");
+    throw new Error(
+      "BL-031-F003 (D3) — withPlatformAdmin must not be invoked by scanProducts; the new path enumerates tenants via prisma.tenant.findMany then loops withTenant per id"
+    );
   },
 }));
 
@@ -116,6 +136,7 @@ beforeEach(() => {
   createAssetCalls.length = 0;
   productUpdateCalls.length = 0;
   existingBackfilled.clear();
+  productScanByTenant.clear();
   createdAssetCursor = 0;
 });
 
@@ -358,5 +379,65 @@ describe("backfillProduct() — generatedAt fallback", () => {
     expect(md.generatedAt).toBe(productNoGenAt.updatedAt.toISOString());
     // traceId absent in legacy → null in metadata.
     expect(md.traceId).toBeNull();
+  });
+});
+
+// BL-031-F003 (D3) · scanProducts must enumerate every tenant and
+// concatenate per-tenant SELECTs. The original BL-030 implementation
+// used `withPlatformAdmin` against the product table, which silently
+// returned 0 because the product RLS policy honours `app.tenant_id`
+// only — not `app.is_platform_admin`. This test pins the new
+// multi-tenant scan: 2 tenants × 1 product each → scanProducts
+// returns 2 rows in the documented order (per-tenant slices in
+// tenant.findMany order, products within a tenant in id ASC order).
+describe("scanProducts() — multi-tenant enumeration", () => {
+  it("lists tenants then per-tenant withTenant scans, returning the merged rows", async () => {
+    const { scanProducts } = await import("../migrate-product-aiassets-to-asset");
+    const { prisma } = await import("@/lib/db");
+    const findMany = prisma.tenant.findMany as unknown as ReturnType<typeof vi.fn>;
+
+    const TENANT_A = "11111111-1111-1111-1111-111111111111";
+    const TENANT_B = "22222222-2222-2222-2222-222222222222";
+
+    const productA: Record<string, unknown> = {
+      id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      tenantId: TENANT_A,
+      name: "PUBG Mobile",
+      updatedAt: new Date("2026-05-01T00:00:00Z"),
+      aiAssets: {
+        status: "ready",
+        emailTemplates: [{ subject: "S", body: "B" }],
+        videoScripts: [],
+      },
+    };
+    const productB: Record<string, unknown> = {
+      id: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+      tenantId: TENANT_B,
+      name: "Honor of Kings",
+      updatedAt: new Date("2026-05-01T00:00:00Z"),
+      aiAssets: {
+        status: "ready",
+        emailTemplates: [{ subject: "S2", body: "B2" }],
+        videoScripts: [],
+      },
+    };
+
+    findMany.mockResolvedValueOnce([{ id: TENANT_A }, { id: TENANT_B }]);
+    productScanByTenant.set(TENANT_A, [productA]);
+    productScanByTenant.set(TENANT_B, [productB]);
+
+    const rows = await scanProducts();
+
+    expect(rows).toHaveLength(2);
+    expect(rows[0]!.tenantId).toBe(TENANT_A);
+    expect(rows[0]!.id).toBe(productA.id);
+    expect(rows[1]!.tenantId).toBe(TENANT_B);
+    expect(rows[1]!.id).toBe(productB.id);
+    // tenant.findMany was called once with the expected select+order.
+    expect(findMany).toHaveBeenCalledTimes(1);
+    expect(findMany.mock.calls[0]![0]).toEqual({
+      select: { id: true },
+      orderBy: { id: "asc" },
+    });
   });
 });

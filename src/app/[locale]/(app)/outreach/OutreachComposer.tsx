@@ -14,7 +14,7 @@
  *   6. Send button (server-action batch)
  *   7. Result summary (sent / mocked / failed, with per-KOL reasons)
  */
-import { useMemo, useRef, useState, useTransition, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/Button";
@@ -43,6 +43,7 @@ import {
   updateKolEmailAction,
   type ComposerActionState,
 } from "./actions";
+import { useProductFilter } from "./useProductFilter";
 import type {
   OutreachCampaignOption,
   OutreachComposerData,
@@ -426,6 +427,7 @@ export function OutreachComposer({
               setTemplateId(id);
               setOverrideTemplate(null);
             }}
+            selectedCampaignProductId={selectedCampaign?.productId ?? null}
             templateSystemGroup={labels.templateSystemGroup}
             templateUserGroup={labels.templateUserGroup}
           />
@@ -954,6 +956,18 @@ interface TemplatePickerProps {
   templates: OutreachTemplateOption[];
   templateId: string;
   onSelect: (id: string) => void;
+  /**
+   * BL-031-F002 (D2) — campaign-scoped default for the product filter.
+   * When the user lands on /outreach with a campaign selected, the
+   * dropdown auto-narrows to that campaign's product so they don't
+   * have to manually pick the matching product to see their templates.
+   * `null` (campaign without product, or no campaign selected) keeps
+   * the filter as "All products". The TemplatePicker stays mounted
+   * across campaign switches in the test layer (parent uses
+   * `key={campaignId}` to remount in production, but unit tests
+   * exercise the rerender path to assert sync behaviour).
+   */
+  selectedCampaignProductId: string | null;
   templateSystemGroup: string;
   templateUserGroup: string;
 }
@@ -962,10 +976,11 @@ function TemplatePicker({
   templates,
   templateId,
   onSelect,
+  selectedCampaignProductId,
   templateSystemGroup,
   templateUserGroup,
 }: TemplatePickerProps) {
-  const [productFilter, setProductFilter] = useState<string | null>(null);
+  const [productFilter, onProductFilterChange] = useProductFilter(selectedCampaignProductId);
   const [searchDraft, setSearchDraft] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -1009,7 +1024,7 @@ function TemplatePicker({
         <Combobox
           items={productOptions}
           value={productFilter}
-          onChange={setProductFilter}
+          onChange={onProductFilterChange}
           placeholder="All products"
           ariaLabel="Filter templates by product"
         />

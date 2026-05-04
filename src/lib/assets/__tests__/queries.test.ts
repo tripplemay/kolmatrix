@@ -225,10 +225,16 @@ describe("loadAssetsForComposer", () => {
     const rows = await loadAssetsForComposer(tx, "email", "en");
 
     const args = tx.asset.findMany.mock.calls[0]![0];
+    // BL-031-F001 (D1): locale predicate now lives inside an OR that
+    // bypasses content.locale for non-system_seed rows. The shape
+    // changed from `{ content: {...} }` at the root to `{ OR: [...] }`.
     expect(args.where).toEqual({
       type: "email",
       status: "published",
-      content: { path: ["locale"], equals: "en" },
+      OR: [
+        { source: { not: "system_seed" } },
+        { content: { path: ["locale"], equals: "en" } },
+      ],
     });
     expect(args.take).toBe(__TEST_ONLY__.COMPOSER_MAX_RESULTS);
     expect(args.orderBy).toEqual([{ source: "asc" }, { updatedAt: "desc" }]);
@@ -265,7 +271,12 @@ describe("loadAssetsForComposer", () => {
       status: "published",
       name: { contains: "Welcome", mode: "insensitive" },
     });
-    expect(where.content).toEqual({ path: ["locale"], equals: "en" });
+    // BL-031-F001 (D1): locale predicate moved into OR. Search and
+    // locale compose as AND-with-OR rather than AND-with-content path.
+    expect(where.OR).toEqual([
+      { source: { not: "system_seed" } },
+      { content: { path: ["locale"], equals: "en" } },
+    ]);
   });
 
   it("translates a productId arg into an exact productId predicate (compound with locale + search)", async () => {
@@ -281,6 +292,70 @@ describe("loadAssetsForComposer", () => {
       productId: "prod-42",
       name: { contains: "intro", mode: "insensitive" },
     });
+  });
+
+  // BL-031-F001 · D1 — locale filter splits by source. system_seed
+  // (product-supplied translations) gets locale-narrowed; user_created
+  // / ai_generated / imported (tenant-owned creative content) bypass
+  // the locale predicate entirely so a /zh/outreach marketer still
+  // sees their en AI drafts. The four cases below pin the new where
+  // shape across the locale × productId × search axis matrix.
+  it("(D1) zh locale emits an OR clause that bypasses content.locale for non-system_seed rows", async () => {
+    const tx = makeTx();
+    tx.asset.findMany.mockResolvedValueOnce([]);
+
+    await loadAssetsForComposer(tx, "email", "zh");
+
+    const where = tx.asset.findMany.mock.calls[0]![0].where;
+    expect(where).toEqual({
+      type: "email",
+      status: "published",
+      OR: [
+        { source: { not: "system_seed" } },
+        { content: { path: ["locale"], equals: "zh" } },
+      ],
+    });
+  });
+
+  it("(D1) en locale uses the same OR shape with locale='en'", async () => {
+    const tx = makeTx();
+    tx.asset.findMany.mockResolvedValueOnce([]);
+
+    await loadAssetsForComposer(tx, "email", "en");
+
+    const orClause = tx.asset.findMany.mock.calls[0]![0].where.OR;
+    expect(orClause).toEqual([
+      { source: { not: "system_seed" } },
+      { content: { path: ["locale"], equals: "en" } },
+    ]);
+  });
+
+  it("(D1) productId AND-composes with the OR locale split (only that product's ai_generated rows pass)", async () => {
+    const tx = makeTx();
+    tx.asset.findMany.mockResolvedValueOnce([]);
+
+    await loadAssetsForComposer(tx, "email", "zh", undefined, "prod-7");
+
+    const where = tx.asset.findMany.mock.calls[0]![0].where;
+    expect(where.productId).toBe("prod-7");
+    expect(where.OR).toEqual([
+      { source: { not: "system_seed" } },
+      { content: { path: ["locale"], equals: "zh" } },
+    ]);
+  });
+
+  it("(D1) name ILIKE search AND-composes with the OR locale split (search works across user-owned + system_seed)", async () => {
+    const tx = makeTx();
+    tx.asset.findMany.mockResolvedValueOnce([]);
+
+    await loadAssetsForComposer(tx, "email", "zh", "intro", undefined);
+
+    const where = tx.asset.findMany.mock.calls[0]![0].where;
+    expect(where.name).toEqual({ contains: "intro", mode: "insensitive" });
+    expect(where.OR).toEqual([
+      { source: { not: "system_seed" } },
+      { content: { path: ["locale"], equals: "zh" } },
+    ]);
   });
 });
 

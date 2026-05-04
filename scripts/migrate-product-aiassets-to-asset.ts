@@ -36,13 +36,36 @@
  * peels them back. `Product.aiAssets` content needs a `pg_dump -t
  * product` restore (run before --execute).
  *
- * RLS — the SELECT cross-tenant scan uses withPlatformAdmin; every
- * write phase runs inside withTenant(product.tenantId, …) so the
- * Asset insert + product.update obey the standard tenant policies.
+ * RLS — BL-031-F003 (D3) revises the cross-tenant scan. The
+ * original BL-030 implementation used `withPlatformAdmin` against
+ * the `product` table, which silently returned 0 rows: the product
+ * RLS policy honours `app.tenant_id` only, not `app.is_platform_admin`
+ * (the latter is wired up exclusively in the `user` table policy for
+ * credentials auth). The new path is:
+ *
+ *   1. List every tenant via `prisma.tenant.findMany`. The `tenant`
+ *      table has no RLS enabled (it's the lookup table — credentials
+ *      auth has to query it before knowing which tenant to bind), so
+ *      `kolmatrix_app` reads it directly without any context.
+ *   2. For each tenant id, open `withTenant(tenantId, …)` and run the
+ *      product SELECT inside that scope. The tenant_isolation policy
+ *      sees the matching `app.tenant_id` and returns that tenant's
+ *      eligible product rows.
+ *   3. Concatenate + sort the per-tenant slices into the same shape
+ *      callers had before so the rest of the script (idempotency
+ *      check, write phase, shrink) is unchanged.
+ *
+ * Write phases still run inside `withTenant(product.tenantId, …)`,
+ * so Asset insert + product.update obey standard tenant policies.
+ *
+ * See `framework/harness/database-patterns.md` for the broader RLS
+ * bypass matrix (when to use withPlatformAdmin vs withTenant vs
+ * sudo postgres) — this script's bug was the canonical first
+ * incident motivating that doc.
  */
 import "dotenv/config";
 
-import { withPlatformAdmin, withTenant } from "@/lib/db";
+import { prisma, withTenant } from "@/lib/db";
 import { createAsset } from "@/lib/assets/mutations";
 import {
   deriveEmailAssetName,
@@ -102,20 +125,36 @@ function isLegacyVideo(value: unknown): value is LegacyVideoEntry {
 }
 
 async function scanProducts(): Promise<ProductScanRow[]> {
-  return withPlatformAdmin((tx) =>
-    tx.$queryRaw<ProductScanRow[]>`
-      SELECT
-        id,
-        tenant_id AS "tenantId",
-        name,
-        updated_at AS "updatedAt",
-        ai_assets AS "aiAssets"
-      FROM product
-      WHERE ai_assets->>'status' = 'ready'
-        AND (ai_assets ? 'emailTemplates' OR ai_assets ? 'videoScripts')
-      ORDER BY tenant_id ASC, id ASC
-    `
-  );
+  // Tenant table has no RLS enabled (init migration only enabled RLS
+  // on user / kol / campaign / kol_campaign / email_template /
+  // email_log; product / asset added later; tenant itself stays the
+  // wide-open lookup table for credentials auth). prisma.tenant
+  // returns all rows under the `kolmatrix_app` role without needing
+  // platform-admin or `SET row_security = off`.
+  const tenants = await prisma.tenant.findMany({
+    select: { id: true },
+    orderBy: { id: "asc" },
+  });
+
+  const rows: ProductScanRow[] = [];
+  for (const { id: tenantId } of tenants) {
+    const tenantRows = await withTenant(tenantId, (tx) =>
+      tx.$queryRaw<ProductScanRow[]>`
+        SELECT
+          id,
+          tenant_id AS "tenantId",
+          name,
+          updated_at AS "updatedAt",
+          ai_assets AS "aiAssets"
+        FROM product
+        WHERE ai_assets->>'status' = 'ready'
+          AND (ai_assets ? 'emailTemplates' OR ai_assets ? 'videoScripts')
+        ORDER BY id ASC
+      `
+    );
+    rows.push(...tenantRows);
+  }
+  return rows;
 }
 
 async function existingBackfilledAsset(

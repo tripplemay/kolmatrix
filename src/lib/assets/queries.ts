@@ -362,7 +362,19 @@ export async function loadAssetsForComposer(
 ): Promise<ComposerAssetOption[]> {
   const where: Prisma.AssetWhereInput = { type, status: "published" };
   if (locale) {
-    where.content = { path: ["locale"], equals: locale } as Prisma.JsonNullableFilter<"Asset">;
+    // BL-031-F001 (D1) — locale filter only applies to system_seed
+    // rows. user_created / ai_generated / imported are tenant-owned
+    // creative content (AI prompts currently lock to English; the
+    // marketer's draft can be any language) and must surface to the
+    // /zh/outreach composer regardless of UI locale. Without this
+    // split a tenant whose AI emails were written in en would see
+    // only the 5 system_seed zh templates and zero of their own work.
+    where.OR = [
+      { source: { not: "system_seed" } },
+      {
+        content: { path: ["locale"], equals: locale } as Prisma.JsonNullableFilter<"Asset">,
+      },
+    ];
   }
   if (search && search.trim().length > 0) {
     // ILIKE on name. content->>'subject' is harder to filter through
