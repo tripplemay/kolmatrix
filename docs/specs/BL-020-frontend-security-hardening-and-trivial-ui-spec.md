@@ -12,7 +12,7 @@ prod 当前 sha `260d1e4 → 8ef1b22` 已含 BL-025-033 所有功能修，但 au
 
 | 池 | 编号 | 文件 | 影响 |
 |---|---|---|---|
-| Critical | CR-1 | knowledge-base/actions.ts:19-23 | productId 缺 UUID 格式校验，恶意 ID 可触发 Prisma 异常 / RLS 边界探测 |
+| Critical | CR-1 | knowledge-base/actions.ts:19-23 | productId 缺**格式校验**（Product.id 是 cuid，非 uuid — Planner 裁决 #1:A 后纠正），恶意 ID 可触发 Prisma 异常 / RLS 边界探测 |
 | Critical | CR-2 | campaigns/[id]/AiSuggestionsClient.tsx:150 | AI 生成 URL 仅查 startsWith('/')，潜在 open redirect / 路径污染 |
 | Critical | CR-3 | discovery/FilterSidebar.tsx:344 | dangerouslySetInnerHTML 反范式（当前常量安全，但留隐患）|
 | High | H-S1 | src/lib/db.ts:60 | SQL 注入兜底单点 — assertUuid 验证后才 string-template，跳过 assertUuid 即洞开 |
@@ -256,7 +256,7 @@ pm2 reload kolmatrix --update-env
 
 ### D7 — F001 / F007 / 既有测试影响
 
-- F001（normalizeProductId 加 UUID_RE）：`knowledge-base/__tests__/actions.test.ts` 既有 case 多数用 valid uuid 不破，但 patch test 加 ≥3 case
+- F001（normalizeProductId 加 **PRODUCT_ID_RE** = `/^c[a-z0-9]{24,}$/i`，**Planner 裁决 #1:A 修正自 UUID_RE**）：`knowledge-base/__tests__/actions.test.ts` 既有 case fixture 用 cuid 25-char（如 `cmab12cd30001g8l5h3n2q9rs`）已合规，patch test 加 ≥3 case
 - F007（Dashboard Campaigns href）：可能影响 dashboard 既有快照测试，需同步更新
 
 ### D8 — F005 Redis 接入风险与回滚
@@ -284,7 +284,7 @@ if (process.env.DISABLE_LOGIN_RATELIMIT === "true") return { ok: true, remaining
 - `src/lib/__tests__/rate-limit.test.ts`（F005 — testcontainer 4+ case）
 
 **修改：**
-- `src/app/[locale]/(app)/knowledge-base/actions.ts`（F001 — normalizeProductId 加 UUID_RE）
+- `src/app/[locale]/(app)/knowledge-base/actions.ts`（F001 — normalizeProductId 加 PRODUCT_ID_RE — Planner 裁决 #1:A）
 - `src/app/[locale]/(app)/knowledge-base/__tests__/actions.test.ts`（F001 — +3 case）
 - `src/app/[locale]/(app)/campaigns/[id]/AiSuggestionsClient.tsx`（F002 — 用 safeAiActionLink）
 - `src/app/[locale]/(app)/discovery/FilterSidebar.tsx`（F003 — 删 dangerouslySetInnerHTML）

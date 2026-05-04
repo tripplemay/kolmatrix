@@ -1,6 +1,6 @@
 {
   "status": "building",
-  "blocked": "F001 hold pending Planner adjudication — see docs/specs/BL-020-F001-audit-cuid-vs-uuid.md (commit f7d1aa0). Generator built 7/8 features (F002-F008 done + staging deployed @ 3aa33cb green); F001 cannot proceed until Planner picks A/B/C on the audit. Once F001 done, Generator switches status to verifying.",
+  "planner_adjudication": "2026-05-05 ~10:00 Planner Kimi 裁决 #1:A — 采纳 PRODUCT_ID_RE = /^c[a-z0-9]{24,}$/i（CUID）。理由 + 复用价值见 docs/specs/BL-020-F001-audit-cuid-vs-uuid.md §7。F001 hold 解除，Generator 立即开工 ~20min；完工后切 verifying。同步修订：spec §1+D7+§3 / features.json F001 acceptance / audit 报告 §3 CR-1 备注。Planner 自审违反 v0.9.9 铁律 1（未核 schema 真实类型），列入 v0.9.11 候选『Planner 铁律 1 强化检查项』。",
   "user_goal": "BL-020 前端安全整改 6 项 + UI 修复 2 项 mini-batch — prod 上线前必修，触发自 docs/reviews/prod-mvp-readiness-audit-2026-05-04.md §3。8 features 全 generator：F001 CR-1 productId UUID 校验 / F002 CR-2 AI URL 路径白名单 / F003 CR-3 dangerouslySetInnerHTML 反范式清理 / F004 H-S1 SQL 注入参数化（set_config 重写）/ F005 H-S2 Login rate-limit + Redis infra 全栈（ioredis + rate-limiter-flexible）/ F006 H-S3 CSP enforce 切换 / F007 UI-1 Dashboard Campaigns 卡解禁 / F008 UI-2 demo_seed env-var 过滤。Q1-Q3 锁：CSP 单 commit 1 周 staging 观察 / rate-limit 仅 login 起步 / F005 含 Redis 全栈装 ioredis。Definition of Done = 8 PASS + Reviewer L1+L2 + prod redeploy + 浏览器 + endpoint 验证（spec §6）；F006 1 周观察期作 Soft-watch 入项目状态。",
   "total_features": 8,
   "completed_features": 7,

@@ -3,12 +3,11 @@
   "features": [
     {
       "id": "F001",
-      "title": "CR-1 productId UUID 校验（normalizeProductId 加 UUID_RE）",
+      "title": "CR-1 productId 格式校验（normalizeProductId 加 PRODUCT_ID_RE — Planner 裁决 #1:A 修自 UUID_RE）",
       "priority": "high",
       "executor": "generator",
       "status": "pending",
-      "blocked_on": "Planner adjudication — see docs/specs/BL-020-F001-audit-cuid-vs-uuid.md (commit f7d1aa0). Product.id 在 prisma/schema.prisma 是 @default(cuid()) 不是 UUID — spec UUID_RE 直接套用会破 createProduct/updateProduct/triggerAiGeneration/deleteProduct 全部 product 操作 + actions.test.ts 5 既有 case 全红。Generator 建议 A 方案 CUID_RE。",
-      "acceptance": "src/app/[locale]/(app)/knowledge-base/actions.ts normalizeProductId 函数（line 19-23）加 UUID_RE 校验：在现有 trim+length 检查后加 if (!UUID_RE.test(productId)) return null（UUID_RE 同文件 line 21 已有，复用不重定义）；既有 createProduct/updateProduct/triggerAiGeneration/deleteProduct 4 调用方已检查 !productId → 走 invalid_input 流程不需改；__tests__/actions.test.ts 加 ≥3 case：(1) valid uuid 通过；(2) 非 uuid 字符串（如 'xxx'）返 null + 上层 invalid_input；(3) 含 path traversal 字符（如 '../etc/passwd'）返 null；既有 case 不破坏；npm run lint + npx tsc --noEmit 全绿。详见 spec §F001 + D7。"
+      "acceptance": "Planner 2026-05-05 裁决 #1:A（详 docs/specs/BL-020-F001-audit-cuid-vs-uuid.md §7）：Product.id 实为 CUID 不是 UUID，spec 原 UUID_RE 错配。src/app/[locale]/(app)/knowledge-base/actions.ts normalizeProductId 函数（line 19-23）加 PRODUCT_ID_RE 校验：const PRODUCT_ID_RE = /^c[a-z0-9]{24,}$/i 顶部新增（不复用既有 UUID_RE，UUID_RE 仍专用 tenantId）；在现有 trim+length 检查后加 if (!PRODUCT_ID_RE.test(productId)) return null；既有 createProduct/updateProduct/triggerAiGeneration/deleteProduct 4 调用方已检查 !productId → 走 invalid_input 流程不需改；__tests__/actions.test.ts 加 ≥3 case：(1) valid CUID（如 'cmab12cd30001g8l5h3n2q9rs' 25-char）通过；(2) 非 CUID 字符串（如 'xxx' / '../etc/passwd' / 含 \"; DROP TABLE\"）返 null + 上层 invalid_input；(3) 空字符串 / 仅空格返 null；(4) 非字符串（null / number）返 null；既有 5 case fixture（已用 cuid 25-char）不破坏；npm run lint + npx tsc --noEmit 全绿；预估 20min 工时。详见 spec §F001 + D7（已同 commit 修正） + audit §7。"
     },
     {
       "id": "F002",

@@ -56,7 +56,7 @@
 
 | 编号 | 描述 | 文件确认仍未修 |
 |---|---|---|
-| **CR-1** productId 缺 UUID 格式校验 | `knowledge-base/actions.ts:21-22` 仅 tenantId UUID_RE，`normalizeProductId` 只查非空 |
+| **CR-1** productId 缺**格式校验**（**2026-05-05 BL-020 Planner 裁决纠正：** Product.id 实为 CUID 非 UUID，本 audit 原描述误述；BL-020 F001 改用 PRODUCT_ID_RE = `/^c[a-z0-9]{24,}$/i`，详见 docs/specs/BL-020-F001-audit-cuid-vs-uuid.md §7）| `knowledge-base/actions.ts:21-22` 仅 tenantId UUID_RE，`normalizeProductId` 只查非空 |
 | **CR-2** AI 生成 URL 直渲染 `<a href>`（潜在 open redirect） | `campaigns/[id]/AiSuggestionsClient.tsx:150` `s.action_link` 仅用 `startsWith("/")`，无路径白名单 + 无 schema 校验 |
 | **CR-3** `dangerouslySetInnerHTML` 内联脚本 | `discovery/FilterSidebar.tsx:344` 仍存在（当前常量安全，但反范式） |
 | **H-S1** SQL 注入风险 | `src/lib/db.ts:60` `tx.$executeRawUnsafe(\`SET LOCAL app.tenant_id = '${tenantId}'\`)` — 字符串插值未参数化（`assertUuid` 兜底单点） |
