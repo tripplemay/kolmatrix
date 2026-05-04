@@ -57,7 +57,7 @@ export async function withTenant<T>(
 ): Promise<T> {
   assertUuid(tenantId, "tenantId");
   return prisma.$transaction(async (tx) => {
-    await tx.$executeRawUnsafe(`SET LOCAL app.tenant_id = '${tenantId}'`);
+    await tx.$executeRaw`SELECT set_config('app.tenant_id', ${tenantId}, true)`;
     return fn(tx);
   });
 }
@@ -73,7 +73,7 @@ export async function withPlatformAdmin<T>(
   fn: (tx: Prisma.TransactionClient) => Promise<T>
 ): Promise<T> {
   return prisma.$transaction(async (tx) => {
-    await tx.$executeRawUnsafe(`SET LOCAL app.is_platform_admin = 'true'`);
+    await tx.$executeRaw`SELECT set_config('app.is_platform_admin', 'true', true)`;
     return fn(tx);
   });
 }
