@@ -75,7 +75,7 @@ type: reference
 | Nginx | `/etc/nginx/conf.d/kolmatrix-staging.conf` — `staging.kol.guangai.ai:443` → `127.0.0.1:3002` |
 | TLS 证书 | Let's Encrypt `staging.kol.guangai.ai`（同 certbot auto-renew） |
 | Postgres | 共用 prod Postgres 实例；DB 名 `kolmatrix_staging`，角色同 prod（kolmatrix + kolmatrix_app） |
-| Redis | 共用 prod Redis 实例，db index `2`（aigcgateway 0 / prod 1 / staging 2） |
+| Redis | 共用 prod Redis 实例，db index `2`（aigcgateway 0 / prod 1 / staging 2）；`.env.staging` 必含 `REDIS_URL=redis://localhost:6379/2`（BL-020-F005 部署时由 Generator SSH 落地，备份 `.env.staging.bak.bl020-f005`） |
 | Health URL | `https://staging.kol.guangai.ai/api/health` |
 
 ### Staging build OOM 兜底（NODE_OPTIONS 必带）
