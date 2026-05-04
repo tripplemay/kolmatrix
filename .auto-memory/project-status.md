@@ -3,11 +3,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔨 BL-033 质量收尾合集（Checkbox + KB pipeline + /assets i18n）— BUILDING 2026-05-04
-- 触发：BL-032 prod backfill done 后用户连报 2 prod 质量问题（Outreach KOL Checkbox unchecked 视觉永显示 ✓ / /zh/assets UI 仍英文）；并入 BL-032 Soft-watch S1+S2 4 features 一批解决
-- 4 features 全 generator：F001 Checkbox 删 keepMounted（base-ui Indicator 配置错配）+ 2 测试 case 补 gap / F002 {{date}} token 加入 SubstituteVariables + KB prompt + 1 行 [DATE] backfill / F003 Server-side validation 兜底（v0.9.9 §3 落地）/ F004 /assets i18n 5 语言完整接入（含错误 toast）
-- D1-D4 + Q1-Q4 锁定：删 keepMounted / date 必填字段 / BRACKET_RE 严格大写防误报 / 5 语言全填 ja/ko/es 机译标 BL-014 审核
+## 🔍 BL-033 质量收尾合集（Checkbox + KB pipeline + /assets i18n）— VERIFYING 2026-05-04 @ 8eed529
+- 4/4 features building done @ 8eed529；staging deployed + health 200 git_sha=8eed529 + DB ok
+- F001 Checkbox keepMounted 删 + 7/7 测试 PASS；F002 SubstituteVariables.date 必填 + 3 调用站补 + scripts/convert 5th 映射 [DATE]→{{date}} 关 BL-032 S1；F003 AiPlaceholderViolationError + per-segment validation + 3 case；F004 5 messages 命名空间 + AssetsClient/EditTab/UsedInTab refactor + localizeErrorCode 错误 toast i18n + ja/ko/es 标 _machineTranslated 待 BL-014
+- 35 BL-033 单测 + 32 既有 assets action 测试全绿；npx tsc --noEmit + npm run lint 0 errors（仅 1 既有 youtube.ts 警告）
 - spec docs/specs/BL-033-quality-followups-and-assets-i18n-spec.md
+- 3 commits：31d47cc(F001) / 8c7271e(F002+F003) / 8eed529(F004) 已推 main，CI 触发
 ## ✅ BL-032 KB AI prompt placeholder 标准化 — DONE 2026-05-04（首轮 PASS @ cc1658d；prod backfill 25 行已跑）
 - v0.9.9 铁律 5 第一次按规矩跑数据迁移验证有效（updateAsset mutation 路径，0 副作用漏洞）
 ## ✅ BL-031 Composer locale + product filter — DONE 2026-05-04（首轮 PASS @ c1405c7）
@@ -16,7 +17,7 @@ type: project
 ## ✅ BL-025 / BL-026 — DONE 2026-05-03（ADR-011/012 lock）
 ## ✅ Framework v0.9.6 / v0.9.7 / v0.9.8 / v0.9.9 — DONE
 ## 用户手工待办（按优先级）
-1. **BL-033 done — prod redeploy + F002 backfill + 浏览器三验**（详 spec §5 部署顺序）
+1. **BL-033 Reviewer 验收**：Codex 接手 status=verifying；done 后 prod redeploy + F002 backfill + 浏览器三验
 2. ~2026-05-09 BIx F004 staging YouTube sync 走查
 3. @next/bundle-analyzer + Lighthouse 推迟独立批次
 ## 关键决议（已 lock）
