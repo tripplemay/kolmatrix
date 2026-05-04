@@ -6,7 +6,7 @@
       "title": "CRIT-1 DB 角色密码 migration 改造（PASSWORD NULL + deploy-prod.sh 注入 + .env.example 改）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "新建 prisma migration 20260505000000_app_role_password_decoupled，含 DO $$ ... ALTER ROLE kolmatrix_app WITH PASSWORD format(current_setting('kolmatrix.app_role_password'))（GUC 未设时 no-op，由 deploy-prod.sh 独立注入）；scripts/deploy-prod.sh 加 ALTER ROLE 段（PGPASSWORD + psql -c ALTER ROLE，幂等）；.env.example 删除 'kolmatrix_app' 字面密码占位，改为 KOLMATRIX_APP_PASSWORD='CHANGEME...' 占位 + 注释；本机 npx prisma migrate dev PASS（GUC 未设 no-op）；npm run lint + tsc + test 全绿。详见 spec §F001 + §6.1 user 手工待办 #1（SSH prod/staging 落地随机密码）。"
     },
     {
