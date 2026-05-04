@@ -21,6 +21,8 @@ import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
 import { Button, Input, Label, Select } from "@/components/ui";
+
+import { AdvancedToggleCookie } from "./AdvancedToggleCookie";
 import {
   BRAND_SAFETY_RATINGS,
   CHANNEL_AGE_TIERS,
@@ -336,15 +338,11 @@ export async function FilterSidebar({ filters, basePath }: Props) {
         </div>
       </details>
 
-      {/* B5-F003 cookie persistence — small inline script that writes
-         `kolm_disco_advanced` whenever the marketer toggles the
-         <details>. Pure browser code, no React state, runs once per
-         page render. */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `(function(){var d=document.querySelector('details[data-disco-advanced]');if(!d)return;d.addEventListener('toggle',function(){document.cookie='${ADVANCED_COOKIE_NAME}='+(d.open?'1':'0')+';path=/;max-age=31536000;samesite=lax';});})();`,
-        }}
-      />
+      {/* B5-F003 cookie persistence (BL-020-F003 hardening): the previous
+         inline-script IIFE is replaced by a client component that
+         attaches a `toggle` listener via useEffect. Behaviour is
+         identical — write `kolm_disco_advanced=1|0` on each toggle. */}
+      <AdvancedToggleCookie cookieName={ADVANCED_COOKIE_NAME} />
 
       {/* Keep sort sticky across filter submissions */}
       <input type="hidden" name="sort" value={filters.sort} />
