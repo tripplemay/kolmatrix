@@ -143,6 +143,7 @@ export function TemplateWorkspaceClient({
         usp: data.selectedCampaign?.productUsp,
       },
       marketer: { name: data.marketerName },
+      date: new Date().toISOString().slice(0, 10),
     }),
     [
       previewKol,

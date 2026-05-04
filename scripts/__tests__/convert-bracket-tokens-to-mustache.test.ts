@@ -10,12 +10,13 @@
  * can assert the email_template mirror is invoked with the new
  * mustache subject/body.
  *
- * Test cases mirror the BL-032-F002 acceptance line:
+ * Test cases mirror BL-032-F002 acceptance + BL-033-F002 [DATE] mapping:
  *   (1) dry-run touches no updateAsset / mirror writes
- *   (2) execute mode replaces 5 bracket variants with 2 mustache tokens
+ *   (2) execute mode replaces 4 bracket variants with 2 mustache tokens
  *   (3) re-run on already-converted content writes nothing (idempotent)
- *   (4) [DATE] preserved literal + email_template mirror updates carry
- *       the new mustache subject/body
+ *   (4) [DATE] → {{date}} converted (BL-033-F002 — was preserved in BL-032,
+ *       now mapped) + email_template mirror updates carry the new tokens
+ *   (5) BL-033-F002 — [DATE]-only asset converts cleanly
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -208,20 +209,19 @@ describe("convertTenant — (3) idempotent re-run", () => {
     expect(mirrorUpdates).toHaveLength(0);
   });
 
-  it("defensive app-side skip when SQL row contains no white-listed bracket (e.g. only [DATE])", async () => {
+  it("defensive app-side skip when SQL row contains no white-listed bracket (race after JSON shape divergence)", async () => {
     const { convertTenant } = await import("../convert-bracket-tokens-to-mustache");
 
-    // Simulate the rare race where SQL ILIKE matched something that
-    // app-side `hasAnyBracket` re-rejects. Because the script's app
-    // filter also rejects [DATE]-only content (D2 — preserve), we
-    // verify the skip path increments stats.skipped and never calls
-    // updateAsset.
+    // Simulate the rare race where SQL ILIKE matched something the
+    // app-side `hasAnyBracket` re-rejects (e.g. JSON-encoded escapes
+    // resembling a bracket). Verify the skip path increments
+    // stats.skipped and never calls updateAsset.
     assetScanByTenant.set(TENANT, [
       {
-        id: "asset-date-only",
+        id: "asset-no-bracket",
         content: {
-          subject: "Reminder for [DATE]",
-          body: "Send by [DATE].",
+          subject: "Plain subject without any tokens",
+          body: "No brackets here at all.",
           locale: "en",
           variables: [],
         },
@@ -238,8 +238,8 @@ describe("convertTenant — (3) idempotent re-run", () => {
   });
 });
 
-describe("convertTenant — (4) [DATE] preserved + email_template mirror sync", () => {
-  it("retains [DATE] literal in newContent and the simulated dualWrite mirror carries the converted subject/body", async () => {
+describe("convertTenant — (4) [DATE] → {{date}} (BL-033-F002) + email_template mirror sync", () => {
+  it("converts [DATE] alongside other variants and the simulated dualWrite mirror carries the converted subject/body", async () => {
     const { convertTenant } = await import("../convert-bracket-tokens-to-mustache");
 
     assetScanByTenant.set(TENANT, [
@@ -262,37 +262,69 @@ describe("convertTenant — (4) [DATE] preserved + email_template mirror sync", 
     expect(stats.mirrorsAttempted).toBe(1);
 
     const newContent = updateAssetCalls[0]!.patch.content as Record<string, unknown>;
-    // [Creator Name] / [Creator] / [Your Name] → mustache
-    expect(newContent.subject).toBe("Hi {{kol.name}} — confirm by [DATE]");
+    // BL-033-F002 — [DATE] now also converts to {{date}}.
+    expect(newContent.subject).toBe("Hi {{kol.name}} — confirm by {{date}}");
     expect(newContent.body).toBe(
-      "Hey {{kol.name}},\nNeed your response before [DATE].\n— {{marketer.name}}"
+      "Hey {{kol.name}},\nNeed your response before {{date}}.\n— {{marketer.name}}"
     );
-    // [DATE] preserved literal in BOTH subject and body.
-    expect(String(newContent.subject)).toContain("[DATE]");
-    expect(String(newContent.body)).toContain("[DATE]");
+    // No bracket variant survives the conversion (incl. [DATE]).
+    expect(String(newContent.subject)).not.toMatch(/\[(?:Creator(?:\s+Name)?|KOL Name|Your Name|DATE)\]/);
+    expect(String(newContent.body)).not.toMatch(/\[(?:Creator(?:\s+Name)?|KOL Name|Your Name|DATE)\]/);
 
     // dualWrite contract: email_template mirror was invoked with the
     // converted subject/body (matches the script's stats.mirrorsAttempted
     // count). mutations.ts unit specs cover the mirror SQL itself.
     expect(mirrorUpdates).toHaveLength(1);
     expect(mirrorUpdates[0]!.assetId).toBe("asset-date-mixed");
-    expect(mirrorUpdates[0]!.subject).toBe("Hi {{kol.name}} — confirm by [DATE]");
+    expect(mirrorUpdates[0]!.subject).toBe("Hi {{kol.name}} — confirm by {{date}}");
     expect(mirrorUpdates[0]!.body).toBe(
-      "Hey {{kol.name}},\nNeed your response before [DATE].\n— {{marketer.name}}"
+      "Hey {{kol.name}},\nNeed your response before {{date}}.\n— {{marketer.name}}"
     );
   });
 });
 
+describe("convertTenant — (5) BL-033-F002 [DATE]-only asset converts cleanly", () => {
+  it("an asset with only [DATE] (no other brackets) converts to {{date}}", async () => {
+    const { convertTenant } = await import("../convert-bracket-tokens-to-mustache");
+
+    // Models the prod residual row (Clash Royale — Signing invitation)
+    // that BL-032 deliberately preserved. BL-033-F002 closes that gap.
+    assetScanByTenant.set(TENANT, [
+      {
+        id: "asset-date-only",
+        content: {
+          subject: "Reminder for [DATE]",
+          body: "Send by [DATE].",
+          locale: "en",
+          variables: [],
+        },
+      },
+    ]);
+
+    const stats = freshStats();
+    await convertTenant(TENANT, true, stats);
+
+    expect(stats.candidates).toBe(1);
+    expect(stats.updated).toBe(1);
+    expect(stats.skipped).toBe(0);
+    expect(stats.mirrorsAttempted).toBe(1);
+
+    const newContent = updateAssetCalls[0]!.patch.content as Record<string, unknown>;
+    expect(newContent.subject).toBe("Reminder for {{date}}");
+    expect(newContent.body).toBe("Send by {{date}}.");
+  });
+});
+
 describe("applyMapping — pure helper", () => {
-  it("preserves text without white-listed brackets", async () => {
+  it("preserves text without any white-listed brackets", async () => {
     const { applyMapping } = await import("../convert-bracket-tokens-to-mustache");
-    expect(applyMapping("plain text [DATE] only")).toBe("plain text [DATE] only");
+    expect(applyMapping("plain text only [unknown] tag")).toBe("plain text only [unknown] tag");
   });
 
-  it("replaces every white-listed variant in a single string", async () => {
+  it("replaces every white-listed variant in a single string (BL-033-F002 includes [DATE])", async () => {
     const { applyMapping } = await import("../convert-bracket-tokens-to-mustache");
     expect(
       applyMapping("[Creator Name] / [KOL Name] / [Creator] / [Your Name] / [DATE]")
-    ).toBe("{{kol.name}} / {{kol.name}} / {{kol.name}} / {{marketer.name}} / [DATE]");
+    ).toBe("{{kol.name}} / {{kol.name}} / {{kol.name}} / {{marketer.name}} / {{date}}");
   });
 });

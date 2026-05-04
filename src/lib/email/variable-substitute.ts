@@ -3,7 +3,7 @@
  *
  * Template tokens match the F002 seed catalogue:
  *   {{kol.name}} / {{kol.handle}} / {{product.name}} /
- *   {{product.category}} / {{product.usp}} / {{marketer.name}}
+ *   {{product.category}} / {{product.usp}} / {{marketer.name}} / {{date}}
  *
  * Missing tokens collapse to empty string by default — the composer
  * preview UI can warn on unresolved tokens via the `missing` array.
@@ -13,6 +13,8 @@ export interface SubstituteVariables {
   kol: { name: string; handle?: string | null };
   product: { name: string; category?: string | null; usp?: string | null };
   marketer: { name: string };
+  /** BL-033-F002: ISO yyyy-mm-dd, e.g. "2026-05-04". Required so TS catches all callers. */
+  date: string;
 }
 
 export interface SubstituteResult {

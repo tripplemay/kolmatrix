@@ -9,6 +9,7 @@ const base = {
   kol: { name: "Luna", handle: "luna_plays" },
   product: { name: "Nebula", category: "MOBA", usp: "Cross-platform" },
   marketer: { name: "Sarah" },
+  date: "2026-05-04",
 };
 
 describe("substitute", () => {
@@ -30,6 +31,19 @@ describe("substitute", () => {
   it("handles whitespace inside token braces", () => {
     const res = substitute("{{   kol.name   }} says hi", base);
     expect(res.text).toBe("Luna says hi");
+  });
+
+  // BL-033-F002 — {{date}} top-level token
+  it("replaces {{date}} with the ISO date string", () => {
+    const res = substitute("Sent on {{date}} from {{marketer.name}}", base);
+    expect(res.text).toBe("Sent on 2026-05-04 from Sarah");
+    expect(res.missing).toEqual([]);
+  });
+
+  it("flags missing date when caller passes empty string", () => {
+    const res = substitute("Sent on {{date}}", { ...base, date: "" });
+    expect(res.text).toBe("Sent on ");
+    expect(res.missing).toEqual(["date"]);
   });
 });
 

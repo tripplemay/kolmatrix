@@ -23,10 +23,10 @@
  * --execute is a full no-op for converted rows. No metadata.convertedAt
  * marker is written.
  *
- * Mapping (spec §D2):
+ * Mapping (spec §D2 — BL-033-F002 added 5th mapping for [DATE]):
  *   [Creator Name] / [KOL Name] / [Creator]  →  {{kol.name}}
  *   [Your Name]                              →  {{marketer.name}}
- *   [DATE]                                   →  preserved (Soft-watch S1)
+ *   [DATE]                                   →  {{date}}  (BL-033-F002)
  *
  * RLS — sibling pattern from BL-031-F003 (D3): tenant.findMany on the
  * base prisma client (tenant table has no RLS), then per-tenant
@@ -63,12 +63,14 @@ interface AssetScanRow {
 // strict superset substring of [Creator]; replacing the longer form
 // first prevents partial overlaps when both appear in the same string.
 // `g` for global; case-sensitive matches the 5 distinct variants
-// observed in prod (BL-032 Phase 1 grep).
+// observed in prod (BL-032 Phase 1 grep + BL-033 [DATE] residual).
 const BRACKET_TO_MUSTACHE: ReadonlyArray<readonly [RegExp, string]> = [
   [/\[Creator Name\]/g, "{{kol.name}}"],
   [/\[KOL Name\]/g, "{{kol.name}}"],
   [/\[Creator\]/g, "{{kol.name}}"],
   [/\[Your Name\]/g, "{{marketer.name}}"],
+  // BL-033-F002 — close BL-032 Soft-watch S1; SubstituteVariables now requires `date`.
+  [/\[DATE\]/g, "{{date}}"],
 ];
 
 export function applyMapping(text: string): string {
@@ -104,13 +106,11 @@ export function convertContent(
 }
 
 export async function scanAssets(tenantId: string): Promise<AssetScanRow[]> {
-  // SQL pre-filter on the 4 white-listed brackets so per-tenant scan
+  // SQL pre-filter on the 5 white-listed brackets so per-tenant scan
   // returns only candidates (15-row prod scale, but staging may grow;
-  // ILIKE on JSONB ::text is cheap at this size). [DATE] excluded by
-  // D3 / D4. App-side hasAnyBracket re-checks for safety after JSON
-  // shape divergence (e.g. `[Creator Name]` inside legitimate quoted
-  // marketing copy is not present in current prod data; the app filter
-  // is the second guardrail).
+  // ILIKE on JSONB ::text is cheap at this size). BL-033-F002 added
+  // [DATE] to close BL-032 Soft-watch S1. App-side hasAnyBracket
+  // re-checks for safety after JSON shape divergence.
   return withTenant(tenantId, (tx) =>
     tx.$queryRaw<AssetScanRow[]>`
       SELECT id, content
@@ -122,6 +122,7 @@ export async function scanAssets(tenantId: string): Promise<AssetScanRow[]> {
           OR content::text ILIKE '%[KOL Name]%'
           OR content::text ILIKE '%[Creator]%'
           OR content::text ILIKE '%[Your Name]%'
+          OR content::text ILIKE '%[DATE]%'
         )
       ORDER BY id ASC
     `

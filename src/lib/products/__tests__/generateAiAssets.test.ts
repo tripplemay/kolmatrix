@@ -294,6 +294,8 @@ describe("generateAiAssets — F001 prompt instructs Mustache tokens (BL-032)", 
     expect(promptText).toContain("{{product.category}}");
     expect(promptText).toContain("{{product.usp}}");
     expect(promptText).toContain("{{marketer.name}}");
+    // BL-033-F002 — {{date}} added to the catalogue.
+    expect(promptText).toContain("{{date}}");
     expect(promptText).toContain("do not use square brackets");
 
     // Pass-through verification — AI's mustache literals end up in createAsset.content.
@@ -424,6 +426,115 @@ describe("generateAiAssets — failure paths write a failed marker, no Asset row
     const aiAssets = productUpdates[0]!.data.aiAssets as Record<string, unknown>;
     expect(aiAssets.status).toBe("failed");
     expect(String(aiAssets.error)).toMatch(/emailTemplates\[0\]/);
+  });
+});
+
+describe("generateAiAssets — F003 server-side bracket placeholder guardrail (BL-033)", () => {
+  it("rejects AI output with bracket placeholders and no Mustache: status=failed, no Asset rows, no audit", async () => {
+    const { generateAiAssets } = await import("../generateAiAssets");
+    const fetcher = mockFetch({
+      id: "trace-bracket",
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              emailTemplates: [
+                { subject: "Hi [Creator Name]", body: "Yo [Creator]\n— [Your Name]" },
+                { subject: "Follow [KOL Name]", body: "Reaching back out, [Creator]." },
+                { subject: "Sign [KOL Name]", body: "Ready to sign, [Creator]?" },
+              ],
+              videoScripts: [
+                { title: "YT 60s", script: "Pan over [DATE] hero..." },
+                { title: "TikTok 15s", script: "Quick hook for [Creator]..." },
+              ],
+            }),
+          },
+        },
+      ],
+    });
+
+    await generateAiAssets(BASE_INPUT, { fetchImpl: fetcher as unknown as typeof fetch });
+
+    expect(createAssetCalls).toHaveLength(0);
+    expect(logAuditCalls).toHaveLength(0);
+    expect(productUpdates).toHaveLength(1);
+    const aiAssets = productUpdates[0]!.data.aiAssets as Record<string, unknown>;
+    expect(aiAssets.status).toBe("failed");
+    expect(String(aiAssets.error)).toContain("bracket placeholders");
+    expect(String(aiAssets.error)).toContain("prompt regression");
+  });
+
+  it("does not flag legitimate Title-Case bracket prose when Mustache tokens are present in the same segment", async () => {
+    const { generateAiAssets } = await import("../generateAiAssets");
+    // Body intentionally mixes a legitimate marketing phrase
+    // "[Press Release]" with a real {{kol.name}} token. The per-segment
+    // rule (brackets>0 AND mustaches===0) gates on absence of mustaches,
+    // so this body must pass.
+    const fetcher = mockFetch({
+      id: "trace-mixed",
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              emailTemplates: [
+                {
+                  subject: "Hi {{kol.name}} — quick note",
+                  body: "Hi {{kol.name}}, see attached [Press Release] for {{product.name}}.\n— {{marketer.name}}",
+                },
+                { subject: "Follow {{kol.name}}", body: "Following up, {{kol.name}}." },
+                { subject: "Sign {{kol.name}}", body: "Ready to sign, {{kol.name}}!" },
+              ],
+              videoScripts: [
+                { title: "YT 60s", script: "Hi {{kol.name}}, watch the trailer." },
+                { title: "TikTok 15s", script: "{{kol.name}} hooks the viewer." },
+              ],
+            }),
+          },
+        },
+      ],
+    });
+
+    await generateAiAssets(BASE_INPUT, { fetchImpl: fetcher as unknown as typeof fetch });
+
+    expect(createAssetCalls).toHaveLength(5);
+    expect(productUpdates).toHaveLength(1);
+    const aiAssets = productUpdates[0]!.data.aiAssets as Record<string, unknown>;
+    expect(aiAssets.status).toBe("ready");
+    // The legitimate bracket phrase passes through to the persisted asset.
+    const firstEmailContent = createAssetCalls[0]!.input.content as Record<string, unknown>;
+    expect(String(firstEmailContent.body)).toContain("[Press Release]");
+    expect(String(firstEmailContent.body)).toContain("{{kol.name}}");
+  });
+
+  it("full-Mustache output is unaffected — happy path still writes 5 Assets", async () => {
+    const { generateAiAssets } = await import("../generateAiAssets");
+    const fetcher = mockFetch({
+      id: "trace-clean",
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              emailTemplates: [
+                { subject: "Hi {{kol.name}}", body: "Sent {{date}}: try {{product.name}}." },
+                { subject: "Follow {{kol.name}}", body: "Following up." },
+                { subject: "Sign {{kol.name}}", body: "Sign now." },
+              ],
+              videoScripts: [
+                { title: "YT 60s", script: "Hero shot, {{kol.name}}." },
+                { title: "TikTok 15s", script: "Hook, {{kol.name}}." },
+              ],
+            }),
+          },
+        },
+      ],
+    });
+
+    await generateAiAssets(BASE_INPUT, { fetchImpl: fetcher as unknown as typeof fetch });
+
+    expect(createAssetCalls).toHaveLength(5);
+    expect(logAuditCalls).toHaveLength(5);
+    const aiAssets = productUpdates[0]!.data.aiAssets as Record<string, unknown>;
+    expect(aiAssets.status).toBe("ready");
   });
 });
 

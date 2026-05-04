@@ -84,6 +84,49 @@ interface ParsedAiAssetContent {
   videoScripts: Array<{ title: string; script: string }>;
 }
 
+/**
+ * BL-033-F003 (v0.9.9 §3) — server-side guardrail for the AI placeholder
+ * contract. Thrown when AI output contains bracket placeholders like
+ * `[Creator Name]` but no Mustache tokens, signalling the prompt
+ * regressed and the substitution layer would render the bracket text
+ * literally to recipients. Falls into the existing catch path so
+ * Product.aiAssets becomes `failed` and no Asset rows persist.
+ */
+export class AiPlaceholderViolationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AiPlaceholderViolationError";
+  }
+}
+
+// Spec §D3 — only flag uppercase-led bracket strings. Lower/Title-case
+// brackets like [press release] are legitimate marketing prose.
+// Match a single capital then any letters or spaces, so multi-word
+// variants ([Creator Name], [Your Name], [DATE]) all hit.
+const BRACKET_RE = /\[[A-Z][a-zA-Z ]+\]/g;
+// Mustache tokens are always lowercase (per the prompt + seed catalogue:
+// {{kol.name}}, {{product.usp}}, {{marketer.name}}, {{date}}).
+const MUSTACHE_RE = /\{\{[a-z][a-zA-Z0-9_.]+\}\}/g;
+
+function validateNoBracketPlaceholders(parsed: ParsedAiAssetContent): void {
+  const segments: string[] = [];
+  for (const e of parsed.emailTemplates) {
+    segments.push(e.subject, e.body);
+  }
+  for (const v of parsed.videoScripts) {
+    segments.push(v.title, v.script);
+  }
+  for (const text of segments) {
+    const brackets = text.match(BRACKET_RE) ?? [];
+    const mustaches = text.match(MUSTACHE_RE) ?? [];
+    if (brackets.length > 0 && mustaches.length === 0) {
+      throw new AiPlaceholderViolationError(
+        `AI output uses bracket placeholders (${brackets.slice(0, 3).join(", ")}) but no Mustache tokens — prompt regression`
+      );
+    }
+  }
+}
+
 export function deriveEmailAssetName(productName: string, index: number): string {
   const suffix = EMAIL_NAME_SUFFIXES[index] ?? `Variant ${index + 1}`;
   return `${productName} — ${suffix}`;
@@ -157,6 +200,7 @@ export async function generateAiAssets(
     `- {{product.category}} for the product category  \n` +
     `- {{product.usp}} for the product unique selling points\n` +
     `- {{marketer.name}} for the sender/marketer signature\n` +
+    `- {{date}} for the current date (formatted as yyyy-mm-dd, e.g. 2026-05-04)\n` +
     `\nExample: "Hi {{kol.name}}, ..." / "—{{marketer.name}}".`;
 
   const body = {
@@ -196,6 +240,10 @@ export async function generateAiAssets(
       throw new Error("aigcgateway response missing choices[0].message.content");
     }
     const parsed = parseAndValidate(raw);
+    // BL-033-F003 — server-side guardrail. Bracket-only output throws
+    // AiPlaceholderViolationError, falling into the catch path below so
+    // Product.aiAssets becomes failed and no Asset rows persist.
+    validateNoBracketPlaceholders(parsed);
     const generatedAt = new Date().toISOString();
     const traceId = json.id ?? null;
 

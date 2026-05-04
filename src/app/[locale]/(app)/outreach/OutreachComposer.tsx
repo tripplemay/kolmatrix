@@ -217,6 +217,7 @@ export function OutreachComposer({
         usp: selectedCampaign?.productUsp,
       },
       marketer: { name: data.marketerName },
+      date: new Date().toISOString().slice(0, 10),
     }),
     [previewKol, selectedCampaign, data.marketerName]
   );
@@ -326,6 +327,7 @@ export function OutreachComposer({
             usp: selectedCampaign.productUsp,
           },
           marketer: { name: data.marketerName },
+          date: new Date().toISOString().slice(0, 10),
         };
         const sub = substituteSubjectAndBody(
           { subject: activeSubject, body: activeBody },
