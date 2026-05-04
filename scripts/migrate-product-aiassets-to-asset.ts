@@ -168,10 +168,19 @@ async function existingBackfilledAsset(
   // metadata->'backfilledFrom'->>'index' = '0' AND
   // metadata->'backfilledFrom'->>'sourceField' = '...' in one go
   // without a generated column.
+  //
+  // BL-031-F003 surfaced fix — `asset.product_id` is `TEXT` in the
+  // Prisma migration (Product.id uses `cuid()` not uuid), so the
+  // original `${productId}::uuid` cast threw
+  // `42883: operator does not exist: text = uuid` whenever the
+  // backfill actually saw rows. The BL-030 prod migration sidestepped
+  // this because scanProducts (with the now-fixed RLS bug) returned
+  // 0 rows and this code path never ran. Plain text equality is the
+  // right contract here — the FK in the migration also doesn't cast.
   const rows = await tx.$queryRaw<Array<{ id: string }>>`
     SELECT id
     FROM asset
-    WHERE product_id = ${productId}::uuid
+    WHERE product_id = ${productId}
       AND source = 'ai_generated'
       AND metadata->'backfilledFrom'->>'sourceField' = ${sourceField}
       AND metadata->'backfilledFrom'->>'index' = ${String(index)}
