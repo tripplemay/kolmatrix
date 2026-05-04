@@ -6,7 +6,7 @@
       "title": "generateAiAssets 提示词加 Mustache token 规约 + 单元测试断言",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "src/lib/products/generateAiAssets.ts userMessage（line 88-97）末尾追加 spec §D1 段落字面（'Use these EXACT Mustache tokens...' 共 5 个 token + 'do not use square brackets like [Creator Name] or [Your Name]' + 'Example' 行）；不动其它 prompt 部分；src/lib/products/__tests__/generateAiAssets.test.ts 加 1 case 'F001 prompt instructs Mustache tokens'：mock fetch 返回的 AI response 含 '{{kol.name}}' '{{marketer.name}}' 字面，断言 createAsset 调用的 content.body 含此 mustache 字面（pass through 验证）+ 断言提交给 fetch 的 body string 含 'Use these EXACT Mustache tokens' 关键短语（prompt 验证）；既有 generateAiAssets test case 不破坏；npm run lint + npx tsc --noEmit 全绿。详见 spec §2 D1 + §3。"
     },
     {
@@ -14,7 +14,7 @@
       "title": "Backfill 脚本 convert-bracket-tokens-to-mustache.ts (per-tenant + updateAsset mutation)",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "新建 scripts/convert-bracket-tokens-to-mustache.ts（默认 dry-run / --execute 实跑）：算法（spec §D3）：(a) prisma.tenant.findMany 枚举所有 tenant；(b) 对每 tenant withTenant 内 findMany asset WHERE source='ai_generated' AND type='email' AND (content body|subject 含任一 5 种 bracket 中 4 个待转的)；(c) 对每条 asset 计算新 content（subject + body 全文 5→2 替换：'[Creator Name]'/'[KOL Name]'/'[Creator]' → '{{kol.name}}'，'[Your Name]' → '{{marketer.name}}'，[DATE] 不替换 — 见 spec §D2 表）；(d) 调 updateAsset(tx, id, {content: newContent}) 自动触发 dualWriteEmailTemplateOnUpdate；(e) 输出 stats：tenants scanned / assets candidate / assets updated / assets skipped (无 bracket) / email_template mirror affected count (从 dualWrite 返回)；脚本入口含 README header（用法+回滚 'restore from pg_dump 或 SQL UPDATE 把 mustache 反向'）；shebang+chmod+x；注：D3 天然幂等（无 bracket 自动跳过），无需 metadata.convertedAt 标记；新建 scripts/__tests__/convert-bracket-tokens-to-mustache.test.ts 至少 4 case：(1) dry-run 不写；(2) 实跑 fixture 5 bracket → 5 mustache；(3) 重跑实跑 → 0 changes（幂等）；(4) [DATE] 字面保留不动 + email_template 镜像 subject/body 同步更新；npm test 本地全绿（forks pool）；CI 全绿。详见 spec §D2+§D3+§3。"
     },
     {
@@ -22,7 +22,7 @@
       "title": "部署 + 验收 handoff 文档",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "completed",
       "acceptance": "Generator 在 building 完成后 progress.json generator_handoff 写完整执行报告：commit list + CI run + staging deploy git_sha + staging dry-run 实测（扫到 N tenant M asset） + spec §5 部署顺序复述；Reviewer L1+L2 必跑：(1) staging 浏览器 /zh/outreach 选任一含 ai_generated email 的 campaign → Send Test 给一个 KOL email → 收件箱内容含 '{{kol.name}}' 已替换为 KOL 实名（不再字面 [Creator Name]）；(2) staging 创建一新 product 触发 Generate AI assets → 等 5-10s → 查 Asset 表新创建 email content body/subject 含 '{{kol.name}}' '{{marketer.name}}' 至少 2 个 mustache token（prompt 修生效验证）；(3) Reviewer 跑 backfill --execute 实跑前 dry-run，确认 stats（如 staging 'M' candidate）；progress.json status 切 verifying。详见 spec §5。"
     }
   ]
