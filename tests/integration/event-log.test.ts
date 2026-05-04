@@ -67,13 +67,18 @@ describe("logEvent()", () => {
   });
 
   it("swallows DB errors so the caller's main flow is unaffected", async () => {
+    // BL-034 F003: tenant-scoped writes flow through withTenant() →
+    // tx.eventLog.create, which bypasses a spy on the singleton's
+    // eventLog.create. Drive the test through the platform-level path
+    // (no tenantId) where the bare client is still in play so the spy
+    // can simulate the connection failure.
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const createSpy = vi
       .spyOn(prismaModule.prisma.eventLog, "create")
       .mockRejectedValueOnce(new Error("connection refused"));
 
     await expect(
-      logEvent({ type: "kol.created", tenantId: TENANT_A, payload: { x: 1 } })
+      logEvent({ type: "kol.created", payload: { x: 1 } })
     ).resolves.toBeUndefined();
 
     expect(errorSpy).toHaveBeenCalledTimes(1);

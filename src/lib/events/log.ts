@@ -1,13 +1,19 @@
 // BI4-F002 · Fire-and-forget business event logging.
 //
 // Feature code calls `logEvent({ type: "kol.created", ... })` after a
-// domain action succeeds. Writes land in `event_log` via the base
-// prisma client (no RLS on that table). Failures are swallowed with
-// console.error so a downstream DB hiccup cannot tank the main flow
-// — events are a nice-to-have for observability / future webhooks,
-// never load-bearing for the business action that produced them.
+// domain action succeeds. Writes land in `event_log`. Failures are
+// swallowed with console.error so a downstream DB hiccup cannot tank the
+// main flow — events are a nice-to-have for observability / future
+// webhooks, never load-bearing for the business action that produced
+// them.
+//
+// BL-034 F003: event_log gained an RLS policy
+// (20260505010000_audit_event_log_rls). Tenant-scoped writes now must
+// pin `app.tenant_id` via withTenant() so the policy lets the INSERT
+// through. Platform-level events (no tenantId) continue to use the bare
+// client and rely on the policy's `tenant_id IS NULL` branch.
 
-import { prisma } from "@/lib/db";
+import { prisma, withTenant } from "@/lib/db";
 
 export interface EventData {
   /** Dotted namespaced action, e.g. "kol.created", "campaign.email_sent" */
@@ -23,16 +29,20 @@ export interface EventData {
 }
 
 export async function logEvent(data: EventData): Promise<void> {
+  const row = {
+    type: data.type,
+    tenantId: data.tenantId ?? null,
+    actorId: data.actorId ?? null,
+    resourceId: data.resourceId ?? null,
+    payload: (data.payload ?? {}) as object,
+  };
+
   try {
-    await prisma.eventLog.create({
-      data: {
-        type: data.type,
-        tenantId: data.tenantId,
-        actorId: data.actorId,
-        resourceId: data.resourceId,
-        payload: (data.payload ?? {}) as object,
-      },
-    });
+    if (data.tenantId) {
+      await withTenant(data.tenantId, (tx) => tx.eventLog.create({ data: row }));
+    } else {
+      await prisma.eventLog.create({ data: row });
+    }
   } catch (err) {
     console.error(`[logEvent] Failed to persist event "${data.type}":`, err);
   }

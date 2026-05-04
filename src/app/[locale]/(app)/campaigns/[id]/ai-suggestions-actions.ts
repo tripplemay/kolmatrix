@@ -61,8 +61,14 @@ export async function generateCampaignSuggestionsAction(
         _count: { _all: true },
       });
 
+      // BL-034 F003 defense-in-depth: even though audit_log now carries an
+      // RLS policy and `tx` is pinned to this tenant via withTenant(), we
+      // also filter by tenantId explicitly so a future refactor that
+      // mistakenly runs this read outside withTenant cannot leak rows
+      // whose resourceId happens to collide across tenants.
       const recentAudit = await tx.auditLog.findMany({
         where: {
+          tenantId,
           OR: [
             { resourceType: "campaign", resourceId: campaignId },
             {
