@@ -17,6 +17,7 @@
  * signing invitation], videos [YouTube 60s / TikTok 15s].
  */
 import { Prisma, withTenant } from "@/lib/db";
+import { validateNoBracketPlaceholders } from "@/lib/ai/placeholder-guard";
 import { resolveAigcV1BaseUrl } from "@/lib/aigc/base-url";
 import { createAsset } from "@/lib/assets/mutations";
 import { logAudit } from "@/lib/audit/log";
@@ -85,45 +86,30 @@ interface ParsedAiAssetContent {
 }
 
 /**
- * BL-033-F003 (v0.9.9 §3) — server-side guardrail for the AI placeholder
- * contract. Thrown when AI output contains bracket placeholders like
- * `[Creator Name]` but no Mustache tokens, signalling the prompt
- * regressed and the substitution layer would render the bracket text
- * literally to recipients. Falls into the existing catch path so
- * Product.aiAssets becomes `failed` and no Asset rows persist.
+ * BL-033-F003 (v0.9.9 §3) → BL-034 F006 — placeholder guard moved to
+ * `src/lib/ai/placeholder-guard.ts` so the single-asset regen paths
+ * (email-generator.ts / video-script-generator.ts) reuse the same
+ * rejection contract. The local re-export keeps existing callers'
+ * `import { AiPlaceholderViolationError } from "./generateAiAssets"`
+ * working until they're migrated.
  */
-export class AiPlaceholderViolationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "AiPlaceholderViolationError";
-  }
-}
+export { AiPlaceholderViolationError } from "@/lib/ai/placeholder-guard";
 
-// Spec §D3 — only flag uppercase-led bracket strings. Lower/Title-case
-// brackets like [press release] are legitimate marketing prose.
-// Match a single capital then any letters or spaces, so multi-word
-// variants ([Creator Name], [Your Name], [DATE]) all hit.
-const BRACKET_RE = /\[[A-Z][a-zA-Z ]+\]/g;
-// Mustache tokens are always lowercase (per the prompt + seed catalogue:
-// {{kol.name}}, {{product.usp}}, {{marketer.name}}, {{date}}).
-const MUSTACHE_RE = /\{\{[a-z][a-zA-Z0-9_.]+\}\}/g;
-
-function validateNoBracketPlaceholders(parsed: ParsedAiAssetContent): void {
-  const segments: string[] = [];
+function validateAllAiAssetSegments(parsed: ParsedAiAssetContent): void {
+  // Permissive mode preserves the pre-BL-034 behavior — a body that
+  // splices `[Press Release]` into `{{kol.name}}` mustache prose is
+  // intentional marketing copy, not a regression.
   for (const e of parsed.emailTemplates) {
-    segments.push(e.subject, e.body);
+    validateNoBracketPlaceholders(
+      { subject: e.subject, body: e.body },
+      { allowIfMustache: true },
+    );
   }
   for (const v of parsed.videoScripts) {
-    segments.push(v.title, v.script);
-  }
-  for (const text of segments) {
-    const brackets = text.match(BRACKET_RE) ?? [];
-    const mustaches = text.match(MUSTACHE_RE) ?? [];
-    if (brackets.length > 0 && mustaches.length === 0) {
-      throw new AiPlaceholderViolationError(
-        `AI output uses bracket placeholders (${brackets.slice(0, 3).join(", ")}) but no Mustache tokens — prompt regression`
-      );
-    }
+    validateNoBracketPlaceholders(
+      { subject: v.title, body: v.script },
+      { allowIfMustache: true },
+    );
   }
 }
 
@@ -245,10 +231,11 @@ export async function generateAiAssets(
       throw new Error("aigcgateway response missing choices[0].message.content");
     }
     const parsed = parseAndValidate(raw);
-    // BL-033-F003 — server-side guardrail. Bracket-only output throws
-    // AiPlaceholderViolationError, falling into the catch path below so
-    // Product.aiAssets becomes failed and no Asset rows persist.
-    validateNoBracketPlaceholders(parsed);
+    // BL-033-F003 → BL-034 F006 — server-side guardrail. Bracket-only
+    // output throws AiPlaceholderViolationError, falling into the catch
+    // path below so Product.aiAssets becomes failed and no Asset rows
+    // persist. Walks every email + video segment via the shared guard.
+    validateAllAiAssetSegments(parsed);
     const generatedAt = new Date().toISOString();
     const traceId = json.id ?? null;
 

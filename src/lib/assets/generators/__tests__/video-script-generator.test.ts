@@ -86,4 +86,19 @@ describe("generateVideoScriptContent", () => {
     });
     expect(prompt).toContain("TikTok 15-second");
   });
+
+  it("BL-034 F006: rejects bracket-placeholder script via shared validateNoBracketPlaceholders", async () => {
+    const fetchImpl = vi.fn().mockResolvedValueOnce(
+      chatResponse(
+        JSON.stringify({
+          title: "Promo",
+          script: "Hi [Creator Name], try the new patch.",
+          durationHintSec: 60,
+        }),
+      ),
+    );
+    await expect(generateVideoScriptContent({ product, fetchImpl })).rejects.toThrow(
+      /bracket placeholders/,
+    );
+  });
 });

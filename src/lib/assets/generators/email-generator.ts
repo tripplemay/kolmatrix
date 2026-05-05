@@ -16,6 +16,7 @@
  */
 import { ZodError } from "zod";
 
+import { validateNoBracketPlaceholders } from "@/lib/ai/placeholder-guard";
 import { wrapUserInput } from "@/lib/ai/xml-escape";
 
 import { type AssetContentByType, EmailContentSchema } from "../schemas";
@@ -140,6 +141,12 @@ export async function generateEmailContent(
   });
 
   const content = parseEmailContent(completion.rawContent);
+  // BL-034 F006: same bracket-placeholder guard as the BL-033 batch
+  // generator — a single-asset regen is just as susceptible to the
+  // model regressing to "[Creator Name]" form. AiPlaceholderViolationError
+  // bubbles to the caller (knowledge-base actions / asset regeneration
+  // path) which surfaces a retry-once toast.
+  validateNoBracketPlaceholders({ subject: content.subject, body: content.body });
   // Force the requested locale into the validated content (the prompt
   // already asks for it but model output occasionally drops it).
   if (input.locale) {

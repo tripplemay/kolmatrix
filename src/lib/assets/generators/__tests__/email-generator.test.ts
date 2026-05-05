@@ -123,4 +123,20 @@ describe("generateEmailContent", () => {
     expect(out.locale).toBe("en");
     expect(out.variables).toEqual([]);
   });
+
+  it("BL-034 F006: rejects bracket-placeholder output via shared validateNoBracketPlaceholders", async () => {
+    const fetchImpl = vi.fn().mockResolvedValueOnce(
+      chatResponse(
+        JSON.stringify({
+          subject: "Hi [Creator Name]",
+          body: "We loved your latest video.",
+          locale: "en",
+          variables: [],
+        }),
+      ),
+    );
+    await expect(generateEmailContent({ product, fetchImpl })).rejects.toThrow(
+      /bracket placeholders/,
+    );
+  });
 });

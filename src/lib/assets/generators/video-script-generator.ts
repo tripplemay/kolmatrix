@@ -11,6 +11,7 @@
  */
 import { ZodError } from "zod";
 
+import { validateNoBracketPlaceholders } from "@/lib/ai/placeholder-guard";
 import { wrapUserInput } from "@/lib/ai/xml-escape";
 
 import { type AssetContentByType, VideoScriptContentSchema } from "../schemas";
@@ -133,6 +134,10 @@ export async function generateVideoScriptContent(
   });
 
   const content = parseVideoScriptContent(completion.rawContent);
+  // BL-034 F006: bracket-placeholder guard. The video script's `script`
+  // field is the equivalent of an email body — bracketed `[Creator Name]`
+  // here would surface raw to the user just like in email content.
+  validateNoBracketPlaceholders({ subject: content.title, body: content.script });
 
   return {
     content,
