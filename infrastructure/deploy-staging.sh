@@ -70,7 +70,18 @@ pm2 restart "$APP_NAME" --update-env >/dev/null
 pm2 describe "$APP_NAME" | sed -n '1,40p'
 
 echo "── 7/7 health check"
-HEALTH_JSON="$(curl -fsS "$HEALTH_URL")"
+# BL-034 F007: /api/health gates `git_sha` + `version` behind a token.
+# Send X-Health-Token from the env so the post-deploy SHA verification
+# below still gets a value. When HEALTH_DETAIL_TOKEN is unset on the
+# server the endpoint returns a body without git_sha and the
+# verification block at the bottom of this script will surface the
+# misconfiguration loudly (exit 1).
+if [[ -n "${HEALTH_DETAIL_TOKEN:-}" ]]; then
+  HEALTH_JSON="$(curl -fsS -H "X-Health-Token: $HEALTH_DETAIL_TOKEN" "$HEALTH_URL")"
+else
+  echo "⚠️  HEALTH_DETAIL_TOKEN not set — git_sha verification will fail"
+  HEALTH_JSON="$(curl -fsS "$HEALTH_URL")"
+fi
 echo "$HEALTH_JSON" | python3 -m json.tool
 
 HEALTH_SHA="$(echo "$HEALTH_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("git_sha",""))')"
