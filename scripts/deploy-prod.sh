@@ -68,11 +68,17 @@ npx prisma migrate deploy
 # `set -a; source .env.production; set +a` (added in the GH Actions step).
 # Skipped silently when the env var is empty so local-dev / first-bootstrap
 # runs don't break.
+# BL-024-F007 retroactive (2026-05-06 — Planner ops 用户授权): use
+# `sudo -u postgres psql` + unix socket peer auth instead of PGPASSWORD
+# over TCP. .env never had POSTGRES_SUPERUSER_PASSWORD configured, so
+# the prior PGPASSWORD path silently fell back to empty and psql
+# prompted for an interactive password — fail in GH Actions
+# non-interactive shell. `sudo -u postgres` requires passwordless sudo
+# for the SSH user (configured per environment.md "sudo passwordless").
+# The postgres OS user owns the cluster and can ALTER ROLE on any role.
 if [ -n "${KOLMATRIX_APP_PASSWORD:-}" ]; then
   echo "   • rotating kolmatrix_app password (idempotent)"
-  PGPASSWORD="${POSTGRES_SUPERUSER_PASSWORD:-${PGPASSWORD:-}}" psql \
-    -h "${DB_HOST:-localhost}" \
-    -U "${POSTGRES_SUPERUSER:-kolmatrix}" \
+  sudo -u postgres psql \
     -d "${POSTGRES_DB:-kolmatrix}" \
     -v "ON_ERROR_STOP=1" \
     -c "ALTER ROLE kolmatrix_app WITH PASSWORD '$KOLMATRIX_APP_PASSWORD';"

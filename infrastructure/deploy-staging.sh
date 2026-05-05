@@ -68,11 +68,13 @@ npx prisma migrate deploy
 # sources from .env.staging just before invoking this script.
 # Skipped silently when the env var is empty so first-bootstrap runs
 # don't break.
+# BL-024-F007 retroactive (2026-05-06 — Planner ops 用户授权): use
+# `sudo -u postgres psql` + unix socket peer auth (mirror of
+# deploy-prod.sh). See deploy-prod.sh ALTER ROLE block for full
+# rationale.
 if [ -n "${KOLMATRIX_APP_PASSWORD:-}" ]; then
   echo "   • rotating kolmatrix_app password (idempotent)"
-  PGPASSWORD="${POSTGRES_SUPERUSER_PASSWORD:-${PGPASSWORD:-}}" psql \
-    -h "${DB_HOST:-localhost}" \
-    -U "${POSTGRES_SUPERUSER:-kolmatrix}" \
+  sudo -u postgres psql \
     -d "${POSTGRES_DB:-kolmatrix_staging}" \
     -v "ON_ERROR_STOP=1" \
     -c "ALTER ROLE kolmatrix_app WITH PASSWORD '$KOLMATRIX_APP_PASSWORD';"
