@@ -76,4 +76,18 @@ describe("kolCosineTopKSql", () => {
     expect(sql.text).toContain("id !=");
     expect(sql.values).toContain("00000000-0000-0000-0000-000000000099");
   });
+
+  it("BL-034 F004: filters out soft-deleted KOLs (no excludeId branch)", () => {
+    const sql = kolCosineTopKSql({ query: makeVec(), limit: 5 });
+    expect(sql.text).toContain("deleted_at IS NULL");
+  });
+
+  it("BL-034 F004: filters out soft-deleted KOLs (excludeId branch)", () => {
+    const sql = kolCosineTopKSql({
+      query: makeVec(),
+      limit: 5,
+      excludeId: "00000000-0000-0000-0000-000000000099",
+    });
+    expect(sql.text).toContain("deleted_at IS NULL");
+  });
 });

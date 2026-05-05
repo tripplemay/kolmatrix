@@ -91,11 +91,16 @@ export function kolCosineTopKSql(args: CosineTopKArgs): Prisma.Sql {
   const lit = vectorLiteral(args.query);
   const dimsRaw = Prisma.raw(String(EMBEDDING_DIMS));
 
+  // BL-034 F004: skip soft-deleted rows in cosine top-k. Without this
+  // filter a deleted KOL still consumes recommendation slots and can be
+  // surfaced by Smart Match / Find Similar paths until the partial
+  // index `kol_embedding_active_idx` is repopulated.
   if (args.excludeId) {
     return Prisma.sql`
       SELECT id, ("embedding" <=> ${lit}::vector(${dimsRaw})) AS distance
       FROM "kol"
       WHERE "embedding" IS NOT NULL
+        AND deleted_at IS NULL
         AND id != ${args.excludeId}::uuid
       ORDER BY distance ASC
       LIMIT ${args.limit}
@@ -105,6 +110,7 @@ export function kolCosineTopKSql(args: CosineTopKArgs): Prisma.Sql {
     SELECT id, ("embedding" <=> ${lit}::vector(${dimsRaw})) AS distance
     FROM "kol"
     WHERE "embedding" IS NOT NULL
+      AND deleted_at IS NULL
     ORDER BY distance ASC
     LIMIT ${args.limit}
   `;

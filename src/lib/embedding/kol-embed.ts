@@ -19,7 +19,9 @@
  * gateway outage degrades to "embeddings stale by one day" rather than
  * "daily sync failed".
  */
-import type { PrismaClient } from "@prisma/client";
+import { Prisma, type PrismaClient } from "@prisma/client";
+
+import { assertUuid } from "@/lib/uuid";
 
 import {
   embedBatch,
@@ -259,19 +261,28 @@ export async function embedAllKols(
   const log = opts.logger ?? ((m: string) => console.log(m));
   const batchSize = opts.batchSize ?? DEFAULT_BATCH_SIZE;
 
-  const tenantFilter = opts.tenantId
-    ? `WHERE tenant_id = '${opts.tenantId}'::uuid`
-    : "";
+  // BL-034 F004: switch from string-concat raw-SQL to Prisma.sql tagged
+  // template + assertUuid() entry guard so caller-supplied tenantId can
+  // never become a SQL injection vector even if upstream validation
+  // breaks. Also adds the `deleted_at IS NULL` filter so soft-deleted KOL
+  // rows do not consume embedding quota.
+  let tenantSql: Prisma.Sql;
+  if (opts.tenantId) {
+    assertUuid(opts.tenantId, "tenantId");
+    tenantSql = Prisma.sql`WHERE tenant_id = ${opts.tenantId}::uuid AND deleted_at IS NULL`;
+  } else {
+    tenantSql = Prisma.sql`WHERE deleted_at IS NULL`;
+  }
 
   // We pull the whole candidate set via raw SQL in a single pass so the
   // hash compare happens client-side (cheap, ~3K rows). For prod scale
   // (~100K) this would chunk by created_at; not needed yet.
-  const rows = await prisma.$queryRawUnsafe<KolRowForEmbed[]>(`
+  const rows = await prisma.$queryRaw<KolRowForEmbed[]>(Prisma.sql`
     SELECT id, display_name, bio, categories, tags, country_code, language,
            embedding_text_hash,
            (embedding IS NULL) AS needs_init
     FROM "kol"
-    ${tenantFilter}
+    ${tenantSql}
   `);
   stats.scanned = rows.length;
 
@@ -335,16 +346,17 @@ export async function embedKolsForIds(
   const log = opts.logger ?? ((m: string) => console.log(m));
   const batchSize = opts.batchSize ?? DEFAULT_BATCH_SIZE;
 
-  // Use parameterised query via Prisma.sql to avoid injection on the
-  // id list.
-  const rows = await prisma.$queryRawUnsafe<KolRowForEmbed[]>(
-    `SELECT id, display_name, bio, categories, tags, country_code, language,
-            embedding_text_hash,
-            (embedding IS NULL) AS needs_init
-     FROM "kol"
-     WHERE id = ANY($1::uuid[])`,
-    ids
-  );
+  // BL-034 F004: convert to Prisma.sql tagged template (zero raw-SQL
+  // unsafe paths in this module) and add the soft-delete filter so we
+  // never re-embed a row marked deleted.
+  const rows = await prisma.$queryRaw<KolRowForEmbed[]>(Prisma.sql`
+    SELECT id, display_name, bio, categories, tags, country_code, language,
+           embedding_text_hash,
+           (embedding IS NULL) AS needs_init
+    FROM "kol"
+    WHERE id = ANY(${ids}::uuid[])
+      AND deleted_at IS NULL
+  `);
   stats.scanned = rows.length;
 
   const { stale, skipped } = pickStaleKol(rows);
@@ -392,14 +404,15 @@ export async function embedProductIfStale(
   const stats = emptyStats();
   const log = opts.logger ?? ((m: string) => console.log(m));
 
-  const rows = await prisma.$queryRawUnsafe<ProductRowForEmbed[]>(
-    `SELECT id, name, category, target_audience, unique_selling_points,
-            embedding_text_hash,
-            (embedding IS NULL) AS needs_init
-     FROM "product"
-     WHERE id = $1`,
-    productId
-  );
+  // BL-034 F004: tagged-template form so the module is free of unsafe
+  // raw-SQL paths (audit hardening).
+  const rows = await prisma.$queryRaw<ProductRowForEmbed[]>(Prisma.sql`
+    SELECT id, name, category, target_audience, unique_selling_points,
+           embedding_text_hash,
+           (embedding IS NULL) AS needs_init
+    FROM "product"
+    WHERE id = ${productId}
+  `);
   stats.scanned = rows.length;
 
   const { stale, skipped } = pickStaleProduct(rows);

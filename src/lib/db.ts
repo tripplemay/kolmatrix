@@ -20,6 +20,8 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Prisma, PrismaClient } from "@prisma/client";
 
+import { assertUuid } from "./uuid";
+
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
   throw new Error("DATABASE_URL is not set");
@@ -38,13 +40,11 @@ if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-function assertUuid(value: string, label: string) {
-  if (!UUID_RE.test(value)) {
-    throw new Error(`${label} must be a UUID string, got ${value}`);
-  }
-}
+// BL-034 F004: assertUuid moved to src/lib/uuid.ts so raw-SQL callers
+// (e.g. embedding/kol-embed.ts) can import the validator without pulling
+// in the Prisma singleton's DATABASE_URL boot guard at module load time.
+// Re-exported here so existing imports keep resolving.
+export { assertUuid } from "./uuid";
 
 /**
  * Run `fn` inside a transaction whose `app.tenant_id` is pinned to the
