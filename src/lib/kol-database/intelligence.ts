@@ -3,7 +3,7 @@ import "dotenv/config";
 import { z } from "zod";
 
 import { parseFencedJson } from "@/lib/ai/json-extract";
-import { resolveAigcV1BaseUrl } from "@/lib/aigc/base-url";
+import { fetchWithRetry, resolveAigcV1BaseUrl } from "@/lib/aigc/fetch-with-retry";
 
 export const KOL_DATABASE_INTELLIGENCE_ACTION_ID = "cmojd0eq90003bn1nz0pm6xsz";
 
@@ -76,32 +76,6 @@ function toVariables(input: DatabaseIntelligenceInput): Record<string, string> {
   };
 }
 
-async function fetchWithRetry(
-  url: string,
-  init: RequestInit,
-  opts: { retries?: number; timeout?: number } = {}
-): Promise<Response> {
-  const retries = opts.retries ?? 1;
-  const timeout = opts.timeout ?? 30_000;
-
-  for (let attempt = 0; attempt <= retries; attempt += 1) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeout);
-    try {
-      const res = await fetch(url, { ...init, signal: controller.signal });
-      clearTimeout(timer);
-      if (res.ok) return res;
-      if (res.status < 500 && res.status !== 429) return res;
-      if (attempt === retries) return res;
-    } catch (err) {
-      clearTimeout(timer);
-      if (attempt === retries) throw err;
-    }
-  }
-
-  throw new DatabaseIntelligenceError("http_error", "unreachable");
-}
-
 export async function generateDatabaseIntelligence(
   input: DatabaseIntelligenceInput
 ): Promise<DatabaseIntelligenceResult> {
@@ -128,7 +102,7 @@ export async function generateDatabaseIntelligence(
           stream: false,
         }),
       },
-      { retries: 1, timeout: 30_000 }
+      { retries: 1, timeoutMs: 30_000 }
     );
   } catch (err) {
     if (err instanceof Error && err.name === "AbortError") {
