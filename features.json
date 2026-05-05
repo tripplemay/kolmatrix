@@ -14,7 +14,7 @@
       "title": "C /weekly-report Last Week / Last Month toggle（Last Month 28-day 窗口聚合）",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "src/app/[locale]/(app)/weekly-report/WeeklyReportHeader.tsx:41 ranges 数组 2 个全 active=true；src/app/[locale]/(app)/weekly-report/page.tsx 接 searchParams.range default 'lastWeek'；src/lib/weekly-report/generate.ts 加 range 参数：lastWeek 同当前实装 / lastMonth 4 周 (28 day) 窗口聚合（KOL active count / Email sent / response rate / new contacts 等按 28-day 累计）；i18n 5 locale weekly-report.range.lastWeek/lastMonth；新增单测 case 验证 28-day window 数据点数 + 累计 metric 与 4 × 单周近似；visual baseline 重生（如需）；npm run lint + tsc + test 全绿。详见 spec §F003 + D4。"
     },
     {

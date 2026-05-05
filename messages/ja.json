@@ -1196,7 +1196,6 @@
       "crumbCurrent": "週次レポート",
       "title": "週次レポート",
       "subtitle": "AIによって生成された、クライアント向けの活動、KOLパフォーマンス、ROIのまとめです。",
-      "rangeDisabledTooltip": "カスタム期間はB4で提供予定です。",
       "range": {
         "lastWeek": "先週",
         "lastMonth": "先月"

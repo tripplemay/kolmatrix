@@ -1127,7 +1127,6 @@
       "crumbCurrent": "Weekly Report",
       "title": "Weekly Report",
       "subtitle": "AI-generated client-ready recap of activity, KOL performance, and ROI.",
-      "rangeDisabledTooltip": "Custom range ships in B4.",
       "range": {
         "lastWeek": "Last Week",
         "lastMonth": "Last Month"

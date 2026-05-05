@@ -1127,7 +1127,6 @@
       "crumbCurrent": "周报",
       "title": "AI 周报",
       "subtitle": "AI 生成的客户向周报，覆盖活动进度、KOL 表现与 ROI 亮点。",
-      "rangeDisabledTooltip": "自定义日期区间将在 B4 上线。",
       "range": {
         "lastWeek": "上周",
         "lastMonth": "上月"

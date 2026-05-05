@@ -8,6 +8,9 @@
  *   → 60/40 split: left = Executive Summary + Top Performers + Key
  *     Activity + Looking Ahead; right = Key Insights panel
  *   → Footer (Report ID + Cost + AI powered by...)
+ *
+ * BL-024-F003: range toggle (`?range=lastWeek|lastMonth`) drives the
+ * Generate CTA so the empty state can request a 28-day report.
  */
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
@@ -20,6 +23,11 @@ import {
   loadWeeklyReportById,
   type WeeklyReportRow,
 } from "@/lib/weekly-report/persistence";
+import {
+  DEFAULT_WEEKLY_REPORT_RANGE,
+  isWeeklyReportRange,
+  type WeeklyReportRange,
+} from "@/lib/weekly-report/range";
 
 import { WeeklyReportBrandHeader } from "./WeeklyReportBrandHeader";
 import { WeeklyReportEmptyState } from "./WeeklyReportEmptyState";
@@ -33,7 +41,7 @@ export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ id?: string; aiLocale?: string }>;
+  searchParams: Promise<{ id?: string; aiLocale?: string; range?: string }>;
 }
 
 function formatWeekRange(start: Date, end: Date): string {
@@ -47,7 +55,7 @@ function formatWeekRange(start: Date, end: Date): string {
 
 export default async function WeeklyReportPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { id, aiLocale: aiLocaleParam } = await searchParams;
+  const { id, aiLocale: aiLocaleParam, range: rawRange } = await searchParams;
 
   const session = await auth();
   const tenantId = session?.user?.tenantId;
@@ -59,6 +67,10 @@ export default async function WeeklyReportPage({ params, searchParams }: Props) 
       : locale === "zh"
         ? "zh"
         : "en";
+
+  const range: WeeklyReportRange = isWeeklyReportRange(rawRange)
+    ? rawRange
+    : DEFAULT_WEEKLY_REPORT_RANGE;
 
   const [t, recent] = await Promise.all([
     getTranslations("weeklyReport"),
@@ -86,6 +98,7 @@ export default async function WeeklyReportPage({ params, searchParams }: Props) 
       <WeeklyReportHeader
         locale={locale}
         pageLocale={aiLocale}
+        range={range}
         recent={recent}
         selectedReportId={report?.id ?? null}
       />
@@ -94,6 +107,7 @@ export default async function WeeklyReportPage({ params, searchParams }: Props) 
         <WeeklyReportEmptyState
           weekStartIso={fallbackWeekStartIso}
           locale={aiLocale}
+          range={range}
           title={t("empty.title")}
           body={t("empty.body")}
           generateLabel={t("empty.generate")}

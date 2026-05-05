@@ -3,12 +3,16 @@
 /**
  * BM2-F010 · /weekly-report Server Actions.
  *
- *   - generateWeeklyReportAction(weekStart, locale)
+ *   - generateWeeklyReportAction(weekStart, locale, range?)
  *       → assemble data → call AI → upsert WeeklyReport row → return id
  *   - createShareTokenAction(reportId)
  *       → mint 32-char token + 7d expiry → return URL
  *
  * Telemetry: 5 event_log types per Planner §13.5 #10.
+ *
+ * BL-024-F003: optional `range` ("lastWeek" | "lastMonth") expands the
+ * report period. lastMonth = 28 days (4 ISO weeks) ending current
+ * Sunday; data-assembly auto-derives prev-period length from the bounds.
  */
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
@@ -30,6 +34,11 @@ import {
   attachShareToken,
   upsertWeeklyReport,
 } from "@/lib/weekly-report/persistence";
+import {
+  isWeeklyReportRange,
+  rangeBounds,
+  type WeeklyReportRange,
+} from "@/lib/weekly-report/range";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -40,7 +49,8 @@ export type GenerateWeeklyReportResult =
 
 export async function generateWeeklyReportAction(
   weekStartIso: string,
-  locale: "en" | "zh"
+  locale: "en" | "zh",
+  range?: WeeklyReportRange
 ): Promise<GenerateWeeklyReportResult> {
   const session = await auth();
   const tenantId = session?.user?.tenantId;
@@ -59,14 +69,28 @@ export async function generateWeeklyReportAction(
   if (Number.isNaN(parsedDate.getTime())) {
     return { ok: false, error: "invalid_input" };
   }
-  const weekStart = isoWeekStartUtc(parsedDate);
-  const weekEnd = isoWeekEndUtc(weekStart);
+
+  // lastMonth bounds anchor on `parsedDate`'s ISO week and reach back 21d;
+  // lastWeek (default) uses the existing Mon-Sun ISO week shape so legacy
+  // callers stay byte-compatible.
+  const effectiveRange: WeeklyReportRange = isWeeklyReportRange(range)
+    ? range
+    : "lastWeek";
+  const { weekStart, weekEnd } =
+    effectiveRange === "lastMonth"
+      ? rangeBounds(effectiveRange, parsedDate)
+      : { weekStart: isoWeekStartUtc(parsedDate), weekEnd: isoWeekEndUtc(isoWeekStartUtc(parsedDate)) };
 
   void logEvent({
     type: "weekly_report.generate_clicked",
     tenantId,
     actorId: userId,
-    payload: { weekStart: weekStart.toISOString().slice(0, 10), locale },
+    payload: {
+      weekStart: weekStart.toISOString().slice(0, 10),
+      weekEnd: weekEnd.toISOString().slice(0, 10),
+      locale,
+      range: effectiveRange,
+    },
   });
 
   // Tenant snapshot for the branded header — fetched inside the same
@@ -149,6 +173,7 @@ export async function generateWeeklyReportAction(
       weekStart: weekStart.toISOString().slice(0, 10),
       weekEnd: weekEnd.toISOString().slice(0, 10),
       locale,
+      range: effectiveRange,
     },
   });
 

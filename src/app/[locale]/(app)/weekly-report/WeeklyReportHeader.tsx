@@ -1,13 +1,17 @@
 /**
  * BM2-F010 · Page header (Planner adjudication §13 #A:A3 + #H:A).
  *
- * Breadcrumb + title + range toggle (Last Week active, Last Month
- * disabled+tooltip "B4") + locale `<select>` + history `<select>`.
+ * Breadcrumb + title + range toggle + locale `<select>` + history `<select>`.
  * The two `<select>`s are vanilla HTML so RSC can render and a small
  * client child handles navigation.
+ *
+ * BL-024-F003: range toggle (Last Week / Last Month) is now a 2-link
+ * URL nav. lastWeek = current ISO week; lastMonth = trailing 28d.
  */
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+
+import type { WeeklyReportRange } from "@/lib/weekly-report/range";
 
 import { WeeklyReportNavSelectors } from "./WeeklyReportNavSelectors";
 
@@ -21,9 +25,15 @@ interface RecentRow {
 interface Props {
   locale: string;
   pageLocale: "en" | "zh";
+  range: WeeklyReportRange;
   recent: RecentRow[];
   selectedReportId: string | null;
 }
+
+const RANGES: ReadonlyArray<{ key: WeeklyReportRange }> = [
+  { key: "lastWeek" },
+  { key: "lastMonth" },
+];
 
 function formatWeekOption(row: RecentRow): string {
   const start = row.weekStart.toISOString().slice(0, 10);
@@ -34,14 +44,11 @@ function formatWeekOption(row: RecentRow): string {
 export async function WeeklyReportHeader({
   locale,
   pageLocale,
+  range,
   recent,
   selectedReportId,
 }: Props) {
   const t = await getTranslations("weeklyReport.header");
-  const ranges: Array<{ key: "lastWeek" | "lastMonth"; active?: boolean }> = [
-    { key: "lastWeek", active: true },
-    { key: "lastMonth" },
-  ];
 
   return (
     <header
@@ -82,22 +89,25 @@ export async function WeeklyReportHeader({
             className="flex rounded-xl bg-surface-container p-1"
             data-testid="weekly-report-range-toggle"
           >
-            {ranges.map((r) => (
-              <button
-                key={r.key}
-                type="button"
-                disabled={!r.active}
-                title={!r.active ? t("rangeDisabledTooltip") : undefined}
-                data-testid={`weekly-report-range-${r.key}`}
-                className={
-                  r.active
-                    ? "rounded-lg bg-surface-high px-4 py-1.5 text-xs font-semibold text-cyan shadow-sm"
-                    : "rounded-lg px-4 py-1.5 text-xs font-semibold text-on-surface-variant disabled:cursor-not-allowed disabled:opacity-60"
-                }
-              >
-                {t(`range.${r.key}` as Parameters<typeof t>[0])}
-              </button>
-            ))}
+            {RANGES.map((r) => {
+              const active = r.key === range;
+              return (
+                <Link
+                  key={r.key}
+                  href={`/${locale}/weekly-report?range=${r.key}`}
+                  data-testid={`weekly-report-range-${r.key}`}
+                  aria-current={active ? "page" : undefined}
+                  prefetch={false}
+                  className={
+                    active
+                      ? "rounded-lg bg-surface-high px-4 py-1.5 text-xs font-semibold text-cyan shadow-sm"
+                      : "rounded-lg px-4 py-1.5 text-xs font-semibold text-on-surface-variant hover:text-on-surface"
+                  }
+                >
+                  {t(`range.${r.key}` as Parameters<typeof t>[0])}
+                </Link>
+              );
+            })}
           </div>
 
           <WeeklyReportNavSelectors

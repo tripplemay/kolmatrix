@@ -8,11 +8,14 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 
+import type { WeeklyReportRange } from "@/lib/weekly-report/range";
+
 import { generateWeeklyReportAction } from "./actions";
 
 interface Props {
   weekStartIso: string;
   locale: "en" | "zh";
+  range: WeeklyReportRange;
   title: string;
   body: string;
   generateLabel: string;
@@ -23,6 +26,7 @@ interface Props {
 export function WeeklyReportEmptyState({
   weekStartIso,
   locale,
+  range,
   title,
   body,
   generateLabel,
@@ -34,7 +38,7 @@ export function WeeklyReportEmptyState({
 
   const handleClick = () => {
     startTransition(async () => {
-      const res = await generateWeeklyReportAction(weekStartIso, locale);
+      const res = await generateWeeklyReportAction(weekStartIso, locale, range);
       if (!res.ok) {
         console.error("[weekly-report] generate failed:", res.error);
         alert(errorLabel);

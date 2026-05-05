@@ -1196,7 +1196,6 @@
       "crumbCurrent": "Informe Semanal",
       "title": "Informe Semanal",
       "subtitle": "Resumen listo para el cliente generado por AI sobre actividad, rendimiento de KOL y ROI.",
-      "rangeDisabledTooltip": "El rango personalizado se lanzará en B4.",
       "range": {
         "lastWeek": "Última Semana",
         "lastMonth": "Último Mes"

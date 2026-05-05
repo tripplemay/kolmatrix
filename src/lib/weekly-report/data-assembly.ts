@@ -16,6 +16,7 @@
 import { withTenant } from "@/lib/db";
 import { loadRoiSummary } from "@/lib/roi/queries";
 
+import { isoWeekEndUtc, isoWeekStartUtc } from "./dates";
 import type {
   KolActivityShape,
   PrevWeekComparisonShape,
@@ -24,21 +25,9 @@ import type {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** Monday 00:00 UTC of the ISO week containing `d`. */
-export function isoWeekStartUtc(d: Date): Date {
-  const out = new Date(d);
-  out.setUTCHours(0, 0, 0, 0);
-  // ISO week: Monday=1...Sunday=7. JS getUTCDay: Sunday=0...Saturday=6.
-  const dow = out.getUTCDay();
-  const offsetToMonday = dow === 0 ? -6 : 1 - dow;
-  out.setUTCDate(out.getUTCDate() + offsetToMonday);
-  return out;
-}
-
-/** Sunday 00:00 UTC at the end of the week starting `weekStart`. */
-export function isoWeekEndUtc(weekStart: Date): Date {
-  return new Date(weekStart.getTime() + 6 * DAY_MS);
-}
+// Re-exported for callers that already import the helpers from
+// `./data-assembly`. New code should import from `./dates` directly.
+export { isoWeekEndUtc, isoWeekStartUtc };
 
 interface AssembleArgs {
   tenantId: string;
@@ -68,7 +57,14 @@ export async function assembleWeeklyReportInput({
 }: AssembleArgs): Promise<AssembledReportData> {
   // Sunday 23:59:59.999 UTC as the inclusive upper bound for date ranges.
   const weekEndExclusive = new Date(weekEnd.getTime() + DAY_MS);
-  const prevWeekStart = new Date(weekStart.getTime() - 7 * DAY_MS);
+  // BL-024-F003: prev period mirrors the current period length so
+  // lastMonth (28d) compares against the previous 28d block, not the
+  // previous 7d block. Round-trip via Math.round absorbs any DST jitter.
+  const periodDays = Math.max(
+    1,
+    Math.round((weekEndExclusive.getTime() - weekStart.getTime()) / DAY_MS)
+  );
+  const prevWeekStart = new Date(weekStart.getTime() - periodDays * DAY_MS);
 
   return withTenant(tenantId, async (tx) => {
     const [

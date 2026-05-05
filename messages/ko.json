@@ -1196,7 +1196,6 @@
       "crumbCurrent": "주간 보고서",
       "title": "주간 보고서",
       "subtitle": "AI가 생성한 클라이언트용 활동, KOL 성과 및 ROI 요약입니다.",
-      "rangeDisabledTooltip": "사용자 지정 범위는 B4에서 제공됩니다.",
       "range": {
         "lastWeek": "지난 주",
         "lastMonth": "지난 달"
