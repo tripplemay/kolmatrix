@@ -47,7 +47,16 @@ jobs:
           # deploy-prod.sh itself has `set -euo pipefail`, so any step's
           # non-zero exit halts the deploy before PM2 touches new code.
           script: |
-            cd /opt/kolmatrix && ./scripts/deploy-prod.sh
+            cd /opt/kolmatrix
+            # BL-024-F006 (BL-034-F001 retroactive): export .env.production
+            # vars into the shell so deploy-prod.sh can read
+            # KOLMATRIX_APP_PASSWORD (et al.) for the ALTER ROLE step.
+            # Without this, the role-rotate block silently skips and the
+            # kolmatrix_app role keeps its init-migration weak password.
+            set -a
+            source .env.production
+            set +a
+            ./scripts/deploy-prod.sh
         env:
           GIT_SHA: ${{ github.sha }}
           SKIP_BACKUP: ${{ inputs.skip_backup }}

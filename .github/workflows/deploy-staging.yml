@@ -47,6 +47,13 @@ jobs:
           script: |
             set -euo pipefail
             cd /opt/kolmatrix-staging
+            # BL-024-F006 (BL-034-F001 retroactive): export .env.staging
+            # vars into the shell so deploy-staging.sh + the post-deploy
+            # ALTER ROLE step (added in F006) can read KOLMATRIX_APP_PASSWORD,
+            # HEALTH_DETAIL_TOKEN, etc. Mirror of the deploy-prod.yml fix.
+            set -a
+            source .env.staging
+            set +a
             bash infrastructure/deploy-staging.sh
             if [[ "$RUN_SEED" == "true" ]]; then
               echo "── post-deploy: npm run db:seed"

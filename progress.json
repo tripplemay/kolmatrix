@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-024 B4 ghost-controls 实装 mini-batch — prod 上线 2026-05-13 前清理 BIx 后残留的 8 项 ghost controls 中 5 项。5 features 全 generator：F002 /roi 时间范围 toggle (7D/30D/90D/All-time) — 先做（复用 BIx F001 范式建立时间 toggle 模式）/ F003 /weekly-report Last Week/Last Month toggle（Last Month 28-day 窗口聚合）/ F001 /database 头 3 按钮（Export CSV 复用 BIx F001 范式 + Import CSV 新模块 zod+upsert + Add KOL form server action）/ F004 /outreach/tracking 列表实装（复用 BL-035 F006 EmailLog.status 数据流）/ F005 /outreach/suppression 列表实装（复用 BL-035 F006 audit_log+Kol.email=null）。Definition of Done = 5 PASS + Reviewer L1+L2 + 2 项 user 手工待办（spec §6.1 prod redeploy 浏览器 5 处 walk + 可选 真触发 Resend hard-bounce 验证 suppression 列表）。来源：Planner 2026-05-02 prod 排查 + prod-mvp-readiness audit 2026-05-04 §4 排定 + 用户 2026-05-05 22:30 决议方案 B（A+B+C+D-2+D-3，D-1 Send Queue 推 BL-040+ 与 BullMQ 合批；E/F deferred）。预估 2.5 day building + 0.5 day verifying。",
   "total_features": 6,
-  "completed_features": 2,
+  "completed_features": 6,
   "fix_rounds": 0,
   "current_sprint": "BL-024-ghost-controls-cleanup",
-  "last_updated": "2026-05-05T23:55+0800",
+  "last_updated": "2026-05-06T03:05+0800",
   "reference_docs": [
     "docs/specs/BL-024-ghost-controls-cleanup-spec.md",
     "docs/specs/BIx-mvp-polish-pass-spec.md",

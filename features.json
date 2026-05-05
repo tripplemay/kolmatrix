@@ -22,7 +22,7 @@
       "title": "A /database 头 3 按钮（Export CSV + Import CSV + Add KOL form）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "src/app/[locale]/(app)/database/page.tsx:127-159 3 个 disabled Button 全实装：\n\n(F001-1 Export CSV) 新建 src/app/api/database/export-csv/route.ts GET handler + auth + tenantId 限制 + 同 /database 页面查询的 KOL 列表（filter / search / sort 同步）+ 生成 CSV（列：displayName/handle/platform/followerCount/engagementRate/valueScore/categories/language/countryCode/email/firstSeenAt）+ csvCell formula-injection 防护（'=','+','-','@' 起首加单引号前缀）+ Content-Disposition: attachment; filename='kols-{tenant}-{YYYYMMDD}.csv' + row-count cap default 5000（v0.9.11 §6 silent updateMany 模式延伸，URL ?limit=N override）；database/page.tsx Export button 改 <Link href='/api/database/export-csv?...'>+ 移除 disabled；集成测试 ≥2 case（基本 CSV + formula-injection 防御）。\n\n(F001-2 Import CSV) 新建 src/app/api/database/import-csv/route.ts POST handler + multipart/form-data + 5MB 上限 + zod schema 校验每行（同 KolSyncAdapter 字段格式）+ 批量 upsert 按 externalId+platform 去重 + 返 {ok, importedCount, skippedCount, errors:[前 10 个错误细节]}；新建 src/app/[locale]/(app)/database/ImportCsvDialog.tsx client component（弹窗 + 上传 + 进度 toast）；集成测试 ≥3 case（valid CSV / invalid 字段 / oversize 5MB+ 拒）。\n\n(F001-3 Add KOL form) 新建 src/app/[locale]/(app)/database/AddKolDialog.tsx client component (form: platform select / handle 必填 / displayName 必填 / url 可选+URL 校验 / email 可选+email 校验 / followerCount number 可选)；新建 src/app/[locale]/(app)/database/actions.ts addKol(input) server action + zod + withTenant + Kol.create + rate-limit（v0.9.11 dogfood：20/min/userId mutation 类，复用 BL-035 F003 rateLimitBatchSend 或新 rateLimitMutation）；重复 handle+platform 返 conflict 提示；集成测试 ≥3 case（valid / 重复 / invalid URL）。\n\nnpm run lint + tsc + test 全绿。详见 spec §F001 + D1+D2。"
     },
     {
@@ -30,7 +30,7 @@
       "title": "D-2 /outreach Tracking tab 实装（list view，复用 BL-035 F006 EmailLog.status 数据流）",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "src/app/[locale]/(app)/outreach/OutreachTabs.tsx TABS 数组 tracking tab 移除 tooltipKey:'comingB4' + 改 disabled→active + 加 href '/outreach/tracking'；新建 src/app/[locale]/(app)/outreach/tracking/page.tsx Server Component（查 EmailLog 表 by tenantId withTenant + 默认 createdAt DESC + cursor pagination 50 行/页 复用 src/lib/pagination/cursor.ts；字段：sentAt/KOL 名 join Kol/Subject/Status (delivered/opened/clicked/bounced/complained/queued/sent)/openedAt/repliedAt/bounceReason）；新建 TrackingTable.tsx client component（filter by status all/delivered/opened/bounced/complained 等 + 分页）；i18n outreach.tabs.tracking 已有；新增 outreach.tracking.{title, columns, statuses, emptyState} 等 keys；visual baseline 新增 tracking-list.png；集成测试 ≥2 case（基本列表 + status filter）；npm run lint + tsc + test 全绿。详见 spec §F004 + D5。"
     },
     {
@@ -38,7 +38,7 @@
       "title": "D-3 /outreach Suppression tab 实装（hard-bounce KOL list，复用 BL-035 F006 audit_log + Kol.email=null）",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "src/app/[locale]/(app)/outreach/OutreachTabs.tsx TABS 数组 suppression tab 解锁；新建 src/app/[locale]/(app)/outreach/suppression/page.tsx Server Component（查 audit_log where action='kol.email_cleared_by_bounce' AND tenant_id=$tenantId — BL-034 F003 RLS 自动 filter，显式 tenantId defense-in-depth；join Kol 显示 displayName/handle/platform；字段：清除时间 audit_log.created_at / KOL 名 / 原 providerMessageId(after) / 退订原因(before.reason)）；新建 SuppressionTable.tsx client component（cursor pagination）；i18n outreach.tabs.suppression 已有；新增 outreach.suppression.{title, columns, emptyState} keys；empty state 友好提示 'No suppressed KOLs yet'；本 feature 不实装手动退订 UI（仅 audit_log 路径，手动退订 UI 推 BL-040+ 需 Kol.suppressedAt schema 字段）；visual baseline 新增 suppression-list.png；集成测试 ≥2 case（basic list / cross-tenant filter）；npm run lint + tsc + test 全绿。详见 spec §F005 + D6。"
     },
     {
@@ -46,7 +46,7 @@
       "title": "BL-034 F001 deploy yml env bridge fix（hotfix 追加 — 用户 2026-05-05 23:05 决议方案 A）",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "触发：Planner 2026-05-05 ~23:00 prod redeploy ops 准备阶段实地核查发现 BL-034 F001 spec acceptance 已 done @ dbbfbb3（deploy-prod.sh 加 ALTER ROLE 段 line 71-81）但漏了同 commit 改 .github/workflows/deploy-prod.yml script 块加 'set -a; source .env.production; set +a'，导致 GH Actions Run 时 KOLMATRIX_APP_PASSWORD env var 不会 export 到 shell 环境，deploy-prod.sh 跑 ALTER ROLE 段 silent skip — prod kolmatrix_app 角色仍用 init migration 弱密码 'kolmatrix_app' (CRIT-1 fix 实际未在 prod 生效)。\n\n改动：(1) .github/workflows/deploy-prod.yml script 块加 'set -a; source .env.production; set +a' 在 ./scripts/deploy-prod.sh 之前；(2) .github/workflows/deploy-staging.yml script 块加 'set -a; source .env.staging; set +a' 在 'bash infrastructure/deploy-staging.sh' 之前；(3) 核对 infrastructure/deploy-staging.sh 是否有对应 ALTER ROLE 段（如无 — Generator 评估是否同 commit 加 ALTER ROLE 到 staging deploy script，参 deploy-prod.sh:71-81 复制实装）；(4) BL-034 F001 spec drift 在 generator_handoff 列出 retroactive 范围 + 提示 Reviewer 在 BL-024 signoff Soft-watch 加 S? 或 Framework Learnings 提案 v0.9.13 候选「spec acceptance 改 deploy-script 时同 commit 必须改对应 yml」。\n\nAcceptance：(a) deploy-prod.yml script 块含 'set -a; source .env.production; set +a' 在 ./scripts/deploy-prod.sh 之前；(b) deploy-staging.yml script 块含 'set -a; source .env.staging; set +a' 在 'bash infrastructure/deploy-staging.sh' 之前；(c) infrastructure/deploy-staging.sh ALTER ROLE 段存在或同 commit 加；(d) 本 feature 不需新单测（CI yml 改动）— smoke：SSH prod 上跑 set -a; source /opt/kolmatrix/.env.production; set +a; echo \"$KOLMATRIX_APP_PASSWORD\" 验证 export（Generator manual 验证 + handoff 列出证据）；(e) generator_handoff 列出 v0.9.13 候选 framework 提案；(f) npm run lint + tsc + test 全绿。\n\n与 v0.9.12 §deploy-patterns.md §5 互动：本 feature 是同类沉淀的下一步「deploy script 期望 .env vars 时 yml 桥接必须配套」。详见 spec §F006。"
     }
   ]

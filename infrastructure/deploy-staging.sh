@@ -62,6 +62,24 @@ npx prisma generate
 echo "── 4/7 prisma migrate deploy"
 npx prisma migrate deploy
 
+# BL-024-F006 (BL-034-F001 retroactive): rotate kolmatrix_app role
+# password every deploy so the env-var stays in sync with the DB.
+# Reads KOLMATRIX_APP_PASSWORD that the deploy-staging.yml workflow
+# sources from .env.staging just before invoking this script.
+# Skipped silently when the env var is empty so first-bootstrap runs
+# don't break.
+if [ -n "${KOLMATRIX_APP_PASSWORD:-}" ]; then
+  echo "   • rotating kolmatrix_app password (idempotent)"
+  PGPASSWORD="${POSTGRES_SUPERUSER_PASSWORD:-${PGPASSWORD:-}}" psql \
+    -h "${DB_HOST:-localhost}" \
+    -U "${POSTGRES_SUPERUSER:-kolmatrix}" \
+    -d "${POSTGRES_DB:-kolmatrix_staging}" \
+    -v "ON_ERROR_STOP=1" \
+    -c "ALTER ROLE kolmatrix_app WITH PASSWORD '$KOLMATRIX_APP_PASSWORD';"
+else
+  echo "   ⚠️  KOLMATRIX_APP_PASSWORD unset — skipping app-role password rotation"
+fi
+
 echo "── 5/7 next build"
 node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build
 
