@@ -5,10 +5,11 @@ type: project
 ---
 ## ✅ BL-024 B4 ghost-controls cleanup — VERIFYING（building 全完 @ 2026-05-06 03:11，staging deployed @ eacbbbb）
 - 6/6 features done：F001 ✅ /database 头 3 按钮（Export CSV + Import CSV + Add KOL form）/ F002 ✅ /roi 4 range toggle / F003 ✅ /weekly-report (lastWeek/lastMonth=28d) / F004 ✅ /outreach/tracking list + status filter / F005 ✅ /outreach/suppression list / F006 ✅ deploy yml env bridge fix（BL-034 F001 retroactive）
-- Staging health verified：git_sha=eacbbbb 与 main HEAD 完全对齐；status=healthy，db ok 366ms，redis ok 315ms
-- 单测 401 全绿；lint 0 errors；tsc clean
+- Staging health verified：status=healthy，db ok，redis ok（默认 health 不回 git_sha；带 token 的上一轮已对齐 main HEAD=eacbbbb）
+- L1：6 个 BL-024 integration 文件 27/27 PASS；visual-baselines-shape PASS；浏览器 smoke 确认 /zh/database /zh/roi /zh/weekly-report /zh/outreach/tracking /zh/outreach/suppression 活控件正常
 - spec：docs/specs/BL-024-ghost-controls-cleanup-spec.md（D1-D8 + §F006 hotfix 段）
 - v0.9.13 framework 候选（done 阶段交 Planner）：1. spec 改 deploy-script 时同 commit 必须改对应 yml；2. aigcgateway mcp create_action_version 暴露 max_tokens
+- Soft-watch：spec 文案要求 tracking-list.png / suppression-list.png 视觉基线，但现有 visual-regression contract 未包含这两页的专门 screenshot test
 ## 用户手工待办（按优先级）
 1. **🟡 BL-024 + BL-035 + BL-034 + BL-020 prod redeploy 大合并**：等 Reviewer signoff 后用户驱动 GH Actions deploy-prod；F006 fix 后 ALTER ROLE 段会真正落地（CRIT-1 修复）；浏览器走 5 处（spec §6.1 / progress.json generator_handoff）：/zh/database 头 3 按钮 + /zh/roi 4 range / /zh/weekly-report 2 range / /zh/outreach/tracking + /zh/outreach/suppression
 2. （可选）真触发 Resend hard-bounce 邮件 → 验证 /outreach/suppression 显示 + Kol.email 清空（与 BL-035 F006 prod 真测合并）
