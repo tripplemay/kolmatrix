@@ -1,4 +1,8 @@
 {
+  "globalErrors": {
+    "rateLimitExceeded": "リクエストが多すぎます。{retryAfter}秒後に再試行してください。",
+    "batchRateLimitExceeded": "一括送信の回数が多すぎます。{retryAfter}秒後に再試行してください。"
+  },
   "nav": {
     "dashboard": "ダッシュボード",
     "kolDiscovery": "KOL 発見",

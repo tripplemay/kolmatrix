@@ -1,4 +1,8 @@
 {
+  "globalErrors": {
+    "rateLimitExceeded": "요청이 너무 많습니다. {retryAfter}초 후에 다시 시도하세요.",
+    "batchRateLimitExceeded": "일괄 전송 횟수가 너무 많습니다. {retryAfter}초 후에 다시 시도하세요."
+  },
   "nav": {
     "dashboard": "대시보드",
     "kolDiscovery": "KOL 발견",

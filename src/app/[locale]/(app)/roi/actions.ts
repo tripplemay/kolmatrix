@@ -10,6 +10,7 @@
  */
 import { auth } from "@/auth";
 import { logEvent } from "@/lib/events/log";
+import { rateLimitAi } from "@/lib/rate-limit-ai";
 import {
   generateRoiInsights,
   RoiInsightsError,
@@ -22,7 +23,7 @@ import {
 
 export type RoiInsightsActionResult =
   | { ok: true; insights: RoiInsightItem[]; traceId?: string }
-  | { ok: false; error: string };
+  | { ok: false; error: string; retryAfter?: number };
 
 export async function generateRoiInsightsAction(
   locale: "en" | "zh"
@@ -31,6 +32,13 @@ export async function generateRoiInsightsAction(
   const tenantId = session?.user?.tenantId;
   const userId = session?.user?.id;
   if (!tenantId) return { ok: false, error: "unauthorized" };
+
+  // BL-035-F003: per-tenant AI rate limit (10/min + 100/day). Redis
+  // outage fails open — cost-cap (BL-034 F005) is the secondary guard.
+  const rl = await rateLimitAi(tenantId);
+  if (!rl.ok) {
+    return { ok: false, error: "rate_limit_exceeded", retryAfter: rl.retryAfter };
+  }
 
   void logEvent({
     type: "roi.insights_clicked",

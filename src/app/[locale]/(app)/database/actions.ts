@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { withTenant } from "@/lib/db";
 import { logEvent } from "@/lib/events/log";
+import { rateLimitAi } from "@/lib/rate-limit-ai";
 import {
   DatabaseIntelligenceError,
   type DatabaseIntelligenceInsight,
@@ -11,7 +12,7 @@ import {
 
 export type DatabaseInsightsActionResult =
   | { ok: true; insights: DatabaseIntelligenceInsight[]; traceId?: string }
-  | { ok: false; error: string };
+  | { ok: false; error: string; retryAfter?: number };
 
 function tierForValueScore(valueScore: number | null): string {
   if (valueScore == null) return "unrated";
@@ -27,6 +28,12 @@ export async function generateDatabaseInsightsAction(
   const tenantId = session?.user?.tenantId;
   const userId = session?.user?.id;
   if (!tenantId) return { ok: false, error: "unauthorized" };
+
+  // BL-035-F003: per-tenant AI rate limit (10/min + 100/day).
+  const rl = await rateLimitAi(tenantId);
+  if (!rl.ok) {
+    return { ok: false, error: "rate_limit_exceeded", retryAfter: rl.retryAfter };
+  }
 
   void logEvent({
     type: "database.insights_clicked",

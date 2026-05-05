@@ -26,6 +26,7 @@ import { z, ZodError } from "zod";
 import { auth } from "@/auth";
 import { withTenant } from "@/lib/db";
 import { logAudit } from "@/lib/audit/log";
+import { rateLimitAi } from "@/lib/rate-limit-ai";
 import {
   createAsset,
   updateAsset,
@@ -89,11 +90,13 @@ export interface GenerateAssetFailure {
     | "validation"
     | "product_not_found"
     | "parent_not_found"
+    | "rate_limit_exceeded"
     | "ai_config"
     | "ai_timeout"
     | "ai_response"
     | "ai_parse"
     | "internal";
+  retryAfter?: number;
 }
 
 export type GenerateAssetResult = GenerateAssetSuccess | GenerateAssetFailure;
@@ -132,6 +135,19 @@ export async function generateAssetAction(rawInput: unknown): Promise<GenerateAs
   const userId = session?.user?.id;
   if (!session?.user || !tenantId || !userId) {
     return { ok: false, error: "Not signed in", code: "unauthorized" };
+  }
+
+  // BL-035-F003: per-tenant AI rate limit (10/min + 100/day). Applied
+  // here (before product + parent fetch) so a saturated tenant fails
+  // fast without burning a withTenant transaction.
+  const rl = await rateLimitAi(tenantId);
+  if (!rl.ok) {
+    return {
+      ok: false,
+      error: "rate_limit_exceeded",
+      code: "rate_limit_exceeded",
+      retryAfter: rl.retryAfter,
+    };
   }
 
   // Phase 1 — read product + parent context inside withTenant so RLS

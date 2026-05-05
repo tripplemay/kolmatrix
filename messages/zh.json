@@ -1,4 +1,8 @@
 {
+  "globalErrors": {
+    "rateLimitExceeded": "请求过于频繁，请在 {retryAfter} 秒后重试。",
+    "batchRateLimitExceeded": "批量发送次数过多，请在 {retryAfter} 秒后重试。"
+  },
   "nav": {
     "dashboard": "仪表盘",
     "kolDiscovery": "KOL 发现",

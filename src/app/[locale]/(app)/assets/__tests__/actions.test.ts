@@ -44,6 +44,13 @@ vi.mock("@/lib/assets/generators/video-script-generator", async () => {
   };
 });
 
+const rateLimitAiMock = vi
+  .fn<() => Promise<{ ok: true; remaining: number } | { ok: false; retryAfter: number }>>()
+  .mockResolvedValue({ ok: true, remaining: 9 });
+vi.mock("@/lib/rate-limit-ai", () => ({
+  rateLimitAi: () => rateLimitAiMock(),
+}));
+
 const { generateAssetAction } = await import("../actions");
 const { AigcGatewayConfigError, AigcGatewayTimeoutError } =
   await import("@/lib/assets/generators/aigcgateway-client");
@@ -84,6 +91,7 @@ beforeEach(() => {
   createAssetMock.mockReset();
   generateEmailContentMock.mockReset();
   generateVideoScriptContentMock.mockReset();
+  rateLimitAiMock.mockReset().mockResolvedValue({ ok: true, remaining: 9 });
 });
 
 function authedSession() {
@@ -145,6 +153,23 @@ describe("generateAssetAction", () => {
     const res = await generateAssetAction({ productId: PRODUCT_ID });
     expect(res.ok).toBe(false);
     if (!res.ok) expect(res.code).toBe("validation");
+  });
+
+  it("BL-035-F003 — short-circuits with rate_limit_exceeded when the AI rate limiter blocks", async () => {
+    authedSession();
+    rateLimitAiMock.mockResolvedValueOnce({ ok: false, retryAfter: 42 });
+    const res = await generateAssetAction({
+      productId: PRODUCT_ID,
+      type: "email",
+    });
+    expect(res).toEqual({
+      ok: false,
+      error: "rate_limit_exceeded",
+      code: "rate_limit_exceeded",
+      retryAfter: 42,
+    });
+    expect(withTenantMock).not.toHaveBeenCalled();
+    expect(generateEmailContentMock).not.toHaveBeenCalled();
   });
 
   it("returns product_not_found without paying for an AI call", async () => {

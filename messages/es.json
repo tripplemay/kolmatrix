@@ -1,4 +1,8 @@
 {
+  "globalErrors": {
+    "rateLimitExceeded": "Demasiadas solicitudes. Vuelve a intentarlo en {retryAfter}s.",
+    "batchRateLimitExceeded": "Demasiados envíos por lote. Vuelve a intentarlo en {retryAfter}s."
+  },
   "nav": {
     "dashboard": "Panel",
     "kolDiscovery": "Descubrir KOL",

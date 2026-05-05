@@ -1,4 +1,8 @@
 {
+  "globalErrors": {
+    "rateLimitExceeded": "Too many requests. Retry after {retryAfter}s.",
+    "batchRateLimitExceeded": "Too many batch sends. Retry after {retryAfter}s."
+  },
   "nav": {
     "dashboard": "Dashboard",
     "kolDiscovery": "KOL Discovery",

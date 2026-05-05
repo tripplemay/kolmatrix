@@ -21,6 +21,7 @@ import {
   SmartMatchError,
 } from "@/lib/discovery/smart-match";
 import { logEvent } from "@/lib/events/log";
+import { rateLimitAi } from "@/lib/rate-limit-ai";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +56,19 @@ export async function POST(req: Request): Promise<NextResponse> {
         })),
       },
       { status: 400 }
+    );
+  }
+
+  // BL-035-F003: per-tenant AI rate limit (10/min + 100/day). 429 with
+  // Retry-After lets clients back off cleanly.
+  const rl = await rateLimitAi(tenantId);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "rate_limit_exceeded", retryAfter: rl.retryAfter },
+      {
+        status: 429,
+        headers: { "Retry-After": String(rl.retryAfter) },
+      },
     );
   }
 

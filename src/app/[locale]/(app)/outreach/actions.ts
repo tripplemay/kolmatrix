@@ -36,6 +36,7 @@ import {
   type BatchSendResult,
 } from "@/lib/email/batch-send";
 import { substituteSubjectAndBody } from "@/lib/email/variable-substitute";
+import { rateLimitBatchSend } from "@/lib/rate-limit-batch";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -243,13 +244,21 @@ export type SendBatchInput = z.infer<typeof sendBatchSchema>;
 
 export async function sendBatchAction(
   input: SendBatchInput
-): Promise<ComposerActionState<BatchSendResult>> {
+): Promise<ComposerActionState<BatchSendResult> & { retryAfter?: number }> {
   const session = await requireSession();
   if (!session) return { ok: false, error: "unauthorized" };
 
   const parsed = sendBatchSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: "invalid_input" };
+  }
+
+  // BL-035-F003: per-user batch send rate limit (20/min/userId).
+  // userId-keyed because sender reputation is account-scoped, not
+  // tenant-scoped.
+  const rl = await rateLimitBatchSend(session.userId);
+  if (!rl.ok) {
+    return { ok: false, error: "rate_limit_exceeded", retryAfter: rl.retryAfter };
   }
 
   if (parsed.data.aiAccepted) {

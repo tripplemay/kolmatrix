@@ -15,6 +15,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { withTenant } from "@/lib/db";
 import { logEvent } from "@/lib/events/log";
+import { rateLimitAi } from "@/lib/rate-limit-ai";
 import {
   assembleWeeklyReportInput,
   isoWeekEndUtc,
@@ -34,7 +35,7 @@ const UUID_RE =
 
 export type GenerateWeeklyReportResult =
   | { ok: true; reportId: string; markdown: string }
-  | { ok: false; error: string };
+  | { ok: false; error: string; retryAfter?: number };
 
 export async function generateWeeklyReportAction(
   weekStartIso: string,
@@ -45,6 +46,12 @@ export async function generateWeeklyReportAction(
   const userId = session?.user?.id;
   if (!tenantId || !UUID_RE.test(tenantId) || !userId) {
     return { ok: false, error: "unauthorized" };
+  }
+
+  // BL-035-F003: per-tenant AI rate limit (10/min + 100/day).
+  const rl = await rateLimitAi(tenantId);
+  if (!rl.ok) {
+    return { ok: false, error: "rate_limit_exceeded", retryAfter: rl.retryAfter };
   }
 
   const parsedDate = weekStartIso ? new Date(weekStartIso) : new Date();
