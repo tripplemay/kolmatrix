@@ -17,7 +17,7 @@
 -- every tenant — this matches existing semantics (e.g. user-login audit
 -- entries written before a tenant context exists).
 --
--- ROLLBACK (manual):
+-- ROLLBACK:
 --   ALTER TABLE "audit_log" DISABLE ROW LEVEL SECURITY;
 --   DROP POLICY IF EXISTS "audit_log_tenant_isolation" ON "audit_log";
 --   ALTER TABLE "event_log" DISABLE ROW LEVEL SECURITY;

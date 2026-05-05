@@ -12,7 +12,7 @@
 -- DB *before* the deploy migration so the IF NOT EXISTS clause makes
 -- this migration a no-op.
 --
--- ROLLBACK (manual):
+-- ROLLBACK:
 --   DROP INDEX IF EXISTS kol_embedding_active_idx;
 
 CREATE INDEX IF NOT EXISTS kol_embedding_active_idx

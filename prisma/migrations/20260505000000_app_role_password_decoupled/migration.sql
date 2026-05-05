@@ -21,3 +21,11 @@ BEGIN
     );
   END IF;
 END $$;
+
+-- ROLLBACK:
+-- This migration is a no-op when the GUC is unset, so the only durable
+-- effect a rollback would care about is whichever password the deploy
+-- script most recently injected via the sibling ALTER ROLE step in
+-- scripts/deploy-prod.sh. Reset the role to the previous password
+-- manually if needed:
+--   ALTER ROLE kolmatrix_app WITH PASSWORD '<previous-value>';
