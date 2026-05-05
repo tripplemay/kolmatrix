@@ -222,6 +222,16 @@ export async function updateKolEmailAction(
 
 // --- Batch send ------------------------------------------------------
 
+// BL-035-F008 (AI-H4): batch upper bound dropped from 50 → 8 + 60s
+// total timeout. Resend rate-limits ~6 sends/sec, so 50 × ~6s/send was
+// pushing every batch past Next 16's default 60s server-action budget.
+// 8 leaves ~12s of headroom for RPC + DB overhead. Promise.race()
+// guards the 60s wall-clock so a stuck Resend call surfaces a clean
+// `timeout` error instead of a request-aborted stack trace. Larger
+// batches will move to a BullMQ async queue in BL-040+.
+const SEND_BATCH_MAX = 8;
+const SEND_BATCH_TIMEOUT_MS = 60_000;
+
 const sendBatchSchema = z.object({
   campaignId: z.string().regex(UUID_RE),
   aiAccepted: z.boolean().default(false),
@@ -237,7 +247,7 @@ const sendBatchSchema = z.object({
       })
     )
     .min(1)
-    .max(50),
+    .max(SEND_BATCH_MAX),
 });
 
 export type SendBatchInput = z.infer<typeof sendBatchSchema>;
@@ -250,7 +260,20 @@ export async function sendBatchAction(
 
   const parsed = sendBatchSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: "invalid_input" };
+    // BL-035-F008: surface the cap explicitly so the UI can show
+    // "split into smaller batches" copy instead of a generic
+    // "invalid_input" toast.
+    const tooLarge = parsed.error.issues.some(
+      (issue) =>
+        issue.path.length >= 1 &&
+        issue.path[0] === "items" &&
+        (("code" in issue && issue.code === "too_big") ||
+          /at most|too_big|max/i.test(issue.message)),
+    );
+    return {
+      ok: false,
+      error: tooLarge ? "batch_too_large" : "invalid_input",
+    };
   }
 
   // BL-035-F003: per-user batch send rate limit (20/min/userId).
@@ -283,13 +306,27 @@ export async function sendBatchAction(
 
   let result: BatchSendResult;
   try {
-    result = await batchSendOutreach(
+    // BL-035-F008: 60s wall-clock guard. If Resend / DB stalls, abort
+    // before Next 16 cancels the server action and the user sees a
+    // generic 500. The actual send attempts are not aborted (no
+    // mid-flight cancellation primitive) — the timeout simply lets us
+    // return a graceful `timeout` error instead.
+    const TIMEOUT_SENTINEL = Symbol("timeout");
+    const timeoutPromise = new Promise<typeof TIMEOUT_SENTINEL>((resolve) => {
+      setTimeout(() => resolve(TIMEOUT_SENTINEL), SEND_BATCH_TIMEOUT_MS);
+    });
+    const sendPromise = batchSendOutreach(
       session.tenantId,
       session.userId,
       parsed.data.campaignId,
       items,
-      { skipSleep: false }
+      { skipSleep: false },
     );
+    const raced = await Promise.race([sendPromise, timeoutPromise]);
+    if (raced === TIMEOUT_SENTINEL) {
+      return { ok: false, error: "timeout" };
+    }
+    result = raced;
   } catch (err) {
     console.error("[sendBatchAction] failed:", err);
     return { ok: false, error: "db_error" };

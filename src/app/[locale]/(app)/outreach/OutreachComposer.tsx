@@ -96,6 +96,9 @@ interface Labels {
   errorLabels: Record<string, string>;
   selectAllLabel: string;
   noSelectableKols: string;
+  // BL-035-F008: optional UX hint shown when checked.size > 8.
+  // Falls back to "Limit 8 per send." when the parent omits it.
+  batchTooLargeHint?: string;
 }
 
 interface Props {
@@ -515,11 +518,29 @@ export function OutreachComposer({
           {labels.kolSelectedTemplate
             .replace("{count}", String(checked.size))
             .replace("{total}", String(selectableKols.length))}
+          {checked.size > 8 ? (
+            // BL-035-F008: server-side cap is 8 per batch. Surface
+            // the limit before the user clicks Send so they can
+            // narrow the selection rather than discover the cap via
+            // the `batch_too_large` error toast.
+            <span
+              className="text-amber-300 ml-2"
+              data-testid="outreach-batch-cap-hint"
+            >
+              {labels.batchTooLargeHint ?? "Limit 8 per send."}
+            </span>
+          ) : null}
         </div>
         <Button
           variant="primary-gradient"
           size="md"
-          disabled={!selectedCampaign || !activeTemplate || checked.size === 0 || sendPending}
+          disabled={
+            !selectedCampaign ||
+            !activeTemplate ||
+            checked.size === 0 ||
+            checked.size > 8 ||
+            sendPending
+          }
           onClick={doSend}
           data-testid="outreach-send-button"
         >
