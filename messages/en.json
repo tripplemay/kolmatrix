@@ -839,6 +839,43 @@
       "suppression": "Suppression",
       "comingB4": "Coming in B4"
     },
+    "tracking": {
+      "title": "Email Tracking",
+      "subtitle": "Every email you've sent — delivery, opens, replies, and bounces.",
+      "filter": {
+        "all": "All",
+        "queued": "Queued",
+        "sent": "Sent",
+        "delivered": "Delivered",
+        "opened": "Opened",
+        "clicked": "Clicked",
+        "bounced": "Bounced",
+        "complained": "Complained"
+      },
+      "columns": {
+        "sentAt": "Sent",
+        "kol": "KOL",
+        "subject": "Subject",
+        "status": "Status",
+        "openedAt": "Opened",
+        "repliedAt": "Replied",
+        "bounceReason": "Bounce reason"
+      },
+      "emptyState": "No emails match this filter yet.",
+      "nextPage": "Next"
+    },
+    "suppression": {
+      "title": "Suppression List",
+      "subtitle": "KOLs auto-suppressed after a hard bounce or complaint.",
+      "columns": {
+        "clearedAt": "Suppressed at",
+        "kol": "KOL",
+        "reason": "Reason",
+        "messageId": "Message ID"
+      },
+      "emptyState": "No suppressed KOLs yet.",
+      "nextPage": "Next"
+    },
     "quickStats": {
       "sentToday": "Sent today",
       "openRate": "Open rate",

@@ -152,6 +152,12 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   // English across locales; "@channelhandle" is a literal sample handle.
   "database.addKolForm.handleLabel",
   "database.addKolForm.handlePlaceholder",
+  // BL-024-F004 / F005 — "KOL" is an acronym that stays uppercase
+  // across every locale; "Message ID" is a technical identifier we
+  // don't translate.
+  "outreach.tracking.columns.kol",
+  "outreach.suppression.columns.kol",
+  "outreach.suppression.columns.messageId",
   "campaigns.filters.dateTo",
   "campaigns.table.kols",
   "campaigns.table.roi",

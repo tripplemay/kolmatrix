@@ -923,6 +923,43 @@
       "suppression": "Supresión",
       "comingB4": "Próximo en B4"
     },
+    "tracking": {
+      "title": "Seguimiento de correos",
+      "subtitle": "Todos los correos enviados — entrega, aperturas, respuestas y rebotes.",
+      "filter": {
+        "all": "Todos",
+        "queued": "En cola",
+        "sent": "Enviados",
+        "delivered": "Entregados",
+        "opened": "Abiertos",
+        "clicked": "Clic",
+        "bounced": "Rebotados",
+        "complained": "Quejas"
+      },
+      "columns": {
+        "sentAt": "Enviado",
+        "kol": "KOL",
+        "subject": "Asunto",
+        "status": "Estado",
+        "openedAt": "Abierto",
+        "repliedAt": "Respondido",
+        "bounceReason": "Motivo del rebote"
+      },
+      "emptyState": "No hay correos para este filtro.",
+      "nextPage": "Siguiente"
+    },
+    "suppression": {
+      "title": "Lista de supresión",
+      "subtitle": "KOLs auto-suprimidos tras un rebote duro o queja.",
+      "columns": {
+        "clearedAt": "Suprimido el",
+        "kol": "KOL",
+        "reason": "Motivo",
+        "messageId": "ID del mensaje"
+      },
+      "emptyState": "Aún no hay KOLs suprimidos.",
+      "nextPage": "Siguiente"
+    },
     "quickStats": {
       "sentToday": "Enviado hoy",
       "openRate": "Tasa de apertura",

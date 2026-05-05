@@ -923,6 +923,43 @@
       "suppression": "차단",
       "comingB4": "B4에 추가 예정"
     },
+    "tracking": {
+      "title": "이메일 추적",
+      "subtitle": "전송된 모든 이메일 — 전달, 오픈, 답장, 반송.",
+      "filter": {
+        "all": "전체",
+        "queued": "대기 중",
+        "sent": "전송됨",
+        "delivered": "전달됨",
+        "opened": "오픈됨",
+        "clicked": "클릭됨",
+        "bounced": "반송",
+        "complained": "신고"
+      },
+      "columns": {
+        "sentAt": "전송 시간",
+        "kol": "KOL",
+        "subject": "제목",
+        "status": "상태",
+        "openedAt": "오픈",
+        "repliedAt": "답장",
+        "bounceReason": "반송 사유"
+      },
+      "emptyState": "해당 필터의 이메일이 아직 없습니다.",
+      "nextPage": "다음"
+    },
+    "suppression": {
+      "title": "차단 목록",
+      "subtitle": "하드 반송 또는 신고 후 자동으로 차단된 KOL.",
+      "columns": {
+        "clearedAt": "차단 시각",
+        "kol": "KOL",
+        "reason": "사유",
+        "messageId": "메시지 ID"
+      },
+      "emptyState": "차단된 KOL이 아직 없습니다.",
+      "nextPage": "다음"
+    },
     "quickStats": {
       "sentToday": "오늘 발송한 이메일",
       "openRate": "오픈율",

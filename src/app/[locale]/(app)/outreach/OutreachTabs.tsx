@@ -20,8 +20,11 @@ const TABS: TabSpec[] = [
   { id: "overview" },
   { id: "templates", badge: 10, tooltipKey: "comingB4" },
   { id: "send_queue", badge: 0, tooltipKey: "comingB4" },
-  { id: "tracking", tooltipKey: "comingB4" },
-  { id: "suppression", badge: 0, tooltipKey: "comingB4" },
+  // BL-024-F004 / F005: tracking + suppression unlocked. Both render
+  // a real list view backed by EmailLog (tracking) / audit_log
+  // hard-bounce events (suppression).
+  { id: "tracking" },
+  { id: "suppression" },
 ];
 
 export async function OutreachTabs({
@@ -47,7 +50,11 @@ export async function OutreachTabs({
             ? `/${locale}/outreach`
             : tab.id === "templates"
               ? `/${locale}/outreach/templates`
-              : undefined;
+              : tab.id === "tracking"
+                ? `/${locale}/outreach/tracking`
+                : tab.id === "suppression"
+                  ? `/${locale}/outreach/suppression`
+                  : undefined;
         const content = (
           <>
             <span>{label}</span>

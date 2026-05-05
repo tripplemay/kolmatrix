@@ -923,6 +923,43 @@
       "suppression": "抑制",
       "comingB4": "B4で登場予定"
     },
+    "tracking": {
+      "title": "メール追跡",
+      "subtitle": "送信したすべてのメール — 配信、開封、返信、バウンス。",
+      "filter": {
+        "all": "すべて",
+        "queued": "キュー中",
+        "sent": "送信済み",
+        "delivered": "配信済み",
+        "opened": "開封済み",
+        "clicked": "クリック",
+        "bounced": "バウンス",
+        "complained": "苦情"
+      },
+      "columns": {
+        "sentAt": "送信",
+        "kol": "KOL",
+        "subject": "件名",
+        "status": "ステータス",
+        "openedAt": "開封",
+        "repliedAt": "返信",
+        "bounceReason": "バウンス理由"
+      },
+      "emptyState": "該当するメールはありません。",
+      "nextPage": "次へ"
+    },
+    "suppression": {
+      "title": "抑制リスト",
+      "subtitle": "ハードバウンスまたは苦情後に自動的に抑制されたKOL。",
+      "columns": {
+        "clearedAt": "抑制日時",
+        "kol": "KOL",
+        "reason": "理由",
+        "messageId": "メッセージID"
+      },
+      "emptyState": "抑制されたKOLはまだありません。",
+      "nextPage": "次へ"
+    },
     "quickStats": {
       "sentToday": "今日送信した数",
       "openRate": "開封率",

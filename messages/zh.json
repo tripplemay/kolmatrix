@@ -839,6 +839,43 @@
       "suppression": "黑名单",
       "comingB4": "B4 版本交付"
     },
+    "tracking": {
+      "title": "邮件追踪",
+      "subtitle": "查看你发过的所有邮件 —— 送达、打开、回复、退信。",
+      "filter": {
+        "all": "全部",
+        "queued": "排队中",
+        "sent": "已发送",
+        "delivered": "已送达",
+        "opened": "已打开",
+        "clicked": "已点击",
+        "bounced": "退信",
+        "complained": "投诉"
+      },
+      "columns": {
+        "sentAt": "发送时间",
+        "kol": "KOL",
+        "subject": "主题",
+        "status": "状态",
+        "openedAt": "打开时间",
+        "repliedAt": "回复时间",
+        "bounceReason": "退信原因"
+      },
+      "emptyState": "暂无符合该筛选的邮件记录。",
+      "nextPage": "下一页"
+    },
+    "suppression": {
+      "title": "黑名单",
+      "subtitle": "硬退信或被举报后自动加入黑名单的 KOL。",
+      "columns": {
+        "clearedAt": "屏蔽时间",
+        "kol": "KOL",
+        "reason": "原因",
+        "messageId": "Message ID"
+      },
+      "emptyState": "暂无被屏蔽的 KOL。",
+      "nextPage": "下一页"
+    },
     "quickStats": {
       "sentToday": "今日已发",
       "openRate": "打开率",
