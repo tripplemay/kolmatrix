@@ -11,12 +11,24 @@
 import "dotenv/config";
 
 import { parseFencedJson } from "@/lib/ai/json-extract";
+import {
+  AiDailyCostExceededError,
+  assertDailyCostBudget,
+  recordAiUsage,
+} from "@/lib/ai/cost-cap";
 import { wrapUserInput } from "@/lib/ai/xml-escape";
 import { resolveAigcV1BaseUrl } from "@/lib/aigc/base-url";
 
 export const KOL_EMAIL_CUSTOMIZE_ACTION_ID = "cmob2z6j00001bnole7i8lg9h";
 
 export interface CustomizeEmailInput {
+  /**
+   * BL-034 F005 fix-round 1: required so the per-tenant daily cost cap
+   * can pre-check + post-meter the AI request. Callers
+   * (outreach/actions.ts) already authenticate the session and have
+   * tenantId on hand.
+   */
+  tenantId: string;
   product: {
     name: string;
     category?: string | null;
@@ -44,7 +56,12 @@ export interface CustomizeEmailResult {
 
 export class CustomizeEmailError extends Error {
   constructor(
-    public readonly code: "missing_env" | "http_error" | "invalid_response" | "timeout",
+    public readonly code:
+      | "missing_env"
+      | "http_error"
+      | "invalid_response"
+      | "timeout"
+      | "daily_cost_exceeded",
     message: string
   ) {
     super(message);
@@ -141,6 +158,23 @@ export async function customizeEmail(input: CustomizeEmailInput): Promise<Custom
     throw new CustomizeEmailError("missing_env", "AIGCGATEWAY_API_KEY is not set");
   }
 
+  // BL-034 F005 fix-round 1: per-tenant daily AI cost cap. Throws
+  // AiDailyCostExceededError when the running estimate (count × $0.01)
+  // hits AI_DAILY_COST_USD_PER_TENANT_MAX. Re-wrap as
+  // CustomizeEmailError so the caller's `error: err.code` switch handles
+  // it (UI maps to "今日 AI 调用配额已用尽").
+  try {
+    await assertDailyCostBudget(input.tenantId);
+  } catch (err) {
+    if (err instanceof AiDailyCostExceededError) {
+      throw new CustomizeEmailError(
+        "daily_cost_exceeded",
+        `tenant daily AI cost cap reached: ${err.message}`,
+      );
+    }
+    throw err;
+  }
+
   const url = `${baseUrl()}/actions/run`;
 
   let res: Response;
@@ -204,6 +238,12 @@ export async function customizeEmail(input: CustomizeEmailInput): Promise<Custom
       "aigcgateway output missing `subject` or `body` string"
     );
   }
+
+  // BL-034 F005 fix-round 1: meter the successful AI call so the next
+  // request's `assertDailyCostBudget` sees it. Failure here only impacts
+  // the cost-cap accuracy (logEvent already swallows DB errors), never
+  // the customize result we return to the caller.
+  await recordAiUsage(input.tenantId, "kol_email_customize");
 
   return {
     subject: parsed.subject,

@@ -140,6 +140,9 @@ export async function customizeAction(
 
   try {
     const result = await customizeEmail({
+      // BL-034 F005 fix-round 1: pass tenantId so customizeEmail can
+      // pre-check the per-tenant daily AI cost cap + meter the call.
+      tenantId: session.tenantId,
       product: {
         name: inputs.campaign.product.name,
         category: inputs.campaign.product.category,
