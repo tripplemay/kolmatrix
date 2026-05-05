@@ -164,8 +164,22 @@ export async function updateProduct(
   const data = parsed.data;
 
   try {
-    const product = await withTenant(tenantId, (tx) =>
-      tx.product.update({
+    const product = await withTenant(tenantId, async (tx) => {
+      // BL-035-F005 (API-H3): explicit ownership preflight on top of
+      // RLS. Returning the same `not_found` error for both "row missing"
+      // and "row owned by another tenant" stops the action from leaking
+      // whether a cross-tenant product id exists. RLS narrows
+      // findUnique to the caller's tenant, so a cross-tenant id
+      // surfaces as null here too — but the explicit tenantId check is
+      // a defence-in-depth tripwire for an RLS misconfiguration.
+      const existing = await tx.product.findUnique({
+        where: { id: productId },
+        select: { id: true, tenantId: true },
+      });
+      if (!existing || existing.tenantId !== tenantId) {
+        return null;
+      }
+      return tx.product.update({
         where: { id: productId },
         data: {
           name: data.name,
@@ -175,8 +189,12 @@ export async function updateProduct(
           downloadUrl: data.downloadUrl ?? null,
           launchDate: data.launchDate ? new Date(data.launchDate) : null,
         },
-      })
-    );
+      });
+    });
+
+    if (!product) {
+      return { ok: false, error: "not_found" };
+    }
 
     void logEvent({
       type: "product.updated",
@@ -277,7 +295,9 @@ export async function triggerAiGeneration(
   }
 }
 
-export async function deleteProduct(productId: string): Promise<{ ok: boolean }> {
+export type DeleteProductResult = { ok: true } | { ok: false; error?: "not_found" };
+
+export async function deleteProduct(productId: string): Promise<DeleteProductResult> {
   const session = await auth();
   const tenantId = session?.user?.tenantId;
   const userId = session?.user?.id;
@@ -287,11 +307,24 @@ export async function deleteProduct(productId: string): Promise<{ ok: boolean }>
   }
 
   try {
-    await withTenant(tenantId, (tx) =>
-      tx.product.delete({
+    // BL-035-F005 (API-H3): same ownership preflight as updateProduct.
+    // Returning `not_found` (not "forbidden") avoids leaking whether
+    // the product id corresponds to a row owned by another tenant.
+    const result = await withTenant(tenantId, async (tx) => {
+      const existing = await tx.product.findUnique({
         where: { id: normalizedProductId },
-      })
-    );
+        select: { id: true, tenantId: true },
+      });
+      if (!existing || existing.tenantId !== tenantId) {
+        return { kind: "not_found" as const };
+      }
+      await tx.product.delete({ where: { id: normalizedProductId } });
+      return { kind: "deleted" as const };
+    });
+
+    if (result.kind === "not_found") {
+      return { ok: false, error: "not_found" };
+    }
 
     void logEvent({
       type: "product.deleted",

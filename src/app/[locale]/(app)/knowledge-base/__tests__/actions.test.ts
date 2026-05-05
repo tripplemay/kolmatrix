@@ -69,10 +69,14 @@ describe("knowledge-base product actions", () => {
       uniqueSellingPoints: "Daily tournaments",
       downloadUrl: "https://example.com/download",
     });
+    // BL-035-F005: ownership preflight runs `findUnique` before update.
+    const findUnique = vi
+      .fn()
+      .mockResolvedValue({ id: PRODUCT_ID, tenantId: TENANT_ID });
     authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
     withTenant.mockImplementation(async (_tenantId, fn) =>
       (fn as (tx: unknown) => unknown)({
-        product: { update },
+        product: { findUnique, update },
       })
     );
 
@@ -106,10 +110,13 @@ describe("knowledge-base product actions", () => {
 
   it("allows a cuid productId through deleteProduct and reaches Prisma", async () => {
     const del = vi.fn().mockResolvedValue({ id: PRODUCT_ID });
+    const findUnique = vi
+      .fn()
+      .mockResolvedValue({ id: PRODUCT_ID, tenantId: TENANT_ID });
     authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
     withTenant.mockImplementation(async (_tenantId, fn) =>
       (fn as (tx: unknown) => unknown)({
-        product: { delete: del },
+        product: { findUnique, delete: del },
       })
     );
 
@@ -266,5 +273,60 @@ describe("knowledge-base product actions", () => {
 
     expect(res).toEqual({ ok: false });
     expect(withTenant).not.toHaveBeenCalled();
+  });
+
+  // BL-035-F005 (API-H3) — ownership preflight defence-in-depth.
+  it("updateProduct returns not_found when findUnique surfaces a row owned by another tenant", async () => {
+    const update = vi.fn();
+    const findUnique = vi
+      .fn()
+      .mockResolvedValue({ id: PRODUCT_ID, tenantId: "00000000-1111-2222-3333-444444444444" });
+    authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
+    withTenant.mockImplementation(async (_tenantId, fn) =>
+      (fn as (tx: unknown) => unknown)({
+        product: { findUnique, update },
+      }),
+    );
+
+    const res = await updateProduct({ ok: false }, buildFormData());
+
+    expect(res).toEqual({ ok: false, error: "not_found" });
+    expect(update).not.toHaveBeenCalled();
+    expect(logEvent).not.toHaveBeenCalled();
+  });
+
+  it("deleteProduct returns not_found when findUnique surfaces a row owned by another tenant", async () => {
+    const del = vi.fn();
+    const findUnique = vi
+      .fn()
+      .mockResolvedValue({ id: PRODUCT_ID, tenantId: "00000000-1111-2222-3333-444444444444" });
+    authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
+    withTenant.mockImplementation(async (_tenantId, fn) =>
+      (fn as (tx: unknown) => unknown)({
+        product: { findUnique, delete: del },
+      }),
+    );
+
+    const res = await deleteProduct(PRODUCT_ID);
+
+    expect(res).toEqual({ ok: false, error: "not_found" });
+    expect(del).not.toHaveBeenCalled();
+    expect(logEvent).not.toHaveBeenCalled();
+  });
+
+  it("deleteProduct returns not_found when findUnique returns null (RLS hides the row)", async () => {
+    const del = vi.fn();
+    const findUnique = vi.fn().mockResolvedValue(null);
+    authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
+    withTenant.mockImplementation(async (_tenantId, fn) =>
+      (fn as (tx: unknown) => unknown)({
+        product: { findUnique, delete: del },
+      }),
+    );
+
+    const res = await deleteProduct(PRODUCT_ID);
+
+    expect(res).toEqual({ ok: false, error: "not_found" });
+    expect(del).not.toHaveBeenCalled();
   });
 });

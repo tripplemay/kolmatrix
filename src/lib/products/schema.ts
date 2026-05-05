@@ -55,6 +55,6 @@ export type CreateProductInput = z.infer<typeof createProductSchema>;
 export type CreateProductState = {
   ok: boolean;
   productId?: string;
-  error?: "invalid_input" | "generic" | "unauthorized";
+  error?: "invalid_input" | "generic" | "unauthorized" | "not_found";
   fieldErrors?: Partial<Record<keyof CreateProductInput, string>>;
 };
