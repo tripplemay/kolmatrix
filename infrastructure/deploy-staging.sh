@@ -92,9 +92,18 @@ if [[ "$HEALTH_STATUS" != "healthy" ]]; then
   exit 1
 fi
 
-if [[ -z "$HEALTH_SHA" || "$HEALTH_SHA" == "unknown" ]]; then
-  echo "❌ health git_sha is empty/unknown" >&2
+if [[ -z "${HEALTH_DETAIL_TOKEN:-}" ]]; then
+  # BL-034 F007 graceful-degrade: when the token isn't configured on the
+  # VPS yet (spec §6.1 #2 user task), the health body legitimately omits
+  # git_sha. The healthcheck above already proved status=healthy, which
+  # is the actual deploy-success signal — don't fail the script just
+  # because we can't read git_sha. Surface a loud warning so ops still
+  # sees the misconfiguration and lands the token soon.
+  echo "⚠️  staging deploy done WITHOUT git_sha verification (HEAD=$HEAD_SHA)"
+  echo "   action: SSH staging + add HEALTH_DETAIL_TOKEN to .env.staging then re-trigger"
+elif [[ -z "$HEALTH_SHA" || "$HEALTH_SHA" == "unknown" ]]; then
+  echo "❌ health git_sha is empty/unknown despite HEALTH_DETAIL_TOKEN being set" >&2
   exit 1
+else
+  echo "✅ staging deploy done (HEAD=$HEAD_SHA, health.git_sha=$HEALTH_SHA)"
 fi
-
-echo "✅ staging deploy done (HEAD=$HEAD_SHA, health.git_sha=$HEALTH_SHA)"
