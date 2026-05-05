@@ -460,11 +460,42 @@
     "header": {
       "subtitle": "{count, plural, =0 {Aún no hay KOLs en tu biblioteca} one {# KOL en tu biblioteca} other {# KOLs en tu biblioteca}}",
       "export": "Exportar",
-      "exportTooltip": "La exportación CSV llega con B6",
+      "exportTooltip": "Descargar los KOLs guardados como CSV",
       "import": "Importar CSV",
-      "importTooltip": "La importación CSV llega con B6",
+      "importTooltip": "Importar KOLs en bloque desde un archivo CSV",
       "addKol": "Añadir KOL",
-      "addKolTooltip": "La entrada manual de KOL llega con B6"
+      "addKolTooltip": "Añadir un KOL manualmente a tu biblioteca"
+    },
+    "import": {
+      "title": "Importar KOLs desde CSV",
+      "body": "Sube un CSV con las columnas: external_id, platform, handle, display_name, follower_count, language, country_code, email, categories. Máximo 5 MB / 50.000 filas.",
+      "uploadLabel": "Subir",
+      "uploadingLabel": "Subiendo…",
+      "cancelLabel": "Cancelar",
+      "successTemplate": "Importados {imported} KOL(s); omitidos {skipped}.",
+      "errorLabel": "Error al importar. Revisa el archivo y vuelve a intentarlo.",
+      "rateLimitLabel": "Demasiadas importaciones. Espera un minuto.",
+      "fileTooLargeLabel": "Archivo demasiado grande o demasiadas filas (5 MB / 50.000).",
+      "rowErrorTemplate": "Fila {row}: {message}"
+    },
+    "addKolForm": {
+      "title": "Añadir un KOL",
+      "platformLabel": "Plataforma",
+      "handleLabel": "Handle",
+      "handlePlaceholder": "@channelhandle",
+      "displayNameLabel": "Nombre",
+      "urlLabel": "URL (opcional)",
+      "emailLabel": "Correo (opcional)",
+      "followerCountLabel": "Seguidores (opcional)",
+      "submitLabel": "Añadir KOL",
+      "submittingLabel": "Añadiendo…",
+      "cancelLabel": "Cancelar",
+      "successLabel": "KOL añadido.",
+      "errorLabel": "No se pudo añadir el KOL.",
+      "duplicateLabel": "Ya existe un KOL con este handle + plataforma.",
+      "rateLimitLabel": "Demasiadas solicitudes. Espera un poco.",
+      "invalidUrlLabel": "URL no válida (https://…)",
+      "invalidEmailLabel": "Correo no válido"
     },
     "filters": {
       "search": "Buscar",

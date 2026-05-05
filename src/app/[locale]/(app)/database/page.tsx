@@ -32,6 +32,7 @@ import { parseFilters, serializeFilters } from "@/lib/kol/filters";
 
 import { DatabaseFilterBar } from "./DatabaseFilterBar";
 import { DatabaseTableClient } from "./DatabaseTableClient";
+import { ImportCsvDialog } from "./ImportCsvDialog";
 import { InsightsPanel } from "./InsightsPanel";
 import { QuickStats } from "./QuickStats";
 import { runDatabaseSearch } from "./search";
@@ -68,6 +69,7 @@ export default async function DatabasePage({ params, searchParams }: Props) {
 
   const t = await getTranslations("database");
   const tHeader = await getTranslations("database.header");
+  const tImport = await getTranslations("database.import");
   const tStatus = await getTranslations("relationshipStatus");
   const tEmpty = await getTranslations("database.emptyState");
   const tSummary = await getTranslations("database.summary");
@@ -138,18 +140,20 @@ export default async function DatabasePage({ params, searchParams }: Props) {
             </span>
             {tHeader("export")}
           </Link>
-          <Button
-            variant="ghost"
-            disabled
-            title={tHeader("importTooltip")}
-            className="border-purple/40 text-purple"
-            data-testid="database-import"
-          >
-            <span className="material-symbols-outlined text-[16px]" aria-hidden>
-              publish
-            </span>
-            {tHeader("import")}
-          </Button>
+          <ImportCsvDialog
+            triggerLabel={tHeader("import")}
+            triggerTitle={tHeader("importTooltip")}
+            dialogTitle={tImport("title")}
+            dialogBody={tImport("body")}
+            uploadLabel={tImport("uploadLabel")}
+            uploadingLabel={tImport("uploadingLabel")}
+            cancelLabel={tImport("cancelLabel")}
+            successTemplate={tImport("successTemplate")}
+            errorLabel={tImport("errorLabel")}
+            rateLimitLabel={tImport("rateLimitLabel")}
+            fileTooLargeLabel={tImport("fileTooLargeLabel")}
+            rowErrorTemplate={tImport("rowErrorTemplate")}
+          />
           <Button
             variant="primary-gradient"
             disabled

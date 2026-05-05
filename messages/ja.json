@@ -460,11 +460,42 @@
     "header": {
       "subtitle": "{count, plural, =0 {まだライブラリにKOLがありません} one {ライブラリに#件のKOLがあります} other {ライブラリに#件のKOLがあります}}",
       "export": "エクスポート",
-      "exportTooltip": "CSVエクスポートはB6で利用可能になります",
+      "exportTooltip": "保存済みKOLをCSVでダウンロード",
       "import": "CSVをインポート",
-      "importTooltip": "CSVインポートはB6で利用可能になります",
+      "importTooltip": "CSVファイルからKOLを一括インポート",
       "addKol": "KOLを追加",
-      "addKolTooltip": "手動でのKOL登録はB6で利用可能になります"
+      "addKolTooltip": "ライブラリに手動でKOLを追加"
+    },
+    "import": {
+      "title": "CSVからKOLをインポート",
+      "body": "列を指定したCSVをアップロード: external_id, platform, handle, display_name, follower_count, language, country_code, email, categories。最大 5 MB / 50,000 行。",
+      "uploadLabel": "アップロード",
+      "uploadingLabel": "アップロード中…",
+      "cancelLabel": "キャンセル",
+      "successTemplate": "{imported}件のKOLをインポート、{skipped}件をスキップ。",
+      "errorLabel": "インポートに失敗しました。ファイルを確認して再試行してください。",
+      "rateLimitLabel": "インポートが多すぎます。少し待ってから再試行してください。",
+      "fileTooLargeLabel": "ファイルが大きすぎるか行数が多すぎます（5 MB / 50,000行まで）。",
+      "rowErrorTemplate": "{row}行目: {message}"
+    },
+    "addKolForm": {
+      "title": "KOLを追加",
+      "platformLabel": "プラットフォーム",
+      "handleLabel": "ハンドル",
+      "handlePlaceholder": "@channelhandle",
+      "displayNameLabel": "表示名",
+      "urlLabel": "URL（任意）",
+      "emailLabel": "メール（任意）",
+      "followerCountLabel": "フォロワー数（任意）",
+      "submitLabel": "KOLを追加",
+      "submittingLabel": "追加中…",
+      "cancelLabel": "キャンセル",
+      "successLabel": "KOLを追加しました。",
+      "errorLabel": "追加に失敗しました。",
+      "duplicateLabel": "このハンドル + プラットフォームの組み合わせはすでに存在します。",
+      "rateLimitLabel": "操作が多すぎます。少し待ってから再試行してください。",
+      "invalidUrlLabel": "URLが無効です（https://…）",
+      "invalidEmailLabel": "メールアドレスが無効です"
     },
     "filters": {
       "search": "検索",

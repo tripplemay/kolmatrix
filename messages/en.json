@@ -460,11 +460,42 @@
     "header": {
       "subtitle": "{count, plural, =0 {No KOLs in your library yet} one {# KOL in your library} other {# KOLs in your library}}",
       "export": "Export",
-      "exportTooltip": "CSV export ships with B6",
+      "exportTooltip": "Download saved KOLs as CSV",
       "import": "Import CSV",
-      "importTooltip": "CSV import ships with B6",
+      "importTooltip": "Bulk-import KOLs from a CSV file",
       "addKol": "Add KOL",
-      "addKolTooltip": "Manual KOL entry ships with B6"
+      "addKolTooltip": "Manually add a KOL to your library"
+    },
+    "import": {
+      "title": "Import KOLs from CSV",
+      "body": "Upload a CSV with the columns: external_id, platform, handle, display_name, follower_count, language, country_code, email, categories. Up to 5 MB / 50,000 rows.",
+      "uploadLabel": "Upload",
+      "uploadingLabel": "Uploading…",
+      "cancelLabel": "Cancel",
+      "successTemplate": "Imported {imported} KOL(s); skipped {skipped}.",
+      "errorLabel": "Import failed. Please check the file and try again.",
+      "rateLimitLabel": "Too many imports — please wait a minute.",
+      "fileTooLargeLabel": "File too large or too many rows (5 MB / 50,000 limit).",
+      "rowErrorTemplate": "Row {row}: {message}"
+    },
+    "addKolForm": {
+      "title": "Add a KOL",
+      "platformLabel": "Platform",
+      "handleLabel": "Handle",
+      "handlePlaceholder": "@channelhandle",
+      "displayNameLabel": "Display name",
+      "urlLabel": "URL (optional)",
+      "emailLabel": "Email (optional)",
+      "followerCountLabel": "Follower count (optional)",
+      "submitLabel": "Add KOL",
+      "submittingLabel": "Adding…",
+      "cancelLabel": "Cancel",
+      "successLabel": "KOL added.",
+      "errorLabel": "Could not add KOL.",
+      "duplicateLabel": "A KOL with this handle + platform already exists.",
+      "rateLimitLabel": "Too many additions — please slow down.",
+      "invalidUrlLabel": "URL must be valid (https://…)",
+      "invalidEmailLabel": "Email must be valid"
     },
     "filters": {
       "search": "Search",

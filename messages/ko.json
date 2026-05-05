@@ -460,11 +460,42 @@
     "header": {
       "subtitle": "{count, plural, =0 {라이브러리에 KOL이 아직 없습니다} one {라이브러리에 #명의 KOL이 있습니다} other {라이브러리에 #명의 KOL이 있습니다}}",
       "export": "내보내기",
-      "exportTooltip": "CSV 내보내기는 B6에서 지원됩니다.",
+      "exportTooltip": "저장된 KOL을 CSV로 다운로드",
       "import": "CSV 가져오기",
-      "importTooltip": "CSV 가져오기는 B6에서 지원됩니다.",
+      "importTooltip": "CSV 파일에서 KOL을 일괄 가져오기",
       "addKol": "KOL 추가",
-      "addKolTooltip": "수동 KOL 입력은 B6에서 지원됩니다."
+      "addKolTooltip": "라이브러리에 KOL을 수동으로 추가"
+    },
+    "import": {
+      "title": "CSV에서 KOL 가져오기",
+      "body": "열: external_id, platform, handle, display_name, follower_count, language, country_code, email, categories. 최대 5 MB / 50,000행.",
+      "uploadLabel": "업로드",
+      "uploadingLabel": "업로드 중…",
+      "cancelLabel": "취소",
+      "successTemplate": "{imported}명 가져옴; {skipped}건 건너뜀.",
+      "errorLabel": "가져오기 실패. 파일을 확인하고 다시 시도하세요.",
+      "rateLimitLabel": "가져오기 횟수가 많습니다. 잠시 후 다시 시도하세요.",
+      "fileTooLargeLabel": "파일이 너무 크거나 행이 너무 많습니다 (5 MB / 50,000행 한도).",
+      "rowErrorTemplate": "{row}행: {message}"
+    },
+    "addKolForm": {
+      "title": "KOL 추가",
+      "platformLabel": "플랫폼",
+      "handleLabel": "핸들",
+      "handlePlaceholder": "@channelhandle",
+      "displayNameLabel": "표시 이름",
+      "urlLabel": "URL (선택)",
+      "emailLabel": "이메일 (선택)",
+      "followerCountLabel": "팔로워 수 (선택)",
+      "submitLabel": "KOL 추가",
+      "submittingLabel": "추가 중…",
+      "cancelLabel": "취소",
+      "successLabel": "KOL이 추가되었습니다.",
+      "errorLabel": "추가 실패.",
+      "duplicateLabel": "이 핸들 + 플랫폼 조합은 이미 존재합니다.",
+      "rateLimitLabel": "작업 횟수가 많습니다. 잠시 후 다시 시도하세요.",
+      "invalidUrlLabel": "URL이 유효하지 않습니다 (https://…)",
+      "invalidEmailLabel": "이메일 형식이 올바르지 않습니다"
     },
     "filters": {
       "search": "검색",

@@ -460,11 +460,42 @@
     "header": {
       "subtitle": "{count, plural, =0 {库中暂无 KOL} other {库中共有 # 位 KOL}}",
       "export": "导出",
-      "exportTooltip": "CSV 导出将随 B6 上线",
+      "exportTooltip": "下载已保存的 KOL 为 CSV",
       "import": "导入 CSV",
-      "importTooltip": "CSV 导入将随 B6 上线",
+      "importTooltip": "通过 CSV 文件批量导入 KOL",
       "addKol": "新增 KOL",
-      "addKolTooltip": "手动新增 KOL 将随 B6 上线"
+      "addKolTooltip": "手动新增一个 KOL 到库中"
+    },
+    "import": {
+      "title": "通过 CSV 导入 KOL",
+      "body": "上传 CSV 文件，列：external_id, platform, handle, display_name, follower_count, language, country_code, email, categories。最多 5 MB / 50,000 行。",
+      "uploadLabel": "上传",
+      "uploadingLabel": "上传中…",
+      "cancelLabel": "取消",
+      "successTemplate": "已导入 {imported} 位 KOL；跳过 {skipped} 行。",
+      "errorLabel": "导入失败，请检查文件后重试。",
+      "rateLimitLabel": "导入过于频繁，请稍候。",
+      "fileTooLargeLabel": "文件过大或行数过多（上限 5 MB / 50,000 行）。",
+      "rowErrorTemplate": "第 {row} 行：{message}"
+    },
+    "addKolForm": {
+      "title": "新增 KOL",
+      "platformLabel": "平台",
+      "handleLabel": "Handle",
+      "handlePlaceholder": "@channelhandle",
+      "displayNameLabel": "显示名称",
+      "urlLabel": "URL（可选）",
+      "emailLabel": "邮箱（可选）",
+      "followerCountLabel": "粉丝数（可选）",
+      "submitLabel": "新增 KOL",
+      "submittingLabel": "新增中…",
+      "cancelLabel": "取消",
+      "successLabel": "KOL 已新增。",
+      "errorLabel": "新增失败。",
+      "duplicateLabel": "该 handle + 平台组合已存在。",
+      "rateLimitLabel": "操作过于频繁，请稍候。",
+      "invalidUrlLabel": "URL 必须有效（https://…）",
+      "invalidEmailLabel": "邮箱格式错误"
     },
     "filters": {
       "search": "搜索",
