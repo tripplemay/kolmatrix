@@ -22,6 +22,19 @@ export interface EmailTemplateRecord {
   productName?: string | null;
 }
 
+// BL-035-F011 (CQ-H2): legacy `loadUserTemplates` / `loadSystemTemplates`
+// removed — every composer caller now goes through `loadOutreachTemplates`
+// which sources from the unified `asset` table. The dual-write
+// email_template mirror still feeds email_log.template_id but is no
+// longer read by app code.
+
+function toOption(row: EmailTemplateRecord): EmailTemplateOption {
+  return {
+    ...row,
+    scope: row.tenantId == null ? "system" : "user",
+  };
+}
+
 export interface EmailTemplateOption extends EmailTemplateRecord {
   scope: EmailTemplateScope;
 }
@@ -32,17 +45,6 @@ export interface EmailTemplateDraftInput {
   body: string;
   variables: Prisma.InputJsonValue;
   locale: "en" | "zh";
-}
-
-function toOption(row: EmailTemplateRecord): EmailTemplateOption {
-  return {
-    ...row,
-    scope: row.tenantId == null ? "system" : "user",
-  };
-}
-
-function orderTemplates(rows: EmailTemplateRecord[]): EmailTemplateOption[] {
-  return rows.map(toOption);
 }
 
 /**
@@ -109,49 +111,6 @@ export async function loadOutreachTemplates(
   }
 
   return [...systemRows.map(adapt), ...userRowsSorted.map(adapt)];
-}
-
-export async function loadUserTemplates(
-  tx: Prisma.TransactionClient,
-  tenantId: string,
-  locale: "en" | "zh"
-): Promise<EmailTemplateOption[]> {
-  const rows = await tx.emailTemplate.findMany({
-    where: { tenantId, type: "user", locale },
-    select: {
-      id: true,
-      tenantId: true,
-      name: true,
-      subject: true,
-      body: true,
-      variables: true,
-      locale: true,
-      type: true,
-    },
-    orderBy: { createdAt: "desc" },
-  });
-  return orderTemplates(rows as EmailTemplateRecord[]);
-}
-
-export async function loadSystemTemplates(
-  tx: Prisma.TransactionClient,
-  locale: "en" | "zh"
-): Promise<EmailTemplateOption[]> {
-  const rows = await tx.emailTemplate.findMany({
-    where: { tenantId: null, locale },
-    select: {
-      id: true,
-      tenantId: true,
-      name: true,
-      subject: true,
-      body: true,
-      variables: true,
-      locale: true,
-      type: true,
-    },
-    orderBy: { createdAt: "asc" },
-  });
-  return orderTemplates(rows as EmailTemplateRecord[]);
 }
 
 export async function createUserTemplate(

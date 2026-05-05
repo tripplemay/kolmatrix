@@ -46,12 +46,11 @@ export class AssetVariantDepthError extends Error {
   }
 }
 
-export class AssetVariantSelfReferenceError extends Error {
-  constructor(public readonly assetId: string) {
-    super(`Asset ${assetId} cannot be its own parent`);
-    this.name = "AssetVariantSelfReferenceError";
-  }
-}
+// BL-035-F011 (CQ-H5): `AssetVariantSelfReferenceError` was declared
+// but never thrown. The variant tree is keyed by parentId and a
+// self-reference would only occur if the caller hand-rolled a row,
+// which createAsset/updateAsset don't allow. Drop the unused class
+// rather than wire a typed catch around it.
 
 function parseContent(type: AssetType, content: unknown): Prisma.InputJsonValue {
   const schema = ASSET_CONTENT_SCHEMAS[type];

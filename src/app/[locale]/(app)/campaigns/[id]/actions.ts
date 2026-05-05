@@ -19,16 +19,12 @@ import {
 } from "@/lib/campaigns/kol-operations";
 import {
   CampaignUpdateError,
-  isAllowedStatusTransition,
   recordCampaignRevenue,
   transitionCampaignStatus,
   updateCampaignFields,
   updateCampaignSchema,
 } from "@/lib/campaigns/update";
-import {
-  CAMPAIGN_STATUS_VALUES,
-  isCampaignStatus,
-} from "@/lib/campaigns/status";
+import { isCampaignStatus } from "@/lib/campaigns/status";
 import { isKolCampaignStatus } from "@/lib/campaigns/kol-campaign-status";
 
 const UUID_RE =
@@ -278,11 +274,7 @@ export async function updateKolFeeAction(
   return { ok: true };
 }
 
-/** Expose for client-side disabled-state hints. */
-export async function peekAllowedStatusTransitions(
-  current: string
-): Promise<readonly string[]> {
-  return CAMPAIGN_STATUS_VALUES.filter(
-    (n) => n !== current && isAllowedStatusTransition(current, n)
-  );
-}
+// BL-035-F011 (CQ-H4): peekAllowedStatusTransitions removed —
+// disabled-state hints in CampaignDetailClient now derive transitions
+// inline from CAMPAIGN_STATUS_VALUES + isAllowedStatusTransition rather
+// than paying for an extra server-action round-trip.

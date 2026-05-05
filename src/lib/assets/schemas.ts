@@ -19,7 +19,10 @@ import { z } from "zod";
 
 export const ASSET_CONTENT_LOCALES = ["en", "zh", "ja", "ko", "es"] as const;
 
-export const AssetVariableSchema = z.object({
+// BL-035-F011 (CQ-H6): AssetVariableSchema, EmailContent and
+// VideoScriptContent had no external consumers, so they're file-local
+// now. Re-export when a real caller needs them.
+const AssetVariableSchema = z.object({
   token: z.string().min(1).max(120),
   description: z.string().max(500).optional(),
   required: z.boolean().default(false),
@@ -38,8 +41,8 @@ export const VideoScriptContentSchema = z.object({
   durationHintSec: z.number().int().positive().max(3600).optional(),
 });
 
-export type EmailContent = z.infer<typeof EmailContentSchema>;
-export type VideoScriptContent = z.infer<typeof VideoScriptContentSchema>;
+type EmailContent = z.infer<typeof EmailContentSchema>;
+type VideoScriptContent = z.infer<typeof VideoScriptContentSchema>;
 
 /**
  * Map AssetType → content Zod schema. Use with
