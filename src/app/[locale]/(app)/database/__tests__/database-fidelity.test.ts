@@ -33,22 +33,22 @@ describe("/database fidelity guards (MVP-vf-F003)", () => {
     expect(tableJsx).toBeGreaterThan(quickJsx);
   });
 
-  it("header CTAs (Export / Import / Add KOL) are disabled with explicit tooltips", () => {
+  it("header CTAs (Export / Import / Add KOL) are wired and no longer disabled", () => {
+    // BL-024-F001 unlocked all three; the guard now asserts the
+    // opposite — they must NOT be ghost controls. Export is a <Link>
+    // to /api/database/export-csv?…; Import / Add KOL render via the
+    // ImportCsvDialog / AddKolDialog client components which keep the
+    // legacy data-testid on their trigger Buttons.
     const page = read("page.tsx");
-    // Each CTA Button block must contain `disabled`, the matching
-    // tooltip, and the data-testid. Order within JSX props is
-    // formatter-dependent, so just check all three tokens live in the
-    // same Button element.
-    for (const [testid, tooltipKey] of [
-      ["database-export", "exportTooltip"],
-      ["database-import", "importTooltip"],
-      ["database-add-kol", "addKolTooltip"],
-    ] as const) {
-      const block = page.match(new RegExp(`<Button[\\s\\S]*?data-testid="${testid}"[\\s\\S]*?>`));
-      expect(block, `Button ${testid} block`).not.toBeNull();
-      expect(block![0]).toMatch(/disabled/);
-      expect(block![0]).toMatch(new RegExp(`tHeader\\("${tooltipKey}"\\)`));
-    }
+    expect(page).toMatch(/<ImportCsvDialog\b/);
+    expect(page).toMatch(/<AddKolDialog\b/);
+    expect(page).toMatch(/href=\{[\s\S]*?\/api\/database\/export-csv/);
+    expect(page).toMatch(/data-testid="database-export"/);
+    // No `disabled` attr inside the export Link block (the next two
+    // are clients so we just verify no `disabled` legacy Button stays).
+    const exportBlock = page.match(/<Link[\s\S]*?data-testid="database-export"[\s\S]*?>/);
+    expect(exportBlock, "export Link block").not.toBeNull();
+    expect(exportBlock![0]).not.toMatch(/disabled\b/);
   });
 
   it("filter bar drops INPUT_CLASS / CHIP_BASE locals and uses public atoms", () => {

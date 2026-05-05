@@ -1,9 +1,14 @@
 "use server";
 
+import { Prisma } from "@prisma/client";
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+
 import { auth } from "@/auth";
 import { withTenant } from "@/lib/db";
 import { logEvent } from "@/lib/events/log";
 import { rateLimitAi } from "@/lib/rate-limit-ai";
+import { rateLimitBatchSend } from "@/lib/rate-limit-batch";
 import {
   DatabaseIntelligenceError,
   type DatabaseIntelligenceInsight,
@@ -13,6 +18,131 @@ import {
 export type DatabaseInsightsActionResult =
   | { ok: true; insights: DatabaseIntelligenceInsight[]; traceId?: string }
   | { ok: false; error: string; retryAfter?: number };
+
+// ----------------------------------------------------------------------
+// BL-024-F001-3 — addKolAction (manual Add KOL form)
+// ----------------------------------------------------------------------
+
+const ADD_KOL_PLATFORMS = [
+  "youtube",
+  "tiktok",
+  "instagram",
+  "twitch",
+  "bilibili",
+  "x",
+  "manual",
+] as const;
+
+const AddKolSchema = z.object({
+  platform: z.enum(ADD_KOL_PLATFORMS),
+  handle: z.string().trim().min(1).max(120),
+  displayName: z.string().trim().min(1).max(200),
+  url: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v ? v : ""))
+    .refine((v) => v === "" || /^https?:\/\/[^\s]+$/.test(v), {
+      message: "invalid_url",
+    }),
+  email: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v ? v : ""))
+    .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), {
+      message: "invalid_email",
+    }),
+  followerCount: z.number().int().min(0).max(2_000_000_000).optional().default(0),
+});
+
+export type AddKolInput = z.input<typeof AddKolSchema>;
+
+export type AddKolActionResult =
+  | { ok: true; kolId: string }
+  | { ok: false; error: string; retryAfter?: number };
+
+export async function addKolAction(input: AddKolInput): Promise<AddKolActionResult> {
+  const session = await auth();
+  const tenantId = session?.user?.tenantId;
+  const userId = session?.user?.id;
+  if (!tenantId || !userId) {
+    return { ok: false, error: "unauthorized" };
+  }
+
+  // v0.9.11 §rate-limit dogfood — mutation row, 20/min/userId.
+  const rl = await rateLimitBatchSend(userId);
+  if (!rl.ok) {
+    return { ok: false, error: "rate_limit_exceeded", retryAfter: rl.retryAfter };
+  }
+
+  const validation = AddKolSchema.safeParse(input);
+  if (!validation.success) {
+    const issue = validation.error.issues[0];
+    const code =
+      issue?.message === "invalid_url" || issue?.message === "invalid_email"
+        ? issue.message
+        : "invalid_input";
+    return { ok: false, error: code };
+  }
+  const data = validation.data;
+
+  // Stable externalId for manual entries: "manual:" + handle (lowercased).
+  // Mirrors the upsert key the CSV import uses so a later CSV re-import
+  // updates instead of duplicating.
+  const externalId = `manual:${data.handle.toLowerCase()}`;
+
+  try {
+    const created = await withTenant(tenantId, (tx) =>
+      tx.kol.create({
+        data: {
+          tenantId,
+          platform: data.platform,
+          handle: data.handle,
+          displayName: data.displayName,
+          externalId,
+          followerCount: data.followerCount,
+          email: data.email || null,
+          isSaved: true,
+          metadata: {
+            source: "manual-add",
+            added_at: new Date().toISOString(),
+            added_by: userId,
+            ...(data.url ? { profile_url: data.url } : {}),
+          } as unknown as Prisma.InputJsonValue,
+        },
+        select: { id: true },
+      })
+    );
+
+    void logEvent({
+      type: "database.kol_added",
+      tenantId,
+      actorId: userId,
+      resourceId: created.id,
+      payload: { platform: data.platform, handle: data.handle },
+    });
+
+    revalidatePath("/[locale]/database", "page");
+    return { ok: true, kolId: created.id };
+  } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
+      return { ok: false, error: "duplicate" };
+    }
+    void logEvent({
+      type: "database.kol_add_failed",
+      tenantId,
+      actorId: userId,
+      payload: {
+        message: (err as Error).message?.slice(0, 200) ?? "unknown",
+      },
+    });
+    return { ok: false, error: "generic" };
+  }
+}
 
 function tierForValueScore(valueScore: number | null): string {
   if (valueScore == null) return "unrated";

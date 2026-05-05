@@ -27,9 +27,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { Button } from "@/components/ui";
 import { parseFilters, serializeFilters } from "@/lib/kol/filters";
 
+import { AddKolDialog } from "./AddKolDialog";
 import { DatabaseFilterBar } from "./DatabaseFilterBar";
 import { DatabaseTableClient } from "./DatabaseTableClient";
 import { ImportCsvDialog } from "./ImportCsvDialog";
@@ -70,6 +70,7 @@ export default async function DatabasePage({ params, searchParams }: Props) {
   const t = await getTranslations("database");
   const tHeader = await getTranslations("database.header");
   const tImport = await getTranslations("database.import");
+  const tAddKol = await getTranslations("database.addKolForm");
   const tStatus = await getTranslations("relationshipStatus");
   const tEmpty = await getTranslations("database.emptyState");
   const tSummary = await getTranslations("database.summary");
@@ -154,17 +155,27 @@ export default async function DatabasePage({ params, searchParams }: Props) {
             fileTooLargeLabel={tImport("fileTooLargeLabel")}
             rowErrorTemplate={tImport("rowErrorTemplate")}
           />
-          <Button
-            variant="primary-gradient"
-            disabled
-            title={tHeader("addKolTooltip")}
-            data-testid="database-add-kol"
-          >
-            <span className="material-symbols-outlined text-[16px]" aria-hidden>
-              add
-            </span>
-            {tHeader("addKol")}
-          </Button>
+          <AddKolDialog
+            triggerLabel={tHeader("addKol")}
+            triggerTitle={tHeader("addKolTooltip")}
+            dialogTitle={tAddKol("title")}
+            platformLabel={tAddKol("platformLabel")}
+            handleLabel={tAddKol("handleLabel")}
+            handlePlaceholder={tAddKol("handlePlaceholder")}
+            displayNameLabel={tAddKol("displayNameLabel")}
+            urlLabel={tAddKol("urlLabel")}
+            emailLabel={tAddKol("emailLabel")}
+            followerCountLabel={tAddKol("followerCountLabel")}
+            submitLabel={tAddKol("submitLabel")}
+            submittingLabel={tAddKol("submittingLabel")}
+            cancelLabel={tAddKol("cancelLabel")}
+            successLabel={tAddKol("successLabel")}
+            errorLabel={tAddKol("errorLabel")}
+            duplicateLabel={tAddKol("duplicateLabel")}
+            rateLimitLabel={tAddKol("rateLimitLabel")}
+            invalidUrlLabel={tAddKol("invalidUrlLabel")}
+            invalidEmailLabel={tAddKol("invalidEmailLabel")}
+          />
         </div>
       </header>
 
