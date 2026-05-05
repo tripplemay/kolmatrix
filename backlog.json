@@ -258,34 +258,6 @@
     ]
   },
   {
-    "id": "BL-024",
-    "title": "B4 ghost-controls 实装 mini-batch（/roi + /weekly-report 时间 toggle + /outreach 3 tabs + /database 头 3 按钮 + KB Import CSV）",
-    "description": "Planner 2026-05-02 全 prod 排查（基线 6f33a55）发现：BIx redeploy 后仍残留 8 项 'UI 展示了但未实装' ghost controls，全部带 disabled + 'Coming in B4' tooltip。团队内部 demo 不阻塞，但**对外客户接触时这些 ghost controls 会暴露产品成熟度问题**。建议合 1 个 mini-batch 在 BL-020 安全闭环后、对外客户前处理。\n\n**待实装清单（按 ROI 排序，~2-3 day Generator）：**\n\n**A. /database 头 3 按钮（Export / Import / Add KOL）—— 高 ROI（对外客户必用入口）**\n- 文件：src/app/[locale]/(app)/database/page.tsx:127-159\n- 当前：3 个 disabled Button + tooltip\n- Export：复用 F001 Export CSV 模式（Server Action 生成 KOL CSV，Content-Disposition）\n- Import：CSV 上传 + zod 校验 + 批量 upsert（externalId+platform 去重，与 KolSyncAdapter 配合）\n- Add KOL：弹窗 form（platform + handle + displayName 必填，其它可选 + URL 校验）\n- 估时 ~1 day\n\n**B. /roi 时间范围 toggle（7D/30D/90D/All-time）—— 中 ROI**\n- 文件：src/app/[locale]/(app)/roi/RoiHeader.tsx:75-80\n- 复用 F001 模式（URL 参数 ?range=7d|30d|90d|allTime + range filter 改 4 组件 + visual baseline）\n- 估时 ~3-4h\n\n**C. /weekly-report 时间范围 toggle（Last Week/Last Month）—— 中 ROI**\n- 文件：src/app/[locale]/(app)/weekly-report/WeeklyReportHeader.tsx:87-92\n- Last Month 实装：周报数据汇总改 4 周窗口聚合\n- 估时 ~2h\n\n**D. /outreach 子导航 3 tabs（Send Queue / Tracking / Suppression）—— 工时高，决策点**\n- 文件：src/app/[locale]/(app)/outreach/OutreachTabs.tsx + 3 个新页面\n- 每 tab 都是独立功能页 + 后端表/逻辑：\n  - Send Queue：BullMQ 队列状态可视化\n  - Tracking：邮件 open/click/reply 事件流（依赖 Resend webhook 接入 + tracking 像素）\n  - Suppression：退订/硬退/无效列表 CRUD\n- 估时 ~1.5-2 day（每 tab 半天起）\n- **建议**：A/B/C 必做，D 看团队 demo 后客户/团队反馈再决定（如客户不投诉，长期 disabled 也行）\n\n**E. /knowledge-base Import CSV —— 低 ROI**\n- 文件：src/app/[locale]/(app)/knowledge-base/ProductsClient.tsx:64\n- 当前：disabled Button + tooltip\n- 实装：CSV 上传 + zod 校验 + 批量产品 upsert\n- 估时 ~3h\n- **建议**：deferred，等真客户产品多到要批量导入再做\n\n**F. /database BulkActionBar Delete —— 不做（B6 destructive）**\n- 文件：src/app/[locale]/(app)/database/BulkActionBar.tsx:74\n- 批量删除 KOL 属 destructive 操作，需 audit log + 回滚机制 + 二次确认 UX，B6 完整批次处理\n- 不入本 mini-batch\n\n**Acceptance（mini-batch 启动时）：**\n- A/B/C 三项全实装 + 守门 tests + visual baseline 重生\n- D 项独立子决议（启动时用户决定做或保留 disabled）\n- E/F 不在本批次范围\n- staging git_sha 一致；prod redeploy 后 spot check 各 toggle 真切换\n- signoff 报告明示哪些 ghost controls 已消除 / 哪些保留 / 哪些 deferred\n\n**2026-05-04 prod-mvp-readiness audit 排定（§4）：**\n- **A 必做** /database 头 3 按钮（Export / Import / Add KOL）：database/page.tsx:127-159；高 ROI 对外必用\n- **B 必做** /roi 时间范围 toggle 7D/30D/90D/All：roi/RoiHeader.tsx:73-88；中 ROI\n- **C 必做** /weekly-report Last Week / Last Month toggle：weekly-report/WeeklyReportHeader.tsx:85-100；中 ROI\n- **D 启动时再裁** /outreach 子导航 3 tabs（Send Queue / Tracking / Suppression）：outreach/OutreachTabs.tsx:79-89；工时高，可推迟\n- **E deferred** /knowledge-base Import CSV：knowledge-base/ProductsClient.tsx:62-72；低 ROI，等真客户反馈触发\n- **F deferred** /database BulkActionBar Delete：database/BulkActionBar.tsx:73；destructive，B6 范围\n- /campaigns Import button：同 E，低；UI-1 Dashboard QuickActions Campaigns 顺手修已收进 BL-020 不重复",
-    "decisions": [
-      "Planner 2026-05-02 全 prod 排查发现 BIx 后仍残留 8 项 ghost controls",
-      "用户 2026-05-02 决议：起 BL-024 mini-batch 跟踪",
-      "范围：A+B+C 必做（~1.5 day）；D 启动时再裁决；E deferred；F 不做（B6 范围）",
-      "排期：BL-020 安全闭环 done 后启动；上线对外客户前处理"
-    ],
-    "confirmed_at": "2026-05-02T00:50+0800",
-    "priority": "medium",
-    "tags": [
-      "ghost-controls",
-      "ui-polish",
-      "post-bl020",
-      "pre-external-customer"
-    ],
-    "discovered_in": "Planner johnsong 2026-05-02 全 prod (6f33a55) 'UI 展示但未实装' 排查报告",
-    "references": [
-      "docs/specs/BIx-mvp-polish-pass-spec.md §F001 (CRM time toggle / Export CSV 实装范式)",
-      "src/app/[locale]/(app)/database/page.tsx:127-159",
-      "src/app/[locale]/(app)/roi/RoiHeader.tsx:75-80",
-      "src/app/[locale]/(app)/weekly-report/WeeklyReportHeader.tsx:87-92",
-      "src/app/[locale]/(app)/outreach/OutreachTabs.tsx",
-      "src/app/[locale]/(app)/knowledge-base/ProductsClient.tsx:64"
-    ]
-  },
-  {
     "id": "BL-025",
     "title": "素材中心 / Asset Library — 统一 Asset 表（方案 X）+ /assets 页面 + variant tree + AI generate/regenerate + /outreach composer 接通",
     "description": "Planner 2026-05-02 全 prod (6f33a55) 链路审计发现：用户录入产品 → AI 生成 3 邮件 + 2 视频 → 0% 接通到使用端（邮件 /outreach composer 选不到；视频完全无入口；ProductCard chip 静态无反应；用户无法编辑/复制/生成 variant/跨产品复用）。BM1 spec §F003 'AI 生成全套素材' 是核心卖点但落地止步在 storage 层，对客户而言基本不存在。\n\n**本批次：起完整素材中心承载所有产品素材，让 marketer 一站看见、编辑、生成、投放。**\n\n用户 2026-05-02 决议：\n- MVP 时间不硬，在 BL-020/BL-024 之前完整实现（不做 trivial 半成品方案）\n- 架构方案 X — 统一 Asset 表（含 EmailTemplate 数据迁移），见 ADR-011\n- Variant tree 支持（regenerate 不覆盖原版，parentId 链可回溯）\n- 视频脚本仅查看/编辑/复制（A 选项），B/C 选项（邮件附件 / KOL 投放）留 BL-026\n- 不做 Asset templates 商城\n- Generate 不限频率但 audit log 留底\n- 富文本编辑器留 BL-027（plain text + Markdown 起步）\n\n**8 features（详见 docs/specs/BL-025-asset-library-spec.md）：**\n- F001 (~1d) Asset 表 schema + migration（含 EmailTemplate 迁移 + RLS + ROLLBACK SQL + dual-write 兼容期）\n- F002 (~0.5d) src/lib/assets/* 后端核心（CRUD + Zod schema 集中 + RLS-aware queries）\n- F003 (~1d) AI generate / regenerate / variant tree（aigcgateway + audit log）\n- F004 (~1.5d) /assets 页面三栏 — Filter sidebar / Grid / Detail panel（依 Stitch 稿实装）\n- F005 (~0.5d) Edit + Save + Versions tab + Used in tab\n- F006 (~0.5d) /outreach composer 接通（loadAssetsForComposer 替 loadOutreachTemplates）\n- F007 (~0.25d) /knowledge-base 集成（ProductCard chip 可点 + 4 状态 + ProductModal 展示）\n- F008 (~0.25d) Send to /outreach（email asset 一键注入 composer，prefilled state）\n\n**估时：** ~5.5 day Generator + 1 day Reviewer\n\n**前置依赖：**\n1. BIx-mvp-polish-pass done + Reviewer signoff PASS\n2. prod redeploy BIx 完成 + 稳定 ≥ 2 day（避免与 F004 sync infra 撞车）\n3. ADR-011 Accepted（已 commit）\n4. Stitch 设计稿出 1-2 张 desktop 高保真（用户并行操作；F004 开工前必到位）\n\n**Definition of Done：**\n- 8 features 全 PASS + Reviewer L1+L2 签收\n- Asset 表 + EmailTemplate dual-write 兼容期上线\n- /assets 页面三栏 + filter URL state + variant tree + edit/save 全工作\n- /outreach composer 看到 AI + User + System 全部 email asset\n- ProductCard chip 4 状态 + 跳 /assets?productId=xxx\n- Audit log 记录 generate / regenerate\n- staging + prod redeploy + L2 烟测 30+ 条 checklist 全 PASS\n\n**后续 backlog 触发（BL-025 done 后）：**\n- BL-020 安全 mini-batch 启动\n- BL-024 ghost-controls 启动\n- 新增候选 BL-026（视频投放 B/C 选项）/ BL-027（富文本编辑器）/ BL-028（Asset templates 商城）\n- 独立 cleanup migration 删 EmailTemplate 表（BL-025 done + 1 周观察期满）",

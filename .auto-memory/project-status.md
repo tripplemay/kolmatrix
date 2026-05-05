@@ -3,25 +3,30 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
+## 🚧 BL-024 B4 ghost-controls 实装 mini-batch — BUILDING（spec lock @ 2026-05-05 22:45）
+- 5/5 全 generator pending：F002 /roi 时间 toggle (7D/30D/90D/All-time) — 先做（BIx F001 范式）/ F003 /weekly-report Last Week+Last Month toggle（28-day 窗口聚合）/ F001 /database 头 3 按钮（Export CSV 复用 /api/crm/export-csv + Import CSV 新模块 + Add KOL form）/ F004 /outreach/tracking 列表（BL-035 F006 EmailLog.status 复用）/ F005 /outreach/suppression 列表（BL-035 F006 audit_log+Kol.email=null 复用）
+- 用户 2026-05-05 22:30 决议方案 B：A+B+C+D-2+D-3 = 5 features；D-1 Send Queue 推 BL-040+ 与 BullMQ 实装合批；E /knowledge-base Import CSV defer 真客户反馈；F /database BulkDelete 推 B6 destructive 完整批次
+- spec：docs/specs/BL-024-ghost-controls-cleanup-spec.md（D1-D8 决策 + §5 v0.9.11/v0.9.12 dogfood + §6.1 2 项 user 手工待办 + §7 推荐顺序 F002 → F003 → F001-1 → F001-2 → F001-3 → F004 → F005）
+- 来源：Planner 2026-05-02 prod 排查（基线 6f33a55）+ prod-mvp-readiness audit 2026-05-04 §4 排定
+- 预估 2.5 day building + 0.5 day verifying
 ## ✅ BL-035 后端 HIGH + UX + AI 服务端协调 — DONE 2026-05-05 ~22:30（first-round PASS @ c9cfed3，fix_rounds=0）
-- 13/13 PASS：F010 fetchWithRetry 共享 + jitter / F003 AI rate-limit 6 endpoint（10/min/tenantId + 100/day; 20/min/userId for sendBatch）/ F009 kol_campaign 索引 / F012 paginator nulls 修饰符（discovery mock 沉底，用户报告闭环）/ F004 createShareToken 服务端 origin / F005 product ownership preflight / F001 password min(12) + seed 升级 / F002 withPlatformAdmin 收紧 / F008 sendBatch 50→8 + 60s timeout / F011 dead code 删 / F013 actions/run wrap + inventory / F007 PII 脱敏 + EmailLog 30d retention / F006 Resend webhook svix 验签
-- L2 Codex staging 6 项端到端实证（详 docs/test-reports/BL-035-verifying-2026-05-05.md）+ Planner 临时担任 evaluator 写完整 signoff（用户 2026-05-05 ~22:30 授权方案 A，与 BL-020/BL-034 同模式）
-- signoff: docs/test-reports/BL-035-backend-high-and-ux-and-aigc-actions-signoff-2026-05-05.md（6 项 Soft-watch S1-S6 全有兜底）
+- 13/13 PASS + signoff（6 项 Soft-watch S1-S6 全有兜底）；详见 docs/test-reports/BL-035-...-signoff-2026-05-05.md
 ## ✅ BL-034 / Framework v0.9.12 / BL-020 / Framework v0.9.11 — DONE 2026-05-05
 ## ✅ BL-033 / BL-032 / BL-031 / BL-030 / BL-027 / BL-025 / BL-026 — DONE 2026-05-03~04
 ## 用户手工待办（按优先级）
-1. **BL-035 + BL-034 + BL-020 prod redeploy 大合并**：SSH prod 写 8 个 env vars（KOLMATRIX_APP_PASSWORD / HEALTH_DETAIL_TOKEN / AI_DAILY_COST_USD_PER_TENANT_MAX=5.00 / RESEND_WEBHOOK_SECRET / EMAIL_MOCK_VERBOSE=false / DISABLE_AI_RATELIMIT 留空 / DISABLE_BATCH_RATELIMIT 留空 / HIDE_DEMO_SEED_KOLS=true）→ Resend Dashboard 配 webhook URL `https://kol.guangai.ai/api/webhooks/resend` + svix secret → VPS crontab 加 `0 2 * * * cd /opt/kolmatrix && npx tsx scripts/redact-old-email-logs.ts --apply` → GH Actions Deploy → 浏览器+endpoint 验证
-2. **aigcgateway 控制台 7 Action template 改**（BL-035 S5）：用 mcp__aigc-gateway create_action_version + activate_version 按 inventory `docs/specs/BL-035-F013-actions-run-inventory.md` 改 max_tokens（500/1000/2000/4000）+ system prompt untrusted clause（kol-email-customize / roi-insights / weekly-report-for-client / kol-database-intelligence / kol-campaign-suggestions / kol-topic-extract / kol-email-generator）
+1. **BL-035 + BL-034 + BL-020 prod redeploy 大合并**：SSH prod 写 8 个 env vars（KOLMATRIX_APP_PASSWORD / HEALTH_DETAIL_TOKEN / AI_DAILY_COST_USD_PER_TENANT_MAX=5.00 / RESEND_WEBHOOK_SECRET / EMAIL_MOCK_VERBOSE=false / DISABLE_AI_RATELIMIT 留空 / DISABLE_BATCH_RATELIMIT 留空 / HIDE_DEMO_SEED_KOLS=true）→ Resend Dashboard 配 webhook URL + svix secret → VPS crontab 加 redact-old-email-logs.ts daily → GH Actions Deploy → 浏览器+endpoint 验证
+2. **aigcgateway 控制台 7 Action template 改**（BL-035 S5）：用 mcp__aigc-gateway create_action_version + activate_version 按 inventory `docs/specs/BL-035-F013-actions-run-inventory.md` 改 max_tokens + system prompt untrusted clause
 3. **BL-020 F006 CSP + BL-034 F008 NULLIF 1 周 staging 观察期**：观察期满后用户驱动 prod redeploy
-4. **F005/F008/F013 prod 真测**（S1-S3 + S4 真 Resend bounce）：第 2 个 tenant 启用后 cross-tenant updateProduct/deleteProduct 测；outreach composer 选 ≥9 KOL 触发 batch_too_large；aigcgateway logs 抽样核对 USER_VIDEO_TITLE 包裹；测试邮件触发 hard bounce 验 EmailLog.status + Kol.email 清空
-5. **F005 cost-cap event_log staging 实测**（继承自 BL-034 S6）+ **Pokemon Go 邮件模板 v1 prod 浏览器验证**（继承自 2026-05-05 ops）
-6. ~2026-05-09 BIx F004 staging YouTube sync 走查 + BL-034 unused import 2 个下批次顺手清（BL-035 S6）
+4. **BL-035 F005/F008/F013 + F006 prod 真测**（S1-S4）：第 2 个 tenant 启用 + outreach composer ≥9 KOL + aigcgateway logs 抽样 + 测试邮件 hard bounce
+5. **BL-034 F005 cost-cap event_log staging 实测** + **Pokemon Go 邮件模板 v1 prod 浏览器验证**（继承）
+6. **BL-024 done 后 prod redeploy 浏览器 5 处 walk**（spec §6.1）：/zh/database 头 3 按钮 + /zh/roi 4 range / /zh/weekly-report 2 range Last Month 数据 / /zh/outreach/tracking + /zh/outreach/suppression 列表
+7. ~2026-05-09 BIx F004 staging YouTube sync 走查 + BL-034 unused import 2 个下批次顺手清（BL-035 S6 已落 BL-024 顺手清空间）
 ## 关键决议（已 lock）
-- BL-035 D1-D9 + Planner 22:30 方案 A（受限项 Soft-watch 兜底 + 临时担任 evaluator 完成 signoff）
-- BL-020 / BL-034 / v0.9.11 / v0.9.12 — 不动
+- BL-024 D1-D8 + 用户 2026-05-05 22:30 方案 B（A+B+C+D-2+D-3 5 features）
+- BL-035 / BL-034 / BL-020 / v0.9.11 / v0.9.12 — 不动
 ## 角色 / Backlog / 时间线
-- 默认映射（role_assignments=null）：CLI=planner+generator，Codex=evaluator；BL-035 verifying 由 Codex 短版 notes + Planner 临时担任 evaluator 完成 signoff 联合（harness §1.5 用户授权 + 铁律 6 记账，与 BL-020/BL-034 同模式）
-- Backlog 19 条（剩 BL-024 ghost-controls / BL-040+041 PRD 偏差 / BL-012 crawler-sync / BL-014/15/16 post-MVP 等）
-- 时间线：05-05 BL-035 done → 05-06~07 用户手工待办执行 + prod redeploy 大合并 → 05-08~10 BL-024 → 05-11 BL-040+BL-041 → **05-13 上线对外**
+- 默认映射（role_assignments=null）：CLI=planner+generator，Codex=evaluator
+- Backlog 18 条（已扣 BL-024；剩 BL-040+BL-041 / BL-012 crawler-sync / BL-014/15/16 post-MVP / BL-022 / BL-021 等）
+- 时间线：05-05~07 BL-024 (现) → 05-08~10 BL-040+BL-041 → 05-11~12 BL-012 / BL-021 (post-MVP buffer) → **05-13 上线对外**
 
 <!-- 写入规则（harness §记忆分层）：覆盖写 / ≤30 行 / 所有角色可写 / 只放 WHAT / 不重复 progress.json -->
