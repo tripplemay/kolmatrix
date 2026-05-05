@@ -11,6 +11,7 @@
  * Telemetry: 5 event_log types per Planner §13.5 #10.
  */
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 
 import { auth } from "@/auth";
 import { withTenant } from "@/lib/db";
@@ -160,9 +161,37 @@ export type CreateShareTokenResult =
   | { ok: true; url: string; expiresAt: string }
   | { ok: false; error: string };
 
+/**
+ * BL-035-F004 (API-H2): origin is now derived server-side. Previously
+ * the client passed `window.location.origin` directly, which let an
+ * attacker tamper with the request and mint a share URL pointing at
+ * `attacker.com/shared/weekly-report/<token>` for phishing.
+ *
+ * Resolution order:
+ *   1. NEXT_PUBLIC_SITE_URL — preferred when set (prod/staging do).
+ *   2. Forwarded headers (`x-forwarded-proto` + `host`) — usually set
+ *      by Vercel / nginx in front of Next.js.
+ *   3. `host` header alone, with `https` assumed (kolquest.com / prod
+ *      runs behind TLS) — falls back to `http` only when the host is
+ *      a local dev address.
+ */
+async function resolveServerOrigin(): Promise<string> {
+  const envBase = process.env.NEXT_PUBLIC_SITE_URL;
+  if (envBase) return envBase.replace(/\/+$/, "");
+
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  if (!host) {
+    throw new Error("createShareTokenAction: no host header on request");
+  }
+  const forwardedProto = h.get("x-forwarded-proto");
+  const isLocal = /^(localhost|127\.0\.0\.1|\[::1\])(:|$)/.test(host);
+  const proto = forwardedProto ?? (isLocal ? "http" : "https");
+  return `${proto}://${host}`;
+}
+
 export async function createShareTokenAction(
-  reportId: string,
-  origin: string
+  reportId: string
 ): Promise<CreateShareTokenResult> {
   const session = await auth();
   const tenantId = session?.user?.tenantId;
@@ -191,6 +220,20 @@ export async function createShareTokenAction(
     return { ok: false, error: "generic" };
   }
 
+  let origin: string;
+  try {
+    origin = await resolveServerOrigin();
+  } catch (err) {
+    void logEvent({
+      type: "weekly_report.share_token_failed",
+      tenantId,
+      actorId: userId,
+      resourceId: reportId,
+      payload: { message: (err as Error).message, code: "no_origin" },
+    });
+    return { ok: false, error: "generic" };
+  }
+
   void logEvent({
     type: "weekly_report.share_token_created",
     tenantId,
@@ -199,7 +242,6 @@ export async function createShareTokenAction(
     payload: { expiresAt: expiresAt.toISOString() },
   });
 
-  // Trim trailing slash to keep the URL canonical regardless of caller.
   const cleanOrigin = origin.replace(/\/+$/, "");
   return {
     ok: true,

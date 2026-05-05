@@ -89,7 +89,9 @@ export function WeeklyReportClientActions({
   const handleShare = useCallback(() => {
     setToast(null);
     startShareTransition(async () => {
-      const res = await createShareTokenAction(reportId, window.location.origin);
+      // BL-035-F004: origin is now derived server-side; client no
+      // longer trusted to supply it.
+      const res = await createShareTokenAction(reportId);
       if (!res.ok) {
         setToast({ tone: "error", message: shareToastErrorTemplate });
         return;
