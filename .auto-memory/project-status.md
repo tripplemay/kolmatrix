@@ -16,10 +16,11 @@ type: project
 - signoff: docs/test-reports/BL-020-frontend-security-hardening-and-trivial-ui-signoff-2026-05-05.md（5 Soft-watch S1-S5 全有明文兜底）
 ## ✅ BL-033 / BL-032 / BL-031 / BL-030 / BL-027 / BL-025 / BL-026 — DONE 2026-05-03~04
 ## 用户手工待办（按优先级）
-1. **BL-020 prod redeploy**：SSH prod 加 .env.production HIDE_DEMO_SEED_KOLS=true（REDIS_URL 已有）→ GH Actions Deploy → 浏览器+endpoint 验证（spec §6.2 + S3）+ 5 错误密码触发 rate-limit toast 物理验（S1）
-2. **BL-020 F006 CSP 1 周 staging 观察期**（S2）：观察期满后用户驱动 prod redeploy（spec §6.3）
-3. **BL-034 done 后 5 项 user 手工待办**（spec §6.1）：SSH prod/staging 写 KOLMATRIX_APP_PASSWORD（F001）+ HEALTH_DETAIL_TOKEN（F007）+ AI_DAILY_COST_USD_PER_TENANT_MAX（F005）+ F008 1 周 staging 观察 + F003 audit_log RLS prod 验
-4. ~2026-05-09 BIx F004 staging YouTube sync 走查
+1. **Pokemon Go 邮件模板 v1 prod 浏览器验证**（2026-05-05 ops 后）：刷新 /zh/knowledge-base 看 Pokemon Go 卡 chip 应显 '4 email templates'；ProductModal 4 行（不变）；/zh/outreach composer Pokemon Go 下拉 4 选项含 v1
+2. **BL-020 prod redeploy**：SSH prod 加 .env.production HIDE_DEMO_SEED_KOLS=true（REDIS_URL 已有）→ GH Actions Deploy → 浏览器+endpoint 验证（spec §6.2 + S3）+ 5 错误密码触发 rate-limit toast 物理验（S1）
+3. **BL-020 F006 CSP 1 周 staging 观察期**（S2）：观察期满后用户驱动 prod redeploy（spec §6.3）
+4. **BL-034 done 后 5 项 user 手工待办**（spec §6.1）：SSH prod/staging 写 KOLMATRIX_APP_PASSWORD（F001）+ HEALTH_DETAIL_TOKEN（F007）+ AI_DAILY_COST_USD_PER_TENANT_MAX（F005）+ F008 1 周 staging 观察 + F003 audit_log RLS prod 验
+5. ~2026-05-09 BIx F004 staging YouTube sync 走查
 ## 关键决议（已 lock）
 - BL-034 D1-D8：deploy-prod.sh ALTER ROLE / seed throw / audit_log NULLIF + tenant_id IS NULL 双分支 / embedAllKols 不强制 RLS 保 admin 路径 / per-tenant cost cap MVP 简化 event_log 计数 / system prompt 英文统一 / 9 max_tokens + 4 XML wrap + cost cap 单 push 多 commit / F008 1 周 staging 观察
 - v0.9.11 + BL-020 D1-D8 + Q1-Q3 + #1:A — 不动
