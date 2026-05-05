@@ -7,6 +7,9 @@
  * tenant-scoped auth + event_log telemetry. Pulls fresh summary +
  * top 25 completed campaigns at call time so the AI sees the same
  * data the user is looking at (no stale snapshot from page load).
+ *
+ * BL-024-F002: action accepts a `RoiRange` so insights match the
+ * window the user sees in the page header toggle.
  */
 import { auth } from "@/auth";
 import { logEvent } from "@/lib/events/log";
@@ -20,13 +23,15 @@ import {
   loadRoiCampaigns,
   loadRoiSummary,
 } from "@/lib/roi/queries";
+import { DEFAULT_ROI_RANGE, isRoiRange, type RoiRange } from "@/lib/roi/range";
 
 export type RoiInsightsActionResult =
   | { ok: true; insights: RoiInsightItem[]; traceId?: string }
   | { ok: false; error: string; retryAfter?: number };
 
 export async function generateRoiInsightsAction(
-  locale: "en" | "zh"
+  locale: "en" | "zh",
+  range?: RoiRange
 ): Promise<RoiInsightsActionResult> {
   const session = await auth();
   const tenantId = session?.user?.tenantId;
@@ -40,16 +45,19 @@ export async function generateRoiInsightsAction(
     return { ok: false, error: "rate_limit_exceeded", retryAfter: rl.retryAfter };
   }
 
+  const effectiveRange: RoiRange = isRoiRange(range) ? range : DEFAULT_ROI_RANGE;
+
   void logEvent({
     type: "roi.insights_clicked",
     tenantId,
     actorId: userId ?? undefined,
+    payload: { range: effectiveRange },
   });
 
   try {
     const [summary, campaigns] = await Promise.all([
-      loadRoiSummary(tenantId),
-      loadRoiCampaigns(tenantId),
+      loadRoiSummary(tenantId, effectiveRange),
+      loadRoiCampaigns(tenantId, effectiveRange),
     ]);
 
     const result = await generateRoiInsights({
@@ -80,6 +88,7 @@ export async function generateRoiInsightsAction(
       payload: {
         traceId: result.traceId ?? null,
         count: result.insights.length,
+        range: effectiveRange,
       },
     });
 
@@ -90,7 +99,7 @@ export async function generateRoiInsightsAction(
       type: "roi.insights_failed",
       tenantId,
       actorId: userId ?? undefined,
-      payload: { code },
+      payload: { code, range: effectiveRange },
     });
     return { ok: false, error: code };
   }

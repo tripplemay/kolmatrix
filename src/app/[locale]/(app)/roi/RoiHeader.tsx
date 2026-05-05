@@ -3,8 +3,9 @@
  *
  * - Breadcrumb (Analytics → ROI Tracking)
  * - Page title + subtitle
- * - Time-range toggle: only "30D" active; 7D / 90D / All-time
- *   disabled+tooltip "B4" per §3.1 row 2 ghost-control rule
+ * - Time-range toggle: 7D / 30D / 90D / All-time, all active. Renders
+ *   as `<Link>`s pointing at `?range=...`; the page Server Component
+ *   reads `searchParams.range` and re-aggregates per BL-024-F002.
  * - "AI Insights" top-bar button → smooth-scroll to panel + trigger
  *   first-time generate (button is client-side; see RoiHeaderAiButton)
  * - "Record revenue → /campaigns" link (active link, not disabled)
@@ -13,23 +14,24 @@
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 
+import type { RoiRange } from "@/lib/roi/range";
+
 import { RoiHeaderAiButton } from "./RoiHeaderAiButton";
 
 interface Props {
   locale: string;
+  range: RoiRange;
 }
 
-export async function RoiHeader({ locale }: Props) {
+const RANGES: ReadonlyArray<{ key: RoiRange; i18nKey: "7d" | "30d" | "90d" | "all" }> = [
+  { key: "7d", i18nKey: "7d" },
+  { key: "30d", i18nKey: "30d" },
+  { key: "90d", i18nKey: "90d" },
+  { key: "allTime", i18nKey: "all" },
+];
+
+export async function RoiHeader({ locale, range }: Props) {
   const t = await getTranslations("roi.header");
-  const ranges: Array<{
-    key: "7d" | "30d" | "90d" | "all";
-    active?: boolean;
-  }> = [
-    { key: "7d" },
-    { key: "30d", active: true },
-    { key: "90d" },
-    { key: "all" },
-  ];
 
   return (
     <header
@@ -70,22 +72,25 @@ export async function RoiHeader({ locale }: Props) {
             className="flex rounded-xl bg-surface-container p-1"
             data-testid="roi-time-toggle"
           >
-            {ranges.map((r) => (
-              <button
-                key={r.key}
-                type="button"
-                disabled={!r.active}
-                title={!r.active ? t("rangeDisabledTooltip") : undefined}
-                data-testid={`roi-range-${r.key}`}
-                className={
-                  r.active
-                    ? "rounded-lg bg-surface-high px-4 py-1.5 text-xs font-semibold text-cyan shadow-sm"
-                    : "rounded-lg px-4 py-1.5 text-xs font-semibold text-on-surface-variant disabled:cursor-not-allowed disabled:opacity-60"
-                }
-              >
-                {t(`range.${r.key}` as Parameters<typeof t>[0])}
-              </button>
-            ))}
+            {RANGES.map((r) => {
+              const active = r.key === range;
+              return (
+                <Link
+                  key={r.key}
+                  href={`/${locale}/roi?range=${r.key}`}
+                  data-testid={`roi-range-${r.i18nKey}`}
+                  aria-current={active ? "page" : undefined}
+                  prefetch={false}
+                  className={
+                    active
+                      ? "rounded-lg bg-surface-high px-4 py-1.5 text-xs font-semibold text-cyan shadow-sm"
+                      : "rounded-lg px-4 py-1.5 text-xs font-semibold text-on-surface-variant hover:text-on-surface"
+                  }
+                >
+                  {t(`range.${r.i18nKey}` as Parameters<typeof t>[0])}
+                </Link>
+              );
+            })}
           </div>
 
           <RoiHeaderAiButton label={t("aiInsights")} />

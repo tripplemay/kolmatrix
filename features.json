@@ -6,7 +6,7 @@
       "title": "B /roi 时间范围 toggle (7D/30D/90D/All-time) 实装 — 先做（建立时间范围 toggle 范式，复用 BIx F001）",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "src/app/[locale]/(app)/roi/RoiHeader.tsx:73-88 4 个 ranges 数组全 active=true（移除 disabled+B4 tooltip）；src/app/[locale]/(app)/roi/page.tsx 接 searchParams.range 传给数据加载 default '30d'；src/lib/roi/insights.ts 加 range: '7d'|'30d'|'90d'|'allTime' 参数按 createdAt filter window（7d=NOW-7day / 30d=NOW-30day / 90d=NOW-90day / allTime=无 filter）；下游组件 RoiKpiStrip / RoiTrendChart / RoiCampaignBreakdown 等按 range filter 重 aggregate；i18n 5 locale 加/校 roi.range.7d/30d/90d/allTime keys；既有集成 / unit 测试加 ≥4 case 验证 4 range × 关键组件；visual baseline 重生（如需）；npm run lint + tsc + test 全绿。复用范式：docs/specs/BIx-mvp-polish-pass-spec.md §F001 /crm 时间 toggle。详见 spec §F002 + D3。"
     },
     {

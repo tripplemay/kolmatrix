@@ -1127,7 +1127,6 @@
       "crumbCurrent": "ROIトラッキング",
       "title": "ROIトラッキング",
       "subtitle": "完了したキャンペーン全体の支出、収益、およびリターンの指標。",
-      "rangeDisabledTooltip": "時間範囲フィルターはB4で提供されます。",
       "range": {
         "7d": "7D",
         "30d": "30日間",

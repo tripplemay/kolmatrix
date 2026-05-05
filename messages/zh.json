@@ -1175,7 +1175,6 @@
       "crumbCurrent": "ROI 追踪",
       "title": "ROI 追踪",
       "subtitle": "已完成活动的支出、收入与回报信号一览。",
-      "rangeDisabledTooltip": "时间范围筛选将在 B4 上线。",
       "range": {
         "7d": "7天",
         "30d": "30天",

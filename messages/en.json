@@ -1175,7 +1175,6 @@
       "crumbCurrent": "ROI Tracking",
       "title": "ROI Tracking",
       "subtitle": "Spend, revenue, and return signals across completed campaigns.",
-      "rangeDisabledTooltip": "Time-range filter ships in B4.",
       "range": {
         "7d": "7D",
         "30d": "30D",

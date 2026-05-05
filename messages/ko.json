@@ -1127,7 +1127,6 @@
       "crumbCurrent": "ROI 추적",
       "title": "ROI 추적",
       "subtitle": "완료된 캠페인 전반에 걸친 지출, 수익 및 수익 신호입니다.",
-      "rangeDisabledTooltip": "시간 범위 필터는 B4에서 제공됩니다.",
       "range": {
         "7d": "7D",
         "30d": "30일",

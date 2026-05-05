@@ -1127,7 +1127,6 @@
       "crumbCurrent": "Seguimiento de ROI",
       "title": "Seguimiento de ROI",
       "subtitle": "Señales de Gasto, Ingresos y Retorno en las campañas finalizadas.",
-      "rangeDisabledTooltip": "El filtro de rango de tiempo se enviará en la B4.",
       "range": {
         "7d": "7D",
         "30d": "30 D",

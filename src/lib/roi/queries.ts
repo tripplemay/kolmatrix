@@ -4,6 +4,15 @@
  * All queries run inside `withTenant`. Decimal columns convert to
  * `number` at the boundary so the pure helpers in `./compute.ts`
  * stay framework-free.
+ *
+ * BL-024-F002: `loadRoiSummary` / `loadRoiCampaigns` accept an optional
+ * `RoiRange`. Range filters apply to `closedAt` for completed campaigns
+ * only — active campaign counts always reflect "currently active"
+ * regardless of the toggle. Default `allTime` preserves the legacy
+ * "no filter" behavior for callers (`/api/roi/*`, weekly-report assembly,
+ * dashboard) that don't pass a range. `loadRoiTrend` keeps its
+ * `days: number` argument so the existing `?days=N` API stays stable;
+ * the page derives `days` via `rangeDays(range)`.
  */
 import { withTenant } from "@/lib/db";
 
@@ -14,6 +23,7 @@ import {
   type RoiSummary,
   type RoiTrendPoint,
 } from "./compute";
+import { rangeStart, type RoiRange } from "./range";
 
 function decimalToNumber(d: { toString(): string } | null): number | null {
   return d == null ? null : Number(d.toString());
@@ -32,11 +42,28 @@ export interface RoiCampaignRow {
 }
 
 export async function loadRoiSummary(
-  tenantId: string
+  tenantId: string,
+  range: RoiRange = "allTime",
+  /** Test injection — defaults to current time. */
+  nowMs?: number
 ): Promise<RoiSummary> {
+  const cutoff = rangeStart(range, nowMs ? new Date(nowMs) : undefined);
   return withTenant(tenantId, async (tx) => {
     const rows = await tx.campaign.findMany({
-      where: { deletedAt: null },
+      where: {
+        deletedAt: null,
+        // Limit completed campaigns to the range window; non-completed
+        // (active/draft) campaigns always count so the active KPI
+        // reflects "right now" regardless of the toggle.
+        ...(cutoff
+          ? {
+              OR: [
+                { status: { not: "completed" } },
+                { closedAt: { gte: cutoff } },
+              ],
+            }
+          : {}),
+      },
       select: {
         id: true,
         name: true,
@@ -93,11 +120,19 @@ export async function loadRoiTrend(
 }
 
 export async function loadRoiCampaigns(
-  tenantId: string
+  tenantId: string,
+  range: RoiRange = "allTime",
+  /** Test injection — defaults to current time. */
+  nowMs?: number
 ): Promise<RoiCampaignRow[]> {
+  const cutoff = rangeStart(range, nowMs ? new Date(nowMs) : undefined);
   return withTenant(tenantId, async (tx) => {
     const rows = await tx.campaign.findMany({
-      where: { status: "completed", deletedAt: null },
+      where: {
+        status: "completed",
+        deletedAt: null,
+        ...(cutoff ? { closedAt: { gte: cutoff } } : {}),
+      },
       select: {
         id: true,
         name: true,

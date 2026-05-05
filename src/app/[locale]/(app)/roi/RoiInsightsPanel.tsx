@@ -24,12 +24,14 @@ import {
 } from "react";
 
 import type { RoiInsightItem } from "@/lib/roi/insights";
+import type { RoiRange } from "@/lib/roi/range";
 
 import { generateRoiInsightsAction } from "./actions";
 
 interface Props {
   tenantId: string;
   locale: "en" | "zh";
+  range: RoiRange;
   labels: {
     title: string;
     idleHint: string;
@@ -138,7 +140,7 @@ function toneIcon(tone: RoiInsightItem["tone"]): string {
   return "lightbulb";
 }
 
-export function RoiInsightsPanel({ tenantId, locale, labels }: Props) {
+export function RoiInsightsPanel({ tenantId, locale, range, labels }: Props) {
   // Hydrate cached insights via useSyncExternalStore so the React 19
   // "no setState in effect" rule is satisfied — localStorage is the
   // external store. Server snapshot is always null (matches initial
@@ -163,7 +165,7 @@ export function RoiInsightsPanel({ tenantId, locale, labels }: Props) {
     lastFireRef.current = now;
     setError(null);
     startTransition(async () => {
-      const res = await generateRoiInsightsAction(locale);
+      const res = await generateRoiInsightsAction(locale, range);
       if (!res.ok) {
         const code = res.error;
         const known: Array<keyof Props["labels"]["error"]> = [
@@ -188,7 +190,7 @@ export function RoiInsightsPanel({ tenantId, locale, labels }: Props) {
       });
       bumpCacheVersion(tenantId);
     });
-  }, [tenantId, locale]);
+  }, [tenantId, locale, range]);
 
   const handleRegenerate = useCallback(() => {
     clearCache(tenantId);

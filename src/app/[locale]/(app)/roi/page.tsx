@@ -2,10 +2,13 @@
  * BM2-F009 · `/roi` page (Planner adjudication §13).
  *
  * Layout (Planner #E:C / #L:B — 60/40, Quarterly Budget dropped):
- *   Header (breadcrumb + title + 30D toggle + AI button + Record CTA)
+ *   Header (breadcrumb + title + range toggle + AI button + Record CTA)
  *   → 4-card KPI strip
  *   → Section B: 60/40 split — Trend chart left, AI Insights right
  *   → Section C: Campaign ROI table (full width, client filter)
+ *
+ * BL-024-F002: time-range toggle (7D/30D/90D/All-time) drives all three
+ * loaders via `?range=...` query param (default `30d`).
  */
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
@@ -16,6 +19,12 @@ import {
   loadRoiSummary,
   loadRoiTrend,
 } from "@/lib/roi/queries";
+import {
+  DEFAULT_ROI_RANGE,
+  isRoiRange,
+  rangeDays,
+  type RoiRange,
+} from "@/lib/roi/range";
 
 import { RoiCampaignTable } from "./RoiCampaignTable";
 import { RoiHeader } from "./RoiHeader";
@@ -28,18 +37,22 @@ export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ range?: string }>;
 }
 
-export default async function RoiPage({ params }: Props) {
+export default async function RoiPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const { range: rawRange } = await searchParams;
+  const range: RoiRange = isRoiRange(rawRange) ? rawRange : DEFAULT_ROI_RANGE;
+
   const session = await auth();
   const tenantId = session?.user?.tenantId;
   if (!tenantId) redirect(`/${locale}/login`);
 
   const [summary, trend, campaigns, t] = await Promise.all([
-    loadRoiSummary(tenantId),
-    loadRoiTrend(tenantId, 30),
-    loadRoiCampaigns(tenantId),
+    loadRoiSummary(tenantId, range),
+    loadRoiTrend(tenantId, rangeDays(range)),
+    loadRoiCampaigns(tenantId, range),
     getTranslations("roi"),
   ]);
 
@@ -50,7 +63,7 @@ export default async function RoiPage({ params }: Props) {
       className="mx-auto flex max-w-[1600px] flex-col gap-6 pb-16"
       data-testid="roi-page"
     >
-      <RoiHeader locale={locale} />
+      <RoiHeader locale={locale} range={range} />
 
       <RoiKpiStrip locale={locale} summary={summary} trend={trend} />
 
@@ -65,6 +78,7 @@ export default async function RoiPage({ params }: Props) {
           <RoiInsightsPanel
             tenantId={tenantId}
             locale={insightsLocale}
+            range={range}
             labels={{
               title: t("insights.title"),
               idleHint: t("insights.idleHint"),
