@@ -10,7 +10,7 @@
  * audit_log is a platform table (no RLS) — every query manually
  * filters `tenant_id = $tenantId` per Planner §13.4 #1.
  */
-import { prisma, withTenant } from "@/lib/db";
+import { withTenant } from "@/lib/db";
 
 import {
   bucketCommitments14d,
@@ -141,37 +141,44 @@ export async function runCrmOverview(
     return { stageDistribution, cumulativeSpend };
   });
 
-  // audit_log queries via the base client (platform table, no RLS).
-  // Manual `tenant_id` filter + LEFT JOIN guards on each side per
-  // §13.4 #1. The 14d sparkline window is independent of the toggle
-  // — it always shows the last 14 days of commitments because the
-  // KPI tile labels itself "14d activity".
+  // BL-034 F003: audit_log gained an RLS policy
+  // (20260505010000_audit_event_log_rls). Reads via the bare prisma
+  // client return zero rows because `current_setting('app.tenant_id')`
+  // is unset → the policy filters every row out. Wrap both findMany
+  // calls in withTenant() so the policy short-circuits to the tenant
+  // branch. The explicit `tenantId` predicate is kept as
+  // defense-in-depth (matches §F003 ai-suggestions-actions.ts pattern).
+  // The 14d sparkline window is independent of the toggle — it always
+  // shows the last 14 days of commitments because the KPI tile labels
+  // itself "14d activity".
   const since14d = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-  const [commitmentEvents, recentRaw] = await Promise.all([
-    prisma.auditLog.findMany({
-      where: {
-        tenantId,
-        action: "kol.relationship_changed",
-        createdAt: { gte: since14d },
-      },
-      select: { createdAt: true, payload: true },
-    }),
-    prisma.auditLog.findMany({
-      where: {
-        tenantId,
-        action: "kol.relationship_changed",
-        ...(cutoff ? { createdAt: { gte: cutoff } } : {}),
-      },
-      orderBy: { createdAt: "desc" },
-      take: 30,
-      select: {
-        actorUserId: true,
-        resourceId: true,
-        payload: true,
-        createdAt: true,
-      },
-    }),
-  ]);
+  const [commitmentEvents, recentRaw] = await withTenant(tenantId, async (tx) =>
+    Promise.all([
+      tx.auditLog.findMany({
+        where: {
+          tenantId,
+          action: "kol.relationship_changed",
+          createdAt: { gte: since14d },
+        },
+        select: { createdAt: true, payload: true },
+      }),
+      tx.auditLog.findMany({
+        where: {
+          tenantId,
+          action: "kol.relationship_changed",
+          ...(cutoff ? { createdAt: { gte: cutoff } } : {}),
+        },
+        orderBy: { createdAt: "desc" },
+        take: 30,
+        select: {
+          actorUserId: true,
+          resourceId: true,
+          payload: true,
+          createdAt: true,
+        },
+      }),
+    ]),
+  );
 
   const commitmentEventsTyped = commitmentEvents.map((e) => ({
     createdAt: e.createdAt,

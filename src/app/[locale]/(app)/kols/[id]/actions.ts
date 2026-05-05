@@ -80,7 +80,11 @@ export async function updateKolRelationshipStatus(
       return { ok: false, error: "not_found" };
     }
     if (before.relationshipStatus !== after.relationshipStatus) {
-      void logAudit({
+      // BL-034 F003: audit_log gained an RLS policy + logAudit now wraps
+      // the insert in withTenant() (extra round-trip). Awaiting here makes
+      // sure the audit commits before the action returns — otherwise the
+      // audit can race revalidatePath() / serverless worker termination.
+      await logAudit({
         actorId: userId,
         action: "kol.relationship_changed",
         targetType: "kol",
