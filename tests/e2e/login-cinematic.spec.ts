@@ -16,7 +16,7 @@ import { expect, test } from "@playwright/test";
 
 const MARKETER = {
   email: "marketer@kolmatrix.local",
-  password: "KOLM@2026!",
+  password: "KOLMatrix@2026!",
 };
 
 test.describe("Login — cinematic layout + credentials flow", () => {

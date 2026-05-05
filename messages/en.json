@@ -62,7 +62,8 @@
       "errorInvalidCredentials": "Invalid email or password.",
       "errorMissingFields": "Email and password are required.",
       "errorGeneric": "Authentication failed. Please try again.",
-      "errorRateLimited": "Too many attempts. Retry after {retryAfter}s."
+      "errorRateLimited": "Too many attempts. Retry after {retryAfter}s.",
+      "errorPasswordTooShort": "Password must be at least 12 characters."
     },
     "requestAccess": {
       "eyebrow": "OPERATOR PROGRAM · BY INVITE",

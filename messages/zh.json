@@ -62,7 +62,8 @@
       "errorInvalidCredentials": "邮箱或密码错误。",
       "errorMissingFields": "请填写邮箱和密码。",
       "errorGeneric": "登录失败，请稍后重试。",
-      "errorRateLimited": "尝试次数过多，请在 {retryAfter} 秒后重试。"
+      "errorRateLimited": "尝试次数过多，请在 {retryAfter} 秒后重试。",
+      "errorPasswordTooShort": "密码至少需 12 个字符。"
     },
     "requestAccess": {
       "eyebrow": "运营者计划 · 邀请制",

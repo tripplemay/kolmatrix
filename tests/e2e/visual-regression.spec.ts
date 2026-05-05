@@ -109,7 +109,7 @@ function shouldSkipMissingBaseline(
 
 const MARKETER = {
   email: "marketer@kolmatrix.local",
-  password: "KOLM@2026!",
+  password: "KOLMatrix@2026!",
 };
 
 async function login(page: Page) {

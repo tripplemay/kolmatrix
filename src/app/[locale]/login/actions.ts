@@ -31,6 +31,14 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
     return { error: "missing_fields" };
   }
 
+  // BL-035-F001 (AUTH-H2): enforce minimum password length at the
+  // server boundary. Mirrors the auth.ts credentialsSchema check so
+  // the LoginForm can surface a precise i18n error instead of the
+  // generic "Invalid email or password".
+  if (password.length < 12) {
+    return { error: "password_too_short" };
+  }
+
   // BL-020-F005 (H-S2): rate-limit BEFORE bcrypt — locking out at the
   // credential check would still let an attacker pin CPU on the hash.
   const rl = await rateLimitLogin(await getClientIp());

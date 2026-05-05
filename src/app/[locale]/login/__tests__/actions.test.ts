@@ -51,11 +51,17 @@ beforeEach(() => {
   });
 });
 
+// BL-035-F001 (AUTH-H2): minimum length 12. The legacy "secret"
+// fixture (6 chars) now trips the password_too_short branch before
+// rateLimitLogin runs, so happy-path tests use a 12-char fixture.
+const VALID_PASSWORD = "KOLMatrix@2026!";
+const SHORT_PASSWORD = "shortpw";
+
 describe("loginAction — rate-limit integration", () => {
   it("blocks the request before signIn when rate limit triggered", async () => {
     rateLimitLoginMock.mockResolvedValueOnce({ ok: false, retryAfter: 42 });
 
-    const res = await loginAction({}, fd("user@example.com", "secret"));
+    const res = await loginAction({}, fd("user@example.com", VALID_PASSWORD));
 
     expect(res).toEqual({ error: "rate_limited", retryAfter: 42 });
     expect(signInMock).not.toHaveBeenCalled();
@@ -66,12 +72,12 @@ describe("loginAction — rate-limit integration", () => {
     rateLimitLoginMock.mockResolvedValueOnce({ ok: true, remaining: 4 });
     signInMock.mockResolvedValueOnce(undefined);
 
-    await loginAction({}, fd("user@example.com", "secret"));
+    await loginAction({}, fd("user@example.com", VALID_PASSWORD));
 
     expect(rateLimitLoginMock).toHaveBeenCalledWith("203.0.113.7");
     expect(signInMock).toHaveBeenCalledWith(
       "credentials",
-      expect.objectContaining({ email: "user@example.com", password: "secret" })
+      expect.objectContaining({ email: "user@example.com", password: VALID_PASSWORD }),
     );
   });
 
@@ -79,5 +85,28 @@ describe("loginAction — rate-limit integration", () => {
     const res = await loginAction({}, fd("", ""));
     expect(res).toEqual({ error: "missing_fields" });
     expect(rateLimitLoginMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("BL-035-F001 — password length (12 char minimum)", () => {
+  it("rejects an 11-character password without consulting rate-limit or signIn", async () => {
+    const res = await loginAction({}, fd("user@example.com", "12345678901"));
+    expect(res).toEqual({ error: "password_too_short" });
+    expect(rateLimitLoginMock).not.toHaveBeenCalled();
+    expect(signInMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects a 7-character legacy fixture (e.g. 'shortpw') with password_too_short", async () => {
+    const res = await loginAction({}, fd("user@example.com", SHORT_PASSWORD));
+    expect(res).toEqual({ error: "password_too_short" });
+  });
+
+  it("accepts exactly 12 characters", async () => {
+    rateLimitLoginMock.mockResolvedValueOnce({ ok: true, remaining: 4 });
+    signInMock.mockResolvedValueOnce(undefined);
+
+    await loginAction({}, fd("user@example.com", "123456789012"));
+    expect(rateLimitLoginMock).toHaveBeenCalled();
+    expect(signInMock).toHaveBeenCalled();
   });
 });

@@ -14,9 +14,14 @@ import { z } from "zod";
 import { authConfig } from "@/auth.config";
 import { withPlatformAdmin } from "@/lib/db";
 
+// BL-035-F001 (AUTH-H2): minimum password length raised from 1 → 12.
+// authorize() runs after the rate limiter, so a brute-force attacker
+// who scripts the form still hits the credential check; min(12)
+// quietly drops trivial inputs (empty / "1") instead of letting them
+// proceed to bcrypt.
 const credentialsSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(1),
+  password: z.string().min(12),
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({

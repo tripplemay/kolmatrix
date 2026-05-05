@@ -10,7 +10,7 @@
  *   - hashedPassword bcrypt hash of "password123" computed once per
  *                    process (cost 4 → fast for tests, NEVER use in
  *                    production). Real login flows in the seed use
- *                    "KOLM@2026!" at cost 10.
+ *                    "KOLMatrix@2026!" at cost 10.
  *   - name           Display name; random full name.
  *   - role           "admin" | "marketer" (default). Matches the values
  *                    used by the credentials provider.

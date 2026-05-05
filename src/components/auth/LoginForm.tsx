@@ -8,13 +8,20 @@ import { loginAction, type LoginState } from "@/app/[locale]/login/actions";
 
 const initial: LoginState = {};
 
-type LoginErrorKey = "missing_fields" | "invalid_credentials" | "generic" | "rate_limited";
+type LoginErrorKey =
+  | "missing_fields"
+  | "invalid_credentials"
+  | "generic"
+  | "rate_limited"
+  | "password_too_short";
 
 const ERROR_TO_I18N: Record<LoginErrorKey, string> = {
   missing_fields: "errorMissingFields",
   invalid_credentials: "errorInvalidCredentials",
   generic: "errorGeneric",
   rate_limited: "errorRateLimited",
+  // BL-035-F001 (AUTH-H2): password min length raised to 12.
+  password_too_short: "errorPasswordTooShort",
 };
 
 export function LoginForm() {

@@ -62,7 +62,8 @@
       "errorInvalidCredentials": "メールアドレスまたはパスワードが正しくありません。",
       "errorMissingFields": "メールアドレスとパスワードは必須です。",
       "errorGeneric": "認証に失敗しました。もう一度お試しください。",
-      "errorRateLimited": "試行回数が多すぎます。{retryAfter}秒後に再試行してください。"
+      "errorRateLimited": "試行回数が多すぎます。{retryAfter}秒後に再試行してください。",
+      "errorPasswordTooShort": "パスワードは12文字以上で入力してください。"
     },
     "requestAccess": {
       "eyebrow": "オペレータープログラム · 招待制",

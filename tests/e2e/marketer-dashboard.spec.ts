@@ -4,7 +4,7 @@
  * Pre-reqs (dev environment):
  *   - `docker compose up -d` for Postgres + Redis
  *   - `npx prisma migrate deploy` + `npm run db:seed` (creates
- *      marketer@kolmatrix.local with password KOLM@2026!, Sarah Chen,
+ *      marketer@kolmatrix.local with password KOLMatrix@2026!, Sarah Chen,
  *      12 KOLs, 3 campaigns).
  *
  * Note on KPI count: the BI1 spec §F008 references "12,847 total KOLs"
@@ -17,7 +17,7 @@ import { expect, test } from "@playwright/test";
 
 const MARKETER = {
   email: "marketer@kolmatrix.local",
-  password: "KOLM@2026!",
+  password: "KOLMatrix@2026!",
 };
 
 async function login(page: import("@playwright/test").Page) {

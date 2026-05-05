@@ -10,7 +10,10 @@
  *   - 4 outreach/followup/accept/decline email templates
  *
  * Re-running the seed is idempotent via `upsert` on natural keys.
- * Password for both seeded users: SEED_ADMIN_PASSWORD env (default "KOLM@2026!").
+ * Password for both seeded users: SEED_ADMIN_PASSWORD env (default "KOLMatrix@2026!").
+ * BL-035-F001 (AUTH-H2) raised the minimum login length to 12 — the
+ * legacy "KOLM@2026!" (10 chars) no longer passes the credentials
+ * schema, so the seed default is now "KOLMatrix@2026!" (15 chars).
  *   - Local dev: leave unset, default applies + console.warn.
  *   - Prod: NODE_ENV=production hard-throws below; do NOT seed prod.
  */
@@ -34,10 +37,13 @@ if (process.env.NODE_ENV === "production") {
 
 // BL-034 F002: allow overriding the demo password via env var so local dev
 // teams that share a database can keep credentials out of git/history.
-const SEED_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? "KOLM@2026!";
+// BL-035-F001 (AUTH-H2): default raised to 15 chars to clear the new
+// 12-char minimum imposed by the credentials schema. The literal
+// "KOLM@2026!" (10 chars) used previously now fails login.
+const SEED_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? "KOLMatrix@2026!";
 if (!process.env.SEED_ADMIN_PASSWORD) {
   console.warn(
-    "[seed] Using default password 'KOLM@2026!' (no SEED_ADMIN_PASSWORD env). " +
+    "[seed] Using default password 'KOLMatrix@2026!' (no SEED_ADMIN_PASSWORD env). " +
       "Local dev OK, do NOT commit/share.",
   );
 }

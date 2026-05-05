@@ -94,12 +94,12 @@ NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) n
 
 ## 测试账号
 
-> **2026-04-24 安全轮换：** prod 两账户密码已从 seed 默认值轮换为随机值，保存于用户密码管理器，本记忆文件**不记录**密码明文。Staging 仍用 `KOLM@2026!`（demo only，无真实数据）。seed.ts 使用的 `KOLM@2026!` 是 staging/local 用；prod **必须**在首次 deploy 后立即轮换（BM1.1 security-polish BI-F001 改为读 env var）。
+> **2026-04-24 安全轮换：** prod 两账户密码已从 seed 默认值轮换为随机值，保存于用户密码管理器，本记忆文件**不记录**密码明文。Staging 现用 `KOLMatrix@2026!`（demo only，无真实数据；BL-035-F001 把 auth credentials min 从 1 升到 12 后旧的 `KOLM@2026!` 10 字符已无法登录）。seed.ts 默认密码同步升级为 `KOLMatrix@2026!`（15 chars），仅 staging/local 用；prod **必须**在首次 deploy 后立即轮换（BM1.1 security-polish BI-F001 改为读 env var）。
 
 - **Admin（prod）:** `admin@kolmatrix.local` / 密码见用户密码管理器（2026-04-24 rotated）/ API Key: `TBD`
 - **Marketer（prod）:** `marketer@kolmatrix.local` / 密码见用户密码管理器（2026-04-24 rotated）/ API Key: `TBD`
-- **Admin（staging / local）:** `admin@kolmatrix.local` / `KOLM@2026!` / API Key: `TBD`
-- **Marketer（staging / local）:** `marketer@kolmatrix.local` / `KOLM@2026!` / API Key: `TBD`
+- **Admin（staging / local）:** `admin@kolmatrix.local` / `KOLMatrix@2026!` / API Key: `TBD`
+- **Marketer（staging / local）:** `marketer@kolmatrix.local` / `KOLMatrix@2026!` / API Key: `TBD`
 
 ## VPS env 文件当前 secrets 状态（2026-04-23 Planner 验证）
 

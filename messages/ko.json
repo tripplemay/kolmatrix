@@ -62,7 +62,8 @@
       "errorInvalidCredentials": "이메일 또는 비밀번호가 올바르지 않습니다.",
       "errorMissingFields": "이메일과 비밀번호를 입력해주세요.",
       "errorGeneric": "인증에 실패했습니다. 다시 시도해주세요.",
-      "errorRateLimited": "시도 횟수가 너무 많습니다. {retryAfter}초 후에 다시 시도하세요."
+      "errorRateLimited": "시도 횟수가 너무 많습니다. {retryAfter}초 후에 다시 시도하세요.",
+      "errorPasswordTooShort": "비밀번호는 12자 이상이어야 합니다."
     },
     "requestAccess": {
       "eyebrow": "운영자 프로그램 · 초대 전용",
