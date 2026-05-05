@@ -50,7 +50,15 @@ jobs:
             bash infrastructure/deploy-staging.sh
             if [[ "$RUN_SEED" == "true" ]]; then
               echo "── post-deploy: npm run db:seed"
-              npm run db:seed
+              # BL-034-F002 added a NODE_ENV=production guard inside
+              # prisma/seed.ts — it hard-throws to keep someone from
+              # accidentally re-seeding prod with the well-known demo
+              # password. Staging's .env.staging legitimately sets
+              # NODE_ENV=production (Next.js needs it for the prod
+              # build), so we override the var ONLY for the seed
+              # invocation. The seed script's own error message
+              # documents this escape verbatim.
+              NODE_ENV=development npm run db:seed
               echo "✅ seed complete"
             else
               echo "── seed skipped per workflow input"
