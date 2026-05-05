@@ -179,10 +179,20 @@ export async function customizeEmail(input: CustomizeEmailInput): Promise<Custom
   }
 
   if (!res.ok) {
+    // BL-035-F007 (AI-H2): the previous error string echoed up to
+    // 200 chars of the gateway response back to the client, which
+    // could include user-controlled prompt fragments (and any PII
+    // they carried). Keep the body for ops on the server log but
+    // surface only the status to the caller.
     const text = await res.text().catch(() => "");
+    console.error(
+      "[aigcgateway full] customizeEmail status=%d body=%s",
+      res.status,
+      text,
+    );
     throw new CustomizeEmailError(
       "http_error",
-      `aigcgateway responded ${res.status}: ${text.slice(0, 200)}`
+      `aigcgateway responded ${res.status}`,
     );
   }
 

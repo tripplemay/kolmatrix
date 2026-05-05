@@ -176,11 +176,15 @@ export async function generateWeeklyReport(
   }
 
   if (!res.ok) {
+    // BL-035-F007 (AI-H2): only the status reaches the client; full
+    // body stays in the server log for ops triage.
     const text = await res.text().catch(() => "");
-    throw new WeeklyReportError(
-      "http_error",
-      `aigcgateway responded ${res.status}: ${text.slice(0, 200)}`
+    console.error(
+      "[aigcgateway full] generateWeeklyReport status=%d body=%s",
+      res.status,
+      text,
     );
+    throw new WeeklyReportError("http_error", `aigcgateway responded ${res.status}`);
   }
 
   const body = (await res.json()) as {

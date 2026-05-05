@@ -192,10 +192,16 @@ export async function embedBatch(
         } as EmbeddingClientOpts);
       }
     }
-    throw new EmbeddingError(
-      "http",
-      `aigcgateway responded ${res.status}: ${text.slice(0, 200)}`
+    // BL-035-F007 (AI-H2): full body stays in the server log for ops
+    // triage; the thrown message stops at status so embedding inputs
+    // (KOL bios, product descriptions) cannot leak through stack
+    // traces or upstream telemetry.
+    console.error(
+      "[aigcgateway full] embedBatch status=%d body=%s",
+      res.status,
+      text,
     );
+    throw new EmbeddingError("http", `aigcgateway responded ${res.status}`);
   }
 
   let payload: unknown;

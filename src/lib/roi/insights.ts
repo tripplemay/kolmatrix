@@ -174,11 +174,16 @@ export async function generateRoiInsights(
   }
 
   if (!res.ok) {
+    // BL-035-F007 (AI-H2): server-side log keeps the full body for
+    // ops; the thrown message stops at status to avoid leaking the
+    // tenant's ROI text + KOL handles back through the response.
     const text = await res.text().catch(() => "");
-    throw new RoiInsightsError(
-      "http_error",
-      `aigcgateway responded ${res.status}: ${text.slice(0, 200)}`
+    console.error(
+      "[aigcgateway full] generateRoiInsights status=%d body=%s",
+      res.status,
+      text,
     );
+    throw new RoiInsightsError("http_error", `aigcgateway responded ${res.status}`);
   }
 
   const body = (await res.json()) as {

@@ -115,10 +115,16 @@ export async function generateDatabaseIntelligence(
   }
 
   if (!res.ok) {
+    // BL-035-F007 (AI-H2): only the status reaches the client.
     const text = await res.text().catch(() => "");
+    console.error(
+      "[aigcgateway full] generateDatabaseIntelligence status=%d body=%s",
+      res.status,
+      text,
+    );
     throw new DatabaseIntelligenceError(
       "http_error",
-      `aigcgateway responded ${res.status}: ${text.slice(0, 200)}`
+      `aigcgateway responded ${res.status}`,
     );
   }
 

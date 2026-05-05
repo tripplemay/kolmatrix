@@ -104,15 +104,24 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   }
 
   if (isMockMode()) {
-    // Structured log so marketers running local dev can see the
-    // payload without chasing a debugger. Keep the prefix stable
-    // for log-scrapers.
-    console.log("[EMAIL MOCK]", {
-      from: FROM_ADDRESS,
-      to: input.to,
-      subject: input.subject,
-      preview: input.bodyText.slice(0, 120),
-    });
+    // BL-035-F007 (AI-H3): default to a metadata-only log line so
+    // local dev / staging stdout doesn't carry KOL real names + body
+    // PII. Set EMAIL_MOCK_VERBOSE=true on a developer machine to get
+    // the full preview back when iterating on copy.
+    if (process.env.EMAIL_MOCK_VERBOSE === "true") {
+      console.log("[EMAIL MOCK]", {
+        from: FROM_ADDRESS,
+        to: input.to,
+        subject: input.subject,
+        preview: input.bodyText.slice(0, 120),
+      });
+    } else {
+      console.log("[EMAIL MOCK]", {
+        from: FROM_ADDRESS,
+        to: input.to,
+        subject: input.subject,
+      });
+    }
     return { providerMessageId: null, mocked: true };
   }
 
