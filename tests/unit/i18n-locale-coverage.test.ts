@@ -148,6 +148,10 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   "discovery.platforms.twitter",
   "discovery.platforms.instagram",
   "database.table.engagement",
+  // BL-024-F001-3 Add KOL form — Handle is a technical term kept in
+  // English across locales; "@channelhandle" is a literal sample handle.
+  "database.addKolForm.handleLabel",
+  "database.addKolForm.handlePlaceholder",
   "campaigns.filters.dateTo",
   "campaigns.table.kols",
   "campaigns.table.roi",
