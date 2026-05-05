@@ -54,7 +54,7 @@
       "title": "AUTH-H4 /api/health execSync 移模块顶层 cache + git_sha + version 加 HEALTH_DETAIL_TOKEN 守卫",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "src/app/api/health/route.ts execSync('git rev-parse --short HEAD') 移到 module top GIT_SHA IIFE（catch fallback 到 process.env.GIT_SHA ?? 'unknown' 兼容 CI/Docker）；GET handler 不再每次 request 跑 execSync；HEALTH_DETAIL_TOKEN env var 守卫 — 默认（无 env 或不匹配）response 仅返 status + latency + db + redis（不含 git_sha + version）；正确 token（query ?token= 或 X-Health-Token header）→ 完整 detail（含 git_sha + version）；.env.example 加 HEALTH_DETAIL_TOKEN='' 行；CI（GitHub Actions deploy-prod.sh 调用 health 验证 git_sha）需同步加 HEALTH_DETAIL_TOKEN secret + curl 带 X-Health-Token；修改 src/app/api/health/__tests__/route.test.ts ≥4 case（无 token / token 正确 query / token 错误 / token 正确 header）；npm run lint + tsc + test 全绿。详见 spec §F007 + §6.1 user 手工待办 #2。"
     },
     {
@@ -62,7 +62,7 @@
       "title": "AUTH-H6 + DB-H4 is_platform_admin GUC NULLIF migration（与 BL-020 F006 CSP 同模式：1 周 staging 观察）",
       "priority": "medium",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "新建 prisma migration 20260505030000_rls_nullif_platform_admin，DROP POLICY user_isolation ON user + CREATE POLICY 同名 + USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid OR NULLIF(current_setting('app.is_platform_admin', true), '')::bool = true)；本地 npx prisma migrate dev PASS；psql -c '\\\\d+ user' 显示 user_isolation policy 含 NULLIF(current_setting('app.is_platform_admin'；grep is_platform_admin in prisma/migrations/ 验证仅 user 表 policy 引用此 GUC（如有其他表同 migration 一并修）；既有 tests/integration/rls-isolation.test.ts 6 case 全绿无回归；新增 tests/integration/db-platform-admin-nullif.test.ts ≥2 case via testcontainer（连续 tx 触达 GUC 后 NULLIF 转 NULL OR 短路 PASS / explicit SET LOCAL platform_admin=true 旁路 RLS 正常返）；npm run lint + tsc + test 全绿。详见 spec §F008 + §6.1 user 手工待办 #4（1 周 staging 观察 + prod redeploy）。"
     }
   ]
