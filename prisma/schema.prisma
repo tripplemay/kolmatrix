@@ -303,6 +303,10 @@ model KolCampaign {
 
   @@unique([tenantId, kolId, campaignId])
   @@index([tenantId, campaignId, status])
+  // BL-035 F009 (DB-H5/H6): per-column indexes for the CRM "campaigns
+  // featuring KOL X" lookup and the tenant_id RLS join key.
+  @@index([kolId])
+  @@index([tenantId])
   @@map("kol_campaign")
 }
 
