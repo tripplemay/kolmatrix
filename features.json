@@ -40,6 +40,14 @@
       "executor": "generator",
       "status": "pending",
       "acceptance": "src/app/[locale]/(app)/outreach/OutreachTabs.tsx TABS 数组 suppression tab 解锁；新建 src/app/[locale]/(app)/outreach/suppression/page.tsx Server Component（查 audit_log where action='kol.email_cleared_by_bounce' AND tenant_id=$tenantId — BL-034 F003 RLS 自动 filter，显式 tenantId defense-in-depth；join Kol 显示 displayName/handle/platform；字段：清除时间 audit_log.created_at / KOL 名 / 原 providerMessageId(after) / 退订原因(before.reason)）；新建 SuppressionTable.tsx client component（cursor pagination）；i18n outreach.tabs.suppression 已有；新增 outreach.suppression.{title, columns, emptyState} keys；empty state 友好提示 'No suppressed KOLs yet'；本 feature 不实装手动退订 UI（仅 audit_log 路径，手动退订 UI 推 BL-040+ 需 Kol.suppressedAt schema 字段）；visual baseline 新增 suppression-list.png；集成测试 ≥2 case（basic list / cross-tenant filter）；npm run lint + tsc + test 全绿。详见 spec §F005 + D6。"
+    },
+    {
+      "id": "F006",
+      "title": "BL-034 F001 deploy yml env bridge fix（hotfix 追加 — 用户 2026-05-05 23:05 决议方案 A）",
+      "priority": "high",
+      "executor": "generator",
+      "status": "pending",
+      "acceptance": "触发：Planner 2026-05-05 ~23:00 prod redeploy ops 准备阶段实地核查发现 BL-034 F001 spec acceptance 已 done @ dbbfbb3（deploy-prod.sh 加 ALTER ROLE 段 line 71-81）但漏了同 commit 改 .github/workflows/deploy-prod.yml script 块加 'set -a; source .env.production; set +a'，导致 GH Actions Run 时 KOLMATRIX_APP_PASSWORD env var 不会 export 到 shell 环境，deploy-prod.sh 跑 ALTER ROLE 段 silent skip — prod kolmatrix_app 角色仍用 init migration 弱密码 'kolmatrix_app' (CRIT-1 fix 实际未在 prod 生效)。\n\n改动：(1) .github/workflows/deploy-prod.yml script 块加 'set -a; source .env.production; set +a' 在 ./scripts/deploy-prod.sh 之前；(2) .github/workflows/deploy-staging.yml script 块加 'set -a; source .env.staging; set +a' 在 'bash infrastructure/deploy-staging.sh' 之前；(3) 核对 infrastructure/deploy-staging.sh 是否有对应 ALTER ROLE 段（如无 — Generator 评估是否同 commit 加 ALTER ROLE 到 staging deploy script，参 deploy-prod.sh:71-81 复制实装）；(4) BL-034 F001 spec drift 在 generator_handoff 列出 retroactive 范围 + 提示 Reviewer 在 BL-024 signoff Soft-watch 加 S? 或 Framework Learnings 提案 v0.9.13 候选「spec acceptance 改 deploy-script 时同 commit 必须改对应 yml」。\n\nAcceptance：(a) deploy-prod.yml script 块含 'set -a; source .env.production; set +a' 在 ./scripts/deploy-prod.sh 之前；(b) deploy-staging.yml script 块含 'set -a; source .env.staging; set +a' 在 'bash infrastructure/deploy-staging.sh' 之前；(c) infrastructure/deploy-staging.sh ALTER ROLE 段存在或同 commit 加；(d) 本 feature 不需新单测（CI yml 改动）— smoke：SSH prod 上跑 set -a; source /opt/kolmatrix/.env.production; set +a; echo \"$KOLMATRIX_APP_PASSWORD\" 验证 export（Generator manual 验证 + handoff 列出证据）；(e) generator_handoff 列出 v0.9.13 候选 framework 提案；(f) npm run lint + tsc + test 全绿。\n\n与 v0.9.12 §deploy-patterns.md §5 互动：本 feature 是同类沉淀的下一步「deploy script 期望 .env vars 时 yml 桥接必须配套」。详见 spec §F006。"
     }
   ]
 }
