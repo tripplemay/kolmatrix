@@ -22,8 +22,28 @@ export async function updateUserLocale(raw: string): Promise<void> {
     await withTenant(tenantId, (tx) => tx.user.update({ where: { id: userId }, data: { locale } }));
     return;
   }
+  // BL-035-F002 (AUTH-H5): legacy fallback used `withPlatformAdmin` to
+  // patch user locale when the session's tenantId/userId failed UUID
+  // validation. That worked because email is globally unique, but
+  // running an everyday locale update through the platform-admin client
+  // is an over-privileged shape — a session shape regression elsewhere
+  // could let it bleed beyond locale. Resolve the user via the
+  // platform-admin read first, then perform the *write* inside the
+  // tenant scope (RLS enforced). Anything that can't be resolved to a
+  // tenant raises Unauthorized.
   if (email) {
-    await withPlatformAdmin((tx) => tx.user.update({ where: { email }, data: { locale } }));
+    const resolved = await withPlatformAdmin((tx) =>
+      tx.user.findUnique({
+        where: { email },
+        select: { id: true, tenantId: true },
+      }),
+    );
+    if (!resolved || !UUID_RE.test(resolved.tenantId)) {
+      throw new Error("Unauthorized");
+    }
+    await withTenant(resolved.tenantId, (tx) =>
+      tx.user.update({ where: { id: resolved.id }, data: { locale } }),
+    );
     return;
   }
   throw new Error("Unauthorized");
