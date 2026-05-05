@@ -228,6 +228,46 @@ prod-mvp-readiness audit 2026-05-04 §4 排定：BIx redeploy 后 prod 仍残留
 
 ---
 
+### F006 · BL-034 F001 deploy yml env bridge fix（hotfix 追加 — 用户 2026-05-05 23:05 决议方案 A）
+
+**Executor:** generator
+**Priority:** high（CRIT-1 后置阻塞 — 当前 prod kolmatrix_app 仍用弱密码）
+**预估工时:** 30 min（2 yml 改 + 可能 1 个 staging deploy script ALTER ROLE 段补 + manual smoke）
+
+**触发：** Planner johnsong 2026-05-05 ~23:00 prod redeploy ops 准备阶段实地核查发现 BL-034 F001 spec acceptance 已 done @ dbbfbb3（deploy-prod.sh 加 ALTER ROLE 段 line 71-81）但漏了同 commit 改 `.github/workflows/deploy-prod.yml` script 块加 `set -a; source .env.production; set +a`。后果：
+- deploy-prod.sh:71 `if [ -n "${KOLMATRIX_APP_PASSWORD:-}" ]` 取空 → silent skip 「⚠️ KOLMATRIX_APP_PASSWORD unset — skipping app-role password rotation」
+- prod kolmatrix_app 角色实际仍用 init migration 写的字面 `'kolmatrix_app'` 弱密码 — **CRIT-1 fix 未在 prod 生效**
+
+**改动：**
+
+1. **`.github/workflows/deploy-prod.yml` script 块改：**
+   ```yaml
+   script: |
+     cd /opt/kolmatrix
+     # F006 (BL-034 F001 retroactive fix): export .env.production into shell
+     # so deploy-prod.sh's ALTER ROLE step (line 71-81) reads KOLMATRIX_APP_PASSWORD.
+     set -a
+     source .env.production
+     set +a
+     ./scripts/deploy-prod.sh
+   ```
+
+2. **`.github/workflows/deploy-staging.yml` script 块改：** 同模式加 `set -a; source .env.staging; set +a` 在 `bash infrastructure/deploy-staging.sh` 之前
+
+3. **核对 `infrastructure/deploy-staging.sh` 是否有对应 ALTER ROLE 段：** 如无 — Generator 评估是否同 commit 加 ALTER ROLE 到 staging deploy script，参 deploy-prod.sh:71-81 复制实装
+
+**Acceptance：**
+- [ ] deploy-prod.yml script 块含 `set -a; source .env.production; set +a` 在 `./scripts/deploy-prod.sh` 之前
+- [ ] deploy-staging.yml script 块含 `set -a; source .env.staging; set +a` 在 `bash infrastructure/deploy-staging.sh` 之前
+- [ ] infrastructure/deploy-staging.sh ALTER ROLE 段存在（如不存在则同 commit 加，参 deploy-prod.sh:71-81）
+- [ ] 本 feature 不需新单测（CI yml 改动）；smoke：SSH prod 上跑 `set -a; source /opt/kolmatrix/.env.production; set +a; echo "$KOLMATRIX_APP_PASSWORD"` 验证 export（Generator manual + handoff 列出证据）
+- [ ] BL-034 F001 spec drift 在 generator_handoff 列出 retroactive 范围 + 提示 Reviewer 在 BL-024 signoff §Soft-watch 加 S? 或 §Framework Learnings 提案 v0.9.13 候选「spec acceptance 改 deploy-script 时同 commit 必须改对应 yml」
+- [ ] `npm run lint + tsc + test` 全绿（CI yml 改不破任何代码）
+
+**与 v0.9.12 §deploy-patterns.md §5 互动：** v0.9.12 §5 已沉淀「new auth-gated endpoint 配套 deploy script」，本 feature 是同类沉淀的下一步：「deploy script 期望 .env vars 时 yml 桥接必须配套」。建议 Generator 在 generator_handoff 提案 v0.9.13 候选（不入 features.json，仅 framework/proposed-learnings.md 草稿）让 Planner 在 BL-024 done 阶段决议。
+
+---
+
 ## 3. 变更文件清单（高层）
 
 ```
