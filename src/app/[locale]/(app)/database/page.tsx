@@ -23,6 +23,7 @@
  * embargo from BM2 F011, no formatter callbacks cross the boundary).
  */
 import { getFormatter, getTranslations } from "next-intl/server";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
@@ -124,17 +125,19 @@ export default async function DatabasePage({ params, searchParams }: Props) {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            disabled
-            title={tHeader("exportTooltip")}
+          <Link
+            href={(() => {
+              const q = serializeFilters(filters, {}).toString();
+              return q ? `/api/database/export-csv?${q}` : "/api/database/export-csv";
+            })()}
             data-testid="database-export"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-on-surface/15 px-3 text-xs font-semibold text-on-surface hover:border-cyan/40 hover:text-cyan"
           >
             <span className="material-symbols-outlined text-[16px]" aria-hidden>
               ios_share
             </span>
             {tHeader("export")}
-          </Button>
+          </Link>
           <Button
             variant="ghost"
             disabled

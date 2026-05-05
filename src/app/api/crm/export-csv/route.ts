@@ -10,6 +10,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { csvRow } from "@/lib/csv/cell";
 import { withTenant } from "@/lib/db";
 import { DEFAULT_CRM_RANGE, isCrmRange, rangeStart, type CrmRange } from "@/lib/crm/overview";
 
@@ -29,20 +30,6 @@ const HEADER_ROW = [
   "total_spend_usd",
   "created_at",
 ] as const;
-
-/** RFC-4180 quoting: wrap in "..." if the cell contains , " or newline. */
-function csvCell(value: string | number | null | undefined): string {
-  if (value == null) return "";
-  const s = String(value);
-  if (/[",\n\r]/.test(s)) {
-    return `"${s.replace(/"/g, '""')}"`;
-  }
-  return s;
-}
-
-function csvRow(cells: ReadonlyArray<string | number | null | undefined>): string {
-  return cells.map(csvCell).join(",");
-}
 
 function safeFilenameFragment(s: string): string {
   return s.replace(/[^a-z0-9]/gi, "_").slice(0, 40) || "tenant";
