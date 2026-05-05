@@ -3,30 +3,27 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-034 后端深度安全 / 数据隔离 — BUILDING（spec lock @ 2026-05-05 ~01:30）
-- 8/8 全 generator pending：F001 DB 角色密码 migration / F002 seed prod 守卫 / F003 audit_log+event_log RLS（v0.9.11 §database-patterns.md §8 dogfood）+ logAudit withTenant / F004 embedAllKols Prisma.sql + assertUuid + deleted_at + partial index / F005 9 max_tokens + 4 XML tag wrap + per-tenant cost cap（v0.9.11 §ai-action-contract.md §4 dogfood）/ F006 placeholder-guard 共享 + 单条 Asset 重生路径挂 / F007 health execSync cache + HEALTH_DETAIL_TOKEN 守卫 / F008 is_platform_admin NULLIF migration（与 BL-020 F006 同模式 1 周 staging 观察）
-- 来源：docs/reviews/backend-full-scan-2026-05-04.md §1 (5 CRIT) + §2 AUTH-H4/H6 + AI-H5 + DB-H4
-- spec：docs/specs/BL-034-backend-deep-security-and-data-isolation-spec.md（D1-D8 决策 + §5 v0.9.11 dogfood 清单 + §6.1 5 项 user 手工待办）
-- 预估 2-3 day building + 0.5 day verifying（audit §6 Sprint 0）
+## 🚧 BL-034 后端深度安全 / 数据隔离 — BUILDING (7/8 done @ b8268b1，F005 partial pending — 2026-05-05 ~10:30)
+- ✅ F001 dbbfbb3 DB 角色密码 migration 解耦 / ✅ F002 0ba6118 seed prod throw + SEED_ADMIN_PASSWORD env / ✅ F003 a23d24d+317cf1c audit_log+event_log RLS + logAudit/logEvent withTenant + ai-suggestions findMany +tenantId（fix 修 kol-profile race + crm/overview RLS read）/ ✅ F004 d095ffd embedAllKols Prisma.sql + assertUuid + deleted_at + partial index / ⚠️ F005 PARTIAL 3466898 xml-escape util + 3/4 wrap site (customize/email/video) + max_tokens(2 chat-completions) + AI_DAILY_COST env 占位；未做 cost cap module + 第 4 wrap (topic-cloud actions/run) + 7 处 actions/run max_tokens (服务端配置不可客户端覆盖) / ✅ F006 4190932 placeholder-guard 共享 + email/video gen attach (allowIfMustache opts 兼容旧) / ✅ F007 0db858f health GIT_SHA IIFE + HEALTH_DETAIL_TOKEN gate + deploy-staging.sh 同步 / ✅ F008 b20635c is_platform_admin NULLIF migration
+- 测试：887 unit PASS（+29 新）；集成新增 audit-log-rls / event-log-rls / kol-embed-deleted-at / db-platform-admin-nullif 全 PASS
+- CI 状态：F006/F004/F003 三轮触发红 + 已修；当前 main HEAD pending (rollback comment fix b8268b1)
+- 决策点：Reviewer accept 7/8 进 verifying，F005 起 fix-round 1 完成 cost cap MVP (~45min) + 第 4 wrap 推 BL-035 (服务端协调) — 详见 progress.json generator_handoff
 ## ✅ Framework v0.9.11 — DONE 2026-05-05 ~01:00（BL-020 + backend-audit 沉淀，5 条 learnings 全 Accept）
-- planner.md 铁律 1 检查矩阵新增 'regex / id-format / type-check' 行 + §rate-limit 条款；database-patterns.md §8 RLS template；ai-action-contract.md §4 max_tokens + XML tag；evaluator.md §16 Node 版本；signoff-report.md L2 RSC 注解；项目根 .nvmrc=20；environment.md staging Redis 行
 - 归档：framework/archive/proposed-learnings-archive-v0.9.11.md
 ## ✅ BL-020 前端安全整改 — DONE 2026-05-05 ~01:00（first-round PASS @ ca5515b，fix_rounds=0）
-- 8/8 PASS：F001 PRODUCT_ID_RE CUID / F002 safeAiActionLink / F003 dangerouslySetInnerHTML grep 0 / F004 set_config 参数化 / F005 ioredis + rate-limiter-flexible login / F006 CSP enforce / F007 Dashboard Campaigns 解禁 / F008 demo_seed env-var
-- signoff: docs/test-reports/BL-020-frontend-security-hardening-and-trivial-ui-signoff-2026-05-05.md（5 Soft-watch S1-S5 全有明文兜底）
 ## ✅ BL-033 / BL-032 / BL-031 / BL-030 / BL-027 / BL-025 / BL-026 — DONE 2026-05-03~04
 ## 用户手工待办（按优先级）
-1. **Pokemon Go 邮件模板 v1 prod 浏览器验证**（2026-05-05 ops 后）：刷新 /zh/knowledge-base 看 Pokemon Go 卡 chip 应显 '4 email templates'；ProductModal 4 行（不变）；/zh/outreach composer Pokemon Go 下拉 4 选项含 v1
-2. **BL-020 prod redeploy**：SSH prod 加 .env.production HIDE_DEMO_SEED_KOLS=true（REDIS_URL 已有）→ GH Actions Deploy → 浏览器+endpoint 验证（spec §6.2 + S3）+ 5 错误密码触发 rate-limit toast 物理验（S1）
-3. **BL-020 F006 CSP 1 周 staging 观察期**（S2）：观察期满后用户驱动 prod redeploy（spec §6.3）
+1. **Pokemon Go 邮件模板 v1 prod 浏览器验证**（2026-05-05 ops 后）：刷新 /zh/knowledge-base 看 Pokemon Go 卡 chip 应显 '4 email templates'
+2. **BL-020 prod redeploy**：SSH prod 加 .env.production HIDE_DEMO_SEED_KOLS=true → GH Actions Deploy
+3. **BL-020 F006 CSP 1 周 staging 观察期**：观察期满后用户驱动 prod redeploy
 4. **BL-034 done 后 5 项 user 手工待办**（spec §6.1）：SSH prod/staging 写 KOLMATRIX_APP_PASSWORD（F001）+ HEALTH_DETAIL_TOKEN（F007）+ AI_DAILY_COST_USD_PER_TENANT_MAX（F005）+ F008 1 周 staging 观察 + F003 audit_log RLS prod 验
 5. ~2026-05-09 BIx F004 staging YouTube sync 走查
 ## 关键决议（已 lock）
-- BL-034 D1-D8：deploy-prod.sh ALTER ROLE / seed throw / audit_log NULLIF + tenant_id IS NULL 双分支 / embedAllKols 不强制 RLS 保 admin 路径 / per-tenant cost cap MVP 简化 event_log 计数 / system prompt 英文统一 / 9 max_tokens + 4 XML wrap + cost cap 单 push 多 commit / F008 1 周 staging 观察
+- BL-034 D1-D8 + F005 PARTIAL 决策（accept partial 进 verifying / fix-round 1 cost cap / 第 4 wrap 推 BL-035）待用户裁决
 - v0.9.11 + BL-020 D1-D8 + Q1-Q3 + #1:A — 不动
 ## 角色 / Backlog / 时间线
 - 默认映射（role_assignments=null）：CLI=planner+generator，Codex=evaluator
-- Backlog 20 条（BL-034 已并入 features.json，剩 BL-035 / BL-024 / BL-040 / BL-041 等）
-- 时间线：05-05~07 BL-034 → 05-08~10 BL-035 → 05-11 BL-024 → 05-12 BL-040+BL-041 → **05-13 上线对外**
+- Backlog 20 条（BL-035 / BL-024 / BL-040 / BL-041 等）
+- 时间线：05-05~07 BL-034 (现) → 05-08~10 BL-035 → 05-11 BL-024 → 05-12 BL-040+BL-041 → **05-13 上线对外**
 
 <!-- 写入规则（harness §记忆分层）：覆盖写 / ≤30 行 / 所有角色可写 / 只放 WHAT / 不重复 progress.json -->
