@@ -11,6 +11,7 @@
 import "dotenv/config";
 
 import { parseFencedJson } from "@/lib/ai/json-extract";
+import { wrapUserInput } from "@/lib/ai/xml-escape";
 import { resolveAigcV1BaseUrl } from "@/lib/aigc/base-url";
 
 export const KOL_EMAIL_CUSTOMIZE_ACTION_ID = "cmob2z6j00001bnole7i8lg9h";
@@ -84,16 +85,25 @@ export const KOL_EMAIL_CUSTOMIZE_VARIABLE_KEYS = [
 export function toVariables(
   input: CustomizeEmailInput
 ): Record<(typeof KOL_EMAIL_CUSTOMIZE_VARIABLE_KEYS)[number], string> {
+  // BL-034 F005: wrap user-controlled fields (product USP, KOL handle /
+  // name / region, original subject + body) in XML tags before they hit
+  // the server-side aigcgateway action prompt template. The wrap
+  // neutralises closing-tag injection attempts ("</USER_PRODUCT_USP>...")
+  // even though the action's system prompt is server-side and may not yet
+  // include the matching untrusted-data clause (BL-035 follow-up to align
+  // server prompts; logged in generator_handoff for §F005). product_name,
+  // product_category, kol_categories, locale come from controlled enums
+  // / structured fields and are left raw.
   return {
     product_name: input.product.name,
     product_category: input.product.category ?? "",
-    product_usp: input.product.usp,
-    kol_name: input.kol.name,
-    kol_handle: input.kol.handle ?? "",
-    kol_region: input.kol.region ?? "",
+    product_usp: wrapUserInput("USER_PRODUCT_USP", input.product.usp),
+    kol_name: wrapUserInput("USER_KOL_NAME", input.kol.name),
+    kol_handle: wrapUserInput("USER_KOL_HANDLE", input.kol.handle ?? ""),
+    kol_region: wrapUserInput("USER_KOL_REGION", input.kol.region ?? ""),
     kol_categories: (input.kol.categories ?? []).join(", "),
-    original_subject: input.template.subject,
-    original_body: input.template.body,
+    original_subject: wrapUserInput("USER_ORIGINAL_SUBJECT", input.template.subject),
+    original_body: wrapUserInput("USER_ORIGINAL_BODY", input.template.body),
     locale: input.template.locale,
   };
 }

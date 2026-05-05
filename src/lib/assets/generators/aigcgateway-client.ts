@@ -73,6 +73,12 @@ export interface RunChatCompletionInput {
   temperature?: number;
   /** Set to true to request JSON-only output. */
   jsonMode?: boolean;
+  /**
+   * BL-034 F005 cap on output tokens. Defaults to 2000 (covers emails /
+   * customised drafts per v0.9.11 §ai-action-contract.md §4 matrix).
+   * Callers generating long reports should bump to 4000.
+   */
+  maxTokens?: number;
   /** Per-call timeout. Default: AIGC_TIMEOUT_MS env or 15_000. */
   timeoutMs?: number;
   /** Internal — wired in tests so we can stub fetch deterministically. */
@@ -122,6 +128,10 @@ export async function runChatCompletion(
     model: input.model ?? DEFAULT_MODEL,
     messages: input.messages,
     temperature: input.temperature ?? 0.7,
+    // BL-034 F005: hard cap output tokens. 2000 fits the email / customised
+    // draft category in framework/harness/ai-action-contract.md §4. Callers
+    // for long-form reports should pass an explicit maxTokens=4000.
+    max_tokens: input.maxTokens ?? 2000,
   };
   if (input.jsonMode) {
     requestBody.response_format = { type: "json_object" };

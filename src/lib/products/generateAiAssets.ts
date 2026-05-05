@@ -215,6 +215,11 @@ export async function generateAiAssets(
     ],
     response_format: { type: "json_object" },
     temperature: 0.7,
+    // BL-034 F005 (v0.9.11 §ai-action-contract.md §4 matrix): cap output at
+    // 2000 tokens — emails/videos category. Without this cap a bad model
+    // (or runaway prompt) could stream tens of thousands of tokens and
+    // burn the per-tenant cost budget on a single call.
+    max_tokens: 2000,
   };
 
   let createdAssets: AssetDetail[] = [];
