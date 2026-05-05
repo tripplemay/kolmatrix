@@ -396,14 +396,15 @@
   },
   {
     "id": "BL-035",
-    "title": "后端 HIGH 收尾批次（11 项，MVP demo 前强烈建议）",
-    "description": "来源：docs/reviews/backend-full-scan-2026-05-04.md §2 (HIGH 14 项 - BL-020 已含 3 项 - BL-034 已含 1 项 = 11 项)。11 features 全 generator：F001 AUTH-H2 登录密码最小长度 z.string().min(1) 改 min(12) (src/auth.ts:19) / F002 AUTH-H5 withPlatformAdmin 普通 locale 更新场景下遇无效 UUID 直抛 Unauthorized (src/app/[locale]/(app)/actions.ts:25) / F003 API-H1 AI endpoint rate-limit 复用 BL-020 F005 Redis 基础 + rate-limiter-flexible（smart-match / generateRoiInsights / generateDatabaseInsights / generateWeeklyReport / generateAsset / sendBatch 6 处） / F004 API-H2 createShareTokenAction origin 服务端 headers().get('host') 推导，删客户端传参 (weekly-report/actions.ts:158-199) / F005 API-H3 updateProduct + deleteProduct 应用层 findUnique ownership preflight (knowledge-base/actions.ts:129) / F006 AI-H1 新建 src/app/api/webhooks/resend/route.ts + svix-signature 验签 + 写回 EmailLog.status + 命中 hard bounce 时清 Kol.email / F007 AI-H2+H3 PII 脱敏（aigcgateway 错误体仅服务端 log 完整体，客户端见 'aigcgateway responded ${status}'；EmailLog.bodyHtml retention policy 30 day 后 redact 真实姓名/邮箱；resend.ts mock 模式 [EMAIL MOCK] 默认仅打 to+subject） / F008 AI-H4 sendBatchAction 批次上限 50→8 + 总超时 60s（接近 Next 16 server action 上限），未来 BullMQ 实装时迁队列异步 / F009 DB-H5+H6 加 kol_campaign.kolId 单字段索引 + tenantId 独立 FK 索引（schema.prisma:281-307） / F010 CQ-H1 fetchWithRetry 抽 src/lib/aigc/fetch-with-retry.ts 共享（替换 5 处重复：campaigns/suggestions / email/customize / kol-database/intelligence / roi/insights / weekly-report/generate） / F011 CQ-H2 + CQ-H4-H6 死代码删（loadUserTemplates / loadSystemTemplates / peekAllowedStatusTransitions / AssetVariantSelfReferenceError typed catch 缺位 / 内部专用导出 unexport）\n\n依赖：BL-034 done 后开（API-H1 AI rate-limit 需 BL-020 F005 Redis ready；API-H2/H3 需 BL-034 audit_log RLS 修完）\n\n预估：5-7 day building + 1 day verifying（audit §6 Sprint 1 范围）",
+    "title": "后端 HIGH 收尾批次 + UX：12 项（11 项 audit HIGH + F012 mock KOL 沉底，MVP demo 前强烈建议）",
+    "description": "来源：docs/reviews/backend-full-scan-2026-05-04.md §2 (HIGH 14 项 - BL-020 已含 3 项 - BL-034 已含 1 项 = 11 项 + UX 1 项 F012 加入 = 12 项)。12 features 全 generator：F001 AUTH-H2 登录密码最小长度 z.string().min(1) 改 min(12) (src/auth.ts:19) / F002 AUTH-H5 withPlatformAdmin 普通 locale 更新场景下遇无效 UUID 直抛 Unauthorized (src/app/[locale]/(app)/actions.ts:25) / F003 API-H1 AI endpoint rate-limit 复用 BL-020 F005 Redis 基础 + rate-limiter-flexible（smart-match / generateRoiInsights / generateDatabaseInsights / generateWeeklyReport / generateAsset / sendBatch 6 处） / F004 API-H2 createShareTokenAction origin 服务端 headers().get('host') 推导，删客户端传参 (weekly-report/actions.ts:158-199) / F005 API-H3 updateProduct + deleteProduct 应用层 findUnique ownership preflight (knowledge-base/actions.ts:129) / F006 AI-H1 新建 src/app/api/webhooks/resend/route.ts + svix-signature 验签 + 写回 EmailLog.status + 命中 hard bounce 时清 Kol.email / F007 AI-H2+H3 PII 脱敏（aigcgateway 错误体仅服务端 log 完整体，客户端见 'aigcgateway responded ${status}'；EmailLog.bodyHtml retention policy 30 day 后 redact 真实姓名/邮箱；resend.ts mock 模式 [EMAIL MOCK] 默认仅打 to+subject） / F008 AI-H4 sendBatchAction 批次上限 50→8 + 总超时 60s（接近 Next 16 server action 上限），未来 BullMQ 实装时迁队列异步 / F009 DB-H5+H6 加 kol_campaign.kolId 单字段索引 + tenantId 独立 FK 索引（schema.prisma:281-307） / F010 CQ-H1 fetchWithRetry 抽 src/lib/aigc/fetch-with-retry.ts 共享（替换 5 处重复：campaigns/suggestions / email/customize / kol-database/intelligence / roi/insights / weekly-report/generate） / F012 UX-1 KOL Discovery 默认排序 mock 沉底（修 Postgres NULLS FIRST 默认）/ F011 CQ-H2 + CQ-H4-H6 死代码删（loadUserTemplates / loadSystemTemplates / peekAllowedStatusTransitions / AssetVariantSelfReferenceError typed catch 缺位 / 内部专用导出 unexport）\n\n依赖：BL-034 done 后开（API-H1 AI rate-limit 需 BL-020 F005 Redis ready；API-H2/H3 需 BL-034 audit_log RLS 修完）\n\n预估：5-7 day building + 1 day verifying（audit §6 Sprint 1 范围）\n\nF012 UX-1（2026-05-05 用户报 + Planner 调查 prod 实测追加）：KOL Discovery 默认排序 (sort='value' valueScore desc) 时 mock 12 条 demo_seed 因 valueScore=NULL 在 Postgres 默认 NULLS FIRST 顶到首页，2245 条真实 manual KOL 被压沉底。修 src/lib/pagination/cursor.ts:95 paginator orderBy shape 升级支持 Prisma 6+ nulls 修饰符（{ field, sort: direction, nulls: 'last' }）— caller 传 string 保持向后兼容；调用方 src/app/[locale]/(app)/discovery/search.ts:87 + sortToOrderBy (src/lib/kol/filters.ts:549) 标 nulls: 'last'；database/search.ts + campaigns/search.ts 同步评估是否也需要（视它们 sort 字段是否可 NULL）。Acceptance：mock 12 条不再顶首页（默认 sort='value' 真实 KOL 第一行 valueScore≥81）；新增 src/lib/pagination/__tests__/cursor.test.ts ≥3 case（string orderBy 向后兼容 + nulls:'last' 顶 NULL 沉底 + 默认值不变）；npm run lint + tsc + test 全绿。预估 1.5h building + 0.5h Reviewer。",
     "decisions": [
       "MVP demo 前推荐做完，对外客户体验质量提升（user-visible: rate-limit / share token / Resend bounce）",
       "F010 + F011 是代码质量收尾，与功能修分组释放 review 压力",
-      "AUTH-H1 (登录限速) = BL-020 F005 已覆盖；AUTH-H3 (CSP enforce) = BL-020 F006 已覆盖；AUTH-H4 (health git_sha) = BL-034 F007 已覆盖；AUTH-H6 (is_platform_admin NULLIF) = BL-034 F008 已覆盖；AI-H5 (validation share) = BL-034 F006 已覆盖 — 5 项 audit HIGH 已分配，剩 11 项独立"
+      "AUTH-H1 (登录限速) = BL-020 F005 已覆盖；AUTH-H3 (CSP enforce) = BL-020 F006 已覆盖；AUTH-H4 (health git_sha) = BL-034 F007 已覆盖；AUTH-H6 (is_platform_admin NULLIF) = BL-034 F008 已覆盖；AI-H5 (validation share) = BL-034 F006 已覆盖 — 5 项 audit HIGH 已分配，剩 11 项独立",
+      "F012 加入 BL-035（用户 2026-05-05 决议）— UX 修与后端 HIGH 同上线波次，paginator nulls 改动影响 discovery + database + campaigns 多 search 路径，与 BL-035 全局收尾性质一致"
     ],
-    "confirmed_at": "2026-05-04T23:30+0800",
+    "confirmed_at": "2026-05-05T01:50+0800",
     "priority": "high",
     "tags": [
       "security",
@@ -413,12 +414,13 @@
       "code-quality",
       "audit-followup"
     ],
-    "discovered_in": "docs/reviews/backend-full-scan-2026-05-04.md §2 (14 HIGH) - BL-020 (3 已覆盖) - BL-034 (1 已覆盖)",
+    "discovered_in": "docs/reviews/backend-full-scan-2026-05-04.md §2 (14 HIGH) - BL-020 (3 已覆盖) - BL-034 (1 已覆盖) + F012 用户 2026-05-05 报 mock 沉底 UX 调查",
     "references": [
       "docs/reviews/backend-full-scan-2026-05-04.md",
       "BL-034 spec (依赖前置)",
       "BL-020 spec §F005 Redis infra (复用)",
-      "framework/harness/ai-action-contract.md"
+      "framework/harness/ai-action-contract.md",
+      "src/lib/pagination/cursor.ts (F012)"
     ]
   }
 ]
