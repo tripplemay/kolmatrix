@@ -30,7 +30,7 @@
       "title": "CRIT-4 embedAllKols 改 Prisma.sql tagged template + assertUuid 入口 + deleted_at IS NULL 过滤 + kol_embedding_active_idx partial index migration + kolCosineTopKSql 同步改",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "src/lib/embedding/kol-embed.ts:262-275 改 prisma.$queryRaw + Prisma.sql tagged template + assertUuid(opts.tenantId) 入口（如有 tenantId）+ WHERE 子句改 Prisma.sql`WHERE tenant_id = ${opts.tenantId}::uuid AND deleted_at IS NULL` 模式；grep $queryRawUnsafe in src/lib/embedding/ → 0 hits；src/lib/embedding/sql.ts:90 kolCosineTopKSql 加 AND deleted_at IS NULL；新建 prisma migration 20260505020000_kol_embedding_active_idx 含 CREATE INDEX CONCURRENTLY IF NOT EXISTS kol_embedding_active_idx ON kol USING ivfflat (embedding vector_cosine_ops) WHERE deleted_at IS NULL AND embedding IS NOT NULL（注意 CONCURRENTLY 在 prisma migrate dev 需手工 BEGIN/COMMIT 控制）；新增 src/lib/embedding/__tests__/kol-embed.test.ts ≥3 case（invalid uuid throws / 2 active + 1 soft-deleted seed → embed 仅 2 / undefined tenantId 跨 tenant active 仅）；新增 src/lib/embedding/__tests__/sql.test.ts ≥1 case 验证 kolCosineTopKSql 输出含 AND deleted_at IS NULL；npm run lint + tsc + test 全绿。详见 spec §F004。"
     },
     {
