@@ -134,6 +134,13 @@ describe("checkQuality · post-write flags", () => {
 });
 
 describe("summarize (weekly report)", () => {
+  // BL-035 chore: seeded_at is anchored to runtime `Date.now()` rather
+  // than the fixed NOW above so the 7-day-window math (which uses
+  // `Date.now()` inside summarize) stays inside the test's expected
+  // bucket even when CI runs the suite on dates after 2026-05-05.
+  // Previously NOW = 2026-04-28T08:30Z and the test silently broke
+  // once the wall-clock crossed 2026-05-05T08:30Z.
+  const RECENT_SEEDED_AT = new Date(Date.now() - 1 * 24 * 3600_000).toISOString();
   function row(overrides: Partial<{
     countryCode: string | null;
     categories: string[];
@@ -144,7 +151,7 @@ describe("summarize (weekly report)", () => {
       countryCode: "US",
       categories: ["Action"],
       followerCount: 100_000,
-      metadata: { seeded_at: NOW.toISOString() },
+      metadata: { seeded_at: RECENT_SEEDED_AT },
       ...overrides,
     };
   }
