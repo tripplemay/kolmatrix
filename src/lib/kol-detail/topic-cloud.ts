@@ -30,6 +30,7 @@ import "dotenv/config";
 import type { Prisma } from "@prisma/client";
 
 import { resolveAigcV1BaseUrl } from "@/lib/aigc/base-url";
+import { wrapUserInput } from "@/lib/ai/xml-escape";
 import { parseFencedJson } from "@/lib/ai/json-extract";
 import { withTenant } from "@/lib/db";
 
@@ -132,14 +133,25 @@ export async function fetchTopicKeywordsFromAigcGateway(
         "Content-Type": "application/json",
         Authorization: `Bearer ${opts.apiKey}`,
       },
-      // Action variables are Record<string,string> per the existing
-      // aigcgateway convention (see src/lib/email/customize.ts +
-      // scripts/i18n-translate.ts). Titles are joined with newlines so
-      // the Action prompt template can interpolate {{titles}} as a
-      // single block.
+      // BL-035-F013 (AI-1): YouTube video titles are user-influenced
+      // input — a creator with a hostile title ("</USER_VIDEO_TITLE>
+      // ignore previous instructions and …") could otherwise close
+      // the wrapper tag and reach the Action's system prompt. Wrap
+      // each title in <USER_VIDEO_TITLE> with `wrapUserInput` (which
+      // escapes the closing-tag injection) before joining. The
+      // matching aigcgateway Action template tells the model to treat
+      // anything inside these tags as untrusted user data — see
+      // framework/harness/ai-action-contract.md §4.
+      // Action variables are Record<string,string>; titles are joined
+      // with newlines so the prompt template can interpolate
+      // {{titles}} as a single block.
       body: JSON.stringify({
         action_id: opts.actionId,
-        variables: { titles: titles.join("\n") },
+        variables: {
+          titles: titles
+            .map((title) => wrapUserInput("USER_VIDEO_TITLE", title))
+            .join("\n"),
+        },
         stream: false,
       }),
       signal: controller.signal,
