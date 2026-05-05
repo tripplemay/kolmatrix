@@ -13,7 +13,7 @@ import type { Prisma } from "@prisma/client";
 
 import { withTenant } from "@/lib/db";
 import { buildKolWhere, sortToOrderBy, type DiscoveryFilters } from "@/lib/kol/filters";
-import { createCursorPaginator } from "@/lib/pagination/cursor";
+import { createCursorPaginator, type OrderBySpec } from "@/lib/pagination/cursor";
 
 export interface DatabaseKolRow {
   id: string;
@@ -65,7 +65,10 @@ export async function runDatabaseSearch(
   const where: Prisma.KolWhereInput = {
     AND: [...andClauses, { isSaved: true }],
   };
-  const { field, direction } = sortToOrderBy(filters.sort);
+  const { field, direction, nulls } = sortToOrderBy(filters.sort);
+  // BL-035-F012: same NULL-sink fix as discovery — saved KOLs without a
+  // valueScore should not crown the database list when sort='value'.
+  const orderBy: OrderBySpec = nulls ? { field, nulls } : field;
 
   return withTenant(tenantId, async (tx) => {
     const paginator = createCursorPaginator<KolRowShape, Prisma.KolWhereInput>({
@@ -79,7 +82,7 @@ export async function runDatabaseSearch(
       paginator.query({
         where,
         cursor: filters.cursor,
-        orderBy: field,
+        orderBy,
         direction,
         limit: PAGE_SIZE,
       }),

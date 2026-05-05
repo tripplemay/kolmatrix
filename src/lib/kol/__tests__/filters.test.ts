@@ -371,7 +371,14 @@ describe("buildKolWhere()", () => {
 
 describe("sortToOrderBy()", () => {
   it("maps the three sort options to indexed columns", () => {
-    expect(sortToOrderBy("value")).toEqual({ field: "valueScore", direction: "desc" });
+    // BL-035-F012: `value` now also pins NULL placement so seed mock
+    // KOLs (valueScore = NULL) sink to the bottom of the list. The
+    // other two columns are non-nullable.
+    expect(sortToOrderBy("value")).toEqual({
+      field: "valueScore",
+      direction: "desc",
+      nulls: "last",
+    });
     expect(sortToOrderBy("followers")).toEqual({ field: "followerCount", direction: "desc" });
     expect(sortToOrderBy("recent")).toEqual({ field: "createdAt", direction: "desc" });
   });

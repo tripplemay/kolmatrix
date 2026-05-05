@@ -19,7 +19,7 @@ import {
   sortToOrderBy,
   type DiscoveryFilters,
 } from "@/lib/kol/filters";
-import { createCursorPaginator } from "@/lib/pagination/cursor";
+import { createCursorPaginator, type OrderBySpec } from "@/lib/pagination/cursor";
 
 export interface DiscoveryKolCard {
   id: string;
@@ -70,7 +70,11 @@ export async function runDiscoverySearch(
   filters: DiscoveryFilters
 ): Promise<DiscoverySearchResult> {
   const where = buildKolWhere(filters);
-  const { field, direction } = sortToOrderBy(filters.sort);
+  const { field, direction, nulls } = sortToOrderBy(filters.sort);
+  // BL-035-F012: pass `{ field, nulls: 'last' }` when the sort column
+  // can be NULL (valueScore on mock KOL seeds). Other sorts pass the
+  // bare string so the paginator's existing shape stays unchanged.
+  const orderBy: OrderBySpec = nulls ? { field, nulls } : field;
 
   return withTenant(tenantId, async (tx) => {
     const paginator = createCursorPaginator<KolRow, Prisma.KolWhereInput>({
@@ -84,7 +88,7 @@ export async function runDiscoverySearch(
       paginator.query({
         where,
         cursor: filters.cursor,
-        orderBy: field,
+        orderBy,
         direction,
         limit: PAGE_SIZE,
       }),

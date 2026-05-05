@@ -545,10 +545,18 @@ export function buildKolWhere(filters: DiscoveryFilters): Prisma.KolWhereInput {
  * Map a sort option to the Prisma orderBy field name used by the cursor
  * paginator. The paginator auto-appends `{ id: direction }` as a stable
  * tie-breaker, so we only return the primary column name.
+ *
+ * BL-035-F012: `value` returns `nulls: 'last'` so KOLs without a
+ * computed valueScore (mock seeds, freshly imported rows) sink to the
+ * bottom of the discovery / database lists instead of crowning the
+ * first page (Postgres' default for `DESC` is `NULLS FIRST`).
+ * `followers` and `recent` map to non-nullable columns and stay
+ * unchanged.
  */
 export function sortToOrderBy(sort: SortOption): {
   field: string;
   direction: "asc" | "desc";
+  nulls?: "first" | "last";
 } {
   switch (sort) {
     case "followers":
@@ -557,7 +565,7 @@ export function sortToOrderBy(sort: SortOption): {
       return { field: "createdAt", direction: "desc" };
     case "value":
     default:
-      return { field: "valueScore", direction: "desc" };
+      return { field: "valueScore", direction: "desc", nulls: "last" };
   }
 }
 

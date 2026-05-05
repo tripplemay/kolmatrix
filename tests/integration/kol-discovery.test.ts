@@ -60,7 +60,7 @@ interface SeededKol {
   categories: string[];
   isGaming: boolean;
   engagementRate: number | null;
-  valueScore: number;
+  valueScore: number | null;
   createdAt: Date;
 }
 
@@ -98,7 +98,7 @@ async function seedTenantWithKols(
       categories: k.categories,
       isGaming: k.isGaming,
       engagementRate: k.engagementRate == null ? null : Number(k.engagementRate.toString()),
-      valueScore: k.valueScore!,
+      valueScore: k.valueScore,
       createdAt: k.createdAt,
     });
   }
@@ -437,6 +437,46 @@ describe("runDiscoverySearch()", () => {
     ]);
     const res = await runDiscoverySearch(tenantId, baseFilters);
     expect(res.items.map((i) => i.handle)).toEqual(["high", "mid", "low"]);
+  });
+
+  it("BL-035-F012 — KOLs with NULL valueScore sink to the bottom of value sort (Postgres NULLS LAST)", async () => {
+    const { tenantId } = await seedTenantWithKols([
+      // Mock-seed style row with no computed value score yet — used to
+      // surface at the top because Postgres treats DESC NULLs as
+      // higher-than-everything.
+      {
+        displayName: "Mock Seed",
+        handle: "mock",
+        countryCode: "US",
+        followerCount: 1_000,
+        categories: ["MOBA"],
+        isGaming: true,
+        engagementRate: 5,
+        valueScore: null,
+      },
+      {
+        displayName: "High Score",
+        handle: "high",
+        countryCode: "US",
+        followerCount: 1_000,
+        categories: ["MOBA"],
+        isGaming: true,
+        engagementRate: 5,
+        valueScore: 90,
+      },
+      {
+        displayName: "Low Score",
+        handle: "low",
+        countryCode: "US",
+        followerCount: 1_000,
+        categories: ["MOBA"],
+        isGaming: true,
+        engagementRate: 5,
+        valueScore: 10,
+      },
+    ]);
+    const res = await runDiscoverySearch(tenantId, baseFilters);
+    expect(res.items.map((i) => i.handle)).toEqual(["high", "low", "mock"]);
   });
 
   it("RLS-isolates rows across tenants", async () => {
