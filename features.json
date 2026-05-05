@@ -46,7 +46,7 @@
       "title": "AI-H5 validateNoBracketPlaceholders 提到 src/lib/ai/placeholder-guard.ts 共享 + email-generator.ts + video-script-generator.ts 单条 Asset 重生路径同步挂",
       "priority": "high",
       "executor": "generator",
-      "status": "pending",
+      "status": "done",
       "acceptance": "新建 src/lib/ai/placeholder-guard.ts export validateNoBracketPlaceholders({subject?, body?, html?})：扫描 [A-Z][a-zA-Z ]+ 方括号占位符 → throw AiPlaceholderViolationError 含 sample 列表；删除 src/lib/products/generateAiAssets.ts:111 本地 fn 定义，从 @/lib/ai/placeholder-guard 复用 import（line 246 调用不变）；grep 'function validateNoBracketPlaceholders' in src/lib/products/ → 0 hits；src/lib/assets/generators/email-generator.ts 在 generate 函数 return 前加 validateNoBracketPlaceholders(generated) 调用 + retry 1 次或抛 AiPlaceholderViolationError（按 BL-032 模式）；video-script-generator.ts 同模式挂；新增 src/lib/ai/__tests__/placeholder-guard.test.ts ≥4 case（valid Mustache PASS / [Creator Name] THROW / [Your Name] THROW / 空内容 PASS）+ email-generator + video-script-generator 既有测试加 ≥1 case 验证 invalid bracket → throw；npm run lint + tsc + test 全绿。详见 spec §F006。"
     },
     {
