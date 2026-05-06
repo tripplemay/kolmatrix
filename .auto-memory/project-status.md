@@ -3,14 +3,15 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ✅ BL-024 B4 ghost-controls cleanup — DONE 2026-05-06 ~07:30（first-round PASS @ eacbbbb，fix_rounds=0，0 PARTIAL/FAIL）
-- 6/6 PASS：F001 ✅ /database 头 3 按钮（Export+Import+Add KOL）/ F002 ✅ /roi 4 range / F003 ✅ /weekly-report 2 range（28-day 聚合）/ F004 ✅ /outreach/tracking / F005 ✅ /outreach/suppression / F006 ✅ deploy yml env bridge fix（BL-034 F001 retroactive）
-- L1：27/27 集成测试 + 3/3 visual-baselines-shape + lint+tsc 0 errors / L2：staging 5 处浏览器走查 + git_sha=eacbbbb 与 main HEAD 一致
-- signoff: docs/test-reports/BL-024-ghost-controls-cleanup-signoff-2026-05-06.md（2 项 Soft-watch S1+S2 兜底）
-- v0.9.13 候选 2 项已写入 framework/proposed-learnings.md（done 阶段交用户决议）
+## ✅ BL-024 + Framework v0.9.13 + BL-024 F007 retroactive + prod redeploy 大合并 — ALL DONE 2026-05-06 ~08:00
+- BL-024 done @ eacbbbb (6/6 first-round PASS, fix_rounds=0)；signoff: docs/test-reports/BL-024-ghost-controls-cleanup-signoff-2026-05-06.md
+- Framework v0.9.13 沉淀完毕（commit 7471434）：deploy-patterns.md §5.1 spec deploy-script vs yml 同 commit 规律 + ai-action-contract.md §4.7 mcp 自动化可达性
+- BL-024 F007 retroactive hotfix（commit 8be3115，Planner ops 用户授权）：deploy-prod.sh + deploy-staging.sh ALTER ROLE 改 sudo -u postgres peer auth 替换 PGPASSWORD/-h/-U（无 POSTGRES_SUPERUSER_PASSWORD env）
+- prod redeploy 大合并 done（run 25408848271 SUCCESS @ 8be3115）：CRIT-1 真闭环 — ALTER ROLE 跑通 + KOLMATRIX_APP_PASSWORD 32-char hex 已轮换 + DATABASE_URL 同步 + 5 env vars 已生效 + git_sha 对齐 + Resend webhook svix 401 验签 ✓
+- 实战教训（v0.9.12 §5.4 同模式）：bash 旧 bytecode — 第 1 次 deploy fail（PGPASSWORD path 旧版本）+ 第 2 次 fail（git checkout 但 bash 已 mmap 旧版本）+ 第 3 次 PASS（新 bash 进程重 read）
 ## ✅ BL-035 / BL-034 / Framework v0.9.12 / BL-020 / Framework v0.9.11 / BL-033~BL-026 — DONE 2026-05-03~05
 ## 用户手工待办（按优先级）
-1. **🔴 prod redeploy 大合并（BL-024 + BL-035 + BL-034 + BL-020）+ KOLMATRIX_APP_PASSWORD 落地**：现 main HEAD（含 BL-024 F006 yml 桥接 fix）已就绪。SSH prod 生成 random KOLMATRIX_APP_PASSWORD（openssl rand -hex 16）+ 写 .env.production + 同步 DATABASE_URL 中 kolmatrix_app:OLD_PWD@... → :NEW_PWD@...（手术级，错一字符 prod 全断）→ GH Actions Deploy → ALTER ROLE 真生效（CRIT-1 retroactive 闭环）→ curl health 验 git_sha 对齐 + 5 处浏览器走查 + Resend 测试邮件触发 hard-bounce 验 EmailLog.status + Kol.email 清空
+1. ~~🔴 prod redeploy 大合并 + KOLMATRIX_APP_PASSWORD 落地~~ ✅ **DONE by Planner ops 2026-05-06 ~08:00**（CRIT-1 retroactive 完整闭环）
 2. **aigcgateway 控制台 UI 设 6 Action max_tokens**（继承 BL-035 S5 + BL-024 Q2 ops Soft-watch — mcp schema 缺）：登录 https://aigc.guangai.ai 按 inventory `docs/specs/BL-035-F013-actions-run-inventory.md §2` 矩阵设（500/1000/2000/4000）
 3. **BL-020 F006 CSP + BL-034 F008 NULLIF 1 周 staging 观察期** → 满后用户驱动 prod redeploy（与 #1 合并是 OK 的）
 4. **BL-035 F005/F008/F013 + F006 prod 真测**（依赖 #1+#2）：第 2 tenant 启用 + outreach composer ≥9 KOL + aigcgateway logs 抽样 + 测试邮件 hard bounce
