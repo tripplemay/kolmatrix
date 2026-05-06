@@ -18,11 +18,26 @@
  */
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { runSemanticDiscoverySearch } from "@/app/[locale]/(app)/discovery/search";
-import { __clearChipEmbeddingCache } from "@/lib/discovery/semantic-search";
 import { EMBEDDING_DIMS } from "@/lib/embedding/types";
 
 import { cleanDb, getAdminPrisma, setupTestDb, teardownTestDb } from "../helpers/db";
+
+// BL-044 F004 — lazy module imports so `db.ts`'s `DATABASE_URL is not set`
+// boot guard doesn't trip during integration test bootstrap (setupTestDb
+// runs in beforeAll, but ESM imports resolve earlier than that).
+// Same pattern as `tests/integration/smart-match-api.test.ts` →
+// `dbModule()` helper inside `src/lib/discovery/smart-match.ts`.
+async function loadModules(): Promise<{
+  runSemanticDiscoverySearch: (typeof import("@/app/[locale]/(app)/discovery/search"))["runSemanticDiscoverySearch"];
+  __clearChipEmbeddingCache: (typeof import("@/lib/discovery/semantic-search"))["__clearChipEmbeddingCache"];
+}> {
+  const search = await import("@/app/[locale]/(app)/discovery/search");
+  const semantic = await import("@/lib/discovery/semantic-search");
+  return {
+    runSemanticDiscoverySearch: search.runSemanticDiscoverySearch,
+    __clearChipEmbeddingCache: semantic.__clearChipEmbeddingCache,
+  };
+}
 
 beforeAll(async () => {
   await setupTestDb();
@@ -32,6 +47,7 @@ afterAll(async () => {
 });
 beforeEach(async () => {
   await cleanDb();
+  const { __clearChipEmbeddingCache } = await loadModules();
   __clearChipEmbeddingCache();
 });
 
@@ -138,6 +154,7 @@ describe("runSemanticDiscoverySearch — happy path", () => {
     stubEmbedFetch(queryVec);
     await admin.$executeRawUnsafe(`ANALYZE "kol"`);
 
+    const { runSemanticDiscoverySearch } = await loadModules();
     const result = await runSemanticDiscoverySearch(tenant.id, {
       ...BASE_FILTERS,
       aiQuery: "FPS creators",
@@ -211,6 +228,7 @@ describe("runSemanticDiscoverySearch — filters / RLS", () => {
     stubEmbedFetch(queryVec);
     await admin.$executeRawUnsafe(`ANALYZE "kol"`);
 
+    const { runSemanticDiscoverySearch } = await loadModules();
     const result = await runSemanticDiscoverySearch(tenant.id, {
       ...BASE_FILTERS,
       aiQuery: "FPS creators",
@@ -261,6 +279,7 @@ describe("runSemanticDiscoverySearch — filters / RLS", () => {
     stubEmbedFetch(queryVec);
     await admin.$executeRawUnsafe(`ANALYZE "kol"`);
 
+    const { runSemanticDiscoverySearch } = await loadModules();
     const result = await runSemanticDiscoverySearch(tenantA.id, {
       ...BASE_FILTERS,
       aiQuery: "FPS creators",
@@ -293,6 +312,7 @@ describe("runSemanticDiscoverySearch — empty result", () => {
     stubEmbedFetch(fakeVec(13));
     await admin.$executeRawUnsafe(`ANALYZE "kol"`);
 
+    const { runSemanticDiscoverySearch } = await loadModules();
     const result = await runSemanticDiscoverySearch(tenant.id, {
       ...BASE_FILTERS,
       aiQuery: "FPS creators",
