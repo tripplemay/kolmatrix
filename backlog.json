@@ -384,39 +384,28 @@
     ]
   },
   {
-    "id": "BL-044",
-    "title": "/discovery AI Semantic Search 实装（C 方案）— 真 multilingual cosine search 替代 ILIKE substring",
-    "description": "来源：用户 2026-05-06 报 prod bug — /zh/discovery 点 AI chip '🎮 王者荣耀上线适配的 FPS 创作者' 显示 '未找到符合的 KOL'。Planner 调查根因：AI chip label 是「自然语言查询意图」但 search 实装是字面 ILIKE substring 匹配 — 长意图字符串命中 0。用户 2026-05-06 12:30 决议路径 B：BL-040 → BL-043 staging gap 闭合 → BL-044 顺序（避免暂停 BL-040）。\n\n4 features 全 generator（fork from B7a SmartMatch 范式）：\nF001 runSemanticKolSearch server module（~150 行 fork from smart-match.ts，复用 embedOne + kolCosineTopKSql + withTenant）\nF002 UI integration — SearchBar chip URL 改 ?ai=<text> + page.tsx 解析 + ActiveFilters 加 AI chip render（~1.5h）\nF003 性能优化 + 失败兜底 — 启动时预热 5 locale × 3 chip = 15 chip embedding 入 module-level Map cache + embedding service 5xx fallback 到 ILIKE 路径 + ENABLE_AI_SEARCH env flag escape hatch（~1h）\nF004 测试 + 监控 — semantic-search.test.ts ≥4 case + 集成测试 ≥2 case + event_log type='ai.usage' source='semantic_search' 监控 cost/latency（~1h）\n\n实装基础 99% 就绪：\n- ✅ B7a-F001 KOL embedding pipeline（embedOne + kolCosineTopKSql + ivfflat index）\n- ✅ B7a-F002 SmartMatch 提供完美 fork 范式（266 行 Product → KOL，类似 free-text → KOL 仅 input 不同）\n- ✅ prod KOL.embedding 99.5% 已 embed（2430/2442）\n- ✅ aigcgateway bge-m3 1024-dim multilingual 模型（已 list_models）\n- ✅ BL-035 F003 AI rate-limit 自动覆盖（10/min/tenantId）\n- ✅ BL-034 F005 cost-cap MVP 自动 enforce per-tenant $5/day\n\nQuality gate 实测 PASS（spec §1.2 @ 2026-05-06 12:10）：Planner 用 mcp embed_text + prod cosine search 跑 4 query → 4 query 全 100% 语义相关命中（中文/英文/日文/韩文 KOL displayName 跨语言混合命中），cosine distance 0.37-0.46（紧致），cost $0.00000188 总。无 multilingual quality 风险。\n\n依赖：BL-040 done + BL-043 staging gap 闭合 → 然后 BL-044 启动（按时间线 ~2-4h 间隔不阻塞）。\n\n预估 1-2 day building + 0.5 day verifying。\n\n详见 docs/specs/BL-044-discovery-ai-semantic-search-spec.md。",
+    "id": "BL-045",
+    "title": "email-generator + video-script-generator targetAudience fallback dead code 清理（BL-040 spec scope retroactive）",
+    "description": "BL-040 spec 起草时 Planner 漏 grep 完整 '?? \\'Not specified\\'' 模式（仅列 generateAiAssets.ts:175 一处），实际 Generator 开工前 grep 实物发现 src/lib/assets/generators/email-generator.ts:74 + src/lib/assets/generators/video-script-generator.ts:80 同样含此 fallback 模式。Generator 按铁律 #10 不越界，本 backlog 条目跟踪后续清理。\n\n**当前实情：** BL-040 已收紧上游 type 到 string（不再 nullable）— 这 2 处 ?? 'Not specified' fallback **永远不会触发**，是 dead code 不影响 runtime。但维护负担 + 误导 reader 以为 NULL 路径仍存。\n\n**清理方案（5 min）：**\n```diff\n# email-generator.ts:74:\n-`Target audience: ${targetAudience ?? 'Not specified'}`\n+`Target audience: ${targetAudience}`\n\n# video-script-generator.ts:80（同模式）\n```\n\n**触发条件：** 下个 mini-batch 顺手做（与其它修同 sprint），或起 dead-code-cleanup sprint 集中（含 BL-024 SW-1 visual baseline + BL-034 unused import + 本条目 + 其它 spec drift 残留）。\n\n**不阻塞任何东西：** dead code 不影响 runtime / build / tests / prod 用户体验。",
     "decisions": [
-      "用户 2026-05-06 12:30 决议路径 B（BL-040 → BL-043 staging gap → BL-044 顺序，不暂停 BL-040）+ 同意 4 features 范围 + 同意 Planner 跑 staging multilingual quality 实测先行",
-      "Quality gate 实测 PASS @ 2026-05-06 12:10：bge-m3 multilingual 在 4 个 query（中文短/中文 chip 完整/英文 baseline/RPG 中文）全部 cosine top-10 100% 语义相关命中，无 quality 风险",
-      "F003 chip embedding cache 在 module-level Map（process-local），PM2 cluster 多实例每实例独立 pre-warm（OK，cache read-mostly）；Redis 不需（chip 文案是 i18n 静态值）",
-      "D5 第 1 版 ?ai=X 时 bypass 其它 filter（categories / platforms / regions），cosine top 50 已足够 specific；hybrid 第 2 版演进",
-      "D6 grid sort 在 AI search 时 disable + tooltip 'AI search uses semantic ranking'（cosine distance ASC 隐式）",
-      "BL-040+BL-043+BL-044 共 ~4-6h+1-2 day 总周期，05-06~07 完成，05-13 上线对外不受影响",
-      "方案 D（chip → categories filter，20 min hotfix）作为 fallback 在 F003 自动触发（embedding service 5xx 时 ILIKE substring 路径，与 chip ?categories= 不同但效果近似）",
-      "ID 重命名：原起草时 ID=BL-043，Planner 完成 spec 期间 Generator 推 BL-040 verifying 同时加了 BL-043（deploy-staging.yml staging gap 闭合）— Planner 改用 BL-044 避 ID 冲突 @ 2026-05-06 12:50"
+      "用户 2026-05-06 16:00 决议方案 A：加 backlog deferred low 顺手清（与 Soft-watch 历史模式一致）",
+      "v0.9.14 候选 #1「audit/spec 起草前必须 grep 完整模式」实战案例 #2（沉淀理由）",
+      "实际 dead code 不影响 runtime；优先级低于 BL-044 AI semantic search、BL-043 staging gap 长期闭合等"
     ],
-    "confirmed_at": "2026-05-06T12:50+0800",
-    "priority": "high",
+    "confirmed_at": "2026-05-06T16:00+0800",
+    "priority": "deferred",
     "tags": [
-      "ai-search",
-      "embedding",
-      "discovery",
-      "multilingual",
-      "ux",
-      "prod-bug-fix",
-      "next-after-bl043"
+      "dead-code-cleanup",
+      "spec-drift",
+      "low-effort",
+      "post-mvp"
     ],
-    "discovered_in": "用户 2026-05-06 prod bug 报告 + Planner johnsong 调查根因 + Quality gate 实测 PASS",
+    "discovered_in": "BL-040 Generator Kimi 开工前 grep 实物 + Planner 起草 spec 漏 grep 完整模式（v0.9.14 沉淀 #1 实战案例 #2）",
     "references": [
-      "docs/specs/BL-044-discovery-ai-semantic-search-spec.md",
-      "src/lib/discovery/smart-match.ts (B7a-F002 fork 范式)",
-      "src/lib/embedding/client.ts (embedOne)",
-      "src/lib/embedding/sql.ts (kolCosineTopKSql)",
-      "src/app/[locale]/(app)/discovery/SearchBar.tsx (chip href 改 ?ai=)",
-      "src/lib/kol/filters.ts (DiscoveryFilters 加 aiQuery field)",
-      "framework/harness/ai-action-contract.md §4.7 (mcp 自动化可达性 — embedding 路径不需 max_tokens)"
+      "src/lib/assets/generators/email-generator.ts:74",
+      "src/lib/assets/generators/video-script-generator.ts:80",
+      "framework/harness/planner.md 铁律 1 矩阵 v0.9.14 新增「完整 pattern 模式」",
+      "BL-040 spec docs/specs/BL-040-product-target-audience-required-spec.md §F001 acceptance（漏 grep 范围）"
     ]
   }
 ]
