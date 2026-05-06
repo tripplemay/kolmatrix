@@ -66,8 +66,6 @@ npx prisma migrate deploy
 # F001: rotate kolmatrix_app role password on every deploy (idempotent).
 # Reads KOLMATRIX_APP_PASSWORD from .env.production via the SSH workflow's
 # `set -a; source .env.production; set +a` (added in the GH Actions step).
-# Skipped silently when the env var is empty so local-dev / first-bootstrap
-# runs don't break.
 # BL-024-F007 retroactive (2026-05-06 — Planner ops 用户授权): use
 # `sudo -u postgres psql` + unix socket peer auth instead of PGPASSWORD
 # over TCP. .env never had POSTGRES_SUPERUSER_PASSWORD configured, so
@@ -76,15 +74,27 @@ npx prisma migrate deploy
 # non-interactive shell. `sudo -u postgres` requires passwordless sudo
 # for the SSH user (configured per environment.md "sudo passwordless").
 # The postgres OS user owns the cluster and can ALTER ROLE on any role.
-if [ -n "${KOLMATRIX_APP_PASSWORD:-}" ]; then
-  echo "   • rotating kolmatrix_app password (idempotent)"
-  sudo -u postgres psql \
-    -d "${POSTGRES_DB:-kolmatrix}" \
-    -v "ON_ERROR_STOP=1" \
-    -c "ALTER ROLE kolmatrix_app WITH PASSWORD '$KOLMATRIX_APP_PASSWORD';"
-else
-  echo "   ⚠️  KOLMATRIX_APP_PASSWORD unset — skipping app-role password rotation"
+# BL-043-F001 (2026-05-06): fail-fast when the env var is unset.
+# Mirrors deploy-staging.sh — the prior silent-skip branch let
+# configuration drift become a hidden 28P01 auth failure (same root
+# cause as the BL-040 staging deploy 25415574990 health 503). Prod
+# always has KOLMATRIX_APP_PASSWORD configured, so this cannot break
+# the current deployment; first-time bootstraps must populate .env
+# before deploying (the expected ops flow).
+if [ -z "${KOLMATRIX_APP_PASSWORD:-}" ]; then
+  echo "❌ FATAL: KOLMATRIX_APP_PASSWORD is unset" >&2
+  echo "   This var must be set so deploy-prod.sh can ALTER ROLE on the" >&2
+  echo "   kolmatrix_app role and keep the .env / DB password in sync." >&2
+  echo "   Add KOLMATRIX_APP_PASSWORD=<random_hex> to /opt/kolmatrix/.env.production" >&2
+  echo "   (and keep it identical to /opt/kolmatrix-staging/.env.staging), then redeploy." >&2
+  echo "   See .auto-memory/environment.md §Postgres kolmatrix_app role 密码 sync 协议." >&2
+  exit 1
 fi
+echo "   • rotating kolmatrix_app password (idempotent)"
+sudo -u postgres psql \
+  -d "${POSTGRES_DB:-kolmatrix}" \
+  -v "ON_ERROR_STOP=1" \
+  -c "ALTER ROLE kolmatrix_app WITH PASSWORD '$KOLMATRIX_APP_PASSWORD';"
 
 echo "── 7/9  next build"
 # Node default old-gen heap is 2 GB; the TypeScript-check pass on the

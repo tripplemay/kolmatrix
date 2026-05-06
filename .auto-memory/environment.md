@@ -74,9 +74,21 @@ type: reference
 | PM2 | app 名 `kolmatrix-staging`，listen `localhost:3002`；systemd unit 复用 `pm2-tripplezhou.service` |
 | Nginx | `/etc/nginx/conf.d/kolmatrix-staging.conf` — `staging.kol.guangai.ai:443` → `127.0.0.1:3002` |
 | TLS 证书 | Let's Encrypt `staging.kol.guangai.ai`（同 certbot auto-renew） |
-| Postgres | 共用 prod Postgres 实例；DB 名 `kolmatrix_staging`，角色同 prod（kolmatrix + kolmatrix_app） |
+| Postgres | 共用 prod Postgres 实例；DB 名 `kolmatrix_staging`，**角色同 prod**（kolmatrix superuser + kolmatrix_app app role）。**密码同步协议（BL-043 lock 2026-05-06）：** kolmatrix_app role 在 prod + staging 共享同一 PG role（同实例），密码必须在 `.env.production` 和 `.env.staging` 中保持完全一致；任一文件密码与 PG 实际不一致都会触发 28P01 password authentication failed（BL-040 staging deploy run 25415574990 health 503 即此根因）。**修改 kolmatrix_app 密码 ops 步骤：** (1) 生成新随机密码 `openssl rand -hex 32`；(2) 同时改 `.env.production` 和 `.env.staging` 中 `KOLMATRIX_APP_PASSWORD=<新值>` + `DATABASE_URL` 中 `kolmatrix_app:<新值>@`；(3) 触发 prod redeploy（deploy-prod.sh ALTER ROLE 落地新密码到 PG）；(4) 触发 staging redeploy（deploy-staging.sh 验证新密码工作）；(5) BL-043 F001 fail-fast 守门确保任一 .env 缺失立即 fail（exit 1 + multi-line error），不再 silent skip。**ALTER ROLE 模式：** sudo psql + unix socket peer auth（v0.9.13 §5.1 sediment + BL-024-F007 retroactive；非 PGPASSWORD over TCP）。详见下方「Postgres kolmatrix_app role 密码 sync 协议」5 处一致表 |
 | Redis | 共用 prod Redis 实例，db index `2`（aigcgateway 0 / prod 1 / staging 2）；`.env.staging` 必含 `REDIS_URL=redis://localhost:6379/2`（BL-020-F005 部署时由 Generator SSH 落地，备份 `.env.staging.bak.bl020-f005`） |
 | Health URL | `https://staging.kol.guangai.ai/api/health` |
+
+### Postgres kolmatrix_app role 密码 sync 协议（BL-043 lock 2026-05-06）
+
+| # | 文件 / 资源 | 字段 | 必须一致 |
+|---|-------------|------|---------|
+| 1 | `/opt/kolmatrix/.env.production` | `KOLMATRIX_APP_PASSWORD` | ✓ |
+| 2 | `/opt/kolmatrix/.env.production` | `DATABASE_URL`（`kolmatrix_app:PWD@...`）| ✓ |
+| 3 | `/opt/kolmatrix-staging/.env.staging` | `KOLMATRIX_APP_PASSWORD` | ✓ |
+| 4 | `/opt/kolmatrix-staging/.env.staging` | `DATABASE_URL`（`kolmatrix_app:PWD@...`）| ✓ |
+| 5 | Postgres `kolmatrix_app` role | `password` | ✓ |
+
+修改任一字段必须同步全部 5 处。`deploy-{prod,staging}.sh` ALTER ROLE 自动落地 (3) → (5)（自 staging deploy；自 prod deploy 落地 prod 路径）；(1)(2)(3)(4) 由用户 ops 手工保持一致。BL-043 F001 fail-fast 在 deploy 入口立即 surface 缺失（任一 `.env` 缺 `KOLMATRIX_APP_PASSWORD` 即 exit 1，不再 silent skip）。
 
 ### Staging build OOM 兜底（NODE_OPTIONS 必带）
 

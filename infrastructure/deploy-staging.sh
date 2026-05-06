@@ -66,21 +66,34 @@ npx prisma migrate deploy
 # password every deploy so the env-var stays in sync with the DB.
 # Reads KOLMATRIX_APP_PASSWORD that the deploy-staging.yml workflow
 # sources from .env.staging just before invoking this script.
-# Skipped silently when the env var is empty so first-bootstrap runs
-# don't break.
 # BL-024-F007 retroactive (2026-05-06 — Planner ops 用户授权): use
 # `sudo -u postgres psql` + unix socket peer auth (mirror of
 # deploy-prod.sh). See deploy-prod.sh ALTER ROLE block for full
 # rationale.
-if [ -n "${KOLMATRIX_APP_PASSWORD:-}" ]; then
-  echo "   • rotating kolmatrix_app password (idempotent)"
-  sudo -u postgres psql \
-    -d "${POSTGRES_DB:-kolmatrix_staging}" \
-    -v "ON_ERROR_STOP=1" \
-    -c "ALTER ROLE kolmatrix_app WITH PASSWORD '$KOLMATRIX_APP_PASSWORD';"
-else
-  echo "   ⚠️  KOLMATRIX_APP_PASSWORD unset — skipping app-role password rotation"
+# BL-043-F001 (2026-05-06): fail-fast when the env var is unset.
+# The prior silent-skip branch let .env-side configuration drift
+# (a missing KOLMATRIX_APP_PASSWORD) become a hidden 28P01 auth
+# failure at runtime — which is exactly how BL-040 staging deploy
+# 25415574990 surfaced as a health 503. Both prod + staging now
+# always have the env var configured (Planner ops 5/6), so this
+# fail-fast cannot break the current deployment shape; first-time
+# bootstraps must populate .env before invoking the script (the
+# expected ops flow). See .auto-memory/environment.md §Postgres
+# for the password-sync 5-point checklist.
+if [ -z "${KOLMATRIX_APP_PASSWORD:-}" ]; then
+  echo "❌ FATAL: KOLMATRIX_APP_PASSWORD is unset" >&2
+  echo "   This var must be set so deploy-staging.sh can ALTER ROLE on the" >&2
+  echo "   kolmatrix_app role and keep the .env / DB password in sync." >&2
+  echo "   Add KOLMATRIX_APP_PASSWORD=<random_hex> to /opt/kolmatrix-staging/.env.staging" >&2
+  echo "   (and keep it identical to /opt/kolmatrix/.env.production), then redeploy." >&2
+  echo "   See .auto-memory/environment.md §Postgres kolmatrix_app role 密码 sync 协议." >&2
+  exit 1
 fi
+echo "   • rotating kolmatrix_app password (idempotent)"
+sudo -u postgres psql \
+  -d "${POSTGRES_DB:-kolmatrix_staging}" \
+  -v "ON_ERROR_STOP=1" \
+  -c "ALTER ROLE kolmatrix_app WITH PASSWORD '$KOLMATRIX_APP_PASSWORD';"
 
 echo "── 5/7 next build"
 node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build
