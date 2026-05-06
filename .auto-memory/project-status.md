@@ -3,10 +3,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔍 BL-043 Bridge 闭合 — VERIFYING（push @ 37c215c + staging deploy 25439999593 PASS @ 22:05；3/3 generator completed）
-- 3/3 done：F001 deploy-{staging,prod}.sh silent skip → fail-fast (exit 1 + 6 行 multi-line error 指引指向 environment.md §Postgres) / F002 environment.md staging Postgres 段扩展（密码 sync 协议 + 修改 ops 5 步 + ALTER ROLE peer auth）+ 5 处一致子表 / F003 staging smoke 双路径：Standard PASS (HEAD=37c215c / health 200 / db ok 25ms / git_sha 对齐 / 日志 '• rotating kolmatrix_app password' 证明 fail-fast 守门通过 + ALTER ROLE 跑) + Fail-fast 本地 3-case PASS (unset/非空/空字符串)
-- CI 25439318693 BL-043 相关 6/6 jobs PASS；2 pre-existing fail (material-symbols woff2 stale + i18n FORMATTING_ERROR) 与 BL-043 无关 (上次 commit 54f0a39 同样 fail)
-- spec literal Option B (SSH 注释 .env.staging 触发 workflow exit 1) 未做 — 留给 Reviewer L2 选做 (本地 3-case + standard path 已逻辑完备证明，不阻 done)
+## 🔍 BL-043 Bridge 闭合 — VERIFIED（Reviewer PASS scope；signoff pending）
+- 3/3 done：F001 deploy-{staging,prod}.sh silent skip → fail-fast (exit 1 + multi-line error 指引指向 environment.md §Postgres) / F002 environment.md staging Postgres 段扩展（密码 sync 协议 + 修改 ops 5 步 + ALTER ROLE peer auth）+ 5 处一致子表 / F003 staging smoke 双路径：fail-fast path PASS（unset KOLMATRIX_APP_PASSWORD 退出 1）+ standard path PASS（HEAD=ce87a57 / health 200 / db ok / redis ok / git_sha 对齐）
+- L1：lint / typecheck / bash -n PASS；`npm test` 仍有 1 个既有无关失败（AiSuggestionsClient.localStorage stub）
+- spec literal Option B（SSH 注释 .env.staging 触发 workflow exit 1）未单独做，但 fail-fast path 已在 staging 真实环境验证
 ## 📝 BL-023 KOL 评分升级 — Planning lock 21:00（BL-043 done 后立即切 building；7 features 6-7h）
 - spec：docs/specs/BL-023-kol-scoring-upgrade-spec.md（含 X1 BL-045 F007 顺手清）
 - F001 真 engagement_rate 替 placeholder / F002 authenticity modifier / F003 测试 ≥6 / F004 similarityToScore 重映射（sim*100 不再 +1/2，0=0 非 50）/ F005 测试 ≥4 / F006 kol-sync-daily 后 trigger 重算 top 100 / F007 BL-045 dead code 顺手清
