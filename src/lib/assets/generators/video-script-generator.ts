@@ -77,7 +77,7 @@ function buildUserPrompt(input: GenerateVideoScriptContentInput): string {
   const lines = [
     `Product name: ${wrapUserInput("USER_PRODUCT_NAME", product.name)}`,
     `Category: ${wrapUserInput("USER_PRODUCT_CATEGORY", product.category)}`,
-    `Target audience: ${wrapUserInput("USER_TARGET_AUDIENCE", product.targetAudience ?? "Not specified")}`,
+    `Target audience: ${wrapUserInput("USER_TARGET_AUDIENCE", product.targetAudience)}`,
     `Unique selling points: ${wrapUserInput("USER_PRODUCT_USP", product.uniqueSellingPoints)}`,
     formatLine,
     steeringPrompt
