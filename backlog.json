@@ -218,37 +218,6 @@
     "discovered_in": "docs/reviews/frontend-audit-2026-05-01.md §H-P5"
   },
   {
-    "id": "BL-023",
-    "title": "KOL 评分体系升级 mini-batch（valueScore 真信号 + Smart Match 区分度）",
-    "description": "Planner 2026-05-01 KOL 评分体系全代码审计发现：当前 valueScore（src/lib/kol/value-score.ts）虽叫 'value' 但完全是公式化算术，零 AI 信号，且核心分量缺陷严重。Smart Match（src/lib/discovery/smart-match.ts）有真 AI（embedding cosine）但映射区间窄。建议合 1 个 mini-batch（~6-7h Generator + 0.5h Reviewer）系统性升级。\n\n**前置依赖：** BIx F004 done（Top 100 KOL 真 engagement batch 预计算落地，kol.engagementRate 字段对 Top 100 KOL 有真值）。否则 A 项无可读源。\n\n**4 项改进（按 ROI 排序）：**\n\n**A. valueScore engagementScore 替换固定 15 placeholder → 真值（高 ROI，~4h）**\n- 现状：computeKolValueScore 写死 engagementScore = 15，与 KOL 实际 engagement 完全无关\n- 改造：`engagementScore = clamp(0, 15, kol.engagementRate × 100 × scale)` —— scale 待定，但要让真 engagement 信号能拉开分差\n- 注意：仅 Top 100 KOL 有真 engagementRate（BIx F004 batch 限）；其他 KOL 仍 fallback 15。需在 valueScore 算法里识别 'has real engagement' vs 'placeholder'，避免 Top 100 vs 其他出现非线性跳变\n- 增量 backfill 脚本：scripts/recompute-value-scores-from-engagement.ts，跑一次把 engagementRate 真值已有的 KOL 重算 valueScore\n\n**B. valueScore 加 brand safety 软扣分（中 ROI，~2h）**\n- 现状：quality.ts 入库门槛过滤 nsfw（unsafe/questionable skip），但 'borderline' / 'low_quality' 进库后无扣分\n- 改造：computeKolValueScore 加可选 brandSafety 参数：`borderline: -10` / `low_quality: -5` / `safe: 0`\n- 影响：让团队 demo 时'看起来低俗'的 KOL 排后\n- 注意：YouTube API 不直接暴露 brand safety；这一项仅在未来爬虫团队（BL-012）/ 第三方信号源接入后真生效；当前 default safe → 改造仅扩接口，不改输出\n\n**C. followerScore 拉宽 cap（中 ROI，~1h）**\n- 现状：followerScore = `log10(max(followers, 100)) × 15`, cap 50；log10(100K) × 15 = 75 → cap 50；100K+ KOL 全 50 分无区分\n- 改造：`log10(max(followers, 100)) × 10`, cap 60；让 100K-10M 区间分差出现\n- 同步调整：raw total max 从 85 → 95（follower 60 + engagement 15 + category 20）；normalize 公式 raw × 100 / 95\n- 注意：现存 valueScore 数据全部需重算（增量脚本同 A 项的 backfill 一并跑）\n\n**D. Smart Match score 拉宽分布 + 加 cache（中 ROI，~3h）**\n- 现状：similarity → score 线性 [-1, 1] → [0, 100]；spec 注'实际命中 [0.4, 0.85]'→ UI 显示落在 [70, 92] 窄区间，ring 看起来'都很好'\n- 改造 1：min-max stretch [0.4, 0.85] → [50, 100]：低于 0.4 的钳制到 50，高于 0.85 的拉到 100；拉宽中段分差\n- 改造 2：top-K 结果加 LRU cache（key=tenantId+productId+productEmbeddingHash，TTL 1h），避免每次 Dialog 重新跑 cosine\n- 注意：拉宽映射需和现 UI 文案对齐（如 ≥80 是 'great match'，新映射要让 0.7+ similarity 落在 80+）\n\n**E. 真 LLM 评估 KOL（暂不做）**\n- 调 aigcgateway action 让 LLM 综合 displayName/bio/categories/recentVideos 给 KOL 整体打分\n- 成本/收益失衡：月预算消耗 ~$5-10/1K KOL；Smart Match 已覆盖匹配场景；valueScore A+B+C 改进已能覆盖 80% 场景\n- 待团队 demo 反馈触发\n\n**Acceptance（mini-batch 启动时）：**\n- src/lib/kol/value-score.ts 接口扩 + brandSafety 可选参数 + engagement 真值识别\n- src/lib/kol/__tests__/value-score.test.ts 加 ≥ 6 个 case 覆盖：A 真 engagement 替换 / B brand safety 三档扣分 / C cap 60 边界 / 现存 case 全 PASS\n- src/lib/discovery/smart-match.ts similarityToScore 改 stretch 映射 + 加 cache layer\n- scripts/recompute-value-scores-from-engagement.ts 增量 backfill 脚本\n- 部署：staging 跑 backfill 验证 Top 100 KOL valueScore 分布拉开（前后对比直方图）；prod 同\n- L1 守门 unit + integration tests + L2 staging 抽样 5 个 Top 100 KOL 看 valueScore 是否变了 + Smart Match Dialog 看 ring 区分度",
-    "decisions": [
-      "Planner 2026-05-01 审计发现 valueScore 完全公式化零 AI 信号 + engagementScore 固定 placeholder + Smart Match 映射窄",
-      "用户 2026-05-01 同意起 backlog 跟踪",
-      "前置依赖：BIx F004 Top 100 真 engagement batch done",
-      "范围 (A+B+C+D) 合一个 mini-batch ~6-7h；E (真 LLM 打分) 暂不做，等团队反馈触发",
-      "排期：BIx done + BL-020 安全 mini-batch done 后启动；不阻塞 MVP 上线",
-      "用户 2026-05-06 19:50 决议：5/10 启动（BIx F004 5/9 done 后），含 F007 顺手清 BL-045（合并 X1）— mini-batch 6-7h Generator + 0.5h Reviewer"
-    ],
-    "confirmed_at": "2026-05-01T20:00+0800",
-    "priority": "high",
-    "tags": [
-      "kol-scoring",
-      "valueScore",
-      "smart-match",
-      "post-bix",
-      "post-bl020"
-    ],
-    "discovered_in": "Planner johnsong 2026-05-01 KOL 评分体系全代码审计（src/lib/kol/value-score.ts + src/lib/discovery/smart-match.ts + src/lib/kol-sync/quality.ts + src/lib/embedding/* 全路径排查）",
-    "references": [
-      "src/lib/kol/value-score.ts",
-      "src/lib/discovery/smart-match.ts",
-      "src/lib/kol-sync/quality.ts",
-      "src/lib/embedding/text.ts",
-      "src/lib/kol-sync/import.ts (valueScore 写入路径)",
-      "docs/specs/BIx-mvp-polish-pass-spec.md §F004 (Top 100 真 engagement batch 前置依赖)"
-    ]
-  },
-  {
     "id": "BL-026",
     "title": "视频脚本投放路径（B 邮件附件 / C 给 KOL 看 — 待真客户场景触发）",
     "description": "BL-025 素材中心实现视频脚本 A 选项（仅查看/编辑/复制；marketer 自留或手工分享）。B/C 选项需求：\n\n**B. 邮件附件引用：** /outreach composer 邮件可挂载视频脚本作 attachment 或 inline preview，KOL 收邮件时看到产品邮件 + 视频脚本，便于 KOL 拍片参考\n- 工时 ~1 day（composer attachment UI + EmailLog 关联视频 asset + Resend 附件支持）\n\n**C. 给 KOL 单独投放（独立路径）：** /campaigns/[id] KOL 卡片可单独发送视频脚本（不走邮件），可能是 KOL 私人邮箱链接 / Notion 共享 / 其它分发方式\n- 工时 ~2-3 day（新增 video_delivery 表 + 分发 API + KOL 接收页面）\n- 待用户接客户后明确分发场景再裁决\n\n**触发条件：** 真实客户接触后明确「视频脚本怎么用 / 给谁看 / 通过什么渠道」 → 起 BL-026 mini-batch 实装 B 或 C 或两者。",
@@ -313,29 +282,15 @@
     ]
   },
   {
-    "id": "BL-045",
-    "title": "email-generator + video-script-generator targetAudience fallback dead code 清理（BL-040 spec scope retroactive）",
-    "description": "BL-040 spec 起草时 Planner 漏 grep 完整 '?? \\'Not specified\\'' 模式（仅列 generateAiAssets.ts:175 一处），实际 Generator 开工前 grep 实物发现 src/lib/assets/generators/email-generator.ts:74 + src/lib/assets/generators/video-script-generator.ts:80 同样含此 fallback 模式。Generator 按铁律 #10 不越界，本 backlog 条目跟踪后续清理。\n\n**当前实情：** BL-040 已收紧上游 type 到 string（不再 nullable）— 这 2 处 ?? 'Not specified' fallback **永远不会触发**，是 dead code 不影响 runtime。但维护负担 + 误导 reader 以为 NULL 路径仍存。\n\n**清理方案（5 min）：**\n```diff\n# email-generator.ts:74:\n-`Target audience: ${targetAudience ?? 'Not specified'}`\n+`Target audience: ${targetAudience}`\n\n# video-script-generator.ts:80（同模式）\n```\n\n**触发条件：** 下个 mini-batch 顺手做（与其它修同 sprint），或起 dead-code-cleanup sprint 集中（含 BL-024 SW-1 visual baseline + BL-034 unused import + 本条目 + 其它 spec drift 残留）。\n\n**不阻塞任何东西：** dead code 不影响 runtime / build / tests / prod 用户体验。",
+    "id": "BL-047",
+    "title": "AiSuggestionsClient.test.tsx pre-existing localStorage stub 修复（vitest jsdom env）",
+    "description": "Codex 在 BL-040 / BL-044 / BL-043 多个批次 verifying 报告均提及 1 个 unrelated existing failure：window.localStorage.setItem is not a function / window.localStorage.clear is not a function 在 src/app/[locale]/(app)/campaigns/[id]/__tests__/AiSuggestionsClient.test.tsx (1 文件 2 case 失败)。\n\n根因：vitest jsdom env 中 localStorage stub 缺失。可能原因：(a) jsdom 默认含 localStorage 但 mock module / setup 文件覆盖了；(b) test 文件内手工 stub 已过时；(c) vitest config jsdom 版本与生产代码 localStorage 调用方式不兼容。\n\n影响：repo-wide npm test 不全绿（其它批次 first-round PASS 时均把它列为 'unrelated existing failure'，需 evaluator 重复说明）。MVP 内部 demo 不阻塞（影响纯单测 CI gate），但接客户/正式 release 时 'npm test 全绿' 是 polish 标准。\n\n修复路径（Generator 排查时优先级）：\n(1) grep AiSuggestionsClient.test.tsx 看 setup（beforeEach / vi.stubGlobal）— 检查 localStorage stub\n(2) grep tests/setup.ts / vitest.config.ts — 检查全局 setup\n(3) 临时方案：如 jsdom 默认 localStorage 可用，删 stub；如不可用，加 stub: vi.stubGlobal('localStorage', {getItem: vi.fn(), setItem: vi.fn(), clear: vi.fn(), removeItem: vi.fn()})\n(4) 验证：npm test src/app/[locale]/(app)/campaigns/[id]/__tests__/AiSuggestionsClient.test.tsx 全 PASS\n\n工时：~30 min Generator + 0.25h Reviewer。可顺手清入下一个相关批次（如 BL-021 Suspense / BL-017 token / BL-046 product soft delete 等同期顺手清）。",
     "decisions": [
-      "用户 2026-05-06 16:00 决议方案 A：加 backlog deferred low 顺手清（与 Soft-watch 历史模式一致）",
-      "v0.9.14 候选 #1「audit/spec 起草前必须 grep 完整模式」实战案例 #2（沉淀理由）",
-      "实际 dead code 不影响 runtime；优先级低于 BL-044 AI semantic search、BL-043 staging gap 长期闭合等",
-      "用户 2026-05-06 19:50 决议 X1：并入 BL-023 作 F007 顺手清（commit-tag feat(BL-023-F007): clean BL-040 retroactive dead-code）— 实装后 splice 移除本条目"
+      "用户 2026-05-07 决议 2=A：不入 BL-043 fix-round（与 BL-043 主题无关 — 违反铁律 #10 spec-driven 单一归属），单独 backlog 跟踪",
+      "起源：BL-040 / BL-044 / BL-043 verifying 报告均提及，pre-existing 至少 5 天",
+      "Planner 推荐顺手清模式：可与 BL-021 Suspense（5/8）或 BL-017 token（5/12）同 commit-tag 顺手清，同 X1 BL-045 合并模式"
     ],
-    "confirmed_at": "2026-05-06T16:00+0800",
-    "priority": "low",
-    "tags": [
-      "dead-code-cleanup",
-      "spec-drift",
-      "low-effort",
-      "post-mvp"
-    ],
-    "discovered_in": "BL-040 Generator Kimi 开工前 grep 实物 + Planner 起草 spec 漏 grep 完整模式（v0.9.14 沉淀 #1 实战案例 #2）",
-    "references": [
-      "src/lib/assets/generators/email-generator.ts:74",
-      "src/lib/assets/generators/video-script-generator.ts:80",
-      "framework/harness/planner.md 铁律 1 矩阵 v0.9.14 新增「完整 pattern 模式」",
-      "BL-040 spec docs/specs/BL-040-product-target-audience-required-spec.md §F001 acceptance（漏 grep 范围）"
-    ]
+    "confirmed_at": "2026-05-07T08:00+0800",
+    "priority": "low"
   }
 ]
