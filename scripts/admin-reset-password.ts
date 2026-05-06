@@ -18,6 +18,7 @@
  *   - Bcrypt cost factor 12 — same as prisma/seed.ts:260.
  */
 import bcrypt from "bcrypt";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
 const TARGETS = ["admin@kolmatrix.local", "marketer@kolmatrix.local"] as const;
@@ -39,7 +40,17 @@ async function main(): Promise<void> {
     process.exit(2);
   }
 
-  const prisma = new PrismaClient();
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    console.error("[reset-password] DATABASE_URL not set; aborting.");
+    process.exit(2);
+  }
+
+  // Match src/lib/db.ts construction — Prisma 7.x requires the pg
+  // adapter explicitly; the bare PrismaClient() throws.
+  const prisma = new PrismaClient({
+    adapter: new PrismaPg({ connectionString }),
+  });
   try {
     const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_COST);
     let updated = 0;
