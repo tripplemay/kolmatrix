@@ -40,9 +40,26 @@ async function main(): Promise<void> {
     process.exit(2);
   }
 
-  const connectionString = process.env.DATABASE_URL;
+  // The User table has RLS policies that hide rows from the
+  // `kolmatrix_app` role unless `app.tenant_id` / `app.is_platform_admin`
+  // is set. For a password reset we want a superuser connection that
+  // bypasses RLS entirely → prefer DATABASE_ADMIN_URL (kolmatrix role)
+  // and fall back to DATABASE_URL only when explicitly allowed.
+  const connectionString =
+    process.env.DATABASE_ADMIN_URL || process.env.DATABASE_URL;
   if (!connectionString) {
-    console.error("[reset-password] DATABASE_URL not set; aborting.");
+    console.error(
+      "[reset-password] neither DATABASE_ADMIN_URL nor DATABASE_URL set; aborting.",
+    );
+    process.exit(2);
+  }
+  if (
+    !process.env.DATABASE_ADMIN_URL &&
+    process.env.ALLOW_NON_ADMIN_DB !== "true"
+  ) {
+    console.error(
+      "[reset-password] DATABASE_ADMIN_URL not set; updateMany via the app role will silently match 0 rows because of RLS. Either set DATABASE_ADMIN_URL or rerun with ALLOW_NON_ADMIN_DB=true (not recommended).",
+    );
     process.exit(2);
   }
 
