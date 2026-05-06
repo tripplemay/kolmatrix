@@ -16,6 +16,14 @@ import { type DiscoveryFilters, serializeFilters } from "@/lib/kol/filters";
 interface Props {
   filters: DiscoveryFilters;
   basePath: string;
+  /**
+   * BL-044 F003 / pre-impl audit #12 — true when the page rendered the
+   * ILIKE fallback after a SemanticSearchError was caught (or
+   * ENABLE_AI_SEARCH=false short-circuited). The URL still says
+   * `?ai=<query>` so the user is told why their AI chip resulted in
+   * keyword matches instead of semantic ones.
+   */
+  aiFallbackActive?: boolean;
 }
 
 interface ChipDescriptor {
@@ -25,7 +33,7 @@ interface ChipDescriptor {
   clear: Partial<DiscoveryFilters>;
 }
 
-export async function ActiveFilters({ filters, basePath }: Props) {
+export async function ActiveFilters({ filters, basePath, aiFallbackActive = false }: Props) {
   const t = await getTranslations("discovery.activeFilters");
   const tFilters = await getTranslations("discovery.filters");
   const tRegions = await getTranslations("discovery.regions");
@@ -34,7 +42,17 @@ export async function ActiveFilters({ filters, basePath }: Props) {
 
   const chips: ChipDescriptor[] = [];
 
-  if (filters.search) {
+  // BL-044 F002 — AI semantic search chip leads the chip row when active.
+  // Clearing the chip drops `aiQuery` (and resets cursor); the trailing
+  // `?search=` ILIKE chip would never coexist (D9 / #11:A mutual
+  // exclusion enforced in parseFilters), so the if/else here mirrors that.
+  if (filters.aiQuery) {
+    chips.push({
+      key: "aiQuery",
+      label: `${t("aiPrefix")}${filters.aiQuery}`,
+      clear: { aiQuery: undefined, cursor: undefined },
+    });
+  } else if (filters.search) {
     chips.push({
       key: "search",
       label: `"${filters.search}"`,
@@ -235,33 +253,49 @@ export async function ActiveFilters({ filters, basePath }: Props) {
     });
   }
 
-  if (chips.length === 0) {
+  if (chips.length === 0 && !aiFallbackActive) {
     return null;
   }
 
   return (
-    <div data-testid="discovery-active-filters" className="flex flex-wrap items-center gap-2">
-      <span className="text-on-surface-variant/70 text-[11px] font-semibold tracking-wider uppercase">
-        {t("heading")}
-      </span>
-      {chips.map((chip) => {
-        const q = serializeFilters(filters, chip.clear).toString();
-        const href = q ? `${basePath}?${q}` : basePath;
-        return (
-          <a
-            key={chip.key}
-            href={href}
-            data-testid={`active-filter-chip-${chip.key}`}
-            aria-label={t("clearAria", { label: chip.label })}
-            className="bg-surface-high/40 text-on-surface hover:border-cyan/40 hover:text-cyan inline-flex items-center gap-1 rounded-full border border-white/10 px-3 py-1 text-xs transition-colors"
-          >
-            <span>{chip.label}</span>
-            <span aria-hidden className="material-symbols-outlined text-[14px] opacity-70">
-              close
-            </span>
-          </a>
-        );
-      })}
+    <div className="space-y-2" data-testid="discovery-active-filters-wrapper">
+      {aiFallbackActive ? (
+        <div
+          role="status"
+          data-testid="discovery-ai-fallback-banner"
+          className="border-amber/40 bg-amber/10 text-amber-fixed flex items-center gap-2 rounded-lg border px-3 py-2 text-xs"
+        >
+          <span className="material-symbols-outlined text-[16px]" aria-hidden>
+            info
+          </span>
+          <span>{t("aiFallbackBanner")}</span>
+        </div>
+      ) : null}
+      {chips.length > 0 ? (
+        <div data-testid="discovery-active-filters" className="flex flex-wrap items-center gap-2">
+          <span className="text-on-surface-variant/70 text-[11px] font-semibold tracking-wider uppercase">
+            {t("heading")}
+          </span>
+          {chips.map((chip) => {
+            const q = serializeFilters(filters, chip.clear).toString();
+            const href = q ? `${basePath}?${q}` : basePath;
+            return (
+              <a
+                key={chip.key}
+                href={href}
+                data-testid={`active-filter-chip-${chip.key}`}
+                aria-label={t("clearAria", { label: chip.label })}
+                className="bg-surface-high/40 text-on-surface hover:border-cyan/40 hover:text-cyan inline-flex items-center gap-1 rounded-full border border-white/10 px-3 py-1 text-xs transition-colors"
+              >
+                <span>{chip.label}</span>
+                <span aria-hidden className="material-symbols-outlined text-[14px] opacity-70">
+                  close
+                </span>
+              </a>
+            );
+          })}
+        </div>
+      ) : null}
     </div>
   );
 }

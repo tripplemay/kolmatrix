@@ -334,13 +334,15 @@
       "includeNonGaming": "非ゲームクリエイターを含める",
       "includeNonGamingHelper": "MVPはデフォルトでゲームクリエイターのみを対象としています。",
       "apply": "フィルターを適用",
-      "applyWithCount": "適用 ({count})"
+      "applyWithCount": "適用 ({count})",
+      "disabledByAi": "AI 検索中はフィルターが無効です。AI タグを削除すると再度有効になります。"
     },
     "sort": {
       "label": "並べ替え",
       "value": "価値スコア",
       "followers": "フォロワー",
-      "recent": "最近追加されたもの"
+      "recent": "最近追加されたもの",
+      "disabledByAi": "AI 検索はセマンティック順序で並べ替えます"
     },
     "summary": {
       "count": "{count, plural, =0 {一致するKOLはありません} one {#件のKOLが一致しました} other {#件のKOLが一致しました}}",
@@ -368,7 +370,9 @@
     },
     "activeFilters": {
       "heading": "アクティブなフィルター",
-      "clearAria": "{label} フィルターを削除"
+      "clearAria": "{label} フィルターを削除",
+      "aiPrefix": "🤖 AI：",
+      "aiFallbackBanner": "AI 検索を利用できません。キーワード検索結果を表示しています。"
     },
     "view": {
       "label": "表示形式",

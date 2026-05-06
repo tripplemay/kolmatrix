@@ -42,9 +42,18 @@ const ADVANCED_COOKIE_NAME = "kolm_disco_advanced";
 interface Props {
   filters: DiscoveryFilters;
   basePath: string;
+  /**
+   * BL-044 F002 / pre-impl #4:B Soft override — when true, the sidebar
+   * stays visible but its inputs are visually disabled with a tooltip,
+   * so the user understands their category/region selection has no
+   * effect during AI semantic search. The functional bypass lives in
+   * page.tsx (which routes to `runSemanticDiscoverySearch` and never
+   * threads the sidebar values through `buildKolWhere`).
+   */
+  disabled?: boolean;
 }
 
-export async function FilterSidebar({ filters, basePath }: Props) {
+export async function FilterSidebar({ filters, basePath, disabled = false }: Props) {
   const t = await getTranslations("discovery.filters");
   const tRegions = await getTranslations("discovery.regions");
   const tCategories = await getTranslations("discovery.categories");
@@ -65,8 +74,22 @@ export async function FilterSidebar({ filters, basePath }: Props) {
       method="get"
       role="search"
       data-testid="discovery-filters"
-      className="glass-panel border-on-surface/5 flex flex-col gap-6 rounded-xl border p-5"
+      data-ai-disabled={disabled ? "true" : undefined}
+      title={disabled ? t("disabledByAi") : undefined}
+      className={cn(
+        "glass-panel border-on-surface/5 flex flex-col gap-6 rounded-xl border p-5",
+        disabled && "pointer-events-none opacity-60",
+      )}
     >
+      {disabled ? (
+        <div
+          role="status"
+          data-testid="discovery-filters-disabled-banner"
+          className="border-amber/40 bg-amber/10 text-amber-fixed -mb-2 rounded-md border px-3 py-2 text-[11px] leading-snug"
+        >
+          {t("disabledByAi")}
+        </div>
+      ) : null}
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold text-white">{t("heading")}</h2>
         <a

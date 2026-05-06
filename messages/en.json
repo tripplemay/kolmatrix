@@ -334,13 +334,15 @@
       "includeNonGaming": "Include non-gaming creators",
       "includeNonGamingHelper": "MVP defaults to gaming creators only.",
       "apply": "Apply filters",
-      "applyWithCount": "Apply ({count})"
+      "applyWithCount": "Apply ({count})",
+      "disabledByAi": "Filters are disabled while AI search is active. Clear the AI chip to re-enable."
     },
     "sort": {
       "label": "Sort",
       "value": "Value score",
       "followers": "Followers",
-      "recent": "Recently added"
+      "recent": "Recently added",
+      "disabledByAi": "AI search uses semantic ranking"
     },
     "summary": {
       "count": "{count, plural, =0 {No KOLs matched} one {# KOL matched} other {# KOLs matched}}",
@@ -368,7 +370,9 @@
     },
     "activeFilters": {
       "heading": "Active filters",
-      "clearAria": "Remove {label} filter"
+      "clearAria": "Remove {label} filter",
+      "aiPrefix": "🤖 AI: ",
+      "aiFallbackBanner": "AI search unavailable, showing keyword results."
     },
     "view": {
       "label": "View",

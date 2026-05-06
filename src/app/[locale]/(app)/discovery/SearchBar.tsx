@@ -10,8 +10,14 @@
  *
  * The platform selector is wired to the existing `platforms` filter:
  * choosing a platform here applies the same filter the sidebar exposes
- * under Advanced filters. AI Chips are static suggested-search shortcuts
- * that prefill `?search=`.
+ * under Advanced filters.
+ *
+ * BL-044 F002 — AI Chips now prefill `?ai=` (semantic search) instead of
+ * `?search=` (ILIKE substring). The chip labels are natural-language
+ * intent strings ("FPS creators…"); ILIKE substring against the long
+ * label hits 0 KOLs in prod, semantic cosine multilingual hits 100%.
+ * Pre-impl audit lock #11:A — `?ai=` and `?search=` are mutually
+ * exclusive, parseFilters drops `search` when `ai` is present.
  *
  * Stays a server component — submission goes through a native GET form
  * targeted at /discovery, the page itself re-renders off the URL.
@@ -84,7 +90,7 @@ export async function SearchBar({ basePath, filters }: Props) {
         </span>
         {(["chip1", "chip2", "chip3"] as const).map((key, i) => {
           const label = t(key);
-          const href = `${basePath}?search=${encodeURIComponent(label)}`;
+          const href = `${basePath}?ai=${encodeURIComponent(label)}`;
           return (
             <a
               key={key}

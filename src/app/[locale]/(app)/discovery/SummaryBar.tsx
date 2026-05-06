@@ -17,11 +17,24 @@ interface Props {
   total: number;
   sort: DiscoveryFilters["sort"];
   view: ViewMode;
+  /**
+   * BL-044 F002 / pre-impl #5:A — when true, the sort selectors render
+   * as disabled chrome and the user is told via tooltip that AI search
+   * uses cosine ordering. The page.tsx caller passes `Boolean(filters.aiQuery)`.
+   */
+  aiActive?: boolean;
   withFilter: (overrides: Partial<DiscoveryFilters>) => string;
   withParams: (extra: Record<string, string | undefined>) => string;
 }
 
-export async function SummaryBar({ total, sort, view, withFilter, withParams }: Props) {
+export async function SummaryBar({
+  total,
+  sort,
+  view,
+  aiActive = false,
+  withFilter,
+  withParams,
+}: Props) {
   const tSummary = await getTranslations("discovery.summary");
   const tSort = await getTranslations("discovery.sort");
   const tView = await getTranslations("discovery.view");
@@ -38,21 +51,45 @@ export async function SummaryBar({ total, sort, view, withFilter, withParams }: 
         {tSummary("count", { count: total })}
       </p>
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 text-xs text-on-surface-variant">
+        <div
+          className={cn(
+            "flex items-center gap-2 text-xs text-on-surface-variant",
+            aiActive && "opacity-60",
+          )}
+          title={aiActive ? tSort("disabledByAi") : undefined}
+          data-ai-disabled={aiActive ? "true" : undefined}
+        >
           <span>{tSort("label")}:</span>
-          {(["value", "followers", "recent"] as const).map((s) => (
-            <a
-              key={s}
-              href={withFilter({ sort: s, cursor: undefined })}
-              data-testid={`sort-${s}`}
-              className={cn(
-                "rounded px-2 py-0.5",
-                sort === s ? "bg-cyan/20 text-cyan" : "hover:text-cyan"
-              )}
-            >
-              {tSort(s)}
-            </a>
-          ))}
+          {(["value", "followers", "recent"] as const).map((s) => {
+            if (aiActive) {
+              // BL-044 #5:A — render as inert <span> when AI search is
+              // active. cosine ranking is implicit; switching sort would
+              // be misleading because the order would not actually change.
+              return (
+                <span
+                  key={s}
+                  data-testid={`sort-${s}`}
+                  aria-disabled="true"
+                  className="rounded px-2 py-0.5 cursor-not-allowed"
+                >
+                  {tSort(s)}
+                </span>
+              );
+            }
+            return (
+              <a
+                key={s}
+                href={withFilter({ sort: s, cursor: undefined })}
+                data-testid={`sort-${s}`}
+                className={cn(
+                  "rounded px-2 py-0.5",
+                  sort === s ? "bg-cyan/20 text-cyan" : "hover:text-cyan"
+                )}
+              >
+                {tSort(s)}
+              </a>
+            );
+          })}
         </div>
         <div
           className="flex items-center gap-1 rounded-md border border-white/10 bg-navy-base/40 p-1"

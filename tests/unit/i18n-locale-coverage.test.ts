@@ -95,6 +95,10 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   "discovery.filters.brandSafetyPG13",
   "discovery.filters.brandSafetyR",
   "discovery.header.aiSmartMatch",
+  // BL-044 F002 — "🤖 AI: " is a brand prefix (the "AI" abbreviation
+  // is the same English code across every locale; the chip query text
+  // that follows is what carries the locale-specific intent).
+  "discovery.activeFilters.aiPrefix",
   // B7a-F002 — Smart Match dialog keys land in en+zh now (B 方案
   // split lock 2026-04-28 16:45). ja/ko/es intentionally mirror en
   // until B7b F006 runs `npm run i18n:translate` for the four

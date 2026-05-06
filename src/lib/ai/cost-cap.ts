@@ -91,16 +91,32 @@ export async function assertDailyCostBudget(tenantId: string): Promise<void> {
  * `assertDailyCostBudget` calls observe it. `logEvent` already wraps the
  * write in `withTenant` (BL-034 F003 follow-through) so the row passes
  * the event_log RLS policy.
+ *
+ * BL-044 F004 (pre-impl audit #7:C) — added optional `extras` arg so
+ * downstream features can attach richer monitoring fields (source,
+ * queryText preview, cache-hit, result count, ...) without breaking
+ * the cost-cap counter SSOT. The base shape stays:
+ *   { tenantId, action, costUsd, modelTokens: null, ...extras }
+ * so the existing `count(today's ai.usage events)` cost-cap estimator
+ * keeps working unchanged. Existing callers that pass 0-3 args remain
+ * fully compatible (extras defaults to undefined → no extra payload keys).
  */
 export async function recordAiUsage(
   tenantId: string,
   action: string,
   costUsd: number = DEFAULT_COST_PER_CALL_USD,
+  extras?: Record<string, unknown>,
 ): Promise<void> {
   await logEvent({
     type: "ai.usage",
     tenantId,
-    payload: { tenantId, action, costUsd, modelTokens: null },
+    payload: {
+      tenantId,
+      action,
+      costUsd,
+      modelTokens: null,
+      ...(extras ?? {}),
+    },
   });
 }
 

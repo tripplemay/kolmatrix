@@ -334,13 +334,15 @@
       "includeNonGaming": "Incluir Creadores no relacionados con juegos",
       "includeNonGamingHelper": "MVP está configurado por defecto solo para Creadores de juegos.",
       "apply": "Aplicar filtros",
-      "applyWithCount": "Aplicar ({count})"
+      "applyWithCount": "Aplicar ({count})",
+      "disabledByAi": "Los filtros están desactivados mientras la búsqueda IA está activa. Borra el chip IA para reactivarlos."
     },
     "sort": {
       "label": "Ordenar",
       "value": "Puntuación de Valor",
       "followers": "Seguidores",
-      "recent": "Añadidos recientemente"
+      "recent": "Añadidos recientemente",
+      "disabledByAi": "La búsqueda IA usa ranking semántico"
     },
     "summary": {
       "count": "{count, plural, =0 {Ningún KOL coincidente} one {# KOL coincidió} other {# KOLs coincidieron}}",
@@ -368,7 +370,9 @@
     },
     "activeFilters": {
       "heading": "Filtros activos",
-      "clearAria": "Eliminar filtro {label}"
+      "clearAria": "Eliminar filtro {label}",
+      "aiPrefix": "🤖 AI: ",
+      "aiFallbackBanner": "Búsqueda IA no disponible; mostrando resultados por palabras clave."
     },
     "view": {
       "label": "Vista",

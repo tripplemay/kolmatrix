@@ -182,6 +182,13 @@ export type RelationshipStatus = (typeof RELATIONSHIP_STATUSES)[number];
 /** The full filter state, after parsing + defaulting. */
 export interface DiscoveryFilters {
   search?: string;
+  /**
+   * BL-044 F002 — natural-language semantic search query (URL `?ai=`).
+   * When set, `runSemanticKolSearch` replaces the ILIKE substring path
+   * and `search` is cleared (the two are mutually exclusive — pre-impl
+   * audit decision #11:A first iteration).
+   */
+  aiQuery?: string;
   followersMin?: number;
   followersMax?: number;
   regions: string[];
@@ -293,10 +300,21 @@ export function parseFilters(
   );
 
   const searchRaw = get("search");
-  const search = searchRaw && searchRaw.trim() ? searchRaw.trim() : undefined;
+  const searchTrimmed = searchRaw && searchRaw.trim() ? searchRaw.trim() : undefined;
+
+  // BL-044 F002 — `?ai=<query>` activates semantic search. Per pre-impl
+  // audit #11:A (first iteration), `?ai=` and `?search=` are mutually
+  // exclusive: when both are present in the URL, `?ai=` wins and the
+  // ILIKE `search` is dropped. This keeps SaveSearch JSON shape simple
+  // and prevents the UI from rendering two competing query chips.
+  const aiRaw = get("ai");
+  const aiQueryTrimmed = aiRaw && aiRaw.trim() ? aiRaw.trim() : undefined;
+  const aiQuery = aiQueryTrimmed;
+  const search = aiQuery ? undefined : searchTrimmed;
 
   return {
     search,
+    aiQuery,
     followersMin: asInt(get("followersMin")),
     followersMax: asInt(get("followersMax")),
     regions: getAll("regions"),
@@ -342,7 +360,15 @@ export function serializeFilters(
 ): URLSearchParams {
   const merged = { ...filters, ...overrides };
   const params = new URLSearchParams();
-  if (merged.search) params.set("search", merged.search);
+  // BL-044 F002 — emit `?ai=<query>` when aiQuery is set. The mutual
+  // exclusion (D9 / #11:A) is enforced at parse time, but we also drop
+  // `search` here when `aiQuery` overrides it during a serializeFilters
+  // override call.
+  if (merged.aiQuery) {
+    params.set("ai", merged.aiQuery);
+  } else if (merged.search) {
+    params.set("search", merged.search);
+  }
   if (merged.followersMin != null) params.set("followersMin", String(merged.followersMin));
   if (merged.followersMax != null) params.set("followersMax", String(merged.followersMax));
   for (const v of merged.regions) params.append("regions", v);

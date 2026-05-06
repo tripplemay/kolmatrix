@@ -334,13 +334,15 @@
       "includeNonGaming": "包含非游戏创作者",
       "includeNonGamingHelper": "MVP 默认仅显示游戏创作者。",
       "apply": "应用筛选",
-      "applyWithCount": "应用筛选（{count}）"
+      "applyWithCount": "应用筛选（{count}）",
+      "disabledByAi": "AI 搜索激活时筛选项已禁用，关闭 AI 标签后可重新启用。"
     },
     "sort": {
       "label": "排序",
       "value": "价值分",
       "followers": "粉丝数",
-      "recent": "最近添加"
+      "recent": "最近添加",
+      "disabledByAi": "AI 搜索使用语义排序"
     },
     "summary": {
       "count": "{count, plural, =0 {未匹配到 KOL} other {匹配到 # 位 KOL}}",
@@ -368,7 +370,9 @@
     },
     "activeFilters": {
       "heading": "已选筛选",
-      "clearAria": "移除 {label} 筛选"
+      "clearAria": "移除 {label} 筛选",
+      "aiPrefix": "🤖 AI：",
+      "aiFallbackBanner": "AI 搜索暂不可用，已切换到关键词匹配。"
     },
     "view": {
       "label": "视图",
