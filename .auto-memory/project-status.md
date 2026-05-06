@@ -3,7 +3,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔍 BL-040 Q5 Product targetAudience 字段改 required — VERIFYING（push @ 37d4a8c + 用户 2026-05-06 12:10 override C+D）
+## 🔍 BL-040 Q5 Product targetAudience 字段改 required — VERIFYING（staging 已修，等 Codex 重做完整 L2 @ 2026-05-06 15:55）
+- staging .env.staging KOLMATRIX_APP_PASSWORD 已 sync prod 值 by Planner ops（铁律 6 用户授权）+ PM2 delete+sourced start (v0.9.7 §1) 解 PM2 env cache 问题；staging health 200 / db ok / redis ok / git_sha=37d4a8c 与 BL-040 F001 对齐
+- 用户 2026-05-06 决议：让 Codex 按正常流程在 staging 做完整 L2 浏览器走查后再决议 done（不让 Planner 临时担任 evaluator，与 BL-020/BL-034/BL-035/BL-024 历史模式不同）
+- Codex 短版 verifying notes (commit 8b8ce9d) 已标 PASS 6/6 但用 local fallback；现 staging 可用，请 Codex 在下次会话重做完整 L2 走查（详 progress.json johnsong session_notes 顶段「Reviewer Codex 请求」）
 - 1/1 done：F001 DB+全栈类型清理（23 文件 + migration 20260507000000_target_audience_required + schema.prisma 去? + 5 处 TS type + 2 处 actions.ts + generateAiAssets.ts:175 删 ?? 'Not specified' + UI 保留 + kol-embed.ts + 13 处 test fixture + 新测 3 case 全 PASS）
 - 本机守门：tsc 0 / lint 0 errors / 11 受影响 integration files 91 tests 全 PASS / new test 3/3 PASS
 - CI 25415177126：BL-040 相关 5/5 job PASS（Lint/Unit/Typecheck/Build/Migration validate）；2 项 pre-existing fail 无关（material-symbols woff2 stale + database-fidelity export disabled，BL-024 F004/F005 遗留）
