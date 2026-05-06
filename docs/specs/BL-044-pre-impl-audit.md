@@ -181,7 +181,58 @@
 
 ---
 
-## 9. Planner 裁决（johnsong · YYYY-MM-DD）
+## 9. Planner 裁决（johnsong · 2026-05-06 16:30）
 
-> 由 Planner 在此追加；Generator 看到本节有内容（短格式 + 逐条理由）后开工。
+**短格式：** `#1:B #2:B #3:A #4:B #5:A #6:C #7:C #8:C #9:A #10:B #11:A #12:B(+banner)`
+
+**12/12 全 Accept Generator 建议**（用户 2026-05-06 16:30 决议「A 全 Accept」），仅 #12 加一个 banner UX 补充（不改路径）。
+
+**逐条裁决理由：**
+
+| #  | 裁决 | 与 Generator 建议 | 理由 |
+| -- | --- | --------------- | ---- |
+| 1  | **B** | ✓ 一致 | fork inline raw SQL 与 SmartMatch 同模式，hydrate 步骤减少 + `is_suspicious=false` 在 SQL 层确保安全；C（扩 `kolCosineTopKSql` 加可选参数）跨 SmartMatch 改动 = scope creep 不入本批次；A（id-only + 后过滤）运行时浪费（top-K=50 取出后过滤可能剩 30 个） |
+| 2  | **B** | ✓ 一致 | spec D2 已 lock topK=50，无悬念 |
+| 3  | **A** | ✓ 一致 | fail-fast 原则：rate-limit (低成本快拒) → cost-cap (DB 计数器) → embed (gateway 调用)；与 `roi/actions.ts:43`、`database/actions.ts:163`、`weekly-report/actions.ts:63` 一致 |
+| 4  | **B** | ✓ 一致 | A（Hard bypass）失去退出 AI search 的视觉导航，用户必须刷新页面或点 X 才能切回 sidebar 操作；B（Soft override）保留 sidebar 视觉 + tooltip 提示，符合渐进 UX；C（Transparent）实现复杂（top-K 取较多再 filter）首版不必要 |
+| 5  | **A** | ✓ 一致 | spec F002 acceptance 明确要求 sort disable；§3 文件清单需补 `SummaryBar.tsx`（已加） |
+| 6  | **C** | ✓ 一致 | spec ≥95% 在自由文本占比未知场景无意义；C 措辞「chip clicks 命中 cache 100% + free text 不缓存」更 explicit |
+| 7  | **C** | ✓ 一致 | B（直接 `logEvent` 跳过 `recordAiUsage`）破坏 cost-cap counter SSOT；C（扩签名加 extras）保留单一入口 + 扩展 monitoring 字段；改动局限 cost-cap.ts 加可选参数（向后兼容） |
+| 8  | **C** | ✓ 一致 | A（全跳过 cost-cap）不安全（恶意刷 free text 不算 cost）；B（全 enforce 含 cache-hit）误差大（cache-hit 实际 0 cost 却消耗 $5/day 配额，500 chip clicks 即触发 cap）；C（仅 free text 进 cost-cap）平衡 |
+| 9  | **A** | ✓ 一致 | spec §F001 acceptance + §1.4 DoD #5「自动覆盖」措辞误导（实际是「显式调用」），不修订未来 reviewer 会质疑；已修订 |
+| 10 | **B** | ✓ 一致 | 与 SmartMatch + 99% 项目 unit/integration tests 一致（`tests/unit/` 不在源文件 `__tests__/`）；spec line 173/263 co-located 是孤立写法（系 spec 起草偏差） |
+| 11 | **A** | ✓ 一致 | 互斥简化首版 implementation；SaveSearch 不含 aiQuery 保留传统 filter 语义；spec D5 first iteration 思路一致；B（两者并存）易引入 SaveSearch JSON schema 偏移；C（视觉锁 input）违反 SearchBar 现有逻辑 |
+| 12 | **B + banner** | ⚠️ 加 banner UX 补充 | server fall-through 不需 redirect 路径正确；**但建议加** `ActiveFilters` "AI search unavailable, showing keyword results" banner（D8 新增），否则用户 URL 仍 `?ai=foo` 但服务端展示 ILIKE 结果时不知 fallback 已发生，会困惑「AI 怎么没工作」+ 刷新还会再次失败 |
+
+---
+
+## 10. Spec 同步修订（已 commit by Planner @ 2026-05-06 16:30）
+
+按裁决修订 `docs/specs/BL-044-discovery-ai-semantic-search-spec.md`：
+
+1. **§Header** 加 Pre-impl 裁决记录行（短格式 + 指向本 audit §9）
+2. **§F001 改动列表** 加 default topK=50 + cosine SQL fork inline + rateLimitAi 模块顶部 + cost-cap 仅 free text path
+3. **§F001 Acceptance** +5 行：cosine SQL fork、topK=50、rateLimitAi 显式调、cost-cap 仅 free text
+4. **§F002 改动列表** 加 SummaryBar aiActive prop + Soft override sidebar + ?ai/?search 互斥 + SaveSearch 不含 aiQuery
+5. **§F002 Acceptance** +5 行：?ai/?search 互斥、SummaryBar aiActive、Soft override sidebar、SaveSearchControls 保留传统语义
+6. **§F003 Acceptance** 改 cache hit rate 措辞 + fall-through 路径 + fallback banner UX
+7. **§F004 改动列表** 改 测试位置到 `tests/unit/` + recordAiUsage 扩签名 extras
+8. **§F004 Acceptance** +1 行：recordAiUsage 扩签名 + cost-cap 仅 free text
+9. **§1.4 DoD** 改 BL-035 F003 描述措辞为「F001 显式调 + cost-cap 仅 free text」
+10. **§3 文件清单** +5 项：SummaryBar.tsx / page.tsx / FilterSidebar.tsx / SaveSearchControls.tsx / cost-cap.ts；测试位置 `__tests__/` → `tests/unit/`
+11. **§4 关键设计决策** 加 D8（fallback 路径）+ D9（?ai/?search 互斥）+ D10（recordAiUsage 扩签名）；D5/D6 补裁决参考
+12. **§5 dogfood 矩阵** 加 v0.9.14 §planner.md 铁律 1（Generator pre-impl grep dogfood）+ v0.9.14 §deploy-patterns §1.7（不涉及）+ v0.9.12 §pre-impl-adjudication 实战触发记录
+13. **§7 实装顺序** 11 步 → 16 步（含 Soft override sidebar + SaveSearchControls + cost-cap.ts + i18n locales 单独列）
+
+---
+
+## 11. Generator 开工授权
+
+**✅ 授权开工 @ 2026-05-06 16:30。** 按 spec §7 修订后 16 步顺序实装 F001 → F002 → F003 → F004。守门：
+
+- 每 push 后 `gh run list --limit 3 --branch main` 检查 CI 全绿
+- staging deploy + git_sha 对齐 + health 200 + DB ok（generator.md 切 verifying 硬要求）
+- 切 verifying 前更新 progress.json `completed_features` + Kimi `session_notes`
+
+如建造中段发现良性偏差按 `framework/harness/pre-impl-adjudication.md` §11 building 中段变种处理（写 `generator_handoff` + 短格式裁决请求 + 暂停推送）。
 
