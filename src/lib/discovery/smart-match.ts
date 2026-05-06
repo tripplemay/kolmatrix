@@ -94,17 +94,22 @@ export class SmartMatchError extends Error {
 }
 
 /**
- * Cosine similarity is `1 - distance` for the cosine ops in pgvector;
- * we map similarity (range [-1, 1]) to a 0-100 score for the UI ring.
+ * BL-023-F004: cosine similarity is `1 - distance` for the cosine ops
+ * in pgvector; we map non-negative similarity directly to a 0-100 score
+ * (negative cosine collapses to 0) for the UI ring.
  *
  * Visual contract: 0 = "no match at all", 100 = "perfect overlap".
- * In practice for an MVP demo we expect bge-m3 hits in the [0.4, 0.85]
- * similarity range (matching products to KOLs across a 3K KOL pool),
- * so the UI scale lands in [70, 92] for "good" matches.
+ * The earlier `(sim+1)/2` mapping put orthogonal matches at 50 — that
+ * misled marketers into reading "no match" as "moderate match", and
+ * compressed real bge-m3 hits ([0.4, 0.85]) into a narrow [70, 92]
+ * band. BL-044 cosine measurements (0.37-0.46 in semantic search)
+ * confirmed the band collapse; the new mapping spreads them across
+ * [37, 46] so the rank ordering stays the same but the absolute number
+ * means what the user expects.
  */
 export function similarityToScore(similarity: number): number {
-  const clamped = Math.max(-1, Math.min(1, similarity));
-  return Math.round(((clamped + 1) / 2) * MAX_SCORE);
+  const positive = Math.max(0, Math.min(1, similarity));
+  return Math.round(positive * MAX_SCORE);
 }
 
 /**
