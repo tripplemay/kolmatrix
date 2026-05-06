@@ -12,6 +12,7 @@ type: project
 ## ✅ BL-035 / BL-034 / Framework v0.9.12 / BL-020 / Framework v0.9.11 / BL-033~BL-026 — DONE 2026-05-03~05
 ## 用户手工待办（按优先级）
 1. ~~🔴 prod redeploy 大合并 + KOLMATRIX_APP_PASSWORD 落地~~ ✅ **DONE by Planner ops 2026-05-06 ~08:00**（CRIT-1 retroactive 完整闭环）
+1.5. ~~aigcgateway 控制台 UI 设 6 Action max_tokens~~ ❌ **CANCELED 2026-05-06**（用户实地确认 Dashboard UI 无 max_tokens 字段；aigcgateway Action 抽象层根本不绑定此字段；改入 backlog 评估 P1 升级 actions/run 调用为 chat/completions 直调）
 2. **aigcgateway 控制台 UI 设 6 Action max_tokens**（继承 BL-035 S5 + BL-024 Q2 ops Soft-watch — mcp schema 缺）：登录 https://aigc.guangai.ai 按 inventory `docs/specs/BL-035-F013-actions-run-inventory.md §2` 矩阵设（500/1000/2000/4000）
 3. **BL-020 F006 CSP + BL-034 F008 NULLIF 1 周 staging 观察期** → 满后用户驱动 prod redeploy（与 #1 合并是 OK 的）
 4. **BL-035 F005/F008/F013 + F006 prod 真测**（依赖 #1+#2）：第 2 tenant 启用 + outreach composer ≥9 KOL + aigcgateway logs 抽样 + 测试邮件 hard bounce
