@@ -119,10 +119,11 @@
     "description": "周报匿名分享链接 /shared/weekly-report/[token] 当前未审过过期时间是否可控、撤销是否生效。MVP 内部团队 demo 不会真分享给外部，不阻塞。Post-MVP 接客户后必须支持：(1) token 过期时间字段（默认 7 天）；(2) revoke API 立即失效；(3) 链接 metadata 显示创建者 + 过期时间。",
     "decisions": [
       "Post-MVP 处理",
-      "默认过期 7 天 + revoke API + 创建者 metadata"
+      "默认过期 7 天 + revoke API + 创建者 metadata",
+      "用户 2026-05-06 19:50 决议 5=A：5/12 实装（接客户前必须）— token 过期 7 天默认 + revoke API + 创建者 metadata；~1 day Generator"
     ],
     "confirmed_at": "2026-04-30T02:30+0800",
-    "priority": "low",
+    "priority": "high",
     "tags": [
       "weekly-report",
       "share-link",
@@ -170,10 +171,11 @@
     "description": "前端审计 H-P4：当前全应用 0 个 loading.tsx / Suspense 边界。ROI / Dashboard / Campaign Detail 都'全等就绪才出现'，慢查询全局阻塞。预估收益：感知首屏 −300~800ms。BIx F005 (γ) 决议跳过 H-P4（范围易扩，11 路由全加 ~4h，critical paths 5 路由 ~2h），单独 backlog 条目评估。等 BIx done 后据团队 demo 反馈决定：(a) critical paths 5 路由（~2h）/ (b) 全 11 路由（~4h）/ (c) 仍不做（如团队反馈无慢页阻塞感）。\n\n**实现路径（如启动）：**\n- 选 5/11 路由各加 src/app/[locale]/(app)/<route>/loading.tsx skeleton\n- 慢查询拆 Suspense boundary：dashboard KPI / ROI trend / campaign KOL panel 等独立 query 并行 stream\n- visual baseline 必更（loading skeleton 引入新 layout）",
     "decisions": [
       "用户 2026-05-01 决议 11 (γ)：跳过 BIx，单独 backlog 评估",
-      "等团队 demo 反馈数据决定 (a)/(b)/(c)"
+      "等团队 demo 反馈数据决定 (a)/(b)/(c)",
+      "用户 2026-05-06 19:50 决议 4=A：5/11 实装 critical 5 路由（dashboard / discovery / campaigns / roi / weekly-report）~2h Generator；上线对外感知首屏 -300~800ms 体验提升"
     ],
     "confirmed_at": "2026-05-01T03:00+0800",
-    "priority": "medium",
+    "priority": "high",
     "tags": [
       "performance",
       "perceived-performance",
@@ -210,10 +212,11 @@
       "用户 2026-05-01 同意起 backlog 跟踪",
       "前置依赖：BIx F004 Top 100 真 engagement batch done",
       "范围 (A+B+C+D) 合一个 mini-batch ~6-7h；E (真 LLM 打分) 暂不做，等团队反馈触发",
-      "排期：BIx done + BL-020 安全 mini-batch done 后启动；不阻塞 MVP 上线"
+      "排期：BIx done + BL-020 安全 mini-batch done 后启动；不阻塞 MVP 上线",
+      "用户 2026-05-06 19:50 决议：5/10 启动（BIx F004 5/9 done 后），含 F007 顺手清 BL-045（合并 X1）— mini-batch 6-7h Generator + 0.5h Reviewer"
     ],
     "confirmed_at": "2026-05-01T20:00+0800",
-    "priority": "medium",
+    "priority": "high",
     "tags": [
       "kol-scoring",
       "valueScore",
@@ -302,10 +305,11 @@
     "decisions": [
       "用户 2026-05-06 BL-040 verifying 切换决议时同意 D 选项 — 短期 SSH 修 + 长期入 backlog 闭合 yml 设计 gap",
       "短期人工修复优先级：在 BL-040 verifying 期间或之前 SSH staging 落地 KOLMATRIX_APP_PASSWORD，否则 staging health 持续 503",
-      "长期 F008 PR 优先级：post-BL-040 done；不阻塞 05-13 上线（prod 不受影响）"
+      "长期 F008 PR 优先级：post-BL-040 done；不阻塞 05-13 上线（prod 不受影响）",
+      "用户 2026-05-06 19:50 决议：BL-023 完成后立即启动（不是 5/7~8 也不是 5/13 后）— 闭合 staging deploy 链路 + .env.staging 落地 + environment.md 文档化"
     ],
     "confirmed_at": "2026-05-06T12:05+0800",
-    "priority": "medium",
+    "priority": "high",
     "tags": [
       "deploy-pattern",
       "env-var",
@@ -329,10 +333,11 @@
     "decisions": [
       "用户 2026-05-06 16:00 决议方案 A：加 backlog deferred low 顺手清（与 Soft-watch 历史模式一致）",
       "v0.9.14 候选 #1「audit/spec 起草前必须 grep 完整模式」实战案例 #2（沉淀理由）",
-      "实际 dead code 不影响 runtime；优先级低于 BL-044 AI semantic search、BL-043 staging gap 长期闭合等"
+      "实际 dead code 不影响 runtime；优先级低于 BL-044 AI semantic search、BL-043 staging gap 长期闭合等",
+      "用户 2026-05-06 19:50 决议 X1：并入 BL-023 作 F007 顺手清（commit-tag feat(BL-023-F007): clean BL-040 retroactive dead-code）— 实装后 splice 移除本条目"
     ],
     "confirmed_at": "2026-05-06T16:00+0800",
-    "priority": "deferred",
+    "priority": "low",
     "tags": [
       "dead-code-cleanup",
       "spec-drift",
