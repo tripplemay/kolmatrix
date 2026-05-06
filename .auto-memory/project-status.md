@@ -3,9 +3,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-043 Bridge 闭合 — BUILDING（spec lock 20:15；切 building 20:30；3 features ~2.5h Generator + 0.5h Reviewer）
-- F001 deploy-{staging,prod}.sh fail-fast on KOLMATRIX_APP_PASSWORD unset / F002 environment.md 密码 sync 协议 5 处一致 / F003 staging smoke test 双路径
-- 80%+ 已闭合（BL-024-F006/F007 retroactive：peer auth ✓ / yml source ✓ / .env 已含 ✓ / staging healthy ✓）；spec：docs/specs/BL-043-deploy-staging-yml-bridge-spec.md
+## 🔍 BL-043 Bridge 闭合 — VERIFYING（push @ 37c215c + staging deploy 25439999593 PASS @ 22:05；3/3 generator completed）
+- 3/3 done：F001 deploy-{staging,prod}.sh silent skip → fail-fast (exit 1 + 6 行 multi-line error 指引指向 environment.md §Postgres) / F002 environment.md staging Postgres 段扩展（密码 sync 协议 + 修改 ops 5 步 + ALTER ROLE peer auth）+ 5 处一致子表 / F003 staging smoke 双路径：Standard PASS (HEAD=37c215c / health 200 / db ok 25ms / git_sha 对齐 / 日志 '• rotating kolmatrix_app password' 证明 fail-fast 守门通过 + ALTER ROLE 跑) + Fail-fast 本地 3-case PASS (unset/非空/空字符串)
+- CI 25439318693 BL-043 相关 6/6 jobs PASS；2 pre-existing fail (material-symbols woff2 stale + i18n FORMATTING_ERROR) 与 BL-043 无关 (上次 commit 54f0a39 同样 fail)
+- spec literal Option B (SSH 注释 .env.staging 触发 workflow exit 1) 未做 — 留给 Reviewer L2 选做 (本地 3-case + standard path 已逻辑完备证明，不阻 done)
 ## 📝 BL-023 KOL 评分升级 — Planning lock 21:00（BL-043 done 后立即切 building；7 features 6-7h）
 - spec：docs/specs/BL-023-kol-scoring-upgrade-spec.md（含 X1 BL-045 F007 顺手清）
 - F001 真 engagement_rate 替 placeholder / F002 authenticity modifier / F003 测试 ≥6 / F004 similarityToScore 重映射（sim*100 不再 +1/2，0=0 非 50）/ F005 测试 ≥4 / F006 kol-sync-daily 后 trigger 重算 top 100 / F007 BL-045 dead code 顺手清

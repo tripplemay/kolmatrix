@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "infrastructure/deploy-staging.sh 改 fail-fast 模式（exit 1 + multi-line error，含修复指引指向 environment.md §Postgres）",
       "scripts/deploy-prod.sh 同步 fail-fast",
@@ -18,7 +18,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "environment.md staging Postgres 段（line 77）扩展含密码同步协议 + 修改 ops 步骤 + ALTER ROLE peer auth 模式",
       "新增 Postgres kolmatrix_app role 密码 sync 协议子表（5 处必须一致：prod .env KOLMATRIX_APP_PASSWORD + DATABASE_URL pwd + staging 2 处 + PG role pwd）"
@@ -30,7 +30,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 1,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "触发 staging deploy run with main HEAD（含 F001+F002 改动）",
       "Standard path：health 200 + DB ok + git_sha 对齐",
