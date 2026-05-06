@@ -59,8 +59,13 @@ export interface EngagementBatchInput {
 export interface EngagementUpdate {
   kolId: string;
   externalId: string;
-  /** Decimal in [0, 1]. `null` when computation isn't reliable
-   *  (no videos / zero total views). */
+  /** BL-023-F008: percentage in [0, 100] (e.g. 4.2 = 4.2%). The rest
+   *  of the app — UI cards, filters, seed data, value-score buckets —
+   *  treats engagement_rate as a percentage; the original 2026-04 BIx
+   *  F004 P4 implementation returned a fraction here, which silently
+   *  wrote 0.04 into the Decimal(5,2) column for a "real" 4% rate and
+   *  surfaced as "0.0%" in the UI. Fixed in BL-023 along with a one-
+   *  shot backfill of the 137 affected prod KOL. */
   engagementRate: number | null;
   latestVideos: readonly EngagementVideoStats[];
 }
@@ -175,10 +180,12 @@ export async function runEngagementBatch(
 }
 
 /**
- * `avg(likeCount + commentCount) / avg(viewCount)` across the input
- * window. Returns `null` when there aren't enough data points to make
- * the ratio meaningful (no videos, or zero total views — typical for
- * unlisted/private channels that crept in via topic filter).
+ * `avg(likeCount + commentCount) / avg(viewCount) * 100` across the
+ * input window — returns a percentage (e.g. 4.2 for a 4.2% rate) so it
+ * matches the unit the rest of the app (UI cards, filters, seed,
+ * BL-023 value-score buckets) already expects. Returns `null` when
+ * there aren't enough data points (no videos, or zero total views —
+ * typical for unlisted/private channels that crept in via topic filter).
  */
 export function computeEngagementRate(videos: readonly EngagementVideoStats[]): number | null {
   if (videos.length === 0) return null;
@@ -189,5 +196,5 @@ export function computeEngagementRate(videos: readonly EngagementVideoStats[]): 
     totalViews += v.viewCount;
   }
   if (totalViews <= 0) return null;
-  return totalEngagements / totalViews;
+  return (totalEngagements / totalViews) * 100;
 }

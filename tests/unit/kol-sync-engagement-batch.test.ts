@@ -24,13 +24,13 @@ function vid(overrides: Partial<EngagementVideoStats>): EngagementVideoStats {
 }
 
 describe("computeEngagementRate", () => {
-  it("returns total(like+comment) / total(views)", () => {
+  it("returns total(like+comment) / total(views) as a percentage (BL-023-F008)", () => {
     const r = computeEngagementRate([
       vid({ viewCount: 1000, likeCount: 50, commentCount: 10 }),
       vid({ viewCount: 2000, likeCount: 100, commentCount: 40 }),
     ]);
-    // (60 + 140) / (1000 + 2000) = 200 / 3000 ≈ 0.0667
-    expect(r).toBeCloseTo(200 / 3000, 6);
+    // (60 + 140) / (1000 + 2000) * 100 = 200 / 3000 * 100 ≈ 6.667 (%)
+    expect(r).toBeCloseTo((200 / 3000) * 100, 4);
   });
 
   it("returns null when there are no videos", () => {
@@ -93,8 +93,8 @@ describe("runEngagementBatch", () => {
     expect(r.videosFetched).toBe(600);
     expect(r.updates).toHaveLength(100);
     // First channel: 6 videos with viewCount 1000..6000, like+comment
-    // 60 each → 360 / 21000 ≈ 0.0171.
-    expect(r.updates[0]!.engagementRate).toBeCloseTo(360 / 21000, 6);
+    // 60 each → 360 / 21000 * 100 ≈ 1.714 (%) (BL-023-F008 percent unit).
+    expect(r.updates[0]!.engagementRate).toBeCloseTo((360 / 21000) * 100, 4);
     expect(r.updates[0]!.latestVideos).toHaveLength(6);
   });
 
