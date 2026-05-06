@@ -1,5 +1,19 @@
 [
   {
+    "id": "BL-046",
+    "title": "product soft delete + deleteProduct 关联检查 + audit_log（孤儿 campaign 根治 + 数据完整性）",
+    "description": "触发：2026-05-06 19:30+ 用户报 prod 孤儿 campaign 4425e07e-3954-4ecf-94a3-a48dbe22baba '王者荣耀世界 5 月推广计划 A' product_id=NULL（completed 状态 / 4/29 创建 / 关联 10 kol_campaign / owner=marketer@kolmatrix.local / budget=10000 USD）。Planner 5 维 grep + audit_log + git history 实地核查根因：用户曾创建 product '王者荣耀世界' → 用它创建 campaign + 关联 10 KOL → 4/29~5/2 期间在 /knowledge-base 点删除按钮 → tx.product.delete() (hard delete) → FK campaign_product_id_fkey ON DELETE SET NULL 沉默拉链 → campaign.product_id 变 NULL → product 名/描述/USP/target_audience 全部 hard delete 不可恢复。\n\n6 个设计 gap（按严重性）：\n#1 product 表 hard delete（无 deleted_at 列）— 🔴 数据不可恢复\n#2 campaign_product_id_fkey ON DELETE SET NULL 沉默拉链 — 🟡 默默产生孤儿无 warning\n#3 deleteProduct() 不检查关联 campaign / asset / kol_campaign — 🔴 误删高风险（10 KOL 关联静默丢失）\n#4 deleteProduct() 不写 audit_log — 🟡 删除操作无审计\n#5 UI /campaigns/[id] 详情页对 product=NULL 处理未知 — 🟡 marketer 看到空白困惑\n#6 Campaign.productId Prisma optional 但应用层 productIdRequired — 🟢 schema/app 不一致非严重\n\n实装范围（~1 day Generator + 0.5 day Reviewer）：\n- F001 schema migration: ALTER TABLE product ADD COLUMN deleted_at TIMESTAMPTZ NULL + index (tenant_id, deleted_at)；BACKFILL deleted_at IS NULL（明确无 soft-deleted 历史）；ROLLBACK 注释\n- F002 src/lib/products/* 改 list / find / findUnique queries 加 WHERE deleted_at IS NULL（覆盖全部 5 路由：knowledge-base list + ProductCard + ProductModal + assets/composer + outreach/composer + smart-match）\n- F003 deleteProduct() 改 hard delete → UPDATE deleted_at = now()；删除前检查 campaign / asset / kol_campaign 关联，如有引用弹窗确认 (cascade soft delete) 或拒绝；写 audit_log resource_type=product action=product.deleted payload={reason, cascade_count{campaign, asset, kol_campaign}}\n- F004 UI /knowledge-base 列表页过滤 deleted_at IS NULL（不显示软删 product）；保留 admin 视图（platform admin 可见软删）作 future\n- F005 UI /campaigns/[id] 详情页对 product=NULL 显示 '(产品已删除)' 灰显 + tooltip + 不渲染 product chip 链接\n- F006 单测 ≥4 case + 集成测试 ≥2 case（删除 product 拒+确认+audit / list 过滤 / detail 显示）\n\n孤儿 campaign 4425e07e 短期处理：方案 D 不做单独 UI fix 等 BL-046 F005 一并处理（用户 2026-05-06 19:55 决议）— campaign status=completed 已无业务影响，UI 加 '(产品已删除)' 已足够。\n\n依赖：无（独立 mini-batch；不依赖 BIx F004）。\n\nADR-worthy：长期 product 删除策略 — soft delete + cascade soft delete 检查 + audit_log；可与 BL-017 token 过期 + 撤销共同形成「Lifecycle 管理」治理主题。",
+    "decisions": [
+      "用户 2026-05-06 19:55 决议 1=D：短期不做单独 UI fix，等 BL-046 长期治本一并解决（孤儿 4425e07e 已 completed 不阻塞）",
+      "用户 2026-05-06 19:55 决议 2=A：5/13 上线前做 BL-046（与 BL-017 同期 5/12，独立批次还是合并待定）",
+      "Planner 推荐：BL-046 独立 mini-batch — 主题（product lifecycle）与 BL-017（token lifecycle）虽都是 Lifecycle 但 reviewer L2 验收路径不同（product KB 删除链 vs weekly-report token 过期链）",
+      "实装范围：6 features F001-F006（schema migration + 全栈 deleted_at filter + deleteProduct 改 soft delete + 关联检查 + audit_log + UI orphan 显示 + 测试）",
+      "孤儿 campaign 4425e07e 不主动迁移（status=completed 业务影响=0），由 BL-046 F005 UI 防御性显示自然解决"
+    ],
+    "confirmed_at": "2026-05-06T19:55+0800",
+    "priority": "high"
+  },
+  {
     "id": "BL-003",
     "title": "/en 和 /en/ 404（根 locale 路径不落到 dashboard）— F008 后部分缓解",
     "description": "初次发现：GET /en 返回 404，GET /en/ 308 跳回 /en 再 404。2026-04-23 BM1 F008 落地后观察到：受保护路由的 307 跳转已正确保留 locale 前缀（/en/dashboard 跳 /en/login 而非裸 /login），说明 locale routing 主干已恢复。残留 bare /en 404 仍在，但正常用户走 / → /en/dashboard 自动补全路径，实操无路径断裂。MVP 可降级为 'deferred'（非 low），Post-MVP 再修。",
