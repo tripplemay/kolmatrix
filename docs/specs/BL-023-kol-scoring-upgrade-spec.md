@@ -276,16 +276,52 @@ if (engagementBatchResult.engagementUpdated > 0) {
 
 ---
 
+### F008 · `engagement_rate` 单位 bug 顺手清（building 中段追加，用户裁决 C @ 2026-05-07）
+
+**Executor:** generator
+**Priority:** high
+**预估工时:** 30 min
+
+**触发：** Generator 实装 F006 时实地 grep 发现 `src/lib/kol-sync/engagement-batch.ts:183 computeEngagementRate` 返回 fraction [0, 1]（如 4.2% → 0.042），但 prod 数据写入路径 + UI 显示（`KolResultCard.tsx:127 ${rate.toFixed(1)}%`）+ seed (`prisma/seed.ts:84` 用 5.8 / 8.2）+ filter (`filters.ts:463`) 全部期望 percent。这是 BIx F004 P4（2026-05-01 deploy）引入的 pre-existing 单位 bug，导致 prod 137 KOL 的 engagement_rate 全部存为 fraction（0.01-0.10 截断后），UI 显示为 "0.0%-0.1%"。
+
+不修则 F006 recompute 全部归入 <1% 桶（rate=0.04 < 1 → engagement=5），BL-023 核心价值（区分 engagement 段位）失效。Generator 短格式裁决请求 → 用户决议 C：F008 顺手清。
+
+**改动：**
+- `src/lib/kol-sync/engagement-batch.ts:183` `computeEngagementRate` 返 `(totalEngagements / totalViews) * 100`
+- `src/lib/kol-sync/engagement-batch.ts:60` `EngagementUpdate.engagementRate` 注释更新（fraction → percent，引用 BL-023-F008 历史背景）
+- `tests/unit/kol-sync-engagement-batch.test.ts:33,97` 期望值更新（×100 + tolerance 改 4 位）
+- `scripts/backfill-engagement-rate-bl023-f008.sql` 一次性 idempotent SQL（`UPDATE kol SET engagement_rate = engagement_rate * 100 WHERE engagement_rate > 0 AND engagement_rate < 1`）
+
+**commit-tag：** `feat(BL-023-F008): engagement_rate unit fix (fraction → percent) + prod backfill SQL`
+
+**Acceptance：**
+- [ ] `computeEngagementRate` 返 percent；EngagementUpdate doc 单位更新
+- [ ] `kol-sync-engagement-batch.test.ts` 全 PASS
+- [ ] backfill SQL idempotent（pre/post counts 验证 fraction → 0）
+- [ ] prod 跑过 backfill 后，137 KOL engagement_rate 落入 1-15 区间（不再 <1）
+- [ ] 未来 BIx F004 cron 自动写 percent，与 seed/UI/filter/F006 buckets 单位对齐
+
+**用户手工待办（追加到 §7.1）：**
+- BL-023 prod deploy 后立即 SSH 跑 `sudo -u postgres psql -d kolmatrix -f /opt/kolmatrix/scripts/backfill-engagement-rate-bl023-f008.sql`（idempotent，~1s 跑完）；staging 同步跑 `kolmatrix_staging` DB（无 fraction 数据时 no-op）
+
+---
+
 ## 3. 变更文件清单
 
 ```
-src/lib/kol/value-score.ts                        F001+F002 EDIT (~50 行 新公式 + authenticity)
-tests/unit/value-score.test.ts                    F003 EDIT/NEW (≥6 case)
+src/lib/kol/value-score.ts                        F001+F002 EDIT (~80 行 新公式 + authenticity + 导出 helper)
+tests/unit/value-score.test.ts                    F003 NEW (16 case)
+src/lib/kol/__tests__/value-score.test.ts         F003 DELETE (旧 co-located 测试合入 tests/unit/)
 
-src/lib/discovery/smart-match.ts                  F004 EDIT (line 100-104 映射)
-tests/unit/smart-match-similarity.test.ts         F005 EDIT (≥4 case + 旧 fixture 更新)
+src/lib/discovery/smart-match.ts                  F004 EDIT (line 105-108 映射 + 注释)
+tests/unit/smart-match-similarity.test.ts         F005 EDIT (8 case 全替换 + BL-044 cosine band 提及)
 
-scripts/kol-sync-daily.ts                          F006 EDIT (engagement phase 后 recompute valueScore)
+scripts/kol-sync-daily.ts                          F006 EDIT (top 查询 +3 字段 + recompute loop + report 字段)
+src/lib/kol-sync/log.ts                            F006 EDIT (EngagementBatchStats +valueScoreRecomputed?)
+
+src/lib/kol-sync/engagement-batch.ts               F008 EDIT (computeEngagementRate * 100 + EngagementUpdate doc)
+tests/unit/kol-sync-engagement-batch.test.ts       F008 EDIT (期望值 *100 + tolerance 调整)
+scripts/backfill-engagement-rate-bl023-f008.sql    F008 NEW (one-shot 数据修复 SQL)
 
 src/lib/assets/generators/email-generator.ts       F007 EDIT (line 74 删 ?? 'Not specified')
 src/lib/assets/generators/video-script-generator.ts F007 EDIT (line 80 同)
@@ -317,6 +353,14 @@ src/lib/assets/generators/video-script-generator.ts F007 EDIT (line 80 同)
 - BL-040 schema 收紧后 fallback 永不触发，dead code
 - 同 commit-tag `feat(BL-023-F007)` 满足铁律 #10 spec 归属
 - v0.9.14 §planner.md 铁律 1 完整 pattern grep dogfood 实战收益
+
+### D6 · F008 engagement_rate 单位 bug 顺手清（building 中段裁决 C）
+- pre-existing BIx F004 P4 单位 bug：`computeEngagementRate` 返 fraction，rest of app 期望 percent → 137 prod KOL 全部 mis-stored，UI 显示 "0.0%-0.1%"
+- 选项 A（spec-literal 不修）会让 F006 recompute 全部归入 <1% 桶，BL-023 核心价值失效
+- 选项 B（让 engagementScoreFromRate 接 fraction）= 与 UI/seed 单位约定矛盾，技术债扩大
+- 选项 C（顺手清）= +30 min 边际成本根治；与 BL-023 主题（评分体系正确化）天然契合 → 用户裁决 C @ 2026-05-07
+- 同 commit-tag `feat(BL-023-F008)` 满足铁律 #10 spec 归属（features.json 同步追加 F008 条目）
+- pre-impl-adjudication §11「building 中段良性偏差」实战触发 — Generator 实地 grep 发现 + 用户即时短格式裁决 + spec retro 更新
 
 ---
 

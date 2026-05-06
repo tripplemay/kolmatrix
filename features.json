@@ -93,5 +93,20 @@
       "tsc + lint 全绿",
       "commit-tag: feat(BL-023-F007): clean BL-040 retroactive dead-code (BL-045 X1)"
     ]
+  },
+  {
+    "id": "F008",
+    "title": "engagement_rate 单位 bug 顺手清（建于 2026-05-07 building 中段，用户裁决 C）",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 0.5,
+    "status": "pending",
+    "acceptance": [
+      "engagement-batch.ts computeEngagementRate 改返 percent（* 100），EngagementUpdate.engagementRate doc 更新为 [0, 100]",
+      "tests/unit/kol-sync-engagement-batch.test.ts 期望值更新（toBeCloseTo((360/21000)*100, 4) 等）",
+      "scripts/backfill-engagement-rate-bl023-f008.sql 一次性 SQL（idempotent），跑 prod 后 137 KOL fraction → percent",
+      "未来 BIx F004 cron 自动写 percent，prod 单位与 seed/UI/filter/F006 buckets 单位对齐",
+      "commit-tag: feat(BL-023-F008): engagement_rate unit fix (fraction → percent) + prod backfill SQL"
+    ]
   }
 ]
