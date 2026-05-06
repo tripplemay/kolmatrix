@@ -33,6 +33,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
 import { embedKolsForIds, type EmbedRunStats } from "../src/lib/embedding/kol-embed";
+import { computeKolValueScore } from "../src/lib/kol/value-score";
 import { YouTubeKolSyncAdapter } from "../src/lib/kol-sync/adapters/youtube";
 import { KolSyncDispatcher } from "../src/lib/kol-sync/dispatcher";
 import {
@@ -121,12 +122,17 @@ interface DailyRunReport {
   /** B7a-F001 — embedding hook results (audit lock #8:B, soft phase). */
   embedStats: EmbedRunStats | null;
   /** BIx-F004-P4 — Top 100 KOL engagement batch summary. `null` when
-   *  the phase didn't run (dryRun / no client / no eligible KOL). */
+   *  the phase didn't run (dryRun / no client / no eligible KOL).
+   *
+   *  BL-023-F006: `valueScoreRecomputed` is the number of KOL whose
+   *  `valueScore` was rewritten using the fresh engagement_rate from
+   *  this run. Always ≤ engagementUpdated. */
   engagementBatch: {
     topKolsProcessed: number;
     engagementUpdated: number;
     latestVideosUpdated: number;
     channelsWithoutPlaylist: number;
+    valueScoreRecomputed: number;
     apiCallStats: EngagementBatchResult["apiCallStats"];
   } | null;
   errors: string[];
@@ -191,6 +197,7 @@ function formatMarkdownReport(report: DailyRunReport): string {
     lines.push(
       `- Top KOL processed: ${eb.topKolsProcessed} | engagement updated: ${eb.engagementUpdated} | latestVideos updated: ${eb.latestVideosUpdated} | without playlist: ${eb.channelsWithoutPlaylist}`
     );
+    lines.push(`- valueScore recomputed (BL-023-F006): ${eb.valueScoreRecomputed}`);
     lines.push(
       `- API calls — channels.list: ${eb.apiCallStats.channels} | playlistItems.list: ${eb.apiCallStats.playlistItems} | videos.list: ${eb.apiCallStats.videos}`
     );
@@ -433,7 +440,18 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
           },
           orderBy: [{ valueScore: { sort: "desc", nulls: "last" } }, { id: "asc" }],
           take: topN,
-          select: { id: true, externalId: true, metadata: true },
+          select: {
+            id: true,
+            externalId: true,
+            metadata: true,
+            // BL-023-F006: extra fields needed for the post-batch
+            // valueScore recompute. Pulled in the same query so we
+            // don't pay for a second findMany after the engagement
+            // updates land.
+            followerCount: true,
+            categories: true,
+            engagementAuthenticity: true,
+          },
         });
         const topChannels = top
           .filter((r): r is typeof r & { externalId: string } => Boolean(r.externalId))
@@ -445,7 +463,12 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
           });
           let engagementUpdated = 0;
           let latestVideosUpdated = 0;
+          let valueScoreRecomputed = 0;
           const metaByKolId = new Map<string, unknown>(top.map((r) => [r.id, r.metadata]));
+          // BL-023-F006: keep the full top-N row payload around so the
+          // post-batch valueScore recompute can read followerCount /
+          // categories / engagementAuthenticity without a re-query.
+          const topById = new Map(top.map((r) => [r.id, r]));
           for (const u of result.updates) {
             const prevMeta = metaByKolId.get(u.kolId);
             const merged = mergeLatestVideos(prevMeta, u.latestVideos);
@@ -466,6 +489,34 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
               console.warn(
                 `[kol-sync-daily] engagement-batch update ${u.kolId}: ${msg.slice(0, 200)}`
               );
+              continue;
+            }
+            // BL-023-F006: recompute valueScore using the engagement
+            // signal we just wrote. Per-row soft-fail — a recompute
+            // miss leaves the prior valueScore in place; the next
+            // daily run gets another shot. Skips KOL whose engagement
+            // batch yielded null (no playlist / zero views) since the
+            // formula would just collapse back to the placeholder.
+            if (u.engagementRate == null) continue;
+            const kol = topById.get(u.kolId);
+            if (!kol) continue;
+            try {
+              const { total } = computeKolValueScore({
+                followerCount: kol.followerCount ?? 0,
+                categories: kol.categories ?? [],
+                engagementRate: u.engagementRate,
+                engagementAuthenticity: kol.engagementAuthenticity,
+              });
+              await deps.prisma.kol.update({
+                where: { id: u.kolId },
+                data: { valueScore: total },
+              });
+              valueScoreRecomputed += 1;
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : String(err);
+              console.warn(
+                `[kol-sync-daily] valueScore-recompute ${u.kolId}: ${msg.slice(0, 200)}`
+              );
             }
           }
           engagementBatch = {
@@ -473,6 +524,7 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
             engagementUpdated,
             latestVideosUpdated,
             channelsWithoutPlaylist: result.channelsWithoutPlaylist,
+            valueScoreRecomputed,
             apiCallStats: result.apiCallStats,
           };
           // Real quota cost from API counters — more accurate than

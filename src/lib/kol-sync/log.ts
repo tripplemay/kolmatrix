@@ -34,6 +34,10 @@ export interface EngagementBatchStats {
   engagementUpdated: number;
   latestVideosUpdated: number;
   channelsWithoutPlaylist: number;
+  /** BL-023-F006 · count of KOL whose valueScore was recomputed using
+   *  the freshly-pulled engagement_rate. Optional for backward-compat
+   *  with log lines emitted before BL-023. */
+  valueScoreRecomputed?: number;
   apiCallStats: { channels: number; playlistItems: number; videos: number };
 }
 
