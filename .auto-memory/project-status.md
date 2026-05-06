@@ -10,6 +10,12 @@ type: project
 - Staging deploy 25415574990：git_pull/migrate/build/pm2-restart 全 PASS（migration applied at staging git_sha=37d4a8c）；health 503 因 BL-024 F006/F007 retroactive .env.staging 漏配 KOLMATRIX_APP_PASSWORD（BL-040 无关，已入 BL-043）
 - spec scope 偏差留 Planner judgement：email-generator.ts:74 + video-script-generator.ts:80 同样含 ?? 'Not specified'，本批次未动（铁律 #10）
 - v0.9.14 候选已写入 framework/proposed-learnings.md（done 阶段交用户决议）
+## 🎯 BL-044 已 spec lock + Quality 实测 PASS — 等 BL-040 done + BL-043 staging gap 闭合后启 building（路径 B 修订）
+- 用户 2026-05-06 报 /discovery AI chip "未找到" prod bug → Planner 调查根因 = AI chip 自然语言意图 vs ILIKE substring 字面匹配不匹配
+- Planner 2026-05-06 12:10 跑 mcp embed_text + prod cosine search 4 query 实测：bge-m3 multilingual 100% 命中（中/英/日/韩文 KOL 跨语言；cosine 0.37-0.46）；total cost $0.00000188；Quality gate PASS
+- 4 features F001-F004 全 generator（fork from B7a SmartMatch 范式 + 99% infra ready）；预估 1-2 day building + 0.5 day verifying
+- spec：docs/specs/BL-044-discovery-ai-semantic-search-spec.md（D1-D7 决策 + §5 v0.9.11/v0.9.12/v0.9.13 dogfood + §6.1 2 项 user 手工待办 + §7 实装顺序 11 步）
+- 注：原起草时 ID=BL-043，期间 Generator 推 BL-040 verifying 时加了不同 BL-043（deploy-staging.yml gap），ID 重命名为 BL-044 避冲突
 ## ✅ BL-024 + Framework v0.9.13 + BL-024 F007 retroactive + prod redeploy 大合并 — DONE 2026-05-06 ~08:00（CRIT-1 retroactive 完整闭环 @ 8be3115）
 ## ✅ BL-035 / BL-034 / Framework v0.9.12 / BL-020 / Framework v0.9.11 / BL-033~BL-026 — DONE 2026-05-03~05
 ## ✅ BL-041 Dashboard 3 元素 — 已 done by MVP-internal-demo-prep-F001 commit 4fd778b @ 2026-05-01（audit 过期 retroactive 关闭）
@@ -28,7 +34,7 @@ type: project
 - BL-035 / BL-034 / BL-020 / BL-024 / v0.9.11~v0.9.13 — 不动
 ## 角色 / Backlog / 时间线
 - 默认映射（role_assignments=null）：CLI=planner+generator，Codex=evaluator
-- Backlog 18 条（新增 BL-043 deploy-staging.yml 闭合 staging-side gap medium / 余 BL-042 max_tokens / BL-012 crawler-sync / BL-021 Suspense / BL-022 列表 / BL-014~17 / BL-019 / BL-023 / BL-025~BL-027 等 deferred）
-- 时间线：05-06 BL-040 verifying → Reviewer reverifying → done → 05-06~07 用户业务测继承待办 #2-#7 → 05-08~10 buffer / BL-021 评估 → **05-13 上线对外**
+- Backlog 19 条（high priority next-sprints：BL-043 deploy-staging.yml staging-gap medium / **BL-044 AI semantic search high prod-bug-fix**；其它 deferred：BL-042 max_tokens / BL-012 / BL-021 / BL-022 / BL-014~17 / BL-019 / BL-023 / BL-025~BL-027）
+- 时间线：05-06 BL-040 verifying → Reviewer reverifying → done → BL-043 staging gap 闭合（~5min SSH user task #2 + 可选 sprint）→ BL-044 AI semantic search building（1-2 day）→ 05-07~08 用户业务测继承待办 → 05-09~10 buffer → **05-13 上线对外**
 
 <!-- 写入规则（harness §记忆分层）：覆盖写 / ≤30 行 / 所有角色可写 / 只放 WHAT / 不重复 progress.json -->
