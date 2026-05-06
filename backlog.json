@@ -365,5 +365,31 @@
       "onboarding"
     ],
     "discovered_in": "Claude CLI prod-mvp-readiness-audit 2026-05-04 §5 D2"
+  },
+  {
+    "id": "BL-042",
+    "title": "aigcgateway actions/run 路径 max_tokens 治理（post-MVP）— 4 选 1 修复方向（P1/P2/P3/P4）",
+    "description": "来源：BL-035 F013 + BL-024 Q2 ops 共 12 次 max_tokens 推延 Soft-watch；2026-05-06 用户实地确认 aigcgateway Dashboard UI Action 详情页**无 max_tokens 字段** + mcp 工具集（create_action_version / update_action / get_action_detail）全无 max_tokens 字段 → aigcgateway Action 抽象层根本不绑定此字段，KOLMatrix 端 actions/run 路径 7 处客户端无法控 max_tokens（详 framework/harness/ai-action-contract.md §4.7 v0.9.13 修订版）。\n\n**当前 prod 状态：** 3 重兜底已实装（BL-034 F005 cost-cap MVP $5/day per tenant + v0.9.11 §4 prompt-injection wrap 6 Action v2 active + aigcgateway 月预算 $100），**短期 P3 接受现状**不阻塞 05-13 上线。\n\n**长期 4 选 1 修复方向：**\n- **P1 7 处 actions/run 改 chat/completions 直调**：客户端代码改 7 文件（customize.ts / roi/insights.ts / weekly-report/generate.ts / kol-database/intelligence.ts / campaigns/suggestions.ts / topic-cloud.ts / embedding/client.ts）+ 手动渲染 prompt template（用 BL-034 F005 wrapUserInput util）+ 直接 fetch /v1/chat/completions + 传 max_tokens；放弃 Action 抽象。工时 1-2 day。治本 + 客户端完全可控。代价：增加 prompt rendering 维护成本（aigcgateway Dashboard prompt 改了客户端要同步改）。\n- **P2 跨项目 issue（aigcgateway 项目）**：Action schema 加 maxTokens 字段 + Dashboard UI 暴露 + mcp 工具（create_action_version / update_action / get_action_detail）暴露字段。KOLMatrix 不可控时间。治本 + 保留 Action 抽象。\n- **P3 接受现状**（当前）：依赖 cost-cap MVP + prompt-injection 防御 + 月预算上限作 3 重兜底。短期 OK；长期不可持续（业务规模扩大后 cost-cap $5/day 可能不够）。\n- **P4 混合策略**：高风险路径（customize.ts 邮件链路，prompt-injection 攻击面最大）走 P1 升级 chat/completions 直调；低风险（topic-cloud / kol-database-intelligence 输出本身就短）走 P3 接受。工时 0.5 day（仅改 1-2 个高风险）。平衡治理 + 工时。\n\n**触发条件：** post-MVP 业务规模扩大（>10 tenant 真客户）+ aigcgateway 月预算消耗加速；或者 cost-cap MVP 触发率显著（用户在 outreach 频繁被 $5/day 拒）；或者 aigcgateway 项目实装 maxTokens 字段（P2 推手）。\n\n**估时：** P4 ~0.5 day / P1 1-2 day。\n\n**依赖：** prod 真实业务数据观察 + aigcgateway 项目动态。",
+    "decisions": [
+      "用户 2026-05-06 ~08:30 决议方案 P3 接受现状不动；加 backlog 条目 post-MVP 处理",
+      "BL-035 F013 + BL-024 Q2 ops 12 次 max_tokens 推延 Soft-watch 正式归档为本条目跟踪",
+      "v0.9.13 §4.7 已沉淀 4 种长期修复方向，本条目 backlog 启动时由 Planner 重新评估"
+    ],
+    "confirmed_at": "2026-05-06T08:30+0800",
+    "priority": "deferred",
+    "tags": [
+      "post-mvp",
+      "aigcgateway",
+      "ai-safety",
+      "ai-cost",
+      "framework-followup"
+    ],
+    "discovered_in": "BL-035 F013 + BL-024 Q2 ops + 2026-05-06 实测验证（mcp + Dashboard UI 都无 max_tokens 字段）",
+    "references": [
+      "framework/harness/ai-action-contract.md §4.7 (v0.9.13 修订版含 4 种修复方向)",
+      "docs/specs/BL-035-F013-actions-run-inventory.md (7 个 Action 矩阵)",
+      "src/lib/email/customize.ts (P1/P4 高风险路径)",
+      "src/lib/products/generateAiAssets.ts (chat/completions 已实装范式参考)"
+    ]
   }
 ]
