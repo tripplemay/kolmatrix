@@ -95,6 +95,7 @@ async function seedWorld() {
       tenantId: TENANT,
       name: "Nebula",
       category: "MOBA",
+      targetAudience: "Cross-platform MOBA enthusiasts aged 18-30",
       uniqueSellingPoints: "Cross-platform",
     },
   });

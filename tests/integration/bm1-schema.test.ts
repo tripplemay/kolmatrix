@@ -87,6 +87,7 @@ describe("product table", () => {
         tenantId: tenantA.id,
         name: "A Product",
         category: "RPG",
+        targetAudience: "Tenant A core RPG fans aged 18-30",
         uniqueSellingPoints: "Tenant A exclusive",
       },
     });
@@ -95,6 +96,7 @@ describe("product table", () => {
         tenantId: tenantB.id,
         name: "B Product",
         category: "FPS",
+        targetAudience: "Tenant B competitive FPS players",
         uniqueSellingPoints: "Tenant B exclusive",
       },
     });

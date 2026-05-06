@@ -94,6 +94,7 @@ async function seedTenantWithProduct(
       tenantId,
       name: productName,
       category: "RPG",
+      targetAudience: "Core RPG fans aged 18-30",
       uniqueSellingPoints: "USP",
     },
   });

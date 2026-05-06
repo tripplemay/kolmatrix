@@ -151,6 +151,7 @@ describe("Campaign.productId nullability (regression for seed-side fix)", () => 
           tenantId,
           name: "Linked Game",
           category: "MOBA",
+          targetAudience: "MOBA players aged 18-30",
           uniqueSellingPoints: "USP",
         },
       });

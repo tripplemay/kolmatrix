@@ -91,6 +91,7 @@ describe("fetchDashboardData()", () => {
             tenantId,
             name,
             category: "MOBA",
+            targetAudience: "MOBA players aged 18-30",
             uniqueSellingPoints: "USP",
           },
         });
@@ -211,6 +212,7 @@ describe("fetchDashboardData()", () => {
           tenantId: tenantIdA,
           name: "A Game",
           category: "MOBA",
+          targetAudience: "Tenant A MOBA enthusiasts",
           uniqueSellingPoints: "A USP",
         },
       });

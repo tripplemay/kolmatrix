@@ -232,6 +232,7 @@ describe("seed.ts outreach end-to-end smoke (MVP-vf C-10 round 2)", () => {
           tenantId,
           name: "Honor of Kings",
           category: "MOBA",
+          targetAudience: "Honor of Kings MOBA fans aged 18-30",
           uniqueSellingPoints: "USP",
         },
       });

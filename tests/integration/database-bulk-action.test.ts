@@ -89,6 +89,7 @@ async function seedTenant(
       tenantId,
       name: "Launch Game",
       category: "RPG",
+      targetAudience: "Core RPG fans aged 18-30",
       uniqueSellingPoints: "USP",
     },
   });

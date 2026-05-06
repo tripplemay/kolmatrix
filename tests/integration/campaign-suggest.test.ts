@@ -89,6 +89,7 @@ async function seedCampaign(tenantId: string, campaignId: string) {
       tenantId,
       name: "Nova Arena",
       category: "MOBA",
+      targetAudience: "MOBA players who enjoy fast-paced rounds",
       uniqueSellingPoints: "Fast rounds",
     },
   });

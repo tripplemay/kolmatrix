@@ -98,7 +98,7 @@ interface ProductRowForEmbed {
   id: string;
   name: string;
   category: string;
-  target_audience: string | null;
+  target_audience: string;
   unique_selling_points: string;
   embedding_text_hash: string | null;
   needs_init: boolean;

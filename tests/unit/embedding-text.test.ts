@@ -81,11 +81,14 @@ describe("embedding source text builder — Product", () => {
     expect(text).toContain("selling points: Free-to-play, cross-platform, anti-cheat");
   });
 
-  it("works when targetAudience is NULL", () => {
+  it("skips audience: line when targetAudience is empty (backfill defense, post-BL-040 NOT NULL)", () => {
+    // BL-040 F001: targetAudience is now string (NOT NULL), but clean() still
+    // returns "" for empty / whitespace-only input — defends against legacy
+    // rows or raw-SQL paths that bypass Zod validation.
     const text = buildProductEmbedText({
       name: "Indie Game",
       category: "Roguelike",
-      targetAudience: null,
+      targetAudience: "",
       uniqueSellingPoints: "Procedural levels",
     });
     expect(text).toContain("name: Indie Game");

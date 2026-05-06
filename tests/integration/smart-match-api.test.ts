@@ -172,6 +172,7 @@ describe("runSmartMatch — filters & RLS", () => {
         tenantId: tenant.id,
         name: "P",
         category: "c",
+        targetAudience: "a",
         uniqueSellingPoints: "u",
       },
     });
@@ -242,6 +243,7 @@ describe("runSmartMatch — filters & RLS", () => {
         tenantId: tenant.id,
         name: "P",
         category: "c",
+        targetAudience: "a",
         uniqueSellingPoints: "u",
       },
     });
@@ -316,6 +318,7 @@ describe("runSmartMatch — filters & RLS", () => {
         tenantId: callingTenant.id,
         name: "P",
         category: "c",
+        targetAudience: "a",
         uniqueSellingPoints: "u",
       },
     });
@@ -415,6 +418,7 @@ describe("runSmartMatch — RLS regression (fix-round 1)", () => {
         tenantId: tenant.id,
         name: "RLS Product",
         category: "shooter",
+        targetAudience: "competitive shooter players",
         uniqueSellingPoints: "fast TTK",
       },
     });

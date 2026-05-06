@@ -36,7 +36,7 @@ export interface GenerateAiAssetsInput {
   actorUserId: string;
   name: string;
   category: string;
-  targetAudience: string | null;
+  targetAudience: string;
   uniqueSellingPoints: string;
   downloadUrl: string | null;
 }
@@ -172,7 +172,7 @@ export async function generateAiAssets(
   const userMessage =
     `Product name: ${input.name}\n` +
     `Category: ${input.category}\n` +
-    `Target audience: ${input.targetAudience ?? "Not specified"}\n` +
+    `Target audience: ${input.targetAudience}\n` +
     `Unique selling points: ${input.uniqueSellingPoints}\n` +
     (input.downloadUrl ? `Download URL: ${input.downloadUrl}\n` : "") +
     `\nGenerate exactly:\n` +

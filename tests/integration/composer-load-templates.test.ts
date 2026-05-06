@@ -297,6 +297,7 @@ describe("BL-027-F006.D · loadAssetsForComposer search + productId filters", ()
         tenantId: TENANT_A,
         name: "Demo Product",
         category: "Game",
+        targetAudience: "Casual gamers in the demo segment",
         uniqueSellingPoints: "Compact USP for filter test",
       },
     });

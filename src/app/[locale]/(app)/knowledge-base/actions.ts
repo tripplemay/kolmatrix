@@ -86,7 +86,7 @@ export async function createProduct(
           tenantId,
           name: data.name,
           category: data.category,
-          targetAudience: data.targetAudience ?? null,
+          targetAudience: data.targetAudience,
           uniqueSellingPoints: data.uniqueSellingPoints,
           downloadUrl: data.downloadUrl ?? null,
           launchDate: data.launchDate ? new Date(data.launchDate) : null,
@@ -184,7 +184,7 @@ export async function updateProduct(
         data: {
           name: data.name,
           category: data.category,
-          targetAudience: data.targetAudience ?? null,
+          targetAudience: data.targetAudience,
           uniqueSellingPoints: data.uniqueSellingPoints,
           downloadUrl: data.downloadUrl ?? null,
           launchDate: data.launchDate ? new Date(data.launchDate) : null,

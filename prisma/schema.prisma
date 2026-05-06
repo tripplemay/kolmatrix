@@ -456,7 +456,7 @@ model Product {
   tenantId            String    @map("tenant_id") @db.Uuid
   name                String
   category            String
-  targetAudience      String?   @map("target_audience") @db.Text
+  targetAudience      String    @map("target_audience") @db.Text
   uniqueSellingPoints String    @map("unique_selling_points") @db.Text
   downloadUrl         String?   @map("download_url")
   launchDate          DateTime? @map("launch_date") @db.Date

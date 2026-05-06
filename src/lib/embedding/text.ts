@@ -30,7 +30,7 @@ export interface KolEmbedInput {
 export interface ProductEmbedInput {
   name: string;
   category: string;
-  targetAudience: string | null | undefined;
+  targetAudience: string;
   uniqueSellingPoints: string;
 }
 

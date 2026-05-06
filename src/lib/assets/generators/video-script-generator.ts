@@ -22,7 +22,7 @@ export interface GenerateVideoScriptContentInput {
   product: {
     name: string;
     category: string;
-    targetAudience: string | null;
+    targetAudience: string;
     uniqueSellingPoints: string;
   };
   steeringPrompt?: string;

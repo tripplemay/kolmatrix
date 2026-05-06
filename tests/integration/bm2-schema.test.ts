@@ -77,6 +77,7 @@ async function seedProduct(tenantId: string, name = "E2E Game") {
       tenantId,
       name,
       category: "MOBA",
+      targetAudience: "MOBA players aged 18-30",
       uniqueSellingPoints: "Test USP",
     },
   });

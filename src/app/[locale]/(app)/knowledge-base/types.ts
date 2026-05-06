@@ -22,7 +22,7 @@ export interface ProductListItem {
   id: string;
   name: string;
   category: string;
-  targetAudience: string | null;
+  targetAudience: string;
   uniqueSellingPoints: string;
   downloadUrl: string | null;
   launchDate: string | null;
