@@ -20,7 +20,7 @@ type: project
 - 2026-05-06 16:00：dead code A backlog / v0.9.14 #1+#2 Accept / BL-044 启动
 ## 角色 / Backlog / 时间线
 - 默认映射（role_assignments=null）：CLI=planner+generator，Codex=evaluator
-- Backlog 19 条（BL-043 staging gap 长期闭合 medium / BL-045 dead code deferred / BL-042 max_tokens / BL-021 / BL-022 / BL-012 / 其它 deferred）
+- Backlog 17 条（无 high；medium 3：BL-021 Suspense / BL-023 valueScore / BL-043 staging gap；low 6：BL-011/014/015/017/018/027；deferred 8：BL-003/012/016/019/022/026/042/045）— 2026-05-06 16:45 移除 BL-020+BL-025 stale 条目（已 done 漏 splice 追溯清）
 - 时间线：05-06 BL-044 building（1-2 day）→ 05-07~08 用户业务测继承待办 #1-#4 → 05-09~10 buffer → **05-13 上线对外**
 
 <!-- 写入规则（harness §记忆分层）：覆盖写 / ≤30 行 / 所有角色可写 / 只放 WHAT / 不重复 progress.json -->

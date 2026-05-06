@@ -165,32 +165,6 @@
     "discovered_in": "docs/product/MVP-polish-audit-2026-04-30.md P1-5 + 用户 2026-04-30 决议"
   },
   {
-    "id": "BL-020",
-    "title": "前端审计 6 条安全整改 + 2 条 trivial UI 修复 mini-batch（CR-1/2/3 + H-S1/2/3 + UI-1 + UI-2）",
-    "description": "2026-05-01 三 agent 并行前端审计（约 37,500 行 TS/TSX，325 文件）出 6 项安全相关问题，团队内部 demo 风险低未进 BIx-mvp-polish-pass，作为单 mini-batch 排期（~0.5-1 day Generator + 0.25 day Reviewer）。基础工程质量良好（每条 API 校验 session+tenantId / 用户输入走 zod / bcrypt cost 12 / 192-bit token），无 0day 级漏洞，但 6 项是真实安全边界，正式上线对外客户前必须落地。\n\n**CR-1 productId 缺 UUID 格式校验**\n- 文件：src/app/[locale]/(app)/knowledge-base/actions.ts:22-25, 135-136, 205\n- normalizeProductId() 仅检查非空，未调 UUID_RE.test()，与本仓库其它 actions 不一致。RLS 兜底但畸形 productId 仍能进 tx.product.update/delete\n- 修复：normalizeProductId 加 UUID_RE.test()，或 Prisma 调用前内联校验\n\n**CR-2 AI 生成 URL 直渲染 <a href>（潜在 open redirect）**\n- 文件：src/app/[locale]/(app)/campaigns/[id]/AiSuggestionsClient.tsx:150\n- s.action_link 来自 AI 响应 + localStorage 反序列化，无 schema 校验\n- 修复：路径白名单 ['/campaigns','/discovery','/database','/outreach']，否则 fallback；改 <Link>\n\n**CR-3 dangerouslySetInnerHTML 内联脚本（discovery 高级筛选）**\n- 文件：src/app/[locale]/(app)/discovery/FilterSidebar.tsx:344-347\n- 当前注入常量安全，但反范式；未来如改动态 cookie 名会洞开\n- 修复：改小型 'use client' 组件，<details> toggle 事件读写 cookie\n\n**H-S1 SQL 注入风险（防御依赖单点 assertUuid）**\n- 文件：src/lib/db.ts:60\n- tx.$executeRawUnsafe(\\`SET LOCAL app.tenant_id = '${tenantId}'\\`) — 当前 assertUuid 兜住，但任何未来 caller 绕过即洞开\n- 修复：tx.$executeRaw\\`SET LOCAL app.tenant_id = ${tenantId}\\` 参数化\n\n**H-S2 登录无防爆破 / 限流**\n- 文件：src/app/[locale]/login/actions.ts + src/app/api/auth/[...nextauth]/route.ts\n- bcrypt cost=12 减缓单点，但并发请求可平行投喂；/api/** 被 middleware 排除\n- 修复：用 @upstash/ratelimit + Redis（.env.example 已有 Redis URL）滑动窗口（10/15min/email）\n\n**H-S3 缺失 HTTP 安全头**\n- 文件：next.config.ts — 缺 CSP / X-Frame-Options / X-Content-Type-Options / HSTS / Referrer-Policy / Permissions-Policy\n- 修复：BIx F005 已含 6 头 + CSP-Report-Only。本条 BL-020 余项 = 一周观察期后切 CSP enforce\n- /shared/weekly-report/[token] 公开页尤其暴露在 clickjacking 下\n\n**UI-1 Dashboard QuickActions Campaigns 卡片假死修复（trivial 顺手做，~10min）**\n- 文件：src/features/dashboard/QuickActions.tsx:25\n- 现状：`{ key: \"campaigns\", href: null, ... }` + 'Coming Soon' badge，但 /campaigns 实际已上线（侧栏可正常进入），QuickActions 卡片对用户造成虚假 'coming' 误导\n- 修复：href 从 `null` 改为 `\"/campaigns\"`；删 'Coming Soon' badge 渲染分支（保留 href=null fallback 以备未来其他卡片用）\n- 守门 test：features/dashboard/__tests__/QuickActions.test.tsx 验证 4 个卡片全部含可点击 href\n- 价值：纯 UI 误导消除；与本批次其它安全项无冲突，顺手修；2026-05-02 Planner 全 prod 排查发现\n\n**UI-2 /discovery 过滤 demo_seed mock KOL（防客户接触 mock 数据，~30min）**\n- 文件：src/app/[locale]/(app)/discovery/search.ts (buildKolWhere)\n- 现状：prisma/seed.ts 灌 12 条硬编码 demo KOL（GamerXia/SakuraYT/NeonHaze/KaiBytes/Mei Plays/Ryo Arcade/Aisha Streams/PixelPao/LumenArc/Janelytics/ForgeFalcon/Zeralite，全部 emailSource=\"demo_seed\"），prod 已 seed-prod.yml 跑过 3 次（2026-05-01）。Demo Studio tenant 登录 prod /discovery 直接看到这 12 条 mock，对外客户极不专业\n- 不能直接删 seed：12 条 KOL 被 300 条 EmailLog + 10 条 KolCampaign 强引用（seed.ts:683-685 + 429-440），删了 demo composer / outreach Overview / weekly-report / dashboard email chart / crm pipeline 全空，团队内部 demo 走不通\n- 修复：buildKolWhere 加 `emailSource: { not: \"demo_seed\" }` 过滤；加 env var `DISCOVERY_HIDE_DEMO_SEED`（prod 默认 true / staging+dev 默认 false 让团队走查 mock）\n- 守门 test：tests/integration/discovery-hide-demo-seed.test.ts 验证 hide=true 时 12 条 mock 0 出现 + hide=false 时全显；其它 demo 数据流（campaigns/outreach/etc）不受影响\n- 部署：prod .env.production 加 DISCOVERY_HIDE_DEMO_SEED=true；staging .env.staging 加 DISCOVERY_HIDE_DEMO_SEED=false（让团队 staging demo 仍可见 mock 走通整个流程）\n- 价值：客户接触面立刻去 mock；不破坏内部演示链；为长期多租户隔离（独立 customer tenant）赢得时间；2026-05-02 Planner 全 prod 排查 + 用户决议\n- 注意：Smart Match Dialog 也走 KOL 池过滤（src/lib/discovery/smart-match.ts），需同步审 demo_seed 过滤是否一并生效（Generator 开工前 grep 确认）\n\n**Acceptance（mini-batch 启动时落地）：**\n- 6 项安全 + 2 项 UI 全修\n- 加守门 tests：UUID 校验 / open-redirect 白名单 / dangerouslySetInnerHTML 改 client component / SQL 参数化 / 限流 unit + integration / CSP 切 enforce 后 violation log 0 / QuickActions 4 卡可点击 / Discovery hide demo_seed env 切换\n- staging + prod L2 烟测 30+ 条 checklist（同 MVP F005 模式补安全维度 + UI-2 验证 prod /discovery 12 条 mock 全消失）\n- signoff 报告明示「6 项安全 Critical/High + 2 项 UI 全部闭环」\n\n**2026-05-04 prod-mvp-readiness audit 增量明细（docs/reviews/prod-mvp-readiness-audit-2026-05-04.md §3）：**\n- CR-1 productId UUID 校验：knowledge-base/actions.ts:21-22 仅 tenantId UUID_RE，normalizeProductId 只查非空\n- CR-2 AI URL 直渲染：campaigns/[id]/AiSuggestionsClient.tsx:150 s.action_link 仅 startsWith('/')，无路径白名单\n- CR-3 dangerouslySetInnerHTML：discovery/FilterSidebar.tsx:344（当前常量安全，但反范式）\n- H-S1 SQL 注入兜底单点：src/lib/db.ts:60 tx.$executeRawUnsafe(`SET LOCAL app.tenant_id = '${tenantId}'`) 字符串插值，依赖 assertUuid 单点；改参数化\n- H-S2 登录无 rate-limit：全 src 0 个 @upstash/ratelimit；login/actions.ts 未限流；@upstash/ratelimit + Redis .env 已有，可直接接入\n- H-S3 CSP Report-Only：next.config.ts:71 仍 Report-Only；切 enforce 前需 1 周观察期\n- UI-1 Dashboard QuickActions Campaigns 假死：src/features/dashboard/QuickActions.tsx:25 href:null + 'Coming soon' tooltip，但 /campaigns 已上线，卡片误导\n- UI-2 demo_seed 12 mock KOL prod 暴露：src/lib/kol/filters.ts:387 buildKolWhere 不含 emailSource:{not:'demo_seed'} 过滤；**修法：env-var 过滤而非删 seed**（demo_seed 有 300 EmailLog + 10 KolCampaign 强引用，删会拆塌历史数据）",
-    "decisions": [
-      "用户 2026-05-01 决议 14：6 项不进 BIx-mvp-polish-pass，单独 mini-batch（团队内部 demo 风险低）",
-      "用户 2026-05-01 决议 (γ-2)：6 项合 1 条 backlog 条目（紧凑，作为单 mini-batch 排期）",
-      "排期建议：BIx done + 团队 demo 反馈窗口期内启动 1 mini-batch（~0.5-1 day），上线对外客户前必须落地",
-      "CSP enforce 切换属本条 acceptance 子项（H-S3 后半段 — BIx F005 仅做 Report-Only）",
-      "用户 2026-05-02 决议：UI-1 Dashboard QuickActions Campaigns 假死修复（trivial ~10min）并入本批次顺手做",
-      "用户 2026-05-02 决议：UI-2 /discovery 过滤 demo_seed mock KOL（~30min env var + where 过滤，不删 seed 保 demo 完整性）并入本批次。否决直接删 seed 方案（会拆塌 300 EmailLog + 10 KolCampaign 强引用 + 整个 Demo Studio composer/outreach/weekly-report demo 链）"
-    ],
-    "confirmed_at": "2026-05-01T03:00+0800",
-    "priority": "high",
-    "tags": [
-      "security",
-      "audit-2026-05-01",
-      "post-bix",
-      "pre-external-customer"
-    ],
-    "discovered_in": "docs/reviews/frontend-audit-2026-05-01.md（三 agent 并行：typescript-reviewer / security-reviewer / general-purpose-performance）",
-    "references": [
-      "docs/reviews/frontend-audit-2026-05-01.md §🔴 Critical (CR-1/2/3) + §🟠 High 安全相关 (H-S1/S2/S3)",
-      "docs/specs/BIx-mvp-polish-pass-spec.md §1.3 非目标 + §10 决议 14"
-    ]
-  },
-  {
     "id": "BL-021",
     "title": "全应用 Suspense / loading.tsx 边界（H-P4）",
     "description": "前端审计 H-P4：当前全应用 0 个 loading.tsx / Suspense 边界。ROI / Dashboard / Campaign Detail 都'全等就绪才出现'，慢查询全局阻塞。预估收益：感知首屏 −300~800ms。BIx F005 (γ) 决议跳过 H-P4（范围易扩，11 路由全加 ~4h，critical paths 5 路由 ~2h），单独 backlog 条目评估。等 BIx done 后据团队 demo 反馈决定：(a) critical paths 5 路由（~2h）/ (b) 全 11 路由（~4h）/ (c) 仍不做（如团队反馈无慢页阻塞感）。\n\n**实现路径（如启动）：**\n- 选 5/11 路由各加 src/app/[locale]/(app)/<route>/loading.tsx skeleton\n- 慢查询拆 Suspense boundary：dashboard KPI / ROI trend / campaign KOL panel 等独立 query 并行 stream\n- visual baseline 必更（loading skeleton 引入新 layout）",
@@ -255,41 +229,6 @@
       "src/lib/embedding/text.ts",
       "src/lib/kol-sync/import.ts (valueScore 写入路径)",
       "docs/specs/BIx-mvp-polish-pass-spec.md §F004 (Top 100 真 engagement batch 前置依赖)"
-    ]
-  },
-  {
-    "id": "BL-025",
-    "title": "素材中心 / Asset Library — 统一 Asset 表（方案 X）+ /assets 页面 + variant tree + AI generate/regenerate + /outreach composer 接通",
-    "description": "Planner 2026-05-02 全 prod (6f33a55) 链路审计发现：用户录入产品 → AI 生成 3 邮件 + 2 视频 → 0% 接通到使用端（邮件 /outreach composer 选不到；视频完全无入口；ProductCard chip 静态无反应；用户无法编辑/复制/生成 variant/跨产品复用）。BM1 spec §F003 'AI 生成全套素材' 是核心卖点但落地止步在 storage 层，对客户而言基本不存在。\n\n**本批次：起完整素材中心承载所有产品素材，让 marketer 一站看见、编辑、生成、投放。**\n\n用户 2026-05-02 决议：\n- MVP 时间不硬，在 BL-020/BL-024 之前完整实现（不做 trivial 半成品方案）\n- 架构方案 X — 统一 Asset 表（含 EmailTemplate 数据迁移），见 ADR-011\n- Variant tree 支持（regenerate 不覆盖原版，parentId 链可回溯）\n- 视频脚本仅查看/编辑/复制（A 选项），B/C 选项（邮件附件 / KOL 投放）留 BL-026\n- 不做 Asset templates 商城\n- Generate 不限频率但 audit log 留底\n- 富文本编辑器留 BL-027（plain text + Markdown 起步）\n\n**8 features（详见 docs/specs/BL-025-asset-library-spec.md）：**\n- F001 (~1d) Asset 表 schema + migration（含 EmailTemplate 迁移 + RLS + ROLLBACK SQL + dual-write 兼容期）\n- F002 (~0.5d) src/lib/assets/* 后端核心（CRUD + Zod schema 集中 + RLS-aware queries）\n- F003 (~1d) AI generate / regenerate / variant tree（aigcgateway + audit log）\n- F004 (~1.5d) /assets 页面三栏 — Filter sidebar / Grid / Detail panel（依 Stitch 稿实装）\n- F005 (~0.5d) Edit + Save + Versions tab + Used in tab\n- F006 (~0.5d) /outreach composer 接通（loadAssetsForComposer 替 loadOutreachTemplates）\n- F007 (~0.25d) /knowledge-base 集成（ProductCard chip 可点 + 4 状态 + ProductModal 展示）\n- F008 (~0.25d) Send to /outreach（email asset 一键注入 composer，prefilled state）\n\n**估时：** ~5.5 day Generator + 1 day Reviewer\n\n**前置依赖：**\n1. BIx-mvp-polish-pass done + Reviewer signoff PASS\n2. prod redeploy BIx 完成 + 稳定 ≥ 2 day（避免与 F004 sync infra 撞车）\n3. ADR-011 Accepted（已 commit）\n4. Stitch 设计稿出 1-2 张 desktop 高保真（用户并行操作；F004 开工前必到位）\n\n**Definition of Done：**\n- 8 features 全 PASS + Reviewer L1+L2 签收\n- Asset 表 + EmailTemplate dual-write 兼容期上线\n- /assets 页面三栏 + filter URL state + variant tree + edit/save 全工作\n- /outreach composer 看到 AI + User + System 全部 email asset\n- ProductCard chip 4 状态 + 跳 /assets?productId=xxx\n- Audit log 记录 generate / regenerate\n- staging + prod redeploy + L2 烟测 30+ 条 checklist 全 PASS\n\n**后续 backlog 触发（BL-025 done 后）：**\n- BL-020 安全 mini-batch 启动\n- BL-024 ghost-controls 启动\n- 新增候选 BL-026（视频投放 B/C 选项）/ BL-027（富文本编辑器）/ BL-028（Asset templates 商城）\n- 独立 cleanup migration 删 EmailTemplate 表（BL-025 done + 1 周观察期满）",
-    "decisions": [
-      "用户 2026-05-02 决议：MVP 时间不硬，在 BL-020/BL-024 之前完整实现素材中心（不做 trivial 半成品）",
-      "架构方案 X 锁定（ADR-011）：统一 Asset 表 + EmailTemplate migration，未来扩展 social_post / brief 等新 type 零成本",
-      "Variant tree 支持（regenerate 不覆盖原版，parentId 链）",
-      "视频脚本 A 选项（仅查看/编辑/复制）；B/C 选项 → BL-026",
-      "不做 Asset templates 商城",
-      "Generate 不限频率 + audit log 留底（后期看数据再加 cap）",
-      "富文本编辑器 → BL-027（plain text + Markdown 起步）",
-      "Stitch 设计稿用户并行出图，F004 UI 实装等设计稿对齐"
-    ],
-    "confirmed_at": "2026-05-02T13:30+0800",
-    "priority": "high",
-    "tags": [
-      "asset-library",
-      "ai-creative-studio",
-      "schema-migration",
-      "post-bix",
-      "pre-external-customer",
-      "differentiation"
-    ],
-    "discovered_in": "Planner johnsong 2026-05-02 全 prod (6f33a55) 产品 → AI 模板/脚本 链路审计 + 用户决议起完整素材中心",
-    "references": [
-      "docs/specs/BL-025-asset-library-spec.md",
-      "docs/adr/ADR-011-unified-asset-table-vs-typed-tables.md",
-      "src/lib/products/generateAiAssets.ts (现有 AI 生成逻辑，F003 复用)",
-      "src/lib/email/templates.ts:loadOutreachTemplates (F006 改造目标)",
-      "prisma/schema.prisma:EmailTemplate (F001 migration 源)",
-      "src/app/[locale]/(app)/knowledge-base/ProductCard.tsx (F007 改造目标)",
-      "BM1 spec §F003 (历史背景：'一键生成 3 邮件 + 2 视频')"
     ]
   },
   {
