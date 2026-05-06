@@ -1,37 +1,41 @@
-{
-  "sprint": "BL-044-discovery-ai-semantic-search",
-  "features": [
-    {
-      "id": "F001",
-      "title": "runSemanticKolSearch server module（fork from smart-match.ts）",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "新建 src/lib/discovery/semantic-search.ts (~150 行 fork from B7a-F002 smart-match.ts:115-200 范式)：export runSemanticKolSearch({tenantId, queryText, topK?}) → Promise<{kolIds: string[], cost: number, latencyMs: number, cacheHit: boolean}>；export class SemanticSearchError 含 codes INVALID_QUERY / EMBED_FAILED / DB_ERROR；复用 embedOne (src/lib/embedding/client.ts) — bge-m3 multilingual 1024-dim；复用 kolCosineTopKSql (src/lib/embedding/sql.ts) — pgvector ivfflat index；RLS via withTenant 包裹（与 SmartMatch 同模式）；Validate queryText 空 / >200 chars 抛 INVALID_QUERY；Latency budget cached path < 100ms / non-cached path < 500ms；新增 src/lib/discovery/__tests__/semantic-search.test.ts ≥4 case（empty query reject / >200 chars reject / valid query top-K returned / EMBED_FAILED 5xx mock）；npm run lint + tsc + test 全绿。详见 spec §F001。"
-    },
-    {
-      "id": "F002",
-      "title": "UI integration — SearchBar AI chip + page.tsx 解析 ?ai=",
-      "priority": "high",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "src/app/[locale]/(app)/discovery/SearchBar.tsx chip href 改：basePath?search=label → basePath?ai=label；src/app/[locale]/(app)/discovery/search.ts 加 semantic 路径检测 filters.aiQuery → 调 runSemanticKolSearch → 返回 cosine-ordered kolIds（自动 fallback 到 ILIKE 见 F003）；src/lib/kol/filters.ts 加 aiQuery?: string field + parseFilters / serializeFilters 同步处理 ai URL 参数；src/app/[locale]/(app)/discovery/ActiveFilters.tsx 加 '🤖 AI: <query>' chip 渲染 + 点 X 清空 ?ai=；AI search result grid 保持 cosine 顺序（不按 valueScore / followers / createdAt 排）— UI 上 sort dropdown disable + tooltip 'AI search uses semantic ranking'；npm run lint + tsc + test 全绿。详见 spec §F002 + D5 + D6。"
-    },
-    {
-      "id": "F003",
-      "title": "Performance + Failure fallback (chip embedding cache + ENABLE_AI_SEARCH escape hatch)",
-      "priority": "medium",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "Module-level CHIP_EMBEDDING_CACHE Map<string, number[]>；preWarmChipCache() lazy first-request 触发（避免 cold start blocking）— 5 locale × 3 chip = 15 texts batch embed；Cache hit → cacheHit:true 在返回值；Cache hit rate ≥95%（chip click 不重复调 aigcgateway）；embedding service 5xx → fall back 到 ?search= ILIKE 路径（SemanticSearchError code=EMBED_FAILED → 自动 redirect URL）；env var ENABLE_AI_SEARCH=false short-circuit 退化到 ILIKE（与 BL-020 F005 / BL-034 F005 escape hatch 同模式）；.env.example 加 ENABLE_AI_SEARCH=true + comment；npm run lint + tsc + test 全绿。详见 spec §F003 + D3/D4。"
-    },
-    {
-      "id": "F004",
-      "title": "Tests + Monitoring (event_log type='ai.usage' source='semantic_search')",
-      "priority": "medium",
-      "executor": "generator",
-      "status": "completed",
-      "acceptance": "单测 src/lib/discovery/__tests__/semantic-search.test.ts ≥4 case 已含 F001；新增 tests/integration/discovery-ai-search.test.ts ≥2 case（?ai=FPS 端到端 grid render with cosine hits / ?ai=GIBBERISH fallback to ILIKE empty state）；event_log 写入 type='ai.usage' source='semantic_search' payload={action:'discovery.semantic_search', queryText 前 50 chars, cost, cacheHit, kolIdsCount}（与 BL-034 F005 cost-cap MVP 集成）；BL-035 F003 AI rate-limit 自动 enforce（10/min/tenantId）；BL-034 F005 cost-cap MVP 自动 enforce per-tenant $5/day 上限；npm run lint + tsc + test 全绿 + CI 全绿。详见 spec §F004。"
-    }
-  ]
-}
+[
+  {
+    "id": "F001",
+    "title": "deploy-staging.sh + deploy-prod.sh fail-fast on KOLMATRIX_APP_PASSWORD unset",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 1,
+    "status": "pending",
+    "acceptance": [
+      "infrastructure/deploy-staging.sh 改 fail-fast 模式（exit 1 + multi-line error，含修复指引指向 environment.md §Postgres）",
+      "scripts/deploy-prod.sh 同步 fail-fast",
+      "lint + tsc + test 全绿（无新测试）"
+    ]
+  },
+  {
+    "id": "F002",
+    "title": ".auto-memory/environment.md staging Postgres 段文档化（密码 sync 协议 5 处必须一致）",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 0.5,
+    "status": "pending",
+    "acceptance": [
+      "environment.md staging Postgres 段（line 77）扩展含密码同步协议 + 修改 ops 步骤 + ALTER ROLE peer auth 模式",
+      "新增 Postgres kolmatrix_app role 密码 sync 协议子表（5 处必须一致：prod .env KOLMATRIX_APP_PASSWORD + DATABASE_URL pwd + staging 2 处 + PG role pwd）"
+    ]
+  },
+  {
+    "id": "F003",
+    "title": "staging deploy run smoke test（standard + fail-fast 双路径验证）",
+    "executor": "generator",
+    "priority": "medium",
+    "estimated_hours": 1,
+    "status": "pending",
+    "acceptance": [
+      "触发 staging deploy run with main HEAD（含 F001+F002 改动）",
+      "Standard path：health 200 + DB ok + git_sha 对齐",
+      "Fail-fast path：临时注释 .env.staging KOLMATRIX_APP_PASSWORD → 触发 deploy → exit 1 + multi-line error",
+      "测试报告 docs/test-reports/BL-043-deploy-bridge-smoke-2026-05-XX.md"
+    ]
+  }
+]

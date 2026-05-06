@@ -313,34 +313,6 @@
     ]
   },
   {
-    "id": "BL-043",
-    "title": "BL-024 F008 retroactive：deploy-staging.yml + .env.staging 加 KOLMATRIX_APP_PASSWORD（闭合 BL-024 F006/F007 staging-side 设计 gap）",
-    "description": "触发：2026-05-06 BL-040 F001 staging deploy run 25415574990 卡 health 503（DB 28P01 password authentication failed for kolmatrix_app）。根因：staging .env.staging 缺 KOLMATRIX_APP_PASSWORD env var → deploy-staging.sh 跳过 ALTER ROLE 步骤（log: ⚠️ KOLMATRIX_APP_PASSWORD unset — skipping app-role password rotation）。staging+prod 共用单一 kolmatrix_app role；今早 ~08:00 prod redeploy 全局 ALTER ROLE 轮换密码后 staging .env.staging 持有的旧密码已失效。\n\n**本质：** BL-024 F006/F007 retroactive 实装时只覆盖 prod env 落地（user task #1 ✅ 2026-05-06 ~08:00），但 staging .env.staging 漏配 KOLMATRIX_APP_PASSWORD，且 deploy-staging.yml/sh 设计上接受 'env var unset → silently skip rotation' 的优雅降级 — 殊不知 staging+prod 共用 role 密码使该降级在 prod 已轮换后必然导致 staging auth break。\n\n**改动建议（短期 + 长期）：**\n1. **短期一次性**（人工）：SSH staging 把 KOLMATRIX_APP_PASSWORD（同 prod 值）加入 /opt/kolmatrix-staging/.env.staging（同 prod 0640 权限）→ 重 deploy 即恢复 health。无代码改动。\n2. **长期 PR**（features.json 新 feature）：\n   - F008-A: 修 deploy-staging.yml 改善失败模式 — KOLMATRIX_APP_PASSWORD unset 时不再 silently skip，而是 hard-fail（exit 1）+ 清晰报错指向 .env.staging 落地。这避免未来同类 retroactive design gap silently 复发。\n   - F008-B: 文档化 environment.md — 明示 staging+prod 共用 kolmatrix_app role + 任意一边轮换密码必须同步 .env 双方。\n   - F008-C：考虑 deploy-prod.yml 内置 staging .env.staging 同步更新（or 自动化校验 staging health 200 失败时阻塞 prod deploy）。\n\n**触发条件：** BL-040 done 后启动；或下次同类 staging health auth fail 复发；或 prod 任意 redeploy 后台触发 staging cascade 失败。\n\n**估时：** F008-A ~30min（yml 改 + 测试）/ F008-B ~15min（doc）/ F008-C ~1h（设计 + 测）/ 短期人工修复 ~5min（SSH + 加 env var + 重 deploy）。",
-    "decisions": [
-      "用户 2026-05-06 BL-040 verifying 切换决议时同意 D 选项 — 短期 SSH 修 + 长期入 backlog 闭合 yml 设计 gap",
-      "短期人工修复优先级：在 BL-040 verifying 期间或之前 SSH staging 落地 KOLMATRIX_APP_PASSWORD，否则 staging health 持续 503",
-      "长期 F008 PR 优先级：post-BL-040 done；不阻塞 05-13 上线（prod 不受影响）",
-      "用户 2026-05-06 19:50 决议：BL-023 完成后立即启动（不是 5/7~8 也不是 5/13 后）— 闭合 staging deploy 链路 + .env.staging 落地 + environment.md 文档化"
-    ],
-    "confirmed_at": "2026-05-06T12:05+0800",
-    "priority": "high",
-    "tags": [
-      "deploy-pattern",
-      "env-var",
-      "staging",
-      "bl-024-retroactive",
-      "framework-followup"
-    ],
-    "discovered_in": "BL-040 F001 staging deploy run 25415574990 卡 health 503 (Generator Kimi 2026-05-06 12:00)",
-    "references": [
-      "infrastructure/deploy-staging.sh §ALTER ROLE step (line 75-83)",
-      ".github/workflows/deploy-staging.yml §SSH script set -a source .env.staging",
-      "framework/harness/deploy-patterns.md §ALTER ROLE 设计起源 (BL-024 F006/F007)",
-      ".auto-memory/environment.md §Postgres staging+prod 共用 role 描述",
-      "scripts/deploy-prod.sh §对应 prod side ALTER ROLE 实装"
-    ]
-  },
-  {
     "id": "BL-045",
     "title": "email-generator + video-script-generator targetAudience fallback dead code 清理（BL-040 spec scope retroactive）",
     "description": "BL-040 spec 起草时 Planner 漏 grep 完整 '?? \\'Not specified\\'' 模式（仅列 generateAiAssets.ts:175 一处），实际 Generator 开工前 grep 实物发现 src/lib/assets/generators/email-generator.ts:74 + src/lib/assets/generators/video-script-generator.ts:80 同样含此 fallback 模式。Generator 按铁律 #10 不越界，本 backlog 条目跟踪后续清理。\n\n**当前实情：** BL-040 已收紧上游 type 到 string（不再 nullable）— 这 2 处 ?? 'Not specified' fallback **永远不会触发**，是 dead code 不影响 runtime。但维护负担 + 误导 reader 以为 NULL 路径仍存。\n\n**清理方案（5 min）：**\n```diff\n# email-generator.ts:74:\n-`Target audience: ${targetAudience ?? 'Not specified'}`\n+`Target audience: ${targetAudience}`\n\n# video-script-generator.ts:80（同模式）\n```\n\n**触发条件：** 下个 mini-batch 顺手做（与其它修同 sprint），或起 dead-code-cleanup sprint 集中（含 BL-024 SW-1 visual baseline + BL-034 unused import + 本条目 + 其它 spec drift 残留）。\n\n**不阻塞任何东西：** dead code 不影响 runtime / build / tests / prod 用户体验。",
