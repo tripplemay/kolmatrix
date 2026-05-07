@@ -244,18 +244,23 @@ updates:
 
 ---
 
-### F007 · framework v0.9.15 沉淀
+### F007 · framework v0.9.15 沉淀（5/7 13:06 修正 — 2 维教训）
 
 **Executor:** generator
 **Priority:** medium
-**预估工时:** 15 min（Planner 同步 0.25h）
+**预估工时:** 20 min（Planner 同步 0.25h）
 
 **改动：**
 
-1. **`framework/harness/planner.md`** 铁律 1 检查矩阵 +1 行：
+> **重要：** BL-047 5/7 13:06 修正后真实历史是「真 bug + 跨环境差异」**不是** spec premise 错误。沉淀 2 维（不只是 1 维"实地跑"）：(1) Backlog 测试断言必须实地跑 + 复现 reviewer 环境 (2) 测试 stub 必须 environment-agnostic。
+
+1. **`framework/harness/planner.md`** 铁律 1 检查矩阵 +2 行：
 
 ```markdown
-| Backlog 条目涉及"测试 fail / 测试 PASS / 测试覆盖"类断言（v0.9.15 新增）| 必须实地 `npx vitest run <target>` 验证当前实情；不依赖 verifying 报告或他人转述措辞（BL-047 反例：Codex verifying 报告"unrelated existing failure"被 Planner 误判为真 fail，实际 Generator 实地 1043/1043 PASS） |
+| 内容 | 核查动作 |
+|------|---------|
+| Backlog 条目涉及"测试 fail / 测试 PASS / 测试覆盖"类断言（v0.9.15 #1）| 必须实地 `npx vitest run <target>` 验证当前实情 + **复现 reviewer 实际跑测试的环境**（pool 类型 forks vs threads / vitest version / Node version）；Generator forks pool PASS ≠ Codex threads pool PASS（BL-047 反例：Generator 5/7 10:30 forks pool 1043/1043 PASS 误以为无 bug，Codex 11:51 reverifying 实际复现 localStorage TypeError） |
+| 测试 stub 设计（v0.9.15 #2）— Test fixture / 全局 mock / setupFiles 内 stub | 必须 environment-agnostic（如用 Map-backed 自实装 stub），不依赖 jsdom / happy-dom / Node 默认行为；不同 vitest pool 启动顺序可能导致 jsdom 全局 init 时机不同 → 不依赖默认行为消除 race（BL-047 fix-round 1 commit 9fa2a49 范式） |
 ```
 
 2. **`framework/CHANGELOG.md`** 加 v0.9.15 entry：
@@ -263,27 +268,29 @@ updates:
 ```markdown
 ## v0.9.15 — 2026-05-07
 
-来源：BL-021 F002 撤（spec premise 错误反例）+ BL-049 测试基建升级 audit。
+来源：BL-021 F002 撤再翻盘（5/7 10:30 撤 → 11:51 Codex reverifying FAIL → 13:00 fix-round 1 真修 @ 9fa2a49）+ BL-049 测试基建升级 audit。
 
 新增/修订：
-- `planner.md` 铁律 1 检查矩阵 +1 行（v0.9.15）— "测试 fail/PASS/覆盖"类 backlog 断言必须实地跑验证，不依赖 verifying 报告措辞
-- 沉淀来源：`docs/audit-reports/test-infra-audit-2026-05-07.md` §H + BL-047 closed-not-reproducible
+- `planner.md` 铁律 1 检查矩阵 +2 行（v0.9.15 #1 + #2）— 跨环境/跨 pool 复现 + 测试 stub environment-agnostic
+- 沉淀来源：`docs/audit-reports/test-infra-audit-2026-05-07.md` §4 + BL-047 fix-round 1 commit 9fa2a49 (Map-backed stub 范式)
 ```
 
 3. **`framework/proposed-learnings.md`** 加沉淀完成 comment：
 ```markdown
-<!-- 2026-05-07: v0.9.15 沉淀完成（1 条 learning 来源 BL-021 F002 撤 + BL-049 audit），已写入 planner.md 铁律 1 矩阵 +1 行 + CHANGELOG。归档：framework/archive/proposed-learnings-archive-v0.9.15.md。 -->
+<!-- 2026-05-07: v0.9.15 沉淀完成（2 条 learnings 来源 BL-021 F002 撤再翻盘 + BL-049 audit），已写入 planner.md 铁律 1 矩阵 +2 行 + CHANGELOG。归档：framework/archive/proposed-learnings-archive-v0.9.15.md。 -->
 ```
 
-4. **`framework/archive/proposed-learnings-archive-v0.9.15.md`** 新建归档（1 条 learning + 反例 audit trail）
+4. **`framework/archive/proposed-learnings-archive-v0.9.15.md`** 新建归档：
+- Learning #1: 跨环境复现（BL-047 反例完整时间线 5/7 10:30 撤 → 11:51 Codex 复现 → 13:00 fix-round 1）
+- Learning #2: Map-backed stub 范式（commit 9fa2a49 引用）
 
-5. **`docs/audit-reports/test-infra-audit-2026-05-07.md`** 第 5 节状态表更新（标 BL-049 done）
+5. **`docs/audit-reports/test-infra-audit-2026-05-07.md`** 第 5 节状态表更新（标 BL-049 done） + 第 4 节"v0.9.15 候选沉淀"已修正为 2 维（5/7 13:06 已 update）
 
 **Acceptance：**
-- [ ] `framework/harness/planner.md` 铁律 1 矩阵 +1 行
-- [ ] `framework/CHANGELOG.md` v0.9.15 entry 完整
-- [ ] `framework/proposed-learnings.md` 加沉淀完成 comment
-- [ ] `framework/archive/proposed-learnings-archive-v0.9.15.md` 新建（含反例 audit trail）
+- [ ] `framework/harness/planner.md` 铁律 1 矩阵 +2 行（不是 1 行）
+- [ ] `framework/CHANGELOG.md` v0.9.15 entry 含真实历史（撤 → 翻盘 → fix-round 1）
+- [ ] `framework/proposed-learnings.md` 加沉淀完成 comment（2 条 learnings）
+- [ ] `framework/archive/proposed-learnings-archive-v0.9.15.md` 新建（含 BL-047 完整反例时间线 + Map-backed stub 范式）
 - [ ] `docs/audit-reports/test-infra-audit-2026-05-07.md` 状态更新
 
 ---

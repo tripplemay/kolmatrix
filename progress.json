@@ -1,33 +1,38 @@
 {
-  "status": "done",
-  "user_goal": "BL-021 Suspense / loading.tsx Critical Paths - 5 critical routes (dashboard/discovery/campaigns/roi/weekly-report) plus shared Skeleton component. Fix-round 1: AiSuggestionsClient.test.tsx localStorage env-portable stub (commit 9fa2a49).",
-  "total_features": 1,
-  "completed_features": 1,
-  "fix_rounds": 1,
-  "current_sprint": "BL-021-suspense-critical-paths",
-  "last_updated": "2026-05-07T13:06+0800",
+  "status": "building",
+  "user_goal": "BL-049 测试基建系统性升级 mini-batch (X1 合并 audit High 3 + Medium 4 = 7 features) — F001 vitest.config.ts coverage.exclude 拆 helper / F002 integration fileParallelism + maxForks=4 (CI 时间 10-15min → 3-4min) / F003 E2E visual workaround 独立 Playwright project + 隔离 DB / F004 .github/dependabot.yml / F005 material-symbols-coverage + e2e database-fidelity 2 pre-existing fails 修 / F006 vitest trailing comment + tests/__example/ + helpers/_colima-detect.ts + mocks/browser.ts dead code 评估 / F007 framework v0.9.15 沉淀 2 维 (跨 pool 复现 + stub environment-agnostic). 预估 ~6h Generator + 0.5h Reviewer. 关联: docs/audit-reports/test-infra-audit-2026-05-07.md (13 项发现详情).",
+  "total_features": 7,
+  "completed_features": 0,
+  "fix_rounds": 0,
+  "current_sprint": "BL-049-test-infra-systematic-upgrade",
+  "last_updated": "2026-05-07T13:10+0800",
   "reference_docs": [
-    "docs/specs/BL-021-suspense-critical-paths-spec.md",
-    "src/components/ui/Skeleton.tsx",
-    "src/components/ui/index.ts",
-    "src/app/[locale]/(app)/dashboard/loading.tsx",
-    "src/app/[locale]/(app)/discovery/loading.tsx",
-    "src/app/[locale]/(app)/campaigns/[id]/loading.tsx",
-    "src/app/[locale]/(app)/roi/loading.tsx",
-    "src/app/[locale]/(app)/weekly-report/loading.tsx",
-    "src/app/[locale]/(app)/campaigns/[id]/__tests__/AiSuggestionsClient.test.tsx"
+    "docs/specs/BL-049-test-infra-systematic-upgrade-spec.md",
+    "docs/audit-reports/test-infra-audit-2026-05-07.md",
+    "vitest.config.ts",
+    "vitest.integration.config.ts",
+    "playwright.config.ts",
+    ".github/workflows/ci.yml",
+    "tests/setup.ts",
+    "tests/integration/material-symbols-coverage.test.ts",
+    "tests/e2e/database-fidelity.spec.ts",
+    "framework/harness/planner.md",
+    "framework/CHANGELOG.md",
+    "framework/proposed-learnings.md"
   ],
   "docs": {
-    "spec": "docs/specs/BL-021-suspense-critical-paths-spec.md",
+    "spec": "docs/specs/BL-049-test-infra-systematic-upgrade-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/BL-021-suspense-critical-paths-signoff-2026-05-07.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": "BL-021 reverifying PASS. L1 full green (lint/tsc/vitest 146/146), staging route smoke passed, and fix-round 1 resolved the cross-environment localStorage failure in AiSuggestionsClient.test.tsx.",
+  "evaluator_feedback": null,
   "generator_handoff": null,
   "session_notes": {
     "Kimi": null,
-    "Reviewer": "[2026-05-07] BL-021 reverifying PASS. L1 full green (lint / tsc / vitest 146/146), staging smoke on /zh/dashboard, /zh/discovery, /zh/campaigns, /zh/roi, /zh/weekly-report passed, and fix-round 1 resolved the cross-environment localStorage failure with a Map-backed stub."
-  }
+    "Reviewer": "[2026-05-07] BL-021 reverifying PASS. L1 full green (lint / tsc / vitest 146/146), staging smoke on /zh/dashboard, /zh/discovery, /zh/campaigns, /zh/roi, /zh/weekly-report passed, and fix-round 1 resolved the cross-environment localStorage failure with a Map-backed stub.",
+    "johnsong": "[2026-05-07 13:10 Planner johnsong - BL-021 done (fix-round 1) + 切 BL-049 building (用户决议 A 立即切)]\n\nBL-021 done @ 5/7 13:06 - first-round FAIL (5/7 11:51) → fix-round 1 PASS (9fa2a49 + da94b73 signoff):\n- 实际工时 09:30 → 13:06 = 3h36min vs spec 2.5h = 1.4x 加速 (含 fix-round 1，与 BL-044/043/023 0 fix-round 趋势不同但仍快于 spec)\n- 关键技术决策：fix-round 1 实装 AiSuggestionsClient localStorage env-portable Map-backed stub @ commit 9fa2a49 — 真修 cross-environment bug\n\nBL-047 历史修正 (5/7 13:10):\n- 5/7 10:30 我和 Generator 误判 spec premise 错误 (Generator 实地 forks pool 1043/1043 PASS)\n- 5/7 11:51 Codex 在 reverifying 实测复现 — BL-047 是真 cross-environment bug\n- 5/7 ~12:30 Generator fix-round 1 实装 Map-backed stub @ 9fa2a49\n- 5/7 13:06 Codex reverifying PASS @ da94b73\n- 5/7 13:10 Planner 修正 backlog: BL-047 closed-not-reproducible → closed-resolved (by BL-021 fix-round 1 @ 9fa2a49)\n- 5/7 13:10 修订 BL-049 spec F007 v0.9.15 沉淀内容: 1 维 (实地跑) → 2 维 (跨 pool 复现 + stub environment-agnostic)\n- 5/7 13:10 同步修订 docs/audit-reports/test-infra-audit-2026-05-07.md §4\n\nBL-049 切 building (用户 5/7 13:10 决议 A 立即切):\n- spec 已 ready (5/7 10:50 lock + 5/7 13:10 F007 修订)\n- 7 features (F001-F007 全 generator) total ~6h Generator + 0.5h Reviewer\n- 实装顺序: F006 → F004 → F005 → F001 → F002 → F003 → F007 (按风险递增)\n- F007 v0.9.15 沉淀 2 维 (跨 pool 复现 + stub environment-agnostic) 比 1 维更深刻\n\n5/13 上线时间线 (BL-049 done 后再 buffer 多):\n- 5/7 13:10~ BL-049 building (Generator ~6h；按 4-6x 加速可能 1-2h done)\n- 5/7 中午~晚 BL-049 done + buffer\n- 5/8~10 周末 BIx F004 cron 累积 + 用户业务测 + Dependabot 首次 run (周一)\n- 5/11 CSP+NULLIF 1 周观察期满评估\n- 5/12 BL-017 token + BL-046 product soft delete\n- 5/13 ⭐ 上线对外 (5+ day buffer)\n\nGenerator 接手须知：\n1. spec docs/specs/BL-049-test-infra-systematic-upgrade-spec.md\n2. F007 关键: 沉淀 2 维不是 1 维 — 看 5/7 13:06 修正版\n3. F002 maxForks=4 起步监控 OOM\n4. F003 实装时确定 A/B/C 路径 (推荐 A 2 DB 最干净)"
+  },
+  "features": []
 }

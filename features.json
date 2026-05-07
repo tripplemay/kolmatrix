@@ -1,19 +1,103 @@
 [
   {
     "id": "F001",
-    "title": "5 critical routes loading.tsx + 通用 Skeleton 组件",
+    "title": "vitest.config.ts coverage.exclude 拆 vitest.coverage-exclusions.ts helper",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.0,
-    "status": "completed",
+    "estimated_hours": 0.5,
+    "status": "pending",
     "acceptance": [
-      "src/components/ui/Skeleton.tsx 新建（animate-pulse + bg-surface-container/30 rounded-2xl 通用 primitive）",
-      "src/components/ui/index.ts 加 export",
-      "5 个 critical 路由各创建 loading.tsx：dashboard / discovery / campaigns/[id] / roi / weekly-report",
-      "find src/app -name 'loading.tsx' → 5 hits",
-      "各 loading.tsx 用 Skeleton 组件（不再 inline animate-pulse 重复）",
-      "loading.tsx 不写单测（Next.js framework 渲染机制保证）",
-      "L1: lint + tsc 全绿"
+      "vitest.coverage-exclusions.ts 新建 + export COVERAGE_EXCLUSIONS_RUNTIME 数组",
+      "vitest.config.ts 减 ~80 行（保留 thresholds + provider + reporter + include / reportsDirectory 不变）",
+      "npm run test:coverage 输出 lcov / html 与之前等价",
+      "coverage thresholds 仍 80%（lines/functions/statements）"
+    ]
+  },
+  {
+    "id": "F002",
+    "title": "vitest.integration.config.ts fileParallelism + maxForks=4 + 隔离 fixtures",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 1.5,
+    "status": "pending",
+    "acceptance": [
+      "vitest.integration.config.ts fileParallelism: true + poolOptions.forks.maxForks: 4",
+      "npm run test:integration 本机 + CI 跑通（无 docker port 冲突 / 无 OOM）",
+      "CI integration job 时间从 ~10-15min 降到 < 8min（实测后 commit message 写）",
+      "65 files 全 PASS（与 fileParallelism: false 时同结果）"
+    ]
+  },
+  {
+    "id": "F003",
+    "title": "E2E visual workaround 拆 — 独立 Playwright project + 独立 DB",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 2.5,
+    "status": "pending",
+    "acceptance": [
+      "playwright.config.ts 加 visual + chromium 2 projects (testMatch / testIgnore 拆开)",
+      ".github/workflows/ci.yml e2e job 不再 visual + reseed + 其余两阶段（Generator 实装时定 A 2 DB / B transaction rollback / C snapshot 路径）",
+      "19 visual baselines 全 PASS（不因其他 spec mutation 失真）",
+      "CI e2e job 时间不超过当前 ~10min",
+      "update-visual-baselines.yml workflow 同步适配新 project 结构"
+    ]
+  },
+  {
+    "id": "F004",
+    "title": ".github/dependabot.yml — npm + github-actions ecosystems",
+    "executor": "generator",
+    "priority": "medium",
+    "estimated_hours": 0.5,
+    "status": "pending",
+    "acceptance": [
+      ".github/dependabot.yml 新建含 npm + github-actions ecosystems",
+      "groups 设置（next/prisma/vitest/playwright 各 1 group 防 PR 爆炸）",
+      "open-pull-requests-limit 限 5",
+      "commit 后等周一首次 run 验证（user task）"
+    ]
+  },
+  {
+    "id": "F005",
+    "title": "material-symbols-coverage + e2e database-fidelity 2 pre-existing fails 修",
+    "executor": "generator",
+    "priority": "medium",
+    "estimated_hours": 0.75,
+    "status": "pending",
+    "acceptance": [
+      "tests/integration/material-symbols-coverage.test.ts PASS（实地查 + 修 woff2 stale 或 logic 改）",
+      "tests/e2e/database-fidelity.spec.ts:123 PASS（改 expectation 为 enabled，与 BL-024 F004/F005 实装一致）",
+      "npm test repo-wide 0 unrelated fail",
+      "commit message 含 (a)(b) 各根因 + 修复方式"
+    ]
+  },
+  {
+    "id": "F006",
+    "title": "vitest trailing comment 清 + tests/__example/ + helpers/_colima-detect.ts + mocks/browser.ts dead code 评估",
+    "executor": "generator",
+    "priority": "low",
+    "estimated_hours": 0.25,
+    "status": "pending",
+    "acceptance": [
+      "vitest.config.ts 末尾 trailing comment 清",
+      "tests/__example/ 实地评估（如有引用从 docs/dev/ 链入；否则删）",
+      "tests/helpers/_colima-detect.ts 评估（如本地 dev / CI 不依赖则删）",
+      "tests/mocks/browser.ts 评估（如未被引用则删）",
+      "commit message 写各项决定"
+    ]
+  },
+  {
+    "id": "F007",
+    "title": "framework v0.9.15 沉淀（2 维教训：跨环境复现 + 测试 stub environment-agnostic）",
+    "executor": "generator",
+    "priority": "medium",
+    "estimated_hours": 0.33,
+    "status": "pending",
+    "acceptance": [
+      "framework/harness/planner.md 铁律 1 矩阵 +2 行（v0.9.15 #1 跨 pool 复现 + #2 stub environment-agnostic）",
+      "framework/CHANGELOG.md v0.9.15 entry 含真实历史（5/7 撤 → 翻盘 → fix-round 1 @ 9fa2a49）",
+      "framework/proposed-learnings.md 加沉淀完成 comment（2 条 learnings）",
+      "framework/archive/proposed-learnings-archive-v0.9.15.md 新建含 BL-047 完整反例时间线 + Map-backed stub 范式",
+      "docs/audit-reports/test-infra-audit-2026-05-07.md 状态表更新（标 BL-049 done）"
     ]
   }
 ]

@@ -81,17 +81,22 @@ F007 framework v0.9.15 沉淀 (BL-047 反例 + planner.md 铁律 1 矩阵 +1 行
 
 ---
 
-## 4. 框架 dogfood（v0.9.15 候选沉淀）
+## 4. 框架 dogfood（v0.9.15 候选沉淀 — 5/7 13:06 修正 2 维）
 
-本次 audit 体现 **v0.9.14 §planner.md 铁律 1（完整 pattern grep）反向验证** — F002 反例：Planner 起 BL-047 spec 时未实地跑测试，仅依赖 Codex verifying 报告"unrelated existing failure"措辞，导致 spec premise 错误。Generator 实地 grep 发现 1043/1043 PASS 撤 F002。
+**初版判断（5/7 10:30）：** F002 反例 — Planner 起 BL-047 spec 时未实地跑测试，仅依赖 Codex verifying 报告"unrelated existing failure"措辞，导致 spec premise 错误。Generator 实地 forks pool 跑 1043/1043 PASS，撤 F002。
 
-**framework v0.9.15 候选沉淀（BL-049 F007 实装）：**
+**真实根因（5/7 11:51-13:06 修正）：** **BL-047 是真 bug**，不是 spec premise 错误。Codex 在 reverifying 时**实际复现 localStorage TypeError**（不同 pool/env 配置）。Generator forks pool 全 PASS ≠ 没 bug — 是不同环境跑 jsdom 行为差异。fix-round 1 @ commit `9fa2a49` 用 **Map-backed env-portable stub** 修了真 bug（不依赖 jsdom 默认 localStorage）。
 
-planner.md 铁律 1 检查矩阵 +1 行：
+教训含 **2 维**（不只是 1 维"实地跑"）：
+
+**framework v0.9.15 候选沉淀（BL-049 F007 实装 2 行）：**
+
+planner.md 铁律 1 检查矩阵 +2 行：
 
 | 内容 | 核查动作 |
 |------|---------|
-| Backlog 条目涉及"测试 fail / 测试 PASS / 测试覆盖"类断言 | **必须实地 `npx vitest run <target>` 验证当前实情**；不依赖 verifying 报告或他人转述措辞（BL-047 反例：Codex verifying 报告"unrelated existing failure"被 Planner 误判为真 fail，实际 Generator 实地 1043/1043 PASS） |
+| Backlog 条目涉及"测试 fail / 测试 PASS / 测试覆盖"类断言（v0.9.15 #1）| **必须实地 `npx vitest run <target>` 验证当前实情** + **必须复现 reviewer 实际跑测试的环境**（pool 类型 forks vs threads / vitest version / Node version）；Generator forks pool PASS ≠ Codex threads pool PASS（BL-047 反例：Generator 5/7 10:30 forks pool 1043/1043 PASS 误以为无 bug，Codex 11:51 reverifying 实际复现 localStorage TypeError） |
+| 测试 stub 设计（v0.9.15 #2）— Test fixture / 全局 mock / setupFiles 内 stub | **必须 environment-agnostic**（如用 Map-backed 自实装 stub），**不依赖 jsdom / happy-dom / Node 默认行为**；不同 vitest pool 启动顺序可能导致 jsdom 全局 init 时机不同 → 不依赖默认行为消除 race（BL-047 fix-round 1 commit 9fa2a49 范式） |
 
 ---
 
