@@ -39,3 +39,4 @@ export {
   type TCellProps,
 } from "./Table";
 export { Checkbox, type CheckboxProps } from "./Checkbox";
+export { Skeleton, type SkeletonProps } from "./Skeleton";
