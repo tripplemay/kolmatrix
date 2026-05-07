@@ -177,16 +177,18 @@
     "description": "BIx-mvp-polish-pass F003 仅做 critical paths（11 页 × 1-2 关键 state）。Post-MVP 全量 spot check 包括：每页 loading skeleton（>1.5s 空白页）/ all empty states / all error states / 网络中断恢复 / API timeout fallback / 长列表滚动 / 长文本截断 等。属系统性 polish 工作，不阻塞团队 demo。",
     "decisions": [
       "MVP 仅 critical paths（已落地于 BIx-mvp-polish-pass F003）",
-      "全量 spot check Post-MVP"
+      "全量 spot check Post-MVP",
+      "用户 2026-05-07 17:00 决议：BL-018 合并入 BL-052 批次（11 页 × 4 状态全量补范围；spec 6 features F006-F011 = BL-018 全部，含公共组件 EmptyState 抽取 + useNetworkStatus + 5 缺失 loading.tsx + /assets error.tsx + /knowledge-base empty state + P1 inline empty 5 处抽公共）；P2 部分（如 4 既有 EmptyState 变体重构、/dashboard ActivityFeed empty 文案等）留待 BL-053-edge-states-refactor 暂不立项；本条 closed-merged 保留 audit trail"
     ],
     "confirmed_at": "2026-04-30T02:30+0800",
-    "priority": "low",
+    "priority": "closed",
     "tags": [
       "edge-states",
       "ux-polish",
       "post-mvp"
     ],
-    "discovered_in": "docs/product/MVP-polish-audit-2026-04-30.md P1-10"
+    "discovered_in": "docs/product/MVP-polish-audit-2026-04-30.md P1-10",
+    "status": "closed-merged-into-BL-052"
   },
   {
     "id": "BL-019",
@@ -309,9 +311,11 @@
       "用户 2026-05-07 13:55 决议 C：BL-050 priority=high，5/12 与 BL-017 + BL-046 同期实装（独立或合并届时定）",
       "Planner 5/7 13:50 实地 grep KpiRow.tsx 发现 trend + sparkline 全 HARDCODED MOCK；BM1-F007 §11.4 G3:A 决议等 B3 后做真趋势但 B3 done 后被遗漏",
       "影响：接客户前必须（假数据 due diligence 红旗）；5/13 上线前应实装真趋势避免客户比对发现",
-      "工时 ~2-3h Generator + 0.5h Reviewer；5 features F001-F005；schema 独立无依赖"
+      "工时 ~2-3h Generator + 0.5h Reviewer；5 features F001-F005；schema 独立无依赖",
+      "用户 2026-05-07 17:00 决议：BL-050 合并入 BL-052 dashboard-trend-edge-polish 批次（与 BL-018 edge state polish 同批次实装；spec 5 features F001-F005 = BL-050 全部）；本条 closed-merged 保留 audit trail"
     ],
     "confirmed_at": "2026-05-07T13:55+0800",
-    "priority": "high"
+    "priority": "closed",
+    "status": "closed-merged-into-BL-052"
   }
 ]

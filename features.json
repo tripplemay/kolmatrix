@@ -1,153 +1,159 @@
 [
   {
     "id": "F001",
-    "title": "schema migration weekly_report 加 expires_at + revoked_at + creator_user_id (合并 product F006 同 migration)",
+    "title": "schema migration kpi_daily_snapshot 表 + ROLLBACK 注释 + npx prisma migrate dev",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "completed",
+    "estimated_hours": 0.3,
+    "status": "pending",
     "acceptance": [
-      "schema.prisma weekly_report 加 expiresAt + revokedAt (creator_user_id 如已有则不动)",
-      "migration 文件 2026XXXXXXXX_lifecycle_management/migration.sql 含 ALTER + ROLLBACK 注释",
-      "npx prisma migrate dev 本机 PASS"
+      "schema.prisma 加 model KpiDailySnapshot（5 KPI 维度 + composite PK (tenantId, snapshotDate) + recent_idx DESC）",
+      "prisma/migrations/2026XXXXXXXX_kpi_daily_snapshot/migration.sql 含 CREATE TABLE + INDEX + GRANT + ROLLBACK 注释（spec §3.1 完整 SQL）",
+      "npx prisma migrate dev 本机 PASS + prisma generate 不报错"
     ]
   },
   {
     "id": "F002",
-    "title": "src/lib/weekly-report/share-token.ts validateToken 加过期/已撤销检查",
+    "title": "src/lib/dashboard/kpi-trends.ts + kpi-snapshot.ts 计算逻辑 + 单测 ≥7 case",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "completed",
+    "status": "pending",
     "acceptance": [
-      "validateToken 检查 expires_at < NOW() → invalid (reason='expired')",
-      "validateToken 检查 revoked_at IS NOT NULL → invalid (reason='revoked')",
-      "单测 ≥3 case (expired / revoked / valid)"
+      "kpi-trends.ts: computeKpiTrend(current, reference) → {direction, percent} / computeSparkline(history, days) → number[] / loadKpiTrends(tx, tenantId) → 4 KPI trends",
+      "kpi-snapshot.ts: takeKpiSnapshot(prisma, tenantId, asOf?) upsert by (tenantId, today) 同日幂等 / takeAllTenantsKpiSnapshot(prisma) 跑全 tenant",
+      "单测 ≥4 case computeKpiTrend (flat/up/down/hasEnoughData=false)",
+      "单测 ≥3 case computeSparkline (<7d 填补 0 / 满 30d 全数据 / 部分缺失日填 prev)",
+      "L1 tsc + lint PASS"
     ]
   },
   {
     "id": "F003",
-    "title": "/shared/weekly-report/[token] page 3 状态 UI（valid / expired / revoked）",
+    "title": "scripts/kpi-snapshot-daily.ts cron entry + npm script + cron 行修订 ops 文档 + 集成测试 ≥1",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "completed",
+    "estimated_hours": 0.4,
+    "status": "pending",
     "acceptance": [
-      "正常 token 显示 weekly-report 内容",
-      "expired token 显示 已过期 + 创建/过期时间",
-      "revoked token 显示 已撤销 + 撤销时间",
-      "i18n keys 5 locale 同步 (en/zh/ja/ko/es)",
-      "过期/撤销页面不暴露 weekly-report 内容（防信息泄漏）"
+      "scripts/kpi-snapshot-daily.ts 新文件（dotenv + PrismaClient + takeAllTenantsKpiSnapshot 调用 + JSON log line + exit 1 if any failed）",
+      "package.json 加 script kpi-snapshot-daily: tsx scripts/kpi-snapshot-daily.ts",
+      "spec §3.4 cron 行修订（kol-sync-daily && kpi-snapshot-daily 串行）docs/dev/ 留 ops 步骤文档（用户 SSH 执行）",
+      "tests/integration/kpi-snapshot.test.ts ≥1 case (takeKpiSnapshot insert 5 维 + retrieve 数值正确)"
     ]
   },
   {
     "id": "F004",
-    "title": "/api/weekly-reports/[id]/revoke route — revoke API",
+    "title": "KpiRow.tsx 删 4 处 hardcoded mock + 接通 trends prop / StatCard tooltip prop / DashboardPage Promise.all 加 loadKpiTrends",
     "executor": "generator",
-    "priority": "medium",
+    "priority": "high",
     "estimated_hours": 0.5,
-    "status": "completed",
+    "status": "pending",
     "acceptance": [
-      "POST endpoint 仅 owner (creator_user_id) + tenant 内可调用",
-      "revoked_at 落库 + audit_log 记录 action='weekly_report.revoked'",
-      "401/403 处理（非 owner / 跨 tenant）"
+      "src/features/dashboard/KpiRow.tsx 删 4 处 hardcoded trend + sparkline (line 50/57/64/71)；改用 trends prop（KpiTrend × 4）",
+      "src/components/common/StatCard.tsx 加 trend.tooltip 可选 prop；hasEnoughData=false 时 trend.percent 显示 '—' + hover 显示 tooltip",
+      "src/app/[locale]/(app)/dashboard/page.tsx Promise.all 加 loadKpiTrends(tx, tenantId)；渲染 <KpiRow trends={kpiTrends} ... />",
+      "snapshot test 验证 hasEnoughData=true vs false 两态 UI 输出"
     ]
   },
   {
     "id": "F005",
-    "title": "weekly-report 创建 UI 显示 expiration metadata + 列表 revoke button + 单测 ≥3",
+    "title": "Part A i18n trendAccumulating 5 locale 同步",
     "executor": "generator",
-    "priority": "medium",
-    "estimated_hours": 1.0,
-    "status": "completed",
+    "priority": "high",
+    "estimated_hours": 0.2,
+    "status": "pending",
     "acceptance": [
-      "UI metadata 显示 Expires + Created by + 默认 7 day expiry (UI 下拉 1d/7d/30d/never)",
-      "列表 revoke button 调 F004 API",
-      "API 调用 + 列表 state 更新",
-      "单测 ≥3 case"
+      "messages/{en,zh,ja,ko,es}.json dashboard.kpi.trendAccumulating 添加（spec §3.6 5 译文已锁）",
+      "i18n CI locale-coverage 守门 PASS"
     ]
   },
   {
     "id": "F006",
-    "title": "schema migration product 加 deleted_at + partial index（与 F001 同 migration 文件）",
+    "title": "公共组件 src/components/common/EmptyState.tsx 新建 + props 契约 + 单测 ≥3 case",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "completed",
+    "estimated_hours": 0.3,
+    "status": "pending",
     "acceptance": [
-      "schema.prisma Product 加 deletedAt DateTime?",
-      "ALTER + CREATE INDEX product_tenant_active_idx (tenant_id) WHERE deleted_at IS NULL",
-      "ROLLBACK 注释 (DROP INDEX + DROP COLUMN)",
-      "npx prisma migrate dev PASS"
+      "src/components/common/EmptyState.tsx props {icon, title, description, cta?: {label, href?, onClick?}, testId?}",
+      "Material icon + design system tokens（参考既有 src/components/common/ 风格）",
+      "src/components/common/index.ts barrel export 加 EmptyState",
+      "单测 ≥3 case：纯文字 / 含 cta href / 含 cta onClick"
     ]
   },
   {
     "id": "F007",
-    "title": "全栈 list/find queries 加 WHERE deleted_at IS NULL（5+ 路由）",
+    "title": "useNetworkStatus hook + NetworkStatusBanner 注入 (app)/layout.tsx + 单测 + 集成测试 ≥1",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "completed",
+    "estimated_hours": 0.5,
+    "status": "pending",
     "acceptance": [
-      "knowledge-base list / ProductCard / ProductModal / assets composer / outreach composer / smart-match / kol-embed / campaigns picker 全 grep 添加 filter",
-      "grep prisma.product.find + tx.product.find 全 hits 验证 (commit message 列覆盖检查清单)",
-      "测试: list 0 rows 软删 / detail 防御 product=NULL"
+      "src/hooks/useNetworkStatus.ts: addEventListener online/offline + SSR 兜底 isOnline=true 返回 {isOnline, lastOfflineAt}",
+      "src/components/common/NetworkStatusBanner.tsx: 离线红条 / 重连 'Back online' 2s 自动消失（i18n common.network.{offline,backOnline}）",
+      "src/app/[locale]/(app)/layout.tsx 顶部注入 <NetworkStatusBanner />（一次性覆盖 11 页）",
+      "单测 ≥2 case useNetworkStatus（online / offline event 触发）",
+      "集成测试 ≥1 case (Playwright 模拟 navigator.onLine=false → banner 出现 / =true → banner 消失)"
     ]
   },
   {
     "id": "F008",
-    "title": "deleteProduct 改 soft delete + 关联检查 + audit_log",
+    "title": "缺失 root loading.tsx × 5 页（knowledge-base / campaigns / crm / outreach / database P1）",
     "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 1.0,
-    "status": "completed",
+    "priority": "medium",
+    "estimated_hours": 0.4,
+    "status": "pending",
     "acceptance": [
-      "deleteProduct 改 UPDATE deleted_at = NOW()（不 DELETE）",
-      "删除前检查 campaign + asset + kol_campaign 关联",
-      "有引用时返回 has_references error + count（用户决议 cascade 或取消）",
-      "audit_log 记录 product.deleted 含 cascade_count + soft_delete: true",
-      "单测 ≥3 case (无关联 / 有关联 / cascade)"
+      "src/app/[locale]/(app)/knowledge-base/loading.tsx 新建 - ProductCard skeleton grid",
+      "src/app/[locale]/(app)/campaigns/loading.tsx 新建（root，区别于已有 [id]/loading.tsx） - CampaignCard skeleton list",
+      "src/app/[locale]/(app)/crm/loading.tsx 新建 - pipeline skeleton",
+      "src/app/[locale]/(app)/outreach/loading.tsx 新建 - composer + recent reply skeleton",
+      "src/app/[locale]/(app)/database/loading.tsx 新建 - KOL grid skeleton（补 P1 子组件已有但 route 切换瞬间空白）",
+      "复用既有 src/components/ui/Skeleton.tsx；5 页 visual baseline 抓 PNG（Linux）"
     ]
   },
   {
     "id": "F009",
-    "title": "UI 防御 /campaigns/[id] product=NULL 显示 (产品已删除) + ProductCard/Modal 类似",
+    "title": "/assets 新建 error.tsx (1/11 唯一缺 — fetch fail 当前裸 throw)",
     "executor": "generator",
-    "priority": "medium",
-    "estimated_hours": 0.5,
-    "status": "completed",
+    "priority": "high",
+    "estimated_hours": 0.15,
+    "status": "pending",
     "acceptance": [
-      "/campaigns/[id] product=NULL 显示 (产品已删除) 灰显 + tooltip",
-      "/knowledge-base 列表通过 F007 自动过滤软删",
-      "i18n keys 5 locale (~3 keys: productDeleted/productDeletedTooltip)"
+      "src/app/[locale]/(app)/assets/error.tsx 新建 - 复用 ErrorBoundary 范式（参考 dashboard/error.tsx）",
+      "i18n 复用既有 common.error.{title,body,retry} keys（如已有；如缺补 5 locale）",
+      "client component 'use client' + reset prop 触发重试"
     ]
   },
   {
     "id": "F010",
-    "title": "单测 ≥4 + 集成测试 ≥2 (products + weekly-report)",
+    "title": "/knowledge-base empty state（length===0 时 CTA 'Add your first product'）+ 5 locale i18n",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.0,
-    "status": "completed",
+    "estimated_hours": 0.3,
+    "status": "pending",
     "acceptance": [
-      "tests/unit/products-soft-delete.test.ts ≥4 case (deleteProduct 软删 / list 过滤 / detail 防御 / audit_log)",
-      "tests/integration/product-soft-delete.test.ts ≥2 case (full flow + audit_log permanence)",
-      "tests/unit/weekly-report-token-lifecycle.test.ts ≥3 case",
-      "tests/integration/weekly-report-token.test.ts ≥1 case",
-      "L1 全套 npm test 全绿"
+      "src/app/[locale]/(app)/knowledge-base/ProductsClient.tsx products.length===0 时渲染 <EmptyState icon='inventory_2' title=... cta={{label, onClick: openCreateModal}} />",
+      "i18n messages/{en,zh,ja,ko,es}.json common.emptyState.noProducts.{title,description,cta} 5 locale",
+      "已有 product 时不显示 EmptyState（仅 0 行触发）"
     ]
   },
   {
     "id": "F011",
-    "title": "audit_log 永久保留 + 防新孤儿验证 (集成测试)",
+    "title": "P1 inline empty 抽公共 EmptyState（outreach 4 处 + crm + database + campaigns/[id] + roi）+ Part B 总测试",
     "executor": "generator",
     "priority": "medium",
-    "estimated_hours": 0.25,
-    "status": "completed",
+    "estimated_hours": 0.6,
+    "status": "pending",
     "acceptance": [
-      "集成测试验证 audit_log 不会被 cascade 删 (无 FK to product)",
-      "soft delete 后 product 物理仍在 DB；FK SET NULL 不再触发 (关联保留)",
-      "commit message 注明 (孤儿 4425e07e 5/7 已 ops 清理 @ bc69a65；本批次防新孤儿)"
+      "/outreach: RecentRepliesCard + RecentlySentTable + OutreachComposer 4 处 length===0 改用 <EmptyState />",
+      "/crm: CrmRecentChanges length===0 改用 <EmptyState />",
+      "/database: page.tsx searchResult.items.length===0 inline 改用 <EmptyState />",
+      "/campaigns/[id]: KOL/Asset/Timeline section 0 数据时显 <EmptyState />（如本身有渲染逻辑）",
+      "/roi: figures/charts 0 数据 placeholder（避免空 chart 渲染异常）",
+      "i18n 各页 common.emptyState.* 子段 5 locale 同步",
+      "Part B 测试：单测 EmptyState ≥3 case + useNetworkStatus ≥2 case；集成测试 ≥1 case offline banner toggle",
+      "L1 全套 npm test 全绿 + lint 0 error + tsc PASS"
     ]
   }
 ]
