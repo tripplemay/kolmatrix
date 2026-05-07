@@ -3,28 +3,32 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-021 Suspense Critical Paths — VERIFYING（F001 1/1 done + staging deploy 1820542 PASS @ 5/7 11:08）
-- F001 ✅ commit 0e0a054 Skeleton + 5 loading.tsx；L1 lint+tsc+1043 tests 全绿；CI 5 关键 jobs PASS；staging deploy run 25473626773 git_sha=1820542 health=healthy
-- F002 ❌ 已撤（spec premise 错误，Generator 实地 1043/1043 PASS 无 bug）；BL-047 入 backlog closed-not-reproducible
-- v0.9.15 候选沉淀：「Backlog spec premise 起草前必须实地跑测试验证」(planner.md 铁律 1 矩阵 +1 行)
-- 等 Codex L1+L2 → signoff → done（预估 30min）
-## ✅ BL-023 DONE 5/7 09:23（8/8 6x；prod fraction=0/percent=138/vs=2482 git_sha=e46a7e0 / signoff BL-023-...-2026-05-07.md）
-## ✅ BL-043 DONE 5/6 (3/3 2x) / ✅ BL-044 DONE 5/6 (4/4 + Prod 12/12 5x)
+## ✅ BL-023 KOL 评分升级 — DONE（Reviewer signoff PASS @ 2026-05-07）
+- 8 features 全闭环：F001/F002 valueScore 公式（engagement 阶梯 + authenticity）/ F003 16 测试 / F004/F005 sim*100 + 8 测试 / F006 cron recompute top100 / F007 BL-045 dead code / F008 engagement_rate fraction→percent + backfill SQL
+- L1：value-score / smart-match / engagement-batch unit + kol-discovery integration 全绿；L2：staging health healthy / discovery shell / Smart Match API matchScore 61 / KOL 详情页 engagementRate 11.4%
+- prod：health healthy @ git_sha=e46a7e0；`fraction_rows=0`、`percent_rows=138`、`value_score_non_null=2482`，backfill 后 prod 已回到 BL-023 单位契约
+- signoff 文件：docs/test-reports/BL-023-kol-scoring-upgrade-signoff-2026-05-07.md
+## ✅ BL-043 — DONE 5/6 22:31 first-round PASS 3/3
+## ✅ BL-044 — DONE 5/6 19:10 PASS 4/4 + Prod walk 12/12 PASS
 ## 🐛 孤儿 campaign 4425e07e — BL-046 入 backlog high（5/12 与 BL-017 同期）
-## 🚧 5/13 上线对外时间线（连续 3 批次 first-round PASS / 平均 4-5x 加速）
-- 5/7 现：**BL-021 verifying**（staging 1820542 PASS）→ 等 Codex L1+L2 → done
-- 5/7 后：用户决议测试基建升级 mini-batch（audit 13 项发现 / BL-049+ ID）启动时机
-- 5/8~10 周末：BIx F004 cron + 用户业务测；5/11：CSP+NULLIF 满期评估
-- 5/12：**BL-017 token + BL-046 product soft delete**；5/13 ⭐ 上线（4-day buffer）
+## 🆕 BL-047 入 backlog low — AiSuggestionsClient.test.tsx pre-existing localStorage stub（5/8 BL-021 或 5/12 BL-017 顺手清）
+## 🚧 5/13 上线对外时间线
+- 5/7 现：**BL-023 verifying** (Codex L2 + signoff)
+- 5/8 周五：**BL-021 Suspense critical 5**（~2h）+ 顺手清 BL-047 候选
+- 5/9~10 周末：用户业务测继承 + BIx F004 cron 累积 + buffer 多
+- 5/11 周一：CSP+NULLIF 1 周观察期满评估
+- 5/12 周二：**BL-017 token 过期+撤销** + **BL-046 product soft delete**（独立或合并；BL-047 候选顺手清）
+- 5/13 周三 ⭐ 上线对外
 ## 用户手工待办
-1. CSP/NULLIF 5/11 满期评估 + BL-035 真客户邮件触发再验
+1. BL-023 prod deploy 后跑 `sudo -u postgres psql -d kolmatrix -f scripts/backfill-engagement-rate-bl023-f008.sql`（idempotent）
+2. CSP/NULLIF 5/11 满期评估 + BL-035 真客户邮件触发再验
 ## 关键决议（已 lock）
-- 5/7 11:08：BL-021 切 verifying（F001 staging deploy run 25473626773 PASS，git_sha=1820542）
-- 5/7 10:35：F002 裁决 A — 撤（spec premise 错误）+ BL-047 closed-not-reproducible
-- 5/7 10:30：Generator F002 partial-pending 裁决请求（§11 第 2 次实战）
-- 5/7 09:30：BL-023 done + BL-021 立即启动（A）+ X1 BL-047 顺手清
-- 5/7 03:00：用户裁决 C — F008 building 中段加（§11 第 1 次实战）
+- 5/7 03:00：用户裁决 C — F008 engagement_rate 单位 bug 顺手清入 BL-023（pre-impl-adjudication §11 building 中段裁决实战）
+- 5/7 08:00：全 A — BL-043 done + BL-047 入 backlog + BL-023 切 building
+- 5/6 21:00：BL-023 spec lock + BIx F004 cron 误判修正
 - 5/6 19:50/19:55：5+1 决议 X1 合并 + BL-046 治本
-## 角色 / Backlog（默认 CLI=planner+generator / Codex=evaluator；Backlog 16 条 high 2 / low 6 / closed 1 / deferred 7）
+## 角色 / Backlog
+- 默认映射：CLI=planner+generator，Codex=evaluator
+- Backlog 16 条（high 3：BL-017/021/046；low 6：BL-011/014/015/018/027/047；deferred 7）
 
 <!-- 写入规则（harness §记忆分层）：覆盖写 / ≤30 行 / 所有角色可写 / 只放 WHAT / 不重复 progress.json -->
