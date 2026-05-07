@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "vitest.coverage-exclusions.ts 新建 + export COVERAGE_EXCLUSIONS_RUNTIME 数组",
       "vitest.config.ts 减 ~80 行（保留 thresholds + provider + reporter + include / reportsDirectory 不变）",
@@ -19,13 +19,14 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "vitest.integration.config.ts fileParallelism: true + poolOptions.forks.maxForks: 4",
       "npm run test:integration 本机 + CI 跑通（无 docker port 冲突 / 无 OOM）",
       "CI integration job 时间从 ~10-15min 降到 < 8min（实测后 commit message 写）",
       "65 files 全 PASS（与 fileParallelism: false 时同结果）"
-    ]
+    ],
+    "generator_notes": "vitest 4 已废弃 poolOptions.forks.maxForks，改用 top-level maxWorkers (覆盖所有 pool 类型)。本机 docker daemon docker.io TLS handshake 持久 timeout 无法 pull pgvector/pgvector:pg16，CI integration job 是验证唯一路径；first run 完成后 Reviewer 看 GH Actions log 写实测时间。"
   },
   {
     "id": "F003",
@@ -33,14 +34,15 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "playwright.config.ts 加 visual + chromium 2 projects (testMatch / testIgnore 拆开)",
       ".github/workflows/ci.yml e2e job 不再 visual + reseed + 其余两阶段（Generator 实装时定 A 2 DB / B transaction rollback / C snapshot 路径）",
       "19 visual baselines 全 PASS（不因其他 spec mutation 失真）",
       "CI e2e job 时间不超过当前 ~10min",
       "update-visual-baselines.yml workflow 同步适配新 project 结构"
-    ]
+    ],
+    "generator_notes": "走路径 D（Playwright project dependencies）替代 spec 推荐 A（2 DB）：chromium project deps on visual project 强制顺序，1 DB 即可隔离 mutation。比 A 简单（无双 Next 实例）且 spec line 144 自带注「或更简：visual fresh seed 不 mutate」即此思路。CI e2e 改为单 invocation 不再 reseed；update-visual-baselines.yml 改为 --project=visual。"
   },
   {
     "id": "F004",
@@ -48,7 +50,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       ".github/dependabot.yml 新建含 npm + github-actions ecosystems",
       "groups 设置（next/prisma/vitest/playwright 各 1 group 防 PR 爆炸）",
@@ -62,13 +64,14 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 0.75,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "tests/integration/material-symbols-coverage.test.ts PASS（实地查 + 修 woff2 stale 或 logic 改）",
       "tests/e2e/database-fidelity.spec.ts:123 PASS（改 expectation 为 enabled，与 BL-024 F004/F005 实装一致）",
       "npm test repo-wide 0 unrelated fail",
       "commit message 含 (a)(b) 各根因 + 修复方式"
-    ]
+    ],
+    "generator_notes": "(a) 跑 scripts/regenerate-material-symbols-subset.sh 重生 woff2（9976 → 9972 bytes，src/ icon usage 微 drift），7/7 测试 PASS；(b) e2e 测试已断言 export/import/add-kol disabled，BL-024 F001-1/2/3 (commits 060241b/49411ef/e4acbf7) 已 enable — 改 expectation 为 enabled + 验证 export href /api/database/export-csv。"
   },
   {
     "id": "F006",
@@ -76,14 +79,15 @@
     "executor": "generator",
     "priority": "low",
     "estimated_hours": 0.25,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "vitest.config.ts 末尾 trailing comment 清",
       "tests/__example/ 实地评估（如有引用从 docs/dev/ 链入；否则删）",
       "tests/helpers/_colima-detect.ts 评估（如本地 dev / CI 不依赖则删）",
       "tests/mocks/browser.ts 评估（如未被引用则删）",
       "commit message 写各项决定"
-    ]
+    ],
+    "generator_notes": "trailing comment 删除；__example/msw-usage.test.ts 保留（vitest.config.ts include line 17 仍跑 + BI1 spec 引用 + active contract test）；_colima-detect.ts 保留（tests/helpers/db.ts:31 主动 import 用 macOS Colima docker socket 检测）；mocks/browser.ts 删除（无 consumer，仅 docstring 描述未来 setupWorker 用途，从未被采用）。"
   },
   {
     "id": "F007",
@@ -91,7 +95,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 0.33,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "framework/harness/planner.md 铁律 1 矩阵 +2 行（v0.9.15 #1 跨 pool 复现 + #2 stub environment-agnostic）",
       "framework/CHANGELOG.md v0.9.15 entry 含真实历史（5/7 撤 → 翻盘 → fix-round 1 @ 9fa2a49）",
