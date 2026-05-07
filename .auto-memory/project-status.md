@@ -3,7 +3,7 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-049 测试基建系统性升级 — VERIFYING（building 完 5/7 14:15 / 7/7 features done / 5.5x 加速 1h05min vs 6h / 3 commits b9fa62c+8ace6e0+91ee2cd / staging deployed @ 91ee2cd / 待 Codex L1+L2）
+## 🚧 BL-049 测试基建系统性升级 — VERIFYING（7/7 features done / L1 lint+tsc+coverage PASS / targeted integration PASS / staging smoke PASS / full Testcontainers integration BLOCKED by missing local Docker daemon / 待 Codex 复跑完整 L2 or 可用 Docker 环境）
 - spec：docs/specs/BL-049-test-infra-systematic-upgrade-spec.md；audit：docs/audit-reports/test-infra-audit-2026-05-07.md
 ## ✅ BL-021 — DONE 5/7 13:06（fix-round 1 PASS @ 9fa2a49 / 1.4x 加速）
 ## ✅ BL-023 DONE 5/7 09:23 (8/8 6x) / ✅ BL-043 DONE 5/6 (3/3 2x) / ✅ BL-044 DONE 5/6 (4/4 + Prod 12/12 5x)
