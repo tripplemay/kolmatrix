@@ -69,14 +69,15 @@ describe("knowledge-base product actions", () => {
       uniqueSellingPoints: "Daily tournaments",
       downloadUrl: "https://example.com/download",
     });
-    // BL-035-F005: ownership preflight runs `findUnique` before update.
-    const findUnique = vi
+    // BL-035-F005 + BL-051a-F007: ownership preflight runs `findFirst`
+    // (with deletedAt: null guard) before update.
+    const findFirst = vi
       .fn()
       .mockResolvedValue({ id: PRODUCT_ID, tenantId: TENANT_ID });
     authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
     withTenant.mockImplementation(async (_tenantId, fn) =>
       (fn as (tx: unknown) => unknown)({
-        product: { findUnique, update },
+        product: { findFirst, update },
       })
     );
 
@@ -108,23 +109,41 @@ describe("knowledge-base product actions", () => {
     expect(generateAiAssets).not.toHaveBeenCalled();
   });
 
-  it("allows a cuid productId through deleteProduct and reaches Prisma", async () => {
-    const del = vi.fn().mockResolvedValue({ id: PRODUCT_ID });
-    const findUnique = vi
+  it("allows a cuid productId through deleteProduct and soft-deletes the row", async () => {
+    // BL-051a-F008 — deleteProduct now performs UPDATE deletedAt=NOW()
+    // instead of DELETE; a no-references row passes straight through.
+    const update = vi.fn().mockResolvedValue({});
+    const findFirst = vi
       .fn()
-      .mockResolvedValue({ id: PRODUCT_ID, tenantId: TENANT_ID });
+      .mockResolvedValue({
+        id: PRODUCT_ID,
+        tenantId: TENANT_ID,
+        name: "Honor of Kings",
+      });
+    const campaignCount = vi.fn().mockResolvedValue(0);
+    const assetCount = vi.fn().mockResolvedValue(0);
+    const kolCampaignCount = vi.fn().mockResolvedValue(0);
     authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
     withTenant.mockImplementation(async (_tenantId, fn) =>
       (fn as (tx: unknown) => unknown)({
-        product: { findUnique, delete: del },
+        product: { findFirst, update },
+        campaign: { count: campaignCount },
+        asset: { count: assetCount },
+        kolCampaign: { count: kolCampaignCount },
       })
     );
 
     const res = await deleteProduct(PRODUCT_ID);
 
-    expect(res).toEqual({ ok: true });
+    expect(res).toEqual({
+      ok: true,
+      cascadeCount: { campaign: 0, asset: 0, kolCampaign: 0 },
+    });
     expect(withTenant).toHaveBeenCalledWith(TENANT_ID, expect.any(Function));
-    expect(del).toHaveBeenCalledWith({ where: { id: PRODUCT_ID } });
+    expect(update).toHaveBeenCalledWith({
+      where: { id: PRODUCT_ID },
+      data: { deletedAt: expect.any(Date) },
+    });
     expect(logEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "product.deleted",
@@ -151,7 +170,10 @@ describe("knowledge-base product actions", () => {
 
     const res = await deleteProduct(PRODUCT_ID);
 
-    expect(res).toEqual({ ok: false });
+    // BL-051a-F008 — error code is now explicit ("unauthorized") so
+    // the UI can distinguish input-validation vs ownership failures
+    // from has_references / not_found / generic.
+    expect(res).toEqual({ ok: false, error: "unauthorized" });
     expect(withTenant).not.toHaveBeenCalled();
     expect(revalidatePath).not.toHaveBeenCalled();
   });
@@ -168,7 +190,10 @@ describe("knowledge-base product actions", () => {
   // ----- triggerAiGeneration (MVP-vf C-05.2) -----------------------------
 
   it("triggerAiGeneration fires generateAiAssets for a known product", async () => {
-    const findUnique = vi.fn().mockResolvedValue({
+    // BL-051a-F007: triggerAiGeneration now uses findFirst with a
+    // deletedAt: null guard so soft-deleted products can't trigger AI
+    // spend.
+    const findFirst = vi.fn().mockResolvedValue({
       id: PRODUCT_ID,
       name: "Pokemon Go",
       category: "AR/Casual",
@@ -179,14 +204,18 @@ describe("knowledge-base product actions", () => {
     authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
     withTenant.mockImplementation(async (_tenantId, fn) =>
       (fn as (tx: unknown) => unknown)({
-        product: { findUnique },
+        product: { findFirst },
       })
     );
 
     const res = await triggerAiGeneration(PRODUCT_ID);
 
     expect(res).toEqual({ ok: true });
-    expect(findUnique).toHaveBeenCalledWith(expect.objectContaining({ where: { id: PRODUCT_ID } }));
+    expect(findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: PRODUCT_ID, deletedAt: null },
+      })
+    );
     expect(markAiAssetsPending).toHaveBeenCalledWith(TENANT_ID, PRODUCT_ID);
     expect(generateAiAssets).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -206,11 +235,11 @@ describe("knowledge-base product actions", () => {
     expect(revalidatePath).toHaveBeenCalledWith("/[locale]/knowledge-base", "page");
   });
 
-  it("triggerAiGeneration returns not_found when the product is missing", async () => {
+  it("triggerAiGeneration returns not_found when the product is missing or soft-deleted", async () => {
     authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
     withTenant.mockImplementation(async (_tenantId, fn) =>
       (fn as (tx: unknown) => unknown)({
-        product: { findUnique: vi.fn().mockResolvedValue(null) },
+        product: { findFirst: vi.fn().mockResolvedValue(null) },
       })
     );
 
@@ -250,7 +279,10 @@ describe("knowledge-base product actions", () => {
 
     const res = await deleteProduct("../../../etc/passwd");
 
-    expect(res).toEqual({ ok: false });
+    // BL-051a-F008: invalid input now collapses into the unauthorized
+    // branch (input validation runs alongside auth so the same shape
+    // covers both classes of pre-Prisma rejections).
+    expect(res).toEqual({ ok: false, error: "unauthorized" });
     expect(withTenant).not.toHaveBeenCalled();
   });
 
@@ -271,20 +303,23 @@ describe("knowledge-base product actions", () => {
 
     const res = await deleteProduct(12345 as unknown as string);
 
-    expect(res).toEqual({ ok: false });
+    // BL-051a-F008: see path-traversal case above; non-string input
+    // takes the same unauthorized branch.
+    expect(res).toEqual({ ok: false, error: "unauthorized" });
     expect(withTenant).not.toHaveBeenCalled();
   });
 
   // BL-035-F005 (API-H3) — ownership preflight defence-in-depth.
-  it("updateProduct returns not_found when findUnique surfaces a row owned by another tenant", async () => {
+  // BL-051a-F007 — preflight now uses findFirst with deletedAt: null.
+  it("updateProduct returns not_found when findFirst surfaces a row owned by another tenant", async () => {
     const update = vi.fn();
-    const findUnique = vi
+    const findFirst = vi
       .fn()
       .mockResolvedValue({ id: PRODUCT_ID, tenantId: "00000000-1111-2222-3333-444444444444" });
     authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
     withTenant.mockImplementation(async (_tenantId, fn) =>
       (fn as (tx: unknown) => unknown)({
-        product: { findUnique, update },
+        product: { findFirst, update },
       }),
     );
 
@@ -295,38 +330,46 @@ describe("knowledge-base product actions", () => {
     expect(logEvent).not.toHaveBeenCalled();
   });
 
-  it("deleteProduct returns not_found when findUnique surfaces a row owned by another tenant", async () => {
-    const del = vi.fn();
-    const findUnique = vi
-      .fn()
-      .mockResolvedValue({ id: PRODUCT_ID, tenantId: "00000000-1111-2222-3333-444444444444" });
+  it("deleteProduct returns not_found when findFirst surfaces a row owned by another tenant", async () => {
+    const update = vi.fn();
+    const findFirst = vi.fn().mockResolvedValue({
+      id: PRODUCT_ID,
+      tenantId: "00000000-1111-2222-3333-444444444444",
+      name: "Cross Tenant",
+    });
     authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
     withTenant.mockImplementation(async (_tenantId, fn) =>
       (fn as (tx: unknown) => unknown)({
-        product: { findUnique, delete: del },
+        product: { findFirst, update },
+        campaign: { count: vi.fn() },
+        asset: { count: vi.fn() },
+        kolCampaign: { count: vi.fn() },
       }),
     );
 
     const res = await deleteProduct(PRODUCT_ID);
 
     expect(res).toEqual({ ok: false, error: "not_found" });
-    expect(del).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
     expect(logEvent).not.toHaveBeenCalled();
   });
 
-  it("deleteProduct returns not_found when findUnique returns null (RLS hides the row)", async () => {
-    const del = vi.fn();
-    const findUnique = vi.fn().mockResolvedValue(null);
+  it("deleteProduct returns not_found when findFirst returns null (RLS hides the row OR already soft-deleted)", async () => {
+    const update = vi.fn();
+    const findFirst = vi.fn().mockResolvedValue(null);
     authMock.mockResolvedValue({ user: { tenantId: TENANT_ID, id: USER_ID } });
     withTenant.mockImplementation(async (_tenantId, fn) =>
       (fn as (tx: unknown) => unknown)({
-        product: { findUnique, delete: del },
+        product: { findFirst, update },
+        campaign: { count: vi.fn() },
+        asset: { count: vi.fn() },
+        kolCampaign: { count: vi.fn() },
       }),
     );
 
     const res = await deleteProduct(PRODUCT_ID);
 
     expect(res).toEqual({ ok: false, error: "not_found" });
-    expect(del).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
   });
 });
