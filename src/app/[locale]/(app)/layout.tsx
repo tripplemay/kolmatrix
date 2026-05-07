@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { auth, signOut } from "@/auth";
+import { NetworkStatusBanner } from "@/components/common";
 import { AppShellLayout } from "@/components/layout/AppShellLayout";
 
 const ROLE_LABELS: Record<string, string> = {
@@ -23,17 +24,20 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const sessionUser = session.user;
 
   return (
-    <AppShellLayout
-      user={{
-        name: sessionUser.name ?? sessionUser.email ?? "Operator",
-        role: ROLE_LABELS[sessionUser.role ?? ""] ?? "Ops Lead",
-        email: sessionUser.email,
-        avatarUrl: sessionUser.image,
-      }}
-      unreadNotifications={1}
-      onSignOut={handleSignOut}
-    >
-      {children}
-    </AppShellLayout>
+    <>
+      <NetworkStatusBanner />
+      <AppShellLayout
+        user={{
+          name: sessionUser.name ?? sessionUser.email ?? "Operator",
+          role: ROLE_LABELS[sessionUser.role ?? ""] ?? "Ops Lead",
+          email: sessionUser.email,
+          avatarUrl: sessionUser.image,
+        }}
+        unreadNotifications={1}
+        onSignOut={handleSignOut}
+      >
+        {children}
+      </AppShellLayout>
+    </>
   );
 }

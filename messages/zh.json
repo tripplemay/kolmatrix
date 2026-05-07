@@ -200,6 +200,10 @@
       "body": "加载此页面时出现意外错误。团队已收到通知 —— 请稍后重试，或返回仪表盘。",
       "retry": "重试",
       "backHome": "返回仪表盘"
+    },
+    "network": {
+      "offline": "网络已断开，正在重连…",
+      "backOnline": "已恢复连接"
     }
   },
   "knowledgeBase": {

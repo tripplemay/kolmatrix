@@ -200,6 +200,10 @@
       "body": "Ocurrió un error inesperado al cargar esta página. El equipo ha sido notificado — vuelve a intentarlo en un momento, o regresa al panel.",
       "retry": "Reintentar",
       "backHome": "Volver al panel"
+    },
+    "network": {
+      "offline": "Estás sin conexión. Reconectando…",
+      "backOnline": "De nuevo en línea"
     }
   },
   "knowledgeBase": {

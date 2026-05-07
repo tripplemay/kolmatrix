@@ -200,6 +200,10 @@
       "body": "We hit an unexpected error loading this page. The team has been notified — try again in a moment, or head back to the dashboard.",
       "retry": "Try again",
       "backHome": "Back to dashboard"
+    },
+    "network": {
+      "offline": "You are offline. Reconnecting...",
+      "backOnline": "Back online"
     }
   },
   "knowledgeBase": {

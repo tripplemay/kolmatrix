@@ -13,6 +13,7 @@ export { AssetTabs } from "./AssetTabs";
 export { ChipButton, type ChipButtonProps } from "./ChipButton";
 export { EmptyState, type EmptyStateProps, type EmptyStateCta } from "./EmptyState";
 export { ErrorBoundary, type ErrorBoundaryProps } from "./ErrorBoundary";
+export { NetworkStatusBanner } from "./NetworkStatusBanner";
 export { GhostButton } from "./GhostButton";
 export { GlassPanel } from "./GlassPanel";
 export { GradientButton } from "./GradientButton";
