@@ -1,112 +1,35 @@
 [
   {
     "id": "F001",
-    "title": "computeKolValueScore 升级 — engagementRate 阶梯映射替换 placeholder=15",
+    "title": "5 critical routes loading.tsx + 通用 Skeleton 组件",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.5,
+    "estimated_hours": 2.0,
     "status": "pending",
     "acceptance": [
-      "KolValueScoreInput 加 engagementRate?: number | null + engagementAuthenticity?: number | null",
-      "engagementScoreFromRate() 阶梯映射 5 段：< 1% 5 / 1-3% 10 / 3-6% 15 / 6-10% 18 / >10% 20",
-      "null engagement 退化 placeholder=12（比原 15 略低）",
-      "公式总分仍 0-100（max raw 90，新归一化 100/90）",
-      "既有 KOL valueScore 浮动 ≤±15"
+      "src/components/ui/Skeleton.tsx 新建（animate-pulse + bg-surface-container/30 rounded-2xl 通用 primitive）",
+      "src/components/ui/index.ts 加 export",
+      "5 个 critical 路由各创建 loading.tsx：dashboard / discovery / campaigns/[id] / roi / weekly-report",
+      "find src/app -name 'loading.tsx' → 5 hits",
+      "各 loading.tsx 用 Skeleton 组件（不再 inline animate-pulse 重复）",
+      "loading.tsx 不写单测（Next.js framework 渲染机制保证）",
+      "L1: lint + tsc 全绿"
     ]
   },
   {
     "id": "F002",
-    "title": "computeKolValueScore 加 authenticityModifier",
+    "title": "BL-047 X1 顺手清 — AiSuggestionsClient.test.tsx pre-existing localStorage stub fix",
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 0.5,
     "status": "pending",
     "acceptance": [
-      "authenticityModifier() 阶梯：null=1.0 / >=80=1.05 / >=60=1.0 / <60=0.85",
-      "当前 prod 0 KOL with authenticity → 全 modifier=1.0 不影响存量",
-      "测试覆盖 4 segment"
-    ]
-  },
-  {
-    "id": "F003",
-    "title": "tests/unit/value-score.test.ts ≥6 case",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "pending",
-    "acceptance": [
-      "≥6 cases 全 PASS（含 engagement 5 段位 + authenticity 4 segment + null 默认）",
-      "可选 regression case 用真 KOL fixtures"
-    ]
-  },
-  {
-    "id": "F004",
-    "title": "similarityToScore 重新映射（sim*100 不再 +1/2 偏移）",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "pending",
-    "acceptance": [
-      "改为 round(max(0, min(1, sim)) * 100)",
-      "sim=0 → 0（不再 50） / sim=0.4 → 40 / sim=0.85 → 85 / sim=1 → 100",
-      "注释更新（删 [70, 92] 旧描述）",
-      "BL-044 cosine 0.37-0.46 提及（已校对）"
-    ]
-  },
-  {
-    "id": "F005",
-    "title": "tests/unit/smart-match-similarity.test.ts ≥4 case + 旧 fixture 更新",
-    "executor": "generator",
-    "priority": "medium",
-    "estimated_hours": 0.5,
-    "status": "pending",
-    "acceptance": [
-      "≥4 cases 全 PASS",
-      "旧 fixture 如断言 sim=0.4 → 70 等需更新（grep expectScore.*70 改）"
-    ]
-  },
-  {
-    "id": "F006",
-    "title": "kol-sync-daily.ts engagement batch 后 trigger valueScore 重算 top 100",
-    "executor": "generator",
-    "priority": "medium",
-    "estimated_hours": 1.0,
-    "status": "pending",
-    "acceptance": [
-      "engagement batch phase 后 recompute valueScore for top 100 KOLs",
-      "DailyRunReport.valueScoreRecomputed 字段记录数量",
-      "per-row soft-fail（与 engagement batch 同模式）",
-      "不阻塞 daily run（即使 valueScore 重算 fail，daily 整体 PASS）"
-    ]
-  },
-  {
-    "id": "F007",
-    "title": "BL-045 顺手清（X1 合并）— email-generator + video-script-generator dead code",
-    "executor": "generator",
-    "priority": "low",
-    "estimated_hours": 0.2,
-    "status": "pending",
-    "acceptance": [
-      "src/lib/assets/generators/email-generator.ts:74 删 ?? 'Not specified' fallback",
-      "src/lib/assets/generators/video-script-generator.ts:80 同删",
-      "grep 'Not specified' src/ → 0 hits（除 test fixtures）",
-      "tsc + lint 全绿",
-      "commit-tag: feat(BL-023-F007): clean BL-040 retroactive dead-code (BL-045 X1)"
-    ]
-  },
-  {
-    "id": "F008",
-    "title": "engagement_rate 单位 bug 顺手清（建于 2026-05-07 building 中段，用户裁决 C）",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "pending",
-    "acceptance": [
-      "engagement-batch.ts computeEngagementRate 改返 percent（* 100），EngagementUpdate.engagementRate doc 更新为 [0, 100]",
-      "tests/unit/kol-sync-engagement-batch.test.ts 期望值更新（toBeCloseTo((360/21000)*100, 4) 等）",
-      "scripts/backfill-engagement-rate-bl023-f008.sql 一次性 SQL（idempotent），跑 prod 后 137 KOL fraction → percent",
-      "未来 BIx F004 cron 自动写 percent，prod 单位与 seed/UI/filter/F006 buckets 单位对齐",
-      "commit-tag: feat(BL-023-F008): engagement_rate unit fix (fraction → percent) + prod backfill SQL"
+      "排查根因（jsdom localStorage init / setup.ts 顺序 / vitest config）",
+      "推荐方案 B：文件内 beforeAll Object.defineProperty(window, 'localStorage', {value: mock methods}) — 仅本文件 scope",
+      "或 Generator 自查后选最简单方案",
+      "npx vitest run AiSuggestionsClient.test.tsx 4 case 全 PASS",
+      "npm test repo-wide 0 fail（除 pre-existing material-symbols-coverage / e2e database-fidelity 等已知）",
+      "commit-tag: feat(BL-021-F002): fix AiSuggestionsClient.test.tsx pre-existing localStorage stub (BL-047 X1)"
     ]
   }
 ]

@@ -180,25 +180,6 @@
     "discovered_in": "docs/product/MVP-polish-audit-2026-04-30.md P1-5 + 用户 2026-04-30 决议"
   },
   {
-    "id": "BL-021",
-    "title": "全应用 Suspense / loading.tsx 边界（H-P4）",
-    "description": "前端审计 H-P4：当前全应用 0 个 loading.tsx / Suspense 边界。ROI / Dashboard / Campaign Detail 都'全等就绪才出现'，慢查询全局阻塞。预估收益：感知首屏 −300~800ms。BIx F005 (γ) 决议跳过 H-P4（范围易扩，11 路由全加 ~4h，critical paths 5 路由 ~2h），单独 backlog 条目评估。等 BIx done 后据团队 demo 反馈决定：(a) critical paths 5 路由（~2h）/ (b) 全 11 路由（~4h）/ (c) 仍不做（如团队反馈无慢页阻塞感）。\n\n**实现路径（如启动）：**\n- 选 5/11 路由各加 src/app/[locale]/(app)/<route>/loading.tsx skeleton\n- 慢查询拆 Suspense boundary：dashboard KPI / ROI trend / campaign KOL panel 等独立 query 并行 stream\n- visual baseline 必更（loading skeleton 引入新 layout）",
-    "decisions": [
-      "用户 2026-05-01 决议 11 (γ)：跳过 BIx，单独 backlog 评估",
-      "等团队 demo 反馈数据决定 (a)/(b)/(c)",
-      "用户 2026-05-06 19:50 决议 4=A：5/11 实装 critical 5 路由（dashboard / discovery / campaigns / roi / weekly-report）~2h Generator；上线对外感知首屏 -300~800ms 体验提升"
-    ],
-    "confirmed_at": "2026-05-01T03:00+0800",
-    "priority": "high",
-    "tags": [
-      "performance",
-      "perceived-performance",
-      "audit-2026-05-01",
-      "post-bix"
-    ],
-    "discovered_in": "docs/reviews/frontend-audit-2026-05-01.md §H-P4"
-  },
-  {
     "id": "BL-022",
     "title": "列表页虚拟化（H-P5，等 scale signal）",
     "description": "前端审计 H-P5：列表页未虚拟化（DatabaseTableClient.tsx:144 / RoiCampaignTable.tsx:110 / CampaignKolPanel.tsx:104 / CampaignsTable.tsx:58，4 个表）。当前靠分页规避，500+ 行批量场景会暴露。BIx F005 (γ) 决议不在 BIx 处理，等 scale signal（团队反馈某表卡顿 / KOL/Campaign 数据增长 ≥ 500/tenant）触发独立 mini-batch（~1-2 day Generator）。\n\n**实现路径（触发后）：**\n- npm install @tanstack/react-virtual\n- 4 个表按相同范式改造（参考 https://tanstack.com/virtual/v3/docs/framework/react/examples/table）\n- 大量回归测试：scrollIntoView / sort / filter / 跨页 selection 状态 / a11y\n- 预估 ~1-2 day Generator + 0.5 day Reviewer（含回归测试）",
@@ -280,17 +261,5 @@
       "src/lib/email/customize.ts (P1/P4 高风险路径)",
       "src/lib/products/generateAiAssets.ts (chat/completions 已实装范式参考)"
     ]
-  },
-  {
-    "id": "BL-047",
-    "title": "AiSuggestionsClient.test.tsx pre-existing localStorage stub 修复（vitest jsdom env）",
-    "description": "Codex 在 BL-040 / BL-044 / BL-043 多个批次 verifying 报告均提及 1 个 unrelated existing failure：window.localStorage.setItem is not a function / window.localStorage.clear is not a function 在 src/app/[locale]/(app)/campaigns/[id]/__tests__/AiSuggestionsClient.test.tsx (1 文件 2 case 失败)。\n\n根因：vitest jsdom env 中 localStorage stub 缺失。可能原因：(a) jsdom 默认含 localStorage 但 mock module / setup 文件覆盖了；(b) test 文件内手工 stub 已过时；(c) vitest config jsdom 版本与生产代码 localStorage 调用方式不兼容。\n\n影响：repo-wide npm test 不全绿（其它批次 first-round PASS 时均把它列为 'unrelated existing failure'，需 evaluator 重复说明）。MVP 内部 demo 不阻塞（影响纯单测 CI gate），但接客户/正式 release 时 'npm test 全绿' 是 polish 标准。\n\n修复路径（Generator 排查时优先级）：\n(1) grep AiSuggestionsClient.test.tsx 看 setup（beforeEach / vi.stubGlobal）— 检查 localStorage stub\n(2) grep tests/setup.ts / vitest.config.ts — 检查全局 setup\n(3) 临时方案：如 jsdom 默认 localStorage 可用，删 stub；如不可用，加 stub: vi.stubGlobal('localStorage', {getItem: vi.fn(), setItem: vi.fn(), clear: vi.fn(), removeItem: vi.fn()})\n(4) 验证：npm test src/app/[locale]/(app)/campaigns/[id]/__tests__/AiSuggestionsClient.test.tsx 全 PASS\n\n工时：~30 min Generator + 0.25h Reviewer。可顺手清入下一个相关批次（如 BL-021 Suspense / BL-017 token / BL-046 product soft delete 等同期顺手清）。",
-    "decisions": [
-      "用户 2026-05-07 决议 2=A：不入 BL-043 fix-round（与 BL-043 主题无关 — 违反铁律 #10 spec-driven 单一归属），单独 backlog 跟踪",
-      "起源：BL-040 / BL-044 / BL-043 verifying 报告均提及，pre-existing 至少 5 天",
-      "Planner 推荐顺手清模式：可与 BL-021 Suspense（5/8）或 BL-017 token（5/12）同 commit-tag 顺手清，同 X1 BL-045 合并模式"
-    ],
-    "confirmed_at": "2026-05-07T08:00+0800",
-    "priority": "low"
   }
 ]
