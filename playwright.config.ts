@@ -51,10 +51,34 @@ export default defineConfig({
     trace: "retain-on-failure",
     viewport: { width: 1440, height: 900 },
   },
+  // BL-049-F003: split the visual-regression suite from the rest of the
+  // E2E run via Playwright projects. The "visual" project owns
+  // visual-regression.spec.ts and runs first (read-only — login + navigate
+  // + screenshot, no mutations). The "chromium" project runs every other
+  // spec and depends on "visual", which forces project-level sequencing
+  // even with `fullyParallel: true`. This eliminates the historic race
+  // where bm1-flow / journey / outreach mutations leaked into
+  // visual-regression screenshots, and lets us drop the in-CI
+  // `npm run db:seed` reseed step (visual leaves the DB pristine, so
+  // chromium starts on the same fresh seed without re-running it).
+  //
+  // Why not 2 DBs (audit "Path A"): the savings would buy us a few
+  // seconds at most while doubling the CI ops surface (postgres service
+  // container × 2, two DATABASE_URLs, second Next dev server). Project
+  // dependencies give us the same isolation guarantee — no chromium
+  // mutation can cross over because the chromium project never starts
+  // until every visual spec (including retries) has finished.
   projects: [
     {
-      name: "chromium",
+      name: "visual",
+      testMatch: /visual-regression\.spec\.ts$/,
       use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "chromium",
+      testIgnore: /visual-regression\.spec\.ts$/,
+      use: { ...devices["Desktop Chrome"] },
+      dependencies: ["visual"],
     },
   ],
   webServer: {
