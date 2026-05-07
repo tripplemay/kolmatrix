@@ -1,11 +1,11 @@
 {
-  "status": "fixing",
-  "user_goal": "BL-021 Suspense / loading.tsx Critical Paths - 5 critical routes (dashboard/discovery/campaigns/roi/weekly-report) plus shared Skeleton component.",
+  "status": "reverifying",
+  "user_goal": "BL-021 Suspense / loading.tsx Critical Paths - 5 critical routes (dashboard/discovery/campaigns/roi/weekly-report) plus shared Skeleton component. Fix-round 1: AiSuggestionsClient.test.tsx localStorage env-portable stub (commit 9fa2a49).",
   "total_features": 1,
   "completed_features": 1,
-  "fix_rounds": 0,
+  "fix_rounds": 1,
   "current_sprint": "BL-021-suspense-critical-paths",
-  "last_updated": "2026-05-07T11:51+0800",
+  "last_updated": "2026-05-07T13:00+0800",
   "reference_docs": [
     "docs/specs/BL-021-suspense-critical-paths-spec.md",
     "src/components/ui/Skeleton.tsx",
@@ -24,10 +24,11 @@
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": "BL-021 verifying FAIL. Staging route smoke passed, but repo-wide vitest reproduced AiSuggestionsClient.test.tsx failures because window.localStorage.setItem/clear is not a function. L1 full green is not met, so batch cannot sign off.",
+  "evaluator_feedback": "BL-021 verifying FAIL (fix-round 0). Staging route smoke passed, but repo-wide vitest reproduced AiSuggestionsClient.test.tsx failures because window.localStorage.setItem/clear is not a function. L1 full green is not met, so batch cannot sign off.",
   "generator_handoff": null,
   "session_notes": {
     "Kimi": null,
+    "johnsong": "[2026-05-07 13:00 Generator johnsong — fix-round 1 完成 + 切 reverifying]\n\n身份：拉远端识别 status=fixing；同 .agent-id (cli:johnsong) 接 Codex evaluator_feedback。\n\n=== Fix-round 1（commit 9fa2a49）===\n\n根因：jsdom 默认 window.localStorage 在 --pool=forks + Linux/Node 组合下表现为非 configurable getter，setItem/clear 调用抛 TypeError。WSL2 jsdom 不复现（我之前 1043/1043 PASS 的实地结论是真的，但只在 WSL2 环境为真）。Codex 在他环境（Linux 容器）成功复现 2 fail。本次以跨环境为目标修，不再依赖 jsdom 默认 storage。\n\n修复（Planner 原推荐方案 B，最小 scope）：\n- src/app/[locale]/(app)/campaigns/[id]/__tests__/AiSuggestionsClient.test.tsx beforeAll 用 Object.defineProperty 把 window.localStorage 替换为 Map-backed Storage stub\n- 实现完整 Storage 接口（length / clear / getItem / key / removeItem / setItem）\n- configurable: true 允许 jsdom 默认 storage 被覆盖\n- test seed 与 component 读 cache 共享同一 Map（store: Map<string, string>），跨环境一致\n\n回归覆盖：本 fix 即 regression — 修前 Linux/Node forks pool 下 2 fail，修后跨环境 PASS。同 commit 满足 generator.md §回归测试沉淀硬性要求。\n\n=== L1 守门（全绿）===\n\n- npm run lint：0 errors / 3 pre-existing warnings（同 BL-023/043/044：afterEach + PUBLISHED_AFTER_CORE_REGIONS + beforeEach）\n- npx tsc --noEmit：0 errors\n- npx vitest run --pool=forks 该测试文件：2/2 PASS（local WSL2 — 不能复现 fail，但也不能 regress）\n- CI run 25476595687（commit 9fa2a49）守门关键 6 jobs PASS：Lint / Typecheck / Unit + coverage / Build + migrate smoke / Validate-rollback / Install dependencies\n  - 2 pre-existing fail（与 BL-021 无关，同 BL-023/043/044 趋势）：Integration material-symbols-coverage woff2 stale + E2E i18n FORMATTING_ERROR + database-export disabled\n  - **Unit + coverage job 在 GitHub Actions Linux 容器 PASS** — 这是 Codex 复现 fail 的同类环境，间接验证本 fix 跨环境生效\n\n=== Staging deploy（已落地）===\n\n- gh workflow run deploy-staging.yml --ref main → run 25476852038 PASS（3min45s）\n- deploy log: '✅ staging deploy done (HEAD=9fa2a49, health.git_sha=9fa2a49)'\n- staging /api/health: status=healthy / db ok / redis ok\n- git_sha=9fa2a49 == main HEAD ✓\n\n[staging deployed @ 9fa2a49 @ 2026-05-07 13:00+0800]\n\n=== Reviewer (Codex) 接手须知（reverifying L1+L2）===\n\nL1 重跑（建议 Codex 在自己环境跑）：\n- npx vitest run --pool=forks 应当 146/146 files PASS / 1043/1043 tests PASS（含 AiSuggestionsClient 2 case）\n- 如仍 fail：起 fix-round 2，告知 Generator 具体 evidence（哪 case / 哪行 stack）\n\nL2 验收（同 verifying 范围）：\n- staging 5 路由 navigate 观察 skeleton 闪烁（DevTools throttle 易看）\n- 回归：/zh/discovery Smart Match + AI semantic search（沿 BL-044 路径）\n\nL2 PASS → 写 signoff（docs/test-reports/BL-021-suspense-critical-paths-signoff-2026-05-07.md）→ 切 done。\n\n=== 5/13 上线时间线 ===\n- 5/7 现：reverifying 等 Codex L1+L2（~30min）\n- 5/7 done 后 buffer + 业务测继承\n- 5/8~10 周末：BIx F004 cron + 业务测；5/11：CSP+NULLIF 满期评估\n- 5/12：BL-017 + BL-046；5/13 ⭐ 上线（4-day buffer）\n\n--- 之前 Reviewer session_notes（保留作 evidence）---\n\nReviewer [2026-05-07] BL-021 verifying FAIL. Staging smoke on /zh/dashboard, /zh/discovery, /zh/campaigns, /zh/campaigns/[id], /zh/roi, /zh/weekly-report passed, but repo-wide vitest reproduced AiSuggestionsClient.test.tsx localStorage failures. Batch is blocked from signoff until generator fixes or reclassifies the test issue.",
     "Reviewer": "[2026-05-07] BL-021 verifying FAIL. Staging smoke on /zh/dashboard, /zh/discovery, /zh/campaigns, /zh/campaigns/[id], /zh/roi, /zh/weekly-report passed, but repo-wide vitest reproduced AiSuggestionsClient.test.tsx localStorage failures. Batch is blocked from signoff until generator fixes or reclassifies the test issue."
   }
 }
