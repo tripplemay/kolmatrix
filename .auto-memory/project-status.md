@@ -3,19 +3,19 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🟡 BL-052 dashboard-trend-edge-polish — VERIFYING（Planner P5 裁决解锁 5/8 / 等 Reviewer 复验）
-- Part A BL-050 KPI 真趋势化（F001-F005）+ Part B BL-018（F006-F011）落地，1084 单测 PASS / staging @ 3ba3fe2 健康
-- Reviewer 5/7 23:40 partial 报告 grade C — 失败点 `tests/integration/pre-commit-hook.test.ts` 全套并发抖动（外部网络依赖 woff2 拉取）；单文件隔离跑 PASS
-- **Planner 5/8 P5 裁决（docs/test-reports/BL-052-verifying-2026-05-07.md §Planner 裁决）：** flaky test 来自 BL-027-F004 + BL-025-F009（与 BL-052 范围正交），不计入 BL-052 评分；新建 BL-054 治理；Reviewer 复验仅 BL-052 引入代码（KPI IT × 3 + Part B 单测 + acceptance 表逐项），预期 grade B+ Ready
+## ✅ BL-052 dashboard-trend-edge-polish — DONE（Planner P5 裁决后 Reviewer signoff PASS / staging @ 3ba3fe2）
+- Part A BL-050 KPI 真趋势化（F001-F005）+ Part B BL-018（F006-F011）落地，1084 单测 PASS / targeted integration PASS / staging 健康
+- Planner 5/8 P5 裁决：`pre-commit-hook.test.ts` flaky 路径属 BL-027-F004 + BL-025-F009 范围外，不计入 BL-052 评分
+- signoff @ docs/test-reports/BL-052-signoff-2026-05-08.md
 - 遗留：F011 /database empty BL-053 一并迁移；F003 cron 行 ops 待用户 SSH 落 prod+staging
 ## ✅ BL-051a Lifecycle Management — DONE 5/7 16:55（11/11 / signoff PASS / prod @ 9a6f62d）
 ## ✅ BL-049 5/7 14:35 / BL-021+BL-023 5/7 / BL-043 5/6 / BL-044 5/6 全 DONE
 ## 🐛 孤儿 campaign 4425e07e ✅ ops 清理 5/7 13:40 / BL-051a F011 防新孤儿 ✅
 ## 🆕 BL-053-edge-states-refactor 暂不立项（4 既有 EmptyState 变体迁移 + /database empty + 5 P1 inline empty 统一；BL-052 done 后评估）
-## 🆕 BL-054-flaky-network-test-isolate 立项 medium（5/8 Planner P5 裁决创立；推荐方向 A 隔离 + serial；~2-4h Generator + 0.5h Reviewer；BL-052 done 后任意时段，不阻塞 5/13 上线）
+## 🆕 BL-054-flaky-network-test-isolate 立项 medium（5/8 Planner P5 裁决创立；推荐方向 A 隔离 + serial；~2-4h Generator + 0.5h Reviewer）
 ## 🆕 BL-012 apify 接入待决议（爬虫团队 5/7 提前交付 https://github.com/guang-tech/apify；fork audit 推荐方案 A 分平台分源 IG/TT 给 apify YouTube 给 B6；4 阻塞项待用户决议：TikHub 付费 / 部署位置 / 批次调度 / 5/13 是否含；Stage 1 部署 ~半天 + Stage 2 adapter ~5-6h Generator）
 ## 🚀 5/13 上线对外 X1+ 极速时间线（5+ day buffer 极宽裕）
-- 5/8 BL-052 Reviewer 复验（裁决后预期 PASS）→ done → prod redeploy 含 BL-049+BL-051a+BL-052
+- 5/8 BL-052 Reviewer 复验 → done → prod redeploy 含 BL-049+BL-051a+BL-052
 - 5/8 Dependabot 首次 run（5 group PR）/ 5/8~12 buffer + 用户业务测继承
 - 5/13 周三 ⭐ 上线对外
 ## 用户手工待办
