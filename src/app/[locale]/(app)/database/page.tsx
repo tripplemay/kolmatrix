@@ -27,6 +27,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { EmptyState } from "@/components/common";
 import { parseFilters, serializeFilters } from "@/lib/kol/filters";
 
 import { AddKolDialog } from "./AddKolDialog";
@@ -192,17 +193,12 @@ export default async function DatabasePage({ params, searchParams }: Props) {
           </p>
 
           {searchResult.items.length === 0 ? (
-            <div
-              className="glass-panel rounded-2xl border border-on-surface/5 p-10 text-center"
-              data-testid="database-empty"
-            >
-              <h2 className="text-lg font-semibold text-white">
-                {tEmpty("title")}
-              </h2>
-              <p className="mt-2 text-sm text-on-surface-variant">
-                {tEmpty("body")}
-              </p>
-            </div>
+            <EmptyState
+              icon="manage_search"
+              title={tEmpty("title")}
+              description={tEmpty("body")}
+              testId="database-empty"
+            />
           ) : (
             <DatabaseTableClient
               rows={searchResult.items}
