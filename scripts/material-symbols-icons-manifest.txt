@@ -55,3 +55,11 @@ more_vert                   # AssetsDetailPanel "..." More menu trigger         
 restart_alt                 # AssetsDetailPanel sticky bottom bar Regenerate      | JSX prop
 restore                     # AssetsDetailPanel Versions tab "Restore this version" | JSX prop
 unarchive                   # AssetCard hover overlay archived-state toggle       | JSX prop or array
+
+# BL-051a-F003 + F005 — share-link lifecycle icons (expired/revoked
+# state badges on /shared/weekly-report/[token] + the brand-header
+# revoke button). Both render via `<span>{iconName}</span>` where
+# iconName is a JSX expression — Pattern 1/2/4 can't see them.
+
+block                       # /shared/weekly-report/[token] revoked state + revoke button | JSX expression iconName
+schedule                    # /shared/weekly-report/[token] expired state | JSX expression iconName

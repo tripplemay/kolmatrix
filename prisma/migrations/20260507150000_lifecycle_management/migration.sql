@@ -12,10 +12,25 @@
 -- asset.deleted_at not in scope this batch — Asset has no deleted_at
 -- column, so spec D2 "如有" hedge fires as no-op).
 --
+-- Part C (F008 follow-on) · audit_log.resource_id type widening.
+-- Pre-BL-051a all audit_log resource_id values were UUIDs (campaign /
+-- KOL / asset / weekly_report). F008's product.deleted audit writes
+-- the Product.id (cuid, NOT a UUID; see PRODUCT_ID_RE in actions.ts
+-- + ADR-of-BL-020 #1:A). The original UUID type rejects cuid input
+-- (`invalid input syntax for type uuid`), so we widen to VARCHAR(64)
+-- to match event_log.resource_id and accept both UUIDs and cuids.
+-- VARCHAR(64) holds any 36-char UUID and any reasonable cuid (cuid v1
+-- is 25 chars, cuid v2 ≤ 32). Existing UUID rows convert losslessly.
+--
 -- ROLLBACK: apply these statements in reverse order.
+--   ALTER TABLE "audit_log" ALTER COLUMN "resource_id" TYPE UUID
+--     USING "resource_id"::uuid;  -- only safe if no cuid rows exist
 --   DROP INDEX "product_tenant_active_idx";
 --   ALTER TABLE "product" DROP COLUMN "deleted_at";
 --   ALTER TABLE "weekly_report" DROP COLUMN "revoked_at";
+
+ALTER TABLE "audit_log"
+  ALTER COLUMN "resource_id" TYPE VARCHAR(64);
 
 -- ===== Part A · weekly_report ============================================
 

@@ -379,7 +379,10 @@ model AuditLog {
   actorUserId  String?  @map("actor_user_id") @db.Uuid
   action       String
   resourceType String   @map("resource_type")
-  resourceId   String?  @map("resource_id") @db.Uuid
+  // BL-051a-F008: widened from UUID to VARCHAR(64) so product.deleted
+  // audits (Product.id is a cuid, not a UUID) can write here. Same
+  // shape as event_log.resource_id.
+  resourceId   String?  @map("resource_id") @db.VarChar(64)
   payload      Json?    @db.JsonB
   ipAddress    String?  @map("ip_address")
   userAgent    String?  @map("user_agent")

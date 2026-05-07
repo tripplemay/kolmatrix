@@ -254,10 +254,14 @@ describe("loadSharedWeeklyReport (anonymous)", () => {
     expect(payload).not.toBeNull();
     expect(payload!.contentMd).toContain("Executive Summary");
     expect(payload!.summaryJson?.tenantSnapshot.name).toBe("A");
-    // Returned payload should expose only the 4 documented fields.
+    // BL-051a-F002 + F003 added revokedAt + locale to the payload so
+    // the public page can render the 'revoked' state with metadata
+    // and pick the report's authoring locale for translations.
     expect(Object.keys(payload!).sort()).toEqual([
       "contentMd",
       "createdAt",
+      "locale",
+      "revokedAt",
       "shareTokenExpiresAt",
       "summaryJson",
     ]);
