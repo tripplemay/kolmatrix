@@ -1,0 +1,57 @@
+# BL-049-F004 · Dependabot config — weekly npm + GitHub Actions PRs.
+#
+# Rationale:
+#   - Catches CVE / minor upgrades before they accumulate into multi-week
+#     bumps that are painful to triage.
+#   - Groups noisy ecosystems (next/prisma/vitest/playwright) so a single
+#     framework bump produces ONE PR instead of 5+.
+#   - open-pull-requests-limit caps weekly noise to 5 active PRs per
+#     ecosystem (prevents flooding when first run lights up dozens of
+#     transitive bumps on Monday).
+#
+# First run lands Monday after merge; user reviews PR list and decides
+# merge / delay / dismiss per group.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "automated"
+    groups:
+      next-ecosystem:
+        patterns:
+          - "next"
+          - "next-*"
+          - "@next/*"
+          - "react"
+          - "react-*"
+          - "@types/react"
+          - "@types/react-*"
+      prisma-ecosystem:
+        patterns:
+          - "prisma"
+          - "@prisma/*"
+      vitest-ecosystem:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+          - "@testing-library/*"
+      playwright-ecosystem:
+        patterns:
+          - "playwright"
+          - "@playwright/*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"

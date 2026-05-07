@@ -116,13 +116,22 @@ test.describe("/database fidelity (MVP-vf-F003)", () => {
     expect(await del.getAttribute("title")).toBeTruthy();
   });
 
-  test("header CTAs (Export / Import / Add KOL) are disabled placeholders", async ({ page }) => {
-    for (const testid of ["database-export", "database-import", "database-add-kol"] as const) {
-      const button = page.getByTestId(testid);
-      await expect(button).toBeVisible();
-      await expect(button).toBeDisabled();
-      const title = await button.getAttribute("title");
-      expect(title, `${testid} title attr`).toBeTruthy();
+  test("header CTAs (Export / Import / Add KOL) are wired and enabled (BL-024 F001-1/2/3)", async ({ page }) => {
+    // BL-024 F001-1 (commit 060241b) shipped Export as a <Link> to
+    // /api/database/export-csv?…; F001-2 (49411ef) wired Import via
+    // <ImportCsvDialog>; F001-3 (e4acbf7) wired Add KOL via
+    // <AddKolDialog>. Each dialog renders an enabled trigger Button
+    // with the legacy data-testid; Export is a <Link> (no `disabled`
+    // attr possible). All three must be visible + active.
+    const exportLink = page.getByTestId("database-export");
+    await expect(exportLink).toBeVisible();
+    const exportHref = await exportLink.getAttribute("href");
+    expect(exportHref, "database-export href").toMatch(/\/api\/database\/export-csv/);
+
+    for (const testid of ["database-import", "database-add-kol"] as const) {
+      const trigger = page.getByTestId(testid);
+      await expect(trigger).toBeVisible();
+      await expect(trigger).toBeEnabled();
     }
   });
 });
