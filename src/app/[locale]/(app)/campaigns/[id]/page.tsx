@@ -68,6 +68,11 @@ export default async function CampaignDetailPage({ params }: Props) {
   const tEmailChart = await getTranslations(
     "campaigns.detail.insights.emailChart"
   );
+  // BL-051a-F009 — productDeleted strings live in the knowledgeBase
+  // namespace because they describe a product lifecycle state, not a
+  // campaign concern; loading both lets headerLabels stay
+  // self-contained.
+  const tKb = await getTranslations("knowledgeBase");
 
   const hasEmailableKols = campaign.kols.some(
     (k) => k.hasEmail && k.contactStatus !== "paid"
@@ -96,7 +101,7 @@ export default async function CampaignDetailPage({ params }: Props) {
               ownerName: campaign.ownerName,
               locale,
             }}
-            labels={headerLabels(t, tStatus, tErrors, campaign.status)}
+            labels={headerLabels(t, tStatus, tErrors, tKb, campaign.status)}
           />
 
           <CampaignKolPanel
@@ -246,6 +251,7 @@ function headerLabels(
   t: Awaited<ReturnType<typeof getTranslations>>,
   tStatus: Awaited<ReturnType<typeof getTranslations>>,
   tErrors: Awaited<ReturnType<typeof getTranslations>>,
+  tKb: Awaited<ReturnType<typeof getTranslations>>,
   status: string
 ) {
   const statusKey =
@@ -278,6 +284,8 @@ function headerLabels(
       not_found: tErrors("notFound"),
     },
     unsetValue: t("unset"),
+    productDeleted: tKb("productDeleted"),
+    productDeletedTooltip: tKb("productDeletedTooltip"),
   };
 }
 

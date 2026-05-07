@@ -37,15 +37,35 @@ export function ProductsClient({ products }: Props) {
   };
 
   const onDelete = (product: ProductListItem) => {
-    const confirmed = window.confirm(`Delete "${product.name}"?`);
+    const confirmed = window.confirm(t("delete.confirm", { name: product.name }));
     if (!confirmed) return;
     startDelete(async () => {
       const res = await deleteProduct(product.id);
-      if (!res.ok) {
-        window.alert("Could not delete product. Please retry.");
+      if (res.ok) {
+        router.refresh();
         return;
       }
-      router.refresh();
+      // BL-051a-F008: surface association warning so the marketer
+      // can decide cascade vs cancel (D3 — ask, don't reject).
+      if (res.error === "has_references") {
+        const counts = res.counts;
+        const cascadeOk = window.confirm(
+          t("delete.cascade", {
+            campaign: counts.campaign,
+            asset: counts.asset,
+            kolCampaign: counts.kolCampaign,
+          })
+        );
+        if (!cascadeOk) return;
+        const retry = await deleteProduct(product.id, { confirmCascade: true });
+        if (retry.ok) {
+          router.refresh();
+        } else {
+          window.alert(t("delete.failed"));
+        }
+        return;
+      }
+      window.alert(t("delete.failed"));
     });
   };
 

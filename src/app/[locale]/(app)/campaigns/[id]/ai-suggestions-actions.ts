@@ -49,6 +49,11 @@ export async function generateCampaignSuggestionsAction(
               name: true,
               category: true,
               uniqueSellingPoints: true,
+              // BL-051a-F009: drop deleted-product context from the
+              // AI prompt (see productContext mapping below). The
+              // suggestions panel doesn't surface product fields
+              // directly, so the prompt-side guard is enough.
+              deletedAt: true,
             },
           },
         },
@@ -119,14 +124,18 @@ export async function generateCampaignSuggestionsAction(
       createdAt: row.createdAt.toISOString(),
     }));
 
-    const productContext = payload.campaign.product
-      ? {
-          id: payload.campaign.product.id,
-          name: payload.campaign.product.name,
-          category: payload.campaign.product.category,
-          usp: payload.campaign.product.uniqueSellingPoints,
-        }
-      : null;
+    // BL-051a-F009: tombstoned products are dropped from the AI
+    // prompt — feeding stale "your product is X" context once the
+    // marketer has retired the SKU produces misleading suggestions.
+    const productContext =
+      payload.campaign.product && payload.campaign.product.deletedAt === null
+        ? {
+            id: payload.campaign.product.id,
+            name: payload.campaign.product.name,
+            category: payload.campaign.product.category,
+            usp: payload.campaign.product.uniqueSellingPoints,
+          }
+        : null;
 
     const result = await generateCampaignSuggestions({
       locale,

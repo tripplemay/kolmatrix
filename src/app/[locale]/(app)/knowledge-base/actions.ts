@@ -7,6 +7,7 @@ import {
   loadProductAssets,
   type ProductAssetListItem,
 } from "@/lib/assets/queries";
+import { logAudit } from "@/lib/audit/log";
 import { withTenant } from "@/lib/db";
 import { logEvent } from "@/lib/events/log";
 import { generateAiAssets, markAiAssetsPending } from "@/lib/products/generateAiAssets";
@@ -172,8 +173,10 @@ export async function updateProduct(
       // findUnique to the caller's tenant, so a cross-tenant id
       // surfaces as null here too — but the explicit tenantId check is
       // a defence-in-depth tripwire for an RLS misconfiguration.
-      const existing = await tx.product.findUnique({
-        where: { id: productId },
+      // BL-051a-F007: findFirst layers deletedAt: null so soft-deleted
+      // products read as "not found" to mutation paths.
+      const existing = await tx.product.findFirst({
+        where: { id: productId, deletedAt: null },
         select: { id: true, tenantId: true },
       });
       if (!existing || existing.tenantId !== tenantId) {
@@ -249,9 +252,12 @@ export async function triggerAiGeneration(
   }
 
   try {
+    // BL-051a-F007: AI generation can't fire on a soft-deleted
+    // product. findFirst layers deletedAt: null on top of the unique
+    // id constraint.
     const product = await withTenant(tenantId, (tx) =>
-      tx.product.findUnique({
-        where: { id: normalizedProductId },
+      tx.product.findFirst({
+        where: { id: normalizedProductId, deletedAt: null },
         select: {
           id: true,
           name: true,
@@ -295,36 +301,116 @@ export async function triggerAiGeneration(
   }
 }
 
-export type DeleteProductResult = { ok: true } | { ok: false; error?: "not_found" };
+export interface DeleteProductCascadeCount {
+  campaign: number;
+  asset: number;
+  kolCampaign: number;
+}
 
-export async function deleteProduct(productId: string): Promise<DeleteProductResult> {
+export type DeleteProductResult =
+  | { ok: true; cascadeCount: DeleteProductCascadeCount }
+  | { ok: false; error: "not_found" }
+  | { ok: false; error: "has_references"; counts: DeleteProductCascadeCount }
+  | { ok: false; error: "unauthorized" | "generic" };
+
+// BL-051a-F008 — soft delete with reference pre-check + audit_log.
+//
+// Flow:
+//   1. Auth + ownership preflight (rejects rows already soft-deleted).
+//   2. Count campaign / asset / kol_campaign references.
+//   3. If any > 0 and the caller didn't pass confirmCascade, surface
+//      `has_references` so the UI can show a confirmation dialog
+//      (D3 — Planner decision: ask, don't reject).
+//   4. UPDATE deleted_at = NOW() (no DELETE — F011 prevents new
+//      orphans like 4425e07e by keeping the row physically + audit
+//      trail intact, ADR D5).
+//   5. logAudit('product.deleted') captures cascade_count + soft_delete:
+//      true; payload survives the soft delete (no FK from audit_log
+//      back to product).
+//
+// Cascade scope (D2): campaign / kol_campaign rows are NOT mutated —
+// they keep pointing to the soft-deleted product so historical
+// dashboards stay coherent; F009 UI shows "（产品已删除）" instead of
+// blanking the row. Asset has no deleted_at column this batch, so the
+// "如有" hedge in spec D2 fires as no-op for assets too. cascade_count
+// in audit_log records what *would* have been touched for future
+// auditing.
+export async function deleteProduct(
+  productId: string,
+  options?: { confirmCascade?: boolean }
+): Promise<DeleteProductResult> {
   const session = await auth();
   const tenantId = session?.user?.tenantId;
   const userId = session?.user?.id;
   const normalizedProductId = normalizeProductId(productId);
-  if (!tenantId || !UUID_RE.test(tenantId) || !normalizedProductId) {
-    return { ok: false };
+  if (!tenantId || !UUID_RE.test(tenantId) || !userId || !normalizedProductId) {
+    return { ok: false, error: "unauthorized" };
   }
 
   try {
-    // BL-035-F005 (API-H3): same ownership preflight as updateProduct.
-    // Returning `not_found` (not "forbidden") avoids leaking whether
-    // the product id corresponds to a row owned by another tenant.
     const result = await withTenant(tenantId, async (tx) => {
-      const existing = await tx.product.findUnique({
-        where: { id: normalizedProductId },
-        select: { id: true, tenantId: true },
+      // BL-035-F005 (API-H3): same ownership preflight as updateProduct.
+      // BL-051a-F007: deletedAt: null hides already-soft-deleted rows
+      // so a double-delete reads as not_found (idempotent surface).
+      const existing = await tx.product.findFirst({
+        where: { id: normalizedProductId, deletedAt: null },
+        select: { id: true, tenantId: true, name: true },
       });
       if (!existing || existing.tenantId !== tenantId) {
         return { kind: "not_found" as const };
       }
-      await tx.product.delete({ where: { id: normalizedProductId } });
-      return { kind: "deleted" as const };
+
+      // Reference counts. KolCampaign joins through Campaign.productId
+      // since there's no direct kol_campaign → product FK.
+      const [campaignCount, assetCount, kolCampaignCount] = await Promise.all([
+        tx.campaign.count({ where: { productId: normalizedProductId } }),
+        tx.asset.count({ where: { productId: normalizedProductId } }),
+        tx.kolCampaign.count({
+          where: { campaign: { productId: normalizedProductId } },
+        }),
+      ]);
+      const counts: DeleteProductCascadeCount = {
+        campaign: campaignCount,
+        asset: assetCount,
+        kolCampaign: kolCampaignCount,
+      };
+      const totalRefs = campaignCount + assetCount + kolCampaignCount;
+
+      if (totalRefs > 0 && !options?.confirmCascade) {
+        return { kind: "has_references" as const, counts };
+      }
+
+      await tx.product.update({
+        where: { id: normalizedProductId },
+        data: { deletedAt: new Date() },
+      });
+
+      return {
+        kind: "deleted" as const,
+        productName: existing.name,
+        counts,
+      };
     });
 
     if (result.kind === "not_found") {
       return { ok: false, error: "not_found" };
     }
+    if (result.kind === "has_references") {
+      return { ok: false, error: "has_references", counts: result.counts };
+    }
+
+    await logAudit({
+      tenantId,
+      actorId: userId,
+      action: "product.deleted",
+      targetType: "product",
+      targetId: normalizedProductId,
+      after: {
+        productName: result.productName,
+        cascadeCount: result.counts,
+        softDelete: true,
+      },
+    });
 
     void logEvent({
       type: "product.deleted",
@@ -334,10 +420,10 @@ export async function deleteProduct(productId: string): Promise<DeleteProductRes
     });
 
     revalidatePath("/[locale]/knowledge-base", "page");
-    return { ok: true };
+    return { ok: true, cascadeCount: result.counts };
   } catch (err) {
     console.error("[knowledge-base] deleteProduct failed:", err);
-    return { ok: false };
+    return { ok: false, error: "generic" };
   }
 }
 

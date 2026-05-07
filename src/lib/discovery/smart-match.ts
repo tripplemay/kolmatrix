@@ -143,9 +143,11 @@ export async function runSmartMatch(
   //    runs through withTenant, so RLS is the security boundary that
   //    proves the caller actually owns this product before we hand
   //    the id over to the admin-role embed/read path.
+  // BL-051a-F007 — soft-deleted products are invisible to Smart
+  // Match. findFirst layers deletedAt: null on top of the unique id.
   const product = await withTenant(input.tenantId, (tx) =>
-    tx.product.findUnique({
-      where: { id: input.productId },
+    tx.product.findFirst({
+      where: { id: input.productId, deletedAt: null },
       select: {
         id: true,
         name: true,

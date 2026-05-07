@@ -26,6 +26,8 @@ interface Labels {
   };
   errors: Record<string, string>;
   unsetValue: string;
+  productDeleted: string;
+  productDeletedTooltip: string;
 }
 
 interface Props {
@@ -40,7 +42,12 @@ interface Props {
     roiPercent: number | null;
     startDate: string | null;
     endDate: string | null;
-    product: { id: string; name: string; category: string } | null;
+    product: {
+      id: string;
+      name: string;
+      category: string;
+      isDeleted: boolean;
+    } | null;
     ownerName: string | null;
     locale: string;
   };
@@ -105,19 +112,35 @@ export function CampaignHeader({ campaign, labels }: Props) {
               {labels.statusBadge}
             </span>
             {campaign.product ? (
-              <a
-                href={`/${campaign.locale}/knowledge-base#product-${campaign.product.id}`}
-                className="inline-flex items-center gap-1 text-on-surface transition-colors hover:text-cyan"
-                data-testid="campaign-product-link"
-              >
+              campaign.product.isDeleted ? (
                 <span
-                  className="material-symbols-outlined text-[16px]"
-                  aria-hidden
+                  className="inline-flex items-center gap-1 text-on-surface-variant/70 italic"
+                  data-testid="campaign-product-deleted"
+                  title={labels.productDeletedTooltip}
                 >
-                  inventory_2
+                  <span
+                    className="material-symbols-outlined text-[16px]"
+                    aria-hidden
+                  >
+                    inventory_2
+                  </span>
+                  {labels.productDeleted}
                 </span>
-                {campaign.product.name} · {campaign.product.category}
-              </a>
+              ) : (
+                <a
+                  href={`/${campaign.locale}/knowledge-base#product-${campaign.product.id}`}
+                  className="inline-flex items-center gap-1 text-on-surface transition-colors hover:text-cyan"
+                  data-testid="campaign-product-link"
+                >
+                  <span
+                    className="material-symbols-outlined text-[16px]"
+                    aria-hidden
+                  >
+                    inventory_2
+                  </span>
+                  {campaign.product.name} · {campaign.product.category}
+                </a>
+              )
             ) : null}
             {campaign.game ? <span>🎮 {campaign.game}</span> : null}
             {campaign.ownerName ? (

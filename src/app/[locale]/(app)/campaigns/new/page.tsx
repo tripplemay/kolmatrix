@@ -42,6 +42,7 @@ export default async function NewCampaignPage({ params, searchParams }: Props) {
 
   const products = await withTenant(tenantId, (tx) =>
     tx.product.findMany({
+      where: { deletedAt: null },
       select: { id: true, name: true, category: true },
       orderBy: { createdAt: "desc" },
     })

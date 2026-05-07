@@ -27,6 +27,7 @@ export default async function KnowledgeBasePage({ params }: Props) {
   // page (≤100 products).
   const { rows, assetCounts } = await withTenant(tenantId, async (tx) => {
     const productRows = await tx.product.findMany({
+      where: { deletedAt: null },
       orderBy: { createdAt: "desc" },
       take: 100,
     });

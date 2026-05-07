@@ -155,8 +155,12 @@ export async function generateAssetAction(rawInput: unknown): Promise<GenerateAs
   // before the AI call so a missing product fails fast (no aigcgateway
   // spend wasted).
   const ctx = await withTenant(tenantId, async (tx) => {
-    const product = await tx.product.findUnique({
-      where: { id: parsed.productId },
+    // BL-051a-F007 — soft-deleted products are invisible to AI
+    // generation (defence-in-depth above F009 UI gate). findFirst (not
+    // findUnique) so we can layer deletedAt: null on top of the unique
+    // id constraint.
+    const product = await tx.product.findFirst({
+      where: { id: parsed.productId, deletedAt: null },
       select: {
         id: true,
         name: true,

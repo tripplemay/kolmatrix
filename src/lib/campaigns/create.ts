@@ -40,8 +40,11 @@ export async function createCampaignRecord(
       // than leaking Prisma's P2003 foreign-key stack trace. The RLS
       // policy on `product` already ensures cross-tenant products are
       // invisible, so findUnique within withTenant handles both cases.
-      const product = await tx.product.findUnique({
-        where: { id: input.productId },
+      // BL-051a-F007 — soft-deleted products can't anchor new
+      // campaigns. findFirst layers deletedAt: null on top of the
+      // unique id constraint.
+      const product = await tx.product.findFirst({
+        where: { id: input.productId, deletedAt: null },
         select: { id: true },
       });
       if (!product) {

@@ -53,6 +53,12 @@ export interface CampaignDetailRow {
     name: string;
     category: string;
     downloadUrl: string | null;
+    // BL-051a-F009 — surfaces tombstoned products to the detail UI so
+    // the campaign card shows "(Product deleted)" instead of broken
+    // metadata. F007 already prevents new campaigns from picking a
+    // soft-deleted product, but pre-existing campaigns can still
+    // reference one.
+    isDeleted: boolean;
   } | null;
   kols: CampaignKolRow[];
 }
@@ -89,6 +95,11 @@ export async function runCampaignDetail(
             name: true,
             category: true,
             downloadUrl: true,
+            // BL-051a-F009: include the tombstone flag so the UI can
+            // render the "(Product deleted)" defense. Prisma relation
+            // includes don't auto-filter on deletedAt, so a soft-
+            // deleted product still loads here.
+            deletedAt: true,
           },
         },
         kolCampaigns: {
@@ -164,6 +175,7 @@ export async function runCampaignDetail(
             name: row.product.name,
             category: row.product.category,
             downloadUrl: row.product.downloadUrl,
+            isDeleted: row.product.deletedAt !== null,
           }
         : null,
       kols,

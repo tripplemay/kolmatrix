@@ -125,6 +125,7 @@ export default async function DiscoveryPage({ params, searchParams }: Props) {
   // avoids an extra round-trip after the dialog opens.
   const products = await withTenant(tenantId, (tx) =>
     tx.product.findMany({
+      where: { deletedAt: null },
       select: { id: true, name: true, category: true },
       orderBy: { createdAt: "desc" },
     })

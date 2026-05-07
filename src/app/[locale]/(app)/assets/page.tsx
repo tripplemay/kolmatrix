@@ -56,6 +56,7 @@ export default async function AssetsPage({ params, searchParams }: Props) {
     ),
     withTenant(tenantId, (tx) =>
       tx.product.findMany({
+        where: { deletedAt: null },
         select: { id: true, name: true },
         orderBy: { createdAt: "desc" },
         take: 200,
