@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/components/ui/Skeleton.tsx 新建（animate-pulse + bg-surface-container/30 rounded-2xl 通用 primitive）",
       "src/components/ui/index.ts 加 export",
@@ -22,7 +22,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "partial-pending",
     "acceptance": [
       "排查根因（jsdom localStorage init / setup.ts 顺序 / vitest config）",
       "推荐方案 B：文件内 beforeAll Object.defineProperty(window, 'localStorage', {value: mock methods}) — 仅本文件 scope",
