@@ -29,15 +29,16 @@ model Tenant {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  users           User[]
-  kols            Kol[]
-  campaigns       Campaign[]
-  templates       EmailTemplate[]
-  products        Product[]
-  campaignMetrics CampaignMetric[]
-  weeklyReports   WeeklyReport[]
-  savedSearches   SavedSearch[]
-  assets          Asset[]
+  users             User[]
+  kols              Kol[]
+  campaigns         Campaign[]
+  templates         EmailTemplate[]
+  products          Product[]
+  campaignMetrics   CampaignMetric[]
+  weeklyReports     WeeklyReport[]
+  savedSearches     SavedSearch[]
+  assets            Asset[]
+  kpiDailySnapshots KpiDailySnapshot[]
 
   @@map("tenant")
 }
@@ -638,4 +639,31 @@ model Asset {
   @@index([tenantId, productId])
   @@index([parentId])
   @@map("asset")
+}
+
+// ============================================================
+// BL-052 · Dashboard KPI daily snapshot (Part A · BL-050 BACKING)
+//
+// One row per (tenantId, snapshotDate) capturing the 5 KPI scalars
+// computed at cron time. computeKpiTrend / computeSparkline read
+// trailing N rows; UI fallback "—" + tooltip when < 7 snapshots
+// (hasEnoughData=false). Cron entry: scripts/kpi-snapshot-daily.ts
+// (chained after kol-sync-daily 08:30 BJ via /etc/cron.d).
+// ============================================================
+
+model KpiDailySnapshot {
+  tenantId        String   @map("tenant_id") @db.Uuid
+  snapshotDate    DateTime @map("snapshot_date") @db.Date
+  kolCount        Int      @map("kol_count")
+  activeCampaigns Int      @map("active_campaigns")
+  emailsSent7d    Int      @map("emails_sent_7d")
+  productCount    Int      @map("product_count")
+  avgValueScore   Decimal  @map("avg_value_score") @db.Decimal(5, 2)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, snapshotDate])
+  @@index([tenantId, snapshotDate(sort: Desc)], map: "kpi_daily_snapshot_recent_idx")
+  @@map("kpi_daily_snapshot")
 }
