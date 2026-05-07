@@ -107,8 +107,10 @@ planner.md 铁律 1 检查矩阵 +2 行：
 | Audit 起草 | 5/7 10:30 | Planner johnsong |
 | 用户决议 X1 合并 | 5/7 10:50 | 用户 |
 | BL-049 spec lock | 5/7 ~11:00 | Planner（BL-021 done 后）|
-| BL-049 building 启动 | 5/7 ~11:00 | Generator Kimi |
-| BL-049 done 预估 | 5/7 ~17:00（按 4-6x 加速可能 ~13:00）| - |
+| BL-049 building 启动 | 5/7 13:10 | Generator johnsong |
+| BL-049 building 完成（7/7 features 实装 + framework v0.9.15 沉淀）| 5/7 ~14:00 | Generator johnsong |
+| BL-049 verifying（待 Codex Reviewer L1 + L2 签收）| 待 | Reviewer |
+| BL-049 done 预估 | 5/7 晚 / 5/8 上午 | - |
 
 ---
 
