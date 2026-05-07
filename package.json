@@ -34,6 +34,7 @@
     "enrich:kol-youtube:dry": "tsx scripts/enrich-kol-from-youtube.ts --dry-run",
     "kol-sync:daily": "tsx scripts/kol-sync-daily.ts",
     "kol-sync:daily:dry": "tsx scripts/kol-sync-daily.ts --dry-run",
+    "kpi-snapshot:daily": "tsx scripts/kpi-snapshot-daily.ts",
     "kol-quality:weekly": "tsx scripts/kol-quality-weekly.ts",
     "kol-quality:weekly:dry": "tsx scripts/kol-quality-weekly.ts --dry-run",
     "kol-embed:backfill": "tsx scripts/kol-embed-backfill.ts",

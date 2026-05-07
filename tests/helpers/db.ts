@@ -151,6 +151,7 @@ export async function cleanDb(): Promise<void> {
        "kol_campaign", "campaign",
        "product",
        "kol",
+       "kpi_daily_snapshot",
        "account", "session", "user",
        "tenant",
        "access_request"

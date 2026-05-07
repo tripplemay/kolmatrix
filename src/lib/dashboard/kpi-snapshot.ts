@@ -13,7 +13,7 @@
  */
 import type { PrismaClient } from "@prisma/client";
 
-import { withTenant } from "@/lib/db";
+import { assertUuid } from "@/lib/uuid";
 
 export interface KpiSnapshotRecord {
   tenantId: string;
@@ -40,10 +40,13 @@ export async function takeKpiSnapshot(
   tenantId: string,
   asOf: Date = new Date()
 ): Promise<KpiSnapshotRecord> {
+  assertUuid(tenantId, "tenantId");
   const snapshotDate = startOfUtcDay(asOf);
   const sevenDaysAgo = new Date(asOf.getTime() - 7 * MS_PER_DAY);
 
-  return withTenant(tenantId, async (tx) => {
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT set_config('app.tenant_id', ${tenantId}, true)`;
+
     const [kolCount, activeCampaigns, emailsSent7d, productCount, valueScoreAgg] =
       await Promise.all([
         tx.kol.count({ where: { isGaming: true } }),
