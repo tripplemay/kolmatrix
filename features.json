@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "schema.prisma weekly_report 加 expiresAt + revokedAt (creator_user_id 如已有则不动)",
       "migration 文件 2026XXXXXXXX_lifecycle_management/migration.sql 含 ALTER + ROLLBACK 注释",
@@ -18,7 +18,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "validateToken 检查 expires_at < NOW() → invalid (reason='expired')",
       "validateToken 检查 revoked_at IS NOT NULL → invalid (reason='revoked')",
@@ -31,7 +31,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "正常 token 显示 weekly-report 内容",
       "expired token 显示 已过期 + 创建/过期时间",
@@ -46,7 +46,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "POST endpoint 仅 owner (creator_user_id) + tenant 内可调用",
       "revoked_at 落库 + audit_log 记录 action='weekly_report.revoked'",
@@ -59,7 +59,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "UI metadata 显示 Expires + Created by + 默认 7 day expiry (UI 下拉 1d/7d/30d/never)",
       "列表 revoke button 调 F004 API",
@@ -73,7 +73,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "schema.prisma Product 加 deletedAt DateTime?",
       "ALTER + CREATE INDEX product_tenant_active_idx (tenant_id) WHERE deleted_at IS NULL",
@@ -87,7 +87,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "knowledge-base list / ProductCard / ProductModal / assets composer / outreach composer / smart-match / kol-embed / campaigns picker 全 grep 添加 filter",
       "grep prisma.product.find + tx.product.find 全 hits 验证 (commit message 列覆盖检查清单)",
@@ -100,7 +100,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "deleteProduct 改 UPDATE deleted_at = NOW()（不 DELETE）",
       "删除前检查 campaign + asset + kol_campaign 关联",
@@ -115,7 +115,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "/campaigns/[id] product=NULL 显示 (产品已删除) 灰显 + tooltip",
       "/knowledge-base 列表通过 F007 自动过滤软删",
@@ -128,7 +128,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "tests/unit/products-soft-delete.test.ts ≥4 case (deleteProduct 软删 / list 过滤 / detail 防御 / audit_log)",
       "tests/integration/product-soft-delete.test.ts ≥2 case (full flow + audit_log permanence)",
@@ -143,7 +143,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 0.25,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "集成测试验证 audit_log 不会被 cascade 删 (无 FK to product)",
       "soft delete 后 product 物理仍在 DB；FK SET NULL 不再触发 (关联保留)",
