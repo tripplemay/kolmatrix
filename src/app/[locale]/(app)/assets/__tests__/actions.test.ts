@@ -117,7 +117,10 @@ function stubProductLookup({
   withTenantMock.mockImplementationOnce(
     async (_tenantId: string, fn: (tx: unknown) => Promise<unknown>) => {
       return fn({
-        product: { findUnique: vi.fn().mockResolvedValue(prod) },
+        // BL-051a-F007: AI generation now uses findFirst with a
+        // deletedAt: null guard so soft-deleted products can't fire
+        // costly aigcgateway calls.
+        product: { findFirst: vi.fn().mockResolvedValue(prod) },
         asset: {
           findUnique: vi.fn().mockResolvedValue(parent ?? null),
           count: vi.fn().mockResolvedValue((variantOrdinal ?? 1) - 1),

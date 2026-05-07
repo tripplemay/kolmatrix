@@ -12,7 +12,7 @@
 -- asset.deleted_at not in scope this batch — Asset has no deleted_at
 -- column, so spec D2 "如有" hedge fires as no-op).
 --
--- ROLLBACK ORDER (apply in reverse):
+-- ROLLBACK: apply these statements in reverse order.
 --   DROP INDEX "product_tenant_active_idx";
 --   ALTER TABLE "product" DROP COLUMN "deleted_at";
 --   ALTER TABLE "weekly_report" DROP COLUMN "revoked_at";

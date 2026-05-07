@@ -19,6 +19,13 @@ vi.mock("@/lib/products/generateAiAssets", () => ({
   markAiAssetsPending,
 }));
 
+// BL-051a-F008: deleteProduct now writes a product.deleted audit row.
+// The real logAudit reaches into prisma.auditLog.create which the test
+// suite doesn't stub (the suite predates audit_log integration); mock
+// it here so the soft-delete happy path stays jsdom-only.
+const logAudit = vi.fn().mockResolvedValue(undefined);
+vi.mock("@/lib/audit/log", () => ({ logAudit }));
+
 const { deleteProduct, updateProduct, triggerAiGeneration } = await import("../actions");
 
 const TENANT_ID = "11111111-2222-3333-4444-555555555555";
