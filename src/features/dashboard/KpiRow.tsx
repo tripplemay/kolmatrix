@@ -1,21 +1,21 @@
 /**
- * KpiRow — Dashboard KPI 区块（BM1-F007 扩展为 5 卡）
+ * KpiRow — Dashboard KPI 区块（5 卡片，BL-052 F004 真趋势化）
  *
- * 5 tiles per spec §F007:
- *   1. Total KOLs (gaming-only count)
- *   2. Active Campaigns (BM1 → 0 / "—" until BM2 ships campaigns)
- *   3. Emails Sent (BM1 → 0 / "—" until BM2 outreach)
- *   4. Products (knowledge-base count)
- *   5. Avg Value Score (AiMatchRingCard re-used — same 0-100 ring UI)
+ * 4 trend cards + 1 ring card. Trends/sparklines come from
+ * loadKpiTrends (see src/lib/dashboard/kpi-trends.ts) — no hardcoded
+ * mocks. Each StatCard receives a KpiTrend; if hasEnoughData=false the
+ * chip falls back to "—" + tooltip per D4 (data accumulating).
  *
- * The trend sparklines remain mock (§11.4 G3:A — historical tables land
- * with B3); the number itself is real.
+ * The 5th tile (Avg Value Score) re-uses AiMatchRingCard — same 0–100
+ * ring UI and no trend (the value is meaningful at any point in time;
+ * spec §1.3 keeps this card untouched).
  */
 "use client";
 
 import { useTranslations } from "next-intl";
 
-import { StatCard } from "@/components/common";
+import { StatCard, type StatCardTrend } from "@/components/common";
+import type { KpiTrend } from "@/lib/dashboard/kpi-trends";
 
 import { AiMatchRingCard } from "./AiMatchRingCard";
 
@@ -25,10 +25,23 @@ interface Props {
   emailsSent7d: number;
   productCount: number;
   avgValueScore: number;
+  trends: {
+    kolCount: KpiTrend;
+    activeCampaigns: KpiTrend;
+    emailsSent7d: KpiTrend;
+    productCount: KpiTrend;
+  };
 }
 
 function pendingValue(count: number): string | number {
   return count === 0 ? "—" : count.toLocaleString();
+}
+
+function trendToProp(trend: KpiTrend, fallbackTooltip: string): StatCardTrend {
+  if (!trend.hasEnoughData) {
+    return { direction: "flat", percent: 0, tooltip: fallbackTooltip };
+  }
+  return { direction: trend.direction, percent: trend.percent };
 }
 
 export function KpiRow({
@@ -37,8 +50,11 @@ export function KpiRow({
   emailsSent7d,
   productCount,
   avgValueScore,
+  trends,
 }: Props) {
   const t = useTranslations("dashboard.kpi");
+  const tooltip = t("trendAccumulating");
+
   return (
     <section
       className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-5"
@@ -47,30 +63,30 @@ export function KpiRow({
       <StatCard
         label={t("totalKols")}
         value={kolCount.toLocaleString()}
-        trend={{ direction: "up", percent: 12 }}
+        trend={trendToProp(trends.kolCount, tooltip)}
         icon="groups"
-        sparkline={[40, 60, 80, 100]}
+        sparkline={trends.kolCount.sparkline}
       />
       <StatCard
         label={t("activeCampaigns")}
         value={pendingValue(activeCampaigns)}
-        trend={{ direction: "flat", percent: 0, accent: "purple" }}
+        trend={trendToProp(trends.activeCampaigns, tooltip)}
         icon="campaign"
-        sparkline={[70, 70, 70, 70]}
+        sparkline={trends.activeCampaigns.sparkline}
       />
       <StatCard
         label={t("emailsSent")}
         value={pendingValue(emailsSent7d)}
-        trend={{ direction: "up", percent: 5.2 }}
+        trend={trendToProp(trends.emailsSent7d, tooltip)}
         icon="mail"
-        sparkline={[50, 62, 78, 92]}
+        sparkline={trends.emailsSent7d.sparkline}
       />
       <StatCard
         label={t("totalProducts")}
         value={productCount.toLocaleString()}
-        trend={{ direction: "flat", percent: 0, accent: "warning" }}
+        trend={trendToProp(trends.productCount, tooltip)}
         icon="inventory_2"
-        sparkline={[30, 40, 55, 70]}
+        sparkline={trends.productCount.sparkline}
       />
       <AiMatchRingCard score={avgValueScore} label={t("avgValueScore")} />
     </section>

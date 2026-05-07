@@ -176,7 +176,8 @@
       "emailsSent": "Correos Enviados",
       "totalProducts": "Productos",
       "avgValueScore": "Puntuación de Valor Promedio",
-      "avgAiMatch": "Coincidencia AI Promedio"
+      "avgAiMatch": "Coincidencia AI Promedio",
+      "trendAccumulating": "Datos de tendencia acumulándose, disponible después de 7 días"
     },
     "quickActions": {
       "knowledgeBase": "Añadir producto",

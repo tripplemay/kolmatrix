@@ -176,7 +176,8 @@
       "emailsSent": "보낸 이메일",
       "totalProducts": "제품",
       "avgValueScore": "평균 가치 점수",
-      "avgAiMatch": "평균 AI 매칭"
+      "avgAiMatch": "평균 AI 매칭",
+      "trendAccumulating": "추세 데이터 수집 중, 7일 후 표시"
     },
     "quickActions": {
       "knowledgeBase": "제품 추가",

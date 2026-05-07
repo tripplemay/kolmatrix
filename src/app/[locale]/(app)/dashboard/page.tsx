@@ -14,6 +14,7 @@ import { RecentActivityCard } from "@/features/dashboard/RecentActivityCard";
 import { WorkflowSteps } from "@/features/dashboard/WorkflowSteps";
 import { isLocale, routing } from "@/i18n/routing";
 import { fetchEmailPerformance } from "@/lib/dashboard/email-performance";
+import { loadKpiTrends } from "@/lib/dashboard/kpi-trends";
 import {
   fetchRecentActivity,
   formatRelativeTime,
@@ -37,9 +38,14 @@ export default async function DashboardPage({ params }: Props) {
   const tenantId = session?.user.tenantId;
   if (!tenantId) redirect("/login");
 
-  const [[d, emailPerf, rawActivity], roiTrend] = await Promise.all([
+  const [[d, emailPerf, rawActivity, kpiTrends], roiTrend] = await Promise.all([
     withTenant(tenantId, (tx) =>
-      Promise.all([fetchDashboardData(tx), fetchEmailPerformance(tx), fetchRecentActivity(tx)])
+      Promise.all([
+        fetchDashboardData(tx),
+        fetchEmailPerformance(tx),
+        fetchRecentActivity(tx),
+        loadKpiTrends(tx, tenantId),
+      ])
     ),
     loadRoiTrend(tenantId, 30),
   ]);
@@ -73,6 +79,7 @@ export default async function DashboardPage({ params }: Props) {
         emailsSent7d={d.emailsSent7d}
         productCount={d.productCount}
         avgValueScore={d.avgValueScore}
+        trends={kpiTrends}
       />
 
       {/* F001: 3 new dashboard elements */}

@@ -176,7 +176,8 @@
       "emailsSent": "邮件触达",
       "totalProducts": "游戏产品",
       "avgValueScore": "平均价值分",
-      "avgAiMatch": "平均 AI 匹配度"
+      "avgAiMatch": "平均 AI 匹配度",
+      "trendAccumulating": "趋势数据累积中，7 天后可见"
     },
     "quickActions": {
       "knowledgeBase": "录入产品",

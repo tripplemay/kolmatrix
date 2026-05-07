@@ -25,4 +25,38 @@ describe("StatCard", () => {
     const bars = container.querySelectorAll("[style*=height]");
     expect(bars.length).toBe(5);
   });
+
+  // BL-052 F004 — tooltip fallback for the "data accumulating" state.
+  it("renders +percent when trend has data and no tooltip", () => {
+    render(<StatCard label="KOLs" value="42" trend={{ direction: "up", percent: 12 }} />);
+    const chip = screen.getByTestId("statcard-trend");
+    expect(chip).toHaveTextContent("+12%");
+    expect(chip).not.toHaveAttribute("title");
+  });
+
+  it("falls back to em-dash + title attribute when trend.tooltip is set", () => {
+    render(
+      <StatCard
+        label="KOLs"
+        value="42"
+        trend={{
+          direction: "flat",
+          percent: 0,
+          tooltip: "Trend data accumulating, available after 7 days",
+        }}
+      />
+    );
+    const chip = screen.getByTestId("statcard-trend");
+    expect(chip.textContent).toContain("—");
+    expect(chip.textContent).not.toContain("0%");
+    expect(chip).toHaveAttribute(
+      "title",
+      "Trend data accumulating, available after 7 days"
+    );
+  });
+
+  it("omits the chip entirely when no trend prop is passed", () => {
+    render(<StatCard label="KOLs" value="42" />);
+    expect(screen.queryByTestId("statcard-trend")).not.toBeInTheDocument();
+  });
 });

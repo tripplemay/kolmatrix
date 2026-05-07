@@ -176,7 +176,8 @@
       "emailsSent": "Emails Sent",
       "totalProducts": "Products",
       "avgValueScore": "Avg Value Score",
-      "avgAiMatch": "Avg AI Match"
+      "avgAiMatch": "Avg AI Match",
+      "trendAccumulating": "Trend data accumulating, available after 7 days"
     },
     "quickActions": {
       "knowledgeBase": "Add product",

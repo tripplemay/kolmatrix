@@ -10,11 +10,24 @@ import { cn } from "@/lib/utils";
 type TrendDirection = "up" | "flat" | "down";
 type TrendAccent = "emerald" | "purple" | "warning";
 
+export interface StatCardTrend {
+  direction: TrendDirection;
+  percent: number;
+  accent?: TrendAccent;
+  /**
+   * BL-052 F004: when set, the chip renders "—" instead of "X%" and the
+   * tooltip text is exposed via the native `title` attribute on hover.
+   * Used for the "data accumulating" fallback while the kpi_daily_snapshot
+   * history is shorter than the trend window.
+   */
+  tooltip?: string;
+}
+
 interface StatCardProps {
   label: string;
   value: string | number;
   subLabel?: string;
-  trend?: { direction: TrendDirection; percent: number; accent?: TrendAccent };
+  trend?: StatCardTrend;
   icon?: string;
   sparkline?: number[];
   className?: string;
@@ -79,12 +92,20 @@ export function StatCard({
               "inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium",
               TREND_TEXT[accent]
             )}
+            title={trend.tooltip}
+            data-testid="statcard-trend"
           >
             <span className="material-symbols-outlined text-[12px]" aria-hidden>
               {TREND_ICON[trend.direction]}
             </span>
-            {trend.direction === "up" ? "+" : ""}
-            {trend.percent}%
+            {trend.tooltip ? (
+              "—"
+            ) : (
+              <>
+                {trend.direction === "up" ? "+" : ""}
+                {trend.percent}%
+              </>
+            )}
           </span>
         ) : (
           <span />

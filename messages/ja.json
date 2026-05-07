@@ -176,7 +176,8 @@
       "emailsSent": "送信されたメール数",
       "totalProducts": "商品数",
       "avgValueScore": "平均価値スコア",
-      "avgAiMatch": "平均 AI マッチ率"
+      "avgAiMatch": "平均 AI マッチ率",
+      "trendAccumulating": "トレンドデータ蓄積中、7日後に表示"
     },
     "quickActions": {
       "knowledgeBase": "商品を追加する",

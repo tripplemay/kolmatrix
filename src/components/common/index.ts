@@ -18,7 +18,7 @@ export { GradientButton } from "./GradientButton";
 export { KolCard } from "./KolCard";
 export { SecondaryButton } from "./SecondaryButton";
 export { SectionHeader } from "./SectionHeader";
-export { StatCard } from "./StatCard";
+export { StatCard, type StatCardTrend } from "./StatCard";
 export { RingProgress, type RingProgressProps } from "./RingProgress";
 export { Sparkline, type SparklineProps } from "./Sparkline";
 export { StatusBadge, type StatusBadgeProps, type StatusDomain } from "./StatusBadge";
