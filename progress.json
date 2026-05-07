@@ -1,41 +1,40 @@
 {
-  "status": "done",
-  "user_goal": "BL-049 测试基建系统性升级 mini-batch (X1 合并 audit High 3 + Medium 4 = 7 features) — F001 vitest.config.ts coverage.exclude 拆 helper / F002 integration fileParallelism + maxForks=4 (CI 时间 10-15min → 3-4min) / F003 E2E visual workaround 独立 Playwright project + 隔离 DB / F004 .github/dependabot.yml / F005 material-symbols-coverage + e2e database-fidelity 2 pre-existing fails 修 / F006 vitest trailing comment + tests/__example/ + helpers/_colima-detect.ts + mocks/browser.ts dead code 评估 / F007 framework v0.9.15 沉淀 2 维 (跨 pool 复现 + stub environment-agnostic). 预估 ~6h Generator + 0.5h Reviewer. 关联: docs/audit-reports/test-infra-audit-2026-05-07.md (13 项发现详情).",
-  "total_features": 7,
-  "completed_features": 7,
+  "status": "building",
+  "user_goal": "BL-051a Lifecycle Management mini-batch (X2 合并 BL-017 weekly-report token + BL-046 product soft delete = 11 features F001-F011) - X1+ 极速时间线 5/7 14:40 启动 (BL-049 提前 1.5h done 后立即切，不等 5/8)。Part A token lifecycle (F001-F005) + Part B product soft delete (F006-F011)。Schema migration 合并 (weekly_report.expires_at/revoked_at + product.deleted_at 同文件)。预估 ~2 day Generator + 1h Reviewer，按 5x 加速实际 ~1.5h。关联: docs/specs/BL-051a-lifecycle-management-spec.md (含 v0.9.15 dogfood guidance)。",
+  "total_features": 11,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "BL-049-test-infra-systematic-upgrade",
-  "last_updated": "2026-05-07T14:35+0800",
+  "current_sprint": "BL-051a-lifecycle-management",
+  "last_updated": "2026-05-07T14:40+0800",
   "reference_docs": [
-    "docs/specs/BL-049-test-infra-systematic-upgrade-spec.md",
-    "docs/audit-reports/test-infra-audit-2026-05-07.md",
-    "vitest.config.ts",
-    "vitest.coverage-exclusions.ts",
-    "vitest.integration.config.ts",
-    "playwright.config.ts",
-    ".github/workflows/ci.yml",
-    ".github/workflows/update-visual-baselines.yml",
-    ".github/dependabot.yml",
-    "tests/integration/material-symbols-coverage.test.ts",
-    "tests/e2e/database-fidelity.spec.ts",
-    "framework/harness/planner.md",
-    "framework/CHANGELOG.md",
-    "framework/proposed-learnings.md",
-    "framework/archive/proposed-learnings-archive-v0.9.15.md"
+    "docs/specs/BL-051a-lifecycle-management-spec.md",
+    "prisma/schema.prisma",
+    "src/lib/weekly-report/share-token.ts",
+    "src/app/[locale]/(public)/shared/weekly-report/[token]/page.tsx",
+    "src/app/api/weekly-reports/",
+    "src/app/[locale]/(app)/knowledge-base/actions.ts",
+    "src/app/[locale]/(app)/knowledge-base/ProductsClient.tsx",
+    "src/app/[locale]/(app)/knowledge-base/ProductCard.tsx",
+    "src/app/[locale]/(app)/knowledge-base/ProductModal.tsx",
+    "src/app/[locale]/(app)/campaigns/",
+    "src/lib/products/",
+    "src/lib/discovery/smart-match.ts",
+    "src/lib/embedding/kol-embed.ts",
+    "framework/harness/planner.md"
   ],
   "docs": {
-    "spec": "docs/specs/BL-049-test-infra-systematic-upgrade-spec.md",
+    "spec": "docs/specs/BL-051a-lifecycle-management-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/BL-049-test-infra-systematic-upgrade-signoff-2026-05-07.md",
-    "framework_reviewed": false
+    "signoff": null,
+    "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": "[2026-05-07] BL-049 signoff PASS after local Colima recovery. L1 lint/tsc/coverage PASS, targeted integration guards PASS, full Testcontainers integration PASS, staging browser smoke PASS. The earlier Docker-blocked state was environmental only and is now cleared.",
-  "generator_handoff": "[2026-05-07 14:15 Generator johnsong → Reviewer] BL-049 building 完 7/7 features，3 commits 推 main：b9fa62c (F001/F002/F004/F005/F006) + 8ace6e0 (F003) + 91ee2cd (F007 framework v0.9.15 沉淀)。\n\n实装路径与 spec 偏差/重要选择：\n1. F002：vitest 4 已废弃 `poolOptions.forks.maxForks`（top-level `maxWorkers` 取代所有 pool），按 vitest 4 实际 API 写。spec 文字仍用旧 maxForks 概念，含义不变。\n2. F003：spec 列 A/B/C 三路径 + session_notes 推荐 A 2 DB；实装走路径 D（Playwright project dependencies）— chromium project deps on visual project 强制顺序，1 DB 即可隔离 mutation。同时满足全部 acceptance（visual + chromium 2 projects / ci.yml 不再 reseed / 19 baselines 跨 mutation 隔离 / time ≤ 当前 / update-visual-baselines.yml 用 --project=visual）。比 A 简单（无双 Next）且 spec line 144 自身已注「或更简：visual fresh seed 不 mutate」。\n3. F006 dead code 三候选评估：__example/msw-usage.test.ts 保留（vitest.config.ts include 行 17 仍跑 + BI1 spec 引用 + active contract test）；_colima-detect.ts 保留（tests/helpers/db.ts:31 主动 import）；mocks/browser.ts 删除（无消费者，仅 docstring 描述未来用途）。commit 1 含 (a)(b)(c) 决议。\n\nL1 守门（本机）：\n- ✅ npx tsc --noEmit 0 error\n- ✅ npm run lint 0 error / 3 pre-existing warnings unchanged\n- ✅ npm test (unit) 146 files / 1043 tests PASS, 615s\n- ⚠️ npm run test:integration 本机受限 — docker daemon 拉 pgvector/pgvector:pg16 TLS handshake timeout（本机网络问题，curl docker.io 401 OK 即网络层通；docker daemon HTTP client 异常）。CI integration job 是验证唯一路径 — F002 fileParallelism 4 worker 实测时间从 ~10-15min → ?（first run 后写入 CHANGELOG / commit msg follow-up）\n- ✅ Playwright config 解析 PASS（--list --project=visual 19 specs / --project=chromium 77 tests 含 visual deps）— 浏览器深 deps 受限本机不能跑 e2e\n\nStaging deploy（hard requirement）：\n- ✅ deploy-staging.yml run 25478900921 完成 4m02s status=success\n- ⚠️ 副作用：staging .env.staging 含历史 hardcode `GIT_SHA=14b1ff7`（非 BL-049 引入），deploy-staging.sh 第 99 行 next build 不 export GIT_SHA 给 build / 第 102 行 pm2 restart --update-env 读 env_file 拿到 stale 值。Generator 已 SSH 直接 sed 修 `.env.staging` 为 GIT_SHA=91ee2cd + pm2 restart --update-env，curl 验 git_sha=91ee2cd matches main HEAD。建议入 backlog low：deploy-staging.sh 加 `sed -i \"s/^GIT_SHA=.*/GIT_SHA=$HEAD_SHA/\" /opt/.../.env.staging` 自动同步（同样 deploy-prod.sh 也要查）。\n\n[staging deployed @ 91ee2cd @ 2026-05-07T14:14+0800]\n\n实际工时：13:10 → 14:15 = 1h05min vs spec 6h = 5.5x 加速（合 BL-044/043/023 4-6x 加速趋势）。\n\n**CI 实测时间（GH Actions run 25478878954 @ 91ee2cd PASS 9m15s）：**\n- Integration tests（Testcontainers）: 4m25s ✅（F002 spec target <8min；baseline ~10-15min；4 worker fileParallelism + maxWorkers=4 实测 ~3x 加速）\n- E2E tests（Playwright）: 6m10s ✅（F003 spec target ≤10min；project deps 顺序无 reseed step）\n- Unit tests + coverage: 2m16s\n- Build + migrate smoke: 1m51s / Lint 1m1s / Typecheck 1m5s\n- 所有 7 jobs 全 success",
+  "evaluator_feedback": null,
+  "generator_handoff": null,
   "session_notes": {
     "Kimi": null,
     "Reviewer": "[2026-05-07] BL-049 signoff PASS. Local Colima was started, Docker daemon recovered, and full integration suite passed (65 files / 400 tests PASS, 1 skipped). Staging smoke remained green on /api/health + /zh/dashboard + /zh/discovery + /zh/campaigns + /zh/roi + /zh/weekly-report.",
-    "johnsong": "[2026-05-07 14:15 Generator johnsong - BL-049 building 完 7/7 features, 切 verifying]\n\n实装顺序按 spec §6（风险递增）：F006 trailing → F004 dependabot → F005(b) e2e expectation → F005(a) woff2 regen → F001 vitest helper → F006 dead code (deleted mocks/browser.ts only) → F002 vitest 4 maxWorkers + fileParallelism → F003 Playwright project deps → F007 framework v0.9.15 archive + planner.md +2 行 + CHANGELOG。\n\n3 commits（spec §6 推荐 2-3 commits 拆开）：\n- b9fa62c: F001+F002+F004+F005+F006 — vitest config refactor + CI infra cleanup\n- 8ace6e0: F003 — Playwright visual project + dependency-sequenced CI\n- 91ee2cd: F007 — framework v0.9.15 sediment (cross-pool repro + stub agnostic)\n\n关键技术决策与 spec 偏差：\n1. F002 vitest 4 API 漂移：`poolOptions.forks.maxForks` 已废弃 → 用 top-level `maxWorkers`。spec 文字含义不变。\n2. F003 选路径 D（Playwright project dependencies）替代 spec 推荐 A（2 DB）：chromium.dependencies=[visual] 即可强制顺序，1 DB 满足全部 acceptance。spec line 144 自带注释「或更简：visual 用 fresh seed 不 mutate」— 与路径 D 同思路。\n3. F006 dead code 评估：仅 mocks/browser.ts 真死（无 import）；__example 在 vitest include 中跑 + BI1 spec 引用、_colima-detect.ts 被 db.ts 主动 import — 二者保留。\n\nL1 守门（本机）：tsc PASS / lint 0 error 3 pre-existing warning / 1043/1043 unit PASS。Integration suite 本机受限（docker daemon docker.io TLS handshake 持久 timeout，无法 pull pgvector/pgvector:pg16；curl docker.io 401 通即网络可达，docker daemon HTTP client 自身问题）— CI integration 是唯一权威路径。\n\nStaging deploy hard requirement：deploy-staging.yml run 25478900921 success（4m02s）；发现 staging `.env.staging` 含 hardcode 旧 GIT_SHA=14b1ff7（非 BL-049 引入；deploy-staging.sh 第 99 行 npm run build 不 export GIT_SHA、pm2 env_file 读 stale 值，复用旧值跨 deploy）。Generator SSH 直接 sed 修 GIT_SHA=91ee2cd + pm2 restart --update-env，curl 验 health.git_sha=91ee2cd 匹配 main HEAD。建议 backlog low：deploy-staging.sh + deploy-prod.sh 加自动 sed GIT_SHA 行，避免手动维护。\n\n[staging deployed @ 91ee2cd @ 2026-05-07T14:14+0800]\n\nReviewer 接手须知：\n1. CI integration job 实测时间是 F002 acceptance 关键证据（spec 写 ~10-15min → 3-4min）— Reviewer 在 CI 完成后看 GH Actions log 写入 signoff\n2. F003 Playwright 改动 CI e2e job 仅 1 invocation（不再 reseed）+ update-visual-baselines.yml --project=visual — 验证两条都按预期跑\n3. F005(a) woff2 regen 仅 9976 → 9972 bytes（4 byte 差，src/ icon usage drift，无 UI 视觉变化）\n4. F007 framework 变更全 docs，无运行时影响"
+    "johnsong": "[2026-05-07 14:40 Planner johnsong - BL-049 done @ 14:35 + 切 BL-051a building (用户决议 A X1+ 极速)]\n\nBL-049 done @ 5/7 14:35 - first-round PASS 7/7 / fix_rounds=0:\n- 实际工时 13:10 → 14:35 = 1h25min vs spec 6.75h = ~5x 加速\n- v0.9.15 沉淀完整落地 (commit 91ee2cd) - 跨 pool 复现 + stub environment-agnostic 2 维教训\n- 实装亮点 (Generator 中段裁决): vitest 4 已废弃 poolOptions.forks.maxForks → top-level maxWorkers (pre-impl-adjudication §11 building 中段良性自主)\n- 短暂 verifying BLOCKED (14:30 Colima docker daemon 缺) → 14:35 recovery PASS\n- 5 批次连续战绩: BL-044 5x / BL-043 2x / BL-023 6x / BL-021 1.4x (含 fix-round 1) / BL-049 5x = 平均 ~3.9x\n\nX1+ 极速版决议 (用户 5/7 14:40):\n- BL-049 提前 1.5h 完成 → 立即切 BL-051a building (不等 5/8)\n- 5/7 ~16:30 BL-051a done (按 5x 加速预估 ~1.4h)\n- 5/7 ~17:00 BL-050 done (按 5x 加速预估 ~30 min)\n- 5/7 ~17:30 prod redeploy 含 BL-049 + BL-051a + BL-050 全部\n- 5/8~12 5+ day buffer 全用户业务测继承\n- 5/13 ⭐ 上线 (5+ day buffer 极宽裕)\n\nBL-051a 切 building:\n- spec 已 lock @ 14:10 (docs/specs/BL-051a-lifecycle-management-spec.md，11 features F001-F011)\n- features.json 替换 11 features total 7.75h spec 估算 (按 5x 加速预估实际 ~1.5h)\n- progress.json status: done → building / sprint=BL-051a / fix_rounds=0\n- backlog.json 移 BL-051a from backlog (high → 1 条 BL-050 留)\n\nGenerator 接手须知:\n1. spec docs/specs/BL-051a-lifecycle-management-spec.md\n2. 实装顺序 §6 (按风险递增): F001+F006 schema migration 合并 → F007 全栈 list filter (最广改动) → F008 deleteProduct 软删 → F009 UI 防御 → F002+F003+F004+F005 weekly-report token → F010+F011 测试\n3. 关键守门: F007 grep prisma.product.find + tx.product.find 全栈漏配检查\n4. F008 关联检查 cascade 行为 - asset 软删 + campaign 不动 + kol_campaign 不动 (D2 决策)\n5. F011 commit message 注明孤儿 4425e07e 5/7 已 ops 清理\n6. v0.9.15 dogfood: F010 集成测试 forks pool + threads pool 都跑 (BL-047 反例之 Generator 必备)\n7. 测试 stub environment-agnostic (Map-backed 范式)\n\n5/7 当天总工时预估: BL-049 1h25min + BL-051a ~1.5h + BL-050 ~30 min = 3.5h - 5/7 中午 12:00 → 17:30 完成所有上线前功能\n\n---\n\n[2026-05-07 14:15 Generator johnsong - BL-049 building 完 7/7 features, 切 verifying]\n\n实装顺序按 spec §6（风险递增）：F006 trailing → F004 dependabot → F005(b) e2e expectation → F005(a) woff2 regen → F001 vitest helper → F006 dead code (deleted mocks/browser.ts only) → F002 vitest 4 maxWorkers + fileParallelism → F003 Playwright project deps → F007 framework v0.9.15 archive + planner.md +2 行 + CHANGELOG。\n\n3 commits（spec §6 推荐 2-3 commits 拆开）：\n- b9fa62c: F001+F002+F004+F005+F006 — vitest config refactor + CI infra cleanup\n- 8ace6e0: F003 — Playwright visual project + dependency-sequenced CI\n- 91ee2cd: F007 — framework v0.9.15 sediment (cross-pool repro + stub agnostic)\n\n关键技术决策与 spec 偏差：\n1. F002 vitest 4 API 漂移：`poolOptions.forks.maxForks` 已废弃 → 用 top-level `maxWorkers`。spec 文字含义不变。\n2. F003 选路径 D（Playwright project dependencies）替代 spec 推荐 A（2 DB）：chromium.dependencies=[visual] 即可强制顺序，1 DB 满足全部 acceptance。spec line 144 自带注释「或更简：visual 用 fresh seed 不 mutate」— 与路径 D 同思路。\n3. F006 dead code 评估：仅 mocks/browser.ts 真死（无 import）；__example 在 vitest include 中跑 + BI1 spec 引用、_colima-detect.ts 被 db.ts 主动 import — 二者保留。\n\nL1 守门（本机）：tsc PASS / lint 0 error 3 pre-existing warning / 1043/1043 unit PASS。Integration suite 本机受限（docker daemon docker.io TLS handshake 持久 timeout，无法 pull pgvector/pgvector:pg16；curl docker.io 401 通即网络可达，docker daemon HTTP client 自身问题）— CI integration 是唯一权威路径。\n\nStaging deploy hard requirement：deploy-staging.yml run 25478900921 success（4m02s）；发现 staging `.env.staging` 含 hardcode 旧 GIT_SHA=14b1ff7（非 BL-049 引入；deploy-staging.sh 第 99 行 npm run build 不 export GIT_SHA、pm2 env_file 读 stale 值，复用旧值跨 deploy）。Generator SSH 直接 sed 修 GIT_SHA=91ee2cd + pm2 restart --update-env，curl 验 health.git_sha=91ee2cd 匹配 main HEAD。建议 backlog low：deploy-staging.sh + deploy-prod.sh 加自动 sed GIT_SHA 行，避免手动维护。\n\n[staging deployed @ 91ee2cd @ 2026-05-07T14:14+0800]\n\nReviewer 接手须知：\n1. CI integration job 实测时间是 F002 acceptance 关键证据（spec 写 ~10-15min → 3-4min）— Reviewer 在 CI 完成后看 GH Actions log 写入 signoff\n2. F003 Playwright 改动 CI e2e job 仅 1 invocation（不再 reseed）+ update-visual-baselines.yml --project=visual — 验证两条都按预期跑\n3. F005(a) woff2 regen 仅 9976 → 9972 bytes（4 byte 差，src/ icon usage drift，无 UI 视觉变化）\n4. F007 framework 变更全 docs，无运行时影响"
   },
   "features": []
 }
