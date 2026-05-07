@@ -29,10 +29,12 @@
       "用户 2026-05-06 19:55 决议 2=A：5/13 上线前做 BL-046（与 BL-017 同期 5/12，独立批次还是合并待定）",
       "Planner 推荐：BL-046 独立 mini-batch — 主题（product lifecycle）与 BL-017（token lifecycle）虽都是 Lifecycle 但 reviewer L2 验收路径不同（product KB 删除链 vs weekly-report token 过期链）",
       "实装范围：6 features F001-F006（schema migration + 全栈 deleted_at filter + deleteProduct 改 soft delete + 关联检查 + audit_log + UI orphan 显示 + 测试）",
-      "孤儿 campaign 4425e07e 不主动迁移（status=completed 业务影响=0），由 BL-046 F005 UI 防御性显示自然解决"
+      "孤儿 campaign 4425e07e 不主动迁移（status=completed 业务影响=0），由 BL-046 F005 UI 防御性显示自然解决",
+      "用户 2026-05-07 14:10 决议 X2：BL-046 合并入 BL-051a Lifecycle Management mini-batch（与 BL-017 同 lifecycle 主题；spec 11 features F006-F011 = BL-046）；本条 closed-merged 保留 audit trail"
     ],
     "confirmed_at": "2026-05-06T19:55+0800",
-    "priority": "high"
+    "priority": "closed",
+    "status": "closed-merged-into-BL-051a"
   },
   {
     "id": "BL-003",
@@ -155,17 +157,19 @@
     "decisions": [
       "Post-MVP 处理",
       "默认过期 7 天 + revoke API + 创建者 metadata",
-      "用户 2026-05-06 19:50 决议 5=A：5/12 实装（接客户前必须）— token 过期 7 天默认 + revoke API + 创建者 metadata；~1 day Generator"
+      "用户 2026-05-06 19:50 决议 5=A：5/12 实装（接客户前必须）— token 过期 7 天默认 + revoke API + 创建者 metadata；~1 day Generator",
+      "用户 2026-05-07 14:10 决议 X2：BL-017 合并入 BL-051a Lifecycle Management mini-batch（与 BL-046 同 lifecycle 主题；spec 11 features F001-F005 = BL-017）；本条 closed-merged 保留 audit trail"
     ],
     "confirmed_at": "2026-04-30T02:30+0800",
-    "priority": "high",
+    "priority": "closed",
     "tags": [
       "weekly-report",
       "share-link",
       "security",
       "post-mvp"
     ],
-    "discovered_in": "docs/product/MVP-polish-audit-2026-04-30.md P1-11"
+    "discovered_in": "docs/product/MVP-polish-audit-2026-04-30.md P1-11",
+    "status": "closed-merged-into-BL-051a"
   },
   {
     "id": "BL-018",
@@ -308,6 +312,21 @@
       "工时 ~2-3h Generator + 0.5h Reviewer；5 features F001-F005；schema 独立无依赖"
     ],
     "confirmed_at": "2026-05-07T13:55+0800",
+    "priority": "high"
+  },
+  {
+    "id": "BL-051a",
+    "title": "Lifecycle Management mini-batch (X2 合并 BL-017 weekly-report token + BL-046 product soft delete = 11 features)",
+    "description": "X2 合并：BL-017 weekly-report token lifecycle (5 features) + BL-046 product soft delete (6 features) = 11 features F001-F011 一 mini-batch.\n\n主题一致性：token + product 同 lifecycle 主题（\"什么死后保留，什么彻底删，谁审计\"）；verifying Reviewer 同一心智模型走查\nSchema migration 合并：weekly_report.expires_at/revoked_at + product.deleted_at 同 migration 文件，部署一次\n\nF001-F005 = BL-017 weekly-report token lifecycle：\n  F001 schema migration weekly_report 加 expires_at TIMESTAMPTZ + revoked_at TIMESTAMPTZ + creator_user_id UUID + ROLLBACK\n  F002 src/lib/weekly-report/share-token.ts validateToken 加过期/已撤销检查\n  F003 /shared/weekly-report/[token] page 显示 expired / revoked / 正常 3 状态\n  F004 /api/weekly-reports/[id]/revoke route 实装 revoke API\n  F005 weekly-report 创建 UI 显示 token expiration metadata + 列表 revoke button + 单测 ≥3\n\nF006-F011 = BL-046 product soft delete + lifecycle integrity：\n  F006 schema migration product 加 deleted_at TIMESTAMPTZ + partial index (tenant_id, deleted_at IS NULL) + ROLLBACK\n  F007 全栈 list/find queries 加 WHERE deleted_at IS NULL（覆盖 5+ 路由：knowledge-base list + ProductCard + ProductModal + assets/composer + outreach/composer + smart-match）\n  F008 src/app/[locale]/(app)/knowledge-base/actions.ts deleteProduct 改 soft delete (UPDATE deleted_at = NOW()) + 删除前检查 campaign / asset / kol_campaign 关联（弹窗确认 cascade soft 或拒绝）+ 写 audit_log resource_type=product action=product.deleted\n  F009 UI 防御：/knowledge-base 列表过滤软删 + /campaigns/[id] 详情页对 product=NULL 显示 \"（产品已删除）\" 灰显 + tooltip\n  F010 单测 ≥4 case (deleteProduct 拒/确认/audit / list 过滤 / detail 显示) + 集成 ≥2 case\n  F011 audit_log 验证 — orphan campaign 4425e07e 已 ops 清理 (5/7 13:40 commit bc69a65)；本批次确保未来 product 删除不再产生新孤儿；audit_log 永久保留\n\n工时：~2 day Generator + 1h Reviewer (合并比独立 2 batch 节省 ~30 min batch switch overhead + 1 schema migration commit)\n按连续 4 批次 4-6x 加速趋势预估实际 ~3-4h Generator first-round PASS\n\n依赖：无（schema migration 独立；与 BL-049 测试基建升级无冲突）\n\n5/12 实施顺序：BL-051a Lifecycle (F001-F011 ~3-4h) → done → BL-050 dashboard KPI 真趋势 (5 features ~30-60 min) → done → 5/13 ⭐ 上线\n\nADR 候选：可考虑 ADR-014 \"Soft delete 范式 + Lifecycle 管理\"（如未来更多表（campaign / KOL）扩展 soft delete）\n\n关联：\n- BL-017 closed-merged-into-BL-051a (audit trail)\n- BL-046 closed-merged-into-BL-051a (audit trail)\n- BL-050 5/12 BL-051a done 后独立批次 (dashboard KPI 真趋势 ~2-3h)\n- 孤儿 campaign 4425e07e 5/7 已 ops 清理 (bc69a65)；BL-051a F011 防止未来新孤儿",
+    "decisions": [
+      "用户 2026-05-07 14:10 决议 X2：BL-017 + BL-046 合并 1 mini-batch (lifecycle 主题一致)；BL-050 dashboard KPI 独立批次",
+      "原 BL-017 + BL-046 backlog 条目改 closed-merged-into-BL-051a 保留 audit trail",
+      "5/12 实施顺序：BL-051a Lifecycle (~3-4h first-round PASS) → BL-050 KPI 真趋势 (~30-60 min) → 5/13 上线",
+      "Schema migration 合并：weekly_report.expires_at/revoked_at + product.deleted_at 同 migration 文件",
+      "Reviewer L2 验收：同一 lifecycle 心智模型走查 token expiry + product soft delete + audit_log 永久保留",
+      "ADR-014 候选：Soft delete 范式 + Lifecycle 管理（如未来更多表扩展 soft delete）"
+    ],
+    "confirmed_at": "2026-05-07T14:10+0800",
     "priority": "high"
   }
 ]
