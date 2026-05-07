@@ -7,7 +7,7 @@ type: project
 - Part A BL-050 KPI 真趋势化（F001-F005）落地：kpi_daily_snapshot 表 + RLS / kpi-trends.ts + kpi-snapshot.ts + 15 单测 / kpi-snapshot:daily cron + ops runbook + 3 IT / KpiRow 删 4 mock + StatCard.tooltip + DashboardPage Promise.all / 5 locale trendAccumulating
 - Part B BL-018 落地（F006-F011）：公共 EmptyState + 3 单测 / useNetworkStatus + NetworkStatusBanner 注入 (app)/layout 一次性补 11 页 T 维度 + 6 单测 / 5 root loading.tsx (knowledge-base/campaigns/crm/outreach/database) / /assets error.tsx / /knowledge-base empty CTA + 5 locale i18n / P1 inline empty 5 处审视后保留 (BL-053 一并迁移)
 - 本机验证：1084 单测 PASS / lint 0 error / tsc 0 error / staging deployed @ 3ba3fe2 健康 (DB+Redis ok)
-- 遗留：F011 /database empty 视觉 baseline 锁定旧 inline，BL-053 一并迁移；F003 cron 行 ops 待用户 SSH 落 prod+staging
+- 遗留：默认 `npm run test:integration` 在 `pre-commit-hook.test.ts` 的 icon + woff2 路径上出现 flaky failure（isolated rerun PASS）；F011 /database empty 视觉 baseline 锁定旧 inline，BL-053 一并迁移；F003 cron 行 ops 待用户 SSH 落 prod+staging
 ## ✅ BL-051a Lifecycle Management — DONE 5/7 16:55（11/11 / 3.7x 加速 / staging @ f2d2c1a / Reviewer signoff PASS）
 - Part A weekly-report token (F001-F005) + Part B product soft delete (F006-F011) + 中段 audit_log.resource_id widening (UUID→VARCHAR(64))
 - signoff @ docs/test-reports/BL-051a-lifecycle-management-signoff-2026-05-07.md
