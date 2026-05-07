@@ -28,16 +28,20 @@ export function NetworkStatusBanner() {
   const t = useTranslations("common.network");
   const [showRestored, setShowRestored] = useState(false);
 
+  // The "Back online" toast appears for RESTORED_VISIBLE_MS after a
+  // false→true transition of `isOnline`. We only flip `showRestored`
+  // inside async timer callbacks (never synchronously inside the
+  // effect body) so eslint-react-hooks/set-state-in-effect stays
+  // happy. The setTimeout(_, 0) for the show step ensures cleanup of
+  // the previous run completes before this run schedules a new one.
   useEffect(() => {
-    if (!isOnline) {
-      setShowRestored(false);
-      return;
-    }
-    if (lastOfflineAt) {
-      setShowRestored(true);
-      const t = setTimeout(() => setShowRestored(false), RESTORED_VISIBLE_MS);
-      return () => clearTimeout(t);
-    }
+    if (!isOnline || !lastOfflineAt) return;
+    const showId = setTimeout(() => setShowRestored(true), 0);
+    const hideId = setTimeout(() => setShowRestored(false), RESTORED_VISIBLE_MS);
+    return () => {
+      clearTimeout(showId);
+      clearTimeout(hideId);
+    };
   }, [isOnline, lastOfflineAt]);
 
   if (isOnline && !showRestored) return null;

@@ -80,6 +80,12 @@ describe("NetworkStatusBanner", () => {
       setOnLine(true);
       window.dispatchEvent(new Event("online"));
     });
+    // The show is dispatched via setTimeout(_, 0) so eslint
+    // react-hooks/set-state-in-effect stays satisfied — flush that
+    // microtask-shaped tick before reading the DOM.
+    act(() => {
+      vi.advanceTimersByTime(0);
+    });
     const restored = screen.getByTestId("network-status-banner");
     expect(restored).toHaveAttribute("data-state", "back-online");
     expect(restored).toHaveTextContent("Back online");
