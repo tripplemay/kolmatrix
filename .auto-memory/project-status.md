@@ -3,7 +3,7 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-051a Lifecycle Management — VERIFYING（11/11 features done @ 5/7 16:55，3.7x 加速 / 4 commits + 3 轮 CI fix / staging @ f2d2c1a）
+## ✅ BL-051a Lifecycle Management — DONE（11/11 features done @ 5/7 16:55，3.7x 加速 / 4 commits + 3 轮 CI fix / staging @ f2d2c1a）
 - Part A weekly-report token (F001-F005)：A1 复用 shareTokenExpiresAt + 新加 revokedAt / B1 validateShareTokenState pure helper + validateShareToken async / 3 状态 page (5 locale) / revoke API + idempotent / brand header TTL picker (1/7/30/never) + revoke button
 - Part B product soft delete (F006-F011)：deletedAt + partial idx / 全栈 8 文件 9 hits filter (C1 grep 实勘 vs spec 偏差) / deleteProduct soft + has_references + cascade_count + audit_log / D2 cascade 仅 product / D3 confirmCascade UI 二次弹窗 / F009 campaigns/[id] product=NULL 防御 + AI suggestions drop deleted
 - 中段 §11 良性偏差 1 处：audit_log.resource_id UUID→VARCHAR(64) (F008 product=cuid 与 UUID col 冲突；生产 logAudit 也会挂；同 migration Part C)
@@ -15,7 +15,7 @@ type: project
 ## 🆕 BL-050 dashboard KPI 真趋势化（5/7 BL-051a done 后立即接续 ~30-60min）
 ## 🆕 BL-047 closed-resolved / BL-017+BL-046 closed-merged-into-BL-051a
 ## 🚀 5/13 上线对外 X1+ 极速时间线（用户 5/7 14:40 决议升级）
-- 5/7 14:50~16:55 **BL-051a building done**（实际 ~2h vs 1.5h 预估，3 轮 CI fix）→ Reviewer verifying
+- 5/7 14:50~16:55 **BL-051a building done**（实际 ~2h vs 1.5h 预估，3 轮 CI fix）→ Reviewer verifying → done
 - 5/7 ~17:30 **BL-050 building → done**（按 5x 加速预估 ~30 min）
 - 5/7 ~18:00 prod redeploy 含 BL-049+BL-051a+BL-050 全部上线前功能
 - 5/8 周一  Dependabot 首次 run（5 group PR）
