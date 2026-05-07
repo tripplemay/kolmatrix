@@ -19,9 +19,16 @@ const authMock = vi.fn<() => Promise<unknown>>();
 vi.mock("@/auth", () => ({ auth: () => authMock() }));
 
 const attachShareTokenMock = vi.fn();
+const revokeShareTokenMock = vi.fn();
 vi.mock("@/lib/weekly-report/persistence", () => ({
   attachShareToken: (...args: unknown[]) => attachShareTokenMock(...args),
+  revokeShareToken: (...args: unknown[]) => revokeShareTokenMock(...args),
   upsertWeeklyReport: vi.fn(),
+}));
+
+const logAuditMock = vi.fn().mockResolvedValue(undefined);
+vi.mock("@/lib/audit/log", () => ({
+  logAudit: (...args: unknown[]) => logAuditMock(...args),
 }));
 
 const logEventMock = vi.fn().mockResolvedValue(undefined);
@@ -73,8 +80,12 @@ afterEach(() => {
 });
 
 describe("createShareTokenAction (BL-035-F004)", () => {
-  it("ignores any client-supplied origin (signature now takes only reportId)", () => {
-    expect(createShareTokenAction.length).toBe(1);
+  it("ignores any client-supplied origin (origin still derived server-side)", () => {
+    // BL-051a-F005 added an optional `ttl` parameter; the
+    // signature now exposes 1 required + 1 optional arg. The
+    // anti-spoofing guarantee remains: the function never accepts a
+    // client-supplied origin string.
+    expect(createShareTokenAction.length).toBeLessThanOrEqual(2);
   });
 
   it("uses NEXT_PUBLIC_SITE_URL when set (preferred over headers)", async () => {

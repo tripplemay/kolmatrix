@@ -18,6 +18,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
 import { auth } from "@/auth";
+import { logAudit } from "@/lib/audit/log";
 import { withTenant } from "@/lib/db";
 import { logEvent } from "@/lib/events/log";
 import { rateLimitAi } from "@/lib/rate-limit-ai";
@@ -32,6 +33,7 @@ import {
 } from "@/lib/weekly-report/generate";
 import {
   attachShareToken,
+  revokeShareToken,
   upsertWeeklyReport,
 } from "@/lib/weekly-report/persistence";
 import {
@@ -215,8 +217,20 @@ async function resolveServerOrigin(): Promise<string> {
   return `${proto}://${host}`;
 }
 
+// BL-051a-F005 — accepted by createShareTokenAction so the UI's TTL
+// dropdown (1d / 7d / 30d / never) controls expiry. Anything else
+// falls back to the legacy 7-day default in attachShareToken.
+const VALID_TTL = new Set(["1", "7", "30", "never"]);
+
+function parseTtl(raw: unknown): "never" | 1 | 7 | 30 | undefined {
+  if (typeof raw !== "string" || !VALID_TTL.has(raw)) return undefined;
+  if (raw === "never") return "never";
+  return Number(raw) as 1 | 7 | 30;
+}
+
 export async function createShareTokenAction(
-  reportId: string
+  reportId: string,
+  ttl?: string
 ): Promise<CreateShareTokenResult> {
   const session = await auth();
   const tenantId = session?.user?.tenantId;
@@ -228,10 +242,15 @@ export async function createShareTokenAction(
     return { ok: false, error: "invalid_input" };
   }
 
+  const ttlChoice = parseTtl(ttl);
   let token: string;
   let expiresAt: Date;
   try {
-    const minted = await attachShareToken({ tenantId, reportId });
+    const minted = await attachShareToken({
+      tenantId,
+      reportId,
+      ttl: ttlChoice,
+    });
     token = minted.token;
     expiresAt = minted.expiresAt;
   } catch (err) {
@@ -273,4 +292,62 @@ export async function createShareTokenAction(
     url: `${cleanOrigin}/shared/weekly-report/${token}`,
     expiresAt: expiresAt.toISOString(),
   };
+}
+
+// BL-051a-F005 — server action wrapper for the brand-header revoke
+// button. Uses the same persistence helper that the public REST
+// route (POST /api/weekly-reports/[id]/revoke) calls, so audit_log
+// emissions stay consistent across both surfaces.
+export type RevokeShareTokenActionResult =
+  | { ok: true; revokedAt: string; previouslyRevoked: boolean }
+  | { ok: false; error: "unauthorized" | "invalid_input" | "not_found" | "forbidden" | "generic" };
+
+export async function revokeShareTokenAction(
+  reportId: string
+): Promise<RevokeShareTokenActionResult> {
+  const session = await auth();
+  const tenantId = session?.user?.tenantId;
+  const userId = session?.user?.id;
+  if (!tenantId || !UUID_RE.test(tenantId) || !userId) {
+    return { ok: false, error: "unauthorized" };
+  }
+  if (!UUID_RE.test(reportId)) {
+    return { ok: false, error: "invalid_input" };
+  }
+
+  try {
+    const result = await revokeShareToken({
+      tenantId,
+      reportId,
+      actorUserId: userId,
+    });
+    if (!result.ok) {
+      return { ok: false, error: result.error };
+    }
+    if (!result.previouslyRevoked) {
+      await logAudit({
+        tenantId,
+        actorId: userId,
+        action: "weekly_report.revoked",
+        targetType: "weekly_report",
+        targetId: reportId,
+        after: { revokedAt: result.revokedAt.toISOString() },
+      });
+    }
+    revalidatePath("/[locale]/weekly-report", "page");
+    return {
+      ok: true,
+      revokedAt: result.revokedAt.toISOString(),
+      previouslyRevoked: result.previouslyRevoked,
+    };
+  } catch (err) {
+    void logEvent({
+      type: "weekly_report.revoke_failed",
+      tenantId,
+      actorId: userId,
+      resourceId: reportId,
+      payload: { message: (err as Error).message },
+    });
+    return { ok: false, error: "generic" };
+  }
 }

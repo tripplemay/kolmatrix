@@ -474,6 +474,11 @@ model Product {
   embedding         Unsupported("vector(1024)")? @map("embedding")
   embeddingTextHash String?                      @map("embedding_text_hash")
 
+  // BL-051a-F006 — soft delete. NULL = active row; non-NULL =
+  // tombstoned (hidden from list/find queries via WHERE deleted_at IS
+  // NULL filter; physical row + audit_log trail retained per ADR D5).
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+
   tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   campaigns Campaign[]
   assets    Asset[]
@@ -531,6 +536,11 @@ model WeeklyReport {
   summaryJson         Json?     @map("summary_json") @db.JsonB
   shareToken          String?   @unique @map("share_token") @db.VarChar(32)
   shareTokenExpiresAt DateTime? @map("share_token_expires_at") @db.Timestamptz
+  // BL-051a-F001 — explicit revocation timestamp. NULL = link active;
+  // non-NULL = link revoked by owner (validateShareToken returns
+  // status='revoked'). Independent of shareTokenExpiresAt so an
+  // unexpired link can still be killed.
+  revokedAt           DateTime? @map("revoked_at") @db.Timestamptz
   createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
   createdByUserId     String    @map("created_by_user_id") @db.Uuid
 

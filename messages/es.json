@@ -266,6 +266,13 @@
       "generic": "No se pudo guardar el producto. Por favor, inténtelo de nuevo.",
       "targetAudienceRequired": "El público objetivo es obligatorio."
     },
+    "delete": {
+      "confirm": "¿Eliminar \"{name}\"?",
+      "cascade": "Este producto está referenciado por {campaign} campaña(s), {asset} recurso(s) y {kolCampaign} asignación(es) de KOL. La eliminación lógica lo oculta de las listas nuevas y conserva el registro de auditoría. ¿Continuar?",
+      "failed": "No se pudo eliminar el producto. Por favor, inténtelo de nuevo."
+    },
+    "productDeleted": "(Producto eliminado)",
+    "productDeletedTooltip": "El producto asociado a esta campaña fue eliminado. Se conserva el registro de auditoría; gestione el ciclo de vida del producto desde la Base de Conocimiento.",
     "mockActivity": {
       "heading1": "Honor of Kings T2",
       "heading2": "Valorant Ep. 9",
@@ -1291,6 +1298,32 @@
     "share": {
       "toastSuccess": "Enlace copiado · {0} · expira {1}",
       "toastError": "No se pudo generar el enlace para compartir. Por favor, inténtelo de nuevo."
+    },
+    "ttl": {
+      "picker": "Caduca en",
+      "oneDay": "1 día",
+      "sevenDays": "7 días",
+      "thirtyDays": "30 días",
+      "never": "Nunca"
+    },
+    "revoke": {
+      "button": "Revocar",
+      "confirm": "¿Revocar este enlace para compartir? Cualquiera con la URL verá una página de \"enlace revocado\".",
+      "toastSuccess": "Enlace para compartir revocado.",
+      "toastError": "No se pudo revocar. Por favor, inténtelo de nuevo."
+    },
+    "metadata": {
+      "expires": "Caduca",
+      "expiresNever": "Nunca caduca",
+      "createdBy": "Compartido por",
+      "revokedAt": "Revocado el"
+    },
+    "shared": {
+      "expiredTitle": "Enlace caducado",
+      "expiredBody": "Este enlace para compartir caducó el {expiresAt}. El informe original se generó el {createdAt}.",
+      "revokedTitle": "Enlace revocado",
+      "revokedBody": "Este enlace para compartir fue revocado el {revokedAt}. El informe original se generó el {createdAt}.",
+      "askOwnerHint": "Solicita al propietario del informe un nuevo enlace para compartir."
     },
     "empty": {
       "title": "Aún no hay informe semanal",

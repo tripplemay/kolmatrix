@@ -6,6 +6,12 @@
  * client-side; the rest is server-rendered.
  */
 import { WeeklyReportClientActions } from "./WeeklyReportClientActions";
+import type {
+  RevokeLabels,
+  ShareMetadataLabels,
+  ShareTokenMetadata,
+  ShareTtlLabels,
+} from "./WeeklyReportClientActions";
 
 interface Props {
   tenant: { name: string; logoUrl: string | null };
@@ -21,6 +27,10 @@ interface Props {
   shareToastErrorTemplate: string;
   weekStartIso: string;
   locale: "en" | "zh";
+  shareMetadata: ShareTokenMetadata;
+  ttlLabels: ShareTtlLabels;
+  revokeLabels: RevokeLabels;
+  shareMetadataLabels: ShareMetadataLabels;
 }
 
 function tenantInitials(name: string): string {
@@ -47,6 +57,10 @@ export function WeeklyReportBrandHeader({
   shareToastErrorTemplate,
   weekStartIso,
   locale,
+  shareMetadata,
+  ttlLabels,
+  revokeLabels,
+  shareMetadataLabels,
 }: Props) {
   return (
     <section
@@ -90,6 +104,10 @@ export function WeeklyReportBrandHeader({
           regenerateLabel={regenerateLabel}
           shareToastSuccessTemplate={shareToastSuccessTemplate}
           shareToastErrorTemplate={shareToastErrorTemplate}
+          shareMetadata={shareMetadata}
+          ttlLabels={ttlLabels}
+          revokeLabels={revokeLabels}
+          shareMetadataLabels={shareMetadataLabels}
         />
       </div>
     </section>

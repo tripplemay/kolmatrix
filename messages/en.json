@@ -266,6 +266,13 @@
       "generic": "Could not save the product. Please retry.",
       "targetAudienceRequired": "Target audience is required."
     },
+    "delete": {
+      "confirm": "Delete \"{name}\"?",
+      "cascade": "This product is referenced by {campaign} campaign(s), {asset} asset(s), and {kolCampaign} KOL allocation(s). Soft-deleting hides it from new lists while keeping the audit trail. Continue?",
+      "failed": "Could not delete the product. Please retry."
+    },
+    "productDeleted": "(Product deleted)",
+    "productDeletedTooltip": "This campaign's product was deleted. The audit trail is preserved; manage product lifecycle from the Knowledge Base.",
     "mockActivity": {
       "heading1": "Honor of Kings Q2",
       "heading2": "Valorant Ep. 9",
@@ -1222,6 +1229,32 @@
     "share": {
       "toastSuccess": "Link copied · {0} · expires {1}",
       "toastError": "Could not generate share link. Please retry."
+    },
+    "ttl": {
+      "picker": "Expires in",
+      "oneDay": "1 day",
+      "sevenDays": "7 days",
+      "thirtyDays": "30 days",
+      "never": "Never"
+    },
+    "revoke": {
+      "button": "Revoke",
+      "confirm": "Revoke this share link? Anyone holding the URL will see a \"link revoked\" page.",
+      "toastSuccess": "Share link revoked.",
+      "toastError": "Could not revoke. Please retry."
+    },
+    "metadata": {
+      "expires": "Expires",
+      "expiresNever": "Never expires",
+      "createdBy": "Shared by",
+      "revokedAt": "Revoked on"
+    },
+    "shared": {
+      "expiredTitle": "Link expired",
+      "expiredBody": "This share link expired on {expiresAt}. The original report was generated on {createdAt}.",
+      "revokedTitle": "Link revoked",
+      "revokedBody": "This share link was revoked on {revokedAt}. The original report was generated on {createdAt}.",
+      "askOwnerHint": "Ask the report owner for a fresh share link."
     },
     "empty": {
       "title": "No weekly report yet",

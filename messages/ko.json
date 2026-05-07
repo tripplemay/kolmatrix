@@ -266,6 +266,13 @@
       "generic": "제품을 저장할 수 없습니다. 다시 시도하세요.",
       "targetAudienceRequired": "타겟 오디언스를 입력해 주세요."
     },
+    "delete": {
+      "confirm": "\"{name}\" 을(를) 삭제하시겠습니까?",
+      "cascade": "이 제품은 {campaign}개 캠페인, {asset}개 자산, {kolCampaign}건 KOL 할당에서 참조되고 있습니다. 소프트 삭제 시 새 목록에서는 숨겨지지만 감사 로그는 보존됩니다. 계속하시겠습니까?",
+      "failed": "제품을 삭제할 수 없습니다. 다시 시도해 주세요."
+    },
+    "productDeleted": "(제품이 삭제됨)",
+    "productDeletedTooltip": "이 캠페인의 제품이 삭제되었습니다. 감사 로그는 보존되며, 제품 라이프사이클은 지식 베이스에서 관리할 수 있습니다.",
     "mockActivity": {
       "heading1": "王者荣耀 Q2",
       "heading2": "발로란트 에피소드 9",
@@ -1291,6 +1298,32 @@
     "share": {
       "toastSuccess": "링크 복사됨 · {0} · 만료일 {1}",
       "toastError": "공유 링크를 생성할 수 없습니다. 다시 시도하세요."
+    },
+    "ttl": {
+      "picker": "유효기간",
+      "oneDay": "1일",
+      "sevenDays": "7일",
+      "thirtyDays": "30일",
+      "never": "무기한"
+    },
+    "revoke": {
+      "button": "취소",
+      "confirm": "이 공유 링크를 취소하시겠습니까? URL을 소지한 사람에게 \"링크가 취소되었습니다\" 페이지가 표시됩니다.",
+      "toastSuccess": "공유 링크가 취소되었습니다.",
+      "toastError": "취소하지 못했습니다. 다시 시도하세요."
+    },
+    "metadata": {
+      "expires": "만료일",
+      "expiresNever": "무기한",
+      "createdBy": "공유자",
+      "revokedAt": "취소된 날짜"
+    },
+    "shared": {
+      "expiredTitle": "링크가 만료되었습니다",
+      "expiredBody": "이 공유 링크는 {expiresAt} 에 만료되었습니다. 원본 보고서는 {createdAt} 에 생성되었습니다.",
+      "revokedTitle": "링크가 취소되었습니다",
+      "revokedBody": "이 공유 링크는 {revokedAt} 에 취소되었습니다. 원본 보고서는 {createdAt} 에 생성되었습니다.",
+      "askOwnerHint": "새 공유 링크가 필요하면 보고서 소유자에게 문의하세요."
     },
     "empty": {
       "title": "아직 주간 보고서가 없습니다",

@@ -20,6 +20,7 @@ import { isoWeekStartUtc } from "@/lib/weekly-report/data-assembly";
 import { splitByH2 } from "@/lib/weekly-report/markdown-split";
 import {
   loadRecentWeeklyReports,
+  loadReportCreatorName,
   loadWeeklyReportById,
   type WeeklyReportRow,
 } from "@/lib/weekly-report/persistence";
@@ -85,6 +86,12 @@ export default async function WeeklyReportPage({ params, searchParams }: Props) 
     report = await loadWeeklyReportById(tenantId, recent[0].id);
   }
 
+  // BL-051a-F005 — creator name only when there's a report to render;
+  // saves the join when the empty state will show instead.
+  const creatorName = report
+    ? await loadReportCreatorName(tenantId, report.id)
+    : null;
+
   // Default "this week" target for Generate CTA (today's ISO week, UTC).
   const fallbackWeekStart = isoWeekStartUtc(new Date());
   const fallbackWeekStartIso = fallbackWeekStart.toISOString().slice(0, 10);
@@ -119,6 +126,7 @@ export default async function WeeklyReportPage({ params, searchParams }: Props) 
           report={report}
           locale={aiLocale}
           weekRangeLabel={formatWeekRange(report.weekStart, report.weekEnd)}
+          creatorName={creatorName}
           t={t}
         />
       )}
@@ -130,10 +138,17 @@ interface WeeklyReportContentProps {
   report: WeeklyReportRow;
   locale: "en" | "zh";
   weekRangeLabel: string;
+  creatorName: string | null;
   t: Awaited<ReturnType<typeof getTranslations<"weeklyReport">>>;
 }
 
-function WeeklyReportContent({ report, locale, weekRangeLabel, t }: WeeklyReportContentProps) {
+function WeeklyReportContent({
+  report,
+  locale,
+  weekRangeLabel,
+  creatorName,
+  t,
+}: WeeklyReportContentProps) {
   const sections = splitByH2(report.contentMd);
   const tenantSnapshot = report.summaryJson?.tenantSnapshot ?? {
     name: "—",
@@ -167,6 +182,31 @@ function WeeklyReportContent({ report, locale, weekRangeLabel, t }: WeeklyReport
         shareToastErrorTemplate={t("share.toastError")}
         weekStartIso={weekStartIso}
         locale={locale}
+        shareMetadata={{
+          hasToken: report.shareToken !== null,
+          expiresAtIso: report.shareTokenExpiresAt?.toISOString() ?? null,
+          revokedAtIso: report.revokedAt?.toISOString() ?? null,
+          creatorName,
+        }}
+        ttlLabels={{
+          picker: t("ttl.picker"),
+          oneDay: t("ttl.oneDay"),
+          sevenDays: t("ttl.sevenDays"),
+          thirtyDays: t("ttl.thirtyDays"),
+          never: t("ttl.never"),
+        }}
+        revokeLabels={{
+          button: t("revoke.button"),
+          confirm: t("revoke.confirm"),
+          toastSuccess: t("revoke.toastSuccess"),
+          toastError: t("revoke.toastError"),
+        }}
+        shareMetadataLabels={{
+          expiresLabel: t("metadata.expires"),
+          expiresNever: t("metadata.expiresNever"),
+          createdByLabel: t("metadata.createdBy"),
+          revokedLabel: t("metadata.revokedAt"),
+        }}
       />
 
       <section

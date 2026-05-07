@@ -1,20 +1,25 @@
 /**
- * BM2-F010 · `/shared/weekly-report/[token]` anonymous route.
+ * BM2-F010 + BL-051a-F003 · `/shared/weekly-report/[token]` anonymous route.
  *
- * - No auth required (middleware short-circuits on /shared/...)
- * - Loads via the superuser Prisma client (`db-admin`) by token
- * - SELECTs only 4 columns; tenant brand info comes out of
- *   `summaryJson.tenantSnapshot` to avoid a tenant-table join
- * - 404 when token is unknown OR `shareTokenExpiresAt` has passed
- * - <meta robots noindex> + og:title/og:description per §13.5 #3
+ * Three render states (BL-051a-F002 lifecycle):
+ *   - valid    → renders the weekly report content (BM2 baseline)
+ *   - expired  → renders metadata + "link expired" panel (no contentMd)
+ *   - revoked  → renders metadata + "link revoked" panel (no contentMd)
+ *   - not_found → notFound() (404, plays back as the original BM2 surface)
+ *
+ * The expired / revoked panels intentionally *do not* leak contentMd
+ * or summaryJson per F003 acceptance — only the timestamps the recipient
+ * needs to ask the owner for a fresh link. Locale comes from the
+ * report row (`locale` column) so a JA-authored report still shows
+ * Japanese chrome after expiry, not the default EN.
  */
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 
 import { logEvent } from "@/lib/events/log";
 import { splitByH2 } from "@/lib/weekly-report/markdown-split";
-import { loadSharedWeeklyReport } from "@/lib/weekly-report/persistence";
-import { isShareTokenExpired } from "@/lib/weekly-report/share-token";
+import { validateShareToken } from "@/lib/weekly-report/persistence";
 
 import { WeeklyReportInsightsPanel } from "../../../[locale]/(app)/weekly-report/WeeklyReportInsightsPanel";
 import { WeeklyReportPrintStyles } from "../../../[locale]/(app)/weekly-report/WeeklyReportPrintStyles";
@@ -23,14 +28,33 @@ import { WeeklyReportRenderer } from "../../../[locale]/(app)/weekly-report/Week
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+const SUPPORTED_LOCALES = new Set(["en", "zh", "ja", "ko", "es"]);
+function normaliseLocale(raw: string | undefined | null): string {
+  if (!raw) return "en";
+  return SUPPORTED_LOCALES.has(raw) ? raw : "en";
+}
+
 interface Props {
   params: Promise<{ token: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { token } = await params;
-  const payload = await loadSharedWeeklyReport(token);
-  const tenantName = payload?.summaryJson?.tenantSnapshot?.name ?? "Weekly Report";
+  const result = await validateShareToken(token);
+  if (result.status === "not_found") {
+    // Mirror the page's notFound() so search engines + share unfurlers
+    // see a generic 404 title rather than tenant brand for an unknown
+    // token.
+    return {
+      title: "Weekly Report",
+      description: "Weekly performance summary.",
+      robots: { index: false, follow: false },
+    };
+  }
+  const tenantName =
+    (result.status === "valid" &&
+      result.payload.summaryJson?.tenantSnapshot?.name) ||
+    "Weekly Report";
   return {
     title: `${tenantName} — Weekly Report`,
     description: `Weekly performance summary for ${tenantName}.`,
@@ -52,21 +76,29 @@ function tenantInitials(name: string): string {
   return (words[0][0] + words[1][0]).toUpperCase();
 }
 
-function formatWeekRange(createdAt: Date): string {
-  return createdAt.toLocaleDateString("en-US", {
+function formatTimestamp(date: Date, locale: string): string {
+  return date.toLocaleString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
     timeZone: "UTC",
   });
 }
 
 export default async function SharedWeeklyReportPage({ params }: Props) {
   const { token } = await params;
-  const payload = await loadSharedWeeklyReport(token);
-  if (!payload || isShareTokenExpired(payload.shareTokenExpiresAt)) {
+  const result = await validateShareToken(token);
+  if (result.status === "not_found") {
     notFound();
   }
+
+  if (result.status === "expired" || result.status === "revoked") {
+    return renderLifecycleState(result.status, result.metadata);
+  }
+
+  const payload = result.payload;
 
   // RSC re-runs on every request; `now` is captured once per render
   // for the telemetry payload (not for any visible state).
@@ -127,7 +159,8 @@ export default async function SharedWeeklyReportPage({ params }: Props) {
         <div className="flex-grow">
           <h1 className="text-2xl font-bold text-white">{tenantSnapshot.name}</h1>
           <p className="mt-1 text-sm text-on-surface-variant">
-            Weekly Report · Generated {formatWeekRange(payload.createdAt)}
+            Weekly Report · Generated{" "}
+            {formatTimestamp(payload.createdAt, payload.locale)}
           </p>
         </div>
         <span className="flex items-center gap-1.5 rounded-full bg-purple/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-purple">
@@ -156,6 +189,59 @@ export default async function SharedWeeklyReportPage({ params }: Props) {
 
       <footer className="border-t border-white/5 pt-6 text-center text-[10px] text-on-surface-variant/70">
         <p>AI powered by KOLMatrix Neural Discovery Engine</p>
+      </footer>
+    </div>
+  );
+}
+
+async function renderLifecycleState(
+  status: "expired" | "revoked",
+  metadata: { createdAt: Date; expiresAt: Date; revokedAt: Date | null; locale: string }
+) {
+  const locale = normaliseLocale(metadata.locale);
+  const t = await getTranslations({
+    locale,
+    namespace: "weeklyReport.shared",
+  });
+
+  void logEvent({
+    type: `weekly_report.shared_view_${status}`,
+    payload: { locale },
+  });
+
+  const headingKey = status === "expired" ? "expiredTitle" : "revokedTitle";
+  const bodyKey = status === "expired" ? "expiredBody" : "revokedBody";
+  const iconName = status === "expired" ? "schedule" : "block";
+  const accentClass =
+    status === "expired"
+      ? "border-amber-500/40 bg-amber-500/10 text-amber-300"
+      : "border-error/40 bg-error/10 text-error";
+
+  return (
+    <div
+      data-testid={`weekly-report-${status}`}
+      data-status={status}
+      className="mx-auto flex min-h-screen max-w-[680px] flex-col items-center justify-center gap-6 p-8 text-center"
+    >
+      <span
+        aria-hidden
+        className={`flex h-14 w-14 items-center justify-center rounded-full border ${accentClass}`}
+      >
+        <span className="material-symbols-outlined text-[28px]">{iconName}</span>
+      </span>
+      <h1 className="text-2xl font-bold text-white">{t(headingKey)}</h1>
+      <p className="text-sm text-on-surface-variant">
+        {t(bodyKey, {
+          createdAt: formatTimestamp(metadata.createdAt, locale),
+          expiresAt: formatTimestamp(metadata.expiresAt, locale),
+          revokedAt: metadata.revokedAt
+            ? formatTimestamp(metadata.revokedAt, locale)
+            : "",
+        })}
+      </p>
+      <p className="text-xs text-on-surface-variant/70">{t("askOwnerHint")}</p>
+      <footer className="border-t border-white/5 pt-6 text-[10px] text-on-surface-variant/70">
+        AI powered by KOLMatrix Neural Discovery Engine
       </footer>
     </div>
   );

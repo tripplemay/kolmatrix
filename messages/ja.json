@@ -266,6 +266,13 @@
       "generic": "製品を保存できませんでした。もう一度試してください。",
       "targetAudienceRequired": "ターゲットオーディエンスは必須です。"
     },
+    "delete": {
+      "confirm": "\"{name}\" を削除しますか？",
+      "cascade": "この製品は {campaign} 件のキャンペーン、{asset} 件のアセット、{kolCampaign} 件の KOL 割り当てから参照されています。ソフト削除すると新規リストから非表示になりますが、監査ログは保持されます。続行しますか？",
+      "failed": "削除できませんでした。もう一度お試しください。"
+    },
+    "productDeleted": "（製品は削除されました）",
+    "productDeletedTooltip": "このキャンペーンに紐づく製品は削除されました。監査ログは保持されており、製品ライフサイクルはナレッジベースから管理できます。",
     "mockActivity": {
       "heading1": "王者榮耀Q2",
       "heading2": "バロラントEp. 9",
@@ -1291,6 +1298,32 @@
     "share": {
       "toastSuccess": "リンクをコピーしました · {0} · 有効期限: {1}",
       "toastError": "共有リンクを生成できませんでした。もう一度お試しください。"
+    },
+    "ttl": {
+      "picker": "有効期限",
+      "oneDay": "1日",
+      "sevenDays": "7日",
+      "thirtyDays": "30日",
+      "never": "無期限"
+    },
+    "revoke": {
+      "button": "取り消し",
+      "confirm": "この共有リンクを取り消しますか? URL を所持している人には「リンクは取り消されました」ページが表示されます。",
+      "toastSuccess": "共有リンクを取り消しました。",
+      "toastError": "取り消しに失敗しました。もう一度お試しください。"
+    },
+    "metadata": {
+      "expires": "有効期限",
+      "expiresNever": "無期限",
+      "createdBy": "共有者",
+      "revokedAt": "取り消し日"
+    },
+    "shared": {
+      "expiredTitle": "リンクの有効期限が切れています",
+      "expiredBody": "この共有リンクは {expiresAt} に期限切れになりました。元のレポートは {createdAt} に作成されました。",
+      "revokedTitle": "リンクは取り消されました",
+      "revokedBody": "この共有リンクは {revokedAt} に取り消されました。元のレポートは {createdAt} に作成されました。",
+      "askOwnerHint": "新しい共有リンクが必要な場合はレポート所有者にお問い合わせください。"
     },
     "empty": {
       "title": "まだ週次レポートはありません",

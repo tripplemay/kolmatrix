@@ -266,6 +266,13 @@
       "generic": "保存失败，请稍后重试。",
       "targetAudienceRequired": "请填写目标受众。"
     },
+    "delete": {
+      "confirm": "删除 \"{name}\"？",
+      "cascade": "该产品被 {campaign} 个活动、{asset} 个素材、{kolCampaign} 条 KOL 关联引用。软删除会从新列表中隐藏，同时保留审计记录，是否继续？",
+      "failed": "删除失败，请重试。"
+    },
+    "productDeleted": "（产品已删除）",
+    "productDeletedTooltip": "本活动关联的产品已被删除。审计记录已保留，可在知识库中管理产品生命周期。",
     "mockActivity": {
       "heading1": "王者荣耀 Q2",
       "heading2": "无畏契约第9集",
@@ -1222,6 +1229,32 @@
     "share": {
       "toastSuccess": "链接已复制 · {0} · 有效期至 {1}",
       "toastError": "分享链接生成失败，请重试。"
+    },
+    "ttl": {
+      "picker": "有效期",
+      "oneDay": "1 天",
+      "sevenDays": "7 天",
+      "thirtyDays": "30 天",
+      "never": "永久"
+    },
+    "revoke": {
+      "button": "撤销",
+      "confirm": "确定要撤销此分享链接？持有该链接的人将看到「链接已撤销」页面。",
+      "toastSuccess": "分享链接已撤销。",
+      "toastError": "撤销失败，请重试。"
+    },
+    "metadata": {
+      "expires": "有效期",
+      "expiresNever": "永久有效",
+      "createdBy": "分享者",
+      "revokedAt": "撤销时间"
+    },
+    "shared": {
+      "expiredTitle": "链接已过期",
+      "expiredBody": "该分享链接已于 {expiresAt} 过期。原报告生成于 {createdAt}。",
+      "revokedTitle": "链接已撤销",
+      "revokedBody": "该分享链接已于 {revokedAt} 被撤销。原报告生成于 {createdAt}。",
+      "askOwnerHint": "请联系报告所有者获取新的分享链接。"
     },
     "empty": {
       "title": "暂无周报",

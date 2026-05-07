@@ -15,7 +15,47 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useState, useTransition } from "react";
 
-import { createShareTokenAction, generateWeeklyReportAction } from "./actions";
+import {
+  createShareTokenAction,
+  generateWeeklyReportAction,
+  revokeShareTokenAction,
+} from "./actions";
+
+// BL-051a-F005 — TTL choices the user picks before minting a share
+// link. Mirrors `ShareTokenTtlChoice` in persistence.ts; kept as a
+// const tuple so the runtime stringifies match the server-side
+// parser.
+export const SHARE_TTL_CHOICES = ["1", "7", "30", "never"] as const;
+export type ShareTtlValue = (typeof SHARE_TTL_CHOICES)[number];
+
+export interface ShareTokenMetadata {
+  hasToken: boolean;
+  expiresAtIso: string | null;
+  revokedAtIso: string | null;
+  creatorName: string | null;
+}
+
+export interface ShareTtlLabels {
+  picker: string;
+  oneDay: string;
+  sevenDays: string;
+  thirtyDays: string;
+  never: string;
+}
+
+export interface RevokeLabels {
+  button: string;
+  confirm: string;
+  toastSuccess: string;
+  toastError: string;
+}
+
+export interface ShareMetadataLabels {
+  expiresLabel: string;
+  expiresNever: string;
+  createdByLabel: string;
+  revokedLabel: string;
+}
 
 interface Props {
   reportId: string;
@@ -31,6 +71,11 @@ interface Props {
   /** "{0}" placeholder for the URL, "{1}" placeholder for expiry. */
   shareToastSuccessTemplate: string;
   shareToastErrorTemplate: string;
+  // BL-051a-F005 props
+  shareMetadata: ShareTokenMetadata;
+  ttlLabels: ShareTtlLabels;
+  revokeLabels: RevokeLabels;
+  shareMetadataLabels: ShareMetadataLabels;
 }
 
 interface Toast {
@@ -54,11 +99,17 @@ export function WeeklyReportClientActions({
   regenerateLabel,
   shareToastSuccessTemplate,
   shareToastErrorTemplate,
+  shareMetadata,
+  ttlLabels,
+  revokeLabels,
+  shareMetadataLabels,
 }: Props) {
   const router = useRouter();
   const [isSharing, startShareTransition] = useTransition();
   const [isRegenerating, startRegenerateTransition] = useTransition();
+  const [isRevoking, startRevokeTransition] = useTransition();
   const [toast, setToast] = useState<Toast | null>(null);
+  const [ttl, setTtl] = useState<ShareTtlValue>("7");
 
   const handleDownload = useCallback(() => {
     const original = document.title;
@@ -91,7 +142,10 @@ export function WeeklyReportClientActions({
     startShareTransition(async () => {
       // BL-035-F004: origin is now derived server-side; client no
       // longer trusted to supply it.
-      const res = await createShareTokenAction(reportId);
+      // BL-051a-F005: ttl pulled from the dropdown; server falls back
+      // to the legacy 7-day default if anything other than
+      // 1/7/30/never reaches it.
+      const res = await createShareTokenAction(reportId, ttl);
       if (!res.ok) {
         setToast({ tone: "error", message: shareToastErrorTemplate });
         return;
@@ -105,11 +159,36 @@ export function WeeklyReportClientActions({
         .replace("{0}", res.url)
         .replace(
           "{1}",
-          new Date(res.expiresAt).toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US")
+          ttl === "never"
+            ? shareMetadataLabels.expiresNever
+            : new Date(res.expiresAt).toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US")
         );
       setToast({ tone: "success", message });
+      router.refresh();
     });
-  }, [reportId, shareToastSuccessTemplate, shareToastErrorTemplate, locale]);
+  }, [
+    reportId,
+    ttl,
+    shareToastSuccessTemplate,
+    shareToastErrorTemplate,
+    shareMetadataLabels.expiresNever,
+    locale,
+    router,
+  ]);
+
+  const handleRevoke = useCallback(() => {
+    setToast(null);
+    if (!window.confirm(revokeLabels.confirm)) return;
+    startRevokeTransition(async () => {
+      const res = await revokeShareTokenAction(reportId);
+      if (!res.ok) {
+        setToast({ tone: "error", message: revokeLabels.toastError });
+        return;
+      }
+      setToast({ tone: "success", message: revokeLabels.toastSuccess });
+      router.refresh();
+    });
+  }, [reportId, revokeLabels.confirm, revokeLabels.toastError, revokeLabels.toastSuccess, router]);
 
   const handleRegenerate = useCallback(() => {
     setToast(null);
@@ -122,6 +201,36 @@ export function WeeklyReportClientActions({
       router.refresh();
     });
   }, [weekStartIso, locale, router, shareToastErrorTemplate]);
+
+  // BL-051a-F005 — when a live token exists, the share row swaps from
+  // "mint a new link" controls to a metadata strip + Revoke. We keep
+  // both blocks here (instead of two siblings in the brand header)
+  // so the toast/transition state stays co-located.
+  const hasLiveToken =
+    shareMetadata.hasToken && shareMetadata.revokedAtIso === null;
+  const wasRevoked =
+    shareMetadata.hasToken && shareMetadata.revokedAtIso !== null;
+  const intlLocale = locale === "zh" ? "zh-CN" : "en-US";
+  const expiresDisplay = (() => {
+    if (!shareMetadata.expiresAtIso) return null;
+    const d = new Date(shareMetadata.expiresAtIso);
+    // Far-future sentinel (>= year 9000) renders as "never" so spec
+    // D4's intent — the user-visible "永久" / "Never expires" — is
+    // preserved even though the column is non-null.
+    if (d.getUTCFullYear() >= 9000) return shareMetadataLabels.expiresNever;
+    return d.toLocaleDateString(intlLocale, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  })();
+  const revokedDisplay = shareMetadata.revokedAtIso
+    ? new Date(shareMetadata.revokedAtIso).toLocaleDateString(intlLocale, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : null;
 
   return (
     <>
@@ -137,18 +246,76 @@ export function WeeklyReportClientActions({
         </span>
         {downloadPdfLabel}
       </button>
-      <button
-        type="button"
-        onClick={handleShare}
-        disabled={isSharing}
-        data-testid="weekly-report-share"
-        className="bg-surface-container-high/70 text-on-surface hover:bg-surface-container-high flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold disabled:cursor-progress disabled:opacity-60"
-      >
-        <span aria-hidden className="material-symbols-outlined text-[18px]">
-          share
+      {hasLiveToken ? (
+        <div
+          data-testid="weekly-report-share-metadata"
+          className="bg-surface-container-high/70 text-on-surface flex flex-col gap-1 rounded-xl px-3 py-2 text-[11px]"
+        >
+          <span>
+            <strong className="font-semibold">
+              {shareMetadataLabels.expiresLabel}:
+            </strong>{" "}
+            {expiresDisplay}
+          </span>
+          {shareMetadata.creatorName ? (
+            <span className="text-on-surface-variant">
+              {shareMetadataLabels.createdByLabel}: {shareMetadata.creatorName}
+            </span>
+          ) : null}
+          <button
+            type="button"
+            onClick={handleRevoke}
+            disabled={isRevoking}
+            data-testid="weekly-report-revoke"
+            className="border-error/40 text-error hover:bg-error/10 mt-1 inline-flex items-center gap-1 self-start rounded-lg border px-2 py-1 text-[11px] font-bold disabled:cursor-progress disabled:opacity-60"
+          >
+            <span aria-hidden className="material-symbols-outlined text-[14px]">
+              block
+            </span>
+            {revokeLabels.button}
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          <label
+            data-testid="weekly-report-ttl-picker"
+            className="bg-surface-container-high/70 text-on-surface flex items-center gap-1 rounded-xl px-2 py-1.5 text-[11px]"
+          >
+            <span className="text-on-surface-variant">{ttlLabels.picker}</span>
+            <select
+              value={ttl}
+              onChange={(e) => setTtl(e.target.value as ShareTtlValue)}
+              data-testid="weekly-report-ttl-select"
+              className="bg-transparent text-xs font-bold outline-none"
+            >
+              <option value="1">{ttlLabels.oneDay}</option>
+              <option value="7">{ttlLabels.sevenDays}</option>
+              <option value="30">{ttlLabels.thirtyDays}</option>
+              <option value="never">{ttlLabels.never}</option>
+            </select>
+          </label>
+          <button
+            type="button"
+            onClick={handleShare}
+            disabled={isSharing}
+            data-testid="weekly-report-share"
+            className="bg-surface-container-high/70 text-on-surface hover:bg-surface-container-high flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold disabled:cursor-progress disabled:opacity-60"
+          >
+            <span aria-hidden className="material-symbols-outlined text-[18px]">
+              share
+            </span>
+            {shareLabel}
+          </button>
+        </div>
+      )}
+      {wasRevoked ? (
+        <span
+          data-testid="weekly-report-share-revoked"
+          className="border-on-surface-variant/30 text-on-surface-variant rounded-xl border px-3 py-2 text-[11px] italic"
+        >
+          {shareMetadataLabels.revokedLabel}: {revokedDisplay}
         </span>
-        {shareLabel}
-      </button>
+      ) : null}
       <button
         type="button"
         onClick={handleRegenerate}

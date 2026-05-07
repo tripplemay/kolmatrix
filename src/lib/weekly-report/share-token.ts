@@ -31,3 +31,30 @@ export function isShareTokenExpired(
   if (!expiresAt) return true;
   return expiresAt.getTime() <= now.getTime();
 }
+
+// BL-051a-F002 — three-state validation surface for share tokens.
+// Callers pass the persisted state pair (expiresAt + revokedAt) plus
+// an optional `now`; the function returns the enum the page render and
+// the revoke API both consume. `null` state = no row matched the
+// token (unknown/malformed). Pure so it lives in share-token.ts and
+// stays trivially unit-testable.
+
+export type ShareTokenStatus = "valid" | "expired" | "revoked" | "not_found";
+
+export interface ShareTokenState {
+  expiresAt: Date | null;
+  revokedAt: Date | null;
+}
+
+export function validateShareTokenState(
+  state: ShareTokenState | null,
+  now: Date = new Date()
+): ShareTokenStatus {
+  if (!state) return "not_found";
+  // Revocation wins over expiry: an explicitly killed link must read
+  // as 'revoked' even after the natural expiry, so the audit trail
+  // matches the user-visible reason.
+  if (state.revokedAt !== null) return "revoked";
+  if (isShareTokenExpired(state.expiresAt, now)) return "expired";
+  return "valid";
+}
