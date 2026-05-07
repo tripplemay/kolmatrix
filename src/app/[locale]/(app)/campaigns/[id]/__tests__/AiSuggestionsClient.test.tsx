@@ -6,7 +6,7 @@
  * <a href> 回退到 `/${locale}/campaigns`，不再让 AI 生成的字符串原样穿透。
  */
 import { render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 // The server-action module pulls in next-auth → next/server, which crashes
 // when imported in jsdom. We don't exercise the action in this test (the
@@ -14,6 +14,35 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("../ai-suggestions-actions", () => ({
   generateCampaignSuggestionsAction: vi.fn(),
 }));
+
+// BL-021 fix-1 (BL-047 root cause):
+// jsdom's default `window.localStorage` is set as a non-configurable
+// getter that returns an object with throwing accessors when running
+// under `--pool=forks` on some Linux/Node combinations (Codex CI repro
+// 2026-05-07). Install a Map-backed Storage stub before importing the
+// component so both the test seed and the component reads see the same
+// in-memory store across environments.
+beforeAll(() => {
+  const store = new Map<string, string>();
+  const storage: Storage = {
+    get length() {
+      return store.size;
+    },
+    clear: () => store.clear(),
+    getItem: (key) => (store.has(key) ? store.get(key)! : null),
+    key: (index) => Array.from(store.keys())[index] ?? null,
+    removeItem: (key) => {
+      store.delete(key);
+    },
+    setItem: (key, value) => {
+      store.set(key, String(value));
+    },
+  };
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    value: storage,
+  });
+});
 
 const { AiSuggestionsClient } = await import("../AiSuggestionsClient");
 
