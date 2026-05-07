@@ -89,7 +89,19 @@ export function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivEl
 
 ---
 
-### F002 · BL-047 顺手清（X1 合并）— AiSuggestionsClient.test.tsx pre-existing localStorage stub fail
+### F002 · ~~BL-047 顺手清（X1 合并）~~ — **已撤 @ 5/7 10:35（spec premise 错误）**
+
+> ⚠️ **本 feature 已撤** — 用户 5/7 10:35 决议 A：撤 F002 + BL-047 标 closed-not-reproducible。
+>
+> **撤销根因（Generator 5/7 10:30 实地证据）：**
+> - `npx vitest run --pool=forks` (full repo-wide) → **146 files / 1043 tests 全 PASS** (~11min)
+> - `tests/setup.ts` 无任何 localStorage stub；jsdom 默认 localStorage 工作正常
+> - AiSuggestionsClient.test.tsx 实际 it() block = 2（spec 声称 4 — 计数也偏）
+> - WSL2 `npx vitest run --pool=threads` 60s timeout 是 vitest pool 启动问题（worker 启动失败），≠ 测试 fail；Planner 5/7 09:30 起 spec 时可能撞到这个 pool startup 现象，误读为「测试 fail」
+>
+> **结论：无 bug 可修。** BL-047 标 closed-not-reproducible 入 backlog 作 audit trail。framework v0.9.15 候选沉淀「Backlog spec premise 起草前必须实地跑测试验证（不依赖 verifying 报告措辞）」。
+>
+> **以下原 F002 内容保留作 audit trail 不删（spec retro 范式）：**
 
 **Executor:** generator
 **Priority:** medium

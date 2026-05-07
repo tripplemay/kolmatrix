@@ -1,11 +1,11 @@
 {
   "status": "building",
-  "user_goal": "BL-021 Suspense / loading.tsx Critical Paths — 全应用 0 个 loading.tsx + 0 Suspense + 5 critical 路由全 page.tsx only（前端审计 H-P4：感知首屏 -300~800ms 收益）。本批次 2 features：F001 5 routes loading.tsx (dashboard/discovery/campaigns/roi/weekly-report) + 通用 src/components/ui/Skeleton.tsx 组件（提取现有 5 处 inline animate-pulse 模式）/ F002 X1 BL-047 顺手清 AiSuggestionsClient.test.tsx pre-existing localStorage stub fail（同 commit-tag）。预估 2-2.5h Generator + 0.5h Reviewer。",
-  "total_features": 2,
+  "user_goal": "BL-021 Suspense / loading.tsx Critical Paths - 5 critical 路由 (dashboard/discovery/campaigns/roi/weekly-report) 加 loading.tsx skeleton fallback + 通用 src/components/ui/Skeleton.tsx 组件提取 (前端审计 H-P4 收益 -300~800ms 首屏感知). F001 已实装 @ commit 0e0a054 (Skeleton primitive + 5 loading.tsx，L1 lint+tsc+1043 tests 全绿). F002 BL-047 X1 顺手清 5/7 10:35 撤 (spec premise 错误，Generator 实地 1043/1043 PASS 无 bug 可修；BL-047 标 closed-not-reproducible 入 backlog 作反例 audit trail；framework v0.9.15 候选沉淀). 预估剩余 Generator staging deploy 30 min + Codex L1+L2 30 min = 1h to done.",
+  "total_features": 1,
   "completed_features": 1,
   "fix_rounds": 0,
   "current_sprint": "BL-021-suspense-critical-paths",
-  "last_updated": "2026-05-07T10:30+0800",
+  "last_updated": "2026-05-07T10:35+0800",
   "reference_docs": [
     "docs/specs/BL-021-suspense-critical-paths-spec.md",
     "src/components/ui/index.ts",
@@ -27,40 +27,17 @@
   "role_assignments": null,
   "evaluator_feedback": null,
   "generator_handoff": {
-    "type": "partial-pending",
-    "raised_by": "johnsong (Generator)",
-    "raised_at": "2026-05-07T10:30+0800",
-    "framework": "pre-impl-adjudication §11 (building 中段良性 partial-pending)",
-    "F001": {
-      "status": "completed",
-      "commit": "0e0a054",
-      "summary": "Skeleton primitive + 5 critical-path loading.tsx (dashboard / discovery / campaigns/[id] / roi / weekly-report). L1 守门：lint 0 errors / tsc 0 errors / vitest 146 files 1043 tests 全 PASS。"
-    },
-    "F002": {
-      "status": "partial-pending",
-      "summary": "Generator 实地 grep 发现 spec premise 错误 — AiSuggestionsClient.test.tsx 当前已经 PASS，无 bug 可修。",
-      "evidence": [
-        "npx vitest run --pool=forks src/app/[locale]/(app)/campaigns/[id]/__tests__/AiSuggestionsClient.test.tsx → Test Files 1 passed / Tests 2 passed (~26s)",
-        "npx vitest run --pool=forks (full repo-wide) → Test Files 146 passed / Tests 1043 passed (~11min)",
-        "tests/setup.ts 无任何 localStorage stub；jsdom 默认 localStorage 工作正常",
-        "test 文件实际 it() block = 2（spec 声称 4 — 计数也偏）",
-        "WSL2 npx vitest run --pool=threads 60s timeout (worker 启动失败) 是 vitest pool 启动问题，≠ 测试 fail；Planner 5/7 09:30 起 spec 时可能撞到这个 pool startup 现象，误读为'测试 fail'"
-      ],
-      "options": [
-        "A 取消 F002 — features.json 删 F002 / spec retro §F002 注'5/7 10:30 Generator 实地 1043/1043 PASS premise 错误，撤'/ backlog.json 把 BL-047 标 closed-not-reproducible 或彻底删 / BL-021 直接 1 feature done — 节省 30 min（推荐）",
-        "B 改 F002 为防御性 regression test — 不改 product code，新增 localStorage quota / async race 边界 case ~30min — 偏 over-engineering，对 5/13 上线无收益（不推荐）",
-        "C 等 Planner 实地复跑 + 重起 spec — 如本机 WSL2 threads pool 真有特定 fail context 我没复现到，留待复核（保守）"
-      ],
-      "generator_recommendation": "A",
-      "rationale": [
-        "1. 实地证据强：1043/1043 PASS，无任何 stub 缺失 — 没东西可'修'",
-        "2. it() 计数 spec 写 4 实际 2，spec 起草时未跑测试，premise 不成立",
-        "3. 5/13 上线时间线 4-day buffer 已极宽裕，删 30min 工作不影响 critical path",
-        "4. BL-047 X1 顺手清的'顺手'前提是真有 bug；不存在的 bug 不顺手清"
-      ]
-    },
-    "state_machine": "状态机 stays building（不切 verifying）。Planner 裁决后切 fixing（如方案 A 撤 F002，则 fix-round 增量 = 0；如方案 B/C 走 fixing → reverifying → done）。",
-    "next_step": "Planner johnsong 下次会话启动看 progress.json.generator_handoff → 短格式裁决（A/B/C） → 修订 spec/features.json/backlog.json → push → Generator 拉远端按裁决执行（或如 A，Generator 可零工作直接 push state-only commit 切 verifying）"
+    "type": "verdict-applied",
+    "applied_by": "johnsong (Planner)",
+    "applied_at": "2026-05-07T10:35+0800",
+    "verdict": "A - 撤 F002 (spec premise 错误，无 bug 可修；Generator 实地 1043/1043 PASS 证据)",
+    "actions_taken": [
+      "features.json 删 F002 (2 -> 1 features，仅保留 F001 已 completed)",
+      "spec docs/specs/BL-021-suspense-critical-paths-spec.md F002 段加 retro 注 (保留原内容作 audit trail)",
+      "backlog.json 加 BL-047 priority=closed status=closed-not-reproducible (dogfood pre-impl-adjudication §11 第 2 次实战 + framework v0.9.15 候选沉淀)",
+      "progress.json total_features 2->1 / completed 1/1 / generator_handoff 改为 verdict-applied"
+    ],
+    "next_step_for_generator": "Generator 拉远端 -> 跑 staging deploy with main HEAD 验证 F001 改动落地 (infrastructure/deploy-staging.sh 触发 GitHub Actions workflow_dispatch deploy-staging.yml) -> 验证 health 200 + git_sha 对齐 -> 切 progress.json status=verifying -> 等 Codex L1+L2"
   },
   "session_notes": {
     "Kimi": null,

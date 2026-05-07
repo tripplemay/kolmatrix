@@ -282,5 +282,18 @@
       "src/lib/email/customize.ts (P1/P4 高风险路径)",
       "src/lib/products/generateAiAssets.ts (chat/completions 已实装范式参考)"
     ]
+  },
+  {
+    "id": "BL-047",
+    "title": "AiSuggestionsClient.test.tsx pre-existing localStorage fail — closed-not-reproducible (5/7 实地不复现)",
+    "description": "原 5/7 08:00 创建 backlog 跟踪 BL-040/BL-044/BL-043 verifying 报告中 unrelated existing failure (window.localStorage.setItem is not a function in AiSuggestionsClient.test.tsx) 现象。\n\n5/7 10:30 Generator 实地排查发现 spec premise 错误：\n- npx vitest run --pool=forks src/app/[locale]/(app)/campaigns/[id]/__tests__/AiSuggestionsClient.test.tsx -> Test Files 1 passed / Tests 2 passed (~26s)\n- npx vitest run --pool=forks (full repo-wide) -> 146 files / 1043 tests 全 PASS (~11min)\n- tests/setup.ts 无任何 localStorage stub；jsdom 默认 localStorage 工作正常\n- AiSuggestionsClient.test.tsx 实际 it() block = 2 (spec 声称 4 计数也偏)\n- WSL2 npx vitest run --pool=threads 60s timeout 是 vitest pool 启动问题，≠ 测试 fail\n\n真实根因 (推测): Codex verifying 报告 unrelated existing failure 措辞使 Planner 误判，实际可能是 Codex 测试环境特有的 pool/timing 问题。\n\n结论: closed-not-reproducible (标 closed 不删；保留 audit trail)\n\nframework v0.9.15 沉淀候选: Backlog spec premise 起草前必须实地跑测试验证(不依赖 verifying 报告措辞) + planner.md 铁律 1 矩阵 +1 行扩展。\n\n如未来真实复现该 fail (如 jsdom 升级后真坏)，重开新 backlog 条目，本条仍保留为反例参考。",
+    "decisions": [
+      "用户 2026-05-07 10:35 决议 F002=A: 撤 F002 + BL-047 标 closed-not-reproducible (spec premise 错误，无 bug 可修)",
+      "Generator F002 partial-pending dogfood pre-impl-adjudication §11 第 2 次实战 (第 1 次是 BL-023 F008 building 中段加 engagement_rate 单位修正)",
+      "framework v0.9.15 沉淀候选: 'Backlog spec premise 起草前必须实地跑测试验证' (audit-reports/test-infra-audit-2026-05-07.md §H 详细)"
+    ],
+    "confirmed_at": "2026-05-07T10:35+0800",
+    "priority": "closed",
+    "status": "closed-not-reproducible"
   }
 ]

@@ -15,21 +15,5 @@
       "loading.tsx 不写单测（Next.js framework 渲染机制保证）",
       "L1: lint + tsc 全绿"
     ]
-  },
-  {
-    "id": "F002",
-    "title": "BL-047 X1 顺手清 — AiSuggestionsClient.test.tsx pre-existing localStorage stub fix",
-    "executor": "generator",
-    "priority": "medium",
-    "estimated_hours": 0.5,
-    "status": "partial-pending",
-    "acceptance": [
-      "排查根因（jsdom localStorage init / setup.ts 顺序 / vitest config）",
-      "推荐方案 B：文件内 beforeAll Object.defineProperty(window, 'localStorage', {value: mock methods}) — 仅本文件 scope",
-      "或 Generator 自查后选最简单方案",
-      "npx vitest run AiSuggestionsClient.test.tsx 4 case 全 PASS",
-      "npm test repo-wide 0 fail（除 pre-existing material-symbols-coverage / e2e database-fidelity 等已知）",
-      "commit-tag: feat(BL-021-F002): fix AiSuggestionsClient.test.tsx pre-existing localStorage stub (BL-047 X1)"
-    ]
   }
 ]
