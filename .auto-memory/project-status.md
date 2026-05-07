@@ -12,15 +12,14 @@ type: project
 ## ✅ BL-044 — DONE 5/6 19:10 PASS 4/4 + Prod walk 12/12 PASS
 ## 🐛 孤儿 campaign 4425e07e — BL-046 入 backlog high（5/12 与 BL-017 同期）
 ## 🆕 BL-047 入 backlog low — AiSuggestionsClient.test.tsx pre-existing localStorage stub（5/8 BL-021 或 5/12 BL-017 顺手清）
-## 🚧 5/13 上线对外时间线
-- 5/7 现：**BL-023 verifying** (Codex L2 + signoff)
-- 5/8 周五：**BL-021 Suspense critical 5**（~2h）+ 顺手清 BL-047 候选
-- 5/9~10 周末：用户业务测继承 + BIx F004 cron 累积 + buffer 多
+## 🚧 5/13 上线对外时间线（连续 3 批次 6x 加速；BL-044 → BL-043 → BL-023 全 first-round PASS 0 fix-round）
+- 5/7 现：等用户决议 — 立即起 **BL-021 Suspense critical 5**（~2h）/ 或 5/8 启动
+- 5/8~10：buffer + BIx F004 cron 累积 + 用户业务测继承
 - 5/11 周一：CSP+NULLIF 1 周观察期满评估
 - 5/12 周二：**BL-017 token 过期+撤销** + **BL-046 product soft delete**（独立或合并；BL-047 候选顺手清）
 - 5/13 周三 ⭐ 上线对外
 ## 用户手工待办
-1. BL-023 prod deploy 后跑 `sudo -u postgres psql -d kolmatrix -f scripts/backfill-engagement-rate-bl023-f008.sql`（idempotent）
+1. ~~BL-023 prod deploy + backfill SQL~~ ✅ DONE 5/7（Codex 已验证 prod TC-05 PASS：fraction_rows=0 / percent_rows=138 / value_score_non_null=2482）
 2. CSP/NULLIF 5/11 满期评估 + BL-035 真客户邮件触发再验
 ## 关键决议（已 lock）
 - 5/7 03:00：用户裁决 C — F008 engagement_rate 单位 bug 顺手清入 BL-023（pre-impl-adjudication §11 building 中段裁决实战）
