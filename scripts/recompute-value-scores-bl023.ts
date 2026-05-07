@@ -32,10 +32,14 @@ import { computeKolValueScore } from "../src/lib/kol/value-score";
 
 interface CliArgs {
   dryRun: boolean;
+  all: boolean;
 }
 
 function parseArgs(argv: readonly string[]): CliArgs {
-  return { dryRun: argv.includes("--dry-run") };
+  return {
+    dryRun: argv.includes("--dry-run"),
+    all: argv.includes("--all"),
+  };
 }
 
 async function main(): Promise<void> {
@@ -50,13 +54,11 @@ async function main(): Promise<void> {
     adapter: new PrismaPg({ connectionString: conn }),
   });
 
-  console.log(`[recompute] mode=${args.dryRun ? "DRY-RUN" : "WRITE"} — fetching KOL with engagement_rate >= 1 ...`);
+  const scope = args.all ? "ALL non-deleted" : "engagement_rate >= 1";
+  console.log(`[recompute] mode=${args.dryRun ? "DRY-RUN" : "WRITE"} scope=${scope} — fetching ...`);
 
   const kols = await prisma.kol.findMany({
-    where: {
-      engagementRate: { gte: 1 },
-      deletedAt: null,
-    },
+    where: args.all ? { deletedAt: null } : { engagementRate: { gte: 1 }, deletedAt: null },
     select: {
       id: true,
       handle: true,
