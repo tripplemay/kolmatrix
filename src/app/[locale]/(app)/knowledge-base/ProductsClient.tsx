@@ -15,6 +15,8 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
+import { EmptyState } from "@/components/common";
+
 import { deleteProduct } from "./actions";
 import { ProductCard } from "./ProductCard";
 import { ProductModal } from "./ProductModal";
@@ -26,6 +28,7 @@ interface Props {
 
 export function ProductsClient({ products }: Props) {
   const t = useTranslations("knowledgeBase");
+  const tEmpty = useTranslations("common.emptyState.noProducts");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<ProductListItem | null>(null);
@@ -104,35 +107,45 @@ export function ProductsClient({ products }: Props) {
         </div>
       </div>
 
-      <div
-        className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
-        data-testid="kb-grid"
-      >
-        {products.map((p) => (
-          <ProductCard
-            key={p.id}
-            product={p}
-            onEdit={(item) => {
-              setEditing(item);
-              setOpen(true);
-            }}
-            onDelete={onDelete}
-          />
-        ))}
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          data-testid="kb-empty-card"
-          className="group flex min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant/30 p-6 text-on-surface-variant transition-all hover:border-cyan/40 hover:bg-cyan/5"
+      {products.length === 0 ? (
+        <EmptyState
+          icon="inventory_2"
+          title={tEmpty("title")}
+          description={tEmpty("description")}
+          cta={{ label: tEmpty("cta"), onClick: () => setOpen(true) }}
+          testId="kb-empty"
+        />
+      ) : (
+        <div
+          className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+          data-testid="kb-grid"
         >
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-surface-high transition-transform group-hover:scale-110">
-            <span className="material-symbols-outlined text-3xl" aria-hidden>
-              add
-            </span>
-          </div>
-          <p className="text-sm font-semibold">{t("emptyCardLabel")}</p>
-        </button>
-      </div>
+          {products.map((p) => (
+            <ProductCard
+              key={p.id}
+              product={p}
+              onEdit={(item) => {
+                setEditing(item);
+                setOpen(true);
+              }}
+              onDelete={onDelete}
+            />
+          ))}
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            data-testid="kb-empty-card"
+            className="group flex min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant/30 p-6 text-on-surface-variant transition-all hover:border-cyan/40 hover:bg-cyan/5"
+          >
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-surface-high transition-transform group-hover:scale-110">
+              <span className="material-symbols-outlined text-3xl" aria-hidden>
+                add
+              </span>
+            </div>
+            <p className="text-sm font-semibold">{t("emptyCardLabel")}</p>
+          </button>
+        </div>
+      )}
 
       {open ? (
         <ProductModal

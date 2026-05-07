@@ -204,6 +204,13 @@
     "network": {
       "offline": "오프라인 상태입니다. 재연결 중…",
       "backOnline": "다시 온라인"
+    },
+    "emptyState": {
+      "noProducts": {
+        "title": "아직 제품이 없습니다",
+        "description": "첫 번째 게임 제품을 추가하면 AI가 KOL 아웃리치 에셋을 작성하고 워크플로우를 시작합니다.",
+        "cta": "첫 제품 추가"
+      }
     }
   },
   "knowledgeBase": {

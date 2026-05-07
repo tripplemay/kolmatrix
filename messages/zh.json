@@ -204,6 +204,13 @@
     "network": {
       "offline": "网络已断开，正在重连…",
       "backOnline": "已恢复连接"
+    },
+    "emptyState": {
+      "noProducts": {
+        "title": "还没有产品",
+        "description": "添加第一个游戏产品，AI 会自动生成 KOL 邮件 / 视频脚本素材并启动工作流。",
+        "cta": "添加第一个产品"
+      }
     }
   },
   "knowledgeBase": {

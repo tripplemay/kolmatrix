@@ -204,6 +204,13 @@
     "network": {
       "offline": "オフラインです。再接続中…",
       "backOnline": "接続が回復しました"
+    },
+    "emptyState": {
+      "noProducts": {
+        "title": "まだ商品がありません",
+        "description": "最初のゲーム商品を追加すると、AI が KOL アウトリーチ素材を作成しワークフローを開始します。",
+        "cta": "最初の商品を追加"
+      }
     }
   },
   "knowledgeBase": {

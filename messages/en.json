@@ -204,6 +204,13 @@
     "network": {
       "offline": "You are offline. Reconnecting...",
       "backOnline": "Back online"
+    },
+    "emptyState": {
+      "noProducts": {
+        "title": "No products yet",
+        "description": "Add your first game product so we can draft KOL outreach assets and route the AI workflow.",
+        "cta": "Add your first product"
+      }
     }
   },
   "knowledgeBase": {

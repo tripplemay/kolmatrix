@@ -204,6 +204,13 @@
     "network": {
       "offline": "Estás sin conexión. Reconectando…",
       "backOnline": "De nuevo en línea"
+    },
+    "emptyState": {
+      "noProducts": {
+        "title": "Aún no hay productos",
+        "description": "Añade tu primer producto de juego y la IA generará los activos de outreach a KOLs y arrancará el flujo de trabajo.",
+        "cta": "Añadir tu primer producto"
+      }
     }
   },
   "knowledgeBase": {
