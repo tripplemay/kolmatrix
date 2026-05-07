@@ -296,5 +296,18 @@
     "confirmed_at": "2026-05-07T10:35+0800",
     "priority": "closed",
     "status": "closed-resolved"
+  },
+  {
+    "id": "BL-050",
+    "title": "Dashboard KPI 真趋势化 — kpi_daily_snapshot 表 + daily cron + computeTrend/Sparkline + UI 接通（替换 hardcoded mock）",
+    "description": "触发：用户 2026-05-07 13:50 仪表盘核查 — Planner 实地 grep 发现顶部 4 KPI 卡片趋势数值 + 图标 + sparkline UI 已渲染但数据全 HARDCODED MOCK：\n\nsrc/features/dashboard/KpiRow.tsx (BM1-F007) 现状：\n- StatCard 1 Total KOLs    trend={direction:\"up\", percent:12}      sparkline=[40,60,80,100]   ← MOCK\n- StatCard 2 Active Campaign trend={direction:\"flat\", percent:0}    sparkline=[70,70,70,70]    ← MOCK\n- StatCard 3 Emails Sent    trend={direction:\"up\", percent:5.2}     sparkline=[50,62,78,92]    ← MOCK\n- StatCard 4 Total Products trend={direction:\"flat\", percent:0}     sparkline=[30,40,55,70]    ← MOCK\n- (StatCard 数字本身真，仅 trend + sparkline 数据 hardcoded)\n\nKpiRow.tsx 顶部注释明示已知 mock：「The trend sparklines remain mock (§11.4 G3:A — historical tables land with B3); the number itself is real.」\n决议时机 BM1-F007 §11.4 G3:A 等 B3（KOL daily-sync 历史表）落地后再做真趋势 — 但 B3 已 done 多月，真趋势计算被遗漏在 backlog 之外。\n\n影响评估：\n- Demo 视觉专业感 ✓（数字 + 趋势箭头 + sparkline）\n- 用户感知准确性 ✗（12% 上升 / 5.2% 等假数据，用户会误以为真实趋势）\n- 真实数据：KOL 2442 cron 每天 +25-30 = 真 7d 增长 ~9%（mock 12% 凑巧接近）；Active Campaign 真 4→3（孤儿删除后）vs mock flat 0%\n- 接客户前必须实装（due diligence 假数据是红旗）\n- 5/13 上线对外 — 如客户比对 mock 与现实立即发现\n\n实装范围（5 features，~2-3h Generator + 0.5h Reviewer）：\nF001 schema migration kpi_daily_snapshot 表 (tenant_id uuid + snapshot_date date + kol_count int + active_campaigns int + emails_sent_7d int + product_count int + avg_value_score numeric + created_at timestamptz；composite PK (tenant_id, snapshot_date))\nF002 daily cron 写 snapshot — 可与 kol-sync-daily cron 同时触发，或独立 /etc/cron.d/kolmatrix-kpi-snapshot daily 03:00 BJ\nF003 src/lib/dashboard/kpi-trends.ts — computeTrend (current snapshot vs 7d-ago snapshot) + computeSparkline (last 30d snapshot 取数组)\nF004 src/features/dashboard/KpiRow.tsx — 接通真趋势数据（删 hardcoded trend / sparkline）；fallback 处理（< 7d 数据时显示 \"—\" 或 \"data accumulating\"）\nF005 单测 ≥4 case (computeTrend / computeSparkline 边界) + 集成测试 ≥1 case (snapshot insert + retrieve)\n\n依赖：无（schema migration 独立；kpi_daily_snapshot 表新建不影响现有数据）\n\n与 BL-046 + BL-017 5/12 同期执行（独立或合并待届时 Planner 决议）：\n- BL-017 weekly-report token lifecycle (~1 day)\n- BL-046 product soft delete + lifecycle (~1 day)\n- BL-050 dashboard KPI 真趋势 (~2-3h)\n- 总 ~2.5 day，5/12 一日内并行可能；如 buffer 充足可独立\n\nADR 候选：可考虑 ADR-014 \"Dashboard KPI snapshot strategy\"（如未来扩展更多 metric 进 snapshot 表）",
+    "decisions": [
+      "用户 2026-05-07 13:55 决议 C：BL-050 priority=high，5/12 与 BL-017 + BL-046 同期实装（独立或合并届时定）",
+      "Planner 5/7 13:50 实地 grep KpiRow.tsx 发现 trend + sparkline 全 HARDCODED MOCK；BM1-F007 §11.4 G3:A 决议等 B3 后做真趋势但 B3 done 后被遗漏",
+      "影响：接客户前必须（假数据 due diligence 红旗）；5/13 上线前应实装真趋势避免客户比对发现",
+      "工时 ~2-3h Generator + 0.5h Reviewer；5 features F001-F005；schema 独立无依赖"
+    ],
+    "confirmed_at": "2026-05-07T13:55+0800",
+    "priority": "high"
   }
 ]
