@@ -15,7 +15,7 @@ type: project
 ## 🆕 BL-054-flaky-network-test-isolate 立项 medium（5/8 Planner P5 裁决创立；推荐方向 A 隔离 + serial；~2-4h Generator + 0.5h Reviewer）
 ## 🆕 BL-012 apify 接入待决议（爬虫团队 5/7 提前交付 https://github.com/guang-tech/apify；fork audit 推荐方案 A 分平台分源 IG/TT 给 apify YouTube 给 B6；4 阻塞项待用户决议：TikHub 付费 / 部署位置 / 批次调度 / 5/13 是否含；Stage 1 部署 ~半天 + Stage 2 adapter ~5-6h Generator）
 ## 🚀 5/13 上线对外 X1+ 极速时间线（5+ day buffer 极宽裕）
-- 5/8 BL-052 Reviewer 复验 → done → prod redeploy 含 BL-049+BL-051a+BL-052
+- 5/8 01:07 BL-052 signoff PASS（B+/Ready）→ prod redeploy 触发中（含 BL-049+BL-051a+BL-052，等用户 health 确认）
 - 5/8 Dependabot 首次 run（5 group PR）/ 5/8~12 buffer + 用户业务测继承
 - 5/13 周三 ⭐ 上线对外
 ## 用户手工待办
