@@ -3,11 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ✅ BL-023 KOL 评分升级 — VERIFYING（Codex L2 PASS on code/staging; signoff blocked by prod deploy + backfill handoff）
-- 8 features 实装完毕（spec 7 + building 中段追加 F008）：F001/F002 valueScore 公式（engagement 阶梯 + authenticity）/ F003 16 测试 / F004/F005 sim*100 + 8 测试 / F006 cron recompute top100 / F007 BL-045 dead code / F008 engagement_rate fraction→percent + backfill SQL
-- L1 通过：value-score / smart-match / engagement-batch unit + kol-discovery integration 全绿；L2 通过：staging health healthy / discovery shell / Smart Match API matchScore 61 / KOL 详情页 engagementRate 11.4%
-- staging git_sha=b6c3668 ✓ / health 200 / DB 15ms / Redis 2ms；但 staging 的 live valueScore 仍未整体重算（cron/backfill 观察窗未闭合）
-- 待用户：BL-023 prod deploy 后 SSH 跑 backfill SQL（137 KOL fraction→percent；详见 progress.json johnsong 笔记），然后再观察 top100 valueScore 是否按新公式落地
+## ✅ BL-023 KOL 评分升级 — DONE（Reviewer signoff PASS @ 2026-05-07）
+- 8 features 全闭环：F001/F002 valueScore 公式（engagement 阶梯 + authenticity）/ F003 16 测试 / F004/F005 sim*100 + 8 测试 / F006 cron recompute top100 / F007 BL-045 dead code / F008 engagement_rate fraction→percent + backfill SQL
+- L1：value-score / smart-match / engagement-batch unit + kol-discovery integration 全绿；L2：staging health healthy / discovery shell / Smart Match API matchScore 61 / KOL 详情页 engagementRate 11.4%
+- prod：health healthy @ git_sha=e46a7e0；`fraction_rows=0`、`percent_rows=138`、`value_score_non_null=2482`，backfill 后 prod 已回到 BL-023 单位契约
+- signoff 文件：docs/test-reports/BL-023-kol-scoring-upgrade-signoff-2026-05-07.md
 ## ✅ BL-043 — DONE 5/6 22:31 first-round PASS 3/3
 ## ✅ BL-044 — DONE 5/6 19:10 PASS 4/4 + Prod walk 12/12 PASS
 ## 🐛 孤儿 campaign 4425e07e — BL-046 入 backlog high（5/12 与 BL-017 同期）

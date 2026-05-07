@@ -1,11 +1,11 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "BL-023 KOL 评分体系升级 mini-batch — 7 features F001-F007（spec lock 5/6 21:00）+ building 中段追加 F008（engagement_rate 单位 bug 顺手清，用户裁决 C @ 5/7）— 共 8 features 全 generator。F001-F003 valueScore 升级（engagement 阶梯 + authenticity modifier + 16 测试 case）/ F004-F005 Smart Match similarityToScore 直接 *100（删 +1/2 偏移）/ F006 kol-sync-daily 后 trigger valueScore 重算 top 100 / F007 BL-045 dead code 顺手清（X1）/ F008 engagement_rate fraction → percent 单位修正 + prod backfill SQL。BIx F004 cron 已部署 6 天累积 137 KOL with 真 engagement_rate；F008 backfill 后 137 KOL 数值落入正确 percent 区间，F006 recompute 才能分到正确段位。",
   "total_features": 8,
   "completed_features": 8,
   "fix_rounds": 0,
   "current_sprint": "BL-023-kol-scoring-upgrade",
-  "last_updated": "2026-05-07T09:05+0800",
+  "last_updated": "2026-05-07T09:23+0800",
   "reference_docs": [
     "docs/specs/BL-023-kol-scoring-upgrade-spec.md",
     "src/lib/kol/value-score.ts",
@@ -25,11 +25,11 @@
   "docs": {
     "spec": "docs/specs/BL-023-kol-scoring-upgrade-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/BL-023-kol-scoring-upgrade-signoff-2026-05-07.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": "BL-023 verification is complete for L1 and staging/API evidence: value-score and similarity tests pass, staging health is healthy, Smart Match returns 0-100 scores, and engagementRate renders as a percent. Final signoff remains blocked until the prod deploy + backfill SQL handoff is completed and the new valueScore path is observed on live prod data.",
+  "evaluator_feedback": "BL-023 signoff PASS. L1, staging, and prod deploy/backfill handoff are complete; prod health is healthy on git_sha e46a7e0, engagement_rate fractions are gone, and the backfill moved prod data onto the BL-023 unit contract.",
   "generator_handoff": null,
   "session_notes": {
     "Kimi": null,
