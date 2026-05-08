@@ -24,7 +24,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.7,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/lib/admin/apify-preview-client.ts 新建：fetch fork GET {APIFY_KOL_BASE_URL}/kol?platform=...&page=N&pageSize=50&sort=recent header x-api-key={APIFY_KOL_BUSINESS_API_KEY}",
       "zod schema 验证 fork response: ApifyKolItemSchema (id/platform/platformUserId/username/displayName/bio/avatarUrl/profileUrl/followers/following/postsCount/totalLikes/totalViews/verified/isBusinessAccount/emails[]/phones[]/socialHandles{}/externalUrl/externalUrls[]/aggregatorUrl/aggregatorEmails[]/aggregatorLinks{}/relevanceScore/influenceScore/qualityScore/reachabilityScore/matchedTags[]/matchedKeywords[]/tier/isSeed) + ApifyKolPageSchema {data, page, pageSize, total}",
