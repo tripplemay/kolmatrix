@@ -3,12 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🟡 BL-012-apify-kol-integration v3 BUILDING（5/8 16:30 增量 F006a sidebar 入口 / 14 features 6 done / fix_rounds=1）
-- Stage 1.5 signoff PASS @ f2f5dbb（tenant_admin 进 preview / marketer redirect / read-only / 数据流隔离 ✓）
-- v3 增量：用户 5/8 16:30 请求 sidebar 入口 → 决议 1=E (UserAvatarMenu admin section) 2=A (BL-012 加 F006a，不切批次)
-- canonical 8-item rule 限制：不能加 sidebar 顶层 nav 第 9 项；改 UserAvatarMenu 下拉 conditional admin section（仅 platform_admin/tenant_admin）
-- F006a 范围：isAdminRole helper + UserAvatarMenu role prop + i18n 5 locale + manifest +1 + 4 单测 + staging 验证 / ~30min G + 10min R
-- spec v3 @ docs/specs/BL-012-apify-kol-integration-spec.md (§4.5.6 新增) / Stage 2 (F007-F013) 仍等用户决策门
+## 🟠 BL-012-apify-kol-integration FIXING fix-round 2（5/8 19:00 用户 prod 报 F002 zod schema mismatch / 14 features 7 done）
+- Stage 1.5 + F006a 全 done (signoff @ f2f5dbb + reverify @ d130bac)，但 prod 真数据触发 F002 zod 41 fields error (externalUrls + aggregatorLinks shape mismatch)
+- 决议 1A (union 类型) / 2A (fix-round 2 不切批次) / 3A (v0.9.19 候选加 proposed-learnings.md)
+- 修复范围: ApifyKolItemSchema externalUrls 改 z.array(z.union([z.string(), z.object({url, title})])) / aggregatorLinks 改 z.union([z.record, z.array, z.null]); +2 单测; ~20min G + 10min R
+- Stage 2 (F007-F013) 仍等用户决策门 4/4 通过
 ## ✅ BL-055 DONE / BL-052 DONE / BL-051a DONE / BL-049 DONE / BL-021+BL-023 DONE / BL-043+BL-044 DONE
 ## 🆕 BL-054-flaky-test-isolate medium / BL-056-notifications low post-MVP
 ## 待办
