@@ -33,7 +33,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           email: sessionUser.email,
           avatarUrl: sessionUser.image,
         }}
-        unreadNotifications={1}
+        // TODO(BL-056): wire to real notifications query when system materialized post-MVP
+        unreadNotifications={0}
         onSignOut={handleSignOut}
       >
         {children}
