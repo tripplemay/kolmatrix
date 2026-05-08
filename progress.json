@@ -1,11 +1,11 @@
 {
-  "status": "done",
+  "status": "building",
   "user_goal": "BL-012-apify-kol-integration v2 — KOLMatrix 接入爬虫团队 guang-tech/apify fork (apify-kol-service)，采用稳妥分阶段策略：Stage 1 (部署 service) + Stage 1.5 (admin preview 页 + 4 维度阈值决策门，5/13 上线含) + 用户决策门 (实地审视质量+数量) + Stage 2 (adapter 真接入 + 写 Prisma Kol 表)。13 features F001-F006 Stage 1.5 ~3.5h G + F007-F013 Stage 2 ~5.5h G + Reviewer ~2.5h，总 ~9h G + 2.5h R。用户决议 1B/2A/3B/4A/5B + v2 5.1A/5.2A/5.3A/5.4B/5.5B。数据流隔离铁律：Stage 1.5 preview 页严格 read-only，不 import @/lib/kol-sync/* + 不调 prisma.kol.*。5/13 上线时间线无影响 (含 Stage 1+1.5；Stage 2 决策门通过后弹性启动)。关联：docs/specs/BL-012-apify-kol-integration-spec.md (v2) + docs/reviews/apify-fork-audit-2026-05-08.md (462 行 audit)",
-  "total_features": 13,
+  "total_features": 14,
   "completed_features": 6,
   "fix_rounds": 1,
   "current_sprint": "BL-012-apify-kol-integration",
-  "last_updated": "2026-05-08T15:50+0800",
+  "last_updated": "2026-05-08T16:30+0800",
   "reference_docs": [
     "docs/specs/BL-012-apify-kol-integration-spec.md",
     "docs/reviews/apify-fork-audit-2026-05-08.md",
@@ -30,11 +30,11 @@
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": "BL-012 Stage 1.5 signoff PASS: tenant_admin now enters /[locale]/admin/apify-preview, marketer still redirects to dashboard, and the preview remains read-only.",
+  "evaluator_feedback": null,
   "generator_handoff": null,
   "session_notes": {
-    "johnsong": "[2026-05-08 15:43 Generator johnsong — BL-012 fix-round 1 done + staging redeployed @ 4b4ae96 + 切 reverifying]\n\nReviewer verifying-2026-05-08 标 FAIL (single critical):\n- 根因：page.tsx 用 `role === \"admin\"`，真实 enum 是 platform_admin/tenant_admin/marketer/client (architecture.md §3.3)，seed admin@kolmatrix.local 是 tenant_admin → admin 真账户访问 /en/admin/apify-preview 被踢回 /dashboard，spec §1.5 可见性硬条款挡线。\n- 单测过 (因 admin 字符串与 mock 字符串吻合)，但与 prod schema 不匹配。\n\nFix-round 1 @ commit 4b4ae96:\n- src/app/[locale]/admin/apify-preview/page.tsx：role check 改为 ['platform_admin', 'tenant_admin'].includes(session.user.role)。reject marketer/client/未知角色 → /[locale]/dashboard。\n- src/app/[locale]/admin/apify-preview/__tests__/page.test.tsx：原 admin case 改名 tenant_admin；新增 platform_admin case；新增 \"literal admin string MUST be rejected\" 回归 case (锁住此 bug 不复发)。\n- L1: page.test 7/7 PASS / lint 0 / tsc 0。\n\n[staging deployed @ 4b4ae96 @ 2026-05-08T15:42+0800]\n- ssh + git pull + NODE_OPTIONS=4096 npm run build + pm2 reload kolmatrix-staging ✓\n- curl health (X-Health-Token): healthy / git_sha=4b4ae96 (= main HEAD) / DB ok 311ms / Redis ok 291ms\n- curl /en/admin/apify-preview: HTTP 307 → /en/login (unauth 仍 redirect ✓)\n\nReviewer 接力 reverifying:\n- 重点 L2 实地：登录 admin@kolmatrix.local (tenant_admin) → /en/admin/apify-preview 应渲染 banner + table + stats cards (不再回 dashboard)\n- 复看 marketer@kolmatrix.local 仍正确被 redirect 到 /dashboard\n- 其它 acceptance 已 PASS (lint/tsc/unit/integration/数据流隔离守门) — 仅角色门修复后再过实地一次即可签收\n- §4.6 fork 数据 4-dim 阈值未达 → INFO (fork 端进度，非 KOLMatrix bug，决策门由用户实地审视后续触发)\n\nfix_rounds 1。Stage 1.5 features 6/6 仍 completed，本次不动 features.json。\n\n下一步等用户:\n(a) Reviewer (Codex) 启动 reverifying 出 signoff\n(b) 决策门弹性时段触发 Stage 2 (F007-F013)\n(c) BL-055 prod redeploy + 5/13 上线",
-    "Reviewer": "[2026-05-08 15:32 Reviewer Codex — BL-012 verifying: lint/tsc/test/integration PASS, but staging preview is blocked by role mismatch (route expects admin, seed creates tenant_admin); not ready for signoff]"
+    "johnsong": "[2026-05-08 16:30 Planner johnsong — BL-012 Stage 1.5 done 后增量 F006a sidebar 入口 (v3 修订)]\n\n用户 5/8 ~16:30 增量请求：\"请在 sidebar 上增加一个这个页面的入口\"\n\n发现 canonical 8-item nav rule (BL-025-F004.B + nav-config.ts:92-94 注释): \"we cannot add a new top-level nav item per spec §F004.B\" → 直接加第 9 个 sidebar nav item 违反既有 spec 铁律。\n\n候选 3 选 + 用户决议 1=E 2=A:\n- E (推荐采纳): UserAvatarMenu 下拉加 conditional admin tools section (业界惯例 GitHub/Notion 等头像菜单含 admin tools，不违反 canonical 8-item rule)\n- F (备选): Sidebar 底部加 conditional admin section\n- G (备选): /settings 页内放 admin tools section\n\n处理流程 A: BL-012 spec v3 修订 + 加 F006a feature (Stage 1.5 增量) + progress.json status done→building / total_features 13→14。\n\nspec v3 修订:\n- §修订记录 加 v3 行\n- §4.5.6 Sidebar 入口（admin tools 可见性）— 完整设计 + 渲染条件 + i18n + 测试要求\n- 引用 isAdminRole helper 保证 F001 role check 与 F006a admin section 严格一致 (避免字面 array 重复 — v0.9.17/v0.9.18 auth role enum 实物核查铁律延伸)\n\nF006a feature 设计:\n- 范围: src/lib/auth/roles.ts 新建 helper + page.tsx F001 重构 + UserAvatarMenu.tsx 加 role prop + 条件渲染 admin section + TopbarActions/Topbar/AppShellLayout 链路透传 + layout.tsx session.user.role + messages 5 locale + manifest 加 admin_panel_settings 重生成 woff2 + 4 单测 + staging 实地验证\n- 工时: ~30min G + 10min R\n- L1 + staging smoke\n\nprogress.json 切回 building 重激活 BL-012:\n- status: done → building (Stage 1.5 增量 — F006a 待做)\n- total_features: 13 → 14\n- completed_features 仍 6 (F001-F006 不变，F006a pending)\n- fix_rounds 仍 1 (Stage 1.5 fix-round 历史不重置)\n\n下一步:\n- Generator (Claude CLI 角色切换) 接力 F006a building (~30min)\n- Reviewer 简短复验 + signoff overwrite docs/test-reports/BL-012-apify-kol-integration-signoff-2026-05-08.md\n- 然后回到 Stage 2 决策门等用户审视 (4 维度 acceptance checklist preview 页 stats cards)\n\n5/13 上线时间线: Stage 1.5 + F006a done 后 prod redeploy → 5/13 上线含 sidebar 入口 (admin 用户能看到 admin tools)",
+    "Reviewer": null
   },
   "features": []
 }

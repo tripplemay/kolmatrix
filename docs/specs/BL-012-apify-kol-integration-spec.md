@@ -16,6 +16,7 @@
 |---|---|---|
 | v1 | 5/8 ~01:30 | 初始 spec — 单 stage 7 features（Stage 2 only：apify-kol.ts adapter 直接写 Prisma Kol 表） |
 | **v2** | **5/8 ~02:30** | 用户重新讨论后扩范围 — **新增 Stage 1.5 admin preview 页面 + 4 维度决策门 checklist**；features 7→13；时间线 5/13 仅含 Stage 1+1.5（不含 Stage 2 真接入）；用户决议 5 子项 lock 1A/2A/3A/4B/5B |
+| **v3** | **5/8 ~16:30** | Stage 1.5 signoff PASS @ commit `f2f5dbb` (A-/Ready) 后用户增量请求 — **加 sidebar 入口 §4.5.6**：UserAvatarMenu 下拉 conditional admin tools section（仅 platform_admin/tenant_admin 可见，业界惯例 GitHub/Notion 等头像菜单含 admin tools，**不违反 canonical 8-item rule** BL-025-F004.B）；features.json 加 F006a；progress.json status: done → building / total_features 13→14 |
 
 ---
 
@@ -216,6 +217,50 @@ Stage 1.5 preview 页**严格 read-only**：
 - 不达标维度具体问题（screenshot + 具体 KOL 例子）
 - 反馈给爬虫团队的 issue（如 GitHub issue link to guang-tech/apify）
 - 下次审视时间
+
+### 4.5.6 Sidebar 入口（v3 增量 — admin tools 可见性）
+
+**用户决议 5/8 ~16:30：** Stage 1.5 signoff PASS 后增量请求 — UserAvatarMenu 下拉菜单加 conditional admin tools section。
+
+**实装位置选择：** UserAvatarMenu（topbar 右上角头像点击展开）而非 sidebar nav 顶级 item，因为：
+- ⚠️ **不违反 canonical 8-item rule**（既有 spec 铁律 BL-025-F004.B + nav-config.ts:92-94 注释）— sidebar 8 个 nav items 是 spec lock，不可加第 9 个
+- ✅ **业界惯例** — GitHub/Notion/Slack 等用户头像菜单含 admin tools
+- ✅ **conditional 仅 admin role 可见** — marketer/client 看到的菜单仍是 profile/settings/signout 3 项，不打扰主 UI
+- ✅ admin 自然在 user identity 上下文中
+
+**实装结构：**
+
+```
+UserAvatarMenu 下拉（admin role 看到）：
+├─ User info (name + email)
+├─ ──── separator ────
+├─ Profile (icon: person)
+├─ Settings (icon: settings)
+├─ ──── separator ────                           ⭐ v3 新增
+├─ "Admin Tools" 小标题 (uppercase tracking)     ⭐ v3 新增
+├─ Apify Preview (icon: admin_panel_settings)    ⭐ v3 新增 → /{locale}/admin/apify-preview
+├─ ──── separator ────
+└─ Sign out (icon: logout)
+```
+
+**渲染条件（与 F001 admin auth gate 严格一致）：**
+
+```ts
+// src/lib/auth/roles.ts (新建 helper)
+export function isAdminRole(role?: string | null): boolean {
+  return ["platform_admin", "tenant_admin"].includes(role ?? "");
+}
+```
+
+F001 page.tsx 同步重构使用此 helper（避免字面 array 重复 — v0.9.17/v0.9.18 候选「auth role enum 实物核查」精神延伸）。
+
+**i18n keys 新增：** `userMenu.adminTools` + `userMenu.adminApifyPreview` 5 locale（admin 工具中英 sufficient，ja/ko/es 同 LLM 候选 BL-014 不阻塞）
+
+**测试要求：**
+- UserAvatarMenu.test.tsx 加 4 case：tenant_admin 渲染 admin section / platform_admin 渲染 / marketer 不渲染 / undefined role 不渲染
+- TopbarActions.test.tsx + AppShellLayout.test.tsx 既有 tests 适配 role prop 透传
+
+**详 features.json F006a。**
 
 ---
 

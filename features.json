@@ -106,6 +106,29 @@
     ]
   },
   {
+    "id": "F006a",
+    "stage": "1.5",
+    "title": "UserAvatarMenu 加 conditional admin tools section + Apify Preview 入口（v3 §4.5.6）",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 0.5,
+    "status": "pending",
+    "acceptance": [
+      "src/lib/auth/roles.ts 新建 helper export function isAdminRole(role?: string | null): boolean { return ['platform_admin', 'tenant_admin'].includes(role ?? ''); }",
+      "src/app/[locale]/admin/apify-preview/page.tsx F001 既有 role check 重构使用 isAdminRole helper（避免字面 array 重复，与 F006a 严格一致 — v0.9.17/v0.9.18 auth role enum 实物核查铁律精神延伸）",
+      "src/components/layout/UserAvatarMenu.tsx 加 role prop (type: string | null | undefined) + 条件渲染 admin section（用 isAdminRole(role)）",
+      "admin section 视觉：在 settings MenuItem 后加 separator + 小标题 'Admin Tools' (uppercase tracking) + 1 项 MenuItem (icon='admin_panel_settings', text=t('userMenu.adminApifyPreview'), 链接到 /[locale]/admin/apify-preview 用 next/link)",
+      "src/components/layout/TopbarActions.tsx + Topbar.tsx + AppShellLayout.tsx 链路 prop 透传 user.role",
+      "src/app/[locale]/(app)/layout.tsx 从 session?.user?.role 传入 AppShellLayout（user 字段加 role）",
+      "messages/{en,zh,ja,ko,es}.json 加 userMenu.adminTools + userMenu.adminApifyPreview 5 locale (zh/en 中英主译 + ja/ko/es 同 LLM 候选 BL-014 后续 review)",
+      "scripts/material-symbols-icons-manifest.txt 加 admin_panel_settings (manifest pattern 5 — JSX icon prop) + 重生成 src/app/fonts/material-symbols-outlined.woff2",
+      "src/components/layout/__tests__/UserAvatarMenu.test.tsx 加 4 case: tenant_admin 渲染 admin section / platform_admin 渲染 / marketer 不渲染 / undefined role 不渲染",
+      "src/components/layout/__tests__/TopbarActions.test.tsx + AppShellLayout.test.tsx 既有 tests 适配 role prop 透传",
+      "L1: lint 0 + tsc 0 + npm test PASS（含新 4 单测 + 既有 tests 适配）",
+      "Staging deploy 实地验证：admin@kolmatrix.local (tenant_admin) 头像菜单见 admin section + 点 'Apify Preview' 跳到 /[locale]/admin/apify-preview / marketer@kolmatrix.local 头像菜单 不见 admin section（仍 profile/settings/signout 3 项）"
+    ]
+  },
+  {
     "id": "F007",
     "stage": "2",
     "title": "src/lib/kol-sync/adapters/apify-kol.ts 新建 + implements KolSyncAdapter (Stage 2 启动条件: 用户决策门通过 4/4)",
