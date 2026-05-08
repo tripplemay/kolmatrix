@@ -221,7 +221,6 @@
     "importCsv": "批量导入 CSV",
     "importCsvDisabled": "即将上线",
     "addButton": "录入新产品",
-    "recentActivityTitle": "最近 AI 活动",
     "emptyStateTitle": "尚未录入任何产品",
     "emptyStateDescription": "录入第一个游戏产品后，AI 将自动生成 KOL 触达素材。",
     "emptyCardLabel": "录入新产品",
@@ -284,19 +283,7 @@
       "failed": "删除失败，请重试。"
     },
     "productDeleted": "（产品已删除）",
-    "productDeletedTooltip": "本活动关联的产品已被删除。审计记录已保留，可在知识库中管理产品生命周期。",
-    "mockActivity": {
-      "heading1": "王者荣耀 Q2",
-      "heading2": "无畏契约第9集",
-      "heading3": "MobileRush 日服",
-      "heading4": "原神版本更新",
-      "heading5": "X项目",
-      "time1": "2 分钟前",
-      "time2": "15 分钟前",
-      "time3": "1 小时前",
-      "time4": "3 小时前",
-      "time5": "昨天"
-    }
+    "productDeletedTooltip": "本活动关联的产品已被删除。审计记录已保留，可在知识库中管理产品生命周期。"
   },
   "discovery": {
     "title": "KOL 发现",

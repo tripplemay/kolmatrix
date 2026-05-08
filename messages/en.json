@@ -221,7 +221,6 @@
     "importCsv": "Import CSV",
     "importCsvDisabled": "Coming soon",
     "addButton": "Add new product",
-    "recentActivityTitle": "RECENT AI ACTIVITY",
     "emptyStateTitle": "No products yet",
     "emptyStateDescription": "Add your first game product to generate KOL outreach assets.",
     "emptyCardLabel": "Add new product",
@@ -284,19 +283,7 @@
       "failed": "Could not delete the product. Please retry."
     },
     "productDeleted": "(Product deleted)",
-    "productDeletedTooltip": "This campaign's product was deleted. The audit trail is preserved; manage product lifecycle from the Knowledge Base.",
-    "mockActivity": {
-      "heading1": "Honor of Kings Q2",
-      "heading2": "Valorant Ep. 9",
-      "heading3": "MobileRush JP",
-      "heading4": "Genshin Update",
-      "heading5": "Project X",
-      "time1": "2m ago",
-      "time2": "15m ago",
-      "time3": "1h ago",
-      "time4": "3h ago",
-      "time5": "Yesterday"
-    }
+    "productDeletedTooltip": "This campaign's product was deleted. The audit trail is preserved; manage product lifecycle from the Knowledge Base."
   },
   "discovery": {
     "title": "Discover KOLs",

@@ -221,7 +221,6 @@
     "importCsv": "Importar CSV",
     "importCsvDisabled": "Próximamente",
     "addButton": "Añadir nuevo producto",
-    "recentActivityTitle": "ACTIVIDAD RECIENTE DE LA IA",
     "emptyStateTitle": "Aún no hay productos",
     "emptyStateDescription": "Añada su primer producto de juego para generar activos de Contacto de KOL.",
     "emptyCardLabel": "Añadir nuevo producto",
@@ -284,19 +283,7 @@
       "failed": "No se pudo eliminar el producto. Por favor, inténtelo de nuevo."
     },
     "productDeleted": "(Producto eliminado)",
-    "productDeletedTooltip": "El producto asociado a esta campaña fue eliminado. Se conserva el registro de auditoría; gestione el ciclo de vida del producto desde la Base de Conocimiento.",
-    "mockActivity": {
-      "heading1": "Honor of Kings T2",
-      "heading2": "Valorant Ep. 9",
-      "heading3": "MobileRush JP",
-      "heading4": "Actualización Genshin",
-      "heading5": "Proyecto X",
-      "time1": "hace 2m",
-      "time2": "hace 15m",
-      "time3": "hace 1h",
-      "time4": "hace 3h",
-      "time5": "Ayer"
-    }
+    "productDeletedTooltip": "El producto asociado a esta campaña fue eliminado. Se conserva el registro de auditoría; gestione el ciclo de vida del producto desde la Base de Conocimiento."
   },
   "discovery": {
     "title": "Descubrir KOLs",

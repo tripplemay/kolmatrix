@@ -221,7 +221,6 @@
     "importCsv": "CSV 가져오기",
     "importCsvDisabled": "곧 지원 예정",
     "addButton": "새 제품 추가",
-    "recentActivityTitle": "최근 AI 활동",
     "emptyStateTitle": "아직 제품이 없습니다",
     "emptyStateDescription": "첫 번째 게임 제품을 추가하여 KOL 아웃리치 자산을 생성하세요.",
     "emptyCardLabel": "새 제품 추가",
@@ -284,19 +283,7 @@
       "failed": "제품을 삭제할 수 없습니다. 다시 시도해 주세요."
     },
     "productDeleted": "(제품이 삭제됨)",
-    "productDeletedTooltip": "이 캠페인의 제품이 삭제되었습니다. 감사 로그는 보존되며, 제품 라이프사이클은 지식 베이스에서 관리할 수 있습니다.",
-    "mockActivity": {
-      "heading1": "王者荣耀 Q2",
-      "heading2": "발로란트 에피소드 9",
-      "heading3": "모바일 러시 JP",
-      "heading4": "원신 업데이트",
-      "heading5": "프로젝트 X",
-      "time1": "2분 전",
-      "time2": "15분 전",
-      "time3": "1시간 전",
-      "time4": "3시간 전",
-      "time5": "어제"
-    }
+    "productDeletedTooltip": "이 캠페인의 제품이 삭제되었습니다. 감사 로그는 보존되며, 제품 라이프사이클은 지식 베이스에서 관리할 수 있습니다."
   },
   "discovery": {
     "title": "KOL 찾기",

@@ -221,7 +221,6 @@
     "importCsv": "CSVをインポート",
     "importCsvDisabled": "近日公開",
     "addButton": "新しい製品を追加",
-    "recentActivityTitle": "最近のAIアクティビティ",
     "emptyStateTitle": "まだ製品がありません",
     "emptyStateDescription": "最初のゲーム製品を追加して、KOLアウトリーチ資産を生成します。",
     "emptyCardLabel": "新しい製品を追加",
@@ -284,19 +283,7 @@
       "failed": "削除できませんでした。もう一度お試しください。"
     },
     "productDeleted": "（製品は削除されました）",
-    "productDeletedTooltip": "このキャンペーンに紐づく製品は削除されました。監査ログは保持されており、製品ライフサイクルはナレッジベースから管理できます。",
-    "mockActivity": {
-      "heading1": "王者榮耀Q2",
-      "heading2": "バロラントEp. 9",
-      "heading3": "モバイルラッシュJP",
-      "heading4": "原神アップデート",
-      "heading5": "プロジェクトX",
-      "time1": "2分前",
-      "time2": "15分前",
-      "time3": "1時間前",
-      "time4": "3時間前",
-      "time5": "昨日"
-    }
+    "productDeletedTooltip": "このキャンペーンに紐づく製品は削除されました。監査ログは保持されており、製品ライフサイクルはナレッジベースから管理できます。"
   },
   "discovery": {
     "title": "KOLを発見する",
