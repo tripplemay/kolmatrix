@@ -718,6 +718,153 @@ test.describe("Authenticated BL-026 visual regression", () => {
 // (LoginBrandOverlay, LoginForm, RequestAccessBrandOverlay,
 // RequestAccessForm). No dynamic copy, no CSRF hidden inputs, no
 // timestamps — so no mask is required.
+// BL-055-F007 — hotfix-batch baselines proving the 4 prod-visible
+// symptoms cleared:
+//   - en-network-status-online.png — /en/dashboard with the network
+//     banner gone (mount-flag prevents the wifi_off flash on hydrate)
+//   - en-sidebar-logo.png + zh-sidebar-logo.png — sidebar brand block
+//     reads `common.brand.subtitle` per locale (no more "Neural Velocity")
+//   - en-outreach-templates-badge.png — /en/outreach templates tab
+//     shows the real EmailTemplate user count (no longer hardcoded 10)
+//   - en-knowledge-base-bottom.png — /en/knowledge-base after the
+//     RECENT_AI_ACTIVITY mock section was removed
+//
+// Baselines come from the "Update visual baselines" workflow on Linux
+// CI; locally they're skipped via the existing shouldSkipMissingBaseline
+// helper until the workflow lands the PNGs.
+test.describe("BL-055 hotfix — visual regression", () => {
+  test.skip(
+    process.platform !== "linux",
+    "Visual regression baseline is Linux-canonical (CI + WSL). Non-Linux runs skip."
+  );
+
+  test("dashboard online state has no network-status banner (BL-055 F001)", async ({ page }) => {
+    test.skip(
+      shouldSkipMissingBaseline("en-network-status-online.png", test.info()),
+      "Baseline en-network-status-online.png missing — run the 'Update visual baselines' workflow."
+    );
+    await login(page);
+    await page.waitForSelector('[data-testid="dashboard-kpi-row"]');
+    await fontsReady(page);
+    // Mount-flag flips on after the first effect tick, so the banner
+    // should never appear in the online happy path. We assert that
+    // explicitly + capture the top strip to lock the chrome down.
+    await expect(page.getByTestId("network-status-banner")).toHaveCount(0);
+
+    const dateSubtitle = page.getByText(/Here is your global KOL marketing pulse/);
+    const kpiRow = page.getByTestId("dashboard-kpi-row");
+    const topKols = page.getByTestId("dashboard-top-kols");
+    const emailCard = page.getByTestId("dashboard-email-perf");
+    const roiCard = page.getByTestId("dashboard-roi-card");
+
+    // Viewport-only — header band + sidebar are the visual signal that
+    // the banner stays unmounted on a clean refresh.
+    await expect(page).toHaveScreenshot("en-network-status-online.png", {
+      animations: "disabled",
+      mask: [dateSubtitle, kpiRow, topKols, emailCard, roiCard],
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
+  });
+
+  test("sidebar brand subtitle renders the en tagline (BL-055 F005)", async ({ page }) => {
+    test.skip(
+      shouldSkipMissingBaseline("en-sidebar-logo.png", test.info()),
+      "Baseline en-sidebar-logo.png missing — run the 'Update visual baselines' workflow."
+    );
+    await login(page);
+    await page.goto("/en/dashboard");
+    await page.waitForSelector('[data-testid="dashboard-kpi-row"]');
+    await fontsReady(page);
+
+    const aside = page.locator("aside").first();
+    await expect(aside).toContainText("KOLMatrix");
+    await expect(aside).toContainText("Game KOL Marketing Platform");
+    await expect(aside).not.toContainText("Neural Velocity");
+
+    await expect(aside).toHaveScreenshot("en-sidebar-logo.png", {
+      animations: "disabled",
+      threshold: 0.02,
+      maxDiffPixels: 4000,
+    });
+  });
+
+  test("sidebar brand subtitle renders the zh tagline (BL-055 F005)", async ({ page }) => {
+    test.skip(
+      shouldSkipMissingBaseline("zh-sidebar-logo.png", test.info()),
+      "Baseline zh-sidebar-logo.png missing — run the 'Update visual baselines' workflow."
+    );
+    await login(page);
+    await page.goto("/zh/dashboard");
+    await page.waitForSelector('[data-testid="dashboard-kpi-row"]');
+    await fontsReady(page);
+
+    const aside = page.locator("aside").first();
+    await expect(aside).toContainText("KOLMatrix");
+    await expect(aside).toContainText("游戏 KOL 智能营销平台");
+    await expect(aside).not.toContainText("Neural Velocity");
+
+    await expect(aside).toHaveScreenshot("zh-sidebar-logo.png", {
+      animations: "disabled",
+      threshold: 0.02,
+      maxDiffPixels: 4000,
+    });
+  });
+
+  test("outreach templates tab badge shows the real count (BL-055 F002)", async ({ page }) => {
+    test.skip(
+      shouldSkipMissingBaseline("en-outreach-templates-badge.png", test.info()),
+      "Baseline en-outreach-templates-badge.png missing — run the 'Update visual baselines' workflow."
+    );
+    await login(page);
+    await page.goto("/en/outreach");
+    await page.waitForSelector('[data-testid="outreach-tabs"]');
+    await fontsReady(page);
+
+    const templatesTab = page.getByTestId("outreach-tab-templates");
+    // Stale "Coming in B4" tooltipKey was removed — link must not carry
+    // a title attribute anymore.
+    await expect(templatesTab).not.toHaveAttribute("title", /.+/);
+    // Badge text (if visible) must not be the old hardcoded 10.
+    const badgeText = (await templatesTab.textContent())?.trim() ?? "";
+    expect(badgeText).not.toMatch(/\b10\b/);
+
+    const tabsStrip = page.getByTestId("outreach-tabs");
+    await expect(tabsStrip).toHaveScreenshot("en-outreach-templates-badge.png", {
+      animations: "disabled",
+      threshold: 0.02,
+      maxDiffPixels: 4000,
+    });
+  });
+
+  test("knowledge-base no longer renders the RECENT_AI_ACTIVITY mock section (BL-055 F003)", async ({
+    page,
+  }) => {
+    test.skip(
+      shouldSkipMissingBaseline("en-knowledge-base-bottom.png", test.info()),
+      "Baseline en-knowledge-base-bottom.png missing — run the 'Update visual baselines' workflow."
+    );
+    await login(page);
+    await page.goto("/en/knowledge-base");
+    await page.waitForSelector('[data-testid="kb-grid"], [data-testid="kb-empty"]');
+    await fontsReady(page);
+
+    // The mock section advertised "RECENT AI ACTIVITY" + "2.1 Credits"
+    // strings; both must be gone now.
+    await expect(page.getByText(/RECENT AI ACTIVITY/i)).toHaveCount(0);
+    await expect(page.getByText(/2\.1 Credits/)).toHaveCount(0);
+
+    const grid = page.getByTestId("kb-grid");
+    await expect(page).toHaveScreenshot("en-knowledge-base-bottom.png", {
+      fullPage: true,
+      animations: "disabled",
+      mask: [grid],
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
+  });
+});
+
 test.describe("Auth cinematic — visual regression", () => {
   test.skip(
     process.platform !== "linux",
