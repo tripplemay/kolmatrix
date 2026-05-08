@@ -1,118 +1,229 @@
 [
   {
     "id": "F001",
-    "title": "NetworkStatusBanner.tsx mount-flag 防 hydration flash（hotfix #1 layer a）",
+    "stage": "1.5",
+    "title": "/[locale]/admin/apify-preview 路由 + admin auth gate（决议 5.1+5.2）",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "completed",
+    "status": "pending",
     "acceptance": [
-      "src/components/common/NetworkStatusBanner.tsx 加 useState/useEffect mount-flag：const [mounted, setMounted] = useState(false); useEffect(() => setMounted(true), []); if (!mounted) return null; （插在 useNetworkStatus() 调用之后，原 if (isOnline && !showRestored) return null 之前）",
-      "保留既有 useNetworkStatus hook 接口不变（hook 公共 API 零改动）",
-      "保留 showRestored 'Back online' toast 逻辑不变",
-      "src/components/common/__tests__/NetworkStatusBanner.test.tsx 加 1 case：'mount 阶段（mounted=false）渲染 null，无论 isOnline 状态如何'；既有 6 case 保留 PASS",
-      "L1 lint 0 error（react-hooks/set-state-in-effect 不触发，因 setMounted 是 mount 后单次调用）",
-      "L1 tsc + npm test PASS"
+      "src/app/[locale]/admin/apify-preview/page.tsx 新建 (server component, async)",
+      "admin auth gate: session?.user?.role === 'admin' check; 非 admin → 302 redirect 到 dashboard",
+      "page metadata: title='Apify-KOL Preview (READ-ONLY) — KOLMatrix'",
+      "顶部警告 banner: '数据未入库，仅审视用 / Read-only preview - data NOT in main DB' (中英双语 i18n)",
+      "i18n key: admin.apifyPreview.{title,readOnlyWarning,filterPlatform,filterMinFollowers,...} 加 5 locale (ja/ko/es 与 en 同 sufficient for admin tool)",
+      "单测 ≥3 case: admin role 渲染 page / marketer role redirect / unauth redirect",
+      "L1 lint + tsc PASS"
     ]
   },
   {
     "id": "F002",
-    "title": "OutreachTabs.tsx templates tab badge async fetch real count + 删 stale tooltipKey（hotfix #2）",
+    "stage": "1.5",
+    "title": "server-side fetch fork apify-kol-service GET /kol API + zod parse + raw JSON 留档",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.7,
-    "status": "completed",
+    "status": "pending",
     "acceptance": [
-      "src/app/[locale]/(app)/outreach/OutreachTabs.tsx 改 async function，从 src/lib/email/templates 既有 query function（actions.ts:32 已 import 的，按 grep 实物确认 function 名）拉 tenant 的 EmailTemplate count，传给 templates tab 的 badge 字段",
-      "删除 templates tab TabSpec 中 tooltipKey: 'comingB4'（保留 send_queue 的 tooltipKey 不动 — send_queue 仍未实装）",
-      "templates tab 真实数字 badge 渲染：count > 0 显示数字，count === 0 不显示 badge（避免显示 0 视觉噪音）",
-      "src/app/[locale]/(app)/outreach/actions.ts 的 revalidatePath 范围扩展：既有 '/[locale]/outreach/templates' 三处（line 425/458/490）保留 + 同 commit 加 revalidatePath('/[locale]/outreach', 'page') 让 OutreachTabs badge 实时刷新",
-      "src/app/[locale]/(app)/outreach/__tests__/OutreachTabs.test.tsx 加 case：'templates badge 显示真实 EmailTemplate count'（mock query function）+ 'templates link 无 tooltipKey 残留'",
-      "L1 lint + tsc + npm test PASS"
+      "src/lib/admin/apify-preview-client.ts 新建：fetch fork GET {APIFY_KOL_BASE_URL}/kol?platform=...&page=N&pageSize=50&sort=recent header x-api-key={APIFY_KOL_BUSINESS_API_KEY}",
+      "zod schema 验证 fork response: ApifyKolItemSchema (id/platform/platformUserId/username/displayName/bio/avatarUrl/profileUrl/followers/following/postsCount/totalLikes/totalViews/verified/isBusinessAccount/emails[]/phones[]/socialHandles{}/externalUrl/externalUrls[]/aggregatorUrl/aggregatorEmails[]/aggregatorLinks{}/relevanceScore/influenceScore/qualityScore/reachabilityScore/matchedTags[]/matchedKeywords[]/tier/isSeed) + ApifyKolPageSchema {data, page, pageSize, total}",
+      "错误处理: env 缺失 throw / 401-403 throw / 429 throw / 5xx throw / timeout 30s",
+      "preview 页消费者获取 data + 同时保留 raw JSON for expand panel",
+      "数据流隔离铁律 (spec §2.2): 此 client 不 import @/lib/kol-sync/* 任一模块 / 不调 prisma.kol.* / 仅 fetch + render",
+      "Reviewer L1 grep 守门: grep 'prisma.kol' src/lib/admin/ + grep 'kol-sync' src/lib/admin/ 都返回 0 (确认隔离)",
+      "单测 ≥3 case: 成功 fetch / 401 throw / zod 校验失败"
     ]
   },
   {
     "id": "F003",
-    "title": "knowledge-base/page.tsx 删 RECENT_AI_ACTIVITY mock section + 5 locale 字典清理（hotfix #3）",
+    "stage": "1.5",
+    "title": "主表格 + filter row + raw JSON expand panel + 字段质量 indicator",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "completed",
+    "estimated_hours": 1,
+    "status": "pending",
     "acceptance": [
-      "src/app/[locale]/(app)/knowledge-base/page.tsx 删 line 72-87 整个 <section aria-label={t('recentActivityTitle')}>...</section> block",
-      "src/app/[locale]/(app)/knowledge-base/page.tsx 删 line 92-147 关联 const ACTIVITY_ICONS / ACTIVITY_TONES / TONE_CLASS / interface ActivityChipProps / function ActivityChip",
-      "messages/{en,zh,ja,ko,es}.json 删 5 locale knowledgeBase.mockActivity 整段（10 keys：heading{1-5} + time{1-5}）+ 删 knowledgeBase.recentActivityTitle 1 key（共 5 locale × 11 keys = 55 行删除）",
-      "i18n CI locale-coverage 守门 PASS（5 locale 同步删除 keys）",
-      "src/app/[locale]/(app)/knowledge-base/__tests__/actions.test.ts + ProductCard.test.tsx 既有测试 PASS（删 section 后 page 渲染不受影响）",
-      "L1 lint + tsc + npm test PASS"
+      "src/app/[locale]/admin/apify-preview/PreviewTable.tsx 新建 (client component)",
+      "Filter row: platform select (all/instagram/tiktok/youtube) + minFollowers number input + hasEmail toggle + sort select (relevance/followers/influence/quality/reachability/recent) + page size 50 + page N pagination (URL search params synced)",
+      "主表格列: username (链 profileUrl 新窗口) / platform / followers (千分隔) / verified (✓/—) / 4 维度评分 (4 dot 0-1 progress bar) / emails count (徽标) / matchedTags (chips top 3) / last_scraped_at (相对时间)",
+      "字段质量 indicator: 空字段标 'text-on-surface-variant/40' 灰；emails.length>0 标绿；aggregatorEmails.length>0 标紫",
+      "Row click → expand panel 显示完整 raw JSON (pretty-print + copy button)",
+      "Empty state: filter 命中 0 时显示 EmptyState '无数据，调整过滤条件'",
+      "Loading state: server fetch 期间 skeleton row × 5",
+      "单测 ≥4 case: 完整数据渲染 / 空字段 indicator / row click expand / pagination URL sync"
     ]
   },
   {
     "id": "F004",
-    "title": "Material Symbols subset manifest 增 4 删 5 + 重生成 woff2（hotfix #4 + #1 layer b 协同）",
+    "stage": "1.5",
+    "title": "4 维度 stats cards + 阈值实时计算 + ✓/✗ 标记 (决议 5.4=B 决策门)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.4,
-    "status": "completed",
+    "estimated_hours": 0.85,
+    "status": "pending",
     "acceptance": [
-      "scripts/material-symbols-icons-manifest.txt 加 4 行：'lightbulb # RoiInsightsPanel.tsx:140 + WeeklyReportInsightsPanel.tsx:90 | function return fallback' / 'insights # DatabaseInsightsClient.tsx:70 | function return fallback' / 'wifi # NetworkStatusBanner.tsx:65 | JSX ternary online branch' / 'wifi_off # NetworkStatusBanner.tsx:65 | JSX ternary offline branch'",
-      "scripts/material-symbols-icons-manifest.txt 删 5 dead 行：compare_arrows / folder_open / more_vert / restart_alt / restore（grep 全仓 src/ --include='*.tsx' --include='*.ts' --exclude-dir=__tests__ 验证 5 icon 确实 dead）",
-      "运行 bash scripts/regenerate-material-symbols-subset.sh → 重新生成 src/app/fonts/material-symbols-outlined.woff2",
-      "git add 含 manifest + 重生成的 woff2 二进制（同 commit 提交，避免 git diff 与其他 feature 混淆）",
-      "本机浏览器实地验证：/roi AI 洞察 'info' tone 显示 lightbulb 灯泡图标（不是字面字符串） / /database AI 洞察 default fallback 显示 insights 图标 / NetworkStatusBanner offline 状态显示 wifi_off 图标",
-      "tests/integration/material-symbols-coverage.test.ts 既有测试 PASS（subset 重生成后图标覆盖增加，既有 case 不破）",
-      "L1 lint + tsc + npm test PASS（不含 pre-commit-hook.test.ts flaky path，按 v0.9.16 P5.2 划归 BL-054）"
+      "src/app/[locale]/admin/apify-preview/StatsCards.tsx 新建 (client component, 接 preview 数据 props)",
+      "Card #1 字段完整度: 必填 5 字段 (username/displayName/followers/platform/profileUrl) 100% 非空 → ✓；email 抽取率 (emails.length>0 OR aggregatorEmails.length>0) 当前样本 ≥40% → ✓；任一不达标 → ✗ 红色",
+      "Card #2 4 维度评分分布: avg(relevanceScore + influenceScore) ≥0.5 + qualityScore + reachabilityScore 至少 60% 非 null + 评分非全 0 全 1 → ✓",
+      "Card #3 跨平台覆盖: IG/TT/YT/X 至少 3 平台有数据 + 任一平台 ≥100 条 + matchedTags 含 gaming/esports/mobilegame 等关键词命中率 ≥70% → ✓",
+      "Card #4 数据新鲜度: last_scraped_at 7 天内 ≥80% + 7-30 天 ≤15% + >30 天 ≤5% → ✓",
+      "每 card 显示当前样本量 (N) + 各阈值具体数字 (如 'email 抽取率: 35.2% / 阈值 ≥40% ✗')",
+      "Footer 总结: '决策门状态: 4/4 通过 → 启动 Stage 2 / 3/4 通过 → 反馈爬虫团队 ✗ 维度' (动态计算)",
+      "单测 ≥4 case: 4 维度边界值阈值（达标 / 不达标 / 边界值 / 空数据）"
     ]
   },
   {
     "id": "F005",
-    "title": "Neural Velocity mock 替换为产品 tagline 5 处 + 5 locale i18n 改造（hotfix #5）",
+    "stage": "1.5",
+    "title": "i18n 中英双语 + admin 路径文案",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "completed",
+    "estimated_hours": 0.4,
+    "status": "pending",
     "acceptance": [
-      "src/components/layout/SidebarLogo.tsx 改 async server component（既已是 server component）+ getTranslations('common.brand') 拉 subtitle，渲染 t('subtitle') 替换硬编码 'Neural Velocity'",
-      "messages/{en,zh,ja,ko,es}.json 加 common.brand.subtitle 5 locale（zh: '游戏 KOL 智能营销平台' / en: 'Game KOL Marketing Platform' / ja: 'ゲーム KOL マーケティングプラットフォーム' / ko: '게임 KOL 마케팅 플랫폼' / es: 'Plataforma de Marketing de KOL para Juegos'；Generator 开工前 5sec 用户 ack 此候选，如调整按用户最终值实装）",
-      "messages/{en,zh,ja,ko,es}.json 修改 engineVersion 字段：删 'Neural Velocity' 词保留版本号（en: 'KOLMatrix Engine v4.2.0' / zh: 'KOLMatrix 引擎 v4.2.0' / ja/ko/es 同 LLM 候选）",
-      "src/app/layout.tsx generateMetadata 改用 server-side i18n（如尚非 generateMetadata 形式，按 next-intl 标准转换）→ description 改为 'KOLMatrix — Game KOL Marketing Platform / 游戏 KOL 智能营销平台' 或单语版（按用户 5sec ack 决定）",
-      "src/components/layout/__tests__/SidebarLogo.test.tsx 改 expect — 不再 hardcode 'Neural Velocity'，改为 expect i18n key call 或 mock messages 验证 subtitle 渲染",
-      "globals.css / LoginBrandOverlay.tsx / GlassPanel.tsx 注释中 'Neural Velocity' 词保留作内部设计代号（design token 命名不动）",
-      "i18n CI locale-coverage 守门 PASS（5 locale 同步加 1 key + 修 1 key）",
-      "L1 lint + tsc + npm test PASS"
+      "messages/zh.json + messages/en.json 加 admin.apifyPreview.* 整段 (~25 keys: title/readOnlyWarning/filterPlatform/filterMinFollowers/filterHasEmail/sortOptions[6]/pagination/columns[8]/qualityIndicator/emptyState/loadingState/statsCards.{1-4}.{title,description,thresholds[3-4],pass,fail}/footerSummary)",
+      "messages/{ja,ko,es}.json admin.apifyPreview 段直接复用 en 版本 (admin 工具非业务 UI，不需 ja/ko/es native，BL-014 不阻塞)",
+      "i18n CI locale-coverage 守门 PASS (5 locale 同步加 keys，但 ja/ko/es 用 en 文案，明示 placeholder via comment in keys 列表) — 或者本批次 admin namespace 在 KEEP_AS_EN_PATHS allowlist (与既有 i18n CI 守门 BL-033-F004 框架一致)",
+      "L1 lint + tsc PASS"
     ]
   },
   {
     "id": "F006",
-    "title": "topbar NotificationBell 硬编码 unreadNotifications=1 改 0 + TODO 注释（hotfix #6）",
+    "stage": "1.5",
+    "title": "Stage 1.5 单测 + 集成测试 ≥1 case",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.15,
-    "status": "completed",
+    "estimated_hours": 0.5,
+    "status": "pending",
     "acceptance": [
-      "src/app/[locale]/(app)/layout.tsx:36 改 unreadNotifications={1} → unreadNotifications={0}",
-      "同行加 TODO 注释：// TODO(BL-056): wire to real notifications query when system materialized post-MVP",
-      "NotificationBell.tsx 组件代码不动（保留 unread > 0 渲染黄点逻辑，未来真化时数据源切到真实 query）",
-      "src/components/layout/__tests__/TopbarActions.test.tsx 既有测试 PASS（unreadNotifications=0 时 hasUnread=false 不渲染黄点）",
-      "本机浏览器实地验证：/zh/dashboard 顶部铃铛无黄点",
-      "L1 lint + tsc + npm test PASS"
+      "src/app/[locale]/admin/apify-preview/__tests__/page.test.tsx 单测 admin auth gate 3 case (F001 内已含; 此 task 整合既有)",
+      "src/lib/admin/__tests__/apify-preview-client.test.ts 单测 fetch + zod 3 case (F002 内已含)",
+      "src/app/[locale]/admin/apify-preview/__tests__/PreviewTable.test.tsx 单测 4 case (F003 内已含)",
+      "src/app/[locale]/admin/apify-preview/__tests__/StatsCards.test.tsx 单测 4 case (F004 内已含)",
+      "tests/integration/admin-apify-preview.test.ts 新建集成测试 ≥1 case: msw mock fork GET /kol 返回 50 条 → preview 页 SSR + 4 维度 stats 卡片实时计算正确 + 数据流隔离验证 (mock prisma.kol 不被调用)",
+      "L1 npm run test:integration 含本测试 PASS"
     ]
   },
   {
     "id": "F007",
-    "title": "L1 全套验证 + visual regression baseline 抓（hotfix 完成回归）",
+    "stage": "2",
+    "title": "src/lib/kol-sync/adapters/apify-kol.ts 新建 + implements KolSyncAdapter (Stage 2 启动条件: 用户决策门通过 4/4)",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 1.5,
+    "status": "pending",
+    "acceptance": [
+      "Generator 启动 F007 前必须验证: progress.json session_notes 或 docs/specs/BL-012-stage1.5-feedback-log-*.md 含用户明示 '决策门通过 4/4，启动 Stage 2' 字样; 否则 F007 not 启动",
+      "src/lib/kol-sync/adapters/apify-kol.ts 新文件 implements KolSyncAdapter (src/lib/kol-sync/types.ts 既有 trait)",
+      "name='apify-kol' / source='apify-kol' (与 metadata.source 字段一致；与 youtube.ts 命名风格对齐)",
+      "ApifyKolAdapterConfig: { baseUrl, apiKey, maxRequestsPerSecond?: number, maxItemsPerRun?: number }",
+      "discover(params: SyncParams): Promise<RawKolData[]> — 调 fork 端 GET /kol?platform=...&page=N&pageSize=100&sort=recent，循环到 data.length < pageSize 或 maxItemsPerRun 上限退出",
+      "refresh(externalIds): Promise<RawKolData[]> — externalId 形式 'platform:platformUserId'，按 platform 分组调 GET /kol/:platform/:userId per id；404 返回 null skip",
+      "healthCheck(): Promise<HealthCheckResult> — GET /health → { healthy: body.status === 'ok', details: { upstream: 'apify-kol-service' } }",
+      "私有 fetch() 方法：URL = baseUrl + path / headers['x-api-key'] = apiKey / 错误分类 (401/403 AdapterAuthError / 429 AdapterRateLimitError 含 Retry-After / 5xx AdapterTransientError 走 withRetry)",
+      "可复用 F002 的 src/lib/admin/apify-preview-client.ts zod schema (ApifyKolItemSchema) — 提取到 src/lib/apify-kol/schemas.ts 共享 (本 commit 同步重构)",
+      "L1 lint + tsc PASS"
+    ]
+  },
+  {
+    "id": "F008",
+    "stage": "2",
+    "title": "mapApifyKolItemToRawKolData() 字段映射 (fork camelCase → KOLMatrix RawKolData)",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 0.85,
+    "status": "pending",
+    "acceptance": [
+      "src/lib/kol-sync/adapters/apify-kol.ts 内 export function mapApifyKolItemToRawKolData(item) → RawKolData",
+      "字段映射完整 (spec v1 §2.2 表): externalId(id) / platform / handle(username) / displayName / description(bio) / thumbnailUrl(avatarUrl) / subscriberCount(followers) / topicCategories(matchedTags)",
+      "country / language / lastUploadAt / brandSafetyRating 设为 null (fork 实物不带；后续 enrichment 补)",
+      "raw 整体存 fork 端原响应 (含 relevanceScore / influenceScore / qualityScore / reachabilityScore / tier / emails[] / phones[] / aggregatorEmails[] / matchedKeywords / isSeed / externalUrl / externalUrls / socialHandles / aggregatorLinks / verified / isBusinessAccount / postsCount / following / totalLikes / totalViews)",
+      "fork 实物 totalLikes / totalViews / postsCount 等 number 直传 (fork 端 service 已 bigint→number)",
+      "单测 ≥3 case：(a) 完整 IG profile (含 emails + scores) / (b) 缺 email + null scores 的 TT profile / (c) 缺 isBusinessAccount + totalLikes 的 YT profile",
+      "L1 单测 PASS"
+    ]
+  },
+  {
+    "id": "F009",
+    "stage": "2",
+    "title": "tests/integration/apify-kol-adapter.test.ts 集成测试 ≥4 case",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 1,
+    "status": "pending",
+    "acceptance": [
+      "tests/integration/apify-kol-adapter.test.ts 新文件，msw 或 vitest http fixture mock fork 端响应",
+      "Case 1 discover 多页：mock 3 页 100/100/57 → adapter 返回 257 条 RawKolData / 退出条件正确",
+      "Case 2 discover 429 + Retry-After：mock 第 2 页返回 429 with Retry-After: 5 header → adapter 等待 5s 后重试 → 第 3 次成功",
+      "Case 3 refresh 单个 KOL：mock GET /kol/tiktok/123456 → 字段映射通过 mapApifyKolItemToRawKolData → 与 import.ts 既有 Prisma upsert 行为一致",
+      "Case 4 healthCheck OK：mock /health → { status: 'ok' } → adapter healthCheck() 返回 healthy=true",
+      "测试用 vitest threads pool",
+      "L1 npm run test:integration 含本测试 PASS"
+    ]
+  },
+  {
+    "id": "F010",
+    "stage": "2",
+    "title": "dispatcher 集成 + scripts/kol-sync-daily.ts 注入 ApifyKolSyncAdapter + quality.ts 加 source 分支",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 0.85,
+    "status": "pending",
+    "acceptance": [
+      "scripts/kol-sync-daily.ts 修改：new KolSyncDispatcher 数组加 new ApifyKolSyncAdapter({ baseUrl: process.env.APIFY_KOL_BASE_URL!, apiKey: process.env.APIFY_KOL_BUSINESS_API_KEY!, maxRequestsPerSecond: 5, maxItemsPerRun: 5000 })",
+      "src/lib/kol-sync/quality.ts 加 'apify-kol' source 分支质量过滤规则 (继承 youtube 规则 + 加 fork 端 4 维度评分作辅助：relevanceScore < 0.2 + influenceScore < 0.2 双低则 quality 标 'low')",
+      "src/lib/kol-sync/dispatcher.ts 既有循环逻辑零改动",
+      "本机干跑 npm run kol-sync:daily 模拟 (用 mock baseUrl 验证 dispatcher 不 crash)",
+      "L1 lint + tsc PASS"
+    ]
+  },
+  {
+    "id": "F011",
+    "stage": "2",
+    "title": "删除 src/lib/kol-sync/adapters/crawler-team.ts.todo 占位 + grep 全仓更新引用",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 0.3,
+    "status": "pending",
+    "acceptance": [
+      "rm src/lib/kol-sync/adapters/crawler-team.ts.todo (与 5/7 fork 实物 API 不一致，audit §6.2 已确认)",
+      "grep -rn 'crawler-team.ts.todo' . 全仓更新引用 (如 docs/specs/B6-kol-daily-sync-spec.md §F006 / docs/product/KOLMatrix-MVP-PRD.md §12 等如有引用，改为 apify-kol.ts)",
+      "git log -- src/lib/kol-sync/adapters/crawler-team.ts.todo 历史保留 (仅删除文件，audit trail 完整)",
+      "delete commit message 含 'F011 delete obsolete crawler-team.ts.todo placeholder'"
+    ]
+  },
+  {
+    "id": "F012",
+    "stage": "2",
+    "title": "docs/dev/kol-sync-runbook.md 更新双 adapter 调度说明 + .auto-memory/environment.md secrets 表 +2 行 + 新增 §apify-kol service 段",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "completed",
+    "status": "pending",
     "acceptance": [
-      "npm run lint → 0 error（warning OK）",
+      "docs/dev/kol-sync-runbook.md 加 §'双 adapter 双源容灾' 段：B6 YouTube + apify-kol 双源 / metadata.source 字段区分 / 故障互备路径 / cron 调度 00:30 UTC",
+      ".auto-memory/environment.md secrets 表加 2 行：APIFY_KOL_BASE_URL (http://localhost:3003 prod / staging 同) + APIFY_KOL_BUSINESS_API_KEY (来自 fork 端 .env BUSINESS_API_KEY)",
+      ".auto-memory/environment.md 新增 §'apify-kol service (同 VM 共生)' 段：部署路径 /opt/apify-kol-service / 端口 3003 / PG 端口 15432 / TIKHUB_TOKEN 由爬虫团队提供 / 月度 paid balance 监控 (/admin/stats) / Stage 1.5 admin preview 页 link",
+      "L1 markdown lint PASS (如有 markdownlint)"
+    ]
+  },
+  {
+    "id": "F013",
+    "stage": "2",
+    "title": "L1 全套验证 + 双 adapter 不互扰回归 (Stage 2 完成回归)",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 0.4,
+    "status": "pending",
+    "acceptance": [
+      "npm run lint → 0 error (warning OK)",
       "npx tsc --noEmit → 0 error",
-      "npm test → 1084+ tests 全 PASS（含 F001-F006 测试更新）",
-      "npm run test:integration → 既有 + 本批次相关 IT PASS（pre-commit-hook.test.ts flaky 按 v0.9.16 P5.2 acceptance 边界划归 BL-054 不计入）",
-      "tests/e2e/visual-regression.spec.ts 抓 4 新 baseline：(1) NetworkStatusBanner online 状态（/zh/dashboard 刷新无 banner）(2) SidebarLogo 中文 + 英文 locale 共 2 个 baseline（/zh + /en） (3) OutreachTabs templates tab 真实 badge 数字（/zh/outreach）(4) KnowledgeBase 删 mock section 后底部（/zh/knowledge-base）",
-      "Generator 同 commit 含 4 新 PNG baseline + 既有 baseline 不破",
-      "git diff --stat 确认改动文件清单符合本批次范围（NetworkStatusBanner.tsx + OutreachTabs.tsx + actions.ts + knowledge-base/page.tsx + 5 messages json + manifest + woff2 + SidebarLogo.tsx + layout.tsx + 4 visual-regression PNG + 测试文件 = ~20 文件）"
+      "npm test → 1084+ tests 全 PASS (含新 F008 单测 ≥3 + F009 IT ≥4 + Stage 1.5 单测/集成测试 = 14+ 新增)",
+      "npm run test:integration → 既有 + 本批次 IT PASS (pre-commit-hook.test.ts flaky 按 v0.9.16 P5.2 acceptance 边界划归 BL-054 不计入)",
+      "B6 YouTube adapter + apify-kol adapter 双源容灾验证: mock 一端 fail → dispatcher 另一端继续",
+      "git diff --stat 确认改动文件清单符合本批次范围",
+      "Reviewer 审视范围: F001-F012 acceptance 表逐项 + Stage 1.5 数据隔离铁律 (preview 页代码不 import @/lib/kol-sync/* 任一模块) + Stage 2 双源容灾"
     ]
   }
 ]
