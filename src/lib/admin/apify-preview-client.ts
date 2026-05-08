@@ -42,10 +42,35 @@ const ApifyKolItemSchema = z
     discords: z.array(z.string()).nullable().optional(),
     socialHandles: RAW_OBJECT.nullable().optional(),
     externalUrl: z.string().nullable().optional(),
-    externalUrls: z.array(z.string()).nullable().optional(),
+    // Fork actually emits `externalUrls` as objects shaped like
+    // `{ url, title?, ... }` (see tikhub-migration-design.md §5.3 — IG
+    // bio_links). The audit-time sample only had a plain-string variant,
+    // so fix-round 2 widens the schema to a union that accepts either
+    // shape — `passthrough()` keeps any extra metadata around for the
+    // raw-JSON expand panel.
+    externalUrls: z
+      .array(
+        z.union([
+          z.string(),
+          z
+            .object({
+              url: z.string(),
+              title: z.string().nullable().optional(),
+            })
+            .passthrough(),
+        ])
+      )
+      .nullable()
+      .optional(),
     aggregatorUrl: z.string().nullable().optional(),
     aggregatorEmails: z.array(z.string()).nullable().optional(),
-    aggregatorLinks: RAW_OBJECT.nullable().optional(),
+    // Fork emits `aggregatorLinks` as either a record (Linktree-style
+    // map) or an array of objects (other aggregators). Accept either
+    // and let the raw-JSON expand panel surface the actual shape.
+    aggregatorLinks: z
+      .union([RAW_OBJECT, z.array(z.unknown())])
+      .nullable()
+      .optional(),
     relevanceScore: z.number().nullable().optional(),
     influenceScore: z.number().nullable().optional(),
     qualityScore: z.number().nullable().optional(),

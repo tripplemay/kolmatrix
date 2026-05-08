@@ -122,4 +122,81 @@ describe("BL-012-F002 fetchApifyKolPage", () => {
 
     await expect(fetchApifyKolPage({})).rejects.toMatchObject({ kind: "config" });
   });
+
+  // BL-012-F002 fix-round 2 (2026-05-08 prod report): the audit-time sample
+  // only carried plain-string externalUrls + record-shaped aggregatorLinks,
+  // but real fork rows ship `[{url, title, ...}]` for the former and array
+  // of objects for the latter. The two cases below pin both wide variants
+  // — they would have failed against the original schema and proved the
+  // bug fix end-to-end.
+  it("accepts externalUrls as an array of {url, title} objects (real IG bio_links shape)", async () => {
+    const fetchSpy = vi.fn(async () =>
+      jsonResponse({
+        data: [
+          {
+            id: "row-bio",
+            platform: "instagram",
+            platformUserId: "9999",
+            username: "biolinker",
+            externalUrls: [
+              { url: "https://example.com/store", title: "Store" },
+              { url: "https://example.com/yt", title: "YouTube" },
+              "https://plain-string-still-works.example",
+            ],
+          },
+        ],
+        page: 1,
+        pageSize: 50,
+        total: 1,
+      })
+    );
+
+    const result = await fetchApifyKolPage(
+      {},
+      { fetch: fetchSpy as unknown as typeof fetch }
+    );
+    expect(result.data).toHaveLength(1);
+    const externalUrls = result.data[0]?.externalUrls;
+    expect(Array.isArray(externalUrls)).toBe(true);
+    expect(externalUrls?.[0]).toMatchObject({ url: "https://example.com/store" });
+    expect(externalUrls?.[2]).toBe("https://plain-string-still-works.example");
+  });
+
+  it("accepts aggregatorLinks as either a record map or an array of objects", async () => {
+    const fetchSpy = vi.fn(async () =>
+      jsonResponse({
+        data: [
+          {
+            id: "row-array",
+            platform: "tiktok",
+            platformUserId: "1111",
+            username: "arraylinks",
+            aggregatorLinks: [
+              { type: "youtube", url: "https://yt.example" },
+              { type: "twitter", url: "https://t.example" },
+            ],
+          },
+          {
+            id: "row-record",
+            platform: "youtube",
+            platformUserId: "2222",
+            username: "recordlinks",
+            aggregatorLinks: { youtube: "https://yt.example", twitter: "https://t.example" },
+          },
+        ],
+        page: 1,
+        pageSize: 50,
+        total: 2,
+      })
+    );
+
+    const result = await fetchApifyKolPage(
+      {},
+      { fetch: fetchSpy as unknown as typeof fetch }
+    );
+    expect(result.data).toHaveLength(2);
+    expect(Array.isArray(result.data[0]?.aggregatorLinks)).toBe(true);
+    expect(typeof result.data[1]?.aggregatorLinks).toBe("object");
+    expect(Array.isArray(result.data[1]?.aggregatorLinks)).toBe(false);
+  });
 });
