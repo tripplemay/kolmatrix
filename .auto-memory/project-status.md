@@ -3,11 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🟣 BL-055-prod-mock-purge-hotfix VERIFYING（5/8 10:45 Reviewer 复验中）
+## ✅ BL-055-prod-mock-purge-hotfix DONE（5/8 11:02 Reviewer signoff PASS @ docs/test-reports/BL-055-signoff-2026-05-08.md）
 - 7 features F001-F007 PASS：mount-flag / async badge / 删 mock section / Material Symbols 增 4 删 5 / Neural Velocity → tagline i18n / unreadNotifications=0 / visual regression test cases
-- L1: lint 0 errors / tsc 0 / unit targeted BL-055 PASS / IT material-symbols-coverage 7/7
-- 5 张 BL-055 visual baselines 已入 git（24 PNG tracked total）；但 visual-baselines-shape.test.ts 仍锁定旧 19 PNG 集合，npm run test FAIL
-- Reviewer 10:45 复验：staging dashboard/outreach/knowledge-base 直接核对 PASS；signoff 仍 blocked
+- L1: lint 0 errors / tsc 0 / unit targeted BL-055 PASS / IT material-symbols-coverage 7/7 / npm run test 154/154 files PASS
+- 24 PNG visual baselines 已入 git；visual-baselines-shape.test.ts 已同步到新集合
+- runtime staging smoke 仍保持 PASS；fix-round 1 为 test-only 变更
 - spec @ docs/specs/BL-055-prod-mock-purge-hotfix-spec.md
 ## 🟡 BL-012-apify-kol-integration v2 修订 / 暂停等 BL-055 / 13 features 9h G + 2.5h R
 - 5/8 02:30 用户重新讨论 → 稳妥分阶段：Stage 1.5 admin preview 页 + 4 维度决策门 → Stage 2 真接入；决议 1A/2A/3A/4B/5B + 1B/2A/3B/4A/5B
@@ -23,8 +23,7 @@ type: project
 1. F003 cron 行 ops（kol-sync:daily && kpi-snapshot:daily）SSH 落 prod+staging（runbook kpi-snapshot-runbook.md）
 2. 5/8 Dependabot 5 group PR 决议合并/延后
 3. BL-012 Stage 1：协调爬虫团队 TIKHUB_TOKEN + 首充 $50 + VM SSH 部署 apify-kol-service docker-compose up
-4. BL-055 'Update visual baselines' workflow 触发（GitHub Actions UI）—— sidebar 文案影响所有 authenticated PNG baseline
-5. BL-055 Reviewer signoff PASS → prod redeploy 触发（GitHub Actions UI）
+4. BL-055 prod redeploy 触发（GitHub Actions UI）
 ## 关键决议（已 lock）
 - 5/8 02:00 BL-055 hotfix 6 项决议 lock + 插队启动；BL-056 notifications 真化加 backlog
 - 5/8 BL-012：1B/2A/3B/4A/5B（爬虫团队付费/复用 VM/5/13 Stage 1 only/$50 demo/合并）
