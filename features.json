@@ -80,7 +80,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.4,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "messages/zh.json + messages/en.json 加 admin.apifyPreview.* 整段 (~25 keys: title/readOnlyWarning/filterPlatform/filterMinFollowers/filterHasEmail/sortOptions[6]/pagination/columns[8]/qualityIndicator/emptyState/loadingState/statsCards.{1-4}.{title,description,thresholds[3-4],pass,fail}/footerSummary)",
       "messages/{ja,ko,es}.json admin.apifyPreview 段直接复用 en 版本 (admin 工具非业务 UI，不需 ja/ko/es native，BL-014 不阻塞)",
