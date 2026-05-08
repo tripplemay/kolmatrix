@@ -14,7 +14,12 @@ trigger: 用户决定（详见 §10 时序方案 A/B/C）
 
 # B6-kol-daily-sync — KOL 每日自动增量同步
 
-> **2026-05-09 历史化通告（BL-012-F011）：** §F006 / §依赖图 提到的 `src/lib/kol-sync/adapters/crawler-team.ts.todo` 占位文件已删除。BL-012 走的不是当时设想的「爬虫团队 v1 handoff API」路径，而是接入 5/7 fork 实物（`apify-kol-service`），新写 `src/lib/kol-sync/adapters/apify-kol.ts`。后续接入以 `docs/specs/BL-012-apify-kol-integration-spec.md` 为准。本 spec 描述 B6 YouTube 路径仍然有效。
+> ⚠️ **DEPRECATED 2026-05-09 by BL-059** — youtube-api-daily 链路 deprecate，
+> KOLMatrix KOL 数据源切换到单源 `apify-kol`。详见
+> `docs/specs/BL-059-youtube-deprecate-and-engagement-derive-spec.md`。
+> 本文件保留于 `docs/archive/` 仅供 audit trail 与历史回滚参考。
+>
+> **2026-05-09 历史化通告（BL-012-F011）：** §F006 / §依赖图 提到的 `src/lib/kol-sync/adapters/crawler-team.ts.todo` 占位文件已删除。BL-012 走的不是当时设想的「爬虫团队 v1 handoff API」路径，而是接入 5/7 fork 实物（`apify-kol-service`），新写 `src/lib/kol-sync/adapters/apify-kol.ts`。后续接入以 `docs/specs/BL-012-apify-kol-integration-spec.md` 为准。
 
 ## 1. 背景与目标
 

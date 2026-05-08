@@ -111,7 +111,7 @@ NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) n
 - **ADMIN_API_KEY：** 创建 schedules / 账户管理用，KOLMatrix 侧不需要（仅 Planner 偶发 SSH ops 用）
 - **月度 paid balance 监控：** TikHub 子计费 + Apify 子计费由爬虫团队的 dashboard 看；KOLMatrix 侧无监控钩子（如需调用 `/admin/stats` 需 ADMIN key）
 - **Stage 1.5 admin preview 入口：** KOLMatrix 端 `/[locale]/admin/apify-preview` (要求 admin role)，背后调本 service 的 `GET /kol`，read-only 不入 KOLMatrix DB（spec §2.2 数据流隔离铁律）
-- **Stage 2 daily sync 集成：** KOLMatrix `scripts/kol-sync-daily.ts` 注入 `ApifyKolSyncAdapter`，与 YouTube adapter 双源容灾（详 `docs/dev/kol-sync-runbook.md` §"双 adapter 双源容灾"）
+- **Stage 2 daily sync 集成（BL-059 后单源）：** KOLMatrix `scripts/kol-sync-daily.ts` 仅注入 `ApifyKolSyncAdapter`（YouTube adapter 已 deprecate 5/9）；详 `docs/dev/kol-sync-runbook.md` §"apify-kol 单源 + cron schedules + 30 天 soft delete 回滚"
 - **同步 ops 流程：** fork 端有更新时按 runbook §"apify-kol-service fork 同步流程" 6 步走（B 方案 reset + 重 apply 2 sed workaround）
 - **5 个长期 todo：** 见 BL-058 backlog（lockfile / port / X service 实装 / docs union shape / admin route X enum）
 
@@ -134,7 +134,7 @@ NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) n
 |---|---|---|---|
 | `AIGCGATEWAY_API_KEY` | ✅ 已配（67 chars） | ✅ 已配（同 key） | 共用 "admintest" key；2026-04-23 从 staging VM 直 curl `/v1/models` 200 OK；完整 key 不落 git，仅存 .env 文件 |
 | `RESEND_API_KEY` | ✅ 已配（36 chars） | ✅ 已配（同 key） | 未在本次验证真发邮件，仅确认非 placeholder；完整 key 不落 git |
-| `APIFY_KOL_BASE_URL` | ✅ 已配（`http://localhost:3003`） | ✅ 已配（同 prod） | BL-012-F012 验证 2026-05-09。同 VM 共生 service，走内网；外网可用 https `apify.kol.guangai.ai` 但当前不暴露。两 env 文件都必须配齐，否则 `kol-sync-daily.ts` 中 apify-kol adapter 静默 skip（YouTube 仍跑） |
+| `APIFY_KOL_BASE_URL` | ✅ 已配（`http://localhost:3003`） | ✅ 已配（同 prod） | BL-012-F012 验证 2026-05-09。同 VM 共生 service，走内网；外网可用 https `apify.kol.guangai.ai` 但当前不暴露。**BL-059 后单源依赖**：两 env 任一缺失即 fail-fast，daily run 当日不增长 KOL（不再 silent-skip）|
 | `APIFY_KOL_BUSINESS_API_KEY` | ✅ 已配（同 fork 端 `BUSINESS_API_KEY`） | ✅ 已配（同 prod） | BL-012-F012 验证 2026-05-09。来自 `/opt/apify-kol-service/.env` `BUSINESS_API_KEY`；KOLMatrix 仅用 read API（`x-api-key` header），不需 `ADMIN_API_KEY` |
 
 **修改流程（如未来需要换 key）：**

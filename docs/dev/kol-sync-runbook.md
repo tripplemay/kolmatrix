@@ -1,12 +1,15 @@
 # KOL Sync Runbook
 
 **Owner:** KOLMatrix backend / Generator agent.  
-**Spec:** `docs/specs/B6-kol-daily-sync-spec.md`.  
+**Spec:** `docs/specs/BL-059-youtube-deprecate-and-engagement-derive-spec.md`
+(post-deprecate; legacy `docs/archive/B6-kol-daily-sync-spec.md` retained
+for audit only).  
 **On-call entry point:** `/var/log/kolmatrix-kol-sync.log` on prod.
 
-This is the day-to-day operational guide for the daily YouTube
-sync cron. For architectural background see the spec; this doc is
-strictly "what does each alert mean and what do I do about it".
+This is the day-to-day operational guide for the daily apify-kol
+sync cron (single-source since BL-059, 5/9). For architectural
+background see the spec; this doc is strictly "what does each alert
+mean and what do I do about it".
 
 ---
 
@@ -36,11 +39,11 @@ Each line is a single JSON object:
   "endedAt":   "2026-04-29T00:30:47.892Z",
   "durationMs": 46851,
   "level": "INFO",
-  "adapters": [{ "name": "youtube", "healthy": true }],
+  "adapters": [{ "name": "apify-kol", "healthy": true }],
   "discoverCount": 47,
-  "refreshCount": 200,
+  "refreshCount": 0,
   "inserted": 35,
-  "updated": 212,
+  "updated": 12,
   "skipped": 0,
   "dedupeSkipped": 0,
   "estimatedQuotaConsumed": 1815,
@@ -70,9 +73,9 @@ tail -1 /var/log/kolmatrix-kol-sync.log | jq .discoverCount
 
 | Trigger | Level | What it means | First-pass action |
 |---|---|---|---|
-| `estimatedQuotaConsumed > 3000` | WARN | A YouTube call is retrying more than usual or matrix expanded. Daily budget is ~1,805u; >3,000u means something burned ~2x. | Check `errors[]` and adapter retry logs in stderr. If a region returns `quotaExceeded`, drop that region for a day or wait for the next quota window. |
-| `discoverCount === 0` | WARN | Today's run found 0 new channels (after dedupe). Could be a quota issue, an upstream search outage, or just bad luck on the matrix. | Look at `errors`. Re-run manually with `npm run kol-sync:daily` and observe — if the same outcome, escalate. |
-| `discoverCount === 0` for 3 days running | **ALERT** | Data source likely broken, or our keyword set has been deindexed. | Page on-call. Verify `npm run kol-sync:daily:dry` plan still looks right. Check `YOUTUBE_API_KEY` validity at https://console.cloud.google.com. |
+| `estimatedQuotaConsumed > 100` | WARN | apify-kol pagination is iterating much harder than usual. Steady-state is single-digit units (1u healthCheck + ~1u per /kol page); >100 means many short-page rescans or runaway. | Check `errors[]` and inspect the markdown report; if scoreScore filter is letting too few rows through, may need to revisit the apify-kol double-low threshold. |
+| `discoverCount === 0` | WARN | Today's run found 0 new KOL (after dedupe). Could be apify-kol-service down, scrape quota at the fork end, or low-volume hashtag schedules. | Look at `errors`. SSH the prod host and `curl -fsS http://localhost:3003/health` on the fork. Re-run manually with `npm run kol-sync:daily` and observe. |
+| `discoverCount === 0` for 3 days running | **ALERT** | Single-source apify-kol likely broken, or fork TikHub balance exhausted. | Page on-call. SSH `/opt/apify-kol-service` and `sudo docker compose ps` + `sudo docker compose logs --tail 200`. Check fork `/admin/stats` for paid balance. 30-day soft-delete window means the youtube-api-daily fallback can be restored via SQL §3.3 in BL-059 spec. |
 | `errors.length > 0` | WARN | At least one adapter call exhausted retries. | Read each error string in `errors[]`. Most are transient — re-run manually if budget allows. |
 | `durationMs > 300000` (5 min) | WARN | Run took longer than the rotation budget. Almost always a sign of network slowness on the VPS or a 429 retry-storm. | Re-run; if it persists, check `free -m` and `iostat 1` on the VPS. |
 
@@ -87,7 +90,8 @@ corruption fails closed (we don't accidentally silence the ALERT).
 
 ### Run on demand (live, prod-only)
 
-Burns ~1,805u quota. Don't do this casually before quota reset.
+Cheap (single-digit units) since apify-kol-service hosts the heavy
+scrape work — KOLMatrix only paginates GET /kol.
 
 ```bash
 ssh tripplezhou@<prod-host>
@@ -104,17 +108,10 @@ Free, no API calls.
 npm run kol-sync:daily:dry
 ```
 
-### Skip the refresh phase (first day after deploy)
-
-```bash
-npm run kol-sync:daily -- --no-refresh
-```
-
-### Smaller refresh batch (when refresh is suspected slow)
-
-```bash
-npm run kol-sync:daily -- --refresh-batch 50
-```
+> **BL-059:** the legacy `--no-refresh` and `--refresh-batch` flags
+> are accepted but ignored — the refresh phase was tied to the
+> YouTube tiered selector and was removed with the deprecate. Old
+> cron lines passing them keep working without change.
 
 ### Revoke the cron temporarily
 
@@ -131,12 +128,14 @@ sudo mv /etc/cron.d/kolmatrix-kol-sync.disabled /etc/cron.d/kolmatrix-kol-sync
 - **First two days after deploy** the structured log is short, so the
   ALERT streak counter can't yet trigger. WARN-level zeroDiscover for
   a single day is not actionable.
-- **YouTube quota window edges:** if cron fires before the 00:00 PT
-  reset finishes propagating, the first request can get a 403. The
-  retry layer's 30s/2min/5min schedule absorbs this transparently —
-  it shows up as `errors[0]` even though the run succeeded later.
-- **Refresh `updated` count > inserted by orders of magnitude is
-  expected** — refresh re-touches the same 200 KOLs every week.
+- **apify-kol-service container restart:** if cron fires while
+  `docker compose up -d --build` is rebuilding (e.g. a mid-day fork
+  sync), the first request can get a 503. The retry layer's
+  30s/2min/5min schedule absorbs this transparently — it shows up as
+  `errors[0]` even though the run succeeded later.
+- **`refreshCount` always 0 since BL-059** — refresh phase was
+  removed with the YouTube deprecate. `inserted + updated` come
+  entirely from discover.
 
 ---
 
@@ -147,40 +146,51 @@ BL-013 territory):
 
 - `level = ALERT`
 - 3+ consecutive runs with `errors.length > 0`
-- `estimatedQuotaConsumed > 6,000` (60% of daily budget — a runaway)
-- API key invalidation: `errors[0]` contains `forbidden` or
-  `accessNotConfigured`
+- API key invalidation: `errors[0]` contains `auth rejected (HTTP 401)`
+  or `(HTTP 403)` — `APIFY_KOL_BUSINESS_API_KEY` mismatch with the
+  fork's `BUSINESS_API_KEY`
+- 30-day soft-delete window (BL-059) approaching expiry without
+  clear apify-kol data quality signal — block on user decision
+  before any hard delete
 
 ---
 
-## 双 adapter 双源容灾（BL-012-F010）
+## apify-kol 单源 + cron schedules + 30 天 soft delete 回滚（BL-059）
 
-自 `BL-012` Stage 2 起，daily cron 同时跑 **two adapters** in one
-dispatcher：YouTube Data API（`source: 'youtube-api-daily'`）+
+自 `BL-059` (5/9) 起，daily cron 仅跑 **single adapter** —
 apify-kol-service（`source: 'apify-kol'`，guang-tech/apify fork 部署
-在同 VM `localhost:3003`）。每个 adapter 各自带 health check / discover /
-refresh，dispatcher 失败隔离 — 一端挂掉另一端继续跑。
+在同 VM `localhost:3003`）。`scripts/kol-sync-daily.ts` 中
+`YouTubeKolSyncAdapter` 注入 + engagement-batch + tiered refresh phase
+全部移除；`src/lib/kol-sync/adapters/youtube.ts` + `engagement-batch*.ts`
++ `published-after.ts` 已 git rm。
 
-| 维度 | YouTube adapter | apify-kol adapter |
-|---|---|---|
-| 类名 | `YouTubeKolSyncAdapter` | `ApifyKolSyncAdapter` |
-| 文件 | `src/lib/kol-sync/adapters/youtube.ts` | `src/lib/kol-sync/adapters/apify-kol.ts` |
-| `metadata.source` | `youtube-api-daily` | `apify-kol` |
-| 上游 | YouTube Data API（10K units/day quota） | apify-kol-service（同 VM port 3003） |
-| 平台覆盖 | YouTube | Instagram / TikTok / YouTube（X 平台 SDK 已接但 service 端 route 未实装）|
-| Refresh | tiered selector（top 50 by valueScore × 3-day cycle 等） | 当前 cron 不跑 refresh（仅 discover）|
-| 质量过滤 | 5 条通用规则（spam / zombie / NSFW 等）| 通用 + apify-kol 专属：`relevance < 0.2 && influence < 0.2` 双低 → skip |
-| Cron 时间 | 00:30 UTC | 同 cron 同跑（dispatcher 串行）|
+| 维度 | apify-kol（唯一 adapter） |
+|---|---|
+| 类名 | `ApifyKolSyncAdapter` |
+| 文件 | `src/lib/kol-sync/adapters/apify-kol.ts` |
+| `metadata.source` | `apify-kol` |
+| 上游 | apify-kol-service（同 VM port 3003） |
+| 平台覆盖 | Instagram / TikTok / YouTube（X 平台 SDK 已接但 service 端 route 未实装，BL-058 跟踪）|
+| Refresh phase | **不跑**（BL-059 deprecate 时一并移除，30 天可回滚双源时再决策）|
+| 质量过滤 | 通用 spam/zombie/NSFW 规则 + apify-kol 专属：`relevance < 0.2 && influence < 0.2` 双低 → skip（`quality.ts`）|
+| `engagement_rate` | `mapApifyKolItemToRawKolData` derive：`(totalLikes / postsCount) / followers * 100`（BL-059-F001 简化公式，缺 totalComments）|
+| Cron 时间 | 00:30 UTC（fork 端 30 hashtag schedules 覆盖 IG/TT/YT，详 fork `/admin/stats`）|
 
-**故障互备路径：**
-- YouTube adapter 故障（quota / outage / API key invalid）→ apify-kol 仍正常 discover，当日 `inserted` 走 apify-kol 路径
-- apify-kol adapter 故障（service 挂 / fork lock 失效 / DB 异常）→ YouTube 仍正常 discover
-- 双方都挂 → daily run 仍完成 healthCheck 阶段并写 `level: ALERT` 结构化日志（`anyHealthy === false` bail 早退）
+**单源风险与缓解：**
+- apify-kol-service 故障 → 当日 daily run 仍完成 healthCheck 阶段并写
+  `level: ALERT`（`anyHealthy === false` bail 早退），下游业务面 KOL
+  数量本日不增长但既有 KOL 不受影响
+- 30 天 soft delete 窗口（5/9 → 6/8）内可执行 BL-059 spec §3.3 SQL
+  恢复 youtube-api-daily 数据 + git revert 恢复 youtube.ts 双源容灾
+  （应急回滚铁律 #9 hotfix 流程）
+- 长期质量监控走 BL-058（4 维度评分稳定性 + 主流程 UI 默认过滤）
 
-**`metadata.source` 隔离铁律（spec §4.5.4）：**
-- apify-kol 数据 4 维度评分阈值未达稳定（BL-058 跟踪）阶段，主流程 UI 层 **不加默认过滤**，但 SQL 清理 / 业务方反馈次质量数据时可按 `metadata.source = 'apify-kol'` 单源回滚
-- YouTube 路径不带 4 维度评分，质量过滤走原通用规则
-- 切勿假设两源的 `subscriberCount` 含义一致（YouTube=频道订阅，apify-kol=社交平台 followers）
+**`metadata.source` 隔离铁律（BL-012 spec §4.5.4 + BL-059 沿用）：**
+- apify-kol 数据 4 维度评分阈值未达稳定阶段，主流程 UI 层 **不加默认过滤**，
+  但 SQL 清理 / 业务方反馈次质量数据时可按 `metadata.source = 'apify-kol'`
+  单源回滚
+- soft-deleted youtube-api-daily 行（5/9 起）保留于表中含完整 audit_log，
+  6/8 后用户决议硬删 vs 永久 soft delete 保留
 
 ---
 
@@ -247,7 +257,7 @@ APIFY_KOL_BASE_URL=http://localhost:3003
 APIFY_KOL_BUSINESS_API_KEY=<同 fork 端 .env BUSINESS_API_KEY>
 ```
 
-`apify-kol` adapter 在两个 env 任一缺失时静默 skip（YouTube 仍正常跑），
-但首次 deploy 必须配齐，否则 daily report 不会包含 apify-kol 数据。
+**BL-059 后单源依赖：** 任一 env var 缺失即 fail-fast（exit 0 with
+ALERT log），daily run 不再 silent-skip。首次 deploy 必须配齐两 env，
 配齐方法见 `.auto-memory/environment.md` "VPS env 文件当前 secrets 状态"
 段表格。
