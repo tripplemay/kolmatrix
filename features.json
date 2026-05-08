@@ -135,7 +135,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "Generator 启动 F007 前必须验证: progress.json session_notes 或 docs/specs/BL-012-stage1.5-feedback-log-*.md 含用户明示 '决策门通过 4/4，启动 Stage 2' 字样; 否则 F007 not 启动",
       "src/lib/kol-sync/adapters/apify-kol.ts 新文件 implements KolSyncAdapter (src/lib/kol-sync/types.ts 既有 trait)",
@@ -156,7 +156,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.85,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/lib/kol-sync/adapters/apify-kol.ts 内 export function mapApifyKolItemToRawKolData(item) → RawKolData",
       "字段映射完整 (spec v1 §2.2 表): externalId(id) / platform / handle(username) / displayName / description(bio) / thumbnailUrl(avatarUrl) / subscriberCount(followers) / topicCategories(matchedTags)",
@@ -174,7 +174,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "tests/integration/apify-kol-adapter.test.ts 新文件，msw 或 vitest http fixture mock fork 端响应",
       "Case 1 discover 多页：mock 3 页 100/100/57 → adapter 返回 257 条 RawKolData / 退出条件正确",
@@ -192,7 +192,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.85,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "scripts/kol-sync-daily.ts 修改：new KolSyncDispatcher 数组加 new ApifyKolSyncAdapter({ baseUrl: process.env.APIFY_KOL_BASE_URL!, apiKey: process.env.APIFY_KOL_BUSINESS_API_KEY!, maxRequestsPerSecond: 5, maxItemsPerRun: 5000 })",
       "src/lib/kol-sync/quality.ts 加 'apify-kol' source 分支质量过滤规则 (继承 youtube 规则 + 加 fork 端 4 维度评分作辅助：relevanceScore < 0.2 + influenceScore < 0.2 双低则 quality 标 'low')",
@@ -208,7 +208,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.3,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "rm src/lib/kol-sync/adapters/crawler-team.ts.todo (与 5/7 fork 实物 API 不一致，audit §6.2 已确认)",
       "grep -rn 'crawler-team.ts.todo' . 全仓更新引用 (如 docs/specs/B6-kol-daily-sync-spec.md §F006 / docs/product/KOLMatrix-MVP-PRD.md §12 等如有引用，改为 apify-kol.ts)",
@@ -223,7 +223,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "docs/dev/kol-sync-runbook.md 加 §'双 adapter 双源容灾' 段：B6 YouTube + apify-kol 双源 / metadata.source 字段区分 / 故障互备路径 / cron 调度 00:30 UTC",
       ".auto-memory/environment.md secrets 表加 2 行：APIFY_KOL_BASE_URL (http://localhost:3003 prod / staging 同) + APIFY_KOL_BUSINESS_API_KEY (来自 fork 端 .env BUSINESS_API_KEY)",
@@ -239,7 +239,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.4,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "npm run lint → 0 error (warning OK)",
       "npx tsc --noEmit → 0 error",

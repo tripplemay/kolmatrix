@@ -134,8 +134,8 @@ NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) n
 |---|---|---|---|
 | `AIGCGATEWAY_API_KEY` | ✅ 已配（67 chars） | ✅ 已配（同 key） | 共用 "admintest" key；2026-04-23 从 staging VM 直 curl `/v1/models` 200 OK；完整 key 不落 git，仅存 .env 文件 |
 | `RESEND_API_KEY` | ✅ 已配（36 chars） | ✅ 已配（同 key） | 未在本次验证真发邮件，仅确认非 placeholder；完整 key 不落 git |
-| `APIFY_KOL_BASE_URL` | ⏳ 部署时落入（`http://localhost:3003`） | ⏳ 同 prod | BL-012-F012 落地。同 VM 共生 service，走内网；外网可用 https `apify.kol.guangai.ai` 但当前不暴露。两 env 文件都必须配齐，否则 `kol-sync-daily.ts` 中 apify-kol adapter 静默 skip（YouTube 仍跑） |
-| `APIFY_KOL_BUSINESS_API_KEY` | ⏳ 部署时落入（同 fork 端 `BUSINESS_API_KEY`） | ⏳ 同 prod | BL-012-F012 落地。来自 `/opt/apify-kol-service/.env` `BUSINESS_API_KEY`；KOLMatrix 仅用 read API（`x-api-key` header），不需 `ADMIN_API_KEY` |
+| `APIFY_KOL_BASE_URL` | ✅ 已配（`http://localhost:3003`） | ✅ 已配（同 prod） | BL-012-F012 验证 2026-05-09。同 VM 共生 service，走内网；外网可用 https `apify.kol.guangai.ai` 但当前不暴露。两 env 文件都必须配齐，否则 `kol-sync-daily.ts` 中 apify-kol adapter 静默 skip（YouTube 仍跑） |
+| `APIFY_KOL_BUSINESS_API_KEY` | ✅ 已配（同 fork 端 `BUSINESS_API_KEY`） | ✅ 已配（同 prod） | BL-012-F012 验证 2026-05-09。来自 `/opt/apify-kol-service/.env` `BUSINESS_API_KEY`；KOLMatrix 仅用 read API（`x-api-key` header），不需 `ADMIN_API_KEY` |
 
 **修改流程（如未来需要换 key）：**
 ```bash
