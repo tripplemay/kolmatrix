@@ -17,6 +17,7 @@
 | v1 | 5/8 ~01:30 | 初始 spec — 单 stage 7 features（Stage 2 only：apify-kol.ts adapter 直接写 Prisma Kol 表） |
 | **v2** | **5/8 ~02:30** | 用户重新讨论后扩范围 — **新增 Stage 1.5 admin preview 页面 + 4 维度决策门 checklist**；features 7→13；时间线 5/13 仅含 Stage 1+1.5（不含 Stage 2 真接入）；用户决议 5 子项 lock 1A/2A/3A/4B/5B |
 | **v3** | **5/8 ~16:30** | Stage 1.5 signoff PASS @ commit `f2f5dbb` (A-/Ready) 后用户增量请求 — **加 sidebar 入口 §4.5.6**：UserAvatarMenu 下拉 conditional admin tools section（仅 platform_admin/tenant_admin 可见，业界惯例 GitHub/Notion 等头像菜单含 admin tools，**不违反 canonical 8-item rule** BL-025-F004.B）；features.json 加 F006a；progress.json status: done → building / total_features 13→14 |
+| **v4** | **5/8 ~19:30** | BL-012 综合 signoff PASS @ commit `4712066` (A-/Ready，fix-round 1+F006a+fix-round 2 全闭合) 后用户决议 4B — **绕过 §4.5.4 决策门** (当前 1/4 passed) 启动 Stage 2 真接入；接受风险（次质量数据进主流程，metadata.source='apify-kol' 隔离作后续清理 option，主流程 UI 不加默认过滤）；BL-058-apify-data-quality-await backlog 加入跟踪 4 维度迭代；progress.json status: done → building 重激活 Stage 2；features.json F007-F013 7 features 仍按 v2 spec 设计；v0.9.18 (auth role enum 实物核查) + v0.9.19 (external API zod schema 实物 sample 验证) 同沉淀 framework |
 
 ---
 
@@ -208,6 +209,28 @@ Stage 1.5 preview 页**严格 read-only**：
 - **4/4 维度全 ✓** → 用户在 spec 里明示"决策门通过"+ 通知 Planner 启动 Stage 2 building（Generator 接力 F007-F013）
 - **3/4 或更少 ✓** → 反馈 ✗ 维度细节给爬虫团队 → 等 fork 端改进 → 用户重新审视 preview 页 → 直至 4/4 通过
 - **决策门通过时间不限：** 5/13 上线时间线已不依赖 Stage 2，决策门可以推迟到 5/13 后任意时段
+
+### 4.5.4-v4 修订（5/8 19:30 用户决议绕过决策门）
+
+⚠️ **v4 修订 — 用户决议 4B 绕过 §4.5.4 决策门启动 Stage 2：**
+
+- **触发：** 5/8 19:00 prod fix-round 2 完成后，BL-012 综合 signoff PASS @ commit `4712066`，但决策门 4 维度 **1 / 4 passed**（spec §4.5.3 阈值未达 3 维度）
+- **用户决议（5/8 19:30）：** 绕过决策门启动 Stage 2 入主流程，**接受风险**：
+  - 次质量数据进 KOLMatrix Kol 表（`metadata.source='apify-kol'` 隔离）
+  - 主流程 UI（discovery / database / smart-match）**不加默认过滤** — 业务方可见 apify-kol 数据
+  - 后续清理 option：SQL ops `WHERE metadata->>'source' = 'apify-kol' AND quality = 'low'`
+- **配套措施：**
+  - BL-058-apify-data-quality-await backlog 加入（决议 3A）— 长期跟踪 fork 数据 4 维度迭代 + 反馈爬虫团队 + 评估主流程 UI 默认过滤选项
+  - v0.9.19 沉淀（external API zod schema 实物 sample 验证）— 防 future 类似 schema mismatch
+  - quality.ts 加 'apify-kol' source 分支严格过滤（emails/aggregatorEmails 双空 → quality='low'，作为 outreach 路径过滤兜底）
+
+**v4 修订理由：**
+- 5/13 上线 buffer 充裕（5+ 天），现在启动 Stage 2 不阻塞上线
+- fork 端数据持续累积，4 维度可能短期内自然改善
+- metadata.source 隔离作后续清理 option — 数据真入库后清理仍可控
+- 用户业务上希望 5/13 上线即含 4 平台数据（IG/TT/YT），不希望等爬虫团队迭代
+
+**何时回到 §4.5.4 严格判定：** BL-058 启动条件触发时（业务方反馈次质量数据扰乱 / 30 天 4 维度未达 / fork 重大更新）→ 评估是否补加主流程 UI 默认过滤 + SQL 清理。
 
 ### 4.5.5 反馈机制
 
