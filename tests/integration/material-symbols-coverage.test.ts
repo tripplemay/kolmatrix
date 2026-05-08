@@ -92,18 +92,20 @@ describe("BL-025-F009.3 · Material Symbols subset coverage", () => {
     expect(stat.size, "woff2 must carry at least a few KB of glyph payload").toBeGreaterThan(2_000);
   });
 
-  it("BL-025-F009.1 pre-loaded icons (folder_open, auto_awesome, restart_alt, file_copy, archive, unarchive, more_vert, compare_arrows, restore, movie) appear in the manifest", () => {
+  it("BL-025-F009.1 dynamic-position icons (auto_awesome, archive, file_copy, movie, unarchive) remain in the manifest", () => {
+    // BL-055-F004 retro: the original 10-icon list dropped 5 entries
+    // that Pattern 1/2 already catch directly in src/ (folder_open,
+    // more_vert, restart_alt, restore are caught by the multi-line
+    // span pattern; compare_arrows became truly unreferenced after
+    // BL-052). The 5 below stay manifest-only because their callsites
+    // hit dynamic positions (JSX prop expression / array element /
+    // ternary) that the script's grep heuristics can't see.
     const expected = [
-      "folder_open",
       "auto_awesome",
-      "restart_alt",
-      "file_copy",
       "archive",
-      "unarchive",
-      "more_vert",
-      "compare_arrows",
-      "restore",
+      "file_copy",
       "movie",
+      "unarchive",
     ];
     const entries = new Set(readManifestEntries());
     for (const icon of expected) {

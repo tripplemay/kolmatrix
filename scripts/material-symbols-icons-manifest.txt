@@ -47,14 +47,14 @@ warning                     # roi/RoiInsightsPanel:137 + weekly-report/WeeklyRep
 
 archive                     # AssetCard hover quick action / Detail panel "..." | JSX prop or array
 auto_awesome                # AssetsEmptyState CTA + AI 徽章 / NewAssetModal step-3 spinner | JSX prop
-compare_arrows              # AssetsDetailPanel Versions tab "Compare with current" | JSX prop
 file_copy                   # AssetCard hover quick action "Duplicate"            | JSX prop or array
-folder_open                 # AssetsEmptyState glass-folder icon                  | inline span
 movie                       # AssetCard type chip for video_script asset          | JSX ternary
-more_vert                   # AssetsDetailPanel "..." More menu trigger           | JSX prop
-restart_alt                 # AssetsDetailPanel sticky bottom bar Regenerate      | JSX prop
-restore                     # AssetsDetailPanel Versions tab "Restore this version" | JSX prop
 unarchive                   # AssetCard hover overlay archived-state toggle       | JSX prop or array
+# BL-055-F004 hygiene: removed compare_arrows / folder_open / more_vert /
+# restart_alt / restore — `compare_arrows` had zero src/ references, the
+# other four are picked up by Pattern 2 (multi-line span tag) so the
+# manifest copy was redundant. Re-add only if a dynamic-position
+# callsite reappears.
 
 # BL-051a-F003 + F005 — share-link lifecycle icons (expired/revoked
 # state badges on /shared/weekly-report/[token] + the brand-header
@@ -63,3 +63,11 @@ unarchive                   # AssetCard hover overlay archived-state toggle     
 
 block                       # /shared/weekly-report/[token] revoked state + revoke button | JSX expression iconName
 schedule                    # /shared/weekly-report/[token] expired state | JSX expression iconName
+
+# BL-055-F004 — prod hotfix #4 audit: glyphs that fell out of the woff2
+# subset because Pattern 1-4 grep can't see their callsites.
+
+lightbulb                   # roi/RoiInsightsPanel:140 + weekly-report/WeeklyReportInsightsPanel:90 | function return fallback
+insights                    # database/DatabaseInsightsClient.tsx:70 | function return fallback
+wifi                        # common/NetworkStatusBanner.tsx:74 | JSX ternary online branch
+wifi_off                    # common/NetworkStatusBanner.tsx:74 | JSX ternary offline branch
