@@ -9,6 +9,7 @@
  */
 import { act, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
+import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { NetworkStatusBanner } from "../NetworkStatusBanner";
@@ -48,6 +49,16 @@ afterEach(() => {
 });
 
 describe("NetworkStatusBanner", () => {
+  // BL-055 F001 — mount-flag guards the very first render so a hydrate
+  // race where navigator.onLine briefly returns false can't paint the
+  // offline banner before the network stack stabilizes. SSR-equivalent
+  // first paint must be empty regardless of navigator state.
+  it("renders nothing on the first render (mounted=false), even when navigator reports offline", () => {
+    setOnLine(false);
+    const html = renderToString(withIntl(<NetworkStatusBanner />));
+    expect(html).toBe("");
+  });
+
   it("renders nothing when the page starts online and no offline event has fired", () => {
     render(withIntl(<NetworkStatusBanner />));
     expect(screen.queryByTestId("network-status-banner")).not.toBeInTheDocument();
@@ -55,6 +66,11 @@ describe("NetworkStatusBanner", () => {
 
   it("appears in offline state after the offline event", () => {
     render(withIntl(<NetworkStatusBanner />));
+    // Flush the mount-flag setTimeout(_, 0) so the banner exits its
+    // pre-mount null-render state before we drive the offline path.
+    act(() => {
+      vi.advanceTimersByTime(0);
+    });
     act(() => {
       setOnLine(false);
       window.dispatchEvent(new Event("offline"));
@@ -67,6 +83,9 @@ describe("NetworkStatusBanner", () => {
   it("switches to back-online toast after online event, then auto-dismisses", () => {
     render(withIntl(<NetworkStatusBanner />));
 
+    act(() => {
+      vi.advanceTimersByTime(0);
+    });
     act(() => {
       setOnLine(false);
       window.dispatchEvent(new Event("offline"));

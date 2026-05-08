@@ -27,6 +27,18 @@ export function NetworkStatusBanner() {
   const { isOnline, lastOfflineAt } = useNetworkStatus();
   const t = useTranslations("common.network");
   const [showRestored, setShowRestored] = useState(false);
+  // BL-055 F001 — defer banner rendering until after first client commit
+  // to avoid a flash on hydrate. Chromium reports navigator.onLine === false
+  // briefly before the network stack finishes initializing post-load, which
+  // hydrates the offline branch on top of an empty SSR slot for one tick.
+  // setTimeout(_, 0) mirrors the showRestored pattern below so eslint
+  // react-hooks/set-state-in-effect stays satisfied — flipping mounted
+  // happens off the effect tick rather than synchronously inside it.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(id);
+  }, []);
 
   // The "Back online" toast appears for RESTORED_VISIBLE_MS after a
   // false→true transition of `isOnline`. We only flip `showRestored`
@@ -44,6 +56,7 @@ export function NetworkStatusBanner() {
     };
   }, [isOnline, lastOfflineAt]);
 
+  if (!mounted) return null;
   if (isOnline && !showRestored) return null;
 
   const offline = !isOnline;
