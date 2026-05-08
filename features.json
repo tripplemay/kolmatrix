@@ -103,7 +103,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "npm run lint → 0 error (warning OK)",
       "npx tsc --noEmit → 0 error",
