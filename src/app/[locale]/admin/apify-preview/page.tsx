@@ -79,7 +79,10 @@ export default async function ApifyPreviewPage({ params, searchParams }: Props) 
   if (!session?.user) {
     redirect(`/${locale}/login`);
   }
-  if (session.user.role !== "admin") {
+  // The real role enum is platform_admin / tenant_admin / marketer / client
+  // (docs/dev/architecture.md §3.3). Spec §2.1 decision 5.2 says "admin role"
+  // — admit both admin tiers and reject marketers + clients.
+  if (session.user.role !== "platform_admin" && session.user.role !== "tenant_admin") {
     redirect(`/${locale}/dashboard`);
   }
 

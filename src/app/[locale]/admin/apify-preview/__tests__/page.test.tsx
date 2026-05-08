@@ -53,8 +53,11 @@ vi.mock("../StatsCards", () => ({
 
 import ApifyPreviewPage from "../page";
 
-const adminSession = {
-  user: { id: "u1", role: "admin", tenantId: "t1", email: "admin@example.com" },
+const tenantAdminSession = {
+  user: { id: "u1", role: "tenant_admin", tenantId: "t1", email: "admin@example.com" },
+};
+const platformAdminSession = {
+  user: { id: "u3", role: "platform_admin", tenantId: "t1", email: "platform@example.com" },
 };
 const marketerSession = {
   user: { id: "u2", role: "marketer", tenantId: "t1", email: "ops@example.com" },
@@ -73,8 +76,8 @@ afterEach(() => {
 });
 
 describe("BL-012-F001 /[locale]/admin/apify-preview auth gate", () => {
-  it("renders the read-only banner + preview table for admin role", async () => {
-    authMock.mockResolvedValue(adminSession);
+  it("renders the read-only banner + preview table for tenant_admin role", async () => {
+    authMock.mockResolvedValue(tenantAdminSession);
     fetchApifyKolPageMock.mockResolvedValue({
       data: [],
       raw: {},
@@ -96,6 +99,27 @@ describe("BL-012-F001 /[locale]/admin/apify-preview auth gate", () => {
     expect(fetchApifyKolPageMock).toHaveBeenCalledTimes(1);
   });
 
+  it("also renders for the platform_admin role", async () => {
+    authMock.mockResolvedValue(platformAdminSession);
+    fetchApifyKolPageMock.mockResolvedValue({
+      data: [],
+      raw: {},
+      page: 1,
+      pageSize: 50,
+      total: 0,
+    });
+
+    const node = await ApifyPreviewPage({
+      params: Promise.resolve({ locale: "en" }),
+      searchParams: emptySearchParams,
+    });
+    const html = renderToStaticMarkup(node);
+
+    expect(redirectMock).not.toHaveBeenCalled();
+    expect(html).toContain("apify-preview-readonly-banner");
+    expect(html).toContain("preview-table-stub");
+  });
+
   it("redirects marketer users to the locale-prefixed dashboard", async () => {
     authMock.mockResolvedValue(marketerSession);
 
@@ -108,6 +132,26 @@ describe("BL-012-F001 /[locale]/admin/apify-preview auth gate", () => {
 
     expect(redirectMock).toHaveBeenCalledWith("/zh/dashboard");
     expect(fetchApifyKolPageMock).not.toHaveBeenCalled();
+  });
+
+  it("redirects users carrying the legacy literal 'admin' role to dashboard", async () => {
+    // Regression for BL-012-F001 verifying-2026-05-08: the prior
+    // implementation used `role === "admin"`, which never matched the
+    // real seed (`tenant_admin`) and silently rejected every admin user.
+    // Pin the new behaviour: a user carrying just "admin" (which the
+    // production schema does not produce) is rejected like any other
+    // non-admin tier.
+    authMock.mockResolvedValue({
+      user: { id: "u4", role: "admin", tenantId: "t1", email: "ghost@example.com" },
+    });
+
+    await expect(
+      ApifyPreviewPage({
+        params: Promise.resolve({ locale: "en" }),
+        searchParams: emptySearchParams,
+      })
+    ).rejects.toThrow("NEXT_REDIRECT:/en/dashboard");
+    expect(redirectMock).toHaveBeenCalledWith("/en/dashboard");
   });
 
   it("redirects unauthenticated visitors to the locale-prefixed login", async () => {
@@ -137,7 +181,7 @@ describe("BL-012-F001 /[locale]/admin/apify-preview auth gate", () => {
 
 describe("BL-012-F003 server fetch error rendering", () => {
   it("shows the fetch-error banner when the upstream client throws", async () => {
-    authMock.mockResolvedValue(adminSession);
+    authMock.mockResolvedValue(tenantAdminSession);
     const { ApifyPreviewError } = await import("@/lib/admin/apify-preview-client");
     fetchApifyKolPageMock.mockRejectedValue(
       new ApifyPreviewError("unauthorized", "fork rejected the api key", 401)
