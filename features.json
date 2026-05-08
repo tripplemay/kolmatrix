@@ -1,253 +1,117 @@
 [
   {
     "id": "F001",
-    "stage": "1.5",
-    "title": "/[locale]/admin/apify-preview 路由 + admin auth gate（决议 5.1+5.2）",
+    "title": "apify-kol mapper 加 engagement_rate derive 计算 + 单测 ≥3 case",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "completed",
+    "status": "pending",
     "acceptance": [
-      "src/app/[locale]/admin/apify-preview/page.tsx 新建 (server component, async)",
-      "admin auth gate: session?.user?.role === 'admin' check; 非 admin → 302 redirect 到 dashboard",
-      "page metadata: title='Apify-KOL Preview (READ-ONLY) — KOLMatrix'",
-      "顶部警告 banner: '数据未入库，仅审视用 / Read-only preview - data NOT in main DB' (中英双语 i18n)",
-      "i18n key: admin.apifyPreview.{title,readOnlyWarning,filterPlatform,filterMinFollowers,...} 加 5 locale (ja/ko/es 与 en 同 sufficient for admin tool)",
-      "单测 ≥3 case: admin role 渲染 page / marketer role redirect / unauth redirect",
-      "L1 lint + tsc PASS"
+      "src/lib/kol-sync/adapters/apify-kol.ts mapApifyKolItemToRawKolData() 加 engagement_rate derive 计算",
+      "公式: (totalLikes / postsCount) / followers * 100；边界 null 处理: followers=0 OR postsCount=0 OR totalLikes=null → engagement_rate = null",
+      "单测 ≥3 case: (a) 完整数据 (followers=100K, postsCount=50, totalLikes=500K) → engagement_rate ≈ 10; (b) followers=0 OR postsCount=0 → null; (c) totalLikes=null → null",
+      "RawKolData.engagement_rate 类型: number | null (与 BL-023 模式一致)",
+      "L1 lint 0 + tsc 0 + 单测 PASS"
     ]
   },
   {
     "id": "F002",
-    "stage": "1.5",
-    "title": "server-side fetch fork apify-kol-service GET /kol API + zod parse + raw JSON 留档",
+    "title": "全量 recompute apify-kol 既有 237 KOL engagement_rate (SQL ops)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.7,
-    "status": "completed",
+    "estimated_hours": 0.3,
+    "status": "pending",
     "acceptance": [
-      "src/lib/admin/apify-preview-client.ts 新建：fetch fork GET {APIFY_KOL_BASE_URL}/kol?platform=...&page=N&pageSize=50&sort=recent header x-api-key={APIFY_KOL_BUSINESS_API_KEY}",
-      "zod schema 验证 fork response: ApifyKolItemSchema (id/platform/platformUserId/username/displayName/bio/avatarUrl/profileUrl/followers/following/postsCount/totalLikes/totalViews/verified/isBusinessAccount/emails[]/phones[]/socialHandles{}/externalUrl/externalUrls[]/aggregatorUrl/aggregatorEmails[]/aggregatorLinks{}/relevanceScore/influenceScore/qualityScore/reachabilityScore/matchedTags[]/matchedKeywords[]/tier/isSeed) + ApifyKolPageSchema {data, page, pageSize, total}",
-      "错误处理: env 缺失 throw / 401-403 throw / 429 throw / 5xx throw / timeout 30s",
-      "preview 页消费者获取 data + 同时保留 raw JSON for expand panel",
-      "数据流隔离铁律 (spec §2.2): 此 client 不 import @/lib/kol-sync/* 任一模块 / 不调 prisma.kol.* / 仅 fetch + render",
-      "Reviewer L1 grep 守门: grep 'prisma.kol' src/lib/admin/ + grep 'kol-sync' src/lib/admin/ 都返回 0 (确认隔离)",
-      "单测 ≥3 case: 成功 fetch / 401 throw / zod 校验失败"
+      "scripts/sql/BL-059-F002-recompute-apify-kol-engagement.sql 新建 (spec §3.1 SQL 实装)",
+      "Staging 先 dry-run 验证: SELECT COUNT 预期受影响行 = 237; SELECT 5 sample row before/after engagement_rate 值",
+      "Prod SSH ops 跑 UPDATE (Planner SSH 协助 + 事务保护)",
+      "Verify: SELECT COUNT(*) FROM kol WHERE metadata->>'source'='apify-kol' AND engagement_rate IS NOT NULL >= 200",
+      "无 audit_log 写入 (仅 UPDATE 字段，非删除)"
     ]
   },
   {
     "id": "F003",
-    "stage": "1.5",
-    "title": "主表格 + filter row + raw JSON expand panel + 字段质量 indicator",
+    "title": "soft delete 2584 youtube-api-daily KOL + audit_log (BEGIN/COMMIT SQL transaction)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1,
-    "status": "completed",
+    "estimated_hours": 0.4,
+    "status": "pending",
     "acceptance": [
-      "src/app/[locale]/admin/apify-preview/PreviewTable.tsx 新建 (client component)",
-      "Filter row: platform select (all/instagram/tiktok/youtube) + minFollowers number input + hasEmail toggle + sort select (relevance/followers/influence/quality/reachability/recent) + page size 50 + page N pagination (URL search params synced)",
-      "主表格列: username (链 profileUrl 新窗口) / platform / followers (千分隔) / verified (✓/—) / 4 维度评分 (4 dot 0-1 progress bar) / emails count (徽标) / matchedTags (chips top 3) / last_scraped_at (相对时间)",
-      "字段质量 indicator: 空字段标 'text-on-surface-variant/40' 灰；emails.length>0 标绿；aggregatorEmails.length>0 标紫",
-      "Row click → expand panel 显示完整 raw JSON (pretty-print + copy button)",
-      "Empty state: filter 命中 0 时显示 EmptyState '无数据，调整过滤条件'",
-      "Loading state: server fetch 期间 skeleton row × 5",
-      "单测 ≥4 case: 完整数据渲染 / 空字段 indicator / row click expand / pagination URL sync"
+      "scripts/sql/BL-059-F003-soft-delete-youtube-api-daily.sql 新建 (spec §3.2 SQL 实装含 BEGIN/COMMIT 事务保护)",
+      "audit_log payload 含: source, reason, kol_campaign_count, email_log_count, engagement_rate, value_score, follower_count, platform, handle (per spec §3.2)",
+      "Staging 先 dry-run (事务回滚验证): SELECT COUNT 预期受影响 = 2584",
+      "Prod SSH ops 跑 transaction (Planner SSH 协助)",
+      "Verify 1: SELECT COUNT(*) FROM kol WHERE metadata->>'source'='youtube-api-daily' AND deleted_at IS NOT NULL = 2584",
+      "Verify 2: SELECT COUNT(*) FROM audit_log WHERE action='kol.bulk_soft_delete' AND created_at >= '2026-05-09' = 2584",
+      "Verify 3: SELECT COUNT(*) FROM kol WHERE metadata->>'source'='youtube-api-daily' AND deleted_at IS NULL = 0"
     ]
   },
   {
     "id": "F004",
-    "stage": "1.5",
-    "title": "4 维度 stats cards + 阈值实时计算 + ✓/✗ 标记 (决议 5.4=B 决策门)",
+    "title": "删除 youtube.ts adapter + engagement-batch.ts + engagement-batch-client.ts + 关联测试",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.85,
-    "status": "completed",
+    "estimated_hours": 0.3,
+    "status": "pending",
     "acceptance": [
-      "src/app/[locale]/admin/apify-preview/StatsCards.tsx 新建 (client component, 接 preview 数据 props)",
-      "Card #1 字段完整度: 必填 5 字段 (username/displayName/followers/platform/profileUrl) 100% 非空 → ✓；email 抽取率 (emails.length>0 OR aggregatorEmails.length>0) 当前样本 ≥40% → ✓；任一不达标 → ✗ 红色",
-      "Card #2 4 维度评分分布: avg(relevanceScore + influenceScore) ≥0.5 + qualityScore + reachabilityScore 至少 60% 非 null + 评分非全 0 全 1 → ✓",
-      "Card #3 跨平台覆盖: IG/TT/YT/X 至少 3 平台有数据 + 任一平台 ≥100 条 + matchedTags 含 gaming/esports/mobilegame 等关键词命中率 ≥70% → ✓",
-      "Card #4 数据新鲜度: last_scraped_at 7 天内 ≥80% + 7-30 天 ≤15% + >30 天 ≤5% → ✓",
-      "每 card 显示当前样本量 (N) + 各阈值具体数字 (如 'email 抽取率: 35.2% / 阈值 ≥40% ✗')",
-      "Footer 总结: '决策门状态: 4/4 通过 → 启动 Stage 2 / 3/4 通过 → 反馈爬虫团队 ✗ 维度' (动态计算)",
-      "单测 ≥4 case: 4 维度边界值阈值（达标 / 不达标 / 边界值 / 空数据）"
+      "rm src/lib/kol-sync/adapters/youtube.ts (~21KB)",
+      "rm src/lib/kol-sync/engagement-batch.ts (~7.5KB)",
+      "rm src/lib/kol-sync/engagement-batch-client.ts (~3KB)",
+      "rm tests/integration/import-kol-from-youtube.test.ts (如存在)",
+      "rm src/lib/kol-sync/adapters/__tests__/youtube*.test.ts (如存在)",
+      "rm src/lib/kol-sync/__tests__/engagement-batch*.test.ts (如存在)",
+      "git log 历史保留 (仅 git rm 删文件，audit trail 完整)"
     ]
   },
   {
     "id": "F005",
-    "stage": "1.5",
-    "title": "i18n 中英双语 + admin 路径文案",
+    "title": "dispatcher / scripts / quality / refresh-selector 移除 youtube 注入 + source 分支",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.4,
-    "status": "completed",
+    "estimated_hours": 0.5,
+    "status": "pending",
     "acceptance": [
-      "messages/zh.json + messages/en.json 加 admin.apifyPreview.* 整段 (~25 keys: title/readOnlyWarning/filterPlatform/filterMinFollowers/filterHasEmail/sortOptions[6]/pagination/columns[8]/qualityIndicator/emptyState/loadingState/statsCards.{1-4}.{title,description,thresholds[3-4],pass,fail}/footerSummary)",
-      "messages/{ja,ko,es}.json admin.apifyPreview 段直接复用 en 版本 (admin 工具非业务 UI，不需 ja/ko/es native，BL-014 不阻塞)",
-      "i18n CI locale-coverage 守门 PASS (5 locale 同步加 keys，但 ja/ko/es 用 en 文案，明示 placeholder via comment in keys 列表) — 或者本批次 admin namespace 在 KEEP_AS_EN_PATHS allowlist (与既有 i18n CI 守门 BL-033-F004 框架一致)",
+      "src/lib/kol-sync/dispatcher.ts: 移除 YouTubeKolSyncAdapter import + 数组注入 (仅留 ApifyKolSyncAdapter + 必要的 mock)",
+      "scripts/kol-sync-daily.ts: 移除 new YouTubeKolSyncAdapter(...) 注入",
+      "src/lib/kol-sync/quality.ts: 移除 'youtube-api-daily' source 分支 (如有专属 quality 规则)",
+      "src/lib/kol-sync/refresh-selector.ts: 移除 youtube 平台特殊逻辑 (如有)",
+      "Grep 守门: grep -rn 'YouTubeKolSyncAdapter' src/ → 0 结果",
+      "Grep 守门: grep -rn 'process.env.YOUTUBE' src/ → 0 结果",
+      "Grep 守门: grep -rn 'youtube-api-daily' src/ scripts/ → 0 实质代码引用 (除 SQL ops 注释 / migration)",
       "L1 lint + tsc PASS"
     ]
   },
   {
     "id": "F006",
-    "stage": "1.5",
-    "title": "Stage 1.5 单测 + 集成测试 ≥1 case",
+    "title": "文档清理 (B6 spec archive + runbook 单 adapter + environment.md) + env vars 清理 (VM ops)",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "completed",
+    "status": "pending",
     "acceptance": [
-      "src/app/[locale]/admin/apify-preview/__tests__/page.test.tsx 单测 admin auth gate 3 case (F001 内已含; 此 task 整合既有)",
-      "src/lib/admin/__tests__/apify-preview-client.test.ts 单测 fetch + zod 3 case (F002 内已含)",
-      "src/app/[locale]/admin/apify-preview/__tests__/PreviewTable.test.tsx 单测 4 case (F003 内已含)",
-      "src/app/[locale]/admin/apify-preview/__tests__/StatsCards.test.tsx 单测 4 case (F004 内已含)",
-      "tests/integration/admin-apify-preview.test.ts 新建集成测试 ≥1 case: msw mock fork GET /kol 返回 50 条 → preview 页 SSR + 4 维度 stats 卡片实时计算正确 + 数据流隔离验证 (mock prisma.kol 不被调用)",
-      "L1 npm run test:integration 含本测试 PASS"
-    ]
-  },
-  {
-    "id": "F006a",
-    "stage": "1.5",
-    "title": "UserAvatarMenu 加 conditional admin tools section + Apify Preview 入口（v3 §4.5.6）",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "completed",
-    "acceptance": [
-      "src/lib/auth/roles.ts 新建 helper export function isAdminRole(role?: string | null): boolean { return ['platform_admin', 'tenant_admin'].includes(role ?? ''); }",
-      "src/app/[locale]/admin/apify-preview/page.tsx F001 既有 role check 重构使用 isAdminRole helper（避免字面 array 重复，与 F006a 严格一致 — v0.9.17/v0.9.18 auth role enum 实物核查铁律精神延伸）",
-      "src/components/layout/UserAvatarMenu.tsx 加 role prop (type: string | null | undefined) + 条件渲染 admin section（用 isAdminRole(role)）",
-      "admin section 视觉：在 settings MenuItem 后加 separator + 小标题 'Admin Tools' (uppercase tracking) + 1 项 MenuItem (icon='admin_panel_settings', text=t('userMenu.adminApifyPreview'), 链接到 /[locale]/admin/apify-preview 用 next/link)",
-      "src/components/layout/TopbarActions.tsx + Topbar.tsx + AppShellLayout.tsx 链路 prop 透传 user.role",
-      "src/app/[locale]/(app)/layout.tsx 从 session?.user?.role 传入 AppShellLayout（user 字段加 role）",
-      "messages/{en,zh,ja,ko,es}.json 加 userMenu.adminTools + userMenu.adminApifyPreview 5 locale (zh/en 中英主译 + ja/ko/es 同 LLM 候选 BL-014 后续 review)",
-      "scripts/material-symbols-icons-manifest.txt 加 admin_panel_settings (manifest pattern 5 — JSX icon prop) + 重生成 src/app/fonts/material-symbols-outlined.woff2",
-      "src/components/layout/__tests__/UserAvatarMenu.test.tsx 加 4 case: tenant_admin 渲染 admin section / platform_admin 渲染 / marketer 不渲染 / undefined role 不渲染",
-      "src/components/layout/__tests__/TopbarActions.test.tsx + AppShellLayout.test.tsx 既有 tests 适配 role prop 透传",
-      "L1: lint 0 + tsc 0 + npm test PASS（含新 4 单测 + 既有 tests 适配）",
-      "Staging deploy 实地验证：admin@kolmatrix.local (tenant_admin) 头像菜单见 admin section + 点 'Apify Preview' 跳到 /[locale]/admin/apify-preview / marketer@kolmatrix.local 头像菜单 不见 admin section（仍 profile/settings/signout 3 项）"
+      "git mv docs/specs/B6-kol-daily-sync-spec.md docs/archive/B6-kol-daily-sync-spec.md (保留 git 历史)",
+      "Archive 文件顶部加 deprecation header: '> ⚠️ DEPRECATED 2026-05-09 by BL-059 - youtube-api-daily 链路 deprecate, KOLMatrix KOL 数据源切换到单源 apify-kol。详见 docs/specs/BL-059-youtube-deprecate-and-engagement-derive-spec.md'",
+      "docs/dev/kol-sync-runbook.md 修订: §'双 adapter 双源容灾' 段 → §'apify-kol 单源 + cron schedules + 30 天 soft delete 回滚机制'",
+      ".auto-memory/environment.md 检查: 如有 YOUTUBE_DATA_API_KEY / YouTube Data API 引用，移除 (grep verify)",
+      "VM ops (Planner SSH 协助): 检查 /opt/kolmatrix/.env.production + /opt/kolmatrix-staging/.env.staging 含 YOUTUBE_DATA_API_KEY 等行，备份后移除 (如存在)",
+      "L1 markdown lint 不破"
     ]
   },
   {
     "id": "F007",
-    "stage": "2",
-    "title": "src/lib/kol-sync/adapters/apify-kol.ts 新建 + implements KolSyncAdapter (Stage 2 启动条件: 用户决策门通过 4/4)",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "completed",
-    "acceptance": [
-      "Generator 启动 F007 前必须验证: progress.json session_notes 或 docs/specs/BL-012-stage1.5-feedback-log-*.md 含用户明示 '决策门通过 4/4，启动 Stage 2' 字样; 否则 F007 not 启动",
-      "src/lib/kol-sync/adapters/apify-kol.ts 新文件 implements KolSyncAdapter (src/lib/kol-sync/types.ts 既有 trait)",
-      "name='apify-kol' / source='apify-kol' (与 metadata.source 字段一致；与 youtube.ts 命名风格对齐)",
-      "ApifyKolAdapterConfig: { baseUrl, apiKey, maxRequestsPerSecond?: number, maxItemsPerRun?: number }",
-      "discover(params: SyncParams): Promise<RawKolData[]> — 调 fork 端 GET /kol?platform=...&page=N&pageSize=100&sort=recent，循环到 data.length < pageSize 或 maxItemsPerRun 上限退出",
-      "refresh(externalIds): Promise<RawKolData[]> — externalId 形式 'platform:platformUserId'，按 platform 分组调 GET /kol/:platform/:userId per id；404 返回 null skip",
-      "healthCheck(): Promise<HealthCheckResult> — GET /health → { healthy: body.status === 'ok', details: { upstream: 'apify-kol-service' } }",
-      "私有 fetch() 方法：URL = baseUrl + path / headers['x-api-key'] = apiKey / 错误分类 (401/403 AdapterAuthError / 429 AdapterRateLimitError 含 Retry-After / 5xx AdapterTransientError 走 withRetry)",
-      "可复用 F002 的 src/lib/admin/apify-preview-client.ts zod schema (ApifyKolItemSchema) — 提取到 src/lib/apify-kol/schemas.ts 共享 (本 commit 同步重构)",
-      "L1 lint + tsc PASS"
-    ]
-  },
-  {
-    "id": "F008",
-    "stage": "2",
-    "title": "mapApifyKolItemToRawKolData() 字段映射 (fork camelCase → KOLMatrix RawKolData)",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 0.85,
-    "status": "completed",
-    "acceptance": [
-      "src/lib/kol-sync/adapters/apify-kol.ts 内 export function mapApifyKolItemToRawKolData(item) → RawKolData",
-      "字段映射完整 (spec v1 §2.2 表): externalId(id) / platform / handle(username) / displayName / description(bio) / thumbnailUrl(avatarUrl) / subscriberCount(followers) / topicCategories(matchedTags)",
-      "country / language / lastUploadAt / brandSafetyRating 设为 null (fork 实物不带；后续 enrichment 补)",
-      "raw 整体存 fork 端原响应 (含 relevanceScore / influenceScore / qualityScore / reachabilityScore / tier / emails[] / phones[] / aggregatorEmails[] / matchedKeywords / isSeed / externalUrl / externalUrls / socialHandles / aggregatorLinks / verified / isBusinessAccount / postsCount / following / totalLikes / totalViews)",
-      "fork 实物 totalLikes / totalViews / postsCount 等 number 直传 (fork 端 service 已 bigint→number)",
-      "单测 ≥3 case：(a) 完整 IG profile (含 emails + scores) / (b) 缺 email + null scores 的 TT profile / (c) 缺 isBusinessAccount + totalLikes 的 YT profile",
-      "L1 单测 PASS"
-    ]
-  },
-  {
-    "id": "F009",
-    "stage": "2",
-    "title": "tests/integration/apify-kol-adapter.test.ts 集成测试 ≥4 case",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 1,
-    "status": "completed",
-    "acceptance": [
-      "tests/integration/apify-kol-adapter.test.ts 新文件，msw 或 vitest http fixture mock fork 端响应",
-      "Case 1 discover 多页：mock 3 页 100/100/57 → adapter 返回 257 条 RawKolData / 退出条件正确",
-      "Case 2 discover 429 + Retry-After：mock 第 2 页返回 429 with Retry-After: 5 header → adapter 等待 5s 后重试 → 第 3 次成功",
-      "Case 3 refresh 单个 KOL：mock GET /kol/tiktok/123456 → 字段映射通过 mapApifyKolItemToRawKolData → 与 import.ts 既有 Prisma upsert 行为一致",
-      "Case 4 healthCheck OK：mock /health → { status: 'ok' } → adapter healthCheck() 返回 healthy=true",
-      "测试用 vitest threads pool",
-      "L1 npm run test:integration 含本测试 PASS"
-    ]
-  },
-  {
-    "id": "F010",
-    "stage": "2",
-    "title": "dispatcher 集成 + scripts/kol-sync-daily.ts 注入 ApifyKolSyncAdapter + quality.ts 加 source 分支",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 0.85,
-    "status": "completed",
-    "acceptance": [
-      "scripts/kol-sync-daily.ts 修改：new KolSyncDispatcher 数组加 new ApifyKolSyncAdapter({ baseUrl: process.env.APIFY_KOL_BASE_URL!, apiKey: process.env.APIFY_KOL_BUSINESS_API_KEY!, maxRequestsPerSecond: 5, maxItemsPerRun: 5000 })",
-      "src/lib/kol-sync/quality.ts 加 'apify-kol' source 分支质量过滤规则 (继承 youtube 规则 + 加 fork 端 4 维度评分作辅助：relevanceScore < 0.2 + influenceScore < 0.2 双低则 quality 标 'low')",
-      "src/lib/kol-sync/dispatcher.ts 既有循环逻辑零改动",
-      "本机干跑 npm run kol-sync:daily 模拟 (用 mock baseUrl 验证 dispatcher 不 crash)",
-      "L1 lint + tsc PASS"
-    ]
-  },
-  {
-    "id": "F011",
-    "stage": "2",
-    "title": "删除 src/lib/kol-sync/adapters/crawler-team.ts.todo 占位 + grep 全仓更新引用",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 0.3,
-    "status": "completed",
-    "acceptance": [
-      "rm src/lib/kol-sync/adapters/crawler-team.ts.todo (与 5/7 fork 实物 API 不一致，audit §6.2 已确认)",
-      "grep -rn 'crawler-team.ts.todo' . 全仓更新引用 (如 docs/specs/B6-kol-daily-sync-spec.md §F006 / docs/product/KOLMatrix-MVP-PRD.md §12 等如有引用，改为 apify-kol.ts)",
-      "git log -- src/lib/kol-sync/adapters/crawler-team.ts.todo 历史保留 (仅删除文件，audit trail 完整)",
-      "delete commit message 含 'F011 delete obsolete crawler-team.ts.todo placeholder'"
-    ]
-  },
-  {
-    "id": "F012",
-    "stage": "2",
-    "title": "docs/dev/kol-sync-runbook.md 更新双 adapter 调度说明 + .auto-memory/environment.md secrets 表 +2 行 + 新增 §apify-kol service 段",
+    "title": "L1 全套验证 + staging smoke + prod redeploy 准备",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "completed",
-    "acceptance": [
-      "docs/dev/kol-sync-runbook.md 加 §'双 adapter 双源容灾' 段：B6 YouTube + apify-kol 双源 / metadata.source 字段区分 / 故障互备路径 / cron 调度 00:30 UTC",
-      ".auto-memory/environment.md secrets 表加 2 行：APIFY_KOL_BASE_URL (http://localhost:3003 prod / staging 同) + APIFY_KOL_BUSINESS_API_KEY (来自 fork 端 .env BUSINESS_API_KEY)",
-      "docs/dev/kol-sync-runbook.md 新增 §'apify-kol-service fork 同步流程'：(1) 同步前兼容性 check (gh api fork commits since last sync + 审查 admin API path/response shape/env vars/platform enum/sed workaround 失效信号 5 点) (2) 同步执行 B 方案 (git fetch origin master + git reset --hard + 重 apply 2 sed workaround: Dockerfile --no-frozen-lockfile + docker-compose.yml 3003:3000 + sudo docker compose down/up -d --build + smoke curl /health) (3) 数据保留说明 (pg_data volume 保留 / .env 保留 / docker compose down 不带 -v) (4) 长期 todo: 反馈爬虫团队修 4 fork bug 后 sed workaround 自然失效",
-      ".auto-memory/environment.md 新增 §'apify-kol service (同 VM 共生)' 段：部署路径 /opt/apify-kol-service / 端口 3003 / PG 端口 15432 / TIKHUB_TOKEN 由爬虫团队提供 / 月度 paid balance 监控 (/admin/stats) / Stage 1.5 admin preview 页 link",
-      "L1 markdown lint PASS (如有 markdownlint)"
-    ]
-  },
-  {
-    "id": "F013",
-    "stage": "2",
-    "title": "L1 全套验证 + 双 adapter 不互扰回归 (Stage 2 完成回归)",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 0.4,
-    "status": "completed",
+    "status": "pending",
     "acceptance": [
       "npm run lint → 0 error (warning OK)",
       "npx tsc --noEmit → 0 error",
-      "npm test → 1084+ tests 全 PASS (含新 F008 单测 ≥3 + F009 IT ≥4 + Stage 1.5 单测/集成测试 = 14+ 新增)",
-      "npm run test:integration → 既有 + 本批次 IT PASS (pre-commit-hook.test.ts flaky 按 v0.9.16 P5.2 acceptance 边界划归 BL-054 不计入)",
-      "B6 YouTube adapter + apify-kol adapter 双源容灾验证: mock 一端 fail → dispatcher 另一端继续",
-      "git diff --stat 确认改动文件清单符合本批次范围",
-      "Reviewer 审视范围: F001-F012 acceptance 表逐项 + Stage 1.5 数据隔离铁律 (preview 页代码不 import @/lib/kol-sync/* 任一模块) + Stage 2 双源容灾"
+      "npm test → 全 PASS (删 youtube 测试 + 新 F001 单测 ≥3 案例，预期净变化保持 1131+ 量级)",
+      "npm run test:integration → 既有 + apify-kol-adapter PASS (pre-commit-hook flaky 按 v0.9.16 P5.2 acceptance 边界划归 BL-054 不计入)",
+      "Staging deploy: ssh + git pull + NODE_OPTIONS=4096 build + pm2 reload kolmatrix-staging → curl /api/health PASS + git_sha 匹配",
+      "Staging smoke: /zh/admin/apify-preview 渲染正常 / /zh/discovery + /zh/database KOL 数量 ~250 (仅 apify-kol 数据，soft delete 后 youtube-api-daily 不可见)",
+      "Reviewer 接力 verifying (覆盖 F001-F006 全部 acceptance + 数据状态 3 SQL count + 代码状态 4 grep check)"
     ]
   }
 ]
