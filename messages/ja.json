@@ -205,6 +205,9 @@
       "offline": "オフラインです。再接続中…",
       "backOnline": "接続が回復しました"
     },
+    "brand": {
+      "subtitle": "ゲーム KOL マーケティングプラットフォーム"
+    },
     "emptyState": {
       "noProducts": {
         "title": "まだ商品がありません",
@@ -1149,7 +1152,7 @@
       "complianceValue": "GDPR準拠",
       "dailyLimitLabel": "1日の制限",
       "dailyLimitValue": "今日 {sent} / {limit} 件送信済み",
-      "engineVersion": "KOLMatrix Neural Velocity Engine v4.2.0"
+      "engineVersion": "KOLMatrix エンジン v4.2.0"
     }
   },
   "crm": {

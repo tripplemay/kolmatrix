@@ -27,7 +27,10 @@ const materialSymbols = localFont({
 
 export const metadata: Metadata = {
   title: "KOLMatrix",
-  description: "Neural Velocity — AI-driven KOL campaign command center",
+  // BL-055 F005 — replaces the Stitch-design codename "Neural Velocity"
+  // with the bilingual product tagline so SEO + browser-tab preview
+  // match what the sidebar renders.
+  description: "KOLMatrix — Game KOL Marketing Platform / 游戏 KOL 智能营销平台",
 };
 
 export default async function RootLayout({

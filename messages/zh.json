@@ -205,6 +205,9 @@
       "offline": "网络已断开，正在重连…",
       "backOnline": "已恢复连接"
     },
+    "brand": {
+      "subtitle": "游戏 KOL 智能营销平台"
+    },
     "emptyState": {
       "noProducts": {
         "title": "还没有产品",
@@ -1065,7 +1068,7 @@
       "complianceValue": "GDPR 合规",
       "dailyLimitLabel": "每日上限",
       "dailyLimitValue": "今日已发 {sent} / 上限 {limit}",
-      "engineVersion": "KOLMatrix Neural Velocity Engine v4.2.0"
+      "engineVersion": "KOLMatrix 引擎 v4.2.0"
     }
   },
   "crm": {

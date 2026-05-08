@@ -205,6 +205,9 @@
       "offline": "Estás sin conexión. Reconectando…",
       "backOnline": "De nuevo en línea"
     },
+    "brand": {
+      "subtitle": "Plataforma de Marketing de KOL para Juegos"
+    },
     "emptyState": {
       "noProducts": {
         "title": "Aún no hay productos",
@@ -1149,7 +1152,7 @@
       "complianceValue": "Cumple con GDPR",
       "dailyLimitLabel": "Límite diario",
       "dailyLimitValue": "{sent} / {limit} enviados hoy",
-      "engineVersion": "KOLMatrix Neural Velocity Engine v4.2.0"
+      "engineVersion": "KOLMatrix Motor v4.2.0"
     }
   },
   "crm": {

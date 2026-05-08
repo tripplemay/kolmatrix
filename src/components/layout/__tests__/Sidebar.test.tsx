@@ -26,6 +26,19 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+// BL-055 F005: SidebarLogo is now an async server component that pulls
+// `common.brand.subtitle` via getTranslations. The Sidebar shell test
+// only cares that the brand block + nav + user chip coexist in the
+// aside, so we stub SidebarLogo with a sync placeholder rather than
+// wiring next-intl/server into the suspense boundary.
+vi.mock("../SidebarLogo", () => ({
+  SidebarLogo: () => (
+    <div data-testid="sidebar-logo-stub">
+      <span>KOLMatrix</span>
+    </div>
+  ),
+}));
+
 describe("Sidebar", () => {
   const user = { name: "Sarah Chen", role: "Marketer" };
 

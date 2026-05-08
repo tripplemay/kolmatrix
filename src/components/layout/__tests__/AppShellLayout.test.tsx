@@ -27,6 +27,14 @@ vi.mock("@/app/[locale]/(app)/actions", () => ({
   updateUserLocale: vi.fn().mockResolvedValue(undefined),
 }));
 
+// BL-055 F005: SidebarLogo became an async server component (i18n
+// subtitle). The shell test only proves the layout composition, so a
+// sync stub keeps the suspense boundary clean instead of pulling in
+// next-intl/server here.
+vi.mock("../SidebarLogo", () => ({
+  SidebarLogo: () => <div data-testid="sidebar-logo-stub">KOLMatrix</div>,
+}));
+
 describe("AppShellLayout", () => {
   const user = { name: "Sarah Chen", role: "Marketer", email: "sarah@kolmatrix.local" };
 

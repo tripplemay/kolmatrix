@@ -205,6 +205,9 @@
       "offline": "오프라인 상태입니다. 재연결 중…",
       "backOnline": "다시 온라인"
     },
+    "brand": {
+      "subtitle": "게임 KOL 마케팅 플랫폼"
+    },
     "emptyState": {
       "noProducts": {
         "title": "아직 제품이 없습니다",
@@ -1149,7 +1152,7 @@
       "complianceValue": "GDPR 준수",
       "dailyLimitLabel": "일일 제한",
       "dailyLimitValue": "오늘 {sent} / {limit} 발송됨",
-      "engineVersion": "KOLMatrix Neural Velocity Engine v4.2.0"
+      "engineVersion": "KOLMatrix 엔진 v4.2.0"
     }
   },
   "crm": {
