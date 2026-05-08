@@ -1,17 +1,18 @@
-# BL-012 apify-kol-integration Signoff 2026-05-08
+# BL-012 apify-kol-integration Signoff 2026-05-09
 
 > 状态：**Reviewer signoff PASS**
-> 触发：BL-012 `reverifying` 完成 fix-round 1 + F006a + fix-round 2 的综合复验
+> 触发：BL-012 `verifying` 完成 Stage 2 进入后的 staging 复验
 > Reviewer：Codex
 
 ## 总体结论
 
-- BL-012 Stage 1.5 + F006a 已完成签收，结论为 `Ready`。
+- BL-012 Stage 1.5 + F006a + Stage 2 已完成签收，结论为 `Ready`。
 - 关键 blocker 已闭合：
   - `/[locale]/admin/apify-preview` 允许真实种子管理员 `tenant_admin`
   - `marketer` 仍被正确重定向回 dashboard
   - `UserAvatarMenu` 对 admin role 透传正确，管理员头像菜单出现 `Admin Tools / Apify Preview`
   - fix-round 2 后 preview 页可用真实 prod 数据渲染，不再因 `externalUrls` / `aggregatorLinks` 形状触发 zod 解析失败
+  - `apify-kol` adapter、mapper、quality 分支、daily sync 注入与相关测试均已落地
   - preview 页保持 read-only，没有数据流回写 main DB 的迹象
 
 ## 验收结果
@@ -22,15 +23,19 @@
 - BL-012 相关测试通过：
   - `npx vitest run --config vitest.config.ts "src/lib/admin/__tests__/apify-preview-client.test.ts" "src/app/[locale]/admin/apify-preview/__tests__/page.test.tsx" "src/components/layout/__tests__/UserAvatarMenu.test.tsx" "src/components/layout/__tests__/TopbarActions.test.tsx" "src/components/layout/__tests__/AppShellLayout.test.tsx"` -> 5 files / 25 tests PASS
   - `npx vitest run --config vitest.integration.config.ts tests/integration/admin-apify-preview.test.ts` -> 1 file / 3 tests PASS
+- Stage 2 测试通过：
+  - `npx vitest run --config vitest.config.ts 'src/lib/kol-sync/__tests__/apify-kol.ts' 'src/lib/kol-sync/adapters/apify-kol.ts' 'tests/unit/apify-kol-adapter.test.ts' 'tests/unit/kol-sync-quality.test.ts'` -> 2 files / 32 tests PASS
+  - `npx vitest run --config vitest.integration.config.ts tests/integration/apify-kol-adapter.test.ts` -> 1 file / 5 tests PASS
 - 全量回归通过：
-  - `npm run test` -> 158 files / 1113 tests PASS
+  - `npm run test` -> 159 files / 1131 tests PASS
 - Staging smoke 通过：
   - `admin@kolmatrix.local` 登录后可进入 `/en/admin/apify-preview`
   - 页面标题为 `Apify-KOL Preview (READ-ONLY)`
   - 只读 banner 可见
   - `Admin Tools` 菜单项对 `tenant_admin` 可见，对 `marketer` 不可见
   - `marketer@kolmatrix.local` 访问同页会被重定向回 `/en/dashboard`
-  - prod `https://kol.guangai.ai/en/admin/apify-preview` 以真实数据渲染成功，`tableRows = 50`，无 fetch-error banner
+  - `https://staging.kol.guangai.ai/en/admin/apify-preview` 以真实数据渲染成功，`tableRows = 50`，无 fetch-error banner
+  - `tenant_admin` 菜单进入路径与 `marketer` 重定向路径都正常
 
 ## 关键证据
 
@@ -64,22 +69,35 @@
   - `externalUrls` 接受 `{url, title}` 对象数组
   - `aggregatorLinks` 接受数组或 record
 
-### 4. 数据流隔离保持
+### 4. Stage 2 adapter 已通过
+
+- `src/lib/kol-sync/adapters/apify-kol.ts` 已实装 `KolSyncAdapter`：
+  - `discover()` 分页拉取 `/kol`
+  - `refresh()` 回刷单条 `/kol/:platform/:userId`
+  - `healthCheck()` 探测 `/health`
+  - 401/403/429/5xx/timeout/parse 都按预期分类
+- `src/lib/kol-sync/quality.ts` 已增加 `apify-kol` 双低过滤规则。
+- `scripts/kol-sync-daily.ts` 已注入 `ApifyKolSyncAdapter`，并保留 YouTube 双源容灾。
+- `tests/integration/apify-kol-adapter.test.ts` 已覆盖 discover / retry-after / refresh / healthCheck / 404 skip。
+- `src/lib/apify-kol/schemas.ts` 作为共享 schema 已被 preview client 和 adapter 同时消费。
+
+### 5. 数据流隔离保持
 
 - `tests/integration/admin-apify-preview.test.ts` 继续证明：
   - preview client 只走 fork API
   - `src/lib/admin` 不导入 `@/lib/kol-sync/*`
   - `src/lib/admin` 不直接写 `prisma.kol.*`
 
-### 5. 运行时核对
+### 6. 运行时核对
 
 - 角色门修复后，staging 上 `tenant_admin` 能看到只读预览页，不再被踢回 dashboard。
 - `marketer` 仍然被正确挡回 dashboard，符合可见性约束。
-- prod 上 `/en/admin/apify-preview` 现在可正常加载真实数据，页面展示 50 行样本并计算 4 维度门控结果。
+- staging 上 `/en/admin/apify-preview` 现在可正常加载真实数据，页面展示 50 行样本并计算 4 维度门控结果。
+- `npm run kol-sync:daily:dry` 在当前本地 shell 上提示 `APIFY_KOL_BASE_URL` / `APIFY_KOL_BUSINESS_API_KEY` 缺失且 `/var/log/kolmatrix-kol-sync.log` 无写权限，这属于本地环境限制，不是代码回归。
 
 ## 说明
 
-- 本次 signoff 聚焦 BL-012 Stage 1.5 的 preview 页、F006a admin menu、fix-round 2 的 zod schema 兼容性、权限门、只读展示和数据流隔离。
+- 本次 signoff 聚焦 BL-012 Stage 1.5 的 preview 页、F006a admin menu、Stage 2 adapter/mapper/quality/runbook 注入、fix-round 2 的 zod schema 兼容性、权限门、只读展示和数据流隔离。
 - `prod` 样本的 4 维度门控结果当前为 `1 / 4 passed`，这是数据质量观察，不是技术阻断。
 - 早前出现的 `material-symbols-coverage` 外部网络 flake 不属于本批阻断项，不作为本次签收门槛。
 
