@@ -95,7 +95,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/app/[locale]/admin/apify-preview/__tests__/page.test.tsx 单测 admin auth gate 3 case (F001 内已含; 此 task 整合既有)",
       "src/lib/admin/__tests__/apify-preview-client.test.ts 单测 fetch + zod 3 case (F002 内已含)",
