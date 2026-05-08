@@ -8,6 +8,7 @@ type: project
 - 决议 1B/2A/3B/4A/5B + 5.1A/5.2A/5.3A/5.4B/5.5B；spec v2 @ docs/specs/BL-012-apify-kol-integration-spec.md
 - ⚠️ Fork 端 3 bug 已 sed workaround（lockfile / ports 硬编码 / X 平台未实装），建议用户反馈爬虫团队
 - Stage 1.5 启动条件：KOL ≥200 + ≥3 平台 → Generator F001-F006 admin preview 页 ~3.5h
+- Reviewer 15:32 复验：L1/集成 PASS，但 staging preview 仍被 role gate 挡回 dashboard（seed admin=tenant_admin，route 只认 admin）
 ## ✅ BL-055 DONE 5/8 11:02（A-/Ready，6 hotfix 闭合，prod redeploy 待用户触发）
 ## ✅ BL-052 DONE 5/8 prod / BL-051a 5/7 / BL-049 5/7 / BL-021+BL-023 5/7 / BL-043+BL-044 5/6
 ## 🆕 BL-053 暂不立项 / BL-054-flaky-test-isolate medium / BL-056-notifications low post-MVP

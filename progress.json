@@ -5,7 +5,7 @@
   "completed_features": 6,
   "fix_rounds": 0,
   "current_sprint": "BL-012-apify-kol-integration",
-  "last_updated": "2026-05-08T15:15+0800",
+  "last_updated": "2026-05-08T15:32+0800",
   "reference_docs": [
     "docs/specs/BL-012-apify-kol-integration-spec.md",
     "docs/reviews/apify-fork-audit-2026-05-08.md",
@@ -30,11 +30,11 @@
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
+  "evaluator_feedback": "BL-012 Stage 1.5 tests pass, but staging preview is blocked by role mismatch: the route expects role === 'admin' while prisma/seed.ts creates admin@kolmatrix.local as tenant_admin.",
   "generator_handoff": null,
   "session_notes": {
     "johnsong": "[2026-05-08 15:15 Generator johnsong — BL-012 Stage 1.5 building 完成 + staging deployed @ 9689453 + 切 verifying]\n\n用户授权 stage1 已完成 → Generator 接力 Stage 1.5 (F001-F006) 完成。\n\nFeatures (6/6 ✅):\n- F001: src/app/[locale]/admin/apify-preview/page.tsx server component + admin auth gate (admin 渲染 / marketer→/dashboard / unauth→/login / invalid locale fallback) + page.test.tsx 5 case\n- F002: src/lib/admin/apify-preview-client.ts fetch fork GET /kol + zod ApifyKolItemSchema + ApifyKolPageSchema + 6 错误分类 (config/unauthorized/rate_limit/transient/timeout/parse) + 30s timeout + apify-preview-client.test.ts 5 case\n- F003: PreviewTable.tsx client component + filter row (platform/minFollowers/hasEmail/sort) URL-synced via router.push + main table 8 列 + score dots + email count badges (green/purple/muted) + tags chips + lastScrapedAt 相对时间 + row click expand JSON + copy button + EmptyState + PreviewTable.test.tsx 4 case\n- F004: StatsCards.tsx + 4-dim 决策门 ((1) 字段完整度 5 必填+email 抽取率≥40%; (2) 评分均分≥0.5+QR 覆盖≥60%+非全 0/1; (3) 平台覆盖≥3+top≥100+gaming tag≥70%; (4) 新鲜度 7d≥80%+7-30d≤15%+>30d≤5%) + 视觉 ✓/✗ + footer 决策门状态 + StatsCards.test.tsx 4 case\n- F005: i18n 5 locale × 55 admin.apifyPreview leaves (en+zh native, ja/ko/es 复用 en + 33 paths in KEEP_AS_EN_PATHS allowlist) + i18n CI locale-coverage 8/8 PASS\n- F006: src/lib/admin/apify-preview-stats.ts 拆出 pure helpers (server-side 可用) + tests/integration/admin-apify-preview.test.ts 3 case (50-row msw mock + 4-dim aggregate ✓ end-to-end / 401 unauthorized / 静态数据流隔离守门 grep src/lib/admin 不含 kol-sync import + prisma.kol mutation)\n\n额外: chore commit 9689453 regen material-symbols woff2 (warning + search_off icons added) — F006 CI 抓住 stale woff2，本机 regen + 7/7 coverage PASS.\n\nL1 验证:\n- npm test: 158 files / 1107 tests PASS\n- npx tsc --noEmit: 0 error\n- npm run lint: 0 error (3 pre-existing warnings unrelated)\n- npx vitest run --config vitest.integration.config.ts tests/integration/admin-apify-preview.test.ts + material-symbols-coverage.test.ts: 全 PASS\n\n[staging deployed @ 9689453 @ 2026-05-08T15:14+0800]\n- ssh + git pull + npm ci + prisma migrate deploy (no pending) + NODE_OPTIONS=4096 npm run build + pm2 reload kolmatrix-staging (id 19) ✓\n- curl health (with X-Health-Token): status=healthy / git_sha=9689453 (= main HEAD) / DB ok 22ms / Redis ok 4ms\n- curl /en/admin/apify-preview: HTTP 307 → /en/login (auth gate works)\n\nReviewer 接力 verifying:\n- 范围: F001-F006 acceptance 表逐项 (auth gate / fetch zod / table render / 4-dim stats / i18n / 集成 + 数据流隔离)\n- L2 staging 实地: admin 账户 (admin@kolmatrix.local / 密码见用户密码管理器) 登录 → /en/admin/apify-preview 渲染 + 表格 + stats cards 4-dim 实时计算 + filter row URL sync + row click JSON expand + copy button + 切 zh 看 i18n\n- L2 marketer 实地: marketer@kolmatrix.local / KOLMatrix@2026! 登录 → /en/admin/apify-preview 应 redirect /en/dashboard\n- 数据流隔离硬条款: grep -rn 'from.*kol-sync\\\\|prisma\\\\.kol\\\\.' src/lib/admin/ → 仅 docstring 命中 (无实际 import/mutation)\n- 注意 §4.6 fork 数据累积可能尚未达 4-dim 阈值 (Card #3 platform≥100/Card #1 email≥40%/...) 这是 fork 端进度问题，非 KOLMatrix bug；Reviewer 标 INFO (不影响 BL-012 PASS) — 决策门由用户后续实地审视触发 Stage 2 启动\n\n下一步等用户:\n(a) Reviewer (Codex) 启动 verifying 出 signoff\n(b) 决策门弹性时段 → 用户审视 → 通过后启动 Stage 2 (F007-F013)\n(c) BL-055 prod redeploy + 5/13 上线含 BL-012 Stage 1+1.5",
-    "Reviewer": null
+    "Reviewer": "[2026-05-08 15:32 Reviewer Codex — BL-012 verifying: lint/tsc/test/integration PASS, but staging preview is blocked by role mismatch (route expects admin, seed creates tenant_admin); not ready for signoff]"
   },
   "features": []
 }
