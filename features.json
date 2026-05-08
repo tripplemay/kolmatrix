@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/components/common/NetworkStatusBanner.tsx 加 useState/useEffect mount-flag：const [mounted, setMounted] = useState(false); useEffect(() => setMounted(true), []); if (!mounted) return null; （插在 useNetworkStatus() 调用之后，原 if (isOnline && !showRestored) return null 之前）",
       "保留既有 useNetworkStatus hook 接口不变（hook 公共 API 零改动）",
@@ -21,7 +21,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.7,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/app/[locale]/(app)/outreach/OutreachTabs.tsx 改 async function，从 src/lib/email/templates 既有 query function（actions.ts:32 已 import 的，按 grep 实物确认 function 名）拉 tenant 的 EmailTemplate count，传给 templates tab 的 badge 字段",
       "删除 templates tab TabSpec 中 tooltipKey: 'comingB4'（保留 send_queue 的 tooltipKey 不动 — send_queue 仍未实装）",
@@ -37,7 +37,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/app/[locale]/(app)/knowledge-base/page.tsx 删 line 72-87 整个 <section aria-label={t('recentActivityTitle')}>...</section> block",
       "src/app/[locale]/(app)/knowledge-base/page.tsx 删 line 92-147 关联 const ACTIVITY_ICONS / ACTIVITY_TONES / TONE_CLASS / interface ActivityChipProps / function ActivityChip",
@@ -53,7 +53,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.4,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "scripts/material-symbols-icons-manifest.txt 加 4 行：'lightbulb # RoiInsightsPanel.tsx:140 + WeeklyReportInsightsPanel.tsx:90 | function return fallback' / 'insights # DatabaseInsightsClient.tsx:70 | function return fallback' / 'wifi # NetworkStatusBanner.tsx:65 | JSX ternary online branch' / 'wifi_off # NetworkStatusBanner.tsx:65 | JSX ternary offline branch'",
       "scripts/material-symbols-icons-manifest.txt 删 5 dead 行：compare_arrows / folder_open / more_vert / restart_alt / restore（grep 全仓 src/ --include='*.tsx' --include='*.ts' --exclude-dir=__tests__ 验证 5 icon 确实 dead）",
@@ -70,7 +70,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/components/layout/SidebarLogo.tsx 改 async server component（既已是 server component）+ getTranslations('common.brand') 拉 subtitle，渲染 t('subtitle') 替换硬编码 'Neural Velocity'",
       "messages/{en,zh,ja,ko,es}.json 加 common.brand.subtitle 5 locale（zh: '游戏 KOL 智能营销平台' / en: 'Game KOL Marketing Platform' / ja: 'ゲーム KOL マーケティングプラットフォーム' / ko: '게임 KOL 마케팅 플랫폼' / es: 'Plataforma de Marketing de KOL para Juegos'；Generator 开工前 5sec 用户 ack 此候选，如调整按用户最终值实装）",
@@ -88,7 +88,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.15,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/app/[locale]/(app)/layout.tsx:36 改 unreadNotifications={1} → unreadNotifications={0}",
       "同行加 TODO 注释：// TODO(BL-056): wire to real notifications query when system materialized post-MVP",
@@ -104,7 +104,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "npm run lint → 0 error（warning OK）",
       "npx tsc --noEmit → 0 error",
