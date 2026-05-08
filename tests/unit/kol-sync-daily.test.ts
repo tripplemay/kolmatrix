@@ -1,21 +1,21 @@
 /**
- * B6-kol-daily-sync F003 · Daily orchestrator unit fixtures.
+ * BL-059 · Daily orchestrator unit fixtures (post-deprecate).
  *
  * `runDaily` is the pure-orchestration core of `scripts/kol-sync-daily.ts`
  * — it takes adapters + Prisma + flags, drives healthCheck →
- * discover → import → refresh → import, and returns a structured
- * report. The bin entry point only handles arg parsing + dotenv +
- * file IO, so the orchestration logic is verified entirely from this
- * suite.
+ * discover → import → embed-hook, and returns a structured report.
+ * After BL-059 (5/9) the YouTube path + engagement-batch + tiered
+ * refresh have been removed; the orchestrator is now apify-kol-only,
+ * with the embedding hook as the only post-discover phase.
  *
- * Five describes cover:
- *   1. parseArgs — defaults / dry-run / refresh-batch validation
- *   2. dry-run — no API, no Prisma touched, plan-only report
- *   3. all-unhealthy — bails before discover, errors logged
- *   4. happy path — discover writes inserted, refresh writes updated,
- *      quota estimate accumulated
+ * Four describes cover:
+ *   1. parseArgs — defaults / dry-run; legacy --no-refresh +
+ *      --refresh-batch flags silently ignored for cron compat.
+ *   2. dry-run — no API, no Prisma touched, plan-only report.
+ *   3. all-unhealthy — bails before discover, errors logged.
+ *   4. happy path — discover writes inserted, no refresh phase.
  *   5. fail isolation — one adapter throws but the rest of the
- *      pipeline continues with non-OK outcome surfaced
+ *      pipeline continues with non-OK outcome surfaced.
  */
 import { describe, expect, it, vi } from "vitest";
 
@@ -25,62 +25,47 @@ import { parseArgs, runDaily } from "@/../scripts/kol-sync-daily";
 
 function fakeChannel(overrides: Partial<RawKolData>): RawKolData {
   return {
-    externalId: "UC_default",
-    platform: "youtube",
+    externalId: "ig_default",
+    platform: "instagram",
     handle: "@default",
-    displayName: "Default Channel",
+    displayName: "Default Creator",
     description: "Plays competitive FPS daily.",
     country: "US",
     language: "en",
     subscriberCount: 200_000,
-    videoCount: 300,
-    viewCount: 10_000_000,
     topicCategories: ["https://en.wikipedia.org/wiki/Action_game"],
-    publishedAt: "2018-01-01T00:00:00Z",
-    scrapedAt: "2026-04-28T08:30:00.000Z",
+    scrapedAt: "2026-05-09T00:30:00.000Z",
     ...overrides,
   };
 }
 
 describe("parseArgs", () => {
-  it("defaults to live + 200 refresh batch", () => {
-    expect(parseArgs([])).toEqual({
-      dryRun: false,
-      refreshBatch: 200,
-      noRefresh: false,
-    });
+  it("defaults to live (no dry-run)", () => {
+    expect(parseArgs([])).toEqual({ dryRun: false });
   });
 
-  it("accepts --dry-run + --no-refresh + --refresh-batch", () => {
-    expect(parseArgs(["--dry-run", "--no-refresh", "--refresh-batch", "50"])).toEqual({
-      dryRun: true,
-      refreshBatch: 50,
-      noRefresh: true,
-    });
+  it("accepts --dry-run", () => {
+    expect(parseArgs(["--dry-run"])).toEqual({ dryRun: true });
   });
 
-  it("rejects out-of-range refresh-batch", () => {
-    expect(() => parseArgs(["--refresh-batch", "-1"])).toThrow();
-    expect(() => parseArgs(["--refresh-batch", "1001"])).toThrow();
-    expect(() => parseArgs(["--refresh-batch", "junk"])).toThrow();
+  it("silently ignores legacy --no-refresh / --refresh-batch (BL-059 cron compat)", () => {
+    expect(parseArgs(["--no-refresh", "--refresh-batch", "50"])).toEqual({ dryRun: false });
+    expect(parseArgs(["--dry-run", "--no-refresh"])).toEqual({ dryRun: true });
   });
 });
 
 describe("runDaily · dry-run", () => {
-  it("returns a plan-only report with no discover / refresh / import", async () => {
+  it("returns a plan-only report with no discover / import", async () => {
     const adapter = new MockKolSyncAdapter({ name: "mock", channels: [] });
     const report = await runDaily({
       adapters: [adapter],
       prisma: null,
       tenantSlug: "demo",
       dryRun: true,
-      refreshBatch: 200,
-      noRefresh: false,
     });
     expect(report.discover).toBeNull();
-    expect(report.refresh).toBeNull();
     expect(report.importStats).toBeNull();
-    expect(report.refreshImportStats).toBeNull();
+    expect(report.embedStats).toBeNull();
     expect(report.errors).toEqual([]);
     // healthCheck still runs — 1u per adapter.
     expect(report.estimatedQuotaConsumed).toBe(1);
@@ -100,23 +85,20 @@ describe("runDaily · all unhealthy", () => {
       prisma: null,
       tenantSlug: "demo",
       dryRun: false,
-      refreshBatch: 200,
-      noRefresh: false,
       retry: { sleep: async () => {}, backoffsMs: [1, 1, 1] },
     });
     expect(report.discover).toBeNull();
-    expect(report.refresh).toBeNull();
     expect(report.errors).toEqual(["all adapters unhealthy — bailing before discover"]);
     expect(report.health.broken.healthy).toBe(false);
   });
 });
 
 describe("runDaily · happy path", () => {
-  it("writes discovered rows, then refreshes stale ones, accumulates quota estimate", async () => {
-    const ch1 = fakeChannel({ externalId: "UC_a" });
-    const ch2 = fakeChannel({ externalId: "UC_b" });
+  it("writes discovered rows tagged with the adapter source", async () => {
+    const ch1 = fakeChannel({ externalId: "ig_a", platform: "instagram" });
+    const ch2 = fakeChannel({ externalId: "tt_b", platform: "tiktok" });
     const adapter = new MockKolSyncAdapter({
-      name: "youtube",
+      name: "apify-kol",
       channels: [ch1, ch2],
     });
 
@@ -126,31 +108,8 @@ describe("runDaily · happy path", () => {
         findUnique: vi.fn(async () => ({ id: "tenant-1" })),
       },
       kol: {
-        // BIx-F004-P3: refresh now goes through `fetchTieredRefreshIds`
-        // which fans out into three findMany variants (top500 / tier3
-        // exclusion / flagged). Branch on the where shape so the
-        // happy-path keeps a deterministic two-id refresh batch.
-        findMany: vi.fn(async (args: { where?: Record<string, unknown> } = {}) => {
-          const where = (args.where ?? {}) as Record<string, unknown>;
-          // Flagged branch — return both rows so the suspicious
-          // injection is observable via 4 total upserts.
-          if (where.isSuspicious === true) {
-            return [{ externalId: "UC_a" }, { externalId: "UC_b" }];
-          }
-          // Tier 3 (id: { notIn: top500Ids }) → empty long-tail.
-          if (where.id) return [];
-          // Top-500 / embedding "touched" lookup → return ids+externalIds.
-          return [
-            { id: "k1", externalId: "UC_a" },
-            { id: "k2", externalId: "UC_b" },
-          ];
-        }),
-        findUnique: vi.fn(async () => {
-          // First findUnique per externalId returns null → 'inserted'.
-          // We can't easily track call sequence here without state; use
-          // null to keep insert path simple.
-          return null;
-        }),
+        findMany: vi.fn(async () => []), // embed-hook touched lookup → empty
+        findUnique: vi.fn(async () => null), // every row is fresh insert
         upsert: vi.fn(
           async ({
             where,
@@ -162,12 +121,6 @@ describe("runDaily · happy path", () => {
           }
         ),
       },
-      // B7a-F001 embed hook entry — orchestrator queries
-      // `prisma.kol.findMany` for ids touched, then calls
-      // `embedKolsForIds(prisma, ids)` which runs $queryRaw (BL-034 F004
-      // converted from $queryRawUnsafe to the tagged-template form).
-      // Returning an empty array short-circuits the embed loop, so the
-      // hook stays a no-op without polluting `report.errors`.
       $queryRaw: vi.fn(async () => []),
       $queryRawUnsafe: vi.fn(async () => []),
       $executeRaw: vi.fn(async () => 0),
@@ -175,25 +128,22 @@ describe("runDaily · happy path", () => {
 
     const report = await runDaily({
       adapters: [adapter],
-      // Cast: the orchestrator only touches the four methods above.
       prisma: fakePrisma as unknown as Parameters<typeof runDaily>[0]["prisma"],
       tenantSlug: "demo",
       dryRun: false,
-      refreshBatch: 200,
-      noRefresh: false,
       retry: { sleep: async () => {}, backoffsMs: [1, 1, 1] },
     });
 
-    expect(report.health.youtube.healthy).toBe(true);
+    expect(report.health["apify-kol"].healthy).toBe(true);
     expect(report.discover?.totals.discoverCount).toBe(2);
-    expect(report.refresh?.totals.refreshCount).toBe(2);
     expect(report.errors).toEqual([]);
-    // 4 upserts: 2 from discover + 2 from refresh, all hitting the same 2 ids.
-    expect(upserts.map((u) => u.externalId).sort()).toEqual(["UC_a", "UC_a", "UC_b", "UC_b"]);
-    // healthCheck (1) + youtube discover (9,000 — BIx-F004-P3 14-region
-    // matrix + publishedAfter phase) + refresh batch ⌈2/50⌉ = 1 →
-    // total 9,002.
-    expect(report.estimatedQuotaConsumed).toBe(9_002);
+    // 2 upserts: one per discovered row, no refresh phase.
+    expect(upserts.map((u) => u.externalId).sort()).toEqual(["ig_a", "tt_b"]);
+    // healthCheck (1) only — no per-adapter quota inflation since
+    // BL-059 deprecate (apify-kol's per-page cost would be tracked in
+    // a future iteration; for now the orchestrator just counts
+    // healthCheck).
+    expect(report.estimatedQuotaConsumed).toBe(1);
   });
 });
 
@@ -206,7 +156,7 @@ describe("runDaily · failure isolation", () => {
     });
     const ok = new MockKolSyncAdapter({
       name: "ok",
-      channels: [fakeChannel({ externalId: "UC_ok" })],
+      channels: [fakeChannel({ externalId: "ig_ok" })],
     });
     const fakePrisma = {
       tenant: { findUnique: vi.fn(async () => ({ id: "tenant-1" })) },
@@ -221,8 +171,6 @@ describe("runDaily · failure isolation", () => {
       prisma: fakePrisma as unknown as Parameters<typeof runDaily>[0]["prisma"],
       tenantSlug: "demo",
       dryRun: false,
-      refreshBatch: 0,
-      noRefresh: false,
       retry: { sleep: async () => {}, backoffsMs: [1, 1, 1] },
     });
     expect(report.health.dead.healthy).toBe(false);

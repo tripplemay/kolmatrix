@@ -7,13 +7,11 @@
  *      externalId); the import path always upserts so this is a
  *      structural guarantee, not a runtime check here.
  *   2. Spam: subscriberCount < 1,000 → skip.
- *   3. Zombie: lastUploadAt > 90 days → skip. The current YouTube
- *      adapter doesn't surface lastUploadAt (channels.list doesn't
- *      return it without a second playlistItems hop). The check is
- *      armed for future adapters / B5 enrichment — when raw
- *      doesn't carry the field the rule is a no-op.
+ *   3. Zombie: lastUploadAt > 90 days → skip. The rule is a no-op when
+ *      the adapter can't surface lastUploadAt (the apify-kol fork
+ *      currently doesn't); armed for future enrichment.
  *   4. NSFW: brandSafetyRating === "questionable" / "unsafe" → skip.
- *      YouTube doesn't expose this; same future-adapter shape.
+ *      The fork doesn't expose this today; same future-adapter shape.
  *   5. Same channel.id different handle: handled by the writer —
  *      the upsert key is (tenant, platform, externalId), so a renamed
  *      handle just refreshes the existing row's `handle` column. Spec
@@ -68,7 +66,7 @@ export interface QualityCheckOpts {
   /** `metadata.source` value the import path will write. Used by rules
    *  that only apply to a specific upstream — currently the apify-kol
    *  double-low score skip. Omit for adapters that don't need source-
-   *  scoped filtering (the YouTube path passes nothing here). */
+   *  scoped filtering. */
   source?: string;
 }
 
@@ -97,7 +95,7 @@ export function checkQuality(
   }
 
   // Rule 3 — zombie. lastUploadAt is optional on RawKolData; the rule
-  // is a no-op when adapters can't surface it (current YouTube path).
+  // is a no-op when adapters can't surface it (current apify-kol path).
   if (raw.lastUploadAt) {
     const last = new Date(raw.lastUploadAt).getTime();
     const cutoff = now.getTime() - ZOMBIE_INACTIVE_DAYS * 24 * 3600_000;
@@ -113,7 +111,7 @@ export function checkQuality(
 
   // BL-012-F010 — apify-kol source rule: skip the double-low rows
   // (relevance < 0.2 AND influence < 0.2) per spec §2.2. Only fires
-  // when the source matches; the YouTube path stays unaffected.
+  // when the source matches.
   if (opts.source === "apify-kol") {
     const scores = readApifyKolScores(raw);
     if (

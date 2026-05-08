@@ -123,7 +123,8 @@ function computeDayOfYear(date: Date): number {
 
 export interface FetchTieredRefreshOpts {
   tenantId: string;
-  /** Platform filter — adapter-specific (only "youtube" today). */
+  /** Platform filter — caller scopes to a single platform per call
+   *  (apify-kol shards by instagram / tiktok / youtube). */
   platform: string;
   date?: Date;
   maxTotal?: number;

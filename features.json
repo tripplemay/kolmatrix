@@ -69,7 +69,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/lib/kol-sync/dispatcher.ts: 移除 YouTubeKolSyncAdapter import + 数组注入 (仅留 ApifyKolSyncAdapter + 必要的 mock)",
       "scripts/kol-sync-daily.ts: 移除 new YouTubeKolSyncAdapter(...) 注入",
