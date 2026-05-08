@@ -1,14 +1,13 @@
 /**
- * B6-kol-daily-sync F003 · RawKolData → Prisma Kol writer.
+ * RawKolData → Prisma Kol writer.
  *
- * Mirrors `scripts/import-kol-from-youtube.ts` for kol-seed-redo, but
  * (a) consumes the platform-agnostic `RawKolData` shape produced by
- * any KolSyncAdapter, and (b) writes B6 daily-specific metadata
- * (`is_demo: false`, `source: 'youtube-api-daily'` / etc.) so a
- * future BL-012 cleanup can scope by source string.
+ * any KolSyncAdapter, and (b) writes adapter-specific metadata
+ * (`is_demo: false`, `source: 'apify-kol'` / etc.) so downstream
+ * cleanups can scope by source string.
  *
  * Unique key: `(tenantId, platform, externalId)` — the kol-seed-redo
- * fix-round 1 added that constraint, F003 here just relies on it.
+ * fix-round 1 added that constraint; this writer just relies on it.
  */
 import { Prisma, type PrismaClient } from "@prisma/client";
 
@@ -54,8 +53,8 @@ export function deriveCategories(topicCategories: readonly string[] | undefined)
 
 export interface ImportOpts {
   tenantId: string;
-  /** Goes into `metadata.source`. `'youtube-api-daily'` for the B6
-   *  cron; future adapters carry their own tag. */
+  /** Goes into `metadata.source`. Each adapter carries its own tag
+   *  (e.g. `'apify-kol'` for the daily fork sync). */
   source: string;
   /** `metadata.is_demo` flag — `true` for one-shot seed crawls, `false`
    *  for live cron-driven rows. */

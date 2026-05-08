@@ -66,12 +66,12 @@ export function parseArgs(argv: readonly string[]): CliArgs {
 // ---------------------------------------------------------------------
 // Pure mapper — googleapis Channel → column updates.
 //
-// Unlike the daily-sync adapter (src/lib/kol-sync/adapters/youtube.ts),
-// this enrich path does NOT re-apply the discover filters (min subs,
-// gaming-topic, description-non-empty). The KOLs are already in the DB
-// — we just want to refresh their YouTube facts. Filtering here would
-// silently leave rows un-enriched whenever a channel slipped below the
-// threshold since seed time, which is exactly the bug we want to avoid.
+// This one-shot enrich path does NOT re-apply discover filters (min
+// subs, gaming-topic, description-non-empty). The KOLs are already in
+// the DB — we just want to refresh their YouTube facts. Filtering here
+// would silently leave rows un-enriched whenever a channel slipped
+// below the threshold since seed time, which is exactly the bug we
+// want to avoid.
 // ---------------------------------------------------------------------
 
 export interface EnrichmentUpdate {

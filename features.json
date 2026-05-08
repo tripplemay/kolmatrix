@@ -52,7 +52,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.3,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "rm src/lib/kol-sync/adapters/youtube.ts (~21KB)",
       "rm src/lib/kol-sync/engagement-batch.ts (~7.5KB)",

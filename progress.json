@@ -2,7 +2,7 @@
   "status": "building",
   "user_goal": "BL-059-youtube-deprecate-and-engagement-derive — KOLMatrix KOL 数据源从双源 (B6 youtube-api-daily 2584 + apify-kol 237) 切换到单源 (apify-kol)，同时 apify-kol mapper 加 engagement_rate derive 计算补偿 BL-023 真信号丢失。用户 5/9 brainstorming Q1=C / Q2=A / Q3=立即同时 derive + 全部 soft delete / Approach=A 单批次。7 features F001-F007 (~2-3h G + 0.5h R + 0.5h Planner ops): F001 mapper derive + F002 全量 recompute apify-kol + F003 soft delete 2584 youtube-api-daily + audit_log + F004 删 youtube.ts/engagement-batch* 文件 + F005 dispatcher/scripts/quality 移除 youtube + F006 文档/env vars 清理 + F007 L1 全套 + staging smoke。30 天 soft delete 回滚窗口 + git revert 可逆。5/13 上线时间线 buffer 4 天，5/9 当晚 done + prod redeploy。关联: docs/specs/BL-059-youtube-deprecate-and-engagement-derive-spec.md (422 行 / 13 章节)",
   "total_features": 7,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
   "current_sprint": "BL-059-youtube-deprecate-and-engagement-derive",
   "last_updated": "2026-05-09T02:42+0800",
