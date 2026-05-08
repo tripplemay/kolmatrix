@@ -1,0 +1,113 @@
+[
+  {
+    "id": "F001",
+    "title": "src/lib/kol-sync/adapters/apify-kol.ts 新建 + implements KolSyncAdapter（discover/refresh/healthCheck 三方法 + ApifyKolAdapterConfig）",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 2,
+    "status": "pending",
+    "acceptance": [
+      "src/lib/kol-sync/adapters/apify-kol.ts 新文件 implements KolSyncAdapter（src/lib/kol-sync/types.ts 既有 trait）",
+      "name='apify-kol' / source='apify-kol'（与 metadata.source 字段一致；与 youtube.ts 命名风格对齐）",
+      "ApifyKolAdapterConfig: { baseUrl, apiKey, maxRequestsPerSecond?: number, maxItemsPerRun?: number }",
+      "discover(params: SyncParams): Promise<RawKolData[]> — 调 fork 端 GET /kol?platform=...&page=N&pageSize=100&sort=recent，循环到 data.length < pageSize 或 maxItemsPerRun 上限退出",
+      "refresh(externalIds): Promise<RawKolData[]> — externalId 形式 'platform:platformUserId'，按 platform 分组调 GET /kol/:platform/:userId per id；404 返回 null skip（dispatcher 容忍 partial success）",
+      "healthCheck(): Promise<HealthCheckResult> — GET /health → { healthy: body.status === 'ok', details: { upstream: 'apify-kol-service' } }",
+      "私有 fetch() 方法：URL = baseUrl + path / headers['x-api-key'] = apiKey / 错误分类（401/403 AdapterAuthError / 429 AdapterRateLimitError 含 Retry-After / 5xx AdapterTransientError 走 withRetry）",
+      "L1 lint + tsc PASS"
+    ]
+  },
+  {
+    "id": "F002",
+    "title": "mapApifyKolItemToRawKolData() 字段映射（fork 实物 camelCase → KOLMatrix RawKolData）",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 1,
+    "status": "pending",
+    "acceptance": [
+      "src/lib/kol-sync/adapters/apify-kol.ts 内 export function mapApifyKolItemToRawKolData(item) → RawKolData",
+      "字段映射完整（spec §2.2 表）：externalId(id) / platform / handle(username) / displayName / description(bio) / thumbnailUrl(avatarUrl) / subscriberCount(followers) / topicCategories(matchedTags)",
+      "country / language / lastUploadAt / brandSafetyRating 设为 null（fork 实物不带；后续 enrichment 补）",
+      "raw 整体存 fork 端原响应（含 relevanceScore / influenceScore / qualityScore / reachabilityScore / tier / emails[] / phones[] / aggregatorEmails[] / matchedKeywords / isSeed / externalUrl / externalUrls / socialHandles / aggregatorLinks / verified / isBusinessAccount / postsCount / following / totalLikes / totalViews）",
+      "fork 实物 totalLikes / totalViews / postsCount 等 number 直传（fork 端 service 已 bigint→number）",
+      "单测 ≥3 case：(a) 完整 IG profile（含 emails + scores）/ (b) 缺 email + null scores 的 TT profile / (c) 缺 isBusinessAccount + totalLikes 的 YT profile",
+      "L1 单测 PASS（threads pool 20s 内）"
+    ]
+  },
+  {
+    "id": "F003",
+    "title": "tests/integration/apify-kol-adapter.test.ts 集成测试 ≥4 case（msw fixture）",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 1.5,
+    "status": "pending",
+    "acceptance": [
+      "tests/integration/apify-kol-adapter.test.ts 新文件，msw 或 vitest http fixture mock fork 端响应",
+      "Case 1 discover 多页：mock 3 页 100/100/57 → adapter 返回 257 条 RawKolData / 退出条件正确（第 3 页 57 < pageSize 100）",
+      "Case 2 discover 429 + Retry-After：mock 第 2 页返回 429 with Retry-After: 5 header → adapter 等待 5s 后重试 → 第 3 次成功 → 总耗时 ≥5s（vitest fakeTimers 推进时钟）",
+      "Case 3 refresh 单个 KOL：mock GET /kol/tiktok/123456 → 字段映射通过 mapApifyKolItemToRawKolData → 与 import.ts 既有 Prisma upsert 行为一致（msw fixture 验证 metadata.source='apify-kol' 写入）",
+      "Case 4 healthCheck OK：mock /health → { status: 'ok' } → adapter healthCheck() 返回 healthy=true",
+      "测试用 vitest threads pool（forks WSL2 timeout 已知）",
+      "L1 npm run test:integration 含本测试 PASS"
+    ]
+  },
+  {
+    "id": "F004",
+    "title": "dispatcher 集成 + scripts/kol-sync-daily.ts 注入 ApifyKolSyncAdapter + quality.ts 加 source 分支",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 0.8,
+    "status": "pending",
+    "acceptance": [
+      "scripts/kol-sync-daily.ts 修改：new KolSyncDispatcher 数组加 new ApifyKolSyncAdapter({ baseUrl: process.env.APIFY_KOL_BASE_URL!, apiKey: process.env.APIFY_KOL_BUSINESS_API_KEY!, maxRequestsPerSecond: 5, maxItemsPerRun: 5000 })",
+      "src/lib/kol-sync/quality.ts 加 'apify-kol' source 分支质量过滤规则（继承 youtube 规则 + 加 fork 端 4 维度评分作辅助：relevanceScore < 0.2 + influenceScore < 0.2 双低则 quality 标 'low'）",
+      "src/lib/kol-sync/dispatcher.ts 既有循环逻辑零改动（双源容灾 already supported by runDailySync 既有 partial-success 容错）",
+      "本机干跑 npm run kol-sync:daily 模拟（不真调外部 service，用 mock baseUrl 验证 dispatcher 不 crash）",
+      "L1 lint + tsc PASS"
+    ]
+  },
+  {
+    "id": "F005",
+    "title": "删除 src/lib/kol-sync/adapters/crawler-team.ts.todo 占位 + grep 全仓更新引用",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 0.3,
+    "status": "pending",
+    "acceptance": [
+      "rm src/lib/kol-sync/adapters/crawler-team.ts.todo（与 5/7 fork 实物 API 不一致，audit §6.2 已确认）",
+      "grep -rn 'crawler-team.ts.todo' . 全仓更新引用（如 docs/specs/B6-kol-daily-sync-spec.md §F006 / docs/product/KOLMatrix-MVP-PRD.md §12 等如有引用，改为 apify-kol.ts）",
+      "git log -- src/lib/kol-sync/adapters/crawler-team.ts.todo 历史保留（仅删除文件，git 历史 audit trail 完整）",
+      "delete commit message 含 'F005 delete obsolete crawler-team.ts.todo placeholder（5/7 fork 实物迁 TikHub + 4 平台后字段口径不再适用）'"
+    ]
+  },
+  {
+    "id": "F006",
+    "title": "docs/dev/kol-sync-runbook.md 更新双 adapter 调度说明 + .auto-memory/environment.md secrets 表 +2 行 + 新增 §apify-kol service 段",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 0.5,
+    "status": "pending",
+    "acceptance": [
+      "docs/dev/kol-sync-runbook.md 加 §'双 adapter 双源容灾' 段：B6 YouTube + apify-kol 双源 / metadata.source 字段区分 / 故障互备路径 / cron 调度 00:30 UTC（与 kpi-snapshot:daily 同行）",
+      ".auto-memory/environment.md secrets 表加 2 行：APIFY_KOL_BASE_URL（http://localhost:3003 prod / staging 同）+ APIFY_KOL_BUSINESS_API_KEY（来自 fork 端 .env BUSINESS_API_KEY）",
+      ".auto-memory/environment.md 新增 §'apify-kol service（同 VM 共生）' 段：部署路径 /opt/apify-kol-service / 端口 3003 / PG 端口 15432 / TIKHUB_TOKEN 由爬虫团队提供 / 月度 paid balance 监控（/admin/stats）",
+      "L1 markdown lint PASS（如有 markdownlint）"
+    ]
+  },
+  {
+    "id": "F007",
+    "title": "L1 全套验证 + Stage 2 完成回归（lint + tsc + npm test + targeted IT 全绿）",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 0.4,
+    "status": "pending",
+    "acceptance": [
+      "npm run lint → 0 error（warning OK）",
+      "npx tsc --noEmit → 0 error",
+      "npm test → 1084+ tests 全 PASS（含新 F002 单测 ≥3 + F003 IT ≥4 = 7+ 新增）",
+      "npm run test:integration → 既有 + 本批次 IT PASS（pre-commit-hook.test.ts flaky 按 v0.9.16 P5.2 acceptance 边界划归 BL-054 不计入）",
+      "git diff --stat 确认改动文件清单符合本批次范围（apify-kol.ts + apify-kol-adapter.test.ts + dispatcher.ts + scripts/kol-sync-daily.ts + quality.ts + 删除 crawler-team.ts.todo + runbook + environment.md）",
+      "Reviewer 审视范围：F001-F006 acceptance 表逐项 + 双 adapter 不互相干扰（B6 youtube 路径单测 / IT 仍 PASS）"
+    ]
+  }
+]
