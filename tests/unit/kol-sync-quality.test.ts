@@ -87,6 +87,38 @@ describe("checkQuality · rule 4 — NSFW", () => {
   });
 });
 
+describe("checkQuality · BL-012-F010 apify-kol source rule", () => {
+  function apifyRaw(rel: number | null, inf: number | null): RawKolData {
+    return fakeRaw({
+      platform: "instagram",
+      raw: { relevanceScore: rel, influenceScore: inf },
+    });
+  }
+
+  it("skips when both relevance and influence < 0.2 (double-low)", () => {
+    const v = checkQuality(apifyRaw(0.1, 0.15), null, NOW, { source: "apify-kol" });
+    expect(v.keep).toBe(false);
+    expect(v.keep === false ? v.reason : null).toBe("low-score");
+  });
+
+  it("keeps when only one of relevance/influence is < 0.2", () => {
+    const a = checkQuality(apifyRaw(0.1, 0.45), null, NOW, { source: "apify-kol" });
+    expect(a.keep).toBe(true);
+    const b = checkQuality(apifyRaw(0.55, 0.05), null, NOW, { source: "apify-kol" });
+    expect(b.keep).toBe(true);
+  });
+
+  it("keeps when scores are missing (null) — only the explicit double-low fires", () => {
+    const v = checkQuality(apifyRaw(null, null), null, NOW, { source: "apify-kol" });
+    expect(v.keep).toBe(true);
+  });
+
+  it("does NOT apply the rule for the youtube source even with double-low scores", () => {
+    const v = checkQuality(apifyRaw(0.05, 0.05), null, NOW, { source: "youtube-api-daily" });
+    expect(v.keep).toBe(true);
+  });
+});
+
 describe("checkQuality · post-write flags", () => {
   it("flags.suspicious_growth when followers spike 10×", () => {
     const v = checkQuality(

@@ -13,98 +13,23 @@
  *
  * Reviewer L1 grep guard verifies the above on every PR.
  */
-import { z } from "zod";
+import {
+  APIFY_KOL_PLATFORMS,
+  APIFY_KOL_SORTS,
+  ApifyKolPageSchema,
+  type ApifyKolItem,
+  type ApifyKolPage,
+  type ApifyKolPlatform,
+  type ApifyKolSort,
+} from "../apify-kol/schemas";
 
 const FETCH_TIMEOUT_MS = 30_000;
 
-const RAW_OBJECT = z.record(z.string(), z.unknown());
-
-const ApifyKolItemSchema = z
-  .object({
-    id: z.union([z.string(), z.number()]),
-    platform: z.string(),
-    platformUserId: z.string(),
-    username: z.string(),
-    displayName: z.string().nullable().optional(),
-    bio: z.string().nullable().optional(),
-    avatarUrl: z.string().nullable().optional(),
-    profileUrl: z.string().nullable().optional(),
-    followers: z.number().nullable().optional(),
-    following: z.number().nullable().optional(),
-    postsCount: z.number().nullable().optional(),
-    totalLikes: z.number().nullable().optional(),
-    totalViews: z.number().nullable().optional(),
-    verified: z.boolean().nullable().optional(),
-    isBusinessAccount: z.boolean().nullable().optional(),
-    emails: z.array(z.string()).nullable().optional(),
-    phones: z.array(z.string()).nullable().optional(),
-    telegrams: z.array(z.string()).nullable().optional(),
-    discords: z.array(z.string()).nullable().optional(),
-    socialHandles: RAW_OBJECT.nullable().optional(),
-    externalUrl: z.string().nullable().optional(),
-    // Fork actually emits `externalUrls` as objects shaped like
-    // `{ url, title?, ... }` (see tikhub-migration-design.md §5.3 — IG
-    // bio_links). The audit-time sample only had a plain-string variant,
-    // so fix-round 2 widens the schema to a union that accepts either
-    // shape — `passthrough()` keeps any extra metadata around for the
-    // raw-JSON expand panel.
-    externalUrls: z
-      .array(
-        z.union([
-          z.string(),
-          z
-            .object({
-              url: z.string(),
-              title: z.string().nullable().optional(),
-            })
-            .passthrough(),
-        ])
-      )
-      .nullable()
-      .optional(),
-    aggregatorUrl: z.string().nullable().optional(),
-    aggregatorEmails: z.array(z.string()).nullable().optional(),
-    // Fork emits `aggregatorLinks` as either a record (Linktree-style
-    // map) or an array of objects (other aggregators). Accept either
-    // and let the raw-JSON expand panel surface the actual shape.
-    aggregatorLinks: z
-      .union([RAW_OBJECT, z.array(z.unknown())])
-      .nullable()
-      .optional(),
-    relevanceScore: z.number().nullable().optional(),
-    influenceScore: z.number().nullable().optional(),
-    qualityScore: z.number().nullable().optional(),
-    reachabilityScore: z.number().nullable().optional(),
-    matchedTags: z.array(z.string()).nullable().optional(),
-    matchedKeywords: z.array(z.string()).nullable().optional(),
-    tier: z.string().nullable().optional(),
-    isSeed: z.boolean().nullable().optional(),
-    lastScrapedAt: z.string().nullable().optional(),
-  })
-  .passthrough();
-
-const ApifyKolPageSchema = z.object({
-  data: z.array(ApifyKolItemSchema),
-  page: z.number(),
-  pageSize: z.number(),
-  total: z.number(),
-});
-
-export type ApifyKolItem = z.infer<typeof ApifyKolItemSchema>;
-export type ApifyKolPage = z.infer<typeof ApifyKolPageSchema>;
-
-export const APIFY_KOL_PLATFORMS = ["instagram", "tiktok", "youtube", "x"] as const;
-export type ApifyKolPlatform = (typeof APIFY_KOL_PLATFORMS)[number];
-
-export const APIFY_KOL_SORTS = [
-  "relevance",
-  "followers",
-  "influence",
-  "quality",
-  "reachability",
-  "recent",
-] as const;
-export type ApifyKolSort = (typeof APIFY_KOL_SORTS)[number];
+// Re-export schema-derived types/constants so existing consumers that
+// import from this module keep working without churn (F007 extracted
+// the schema to `src/lib/apify-kol/schemas.ts` for adapter sharing).
+export { APIFY_KOL_PLATFORMS, APIFY_KOL_SORTS };
+export type { ApifyKolItem, ApifyKolPage, ApifyKolPlatform, ApifyKolSort };
 
 export interface ApifyPreviewQuery {
   platform?: ApifyKolPlatform;

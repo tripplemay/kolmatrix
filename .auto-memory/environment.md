@@ -100,6 +100,21 @@ NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) n
 
 `framework/harness/deploy-patterns.md §3.2 step 6` 已固化此命令；本节是给读者的"为什么必须这么写"解释。Prod 的 16GB RAM 不受此限制，但同样写带 NODE_OPTIONS 的命令是无害的。
 
+## apify-kol service（同 VM 共生，BL-012-F012 lock 2026-05-09）
+
+- **项目位置：** `/opt/apify-kol-service`（fork 自 `guang-tech/apify`）
+- **入口：** docker compose（同 VM 容器）
+- **Host port：** `3003`（容器内 `3000`，sed workaround 将 docker-compose.yml `3000:3000` 改为 `3003:3000`，详 `docs/dev/kol-sync-runbook.md` §"apify-kol-service fork 同步流程"）
+- **Postgres port：** `15432`（容器化 PG 独立实例，与 KOLMatrix 共用 VM 的 PG 隔离；fork 端自带 schema 与 KOLMatrix Prisma schema 完全独立）
+- **TIKHUB_TOKEN：** 由爬虫团队提供，存 `/opt/apify-kol-service/.env`，KOLMatrix 不读
+- **BUSINESS_API_KEY：** read-only 业务侧 key，KOLMatrix `x-api-key` header 用此值（同步到 KOLMatrix `.env.{production,staging}` 的 `APIFY_KOL_BUSINESS_API_KEY`）
+- **ADMIN_API_KEY：** 创建 schedules / 账户管理用，KOLMatrix 侧不需要（仅 Planner 偶发 SSH ops 用）
+- **月度 paid balance 监控：** TikHub 子计费 + Apify 子计费由爬虫团队的 dashboard 看；KOLMatrix 侧无监控钩子（如需调用 `/admin/stats` 需 ADMIN key）
+- **Stage 1.5 admin preview 入口：** KOLMatrix 端 `/[locale]/admin/apify-preview` (要求 admin role)，背后调本 service 的 `GET /kol`，read-only 不入 KOLMatrix DB（spec §2.2 数据流隔离铁律）
+- **Stage 2 daily sync 集成：** KOLMatrix `scripts/kol-sync-daily.ts` 注入 `ApifyKolSyncAdapter`，与 YouTube adapter 双源容灾（详 `docs/dev/kol-sync-runbook.md` §"双 adapter 双源容灾"）
+- **同步 ops 流程：** fork 端有更新时按 runbook §"apify-kol-service fork 同步流程" 6 步走（B 方案 reset + 重 apply 2 sed workaround）
+- **5 个长期 todo：** 见 BL-058 backlog（lockfile / port / X service 实装 / docs union shape / admin route X enum）
+
 ## 扩容信号
 
 - RAM 接近 14GB、CPU 持续 >70%、或 KOL 采集 worker 影响 aigcgateway 响应时，拆独立 VM。
@@ -119,6 +134,8 @@ NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) n
 |---|---|---|---|
 | `AIGCGATEWAY_API_KEY` | ✅ 已配（67 chars） | ✅ 已配（同 key） | 共用 "admintest" key；2026-04-23 从 staging VM 直 curl `/v1/models` 200 OK；完整 key 不落 git，仅存 .env 文件 |
 | `RESEND_API_KEY` | ✅ 已配（36 chars） | ✅ 已配（同 key） | 未在本次验证真发邮件，仅确认非 placeholder；完整 key 不落 git |
+| `APIFY_KOL_BASE_URL` | ⏳ 部署时落入（`http://localhost:3003`） | ⏳ 同 prod | BL-012-F012 落地。同 VM 共生 service，走内网；外网可用 https `apify.kol.guangai.ai` 但当前不暴露。两 env 文件都必须配齐，否则 `kol-sync-daily.ts` 中 apify-kol adapter 静默 skip（YouTube 仍跑） |
+| `APIFY_KOL_BUSINESS_API_KEY` | ⏳ 部署时落入（同 fork 端 `BUSINESS_API_KEY`） | ⏳ 同 prod | BL-012-F012 落地。来自 `/opt/apify-kol-service/.env` `BUSINESS_API_KEY`；KOLMatrix 仅用 read API（`x-api-key` header），不需 `ADMIN_API_KEY` |
 
 **修改流程（如未来需要换 key）：**
 ```bash

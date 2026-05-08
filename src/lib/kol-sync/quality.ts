@@ -34,11 +34,21 @@ export const DECLINING_DROP_RATIO = 0.5;
 export const DECLINING_LOOKBACK_DAYS = 30;
 const NSFW_RATINGS = new Set(["questionable", "unsafe", "nsfw"]);
 
+/** BL-012-F010 — apify-kol fork ships 4 dimension scores per row
+ *  (relevance / influence / quality / reachability). The pre-write
+ *  rule for this source skips any row where BOTH relevance AND
+ *  influence are < 0.2 — these are "double-low" rows the fork's own
+ *  scorer flagged as borderline noise. Single-low rows still pass
+ *  (lots of legit creators score ≤0.2 on one dimension); only the
+ *  combined signal is strong enough to skip. */
+export const APIFY_KOL_DOUBLE_LOW_THRESHOLD = 0.2;
+
 export type QualitySkipReason =
   | "spam"
   | "zombie"
   | "nsfw"
-  | "missing-id";
+  | "missing-id"
+  | "low-score";
 
 export interface QualityFlags {
   suspicious_growth?: true;
@@ -54,6 +64,14 @@ export type QualityVerdict =
   | { keep: true; flags: QualityFlags }
   | { keep: false; reason: QualitySkipReason; flags: QualityFlags };
 
+export interface QualityCheckOpts {
+  /** `metadata.source` value the import path will write. Used by rules
+   *  that only apply to a specific upstream — currently the apify-kol
+   *  double-low score skip. Omit for adapters that don't need source-
+   *  scoped filtering (the YouTube path passes nothing here). */
+  source?: string;
+}
+
 /**
  * Apply all 5 pre-write rules and compute post-write anomaly flags
  * in one pass. The caller hands in the existing Kol row (if any) so
@@ -64,7 +82,8 @@ export type QualityVerdict =
 export function checkQuality(
   raw: RawKolData,
   existing: QualityCheckExisting | null,
-  now: Date
+  now: Date,
+  opts: QualityCheckOpts = {}
 ): QualityVerdict {
   const flags = computeFlags(raw, existing, now);
 
@@ -92,7 +111,36 @@ export function checkQuality(
     return { keep: false, reason: "nsfw", flags };
   }
 
+  // BL-012-F010 — apify-kol source rule: skip the double-low rows
+  // (relevance < 0.2 AND influence < 0.2) per spec §2.2. Only fires
+  // when the source matches; the YouTube path stays unaffected.
+  if (opts.source === "apify-kol") {
+    const scores = readApifyKolScores(raw);
+    if (
+      scores.relevance !== null &&
+      scores.influence !== null &&
+      scores.relevance < APIFY_KOL_DOUBLE_LOW_THRESHOLD &&
+      scores.influence < APIFY_KOL_DOUBLE_LOW_THRESHOLD
+    ) {
+      return { keep: false, reason: "low-score", flags };
+    }
+  }
+
   return { keep: true, flags };
+}
+
+function readApifyKolScores(raw: RawKolData): {
+  relevance: number | null;
+  influence: number | null;
+} {
+  const r = raw.raw;
+  if (!r || typeof r !== "object") return { relevance: null, influence: null };
+  const rel = (r as Record<string, unknown>).relevanceScore;
+  const inf = (r as Record<string, unknown>).influenceScore;
+  return {
+    relevance: typeof rel === "number" && Number.isFinite(rel) ? rel : null,
+    influence: typeof inf === "number" && Number.isFinite(inf) ? inf : null,
+  };
 }
 
 function computeFlags(

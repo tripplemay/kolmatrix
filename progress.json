@@ -13,7 +13,7 @@
     "src/lib/kol-sync/dispatcher.ts",
     "src/lib/kol-sync/adapters/youtube.ts",
     "src/lib/kol-sync/adapters/mock.ts",
-    "src/lib/kol-sync/adapters/crawler-team.ts.todo",
+    "src/lib/kol-sync/adapters/apify-kol.ts",
     "src/lib/kol-sync/quality.ts",
     "src/lib/kol-sync/retry.ts",
     "src/lib/kol-sync/import.ts",

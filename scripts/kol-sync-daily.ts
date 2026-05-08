@@ -34,6 +34,7 @@ import { PrismaClient } from "@prisma/client";
 
 import { embedKolsForIds, type EmbedRunStats } from "../src/lib/embedding/kol-embed";
 import { computeKolValueScore } from "../src/lib/kol/value-score";
+import { ApifyKolSyncAdapter } from "../src/lib/kol-sync/adapters/apify-kol";
 import { YouTubeKolSyncAdapter } from "../src/lib/kol-sync/adapters/youtube";
 import { KolSyncDispatcher } from "../src/lib/kol-sync/dispatcher";
 import {
@@ -43,6 +44,7 @@ import {
 } from "../src/lib/kol-sync/engagement-batch";
 import { createEngagementBatchClient } from "../src/lib/kol-sync/engagement-batch-client";
 import { importRawKolData, type ImportStats } from "../src/lib/kol-sync/import";
+import type { QualityFlags, QualitySkipReason } from "../src/lib/kol-sync/quality";
 import { PUBLISHED_AFTER_CORE_REGIONS } from "../src/lib/kol-sync/published-after";
 import { fetchTieredRefreshIds } from "../src/lib/kol-sync/refresh-selector";
 import {
@@ -56,7 +58,6 @@ import { DEFAULT_BACKOFFS_MS } from "../src/lib/kol-sync/retry";
 import type {
   HealthCheckResult,
   KolSyncAdapter,
-  RawKolData,
   RefreshReport,
   SyncReport,
 } from "../src/lib/kol-sync/types";
@@ -335,30 +336,70 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
       if (!o.ok) errors.push(`discover[${o.adapter}]: ${o.error}`);
     }
   }
-  const discoveredRaws: RawKolData[] = discover
-    ? discover.outcomes.flatMap((o) => (o.ok ? o.data : []))
-    : [];
 
-  // ---- WRITE DISCOVERED ----
+  // ---- WRITE DISCOVERED (per-adapter source tagging — BL-012-F010) ----
+  // Each adapter exposes its own `metadata.source` value via the
+  // KolSyncAdapter contract. Import path runs once per adapter so
+  // the apify-kol bridge writes rows tagged `source: 'apify-kol'`
+  // alongside YouTube's `source: 'youtube-api-daily'`. This is what
+  // lets §4.5.4 isolate apify-kol data downstream (BL-058 follow-up).
   let importStats: ImportStats | null = null;
-  if (deps.prisma && !deps.dryRun && discoveredRaws.length > 0) {
+  if (deps.prisma && !deps.dryRun && discover) {
     const tenant = await deps.prisma.tenant.findUnique({
       where: { slug: deps.tenantSlug },
     });
     if (!tenant) {
       errors.push(`tenant not found: ${deps.tenantSlug}`);
     } else {
-      try {
-        // Default to youtube-api-daily; adapter-specific imports could
-        // land later when more sources come online.
-        importStats = await importRawKolData(deps.prisma, discoveredRaws, {
-          tenantId: tenant.id,
-          source: "youtube-api-daily",
-          isDemo: false,
-          now: deps.now,
-        });
-      } catch (err) {
-        errors.push(`discover-import: ${err instanceof Error ? err.message : String(err)}`);
+      const sourceByAdapter = new Map(deps.adapters.map((a) => [a.name, a.source]));
+      const aggregate: ImportStats = {
+        total: 0,
+        inserted: 0,
+        updated: 0,
+        skipped: 0,
+        skippedByReason: {},
+        flaggedByKind: {},
+        categoriesHistogram: {},
+      };
+      for (const outcome of discover.outcomes) {
+        if (!outcome.ok || outcome.data.length === 0) continue;
+        const source = sourceByAdapter.get(outcome.adapter) ?? outcome.adapter;
+        try {
+          const stats = await importRawKolData(deps.prisma, outcome.data, {
+            tenantId: tenant.id,
+            source,
+            isDemo: false,
+            now: deps.now,
+          });
+          aggregate.total += stats.total;
+          aggregate.inserted += stats.inserted;
+          aggregate.updated += stats.updated;
+          aggregate.skipped += stats.skipped;
+          for (const [reason, count] of Object.entries(stats.skippedByReason)) {
+            const key = reason as QualitySkipReason;
+            aggregate.skippedByReason[key] =
+              (aggregate.skippedByReason[key] ?? 0) + (count as number);
+          }
+          for (const [flag, count] of Object.entries(stats.flaggedByKind)) {
+            const key = flag as keyof QualityFlags;
+            aggregate.flaggedByKind[key] =
+              (aggregate.flaggedByKind[key] ?? 0) + (count as number);
+          }
+          for (const [cat, count] of Object.entries(stats.categoriesHistogram)) {
+            aggregate.categoriesHistogram[cat] =
+              (aggregate.categoriesHistogram[cat] ?? 0) + count;
+          }
+        } catch (err) {
+          errors.push(
+            `discover-import[${outcome.adapter}]: ${err instanceof Error ? err.message : String(err)}`
+          );
+        }
+      }
+      // Only surface the aggregate when at least one adapter wrote rows
+      // — keeps the report shape consistent with the prior single-source
+      // runs (`importStats === null` ⇒ "nothing was written").
+      if (aggregate.total > 0) {
+        importStats = aggregate;
       }
     }
   }
@@ -660,6 +701,27 @@ async function main(): Promise<void> {
       onMatrixCell: (e) => perMatrixCollector.push(e),
     }),
   ];
+
+  // BL-012-F010 — apify-kol-service adapter. Skipped silently when
+  // the env vars are missing so the daily run still completes for
+  // YouTube; healthCheck will surface the absence in the structured
+  // log next pass once the keys land.
+  const apifyKolBase = process.env.APIFY_KOL_BASE_URL;
+  const apifyKolKey = process.env.APIFY_KOL_BUSINESS_API_KEY;
+  if (apifyKolBase && apifyKolKey) {
+    adapters.push(
+      new ApifyKolSyncAdapter({
+        baseUrl: apifyKolBase,
+        apiKey: apifyKolKey,
+        maxRequestsPerSecond: 5,
+        maxItemsPerRun: 5_000,
+      })
+    );
+  } else {
+    console.warn(
+      "[kol-sync-daily] APIFY_KOL_BASE_URL or APIFY_KOL_BUSINESS_API_KEY missing — apify-kol adapter disabled this run"
+    );
+  }
 
   // BIx-F004-P4: engagement batch client (skipped when key is
   // missing — discover/refresh still complete).

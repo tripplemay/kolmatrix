@@ -8,6 +8,8 @@ date: 2026-04-24
 
 # KOL Data Crawler Team — Handoff v1
 
+> **2026-05-09 历史化通告（BL-012-F011）：** 5/7 fork 实物（`apify-kol-service`，guang-tech/apify）API 与本文 v1 设计 ~30% 不一致；KOLMatrix 侧已新写 `src/lib/kol-sync/adapters/apify-kol.ts` 适配实物 API（详 `docs/specs/BL-012-apify-kol-integration-spec.md`）。本文 §"KOLMatrix 侧 6 月 M5 接入工作"提到的 `crawler-team.ts.todo` 占位文件已于 BL-012-F011 删除。本文留存仅作历史对照（4/24 时点的需求蓝图），新接入以 `BL-012` spec 为准。
+
 本文是 KOLMatrix 平台对**独立爬虫团队**的数据需求说明。爬虫团队按本需求产出 KOL 数据 API，KOLMatrix 平台消费该 API 写入自身 PostgreSQL 供用户筛选/触达/分析。
 
 ## 0. TL;DR（5 分钟速读版）

@@ -254,7 +254,8 @@ export async function importRawKolData(
       existing
         ? { followerCount: existing.followerCount, lastSyncedAt: existing.lastSyncedAt }
         : null,
-      nowDate
+      nowDate,
+      { source: opts.source }
     );
 
     if (!verdict.keep) {
