@@ -1,31 +1,21 @@
 /**
  * BM2-F006 · Sub-nav tabs strip.
  *
- * Per adjudication §12 #B: Overview active, the rest disabled with
- * tooltips pointing at the B4 roadmap. Badge counts (24 / 87 / 142)
- * are intentionally static placeholders — the real numbers require
- * Template library + Send queue + Suppression list that don't exist
- * in MVP.
+ * BL-055 F002: templates badge now reflects the real per-tenant
+ * user-template count (countUserTemplates). send_queue still pre-MVP.
  */
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+
+import { auth } from "@/auth";
+import { withTenant } from "@/lib/db";
+import { countUserTemplates } from "@/lib/email/templates";
 
 interface TabSpec {
   id: "overview" | "templates" | "send_queue" | "tracking" | "suppression";
   badge?: number;
   tooltipKey?: string;
 }
-
-const TABS: TabSpec[] = [
-  { id: "overview" },
-  { id: "templates", badge: 10, tooltipKey: "comingB4" },
-  { id: "send_queue", badge: 0, tooltipKey: "comingB4" },
-  // BL-024-F004 / F005: tracking + suppression unlocked. Both render
-  // a real list view backed by EmailLog (tracking) / audit_log
-  // hard-bounce events (suppression).
-  { id: "tracking" },
-  { id: "suppression" },
-];
 
 export async function OutreachTabs({
   activeTab = "overview",
@@ -35,6 +25,35 @@ export async function OutreachTabs({
   locale: string;
 }) {
   const t = await getTranslations("outreach.tabs");
+
+  let templatesCount = 0;
+  const session = await auth();
+  const tenantId = session?.user?.tenantId;
+  if (tenantId) {
+    try {
+      templatesCount = await withTenant(tenantId, (tx) =>
+        countUserTemplates(tx, tenantId)
+      );
+    } catch {
+      // Soft-fail: badge defaults to "no number" rather than blocking
+      // the entire tab strip on a transient DB hiccup.
+      templatesCount = 0;
+    }
+  }
+
+  const TABS: TabSpec[] = [
+    { id: "overview" },
+    {
+      id: "templates",
+      badge: templatesCount > 0 ? templatesCount : undefined,
+    },
+    { id: "send_queue", badge: 0, tooltipKey: "comingB4" },
+    // BL-024-F004 / F005: tracking + suppression unlocked. Both render
+    // a real list view backed by EmailLog (tracking) / audit_log
+    // hard-bounce events (suppression).
+    { id: "tracking" },
+    { id: "suppression" },
+  ];
   return (
     <nav
       aria-label="Outreach sections"

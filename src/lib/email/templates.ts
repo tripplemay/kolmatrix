@@ -113,6 +113,18 @@ export async function loadOutreachTemplates(
   return [...systemRows.map(adapt), ...userRowsSorted.map(adapt)];
 }
 
+// BL-055 F002 — tenant's user-template count for the /outreach
+// templates tab badge. System seeds (tenantId IS NULL) excluded so
+// the number reflects what the marketer actually authored.
+export async function countUserTemplates(
+  tx: Prisma.TransactionClient,
+  tenantId: string
+): Promise<number> {
+  return tx.emailTemplate.count({
+    where: { tenantId, type: "user" },
+  });
+}
+
 export async function createUserTemplate(
   tx: Prisma.TransactionClient,
   tenantId: string,
