@@ -75,6 +75,10 @@ export interface KolUpsertPayload {
   language: string | null;
   followerCount: number;
   avgViews: number | null;
+  /** BL-059 F001 — engagement_rate carried through from the adapter
+   *  (apify-kol derives it; sources that don't surface engagement leave
+   *  it undefined and the Kol row's column stays untouched). */
+  engagementRate: number | null | undefined;
   categories: string[];
   isGaming: boolean;
   // B5-F001 / F002 — promoted from metadata.youtube.*. New code only
@@ -170,6 +174,7 @@ export function mapToUpsertPayload(
     language: raw.language ?? null,
     followerCount: raw.subscriberCount,
     avgViews,
+    engagementRate: raw.engagement_rate,
     categories,
     isGaming: true,
     channelCreatedAt,
@@ -289,6 +294,13 @@ export async function importRawKolData(
       language: payload.language,
       followerCount: payload.followerCount,
       avgViews: payload.avgViews,
+      // BL-059 F001 — only write engagementRate when the adapter
+      // surfaced one. Adapters that leave it undefined preserve the
+      // existing column value (lets BL-023 backfills + manual edits
+      // survive a daily refresh that doesn't re-derive).
+      ...(payload.engagementRate !== undefined
+        ? { engagementRate: payload.engagementRate }
+        : {}),
       categories: payload.categories,
       isGaming: payload.isGaming,
       handle: payload.handle,

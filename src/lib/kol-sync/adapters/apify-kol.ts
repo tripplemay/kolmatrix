@@ -398,6 +398,21 @@ export function mapApifyKolItemToRawKolData(
     ? item.matchedTags.filter((t): t is string => typeof t === "string")
     : [];
 
+  // BL-059 F001 — engagement_rate derive (simplified: likes-only because
+  // fork GET /kol doesn't expose totalComments yet — BL-058 sub-feature
+  // tracks the comments-aware upgrade). Return null when any input is
+  // missing or zero; otherwise (totalLikes / postsCount) / followers * 100
+  // = average like-per-follower per post, in percentage points.
+  const followers = item.followers;
+  const postsCount = item.postsCount;
+  const totalLikes = item.totalLikes;
+  const engagementRate =
+    typeof followers === "number" && followers > 0 &&
+    typeof postsCount === "number" && postsCount > 0 &&
+    typeof totalLikes === "number" && Number.isFinite(totalLikes)
+      ? (totalLikes / postsCount) / followers * 100
+      : null;
+
   return {
     externalId,
     platform: item.platform,
@@ -414,6 +429,7 @@ export function mapApifyKolItemToRawKolData(
     lastUploadAt: null,
     brandSafetyRating: null,
     raw: { ...(item as Record<string, unknown>) },
+    engagement_rate: engagementRate,
     scrapedAt: now(),
   };
 }

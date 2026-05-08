@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/lib/kol-sync/adapters/apify-kol.ts mapApifyKolItemToRawKolData() 加 engagement_rate derive 计算",
       "公式: (totalLikes / postsCount) / followers * 100；边界 null 处理: followers=0 OR postsCount=0 OR totalLikes=null → engagement_rate = null",

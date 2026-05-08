@@ -49,6 +49,13 @@ export interface RawKolData {
    *  can promote nested fields into proper columns later without a
    *  re-fetch. */
   raw?: Record<string, unknown>;
+  /** BL-059 F001 — engagement proxy derived by the adapter. apify-kol
+   *  computes `(totalLikes / postsCount) / followers * 100` from the
+   *  fork's accumulated counters; YouTube's BL-023 path used a true
+   *  per-video rate but is being deprecated. Adapters that don't
+   *  expose engagement leave this undefined and `engagement_rate`
+   *  stays NULL on the Kol row. */
+  engagement_rate?: number | null;
   /** Wall-clock at scrape time — used for `last_synced_at` and to
    *  distinguish stale rows. */
   scrapedAt: string;

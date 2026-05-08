@@ -174,6 +174,65 @@ describe("BL-012-F008 mapApifyKolItemToRawKolData (pure)", () => {
 });
 
 // ---------------------------------------------------------------------
+// BL-059-F001 — engagement_rate derive
+// ---------------------------------------------------------------------
+
+describe("BL-059-F001 mapApifyKolItemToRawKolData engagement_rate derive", () => {
+  it("(a) computes (totalLikes / postsCount) / followers * 100 for a complete IG profile", () => {
+    // 100K followers · 50 posts · 500K total likes
+    // → avg likes per post = 10,000
+    // → engagement_rate = 10,000 / 100,000 * 100 = 10 (10%)
+    const out = mapApifyKolItemToRawKolData(
+      igProfile({ followers: 100_000, postsCount: 50, totalLikes: 500_000 }),
+      STUB_NOW
+    );
+    expect(out?.engagement_rate).toBeCloseTo(10, 6);
+  });
+
+  it("(b) returns null when followers is 0 or postsCount is 0 (avoid div-by-zero)", () => {
+    const zeroFollowers = mapApifyKolItemToRawKolData(
+      igProfile({ followers: 0, postsCount: 50, totalLikes: 500_000 }),
+      STUB_NOW
+    );
+    expect(zeroFollowers?.engagement_rate).toBeNull();
+
+    const zeroPosts = mapApifyKolItemToRawKolData(
+      igProfile({ followers: 100_000, postsCount: 0, totalLikes: 500_000 }),
+      STUB_NOW
+    );
+    expect(zeroPosts?.engagement_rate).toBeNull();
+  });
+
+  it("(c) returns null when totalLikes is null/undefined (don't assume zero likes)", () => {
+    const nullLikes = mapApifyKolItemToRawKolData(
+      igProfile({ followers: 100_000, postsCount: 50, totalLikes: null }),
+      STUB_NOW
+    );
+    expect(nullLikes?.engagement_rate).toBeNull();
+
+    const undefinedLikes = mapApifyKolItemToRawKolData(
+      igProfile({ followers: 100_000, postsCount: 50, totalLikes: undefined }),
+      STUB_NOW
+    );
+    expect(undefinedLikes?.engagement_rate).toBeNull();
+  });
+
+  it("(d) returns null when followers/postsCount are null (TT row with scrape gaps)", () => {
+    const nullFollowers = mapApifyKolItemToRawKolData(
+      igProfile({ followers: null, postsCount: 50, totalLikes: 500_000 }),
+      STUB_NOW
+    );
+    expect(nullFollowers?.engagement_rate).toBeNull();
+
+    const nullPosts = mapApifyKolItemToRawKolData(
+      igProfile({ followers: 100_000, postsCount: null, totalLikes: 500_000 }),
+      STUB_NOW
+    );
+    expect(nullPosts?.engagement_rate).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------
 // Adapter-level — error classification.
 // ---------------------------------------------------------------------
 
