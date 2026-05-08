@@ -35,13 +35,19 @@ vi.mock("@/lib/admin/apify-preview-client", async () => {
   };
 });
 
-// PreviewTable is a client component under test in its own file. Stub it
-// here so the page test stays focused on the auth gate + fetch wiring.
+// PreviewTable + StatsCards are client components under test in their own
+// files. Stub them here so the page test stays focused on the auth gate +
+// fetch wiring.
 vi.mock("../PreviewTable", () => ({
   PreviewTable: (props: { items: unknown[]; total: number }) => (
     <div data-testid="preview-table-stub">
       stub:items={props.items.length}:total={props.total}
     </div>
+  ),
+}));
+vi.mock("../StatsCards", () => ({
+  StatsCards: (props: { items: unknown[]; total: number }) => (
+    <div data-testid="stats-cards-stub">stub:items={props.items.length}:total={props.total}</div>
   ),
 }));
 

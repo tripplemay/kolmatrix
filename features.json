@@ -61,7 +61,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.85,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/app/[locale]/admin/apify-preview/StatsCards.tsx 新建 (client component, 接 preview 数据 props)",
       "Card #1 字段完整度: 必填 5 字段 (username/displayName/followers/platform/profileUrl) 100% 非空 → ✓；email 抽取率 (emails.length>0 OR aggregatorEmails.length>0) 当前样本 ≥40% → ✓；任一不达标 → ✗ 红色",

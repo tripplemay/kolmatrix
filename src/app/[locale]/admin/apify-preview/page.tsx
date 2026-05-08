@@ -14,6 +14,7 @@ import {
 } from "@/lib/admin/apify-preview-client";
 
 import { PreviewTable } from "./PreviewTable";
+import { StatsCards } from "./StatsCards";
 
 export const metadata = { title: "Apify-KOL Preview (READ-ONLY) — KOLMatrix" };
 
@@ -126,13 +127,16 @@ export default async function ApifyPreviewPage({ params, searchParams }: Props) 
             {t("fetchError", { kind: error.kind, message: error.message })}
           </div>
         ) : (
-          <PreviewTable
-            items={result?.data ?? []}
-            page={result?.page ?? 1}
-            pageSize={result?.pageSize ?? query.pageSize ?? DEFAULT_PAGE_SIZE}
-            total={result?.total ?? 0}
-            query={query}
-          />
+          <>
+            <StatsCards items={result?.data ?? []} total={result?.total ?? 0} />
+            <PreviewTable
+              items={result?.data ?? []}
+              page={result?.page ?? 1}
+              pageSize={result?.pageSize ?? query.pageSize ?? DEFAULT_PAGE_SIZE}
+              total={result?.total ?? 0}
+              query={query}
+            />
+          </>
         )}
       </div>
     </div>

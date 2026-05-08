@@ -1587,7 +1587,52 @@
         "next": "Next",
         "status": "Page {page} of {totalPages} • {total} total"
       },
-      "fetchError": "Failed to load apify-kol data ({kind}): {message}"
+      "fetchError": "Failed to load apify-kol data ({kind}): {message}",
+      "statsCards": {
+        "statusPass": "Pass",
+        "statusFail": "Fail",
+        "sampleSize": "Sample N = {n}",
+        "card1": {
+          "title": "#1 Field completeness",
+          "description": "Required fields filled and emails extracted at usable rate.",
+          "thresholds": {
+            "requiredFields": "Required fields (5)",
+            "emailRate": "Email extraction rate"
+          }
+        },
+        "card2": {
+          "title": "#2 Score distribution",
+          "description": "Relevance + influence average and quality + reachability coverage.",
+          "thresholds": {
+            "scoreAvg": "avg(relevance + influence)",
+            "qrCoverage": "Q + Re non-null coverage",
+            "distribution": "Score spread"
+          }
+        },
+        "card3": {
+          "title": "#3 Platform coverage",
+          "description": "Multi-platform breadth with gaming-vertical tag hit rate.",
+          "thresholds": {
+            "platforms": "Platforms with data",
+            "platformVolume": "Top-platform volume",
+            "gamingTagRate": "Gaming-tag hit rate"
+          }
+        },
+        "card4": {
+          "title": "#4 Data freshness",
+          "description": "How recently the visible KOLs were last scraped.",
+          "thresholds": {
+            "fresh7d": "Within 7 days",
+            "aged7to30d": "7 — 30 days",
+            "stale30d": "Over 30 days"
+          }
+        },
+        "footer": {
+          "gateOpen": "Gate status: 4 / 4 passed → Stage 2 wiring ready.",
+          "gateBlocked": "Gate status: {passCount} / {total} passed → flag the failing dimensions to the crawler team.",
+          "sampleNote": "Computed from current page (N = {n} of {total} total). Widen pageSize to broaden sample."
+        }
+      }
     }
   }
 }
