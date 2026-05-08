@@ -23,32 +23,44 @@ const REPO_ROOT = resolve(__dirname, "../..");
 
 // BL-026-F002/F004/F005 Reviewer follow-up: 5 new baselines added
 // for the post-redesign /assets shell + /outreach composer (per
-// spec §S1.6). en-assets-wizard-step1.png stays deleted (the wizard
-// dialog still opens but the underlying page chrome shifted enough
-// that the BL-025 baseline wasn't a reliable comparison anymore;
-// not in the new 5 because the wizard is the same primitive Step 1
-// dialog covered by the assets-page e2e suite).
-const EXPECTED_BASELINES = [
-  "dashboard.png",
-  "en-assets-drawer-open.png",
-  "en-assets-empty-system-seed.png",
-  "en-assets-filter-dropdown.png",
-  "en-assets.png",
-  "en-campaign-detail.png",
-  "en-campaigns.png",
-  "en-crm.png",
-  "en-database.png",
-  "en-discovery.png",
-  "en-knowledge-base.png",
-  "en-kols-detail.png",
-  "en-login.png",
-  "en-outreach-templates.png",
-  "en-outreach.png",
-  "en-request-access.png",
-  "en-roi.png",
-  "en-weekly-report.png",
-  "zh-login.png",
-] as const;
+// spec §S1.6). en-assets-wizard-step1.png stays deleted.
+//
+// BL-055-F007 Reviewer follow-up: 5 hotfix baselines added. The
+// last three are intentionally locator-scoped (sidebar = 240px wide,
+// outreach tabs strip = 976px wide) so they capture only the chrome
+// the hotfix touches; full-page would re-trip on every other-page
+// drift. We track the expected width per baseline so the canonical-
+// width guard still catches accidental viewport changes on the
+// 1280-wide screenshots without erroring on the deliberate locator
+// crops.
+const EXPECTED_BASELINES: ReadonlyArray<{ name: string; width: number }> = [
+  { name: "dashboard.png", width: 1280 },
+  { name: "en-assets-drawer-open.png", width: 1280 },
+  { name: "en-assets-empty-system-seed.png", width: 1280 },
+  { name: "en-assets-filter-dropdown.png", width: 1280 },
+  { name: "en-assets.png", width: 1280 },
+  { name: "en-campaign-detail.png", width: 1280 },
+  { name: "en-campaigns.png", width: 1280 },
+  { name: "en-crm.png", width: 1280 },
+  { name: "en-database.png", width: 1280 },
+  { name: "en-discovery.png", width: 1280 },
+  { name: "en-knowledge-base-bottom.png", width: 1280 },
+  { name: "en-knowledge-base.png", width: 1280 },
+  { name: "en-kols-detail.png", width: 1280 },
+  { name: "en-login.png", width: 1280 },
+  { name: "en-network-status-online.png", width: 1280 },
+  { name: "en-outreach-templates-badge.png", width: 976 },
+  { name: "en-outreach-templates.png", width: 1280 },
+  { name: "en-outreach.png", width: 1280 },
+  { name: "en-request-access.png", width: 1280 },
+  { name: "en-roi.png", width: 1280 },
+  { name: "en-sidebar-logo.png", width: 240 },
+  { name: "en-weekly-report.png", width: 1280 },
+  { name: "zh-login.png", width: 1280 },
+  { name: "zh-sidebar-logo.png", width: 240 },
+];
+
+const EXPECTED_NAMES: ReadonlyArray<string> = EXPECTED_BASELINES.map((b) => b.name);
 
 function gitTrackedBaselines(): string[] {
   const out = execFileSync("git", ["ls-files", "tests/screenshots/baseline/"], {
@@ -76,13 +88,13 @@ function baselineWidths(): Array<{ name: string; width: number }> {
 }
 
 describe("visual baseline collection (MVP-vf-F007)", () => {
-  it("git tracks exactly the 19 baseline PNGs the spec covers", () => {
-    expect(gitTrackedBaselines()).toEqual([...EXPECTED_BASELINES].sort());
+  it(`git tracks exactly the ${EXPECTED_BASELINES.length} baseline PNGs the spec covers`, () => {
+    expect(gitTrackedBaselines()).toEqual([...EXPECTED_NAMES].sort());
   });
 
   it("every git-tracked baseline has a matching toHaveScreenshot() call", () => {
     const spec = readFileSync(resolve(REPO_ROOT, "tests/e2e/visual-regression.spec.ts"), "utf8");
-    for (const baseline of EXPECTED_BASELINES) {
+    for (const baseline of EXPECTED_NAMES) {
       expect(
         spec,
         `expected toHaveScreenshot("${baseline}") in visual-regression.spec.ts`
@@ -90,11 +102,8 @@ describe("visual baseline collection (MVP-vf-F007)", () => {
     }
   });
 
-  it("keeps every baseline on the canonical 1280px Playwright width", () => {
-    expect(baselineWidths()).toEqual(
-      EXPECTED_BASELINES.map((name) => ({ name, width: 1280 })).sort((a, b) =>
-        a.name.localeCompare(b.name)
-      )
-    );
+  it("each baseline matches its declared canonical Playwright width", () => {
+    const expected = [...EXPECTED_BASELINES].sort((a, b) => a.name.localeCompare(b.name));
+    expect(baselineWidths()).toEqual(expected);
   });
 });
