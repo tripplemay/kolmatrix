@@ -18,6 +18,7 @@
 | **v2** | **5/8 ~02:30** | 用户重新讨论后扩范围 — **新增 Stage 1.5 admin preview 页面 + 4 维度决策门 checklist**；features 7→13；时间线 5/13 仅含 Stage 1+1.5（不含 Stage 2 真接入）；用户决议 5 子项 lock 1A/2A/3A/4B/5B |
 | **v3** | **5/8 ~16:30** | Stage 1.5 signoff PASS @ commit `f2f5dbb` (A-/Ready) 后用户增量请求 — **加 sidebar 入口 §4.5.6**：UserAvatarMenu 下拉 conditional admin tools section（仅 platform_admin/tenant_admin 可见，业界惯例 GitHub/Notion 等头像菜单含 admin tools，**不违反 canonical 8-item rule** BL-025-F004.B）；features.json 加 F006a；progress.json status: done → building / total_features 13→14 |
 | **v4** | **5/8 ~19:30** | BL-012 综合 signoff PASS @ commit `4712066` (A-/Ready，fix-round 1+F006a+fix-round 2 全闭合) 后用户决议 4B — **绕过 §4.5.4 决策门** (当前 1/4 passed) 启动 Stage 2 真接入；接受风险（次质量数据进主流程，metadata.source='apify-kol' 隔离作后续清理 option，主流程 UI 不加默认过滤）；BL-058-apify-data-quality-await backlog 加入跟踪 4 维度迭代；progress.json status: done → building 重激活 Stage 2；features.json F007-F013 7 features 仍按 v2 spec 设计；v0.9.18 (auth role enum 实物核查) + v0.9.19 (external API zod schema 实物 sample 验证) 同沉淀 framework |
+| **v5** | **5/8 ~21:00** | 用户提示 ai-usage.md 完整审视后发现 Stage 1 §4.4 集成偏差 — 服务方 §11 Recipe B (冷启动 1k+ KOL best practice) 推荐 **POST /admin/schedules cron 每天跑 hashtag matrix + 1 周后 seed_expansion**，而 v2 spec §4.4 仅写 POST /admin/scrape-jobs 一次性 hashtag jobs（不持续累积）。导致决议门 1/4 passed (24h 后 318 KOL 但缺持续抓取)。v5 加 §4.7 (cron hashtag schedules 子段) + §4.8 (seed_expansion 子段) — Planner ops 后续 SSH 创建 schedules（用户决议 A 不立即 SSH，留 ops 待办）。X 平台再次确认 service 文档 + admin route enum 一致：仅 IG/TT/YT，X 是 SDK future。本次自我应用 v0.9.19 铁律（spec 起草前 ≥5-10 真数据 + 完整文档审视）— 反例：5/8 02:30 起 spec v2 时仅审 ai-usage.md 前 120 行漏 §4 §5 §11 §13 |
 
 ---
 
@@ -158,6 +159,98 @@ Stage 1.5 preview 页**严格 read-only**：
 ### 4.1-4.6 Stage 1 ops（v1 不变）
 
 详 v1 spec §4.1-§4.6（TIKHUB_TOKEN 协调 / VM SSH 部署 docker-compose / smoke / 录种子 / .env 加 2 行 / 数据可用性验证）。
+
+### 4.7 创建定时 hashtag schedules（v5 增量 — 服务方 §11 Recipe B 推荐 best practice）
+
+**触发：** 5/8 21:00 用户提示 ai-usage.md 完整审视后发现 v2 spec §4.4 集成偏差 — 仅做 POST /admin/scrape-jobs 一次性 hashtag jobs，不符合服务方 §11 Recipe B 冷启动 1k+ KOL 推荐路径。决议门 1/4 passed 部分原因。
+
+**v5 修订加：** Planner ops + 用户协作 SSH 创建定时 hashtag schedules（fork service /admin/schedules endpoint，cron 每天自动跑）。
+
+#### 4.7.1 设计目标
+
+让 fork service 持续抓取 IG/TT/YT 各 5-10 个游戏 hashtag → 每天累积 100-300 新 KOL → 1 周达 1-3k KOL → 决议门 4 维度自然达标。
+
+#### 4.7.2 推荐 hashtag matrix（30 schedules，IG/TT/YT 各 10）
+
+| 平台 | hashtag (10) |
+|---|---|
+| Instagram | gaming / esports / gamergirl / streamer / pcgaming / valorant / fortnite / cs2 / dota2 / leagueoflegends |
+| TikTok | 同上 10 hashtag（TikTok hashtag 命名习惯类似 IG）|
+| YouTube | gaming highlights / valorant highlights / fortnite gameplay / cs2 highlights / dota2 / mobile gaming / pc gaming / esports / gameplay walkthrough / gaming reviews（YouTube 无 hashtag，用 keyword 搜索） |
+
+#### 4.7.3 cron 调度（避开 KOLMatrix kol-sync:daily 00:30 UTC）
+
+- **02:00 UTC** 每天跑 30 hashtag schedules（每平台 10 个并行）
+- 即 `cronExpression: "0 2 * * *"`
+- limit: 100 帖 / hashtag (per Recipe B)
+- 总抓取量上限：30 × 100 = 3000 帖 / 天 → 提取作者 → 抓 profile → 入库（实际 fork service 端 SCRAPE_CONCURRENCY=2 串行，单天可能 1-2 小时跑完）
+
+#### 4.7.4 SSH ops 命令（Planner 后续执行 — 用户决议 A 不立即跑）
+
+```bash
+ssh tripplezhou@34.180.93.185 'bash -s' << 'REMOTE_EOF'
+cd /opt/apify-kol-service
+ADMIN_KEY=$(grep "^ADMIN_API_KEY=" .env | cut -d= -f2-)
+
+for tag in gaming esports gamergirl streamer pcgaming valorant fortnite cs2 dota2 leagueoflegends; do
+  for platform in instagram tiktok; do
+    curl -sS -X POST -H "x-api-key: $ADMIN_KEY" -H "Content-Type: application/json" \
+      -d "{\"name\":\"daily-$platform-$tag\",\"cronExpression\":\"0 2 * * *\",\"kind\":\"hashtag\",\"config\":{\"platform\":\"$platform\",\"searchValue\":\"$tag\",\"limit\":100}}" \
+      http://localhost:3003/admin/schedules
+  done
+done
+
+# YT 用 keyword 搜索（无 hashtag）
+for keyword in "gaming highlights" "valorant highlights" "fortnite gameplay" "cs2 highlights" "dota2" "mobile gaming" "pc gaming" "esports" "gameplay walkthrough" "gaming reviews"; do
+  curl -sS -X POST -H "x-api-key: $ADMIN_KEY" -H "Content-Type: application/json" \
+    -d "{\"name\":\"daily-youtube-$(echo $keyword | tr ' ' '-')\",\"cronExpression\":\"0 2 * * *\",\"kind\":\"hashtag\",\"config\":{\"platform\":\"youtube\",\"searchValue\":\"$keyword\",\"limit\":100}}" \
+    http://localhost:3003/admin/schedules
+done
+
+# 验证
+curl -sS -H "x-api-key: $ADMIN_KEY" http://localhost:3003/admin/schedules | python3 -m json.tool | head -50
+REMOTE_EOF
+```
+
+### 4.8 seed_expansion（v5 增量 — 1 周累积后启动）
+
+**触发：** §4.7 cron schedules 跑 1 周累积 1-3k KOL 后启动 seed_expansion → 让 fork service 端用 IG followers 链路扩散到中尾 KOL。
+
+#### 4.8.1 SSH ops 命令（Planner 后续执行 — 1 周后 / 5/15 左右）
+
+```bash
+ssh tripplezhou@34.180.93.185 'bash -s' << 'REMOTE_EOF'
+cd /opt/apify-kol-service
+ADMIN_KEY=$(grep "^ADMIN_API_KEY=" .env | cut -d= -f2-)
+
+# IG seed expansion (TT/YT 无公开 followers，仅 IG)
+curl -sS -X POST -H "x-api-key: $ADMIN_KEY" -H "Content-Type: application/json" \
+  -d '{
+    "kind":"seed_expansion",
+    "config":{"topN":100,"perSeedLimit":1000,"minFollowersFilter":5000,"bioKeywords":["gamer","streamer","esports","gaming"]}
+  }' \
+  http://localhost:3003/admin/scrape-jobs
+REMOTE_EOF
+```
+
+#### 4.8.2 acceptance
+
+- 1 周累积达 ≥1k KOL 后启动
+- topN=100：从 hot/warm tier 取 top 100 IG KOL 作种子
+- perSeedLimit=1000：每个种子最多扩散 1000 followers
+- 过滤：minFollowersFilter=5000 + bioKeywords ["gamer","streamer","esports","gaming"]
+- 预期再扩散 ~2-5k 中尾 IG KOL → 总累积达 3-5k KOL → 决议门 4 维度全 ✓
+
+### 4.9 v5 修订对决议门的影响
+
+| 维度 | v2 状态（一次性 hashtag jobs） | v5 后预期（1 周 cron + seed_expansion） |
+|---|---|---|
+| #1 字段完整度 | 1/4 passed 中可能未达（hashtag 抓取 KOL 不够典型） | ✓ 预期达（持续抓取 + Linktree aggregator 自动跑提升 email 抽取） |
+| #2 4 维度评分分布 | 可能未达（多数 cold tier null） | ✓ 预期达（warm/hot tier 自然增加 + 评分填充） |
+| #3 跨平台覆盖 | ✓ 已达（IG/TT/YT 各 100+） | ✓ 持续（30 schedules 持续覆盖） |
+| #4 数据新鲜度 | 可能未达（一次性抓取后无 refresh） | ✓ 预期达（fork refresh-scheduler 5min 扫一次 next_refresh_at + hot 1d / warm 3d / cold 7d） |
+
+**5/15-5/16 决议门预期 4/4 通过** — Stage 2 已 4B 决议绕过启动，但若用户 5/13 后 revisit 严格判定，4/4 通过提供二次保障。
 
 ---
 
