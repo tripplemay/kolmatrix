@@ -3,11 +3,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🟡 BL-059-youtube-deprecate-and-engagement-derive VERIFYING（5/9 03:42 切 / 7/7 features done @ 56f6623）
+## ✅ BL-059-youtube-deprecate-and-engagement-derive DONE（5/9 07:33 签收 / 7/7 features done @ 56f6623）
 - features 7/7 completed / fix_rounds=0 / staging deployed @ 56f6623（HEAD ✓）
-- L1: lint 0 / tsc 0 / **156 files 1101 tests PASS** + staging health PASS（DB 17ms / Redis 2ms）+ 公开页 smoke PASS
-- 关键产出：F001 apify-kol mapper engagement_rate derive + F002 SQL no-op 守门（spec §3.1 metadata.raw 缺失，依赖下次 sync mapper 写入）+ F003 prod 2584 youtube-api-daily soft-deleted + 2584 audit_log + F004 删 youtube.ts/engagement-batch/published-after + F005 kol-sync-daily.ts apify-kol 单源 rewrite + F006 文档+VM env vars audit + F007 staging smoke
-- 待用户：(a) Reviewer 接力 verifying 出 signoff (b) prod redeploy 后下次 cron 写 engagement_rate（spec §10.2 #2 ≥200）
+- L1: lint 0 / tsc 0 / **156 files 1101 tests PASS** + 定点 vitest 3 files/43 tests PASS + integration 2 files/8 tests PASS
+- staging: /api/health healthy（DB ok / Redis ok）+ /en/dashboard + /en/discovery + /en/database smoke PASS
+- 关键产出：F001 apify-kol mapper engagement_rate derive + F002/F003 单源迁移与软删除闭环 + F004 删 youtube.ts/engagement-batch/published-after + F005 kol-sync-daily.ts apify-kol 单源 rewrite + F006 文档+VM env vars audit + F007 staging smoke
+- signoff: docs/test-reports/BL-059-youtube-deprecate-and-engagement-derive-signoff-2026-05-09.md
 ## ✅ BL-012 DONE 5/9 / BL-055 DONE / BL-052 / BL-051a / BL-049 / BL-021+BL-023 / BL-043+BL-044 全 DONE
 ## 🆕 BL-054-flaky-test-isolate medium / BL-056-notifications low / BL-058-apify-data-quality low post-MVP
 ## 🚀 5/13 上线对外（buffer 4 天充裕）
