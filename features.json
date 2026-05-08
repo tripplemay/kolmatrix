@@ -87,7 +87,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "git mv docs/specs/B6-kol-daily-sync-spec.md docs/archive/B6-kol-daily-sync-spec.md (保留 git 历史)",
       "Archive 文件顶部加 deprecation header: '> ⚠️ DEPRECATED 2026-05-09 by BL-059 - youtube-api-daily 链路 deprecate, KOLMatrix KOL 数据源切换到单源 apify-kol。详见 docs/specs/BL-059-youtube-deprecate-and-engagement-derive-spec.md'",

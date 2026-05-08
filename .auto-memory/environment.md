@@ -136,6 +136,7 @@ NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) n
 | `RESEND_API_KEY` | ✅ 已配（36 chars） | ✅ 已配（同 key） | 未在本次验证真发邮件，仅确认非 placeholder；完整 key 不落 git |
 | `APIFY_KOL_BASE_URL` | ✅ 已配（`http://localhost:3003`） | ✅ 已配（同 prod） | BL-012-F012 验证 2026-05-09。同 VM 共生 service，走内网；外网可用 https `apify.kol.guangai.ai` 但当前不暴露。**BL-059 后单源依赖**：两 env 任一缺失即 fail-fast，daily run 当日不增长 KOL（不再 silent-skip）|
 | `APIFY_KOL_BUSINESS_API_KEY` | ✅ 已配（同 fork 端 `BUSINESS_API_KEY`） | ✅ 已配（同 prod） | BL-012-F012 验证 2026-05-09。来自 `/opt/apify-kol-service/.env` `BUSINESS_API_KEY`；KOLMatrix 仅用 read API（`x-api-key` header），不需 `ADMIN_API_KEY` |
+| `YOUTUBE_API_KEY` | ✅ 已配（B5-F006 KOL 详情页保留） | ✅ 已配（同 prod） | BL-059 lock 2026-05-09：daily sync 端 youtube.ts 已删（5/9 deprecate），但 `src/app/[locale]/(app)/kols/[id]/page.tsx` `loadRecentVideos()` 仍依赖此 key 给 KOL 详情页拉最近 6 视频缓存（B5-F006 path，out-of-scope per BL-059 §1.4 "主流程 UI 调整 out-of-scope"）。删除会让 apify-kol 平台为 youtube 的 KOL 详情页 recent videos 区灰显。未来可在独立 batch 收尾 |
 
 **修改流程（如未来需要换 key）：**
 ```bash
