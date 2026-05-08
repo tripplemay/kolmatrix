@@ -342,6 +342,83 @@ F001 page.tsx 同步重构使用此 helper（避免字面 array 重复 — v0.9.
 
 详 v1 spec §7（dispatcher 集成 + cron 行 + prod redeploy）。
 
+### 7.3 apify-kol-service fork 同步流程（v4 增量）
+
+apify-kol-service 部署在 KOLMatrix prod VM `/opt/apify-kol-service`（Stage 1 §4.2 部署）。fork 上游（`guang-tech/apify`）后续可能更新（修 lockfile / 加 X 平台 / 改 admin API 等）。同步流程：
+
+#### 7.3.1 同步前兼容性 check（必须）
+
+```bash
+# 1. 看 fork upstream 自上次 sync 以来的 commits
+gh api repos/guang-tech/apify/commits?since=<上次 sync 时间戳> --jq '.[].commit.message' | head -20
+
+# 2. 关键审查点（影响 KOLMatrix 端 adapter）
+#    - admin API path 是否改 (/admin/seeds / /admin/scrape-jobs / /admin/stats / /kol)
+#    - GET /kol response shape 是否新增字段 / 改字段类型 (KOLMatrix zod schema 用 union+passthrough 已容忍 unknown，应自动兼容)
+#    - admin route platform enum 是否新增 (如 X 平台 route 实装 → adapter 加 X handles support)
+#    - .env 必填变量是否新增 (KOLMatrix .env 需补)
+#    - docker-compose.yml service 名 / 端口默认是否改
+
+# 3. 看是否爬虫团队修了我们端 sed workaround 已 fix 的 bug
+#    - packages/service/Dockerfile pnpm install 是否仍 --frozen-lockfile (已修则 sed 失效)
+#    - docker-compose.yml ports 是否改为 ${SERVICE_PORT:-3000}:3000 (已修则 sed 失效)
+```
+
+#### 7.3.2 同步执行（B 方案 — git fetch + reset --hard + 重 apply sed）
+
+```bash
+ssh tripplezhou@34.180.93.185 'bash -s' << 'REMOTE_EOF'
+set -e
+cd /opt/apify-kol-service
+
+# 1. Fetch upstream + 强制对齐 master
+git fetch origin master
+git reset --hard origin/master
+
+# 2. Re-apply KOLMatrix sed workarounds (sed 不 match 时自动跳过 — fork 已修则无 effect)
+sed -i "s|pnpm install --frozen-lockfile|pnpm install --no-frozen-lockfile|g" packages/service/Dockerfile
+sed -i "s|\"3000:3000\"|\"3003:3000\"|g" docker-compose.yml
+
+# 3. Rebuild + restart (data volume pg_data 保留不丢)
+sudo docker compose down       # 重要：不带 -v，volume 保留
+sudo docker compose up -d --build
+
+# 4. Smoke
+sleep 15
+curl -sS http://localhost:3003/health
+sudo docker compose ps
+REMOTE_EOF
+```
+
+#### 7.3.3 数据保留说明
+
+| 资产 | 保留？ | 备注 |
+|---|---|---|
+| `apify_kol_pg_data` docker volume | ✅ 保留 | `docker compose down`（不带 `-v`）不删 volume — 抓取的 KOL + 任务历史 + Linktree 解析记录全保 |
+| `.env` 文件 | ✅ 保留 | 在 `.gitignore` 中，`git reset --hard` 不动 |
+| 4 secrets (POSTGRES_PASSWORD / TIKHUB_TOKEN / BUSINESS_API_KEY / ADMIN_API_KEY) | ✅ 保留 | 仅在 `.env`，不在 git tracked 文件 |
+
+#### 7.3.4 长期 todo（fork 上游修后）
+
+爬虫团队修以下 4 个 fork bug 后，KOLMatrix 端 sed workaround 自然失效（sed 不 match 即跳过）：
+
+1. ⚠️ `pnpm-lock.yaml` 与 `packages/sdk/package.json` 不一致（修复方法：fork 端跑 `pnpm install` + commit lockfile）
+2. ⚠️ `docker-compose.yml` ports 硬编码 `"3000:3000"`（建议改 `"${SERVICE_PORT:-3000}:3000"`）
+3. ⚠️ `admin route` platform enum 仅 IG/TT/YT，X(Twitter) 待实装
+4. ⚠️ `docs/specs/2026-05-07-tikhub-migration-design.md` `externalUrls` / `aggregatorLinks` union shape 注释含糊（需明示 `[{url, title}]` array of object）
+
+KOLMatrix 端可在 `docs/dev/kol-sync-runbook.md` 加 follow-up 段，定期 check 4 bug 状态（如季度 review）。
+
+### 7.4 cron 调度（既有 BL-052 F003 + 本批次 F010 复用）
+
+`/etc/cron.d/kolmatrix-daily-sync`（与 BL-052 F003 kpi-snapshot:daily 同 cron 行）：
+
+```
+00:30 UTC tripplezhou cd /opt/kolmatrix && npm run kol-sync:daily && npm run kpi-snapshot:daily 2>&1 | logger -t kolmatrix-cron
+```
+
+apify-kol-service 自带 pg-boss + cron（5min 扫一次刷新），独立运行不需 KOLMatrix 端 cron 干预。
+
 ---
 
 ## 8. 风险与缓解

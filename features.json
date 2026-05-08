@@ -227,6 +227,7 @@
     "acceptance": [
       "docs/dev/kol-sync-runbook.md 加 §'双 adapter 双源容灾' 段：B6 YouTube + apify-kol 双源 / metadata.source 字段区分 / 故障互备路径 / cron 调度 00:30 UTC",
       ".auto-memory/environment.md secrets 表加 2 行：APIFY_KOL_BASE_URL (http://localhost:3003 prod / staging 同) + APIFY_KOL_BUSINESS_API_KEY (来自 fork 端 .env BUSINESS_API_KEY)",
+      "docs/dev/kol-sync-runbook.md 新增 §'apify-kol-service fork 同步流程'：(1) 同步前兼容性 check (gh api fork commits since last sync + 审查 admin API path/response shape/env vars/platform enum/sed workaround 失效信号 5 点) (2) 同步执行 B 方案 (git fetch origin master + git reset --hard + 重 apply 2 sed workaround: Dockerfile --no-frozen-lockfile + docker-compose.yml 3003:3000 + sudo docker compose down/up -d --build + smoke curl /health) (3) 数据保留说明 (pg_data volume 保留 / .env 保留 / docker compose down 不带 -v) (4) 长期 todo: 反馈爬虫团队修 4 fork bug 后 sed workaround 自然失效",
       ".auto-memory/environment.md 新增 §'apify-kol service (同 VM 共生)' 段：部署路径 /opt/apify-kol-service / 端口 3003 / PG 端口 15432 / TIKHUB_TOKEN 由爬虫团队提供 / 月度 paid balance 监控 (/admin/stats) / Stage 1.5 admin preview 页 link",
       "L1 markdown lint PASS (如有 markdownlint)"
     ]
