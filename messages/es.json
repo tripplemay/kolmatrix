@@ -27,7 +27,9 @@
   "userMenu": {
     "profile": "Perfil",
     "settings": "Configuración",
-    "signOut": "Cerrar sesión"
+    "signOut": "Cerrar sesión",
+    "adminTools": "Herramientas de administración",
+    "adminApifyPreview": "Vista previa de Apify"
   },
   "login": {
     "title": "Iniciar sesión en KOLMatrix",

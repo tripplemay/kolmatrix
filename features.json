@@ -112,7 +112,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/lib/auth/roles.ts 新建 helper export function isAdminRole(role?: string | null): boolean { return ['platform_admin', 'tenant_admin'].includes(role ?? ''); }",
       "src/app/[locale]/admin/apify-preview/page.tsx F001 既有 role check 重构使用 isAdminRole helper（避免字面 array 重复，与 F006a 严格一致 — v0.9.17/v0.9.18 auth role enum 实物核查铁律精神延伸）",

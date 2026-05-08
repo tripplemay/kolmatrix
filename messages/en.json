@@ -27,7 +27,9 @@
   "userMenu": {
     "profile": "Profile",
     "settings": "Settings",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "adminTools": "Admin Tools",
+    "adminApifyPreview": "Apify Preview"
   },
   "login": {
     "title": "Sign in to KOLMatrix",

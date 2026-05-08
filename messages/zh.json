@@ -27,7 +27,9 @@
   "userMenu": {
     "profile": "个人资料",
     "settings": "设置",
-    "signOut": "退出登录"
+    "signOut": "退出登录",
+    "adminTools": "管理员工具",
+    "adminApifyPreview": "Apify 数据预览"
   },
   "login": {
     "title": "登录 KOLMatrix",

@@ -71,3 +71,9 @@ lightbulb                   # roi/RoiInsightsPanel:140 + weekly-report/WeeklyRep
 insights                    # database/DatabaseInsightsClient.tsx:70 | function return fallback
 wifi                        # common/NetworkStatusBanner.tsx:74 | JSX ternary online branch
 wifi_off                    # common/NetworkStatusBanner.tsx:74 | JSX ternary offline branch
+
+# BL-012-F006a — UserAvatarMenu admin tools section glyph. The current
+# callsite is a multi-line `<span class="material-symbols-outlined">` so
+# Pattern 2 already picks it up, but pinning it here keeps the subset
+# stable across future refactors (e.g. switching to `icon="..."` prop).
+admin_panel_settings        # layout/UserAvatarMenu.tsx admin tools section | JSX nested span

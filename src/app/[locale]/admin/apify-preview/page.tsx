@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { isLocale, routing } from "@/i18n/routing";
+import { isAdminRole } from "@/lib/auth/roles";
 import {
   ApifyPreviewError,
   APIFY_KOL_PLATFORMS,
@@ -79,10 +80,7 @@ export default async function ApifyPreviewPage({ params, searchParams }: Props) 
   if (!session?.user) {
     redirect(`/${locale}/login`);
   }
-  // The real role enum is platform_admin / tenant_admin / marketer / client
-  // (docs/dev/architecture.md §3.3). Spec §2.1 decision 5.2 says "admin role"
-  // — admit both admin tiers and reject marketers + clients.
-  if (session.user.role !== "platform_admin" && session.user.role !== "tenant_admin") {
+  if (!isAdminRole(session.user.role)) {
     redirect(`/${locale}/dashboard`);
   }
 

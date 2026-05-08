@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-012-apify-kol-integration v2 — KOLMatrix 接入爬虫团队 guang-tech/apify fork (apify-kol-service)，采用稳妥分阶段策略：Stage 1 (部署 service) + Stage 1.5 (admin preview 页 + 4 维度阈值决策门，5/13 上线含) + 用户决策门 (实地审视质量+数量) + Stage 2 (adapter 真接入 + 写 Prisma Kol 表)。13 features F001-F006 Stage 1.5 ~3.5h G + F007-F013 Stage 2 ~5.5h G + Reviewer ~2.5h，总 ~9h G + 2.5h R。用户决议 1B/2A/3B/4A/5B + v2 5.1A/5.2A/5.3A/5.4B/5.5B。数据流隔离铁律：Stage 1.5 preview 页严格 read-only，不 import @/lib/kol-sync/* + 不调 prisma.kol.*。5/13 上线时间线无影响 (含 Stage 1+1.5；Stage 2 决策门通过后弹性启动)。关联：docs/specs/BL-012-apify-kol-integration-spec.md (v2) + docs/reviews/apify-fork-audit-2026-05-08.md (462 行 audit)",
   "total_features": 14,
-  "completed_features": 6,
+  "completed_features": 7,
   "fix_rounds": 1,
   "current_sprint": "BL-012-apify-kol-integration",
-  "last_updated": "2026-05-08T16:30+0800",
+  "last_updated": "2026-05-08T16:35+0800",
   "reference_docs": [
     "docs/specs/BL-012-apify-kol-integration-spec.md",
     "docs/reviews/apify-fork-audit-2026-05-08.md",

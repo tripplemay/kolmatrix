@@ -12,6 +12,10 @@
  * which lets this shell + Sidebar + Topbar regress to server
  * components, knocking the static logo / icons / user chip out of
  * the client bundle.
+ *
+ * BL-012-F006a · `roleEnum` is the raw role from the session (e.g.
+ * `tenant_admin`); the Sidebar still uses the human-readable label
+ * the (app) layout supplies on `user.role`.
  */
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
@@ -19,6 +23,8 @@ import { Topbar } from "./Topbar";
 interface AppShellLayoutProps {
   children: React.ReactNode;
   user: { name: string; role: string; email?: string | null; avatarUrl?: string | null };
+  /** Raw role enum — forwarded to Topbar/UserAvatarMenu for the admin gate. */
+  roleEnum?: string | null;
   unreadNotifications?: number;
   onSignOut?: () => void;
 }
@@ -26,6 +32,7 @@ interface AppShellLayoutProps {
 export function AppShellLayout({
   children,
   user,
+  roleEnum,
   unreadNotifications,
   onSignOut,
 }: AppShellLayoutProps) {
@@ -33,7 +40,12 @@ export function AppShellLayout({
     <div className="bg-navy-base min-h-screen">
       <Sidebar user={user} />
       <div className="ml-[240px] flex min-h-screen flex-col">
-        <Topbar user={user} unreadNotifications={unreadNotifications} onSignOut={onSignOut} />
+        <Topbar
+          user={user}
+          roleEnum={roleEnum}
+          unreadNotifications={unreadNotifications}
+          onSignOut={onSignOut}
+        />
         <main className="flex-1 px-8 py-6">{children}</main>
       </div>
     </div>
