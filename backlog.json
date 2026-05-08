@@ -308,5 +308,27 @@
     "confirmed_at": "2026-05-07T13:55+0800",
     "priority": "closed",
     "status": "closed-merged-into-BL-052"
+  },
+  {
+    "id": "BL-056",
+    "title": "notifications 系统真化（schema + queries + bell dropdown UI + 通知触发链路）",
+    "description": "**触发：** 2026-05-08 用户 prod 反馈 topbar 铃铛永远显示黄点 (hotfix #6)。Planner 实地调查发现 `src/app/[locale]/(app)/layout.tsx:36` 硬编码 `unreadNotifications={1}`，且整个项目 0 notifications 基础设施：无 `Notification` Prisma schema、无 `src/lib/notifications/` lib、无 `loadNotifications`/`getUnread` query、`NotificationBell.tsx` 按钮无 onClick/dropdown UI、无 audit_log/event_log 候选数据源接通。\n\n**短期 hotfix（5/8 用户决议 6=A）：** layout.tsx:36 改 `unreadNotifications={0}` 永远不显黄点（铃铛仍在 topbar 但 0 unread）+ 加 TODO(post-MVP) 注释。本条目跟踪长期治本。\n\n**长期实装范围（BL-056 启动时由 Planner 重新评估）：**\n\nF001 schema migration: `Notification` 表（`id` cuid PK / `tenant_id` FK / `user_id` FK 可选指向某用户 / `kind` enum (campaign_status/asset_generated/email_bounced/kol_added/...) / `severity` enum (info/warning/critical) / `payload` JSONB / `read_at` TIMESTAMPTZ NULL / `created_at`）+ RLS policy + composite index `(tenant_id, user_id, read_at) WHERE read_at IS NULL`\n\nF002 src/lib/notifications/ 新建 4 文件：types.ts / queries.ts (`countUnread(tx, userId)` + `loadNotifications(tx, userId, limit)` + `markAsRead(tx, userId, ids)`) / mutations.ts (`createNotification(tx, payload)`) / dispatch.ts (subscribe to audit_log triggers)\n\nF003 触发链路：在既有 mutation 路径插入 `createNotification` 调用（约 5-8 处：campaign.create / kol.added / asset.generated / email.bounced / kol.relationship_status_changed 等）\n\nF004 UI: `NotificationBell.tsx` 加 onClick + dropdown panel 渲染 notifications list；新增 `NotificationsList` 组件 / `NotificationItem` 组件；mark all read 按钮；mark single read on click\n\nF005 `layout.tsx` 改 server fetch `countUnread(tx, currentUserId)` 传给 `<AppShellLayout unreadNotifications={...} />`\n\nF006 i18n: 5 locale 通知 kind/severity 文案（约 15-20 keys）\n\nF007 测试：单测 ≥6 case (queries + mutations) + 集成测试 ≥2 case (notifications 全链 trigger→DB→UI)\n\n**预估工时：** ~2-3 day Generator + 0.5 day Reviewer + ADR-XXX (notifications 系统设计 / 触发模式选择: pull vs push) + 5 locale i18n 翻译\n\n**依赖：** 无硬依赖；建议接客户后业务反馈触发优先级（如团队反复要求被通知 campaign 完成 / KOL 加入 / 邮件 bounce）\n\n**ADR-worthy：** 是 — notifications 触发模式（DB 直插 / event-bus / pg-listen-notify）、未读计数缓存策略（per-request fresh / per-user 5min cache / Redis）、UI 同步刷新（poll / SSE / websocket）影响多个下游模块，需 ADR 沉淀。\n\n**触发条件：** post-MVP 业务反馈触发 + 真客户使用反馈到位（如团队反复抱怨需被通知 campaign 完成 / 邮件 bounce 等）。\n\n**关联：**\n- 短期 hotfix 在 BL-055 hotfix batch 中处理（layout.tsx:36 改 0 + TODO 注释）\n- 长期 ADR 候选：触发模式 + 缓存策略 + UI 同步策略 3 选 1\n- 与 audit_log / event_log 表关系：notifications 是用户视角的精选 subset，不是全量审计日志",
+    "decisions": [
+      "用户 2026-05-08 决议 6=A：短期 hotfix layout.tsx:36 改 0 不显黄点 + 加 TODO 注释；长期独立批次 BL-056 跟踪真化",
+      "BL-056 启动条件：post-MVP + 真客户业务反馈触发，不阻塞 5/13 上线",
+      "实装范围 7 features：schema migration + lib + 触发链路 + UI dropdown + layout query + i18n + 测试",
+      "ADR-worthy：触发模式 (DB 直插/event-bus/pg-listen-notify) + 未读计数缓存策略 + UI 同步策略均需 ADR",
+      "工时估算：~2-3 day Generator + 0.5 day Reviewer + ADR + i18n LLM 翻译 (BL-014 ja/ko/es native review 链路)"
+    ],
+    "confirmed_at": "2026-05-08T02:00+0800",
+    "priority": "low",
+    "tags": [
+      "notifications",
+      "post-mvp",
+      "ui-feature",
+      "schema-migration",
+      "feedback-triggered"
+    ],
+    "discovered_in": "用户 prod 反馈 hotfix #6 (topbar 铃铛永远黄点) + Planner johnsong 实地调查 0 notifications 基础设施"
   }
 ]
