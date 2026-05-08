@@ -3,11 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🟣 BL-055-prod-mock-purge-hotfix VERIFYING（5/8 10:30 Generator 7/7 done + staging deployed @ 5f62dfc）
+## 🟣 BL-055-prod-mock-purge-hotfix VERIFYING（5/8 10:45 Reviewer 复验中）
 - 7 features F001-F007 PASS：mount-flag / async badge / 删 mock section / Material Symbols 增 4 删 5 / Neural Velocity → tagline i18n / unreadNotifications=0 / visual regression test cases
-- L1: lint 0 errors / tsc 0 / unit 1087+/1089 / IT material-symbols-coverage 7/7
-- ⚠️ visual baseline 因 sidebar 文案改动需 update-visual-baselines workflow 刷整棵树（用户手动 trigger）
-- Reviewer 10:35 复验：targeted BL-055 unit tests + material-symbols coverage PASS；staging dashboard/outreach/knowledge-base 直接核对 PASS；但 4 张 BL-055 baseline PNG 仍未入 git
+- L1: lint 0 errors / tsc 0 / unit targeted BL-055 PASS / IT material-symbols-coverage 7/7
+- 5 张 BL-055 visual baselines 已入 git（24 PNG tracked total）；但 visual-baselines-shape.test.ts 仍锁定旧 19 PNG 集合，npm run test FAIL
+- Reviewer 10:45 复验：staging dashboard/outreach/knowledge-base 直接核对 PASS；signoff 仍 blocked
 - spec @ docs/specs/BL-055-prod-mock-purge-hotfix-spec.md
 ## 🟡 BL-012-apify-kol-integration v2 修订 / 暂停等 BL-055 / 13 features 9h G + 2.5h R
 - 5/8 02:30 用户重新讨论 → 稳妥分阶段：Stage 1.5 admin preview 页 + 4 维度决策门 → Stage 2 真接入；决议 1A/2A/3A/4B/5B + 1B/2A/3B/4A/5B
