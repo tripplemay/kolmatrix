@@ -20,7 +20,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.3,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "scripts/sql/BL-059-F002-recompute-apify-kol-engagement.sql 新建 (spec §3.1 SQL 实装)",
       "Staging 先 dry-run 验证: SELECT COUNT 预期受影响行 = 237; SELECT 5 sample row before/after engagement_rate 值",
@@ -35,7 +35,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.4,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "scripts/sql/BL-059-F003-soft-delete-youtube-api-daily.sql 新建 (spec §3.2 SQL 实装含 BEGIN/COMMIT 事务保护)",
       "audit_log payload 含: source, reason, kol_campaign_count, email_log_count, engagement_rate, value_score, follower_count, platform, handle (per spec §3.2)",

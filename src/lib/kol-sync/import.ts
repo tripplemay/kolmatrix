@@ -194,6 +194,12 @@ export function mapToUpsertPayload(
               scrapedAt: raw.scrapedAt,
             }
           : undefined,
+      // BL-059 F002: preserve the adapter's raw payload for apify-kol
+      // so SQL backfills (engagement_rate / future 4-dim score
+      // recomputes) and the admin preview can read upstream fields
+      // without re-fetching. Other sources keep the existing shape —
+      // YouTube already had its own metadata.youtube nest.
+      ...(opts.source === "apify-kol" && raw.raw ? { raw: raw.raw } : {}),
     },
     valueScore,
   };
