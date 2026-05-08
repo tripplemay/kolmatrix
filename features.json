@@ -42,7 +42,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/app/[locale]/admin/apify-preview/PreviewTable.tsx 新建 (client component)",
       "Filter row: platform select (all/instagram/tiktok/youtube) + minFollowers number input + hasEmail toggle + sort select (relevance/followers/influence/quality/reachability/recent) + page size 50 + page N pagination (URL search params synced)",

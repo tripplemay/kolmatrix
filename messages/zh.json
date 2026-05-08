@@ -1553,7 +1553,41 @@
   "admin": {
     "apifyPreview": {
       "title": "Apify-KOL 数据预览（只读）",
-      "readOnlyWarning": "只读预览 — 数据未入库，仅供内部 admin 审视。"
+      "readOnlyWarning": "只读预览 — 数据未入库，仅供内部 admin 审视。",
+      "filterPlatform": "平台",
+      "filterPlatformAll": "全部平台",
+      "filterMinFollowers": "粉丝下限",
+      "filterHasEmail": "包含邮箱",
+      "filterSort": "排序方式",
+      "sortOptions": {
+        "relevance": "相关性",
+        "followers": "粉丝量",
+        "influence": "影响力",
+        "quality": "质量",
+        "reachability": "可触达",
+        "recent": "最近抓取"
+      },
+      "columns": {
+        "username": "用户名",
+        "platform": "平台",
+        "followers": "粉丝",
+        "verified": "认证",
+        "scores": "评分 (相/影/质/触)",
+        "emails": "邮箱",
+        "tags": "标签",
+        "lastScraped": "最近抓取"
+      },
+      "emptyTitle": "当前过滤条件无匹配 KOL",
+      "emptyDescription": "尝试放宽平台 / 排序 / 邮箱过滤，或等待下一轮抓取。",
+      "expandPanel": "原始 JSON",
+      "copyJson": "复制 JSON",
+      "copyJsonDone": "已复制！",
+      "pagination": {
+        "previous": "上一页",
+        "next": "下一页",
+        "status": "第 {page} 页 / 共 {totalPages} 页 • 总计 {total} 条"
+      },
+      "fetchError": "加载 apify-kol 数据失败 ({kind})：{message}"
     }
   }
 }

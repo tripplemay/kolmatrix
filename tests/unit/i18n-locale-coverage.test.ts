@@ -200,13 +200,41 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   // BL-033-F004: "AI" tag chip — the acronym is identical to en in
   // zh/ja/ko (Spanish localizes to "IA"). Industry-standard.
   "assets.card.tagAi",
-  // BL-012-F001 / F005: admin.apifyPreview.* is an internal admin tool
-  // (data review for the Stage 1.5 4-dim decision gate). Spec §1.5
+  // BL-012-F001 / F003 / F005: admin.apifyPreview.* is an internal admin
+  // tool (data review for the Stage 1.5 4-dim decision gate). Spec §1.5
   // explicitly excludes ja/ko/es native review — admin operators read
   // English; en+zh have native copy. Keep the en strings in ja/ko/es
   // until BL-014 i18n round broadens admin coverage.
   "admin.apifyPreview.title",
   "admin.apifyPreview.readOnlyWarning",
+  "admin.apifyPreview.filterPlatform",
+  "admin.apifyPreview.filterPlatformAll",
+  "admin.apifyPreview.filterMinFollowers",
+  "admin.apifyPreview.filterHasEmail",
+  "admin.apifyPreview.filterSort",
+  "admin.apifyPreview.sortOptions.relevance",
+  "admin.apifyPreview.sortOptions.followers",
+  "admin.apifyPreview.sortOptions.influence",
+  "admin.apifyPreview.sortOptions.quality",
+  "admin.apifyPreview.sortOptions.reachability",
+  "admin.apifyPreview.sortOptions.recent",
+  "admin.apifyPreview.columns.username",
+  "admin.apifyPreview.columns.platform",
+  "admin.apifyPreview.columns.followers",
+  "admin.apifyPreview.columns.verified",
+  "admin.apifyPreview.columns.scores",
+  "admin.apifyPreview.columns.emails",
+  "admin.apifyPreview.columns.tags",
+  "admin.apifyPreview.columns.lastScraped",
+  "admin.apifyPreview.emptyTitle",
+  "admin.apifyPreview.emptyDescription",
+  "admin.apifyPreview.expandPanel",
+  "admin.apifyPreview.copyJson",
+  "admin.apifyPreview.copyJsonDone",
+  "admin.apifyPreview.pagination.previous",
+  "admin.apifyPreview.pagination.next",
+  "admin.apifyPreview.pagination.status",
+  "admin.apifyPreview.fetchError",
 ]);
 
 const en = load("en");

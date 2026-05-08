@@ -1553,7 +1553,41 @@
   "admin": {
     "apifyPreview": {
       "title": "Apify-KOL Preview (READ-ONLY)",
-      "readOnlyWarning": "Read-only preview — data NOT in main DB. For internal admin review only."
+      "readOnlyWarning": "Read-only preview — data NOT in main DB. For internal admin review only.",
+      "filterPlatform": "Platform",
+      "filterPlatformAll": "All platforms",
+      "filterMinFollowers": "Min followers",
+      "filterHasEmail": "Has email",
+      "filterSort": "Sort by",
+      "sortOptions": {
+        "relevance": "Relevance",
+        "followers": "Followers",
+        "influence": "Influence",
+        "quality": "Quality",
+        "reachability": "Reachability",
+        "recent": "Most recent"
+      },
+      "columns": {
+        "username": "Username",
+        "platform": "Platform",
+        "followers": "Followers",
+        "verified": "Verified",
+        "scores": "Scores (R/I/Q/Re)",
+        "emails": "Emails",
+        "tags": "Tags",
+        "lastScraped": "Last scraped"
+      },
+      "emptyTitle": "No KOLs match the current filter",
+      "emptyDescription": "Try widening platform / sort / hasEmail filters, or wait for the next scrape pass.",
+      "expandPanel": "Raw JSON",
+      "copyJson": "Copy JSON",
+      "copyJsonDone": "Copied!",
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "status": "Page {page} of {totalPages} • {total} total"
+      },
+      "fetchError": "Failed to load apify-kol data ({kind}): {message}"
     }
   }
 }
