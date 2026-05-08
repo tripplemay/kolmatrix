@@ -6,7 +6,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/app/[locale]/admin/apify-preview/page.tsx 新建 (server component, async)",
       "admin auth gate: session?.user?.role === 'admin' check; 非 admin → 302 redirect 到 dashboard",

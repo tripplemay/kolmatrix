@@ -1550,5 +1550,11 @@
       "content_invalid": "Contenido del activo inválido — revisa el formato.",
       "depth_exceeded": "Se alcanzó el límite de profundidad de variantes para este árbol."
     }
+  },
+  "admin": {
+    "apifyPreview": {
+      "title": "Apify-KOL Preview (READ-ONLY)",
+      "readOnlyWarning": "Read-only preview — data NOT in main DB. For internal admin review only."
+    }
   }
 }

@@ -1549,5 +1549,11 @@
       "content_invalid": "Asset content is invalid — please check formatting.",
       "depth_exceeded": "Variant depth limit reached for this tree."
     }
+  },
+  "admin": {
+    "apifyPreview": {
+      "title": "Apify-KOL Preview (READ-ONLY)",
+      "readOnlyWarning": "Read-only preview — data NOT in main DB. For internal admin review only."
+    }
   }
 }

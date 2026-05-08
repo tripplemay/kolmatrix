@@ -1550,5 +1550,11 @@
       "content_invalid": "에셋 콘텐츠가 잘못되었습니다 — 형식을 확인하세요.",
       "depth_exceeded": "이 트리의 변형 깊이 한도에 도달했습니다."
     }
+  },
+  "admin": {
+    "apifyPreview": {
+      "title": "Apify-KOL Preview (READ-ONLY)",
+      "readOnlyWarning": "Read-only preview — data NOT in main DB. For internal admin review only."
+    }
   }
 }

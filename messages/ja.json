@@ -1550,5 +1550,11 @@
       "content_invalid": "アセットコンテンツが無効です — フォーマットを確認してください。",
       "depth_exceeded": "このツリーのバリアント深度上限に達しました。"
     }
+  },
+  "admin": {
+    "apifyPreview": {
+      "title": "Apify-KOL Preview (READ-ONLY)",
+      "readOnlyWarning": "Read-only preview — data NOT in main DB. For internal admin review only."
+    }
   }
 }

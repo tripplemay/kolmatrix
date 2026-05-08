@@ -1549,5 +1549,11 @@
       "content_invalid": "素材内容无效 — 请检查格式。",
       "depth_exceeded": "此版本树已达深度上限。"
     }
+  },
+  "admin": {
+    "apifyPreview": {
+      "title": "Apify-KOL 数据预览（只读）",
+      "readOnlyWarning": "只读预览 — 数据未入库，仅供内部 admin 审视。"
+    }
   }
 }

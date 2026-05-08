@@ -200,6 +200,13 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   // BL-033-F004: "AI" tag chip — the acronym is identical to en in
   // zh/ja/ko (Spanish localizes to "IA"). Industry-standard.
   "assets.card.tagAi",
+  // BL-012-F001 / F005: admin.apifyPreview.* is an internal admin tool
+  // (data review for the Stage 1.5 4-dim decision gate). Spec §1.5
+  // explicitly excludes ja/ko/es native review — admin operators read
+  // English; en+zh have native copy. Keep the en strings in ja/ko/es
+  // until BL-014 i18n round broadens admin coverage.
+  "admin.apifyPreview.title",
+  "admin.apifyPreview.readOnlyWarning",
 ]);
 
 const en = load("en");
