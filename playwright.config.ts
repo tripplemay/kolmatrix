@@ -89,7 +89,7 @@ export default defineConfig({
     },
     {
       name: "chromium",
-      testIgnore: /(visual-regression|marketer\.setup)\.ts$/,
+      testIgnore: /(visual-regression\.spec|marketer\.setup)\.ts$/,
       use: { ...devices["Desktop Chrome"] },
       dependencies: ["visual", "setup"],
     },
