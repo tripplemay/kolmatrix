@@ -1,117 +1,80 @@
 [
   {
     "id": "F001",
-    "title": "apify-kol mapper 加 engagement_rate derive 计算 + 单测 ≥3 case",
+    "title": "dashboard/data.ts query filter — 3 处加 deletedAt: null",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "completed",
+    "estimated_hours": 0.3,
+    "status": "pending",
     "acceptance": [
-      "src/lib/kol-sync/adapters/apify-kol.ts mapApifyKolItemToRawKolData() 加 engagement_rate derive 计算",
-      "公式: (totalLikes / postsCount) / followers * 100；边界 null 处理: followers=0 OR postsCount=0 OR totalLikes=null → engagement_rate = null",
-      "单测 ≥3 case: (a) 完整数据 (followers=100K, postsCount=50, totalLikes=500K) → engagement_rate ≈ 10; (b) followers=0 OR postsCount=0 → null; (c) totalLikes=null → null",
-      "RawKolData.engagement_rate 类型: number | null (与 BL-023 模式一致)",
+      "src/app/[locale]/(app)/dashboard/data.ts 三处 query 全加 deletedAt: null filter",
+      "L65 tx.kol.count where 加 deletedAt: null",
+      "L72-75 tx.kol.aggregate where 加 deletedAt: null",
+      "L82-86 tx.kol.findMany where 加 deletedAt: null",
+      "单元测试 dashboard-data.test.ts (创建 if not exist) 增 ≥3 case 验证 soft deleted KOL 不计入",
       "L1 lint 0 + tsc 0 + 单测 PASS"
     ]
   },
   {
     "id": "F002",
-    "title": "全量 recompute apify-kol 既有 237 KOL engagement_rate (SQL ops)",
+    "title": "database/stats.ts query filter — 3 处加 deletedAt: null",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.3,
-    "status": "completed",
+    "status": "pending",
     "acceptance": [
-      "scripts/sql/BL-059-F002-recompute-apify-kol-engagement.sql 新建 (spec §3.1 SQL 实装)",
-      "Staging 先 dry-run 验证: SELECT COUNT 预期受影响行 = 237; SELECT 5 sample row before/after engagement_rate 值",
-      "Prod SSH ops 跑 UPDATE (Planner SSH 协助 + 事务保护)",
-      "Verify: SELECT COUNT(*) FROM kol WHERE metadata->>'source'='apify-kol' AND engagement_rate IS NOT NULL >= 200",
-      "无 audit_log 写入 (仅 UPDATE 字段，非删除)"
+      "src/app/[locale]/(app)/database/stats.ts 三处 query 全加 deletedAt: null filter",
+      "L26 total tx.kol.count where 加 deletedAt: null",
+      "L27-32 activeCollabs tx.kol.count where 加 deletedAt: null",
+      "L33-37 aggregate where 加 deletedAt: null",
+      "L95-103 loadCoverageGapSummary 已含 deletedAt: null 不需修改",
+      "单元测试 database-stats.test.ts (创建 if not exist) 增 ≥2 case 验证 isSaved+softDeleted 不计入",
+      "L1 PASS"
     ]
   },
   {
     "id": "F003",
-    "title": "soft delete 2584 youtube-api-daily KOL + audit_log (BEGIN/COMMIT SQL transaction)",
+    "title": "dashboard/kpi-snapshot.ts query filter + 历史污染数据清理",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.4,
-    "status": "completed",
+    "estimated_hours": 0.3,
+    "status": "pending",
     "acceptance": [
-      "scripts/sql/BL-059-F003-soft-delete-youtube-api-daily.sql 新建 (spec §3.2 SQL 实装含 BEGIN/COMMIT 事务保护)",
-      "audit_log payload 含: source, reason, kol_campaign_count, email_log_count, engagement_rate, value_score, follower_count, platform, handle (per spec §3.2)",
-      "Staging 先 dry-run (事务回滚验证): SELECT COUNT 预期受影响 = 2584",
-      "Prod SSH ops 跑 transaction (Planner SSH 协助)",
-      "Verify 1: SELECT COUNT(*) FROM kol WHERE metadata->>'source'='youtube-api-daily' AND deleted_at IS NOT NULL = 2584",
-      "Verify 2: SELECT COUNT(*) FROM audit_log WHERE action='kol.bulk_soft_delete' AND created_at >= '2026-05-09' = 2584",
-      "Verify 3: SELECT COUNT(*) FROM kol WHERE metadata->>'source'='youtube-api-daily' AND deleted_at IS NULL = 0"
+      "src/lib/dashboard/kpi-snapshot.ts L52 + L56-58 加 deletedAt: null",
+      "scripts/sql/BL-060-F003-cleanup-kpi-snapshot-leak.sql 新建：DELETE FROM kpi_daily_snapshot WHERE snapshot_date >= '2026-05-08' AND kol_count > (SELECT COUNT(*) FROM kol WHERE deleted_at IS NULL AND is_gaming=true)",
+      "既有 kpi-snapshot.test.ts 增 ≥1 case 验证 soft deleted 不计入",
+      "L1 PASS"
     ]
   },
   {
     "id": "F004",
-    "title": "删除 youtube.ts adapter + engagement-batch.ts + engagement-batch-client.ts + 关联测试",
+    "title": "P1 一致性补丁 — campaigns + crm 三处加 deletedAt: null",
     "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 0.3,
-    "status": "completed",
+    "priority": "medium",
+    "estimated_hours": 0.2,
+    "status": "pending",
     "acceptance": [
-      "rm src/lib/kol-sync/adapters/youtube.ts (~21KB)",
-      "rm src/lib/kol-sync/engagement-batch.ts (~7.5KB)",
-      "rm src/lib/kol-sync/engagement-batch-client.ts (~3KB)",
-      "rm tests/integration/import-kol-from-youtube.test.ts (如存在)",
-      "rm src/lib/kol-sync/adapters/__tests__/youtube*.test.ts (如存在)",
-      "rm src/lib/kol-sync/__tests__/engagement-batch*.test.ts (如存在)",
-      "git log 历史保留 (仅 git rm 删文件，audit trail 完整)"
+      "src/lib/campaigns/list-kpis.ts L98 tx.kol.aggregate where 加 deletedAt: null",
+      "src/lib/campaigns/detail.ts L209 tx.kol.findMany where 加 deletedAt: null",
+      "src/lib/crm/overview.ts L209 tx.kol.findMany where 加 deletedAt: null",
+      "BL-059 F003 实际无影响（系统种子 KOL 无 kolCampaigns 关系），仅一致性补丁",
+      "L1 PASS"
     ]
   },
   {
     "id": "F005",
-    "title": "dispatcher / scripts / quality / refresh-selector 移除 youtube 注入 + source 分支",
+    "title": "SQL ops 清理 4 个 is_saved leak + L1 + staging smoke",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "completed",
+    "estimated_hours": 0.4,
+    "status": "pending",
     "acceptance": [
-      "src/lib/kol-sync/dispatcher.ts: 移除 YouTubeKolSyncAdapter import + 数组注入 (仅留 ApifyKolSyncAdapter + 必要的 mock)",
-      "scripts/kol-sync-daily.ts: 移除 new YouTubeKolSyncAdapter(...) 注入",
-      "src/lib/kol-sync/quality.ts: 移除 'youtube-api-daily' source 分支 (如有专属 quality 规则)",
-      "src/lib/kol-sync/refresh-selector.ts: 移除 youtube 平台特殊逻辑 (如有)",
-      "Grep 守门: grep -rn 'YouTubeKolSyncAdapter' src/ → 0 结果",
-      "Grep 守门: grep -rn 'process.env.YOUTUBE' src/ → 0 结果",
-      "Grep 守门: grep -rn 'youtube-api-daily' src/ scripts/ → 0 实质代码引用 (除 SQL ops 注释 / migration)",
-      "L1 lint + tsc PASS"
-    ]
-  },
-  {
-    "id": "F006",
-    "title": "文档清理 (B6 spec archive + runbook 单 adapter + environment.md) + env vars 清理 (VM ops)",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "completed",
-    "acceptance": [
-      "git mv docs/specs/B6-kol-daily-sync-spec.md docs/archive/B6-kol-daily-sync-spec.md (保留 git 历史)",
-      "Archive 文件顶部加 deprecation header: '> ⚠️ DEPRECATED 2026-05-09 by BL-059 - youtube-api-daily 链路 deprecate, KOLMatrix KOL 数据源切换到单源 apify-kol。详见 docs/specs/BL-059-youtube-deprecate-and-engagement-derive-spec.md'",
-      "docs/dev/kol-sync-runbook.md 修订: §'双 adapter 双源容灾' 段 → §'apify-kol 单源 + cron schedules + 30 天 soft delete 回滚机制'",
-      ".auto-memory/environment.md 检查: 如有 YOUTUBE_DATA_API_KEY / YouTube Data API 引用，移除 (grep verify)",
-      "VM ops (Planner SSH 协助): 检查 /opt/kolmatrix/.env.production + /opt/kolmatrix-staging/.env.staging 含 YOUTUBE_DATA_API_KEY 等行，备份后移除 (如存在)",
-      "L1 markdown lint 不破"
-    ]
-  },
-  {
-    "id": "F007",
-    "title": "L1 全套验证 + staging smoke + prod redeploy 准备",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "completed",
-    "acceptance": [
-      "npm run lint → 0 error (warning OK)",
-      "npx tsc --noEmit → 0 error",
-      "npm test → 全 PASS (删 youtube 测试 + 新 F001 单测 ≥3 案例，预期净变化保持 1131+ 量级)",
-      "npm run test:integration → 既有 + apify-kol-adapter PASS (pre-commit-hook flaky 按 v0.9.16 P5.2 acceptance 边界划归 BL-054 不计入)",
-      "Staging deploy: ssh + git pull + NODE_OPTIONS=4096 build + pm2 reload kolmatrix-staging → curl /api/health PASS + git_sha 匹配",
-      "Staging smoke: /zh/admin/apify-preview 渲染正常 / /zh/discovery + /zh/database KOL 数量 ~250 (仅 apify-kol 数据，soft delete 后 youtube-api-daily 不可见)",
-      "Reviewer 接力 verifying (覆盖 F001-F006 全部 acceptance + 数据状态 3 SQL count + 代码状态 4 grep check)"
+      "scripts/sql/BL-060-F005-cleanup-is-saved-leak.sql 新建：BEGIN; UPDATE kol SET is_saved=false, updated_at=NOW() WHERE is_saved=true AND deleted_at IS NOT NULL; INSERT audit_log; COMMIT;",
+      "audit_log 4 行 action='kol.bulk_unset_is_saved' resource_type='kol' resource_id 与 kol.id 对应",
+      "L1 全套: lint 0 / tsc 0 / npm test 全 PASS",
+      "staging deploy + /api/health healthy",
+      "staging smoke: /en/dashboard kolCount = SQL active is_gaming COUNT；/en/database QuickStats total = SQL active is_saved COUNT",
+      "staging SQL ops 演练通过后，prod redeploy 完成由用户手动跑 F005 SQL（保留事务可回滚）"
     ]
   }
 ]

@@ -3,6 +3,7 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
+## 🔨 BL-060-soft-delete-ui-filter-hotfix BUILDING（5/9 12:50 启动 / 5 features pending / ~1.5h Generator）— 修 dashboard kolCount 2889→305 + database total 4→0 + kpi-snapshot trend cron + 4 文件 P1 一致性 + SQL ops 清 4 个 is_saved leak / spec docs/specs/BL-060-soft-delete-ui-filter-hotfix-spec.md
 ## ✅ BL-059 youtube-deprecate-and-engagement-derive DONE（5/9 / 7/7 features @ 56f6623 / fix_rounds=0）
 - L1: lint 0 / tsc 0 / 156 files 1101 tests PASS + integration 2/8 PASS；staging /api/health healthy + smoke PASS
 - 关键产出：apify-kol mapper engagement_rate derive + 单源迁移与软删除闭环 + youtube.ts/engagement-batch 删除
