@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.3,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/app/[locale]/(app)/dashboard/data.ts 三处 query 全加 deletedAt: null filter",
       "L65 tx.kol.count where 加 deletedAt: null",
@@ -21,7 +21,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.3,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/app/[locale]/(app)/database/stats.ts 三处 query 全加 deletedAt: null filter",
       "L26 total tx.kol.count where 加 deletedAt: null",
@@ -38,7 +38,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.3,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/lib/dashboard/kpi-snapshot.ts L52 + L56-58 加 deletedAt: null",
       "scripts/sql/BL-060-F003-cleanup-kpi-snapshot-leak.sql 新建：DELETE FROM kpi_daily_snapshot WHERE snapshot_date >= '2026-05-08' AND kol_count > (SELECT COUNT(*) FROM kol WHERE deleted_at IS NULL AND is_gaming=true)",
@@ -52,7 +52,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 0.2,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/lib/campaigns/list-kpis.ts L98 tx.kol.aggregate where 加 deletedAt: null",
       "src/lib/campaigns/detail.ts L209 tx.kol.findMany where 加 deletedAt: null",
@@ -67,7 +67,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.4,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "scripts/sql/BL-060-F005-cleanup-is-saved-leak.sql 新建：BEGIN; UPDATE kol SET is_saved=false, updated_at=NOW() WHERE is_saved=true AND deleted_at IS NOT NULL; INSERT audit_log; COMMIT;",
       "audit_log 4 行 action='kol.bulk_unset_is_saved' resource_type='kol' resource_id 与 kol.id 对应",
