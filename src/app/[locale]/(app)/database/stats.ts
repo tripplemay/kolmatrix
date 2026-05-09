@@ -23,15 +23,16 @@ const ACTIVE_STATUSES = ["negotiating", "long_term"] as const;
 export async function loadDatabaseStats(tenantId: string): Promise<DatabaseStats> {
   return withTenant(tenantId, async (tx) => {
     const [total, activeCollabs, agg] = await Promise.all([
-      tx.kol.count({ where: { isSaved: true } }),
+      tx.kol.count({ where: { isSaved: true, deletedAt: null } }),
       tx.kol.count({
         where: {
           isSaved: true,
+          deletedAt: null,
           relationshipStatus: { in: [...ACTIVE_STATUSES] },
         },
       }),
       tx.kol.aggregate({
-        where: { isSaved: true },
+        where: { isSaved: true, deletedAt: null },
         _avg: { valueScore: true },
         _sum: { followerCount: true },
       }),

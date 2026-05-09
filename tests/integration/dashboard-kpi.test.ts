@@ -191,6 +191,128 @@ describe("fetchDashboardData()", () => {
     });
   });
 
+  // BL-060 F001 — soft deleted KOLs must not surface anywhere on the
+  // dashboard. Pre-fix the kolCount/avgValueScore/topKols branches
+  // included tombstoned rows, which masked the real "active gaming
+  // pool" size and let removed creators float to the top of the list.
+  it("excludes soft-deleted KOLs from kolCount", async () => {
+    await withTestTenant(async (tenantId, tx) => {
+      // 3 active gaming + 2 soft-deleted gaming → kolCount = 3
+      for (let i = 0; i < 3; i++) {
+        await tx.kol.create({
+          data: {
+            tenantId,
+            platform: "youtube",
+            handle: `active_${i}`,
+            displayName: `Active ${i}`,
+            followerCount: 1_000,
+            categories: ["MOBA"],
+            isGaming: true,
+            valueScore: 70,
+          },
+        });
+      }
+      for (let i = 0; i < 2; i++) {
+        await tx.kol.create({
+          data: {
+            tenantId,
+            platform: "youtube",
+            handle: `tombstone_${i}`,
+            displayName: `Tombstone ${i}`,
+            followerCount: 1_000,
+            categories: ["MOBA"],
+            isGaming: true,
+            valueScore: 90,
+            deletedAt: new Date(),
+          },
+        });
+      }
+
+      const d = await fetchDashboardData(tx);
+      expect(d.kolCount).toBe(3);
+    });
+  });
+
+  it("excludes soft-deleted KOLs from avgValueScore", async () => {
+    await withTestTenant(async (tenantId, tx) => {
+      // Active scores: 60, 80 → mean 70. A tombstoned row with 0
+      // would drag the average to ~46 if the filter were missing.
+      const activeScores = [60, 80];
+      for (let i = 0; i < activeScores.length; i++) {
+        await tx.kol.create({
+          data: {
+            tenantId,
+            platform: "youtube",
+            handle: `avg_active_${i}`,
+            displayName: `Avg Active ${i}`,
+            followerCount: 1_000,
+            categories: ["MOBA"],
+            isGaming: true,
+            valueScore: activeScores[i],
+          },
+        });
+      }
+      await tx.kol.create({
+        data: {
+          tenantId,
+          platform: "youtube",
+          handle: "avg_deleted",
+          displayName: "Avg Deleted",
+          followerCount: 1_000,
+          categories: ["MOBA"],
+          isGaming: true,
+          valueScore: 0,
+          deletedAt: new Date(),
+        },
+      });
+
+      const d = await fetchDashboardData(tx);
+      expect(d.avgValueScore).toBe(70);
+    });
+  });
+
+  it("excludes soft-deleted KOLs from topKols even when their score is highest", async () => {
+    await withTestTenant(async (tenantId, tx) => {
+      // 2 active 60/70 + 1 soft-deleted 99 — the 99 must not appear
+      // because the row is tombstoned.
+      for (const [handle, score] of [
+        ["top_active_1", 60],
+        ["top_active_2", 70],
+      ] as const) {
+        await tx.kol.create({
+          data: {
+            tenantId,
+            platform: "youtube",
+            handle,
+            displayName: handle,
+            followerCount: 1_000,
+            categories: ["MOBA"],
+            isGaming: true,
+            valueScore: score,
+          },
+        });
+      }
+      await tx.kol.create({
+        data: {
+          tenantId,
+          platform: "youtube",
+          handle: "top_deleted_99",
+          displayName: "Top Deleted",
+          followerCount: 1_000,
+          categories: ["MOBA"],
+          isGaming: true,
+          valueScore: 99,
+          deletedAt: new Date(),
+        },
+      });
+
+      const d = await fetchDashboardData(tx);
+      expect(d.topKols).toHaveLength(2);
+      expect(d.topKols.map((k) => k.displayName)).not.toContain("Top Deleted");
+      expect(d.topKols[0].valueScore).toBe(70);
+    });
+  });
+
   it("isolates dashboard counts across tenants (RLS)", async () => {
     // Seed tenant A with data; snapshot its dashboard.
     let tenantASnapshot: Awaited<ReturnType<FetchDashboardData>> | null = null;

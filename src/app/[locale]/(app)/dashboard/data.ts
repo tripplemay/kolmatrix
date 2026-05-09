@@ -62,7 +62,7 @@ export async function fetchDashboardData(tx: TenantPrisma) {
     campaigns,
     topKols,
   ] = await Promise.all([
-    tx.kol.count({ where: { isGaming: true } }),
+    tx.kol.count({ where: { isGaming: true, deletedAt: null } }),
     tx.product.count(),
     tx.campaign.count({ where: { status: "active" } }),
     tx.emailLog.count({ where: { sentAt: { gte: sevenDaysAgo } } }),
@@ -71,7 +71,7 @@ export async function fetchDashboardData(tx: TenantPrisma) {
     tx.campaign.count({ where: { revenueRecorded: { gt: 0 } } }),
     tx.kol.aggregate({
       _avg: { valueScore: true },
-      where: { isGaming: true, valueScore: { not: null } },
+      where: { isGaming: true, valueScore: { not: null }, deletedAt: null },
     }),
     tx.campaign.findMany({
       where: { status: { in: ["active", "completed"] } },
@@ -80,7 +80,7 @@ export async function fetchDashboardData(tx: TenantPrisma) {
       include: { _count: { select: { kolCampaigns: true } } },
     }),
     tx.kol.findMany({
-      where: { isGaming: true },
+      where: { isGaming: true, deletedAt: null },
       orderBy: [{ valueScore: "desc" }, { id: "desc" }],
       take: 5,
     }),

@@ -49,13 +49,13 @@ export async function takeKpiSnapshot(
 
     const [kolCount, activeCampaigns, emailsSent7d, productCount, valueScoreAgg] =
       await Promise.all([
-        tx.kol.count({ where: { isGaming: true } }),
+        tx.kol.count({ where: { isGaming: true, deletedAt: null } }),
         tx.campaign.count({ where: { status: "active" } }),
         tx.emailLog.count({ where: { sentAt: { gte: sevenDaysAgo } } }),
         tx.product.count(),
         tx.kol.aggregate({
           _avg: { valueScore: true },
-          where: { isGaming: true, valueScore: { not: null } },
+          where: { isGaming: true, valueScore: { not: null }, deletedAt: null },
         }),
       ]);
 

@@ -227,6 +227,43 @@ describe("takeKpiSnapshot", () => {
     expect(allRows[0].productCount).toBe(2);
   });
 
+  // BL-060 F003 — guard against the same leak fixed in fetchDashboardData:
+  // tombstoned KOLs must not inflate the daily snapshot's kolCount or
+  // skew avgValueScore. The cron writes one row per tenant per UTC day,
+  // and any leak compounds into the dashboard trend chart.
+  it("excludes soft-deleted KOLs from kolCount and avgValueScore", async () => {
+    const tenantId = await seedTenant("soft-delete");
+    await seedFixtures(tenantId, {
+      kolCount: 2,
+      activeCampaigns: 0,
+      productCount: 0,
+      emailsSent7d: 0,
+      valueScores: [80, 60], // active mean = 70
+    });
+
+    const admin = getAdminPrisma();
+    // 2 tombstoned gaming KOLs with score=10 — would drag avgValueScore
+    // to 40 and bump kolCount to 4 if the soft-delete filter were missing.
+    for (let i = 0; i < 2; i++) {
+      await admin.kol.create({
+        data: {
+          tenantId,
+          platform: "youtube",
+          handle: `tomb-${tenantId.slice(0, 4)}-${i}`,
+          displayName: `Tomb ${i}`,
+          followerCount: 100,
+          isGaming: true,
+          valueScore: 10,
+          deletedAt: new Date(),
+        },
+      });
+    }
+
+    const record = await takeKpiSnapshot(getAppPrisma(), tenantId);
+    expect(record.kolCount).toBe(2);
+    expect(record.avgValueScore).toBe(70);
+  });
+
   it("isolates snapshots across tenants under RLS (app role can only see its own)", async () => {
     const tenantA = await seedTenant("rls-a");
     const tenantB = await seedTenant("rls-b");

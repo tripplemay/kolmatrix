@@ -97,6 +97,7 @@ export async function loadCampaignsListKpis(tenantId: string): Promise<Campaigns
       ]),
       tx.kol.aggregate({
         where: {
+          deletedAt: null,
           kolCampaigns: {
             some: { campaign: { status: ACTIVE_STATUS } },
           },

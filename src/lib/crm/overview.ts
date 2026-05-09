@@ -207,7 +207,7 @@ export async function runCrmOverview(
         : Promise.resolve([]),
       kolIds.length > 0
         ? tx.kol.findMany({
-            where: { id: { in: kolIds } },
+            where: { id: { in: kolIds }, deletedAt: null },
             select: { id: true, displayName: true, avatarUrl: true },
           })
         : Promise.resolve([]),

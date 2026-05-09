@@ -207,7 +207,7 @@ export async function runAvailableKolsForCampaign(
     });
     const exclude = new Set(linked.map((l) => l.kolId));
     const pool = await tx.kol.findMany({
-      where: { isSaved: true },
+      where: { isSaved: true, deletedAt: null },
       select: {
         id: true,
         displayName: true,
