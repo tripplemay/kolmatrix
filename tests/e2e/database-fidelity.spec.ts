@@ -25,7 +25,14 @@ async function login(page: Page) {
   await page.locator('input[name="email"]').fill(MARKETER.email);
   await page.locator('input[name="password"]').fill(MARKETER.password);
   await page.getByRole("button", { name: /Sign in/ }).click();
-  await page.waitForURL(/\/(en|zh|ja|ko|es)\/dashboard(\/|$)/);
+  // BL-060 fix-round 1 — match the laxer pattern marketer-dashboard.spec.ts
+  // and login-cinematic.spec.ts already use. Auth.js redirects to bare
+  // `/dashboard` first; next-intl middleware then rewrites to
+  // `/<locale>/dashboard`. The strict `/<locale>/dashboard` form below
+  // missed the intermediate state, so any staging slowness in the
+  // rewrite tripped a waitForURL timeout (Reviewer-observed flake on
+  // 2026-05-09 verifying — see docs/test-reports/BL-060-verifying-2026-05-09.md).
+  await page.waitForURL(/\/dashboard(\/|$)/);
 }
 
 test.describe("/database fidelity (MVP-vf-F003)", () => {
