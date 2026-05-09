@@ -125,7 +125,8 @@ NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) n
 
   - **核心论据（fork §3.3）：** KOLMatrix 现有公式 `(totalLikes/postsCount)/followers × 100` 在估算路径下与「全量累加」**数学等价无系统性偏差**（postsCount 在分子分母互相抵消，最终参与排序的信号 = 「每帖稳态平均 / followers」）→ KOLMatrix 端 mapper **不需要改代码**
   - **UI 透明度提醒：** YT/X 的 totalLikes 字段是 view-based proxy（不是字面"累计点赞"），混合 IG/TT 的 like-based 后展示 engagement_rate 会有跨平台语义不一致；BL-061 F004 计划在 KPI strip + /discovery 卡片加 tooltip "YT/X is view-based proxy" 解释
-  - **fork 上线待办（爬虫团队 §9）：** 部署 staging → 集成测试 → 通知 KOLMatrix → 监控 24h engagement_rate 非 NULL ≥95%；本机 `/opt/apify-kol-service` 是否已 sync fork 修复版**待 BL-061 F001 SSH 实地核查**（截至 2026-05-09 19:30 状态未知）
+  - **fork 上线待办（爬虫团队 §9）：** 部署 staging → 集成测试 → 通知 KOLMatrix → 监控 24h engagement_rate 非 NULL ≥95%
+  - **本机 `/opt/apify-kol-service` 当前状态（2026-05-09 ~19:40 用户告知 lock）：** **未 deploy fork 修复版** — 仍跑旧版本（totalLikes 三平台缺）。BL-061 整批被 fork deploy 阻塞，F001 不再是"实地核查"而是"推动爬虫团队完成上线"；F002+ 等 deploy 完成后立即执行。5/13 上线对外的 engagement_rate 恢复完全依赖此 deploy 链路
 
 ## 扩容信号
 
