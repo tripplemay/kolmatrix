@@ -1,8 +1,8 @@
 -- BL-060-F005 · Clear `is_saved=true` flag from rows that BL-059 F003
 -- soft-deleted but didn't reset. Prod observed 4 such rows (all
--- youtube-api-daily); they show up in /database QuickStats `total`
--- because the pre-fix `loadDatabaseStats` query forgot
--- `deleted_at IS NULL` (fixed in F002 of this batch). Resetting
+-- youtube-api-daily) on 2026-05-09; they showed up in /database
+-- QuickStats `total` because the pre-fix `loadDatabaseStats` query
+-- forgot `deleted_at IS NULL` (fixed in F002 of this batch). Resetting
 -- `is_saved` defends against any future query that filters by
 -- `is_saved=true` without also checking `deleted_at`.
 --
