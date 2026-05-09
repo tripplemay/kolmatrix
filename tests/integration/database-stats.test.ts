@@ -9,8 +9,6 @@
  */
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { loadDatabaseStats } from "@/app/[locale]/(app)/database/stats";
-
 import {
   cleanDb,
   getAdminPrisma,
@@ -18,8 +16,21 @@ import {
   teardownTestDb,
 } from "../helpers/db";
 
+// `loadDatabaseStats` calls `withTenant` from src/lib/db.ts which
+// instantiates the production Prisma singleton at module-load time
+// from process.env.DATABASE_URL. setupTestDb() rewrites that env var
+// to the Testcontainers port, so the import has to happen *after*
+// setupTestDb() — mirroring dashboard-kpi.test.ts.
+type LoadDatabaseStats = typeof import(
+  "@/app/[locale]/(app)/database/stats"
+).loadDatabaseStats;
+let loadDatabaseStats: LoadDatabaseStats;
+
 beforeAll(async () => {
   await setupTestDb();
+  ({ loadDatabaseStats } = await import(
+    "@/app/[locale]/(app)/database/stats"
+  ));
 });
 
 afterAll(async () => {
