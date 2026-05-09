@@ -14,11 +14,11 @@ type: project
 - BL-059 done → prod redeploy（GitHub Actions UI dispatch HEAD 56f6623）— 关键路径
 - 5/9-5/13 cron 累积 + 5/13 上线（apify-kol 单源 + ~500-1000 KOL）
 - 6/8（30 天 soft delete 后）评估硬删 vs 永久保留
+## ✅ prod redeploy 已完成 5/9 07:43 北京 @ 7cc7652（uptime 4.6h），cron 已新增 56 KOL（apify-kol active 237→293），新 KOL engagement_rate 全 NULL 印证 BL-058
 ## 用户手工待办（按优先级）
-1. **prod redeploy 含 BL-059**（GitHub Actions UI dispatch HEAD 56f6623）— 关键
-2. 反馈爬虫团队 — 现成话术 docs/inbox/feedback-fork-totallikes-2026-05-09.md（Issue + Slack 双发）+ 其他 5 fork bug + revoke classic PAT
-3. 5/15 §4.8 seed_expansion（如 cron 累积 ≥1k）+ fork 数据 4 维度迭代关注（BL-058）
-4. 决定下一批次方向（BL-054 / BL-056 / 用户提其他）
+1. 反馈爬虫团队 — 现成话术 docs/inbox/feedback-fork-totallikes-2026-05-09.md（Issue + Slack 双发）+ 其他 5 fork bug + revoke classic PAT
+2. 5/15 §4.8 seed_expansion（如 cron 累积 ≥1k）+ fork 数据 4 维度迭代关注（BL-058）
+3. 决定下一批次方向（BL-054 / BL-056 / 用户提其他）
 ## 关键决议（已 lock）
 - 5/9 BL-059 综合 PASS @ 56f6623 + signoff Ready；5/9 BL-058 P0 sub-feature triggered + 方向 B lock（全等 fork，KOLMatrix 不动；fallback 公式首选 BL-023 真公式 Σ(likes+comments)/Σ(views) 取最近 50 视频）
 - 5/9 BL-012 综合 signoff PASS @ 4712066（A-/Ready，14/14，fix_rounds 2）
