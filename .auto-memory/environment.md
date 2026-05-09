@@ -114,6 +114,18 @@ NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) n
 - **Stage 2 daily sync 集成（BL-059 后单源）：** KOLMatrix `scripts/kol-sync-daily.ts` 仅注入 `ApifyKolSyncAdapter`（YouTube adapter 已 deprecate 5/9）；详 `docs/dev/kol-sync-runbook.md` §"apify-kol 单源 + cron schedules + 30 天 soft delete 回滚"
 - **同步 ops 流程：** fork 端有更新时按 runbook §"apify-kol-service fork 同步流程" 6 步走（B 方案 reset + 重 apply 2 sed workaround）
 - **5 个长期 todo：** 见 BL-058 backlog（lockfile / port / X service 实装 / docs union shape / admin route X enum）
+- **fork 5/9 totalLikes/postsCount 修复完成（待 KOLMatrix 端 BL-061 验证）：** 决策文档 `guang-tech/apify @ master @ docs/decisions/2026-05-09-totallikes-postscount-estimation.md`。**4 平台字段语义表（重要 — 影响下游 engagement_rate 解读）：**
+
+| Platform | totalLikes 字段实际写入 | 算法 | 误差 | 信号语义 |
+|---|---|---|---|---|
+| TikTok | 真累计点赞 `stats.heart` | 精确（profile call） | 0% | like-based |
+| Instagram | 真累计点赞估算值（pinned 全采 + non-pinned IPW 加权） | L2 分层 + IPW | ~25% | like-based |
+| YouTube | **channel views**（不是 likes，借字段平替） | views 平替（channel.view_count 直取） | 0% | **view-based proxy** |
+| X | **累计曝光估算**（views L2 + IPW；RT 不过滤因 timeline 曝光归 KOL） | L2 views 平替 + IPW | ~13% | **view-based proxy** |
+
+  - **核心论据（fork §3.3）：** KOLMatrix 现有公式 `(totalLikes/postsCount)/followers × 100` 在估算路径下与「全量累加」**数学等价无系统性偏差**（postsCount 在分子分母互相抵消，最终参与排序的信号 = 「每帖稳态平均 / followers」）→ KOLMatrix 端 mapper **不需要改代码**
+  - **UI 透明度提醒：** YT/X 的 totalLikes 字段是 view-based proxy（不是字面"累计点赞"），混合 IG/TT 的 like-based 后展示 engagement_rate 会有跨平台语义不一致；BL-061 F004 计划在 KPI strip + /discovery 卡片加 tooltip "YT/X is view-based proxy" 解释
+  - **fork 上线待办（爬虫团队 §9）：** 部署 staging → 集成测试 → 通知 KOLMatrix → 监控 24h engagement_rate 非 NULL ≥95%；本机 `/opt/apify-kol-service` 是否已 sync fork 修复版**待 BL-061 F001 SSH 实地核查**（截至 2026-05-09 19:30 状态未知）
 
 ## 扩容信号
 
