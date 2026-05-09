@@ -13,31 +13,19 @@
  * every assertion below is reachable on a clean tenant.
  */
 import { expect, test } from "@playwright/test";
-import type { Page } from "@playwright/test";
 
-const MARKETER = {
-  email: "marketer@kolmatrix.local",
-  password: "KOLMatrix@2026!",
-};
-
-async function login(page: Page) {
-  await page.goto("/login");
-  await page.locator('input[name="email"]').fill(MARKETER.email);
-  await page.locator('input[name="password"]').fill(MARKETER.password);
-  await page.getByRole("button", { name: /Sign in/ }).click();
-  // BL-060 fix-round 1 — match the laxer pattern marketer-dashboard.spec.ts
-  // and login-cinematic.spec.ts already use. Auth.js redirects to bare
-  // `/dashboard` first; next-intl middleware then rewrites to
-  // `/<locale>/dashboard`. The strict `/<locale>/dashboard` form below
-  // missed the intermediate state, so any staging slowness in the
-  // rewrite tripped a waitForURL timeout (Reviewer-observed flake on
-  // 2026-05-09 verifying — see docs/test-reports/BL-060-verifying-2026-05-09.md).
-  await page.waitForURL(/\/dashboard(\/|$)/);
-}
+// BL-060 fix-round 2 — opt into the storageState produced by the
+// `setup` project (tests/e2e/marketer.setup.ts). One login per
+// playwright run instead of one per case eliminates the cumulative
+// login flake that tripped Bulk Action Bar / header CTAs in
+// fix-round 1's reverify (5/9 — see docs/test-reports/
+// BL-060-reverifying-2026-05-09.md). beforeEach below now jumps
+// straight to /en/database with the marketer's session already
+// hydrated from cookies + localStorage.
+test.use({ storageState: "playwright/.auth/marketer.json" });
 
 test.describe("/database fidelity (MVP-vf-F003)", () => {
   test.beforeEach(async ({ page }) => {
-    await login(page);
     await page.goto("/en/database");
     // Either the table wrapper or the empty-state mounts — the KPI
     // strip and filter bar are always present.

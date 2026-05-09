@@ -74,11 +74,24 @@ export default defineConfig({
       testMatch: /visual-regression\.spec\.ts$/,
       use: { ...devices["Desktop Chrome"] },
     },
+    // BL-060 fix-round 2 — auth setup project. Logs in once and
+    // saves storageState to playwright/.auth/marketer.json. Specs
+    // that need a pre-authenticated session opt in via
+    // `test.use({ storageState: "playwright/.auth/marketer.json" })`
+    // — currently database-fidelity.spec.ts (was suffering 7-case
+    // cumulative login flake on staging). Specs that test the login
+    // flow itself (login-cinematic.spec.ts) leave the default empty
+    // state alone.
+    {
+      name: "setup",
+      testMatch: /marketer\.setup\.ts$/,
+      use: { ...devices["Desktop Chrome"] },
+    },
     {
       name: "chromium",
-      testIgnore: /visual-regression\.spec\.ts$/,
+      testIgnore: /(visual-regression|marketer\.setup)\.ts$/,
       use: { ...devices["Desktop Chrome"] },
-      dependencies: ["visual"],
+      dependencies: ["visual", "setup"],
     },
   ],
   webServer: {

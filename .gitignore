@@ -47,6 +47,10 @@ playwright-report/
 test-results/
 blob-report/
 playwright/.cache/
+# BL-060 fix-round 2 — auth setup project produces a per-run
+# storageState here (cookies + localStorage). Never commit, regenerated
+# every playwright run.
+playwright/.auth/
 
 # i18n translator dry-run reports — regenerated on every dry-run, not
 # audit-worthy (live-run reports without the -dry suffix are committed).
