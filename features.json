@@ -1,80 +1,89 @@
 [
   {
     "id": "F001",
-    "title": "dashboard/data.ts query filter — 3 处加 deletedAt: null",
+    "title": "fork-sync deploy by Planner ops（已完成 2026-05-10 13:30 北京）— HEAD=1374473 + 4 sed/awk hot-fix + service running /health=ok",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.3,
+    "estimated_hours": 1.0,
     "status": "completed",
     "acceptance": [
-      "src/app/[locale]/(app)/dashboard/data.ts 三处 query 全加 deletedAt: null filter",
-      "L65 tx.kol.count where 加 deletedAt: null",
-      "L72-75 tx.kol.aggregate where 加 deletedAt: null",
-      "L82-86 tx.kol.findMany where 加 deletedAt: null",
-      "单元测试 dashboard-data.test.ts (创建 if not exist) 增 ≥3 case 验证 soft deleted KOL 不计入",
-      "L1 lint 0 + tsc 0 + 单测 PASS"
+      "/opt/apify-kol-service HEAD = 1374473 (fork master)",
+      "4 sed/awk hot-fix 落地：sub-package Dockerfile path / pnpm --no-frozen-lockfile / docker-compose ports 3003:3003 / awk 5 行 insert 加 @apify-kol/apify package COPY+build",
+      "docker compose up: postgres + service running，/health = ok",
+      "TikTok gaming totalLikes = 562,200,000（与 fork §5.1 stats.heart 一致）",
+      "YouTube ISSEI totalLikes = 65,142,160,172（views 平替自动）",
+      "Instagram Ninja totalLikes = null 接受（TikHub upstream 抽风，fork §6.3 已知）",
+      "audit trail commits: 8423df6/71d5e92/bc8dbfd"
     ]
   },
   {
     "id": "F002",
-    "title": "database/stats.ts query filter — 3 处加 deletedAt: null",
+    "title": "staging 4 平台 deeper 实物核查 — KOLMatrix Prisma DB 视角验证字段已落",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.3,
-    "status": "completed",
+    "estimated_hours": 0.5,
+    "status": "pending",
     "acceptance": [
-      "src/app/[locale]/(app)/database/stats.ts 三处 query 全加 deletedAt: null filter",
-      "L26 total tx.kol.count where 加 deletedAt: null",
-      "L27-32 activeCollabs tx.kol.count where 加 deletedAt: null",
-      "L33-37 aggregate where 加 deletedAt: null",
-      "L95-103 loadCoverageGapSummary 已含 deletedAt: null 不需修改",
-      "单元测试 database-stats.test.ts (创建 if not exist) 增 ≥2 case 验证 isSaved+softDeleted 不计入",
-      "L1 PASS"
+      "触发 npm run kol-sync:daily 一次（手动 OR 等 5/10 02:00 UTC cron）",
+      "SQL: SELECT platform, handle, engagement_rate FROM kol WHERE metadata->>'source'='apify-kol' AND handle IN ('ninja', 'gaming', 'UC6QZ_ss3i_8qLV_RczPZBkw')",
+      "TT gaming engagement_rate 非 NULL 且 > 0",
+      "YT ISSEI engagement_rate 非 NULL（views-based proxy 数值合理）",
+      "IG ninja 接受仍 NULL（TikHub upstream 抽风 fork §6.3 已知）",
+      "实测 SQL output 记录在 docs/test-reports/BL-061-F002-deeper-2026-05-10.md",
+      "L1 lint 0 / tsc 0",
+      "staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）"
     ]
   },
   {
     "id": "F003",
-    "title": "dashboard/kpi-snapshot.ts query filter + 历史污染数据清理",
+    "title": "staging daily sync engagement_rate 非 NULL 比例验证（≥80%）",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.3,
-    "status": "completed",
+    "estimated_hours": 0.5,
+    "status": "pending",
     "acceptance": [
-      "src/lib/dashboard/kpi-snapshot.ts L52 + L56-58 加 deletedAt: null",
-      "scripts/sql/BL-060-F003-cleanup-kpi-snapshot-leak.sql 新建：DELETE FROM kpi_daily_snapshot WHERE snapshot_date >= '2026-05-08' AND kol_count > (SELECT COUNT(*) FROM kol WHERE deleted_at IS NULL AND is_gaming=true)",
-      "既有 kpi-snapshot.test.ts 增 ≥1 case 验证 soft deleted 不计入",
+      "触发完整 daily-sync 跑 prod 全量 active apify-kol KOL（手动或等 cron）",
+      "SQL: SELECT COUNT(*) total, COUNT(engagement_rate) non_null, ROUND(COUNT(engagement_rate)::decimal/COUNT(*)*100, 1) non_null_pct FROM kol WHERE metadata->>'source'='apify-kol' AND deleted_at IS NULL",
+      "non_null_pct ≥ 80%（先前 0%，目标 ≥95% 但接受 IG TikHub 抽风带来 ~13% 缺失）",
+      "不达 80% → Generator 排查 mapper 或 fork 数据并上报 Planner",
+      "实测 output 记录在 docs/test-reports/BL-061-F003-daily-sync-2026-05-10.md",
       "L1 PASS"
     ]
   },
   {
     "id": "F004",
-    "title": "P1 一致性补丁 — campaigns + crm 三处加 deletedAt: null",
+    "title": "UI engagement_rate transparency tooltip + 5 语言 i18n（'YT/X is view-based proxy'）",
     "executor": "generator",
     "priority": "medium",
-    "estimated_hours": 0.2,
-    "status": "completed",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "src/lib/campaigns/list-kpis.ts L98 tx.kol.aggregate where 加 deletedAt: null",
-      "src/lib/campaigns/detail.ts L209 tx.kol.findMany where 加 deletedAt: null",
-      "src/lib/crm/overview.ts L209 tx.kol.findMany where 加 deletedAt: null",
-      "BL-059 F003 实际无影响（系统种子 KOL 无 kolCampaigns 关系），仅一致性补丁",
-      "L1 PASS"
+      "KOL 详情页 KPI strip engagement_rate 卡片右上加 info icon + tooltip",
+      "/discovery KOL 卡片 engagement_rate 列 hover 显 tooltip",
+      "Tooltip 文案 5 语言（CN/EN/JA/KO/ES）；EN: 'YouTube/X engagement_rate uses channel views as proxy (not literal like counts). Cross-platform comparison is approximate.' / CN: 'YouTube/X 的互动率使用频道观看次数作代理（非字面点赞数）。跨平台对比为近似值。'",
+      "其他 3 语言由 LLM 翻译走 BL-014 流程",
+      "i18n keys: messages/{cn,en,ja,ko,es}.json 加 kol.engagementRate.tooltip key",
+      "不改 src/lib/kol-sync/adapters/apify-kol.ts engagement_rate derive 公式（fork §3.3 数学等价）",
+      "单测 ≥1 case 验证 tooltip 渲染（getByText / getByRole 拿 i18n 文案）",
+      "L1 PASS",
+      "staging git_sha 与本 commit 一致"
     ]
   },
   {
     "id": "F005",
-    "title": "SQL ops 清理 4 个 is_saved leak + L1 + staging smoke",
+    "title": "prod redeploy + 24h 监控 + BL-058 P0 sub-feature 关闭",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.4,
-    "status": "completed",
+    "estimated_hours": 0.5,
+    "status": "pending",
     "acceptance": [
-      "scripts/sql/BL-060-F005-cleanup-is-saved-leak.sql 新建：BEGIN; UPDATE kol SET is_saved=false, updated_at=NOW() WHERE is_saved=true AND deleted_at IS NOT NULL; INSERT audit_log; COMMIT;",
-      "audit_log 4 行 action='kol.bulk_unset_is_saved' resource_type='kol' resource_id 与 kol.id 对应",
-      "L1 全套: lint 0 / tsc 0 / npm test 全 PASS",
-      "staging deploy + /api/health healthy",
-      "staging smoke: /en/dashboard kolCount = SQL active is_gaming COUNT；/en/database QuickStats total = SQL active is_saved COUNT",
-      "staging SQL ops 演练通过后，prod redeploy 完成由用户手动跑 F005 SQL（保留事务可回滚）"
+      "prod redeploy（GitHub Actions UI dispatch HEAD = main，由用户手动触发）",
+      "prod /api/health 返回 git_sha = main HEAD",
+      "触发 prod KOL daily-sync（02:00 UTC 自动 cron 或 SSH cd /opt/kolmatrix && npm run kol-sync:daily）",
+      "24h 后 SQL 验证 prod 同 F003 SQL: non_null_pct ≥ 80%",
+      "backlog.json BL-058 P0 sub-feature 状态 fork-fix-completed-pending-deployment → closed-bl-061-verified",
+      "docs/test-reports/BL-061-signoff-2026-05-1X.md 写最终结论：prod SQL output + UI tooltip 实物截图 + BL-058 关闭决议",
+      "Reviewer 复验全部 acceptance 后写 signoff，progress.json status verifying → done"
     ]
   }
 ]
