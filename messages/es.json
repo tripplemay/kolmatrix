@@ -1637,5 +1637,10 @@
         }
       }
     }
+  },
+  "kol": {
+    "engagementRate": {
+      "tooltip": "La tasa de interacción de YouTube/X usa las vistas del canal como aproximación (no son los me gusta literales). La comparación entre plataformas es aproximada."
+    }
   }
 }

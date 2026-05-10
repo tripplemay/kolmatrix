@@ -40,6 +40,8 @@ function formatFollowers(n: number): string {
 
 export function KolResultCard({ kol }: Props) {
   const t = useTranslations("discovery.card");
+  const tEngagement = useTranslations("kol.engagementRate");
+  const engagementTooltip = tEngagement("tooltip");
   const [state, formAction, pending] = useActionState(toggleKolSaved, initial);
 
   const currentSaved = state.ok && state.kolId === kol.id ? state.saved! : kol.isSaved;
@@ -119,8 +121,17 @@ export function KolResultCard({ kol }: Props) {
           </span>
         </div>
         <div className="flex flex-col">
-          <span className="text-[10px] text-on-surface-variant/70">
-            {t("engagement")}
+          <span className="flex items-center gap-1 text-[10px] text-on-surface-variant/70">
+            <span>{t("engagement")}</span>
+            <span
+              role="img"
+              aria-label={engagementTooltip}
+              title={engagementTooltip}
+              data-testid="engagement-rate-tooltip"
+              className="material-symbols-outlined cursor-help text-[12px] leading-none text-on-surface-variant/60"
+            >
+              info
+            </span>
           </span>
           <span className="text-xs font-medium text-slate-200">
             {kol.engagementRate != null

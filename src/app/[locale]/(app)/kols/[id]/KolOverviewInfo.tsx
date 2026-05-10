@@ -48,8 +48,10 @@ function formatFollowers(n: number | null): string | null {
 export async function KolOverviewInfo(props: Props) {
   const t = await getTranslations("kolProfile.overview");
   const tHero = await getTranslations("kolProfile.hero");
+  const tEngagement = await getTranslations("kol.engagementRate");
   const format = await getFormatter();
   const unknown = tHero("unknown");
+  const engagementTooltip = tEngagement("tooltip");
 
   return (
     <GlassPanel className="border-on-surface/5 rounded-2xl border p-6">
@@ -68,6 +70,7 @@ export async function KolOverviewInfo(props: Props) {
         <Field
           label={t("fieldEngagement")}
           value={props.engagementRate != null ? `${props.engagementRate.toFixed(1)}%` : unknown}
+          tooltip={engagementTooltip}
         />
         <Field label={t("fieldAvgViews")} value={formatFollowers(props.avgViews) ?? unknown} />
         <Field
@@ -106,11 +109,30 @@ export async function KolOverviewInfo(props: Props) {
   );
 }
 
-function Field({ label, value }: { label: string; value: string }) {
+function Field({
+  label,
+  value,
+  tooltip,
+}: {
+  label: string;
+  value: string;
+  tooltip?: string;
+}) {
   return (
     <div>
-      <dt className="text-on-surface-variant text-[11px] font-semibold tracking-wider uppercase">
-        {label}
+      <dt className="text-on-surface-variant flex items-center gap-1 text-[11px] font-semibold tracking-wider uppercase">
+        <span>{label}</span>
+        {tooltip ? (
+          <span
+            role="img"
+            aria-label={tooltip}
+            title={tooltip}
+            data-testid="engagement-rate-tooltip"
+            className="material-symbols-outlined cursor-help text-[14px] leading-none text-on-surface-variant/70"
+          >
+            info
+          </span>
+        ) : null}
       </dt>
       <dd className="text-on-surface mt-1 text-sm">{value}</dd>
     </div>

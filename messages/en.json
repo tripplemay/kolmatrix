@@ -1636,5 +1636,10 @@
         }
       }
     }
+  },
+  "kol": {
+    "engagementRate": {
+      "tooltip": "YouTube/X engagement_rate uses channel views as proxy (not literal like counts). Cross-platform comparison is approximate."
+    }
   }
 }
