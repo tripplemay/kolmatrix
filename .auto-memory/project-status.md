@@ -11,7 +11,7 @@ type: project
 ## ✅ BL-012 / BL-055 / BL-052 / BL-051a / BL-049 / BL-021+BL-023 / BL-043+BL-044 全 DONE
 ## 🆕 BL-054-flaky medium / BL-056-notifications low
 ## ✅ BL-058 P0 sub-feature 5/9 19:30 fork 修复完成 — 4 平台分四种处理（TT 精确 stats.heart / IG L2+IPW 估算 ~25% / YT+X view 平替写 totalLikes）；fork §3.3 数学已证 KOLMatrix mapper 无需改；决策文档 guang-tech/apify @ docs/decisions/2026-05-09-totallikes-postscount-estimation.md
-## 🆕 BL-061-apify-fork-totallikes-verify backlog（high P1，~3-4h；2026-05-09 19:50 责任修正：fork-sync deploy 是 KOLMatrix ops 不是爬虫团队职责，按 docs/dev/kol-sync-runbook.md §同步流程 6 步走 §1 兼容性 check 用户 ack 后 reset --hard）— F001 fork-sync deploy / F002 staging 4 平台实物 / F003 staging daily sync ≥95% / F004 UI tooltip / F005 prod redeploy + 24h 监控
+## 🆕 BL-061-apify-fork-totallikes-verify F001 ✅ DONE @ HEAD=1374473（5/10 13:30 北京 Planner 跳出状态机直接做 ops；4 sed/awk hot-fix 落地；TT 562,200,000 + YT 651亿 已修，IG TikHub 抽风仍 null fork §6.3 known）— F002-F005 待 BL-060 done 后由 Generator/Reviewer 接手
 ## 🚀 5/13 上线对外（buffer 4 天）
 - BL-059 done → prod redeploy（GitHub Actions UI dispatch HEAD 56f6623）— 关键路径
 - 5/9-5/13 cron 累积 + 5/13 上线（apify-kol 单源 + ~500-1000 KOL）

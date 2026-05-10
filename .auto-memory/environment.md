@@ -126,7 +126,16 @@ NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) n
   - **核心论据（fork §3.3）：** KOLMatrix 现有公式 `(totalLikes/postsCount)/followers × 100` 在估算路径下与「全量累加」**数学等价无系统性偏差**（postsCount 在分子分母互相抵消，最终参与排序的信号 = 「每帖稳态平均 / followers」）→ KOLMatrix 端 mapper **不需要改代码**
   - **UI 透明度提醒：** YT/X 的 totalLikes 字段是 view-based proxy（不是字面"累计点赞"），混合 IG/TT 的 like-based 后展示 engagement_rate 会有跨平台语义不一致；BL-061 F004 计划在 KPI strip + /discovery 卡片加 tooltip "YT/X is view-based proxy" 解释
   - **fork 上线待办（爬虫团队 §9）：** 部署 staging → 集成测试 → 通知 KOLMatrix → 监控 24h engagement_rate 非 NULL ≥95%
-  - **本机 `/opt/apify-kol-service` 当前状态（2026-05-09 ~19:40 用户告知 lock）：** **未同步 fork 修复版** — 仍跑旧版本（totalLikes 三平台缺）。**责任归属修正（5/9 19:50）：** fork-sync deploy 是 **KOLMatrix 团队 ops 责任**（爬虫团队负责 fork 代码修复已完成）。按 `docs/dev/kol-sync-runbook.md` §"apify-kol-service fork 同步流程" 6 步走：§1 兼容性 check（gh api fork commits + 5 集成点 grep）→ §2 reset --hard origin/master + 2 sed workaround（Dockerfile / docker-compose.yml）+ docker compose down/up --build + curl /health。**runbook §1 硬约束：** 未用户 ack 不得直接 reset --hard。BL-061 F001 重定义为「Planner / Generator 按 runbook 6 步执行 fork-sync deploy」
+  - **本机 `/opt/apify-kol-service` 当前状态（2026-05-10 ~13:30 北京 BL-061 F001 deploy 完成）：** HEAD=`1374473` (fork master)。TT + YT totalLikes 已恢复（562,200,000 / 65,142,160,172），IG 因 TikHub upstream 抽风仍 null（fork §6.3 已知 known issue）。**runbook §2 sed 清单需升级 2 → 4：**
+    1. `sed -i 's/pnpm install --frozen-lockfile/pnpm install --no-frozen-lockfile/g' packages/service/Dockerfile`（path 变 monorepo sub-package）
+    2. `sed -i 's/"3003:3000"/"3003:3003"/' docker-compose.yml`（service 监听端口 5/9 变 3003，原 ports 映射 3000 错配 → 改 3003:3003 对齐）
+    3. **awk 5 行 hot-fix `packages/service/Dockerfile`**（fork 上游 bug，5/9 加 `@apify-kol/apify` workspace 包但 Dockerfile 没 COPY 进 build context）：
+       - Builder: `+ COPY packages/apify/package.json packages/apify/`（pnpm install 前）
+       - Builder: `+ COPY packages/apify packages/apify`（src copy）
+       - Builder: `+ RUN pnpm --filter @apify-kol/apify build`（service build 之前）
+       - Runtime: `+ COPY --from=builder /app/packages/apify/package.json packages/apify/`
+       - Runtime: `+ COPY --from=builder /app/packages/apify/dist packages/apify/dist`
+    4. fork 上游需要修：(a) `packages/service/Dockerfile` 加 `@apify-kol/apify` 同步 COPY；(b) `docker-compose.yml` ports 默认 3003:3000 → 3003:3003（或 SERVICE_PORT 默认仍 3000）。修复后 KOLMatrix 端可去 awk hot-fix 与第 3 个 sed
 
 ## 扩容信号
 
