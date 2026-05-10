@@ -52,11 +52,11 @@
   },
   {
     "id": "F004",
-    "title": "UI engagement_rate transparency tooltip + 5 语言 i18n（'YT/X is view-based proxy'）",
+    "title": "UI engagement_rate transparency tooltip + 5 语言 i18n（'YT/X is view-based proxy'）— 已完成 2026-05-10 17:21 北京 @ staging git_sha=e810c8e；KolOverviewInfo + KolResultCard 加 info icon + native title tooltip；messages/{en,zh,ja,ko,es}.json 加 kol.engagementRate.tooltip key；2 单测 PASS；视觉 baseline en-kols-detail.png regen via update-visual-baselines workflow @ 7a3e96a",
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "KOL 详情页 KPI strip engagement_rate 卡片右上加 info icon + tooltip",
       "/discovery KOL 卡片 engagement_rate 列 hover 显 tooltip",
