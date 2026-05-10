@@ -68,6 +68,7 @@ Proposed ──► Accepted ──► [Deprecated | Superseded by ADR-YYY]
 | [010](./ADR-010-domain-strategy-kolquest-com.md) | Domain Strategy — kolquest.com | 注册 kolquest.com 作品牌+发件域；主站暂不迁移；根域直发 | Accepted | 2026-04-19 |
 | [011](./ADR-011-unified-asset-table-vs-typed-tables.md) | Unified Asset Table | 单 Asset 表 + type enum + content JSONB；EmailTemplate dual-write 兼容期 | Accepted | 2026-05-02 |
 | [012](./ADR-012-assets-ux-redesign-outreach-first.md) | Assets UX Redesign — Outreach-First | 推翻 §F004.B 部分（sidebar / 4 tabs / Create blank）；drawer + top filter dropdown + composer 增强 | Accepted | 2026-05-03 |
+| [013](./ADR-013-ai-native-product-pivot.md) | **AI Native 产品转向** | 顶层 IA 7→4 路由（Brief/Match/Reach/Insight）；删 KOL saved pool；AI 主导取代工具+辅助；6-10 周重构；5/13 上线 deadline 取消 | Accepted | 2026-05-10 |
 
 ## 按主题索引
 
@@ -92,6 +93,9 @@ Proposed ──► Accepted ──► [Deprecated | Superseded by ADR-YYY]
 ### 外部服务集成
 - [ADR-009](./ADR-009-aigcgateway-integration.md) AI 网关集成（B2 前置）
 - [ADR-010](./ADR-010-domain-strategy-kolquest-com.md) 品牌域 kolquest.com 策略（BI3 / B4 前置）
+
+### 产品方向
+- [ADR-013](./ADR-013-ai-native-product-pivot.md) **AI Native 产品转向**（5/10 起 6-10 周重构 / 4 路由 IA / 删 isSaved 概念 / BL-063+ 系列依赖源）
 
 ---
 
