@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "src/lib/campaigns/detail.ts:209 runAvailableKolsForCampaign query: where { isSaved: true, deletedAt: null } → where { deletedAt: null }",
       "src/app/[locale]/(app)/campaigns/[id]/AddKolDialog.tsx 加 disabled 状态 tooltip 文案 + 触发按钮 hover tooltip",
