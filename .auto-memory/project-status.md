@@ -3,24 +3,25 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ✅ BL-061-apify-fork-totallikes-verify DONE — Codex Reviewer signed off @ 5/10 21:20
-- ✅ F001 fork-sync deploy：apify-kol-service HEAD=1374473 + /health ok
-- ✅ F002/F003 staging SQL：1231 total / 83 non-null / 6.7%；TT gaming 0.75 / YT ISSEI 18.83 / IG ninja NULL 接受
-- ✅ F004 UI tooltip+i18n：local + staging `/discovery` 5 locale title 全匹配；`/en/kols/:id` detail tooltip PASS
-- ✅ F005 prod SQL：1231 total / 82 non-null / 6.7%；3 handle 与 staging 一致；prod health git_sha=b618d5d healthy
-- 📋 Reviewer signoff: docs/test-reports/BL-061-reviewer-signoff-2026-05-10.md
-## ✅ BL-060 / BL-059 / BL-012 / BL-055 / BL-052 / BL-051a / BL-049 / BL-021+BL-023 / BL-043+BL-044 全 DONE
-## 🚀 5/13 上线对外（buffer 3 天 — 用 1.5 天，剩 5/11+5/12+5/13）
-- BL-061 done @ 21:20 Codex signoff；CLI Planner 5/10 done 阶段处理完成；5/13 ready，等用户决定下批次
-## 用户手工待办（按优先级）
-1. Planner（CLI）走 done 阶段：处理 proposed-learnings + 询问下批次（候选 BL-062 数据 coverage 治理 / BL-054-flaky / BL-056-notifications / 用户提其他）
-2. 5/17 第一次 weekly growth-curve check：重跑 BL-061 F003 SQL，判断是否启动 BL-062 加速路径
-3. fork 上游待修：(a) packages/service/Dockerfile 加 @apify-kol/apify COPY (b) docker-compose.yml ports default 3003:3003（写 docs/inbox/feedback-fork-dockerfile-2026-05-10.md 由 Planner backlog）
-4. role-context/*.md 瘦身（evaluator 77 / generator 87 行已超 ≤50 限）— Planner backlog
-5. 5/15 §4.8 seed_expansion / BL-054-flaky / BL-056-notifications 等 backlog
+## 🚧 BL-063-isSaved-decommission building（Phase 1 第一批，ADR-013 物质基础）
+- ✅ F001 done @ 83354fc — quick-fix detail.ts 拆 isSaved filter + CampaignKolPanel tooltip + 5 语言 i18n
+- ✅ F001 staging deploy（[deployed @ 83354fc @ 5/10 23:25]，run 25632368758，git_sha 一致）
+- ⏸ F002-F006 pending — F002 schema migration / F003 src/ 9+ 处全清 / F004 测试更新 / F005 staging dry-run / F006 prod ops
+- 📋 Spec: docs/specs/BL-063-isSaved-decommission-spec.md / ADR-013 / vision / roadmap
+## 🚨 F002/F003 起工前需 Planner 裁决（pre-impl audit）
+- src/ 实际 isSaved 引用**远超 spec §1 9+ 处**：discovery Save/Unsave UI（actions.ts/KolResultCard.tsx/search.ts/2 测试）+ KOL 详情页（kols/[id]/page.tsx + KolActionsCard.tsx）+ database/search.ts:66（核心 filter）+ database/actions.ts:178（第二处写入）+ database/{import,export}-csv 路由
+- 问题：本批次同步删？还是等 BL-064 IA 改造一起做？Generator 建议同步删（schema 一旦无字段，所有引用 tsc 必报错；BL-064 是上层路由/导航不应混入）
+- 等用户 ack F001 staging dogfood + 决策 F003 范围 → 起 F002
+## ✅ BL-061 / BL-060 / BL-059 / BL-012 / BL-055 / BL-052 / BL-051a / BL-049 / BL-021+023 / BL-043+044 全 DONE
 ## 关键决议（已 lock）
-- 5/9 BL-058 P0 方向 B lock（全等 fork，KOLMatrix 不动）；fork §3.3 mapper 数学等价证明
-- 5/9 BL-059 单源 apify-kol；youtube.ts deprecate；30 天 soft delete 6/8 决策
-- BL-058 P0 sub-feature 已 closed-bl-061-verified；80%/95% coverage 长期目标转 BL-062
+- 5/10 ADR-013 AI Native 转向：5/13 上线 deadline 取消 / 6-10 周重构 / Phase 1-4 / BL-064 顶层 IA 依赖 BL-063 done / BL-048 提前到 Phase 2
+- 5/9 BL-058 P0 方向 B / BL-059 单源 apify-kol / fork §3.3 mapper 数学等价
+- BL-058 P0 closed-bl-061-verified
+## 用户手工待办
+1. F001 staging dogfood 实地验证（/campaigns/[id] '添加 KOL' 按钮 enabled + dialog 全量池）
+2. 决策 F003 范围（含/不含 discovery Save/Unsave UI 与 KOL 详情页 SavedToggleButton）
+3. F006 prod 时间窗 ack（业务低峰期）
+4. 5/17 第一次 weekly growth-curve check（重跑 BL-061 F003 SQL，判断 BL-062 加速路径）
+5. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 ## 角色 / Backlog
-- 默认：CLI=planner+generator，Codex=evaluator / Backlog 19 条（BL-061 closed并入 features.json 已 done）/ framework 6-layer 完整
+- 默认：CLI=planner+generator，Codex=evaluator / Backlog 19 条（BL-061 closed） / framework 6-layer
