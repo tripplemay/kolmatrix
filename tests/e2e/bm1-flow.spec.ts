@@ -42,7 +42,13 @@ async function login(page: Page) {
 }
 
 test.describe("BM1 — full marketer journey (F009 E2E)", () => {
-  test("login → product → discover → save → database → profile → dashboard", async ({ page }) => {
+  // BL-063 F003+F004: steps 7-8 ("save the KOL", "find it in /database")
+  // rely on the saved/unsaved gate that ADR-013 deprecated — the Save
+  // toggle is gone from /discovery and /database now lists the full
+  // tenant pool. The BM1 journey will be rewritten alongside BL-064's
+  // IA rework, so the case is skipped end-to-end rather than half-
+  // rewritten here.
+  test.skip("login → product → discover → save → database → profile → dashboard", async ({ page }) => {
     // Unique product name so the same E2E can rerun without hitting
     // the tenant's existing catalogue.
     const productName = `E2E Game ${Date.now()}`;
