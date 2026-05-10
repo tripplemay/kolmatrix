@@ -1,11 +1,11 @@
 {
-  "status": "planning",
+  "status": "building",
   "user_goal": "BL-061-apify-fork-totallikes-verify — 爬虫团队 5/9 ~19:30 完成 fork totalLikes/postsCount 修复（4 平台 4 种处理：TT 精确 stats.heart / IG L2+IPW / YT views 平替 / X L2 views 平替+IPW）。KOLMatrix 端 mapper 公式不改（fork §3.3 数学等价）。5 features：F001 fork-sync deploy（已 by Planner ops 5/10 13:30 HEAD=1374473 + 4 sed/awk hot-fix）/ F002 staging 4 平台 deeper Prisma DB 视角实物 / F003 staging daily sync engagement_rate ≥80% 非 NULL / F004 UI tooltip i18n 'YT/X is view-based proxy' 5 语言 / F005 prod redeploy + 24h 监控 + BL-058 P0 sub-feature 关闭。预估 ~3-4h Generator + 0.5h Reviewer（不含 F001 已计入 Planner ops）。5/13 上线 buffer 4 天。关联 docs/specs/BL-061-apify-fork-totallikes-verify-spec.md。",
   "total_features": 5,
   "completed_features": 1,
   "fix_rounds": 0,
   "current_sprint": "BL-061-apify-fork-totallikes-verify",
-  "last_updated": "2026-05-10T14:00+0800",
+  "last_updated": "2026-05-10T14:15+0800",
   "reference_docs": [
     "docs/specs/BL-061-apify-fork-totallikes-verify-spec.md",
     "docs/inbox/feedback-fork-totallikes-2026-05-09.md",
