@@ -22,7 +22,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "prisma/schema.prisma Kol 模型移除 isSaved Boolean 字段",
       "prisma/migrations/202605XX_remove_is_saved_from_kol/migration.sql 新建：CREATE TEMP TABLE _bl063_is_saved_backup AS SELECT id, is_saved FROM kol WHERE is_saved=true; ALTER TABLE kol DROP COLUMN is_saved;",
@@ -38,7 +38,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 6.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "全仓 grep 'isSaved\\|is_saved' 仅残留在 BL-063 commit message / migration / docs 引用，src/ 路径全清",
       "src/lib/campaigns/list-kpis.ts:98 valueScoreAgg 移除 isSaved（保留 deletedAt: null）",
@@ -58,7 +58,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "tests/integration/dashboard-kpi.test.ts BL-060 加的 3 case 重写为不依赖 isSaved",
       "tests/integration/database-stats.test.ts BL-060 加的 2 case 整文件标 deprecated（BL-064 删 /database 时一起删）",
