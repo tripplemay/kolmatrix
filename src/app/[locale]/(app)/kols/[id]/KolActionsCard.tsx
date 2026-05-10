@@ -1,8 +1,8 @@
 /**
  * MVP-vf-F006 · Right-rail Actions card.
  *
- * BL-063 F003: SavedToggleButton removed (isSaved decommissioned per
- * ADR-013). Card now wraps RelationshipStatusSelect alone.
+ * BL-063 F003: the saved-toggle widget is gone (isSaved decommissioned
+ * per ADR-013). Card now wraps RelationshipStatusSelect alone.
  */
 import { getTranslations } from "next-intl/server";
 
