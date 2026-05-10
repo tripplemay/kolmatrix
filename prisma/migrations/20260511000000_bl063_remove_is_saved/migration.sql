@@ -23,9 +23,7 @@ DROP INDEX IF EXISTS "kol_tenant_saved_idx";
 -- 3. Drop the column itself.
 ALTER TABLE "kol" DROP COLUMN "is_saved";
 
--- ----------------------------------------------------------------
--- ROLLBACK (manual; not auto-applied by Prisma)
--- ----------------------------------------------------------------
+-- ROLLBACK: manual recipe — Prisma does not auto-apply this block.
 -- 1. ALTER TABLE "kol" ADD COLUMN "is_saved" BOOLEAN NOT NULL DEFAULT FALSE;
 -- 2. -- Restore the previously-saved rows from a pre-migration pg_dump:
 --    -- pg_restore --data-only --table=kol /opt/kolmatrix-backups/<dump>
