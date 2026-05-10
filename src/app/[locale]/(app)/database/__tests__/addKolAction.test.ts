@@ -49,7 +49,7 @@ beforeEach(() => {
 });
 
 describe("addKolAction", () => {
-  it("creates a KOL with isSaved=true on valid input", async () => {
+  it("creates a KOL on valid input (BL-063 F003: isSaved field deprecated, no longer written)", async () => {
     kolCreateMock.mockResolvedValueOnce({ id: "new-kol-id" });
     const res = await addKolAction({
       platform: "youtube",
@@ -63,7 +63,7 @@ describe("addKolAction", () => {
     expect(args.data.tenantId).toBe(TENANT);
     expect(args.data.platform).toBe("youtube");
     expect(args.data.handle).toBe("alpha");
-    expect(args.data.isSaved).toBe(true);
+    expect(args.data.isSaved).toBeUndefined(); // BL-063: pool widened, no isSaved write
     // externalId is the canonical "manual:<handle>" so a later CSV
     // re-import upserts the same row instead of duplicating.
     expect(args.data.externalId).toBe("manual:alpha");

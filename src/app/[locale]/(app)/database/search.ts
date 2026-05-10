@@ -1,13 +1,12 @@
 /**
- * BM1-F005 · Saved-KOL loader for the /database page.
+ * BM1-F005 · Tenant-pool KOL loader for the /database page.
  *
- * Reuses BM1-F004's buildKolWhere so any filter dim (basic 4 in UI +
- * relationshipStatus bar) automatically composes. We force isSaved=true
- * and drop the isGaming default (saved KOLs may mix gaming + non-gaming
- * creators once the marketer starts curating) by flipping
- * includeNonGaming on in the override. includeNonGaming surfaces in the
- * URL only when the user toggles it on /discovery; /database always
- * shows whatever the tenant has saved.
+ * BL-063 F003: pool widened from "isSaved=true" to all non-soft-deleted
+ * KOLs (ADR-013 deprecates the saved/discovered split). /database is
+ * scheduled for removal in BL-064 IA rework; until then it lists the
+ * full tenant pool. Drops the isGaming default by flipping
+ * includeNonGaming on (non-gaming creators belong in the pool too);
+ * other filters compose via BM1-F004's buildKolWhere.
  */
 import type { Prisma } from "@prisma/client";
 
@@ -56,14 +55,14 @@ export async function runDatabaseSearch(
   tenantId: string,
   filters: DiscoveryFilters
 ): Promise<DatabaseSearchResult> {
-  // Saved candidates span gaming + non-gaming creators; drop the MVP
+  // Tenant pool spans gaming + non-gaming creators; drop the MVP
   // "gaming only" default when composing the where.
   const baseWhere = buildKolWhere({ ...filters, includeNonGaming: true });
   const andClauses = Array.isArray(baseWhere.AND)
     ? (baseWhere.AND as Prisma.KolWhereInput[])
     : [];
   const where: Prisma.KolWhereInput = {
-    AND: [...andClauses, { isSaved: true }],
+    AND: [...andClauses, { deletedAt: null }],
   };
   const { field, direction, nulls } = sortToOrderBy(filters.sort);
   // BL-035-F012: same NULL-sink fix as discovery — saved KOLs without a

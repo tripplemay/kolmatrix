@@ -103,7 +103,6 @@ export async function addKolAction(input: AddKolInput): Promise<AddKolActionResu
           externalId,
           followerCount: data.followerCount,
           email: data.email || null,
-          isSaved: true,
           metadata: {
             source: "manual-add",
             added_at: new Date().toISOString(),
@@ -175,7 +174,6 @@ export async function generateDatabaseInsightsAction(
     const rows = await withTenant(tenantId, (tx) =>
       tx.kol.findMany({
         where: {
-          isSaved: true,
           deletedAt: null,
           isSuspicious: false,
         },

@@ -1,9 +1,10 @@
 /**
  * BL-024-F001-1 — `/database` Export CSV.
  *
- * Reuses the same `parseFilters` + `buildKolWhere` (+ `isSaved=true`)
- * pipeline as `/database/page.tsx → search.ts` so the file the user
- * downloads matches the rows they're looking at.
+ * Reuses the same `parseFilters` + `buildKolWhere` pipeline as
+ * `/database/page.tsx → search.ts` so the file the user downloads
+ * matches the rows they're looking at. (BL-063 F003: dropped the
+ * isSaved=true filter — pool now spans the full tenant.)
  *
  * Row cap: default 5000 (URL `?limit=N` with N ≤ 50000) per
  * v0.9.11 §database-patterns.md §6 — explicit cap > silent OOM on
@@ -92,7 +93,7 @@ export async function GET(req: Request): Promise<Response> {
     ? (baseWhere.AND as Prisma.KolWhereInput[])
     : [];
   const where: Prisma.KolWhereInput = {
-    AND: [...andClauses, { isSaved: true }],
+    AND: [...andClauses, { deletedAt: null }],
   };
 
   const { tenantSlug, rows } = await withTenant(tenantId, async (tx) => {

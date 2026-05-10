@@ -200,7 +200,6 @@ export async function POST(req: Request): Promise<Response> {
             countryCode: r.country_code || null,
             email: r.email || null,
             categories,
-            isSaved: true,
             metadata: {
               source: "manual-csv-import",
               imported_at: new Date().toISOString(),
@@ -215,7 +214,6 @@ export async function POST(req: Request): Promise<Response> {
             countryCode: r.country_code || null,
             email: r.email || null,
             categories,
-            isSaved: true,
           },
         });
         importedCount += 1;

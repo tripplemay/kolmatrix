@@ -8,13 +8,13 @@
 import { withTenant } from "@/lib/db";
 
 export interface DatabaseStats {
-  /** Total Kol rows in the tenant where isSaved=true. */
+  /** Total non-soft-deleted Kol rows in the tenant (BL-063: pool widened). */
   total: number;
   /** Kol rows whose relationshipStatus is in the "active collabs" set. */
   activeCollabs: number;
-  /** Average valueScore over saved KOLs that have one. `null` if no scores yet. */
+  /** Average valueScore over tenant KOLs that have one. `null` if no scores yet. */
   avgValueScore: number | null;
-  /** Sum of follower_count over saved KOLs. */
+  /** Sum of follower_count over tenant KOLs. */
   followerReach: number;
 }
 
@@ -23,16 +23,15 @@ const ACTIVE_STATUSES = ["negotiating", "long_term"] as const;
 export async function loadDatabaseStats(tenantId: string): Promise<DatabaseStats> {
   return withTenant(tenantId, async (tx) => {
     const [total, activeCollabs, agg] = await Promise.all([
-      tx.kol.count({ where: { isSaved: true, deletedAt: null } }),
+      tx.kol.count({ where: { deletedAt: null } }),
       tx.kol.count({
         where: {
-          isSaved: true,
           deletedAt: null,
           relationshipStatus: { in: [...ACTIVE_STATUSES] },
         },
       }),
       tx.kol.aggregate({
-        where: { isSaved: true, deletedAt: null },
+        where: { deletedAt: null },
         _avg: { valueScore: true },
         _sum: { followerCount: true },
       }),
@@ -95,7 +94,6 @@ export async function loadCoverageGapSummary(
   return withTenant(tenantId, async (tx) => {
     const rows = await tx.kol.findMany({
       where: {
-        isSaved: true,
         deletedAt: null,
         isSuspicious: false,
       },
