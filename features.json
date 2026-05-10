@@ -1,89 +1,108 @@
 [
   {
     "id": "F001",
-    "title": "fork-sync deploy by Planner ops（已完成 2026-05-10 13:30 北京）— HEAD=1374473 + 4 sed/awk hot-fix + service running /health=ok",
+    "title": "quick-fix detail.ts 去 isSaved filter + AddKolDialog tooltip + 5 语言 i18n（unblock 内部 dogfood）",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.0,
-    "status": "completed",
+    "estimated_hours": 0.5,
+    "status": "pending",
     "acceptance": [
-      "/opt/apify-kol-service HEAD = 1374473 (fork master)",
-      "4 sed/awk hot-fix 落地：sub-package Dockerfile path / pnpm --no-frozen-lockfile / docker-compose ports 3003:3003 / awk 5 行 insert 加 @apify-kol/apify package COPY+build",
-      "docker compose up: postgres + service running，/health = ok",
-      "TikTok gaming totalLikes = 562,200,000（与 fork §5.1 stats.heart 一致）",
-      "YouTube ISSEI totalLikes = 65,142,160,172（views 平替自动）",
-      "Instagram Ninja totalLikes = null 接受（TikHub upstream 抽风，fork §6.3 已知）",
-      "audit trail commits: 8423df6/71d5e92/bc8dbfd"
+      "src/lib/campaigns/detail.ts:209 runAvailableKolsForCampaign query: where { isSaved: true, deletedAt: null } → where { deletedAt: null }",
+      "src/app/[locale]/(app)/campaigns/[id]/AddKolDialog.tsx 加 disabled 状态 tooltip 文案 + 触发按钮 hover tooltip",
+      "messages/{cn,en,ja,ko,es}.json 加 campaigns.kolPanel.aiNativeMigrationTooltip key（文案：'全量 KOL 池，AI native 完整版即将上线'/EN: 'Full KOL pool — AI native experience coming soon'）",
+      "L1 lint 0 / tsc 0 / unit + integration test PASS（含 BL-061 既有 6 case）",
+      "staging deploy + curl /api/health git_sha 与本 commit 一致",
+      "现 e2e database-fidelity.spec.ts 不受影响（F001 仅改 detail.ts 一行 + tooltip 文案）",
+      "staging 实地：进 /campaigns/[id] 任一 active campaign '添加 KOL' 按钮 enabled（除非 status=completed）"
     ]
   },
   {
     "id": "F002",
-    "title": "staging 4 平台 deeper 实物核查 — KOLMatrix Prisma DB 视角验证字段已落（已完成 2026-05-10 北京）— 3/3 目标 handle 通过：TT gaming 0.75 / YT ISSEI 18.83 / IG ninja NULL 接受",
+    "title": "schema migration: 删除 is_saved 字段 + 数据 backup 表",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "completed",
+    "estimated_hours": 4.0,
+    "status": "pending",
     "acceptance": [
-      "触发 npm run kol-sync:daily 一次（手动 OR 等 5/10 02:00 UTC cron）",
-      "SQL: SELECT platform, handle, engagement_rate FROM kol WHERE metadata->>'source'='apify-kol' AND handle IN ('ninja', 'gaming', 'UC6QZ_ss3i_8qLV_RczPZBkw')",
-      "TT gaming engagement_rate 非 NULL 且 > 0",
-      "YT ISSEI engagement_rate 非 NULL（views-based proxy 数值合理）",
-      "IG ninja 接受仍 NULL（TikHub upstream 抽风 fork §6.3 已知）",
-      "实测 SQL output 记录在 docs/test-reports/BL-061-F002-deeper-2026-05-10.md",
+      "prisma/schema.prisma Kol 模型移除 isSaved Boolean 字段",
+      "prisma/migrations/202605XX_remove_is_saved_from_kol/migration.sql 新建：CREATE TEMP TABLE _bl063_is_saved_backup AS SELECT id, is_saved FROM kol WHERE is_saved=true; ALTER TABLE kol DROP COLUMN is_saved;",
+      "migration 含 ROLLBACK 注释（手动 ALTER ADD COLUMN + 从 backup 恢复）",
+      "npx prisma migrate dev local 跑通",
+      "npx prisma generate 重新生成 client（commit 含自动生成的更新）",
+      "L1 lint 0 / tsc 0（删字段后所有引用必须清，否则 tsc 会报错）"
+    ]
+  },
+  {
+    "id": "F003",
+    "title": "移除 9+ 处 query 的 isSaved filter 引用",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 6.0,
+    "status": "pending",
+    "acceptance": [
+      "全仓 grep 'isSaved\\|is_saved' 仅残留在 BL-063 commit message / migration / docs 引用，src/ 路径全清",
+      "src/lib/campaigns/list-kpis.ts:98 valueScoreAgg 移除 isSaved（保留 deletedAt: null）",
+      "src/lib/crm/overview.ts:209 tx.kol.findMany 移除 isSaved",
+      "src/app/[locale]/(app)/database/stats.ts 3 处（L26/L27-32/L33-37）移除 isSaved（整页将在 BL-064 删除，本批次先去 filter）",
+      "src/lib/kol/filters.ts（如 grep 命中）移除",
+      "src/app/[locale]/(app)/database/actions.ts:106 addKolAction 移除 isSaved: true 字段写入",
+      "其它 grep 命中处全清",
+      "TypeScript 编译通过（删字段后所有引用必须清）",
       "L1 lint 0 / tsc 0",
       "staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）"
     ]
   },
   {
-    "id": "F003",
-    "title": "staging daily sync engagement_rate 非 NULL 比例验证（≥5% — 5/10 user choice C amend，原 80% 不可达，长期目标由 BL-062 承接）— 已完成 2026-05-10 17:50 北京 @ staging git_sha=e810c8e；6.7% ≥ 5% PASS；platform breakdown IG 0% / TT 1.3% / YT 19.1% 作 BL-062 基线",
+    "id": "F004",
+    "title": "测试更新：移除 isSaved 相关 case + 加全量池逻辑测试",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "completed",
+    "estimated_hours": 4.0,
+    "status": "pending",
     "acceptance": [
-      "触发完整 daily-sync 跑 staging 全量 active apify-kol KOL（手动或等 cron）",
-      "SQL: SELECT COUNT(*) total, COUNT(engagement_rate) non_null, ROUND(COUNT(engagement_rate)::decimal/COUNT(*)*100, 1) non_null_pct FROM kol WHERE metadata->>'source'='apify-kol' AND deleted_at IS NULL",
-      "non_null_pct ≥ 5%（5/10 amendment by user choice C；原阈值 80% 不可达，根因 fork 端 1148 hashtag-discovery KOL 未触发 profile 调用；80%/95% 长期目标由 BL-062 数据 coverage 治理批次承接，本批次守 5% 底线作成长曲线监控基线）",
-      "不达 5% → Generator 排查 mapper 或 fork 数据并上报 Planner",
-      "platform-level breakdown（IG/TT/YT 分别 pct）作 BL-062 基线",
-      "实测 output 记录在 docs/test-reports/BL-061-F003-daily-sync-2026-05-10.md",
-      "L1 PASS"
-    ]
-  },
-  {
-    "id": "F004",
-    "title": "UI engagement_rate transparency tooltip + 5 语言 i18n（'YT/X is view-based proxy'）— 已完成 2026-05-10 17:21 北京 @ staging git_sha=e810c8e；KolOverviewInfo + KolResultCard 加 info icon + native title tooltip；messages/{en,zh,ja,ko,es}.json 加 kol.engagementRate.tooltip key；2 单测 PASS；视觉 baseline en-kols-detail.png regen via update-visual-baselines workflow @ 7a3e96a",
-    "executor": "generator",
-    "priority": "medium",
-    "estimated_hours": 1.5,
-    "status": "completed",
-    "acceptance": [
-      "KOL 详情页 KPI strip engagement_rate 卡片右上加 info icon + tooltip",
-      "/discovery KOL 卡片 engagement_rate 列 hover 显 tooltip",
-      "Tooltip 文案 5 语言（CN/EN/JA/KO/ES）；EN: 'YouTube/X engagement_rate uses channel views as proxy (not literal like counts). Cross-platform comparison is approximate.' / CN: 'YouTube/X 的互动率使用频道观看次数作代理（非字面点赞数）。跨平台对比为近似值。'",
-      "其他 3 语言由 LLM 翻译走 BL-014 流程",
-      "i18n keys: messages/{cn,en,ja,ko,es}.json 加 kol.engagementRate.tooltip key",
-      "不改 src/lib/kol-sync/adapters/apify-kol.ts engagement_rate derive 公式（fork §3.3 数学等价）",
-      "单测 ≥1 case 验证 tooltip 渲染（getByText / getByRole 拿 i18n 文案）",
-      "L1 PASS",
+      "tests/integration/dashboard-kpi.test.ts BL-060 加的 3 case 重写为不依赖 isSaved",
+      "tests/integration/database-stats.test.ts BL-060 加的 2 case 整文件标 deprecated（BL-064 删 /database 时一起删）",
+      "tests/integration/kpi-snapshot.test.ts BL-060 加的 1 case 重写",
+      "src/app/[locale]/(app)/database/__tests__/addKolAction.test.ts 移除 isSaved 期望",
+      "加 ≥3 新 case 验证全量池：(a) runAvailableKolsForCampaign 返回所有非软删 KOL (b) addKolAction 创建 KOL 不再设 isSaved (c) schema 验证 is_saved 列不存在",
+      "e2e database-fidelity.spec.ts 仅适配 isSaved 移除（如有 case 验证 isSaved=true 显示，删除）",
+      "L1 全套 PASS（含新 ≥3 case）",
       "staging git_sha 与本 commit 一致"
     ]
   },
   {
     "id": "F005",
-    "title": "prod redeploy + 24h 监控 + BL-058 P0 sub-feature 关闭 — 已完成 2026-05-10 18:04 北京 @ prod git_sha=b618d5d；prod sync inserted=938+updated=292；prod SQL 6.7%(82/1231) ≥5% PASS；3 handle prod 复核与 staging 完全一致；BL-058 P0 状态 closed-bl-061-verified",
+    "title": "staging dry-run + 数据 audit",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "completed",
+    "estimated_hours": 2.5,
+    "status": "pending",
     "acceptance": [
+      "staging 跑 F002 migration（npx prisma migrate deploy on staging）",
+      "staging SQL audit: SELECT column_name FROM information_schema.columns WHERE table_name='kol' AND column_name='is_saved' → 0 rows",
+      "staging 跑 BL-061 F003 SQL 验证 engagement_rate 非 NULL 比例不退化（应仍 6.7%）",
+      "staging 全量 e2e suite PASS（marketer-dashboard / database-fidelity / login-cinematic / 等）",
+      "staging /campaigns/[id] 实地：'添加 KOL' 按钮 enabled + dialog 显完整 KOL 池（>0 候选）",
+      "staging _bl063_is_saved_backup 表存在（含 4 行原 isSaved=true 数据）",
+      "实测 output 记录在 docs/test-reports/BL-063-F005-staging-dryrun-2026-05-XX.md"
+    ]
+  },
+  {
+    "id": "F006",
+    "title": "prod migration ops（用户手动触发 + 24h 监控 + signoff）",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 1.5,
+    "status": "pending",
+    "acceptance": [
+      "prod 数据 backup（SSH sudo -u postgres pg_dump kolmatrix > /tmp/bl063-pre-migration.dump 或 SQL 内 backup table）",
       "prod redeploy（GitHub Actions UI dispatch HEAD = main，由用户手动触发）",
       "prod /api/health 返回 git_sha = main HEAD",
-      "触发 prod KOL daily-sync（02:00 UTC 自动 cron 或 SSH cd /opt/kolmatrix && npm run kol-sync:daily）",
-      "24h 后 SQL 验证 prod 同 F003 SQL: non_null_pct ≥ 5%（5/10 amendment by user choice C，与 F003 同步；80%/95% 长期目标 BL-062 承接）",
-      "backlog.json BL-058 P0 sub-feature 状态 fork-fix-completed-pending-deployment → closed-bl-061-verified",
-      "docs/test-reports/BL-061-signoff-2026-05-1X.md 写最终结论：prod SQL output + UI tooltip 实物截图 + BL-058 关闭决议",
+      "deploy script 自动跑 npx prisma migrate deploy 应用 F002 migration",
+      "prod SQL audit: is_saved 列不存在 / kol 表行数无非预期变化 / engagement_rate non_null_pct 不退化",
+      "prod /campaigns/[id] 实地：按钮 enabled + dialog 含全量池",
+      "24h 监控：sentry / pm2 logs 无 isSaved 相关错误",
+      "docs/test-reports/BL-063-signoff-2026-05-XX.md 写最终结论：staging + prod SQL output + UI 实物截图 + Phase 1 第一批完成确认",
       "Reviewer 复验全部 acceptance 后写 signoff，progress.json status verifying → done"
     ]
   }

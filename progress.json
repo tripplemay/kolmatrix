@@ -1,37 +1,36 @@
 {
-  "status": "done",
-  "user_goal": "BL-061-apify-fork-totallikes-verify — 爬虫团队 5/9 ~19:30 完成 fork totalLikes/postsCount 修复（4 平台 4 种处理：TT 精确 stats.heart / IG L2+IPW / YT views 平替 / X L2 views 平替+IPW）。KOLMatrix 端 mapper 公式不改（fork §3.3 数学等价）。5 features：F001 fork-sync deploy（已 by Planner ops 5/10 13:30 HEAD=1374473 + 4 sed/awk hot-fix）/ F002 staging 4 平台 deeper Prisma DB 视角实物 / F003 staging daily sync engagement_rate ≥80% 非 NULL / F004 UI tooltip i18n 'YT/X is view-based proxy' 5 语言 / F005 prod redeploy + 24h 监控 + BL-058 P0 sub-feature 关闭。预估 ~3-4h Generator + 0.5h Reviewer（不含 F001 已计入 Planner ops）。5/13 上线 buffer 4 天。关联 docs/specs/BL-061-apify-fork-totallikes-verify-spec.md。",
-  "total_features": 5,
-  "completed_features": 5,
+  "status": "planning",
+  "user_goal": "BL-063-isSaved-decommission — ADR-013 AI Native 转向 Phase 1 第一批：拆除 KOL is_saved 字段（schema migration + 9+ 处 query 改 + 测试更新 + 数据迁移）。6 features：F001 quick-fix detail.ts 去 isSaved filter（unblock 内部 dogfood）/ F002 schema migration 删 is_saved 字段 + backup 表 / F003 9+ 处 query 引用全清（lib/campaigns + lib/crm + database/stats + database/actions 等）/ F004 测试更新（删 BL-060 加的 isSaved 维度 case + 加 3 新全量池 case）/ F005 staging dry-run + 数据 audit / F006 prod migration ops（用户手动触发 + 24h 监控 + signoff）。预估 ~3-5 day Generator + 1 day Reviewer。本批次 done 后 BL-064 顶层 IA 改造启动。关联 docs/specs/BL-063-isSaved-decommission-spec.md / ADR-013-ai-native-product-pivot / docs/product/ai-native-roadmap.md §3。",
+  "total_features": 6,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "BL-061-apify-fork-totallikes-verify",
-  "last_updated": "2026-05-10T21:20+0800",
+  "current_sprint": "BL-063-isSaved-decommission",
+  "last_updated": "2026-05-10T22:00+0800",
   "reference_docs": [
-    "docs/specs/BL-061-apify-fork-totallikes-verify-spec.md",
-    "docs/inbox/feedback-fork-totallikes-2026-05-09.md",
-    "docs/dev/kol-sync-runbook.md",
-    "src/lib/kol-sync/adapters/apify-kol.ts",
-    "src/lib/apify-kol/schemas.ts",
-    ".auto-memory/environment.md"
+    "docs/specs/BL-063-isSaved-decommission-spec.md",
+    "docs/adr/ADR-013-ai-native-product-pivot.md",
+    "docs/product/ai-native-vision.md",
+    "docs/product/ai-native-roadmap.md",
+    "src/lib/campaigns/detail.ts",
+    "src/lib/campaigns/list-kpis.ts",
+    "src/lib/crm/overview.ts",
+    "src/app/[locale]/(app)/database/stats.ts",
+    "src/app/[locale]/(app)/database/actions.ts",
+    "src/app/[locale]/(app)/campaigns/[id]/AddKolDialog.tsx",
+    "prisma/schema.prisma"
   ],
   "docs": {
-    "spec": "docs/specs/BL-061-apify-fork-totallikes-verify-spec.md",
+    "spec": "docs/specs/BL-063-isSaved-decommission-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/BL-061-reviewer-signoff-2026-05-10.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "PASS — L1 lint/typecheck/unit/local smoke + L2 staging/prod health/SQL + staging UI tooltip/i18n all satisfy BL-061 acceptance. Full E2E suite red is attributed to local login rate-limit suite isolation, not BL-061 product behavior.",
-    "pass_count": 5,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": []
-  },
+  "evaluator_feedback": null,
   "generator_handoff": null,
   "session_notes": {
-    "johnsong": "[2026-05-10 14:30 - 18:10 北京 Generator johnsong — BL-061 5/5 features 全部 PASS，status building → verifying，等 Codex Reviewer]\n\n本次会话角色：Generator（用户固定指派 'generator'）。本批次 5 features 全部完成，4/5 由 Generator 本会话 + 1/5 (F001) 由 Planner pre-session ops。Status 切 verifying，handoff 给 Codex Reviewer 一并签收。\n\n## 5 features 实测全 PASS\n\n| F | 完成 | Commits | 验收要点 |\n|---|---|---|---|\n| F001 | Planner 13:30 | 8423df6→bc8dbfd | apify-kol-service HEAD=1374473 + 4 sed/awk hot-fix；TT 562,200,000 / YT 651亿 |\n| F002 | 17:00 | 3dd52af | TT gaming 0.75 / YT ISSEI 18.83 / IG ninja NULL（fork §6.3 接受）|\n| F003 | 17:55 | b618d5d | user choice C amend；6.7%(83/1231)≥5% PASS；platform 基线 IG 0%/TT 1.3%/YT 19.1% |\n| F004 | 17:21 | 2df1de5→7a3e96a→e810c8e→48c121a | UI tooltip + 5 lang i18n + 2 单测 + visual baseline regen + staging deployed |\n| F005 | 18:04 | 本 commit | prod redeploy @ b618d5d + 手动 sync inserted=938+updated=292 + prod SQL 6.7%(82/1231)≥5% PASS + 3 handle prod 复核与 staging 完全一致 |\n\n## 关键 amendment（user choice C）\n\nF003 spec §4 阈值 80%→5%（实测 6.7% > 5%）。根因 apify-kol service 1148 hashtag-discovery KOL 未触发 profile 调用（postsCount=0/totalLikes=0）；KOLMatrix mapper 无 bug。80%/95% 长期目标由 BL-062 数据 coverage 治理批次承接（spec §8 + signoff §6 backlog 已注）。\n\n## BL-058 P0 sub-feature 关闭\n\nbacklog.json BL-058 状态：fork-fix-completed-pending-deployment → **closed-bl-061-verified**（5/10 18:04）。BL-058 整体 priority=low 维持，仅 P0 sub-feature 关闭。\n\n## 视觉 baseline 关键流程沉淀\n\nF004 加 info icon 让 en-kols-detail 行高 1328→1335px (+7px) → CI 视觉断言失败（diff 2.3%）。按 BM2 spec §F011 标准路径触发 GitHub Actions 'Update visual baselines' workflow，bot regen 仅 en-kols-detail.png（discovery 因 grid mask 不变）@ 7a3e96a。bot commit 不触发 CI 是 GITHUB_TOKEN 沙盒限制；空 commit 也被 0-paths filter 跳过；功能等价验证走 staging 实跑 build + pm2 reload + /api/health git_sha=e810c8e ✓。\n\n## SQL 排查发现（沉淀给后续 Generator）\n\n跨 tenant 全量验收 SQL 必须走 `sudo -u postgres psql kolmatrix(_staging)` superuser bypass RLS。普通 kolmatrix_app role + Prisma RLS 跨 tenant 看 0 行（5/10 排查中关键 trap）。\n\n## Handoff to Codex Reviewer（status verifying）\n\n- progress.json status=verifying，docs.signoff=docs/test-reports/BL-061-signoff-2026-05-10.md\n- features.json 5/5 status=completed\n- staging git_sha 已对齐 main HEAD b618d5d（git pull --ff-only 已落，state-only commit 不需 rebuild per role-context generator §豁免范围）\n- prod /api/health git_sha=b618d5d，pm2 cluster 2 instances healthy\n- BL-058 P0 closed-bl-061-verified ✓\n- 5/13 上线 buffer 仍剩 3 天（5/11/5/12/5/13）\n\n## 下次续接（Reviewer / Planner 必读）\n\n- Codex Reviewer 启动：读 progress.json 见 status=verifying → 加载 evaluator.md → 跑 L1 + L2 + UI/SQL 复核 → 写 evaluator-side signoff（如 PASS 切 done；如 issue 切 fixing 配 evaluator_feedback）\n- 推荐验收子集：(1) L1 全套 lint+tsc+npm test (2) Browser 实测 staging /en/kols/:id + /en/discovery tooltip 渲染 + 5 语言切换 (3) Prod SQL 复核（同 §6 命令）(4) F004 视觉 baseline regen 走的非常规 workflow 路径作为 audit 证据写进 signoff\n- BL-062 候选合并见 spec §8（fork team profile schedules / 自跑 admin/seeds 加速 / weekly growth-curve 监控；Planner BL-061 close 后排 backlog）\n- 5/17 第一次 weekly growth-curve check（重跑 F003 SQL 看 pct 增长趋势）",
-    "Reviewer": "[2026-05-10 20:35 - 21:20 北京 Codex Reviewer — BL-061 verifying → done]\n\n已按 evaluator 流程完成独立验收并写入 docs/test-reports/BL-061-reviewer-signoff-2026-05-10.md。L1：lint 0 error/2 warning，typecheck PASS，npm test 157 files / 1103 tests PASS，本地 3099 smoke PASS，F004 local tooltip/i18n probe PASS。完整 E2E suite 首次 27 failed / 27 passed / 29 skipped，根因是并发重复登录触发本地 login rate-limit；重启测试服务并仅对本地进程设置 DISABLE_LOGIN_RATELIMIT=true 后单点登录 PASS，按 suite isolation 记录为 soft-watch，不阻断 BL-061。\n\nL2：用户授权后执行只读检查，无 sync/deploy/write。apify-kol service HEAD=1374473 且 /health ok；staging health git_sha=e810c8e，prod health git_sha=b618d5d，DB/Redis healthy。SHA 与 HEAD=751ffbd 的差异均仅 docs/spec/report/state/backlog，无 runtime 路径，不阻断。SQL 复核：staging total=1231 non_null=83 pct=6.7，prod total=1231 non_null=82 pct=6.7；platform breakdown 与 Generator 报告一致；ninja NULL / gaming 0.75 / UC6QZ... 18.83 一致。Staging browser：/discovery 5 locale 各 20 tooltip title 全匹配，/en/kols/:id detail tooltip 1 个且英文 title 匹配。Prod authenticated UI 未登录实测，因为生产密码不在记忆文件且已轮换，未尝试默认密码以避免触发生产限流；由 prod runtime SHA + staging UI 实测背书。\n\n结论：5/5 PASS，progress.status=done，docs.signoff 指向 Reviewer signoff。后续 Planner done 阶段处理：BL-062 数据 coverage 治理、5/17 weekly growth-curve check、BL-054-flaky/E2E login storageState 扩展。"
+    "johnsong": "[2026-05-10 14:00 - 22:00 北京 Planner johnsong — 重大产品方向转向决议 + Phase 0 沉淀 + BL-063 起批次]\n\n本会话 Planner 工作分 5 段：\n\n1) BL-061 done 阶段收尾（commits 75dfc85 → 7e99e53）：\n- project-status.md 校验 + 微调（BL-061 done 反映 + backlog 19 条）\n- framework/proposed-learnings.md 检查（v0.9.20 已 closed，Reviewer 确认无新 learning）\n- 三项 Planner-ops 集中处理：(a) docs/inbox/feedback-fork-dockerfile-2026-05-10.md fork bug 反馈话术 (b) docs/dev/kol-sync-runbook.md §2 sed 清单 2→4 升级 (c) role-context/*.md 瘦身（evaluator 77→41 / generator 87→42，双双 ≤50 行硬约束）+ evaluator 加 SQL RLS 注意条目\n\n2) prod 实地 bug 调查（用户报告 /campaigns/[id] '添加 KOL' 按钮 disabled）：\n- Planner 调查根因：runAvailableKolsForCampaign (detail.ts:209) WHERE isSaved=true AND deletedAt IS NULL\n- prod SQL 实测：marketer tenant 2b1d...3d5 active_saved=0 / all_saved=4（全 yt 残留已软删）\n- 表层 UX bug 暴露产品架构层问题（KOL 三态心智冗余）→ 触发产品方向讨论\n\n3) 产品方向探索：用户提出 'KOL 数据库这层多余，应该录入产品 → 创建活动 → 在全量 KOL 中由 AI 添加合适的 KOL → 启动触达'：\n- Planner 推 1A/1B/1C + A1/A2/A3 + B1/B2/B3 + C1/C2/C3 + D1/D2/D3 决策矩阵\n- 用户决议：1A + A3 + B3 + C3 + D（上线时间不是硬约束，产品体验才是）\n- 这是 KOLMatrix 项目至今最大的产品方向决策\n\n4) Phase 0 沉淀（commit f62c21f）：\n- docs/adr/ADR-013-ai-native-product-pivot.md 280 行（核心决策 + 完整 alternatives-considered + 重新评估触发条件）\n- docs/product/ai-native-vision.md 330 行（5 关键交互场景 + before-after 用户旅程对比 + 差异化论据）\n- docs/product/ai-native-roadmap.md 280 行（Phase 1-4 + BL-063→070 拆分 + 现 backlog 重排 + 风险表）\n- docs/adr/README.md 索引更新 + 加'产品方向'主题区\n- 总 862 行新文档\n\n5) BL-063 起批次（本 commit）：\n- docs/specs/BL-063-isSaved-decommission-spec.md 新建（~250 行 / 7 节）\n- features.json 6 features（F001 quick-fix / F002 schema migration / F003 9+ query 清理 / F004 测试更新 / F005 staging dry-run / F006 prod migration ops）\n- progress.json 切 done → planning，sprint = BL-063-isSaved-decommission\n- 等用户 ack spec → 切 building → Generator 接手\n\n关键决策点（spec §3 提的，Generator 起工时需 Planner 裁决）：\n- F001 tooltip 文案的 5 语言精确措辞（spec 给了 CN/EN，需 LLM 翻 ja/ko/es）\n- F002 schema migration 时机（local migrate dev vs 直接 staging migrate deploy）— 推荐先 local 起 migration 文件再走 staging deploy\n- F003 grep 全清范围 — Generator 需主动 grep 不限于 spec §1 列表，看是否有遗漏处\n- F006 prod ops 时间窗 — 由用户手动 ack，建议业务低峰期\n\nADR-013 关键沉淀：5/13 上线 deadline 取消 / 6-10 周重构周期 / Phase 1-4 分批 / BL-064 顶层 IA 改造（Phase 1 第二批）依赖 BL-063 done / BL-048 valueScore 提前到 Phase 2 / BL-062 数据 coverage 治理与 Phase 1-2 平行 / 其它 backlog 重排见 roadmap §8。\n\n下次会话续接（Reviewer / Generator 必读）：\n- progress.json status=planning，docs.spec=docs/specs/BL-063-isSaved-decommission-spec.md\n- features.json 6 features F001-F006 全 pending\n- Generator 启动：读 ADR-013 + vision §2 §3 + roadmap §3 + spec §1-7 → 按 features.json 顺序 F001 → F006 实施\n- F001 quick-fix 必须最先做（unblock 内部 dogfood）+ 立即 staging deploy 让团队验证\n- F002 schema migration 必须 staging 验证后才 prod\n- F006 prod ops 必须用户 ack 时间窗\n- BL-063 done 后 Planner 起 BL-064 顶层 IA 改造（Phase 1 第二批）",
+    "Reviewer": null
   },
   "features": []
 }
