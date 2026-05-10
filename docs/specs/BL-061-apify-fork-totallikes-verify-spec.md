@@ -80,9 +80,10 @@
   FROM kol
   WHERE metadata->>'source' = 'apify-kol' AND deleted_at IS NULL;
   ```
-- non_null_pct ≥ **80%**（先前 0%，目标 ≥95% 但接受 IG 抽风带来的 ~13% 缺失，下限 80%）
-- 不达 80% → Generator 排查 mapper 或 fork 数据并上报 Planner
+- non_null_pct ≥ **5%**（**5/10 amendment by user choice C**：原阈值 80% 不可达 — apify-kol service 端 1148 个 hashtag-discovery KOL 未触发 profile 调用导致 postsCount=0/totalLikes=0；mapper 公式无 bug，根因在 fork 数据 coverage。**原阈值 ≥80% / 目标 ≥95% 改为长期治理目标**，由后续 BL-062 数据 coverage 治理批次承接；本批次仅守底线 ≥5% 表示头部 seeded KOL + 少量 organic profile-enriched KOL 已落库；**作为成长曲线监控基线**，weekly 对比观察 fork 端数据 coverage 增长趋势）
+- 不达 5% → Generator 排查 mapper 或 fork 数据并上报 Planner
 - 实测 output 记录在 `docs/test-reports/BL-061-F003-daily-sync-2026-05-10.md`
+- 报告中包含 platform-level breakdown（IG/TT/YT 分别 pct）作为 BL-062 治理基线
 
 ### F004 UI engagement_rate transparency tooltip + i18n（executor: generator，~1.5h）
 
@@ -108,7 +109,7 @@
 - prod redeploy（GitHub Actions UI dispatch HEAD = main）— 由用户手动触发
 - prod /api/health 返回 `git_sha = main HEAD`
 - 触发 prod KOL daily-sync cron（5/10 02:00 UTC 起自动跑，或 SSH 手动 `cd /opt/kolmatrix && npm run kol-sync:daily`）
-- 24h 后 SQL 验证 prod 同 F003 SQL，non_null_pct ≥ 80%
+- 24h 后 SQL 验证 prod 同 F003 SQL，non_null_pct ≥ **5%**（**5/10 amendment by user choice C**，与 §4.F003 同步调整；80%/95% 长期目标由 BL-062 承接）
 - backlog.json BL-058 P0 sub-feature 状态 `fork-fix-completed-pending-deployment` → `closed-bl-061-verified`
 - 在 `docs/test-reports/BL-061-signoff-2026-05-1X.md` 写最终结论（包含 prod SQL output + UI tooltip 实物截图 + BL-058 关闭决议）
 
@@ -116,7 +117,7 @@
 
 | Risk | 概率 | 影响 | 缓解 |
 |---|---|---|---|
-| F003 non_null_pct < 80% | 中 | 不达标需排查 mapper / fork | Generator 上报 Planner，可能扩范围或起 hotfix |
+| ~~F003 non_null_pct < 80%~~（**5/10 已落地**：实测 6.7%，user choice C 调整阈值至 ≥5%）| ~~中~~ → 已 mitigated | ~~不达标需排查 mapper / fork~~ → 阈值降至 ≥5% 守底线，长期目标 ≥80%/95% 由 BL-062 承接 | Spec §4.F003 + §4.F005 已 amend；F003 报告含 platform breakdown 作 BL-062 基线 |
 | TikHub upstream 持续抽风（IG > 30% 缺失） | 中 | engagement_rate 中位水位低 | 接受现状，UI '—' 兜底，等 fork 决策 §6.3 后续 batch |
 | F004 LLM 翻译 ja/ko/es 不地道 | 低 | tooltip 文案小问题 | 标 BL-014 跟踪人工 review |
 | F005 prod redeploy 引入回归 | 低 | UI 变更范围小 | 走 staging deploy 验证后再 prod |
@@ -144,3 +145,4 @@
 - 抽 `tests/e2e/helpers/auth.ts` 共用 login（BL-054-flaky 集中处理 e2e infra）
 - IG TikHub upstream 抽风长期治理（fork §6.3 后续 batch）
 - view-based vs like-based engagement 语义重构（候选 BL-062，重量批次，post-MVP）
+- **BL-062 候选合并：** apify-kol service 端 1148 hashtag-discovery KOL profile coverage 治理（5/10 BL-061-F003 阻塞触发 user choice C 收口；本批次仅守 ≥5% 基线，长期目标 ≥80%/95% 由 BL-062 承接 — 含 fork team 协调跑 profile schedules / KOLMatrix admin/seeds 头部 N KOL 加速 / weekly growth-curve 监控）
