@@ -1,11 +1,11 @@
 {
-  "status": "planning",
+  "status": "building",
   "user_goal": "BL-063-isSaved-decommission — ADR-013 AI Native 转向 Phase 1 第一批：拆除 KOL is_saved 字段（schema migration + 9+ 处 query 改 + 测试更新 + 数据迁移）。6 features：F001 quick-fix detail.ts 去 isSaved filter（unblock 内部 dogfood）/ F002 schema migration 删 is_saved 字段 + backup 表 / F003 9+ 处 query 引用全清（lib/campaigns + lib/crm + database/stats + database/actions 等）/ F004 测试更新（删 BL-060 加的 isSaved 维度 case + 加 3 新全量池 case）/ F005 staging dry-run + 数据 audit / F006 prod migration ops（用户手动触发 + 24h 监控 + signoff）。预估 ~3-5 day Generator + 1 day Reviewer。本批次 done 后 BL-064 顶层 IA 改造启动。关联 docs/specs/BL-063-isSaved-decommission-spec.md / ADR-013-ai-native-product-pivot / docs/product/ai-native-roadmap.md §3。",
   "total_features": 6,
   "completed_features": 0,
   "fix_rounds": 0,
   "current_sprint": "BL-063-isSaved-decommission",
-  "last_updated": "2026-05-10T22:00+0800",
+  "last_updated": "2026-05-10T22:15+0800",
   "reference_docs": [
     "docs/specs/BL-063-isSaved-decommission-spec.md",
     "docs/adr/ADR-013-ai-native-product-pivot.md",
