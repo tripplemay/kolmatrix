@@ -685,6 +685,7 @@
         "title": "KOLs in this campaign",
         "empty": "No KOLs yet. Add saved creators to kick off outreach.",
         "addButton": "Add KOLs",
+        "aiNativeMigrationTooltip": "Full KOL pool — AI native experience coming soon",
         "addDialog": {
           "title": "Add KOL to campaign",
           "searchPlaceholder": "Search saved creators by name or handle…",

@@ -184,8 +184,12 @@ export async function runCampaignDetail(
 }
 
 /**
- * Saved candidates NOT yet in the campaign. Used by the AddKolDialog.
- * MVP cap: 100 rows (plenty — a tenant rarely has that many saved).
+ * Candidates NOT yet in the campaign. Used by the AddKolDialog.
+ *
+ * BL-063 F001: pool widened from "isSaved=true" to all non-soft-deleted
+ * KOLs. ADR-013 deprecates the saved/discovered split — every campaign
+ * pulls from the full tenant pool. The 100-row cap is MVP scaffolding;
+ * BL-064+ replaces this with the AI-native recommend-by-relevance flow.
  */
 export async function runAvailableKolsForCampaign(
   tenantId: string,
@@ -207,7 +211,7 @@ export async function runAvailableKolsForCampaign(
     });
     const exclude = new Set(linked.map((l) => l.kolId));
     const pool = await tx.kol.findMany({
-      where: { isSaved: true, deletedAt: null },
+      where: { deletedAt: null },
       select: {
         id: true,
         displayName: true,

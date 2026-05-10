@@ -294,6 +294,7 @@ function kolPanelLabels(t: Awaited<ReturnType<typeof getTranslations>>) {
     title: t("kolPanel.title"),
     empty: t("kolPanel.empty"),
     addButton: t("kolPanel.addButton"),
+    aiNativeMigrationTooltip: t("kolPanel.aiNativeMigrationTooltip"),
     addDialog: {
       title: t("kolPanel.addDialog.title"),
       searchPlaceholder: t("kolPanel.addDialog.searchPlaceholder"),

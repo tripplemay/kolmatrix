@@ -736,6 +736,7 @@
         "title": "이 캠페인에 참여한 KOL",
         "empty": "아직 KOL이 없습니다. 저장된 크리에이터를 추가하여 아웃리치를 시작하세요.",
         "addButton": "KOL 추가",
+        "aiNativeMigrationTooltip": "전체 KOL 풀 — AI 네이티브 정식 버전 곧 출시",
         "addDialog": {
           "title": "캠페인에 KOL 추가",
           "searchPlaceholder": "이름이나 핸들로 저장된 크리에이터 검색…",

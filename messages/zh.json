@@ -685,6 +685,7 @@
         "title": "活动内 KOL",
         "empty": "还没有 KOL。添加保存过的创作者开始触达。",
         "addButton": "添加 KOL",
+        "aiNativeMigrationTooltip": "全量 KOL 池，AI native 完整版即将上线",
         "addDialog": {
           "title": "向活动添加 KOL",
           "searchPlaceholder": "按名称或 handle 搜索已保存的创作者…",

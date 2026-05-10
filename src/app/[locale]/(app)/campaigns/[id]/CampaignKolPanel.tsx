@@ -20,6 +20,7 @@ interface Labels {
   title: string;
   empty: string;
   addButton: string;
+  aiNativeMigrationTooltip: string;
   addDialog: {
     title: string;
     searchPlaceholder: string;
@@ -75,6 +76,7 @@ export function CampaignKolPanel({
           variant="primary-gradient"
           onClick={() => setDialogOpen(true)}
           disabled={locked || available.length === 0}
+          title={labels.aiNativeMigrationTooltip}
           data-testid="campaign-kol-add-button"
         >
           <span className="material-symbols-outlined text-[16px]" aria-hidden>

@@ -736,6 +736,7 @@
         "title": "このキャンペーンのKOL",
         "empty": "まだKOLはいません。保存したクリエイターを追加してアウトリーチを開始しましょう。",
         "addButton": "KOLを追加",
+        "aiNativeMigrationTooltip": "全KOLプール — AIネイティブ完全版は間もなく公開",
         "addDialog": {
           "title": "キャンペーンにKOLを追加",
           "searchPlaceholder": "名前またはハンドルで保存されたクリエイターを検索…",

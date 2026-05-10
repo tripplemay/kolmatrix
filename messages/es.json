@@ -736,6 +736,7 @@
         "title": "KOLs en esta campaña",
         "empty": "Aún no hay KOLs. Añada creadores guardados para iniciar el contacto.",
         "addButton": "Añadir KOLs",
+        "aiNativeMigrationTooltip": "Pool completo de KOLs — la experiencia IA nativa llegará pronto",
         "addDialog": {
           "title": "Añadir KOL a la campaña",
           "searchPlaceholder": "Buscar creadores guardados por nombre o handle…",
