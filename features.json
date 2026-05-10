@@ -72,11 +72,11 @@
   },
   {
     "id": "F005",
-    "title": "prod redeploy + 24h 监控 + BL-058 P0 sub-feature 关闭",
+    "title": "prod redeploy + 24h 监控 + BL-058 P0 sub-feature 关闭 — 已完成 2026-05-10 18:04 北京 @ prod git_sha=b618d5d；prod sync inserted=938+updated=292；prod SQL 6.7%(82/1231) ≥5% PASS；3 handle prod 复核与 staging 完全一致；BL-058 P0 状态 closed-bl-061-verified",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "prod redeploy（GitHub Actions UI dispatch HEAD = main，由用户手动触发）",
       "prod /api/health 返回 git_sha = main HEAD",

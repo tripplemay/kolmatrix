@@ -3,18 +3,19 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔄 BL-061-apify-fork-totallikes-verify building — 4/5 done（F001 by Planner ops + F002+F003+F004 by Generator）/ F005 仅剩用户手动 prod deploy + 24h 监控
-- ✅ F001 fork-sync deploy @ HEAD=1374473（5/10 13:30 by Planner ops，4 sed/awk hot-fix 落地）
-- ✅ F002 staging deeper Prisma 实物核查（5/10 17:00 @ 3dd52af）— 3/3 目标 handle PASS：TT gaming 0.75 / YT ISSEI 18.83 / IG ninja NULL（fork §6.3 known）
-- ✅ F003 staging 全量 non_null_pct 验证（5/10 17:55，user choice C amend 阈值 80%→5%）— 实测 6.7% (83/1231) ≥ 5% PASS；platform breakdown IG 0% / TT 1.3% / YT 19.1% 作 BL-062 基线（fork team profile schedules 长期治理）
-- ✅ F004 UI tooltip + 5 语言 i18n（5/10 17:21 @ e810c8e）— KolOverviewInfo + KolResultCard 加 info icon，messages/{en,zh,ja,ko,es}.json kol.engagementRate.tooltip key，2 单测 PASS，视觉 baseline regen @ 7a3e96a，staging deployed
-- ⏳ F005 = 用户手动 prod redeploy + 24h cron + signoff（spec amendment 后 prod 阈值 ≥5% 同步降）
+## 🔄 BL-061-apify-fork-totallikes-verify verifying — 5/5 features Generator-side PASS @ 5/10 18:10，等 Codex Reviewer 签收
+- ✅ F001 fork-sync deploy @ HEAD=1374473（Planner 13:30 ops + 4 sed/awk hot-fix）
+- ✅ F002 staging 3 handle 实物核查（17:00 @ 3dd52af）— TT 0.75 / YT 18.83 / IG NULL 接受
+- ✅ F003 全量 ≥5%（17:55 @ b618d5d，user choice C amend 80%→5%）— staging 6.7% PASS；platform 基线 IG 0%/TT 1.3%/YT 19.1%
+- ✅ F004 UI tooltip + 5 lang i18n（17:21 @ e810c8e + visual baseline regen 7a3e96a）— 2 单测 PASS + staging deployed
+- ✅ F005 prod redeploy + 验收（18:04，prod git_sha=b618d5d；prod sync inserted=938+updated=292；prod SQL 6.7%(82/1231)≥5% PASS；3 handle 与 staging 完全一致；BL-058 P0 closed-bl-061-verified）
+- 📋 signoff: docs/test-reports/BL-061-signoff-2026-05-10.md（Generator side 收口完成）
 ## ✅ BL-060 / BL-059 / BL-012 / BL-055 / BL-052 / BL-051a / BL-049 / BL-021+BL-023 / BL-043+BL-044 全 DONE
-## 🚀 5/13 上线对外（buffer 3 天 — 已用 5/10 一天）
-- F003 user choice C 已落地 → F005 unblocked，仅剩用户手动 prod deploy
+## 🚀 5/13 上线对外（buffer 3 天 — 用 1.5 天，剩 5/11+5/12+5/13）
+- BL-061 Generator 已 5/5 PASS + status verifying → Codex Reviewer 启动签收 → PASS 切 done → 5/13 ready
 ## 用户手工待办（按优先级）
-1. **F005 prod redeploy**（GitHub Actions UI → Actions → 'Deploy to Production' → Run workflow，ref=main，skip_backup=false）— 触发后 5-10min /api/health git_sha 对齐 main
-2. F005 prod cron 5/11 早 8:30 BJ (00:30 UTC) 自动跑 daily-sync；5/11 中后段 Generator 重跑 F003 SQL 验证 prod ≥5% → 切 backlog.json BL-058 P0 状态 + 写 signoff → status 切 verifying 由 Reviewer 一并签收 5 features
+1. 在 Codex 端启动 Reviewer 角色（progress.json status=verifying 自动触发 evaluator.md 加载）— 跑 L1 + L2 + UI/SQL 复核 + 写 evaluator signoff
+2. Reviewer PASS 后由 Planner（CLI）走 done 阶段：处理 proposed-learnings + 询问下批次（候选 BL-062 数据 coverage 治理 / BL-054-flaky / BL-056-notifications / 用户提其他）
 3. fork 上游待修：(a) packages/service/Dockerfile 加 @apify-kol/apify COPY (b) docker-compose.yml ports default 3003:3003（写 docs/inbox/feedback-fork-dockerfile-2026-05-10.md 由 Planner backlog）
 4. role-context/*.md 瘦身（evaluator 77 / generator 87 行已超 ≤50 限）— Planner backlog
 5. 5/15 §4.8 seed_expansion / BL-054-flaky / BL-056-notifications 等 backlog
