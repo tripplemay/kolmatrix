@@ -18,11 +18,11 @@
   },
   {
     "id": "F002",
-    "title": "staging 4 平台 deeper 实物核查 — KOLMatrix Prisma DB 视角验证字段已落",
+    "title": "staging 4 平台 deeper 实物核查 — KOLMatrix Prisma DB 视角验证字段已落（已完成 2026-05-10 北京）— 3/3 目标 handle 通过：TT gaming 0.75 / YT ISSEI 18.83 / IG ninja NULL 接受",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "触发 npm run kol-sync:daily 一次（手动 OR 等 5/10 02:00 UTC cron）",
       "SQL: SELECT platform, handle, engagement_rate FROM kol WHERE metadata->>'source'='apify-kol' AND handle IN ('ninja', 'gaming', 'UC6QZ_ss3i_8qLV_RczPZBkw')",
