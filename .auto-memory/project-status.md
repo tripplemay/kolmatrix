@@ -11,7 +11,7 @@ type: project
 - 📋 Reviewer signoff: docs/test-reports/BL-061-reviewer-signoff-2026-05-10.md
 ## ✅ BL-060 / BL-059 / BL-012 / BL-055 / BL-052 / BL-051a / BL-049 / BL-021+BL-023 / BL-043+BL-044 全 DONE
 ## 🚀 5/13 上线对外（buffer 3 天 — 用 1.5 天，剩 5/11+5/12+5/13）
-- BL-061 已 done，5/13 ready；下一步 CLI Planner done 阶段处理记忆/候选 backlog
+- BL-061 done @ 21:20 Codex signoff；CLI Planner 5/10 done 阶段处理完成；5/13 ready，等用户决定下批次
 ## 用户手工待办（按优先级）
 1. Planner（CLI）走 done 阶段：处理 proposed-learnings + 询问下批次（候选 BL-062 数据 coverage 治理 / BL-054-flaky / BL-056-notifications / 用户提其他）
 2. 5/17 第一次 weekly growth-curve check：重跑 BL-061 F003 SQL，判断是否启动 BL-062 加速路径
@@ -23,4 +23,4 @@ type: project
 - 5/9 BL-059 单源 apify-kol；youtube.ts deprecate；30 天 soft delete 6/8 决策
 - BL-058 P0 sub-feature 已 closed-bl-061-verified；80%/95% coverage 长期目标转 BL-062
 ## 角色 / Backlog
-- 默认：CLI=planner+generator，Codex=evaluator / Backlog 20 条（BL-061 active）/ framework 6-layer 完整
+- 默认：CLI=planner+generator，Codex=evaluator / Backlog 19 条（BL-061 closed并入 features.json 已 done）/ framework 6-layer 完整
