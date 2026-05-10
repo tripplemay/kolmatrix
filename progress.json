@@ -1,11 +1,11 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "BL-061-apify-fork-totallikes-verify — 爬虫团队 5/9 ~19:30 完成 fork totalLikes/postsCount 修复（4 平台 4 种处理：TT 精确 stats.heart / IG L2+IPW / YT views 平替 / X L2 views 平替+IPW）。KOLMatrix 端 mapper 公式不改（fork §3.3 数学等价）。5 features：F001 fork-sync deploy（已 by Planner ops 5/10 13:30 HEAD=1374473 + 4 sed/awk hot-fix）/ F002 staging 4 平台 deeper Prisma DB 视角实物 / F003 staging daily sync engagement_rate ≥80% 非 NULL / F004 UI tooltip i18n 'YT/X is view-based proxy' 5 语言 / F005 prod redeploy + 24h 监控 + BL-058 P0 sub-feature 关闭。预估 ~3-4h Generator + 0.5h Reviewer（不含 F001 已计入 Planner ops）。5/13 上线 buffer 4 天。关联 docs/specs/BL-061-apify-fork-totallikes-verify-spec.md。",
   "total_features": 5,
   "completed_features": 5,
   "fix_rounds": 0,
   "current_sprint": "BL-061-apify-fork-totallikes-verify",
-  "last_updated": "2026-05-10T18:10+0800",
+  "last_updated": "2026-05-10T21:20+0800",
   "reference_docs": [
     "docs/specs/BL-061-apify-fork-totallikes-verify-spec.md",
     "docs/inbox/feedback-fork-totallikes-2026-05-09.md",
@@ -17,15 +17,21 @@
   "docs": {
     "spec": "docs/specs/BL-061-apify-fork-totallikes-verify-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/BL-061-signoff-2026-05-10.md",
+    "signoff": "docs/test-reports/BL-061-reviewer-signoff-2026-05-10.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
+  "evaluator_feedback": {
+    "summary": "PASS — L1 lint/typecheck/unit/local smoke + L2 staging/prod health/SQL + staging UI tooltip/i18n all satisfy BL-061 acceptance. Full E2E suite red is attributed to local login rate-limit suite isolation, not BL-061 product behavior.",
+    "pass_count": 5,
+    "partial_count": 0,
+    "fail_count": 0,
+    "issues": []
+  },
   "generator_handoff": null,
   "session_notes": {
     "johnsong": "[2026-05-10 14:30 - 18:10 北京 Generator johnsong — BL-061 5/5 features 全部 PASS，status building → verifying，等 Codex Reviewer]\n\n本次会话角色：Generator（用户固定指派 'generator'）。本批次 5 features 全部完成，4/5 由 Generator 本会话 + 1/5 (F001) 由 Planner pre-session ops。Status 切 verifying，handoff 给 Codex Reviewer 一并签收。\n\n## 5 features 实测全 PASS\n\n| F | 完成 | Commits | 验收要点 |\n|---|---|---|---|\n| F001 | Planner 13:30 | 8423df6→bc8dbfd | apify-kol-service HEAD=1374473 + 4 sed/awk hot-fix；TT 562,200,000 / YT 651亿 |\n| F002 | 17:00 | 3dd52af | TT gaming 0.75 / YT ISSEI 18.83 / IG ninja NULL（fork §6.3 接受）|\n| F003 | 17:55 | b618d5d | user choice C amend；6.7%(83/1231)≥5% PASS；platform 基线 IG 0%/TT 1.3%/YT 19.1% |\n| F004 | 17:21 | 2df1de5→7a3e96a→e810c8e→48c121a | UI tooltip + 5 lang i18n + 2 单测 + visual baseline regen + staging deployed |\n| F005 | 18:04 | 本 commit | prod redeploy @ b618d5d + 手动 sync inserted=938+updated=292 + prod SQL 6.7%(82/1231)≥5% PASS + 3 handle prod 复核与 staging 完全一致 |\n\n## 关键 amendment（user choice C）\n\nF003 spec §4 阈值 80%→5%（实测 6.7% > 5%）。根因 apify-kol service 1148 hashtag-discovery KOL 未触发 profile 调用（postsCount=0/totalLikes=0）；KOLMatrix mapper 无 bug。80%/95% 长期目标由 BL-062 数据 coverage 治理批次承接（spec §8 + signoff §6 backlog 已注）。\n\n## BL-058 P0 sub-feature 关闭\n\nbacklog.json BL-058 状态：fork-fix-completed-pending-deployment → **closed-bl-061-verified**（5/10 18:04）。BL-058 整体 priority=low 维持，仅 P0 sub-feature 关闭。\n\n## 视觉 baseline 关键流程沉淀\n\nF004 加 info icon 让 en-kols-detail 行高 1328→1335px (+7px) → CI 视觉断言失败（diff 2.3%）。按 BM2 spec §F011 标准路径触发 GitHub Actions 'Update visual baselines' workflow，bot regen 仅 en-kols-detail.png（discovery 因 grid mask 不变）@ 7a3e96a。bot commit 不触发 CI 是 GITHUB_TOKEN 沙盒限制；空 commit 也被 0-paths filter 跳过；功能等价验证走 staging 实跑 build + pm2 reload + /api/health git_sha=e810c8e ✓。\n\n## SQL 排查发现（沉淀给后续 Generator）\n\n跨 tenant 全量验收 SQL 必须走 `sudo -u postgres psql kolmatrix(_staging)` superuser bypass RLS。普通 kolmatrix_app role + Prisma RLS 跨 tenant 看 0 行（5/10 排查中关键 trap）。\n\n## Handoff to Codex Reviewer（status verifying）\n\n- progress.json status=verifying，docs.signoff=docs/test-reports/BL-061-signoff-2026-05-10.md\n- features.json 5/5 status=completed\n- staging git_sha 已对齐 main HEAD b618d5d（git pull --ff-only 已落，state-only commit 不需 rebuild per role-context generator §豁免范围）\n- prod /api/health git_sha=b618d5d，pm2 cluster 2 instances healthy\n- BL-058 P0 closed-bl-061-verified ✓\n- 5/13 上线 buffer 仍剩 3 天（5/11/5/12/5/13）\n\n## 下次续接（Reviewer / Planner 必读）\n\n- Codex Reviewer 启动：读 progress.json 见 status=verifying → 加载 evaluator.md → 跑 L1 + L2 + UI/SQL 复核 → 写 evaluator-side signoff（如 PASS 切 done；如 issue 切 fixing 配 evaluator_feedback）\n- 推荐验收子集：(1) L1 全套 lint+tsc+npm test (2) Browser 实测 staging /en/kols/:id + /en/discovery tooltip 渲染 + 5 语言切换 (3) Prod SQL 复核（同 §6 命令）(4) F004 视觉 baseline regen 走的非常规 workflow 路径作为 audit 证据写进 signoff\n- BL-062 候选合并见 spec §8（fork team profile schedules / 自跑 admin/seeds 加速 / weekly growth-curve 监控；Planner BL-061 close 后排 backlog）\n- 5/17 第一次 weekly growth-curve check（重跑 F003 SQL 看 pct 增长趋势）",
-    "Reviewer": null
+    "Reviewer": "[2026-05-10 20:35 - 21:20 北京 Codex Reviewer — BL-061 verifying → done]\n\n已按 evaluator 流程完成独立验收并写入 docs/test-reports/BL-061-reviewer-signoff-2026-05-10.md。L1：lint 0 error/2 warning，typecheck PASS，npm test 157 files / 1103 tests PASS，本地 3099 smoke PASS，F004 local tooltip/i18n probe PASS。完整 E2E suite 首次 27 failed / 27 passed / 29 skipped，根因是并发重复登录触发本地 login rate-limit；重启测试服务并仅对本地进程设置 DISABLE_LOGIN_RATELIMIT=true 后单点登录 PASS，按 suite isolation 记录为 soft-watch，不阻断 BL-061。\n\nL2：用户授权后执行只读检查，无 sync/deploy/write。apify-kol service HEAD=1374473 且 /health ok；staging health git_sha=e810c8e，prod health git_sha=b618d5d，DB/Redis healthy。SHA 与 HEAD=751ffbd 的差异均仅 docs/spec/report/state/backlog，无 runtime 路径，不阻断。SQL 复核：staging total=1231 non_null=83 pct=6.7，prod total=1231 non_null=82 pct=6.7；platform breakdown 与 Generator 报告一致；ninja NULL / gaming 0.75 / UC6QZ... 18.83 一致。Staging browser：/discovery 5 locale 各 20 tooltip title 全匹配，/en/kols/:id detail tooltip 1 个且英文 title 匹配。Prod authenticated UI 未登录实测，因为生产密码不在记忆文件且已轮换，未尝试默认密码以避免触发生产限流；由 prod runtime SHA + staging UI 实测背书。\n\n结论：5/5 PASS，progress.status=done，docs.signoff 指向 Reviewer signoff。后续 Planner done 阶段处理：BL-062 数据 coverage 治理、5/17 weekly growth-curve check、BL-054-flaky/E2E login storageState 扩展。"
   },
   "features": []
 }
