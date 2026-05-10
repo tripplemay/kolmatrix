@@ -71,3 +71,7 @@ ssh tripplezhou@34.180.93.185 "cd /opt/kolmatrix && git ls-files <artifact-path>
 ```
 
 仅核对"文件存在 VPS 上"（`ls -la`）是不够的 —— 这会让脚本 / 配置文件活在单点，未来 re-deploy / 迁机器 / 灾后恢复会丢失。详见 `framework/harness/deploy-patterns.md` §2。
+
+## E2E suite 稳定性诊断（2026-05-10 BL-060 实战）
+
+单例 PASS / 整组 FAIL = **suite-level isolation 问题**（不是 case 内容 / 正则问题）— 候选根因：每 case `beforeEach` 重 login 累积抖动 / staging 8GB RAM 资源压力。**根治：** 抽 `tests/e2e/<role>.setup.ts` + 各 spec opt-in `test.use({ storageState })`，N 次 login 收敛 1 次。**反模式：** 单点放宽 timeout / 正则只缓解症状。来源 BL-060 fix-round 1（cc82a54 正则放宽失败）→ fix-round 2（f75cafd storageState PASS）。

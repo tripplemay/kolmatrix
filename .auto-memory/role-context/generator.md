@@ -81,3 +81,7 @@ type: feedback
 ```
 
 **Planner 起草新 features.json 时套用此模板**（B7b / B8 / 后续批次）。Reviewer 验收时显式核对。
+
+## 扩范围 vs 单点修的判断（2026-05-10 BL-060 实战）
+
+fixing 阶段发现 Reviewer 反馈的问题**指向 infrastructure 层**（e2e suite 稳定性 / 配置漂移 / 资源争用）而非原 spec acceptance 范围 → **不要单边判断「5 分钟修一行」**，停下来在 evaluator_feedback 反向回复或 session_notes 写"根因 X，建议 Planner 评估扩 Fxxx vs 独立 batch" → 用户 ack 后再扩范围实装。**反例：** BL-060 fix-round 1（cc82a54）单点放宽 e2e login 正则未上报 suite-level isolation 根因 → 复验仍 PARTIAL 浪费一轮 fix_rounds（fix-round 2 才走 storageState 根治）。
