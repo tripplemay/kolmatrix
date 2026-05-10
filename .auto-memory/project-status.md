@@ -3,13 +3,13 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-063-isSaved-decommission building（4/6 done，F005 partial-pending 等 Planner 裁决）
+## 🚧 BL-063-isSaved-decommission fixing（5/6 done, fix_rounds=1，F006 待用户 deploy-prod）
 - ✅ F001 done @ 83354fc — quick-fix detail.ts + tooltip + 5 语言 i18n + staging deployed
-- ✅ F002 done — prisma schema 删 isSaved 字段 + 索引 + migration sql（TEMP backup + ROLLBACK 注释）
+- ✅ F002 done — prisma schema 删 isSaved + 索引 + migration sql（TEMP backup + ROLLBACK 指 pg_dump）
 - ✅ F003 done — src/ 全清 isSaved（discovery/actions.ts + SavedToggleButton.tsx 整文件删 + 9 文件 trim）— 用户选 A
 - ✅ F004 done — 10 fixture 清 + 2 文件 describe/it.skip（BL-064 整删）+ 新 ≥3 全量池 case
-- ⏸ F005 partial-pending @ 99a3d07 — staging audit 5/7 PASS（migration / column dropped / e2e PASS / UI 5/5 / 报告）/ 1 PARTIAL（_bl063_is_saved_backup TEMP，与 F002 设计不矛盾但与 F005 第 6 条 acceptance 字面矛盾）/ 1 FAIL（engagement_rate 2.44% vs 6.7%，BL-063 orthogonal — 分子 95 行未变，分母涨）。等 Planner 裁决 docs/specs/BL-063-F005-staging-dryrun-audit.md（自荐 #1:A #2:A）
-- ⏸ F006 prod ops — F005 done 后启动：用户手动触发 deploy-prod + 24h 监控 + signoff
+- ✅ F005 done @ fix-round 1（partial-pending @ 99a3d07 → Planner 0ea747d ruling #1:A #2:A → acceptance §3 改「分子≥95 不下降」§6 改「TEMP 模式 + durable 推 F006 pg_dump」+ backlog 加 BL-062 数据 coverage 治理）
+- ⏸ F006 prod ops — 待用户 ack 业务低峰期 + 用户在 GH Actions 手动触发 deploy-prod.yml；之后 Generator SSH prod 跑 audit + 写 signoff + 切 reverifying
 - 📋 Spec: docs/specs/BL-063-isSaved-decommission-spec.md / ADR-013 / vision / roadmap
 ## ✅ BL-061 / BL-060 / BL-059 / BL-012 / BL-055 / BL-052 / BL-051a / BL-049 / BL-021+023 / BL-043+044 全 DONE
 ## 关键决议（已 lock）

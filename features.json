@@ -76,7 +76,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "staging 跑 F002 migration（npx prisma migrate deploy on staging）",
       "staging SQL audit: SELECT column_name FROM information_schema.columns WHERE table_name='kol' AND column_name='is_saved' → 0 rows",
