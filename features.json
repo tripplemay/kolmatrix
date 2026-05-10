@@ -80,10 +80,10 @@
     "acceptance": [
       "staging 跑 F002 migration（npx prisma migrate deploy on staging）",
       "staging SQL audit: SELECT column_name FROM information_schema.columns WHERE table_name='kol' AND column_name='is_saved' → 0 rows",
-      "staging 跑 BL-061 F003 SQL 验证 engagement_rate 非 NULL 比例不退化（应仍 6.7%）",
+      "staging 跑 BL-061 F003 SQL 验证 engagement_rate 分子（非 NULL 行数）不下降（BL-061 baseline 5/9 = 95 行，本批次实测 ≥ 95 行 — 防 BL-063 引入 stats regression；原 6.7% 比例指标转 BL-062 5/17 weekly growth-curve check 跟进，比例随分母涨稀释属 BL-063 orthogonal）— 5/11 Planner 裁决修订（audit §7 #2:A）",
       "staging 全量 e2e suite PASS（marketer-dashboard / database-fidelity / login-cinematic / 等）",
       "staging /campaigns/[id] 实地：'添加 KOL' 按钮 enabled + dialog 显完整 KOL 池（>0 候选）",
-      "staging _bl063_is_saved_backup 表存在（含 4 行原 isSaved=true 数据）",
+      "F002 migration TEMP 备份模式正确执行（migration SQL 行内验证 + ROLLBACK 注释指向 pg_dump for durable）— 持久化备份责任归 F006 prod ops 走 pg_dump（5/11 Planner 裁决修订 audit §7 #1:A，原 staging _bl063_is_saved_backup 表存在条款与 F002 TEMP 设计字面冲突已撤）",
       "实测 output 记录在 docs/test-reports/BL-063-F005-staging-dryrun-2026-05-XX.md"
     ]
   },

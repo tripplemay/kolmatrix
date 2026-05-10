@@ -124,7 +124,55 @@ spec 起草时（5/10 ~22:30）BL-061 数据快照仍是 6.7%，5/11 ~10:00 audi
 
 ---
 
-## Planner 裁决（待填）
+## 7. Planner 裁决（johnsong · 2026-05-11 ~10:45 BJT）
 
-> 在此追加 `## 7. Planner 裁决（{agent-id} · 2026-05-11）` 段，含短格式 `#1:X #2:Y` + 逐条理由 +
-> 同步文档更新清单。
+**短格式：** `#1:A #2:A`
+
+### 决议 #1：A — 修订 F005 acceptance 第 6 条文字（不动代码）
+
+**理由：**
+
+- F002 acceptance 第 2 条字面写 `CREATE TEMP TABLE`，**Planner 起草时设计意图就是 session-scoped**（migration 注释亦明示「durable backup should pg_dump (F006 acceptance)」）— 此为 §3.3 典型 spec 字面冲突 / 同 batch 不同 feature acceptance 自锅
+- F005 第 6 条要求 post-deploy 查到 backup 表，与 F002 设计相互矛盾，物理上不可能达成
+- 方案 B（改非 TEMP）会留 schema 垃圾且需新 migration，违反"设计本就正确"原则
+- 方案 C（推 Reviewer）是典型 §4.5 anti-pattern（按旧 spec 验收）
+
+**修订 F005 acceptance 第 6 条：**
+- 旧：`staging _bl063_is_saved_backup 表存在（含 4 行原 isSaved=true 数据）`
+- 新：`F002 migration TEMP 备份模式正确执行（migration SQL 行内验证 + ROLLBACK 注释指向 pg_dump for durable）— 持久化备份责任归 F006 prod ops（pg_dump，见 F006 acceptance 第 1 条）`
+
+### 决议 #2：A — 修订 F005 acceptance 第 3 条 + backlog 加 BL-062 跟进
+
+**理由：**
+
+- 实测 95/3891=2.44% 是**分母漂移**而非 BL-063 引入 regression（分子 95 行 = BL-061 baseline 完全相同；2 天 daily sync 增 ~530 KOL 未回填 stats，分母 4000→3891 active 涨）
+- BL-063 全部 6 features 不动 engagement_rate 计算路径或 stats sync 逻辑（git diff main~6 grep engagement|stats 无命中）
+- 方案 B（扩 F007 回填脚本）违反铁律 10 — 不能干净归属到"is_saved decommission"叙事下，且阻塞 F005 done
+- 方案 C（放过）会让 Codex Reviewer 字面判 FAIL，留 spec 字面 vs 现实不一致的争议（v0.9.14 sediment 反过的同坑）
+- 方案 A 既不违反铁律 10、不扩范围、给 F005 干净 done，又把数据漂移问题正式登记到 backlog 让 5/17 weekly 自然处理
+
+**修订 F005 acceptance 第 3 条：**
+- 旧：`staging 跑 BL-061 F003 SQL 验证 engagement_rate 非 NULL 比例不退化（应仍 6.7%）`
+- 新：`staging 跑 BL-061 F003 SQL 验证 engagement_rate **分子（非 NULL 行数）不下降**（BL-061 baseline 5/9 = 95 行，本批次实测 ≥ 95 行 — 防 BL-063 引入 stats regression）。原 6.7% 比例指标转 backlog 跟进（apify-kol daily sync 增量未回填 stats，比例随分母涨稀释；BL-063 orthogonal — 见 BL-062 5/17 weekly growth-curve check）`
+
+**backlog.json 新增条目：** `BL-062 数据 coverage 治理 / 5/17 weekly growth-curve check`（含 engagement_rate non_null_pct 跟进 + roadmap §8 定位）
+
+### 同步文档更新清单（本裁决 commit 含）
+
+1. `docs/specs/BL-063-F005-staging-dryrun-audit.md` — 本段（§7 Planner 裁决）
+2. `features.json` F005 acceptance 第 3、6 条文字修订
+3. `backlog.json` 追加 BL-062 数据 coverage 治理 entry
+4. `docs/specs/BL-063-isSaved-decommission-spec.md` 不动（features.json 是 truth source；spec doc 是起草时快照）
+
+### 裁决后 Generator 续做（fix-round 1）
+
+按 audit §5 步骤：
+
+1. Generator git pull 看到裁决 commit
+2. F005 status `pending → done`（features.json）
+3. progress.json `completed_features 4 → 5` + `last_updated`
+4. 切 status `building → fixing`（`fix_rounds 0 → 1`，per §11.4）— 因为 acceptance 修订是裁决产物，按 §11.4 计入 fix_round
+5. F006 prod ops 推进：用户手动触发 deploy-prod + Generator 跑 prod audit + 写 signoff
+6. F006 done → reverifying → Codex Reviewer 终审 → done
+
+**Planner 提示：** F006 prod ops 必须等用户 ack 业务低峰期时间窗（per spec §5 不变量条款），Generator 不得自行触发 deploy-prod。

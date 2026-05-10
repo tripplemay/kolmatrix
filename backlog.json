@@ -363,5 +363,27 @@
       "bl-059-followup"
     ],
     "discovered_in": "BL-012 v4 修订 — 用户绕过 §4.5.4 决策门 1/4 passed 启动 Stage 2"
+  },
+  {
+    "id": "BL-062",
+    "title": "数据 coverage 治理 — apify-kol daily sync 增量 KOL stats 回填 + engagement_rate non_null_pct 长期 ≥ 80%/95% 目标 + 5/17 起 weekly growth-curve check",
+    "description": "**触发：** 2026-05-11 BL-063 F005 staging dry-run 发现 engagement_rate non_null_pct 从 BL-061 baseline 6.7% 漂移到 2.44%（分子 95 行未变，分母 4000→3891 active 涨）。根因 5/9-5/11 daily sync 增量 ~530 KOL 没有回填 stats（IG/TT/YT 的 totalLikes / postsCount / lastUploadAt 等字段）。BL-063 orthogonal — Planner 裁决 (#2:A) 修 BL-063 F005 acceptance 为'分子不下降'，比例指标转本批次跟进。\n\n**业务目标：**\n- short-term：5/17 起每周一跑 BL-061 F003 SQL 看 non_null_pct 增长趋势（看 fork team profile schedules 是否在补数据，分子是否爬升）\n- mid-term：fork team 协调跑 profile schedules 主动回填存量缺位 stats KOL（IG TikHub upstream 抽风 fork §6.3 已知 + YT/X view-based proxy 需 channel 调用）\n- long-term：达 ADR-013 vision §9 验证目标 engagement_rate non_null_pct ≥ 80%/95%（AI 推荐质量核心依赖）\n\n**实装范围（待 Planner 起 batch 时锁定，预估 ~3-5 day Generator + 1 day Reviewer）：**\n- F001 weekly growth-curve SQL script + cron 自动跑（每周一 02:00 UTC，结果写 docs/test-reports/weekly-engagement-coverage-YYYY-MM-DD.md）\n- F002 反馈爬虫团队跑 profile schedules（已有 docs/inbox/feedback-fork-totallikes-2026-05-09.md 关联）— 触发 fork 端主动回填存量\n- F003（候选）KOLMatrix admin tools 加 'sync engagement_rate for KOL pool' ops 工具（admin 触发，non-cron，按 tenant 单独跑）\n- F004（候选）大盘看板加 engagement_rate coverage gauge（dashboard / insight 页）\n\n**触发条件（启动 batch）：**\n- 5/17 第一次 weekly check 后看 non_null_pct 是否 < 5%（如远低于 BL-061 baseline → BL-062 P0 提速）\n- 或 fork team 反馈 profile schedules 实施进度（如 fork 端 1-2 周内大幅回填，本 batch 仅做 weekly check 跟踪即可）\n- 或 Phase 2 BL-066 AI 推荐主面板上线时 non_null_pct 仍 < 30%（AI 推荐质量受影响）\n\n**与 ADR-013 关联：** roadmap §8 已标 BL-062 medium / 与 Phase 1-2 平行 / 不阻塞 BL-063→065 主重构。本批次完成后 Phase 2 BL-066 才有质量数据可用。",
+    "decisions": [
+      "Planner 5/11 裁决 BL-063 F005 audit #2:A：F005 acceptance 第 3 条改'分子不下降'（防 BL-063 stats regression），比例指标转本 BL-062 batch 跟进",
+      "ADR-013-ai-native-product-pivot Phase 2 BL-066 AI 推荐主面板的数据质量前提（roadmap §8 lock）",
+      "5/17 第一次 weekly growth-curve check 作触发评估点（不达标 → P0 提速 / 达标 → 维持 medium 与 Phase 1-2 平行）",
+      "fork team profile schedules 协调 + KOLMatrix admin sync ops 工具是核心两条路径"
+    ],
+    "confirmed_at": "2026-05-11T10:45+0800",
+    "priority": "medium",
+    "tags": [
+      "data-coverage",
+      "engagement-rate",
+      "apify-kol",
+      "post-bl-063",
+      "ai-native-prerequisite",
+      "weekly-cron"
+    ],
+    "discovered_in": "BL-063 F005 staging dry-run 2026-05-11 by Generator johnsong — engagement_rate non_null_pct 2.44% 实测 vs 6.7% baseline；分母漂移非 BL-063 regression"
   }
 ]
