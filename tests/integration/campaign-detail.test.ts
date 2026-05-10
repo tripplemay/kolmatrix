@@ -154,9 +154,11 @@ describe("runCampaignDetail + runAvailableKolsForCampaign", () => {
     expect(asB).toBeNull();
   });
 
-  it("runAvailableKolsForCampaign excludes KOLs already in the campaign + non-saved KOLs", async () => {
+  it("runAvailableKolsForCampaign excludes KOLs already in the campaign (full-tenant pool per BL-063 F001)", async () => {
+    // BL-063 F001: pool widened from isSaved=true to all non-soft-
+    // deleted KOLs. kol[3] (savedCount=3 means kol[3].isSaved=false)
+    // now belongs in the pool — the saved/discovered split is gone.
     const w = await seedWorld(TENANT_A, OWNER_A, 4, { savedCount: 3 });
-    // Link kol[0] to the campaign so only kol[1] and kol[2] remain (kol[3] is unsaved).
     await mod.kolOps.addKolToCampaign(w.tenantId, w.ownerId, w.campaignId, {
       kolId: w.kolIds[0]!,
     });
@@ -167,8 +169,8 @@ describe("runCampaignDetail + runAvailableKolsForCampaign", () => {
     const ids = available.map((a) => a.id);
     expect(ids).toContain(w.kolIds[1]);
     expect(ids).toContain(w.kolIds[2]);
+    expect(ids).toContain(w.kolIds[3]); // BL-063: unsaved KOL now in pool
     expect(ids).not.toContain(w.kolIds[0]); // already linked
-    expect(ids).not.toContain(w.kolIds[3]); // not saved
   });
 });
 
