@@ -3,7 +3,7 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔄 BL-060-soft-delete-ui-filter-hotfix REVERIFYING（5/9 20:55 / fix-round 2 ready @ f75cafd / CI 25601580748 全绿 / staging deployed git_sha=f75cafd healthy）— 修 dashboard kolCount 2889→305 + database total 4→0 + kpi-snapshot trend cron + 4 文件 P1 一致性 + SQL ops 清 4 个 is_saved leak / spec docs/specs/BL-060-soft-delete-ui-filter-hotfix-spec.md / 视觉 baseline regen @ 6f30c08 / fix-round 2: e2e database-fidelity 改 storageState 共享 session（playwright 推荐）从根上消除 7 case 累积 login 抖动；testIgnore 正则补 .spec 修 chromium 误跑 visual-regression（hotfix f75cafd）
+## ✅ BL-060-soft-delete-ui-filter-hotfix DONE（5/10 13:19 / fix-round 2 PASS @ f75cafd / CI 25601580748 全绿 / staging deployed git_sha=f75cafd healthy）— 修 dashboard kolCount 2889→305 + database total 4→0 + kpi-snapshot trend cron + 4 文件 P1 一致性 + SQL ops 清 4 个 is_saved leak / spec docs/specs/BL-060-soft-delete-ui-filter-hotfix-spec.md / 视觉 baseline regen @ 6f30c08 / fix-round 2: e2e database-fidelity 改 storageState 共享 session（playwright 推荐）从根上消除 7 case 累积 login 抖动；staging 复验 7/7 PASS，已签收
 ## ✅ BL-059 youtube-deprecate-and-engagement-derive DONE（5/9 / 7/7 features @ 56f6623 / fix_rounds=0）
 - L1: lint 0 / tsc 0 / 156 files 1101 tests PASS + integration 2/8 PASS；staging /api/health healthy + smoke PASS
 - 关键产出：apify-kol mapper engagement_rate derive + 单源迁移与软删除闭环 + youtube.ts/engagement-batch 删除
