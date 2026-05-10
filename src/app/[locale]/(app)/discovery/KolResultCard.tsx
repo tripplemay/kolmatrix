@@ -1,28 +1,18 @@
-"use client";
-
 /**
  * BM1-F004 · Single KOL card in the /discovery result grid.
  *
- * Hugs the Stitch kol-discovery.html card: avatar + name + follower
- * meta, cyan value badge in the upper right, category + tag chips,
- * and a save toggle in the footer. Save submits to the shared
- * toggleKolSaved server action — we rely on optimistic useFormStatus
- * so the button shows a pending state while the revalidate rolls
- * through.
+ * Stitch kol-discovery.html card without the save toggle (BL-063 F003:
+ * isSaved decommissioned per ADR-013 — every KOL is part of the
+ * tenant pool, so the saved/unsaved chip no longer carries meaning).
+ * BL-064 reworks the IA so /discovery rolls into the AI-native flow.
  */
 import { useTranslations } from "next-intl";
-import { useActionState } from "react";
 
-import { cn } from "@/lib/utils";
-
-import { toggleKolSaved, type ToggleKolSavedState } from "./actions";
 import type { DiscoveryKolCard } from "./search";
 
 interface Props {
   kol: DiscoveryKolCard;
 }
-
-const initial: ToggleKolSavedState = { ok: false };
 
 function initialsOf(name: string): string {
   const trimmed = name.trim();
@@ -42,9 +32,6 @@ export function KolResultCard({ kol }: Props) {
   const t = useTranslations("discovery.card");
   const tEngagement = useTranslations("kol.engagementRate");
   const engagementTooltip = tEngagement("tooltip");
-  const [state, formAction, pending] = useActionState(toggleKolSaved, initial);
-
-  const currentSaved = state.ok && state.kolId === kol.id ? state.saved! : kol.isSaved;
 
   return (
     <div
@@ -149,36 +136,6 @@ export function KolResultCard({ kol }: Props) {
         </div>
       </div>
 
-      <form action={formAction} className="mt-2">
-        <input type="hidden" name="kolId" value={kol.id} />
-        <input
-          type="hidden"
-          name="nextSaved"
-          value={currentSaved ? "false" : "true"}
-        />
-        <button
-          type="submit"
-          disabled={pending}
-          aria-pressed={currentSaved}
-          data-testid="kol-save-button"
-          className={cn(
-            "flex w-full items-center justify-center gap-2 rounded-lg border py-2 text-xs font-semibold transition-colors",
-            currentSaved
-              ? "border-cyan/30 bg-cyan/10 text-cyan"
-              : "border-outline-variant text-on-surface-variant hover:border-cyan/40 hover:text-cyan",
-            pending && "opacity-60"
-          )}
-        >
-          <span
-            className="material-symbols-outlined text-[16px]"
-            aria-hidden
-            style={currentSaved ? { fontVariationSettings: "'FILL' 1" } : undefined}
-          >
-            {currentSaved ? "bookmark_added" : "bookmark"}
-          </span>
-          <span>{currentSaved ? t("saved") : t("save")}</span>
-        </button>
-      </form>
     </div>
   );
 }

@@ -67,7 +67,6 @@ describe("loadDatabaseStats()", () => {
           handle: `active_${i}`,
           displayName: `Active ${i}`,
           followerCount: 1_000,
-          isSaved: true,
         },
       });
     }
@@ -79,7 +78,6 @@ describe("loadDatabaseStats()", () => {
           handle: `tomb_${i}`,
           displayName: `Tomb ${i}`,
           followerCount: 1_000,
-          isSaved: true,
           deletedAt: new Date(),
         },
       });
@@ -104,7 +102,6 @@ describe("loadDatabaseStats()", () => {
         handle: "active_negot",
         displayName: "Active Negot",
         followerCount: 500,
-        isSaved: true,
         relationshipStatus: "negotiating",
         valueScore: 60,
       },
@@ -116,7 +113,6 @@ describe("loadDatabaseStats()", () => {
         handle: "active_lt",
         displayName: "Active LT",
         followerCount: 1_500,
-        isSaved: true,
         relationshipStatus: "long_term",
         valueScore: 80,
       },
@@ -128,7 +124,6 @@ describe("loadDatabaseStats()", () => {
         handle: "tomb_negot",
         displayName: "Tomb Negot",
         followerCount: 10_000,
-        isSaved: true,
         relationshipStatus: "negotiating",
         valueScore: 0,
         deletedAt: new Date(),

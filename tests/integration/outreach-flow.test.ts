@@ -118,7 +118,6 @@ async function seedWorld() {
         handle: `kol_${i}`,
         displayName: `Kol ${i}`,
         email: `kol${i}@example.test`,
-        isSaved: true,
       },
     });
     await admin.kolCampaign.create({

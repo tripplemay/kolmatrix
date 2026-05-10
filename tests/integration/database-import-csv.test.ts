@@ -81,7 +81,7 @@ describe("/api/database/import-csv (BL-024-F001-2)", () => {
     expect(res.status).toBe(401);
   });
 
-  it("imports valid rows and persists them isSaved=true", async () => {
+  it("imports valid rows (BL-063: isSaved column dropped, every row is part of the tenant pool)", async () => {
     const { tenantId, userId } = await freshTenantWithUser();
     authMock.mockResolvedValue({ user: { tenantId, id: userId } });
     const csv =
@@ -113,7 +113,6 @@ describe("/api/database/import-csv (BL-024-F001-2)", () => {
     const admin = getAdminPrisma();
     const saved = await admin.kol.findMany({ where: { tenantId } });
     expect(saved).toHaveLength(2);
-    expect(saved.every((k) => k.isSaved === true)).toBe(true);
     expect(saved.find((k) => k.externalId === "ext-1")?.email).toBe(
       "alpha@example.com"
     );

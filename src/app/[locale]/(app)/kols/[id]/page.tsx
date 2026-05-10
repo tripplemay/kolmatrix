@@ -68,7 +68,6 @@ type KolDetailShape = Prisma.KolGetPayload<{
     lastUploadAt: true;
     monetizationStatus: true;
     brandSafetyRating: true;
-    isSaved: true;
     isGaming: true;
     relationshipStatus: true;
     bannerUrl: true;
@@ -102,7 +101,6 @@ async function loadKol(tenantId: string, kolId: string): Promise<KolDetailShape 
         lastUploadAt: true,
         monetizationStatus: true,
         brandSafetyRating: true,
-        isSaved: true,
         isGaming: true,
         relationshipStatus: true,
         bannerUrl: true,
@@ -223,7 +221,6 @@ export default async function KolProfilePage({ params, searchParams }: Props) {
             <KolValueScoreCard valueScore={kol.valueScore} />
             <KolActionsCard
               kolId={kol.id}
-              isSaved={kol.isSaved}
               relationshipStatus={kol.relationshipStatus}
             />
           </aside>

@@ -512,28 +512,7 @@ describe("runDiscoverySearch()", () => {
     expect(seenByB.items.map((i) => i.handle)).toEqual(["tenant_b"]);
   });
 
-  it("isSaved flip is visible on the next read", async () => {
-    const { tenantId, created } = await seedTenantWithKols([
-      {
-        displayName: "Saver",
-        handle: "saver",
-        countryCode: "US",
-        followerCount: 1_000,
-        categories: ["MOBA"],
-        isGaming: true,
-        engagementRate: 5,
-        valueScore: 80,
-      },
-    ]);
-    const before = await runDiscoverySearch(tenantId, baseFilters);
-    expect(before.items[0]?.isSaved).toBe(false);
-
-    await getAdminPrisma().kol.update({
-      where: { id: created[0]!.id },
-      data: { isSaved: true },
-    });
-
-    const after = await runDiscoverySearch(tenantId, baseFilters);
-    expect(after.items[0]?.isSaved).toBe(true);
-  });
+  // BL-063 F003: isSaved column dropped — Save/Unsave toggle deleted
+  // (discovery/actions.ts removed; KolResultCard no longer renders
+  // the bookmark button). The toggle round-trip case is obsolete.
 });

@@ -112,7 +112,6 @@ async function seedTenant(
         handle: `bulk_${tenantId.slice(0, 4)}_${i}`,
         displayName: `Bulk ${i}`,
         followerCount: 1_000 * (i + 1),
-        isSaved: true,
       },
     });
     kolIds.push(k.id);

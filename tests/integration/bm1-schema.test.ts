@@ -120,7 +120,7 @@ describe("product table", () => {
 });
 
 describe("kol new BM1 columns", () => {
-  it("round-trips valueScore / isGaming / isSaved / relationshipStatus / tags", async () => {
+  it("round-trips valueScore / isGaming / relationshipStatus / tags (BL-063: isSaved removed)", async () => {
     await withTestTenant(async (tenantId, tx) => {
       const created = await tx.kol.create({
         data: {
@@ -131,7 +131,6 @@ describe("kol new BM1 columns", () => {
           categories: ["moba"],
           valueScore: 78,
           isGaming: true,
-          isSaved: true,
           relationshipStatus: "negotiating",
           tags: ["priority", "english"],
         },
@@ -139,10 +138,8 @@ describe("kol new BM1 columns", () => {
 
       expect(created.valueScore).toBe(78);
       expect(created.isGaming).toBe(true);
-      expect(created.isSaved).toBe(true);
       expect(created.relationshipStatus).toBe("negotiating");
       expect(created.tags).toEqual(["priority", "english"]);
-      // Defaults should appear even when omitted (covered below).
     });
   });
 
@@ -159,7 +156,6 @@ describe("kol new BM1 columns", () => {
       });
       expect(created.valueScore).toBeNull();
       expect(created.isGaming).toBe(true);
-      expect(created.isSaved).toBe(false);
       expect(created.relationshipStatus).toBe("prospect");
       expect(created.tags).toEqual([]);
       expect(created.knownBrandCollabs).toEqual([]);

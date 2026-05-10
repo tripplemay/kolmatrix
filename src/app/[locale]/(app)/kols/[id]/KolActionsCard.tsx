@@ -1,9 +1,8 @@
 /**
  * MVP-vf-F006 · Right-rail Actions card.
  *
- * Tiny shell around the existing client widgets (RelationshipStatusSelect
- * + SavedToggleButton). Lives here so page.tsx doesn't need to know
- * about either; one card == one component.
+ * BL-063 F003: SavedToggleButton removed (isSaved decommissioned per
+ * ADR-013). Card now wraps RelationshipStatusSelect alone.
  */
 import { getTranslations } from "next-intl/server";
 
@@ -13,15 +12,13 @@ import {
 } from "@/lib/kol/filters";
 
 import { RelationshipStatusSelect } from "./RelationshipStatusSelect";
-import { SavedToggleButton } from "./SavedToggleButton";
 
 interface Props {
   kolId: string;
-  isSaved: boolean;
   relationshipStatus: string;
 }
 
-export async function KolActionsCard({ kolId, isSaved, relationshipStatus }: Props) {
+export async function KolActionsCard({ kolId, relationshipStatus }: Props) {
   const t = await getTranslations("kolProfile.overview");
   const status: RelationshipStatus = (RELATIONSHIP_STATUSES as readonly string[]).includes(
     relationshipStatus
@@ -37,7 +34,6 @@ export async function KolActionsCard({ kolId, isSaved, relationshipStatus }: Pro
         {t("sectionActions")}
       </h2>
       <RelationshipStatusSelect kolId={kolId} currentStatus={status} />
-      <SavedToggleButton kolId={kolId} currentSaved={isSaved} />
     </div>
   );
 }

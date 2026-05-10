@@ -178,7 +178,6 @@ model Kol {
   knownBrandCollabs      String[]  @default([]) @map("known_brand_collabs")
   engagementAuthenticity Int?      @map("engagement_authenticity")
   isGaming               Boolean   @default(true) @map("is_gaming")
-  isSaved                Boolean   @default(false) @map("is_saved")
   aiTaggedAt             DateTime? @map("ai_tagged_at") @db.Timestamptz
   aiTagConfidence        String?   @map("ai_tag_confidence") @db.VarChar(8)
 
@@ -234,7 +233,6 @@ model Kol {
   @@index([tenantId, aiScore(sort: Desc)])
   @@index([tenantId, platform, followerCount])
   @@index([tenantId, isGaming, valueScore(sort: Desc)], map: "kol_tenant_gaming_value_idx")
-  @@index([tenantId, isSaved], map: "kol_tenant_saved_idx")
   @@map("kol")
 }
 

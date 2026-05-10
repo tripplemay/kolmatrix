@@ -35,7 +35,6 @@ export interface DiscoveryKolCard {
   valueScore: number | null;
   categories: string[];
   tags: string[];
-  isSaved: boolean;
   isGaming: boolean;
 }
 
@@ -61,7 +60,6 @@ type KolRow = {
   valueScore: number | null;
   categories: string[];
   tags: string[];
-  isSaved: boolean;
   isGaming: boolean;
   createdAt: Date;
 };
@@ -110,7 +108,6 @@ export async function runDiscoverySearch(
       valueScore: r.valueScore,
       categories: r.categories,
       tags: r.tags,
-      isSaved: r.isSaved,
       isGaming: r.isGaming,
     }));
 
@@ -187,7 +184,6 @@ export async function runSemanticDiscoverySearch(
         valueScore: true,
         categories: true,
         tags: true,
-        isSaved: true,
         isGaming: true,
       },
     });
@@ -211,7 +207,6 @@ export async function runSemanticDiscoverySearch(
         valueScore: r.valueScore,
         categories: r.categories,
         tags: r.tags,
-        isSaved: r.isSaved,
         isGaming: r.isGaming,
       });
     }

@@ -6,15 +6,11 @@
  * Mirrors the spec acceptance for cross-platform proxy transparency.
  */
 import { screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { renderIntl } from "../../../../../../tests/utils/render-intl";
 import { KolResultCard } from "../KolResultCard";
 import type { DiscoveryKolCard } from "../search";
-
-vi.mock("../actions", () => ({
-  toggleKolSaved: vi.fn(async () => ({ ok: false })),
-}));
 
 const baseKol: DiscoveryKolCard = {
   id: "kol-1",
@@ -29,7 +25,6 @@ const baseKol: DiscoveryKolCard = {
   valueScore: 92,
   categories: ["Gaming"],
   tags: [],
-  isSaved: false,
   isGaming: true,
 };
 

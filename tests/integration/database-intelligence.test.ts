@@ -97,7 +97,6 @@ async function seedKolRow(args: {
       valueScore: args.valueScore,
       relationshipStatus: args.relationshipStatus,
       isGaming: true,
-      isSaved: true,
       isSuspicious: false,
     },
   });

@@ -58,10 +58,10 @@ describe("/kols/:id fidelity guards (MVP-vf-F006)", () => {
     expect(card).toMatch(/valueEmpty/);
   });
 
-  it("KolActionsCard wires both client widgets it inherited", () => {
+  it("KolActionsCard wires the relationship-status widget (BL-063: SavedToggleButton removed)", () => {
     const actions = read("KolActionsCard.tsx");
     expect(actions).toMatch(/<RelationshipStatusSelect\b/);
-    expect(actions).toMatch(/<SavedToggleButton\b/);
+    expect(actions).not.toMatch(/SavedToggleButton/);
   });
 
   it("EmptyTabState routes through GlassPanel for the inactive tabs", () => {

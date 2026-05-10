@@ -106,7 +106,10 @@ async function seedWorld(
       spendTotal: "0",
     },
   });
-  const savedThreshold = opts.savedCount ?? kolCount;
+  // BL-063 F002: isSaved column dropped. The savedCount option is now
+  // a no-op; callers can leave it unset. The seedWorld signature stays
+  // for backwards compat with the existing test bodies.
+  void opts.savedCount;
   const kolIds: string[] = [];
   for (let i = 0; i < kolCount; i += 1) {
     const k = await admin.kol.create({
@@ -116,7 +119,6 @@ async function seedWorld(
         handle: `seed_${tenantId.slice(0, 4)}_${i}`,
         displayName: `Seed ${i}`,
         followerCount: 1_000 * (i + 1),
-        isSaved: i < savedThreshold,
         email: i % 2 === 0 ? `kol${i}@example.test` : null,
       },
     });
