@@ -55,7 +55,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 6.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "messages/{cn,en,ja,ko,es}.json 新增 keys：nav.brief.{label,description} / nav.match.{label,description} / nav.reach.{label,description} / nav.insight.{label,description}",
       "各新路由 page title + breadcrumb keys（如 brief.page.title 等）",
