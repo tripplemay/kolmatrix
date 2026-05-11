@@ -3,13 +3,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-063-isSaved-decommission fixing（5/6 done, fix_rounds=1，F006 待用户 deploy-prod）
-- ✅ F001 done @ 83354fc — quick-fix detail.ts + tooltip + 5 语言 i18n + staging deployed
-- ✅ F002 done — prisma schema 删 isSaved + 索引 + migration sql（TEMP backup + ROLLBACK 指 pg_dump）
-- ✅ F003 done — src/ 全清 isSaved（discovery/actions.ts + SavedToggleButton.tsx 整文件删 + 9 文件 trim）— 用户选 A
-- ✅ F004 done — 10 fixture 清 + 2 文件 describe/it.skip（BL-064 整删）+ 新 ≥3 全量池 case
-- ✅ F005 done @ fix-round 1（partial-pending @ 99a3d07 → Planner 0ea747d ruling #1:A #2:A → acceptance §3 改「分子≥95 不下降」§6 改「TEMP 模式 + durable 推 F006 pg_dump」+ backlog 加 BL-062 数据 coverage 治理）
-- ⏸ F006 prod ops — 待用户 ack 业务低峰期 + 用户在 GH Actions 手动触发 deploy-prod.yml；之后 Generator SSH prod 跑 audit + 写 signoff + 切 reverifying
+## 🚧 BL-063-isSaved-decommission reverifying（6/6 done, fix_rounds=1，等 Reviewer 24h second-pass audit）
+- ✅ F001-F004 done — quick-fix detail.ts + schema migration + src/ 全清 + 测试更新（详见 git log）
+- ✅ F005 done @ fix-round 1（partial-pending @ 99a3d07 → Planner 0ea747d ruling #1:A #2:A → acceptance §3+§6 修订 + backlog BL-062 跟进 engagement_rate 5/17 weekly）
+- ✅ F006 immediate done @ 92b4957 — prod deploy run 25643437421 success @ 2026-05-11T00:02:26Z UTC / 9 项 audit 全 PASS（git_sha=92b4957 / migration finished / column+index dropped / engagement_rate 107≥95 / row count sane / src/ comments-only / pre-deploy backup db-20260511-000236.sql.gz 22M / pm2 logs immediate clean）+ 用户 prod UI 5/5 PASS / signoff v1 docs/test-reports/BL-063-signoff-2026-05-11.md。§7 24h pm2 监控由 Reviewer 在 reverifying 阶段（部署后 24h 起即 2026-05-12 ~00:00 UTC）跑 second-pass audit 验证 + 写 signoff v2 + 切 reverifying → done
 - 📋 Spec: docs/specs/BL-063-isSaved-decommission-spec.md / ADR-013 / vision / roadmap
 ## ✅ BL-061 / BL-060 / BL-059 / BL-012 / BL-055 / BL-052 / BL-051a / BL-049 / BL-021+023 / BL-043+044 全 DONE
 ## 关键决议（已 lock）

@@ -93,7 +93,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "prod 数据 backup（SSH sudo -u postgres pg_dump kolmatrix > /tmp/bl063-pre-migration.dump 或 SQL 内 backup table）",
       "prod redeploy（GitHub Actions UI dispatch HEAD = main，由用户手动触发）",
