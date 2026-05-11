@@ -1,3 +1,6 @@
+// BL-064-F006 — file touched intentionally to force a CI run after the
+// update-visual-baselines auto-commit (GitHub bot pushes don't trigger
+// downstream workflows by default).
 /**
  * Pure helpers extracted from src/middleware.ts so the routing decision
  * logic can be unit-tested without importing NextAuth (which pulls in
