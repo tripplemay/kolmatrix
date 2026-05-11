@@ -27,7 +27,12 @@ const {
 } = await import("@/middleware-helpers");
 
 describe("PROTECTED_PREFIXES", () => {
-  it("contains every authed top-level route in B0 + is alphabet-stable", () => {
+  it("contains every authed top-level route (B0 legacy + BL-064 new IA) in declared order", () => {
+    // Order is significant for review/audit, but not enforced as
+    // alphabet-sorted (BL-064-F001 added 4 new-IA paths at the end of the
+    // list to keep the diff minimal while the legacy routes are still
+    // alive via F002 302-redirects). Once BL-070 removes the legacy
+    // paths, this list can be re-sorted.
     expect(PROTECTED_PREFIXES).toEqual([
       "/dashboard",
       "/discovery",
@@ -42,6 +47,11 @@ describe("PROTECTED_PREFIXES", () => {
       "/weekly-report",
       "/outreach",
       "/settings",
+      // BL-064-F001 — Phase 1 4-route IA
+      "/brief",
+      "/match",
+      "/reach",
+      "/insight",
     ]);
   });
 });
