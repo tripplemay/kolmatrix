@@ -87,7 +87,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "staging deploy via deploy-staging.yml workflow（自动 / 用户触发任一）",
       "staging /api/health git_sha 与 main HEAD 一致",
