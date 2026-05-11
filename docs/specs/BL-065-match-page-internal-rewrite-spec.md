@@ -1,12 +1,19 @@
 # BL-065 Match 页内部 UI 实质重写 — 合并 Discovery + Database 为统一 KOL 工作台 Spec
 
-> **草稿创建：** 2026-05-11 北京 / Planner johnsong
-> **状态：** **DRAFT** — 草稿等待用户 review；不入 features.json；BL-064 整体 done + Phase 1 verifying gate 达成后 Planner 升级为正式 spec
+> **草稿创建：** 2026-05-11 北京 / Planner johnsong（commit caa7398 DRAFT 版）
+> **正式 spec 升级：** 2026-05-11 ~19:30 BJT / Planner johnsong — BL-064 已 DONE @ fbfb4ac / Phase 1 verifying gate 达成
+> **状态：** **Accepted**（等用户 ack 6 决策点 + features.json 后切 building）
 > **批次类型：** 普通批次（全部 executor:generator）
 > **优先级：** P0（Phase 2 第一批 / ADR-013 vision §2 Match 路由的实质化）
 > **预估工时：** ~5-7 day Generator + 1 day Reviewer
-> **依赖：** BL-064 done（/match 路由壳已 ready，当前 embed /discovery 占位）+ ideally BL-048 valueScore 优化并行（roadmap §8 提前到 Phase 2，AI 排序质量基础）
+> **依赖：** BL-064 done ✅（/match 路由壳已 ready，当前 embed /discovery 占位）+ ideally BL-048 valueScore 优化并行（roadmap §8 提前到 Phase 2，AI 排序质量基础）
 > **决策来源：** ADR-013 §Decision 第 1 条 / vision §2 Match 路由 / roadmap §4 BL-065
+>
+> **DRAFT → Accepted 修订记录（2026-05-11 19:30 BJT）：**
+> 1. **BL-064 fix-round 3 经验 incorporated：** embed-old-components 策略下 redirect 到 destination route 未 wire ready 时 UX 会比 kept 旧路由差（5 → 6 fix-round 缩减到 5 content-equivalent + 1 parametric）。本批次仅删 /database + /discovery 老路由（确认 /match 已 wire ready 后），其他 kept 路径仍归 BL-066/069/070 各自批次处理
+> 2. **BL-048 valueScore 并行：** 暂不强制并行启动；本批次 building 中段（fix-round 1 时）由 Planner 评估是否同期 lock
+> 3. **6 决策点 #A-#F：** Planner 倾向不动（DRAFT 时已 Planner-tilt）；用户 ack 后 embed 进 features.json acceptance
+> 4. **团队 dogfood 1 周：** 用户决议 5/13 上线 deadline 已取消，时间不是硬约束；用户 ack 即可起 BL-065，不必满 1 周
 
 ---
 

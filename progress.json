@@ -1,47 +1,36 @@
 {
-  "status": "done",
-  "user_goal": "BL-064-top-level-ia-refactor — ADR-013 AI Native 转向 Phase 1 第二批：顶层 IA 7 路由 → 4 路由（Brief/Match/Reach/Insight），含 4 新路由壳 + 7 老路由 302 redirect 兜底 + 顶部 nav 重写 + i18n 5 语言新 keys + e2e suite 适配 + 视觉 baseline regen + staging/prod redeploy + 24h 监控 + Reviewer 终审。7 features F001-F007。预估 ~5-7 day Generator + 1 day Reviewer。本批次完成 + 团队 dogfood 1 周无 P0 → Phase 1 整体验收 gate 达成 → Phase 2 BL-065 Match 页（合并 Discovery+Database 内部 UI 实质重写）启动。本批次不动各路由内部 UI 实质重写（Match 合并 = BL-065 / Campaign AI 推荐主面板 = BL-066）。关联 docs/specs/BL-064-top-level-ia-refactor-spec.md / ADR-013 / vision §2 / roadmap §3。",
+  "status": "planning",
+  "user_goal": "BL-065-match-page-internal-rewrite — ADR-013 AI Native 转向 Phase 2 第一批：Match 页内部 UI 实质重写，合并 Discovery + Database 为统一 KOL 工作台。7 features：F001 Match 页 layout + 双视图 / F002 Filter+Search+SaveSearchControls 合并 / F003 BulkActionBar 集成 + ImportCsvDialog 移 /admin / F004 AddKolDialog 保留 + UI 集成 / F005 SmartMatchDialog → AI 推荐 sidebar (campaign-context mode) / F006 i18n 5 语言 + e2e + 删 /discovery + /database 整页 27 文件 / F007 staging + prod redeploy + 24h 监控 + signoff。预估 ~5-7 day Generator + 1 day Reviewer。本批次完成后 BL-066 Campaign 详情页 AI 推荐主面板 + BL-048 valueScore 优化（Phase 2 并行）启动。本批次不动 Campaign 详情页内部 UI（BL-066 工作）/ B3 自然语言 refine（BL-068）/ C3 完整 explainability（BL-067 — 本批次仅 C2 占位）。关联 docs/specs/BL-065-match-page-internal-rewrite-spec.md / ADR-013 / vision §2 §3 / roadmap §4。",
   "total_features": 7,
-  "completed_features": 7,
-  "fix_rounds": 3,
-  "current_sprint": "BL-064-top-level-ia-refactor",
-  "last_updated": "2026-05-11T19:15+0800",
+  "completed_features": 0,
+  "fix_rounds": 0,
+  "current_sprint": "BL-065-match-page-internal-rewrite",
+  "last_updated": "2026-05-11T19:35+0800",
   "reference_docs": [
-    "docs/specs/BL-064-top-level-ia-refactor-spec.md",
+    "docs/specs/BL-065-match-page-internal-rewrite-spec.md",
     "docs/adr/ADR-013-ai-native-product-pivot.md",
     "docs/product/ai-native-vision.md",
     "docs/product/ai-native-roadmap.md",
-    "src/middleware.ts",
+    "src/app/[locale]/(app)/match/page.tsx",
+    "src/app/[locale]/(app)/discovery/",
+    "src/app/[locale]/(app)/database/",
+    "src/app/[locale]/(app)/admin/apify-preview/",
     "src/components/app-shell/Nav.tsx",
-    "src/app/[locale]/(app)/dashboard/page.tsx",
-    "src/app/[locale]/(app)/discovery/page.tsx",
-    "src/app/[locale]/(app)/database/page.tsx",
-    "src/app/[locale]/(app)/campaigns/page.tsx",
-    "src/app/[locale]/(app)/knowledge-base/page.tsx",
-    "src/app/[locale]/(app)/outreach/page.tsx",
-    "src/app/[locale]/(app)/reports/page.tsx",
     "messages/cn.json",
-    "messages/en.json",
-    "tests/e2e/marketer.setup.ts"
+    "messages/en.json"
   ],
   "docs": {
-    "spec": "docs/specs/BL-064-top-level-ia-refactor-spec.md",
+    "spec": "docs/specs/BL-065-match-page-internal-rewrite-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/BL-064-signoff-2026-05-11.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "PASS — BL-064 Reviewer verification complete. L1: codex setup/wait PASS, lint 0 errors/2 existing warnings, typecheck PASS, npm test 157 files / 1115 tests PASS, BL-064 redirect E2E hot rerun 43 passed / 24 skipped. Production read-only audit PASS=18 FAIL=0 WARN=1 with prod health git_sha=9b1b15b, pm2 last 500 lines clean, WARN only legacy nav.* doc-comment / BL-070 cleanup tracker. User logged-in prod UI spot check already PASS.",
-    "pass_count": 7,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": []
-  },
+  "evaluator_feedback": null,
   "generator_handoff": null,
   "session_notes": {
-    "johnsong": "[2026-05-11 18:50 BJT Generator johnsong — F001-F006 done + F007 immediate audit PASS]\n\n**Prod 状态：** `9b1b15b`（含 signoff doc v1.1）；prod /api/health git_sha = main HEAD (paths-ignored 后续提交无 runtime 变更)；pm2 uptime ~10min。\n\n**F007 进度 5/7 acceptance：**\n1. ✅ prod 数据 backup — /opt/kolmatrix-backups/db-20260511-103452.sql.gz\n2. ✅ prod redeploy via workflow_dispatch 2 次（Generator 触发 b944d03 + 用户触发 9b1b15b）\n3. ✅ prod /api/health git_sha = main HEAD\n4. ✅ prod 4 新路由可访问 + redirect 验证（用户 logged-in 5/5 redirect + 6/6 kept + /campaigns/[id] parametric + sidebar 4-item 5-locale activeNav 全 PASS @ 18:50）\n5. ✅ scripts/bl064-f007-prod-audit.sh PASS=18 FAIL=0 WARN=1（WARN 是 doc-comment grep 不完美，无害）\n6. ⏳ 24h pm2 logs 监控窗 — 起 2026-05-11 18:42 北京 / 收 2026-05-12 18:42 北京\n7. ⏳ signoff §6 + Reviewer 复验 v2 → status reverifying → done\n\n**3 轮 fix-round 中决策偏离（audit doc §8 §9 详记）：**\n- adjudication §4 /campaigns 列表 → kept；BL-066 wire /match view=campaigns 后启 redirect\n- §3 F002 /campaigns/new → kept；BL-069 wire /brief form 后启\n- §2 analytics 子路由 (/roi /weekly-report /analytics) → kept；BL-070 unify /insight 后启\n- /outreach sub-path 继承 (/templates 等) → kept；BL-070 wire /reach 子路由后启\n\nF002 redirect 最终 6 条 = 5 content-equivalent prefix (/dashboard→insight / /discovery→match / /database→match / /knowledge-base→brief / /outreach→reach) + 1 parametric (/campaigns/[id]→/match?campaignId=:id)。其余 6 条原 redirect 全部 kept deep-link。\n\n**下次会话续接（2026-05-12 18:42 北京后）：**\n1. ssh prod 跑 audit script §6 看 pm2 logs 24h 干净\n2. 填 signoff doc §6\n3. flip progress.json status: building → verifying\n4. 交 Codex Reviewer 写终验签收\n5. reverifying → done\n\n**Codex 终验时关注：** F002 缩减后 redirect 范围（仅 5+1）、kept paths activeNav 高亮（assets→brief / crm→reach / kols→match / campaigns→match）、5 语言 nav 翻译、视觉 baselines 全 16 个 PNG 重生、ia-refactor-redirects.spec.ts 60+ test case 已覆盖 redirect contract。",
-    "Reviewer": "[2026-05-11 19:10 - 19:15 北京 Codex Reviewer — BL-064 verifying → done]\n\n按用户「开始」执行 Reviewer 验收。先启动 Codex L1：bash scripts/test/codex-setup.sh 完成 npm ci、docker PG/Redis、prisma migrate deploy、seed，并在 3099 启动 Next；codex-wait /login 307 ready。L1 结果：lint 0 error / 2 existing warnings；typecheck PASS；npm run test 157 files / 1115 tests PASS。误跑 npm run test -- --runInBand 因 Vitest 4 不支持该 Jest 参数失败，已用原生 npm run test 重跑通过，不计产品失败。\n\nBL-064 redirect E2E：首轮 bash scripts/test/codex-e2e.sh tests/e2e/ia-refactor-redirects.spec.ts 得到 36 passed / 7 failed / 24 skipped，失败全是本地 Turbopack 首次并发编译下 page.goto timeout / ERR_ABORTED。服务热身后串行复跑 bash scripts/test/codex-e2e.sh tests/e2e/ia-refactor-redirects.spec.ts --workers=1，43 passed / 24 skipped，全 PASS，判为 L1 suite isolation/cold-compile timeout，不阻断。\n\n生产只读 audit：ssh tripplezhou@34.180.93.185 'bash /opt/kolmatrix/scripts/bl064-f007-prod-audit.sh'，exit 0，PASS=18 FAIL=0 WARN=1。prod health healthy，git_sha=9b1b15b；4 新 IA 路由 logged-out 307 到 auth gate；pm2 last 500 lines 无 BL-064 route-not-found / next-intl / missing translation error；WARN 仅 legacy nav.* doc-comment / BL-070 cleanup tracker。已追加 docs/test-reports/BL-064-signoff-2026-05-11.md §9 Reviewer Signoff v2，progress.status=done，docs.signoff 指向该报告。"
+    "johnsong": "[2026-05-11 19:35 BJT Planner johnsong — BL-064 done-phase closure + BL-065 起批次 + 沉淀 BL-064 fix-round 3 learning]\n\n本会话本段：BL-064 由 Codex Reviewer 终审 PASS @ fbfb4ac（详 docs/test-reports/BL-064-signoff-2026-05-11.md §9 v2）。Phase 1 整体验收 gate（roadmap §11）达成 — BL-063 + BL-064 双双 DONE。用户 ack 起 BL-065 Phase 2 第一批。\n\nPlanner 起 BL-065 批次产出：\n1. docs/specs/BL-065-match-page-internal-rewrite-spec.md — 升级自 commit caa7398 DRAFT 版（git mv 保 history）+ 头部加 DRAFT → Accepted 修订记录（4 点：BL-064 fix-round 3 经验 incorporated / BL-048 不强制并行 / 6 决策点 Planner-tilt 不动 / 团队 dogfood 不必满 1 周）\n2. features.json 7 pending entries（F001-F007）含完整 acceptance + Planner 在 spec §4 的 6 决策点倾向已 embed（#A 双视图保留 / #B AI sidebar 起步 / #C 单 /admin/kol-csv-import 子路由起步 / #D BulkActionBar 全操作集 + 确认 modal / #E SaveSearchControls 保留 / #F 卡片默认）\n3. progress.json 切 done → planning，sprint = BL-065-match-page-internal-rewrite，completed=0/7\n4. framework/proposed-learnings.md 加 BL-064 fix-round 3 'IA refactor redirect scope wire-readiness' learning（同 commit）\n\n关键设计要点（Generator 起工时必读）：\n- 本批次范围：Match 页本身 UI 实质重写（合并 Discovery + Database），含 campaign-context AI sidebar 起步\n- 不在范围：Campaign 详情页内部 UI（BL-066）/ B3 自然语言 refine（BL-068）/ C3 完整 explainability（BL-067，本批次仅 C2 占位）\n- 6 决策点 Planner-tilt 已 lock：#A 双视图 / #B sidebar 起步 / #C 子路由起步 / #D 全操作集+确认 / #E SaveSearchControls 保留 / #F 卡片默认\n- F006 删 /discovery + /database 整页（共 ~27 文件 + 对应 e2e），需特别小心（BL-064 已 wire redirect destination ready）\n- F003 ImportCsvDialog 移 /admin/kol-csv-import + Match 页 admin entry link\n- F005 现 AiSuggestionsClient logic 复用，BL-066 升级为主面板\n- BL-048 valueScore 是否同期 lock 由 Planner 在 building 中段评估\n\nF007 prod redeploy 必须等用户 ack 时间窗（per BL-063/064 实战流程）。24h pm2 monitor 是否加速由用户决定（BL-064 加速先例，但 BL-065 是 UI 大改可能不应加速）。\n\n本批次 done 后：BL-066 Campaign 详情页 AI 推荐主面板（Phase 2 第二批，依赖本批次 ?campaignId=xxx mode + AI 推荐 sidebar）+ BL-048 valueScore 优化（Phase 2 并行）。\n\n下次 Generator (cli=johnsong) 会话续接：\n- git pull 看到本 commit\n- 读 progress.json status=planning 等用户 ack spec → 切 building\n- 用户 ack 后 Planner 切 status planning → building\n- Generator 接 F001 Match 页 layout 实质重写 → F007 prod ops 顺序实施\n- F006 删整页操作不可逆，建议 staging 完整 e2e + 团队 spot check 后再上 prod\n\n本会话 Planner 工作收口完成。下次会话用户 ack BL-065 spec → 切 building → Generator 接手。",
+    "Reviewer": null
   },
   "features": []
 }
