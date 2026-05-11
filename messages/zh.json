@@ -19,16 +19,7 @@
     "emailCenter": "邮件中心",
     "knowledgeBase": "知识库",
     "analytics": "分析",
-    "settings": "设置",
-    "__deprecated_by_bl_064__": [
-      "dashboard",
-      "kolDiscovery",
-      "kolDatabase",
-      "campaigns",
-      "emailCenter",
-      "knowledgeBase",
-      "analytics"
-    ]
+    "settings": "设置"
   },
   "topbar": {
     "searchPlaceholder": "搜索KOL、活动、邮件...",

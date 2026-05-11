@@ -9,6 +9,29 @@
  * Adjudication 2026-05-11 #3：sub-route /assets /crm /kols/[id] 保留
  * 路由但 deriveActiveNav 把它们映射到内容对应的新 nav id（assets→brief
  * / crm→reach / kols→match），deep link 不死。
+ *
+ * **BL-064-F004 messages deprecations (delete in BL-070):**
+ * The following keys still live in `messages/{en,zh,ja,ko,es}.json` so
+ * any straggler `t("nav.dashboard")` callsite doesn't crash, but they
+ * are deprecated by this batch and must be removed when BL-070
+ * completes the full per-route UI migration:
+ *
+ *   nav.dashboard       — replaced by nav.insight
+ *   nav.kolDiscovery    — replaced by nav.match
+ *   nav.kolDatabase     — folded into nav.match (BL-065 removes /database)
+ *   nav.campaigns       — folded into nav.match (campaigns surface)
+ *   nav.emailCenter     — replaced by nav.reach
+ *   nav.knowledgeBase   — replaced by nav.brief
+ *   nav.analytics       — replaced by nav.insight
+ *
+ * `nav.settings` is intentionally NOT in the list — it now lives in
+ * the UserAvatarMenu dropdown (adjudication §1) but the key is still
+ * read there.
+ *
+ * **BL-014 review pending markers (ja/ko/es):** The new
+ * `nav.brief/match/reach/insight` (+ description) translations in
+ * `messages/ja.json`, `ko.json`, `es.json` are LLM-generated loanwords
+ * pending native-speaker review per BL-014 (see backlog.json).
  */
 export type NavItemId = "brief" | "match" | "reach" | "insight";
 

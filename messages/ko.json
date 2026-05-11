@@ -19,17 +19,7 @@
     "emailCenter": "이메일 센터",
     "knowledgeBase": "지식 베이스",
     "analytics": "분석",
-    "settings": "설정",
-    "__deprecated_by_bl_064__": [
-      "dashboard",
-      "kolDiscovery",
-      "kolDatabase",
-      "campaigns",
-      "emailCenter",
-      "knowledgeBase",
-      "analytics"
-    ],
-    "__bl_014_review_pending__": "ja/ko/es translations for brief/match/reach/insight + descriptions are LLM-generated; awaiting native-speaker review per BL-014"
+    "settings": "설정"
   },
   "topbar": {
     "searchPlaceholder": "KOL, 캠페인, 이메일 등 검색",

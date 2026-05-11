@@ -19,17 +19,7 @@
     "emailCenter": "メールセンター",
     "knowledgeBase": "ナレッジベース",
     "analytics": "分析",
-    "settings": "設定",
-    "__deprecated_by_bl_064__": [
-      "dashboard",
-      "kolDiscovery",
-      "kolDatabase",
-      "campaigns",
-      "emailCenter",
-      "knowledgeBase",
-      "analytics"
-    ],
-    "__bl_014_review_pending__": "ja/ko/es translations for brief/match/reach/insight + descriptions are LLM-generated; awaiting native-speaker review per BL-014"
+    "settings": "設定"
   },
   "topbar": {
     "searchPlaceholder": "KOL、キャンペーン、メールなどを検索",

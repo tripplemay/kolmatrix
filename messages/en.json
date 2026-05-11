@@ -19,16 +19,7 @@
     "emailCenter": "Email Center",
     "knowledgeBase": "Knowledge Base",
     "analytics": "Analytics",
-    "settings": "Settings",
-    "__deprecated_by_bl_064__": [
-      "dashboard",
-      "kolDiscovery",
-      "kolDatabase",
-      "campaigns",
-      "emailCenter",
-      "knowledgeBase",
-      "analytics"
-    ]
+    "settings": "Settings"
   },
   "topbar": {
     "searchPlaceholder": "Search KOLs, campaigns, emails...",
