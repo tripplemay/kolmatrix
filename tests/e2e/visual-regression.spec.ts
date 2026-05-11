@@ -53,18 +53,16 @@
  *     --update-snapshots
  */
 /**
- * BL-064-F005 — all `test.describe(...)` blocks below are temporarily
- * converted to `.skip` while the Phase 1 IA refactor lands. Reason:
- * the committed baselines under `tests/screenshots/baseline/` were
- * captured against the 8-item sidebar (Dashboard / Discovery / Database
- * / Campaigns / Email Center / Knowledge Base / Analytics / Settings)
- * and would diverge on every page after F003 reshaped the sidebar to
- * 4 items (Brief / Match / Reach / Insight). BL-064-F006 regenerates
- * baselines on staging via the `update-visual-baselines` workflow and
- * re-enables these describes in the same commit.
- *
- * If you're reverting BL-064 partially, also revert the `.skip`
- * additions here so visual regression catches any drift.
+ * BL-064-F006 re-enable — describes have been switched back from .skip
+ * to active. Baselines under `tests/screenshots/baseline/` are
+ * regenerated against the new 4-item sidebar (Brief / Match / Reach /
+ * Insight) via the `update-visual-baselines` workflow run that ships
+ * alongside this commit. Legacy baseline filenames (dashboard.png,
+ * en-discovery.png, en-database.png, etc.) are intentionally kept —
+ * their content now reflects the 302-redirected new IA shell (e.g.
+ * dashboard.png shows /insight under the hood), but renaming is BL-070
+ * scope. The login waitForURL accepts both /dashboard and /insight
+ * during the transition (F002 302 chain).
  */
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
@@ -131,7 +129,9 @@ async function login(page: Page) {
   await page.locator('input[name="email"]').fill(MARKETER.email);
   await page.locator('input[name="password"]').fill(MARKETER.password);
   await page.getByRole("button", { name: /Sign in/ }).click();
-  await page.waitForURL(/\/dashboard(\/|$)/);
+  // BL-064-F002 — /dashboard 302→/insight; accept either tail during
+  // Phase 1 transition.
+  await page.waitForURL(/\/(dashboard|insight)(\/|$)/);
   // BM1-F009: skip waitForLoadState("networkidle") — every locator we
   // use afterwards auto-waits via expect/visible.
 }
@@ -163,7 +163,7 @@ async function imagesReady(page: Page) {
   );
 }
 
-test.describe.skip("Authenticated BM1 visual regression", () => {
+test.describe("Authenticated BM1 visual regression", () => {
   test.skip(
     process.platform !== "linux",
     "Visual regression baseline is Linux-canonical (CI + WSL). Non-Linux runs skip."
@@ -209,7 +209,8 @@ test.describe.skip("Authenticated BM1 visual regression", () => {
       .locator("aside")
       .getByRole("link", { name: /Knowledge Base/i })
       .click();
-    await page.waitForURL(/\/knowledge-base(\/|\?|$)/);
+    // BL-064-F002 — /knowledge-base 302→/brief
+    await page.waitForURL(/\/(knowledge-base|brief)(\/|\?|$)/);
     await page.waitForSelector('[data-testid="kb-grid"], [data-testid="kb-empty"]');
     await fontsReady(page);
 
@@ -234,7 +235,8 @@ test.describe.skip("Authenticated BM1 visual regression", () => {
       .locator("aside")
       .getByRole("link", { name: /KOL Discovery/i })
       .click();
-    await page.waitForURL(/\/discovery(\/|\?|$)/);
+    // BL-064-F002 — /discovery 302→/match
+    await page.waitForURL(/\/(discovery|match)(\/|\?|$)/);
     // BM2-F011-001: wait for BOTH grid and summary, not the OR shortcut.
     // Workflow run 24953605628 captured a 1280x1703 baseline because
     // summary mounted before grid; CI's first run saw grid mount
@@ -278,7 +280,8 @@ test.describe.skip("Authenticated BM1 visual regression", () => {
       .locator("aside")
       .getByRole("link", { name: /KOL Database/i })
       .click();
-    await page.waitForURL(/\/database(\/|\?|$)/);
+    // BL-064-F002 — /database 302→/match
+    await page.waitForURL(/\/(database|match)(\/|\?|$)/);
     await page.waitForSelector(
       '[data-testid="database-table-wrapper"], [data-testid="database-empty"]'
     );
@@ -298,7 +301,7 @@ test.describe.skip("Authenticated BM1 visual regression", () => {
   });
 });
 
-test.describe.skip("Authenticated BM2 visual regression", () => {
+test.describe("Authenticated BM2 visual regression", () => {
   test.skip(
     process.platform !== "linux",
     "Visual regression baseline is Linux-canonical (CI + WSL). Non-Linux runs skip."
@@ -584,7 +587,7 @@ test.describe.skip("Authenticated BM2 visual regression", () => {
 // the 5; signoff (Reviewer follow-up after workflow run lands PNGs)
 // will close the loop in docs/test-reports/BL-026-asset-ux-redesign-
 // signoff-2026-05-03.md.
-test.describe.skip("Authenticated BL-026 visual regression", () => {
+test.describe("Authenticated BL-026 visual regression", () => {
   test.skip(
     process.platform !== "linux",
     "Visual regression baseline is Linux-canonical (CI + WSL). Non-Linux runs skip."
@@ -746,7 +749,7 @@ test.describe.skip("Authenticated BL-026 visual regression", () => {
 // Baselines come from the "Update visual baselines" workflow on Linux
 // CI; locally they're skipped via the existing shouldSkipMissingBaseline
 // helper until the workflow lands the PNGs.
-test.describe.skip("BL-055 hotfix — visual regression", () => {
+test.describe("BL-055 hotfix — visual regression", () => {
   test.skip(
     process.platform !== "linux",
     "Visual regression baseline is Linux-canonical (CI + WSL). Non-Linux runs skip."
@@ -879,7 +882,7 @@ test.describe.skip("BL-055 hotfix — visual regression", () => {
   });
 });
 
-test.describe.skip("Auth cinematic — visual regression", () => {
+test.describe("Auth cinematic — visual regression", () => {
   test.skip(
     process.platform !== "linux",
     "Visual regression baseline is Linux-canonical (CI + WSL). Non-Linux runs skip."
