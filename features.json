@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 6.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "创建目录：src/app/[locale]/(app)/brief/page.tsx + match/page.tsx + reach/page.tsx + insight/page.tsx",
       "每个 page.tsx embed 对应旧路由内容（/brief embed /knowledge-base 内容；/match embed /discovery 内容；/reach embed /outreach 内容；/insight embed /dashboard 内容）— 决策点 #A 选 A2",
