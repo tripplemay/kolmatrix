@@ -4,6 +4,14 @@
     "batchRateLimitExceeded": "一括送信の回数が多すぎます。{retryAfter}秒後に再試行してください。"
   },
   "nav": {
+    "brief": "ブリーフ",
+    "briefDescription": "製品とキャンペーンの入力情報を定義",
+    "match": "マッチ",
+    "matchDescription": "目標に合った AI 推奨 KOL",
+    "reach": "リーチ",
+    "reachDescription": "メールアウトリーチと返信管理",
+    "insight": "インサイト",
+    "insightDescription": "結果、ROI、振り返り",
     "dashboard": "ダッシュボード",
     "kolDiscovery": "KOL 発見",
     "kolDatabase": "KOL データベース",
@@ -11,7 +19,17 @@
     "emailCenter": "メールセンター",
     "knowledgeBase": "ナレッジベース",
     "analytics": "分析",
-    "settings": "設定"
+    "settings": "設定",
+    "__deprecated_by_bl_064__": [
+      "dashboard",
+      "kolDiscovery",
+      "kolDatabase",
+      "campaigns",
+      "emailCenter",
+      "knowledgeBase",
+      "analytics"
+    ],
+    "__bl_014_review_pending__": "ja/ko/es translations for brief/match/reach/insight + descriptions are LLM-generated; awaiting native-speaker review per BL-014"
   },
   "topbar": {
     "searchPlaceholder": "KOL、キャンペーン、メールなどを検索",

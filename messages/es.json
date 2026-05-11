@@ -4,6 +4,14 @@
     "batchRateLimitExceeded": "Demasiados envíos por lote. Vuelve a intentarlo en {retryAfter}s."
   },
   "nav": {
+    "brief": "Brief",
+    "briefDescription": "Define producto y campaña",
+    "match": "Match",
+    "matchDescription": "KOLs recomendados por IA",
+    "reach": "Reach",
+    "reachDescription": "Outreach por correo y respuestas",
+    "insight": "Insight",
+    "insightDescription": "Resultados, ROI y retrospectivas",
     "dashboard": "Panel",
     "kolDiscovery": "Descubrir KOL",
     "kolDatabase": "Base de datos de KOL",
@@ -11,7 +19,17 @@
     "emailCenter": "Centro de correo electrónico",
     "knowledgeBase": "Base de conocimientos",
     "analytics": "Análisis",
-    "settings": "Configuración"
+    "settings": "Configuración",
+    "__deprecated_by_bl_064__": [
+      "dashboard",
+      "kolDiscovery",
+      "kolDatabase",
+      "campaigns",
+      "emailCenter",
+      "knowledgeBase",
+      "analytics"
+    ],
+    "__bl_014_review_pending__": "ja/ko/es translations for brief/match/reach/insight + descriptions are LLM-generated; awaiting native-speaker review per BL-014"
   },
   "topbar": {
     "searchPlaceholder": "Buscar KOLs, campañas, correos electrónicos...",

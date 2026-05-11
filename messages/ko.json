@@ -4,6 +4,14 @@
     "batchRateLimitExceeded": "일괄 전송 횟수가 너무 많습니다. {retryAfter}초 후에 다시 시도하세요."
   },
   "nav": {
+    "brief": "브리프",
+    "briefDescription": "제품과 캠페인 입력 정의",
+    "match": "매치",
+    "matchDescription": "목표에 맞는 AI 추천 KOL",
+    "reach": "리치",
+    "reachDescription": "이메일 아웃리치 및 답신 관리",
+    "insight": "인사이트",
+    "insightDescription": "결과, ROI, 회고",
     "dashboard": "대시보드",
     "kolDiscovery": "KOL 발견",
     "kolDatabase": "KOL 데이터베이스",
@@ -11,7 +19,17 @@
     "emailCenter": "이메일 센터",
     "knowledgeBase": "지식 베이스",
     "analytics": "분석",
-    "settings": "설정"
+    "settings": "설정",
+    "__deprecated_by_bl_064__": [
+      "dashboard",
+      "kolDiscovery",
+      "kolDatabase",
+      "campaigns",
+      "emailCenter",
+      "knowledgeBase",
+      "analytics"
+    ],
+    "__bl_014_review_pending__": "ja/ko/es translations for brief/match/reach/insight + descriptions are LLM-generated; awaiting native-speaker review per BL-014"
   },
   "topbar": {
     "searchPlaceholder": "KOL, 캠페인, 이메일 등 검색",
