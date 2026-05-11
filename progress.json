@@ -33,7 +33,7 @@
   "role_assignments": null,
   "evaluator_feedback": {
     "BL-064-F006": "PASS — staging spot check 用户走完，staging redeploy @ aff4369 = main HEAD（含 redirect 缩减运行时 fix）",
-    "BL-064-F007-immediate": "PASS — prod redeploy 2 次（b944d03 + 9b1b15b 把 signoff doc 同步上线）；audit script PASS=18 FAIL=0 WARN=1；24h monitor 起 2026-05-11 18:42 北京 / 收 2026-05-12 18:42 北京；prod UI spot check 待用户"
+    "BL-064-F007-immediate": "PASS — prod redeploy 2 次（b944d03 + 9b1b15b 把 signoff doc 同步上线）；audit script PASS=18 FAIL=0 WARN=1；24h monitor 起 2026-05-11 18:42 北京 / 收 2026-05-12 18:42 北京；prod UI spot check PASS 用户 18:50 北京 ack（4 项 § 全过 — 5 redirect + 6 kept + /campaigns/[id] parametric + sidebar 4-item 5-locale activeNav 高亮）"
   },
   "generator_handoff": null,
   "session_notes": {
