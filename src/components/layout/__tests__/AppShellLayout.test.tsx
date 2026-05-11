@@ -44,16 +44,17 @@ describe("AppShellLayout", () => {
         <p>page content</p>
       </AppShellLayout>
     );
-    // Active nav should be Campaigns
+    // BL-064-F003 — /en/campaigns list page maps to the Match nav item
+    // (adjudication #4); the legacy "Campaigns" top-level nav is gone.
     const active = document.querySelector("a[aria-current='page']");
-    expect(active?.textContent).toContain("Campaigns");
+    expect(active?.textContent).toContain("Match");
     // Page title mirrors the active nav label
-    expect(screen.getByRole("heading", { name: "Campaigns" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Match" })).toBeInTheDocument();
     // children render inside main
     expect(screen.getByText("page content").closest("main")).not.toBeNull();
   });
 
-  it("falls back to dashboard when pathname doesn't match any nav", () => {
+  it("falls back to insight (canonical landing) when pathname doesn't match any nav", () => {
     // re-mock usePathname to a non-matching path by re-importing is overkill;
     // instead mount with a child that is enough to prove the layout renders.
     renderIntl(

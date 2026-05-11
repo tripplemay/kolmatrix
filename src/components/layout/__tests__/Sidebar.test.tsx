@@ -53,9 +53,11 @@ describe("Sidebar", () => {
   });
 
   it("derives the active nav item from the current pathname", () => {
+    // BL-064-F003 — /campaigns list page maps to the Match nav item
+    // (adjudication #4); the legacy "Campaigns" sidebar label is gone.
     pathnameRef.value = "/en/campaigns";
     const { container } = renderIntl(<Sidebar user={user} />);
     const active = container.querySelector("a[aria-current='page']");
-    expect(active?.textContent).toContain("Campaigns");
+    expect(active?.textContent).toContain("Match");
   });
 });

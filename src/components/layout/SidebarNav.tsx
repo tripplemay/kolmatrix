@@ -24,12 +24,15 @@ export function SidebarNav() {
       <ul className="flex flex-col gap-1">
         {NAV_ITEMS.map((item) => {
           const isActive = item.id === activeId;
-          const key = item.i18nKey.replace(/^nav\./, "");
+          const labelKey = item.i18nKey.replace(/^nav\./, "");
+          const descKey = item.descriptionKey.replace(/^nav\./, "");
+          const description = t(descKey);
           return (
             <li key={item.id}>
               <Link
                 href={`/${locale}${item.href}`}
                 aria-current={isActive ? "page" : undefined}
+                title={description}
                 className={cn(
                   "flex items-center gap-3 px-3.5 py-2.5 text-[14px] font-medium transition-colors duration-200",
                   isActive
@@ -40,7 +43,7 @@ export function SidebarNav() {
                 <span className="material-symbols-outlined text-[20px]" aria-hidden>
                   {item.icon}
                 </span>
-                <span>{t(key)}</span>
+                <span>{t(labelKey)}</span>
               </Link>
             </li>
           );

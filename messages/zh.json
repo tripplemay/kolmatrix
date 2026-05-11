@@ -4,6 +4,14 @@
     "batchRateLimitExceeded": "批量发送次数过多，请在 {retryAfter} 秒后重试。"
   },
   "nav": {
+    "brief": "概要",
+    "briefDescription": "输入产品与活动需求",
+    "match": "匹配",
+    "matchDescription": "AI 推荐契合目标的 KOL",
+    "reach": "触达",
+    "reachDescription": "邮件外联与回复管理",
+    "insight": "洞察",
+    "insightDescription": "结果复盘、ROI 与周报",
     "dashboard": "仪表盘",
     "kolDiscovery": "KOL 发现",
     "kolDatabase": "KOL 数据库",

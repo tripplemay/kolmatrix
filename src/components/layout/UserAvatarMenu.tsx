@@ -95,7 +95,19 @@ export function UserAvatarMenu({ user, role, onSignOut }: UserAvatarMenuProps) {
           </div>
           <div className="bg-outline-variant/40 mx-2 my-1 h-px" />
           <MenuItem icon="person">{t("profile")}</MenuItem>
-          <MenuItem icon="settings">{t("settings")}</MenuItem>
+          {/* BL-064-F003 adjudication #1 — Settings 移入 user-menu dropdown
+              (从侧栏 nav 移出)；4-item IA 不再含 Settings */}
+          <Link
+            href={`/${locale}/settings`}
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="text-on-surface-variant hover:text-cyan hover:bg-surface-high/60 flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2 text-left text-[13px] transition-colors"
+          >
+            <span className="material-symbols-outlined text-[18px]" aria-hidden>
+              settings
+            </span>
+            {t("settings")}
+          </Link>
           {showAdmin ? (
             <div data-testid="user-avatar-admin-section">
               <div className="bg-outline-variant/40 mx-2 my-1 h-px" />

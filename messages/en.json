@@ -4,6 +4,14 @@
     "batchRateLimitExceeded": "Too many batch sends. Retry after {retryAfter}s."
   },
   "nav": {
+    "brief": "Brief",
+    "briefDescription": "Define your product and campaign inputs",
+    "match": "Match",
+    "matchDescription": "AI-recommended KOLs for your goals",
+    "reach": "Reach",
+    "reachDescription": "Email outreach and replies",
+    "insight": "Insight",
+    "insightDescription": "Results, ROI, and retrospectives",
     "dashboard": "Dashboard",
     "kolDiscovery": "KOL Discovery",
     "kolDatabase": "KOL Database",
