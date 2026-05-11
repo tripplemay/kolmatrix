@@ -66,30 +66,43 @@ type IaRedirectRule = {
 };
 
 const IA_REDIRECT_RULES: ReadonlyArray<IaRedirectRule> = [
-  // /campaigns special cases (must precede generic /campaigns prefix)
-  { pattern: /^\/campaigns\/new$/, resolve: () => "/brief?action=new" },
+  // BL-064-F005 fix-round-2 — F002 redirect scope is constrained to
+  // *content-equivalent* sources. The new IA shells (F001 A2 embed-old)
+  // each embed ONE old page:
+  //
+  //   /brief    embeds /knowledge-base
+  //   /match    embeds /discovery
+  //   /reach    embeds /outreach
+  //   /insight  embeds /dashboard
+  //
+  // Routes whose content lives elsewhere (campaigns form / roi cards /
+  // weekly-report) cannot be safely 302'd to the new IA — the user
+  // would land on a shell that doesn't render what they came for.
+  // Those stay as kept deep-link paths until the relevant Phase 2
+  // batch wires the content into the new shells:
+  //
+  //   /campaigns       → kept; BL-066 makes /match honor view=campaigns
+  //   /campaigns/new   → kept; BL-069 wires /brief form
+  //   /roi             → kept; BL-070 unifies /insight + /roi
+  //   /weekly-report   → kept; BL-070 unifies under /insight
+  //   /analytics       → kept; BL-070 unifies under /insight
+  //
+  // Only /campaigns/[id] still redirects to /match?campaignId=:id per
+  // adjudication §B — BL-066 will land the matching renderer; until
+  // then users see Discovery with the campaignId param visible.
   {
-    pattern: /^\/campaigns\/([^/?]+)(\?.*)?$/,
+    // Negative lookahead — `/campaigns/new` is a kept path (see comment
+    // above); only treat single-segment subpaths as id captures.
+    pattern: /^\/campaigns\/(?!new$)([^/?]+)(\?.*)?$/,
     resolve: (m) => `/match?campaignId=${encodeURIComponent(m[1]!)}`,
   },
-  // BL-064-F005 fix — /campaigns LIST redirect to /match?view=campaigns
-  // was the adjudicated target (§4), but /match currently embeds the
-  // Discovery page (F001 A2) and has no `view=campaigns` handling. The
-  // redirect would silently take users to Discovery, hiding the actual
-  // campaigns list. Defer the /campaigns list redirect to BL-066 (when
-  // Match learns view=campaigns); for BL-064 we KEEP /campaigns list
-  // as a deep-link path (same handling as /assets /crm /kols/[id] per
-  // adjudication §3). Sidebar's "Match" item still highlights /campaigns
-  // via deriveActiveNav.
-  // Prefix-rewrite redirects (sub-routes inherit via tail capture)
+  // Content-equivalent prefix-rewrite redirects (sub-routes inherit
+  // via tail capture).
   { pattern: /^\/dashboard(\/.*)?$/, resolve: (m) => `/insight${m[1] ?? ""}` },
   { pattern: /^\/discovery(\/.*)?$/, resolve: (m) => `/match${m[1] ?? ""}` },
   { pattern: /^\/database(\/.*)?$/, resolve: (m) => `/match${m[1] ?? ""}` },
   { pattern: /^\/knowledge-base(\/.*)?$/, resolve: (m) => `/brief${m[1] ?? ""}` },
   { pattern: /^\/outreach(\/.*)?$/, resolve: (m) => `/reach${m[1] ?? ""}` },
-  { pattern: /^\/roi(\/.*)?$/, resolve: (m) => `/insight${m[1] ?? ""}` },
-  { pattern: /^\/weekly-report(\/.*)?$/, resolve: (m) => `/insight${m[1] ?? ""}` },
-  { pattern: /^\/analytics(\/.*)?$/, resolve: (m) => `/insight${m[1] ?? ""}` },
 ];
 
 export function resolveIaRefactorRedirect(barePath: string): string | null {

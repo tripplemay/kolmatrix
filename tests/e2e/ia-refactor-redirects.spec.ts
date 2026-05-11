@@ -24,20 +24,19 @@ const LOCALES = ["en", "zh", "ja", "ko", "es"] as const;
 // with extra query/hash that middleware preserves (e.g. /campaigns →
 // /match?view=campaigns).
 const REDIRECT_CASES: Array<{ from: string; expect: RegExp; note?: string }> = [
+  // BL-064-F005 fix-round-2 — F002 redirect scope is restricted to
+  // content-equivalent sources. Routes whose content lives elsewhere
+  // (campaigns form / roi cards / weekly-report) are now kept paths
+  // (asserted in the KEPT_PATHS describe below). See
+  // src/middleware-helpers.ts IA_REDIRECT_RULES for the canonical
+  // contract and the deferred-to-batch mapping.
   { from: "/dashboard", expect: /\/insight(\/|\?|$)/ },
   { from: "/discovery", expect: /\/match(\/|\?|$)/ },
   { from: "/database", expect: /\/match(\/|\?|$)/ },
   { from: "/knowledge-base", expect: /\/brief(\/|\?|$)/ },
   { from: "/outreach", expect: /\/reach(\/|\?|$)/ },
-  { from: "/roi", expect: /\/insight(\/|\?|$)/ },
-  { from: "/weekly-report", expect: /\/insight(\/|\?|$)/ },
-  { from: "/analytics", expect: /\/insight(\/|\?|$)/ },
-  // BL-064-F005 fix — /campaigns LIST redirect deferred to BL-066 (the
-  // /match shell doesn't yet honor view=campaigns). List is now a kept
-  // deep-link path; only /campaigns/new + /campaigns/[id] redirect.
-  { from: "/campaigns/new", expect: /\/brief\?action=new/ },
-  // /campaigns/[id] — placeholder uuid; redirect should preserve id
-  // through encodeURIComponent
+  // /campaigns/[id] — still redirects per adjudication §B; BL-066
+  // wires the actual renderer
   {
     from: "/campaigns/abc-123",
     expect: /\/match\?campaignId=abc-123/,
@@ -81,7 +80,15 @@ test.describe("BL-064 — sub-routes intentionally NOT redirected (Adjudication 
     "/crm",
     "/kols/clxyz789",
     "/settings",
-    "/campaigns", // BL-064-F005 fix — list stays until BL-066
+    // BL-064-F005 fix-round-2 — these stay until later batches wire the
+    // new IA shells to render their content (campaigns form / roi /
+    // weekly-report / analytics). See src/middleware-helpers.ts for
+    // the deferred-to-batch mapping.
+    "/campaigns",
+    "/campaigns/new",
+    "/roi",
+    "/weekly-report",
+    "/analytics",
   ];
   for (const path of KEPT_PATHS) {
     test(`${path} stays in legacy area (no 302 to new IA)`, async ({ page }) => {

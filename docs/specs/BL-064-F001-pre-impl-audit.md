@@ -153,3 +153,39 @@ CI run 25654625299 e2e 实跑发现：adjudication §4「/campaigns 列表 → /
 
 **回溯 adjudication §4 的最终落点：** `/campaigns 列表`目前作为 kept deep-link 路径（同 /assets /crm /kols/[id]）；BL-066 实装 /match `?view=campaigns` 条件渲染后再启用 redirect。这次偏离 Planner 应回溯到 `docs/adr/`（若 ADR worthy）或仅作 backlog 跟进项（BL-066 范围内）。
 
+---
+
+## 9. fix-round-2: F002 redirect 缩减到 content-equivalent only（2026-05-11 15:30 BJT）
+
+CI run 25656174606 e2e 进一步发现：journey-a 在 `/campaigns/new` 找不到 `input[name="name"]`（/brief embed KB 无新建活动表单）；journey-b 在 `/roi` 找不到 `roi-page-title` testid（/insight embed Dashboard 无 ROI 卡片）。同 §8 同根因：A2 embed-old 单 source 限制。
+
+**Generator 决议（fix-round-2）：** F002 redirect 范围限定为「内容等价」5 条：
+
+| Source | Target | 等价理由 |
+|---|---|---|
+| `/dashboard` | `/insight` | /insight 直接 embed /dashboard |
+| `/discovery` | `/match` | /match 直接 embed /discovery |
+| `/database` | `/match` | BL-065 整页删；/match 显示 discovery KOL 列表（同 KOL 源）|
+| `/knowledge-base` | `/brief` | /brief 直接 embed /knowledge-base |
+| `/outreach` | `/reach` | /reach 直接 embed /outreach（子路径继承）|
+
+**新增 kept deep-link 路径（4 条转入 §3 分类）：**
+
+| Path | 原 adjudication | 实际处置 | Defer 到 |
+|---|---|---|---|
+| `/campaigns/new` | §3 F002 → /brief?action=new | kept | BL-069 wire /brief 含新建表单 |
+| `/roi` | §2 → /insight | kept | BL-070 unify /insight |
+| `/weekly-report` | §2 → /insight | kept | BL-070 unify /insight |
+| `/analytics` | §2 → /insight | kept | BL-070 unify /insight |
+
+**仍按 adjudication redirect 但实战未必完美：** `/campaigns/[id]` → `/match?campaignId=:id` 保留（per §B），但 /match 暂不渲染 detail（看到的是 Discovery 列表 + URL 含 campaignId）。BL-066 wire /match renderer 后这个变得正确。本批次暂可接受。
+
+**影响：**
+- `src/middleware-helpers.ts` `IA_REDIRECT_RULES`：减到 5 条（含 /campaigns/[id]） + 嵌入 deferred-to-batch 映射说明
+- `src/__tests__/middleware-helpers.test.ts`：4 个 kept 路径期 `null`
+- `tests/e2e/ia-refactor-redirects.spec.ts`：REDIRECT_CASES 减；KEPT_PATHS 增
+- `docs/specs/BL-064-F006-staging-spot-check.md`：§3 改成 5 redirect + 6 kept 双段
+- `BL-064-top-level-ia-refactor-spec.md`（原 spec）：F002 acceptance 缩减落地由 Planner 在 done 阶段定夺（不该 building 期改 spec）
+
+**Planner 回溯责任：** done 阶段回头审 spec §3 F002 acceptance + 决策点 #B（部分仍 valid）+ 决策点 #4（/campaigns 列表降级）+ 决策点 #2（analytics 降级）；如 ADR worthy 加新 ADR；否则只是 backlog 跟进 BL-066/BL-069/BL-070 加 redirect。
+
