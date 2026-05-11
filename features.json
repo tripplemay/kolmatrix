@@ -71,7 +71,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 8.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "现 e2e spec 文件全部更新：路径替换 + assertion 适配 + 必要 case 重写",
       "优先更新：tests/e2e/marketer.setup.ts（login 后跳 /insight 而非 /dashboard）+ database-fidelity.spec.ts（/database → /match）+ marketer-dashboard.spec.ts（/dashboard → /insight）+ login-cinematic.spec.ts",
