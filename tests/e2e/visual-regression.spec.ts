@@ -266,7 +266,14 @@ test.describe("Authenticated BM1 visual regression", () => {
     });
   });
 
-  test("database full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
+  test.skip("database full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
+    // BL-064 / BL-065 — /database is being decommissioned. F002 302's
+    // it to /match (Discovery content); the legacy database-table-
+    // wrapper / database-empty testids no longer mount under that URL,
+    // so the baseline cannot be regenerated until BL-065 removes the
+    // route entirely (at which point this test is deleted, not
+    // re-baselined). Skipped at the test level so the rest of the
+    // visual suite can refresh.
     test.skip(
       shouldSkipMissingBaseline("en-database.png", test.info()),
       "Baseline en-database.png missing — run the 'Update visual baselines' workflow."
@@ -334,7 +341,13 @@ test.describe("Authenticated BM2 visual regression", () => {
     });
   });
 
-  test("campaign detail full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
+  test.skip("campaign detail full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
+    // BL-064-F002 — /campaigns/[id] 302→/match?campaignId=:id (per
+    // adjudication §4 #B). /match currently embeds /discovery and does
+    // NOT yet render campaign detail (BL-066 wires that). The legacy
+    // campaign-detail-title testid no longer mounts under the redirect
+    // target, so the baseline cannot be regenerated until BL-066
+    // ships. Skipped at the test level.
     test.skip(
       shouldSkipMissingBaseline("en-campaign-detail.png", test.info()),
       "Baseline en-campaign-detail.png missing — run the 'Update visual baselines' workflow."
