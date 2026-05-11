@@ -21,7 +21,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/middleware.ts 或各老路由 page.tsx 加 302 redirect：/dashboard → /insight / /discovery → /match / /database → /match / /campaigns → /brief 或 /match?view=campaigns / /campaigns/new → /brief?action=new / /campaigns/[id] → /match?campaignId=:id（决策点 #B 选 /match） / /knowledge-base → /brief / /outreach → /reach / /outreach/composer → /reach/composer / /reports → /insight",
       "redirect HTTP status = 302 临时（决策点 #C 选 302，保留 revert 灵活性）",
