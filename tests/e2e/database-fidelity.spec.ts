@@ -24,7 +24,13 @@ import { expect, test } from "@playwright/test";
 // hydrated from cookies + localStorage.
 test.use({ storageState: "playwright/.auth/marketer.json" });
 
-test.describe("/database fidelity (MVP-vf-F003)", () => {
+// BL-064-F005 — /database route is 302-redirected to /match (F002) and
+// the page itself is scheduled for removal in BL-065 (Phase 2 Match
+// rewrite). The fidelity assertions below target the legacy /database
+// markup which no longer renders, so the whole describe is skipped.
+// Re-enable once BL-065 Match page lands with database-equivalent
+// controls; or delete this file when BL-070 cleans up legacy code.
+test.describe.skip("/database fidelity (MVP-vf-F003) — DECOMMISSIONED BY BL-064/BL-065", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/en/database");
     // Either the table wrapper or the empty-state mounts — the KPI

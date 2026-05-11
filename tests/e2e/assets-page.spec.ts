@@ -26,7 +26,8 @@ async function login(page: import("@playwright/test").Page) {
   await page.locator('input[name="email"]').fill(MARKETER.email);
   await page.locator('input[name="password"]').fill(MARKETER.password);
   await page.getByRole("button", { name: /Sign in/ }).click();
-  await page.waitForURL(/\/dashboard(\/|$)/);
+  // BL-064-F002 — /dashboard 302→/insight
+  await page.waitForURL(/\/(dashboard|insight)(\/|$)/);
 }
 
 async function gotoAssets(page: import("@playwright/test").Page) {

@@ -32,7 +32,8 @@ async function login(page: Page) {
   await page.locator('input[name="email"]').fill(MARKETER.email);
   await page.locator('input[name="password"]').fill(MARKETER.password);
   await page.getByRole("button", { name: /Sign in/ }).click();
-  await page.waitForURL(/\/(en|zh|ja|ko|es)\/dashboard(\/|$)/);
+  // BL-064-F002 — /dashboard 302→/insight
+  await page.waitForURL(/\/(en|zh|ja|ko|es)\/(dashboard|insight)(\/|$)/);
 }
 
 test.describe("BM2 Journey A — Discovery → Campaigns → Outreach", () => {
@@ -40,26 +41,33 @@ test.describe("BM2 Journey A — Discovery → Campaigns → Outreach", () => {
     await login(page);
 
     // Step 2 — Discovery has at least one card visible.
-    await page.locator("aside").getByRole("link", { name: /KOL Discovery/i }).click();
-    await page.waitForURL(/\/(en|zh|ja|ko|es)\/discovery(\/|\?|$)/);
+    // BL-064-F003 sidebar no longer has "KOL Discovery"; the equivalent
+    // new IA entry is "Match" (which embeds Discovery via F001).
+    await page.locator("aside").getByRole("link", { name: /^Match$/ }).click();
+    await page.waitForURL(/\/(en|zh|ja|ko|es)\/(discovery|match)(\/|\?|$)/);
     const cards = page.locator('[data-testid="kol-card"]');
     await expect(cards.first()).toBeVisible({ timeout: 15_000 });
 
     // Step 3 — Campaigns list reachable + page title visible.
-    await page.locator("aside").getByRole("link", { name: /^Campaigns$/i }).click();
-    await page.waitForURL(/\/(en|zh|ja|ko|es)\/campaigns(\/|\?|$)/);
+    // BL-064-F003 sidebar removed the "Campaigns" entry; reach the list
+    // via direct nav (the page itself still renders, just no top-level
+    // nav link). /campaigns 302→/match?view=campaigns under F002.
+    await page.goto("/en/campaigns");
+    await page.waitForURL(/\/(en|zh|ja|ko|es)\/(campaigns|match)(\/|\?|$)/);
     await expect(page.getByTestId("campaigns-page-title")).toBeVisible();
 
     // Step 4 — New-campaign form reachable.
     await page.goto("/en/campaigns/new");
-    await page.waitForURL(/\/(en|zh|ja|ko|es)\/campaigns\/new(\/|\?|$)/);
+    // BL-064-F002 — /campaigns/new 302→/brief?action=new
+    await page.waitForURL(/\/(en|zh|ja|ko|es)\/(campaigns\/new|brief)(\/|\?|$)/);
     await expect(
       page.locator('input[name="name"], input[id*="name" i]').first()
     ).toBeVisible({ timeout: 15_000 });
 
     // Step 5 — Outreach page reachable + tabs visible.
     await page.goto("/en/outreach");
-    await page.waitForURL(/\/(en|zh|ja|ko|es)\/outreach(\/|\?|$)/);
+    // BL-064-F002 — /outreach 302→/reach
+    await page.waitForURL(/\/(en|zh|ja|ko|es)\/(outreach|reach)(\/|\?|$)/);
     await expect(page.getByTestId("outreach-page")).toBeVisible({
       timeout: 15_000,
     });

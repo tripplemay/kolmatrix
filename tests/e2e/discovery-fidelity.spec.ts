@@ -24,13 +24,18 @@ async function login(page: Page) {
   await page.locator('input[name="email"]').fill(MARKETER.email);
   await page.locator('input[name="password"]').fill(MARKETER.password);
   await page.getByRole("button", { name: /Sign in/ }).click();
-  await page.waitForURL(/\/(en|zh|ja|ko|es)\/dashboard(\/|$)/);
+  // BL-064-F002 — /dashboard 302→/insight; accept either tail
+  await page.waitForURL(/\/(en|zh|ja|ko|es)\/(dashboard|insight)(\/|$)/);
 }
 
 test.describe("/discovery fidelity (MVP-vf-F002)", () => {
   test.beforeEach(async ({ page }) => {
     await login(page);
-    await page.goto("/en/discovery");
+    // BL-064-F002 — /en/discovery now 302-redirects to /en/match which
+    // embeds the same Discovery page component (F001 A2 embed-old).
+    // Hitting /en/match directly avoids the redirect hop while still
+    // proving the discovery UI mounts under the new IA shell.
+    await page.goto("/en/match");
     await expect(page.getByTestId("discovery-grid")).toBeVisible({
       timeout: 15_000,
     });
@@ -105,7 +110,9 @@ test.describe("/discovery fidelity (MVP-vf-F002)", () => {
   }) => {
     // Apply a single platform filter via URL so the test is self-contained
     // (the form submit dance would re-render twice).
-    await page.goto("/en/discovery?platforms=youtube");
+    // BL-064-F002 — /en/discovery → /en/match (embed-old); query params
+    // pass through since the page reads searchParams server-side.
+    await page.goto("/en/match?platforms=youtube");
     await expect(page.getByTestId("discovery-grid")).toBeVisible({
       timeout: 15_000,
     });

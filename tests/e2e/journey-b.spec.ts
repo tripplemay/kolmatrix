@@ -31,7 +31,8 @@ async function login(page: Page) {
   await page.locator('input[name="email"]').fill(MARKETER.email);
   await page.locator('input[name="password"]').fill(MARKETER.password);
   await page.getByRole("button", { name: /Sign in/ }).click();
-  await page.waitForURL(/\/(en|zh|ja|ko|es)\/dashboard(\/|$)/);
+  // BL-064-F002 — /dashboard 302→/insight
+  await page.waitForURL(/\/(en|zh|ja|ko|es)\/(dashboard|insight)(\/|$)/);
 }
 
 test.describe("BM2 Journey B — Campaign → ROI → Weekly Report", () => {
@@ -39,8 +40,10 @@ test.describe("BM2 Journey B — Campaign → ROI → Weekly Report", () => {
     await login(page);
 
     // Step 2 — Campaigns list reachable.
-    await page.locator("aside").getByRole("link", { name: /^Campaigns$/i }).click();
-    await page.waitForURL(/\/(en|zh|ja|ko|es)\/campaigns(\/|\?|$)/);
+    // BL-064-F003 sidebar removed the "Campaigns" nav entry; reach via
+    // direct nav. /campaigns 302→/match?view=campaigns under F002.
+    await page.goto("/en/campaigns");
+    await page.waitForURL(/\/(en|zh|ja|ko|es)\/(campaigns|match)(\/|\?|$)/);
     await expect(page.getByTestId("campaigns-page-title")).toBeVisible({
       timeout: 15_000,
     });
@@ -52,7 +55,8 @@ test.describe("BM2 Journey B — Campaign → ROI → Weekly Report", () => {
 
     // Step 4 — ROI page reachable + KPI strip visible.
     await page.goto("/en/roi");
-    await page.waitForURL(/\/(en|zh|ja|ko|es)\/roi(\/|\?|$)/);
+    // BL-064-F002 — /roi 302→/insight
+    await page.waitForURL(/\/(en|zh|ja|ko|es)\/(roi|insight)(\/|\?|$)/);
     await expect(page.getByTestId("roi-page-title")).toBeVisible({
       timeout: 15_000,
     });
@@ -64,7 +68,8 @@ test.describe("BM2 Journey B — Campaign → ROI → Weekly Report", () => {
     // green paths (we don't force a real AI call in CI to keep the
     // suite cost- and credential-free).
     await page.goto("/en/weekly-report");
-    await page.waitForURL(/\/(en|zh|ja|ko|es)\/weekly-report(\/|\?|$)/);
+    // BL-064-F002 — /weekly-report 302→/insight
+    await page.waitForURL(/\/(en|zh|ja|ko|es)\/(weekly-report|insight)(\/|\?|$)/);
     await expect(page.getByTestId("weekly-report-page-title")).toBeVisible({
       timeout: 15_000,
     });

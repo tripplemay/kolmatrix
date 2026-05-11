@@ -31,13 +31,15 @@ async function login(page: import("@playwright/test").Page) {
   await page.locator('input[name="email"]').fill(MARKETER.email);
   await page.locator('input[name="password"]').fill(MARKETER.password);
   await page.getByRole("button", { name: /Sign in/ }).click();
-  await page.waitForURL(/\/dashboard(\/|$)/);
+  // BL-064-F002 — /dashboard 302→/insight
+  await page.waitForURL(/\/(dashboard|insight)(\/|$)/);
 }
 
 async function gotoOutreachWithFirstCampaign(page: import("@playwright/test").Page) {
   await login(page);
   await page.goto("/en/outreach");
-  await page.waitForURL(/\/outreach/);
+  // BL-064-F002 — /outreach 302→/reach (incl. sub-routes)
+  await page.waitForURL(/\/(outreach|reach)/);
   await expect(page.getByTestId("outreach-page")).toBeVisible({ timeout: 10_000 });
   // Pick the first non-empty option in the campaign select; the picker
   // only renders once a campaign is selected (OutreachComposer.tsx:435).

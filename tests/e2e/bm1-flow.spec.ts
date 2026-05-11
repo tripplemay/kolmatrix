@@ -35,7 +35,8 @@ async function login(page: Page) {
   await page.locator('input[name="email"]').fill(MARKETER.email);
   await page.locator('input[name="password"]').fill(MARKETER.password);
   await page.getByRole("button", { name: /Sign in/ }).click();
-  await page.waitForURL(/\/dashboard(\/|$)/);
+  // BL-064-F002 — /dashboard 302→/insight
+  await page.waitForURL(/\/(dashboard|insight)(\/|$)/);
   // BM1-F009: skip waitForLoadState("networkidle") — it does not
   // resolve on staging even when pending requests are zero, and every
   // locator we use afterwards auto-waits for visibility anyway.
@@ -62,7 +63,8 @@ test.describe("BM1 — full marketer journey (F009 E2E)", () => {
       .locator("aside")
       .getByRole("link", { name: /Knowledge Base/i })
       .click();
-    await page.waitForURL(/\/knowledge-base(\/|\?|$)/);
+    // BL-064-F002 — /knowledge-base 302→/brief
+    await page.waitForURL(/\/(knowledge-base|brief)(\/|\?|$)/);
 
     // 3. Open the Add Product modal
     await page.getByTestId("kb-add-product").click();
@@ -98,7 +100,8 @@ test.describe("BM1 — full marketer journey (F009 E2E)", () => {
       .locator("aside")
       .getByRole("link", { name: /KOL Discovery/i })
       .click();
-    await page.waitForURL(/\/discovery(\/|\?|$)/);
+    // BL-064-F002 — /discovery 302→/match
+    await page.waitForURL(/\/(discovery|match)(\/|\?|$)/);
 
     // Pick the first card whose save button is NOT already pressed.
     // Staging accumulates state across test runs (the toggle
@@ -134,7 +137,8 @@ test.describe("BM1 — full marketer journey (F009 E2E)", () => {
       .locator("aside")
       .getByRole("link", { name: /KOL Database/i })
       .click();
-    await page.waitForURL(/\/database(\/|\?|$)/);
+    // BL-064-F002 — /database 302→/match
+    await page.waitForURL(/\/(database|match)(\/|\?|$)/);
     const savedRow = page.locator(`[data-testid="database-row"][data-kol-id="${savedKolId}"]`);
     // Staging revalidatePath round-trip is slower than local dev;
     // allow up to 15s for the newly-saved row to land in /database.
@@ -160,7 +164,8 @@ test.describe("BM1 — full marketer journey (F009 E2E)", () => {
       .locator("aside")
       .getByRole("link", { name: /^Dashboard$/ })
       .click();
-    await page.waitForURL(/\/dashboard(\/|$)/);
+    // BL-064-F002 — /dashboard 302→/insight
+  await page.waitForURL(/\/(dashboard|insight)(\/|$)/);
     // StatCard renders `<value>Products</value>`; assert the label
     // is present (layout) + a positive integer is visible somewhere
     // in the KPI row.

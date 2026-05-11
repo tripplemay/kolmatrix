@@ -33,18 +33,18 @@ async function login(page: Page) {
   await page.locator('input[name="email"]').fill(MARKETER.email);
   await page.locator('input[name="password"]').fill(MARKETER.password);
   await page.getByRole("button", { name: /Sign in/ }).click();
-  await page.waitForURL(/\/dashboard(\/|$)/);
+  // BL-064-F002 — /dashboard 302→/insight
+  await page.waitForURL(/\/(dashboard|insight)(\/|$)/);
 }
 
 test.describe("BM2-F003 · Campaigns list", () => {
   test("renders the page frame and new-campaign CTA", async ({ page }) => {
     await login(page);
 
-    await page
-      .locator("aside")
-      .getByRole("link", { name: /^Campaigns$/ })
-      .click();
-    await page.waitForURL(/\/campaigns(\/|\?|$)/);
+    // BL-064-F003 sidebar removed the "Campaigns" nav entry; reach
+    // /campaigns via direct goto (F002 302→/match?view=campaigns).
+    await page.goto("/en/campaigns");
+    await page.waitForURL(/\/(campaigns|match)(\/|\?|$)/);
 
     // Title always renders regardless of row count. AppShell's Topbar
     // also renders a "Campaigns" heading, so we scope to the page-

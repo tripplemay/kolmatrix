@@ -21,7 +21,8 @@ async function login(page: import("@playwright/test").Page) {
   await page.locator('input[name="email"]').fill(MARKETER.email);
   await page.locator('input[name="password"]').fill(MARKETER.password);
   await page.getByRole("button", { name: /Sign in/ }).click();
-  await page.waitForURL(/\/dashboard(\/|$)/);
+  // BL-064-F002 — /dashboard 302→/insight
+  await page.waitForURL(/\/(dashboard|insight)(\/|$)/);
 }
 
 function localePrefix(url: string): string {
@@ -61,7 +62,8 @@ test.describe("BL-025-F008 send-to-outreach", () => {
     const sendBtn = page.getByRole("button", { name: /Send to Outreach/i });
     await expect(sendBtn).toBeVisible();
     await sendBtn.click();
-    await page.waitForURL(/\/outreach\?prefilledAssetId=/);
+    // BL-064-F002 — /outreach 302→/reach; both forms acceptable.
+    await page.waitForURL(/\/(outreach|reach)\?prefilledAssetId=/);
 
     await expect(page.getByTestId("outreach-prefilled-banner")).toBeVisible();
     await expect(page.getByTestId("outreach-prefilled-banner")).toContainText(

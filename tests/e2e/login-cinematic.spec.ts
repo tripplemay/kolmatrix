@@ -41,15 +41,18 @@ test.describe("Login — cinematic layout + credentials flow", () => {
     await expect(google).toHaveAttribute("aria-disabled", "true");
   });
 
-  test("logs in via /en/login with seed marketer credentials and lands on /dashboard", async ({
+  test("logs in via /en/login with seed marketer credentials and lands on the post-login route", async ({
     page,
   }) => {
     await page.goto("/en/login");
     await page.locator('input[name="email"]').fill(MARKETER.email);
     await page.locator('input[name="password"]').fill(MARKETER.password);
     await page.getByRole("button", { name: /^Sign in$/ }).click();
-    await page.waitForURL(/\/dashboard(\/|$)/);
-    expect(page.url()).toMatch(/\/dashboard(\/|$)/);
+    // BL-064-F002 — middleware 302-redirects /dashboard → /insight,
+    // so the URL the browser lands on is /<locale>/insight. Accept
+    // both during Phase 1 transition.
+    await page.waitForURL(/\/(dashboard|insight)(\/|$)/);
+    expect(page.url()).toMatch(/\/(dashboard|insight)(\/|$)/);
   });
 
   test("/zh/login surfaces the Chinese welcome copy", async ({ page }) => {

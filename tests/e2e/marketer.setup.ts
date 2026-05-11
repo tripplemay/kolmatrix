@@ -29,11 +29,11 @@ setup("authenticate marketer", async ({ page }) => {
   await page.locator('input[name="password"]').fill(MARKETER.password);
   await page.getByRole("button", { name: /Sign in/ }).click();
 
-  // Match the laxer pattern marketer-dashboard.spec.ts and
-  // login-cinematic.spec.ts already use — accepts both
-  // `/dashboard` (Auth.js raw redirect) and `/<locale>/dashboard`
-  // (next-intl middleware rewrite).
-  await page.waitForURL(/\/dashboard(\/|$)/);
+  // BL-064-F002+F005 — middleware now 302-redirects /dashboard →
+  // /insight, so the final URL after Auth.js redirect+i18n rewrite is
+  // `/<locale>/insight`. Accept both forms during the Phase 1 transition
+  // so the storageState capture is resilient to either redirect chain.
+  await page.waitForURL(/\/(dashboard|insight)(\/|$)/);
 
   // Wait for the KPI row to actually mount before persisting state.
   // Otherwise we could race ahead and save cookies for a session

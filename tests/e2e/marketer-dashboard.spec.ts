@@ -28,9 +28,10 @@ async function login(page: import("@playwright/test").Page) {
   await page.locator('input[name="email"]').fill(MARKETER.email);
   await page.locator('input[name="password"]').fill(MARKETER.password);
   await page.getByRole("button", { name: /Sign in/ }).click();
-  // Accept both `/dashboard` (before next-intl locale rewrite) and
-  // `/<locale>/dashboard` (after). Both prove the redirect worked.
-  await page.waitForURL(/\/dashboard(\/|$)/);
+  // BL-064-F002 — middleware now 302-redirects /dashboard → /insight,
+  // so the final landing URL is /<locale>/insight. Accept both during
+  // the Phase 1 transition.
+  await page.waitForURL(/\/(dashboard|insight)(\/|$)/);
   // BM1-F009: do NOT call waitForLoadState("networkidle") here — on the
   // staging build it never resolves (even with pending=0 for 30s) while
   // all downstream locators auto-wait for visibility anyway. Previously
@@ -39,15 +40,12 @@ async function login(page: import("@playwright/test").Page) {
 }
 
 test.describe("Marketer — login + dashboard flow", () => {
-  test("logs in via /login with seed credentials and lands on /dashboard", async ({ page }) => {
+  test("logs in via /login with seed credentials and lands on the canonical post-login route", async ({ page }) => {
     await login(page);
-    // BM1-F009 regression: assert the URL is locale-prefixed, not bare
-    // `/dashboard`. Before the fix, `signIn(..., redirectTo: "/dashboard")`
-    // left the browser at `/dashboard` while the RSC payload was for
-    // `/en/dashboard`, breaking subsequent client-side navigation on
-    // staging. `resolveTargetLocale()` in the server action now prefixes
-    // the redirect target so URL + content stay in sync.
-    expect(page.url()).toMatch(/\/(en|zh|ja|ko|es)\/dashboard(\/|$)/);
+    // BM1-F009 regression: URL must be locale-prefixed. BL-064-F002
+    // adds the /dashboard → /insight 302; either tail is acceptable
+    // during transition.
+    expect(page.url()).toMatch(/\/(en|zh|ja|ko|es)\/(dashboard|insight)(\/|$)/);
   });
 
   test("dashboard greets Sarah Chen and surfaces KPI cards", async ({ page }) => {
@@ -64,30 +62,29 @@ test.describe("Marketer — login + dashboard flow", () => {
     ).toBeVisible();
   });
 
-  test("switching locale EN → ZH updates nav labels from 'Dashboard' to '仪表盘'", async ({
+  test("switching locale EN → ZH updates new IA nav labels (Insight → 洞察)", async ({
     page,
   }) => {
     await login(page);
-    // Sanity: English label present first.
-    await expect(page.getByRole("link", { name: "Dashboard" })).toBeVisible();
+    // BL-064-F003 sidebar is now 4-item; "Insight" is the new IA label
+    // that replaces "Dashboard" (the old top-level nav entry).
+    await expect(
+      page.locator("aside").getByRole("link", { name: "Insight" })
+    ).toBeVisible();
 
     await page.getByRole("button", { name: "Change language" }).click();
     await page.getByRole("menuitem", { name: "中文（简体）" }).click();
 
     await page.waitForURL(/\/zh\//);
-    await expect(page.getByRole("link", { name: "仪表盘" })).toBeVisible();
+    await expect(
+      page.locator("aside").getByRole("link", { name: "洞察" })
+    ).toBeVisible();
   });
 
-  test("clicking 'KOL Database' in the sidebar routes to /database", async ({ page }) => {
+  test("BL-064 — clicking 'Match' in the sidebar routes to /match (replaces legacy KOL Database)", async ({ page }) => {
     await login(page);
-    // BM1-F007 added a Quick Actions row with an identically-labelled
-    // button; scope to the sidebar nav so we only match the canonical
-    // sidebar link.
-    await page
-      .locator("aside")
-      .getByRole("link", { name: "KOL Database" })
-      .click();
-    await page.waitForURL(/\/database(\/|$)/);
-    expect(page.url()).toMatch(/\/database(\/|$)/);
+    await page.locator("aside").getByRole("link", { name: "Match" }).click();
+    await page.waitForURL(/\/match(\/|\?|$)/);
+    expect(page.url()).toMatch(/\/match(\/|\?|$)/);
   });
 });
