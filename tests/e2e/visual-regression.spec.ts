@@ -205,11 +205,9 @@ test.describe("Authenticated BM1 visual regression", () => {
       "Baseline en-knowledge-base.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
-    await page
-      .locator("aside")
-      .getByRole("link", { name: /Knowledge Base/i })
-      .click();
-    // BL-064-F002 — /knowledge-base 302→/brief
+    // BL-064-F003 sidebar dropped the "Knowledge Base" link; go direct
+    // (F002 302→/brief, content unchanged).
+    await page.goto("/en/knowledge-base");
     await page.waitForURL(/\/(knowledge-base|brief)(\/|\?|$)/);
     await page.waitForSelector('[data-testid="kb-grid"], [data-testid="kb-empty"]');
     await fontsReady(page);
@@ -231,11 +229,9 @@ test.describe("Authenticated BM1 visual regression", () => {
       "Baseline en-discovery.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
-    await page
-      .locator("aside")
-      .getByRole("link", { name: /KOL Discovery/i })
-      .click();
-    // BL-064-F002 — /discovery 302→/match
+    // BL-064-F003 sidebar dropped the "KOL Discovery" link; go direct
+    // (F002 302→/match, embeds Discovery content unchanged).
+    await page.goto("/en/discovery");
     await page.waitForURL(/\/(discovery|match)(\/|\?|$)/);
     // BM2-F011-001: wait for BOTH grid and summary, not the OR shortcut.
     // Workflow run 24953605628 captured a 1280x1703 baseline because
@@ -276,11 +272,10 @@ test.describe("Authenticated BM1 visual regression", () => {
       "Baseline en-database.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
-    await page
-      .locator("aside")
-      .getByRole("link", { name: /KOL Database/i })
-      .click();
-    // BL-064-F002 — /database 302→/match
+    // BL-064-F003 sidebar dropped the "KOL Database" link + BL-065
+    // will delete /database; F002 302→/match (Discovery content) is
+    // the transitional substitute.
+    await page.goto("/en/database");
     await page.waitForURL(/\/(database|match)(\/|\?|$)/);
     await page.waitForSelector(
       '[data-testid="database-table-wrapper"], [data-testid="database-empty"]'
@@ -313,10 +308,10 @@ test.describe("Authenticated BM2 visual regression", () => {
       "Baseline en-campaigns.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
-    await page
-      .locator("aside")
-      .getByRole("link", { name: /^Campaigns$/i })
-      .click();
+    // BL-064-F003 sidebar dropped "Campaigns"; the list page is kept
+    // (BL-064-F005 fix-round-2 — /campaigns stays as deep-link until
+    // BL-066 wires /match view=campaigns).
+    await page.goto("/en/campaigns");
     await page.waitForURL(/\/campaigns(\/|\?|$)/);
     await page.waitForSelector('[data-testid="campaigns-page-title"]');
     await fontsReady(page);
