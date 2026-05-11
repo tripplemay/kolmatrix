@@ -37,7 +37,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 6.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/components/app-shell/Nav.tsx（或 grep 同义文件）从 7 路由改为 4 路由",
       "4 路由顺序：Brief → Match → Reach → Insight（决策点 #D，教学性强）",
