@@ -1,11 +1,11 @@
 {
-  "status": "reverifying",
+  "status": "done",
   "user_goal": "BL-063-isSaved-decommission — ADR-013 AI Native 转向 Phase 1 第一批：拆除 KOL is_saved 字段（schema migration + 9+ 处 query 改 + 测试更新 + 数据迁移）。6 features：F001 quick-fix detail.ts 去 isSaved filter（unblock 内部 dogfood）/ F002 schema migration 删 is_saved 字段 + backup 表 / F003 9+ 处 query 引用全清（lib/campaigns + lib/crm + database/stats + database/actions 等）/ F004 测试更新（删 BL-060 加的 isSaved 维度 case + 加 3 新全量池 case）/ F005 staging dry-run + 数据 audit / F006 prod migration ops（用户手动触发 + 24h 监控 + signoff）。预估 ~3-5 day Generator + 1 day Reviewer。本批次 done 后 BL-064 顶层 IA 改造启动。关联 docs/specs/BL-063-isSaved-decommission-spec.md / ADR-013-ai-native-product-pivot / docs/product/ai-native-roadmap.md §3。",
   "total_features": 6,
   "completed_features": 6,
   "fix_rounds": 1,
   "current_sprint": "BL-063-isSaved-decommission",
-  "last_updated": "2026-05-11T10:35+0800",
+  "last_updated": "2026-05-11T13:10+0800",
   "reference_docs": [
     "docs/specs/BL-063-isSaved-decommission-spec.md",
     "docs/adr/ADR-013-ai-native-product-pivot.md",
@@ -22,15 +22,21 @@
   "docs": {
     "spec": "docs/specs/BL-063-isSaved-decommission-spec.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/BL-063-signoff-2026-05-11.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
-  "generator_handoff": "[2026-05-11 ~10:35 BJT Generator johnsong → Reviewer handoff, signoff v1.1] F006 prod ops 9/9 acceptance 9 项中 8 PASS / 1 PENDING (§9 reverifying)。§7 24h 监控经用户直接 ack 加速到 ~2h，证据齐全：daily sync cron 实测（2026-05-11 00:30:03 UTC，BL-063 deploy 后 28min，1561 discovery + 1231 update + errors=[]）+ second-pass audit (2026-05-11 02:18 UTC) + tsc 编译期保证 + e2e CI PASS + grep 全清 + 用户 prod UI 5/5 + pm2 logs 无 isSaved 痕迹（详见 signoff §6 multi-defense matrix）。Reviewer reverifying 任务：(1) 读 docs/test-reports/BL-063-signoff-2026-05-11.md 全文（v1+v1.1，§6 multi-defense + 用户 ack 痕迹）(2) 可选独立验证：重跑 ssh tripplezhou@34.180.93.185 \"bash /opt/kolmatrix/scripts/bl063-f006-prod-audit.sh\" — script idempotent (3) 可选：2026-05-12 00:30 UTC 后跑第 3 轮 audit 作为完整 24h 窗口确认（保守原则）— 但 multi-defense 已饱和，非必需 (4) 写 reverifying signoff 段（追加到本 signoff 文件 §8 或新建 -reviewer.md）(5) progress.json status reverifying → done / framework_reviewed 处理 / .auto-memory/project-status.md BL-063 移到 ✅ 历史 batch 列表 / BL-064 顶层 IA 改造解锁。features.json F006 acceptance §7 字面仍写 24h，本批次按用户 ack 偏离 — Reviewer 按 signoff §6 evidence 评估，不回写 features.json acceptance（修订 acceptance 是 Planner 责任，本批次接近 done 不必重启 ruling cycle）。",
+  "evaluator_feedback": {
+    "summary": "PASS — Reviewer reverifying complete. Prod read-only audit rerun at 2026-05-11T05:02Z: git_sha 92b4957 healthy, BL-063 migration finished, is_saved column/index dropped, engagement_rate non_null=107 ≥95, row counts sane, src residuals comments-only, pm2 logs last 1000 lines clean. One expected backup-age WARN does not block because pg_dump file db-20260511-000236.sql.gz matches deploy step evidence.",
+    "pass_count": 6,
+    "partial_count": 0,
+    "fail_count": 0,
+    "issues": []
+  },
+  "generator_handoff": null,
   "session_notes": {
     "johnsong": "[2026-05-11 ~09:35 BJT Generator johnsong — F006 immediate done, signoff v1, status fixing → reverifying]\n\n## 本会话动作\n\n1. 用户 trigger Deploy to Production (run 25643437421) → success @ sha 92b4957 @ 2026-05-11T00:02:26Z UTC\n2. SSH prod 跑 scripts/bl063-f006-prod-audit.sh → 7 PASS / 0 FAIL / 1 误报 WARN（backup 时间是 deploy step 2 同步跑的，符合预期）\n3. 用户 prod /campaigns/[id] /discovery /kols/[id] /database UI walkthrough 5/5 PASS\n4. 写 docs/test-reports/BL-063-signoff-2026-05-11.md (v1, immediate post-deploy)\n\n## F006 acceptance 8/9 PASS (immediate)\n\n- §1 prod backup ✅ db-20260511-000236.sql.gz 22M (deploy step 2/8)\n- §2 prod redeploy by user ✅ run 25643437421 success\n- §3 prod /api/health git_sha=92b4957 = main HEAD ✅\n- §4 prisma migrate deploy 自动落地 BL-063 migration ✅\n- §5 prod SQL audit (column dropped / index dropped / engagement_rate 107≥95 / row count sane) ✅\n- §6 prod UI walkthrough 用户 5/5 PASS ✅\n- §7 24h pm2 logs 监控 ⏳ PENDING — 由 Reviewer 24h 后跑 second-pass audit 验证\n- §8 signoff report v1 ✅（v2 由 Reviewer 写）\n- §9 Reviewer 复验 ⏳ 即将进入 reverifying\n\n## 状态机切换\n\n- features.json F006 status pending → done\n- progress.json: completed_features 5 → 6 / status fixing → reverifying / fix_rounds 仍 1 / generator_handoff 写 Reviewer 任务清单 / evaluator_feedback 清空（Reviewer 重写）/ session_notes.johnsong 覆盖本条 / last_updated\n- .auto-memory/project-status.md BL-063 行从 fixing → reverifying\n\n## Reviewer reverifying 任务清单\n\n1. 部署后 ~24h 起（2026-05-12 ~00:00 UTC 之后）SSH prod 跑：\n   `ssh tripplezhou@34.180.93.185 'bash /opt/kolmatrix/scripts/bl063-f006-prod-audit.sh'`\n2. 验证 [9] pm2 logs 24h 窗口仍 clean（覆盖完整 24h 流量）\n3. 全部 9 项仍 PASS（生产数据无显著漂移）\n4. 写 signoff v2: 追加到 docs/test-reports/BL-063-signoff-2026-05-11.md §6 或新建 -v2.md\n5. progress.json status reverifying → done / framework_reviewed 处理\n6. .auto-memory/project-status.md BL-063 行从 reverifying → DONE，加入 ✅ 历史 batch 列表\n7. backlog.json BL-064 顶层 IA 改造解锁，可启动新批次\n\n## 本批次完整 commit 链\n\n- 908ff72 feat(BL-063-F001) detail.ts widen pool + tooltip + 5-lang i18n\n- 79165da chore(state) F001 done\n- 83354fc fix(BL-063-F001) CI 1/408 case repair\n- 4170692 chore(state) F001 staging deployed audit\n- 78809c2 feat(BL-063-F003-partial) 5 backend files + 1 unit test\n- da459ef chore(state) F003 partial audit\n- 4b74f2a fix(BL-063-F002) canonical -- ROLLBACK: prefix\n- 0dc4afa fix(BL-063-F004) skip BM1 marketer-journey E2E (relies on Save toggle)\n- 39fbd4e chore(state) staging deployed @ 0dc4afa\n- c959010 chore(state) F005 UI spot check PASS\n- 99a3d07 chore(BL-063-F005) partial-pending audit (5 PASS / 1 PARTIAL / 1 FAIL)\n- 2e172f1 chore(state) F005 partial-pending @ 99a3d07\n- 0ea747d chore(BL-063-F005) Planner ruling #1:A #2:A — accept partial-pending\n- 00a702c chore(BL-063-F005) fix-round 1 done — F005 marked done, status fixing, awaiting F006\n- 92b4957 feat(BL-063-F006) prod ops audit scripts (read-only, run post-deploy)\n- (本会话即将推) chore(BL-063-F006) prod immediate done + signoff v1 → reverifying\n\n## 给 Reviewer 的提示\n\n- audit script 设计为 idempotent，可重复跑\n- script 内部 [8] backup 时间判 < 60min = ✓ fresh，60-1500min = ⚠（误报，实际是本次 deploy）；24h 后跑这一项必然 WARN，不是 fail\n- script 内部 [9] pm2 logs grep 不分大小写，覆盖 'isSaved' 和 'is_saved' 两形式\n- HEALTH_DETAIL_TOKEN 自动从 /opt/kolmatrix/.env.production 读，无需手填\n- 如 24h audit 全 PASS → reviewer 接 reverifying → done 流程\n- 如 24h audit 出现 pm2 logs isSaved 错误 → 起 fix-round 2，progress.json status reverifying → fixing，fix_rounds 1 → 2",
-    "Reviewer": null
+    "Reviewer": "[2026-05-11 13:02 - 13:10 北京 Codex Reviewer — BL-063 reverifying → done]\n\n用户确认现在可以验证后，先 git pull --ff-only 同步到 db6b313，读取 v1.1 signoff 与 generator_handoff。按用户授权的 §7 加速验收路径，执行生产只读 audit：ssh tripplezhou@34.180.93.185 'bash /opt/kolmatrix/scripts/bl063-f006-prod-audit.sh'。结果 exit 0，summary PASS 7 / FAIL 0 / WARN 1。核心证据：prod git_sha=92b4957 且 health healthy；migration 20260511000000_bl063_remove_is_saved finished 且未 rollback；is_saved column count=0；kol_tenant_saved_idx count=0；engagement_rate active=1243 non_null=107 pct=8.61 ≥95；row count total=3827 active=1243；src/ 仅 5 处 explanatory comments；pm2 最近 1000 行无 isSaved/is_saved。唯一 WARN 是 backup age=300 min，符合 Generator handoff 对脚本 fresh-window 的预期，不阻断。\n\n已追加 docs/test-reports/BL-063-signoff-2026-05-11.md §8 Reviewer Reverifying Sign-off (v2)，progress.status=reverifying → done，docs.signoff 指向该报告，evaluator_feedback 写 PASS，.auto-memory/project-status.md 更新为 BL-063 done 并解锁 BL-064。"
   },
   "features": []
 }
