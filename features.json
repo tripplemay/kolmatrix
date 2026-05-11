@@ -1,109 +1,118 @@
 [
   {
     "id": "F001",
-    "title": "quick-fix detail.ts 去 isSaved filter + AddKolDialog tooltip + 5 语言 i18n（unblock 内部 dogfood）",
+    "title": "4 新路由结构创建（brief / match / reach / insight）— embed-old-components 占位策略（决策点 #A）",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "done",
+    "estimated_hours": 6.0,
+    "status": "pending",
     "acceptance": [
-      "src/lib/campaigns/detail.ts:209 runAvailableKolsForCampaign query: where { isSaved: true, deletedAt: null } → where { deletedAt: null }",
-      "src/app/[locale]/(app)/campaigns/[id]/AddKolDialog.tsx 加 disabled 状态 tooltip 文案 + 触发按钮 hover tooltip",
-      "messages/{cn,en,ja,ko,es}.json 加 campaigns.kolPanel.aiNativeMigrationTooltip key（文案：'全量 KOL 池，AI native 完整版即将上线'/EN: 'Full KOL pool — AI native experience coming soon'）",
-      "L1 lint 0 / tsc 0 / unit + integration test PASS（含 BL-061 既有 6 case）",
-      "staging deploy + curl /api/health git_sha 与本 commit 一致",
-      "现 e2e database-fidelity.spec.ts 不受影响（F001 仅改 detail.ts 一行 + tooltip 文案）",
-      "staging 实地：进 /campaigns/[id] 任一 active campaign '添加 KOL' 按钮 enabled（除非 status=completed）"
+      "创建目录：src/app/[locale]/(app)/brief/page.tsx + match/page.tsx + reach/page.tsx + insight/page.tsx",
+      "每个 page.tsx embed 对应旧路由内容（/brief embed /knowledge-base 内容；/match embed /discovery 内容；/reach embed /outreach 内容；/insight embed /dashboard 内容）— 决策点 #A 选 A2",
+      "每个新路由有 metadata（page title / description），用 next/metadata 实装",
+      "现有 <AppShellLayout> 兼容新路由 + nav active 路由判断正确",
+      "L1 lint 0 / tsc 0 / unit test PASS",
+      "staging git_sha 与本 commit 一致"
     ]
   },
   {
     "id": "F002",
-    "title": "schema migration: 删除 is_saved 字段 + 数据 backup 表",
+    "title": "老路由 redirect 兜底（7 老路由 → 4 新路由，302 临时 / 决策点 #B + #C）",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "done",
+    "status": "pending",
     "acceptance": [
-      "prisma/schema.prisma Kol 模型移除 isSaved Boolean 字段",
-      "prisma/migrations/202605XX_remove_is_saved_from_kol/migration.sql 新建：CREATE TEMP TABLE _bl063_is_saved_backup AS SELECT id, is_saved FROM kol WHERE is_saved=true; ALTER TABLE kol DROP COLUMN is_saved;",
-      "migration 含 ROLLBACK 注释（手动 ALTER ADD COLUMN + 从 backup 恢复）",
-      "npx prisma migrate dev local 跑通",
-      "npx prisma generate 重新生成 client（commit 含自动生成的更新）",
-      "L1 lint 0 / tsc 0（删字段后所有引用必须清，否则 tsc 会报错）"
+      "src/middleware.ts 或各老路由 page.tsx 加 302 redirect：/dashboard → /insight / /discovery → /match / /database → /match / /campaigns → /brief 或 /match?view=campaigns / /campaigns/new → /brief?action=new / /campaigns/[id] → /match?campaignId=:id（决策点 #B 选 /match） / /knowledge-base → /brief / /outreach → /reach / /outreach/composer → /reach/composer / /reports → /insight",
+      "redirect HTTP status = 302 临时（决策点 #C 选 302，保留 revert 灵活性）",
+      "现 URL 历史不死链（老 bookmark / 邮件 / 第三方分享访问应正常跳转）",
+      "next-intl middleware locale 前缀（/zh /en /ja /ko /es）兼容 redirect",
+      "L1 PASS",
+      "staging git_sha 与本 commit 一致"
     ]
   },
   {
     "id": "F003",
-    "title": "移除 9+ 处 query 的 isSaved filter 引用",
+    "title": "顶部 Nav 4 路由重写（顺序 Brief → Match → Reach → Insight / 决策点 #D）",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 6.0,
-    "status": "done",
+    "status": "pending",
     "acceptance": [
-      "全仓 grep 'isSaved\\|is_saved' 仅残留在 BL-063 commit message / migration / docs 引用，src/ 路径全清",
-      "src/lib/campaigns/list-kpis.ts:98 valueScoreAgg 移除 isSaved（保留 deletedAt: null）",
-      "src/lib/crm/overview.ts:209 tx.kol.findMany 移除 isSaved",
-      "src/app/[locale]/(app)/database/stats.ts 3 处（L26/L27-32/L33-37）移除 isSaved（整页将在 BL-064 删除，本批次先去 filter）",
-      "src/lib/kol/filters.ts（如 grep 命中）移除",
-      "src/app/[locale]/(app)/database/actions.ts:106 addKolAction 移除 isSaved: true 字段写入",
-      "其它 grep 命中处全清",
-      "TypeScript 编译通过（删字段后所有引用必须清）",
-      "L1 lint 0 / tsc 0",
-      "staging git_sha 与本 commit 一致（curl https://staging.kol.guangai.ai/api/health | jq .git_sha 验证）"
+      "src/components/app-shell/Nav.tsx（或 grep 同义文件）从 7 路由改为 4 路由",
+      "4 路由顺序：Brief → Match → Reach → Insight（决策点 #D，教学性强）",
+      "每个 nav item 含 label / icon / description tooltip",
+      "当前路由高亮逻辑：embed-old-components 场景下 nav active 判断按 URL 路径前缀（/brief / /match / /reach / /insight）",
+      "mobile responsive 兼容（BL-019 deferred，不破坏 breakpoint）",
+      "单测 ≥2 case 验证 nav 渲染 + 高亮逻辑",
+      "L1 PASS",
+      "staging git_sha 与本 commit 一致"
     ]
   },
   {
     "id": "F004",
-    "title": "测试更新：移除 isSaved 相关 case + 加全量池逻辑测试",
+    "title": "i18n 5 语言新路由 keys + 老 keys 标 deprecated",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 4.0,
-    "status": "done",
+    "estimated_hours": 6.0,
+    "status": "pending",
     "acceptance": [
-      "tests/integration/dashboard-kpi.test.ts BL-060 加的 3 case 重写为不依赖 isSaved",
-      "tests/integration/database-stats.test.ts BL-060 加的 2 case 整文件标 deprecated（BL-064 删 /database 时一起删）",
-      "tests/integration/kpi-snapshot.test.ts BL-060 加的 1 case 重写",
-      "src/app/[locale]/(app)/database/__tests__/addKolAction.test.ts 移除 isSaved 期望",
-      "加 ≥3 新 case 验证全量池：(a) runAvailableKolsForCampaign 返回所有非软删 KOL (b) addKolAction 创建 KOL 不再设 isSaved (c) schema 验证 is_saved 列不存在",
-      "e2e database-fidelity.spec.ts 仅适配 isSaved 移除（如有 case 验证 isSaved=true 显示，删除）",
-      "L1 全套 PASS（含新 ≥3 case）",
+      "messages/{cn,en,ja,ko,es}.json 新增 keys：nav.brief.{label,description} / nav.match.{label,description} / nav.reach.{label,description} / nav.insight.{label,description}",
+      "各新路由 page title + breadcrumb keys（如 brief.page.title 等）",
+      "旧 keys（nav.dashboard.label / nav.discovery.label / 等）保留但标注 // deprecated by BL-064（comment 注释），BL-070 完整迁移后删",
+      "EN + CN 由 Planner / 用户直译；ja/ko/es 走 LLM 翻 + 标 BL-014 native review",
+      "L1 PASS",
       "staging git_sha 与本 commit 一致"
     ]
   },
   {
     "id": "F005",
-    "title": "staging dry-run + 数据 audit",
+    "title": "e2e suite 适配新路由 + 加 ia-refactor-redirects.spec.ts",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.5,
-    "status": "done",
+    "estimated_hours": 8.0,
+    "status": "pending",
     "acceptance": [
-      "staging 跑 F002 migration（npx prisma migrate deploy on staging）",
-      "staging SQL audit: SELECT column_name FROM information_schema.columns WHERE table_name='kol' AND column_name='is_saved' → 0 rows",
-      "staging 跑 BL-061 F003 SQL 验证 engagement_rate 分子（非 NULL 行数）不下降（BL-061 baseline 5/9 = 95 行，本批次实测 ≥ 95 行 — 防 BL-063 引入 stats regression；原 6.7% 比例指标转 BL-062 5/17 weekly growth-curve check 跟进，比例随分母涨稀释属 BL-063 orthogonal）— 5/11 Planner 裁决修订（audit §7 #2:A）",
-      "staging 全量 e2e suite PASS（marketer-dashboard / database-fidelity / login-cinematic / 等）",
-      "staging /campaigns/[id] 实地：'添加 KOL' 按钮 enabled + dialog 显完整 KOL 池（>0 候选）",
-      "F002 migration TEMP 备份模式正确执行（migration SQL 行内验证 + ROLLBACK 注释指向 pg_dump for durable）— 持久化备份责任归 F006 prod ops 走 pg_dump（5/11 Planner 裁决修订 audit §7 #1:A，原 staging _bl063_is_saved_backup 表存在条款与 F002 TEMP 设计字面冲突已撤）",
-      "实测 output 记录在 docs/test-reports/BL-063-F005-staging-dryrun-2026-05-XX.md"
+      "现 e2e spec 文件全部更新：路径替换 + assertion 适配 + 必要 case 重写",
+      "优先更新：tests/e2e/marketer.setup.ts（login 后跳 /insight 而非 /dashboard）+ database-fidelity.spec.ts（/database → /match）+ marketer-dashboard.spec.ts（/dashboard → /insight）+ login-cinematic.spec.ts",
+      "新建 tests/e2e/ia-refactor-redirects.spec.ts — 验证 7+ 老路由 302 redirect 到新路由 + 5 语言 locale 兼容",
+      "BM1 marketer-journey e2e（BL-063 skip）评估：如 Save toggle 已删 + 新 IA 改了 nav，可能仍 skip；如能修则 enable",
+      "CI E2E suite 全 PASS（含新 ia-refactor-redirects.spec.ts）",
+      "staging git_sha 与本 commit 一致"
     ]
   },
   {
     "id": "F006",
-    "title": "prod migration ops（用户手动触发 + 24h 监控 + signoff）",
+    "title": "staging deploy + 视觉 baseline regen + 团队 dogfood spot check",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "done",
+    "estimated_hours": 3.0,
+    "status": "pending",
     "acceptance": [
-      "prod 数据 backup（SSH sudo -u postgres pg_dump kolmatrix > /tmp/bl063-pre-migration.dump 或 SQL 内 backup table）",
-      "prod redeploy（GitHub Actions UI dispatch HEAD = main，由用户手动触发）",
-      "prod /api/health 返回 git_sha = main HEAD",
-      "deploy script 自动跑 npx prisma migrate deploy 应用 F002 migration",
-      "prod SQL audit: is_saved 列不存在 / kol 表行数无非预期变化 / engagement_rate non_null_pct 不退化",
-      "prod /campaigns/[id] 实地：按钮 enabled + dialog 含全量池",
-      "24h 监控：sentry / pm2 logs 无 isSaved 相关错误",
-      "docs/test-reports/BL-063-signoff-2026-05-XX.md 写最终结论：staging + prod SQL output + UI 实物截图 + Phase 1 第一批完成确认",
-      "Reviewer 复验全部 acceptance 后写 signoff，progress.json status verifying → done"
+      "staging deploy via deploy-staging.yml workflow（自动 / 用户触发任一）",
+      "staging /api/health git_sha 与 main HEAD 一致",
+      "视觉 baseline 重新生成（nav 改了几乎所有 page 视觉断言变）— 走 update-visual-baselines workflow（BL-061 实战路径）",
+      "团队 dogfood 路径开放：https://staging.kol.guangai.ai/{cn,en,ja,ko,es}/{brief,match,reach,insight} 可访问",
+      "用户做 staging spot check 清单（Planner 在 building 后期给出）：4 新路由 + 7 老路由 redirect + nav 4 语言切换 + nav 当前高亮",
+      "spot check 结果记在 progress.json evaluator_feedback 或新文件"
+    ]
+  },
+  {
+    "id": "F007",
+    "title": "prod redeploy + 24h 监控 + signoff（用户 ack 时间窗 / Reviewer 终审）",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 3.0,
+    "status": "pending",
+    "acceptance": [
+      "prod 数据 backup（routine pg_dump on deploy script，BL-063 F006 同链路）",
+      "prod redeploy via Deploy to Production workflow（由用户手动触发，必须 ack 业务低峰期时间窗）",
+      "prod /api/health git_sha = main HEAD",
+      "prod 4 新路由可访问 + 7 老路由 redirect 正常（用户 5 分钟 spot check）",
+      "24h pm2 logs 监控无 404 / route-not-found / next-intl middleware 错误",
+      "scripts/bl064-f007-prod-audit.sh 类比 BL-063 F006 audit script 模板，read-only 验证脚本",
+      "docs/test-reports/BL-064-signoff-2026-05-XX.md 写最终结论：staging + prod 验证结果 + Phase 1 第二批完成确认 + Phase 1 整体验收 gate 是否达成",
+      "Reviewer 复验全部 acceptance + signoff v2，progress.json status reverifying → done"
     ]
   }
 ]
