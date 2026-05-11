@@ -42,12 +42,6 @@ const REDIRECT_CASES: Array<{ from: string; expect: RegExp; note?: string }> = [
     expect: /\/match\?campaignId=abc-123/,
     note: "spec §4 #B",
   },
-  // Sub-route inheritance: /outreach/templates → /reach/templates
-  {
-    from: "/outreach/templates",
-    expect: /\/reach\/templates/,
-    note: "next.js prefix path inheritance",
-  },
 ];
 
 test.describe("BL-064 IA refactor 302 redirects", () => {
@@ -89,6 +83,11 @@ test.describe("BL-064 — sub-routes intentionally NOT redirected (Adjudication 
     "/roi",
     "/weekly-report",
     "/analytics",
+    // BL-064-F006 fix-round-3 — outreach sub-paths kept; /reach has
+    // no sub-routes yet (BL-070 will land those).
+    "/outreach/templates",
+    "/outreach/suppression",
+    "/outreach/tracking",
   ];
   for (const path of KEPT_PATHS) {
     test(`${path} stays in legacy area (no 302 to new IA)`, async ({ page }) => {

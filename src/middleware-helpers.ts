@@ -96,13 +96,19 @@ const IA_REDIRECT_RULES: ReadonlyArray<IaRedirectRule> = [
     pattern: /^\/campaigns\/(?!new$)([^/?]+)(\?.*)?$/,
     resolve: (m) => `/match?campaignId=${encodeURIComponent(m[1]!)}`,
   },
-  // Content-equivalent prefix-rewrite redirects (sub-routes inherit
-  // via tail capture).
-  { pattern: /^\/dashboard(\/.*)?$/, resolve: (m) => `/insight${m[1] ?? ""}` },
-  { pattern: /^\/discovery(\/.*)?$/, resolve: (m) => `/match${m[1] ?? ""}` },
-  { pattern: /^\/database(\/.*)?$/, resolve: (m) => `/match${m[1] ?? ""}` },
-  { pattern: /^\/knowledge-base(\/.*)?$/, resolve: (m) => `/brief${m[1] ?? ""}` },
-  { pattern: /^\/outreach(\/.*)?$/, resolve: (m) => `/reach${m[1] ?? ""}` },
+  // Content-equivalent exact-prefix redirects. NOTE: BL-064-F006
+  // discovered the F001 new-IA shells (/insight /match /brief /reach)
+  // are *root-only* — they re-export the legacy page.tsx default but
+  // do NOT mount sub-routes (/reach has no templates/suppression/
+  // tracking children). So we redirect exact-match only. Sub-paths
+  // (e.g. /outreach/templates) stay as kept deep-link paths and
+  // continue to render their legacy markup. BL-070 will fold the sub-
+  // routes when the new IA gets its real implementation.
+  { pattern: /^\/dashboard$/, resolve: () => "/insight" },
+  { pattern: /^\/discovery$/, resolve: () => "/match" },
+  { pattern: /^\/database$/, resolve: () => "/match" },
+  { pattern: /^\/knowledge-base$/, resolve: () => "/brief" },
+  { pattern: /^\/outreach$/, resolve: () => "/reach" },
 ];
 
 export function resolveIaRefactorRedirect(barePath: string): string | null {

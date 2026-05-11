@@ -73,12 +73,14 @@ describe("resolveIaRefactorRedirect — BL-064-F002", () => {
     expect(resolveIaRefactorRedirect("/analytics")).toBeNull();
   });
 
-  it("preserves sub-route paths via prefix inheritance (only for content-equivalent shells)", () => {
-    expect(resolveIaRefactorRedirect("/outreach/templates")).toBe("/reach/templates");
-    expect(resolveIaRefactorRedirect("/outreach/suppression")).toBe("/reach/suppression");
-    expect(resolveIaRefactorRedirect("/outreach/tracking")).toBe("/reach/tracking");
-    expect(resolveIaRefactorRedirect("/dashboard/anything")).toBe("/insight/anything");
-    expect(resolveIaRefactorRedirect("/knowledge-base/foo/bar")).toBe("/brief/foo/bar");
+  it("BL-064-F006 fix-round-3 — exact-match only (new IA shells have no sub-routes)", () => {
+    // Sub-paths stay as kept deep-link paths; the legacy markup
+    // continues to render under the original URL.
+    expect(resolveIaRefactorRedirect("/outreach/templates")).toBeNull();
+    expect(resolveIaRefactorRedirect("/outreach/suppression")).toBeNull();
+    expect(resolveIaRefactorRedirect("/outreach/tracking")).toBeNull();
+    expect(resolveIaRefactorRedirect("/dashboard/anything")).toBeNull();
+    expect(resolveIaRefactorRedirect("/knowledge-base/foo/bar")).toBeNull();
   });
 
   it("handles /campaigns family per spec §4 #B + BL-064-F005 fix-round-2", () => {
