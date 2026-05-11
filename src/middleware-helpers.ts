@@ -43,6 +43,56 @@ export function isProtected(pathname: string): boolean {
 }
 
 /**
+ * BL-064-F002 — Phase 1 IA refactor 302 redirect map.
+ *
+ * Takes a locale-stripped bare path (e.g. `/dashboard`, `/campaigns/abc`)
+ * and returns the new IA bare path (with query string) the user should be
+ * redirected to, or `null` if no redirect applies.
+ *
+ * Order matters in the array below: more specific patterns first
+ * (`/campaigns/new` before `/campaigns/:id` before `/campaigns`).
+ *
+ * Adjudication 2026-05-11 (Planner):
+ *   #2 /roi /weekly-report /analytics → /insight  (spec "/reports" 笔误纠正)
+ *   #3 /assets /crm /kols/[id] 保留路由（不 redirect），仅 activeNav 映射
+ *   #4 /campaigns 列表 → /match?view=campaigns
+ *
+ * Sub-route inheritance: `/outreach/templates` → `/reach/templates`
+ *   (next.js path inheritance via prefix replacement).
+ */
+type IaRedirectRule = {
+  pattern: RegExp;
+  resolve: (m: RegExpMatchArray) => string;
+};
+
+const IA_REDIRECT_RULES: ReadonlyArray<IaRedirectRule> = [
+  // /campaigns special cases (must precede generic /campaigns prefix)
+  { pattern: /^\/campaigns\/new$/, resolve: () => "/brief?action=new" },
+  {
+    pattern: /^\/campaigns\/([^/?]+)(\?.*)?$/,
+    resolve: (m) => `/match?campaignId=${encodeURIComponent(m[1]!)}`,
+  },
+  { pattern: /^\/campaigns(\?.*)?$/, resolve: () => "/match?view=campaigns" },
+  // Prefix-rewrite redirects (sub-routes inherit via tail capture)
+  { pattern: /^\/dashboard(\/.*)?$/, resolve: (m) => `/insight${m[1] ?? ""}` },
+  { pattern: /^\/discovery(\/.*)?$/, resolve: (m) => `/match${m[1] ?? ""}` },
+  { pattern: /^\/database(\/.*)?$/, resolve: (m) => `/match${m[1] ?? ""}` },
+  { pattern: /^\/knowledge-base(\/.*)?$/, resolve: (m) => `/brief${m[1] ?? ""}` },
+  { pattern: /^\/outreach(\/.*)?$/, resolve: (m) => `/reach${m[1] ?? ""}` },
+  { pattern: /^\/roi(\/.*)?$/, resolve: (m) => `/insight${m[1] ?? ""}` },
+  { pattern: /^\/weekly-report(\/.*)?$/, resolve: (m) => `/insight${m[1] ?? ""}` },
+  { pattern: /^\/analytics(\/.*)?$/, resolve: (m) => `/insight${m[1] ?? ""}` },
+];
+
+export function resolveIaRefactorRedirect(barePath: string): string | null {
+  for (const rule of IA_REDIRECT_RULES) {
+    const match = barePath.match(rule.pattern);
+    if (match) return rule.resolve(match);
+  }
+  return null;
+}
+
+/**
  * Locales we actively translate and want to serve to users whose
  * browser advertises them via Accept-Language. ja/ko/es are declared in
  * `routing.locales` so the URLs + manual language switcher still work,

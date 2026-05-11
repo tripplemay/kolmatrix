@@ -8,6 +8,7 @@ import { isLocale, LOCALE_COOKIE_NAME, routing } from "@/i18n/routing";
 import {
   detectLocaleFromAcceptLanguage,
   isProtected,
+  resolveIaRefactorRedirect,
   stripLocale,
 } from "@/middleware-helpers";
 
@@ -75,6 +76,25 @@ export default auth((req) => {
     const userLocale = req.auth.user?.locale;
     const locale = isLocale(userLocale) ? userLocale : routing.defaultLocale;
     return NextResponse.redirect(new URL(`/${locale}/dashboard`, nextUrl));
+  }
+
+  // BL-064-F002 — Phase 1 IA refactor 302 redirects. Applied AFTER the
+  // auth + login special cases so unauthenticated users still see /login
+  // first, and authenticated users land on the new IA path directly.
+  // /dashboard → /insight, /knowledge-base → /brief, etc. (incl. sub-route
+  // inheritance). Status 302 (temporary) per Planner adjudication §4 #C to
+  // preserve revert flexibility during Phase 1 transition.
+  const iaRedirectPath = resolveIaRefactorRedirect(bare);
+  if (iaRedirectPath) {
+    const locale = resolveTargetLocale(req);
+    const target = new URL(`/${locale}${iaRedirectPath}`, nextUrl);
+    // Preserve any query params the caller had (e.g. ?status=active on
+    // /campaigns?status=active). Only set when not already supplied by the
+    // redirect target (e.g. ?view=campaigns wins on /campaigns).
+    nextUrl.searchParams.forEach((value, key) => {
+      if (!target.searchParams.has(key)) target.searchParams.set(key, value);
+    });
+    return NextResponse.redirect(target, 302);
   }
 
   return handleI18nRouting(req);
