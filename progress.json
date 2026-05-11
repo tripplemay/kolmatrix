@@ -1,11 +1,11 @@
 {
-  "status": "planning",
+  "status": "building",
   "user_goal": "BL-065-match-page-internal-rewrite — ADR-013 AI Native 转向 Phase 2 第一批：Match 页内部 UI 实质重写，合并 Discovery + Database 为统一 KOL 工作台。7 features：F001 Match 页 layout + 双视图 / F002 Filter+Search+SaveSearchControls 合并 / F003 BulkActionBar 集成 + ImportCsvDialog 移 /admin / F004 AddKolDialog 保留 + UI 集成 / F005 SmartMatchDialog → AI 推荐 sidebar (campaign-context mode) / F006 i18n 5 语言 + e2e + 删 /discovery + /database 整页 27 文件 / F007 staging + prod redeploy + 24h 监控 + signoff。预估 ~5-7 day Generator + 1 day Reviewer。本批次完成后 BL-066 Campaign 详情页 AI 推荐主面板 + BL-048 valueScore 优化（Phase 2 并行）启动。本批次不动 Campaign 详情页内部 UI（BL-066 工作）/ B3 自然语言 refine（BL-068）/ C3 完整 explainability（BL-067 — 本批次仅 C2 占位）。关联 docs/specs/BL-065-match-page-internal-rewrite-spec.md / ADR-013 / vision §2 §3 / roadmap §4。",
   "total_features": 7,
   "completed_features": 0,
   "fix_rounds": 0,
   "current_sprint": "BL-065-match-page-internal-rewrite",
-  "last_updated": "2026-05-11T19:35+0800",
+  "last_updated": "2026-05-11T19:40+0800",
   "reference_docs": [
     "docs/specs/BL-065-match-page-internal-rewrite-spec.md",
     "docs/adr/ADR-013-ai-native-product-pivot.md",
