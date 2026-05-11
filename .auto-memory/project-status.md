@@ -17,4 +17,4 @@ type: project
 1. 5/17 第一次 weekly growth-curve check（重跑 BL-061 F003 SQL，判断 BL-062 加速路径）
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 ## 角色 / Backlog
-- 默认：CLI=planner+generator，Codex=evaluator / Backlog 19 条 / framework 6-layer
+- 默认：CLI=planner+generator，Codex=evaluator / Backlog 20 条（BL-062 数据 coverage 治理新增）/ framework 6-layer / **下一批次 BL-064 顶层 IA 改造（roadmap §3 Phase 1 第二批）ready**
