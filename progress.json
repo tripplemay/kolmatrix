@@ -1,11 +1,11 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "BL-064-top-level-ia-refactor — ADR-013 AI Native 转向 Phase 1 第二批：顶层 IA 7 路由 → 4 路由（Brief/Match/Reach/Insight），含 4 新路由壳 + 7 老路由 302 redirect 兜底 + 顶部 nav 重写 + i18n 5 语言新 keys + e2e suite 适配 + 视觉 baseline regen + staging/prod redeploy + 24h 监控 + Reviewer 终审。7 features F001-F007。预估 ~5-7 day Generator + 1 day Reviewer。本批次完成 + 团队 dogfood 1 周无 P0 → Phase 1 整体验收 gate 达成 → Phase 2 BL-065 Match 页（合并 Discovery+Database 内部 UI 实质重写）启动。本批次不动各路由内部 UI 实质重写（Match 合并 = BL-065 / Campaign AI 推荐主面板 = BL-066）。关联 docs/specs/BL-064-top-level-ia-refactor-spec.md / ADR-013 / vision §2 / roadmap §3。",
   "total_features": 7,
-  "completed_features": 6,
+  "completed_features": 7,
   "fix_rounds": 3,
   "current_sprint": "BL-064-top-level-ia-refactor",
-  "last_updated": "2026-05-11T17:08+0800",
+  "last_updated": "2026-05-11T18:55+0800",
   "reference_docs": [
     "docs/specs/BL-064-top-level-ia-refactor-spec.md",
     "docs/adr/ADR-013-ai-native-product-pivot.md",

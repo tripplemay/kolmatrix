@@ -99,11 +99,11 @@
   },
   {
     "id": "F007",
-    "title": "prod redeploy + 24h 监控 + signoff（用户 ack 时间窗 / Reviewer 终审）",
+    "title": "prod redeploy + 24h 监控 + signoff（用户 ack 时间窗 / Reviewer 终审）— 24h soak accelerated by user ack 5/11 18:54 BJT",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "prod 数据 backup（routine pg_dump on deploy script，BL-063 F006 同链路）",
       "prod redeploy via Deploy to Production workflow（由用户手动触发，必须 ack 业务低峰期时间窗）",
