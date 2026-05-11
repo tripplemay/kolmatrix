@@ -67,4 +67,18 @@ describe("deriveActiveNav", () => {
     expect(deriveActiveNav("/en/knowledge-base")).toBe("knowledge-base");
     expect(deriveActiveNav("/zh/knowledge-base")).toBe("knowledge-base");
   });
+
+  it("BL-064-F001 — new IA shells highlight content-equivalent legacy nav", () => {
+    // F001 阶段 SidebarNav 仍是旧 8-item IA；F003 切 4-item 后这段会一并改。
+    // 当前断言：访问新路由壳 /brief /match /reach /insight 时，nav 高亮内容
+    // 对应的旧 nav id（/brief embed KB / /match embed Discovery 等）。
+    expect(deriveActiveNav("/en/brief")).toBe("knowledge-base");
+    expect(deriveActiveNav("/zh/brief")).toBe("knowledge-base");
+    expect(deriveActiveNav("/en/match")).toBe("kol-discovery");
+    expect(deriveActiveNav("/zh/match")).toBe("kol-discovery");
+    expect(deriveActiveNav("/en/reach")).toBe("email-center");
+    expect(deriveActiveNav("/zh/reach")).toBe("email-center");
+    expect(deriveActiveNav("/en/insight")).toBe("dashboard");
+    expect(deriveActiveNav("/zh/insight")).toBe("dashboard");
+  });
 });

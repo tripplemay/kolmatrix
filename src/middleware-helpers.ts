@@ -21,6 +21,11 @@ export const PROTECTED_PREFIXES = [
   "/weekly-report",
   "/outreach",
   "/settings",
+  // BL-064-F001 — 4 new top-level IA routes
+  "/brief",
+  "/match",
+  "/reach",
+  "/insight",
 ];
 
 export function stripLocale(pathname: string): string {

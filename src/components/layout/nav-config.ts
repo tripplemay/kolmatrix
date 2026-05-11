@@ -77,6 +77,14 @@ export const NAV_ITEMS: NavItem[] = [
 
 export function deriveActiveNav(pathname: string): NavItemId {
   const path = pathname.replace(/^\/(en|zh|ja|ko|es)(?=\/|$)/, "") || "/";
+  // BL-064-F001 transitional mapping — /brief /match /reach /insight 是新 IA
+  // 路由壳（embed-old），F001 阶段 nav 仍是旧 8 项，把新路径映射到内容
+  // 对应的旧 nav id 以保持高亮正确。F003 重写 nav-config 改为新 4-id IA
+  // 后这段会一并重做。
+  if (path.startsWith("/brief")) return "knowledge-base";
+  if (path.startsWith("/match")) return "kol-discovery";
+  if (path.startsWith("/reach")) return "email-center";
+  if (path.startsWith("/insight")) return "dashboard";
   if (path.startsWith("/discovery")) return "kol-discovery";
   if (path.startsWith("/database")) return "kol-database";
   if (path.startsWith("/kols")) return "kol-database";
