@@ -40,12 +40,18 @@ test.describe("BM2 Journey A — Discovery → Campaigns → Outreach", () => {
   test("walks the find-creator + reach-out flow", async ({ page }) => {
     await login(page);
 
-    // Step 2 — Discovery has at least one card visible.
-    // BL-064-F003 sidebar no longer has "KOL Discovery"; the equivalent
-    // new IA entry is "Match" (which embeds Discovery via F001).
+    // Step 2 — Match (formerly Discovery) shows at least one KOL card.
+    // BL-064-F003 sidebar dropped "KOL Discovery"; the new IA entry is
+    // "Match". BL-065-F001 then replaced the A2 embed (which mounted
+    // `kol-card`) with the unified workbench (`match-kol-card`). The
+    // OR selector below covers both layouts so the journey keeps
+    // passing while the rest of BL-065 lands; once F006 deletes the
+    // legacy /discovery, the first half of the OR can be dropped.
     await page.locator("aside").getByRole("link", { name: /^Match$/ }).click();
     await page.waitForURL(/\/(en|zh|ja|ko|es)\/(discovery|match)(\/|\?|$)/);
-    const cards = page.locator('[data-testid="kol-card"]');
+    const cards = page.locator(
+      '[data-testid="kol-card"], [data-testid="match-kol-card"]',
+    );
     await expect(cards.first()).toBeVisible({ timeout: 15_000 });
 
     // Step 3 — Campaigns list reachable + page title visible.

@@ -28,7 +28,16 @@ async function login(page: Page) {
   await page.waitForURL(/\/(en|zh|ja|ko|es)\/(dashboard|insight)(\/|$)/);
 }
 
-test.describe("/discovery fidelity (MVP-vf-F002)", () => {
+// BL-065-F001 — /discovery is being decommissioned. F002 (BL-064) 302's
+// /en/discovery to /en/match, and BL-065-F001 just retired the A2 embed
+// where /match re-exported the legacy Discovery page (and therefore still
+// mounted `data-testid="discovery-grid"`). The new /match workbench uses
+// `match-grid` / `match-kol-card`; rewriting every assertion below to
+// those selectors duplicates work that F006 already plans (it deletes
+// /discovery + this file outright and stands up tests/e2e/match-
+// fidelity.spec.ts to cover the new workbench). Mirrors the
+// database-fidelity DECOMMISSIONED skip landed in BL-064-F006.
+test.describe.skip("/discovery fidelity (MVP-vf-F002) — DECOMMISSIONED BY BL-065-F001", () => {
   test.beforeEach(async ({ page }) => {
     await login(page);
     // BL-064-F002 — /en/discovery now 302-redirects to /en/match which

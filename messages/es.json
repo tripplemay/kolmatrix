@@ -610,7 +610,7 @@
   },
   "match": {
     "header": {
-      "title": "Match",
+      "title": "Coincidencia",
       "subtitle": "KOLs recomendados por IA en todo tu pool apify-kol. Filtra, ordena y alterna entre las vistas de tarjetas y tabla para afinar tu lista."
     },
     "view": {
