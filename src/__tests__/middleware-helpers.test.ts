@@ -78,9 +78,11 @@ describe("resolveIaRefactorRedirect — BL-064-F002", () => {
     expect(resolveIaRefactorRedirect("/knowledge-base/foo/bar")).toBe("/brief/foo/bar");
   });
 
-  it("handles /campaigns family per spec §4 #B + Adjudication #4", () => {
-    // /campaigns list → /match?view=campaigns (Adjudication #4)
-    expect(resolveIaRefactorRedirect("/campaigns")).toBe("/match?view=campaigns");
+  it("handles /campaigns family per spec §4 #B + BL-064-F005 fix", () => {
+    // BL-064-F005 fix — /campaigns list is NOT redirected (adjudication
+    // §4 deferred to BL-066 once Match learns view=campaigns). The list
+    // page stays accessible as a deep-link path.
+    expect(resolveIaRefactorRedirect("/campaigns")).toBeNull();
     // /campaigns/new → /brief?action=new (per spec §3 F002)
     expect(resolveIaRefactorRedirect("/campaigns/new")).toBe("/brief?action=new");
     // /campaigns/[id] → /match?campaignId=:id (spec §4 #B)
@@ -101,7 +103,7 @@ describe("resolveIaRefactorRedirect — BL-064-F002", () => {
   it("orders /campaigns rules correctly (specific before generic)", () => {
     // /campaigns/new must NOT fall into the [id] rule
     expect(resolveIaRefactorRedirect("/campaigns/new")).toBe("/brief?action=new");
-    // /campaigns must NOT fall into a sub-route rule
-    expect(resolveIaRefactorRedirect("/campaigns")).toBe("/match?view=campaigns");
+    // /campaigns list stays kept (no redirect) per BL-064-F005 fix.
+    expect(resolveIaRefactorRedirect("/campaigns")).toBeNull();
   });
 });

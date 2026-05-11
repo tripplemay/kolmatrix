@@ -132,3 +132,24 @@
 
 **Generator 起 F001（status: building 已就绪）。**
 
+---
+
+## 8. F005 实装期发现的 adjudication §4 偏离（2026-05-11 14:30 BJT）
+
+CI run 25654625299 e2e 实跑发现：adjudication §4「/campaigns 列表 → /match?view=campaigns」存在 UX 损坏。根因：
+
+- /match 路由壳（F001 A2 embed-old）直接 embed `/discovery` 内容
+- /match 暂未实装 `?view=campaigns` 的条件渲染
+- 因此 /campaigns 302→/match 后，用户看到的是 Discovery，**不是** Campaigns 列表
+- campaigns-empty.spec.ts + journey-a/b 在 e2e 验证 `getByTestId("campaigns-page-title")` 全 fail
+
+**Generator 决议（fix-round）：** 把 /campaigns 列表从 redirect 列表移出，归入 adjudication §3「保留 + activeNav 映射」分类。`/campaigns/new` 和 `/campaigns/[id]` 的 redirect 不变（这两条的目的地是 Brief / Match-with-campaignId，UX 合理）。
+
+**影响：**
+- `src/middleware-helpers.ts` `resolveIaRefactorRedirect`：删 `/campaigns` 列表规则
+- `src/__tests__/middleware-helpers.test.ts`：`/campaigns` 期 → `null`
+- `tests/e2e/ia-refactor-redirects.spec.ts`：/campaigns 移出 REDIRECT_CASES，加入 KEPT_PATHS
+- 侧栏 Match 高亮逻辑保持（deriveActiveNav 仍把 /campaigns 映射到 match）
+
+**回溯 adjudication §4 的最终落点：** `/campaigns 列表`目前作为 kept deep-link 路径（同 /assets /crm /kols/[id]）；BL-066 实装 /match `?view=campaigns` 条件渲染后再启用 redirect。这次偏离 Planner 应回溯到 `docs/adr/`（若 ADR worthy）或仅作 backlog 跟进项（BL-066 范围内）。
+

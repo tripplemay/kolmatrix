@@ -72,7 +72,15 @@ const IA_REDIRECT_RULES: ReadonlyArray<IaRedirectRule> = [
     pattern: /^\/campaigns\/([^/?]+)(\?.*)?$/,
     resolve: (m) => `/match?campaignId=${encodeURIComponent(m[1]!)}`,
   },
-  { pattern: /^\/campaigns(\?.*)?$/, resolve: () => "/match?view=campaigns" },
+  // BL-064-F005 fix — /campaigns LIST redirect to /match?view=campaigns
+  // was the adjudicated target (§4), but /match currently embeds the
+  // Discovery page (F001 A2) and has no `view=campaigns` handling. The
+  // redirect would silently take users to Discovery, hiding the actual
+  // campaigns list. Defer the /campaigns list redirect to BL-066 (when
+  // Match learns view=campaigns); for BL-064 we KEEP /campaigns list
+  // as a deep-link path (same handling as /assets /crm /kols/[id] per
+  // adjudication §3). Sidebar's "Match" item still highlights /campaigns
+  // via deriveActiveNav.
   // Prefix-rewrite redirects (sub-routes inherit via tail capture)
   { pattern: /^\/dashboard(\/.*)?$/, resolve: (m) => `/insight${m[1] ?? ""}` },
   { pattern: /^\/discovery(\/.*)?$/, resolve: (m) => `/match${m[1] ?? ""}` },
