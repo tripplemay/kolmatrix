@@ -608,6 +608,22 @@
       "count": "{count, plural, =0 {No hay KOLs guardados} one {# KOL guardado} other {# KOLs guardados}}"
     }
   },
+  "match": {
+    "header": {
+      "title": "Match",
+      "subtitle": "KOLs recomendados por IA en todo tu pool apify-kol. Filtra, ordena y alterna entre las vistas de tarjetas y tabla para afinar tu lista."
+    },
+    "view": {
+      "label": "Vista",
+      "card": "Vista de tarjetas",
+      "table": "Vista de tabla"
+    },
+    "aiSidebar": {
+      "title": "Sugerencias IA",
+      "placeholder": "Cuando se cargue el contexto de la campaña, las principales recomendaciones aparecerán aquí.",
+      "shellTag": "F005 — conecta la lógica de recomendación IA"
+    }
+  },
   "campaigns": {
     "title": "Campañas",
     "subtitle": "Planifique, ejecute y mida cada iniciativa de contacto.",

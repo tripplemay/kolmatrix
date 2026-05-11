@@ -608,6 +608,22 @@
       "count": "{count, plural, =0 {保存されたKOLはありません} one {保存された#件のKOL} other {保存された#件のKOL}}"
     }
   },
+  "match": {
+    "header": {
+      "title": "マッチ",
+      "subtitle": "apify-kol プール全体から AI が推奨する KOL を表示します。フィルター、ソート、カード／テーブル ビューの切替でショートリストを絞り込めます。"
+    },
+    "view": {
+      "label": "ビュー",
+      "card": "カード ビュー",
+      "table": "テーブル ビュー"
+    },
+    "aiSidebar": {
+      "title": "AI 推奨",
+      "placeholder": "キャンペーン コンテキストが読み込まれると、トップ推奨候補がここに表示されます。",
+      "shellTag": "F005 — AI 推奨ロジックを接続"
+    }
+  },
   "campaigns": {
     "title": "キャンペーン",
     "subtitle": "すべてのアウトリーチプッシュを計画、実行、測定します。",

@@ -608,6 +608,22 @@
       "count": "{count, plural, =0 {未保存任何 KOL} other {已保存 # 位 KOL}}"
     }
   },
+  "match": {
+    "header": {
+      "title": "匹配",
+      "subtitle": "在 apify-kol 完整池中获取 AI 推荐的 KOL。可筛选、排序，并在卡片视图与表格视图之间切换以精修候选名单。"
+    },
+    "view": {
+      "label": "视图",
+      "card": "卡片视图",
+      "table": "表格视图"
+    },
+    "aiSidebar": {
+      "title": "AI 推荐",
+      "placeholder": "加载活动上下文后,系统的 Top 推荐将在此显示。",
+      "shellTag": "F005 — 接入 AI 推荐逻辑"
+    }
+  },
   "campaigns": {
     "title": "营销活动",
     "subtitle": "统一规划、执行并度量每一次推广。",

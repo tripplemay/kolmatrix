@@ -608,6 +608,22 @@
       "count": "{count, plural, =0 {No saved KOLs} one {# saved KOL} other {# saved KOLs}}"
     }
   },
+  "match": {
+    "header": {
+      "title": "Match",
+      "subtitle": "AI-recommended KOLs across your full apify-kol pool. Filter, sort, and switch between card and table views to dial in your shortlist."
+    },
+    "view": {
+      "label": "View",
+      "card": "Card view",
+      "table": "Table view"
+    },
+    "aiSidebar": {
+      "title": "AI suggestions",
+      "placeholder": "Once campaign context loads, the top recommendations will appear here.",
+      "shellTag": "F005 — wires up the AI-recommendation logic"
+    }
+  },
   "campaigns": {
     "title": "Campaigns",
     "subtitle": "Plan, run, and measure every outreach push.",
