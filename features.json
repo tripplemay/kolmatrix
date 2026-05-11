@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 11.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/app/[locale]/(app)/match/page.tsx 从 embed /discovery 改为实质组件（不再 import 旧 page.tsx）",
       "Layout 三段：顶部 SummaryBar（含 QuickStats 数据洞察 from 旧 /database）+ 左侧 FilterSidebar + 主区双视图",
