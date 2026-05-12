@@ -620,8 +620,8 @@
     },
     "aiSidebar": {
       "title": "AI 추천",
-      "placeholder": "캠페인 컨텍스트가 로드되면 상위 추천 KOL이 여기에 표시됩니다.",
-      "shellTag": "F005 — AI 추천 로직 연결"
+      "withCampaign": "{name}에 대한 추천",
+      "whyHint": "추천 이유"
     },
     "bulk": {
       "selected": "선택됨",

@@ -620,8 +620,8 @@
     },
     "aiSidebar": {
       "title": "Sugerencias IA",
-      "placeholder": "Cuando se cargue el contexto de la campaña, las principales recomendaciones aparecerán aquí.",
-      "shellTag": "F005 — conecta la lógica de recomendación IA"
+      "withCampaign": "para {name}",
+      "whyHint": "Por qué lo sugerimos"
     },
     "bulk": {
       "selected": "seleccionados",

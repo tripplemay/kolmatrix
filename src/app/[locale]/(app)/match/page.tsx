@@ -101,7 +101,7 @@ export default async function MatchPage({ params, searchParams }: Props) {
   if (!tenantId) redirect("/login");
   const userId = session.user.id;
 
-  const [searchResult, stats, savedSearches] = await Promise.all([
+  const [searchResult, stats, savedSearches, campaign] = await Promise.all([
     runMatchSearch(tenantId, filters),
     loadDatabaseStats(tenantId),
     withTenant(tenantId, (tx) =>
@@ -112,6 +112,19 @@ export default async function MatchPage({ params, searchParams }: Props) {
         select: { id: true, name: true, filters: true, createdAt: true },
       }),
     ),
+    // BL-065-F005 — tenant-scoped campaign lookup for the AI sidebar.
+    // Returns null when the URL's campaignId is stale, malformed, or
+    // belongs to another tenant (RLS strips it). In that case the
+    // sidebar is silently dropped — the marketer still sees the full
+    // workbench, just without the campaign-context recommendations.
+    campaignId
+      ? withTenant(tenantId, (tx) =>
+          tx.campaign.findFirst({
+            where: { id: campaignId, deletedAt: null },
+            select: { id: true, name: true },
+          }),
+        )
+      : Promise.resolve(null),
   ]);
 
   const t = await getTranslations("match.header");
@@ -182,7 +195,11 @@ export default async function MatchPage({ params, searchParams }: Props) {
     }
   }
 
-  const mainColumns = campaignId
+  // BL-065-F005 — sidebar only mounts when the campaign resolved
+  // tenant-scoped. A stale ?campaignId= falls back to the 2-column
+  // workbench so the user doesn't see a broken sidebar.
+  const showAiSidebar = Boolean(campaign);
+  const mainColumns = showAiSidebar
     ? "lg:grid-cols-[260px_minmax(0,1fr)_320px]"
     : "lg:grid-cols-[260px_minmax(0,1fr)]";
 
@@ -191,7 +208,7 @@ export default async function MatchPage({ params, searchParams }: Props) {
       className="mx-auto max-w-[1600px] space-y-6 pb-16"
       data-testid="match-page"
       data-view={view}
-      data-campaign-mode={campaignId ? "true" : "false"}
+      data-campaign-mode={showAiSidebar ? "true" : "false"}
     >
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -346,7 +363,14 @@ export default async function MatchPage({ params, searchParams }: Props) {
           </nav>
         </section>
 
-        {campaignId ? <AiSuggestionsSidebar campaignId={campaignId} /> : null}
+        {showAiSidebar && campaign ? (
+          <AiSuggestionsSidebar
+            campaignId={campaign.id}
+            tenantId={tenantId}
+            locale={locale}
+            campaignName={campaign.name}
+          />
+        ) : null}
       </div>
     </div>
   );

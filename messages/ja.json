@@ -620,8 +620,8 @@
     },
     "aiSidebar": {
       "title": "AI 推奨",
-      "placeholder": "キャンペーン コンテキストが読み込まれると、トップ推奨候補がここに表示されます。",
-      "shellTag": "F005 — AI 推奨ロジックを接続"
+      "withCampaign": "{name} 向け",
+      "whyHint": "提案の理由"
     },
     "bulk": {
       "selected": "選択中",

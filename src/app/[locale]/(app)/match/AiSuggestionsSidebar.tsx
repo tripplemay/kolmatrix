@@ -1,23 +1,44 @@
 /**
- * BL-065-F001 · /match AI recommendations sidebar — UI shell only.
+ * BL-065-F001 + F005 · /match AI recommendations sidebar.
  *
- * Mounted in the right column when `?campaignId=xxx` is present in the
- * URL. F005 will swap the placeholder body for the actual AI-suggested
- * top-N list (current AiSuggestionsClient logic from /campaigns/[id]
- * gets generalized into a sidebar form). C2-shallow "为什么" copy lives
- * here too once F005 wires it; C3 full explainability is BL-067.
+ * F001 shipped this as a UI shell (title + placeholder copy). F005
+ * upgrades it to the real campaign-context AI surface (spec §3 F005,
+ * decision-point #B Planner-tilt = "sidebar 起步, BL-066 升级为主面板"):
  *
- * Server component so the heading + placeholder render server-side; the
- * client AI call lands in F005 inside its own boundary.
+ *   - Mounted only when the URL carries `?campaignId=<uuid>` AND the
+ *     campaign resolves under the tenant (RLS-checked in page.tsx).
+ *   - Reuses the BM2 AiSuggestionsClient (`/campaigns/[id]/
+ *     AiSuggestionsClient.tsx`) verbatim — generation, 24h
+ *     localStorage cache, refresh button, error fallback. The same
+ *     `campaigns.detail.insights.ai.*` i18n bundle drives the labels;
+ *     no new copy is needed.
+ *   - Adds the C2 "为什么" placeholder hint (spec §F005 + decision-
+ *     point §3 vision Cn-tier). Each suggestion already carries a
+ *     description field; the hint label above it foreshadows the C3
+ *     full explainability that BL-067 will ship.
+ *
+ * BL-066 will swap this sidebar for a full main-panel "accept / swap /
+ * refine" workflow; for now the surface is a 320-px right column.
  */
 import { getTranslations } from "next-intl/server";
 
+import { AiSuggestionsClient } from "@/app/[locale]/(app)/campaigns/[id]/AiSuggestionsClient";
+
 interface Props {
   campaignId: string;
+  tenantId: string;
+  locale: string;
+  campaignName: string;
 }
 
-export async function AiSuggestionsSidebar({ campaignId }: Props) {
+export async function AiSuggestionsSidebar({
+  campaignId,
+  tenantId,
+  locale,
+  campaignName,
+}: Props) {
   const t = await getTranslations("match.aiSidebar");
+  const tAi = await getTranslations("campaigns.detail.insights.ai");
 
   return (
     <aside
@@ -37,13 +58,38 @@ export async function AiSuggestionsSidebar({ campaignId }: Props) {
           {t("title")}
         </h2>
       </div>
-      <p className="text-xs text-on-surface-variant">{t("placeholder")}</p>
+
       <p
-        className="mt-3 rounded border border-cyan-fixed/20 bg-cyan-fixed/5 px-2 py-1 text-[10px] uppercase tracking-wide text-cyan-fixed"
-        data-testid="match-ai-sidebar-shell-tag"
+        className="mb-3 text-xs font-medium text-white"
+        data-testid="match-ai-sidebar-campaign-name"
       >
-        {t("shellTag")}
+        {t("withCampaign", { name: campaignName })}
       </p>
+
+      {/* C2 placeholder "为什么": each AI suggestion's description is the
+          shallow explanation. The hint label primes the marketer so the
+          BL-067 C3 upgrade (full per-suggestion explainability) feels
+          continuous. */}
+      <p
+        className="mb-3 text-[10px] uppercase tracking-wider text-on-surface-variant/70"
+        data-testid="match-ai-sidebar-why-hint"
+      >
+        {t("whyHint")}
+      </p>
+
+      <AiSuggestionsClient
+        tenantId={tenantId}
+        campaignId={campaignId}
+        locale={locale}
+        labels={{
+          generate: tAi("generateCta"),
+          refresh: tAi("refreshCta"),
+          loading: tAi("loading"),
+          cachedPrefix: tAi("cachedPrefix"),
+          empty: tAi("empty"),
+          error: tAi("error"),
+        }}
+      />
     </aside>
   );
 }

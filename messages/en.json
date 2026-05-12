@@ -620,8 +620,8 @@
     },
     "aiSidebar": {
       "title": "AI suggestions",
-      "placeholder": "Once campaign context loads, the top recommendations will appear here.",
-      "shellTag": "F005 — wires up the AI-recommendation logic"
+      "withCampaign": "for {name}",
+      "whyHint": "Why we suggest this"
     },
     "bulk": {
       "selected": "selected",

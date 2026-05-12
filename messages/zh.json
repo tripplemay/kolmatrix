@@ -620,8 +620,8 @@
     },
     "aiSidebar": {
       "title": "AI 推荐",
-      "placeholder": "加载活动上下文后,系统的 Top 推荐将在此显示。",
-      "shellTag": "F005 — 接入 AI 推荐逻辑"
+      "withCampaign": "用于 {name}",
+      "whyHint": "为什么推荐"
     },
     "bulk": {
       "selected": "已选",
