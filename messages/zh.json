@@ -622,6 +622,26 @@
       "title": "AI 推荐",
       "placeholder": "加载活动上下文后,系统的 Top 推荐将在此显示。",
       "shellTag": "F005 — 接入 AI 推荐逻辑"
+    },
+    "bulk": {
+      "selected": "已选",
+      "addToCampaign": "加入活动",
+      "exportCsv": "导出 CSV",
+      "delete": "删除",
+      "clear": "清除",
+      "confirmDelete": {
+        "title": "软删除已选 KOL？",
+        "body": "{count, plural, other {将隐藏 # 个 KOL}}。审计记录保留，管理员可后续恢复。",
+        "cancel": "取消",
+        "confirm": "删除",
+        "submitting": "删除中…",
+        "errorRateLimit": "批量操作过于频繁,请稍后再试。",
+        "errorGeneric": "删除失败。请重试,如持续请联系支持。"
+      }
+    },
+    "adminEntry": {
+      "csvImport": "导入 KOL CSV",
+      "csvImportTooltip": "仅管理员 — 通过 CSV 文件批量导入 KOL 到租户池。"
     }
   },
   "campaigns": {
@@ -1660,6 +1680,14 @@
           "sampleNote": "基于当前页计算（N = {n} / 总计 {total}）。如需更大样本请调高 pageSize。"
         }
       }
+    },
+    "kolCsvImport": {
+      "eyebrow": "管理员",
+      "title": "通过 CSV 批量导入 KOL",
+      "description": "上传 CSV 文件,一次性将多个 KOL 添加到租户池。重复 handle 行将跳过,逐行错误会反馈。",
+      "uploadHeading": "上传 CSV 文件",
+      "uploadBody": "点击下方按钮打开文件选择器,选择包含 KOL 行的 .csv 文件。导入对话框会汇报成功数、跳过数和逐行错误。",
+      "backToMatch": "返回 Match 工作台"
     }
   },
   "kol": {

@@ -622,6 +622,26 @@
       "title": "AI 推奨",
       "placeholder": "キャンペーン コンテキストが読み込まれると、トップ推奨候補がここに表示されます。",
       "shellTag": "F005 — AI 推奨ロジックを接続"
+    },
+    "bulk": {
+      "selected": "選択中",
+      "addToCampaign": "キャンペーンに追加",
+      "exportCsv": "CSV エクスポート",
+      "delete": "削除",
+      "clear": "クリア",
+      "confirmDelete": {
+        "title": "選択した KOL をソフト削除しますか？",
+        "body": "{count, plural, other {# 件の KOL がワークベンチから非表示になります}}。監査ログは保持され、管理者が後で復元できます。",
+        "cancel": "キャンセル",
+        "confirm": "削除",
+        "submitting": "削除中…",
+        "errorRateLimit": "一括操作の回数が多すぎます。少し時間を置いて再試行してください。",
+        "errorGeneric": "削除に失敗しました。再試行するか、問題が続く場合はサポートにご連絡ください。"
+      }
+    },
+    "adminEntry": {
+      "csvImport": "KOL CSV をインポート",
+      "csvImportTooltip": "管理者専用 — CSV ファイルでテナント プールに一括追加します。"
     }
   },
   "campaigns": {
@@ -1661,6 +1681,14 @@
           "sampleNote": "Computed from current page (N = {n} of {total} total). Widen pageSize to broaden sample."
         }
       }
+    },
+    "kolCsvImport": {
+      "eyebrow": "管理者",
+      "title": "CSV から KOL を一括インポート",
+      "description": "CSV ファイルをアップロードして、複数の KOL を一度にテナント プールへ追加します。重複ハンドルの行はスキップされ、行ごとのエラーが報告されます。",
+      "uploadHeading": "CSV ファイルをアップロード",
+      "uploadBody": "下のボタンをクリックしてファイル ピッカーを開き、KOL 行を含む .csv を選択します。インポート ダイアログでは成功数、スキップ数、行ごとのエラーが表示されます。",
+      "backToMatch": "Match ワークベンチに戻る"
     }
   },
   "kol": {

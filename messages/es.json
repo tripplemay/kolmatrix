@@ -622,6 +622,26 @@
       "title": "Sugerencias IA",
       "placeholder": "Cuando se cargue el contexto de la campaña, las principales recomendaciones aparecerán aquí.",
       "shellTag": "F005 — conecta la lógica de recomendación IA"
+    },
+    "bulk": {
+      "selected": "seleccionados",
+      "addToCampaign": "Añadir a campaña",
+      "exportCsv": "Exportar CSV",
+      "delete": "Eliminar",
+      "clear": "Limpiar",
+      "confirmDelete": {
+        "title": "¿Eliminar lógicamente los KOL seleccionados?",
+        "body": "{count, plural, one {Se ocultará # KOL del workbench} other {Se ocultarán # KOLs del workbench}}. El registro de auditoría se conserva; un administrador podrá restaurarlos más tarde.",
+        "cancel": "Cancelar",
+        "confirm": "Eliminar",
+        "submitting": "Eliminando…",
+        "errorRateLimit": "Demasiadas acciones masivas. Espera un momento e inténtalo de nuevo.",
+        "errorGeneric": "Error al eliminar. Inténtalo de nuevo o contacta con soporte si persiste."
+      }
+    },
+    "adminEntry": {
+      "csvImport": "Importar KOL CSV",
+      "csvImportTooltip": "Solo administradores — carga masiva de un archivo CSV al pool del tenant."
     }
   },
   "campaigns": {
@@ -1661,6 +1681,14 @@
           "sampleNote": "Computed from current page (N = {n} of {total} total). Widen pageSize to broaden sample."
         }
       }
+    },
+    "kolCsvImport": {
+      "eyebrow": "ADMINISTRADOR",
+      "title": "Importación masiva de KOL desde CSV",
+      "description": "Sube un archivo CSV para añadir múltiples KOL al pool del tenant a la vez. Las filas con handles duplicados se omiten; los errores por fila se reportan.",
+      "uploadHeading": "Subir archivo CSV",
+      "uploadBody": "Haz clic en el botón para abrir el selector de archivos y elige un .csv con filas de KOL. El diálogo de importación muestra éxitos, omisiones y errores por fila.",
+      "backToMatch": "Volver al workbench Match"
     }
   },
   "kol": {

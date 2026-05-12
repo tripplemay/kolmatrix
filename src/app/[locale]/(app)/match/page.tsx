@@ -42,10 +42,13 @@
 import { getFormatter, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
+import Link from "next/link";
+
 import { SaveSearchControls } from "@/app/[locale]/(app)/discovery/SaveSearchControls";
 import { QuickStats } from "@/app/[locale]/(app)/database/QuickStats";
 import { loadDatabaseStats } from "@/app/[locale]/(app)/database/stats";
 import { auth } from "@/auth";
+import { isAdminRole } from "@/lib/auth/roles";
 import { withTenant } from "@/lib/db";
 import { parseFilters, serializeFilters } from "@/lib/kol/filters";
 import { cn } from "@/lib/utils";
@@ -115,7 +118,10 @@ export default async function MatchPage({ params, searchParams }: Props) {
   const tPager = await getTranslations("discovery.pagination");
   const tStatus = await getTranslations("relationshipStatus");
   const tHeader = await getTranslations("discovery.header");
+  const tAdminEntry = await getTranslations("match.adminEntry");
   const format = await getFormatter();
+
+  const isAdmin = isAdminRole(session.user.role);
 
   const basePath = `/${locale}/match`;
 
@@ -194,6 +200,22 @@ export default async function MatchPage({ params, searchParams }: Props) {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {isAdmin ? (
+            <Link
+              href={`/${locale}/admin/kol-csv-import`}
+              data-testid="match-admin-csv-import-link"
+              title={tAdminEntry("csvImportTooltip")}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-purple/40 px-3 text-xs font-semibold text-purple hover:border-purple/60 hover:bg-purple/10"
+            >
+              <span
+                className="material-symbols-outlined text-[16px]"
+                aria-hidden
+              >
+                admin_panel_settings
+              </span>
+              {tAdminEntry("csvImport")}
+            </Link>
+          ) : null}
           <SaveSearchControls
             basePath={basePath}
             currentFilters={filters}

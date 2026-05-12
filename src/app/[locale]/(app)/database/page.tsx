@@ -32,7 +32,6 @@ import { parseFilters, serializeFilters } from "@/lib/kol/filters";
 import { AddKolDialog } from "./AddKolDialog";
 import { DatabaseFilterBar } from "./DatabaseFilterBar";
 import { DatabaseTableClient } from "./DatabaseTableClient";
-import { ImportCsvDialog } from "./ImportCsvDialog";
 import { InsightsPanel } from "./InsightsPanel";
 import { QuickStats } from "./QuickStats";
 import { runDatabaseSearch } from "./search";
@@ -69,7 +68,6 @@ export default async function DatabasePage({ params, searchParams }: Props) {
 
   const t = await getTranslations("database");
   const tHeader = await getTranslations("database.header");
-  const tImport = await getTranslations("database.import");
   const tAddKol = await getTranslations("database.addKolForm");
   const tStatus = await getTranslations("relationshipStatus");
   const tEmpty = await getTranslations("database.emptyState");
@@ -141,20 +139,13 @@ export default async function DatabasePage({ params, searchParams }: Props) {
             </span>
             {tHeader("export")}
           </Link>
-          <ImportCsvDialog
-            triggerLabel={tHeader("import")}
-            triggerTitle={tHeader("importTooltip")}
-            dialogTitle={tImport("title")}
-            dialogBody={tImport("body")}
-            uploadLabel={tImport("uploadLabel")}
-            uploadingLabel={tImport("uploadingLabel")}
-            cancelLabel={tImport("cancelLabel")}
-            successTemplate={tImport("successTemplate")}
-            errorLabel={tImport("errorLabel")}
-            rateLimitLabel={tImport("rateLimitLabel")}
-            fileTooLargeLabel={tImport("fileTooLargeLabel")}
-            rowErrorTemplate={tImport("rowErrorTemplate")}
-          />
+          {/* BL-065-F003 — Import CSV trigger was moved to
+              /admin/kol-csv-import (admin role only). This /database
+              page is also unreachable in production (middleware 302→
+              /match per BL-064-F002), so dropping the import button
+              here doesn't reduce the marketer-facing surface; it just
+              keeps the page compiling after the ImportCsvDialog file
+              relocated. F006 deletes this whole route. */}
           <AddKolDialog
             triggerLabel={tHeader("addKol")}
             triggerTitle={tHeader("addKolTooltip")}

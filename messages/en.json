@@ -622,6 +622,26 @@
       "title": "AI suggestions",
       "placeholder": "Once campaign context loads, the top recommendations will appear here.",
       "shellTag": "F005 — wires up the AI-recommendation logic"
+    },
+    "bulk": {
+      "selected": "selected",
+      "addToCampaign": "Add to campaign",
+      "exportCsv": "Export CSV",
+      "delete": "Delete",
+      "clear": "Clear",
+      "confirmDelete": {
+        "title": "Soft-delete the selected KOLs?",
+        "body": "{count, plural, one {# KOL will be} other {# KOLs will be}} hidden from the workbench. Audit trail stays; an admin can restore them later.",
+        "cancel": "Cancel",
+        "confirm": "Delete",
+        "submitting": "Deleting…",
+        "errorRateLimit": "Too many bulk actions. Wait a moment and retry.",
+        "errorGeneric": "Delete failed. Please retry or contact support if the issue persists."
+      }
+    },
+    "adminEntry": {
+      "csvImport": "Import KOL CSV",
+      "csvImportTooltip": "Admin only — bulk-ingest a CSV file into the tenant pool."
     }
   },
   "campaigns": {
@@ -1660,6 +1680,14 @@
           "sampleNote": "Computed from current page (N = {n} of {total} total). Widen pageSize to broaden sample."
         }
       }
+    },
+    "kolCsvImport": {
+      "eyebrow": "ADMIN",
+      "title": "Bulk import KOLs from CSV",
+      "description": "Upload a CSV file to add multiple KOLs to the tenant pool at once. Rows with duplicate handles are skipped; per-row errors are reported back.",
+      "uploadHeading": "Upload CSV file",
+      "uploadBody": "Click below to open the file picker and select a .csv with KOL rows. The import dialog reports successes, skips, and any per-row errors.",
+      "backToMatch": "Back to Match workbench"
     }
   },
   "kol": {

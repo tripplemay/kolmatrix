@@ -33,19 +33,22 @@ describe("/database fidelity guards (MVP-vf-F003)", () => {
     expect(tableJsx).toBeGreaterThan(quickJsx);
   });
 
-  it("header CTAs (Export / Import / Add KOL) are wired and no longer disabled", () => {
+  it("header CTAs (Export / Add KOL) are wired and no longer disabled", () => {
     // BL-024-F001 unlocked all three; the guard now asserts the
     // opposite — they must NOT be ghost controls. Export is a <Link>
-    // to /api/database/export-csv?…; Import / Add KOL render via the
-    // ImportCsvDialog / AddKolDialog client components which keep the
-    // legacy data-testid on their trigger Buttons.
+    // to /api/database/export-csv?…; Add KOL renders via the
+    // AddKolDialog client component which keeps the legacy data-testid
+    // on its trigger Button.
+    //
+    // BL-065-F003: ImportCsvDialog has been relocated to
+    // /admin/kol-csv-import (spec §F003 + decision-point #C). The
+    // /database header no longer renders the Import trigger; that
+    // assertion moved to f003-fidelity.test.ts in /match.
     const page = read("page.tsx");
-    expect(page).toMatch(/<ImportCsvDialog\b/);
+    expect(page).not.toMatch(/<ImportCsvDialog\b/);
     expect(page).toMatch(/<AddKolDialog\b/);
     expect(page).toMatch(/href=\{[\s\S]*?\/api\/database\/export-csv/);
     expect(page).toMatch(/data-testid="database-export"/);
-    // No `disabled` attr inside the export Link block (the next two
-    // are clients so we just verify no `disabled` legacy Button stays).
     const exportBlock = page.match(/<Link[\s\S]*?data-testid="database-export"[\s\S]*?>/);
     expect(exportBlock, "export Link block").not.toBeNull();
     expect(exportBlock![0]).not.toMatch(/disabled\b/);

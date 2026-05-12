@@ -622,6 +622,26 @@
       "title": "AI 추천",
       "placeholder": "캠페인 컨텍스트가 로드되면 상위 추천 KOL이 여기에 표시됩니다.",
       "shellTag": "F005 — AI 추천 로직 연결"
+    },
+    "bulk": {
+      "selected": "선택됨",
+      "addToCampaign": "캠페인에 추가",
+      "exportCsv": "CSV 내보내기",
+      "delete": "삭제",
+      "clear": "지우기",
+      "confirmDelete": {
+        "title": "선택한 KOL을 소프트 삭제하시겠습니까?",
+        "body": "{count, plural, other {# 명의 KOL이 워크벤치에서 숨겨집니다}}. 감사 기록은 유지되며 관리자가 나중에 복원할 수 있습니다.",
+        "cancel": "취소",
+        "confirm": "삭제",
+        "submitting": "삭제 중…",
+        "errorRateLimit": "일괄 작업이 너무 잦습니다. 잠시 후 다시 시도하세요.",
+        "errorGeneric": "삭제 실패. 다시 시도하거나 문제가 계속되면 지원팀에 문의하세요."
+      }
+    },
+    "adminEntry": {
+      "csvImport": "KOL CSV 가져오기",
+      "csvImportTooltip": "관리자 전용 — CSV 파일로 테넌트 풀에 일괄 추가합니다."
     }
   },
   "campaigns": {
@@ -1661,6 +1681,14 @@
           "sampleNote": "Computed from current page (N = {n} of {total} total). Widen pageSize to broaden sample."
         }
       }
+    },
+    "kolCsvImport": {
+      "eyebrow": "관리자",
+      "title": "CSV로 KOL 일괄 가져오기",
+      "description": "CSV 파일을 업로드하여 여러 KOL을 한 번에 테넌트 풀에 추가하세요. 중복된 핸들이 있는 행은 건너뛰고, 행별 오류가 보고됩니다.",
+      "uploadHeading": "CSV 파일 업로드",
+      "uploadBody": "아래 버튼을 클릭하여 파일 선택기를 열고 KOL 행이 포함된 .csv 파일을 선택하세요. 가져오기 대화 상자에서 성공 수, 건너뛴 수, 행별 오류가 표시됩니다.",
+      "backToMatch": "Match 작업대로 돌아가기"
     }
   },
   "kol": {
