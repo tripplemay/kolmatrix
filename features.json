@@ -56,7 +56,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 4.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "/match 顶部 actions 区加 'Add KOL' 按钮 + Dialog（继承 /database 的 AddKolDialog）",
       "BL-063 已删 isSaved=true 字段写入；本批次仅 UI 路径迁移",
