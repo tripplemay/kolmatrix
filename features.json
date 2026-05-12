@@ -38,7 +38,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 6.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "BulkActionBar 从 /database 迁来，挂 Match 页主区底部（选中多行 KOL 触发显）",
       "操作集（决策点 #D 保留全部 + 加确认 modal）：批量加 campaign / 批量软删（含确认 modal）/ 批量导出 CSV",
