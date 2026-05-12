@@ -1,0 +1,537 @@
+/**
+ * BL-065-F002 · Unified filter sidebar for the /match workbench.
+ *
+ * Merges the BM1 /discovery FilterSidebar (15 dims) with the BM1
+ * /database DatabaseFilterBar (status pills + tier dropdown), drops the
+ * /database "Game" duplicate (it bound to the same `categories` param
+ * as the Category select — verified in DatabaseFilterBar.tsx L131-140),
+ * and keeps the AdvancedToggleCookie persistence so the advanced
+ * <details> section's open/closed state survives reloads.
+ *
+ * Layout (top-to-bottom):
+ *   1. Heading + clearAll
+ *   2. Relationship-status pill row (BM1 /database — All / Prospect /
+ *      First contact / Negotiating / Long-term / Paused / Terminated).
+ *      URL-driven anchors so the form submit doesn't reset them.
+ *   3. Basic 4 (Discovery): search / followers / regions chips /
+ *      categories chips.
+ *   4. Advanced <details> (collapsed): tier (Database) + 11 Discovery
+ *      advanced dimensions (platforms / languages / engagement /
+ *      avgViews / uploads / lastUpload / monetization / brandSafety /
+ *      knownCollabs / tags / channelAge / uploadFrequency / regionGroup /
+ *      includeNonGaming).
+ *
+ * URL-driven GET form; parseFilters rebuilds DiscoveryFilters on every
+ * render. No client state — checkbox chips that aren't ticked are
+ * simply absent from the next URL.
+ */
+import { cookies } from "next/headers";
+import { getTranslations } from "next-intl/server";
+
+import { ChipButton } from "@/components/common";
+import { Button, Input, Label, Select } from "@/components/ui";
+import {
+  BRAND_SAFETY_RATINGS,
+  CHANNEL_AGE_TIERS,
+  DISCOVERY_CATEGORIES,
+  DISCOVERY_PLATFORMS,
+  DISCOVERY_REGIONS,
+  LAST_UPLOAD_WINDOWS,
+  MONETIZATION_STATUSES,
+  REGION_GROUPS,
+  RELATIONSHIP_STATUSES,
+  UPLOAD_FREQUENCY_TIERS,
+  type DiscoveryFilters,
+} from "@/lib/kol/filters";
+import { cn } from "@/lib/utils";
+
+import { AdvancedToggleCookie } from "@/app/[locale]/(app)/discovery/AdvancedToggleCookie";
+
+const ADVANCED_COOKIE_NAME = "kolm_match_advanced";
+const STATUS_PILLS = ["all", ...RELATIONSHIP_STATUSES] as const;
+const TIER_OPTIONS = ["high", "medium", "low", "unrated"] as const;
+
+interface Props {
+  filters: DiscoveryFilters;
+  basePath: string;
+}
+
+export async function MatchFilterSidebar({ filters, basePath }: Props) {
+  const t = await getTranslations("discovery.filters");
+  const tRegions = await getTranslations("discovery.regions");
+  const tCategories = await getTranslations("discovery.categories");
+  const tPlatforms = await getTranslations("discovery.platforms");
+  const tStatus = await getTranslations("relationshipStatus");
+  const tDbFilters = await getTranslations("database.filters");
+
+  const cookieJar = await cookies();
+  const advancedCookie = cookieJar.get(ADVANCED_COOKIE_NAME)?.value;
+  const advancedOpen = advancedCookie === "1" || hasAnyAdvanced(filters);
+
+  const currentStatus = filters.relationshipStatuses[0] ?? "all";
+
+  return (
+    <form
+      action={basePath}
+      method="get"
+      role="search"
+      data-testid="match-filters"
+      className="glass-panel border-on-surface/5 flex flex-col gap-6 rounded-xl border p-5"
+    >
+      <div className="flex items-center justify-between">
+        <h2 className="text-base font-semibold text-white">{t("heading")}</h2>
+        <a
+          href={basePath}
+          className="text-on-surface-variant hover:text-cyan text-xs transition-colors"
+        >
+          {t("clearAll")}
+        </a>
+      </div>
+
+      {/* Relationship-status pills — anchors so they bypass the form
+          submit. Each pill carries the rest of the active filter state
+          via serializeFilters so clicking doesn't clear sidebar work. */}
+      <div className="space-y-2" data-testid="match-status-pills">
+        <Label>{tDbFilters("status")}</Label>
+        <div className="flex flex-wrap gap-1.5">
+          {STATUS_PILLS.map((s) => {
+            const overrides: Partial<DiscoveryFilters> = {
+              relationshipStatuses:
+                s === "all"
+                  ? []
+                  : [s as DiscoveryFilters["relationshipStatuses"][number]],
+              cursor: undefined,
+            };
+            const params = serializeFiltersInline(filters, overrides);
+            const href = params ? `${basePath}?${params}` : basePath;
+            const pressed = currentStatus === s;
+            return (
+              <a
+                key={s}
+                href={href}
+                data-testid={`match-status-pill-${s}`}
+                aria-current={pressed ? "true" : undefined}
+              >
+                <ChipButton pressed={pressed} type="button" tabIndex={-1}>
+                  {s === "all" ? tDbFilters("statusAll") : tStatus(s)}
+                </ChipButton>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Basic 4: search / followers / region / category */}
+      <Field label={t("search")}>
+        <Input
+          type="search"
+          name="search"
+          defaultValue={filters.search ?? ""}
+          placeholder={t("searchPlaceholder")}
+          maxLength={200}
+        />
+      </Field>
+
+      <Field label={t("followers")}>
+        <div className="grid grid-cols-2 gap-2">
+          <Input
+            type="number"
+            name="followersMin"
+            defaultValue={filters.followersMin ?? ""}
+            min={0}
+            placeholder={t("followersMin")}
+          />
+          <Input
+            type="number"
+            name="followersMax"
+            defaultValue={filters.followersMax ?? ""}
+            min={0}
+            placeholder={t("followersMax")}
+          />
+        </div>
+      </Field>
+
+      <ChipGroup label={t("region")}>
+        {DISCOVERY_REGIONS.map((code) => (
+          <ChipCheckbox
+            key={code}
+            name="regions"
+            value={code}
+            label={tRegions(code)}
+            checked={filters.regions.includes(code)}
+            dataTestid={`match-filter-region-${code}`}
+          />
+        ))}
+      </ChipGroup>
+
+      <ChipGroup label={t("category")}>
+        {DISCOVERY_CATEGORIES.map((c) => (
+          <ChipCheckbox
+            key={c}
+            name="categories"
+            value={c}
+            label={tCategories(c)}
+            checked={filters.categories.includes(c)}
+            dataTestid={`match-filter-category-${c}`}
+          />
+        ))}
+      </ChipGroup>
+
+      <details
+        data-match-advanced
+        className="border-outline-variant/30 -mx-1 rounded-lg border px-3 py-2 open:pb-4"
+        {...(advancedOpen ? { open: true } : {})}
+      >
+        <summary className="text-cyan-fixed cursor-pointer text-xs font-semibold tracking-wider uppercase select-none">
+          {t("advancedToggle")}
+        </summary>
+
+        <div className="mt-4 flex flex-col gap-6">
+          <Field label={tDbFilters("tier")}>
+            <Select name="tiers" defaultValue={filters.tiers?.[0] ?? ""}>
+              <option value="">—</option>
+              {TIER_OPTIONS.map((tier) => (
+                <option key={tier} value={tier} data-testid={`match-tier-option-${tier}`}>
+                  {tDbFilters(
+                    `tier${tier[0].toUpperCase()}${tier.slice(1)}` as
+                      | "tierHigh"
+                      | "tierMedium"
+                      | "tierLow"
+                      | "tierUnrated",
+                  )}
+                </option>
+              ))}
+            </Select>
+          </Field>
+
+          <ChipGroup label={t("platform")}>
+            {DISCOVERY_PLATFORMS.map((p) => (
+              <ChipCheckbox
+                key={p}
+                name="platforms"
+                value={p}
+                label={tPlatforms(p)}
+                checked={filters.platforms.includes(p)}
+              />
+            ))}
+          </ChipGroup>
+
+          <Field label={t("language")}>
+            <Input
+              type="text"
+              name="languages"
+              defaultValue={filters.languages.join(",")}
+              placeholder="en, zh, ja"
+            />
+          </Field>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label={t("engagement")} compact>
+              <Input
+                type="number"
+                name="engagementMin"
+                defaultValue={filters.engagementMin ?? ""}
+                min={0}
+                max={100}
+                step="0.1"
+                placeholder={t("engagementPlaceholder")}
+              />
+            </Field>
+            <Field label={t("avgViews")} compact>
+              <Input
+                type="number"
+                name="avgViewsMin"
+                defaultValue={filters.avgViewsMin ?? ""}
+                min={0}
+              />
+            </Field>
+            <Field label={t("uploads")} compact>
+              <Input
+                type="number"
+                name="uploadsPerMonthMin"
+                defaultValue={filters.uploadsPerMonthMin ?? ""}
+                min={0}
+              />
+            </Field>
+            <Field label={t("lastUpload")} compact>
+              <Select
+                name="lastUpload"
+                defaultValue={filters.lastUploadWithinDays?.toString() ?? ""}
+              >
+                <option value="">{t("lastUploadAny")}</option>
+                {LAST_UPLOAD_WINDOWS.map((d) => (
+                  <option key={d} value={d}>
+                    {t(`lastUpload${d}` as `lastUpload${30 | 90 | 180}`)}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          </div>
+
+          <ChipGroup label={t("monetization")}>
+            {MONETIZATION_STATUSES.map((m) => (
+              <ChipCheckbox
+                key={m}
+                name="monetization"
+                value={m}
+                label={t(
+                  `monetization${m[0]}${m.slice(1).toLowerCase()}` as
+                    | "monetizationVerified"
+                    | "monetizationMonetized"
+                    | "monetizationNone",
+                )}
+                checked={filters.monetizationStatuses.includes(m)}
+              />
+            ))}
+          </ChipGroup>
+
+          <ChipGroup label={t("brandSafety")}>
+            {BRAND_SAFETY_RATINGS.map((b) => (
+              <ChipCheckbox
+                key={b}
+                name="brandSafety"
+                value={b}
+                label={t(
+                  `brandSafety${b}` as
+                    | "brandSafetyG"
+                    | "brandSafetyPG"
+                    | "brandSafetyPG13"
+                    | "brandSafetyR",
+                )}
+                checked={filters.brandSafety.includes(b)}
+              />
+            ))}
+          </ChipGroup>
+
+          <Field label={t("knownCollabs")}>
+            <Input
+              type="text"
+              name="knownCollabs"
+              defaultValue={filters.knownCollabs.join(",")}
+              placeholder={t("knownCollabsPlaceholder")}
+            />
+          </Field>
+
+          <Field label={t("tags")}>
+            <Input
+              type="text"
+              name="tags"
+              defaultValue={filters.tags.join(",")}
+              placeholder={t("tagsPlaceholder")}
+            />
+          </Field>
+
+          <ChipGroup label={t("channelAge")}>
+            {CHANNEL_AGE_TIERS.map((tier) => (
+              <ChipCheckbox
+                key={tier}
+                name="channelAge"
+                value={tier}
+                label={t(
+                  `channelAge_${tier}` as
+                    | "channelAge_new"
+                    | "channelAge_established"
+                    | "channelAge_veteran",
+                )}
+                checked={filters.channelAge.includes(tier)}
+                dataTestid={`match-filter-channel-age-${tier}`}
+              />
+            ))}
+          </ChipGroup>
+
+          <ChipGroup label={t("uploadFrequency")}>
+            {UPLOAD_FREQUENCY_TIERS.map((tier) => (
+              <ChipCheckbox
+                key={tier}
+                name="uploadFrequency"
+                value={tier}
+                label={t(
+                  `uploadFrequency_${tier}` as
+                    | "uploadFrequency_active"
+                    | "uploadFrequency_semi-active"
+                    | "uploadFrequency_inactive",
+                )}
+                checked={filters.uploadFrequency.includes(tier)}
+                dataTestid={`match-filter-upload-freq-${tier}`}
+              />
+            ))}
+          </ChipGroup>
+
+          <ChipGroup label={t("regionGroup")}>
+            {REGION_GROUPS.map((grp) => (
+              <ChipCheckbox
+                key={grp}
+                name="regionGroup"
+                value={grp}
+                label={t(
+                  `regionGroup_${grp}` as
+                    | "regionGroup_asia"
+                    | "regionGroup_europe"
+                    | "regionGroup_americas"
+                    | "regionGroup_latam"
+                    | "regionGroup_oceania",
+                )}
+                checked={filters.regionGroup.includes(grp)}
+                dataTestid={`match-filter-region-group-${grp}`}
+              />
+            ))}
+          </ChipGroup>
+
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              name="includeNonGaming"
+              defaultChecked={filters.includeNonGaming}
+              className="border-outline-variant bg-surface-high text-cyan mt-1 h-4 w-4 rounded"
+            />
+            <span>
+              <span className="text-on-surface block text-sm">
+                {t("includeNonGaming")}
+              </span>
+              <span className="text-on-surface-variant/70 block text-[11px]">
+                {t("includeNonGamingHelper")}
+              </span>
+            </span>
+          </label>
+        </div>
+      </details>
+
+      <AdvancedToggleCookie cookieName={ADVANCED_COOKIE_NAME} />
+
+      <input type="hidden" name="sort" value={filters.sort} />
+
+      <Button type="submit" variant="primary-gradient" className="mt-2 w-full">
+        {t("apply")}
+      </Button>
+    </form>
+  );
+}
+
+function hasAnyAdvanced(f: DiscoveryFilters): boolean {
+  return (
+    (f.tiers?.length ?? 0) > 0 ||
+    f.platforms.length > 0 ||
+    f.languages.length > 0 ||
+    f.engagementMin != null ||
+    f.avgViewsMin != null ||
+    f.uploadsPerMonthMin != null ||
+    f.lastUploadWithinDays != null ||
+    f.channelAge.length > 0 ||
+    f.uploadFrequency.length > 0 ||
+    f.regionGroup.length > 0 ||
+    f.monetizationStatuses.length > 0 ||
+    f.brandSafety.length > 0 ||
+    f.knownCollabs.length > 0 ||
+    f.tags.length > 0 ||
+    f.includeNonGaming
+  );
+}
+
+function serializeFiltersInline(
+  f: DiscoveryFilters,
+  overrides: Partial<DiscoveryFilters>,
+): string {
+  const merged = { ...f, ...overrides };
+  const params = new URLSearchParams();
+  if (merged.aiQuery) params.set("ai", merged.aiQuery);
+  else if (merged.search) params.set("search", merged.search);
+  if (merged.followersMin != null)
+    params.set("followersMin", String(merged.followersMin));
+  if (merged.followersMax != null)
+    params.set("followersMax", String(merged.followersMax));
+  for (const v of merged.regions) params.append("regions", v);
+  for (const v of merged.categories) params.append("categories", v);
+  for (const v of merged.languages) params.append("languages", v);
+  for (const v of merged.platforms) params.append("platforms", v);
+  if (merged.engagementMin != null)
+    params.set("engagementMin", String(merged.engagementMin));
+  if (merged.avgViewsMin != null)
+    params.set("avgViewsMin", String(merged.avgViewsMin));
+  if (merged.uploadsPerMonthMin != null)
+    params.set("uploadsPerMonthMin", String(merged.uploadsPerMonthMin));
+  if (merged.lastUploadWithinDays)
+    params.set("lastUpload", String(merged.lastUploadWithinDays));
+  for (const v of merged.monetizationStatuses) params.append("monetization", v);
+  for (const v of merged.brandSafety) params.append("brandSafety", v);
+  for (const v of merged.relationshipStatuses)
+    params.append("relationshipStatus", v);
+  for (const v of merged.knownCollabs) params.append("knownCollabs", v);
+  for (const v of merged.tags) params.append("tags", v);
+  for (const v of merged.tiers ?? []) params.append("tiers", v);
+  for (const v of merged.channelAge) params.append("channelAge", v);
+  for (const v of merged.uploadFrequency) params.append("uploadFrequency", v);
+  for (const v of merged.regionGroup) params.append("regionGroup", v);
+  if (merged.includeNonGaming) params.set("includeNonGaming", "on");
+  if (merged.sort !== "value") params.set("sort", merged.sort);
+  return params.toString();
+}
+
+function Field({
+  label,
+  children,
+  compact,
+}: {
+  label: string;
+  children: React.ReactNode;
+  compact?: boolean;
+}) {
+  return (
+    <div className={compact ? "space-y-1" : "space-y-2"}>
+      <Label>{label}</Label>
+      {children}
+    </div>
+  );
+}
+
+function ChipGroup({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Field label={label}>
+      <div className="flex flex-wrap gap-2">{children}</div>
+    </Field>
+  );
+}
+
+interface ChipCheckboxProps {
+  name: string;
+  value: string;
+  label: string;
+  checked: boolean;
+  dataTestid?: string;
+}
+
+function ChipCheckbox({
+  name,
+  value,
+  label,
+  checked,
+  dataTestid,
+}: ChipCheckboxProps) {
+  return (
+    <label className="inline-flex">
+      <input
+        type="checkbox"
+        name={name}
+        value={value}
+        defaultChecked={checked}
+        className="peer sr-only"
+        data-testid={dataTestid}
+      />
+      <span
+        className={cn(
+          "inline-flex cursor-pointer items-center justify-center rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors select-none",
+          "border-outline-variant bg-surface/40 text-on-surface-variant hover:border-cyan/40 hover:text-cyan",
+          "peer-checked:border-cyan/60 peer-checked:bg-cyan/20 peer-checked:text-cyan",
+          "peer-focus-visible:ring-cyan/50 peer-focus-visible:ring-2",
+        )}
+      >
+        {label}
+      </span>
+    </label>
+  );
+}

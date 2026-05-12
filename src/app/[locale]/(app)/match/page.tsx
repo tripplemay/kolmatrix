@@ -1,54 +1,63 @@
 /**
- * BL-065-F001 · /match unified KOL workbench (server component).
+ * BL-065-F001 + F002 · /match unified KOL workbench (server component).
  *
- * Phase 2 Match-page internal rewrite: this file no longer re-exports
- * /discovery (the BL-064 A2 embed-old-components occupation strategy is
- * retired). It now owns the layout that merges BM1 /discovery (filter +
- * card grid) with /database (KPI strip + table) into a single workbench:
+ * Phase 2 Match-page internal rewrite. F001 retired the BL-064 A2
+ * embed-old-components occupation strategy; F002 then layered on the
+ * merged filter + search + save-search + active-filter chip surfaces:
  *
  *   ┌─────────────────────────────────────────────────────────────────┐
- *   │ Header (title + subtitle; actions placeholder for F004 AddKol)  │
+ *   │ Header (title + SaveSearchControls in actions area)              │
  *   ├─────────────────────────────────────────────────────────────────┤
- *   │ QuickStats KPI strip (full pool: total / active collabs / avg   │
- *   │   value-score / follower reach)                                  │
+ *   │ QuickStats KPI strip                                             │
+ *   ├─────────────────────────────────────────────────────────────────┤
+ *   │ MatchSearchBar (platform + keyword, full-width)                  │
  *   ├──────────────┬────────────────────────────────────┬─────────────┤
- *   │ FilterSidebar│ MatchSummaryBar                    │ AiSuggestion│
- *   │   (260px)    │ MatchKolCard grid  /  MatchKolTable│   Sidebar   │
- *   │              │                                    │   (320px,   │
- *   │              │ Pagination                         │    only if  │
- *   │              │                                    │    campaign │
+ *   │ MatchFilter- │ MatchActiveFilters (chip strip)    │ AiSuggestion│
+ *   │ Sidebar      │ MatchSummaryBar (count+sort+view)  │   Sidebar   │
+ *   │   (260px)    │ [table view] MatchTableSearch      │   (320px,   │
+ *   │              │ MatchKolCard grid / MatchKolTable  │    only if  │
+ *   │              │ Pagination                          │    campaign │
  *   │              │                                    │    Id set)  │
  *   └──────────────┴────────────────────────────────────┴─────────────┘
  *
- * Acceptance trace (spec §3 F001):
- *  - 不 import 旧 page.tsx → re-export gone, real component below.
- *  - 三段 layout → header / QuickStats / grid (sidebar | main | optional AI).
- *  - 双视图 → MatchSummaryBar toggles between card / table via ?view= URL param.
- *  - 默认排序 valueScore desc → DiscoveryFilters.sort defaults to "value"
- *    (BM1 parseFilters); apify-kol single-source pool via runMatchSearch
- *    (includeNonGaming forced true).
- *  - ?campaignId=xxx → AiSuggestionsSidebar mounted as shell (F005 wires it).
+ * F002 highlights:
+ *  - MatchFilterSidebar merges the BM1 /discovery FilterSidebar (15
+ *    dims) with the BM1 /database DatabaseFilterBar (status pills +
+ *    tier dropdown). Dropped the /database "Game" duplicate.
+ *  - MatchSearchBar inherits the /discovery SearchBar shell minus AI
+ *    chips (free-text semantic search is BL-068 territory, not BL-065).
+ *  - SaveSearchControls is reused unchanged from /discovery — the
+ *    SavedSearch JSON shape is filter-only (BL-044 #11:A), so basePath
+ *    rewire is the only change. F006 migrates the file into /match.
+ *  - MatchActiveFilters extends Discovery ActiveFilters with
+ *    relationshipStatus + tier chips so the two BM1 /database
+ *    dimensions also surface in the closable-chip strip.
+ *  - MatchTableSearch is the table-view-only inline search input
+ *    (acceptance §F002 "表格视图下加 inline column search").
  *
- * F002 will rebuild FilterSidebar to merge the dual discovery+database
- * filter sets; for F001 we reuse the BM1 /discovery FilterSidebar
- * verbatim with basePath rewired to /match. Same intentional re-use for
- * /database QuickStats / loadDatabaseStats — F006 migrates the imports
- * into /match before deleting the source folders.
+ * F003 onwards still rides /discovery for ImportCsvDialog (until F003
+ * moves it to /admin) and /database for QuickStats + loadDatabaseStats
+ * (until F006 copies them in and deletes the source folders).
  */
 import { getFormatter, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
-import { auth } from "@/auth";
-import { FilterSidebar } from "@/app/[locale]/(app)/discovery/FilterSidebar";
+import { SaveSearchControls } from "@/app/[locale]/(app)/discovery/SaveSearchControls";
 import { QuickStats } from "@/app/[locale]/(app)/database/QuickStats";
 import { loadDatabaseStats } from "@/app/[locale]/(app)/database/stats";
+import { auth } from "@/auth";
+import { withTenant } from "@/lib/db";
 import { parseFilters, serializeFilters } from "@/lib/kol/filters";
 import { cn } from "@/lib/utils";
 
 import { AiSuggestionsSidebar } from "./AiSuggestionsSidebar";
+import { MatchActiveFilters } from "./MatchActiveFilters";
+import { MatchFilterSidebar } from "./MatchFilterSidebar";
 import { MatchKolCard } from "./MatchKolCard";
 import { MatchKolTable } from "./MatchKolTable";
+import { MatchSearchBar } from "./MatchSearchBar";
 import { MatchSummaryBar } from "./MatchSummaryBar";
+import { MatchTableSearch } from "./MatchTableSearch";
 import { runMatchSearch } from "./search";
 import { parseView } from "./view-mode";
 
@@ -86,16 +95,26 @@ export default async function MatchPage({ params, searchParams }: Props) {
   const session = await auth();
   const tenantId = session?.user?.tenantId;
   if (!tenantId) redirect("/login");
+  const userId = session.user.id;
 
-  const [searchResult, stats] = await Promise.all([
+  const [searchResult, stats, savedSearches] = await Promise.all([
     runMatchSearch(tenantId, filters),
     loadDatabaseStats(tenantId),
+    withTenant(tenantId, (tx) =>
+      tx.savedSearch.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+        select: { id: true, name: true, filters: true, createdAt: true },
+      }),
+    ),
   ]);
 
   const t = await getTranslations("match.header");
   const tEmpty = await getTranslations("discovery.emptyState");
   const tPager = await getTranslations("discovery.pagination");
   const tStatus = await getTranslations("relationshipStatus");
+  const tHeader = await getTranslations("discovery.header");
   const format = await getFormatter();
 
   const basePath = `/${locale}/match`;
@@ -174,16 +193,47 @@ export default async function MatchPage({ params, searchParams }: Props) {
             {t("subtitle")}
           </p>
         </div>
+        <div className="flex items-center gap-3">
+          <SaveSearchControls
+            basePath={basePath}
+            currentFilters={filters}
+            initialItems={savedSearches.map((r) => ({
+              id: r.id,
+              name: r.name,
+              filters: r.filters as Record<string, unknown>,
+              createdAt: r.createdAt.toISOString(),
+            }))}
+            labels={{
+              saveSearch: tHeader("saveSearch"),
+              savePrompt: tHeader("saveSearchPrompt"),
+              saveConfirm: tHeader("saveSearchSaved"),
+              mySearches: tHeader("mySearches", {
+                count: savedSearches.length,
+              }),
+              loadPlaceholder: tHeader("loadSearchPlaceholder"),
+              saveFailed: tHeader("saveSearchFailed"),
+            }}
+          />
+        </div>
       </header>
 
       <QuickStats stats={stats} />
 
+      <MatchSearchBar
+        basePath={basePath}
+        filters={filters}
+        view={view}
+        campaignId={campaignId}
+      />
+
       <div className={cn("grid gap-6", mainColumns)}>
         <aside className="lg:sticky lg:top-20 lg:self-start">
-          <FilterSidebar filters={filters} basePath={basePath} />
+          <MatchFilterSidebar filters={filters} basePath={basePath} />
         </aside>
 
         <section className="flex min-w-0 flex-col gap-4">
+          <MatchActiveFilters filters={filters} basePath={basePath} />
+
           <MatchSummaryBar
             total={searchResult.total}
             sort={filters.sort}
@@ -191,6 +241,10 @@ export default async function MatchPage({ params, searchParams }: Props) {
             withFilter={withFilter}
             withParams={withParams}
           />
+
+          {view === "table" && searchResult.items.length > 0 ? (
+            <MatchTableSearch basePath={basePath} search={filters.search ?? ""} />
+          ) : null}
 
           {searchResult.items.length === 0 ? (
             <div
