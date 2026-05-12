@@ -22,7 +22,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 9.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "FilterSidebar 合并 Discovery FilterSidebar + Database DatabaseFilterBar 重复部分（platform / category / tier / region / etc）",
       "SearchBar 保留（继承 Discovery logic），表格视图下加 inline column search",
