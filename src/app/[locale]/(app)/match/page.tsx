@@ -45,6 +45,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 
 import { SaveSearchControls } from "@/app/[locale]/(app)/discovery/SaveSearchControls";
+import { AddKolDialog } from "@/app/[locale]/(app)/database/AddKolDialog";
 import { QuickStats } from "@/app/[locale]/(app)/database/QuickStats";
 import { loadDatabaseStats } from "@/app/[locale]/(app)/database/stats";
 import { auth } from "@/auth";
@@ -119,6 +120,8 @@ export default async function MatchPage({ params, searchParams }: Props) {
   const tStatus = await getTranslations("relationshipStatus");
   const tHeader = await getTranslations("discovery.header");
   const tAdminEntry = await getTranslations("match.adminEntry");
+  const tDbHeader = await getTranslations("database.header");
+  const tAddKol = await getTranslations("database.addKolForm");
   const format = await getFormatter();
 
   const isAdmin = isAdminRole(session.user.role);
@@ -235,6 +238,27 @@ export default async function MatchPage({ params, searchParams }: Props) {
               loadPlaceholder: tHeader("loadSearchPlaceholder"),
               saveFailed: tHeader("saveSearchFailed"),
             }}
+          />
+          <AddKolDialog
+            triggerLabel={tDbHeader("addKol")}
+            triggerTitle={tDbHeader("addKolTooltip")}
+            dialogTitle={tAddKol("title")}
+            platformLabel={tAddKol("platformLabel")}
+            handleLabel={tAddKol("handleLabel")}
+            handlePlaceholder={tAddKol("handlePlaceholder")}
+            displayNameLabel={tAddKol("displayNameLabel")}
+            urlLabel={tAddKol("urlLabel")}
+            emailLabel={tAddKol("emailLabel")}
+            followerCountLabel={tAddKol("followerCountLabel")}
+            submitLabel={tAddKol("submitLabel")}
+            submittingLabel={tAddKol("submittingLabel")}
+            cancelLabel={tAddKol("cancelLabel")}
+            successLabel={tAddKol("successLabel")}
+            errorLabel={tAddKol("errorLabel")}
+            duplicateLabel={tAddKol("duplicateLabel")}
+            rateLimitLabel={tAddKol("rateLimitLabel")}
+            invalidUrlLabel={tAddKol("invalidUrlLabel")}
+            invalidEmailLabel={tAddKol("invalidEmailLabel")}
           />
         </div>
       </header>
