@@ -71,7 +71,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 8.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "现 SmartMatchDialog（按需触发 modal）改为 Match 页右侧 sidebar，?campaignId=xxx 时自动显（决策点 #B sidebar 起步，BL-066 升级为主面板）",
       "Sidebar 显 top N AI 推荐（接现 AiSuggestionsClient logic，BL-066 升级完整主面板）",
