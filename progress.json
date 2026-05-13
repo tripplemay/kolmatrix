@@ -1,11 +1,11 @@
 {
-  "status": "fixing",
+  "status": "reverifying",
   "user_goal": "BL-065-match-page-internal-rewrite — ADR-013 AI Native 转向 Phase 2 第一批：Match 页内部 UI 实质重写，合并 Discovery + Database 为统一 KOL 工作台。7 features：F001 Match 页 layout + 双视图 / F002 Filter+Search+SaveSearchControls 合并 / F003 BulkActionBar 集成 + ImportCsvDialog 移 /admin / F004 AddKolDialog 保留 + UI 集成 / F005 SmartMatchDialog → AI 推荐 sidebar (campaign-context mode) / F006 i18n 5 语言 + e2e + 删 /discovery + /database 整页 27 文件 / F007 staging + prod redeploy + 24h 监控 + signoff。预估 ~5-7 day Generator + 1 day Reviewer。本批次完成后 BL-066 Campaign 详情页 AI 推荐主面板 + BL-048 valueScore 优化（Phase 2 并行）启动。本批次不动 Campaign 详情页内部 UI（BL-066 工作）/ B3 自然语言 refine（BL-068）/ C3 完整 explainability（BL-067 — 本批次仅 C2 占位）。关联 docs/specs/BL-065-match-page-internal-rewrite-spec.md / ADR-013 / vision §2 §3 / roadmap §4。",
   "total_features": 7,
   "completed_features": 7,
-  "fix_rounds": 0,
+  "fix_rounds": 1,
   "current_sprint": "BL-065-match-page-internal-rewrite",
-  "last_updated": "2026-05-13T15:37+0800",
+  "last_updated": "2026-05-13T16:25+0800",
   "reference_docs": [
     "docs/specs/BL-065-match-page-internal-rewrite-spec.md",
     "docs/adr/ADR-013-ai-native-product-pivot.md",
@@ -26,37 +26,29 @@
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "FAIL — BL-065 Reviewer verification found one blocking runtime issue after otherwise green L1/prod checks. L1: codex setup/wait PASS, lint 0 errors/2 existing warnings, typecheck PASS after clearing stale .next generated types, npm test 161 files / 1140 tests PASS, match-fidelity E2E 7 passed / 22 skipped. Full E2E first run had 20 login-timeout failures from repeated local login; rerunning failed specs with local DISABLE_LOGIN_RATELIMIT=true passed 26 / skipped 28. Production read-only audit PASS=7 FAIL=0 WARN=1; WARN row-count gap was manually covered via superuser read total=3941 live=1357 soft_deleted=2584. Blocking issue: local admin route probe renders /en/admin/kol-csv-import for admin but server logs next-intl FORMATTING_ERROR because successTemplate and rowErrorTemplate are formatted without required variables.",
-    "pass_count": 6,
-    "partial_count": 0,
-    "fail_count": 1,
-    "issues": [
-      {
-        "id": "BL-065-R1",
-        "severity": "blocker",
-        "scope": "F003 / /en/admin/kol-csv-import",
-        "summary": "Admin CSV import page renders with next-intl FORMATTING_ERROR on initial admin access.",
-        "evidence": "Local role-gate probe: admin@kolmatrix.local reached http://localhost:3099/en/admin/kol-csv-import and page body contained import/csv, but Next server logged Error: FORMATTING_ERROR: The intl string context variable \"imported\" was not provided to the string \"Imported {imported} KOL(s); skipped {skipped}.\" at KolCsvImportPage src/app/[locale]/admin/kol-csv-import/page.tsx:79 successTemplate={tImport(\"successTemplate\")}; also Error: FORMATTING_ERROR variable \"row\" not provided for rowErrorTemplate={tImport(\"rowErrorTemplate\")}.",
-        "expected_fix": "Do not evaluate parameterized i18n templates without interpolation variables during render. Pass raw template strings to the client or format them only when imported/skipped/row/message values are available, then rerun Reviewer L1 admin route probe."
-      }
-    ]
-  },
+  "evaluator_feedback": null,
   "generator_handoff": {
-    "from": "Reviewer",
-    "to": "Generator",
-    "status": "fixing",
-    "summary": "Please fix BL-065-R1 before signoff: /en/admin/kol-csv-import logs next-intl FORMATTING_ERROR on initial admin render because successTemplate and rowErrorTemplate are evaluated without required variables.",
+    "from": "Generator",
+    "to": "Reviewer",
+    "status": "reverifying",
+    "summary": "BL-065-R1 fixed @ 4562895 — /admin/kol-csv-import server render now uses tImport.raw() for the two parameterized templates (successTemplate + rowErrorTemplate). Latent ICU formatter bug from /database route relocation is resolved.",
+    "fix_commit": "4562895",
+    "fix_root_cause": "ImportCsvDialog substitutes {imported}/{skipped}/{row}/{message} via String.replace (raw template, not ICU). Server-side tImport(key) ran them through next-intl's ICU formatter and threw FORMATTING_ERROR. The same wiring existed on /database/page.tsx before BL-065 (BL-024-F001-2) but middleware 302'd /database → /match so the page never actually rendered. F003 mounted the dialog on /admin/kol-csv-import which DOES render, exposing the bug.",
+    "fix_summary": "tImport(\"successTemplate\") → tImport.raw(\"successTemplate\") as string (same for rowErrorTemplate). .raw(key) is next-intl's documented API for retrieving the literal message string without ICU evaluation (use-intl/dist/types/core/createBaseTranslator.d.ts).",
+    "regression_test": "src/app/[locale]/admin/kol-csv-import/__tests__/page-i18n-fidelity.test.ts — 2 cases: (a) successTemplate + rowErrorTemplate use .raw(); (b) plain non-parameterized keys (title/body/uploadLabel/etc.) stay on tImport() to preserve future ICU support.",
+    "ci_status": "CI run 25787001116 全 8 jobs PASS",
+    "staging_status": "staging deploy verified @ 4562895 (curl /api/health git_sha matches HEAD; pm2 logs 200 lines no FORMATTING_ERROR after reload)",
     "required_reverify": [
-      "Start Codex L1 on port 3099",
-      "Login as admin@kolmatrix.local and open /en/admin/kol-csv-import",
-      "Confirm page renders without server/client FORMATTING_ERROR",
-      "Confirm marketer@kolmatrix.local is still redirected to /en/match",
-      "Run targeted tests covering the import page/i18n path"
+      "L1 (lint / typecheck / vitest / playwright) on c66cb0eb+",
+      "Login as admin@kolmatrix.local on local 3099 → /en/admin/kol-csv-import → confirm server logs no FORMATTING_ERROR",
+      "Login as marketer@kolmatrix.local → /en/admin/kol-csv-import → confirm 302 → /en/match",
+      "Confirm src/app/[locale]/admin/kol-csv-import/__tests__/page-i18n-fidelity.test.ts 2/2 PASS",
+      "Optional: prod re-audit (no prod redeploy needed unless user acks — fix is staging-only verified). If user gates prod, redeploy + scripts/bl065-f007-prod-audit.sh again.",
+      "Finalize signoff §8 + §9 + flip progress.status reverifying → done"
     ]
   },
   "session_notes": {
-    "johnsong": "[2026-05-13 15:00 BJT Generator johnsong — F007 prod deploy + audit 完成 / building → verifying]\n\n本会话产出：F007 — staging dogfood gate + prod redeploy + 视觉 baseline regen + audit + signoff draft 落地（completed 7/7）。Generator 部分收工，交付 Codex Reviewer 复验。\n\n工作流（5/13 14:45-15:00 BJT，~15min）：\n  1. c5b5c31 chore(BL-065-F007) — audit script + signoff doc draft（推送后 CI 自动绿 run 25783042626）\n  2. update-visual-baselines workflow run 25783090333 触发并完成 — 唯一 commit：dashboard.png 微调 168818→164303 bytes（auto-commit by workflow）\n  3. deploy-prod.yml run 25783092395 触发并完成（用户 ack 立即触发）— prod deployed @ c5b5c31，4min completed\n  4. 拉 e519c50（baseline regen commit）+ verify prod health：git_sha=c5b5c31, status=healthy ✓\n  5. SSH prod 跑 bl065-f007-prod-audit.sh：PASS=7 FAIL=0 WARN=1（WARN 是 sudo -u tripplezhou psql 命令权限不足，改用 sudo -u postgres + 表名 kol/snake_case 后 manually 验 Kol total=3941 live=1357 soft-deleted=2584，pattern intact）\n  6. signoff draft 更新：§1 部署信息填 prod + audit + baseline regen 三 runs；§2 F007 状态从 in-progress 切到 Generator 完成；§7 baseline regen 实际结果（only dashboard.png）+ 新增 §7.1 audit 7 sections 全 PASS\n\n关键决策（用户 5/13 ack）：\n- 立即 prod redeploy（不等 1 周 dogfood）— staging verified @ abdec9f / CI 全绿 / revert 简单\n- update-visual-baselines workflow 现在触发（同 baseline 漂移现象 dashboard.png 多次 batch 都遇到）\n- 24h pm2 monitor 由 Reviewer 自行评估（不预设 Generator 倾向）\n- match-fidelity.spec.ts 是功能型 E2E 无 toHaveScreenshot：BL-066 升级主面板时再加视觉 baseline，本批次不补\n\n下一步 Reviewer 续接（status=verifying）：\n- 拉 main HEAD（c5b5c31 + 后续 baseline regen + audit script fix）\n- 跑 L1（lint / typecheck / vitest / playwright），复验 F001-F007 全 acceptance\n- 跑 scripts/bl065-f007-prod-audit.sh on prod 二次 audit\n- 检查 24h pm2 monitor 窗口（用户授权 Reviewer 评估加速 vs 走完）\n- spot check 团队反馈（spec §6 14 项清单已写入 signoff §6）\n- signoff v2 + progress.json reverifying → done\n\n不可逆操作清单（F006）：\n- /discovery + /database 整文件夹 + 整 i18n 完整化已落地 + 旧 i18n 键 deprecate 待 BL-070 二次清理\n- 视觉 baseline en-discovery + en-database 已删（visual-baselines-shape.test.ts 22 baselines）\n- 7 文件 git mv 保留 blame：SaveSearchControls / AdvancedToggleCookie / AddKolDialog / AddToCampaignDialog / QuickStats / stats.ts / addKolAction.test.ts\n\n本批次（BL-065）Generator 工作完成。Phase 2 第一批解锁后续：BL-066 Campaign 详情页 AI 推荐主面板 / BL-067 C3 explainability / BL-068 B3 自然语言 refine / BL-048 valueScore（Phase 2 并行）/ BL-070 二次清理。",
+    "johnsong": "[2026-05-13 16:25 BJT Generator johnsong — BL-065-R1 fixing → reverifying (fix_rounds=1)]\n\nReviewer 在 verifying 时发现 BL-065-R1 blocker — /en/admin/kol-csv-import 渲染时 next-intl 抛 FORMATTING_ERROR。Generator 修复 + 提交。\n\n诊断 / 修复链：\n  1. 根因：ImportCsvDialog 用 String.replace 替换 {imported}/{skipped}/{row}/{message} tokens（raw template，非 ICU），但 page.tsx server-side 调 tImport(\"successTemplate\") 让 next-intl ICU 格式器评估未绑定占位符抛错。Latent bug — 老 /database/page.tsx 同样写法存在但被 middleware 302 重定向掉，从未实际渲染。F003 把 dialog 挪到 /admin/kol-csv-import 路由（确实渲染），bug 暴露。\n  2. 修复 @ 4562895：tImport(\"successTemplate\") → tImport.raw(\"successTemplate\") as string（同理 rowErrorTemplate）。`.raw(key)` 是 next-intl 文档化 API（use-intl/dist/types/core/createBaseTranslator.d.ts），返回字面模板字符串绕过 ICU。\n  3. 回归守门 @ 同 commit：新建 src/app/[locale]/admin/kol-csv-import/__tests__/page-i18n-fidelity.test.ts 2 case — (a) 参数化模板必须用 .raw；(b) 非参数化 key 保持 tImport()（不污染 future ICU pluralization）。\n  4. L1 PASS（lint 0 / typecheck 0 / vitest 2/2）+ CI run 25787001116 全 8 jobs 绿。\n  5. SSH staging deploy @ 4562895 完成。git_sha=4562895 == HEAD ✓。pm2 logs 200 lines after reload 无 FORMATTING_ERROR。\n\n切 status fixing → reverifying，fix_rounds 0 → 1，evaluator_feedback 清空，generator_handoff 重写为 Generator→Reviewer。\n\nReviewer 复验任务（generator_handoff.required_reverify）：\n  - L1 全量\n  - admin/marketer 双角色 admin/kol-csv-import 路由本地探针（admin 渲染无 FORMATTING_ERROR；marketer 302 到 /match）\n  - 回归测试 2/2 PASS 确认\n  - prod redeploy 可选（fix 仅 staging 验证；用户 ack 后再触发 prod）\n  - 完成 signoff §8 §9 + reverifying → done\n\n不在 fix 范围（保留给 Reviewer / 后续批次）：\n  - prod redeploy 时间窗（用户 5/13 已决策立即 prod，但本 R1 是 staging-verified 修复，再次 prod 需新 ack）\n  - 24h pm2 monitor 决策仍归 Reviewer\n  - BL-070 二次清理：旧 discovery.* + database.* i18n 键 + KEEP_AS_EN_PATHS 旧条目（这次 BL-065-R1 暴露的 i18n 键路径仍在 database.import.*，未迁移到 admin.kolCsvImport.* — F006 故意留旧并存）",
     "Reviewer": "[2026-05-13 15:05 - 15:37 北京 Codex Reviewer — BL-065 verifying → fixing]\n\n按用户「开始」执行 BL-065 Reviewer 验收。先 git pull --ff-only 确认 up to date；启动 Codex L1：bash scripts/test/codex-setup.sh 完成 npm ci、docker PG/Redis、prisma migrate deploy、seed，并在 3099 启动 Next；codex-wait /login 307 ready。\n\nL1：lint 0 error / 2 existing warnings；Vitest 161 files / 1140 tests PASS；typecheck 首轮因 stale .next/types/validator.ts 仍引用已删除 /database、/discovery page 失败，停止 dev server、rm -rf .next 后 npm run typecheck PASS。Match E2E：bash scripts/test/codex-e2e.sh tests/e2e/match-fidelity.spec.ts --workers=1 → 7 passed / 22 skipped。Full E2E：首轮 68 passed / 20 failed / 28 skipped，失败全部是各 spec 自行重复登录后的 post-login wait timeout；用本地 DISABLE_LOGIN_RATELIMIT=true 重启 3099 后复跑失败 spec 文件 → 26 passed / 28 skipped，判为 local login rate-limit/suite isolation，不阻断。\n\n生产只读 audit：ssh tripplezhou@34.180.93.185 'bash /opt/kolmatrix/scripts/bl065-f007-prod-audit.sh'，exit 0，PASS=7 FAIL=0 WARN=1。prod health healthy，git_sha=c5b5c31；/en/match、legacy /discovery、legacy /database、/admin/kol-csv-import 均进入预期 auth/redirect gate；pm2 last 500 lines 无 BL-065 match 相关错误。WARN 是脚本内 Kol row-count SQL 权限/连接路径未取到；Reviewer 补跑 sudo -u postgres psql 只读查询，total=3941 live=1357 soft_deleted=2584，soft-delete pattern intact。\n\n本地角色门禁探针：admin@kolmatrix.local 可访问 /en/admin/kol-csv-import 且页面含 import/csv；marketer@kolmatrix.local 访问该路由后回 /en/match。但 admin 页面初始渲染时 Next server 记录 next-intl FORMATTING_ERROR：successTemplate 缺 imported/skipped 变量，rowErrorTemplate 缺 row/message 变量。该问题属于 F003 admin CSV import 页真实运行时错误，阻断 signoff。已更新 docs/test-reports/BL-065-signoff-2026-05-13.md §8/§9，progress.status=fixing，generator_handoff 指向 BL-065-R1。"
   },
   "features": []
