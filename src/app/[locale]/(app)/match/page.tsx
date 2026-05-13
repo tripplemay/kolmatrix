@@ -79,6 +79,9 @@ function compactFollowers(n: number): string {
   return String(n);
 }
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 function pickCampaignId(
   raw: Record<string, string | string[] | undefined>,
 ): string | null {
@@ -86,7 +89,16 @@ function pickCampaignId(
   const value = Array.isArray(v) ? v[0] : v;
   if (!value || typeof value !== "string") return null;
   const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
+  // BL-065-F006 — Prisma rejects non-UUID ids when querying a uuid
+  // column; the BL-064 redirect deliberately preserves stale or
+  // bogus campaign ids (e.g. `/campaigns/abc-123 → /match?campaignId=abc-123`)
+  // for the ia-refactor-redirects E2E, so we must validate the shape
+  // before passing it to findFirst — otherwise the page 500s on every
+  // non-uuid query param. Mirrors the ?campaignId= AI sidebar gate in
+  // BL-065-F005 (sidebar silently drops when the campaign can't be
+  // resolved tenant-scoped).
+  if (trimmed.length === 0 || !UUID_RE.test(trimmed)) return null;
+  return trimmed;
 }
 
 export default async function MatchPage({ params, searchParams }: Props) {

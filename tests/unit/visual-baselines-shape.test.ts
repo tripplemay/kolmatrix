@@ -42,8 +42,9 @@ const EXPECTED_BASELINES: ReadonlyArray<{ name: string; width: number }> = [
   { name: "en-campaign-detail.png", width: 1280 },
   { name: "en-campaigns.png", width: 1280 },
   { name: "en-crm.png", width: 1280 },
-  { name: "en-database.png", width: 1280 },
-  { name: "en-discovery.png", width: 1280 },
+  // BL-065-F006 — en-database.png + en-discovery.png removed alongside
+  // the deleted /database + /discovery routes. F007 will add the new
+  // en-match.png baseline via the update-visual-baselines workflow.
   { name: "en-knowledge-base-bottom.png", width: 1280 },
   { name: "en-knowledge-base.png", width: 1280 },
   { name: "en-kols-detail.png", width: 1280 },

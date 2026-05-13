@@ -22,8 +22,10 @@ const APP_ROOT = resolve(__dirname, "../../src/app/[locale]/(app)");
 
 const PAGES_THAT_NEED_ERROR_TSX = [
   "dashboard",
-  "discovery",
-  "database",
+  // BL-065-F006 — `discovery` + `database` routes deleted alongside
+  // their error.tsx files (the new /match workbench is the
+  // replacement surface and ships its own error.tsx).
+  "match",
   "kols/[id]",
   "knowledge-base",
   "campaigns",
