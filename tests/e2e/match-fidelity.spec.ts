@@ -59,8 +59,11 @@ test.describe("/match fidelity (BL-065-F006)", () => {
     if ((await firstRow.count()) === 0) {
       test.skip(true, "No KOLs in seed — selection path unreachable");
     }
-    // Click the row's checkbox (the first <input type="checkbox"> inside).
-    await firstRow.locator('input[type="checkbox"]').first().check();
+    // The shadcn Checkbox renders a sr-only native <input> plus a
+    // visible <button role="checkbox">. Click the visible button; the
+    // native input is aria-hidden + outside viewport so check() retries
+    // forever waiting for visibility (CI run 25781768048).
+    await firstRow.getByRole("checkbox").click();
     await expect(page.getByTestId("match-bulk-bar")).toBeVisible();
     await expect(
       page.getByTestId("match-bulk-bar-add-to-campaign"),
