@@ -145,9 +145,11 @@ section "[7] Backup row counts on the Kol table — soft-delete pattern intact"
 # F003 bulk-soft-delete sets deletedAt=now() on selected rows. Confirm
 # the audit-log captures every action and no Kol row was hard-deleted.
 # We just spot-check counts; deeper review lives in the Reviewer signoff.
-KOL_TOTAL=$(sudo -u tripplezhou psql -d kolmatrix -tA -c "SELECT count(*) FROM \"Kol\";" 2>/dev/null || echo "?")
-KOL_LIVE=$(sudo -u tripplezhou psql -d kolmatrix -tA -c "SELECT count(*) FROM \"Kol\" WHERE \"deletedAt\" IS NULL;" 2>/dev/null || echo "?")
-KOL_DELETED=$(sudo -u tripplezhou psql -d kolmatrix -tA -c "SELECT count(*) FROM \"Kol\" WHERE \"deletedAt\" IS NOT NULL;" 2>/dev/null || echo "?")
+KOL_COUNTS=$(sudo -u postgres psql -d kolmatrix -tA -c "SELECT count(*) || '|' || count(*) FILTER (WHERE deleted_at IS NULL) || '|' || count(*) FILTER (WHERE deleted_at IS NOT NULL) FROM kol;" 2>/dev/null || echo "?|?|?")
+KOL_TOTAL="${KOL_COUNTS%%|*}"
+KOL_REST="${KOL_COUNTS#*|}"
+KOL_LIVE="${KOL_REST%%|*}"
+KOL_DELETED="${KOL_REST#*|}"
 echo "Kol total=$KOL_TOTAL  live=$KOL_LIVE  soft-deleted=$KOL_DELETED"
 if [ "$KOL_TOTAL" != "?" ] && [ "$KOL_LIVE" != "?" ]; then
   green "✓ Kol soft-delete pattern intact (total ≥ live, by construction)"

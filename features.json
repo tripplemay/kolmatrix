@@ -107,7 +107,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "staging deploy via deploy-staging.yml",
       "视觉 baseline regen via update-visual-baselines workflow（Match 页新视觉 + 删除的 /discovery /database 旧 baseline 自动失效）",
