@@ -68,6 +68,15 @@ export default async function KolCsvImportPage({ params }: Props) {
         <p className="mb-4 text-xs text-on-surface-variant">
           {t("uploadBody")}
         </p>
+        {/* BL-065-R1 — successTemplate + rowErrorTemplate contain
+            `{imported}` / `{skipped}` / `{row}` / `{message}` tokens
+            that the client-side dialog substitutes via String.replace
+            (not next-intl ICU). Calling `tImport("…")` evaluates them
+            as ICU placeholders and throws FORMATTING_ERROR on server-
+            side render (latent bug exposed when F003 mounted this
+            dialog on a route that actually renders, vs the old
+            /database that 302'd away). `.raw(key)` bypasses ICU
+            evaluation and returns the literal template string. */}
         <ImportCsvDialog
           triggerLabel={tHeader("import")}
           triggerTitle={tHeader("importTooltip")}
@@ -76,11 +85,11 @@ export default async function KolCsvImportPage({ params }: Props) {
           uploadLabel={tImport("uploadLabel")}
           uploadingLabel={tImport("uploadingLabel")}
           cancelLabel={tImport("cancelLabel")}
-          successTemplate={tImport("successTemplate")}
+          successTemplate={tImport.raw("successTemplate") as string}
           errorLabel={tImport("errorLabel")}
           rateLimitLabel={tImport("rateLimitLabel")}
           fileTooLargeLabel={tImport("fileTooLargeLabel")}
-          rowErrorTemplate={tImport("rowErrorTemplate")}
+          rowErrorTemplate={tImport.raw("rowErrorTemplate") as string}
         />
       </section>
 
