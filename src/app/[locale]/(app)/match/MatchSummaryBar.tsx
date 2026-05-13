@@ -34,8 +34,8 @@ export async function MatchSummaryBar({
   withFilter,
   withParams,
 }: Props) {
-  const tSummary = await getTranslations("discovery.summary");
-  const tSort = await getTranslations("discovery.sort");
+  const tSummary = await getTranslations("match.summary");
+  const tSort = await getTranslations("match.sort");
   const tView = await getTranslations("match.view");
 
   return (

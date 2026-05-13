@@ -14,8 +14,6 @@ import { describe, expect, it } from "vitest";
 
 const MATCH_DIR = resolve(__dirname, "..");
 const ADMIN_DIR = resolve(__dirname, "../../../admin/kol-csv-import");
-const DATABASE_DIR = resolve(__dirname, "../../database");
-
 function read(dir: string, relative: string): string {
   return readFileSync(resolve(dir, relative), "utf8");
 }
@@ -93,12 +91,13 @@ describe("/admin/kol-csv-import route (BL-065-F003)", () => {
     expect(dialog).toMatch(/export function ImportCsvDialog/);
   });
 
-  it("the /database page no longer imports or renders ImportCsvDialog", () => {
-    const dbPage = read(DATABASE_DIR, "page.tsx");
-    expect(dbPage).not.toMatch(/<ImportCsvDialog\b/);
-    expect(dbPage).not.toMatch(/from "\.\/ImportCsvDialog"/);
-    // The dropped tImport translator alias must also be gone.
-    expect(dbPage).not.toMatch(/const tImport = await getTranslations/);
+  it("the /database folder is deleted outright (BL-065-F006 follow-on)", () => {
+    // F003 originally checked that /database/page.tsx no longer imported
+    // ImportCsvDialog. F006 then deleted the entire /database folder, so
+    // the only contract that still makes sense is "no /database files
+    // exist at all". Skipped at the path level because resolving a
+    // missing directory would throw.
+    expect(() => readFileSync(resolve(__dirname, "../../database/page.tsx"))).toThrow();
   });
 });
 

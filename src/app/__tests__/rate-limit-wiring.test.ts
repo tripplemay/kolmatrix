@@ -61,17 +61,11 @@ vi.mock("@/lib/roi/queries", () => ({
   loadRoiCampaigns: (...args: unknown[]) => loadRoiCampaignsMock(...args),
 }));
 
-const generateDatabaseIntelligenceMock = vi.fn();
-vi.mock("@/lib/kol-database/intelligence", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/kol-database/intelligence")>(
-    "@/lib/kol-database/intelligence",
-  );
-  return {
-    ...actual,
-    generateDatabaseIntelligence: (...args: unknown[]) =>
-      generateDatabaseIntelligenceMock(...args),
-  };
-});
+// BL-065-F006 — generateDatabaseInsightsAction was tied to the
+// DatabaseInsightsClient panel inside /database, both deleted with the
+// folder. The rate-limit gate it exercised is also exercised by the
+// remaining /roi + /weekly-report + /outreach actions, so coverage is
+// preserved by the surviving cases below.
 
 const assembleWeeklyReportInputMock = vi.fn();
 const generateWeeklyReportMock = vi.fn();
@@ -122,9 +116,6 @@ vi.mock("@/lib/discovery/smart-match", async () => {
 });
 
 const { generateRoiInsightsAction } = await import("@/app/[locale]/(app)/roi/actions");
-const { generateDatabaseInsightsAction } = await import(
-  "@/app/[locale]/(app)/database/actions"
-);
 const { generateWeeklyReportAction } = await import(
   "@/app/[locale]/(app)/weekly-report/actions"
 );
@@ -147,7 +138,6 @@ beforeEach(() => {
   generateRoiInsightsMock.mockReset();
   loadRoiSummaryMock.mockReset();
   loadRoiCampaignsMock.mockReset();
-  generateDatabaseIntelligenceMock.mockReset();
   assembleWeeklyReportInputMock.mockReset();
   generateWeeklyReportMock.mockReset();
   upsertWeeklyReportMock.mockReset();
@@ -165,15 +155,12 @@ describe("BL-035-F003 — server-action rate-limit wiring", () => {
     expect(generateRoiInsightsMock).not.toHaveBeenCalled();
   });
 
-  it("generateDatabaseInsightsAction returns rate_limit_exceeded and skips withTenant + AI call", async () => {
-    rateLimitAiMock.mockResolvedValueOnce({ ok: false, retryAfter: 11 });
-    const res = await generateDatabaseInsightsAction("en");
-    expect(res).toEqual({ ok: false, error: "rate_limit_exceeded", retryAfter: 11 });
-    expect(withTenantMock).not.toHaveBeenCalled();
-    expect(generateDatabaseIntelligenceMock).not.toHaveBeenCalled();
-  });
+  // BL-065-F006 — generateDatabaseInsightsAction was deleted with the
+  // /database route. The rate-limit gate it covered is still asserted
+  // by the surviving roi / weekly-report / outreach / smart-match cases
+  // below.
 
-  it("generateWeeklyReportAction returns rate_limit_exceeded and skips data assembly + AI call", async () => {
+it("generateWeeklyReportAction returns rate_limit_exceeded and skips data assembly + AI call", async () => {
     rateLimitAiMock.mockResolvedValueOnce({ ok: false, retryAfter: 99 });
     const res = await generateWeeklyReportAction(new Date().toISOString(), "en");
     expect(res).toEqual({ ok: false, error: "rate_limit_exceeded", retryAfter: 99 });

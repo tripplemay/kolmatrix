@@ -29,7 +29,7 @@ function formatFollowers(n: number): string {
 }
 
 export function MatchKolCard({ kol }: Props) {
-  const t = useTranslations("discovery.card");
+  const t = useTranslations("match.card");
   const tEngagement = useTranslations("kol.engagementRate");
   const engagementTooltip = tEngagement("tooltip");
 

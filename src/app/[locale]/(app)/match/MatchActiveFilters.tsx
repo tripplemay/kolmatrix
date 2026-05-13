@@ -33,13 +33,13 @@ export async function MatchActiveFilters({
   basePath,
   aiFallbackActive = false,
 }: Props) {
-  const t = await getTranslations("discovery.activeFilters");
-  const tFilters = await getTranslations("discovery.filters");
-  const tRegions = await getTranslations("discovery.regions");
-  const tCategories = await getTranslations("discovery.categories");
-  const tPlatforms = await getTranslations("discovery.platforms");
+  const t = await getTranslations("match.activeFilters");
+  const tFilters = await getTranslations("match.filters");
+  const tRegions = await getTranslations("match.regions");
+  const tCategories = await getTranslations("match.categories");
+  const tPlatforms = await getTranslations("match.platforms");
   const tStatus = await getTranslations("relationshipStatus");
-  const tDbFilters = await getTranslations("database.filters");
+  const tDbFilters = await getTranslations("match.filters");
 
   const chips: ChipDescriptor[] = [];
 

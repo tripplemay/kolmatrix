@@ -31,8 +31,8 @@ export async function MatchSearchBar({
   view,
   campaignId,
 }: Props) {
-  const t = await getTranslations("discovery.searchBar");
-  const tPlatforms = await getTranslations("discovery.platforms");
+  const t = await getTranslations("match.searchBar");
+  const tPlatforms = await getTranslations("match.platforms");
 
   const carryover = buildCarryoverFields(filters, { view, campaignId });
 

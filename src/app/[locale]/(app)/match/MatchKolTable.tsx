@@ -21,7 +21,7 @@ import { useCallback, useMemo, useState } from "react";
 import {
   AddToCampaignDialog,
   type BulkAddResult,
-} from "@/app/[locale]/(app)/database/AddToCampaignDialog";
+} from "./AddToCampaignDialog";
 import { StatusBadge } from "@/components/common";
 import { Checkbox, Table, TBody, TCell, THead, TRow } from "@/components/ui";
 
@@ -52,7 +52,7 @@ function initialsOf(name: string): string {
 }
 
 export function MatchKolTable({ rows, locale, rowFormatted }: Props) {
-  const tTable = useTranslations("database.table");
+  const tTable = useTranslations("match.table");
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [addOpen, setAddOpen] = useState(false);

@@ -223,93 +223,11 @@ test.describe("Authenticated BM1 visual regression", () => {
     });
   });
 
-  test.skip("discovery full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
-    // BL-064 / BL-065 — /discovery is being decommissioned. F002 302's
-    // it to /match, and BL-065-F001 just replaced the /match A2 embed
-    // (which re-exported /discovery's page and therefore still mounted
-    // `data-testid="discovery-grid"`) with the new unified workbench
-    // that uses `data-testid="match-grid"` instead. The
-    // en-discovery.png baseline can't be regenerated against the new
-    // layout; F006 deletes /discovery outright and F007 regenerates
-    // baselines via update-visual-baselines workflow. Mirrors the
-    // database test.skip pattern landed in 8c73094 (BL-064-F006).
-    test.skip(
-      shouldSkipMissingBaseline("en-discovery.png", test.info()),
-      "Baseline en-discovery.png missing — run the 'Update visual baselines' workflow."
-    );
-    await login(page);
-    // BL-064-F003 sidebar dropped the "KOL Discovery" link; go direct
-    // (F002 302→/match, embeds Discovery content unchanged).
-    await page.goto("/en/discovery");
-    await page.waitForURL(/\/(discovery|match)(\/|\?|$)/);
-    // BM2-F011-001: wait for BOTH grid and summary, not the OR shortcut.
-    // Workflow run 24953605628 captured a 1280x1703 baseline because
-    // summary mounted before grid; CI's first run saw grid mount
-    // first and produced 1280x1732 (29 px / one row of grid taller).
-    // Splitting the OR into a sequential AND removes the race.
-    await page.waitForSelector('[data-testid="discovery-grid"]');
-    await page.waitForSelector('[data-testid="discovery-summary"]');
-    await fontsReady(page);
-    await imagesReady(page);
-
-    const grid = page.getByTestId("discovery-grid");
-    const summary = page.getByTestId("discovery-summary");
-
-    // BM2-F011-001: drop fullPage:true here. Discovery is the only
-    // page that holds a recurring 29 px (one-row) height drift
-    // between the update-visual-baselines workflow runner and the
-    // CI E2E runner. Both have deterministic seed (c9be5a6),
-    // wait-AND mount synchronisation, fonts ready, and images
-    // ready, yet KOL grid card layout still settles at one of two
-    // heights based on cold-route hydration timing. fullPage screen-
-    // shots fail-hard on dimension mismatch (Playwright cannot
-    // tolerate that with maxDiffPixels). A viewport-only capture
-    // is always 1280x720, so the dimension never drifts, and the
-    // above-the-fold layout (header + summary pillars + first
-    // grid row) still validates the discovery visual contract.
-    await expect(page).toHaveScreenshot("en-discovery.png", {
-      animations: "disabled",
-      mask: [grid, summary],
-      threshold: 0.02,
-      maxDiffPixels: 8000,
-    });
-  });
-
-  test.skip("database full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
-    // BL-064 / BL-065 — /database is being decommissioned. F002 302's
-    // it to /match (Discovery content); the legacy database-table-
-    // wrapper / database-empty testids no longer mount under that URL,
-    // so the baseline cannot be regenerated until BL-065 removes the
-    // route entirely (at which point this test is deleted, not
-    // re-baselined). Skipped at the test level so the rest of the
-    // visual suite can refresh.
-    test.skip(
-      shouldSkipMissingBaseline("en-database.png", test.info()),
-      "Baseline en-database.png missing — run the 'Update visual baselines' workflow."
-    );
-    await login(page);
-    // BL-064-F003 sidebar dropped the "KOL Database" link + BL-065
-    // will delete /database; F002 302→/match (Discovery content) is
-    // the transitional substitute.
-    await page.goto("/en/database");
-    await page.waitForURL(/\/(database|match)(\/|\?|$)/);
-    await page.waitForSelector(
-      '[data-testid="database-table-wrapper"], [data-testid="database-empty"]'
-    );
-    await fontsReady(page);
-
-    const table = page.getByTestId("database-table-wrapper");
-    const empty = page.getByTestId("database-empty");
-    const summary = page.getByTestId("database-summary");
-
-    await expect(page).toHaveScreenshot("en-database.png", {
-      fullPage: true,
-      animations: "disabled",
-      mask: [table, empty, summary],
-      threshold: 0.02,
-      maxDiffPixels: 8000,
-    });
-  });
+  // BL-065-F006 — the legacy `discovery full-page` + `database full-page`
+  // visual cases were deleted with their routes. The unified workbench
+  // is exercised by tests/e2e/match-fidelity.spec.ts (functional) and a
+  // future en-match.png baseline will be added once F007 regenerates
+  // visual baselines via the update-visual-baselines workflow.
 });
 
 test.describe("Authenticated BM2 visual regression", () => {
@@ -525,62 +443,44 @@ test.describe("Authenticated BM2 visual regression", () => {
     });
   });
 
-  // MVP-vf-F006 — first KOL profile reachable from /discovery.
-  // Why /discovery instead of /database: a fresh CI seed has no
-  // isSaved=true rows, so /database renders the empty state and
-  // never mounts data-testid="database-table-wrapper". /discovery
-  // shows every KOL regardless of save state, so the first
-  // [data-testid="kol-card"] is always present.
-  //
-  // BL-065-F001 — the navigation entrypoint above is broken: /discovery
-  // 302→/match and /match no longer mounts `discovery-grid` /
-  // `kol-card` (the new workbench uses match-grid / match-kol-card).
-  // The /kols/[id] page itself is unchanged, so the baseline is still
-  // valid — only the click-path to reach the first KOL card needs an
-  // F006 migration onto the new selectors. Skip until F006 retargets
-  // the locators and F007 regenerates baselines.
-  test.skip("kols-detail full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
+  // MVP-vf-F006 — first KOL profile reachable through the unified Match
+  // workbench. BL-065-F006 retargeted the click-path: the legacy
+  // /en/discovery entrypoint is gone (folder deleted in this same
+  // commit) and the new /en/match surface uses `match-grid` /
+  // `match-kol-card` selectors. The /kols/[id] page itself is
+  // unchanged.
+  test("kols-detail full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
       shouldSkipMissingBaseline("en-kols-detail.png", test.info()),
       "Baseline en-kols-detail.png missing — run the 'Update visual baselines' workflow."
     );
     test.setTimeout(90_000);
     await login(page);
-    await page.goto("/en/discovery");
-    await page.waitForSelector('[data-testid="discovery-grid"]');
+    await page.goto("/en/match");
+    await page.waitForSelector('[data-testid="match-grid"]');
 
-    // B5-F006: prefer the first YouTube-platform card so the
-    // RecentVideosGrid + TopicCloud panels (both youtube-only) always
-    // render in the screenshot — otherwise the discovery default order
-    // can return a twitch/other-platform KOL on one CI run and a
-    // youtube KOL on another, drifting page height by ~250px and
-    // tripping the visual-diff threshold.
+    // B5-F006 reasoning preserved: prefer the first YouTube-platform
+    // card so the RecentVideosGrid + TopicCloud panels render and the
+    // page height stays stable across CI runs.
     const youtubeCard = page
-      .locator('[data-testid="kol-card"][data-kol-platform="youtube"]')
+      .locator('[data-testid="match-kol-card"][data-kol-platform="youtube"]')
       .first();
     const firstCard =
       (await youtubeCard.count()) > 0
         ? youtubeCard
-        : page.locator('[data-testid="kol-card"]').first();
+        : page.locator('[data-testid="match-kol-card"]').first();
     if ((await firstCard.count()) === 0) {
       test.skip(true, "No KOLs in seed — kols-detail baseline N/A");
     }
-    // KolResultCard exposes data-kol-id; assemble the profile URL
-    // directly so the test doesn't depend on the card hosting an
-    // anchor link to /kols/:id (it currently doesn't — clicking the
-    // card opens the save toggle inline, not a navigation).
     const kolId = await firstCard.getAttribute("data-kol-id");
     if (!kolId || !/^[0-9a-f-]{36}$/.test(kolId)) {
-      test.skip(true, `Unexpected kol-card id: ${kolId ?? "(null)"}`);
+      test.skip(true, `Unexpected match-kol-card id: ${kolId ?? "(null)"}`);
     }
     await page.goto(`/en/kols/${kolId}`);
     await page.waitForSelector('[data-testid="kol-hero"]', { timeout: 60_000 });
     await fontsReady(page);
     await imagesReady(page);
 
-    // Per-KOL chrome (display name, value score, follower count) is
-    // tenant-seed-specific — mask the hero + value score so the
-    // structural diff drives the signal.
     const hero = page.getByTestId("kol-hero");
     const valueScore = page.getByTestId("kol-value-score-card");
 

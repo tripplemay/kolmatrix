@@ -45,7 +45,7 @@ import {
 } from "@/lib/kol/filters";
 import { cn } from "@/lib/utils";
 
-import { AdvancedToggleCookie } from "@/app/[locale]/(app)/discovery/AdvancedToggleCookie";
+import { AdvancedToggleCookie } from "./AdvancedToggleCookie";
 
 const ADVANCED_COOKIE_NAME = "kolm_match_advanced";
 const STATUS_PILLS = ["all", ...RELATIONSHIP_STATUSES] as const;
@@ -57,12 +57,12 @@ interface Props {
 }
 
 export async function MatchFilterSidebar({ filters, basePath }: Props) {
-  const t = await getTranslations("discovery.filters");
-  const tRegions = await getTranslations("discovery.regions");
-  const tCategories = await getTranslations("discovery.categories");
-  const tPlatforms = await getTranslations("discovery.platforms");
+  const t = await getTranslations("match.filters");
+  const tRegions = await getTranslations("match.regions");
+  const tCategories = await getTranslations("match.categories");
+  const tPlatforms = await getTranslations("match.platforms");
   const tStatus = await getTranslations("relationshipStatus");
-  const tDbFilters = await getTranslations("database.filters");
+  const tDbFilters = await getTranslations("match.filters");
 
   const cookieJar = await cookies();
   const advancedCookie = cookieJar.get(ADVANCED_COOKIE_NAME)?.value;

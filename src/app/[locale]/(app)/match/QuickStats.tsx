@@ -24,7 +24,7 @@ function compactFollowers(n: number): string {
 }
 
 export async function QuickStats({ stats }: Props) {
-  const t = await getTranslations("database.quickStats");
+  const t = await getTranslations("match.quickStats");
   return (
     <div
       className="grid grid-cols-2 gap-4 lg:grid-cols-4"

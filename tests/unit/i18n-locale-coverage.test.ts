@@ -156,6 +156,36 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   // English across locales; "@channelhandle" is a literal sample handle.
   "database.addKolForm.handleLabel",
   "database.addKolForm.handlePlaceholder",
+  // BL-065-F006 — match.* mirrors the discovery.* / database.* trees
+  // that fed the new unified workbench. The brand / tech / glossary
+  // keep-as-en allowlist needs counterparts on the new paths because
+  // the original discovery.* / database.* keys also still exist (BL-070
+  // will delete them).
+  "match.filters.brandSafetyG",
+  "match.filters.brandSafetyPG",
+  "match.filters.brandSafetyPG13",
+  "match.filters.brandSafetyR",
+  "match.filters.regionGroup_asia",
+  "match.savedSearch.aiSmartMatch",
+  "match.activeFilters.aiPrefix",
+  "match.card.engagement",
+  "match.card.unavailableMetric",
+  "match.regions.VN",
+  "match.categories.MOBA",
+  "match.categories.RPG",
+  "match.categories.FPS",
+  "match.categories.Casual",
+  "match.categories.Shooter",
+  "match.categories.Sandbox",
+  "match.platforms.youtube",
+  "match.platforms.tiktok",
+  "match.platforms.twitch",
+  "match.platforms.bilibili",
+  "match.platforms.twitter",
+  "match.platforms.instagram",
+  "match.table.engagement",
+  "match.addKolForm.handleLabel",
+  "match.addKolForm.handlePlaceholder",
   // BL-024-F004 / F005 — "KOL" is an acronym that stays uppercase
   // across every locale; "Message ID" is a technical identifier we
   // don't translate.

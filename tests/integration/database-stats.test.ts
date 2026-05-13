@@ -22,14 +22,14 @@ import {
 // to the Testcontainers port, so the import has to happen *after*
 // setupTestDb() — mirroring dashboard-kpi.test.ts.
 type LoadDatabaseStats = typeof import(
-  "@/app/[locale]/(app)/database/stats"
+  "@/app/[locale]/(app)/match/stats"
 ).loadDatabaseStats;
 let loadDatabaseStats: LoadDatabaseStats;
 
 beforeAll(async () => {
   await setupTestDb();
   ({ loadDatabaseStats } = await import(
-    "@/app/[locale]/(app)/database/stats"
+    "@/app/[locale]/(app)/match/stats"
   ));
 });
 

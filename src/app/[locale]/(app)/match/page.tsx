@@ -44,10 +44,10 @@ import { redirect } from "next/navigation";
 
 import Link from "next/link";
 
-import { SaveSearchControls } from "@/app/[locale]/(app)/discovery/SaveSearchControls";
-import { AddKolDialog } from "@/app/[locale]/(app)/database/AddKolDialog";
-import { QuickStats } from "@/app/[locale]/(app)/database/QuickStats";
-import { loadDatabaseStats } from "@/app/[locale]/(app)/database/stats";
+import { AddKolDialog } from "./AddKolDialog";
+import { QuickStats } from "./QuickStats";
+import { SaveSearchControls } from "./SaveSearchControls";
+import { loadDatabaseStats } from "./stats";
 import { auth } from "@/auth";
 import { isAdminRole } from "@/lib/auth/roles";
 import { withTenant } from "@/lib/db";
@@ -128,13 +128,13 @@ export default async function MatchPage({ params, searchParams }: Props) {
   ]);
 
   const t = await getTranslations("match.header");
-  const tEmpty = await getTranslations("discovery.emptyState");
-  const tPager = await getTranslations("discovery.pagination");
+  const tEmpty = await getTranslations("match.emptyState");
+  const tPager = await getTranslations("match.pagination");
   const tStatus = await getTranslations("relationshipStatus");
-  const tHeader = await getTranslations("discovery.header");
+  const tSavedSearch = await getTranslations("match.savedSearch");
   const tAdminEntry = await getTranslations("match.adminEntry");
-  const tDbHeader = await getTranslations("database.header");
-  const tAddKol = await getTranslations("database.addKolForm");
+  const tDbHeader = await getTranslations("match.headerActions");
+  const tAddKol = await getTranslations("match.addKolForm");
   const format = await getFormatter();
 
   const isAdmin = isAdminRole(session.user.role);
@@ -246,14 +246,14 @@ export default async function MatchPage({ params, searchParams }: Props) {
               createdAt: r.createdAt.toISOString(),
             }))}
             labels={{
-              saveSearch: tHeader("saveSearch"),
-              savePrompt: tHeader("saveSearchPrompt"),
-              saveConfirm: tHeader("saveSearchSaved"),
-              mySearches: tHeader("mySearches", {
+              saveSearch: tSavedSearch("saveSearch"),
+              savePrompt: tSavedSearch("saveSearchPrompt"),
+              saveConfirm: tSavedSearch("saveSearchSaved"),
+              mySearches: tSavedSearch("mySearches", {
                 count: savedSearches.length,
               }),
-              loadPlaceholder: tHeader("loadSearchPlaceholder"),
-              saveFailed: tHeader("saveSearchFailed"),
+              loadPlaceholder: tSavedSearch("loadSearchPlaceholder"),
+              saveFailed: tSavedSearch("saveSearchFailed"),
             }}
           />
           <AddKolDialog

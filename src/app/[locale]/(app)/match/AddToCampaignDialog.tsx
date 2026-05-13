@@ -60,7 +60,7 @@ export function AddToCampaignDialog({
   selectedIds,
   onAdded,
 }: Props) {
-  const t = useTranslations("database.dialog");
+  const t = useTranslations("match.dialog");
   const [campaigns, setCampaigns] = useState<CampaignOption[] | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [campaignId, setCampaignId] = useState("");

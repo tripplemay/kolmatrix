@@ -23,7 +23,7 @@ interface Props {
 }
 
 export async function MatchTableSearch({ basePath, search }: Props) {
-  const t = await getTranslations("discovery.filters");
+  const t = await getTranslations("match.filters");
 
   return (
     <form
