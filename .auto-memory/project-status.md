@@ -3,15 +3,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-065-match-page-internal-rewrite VERIFYING（7/7 Generator 完成 → Reviewer 复验 pending）
-- F001 done @ 3c2d70c — /match unified workbench + 双视图 + ?campaignId sidebar shell
-- F002 done @ aeb69c7 — Filter + Search + SaveSearchControls + ActiveFilters 合并
-- F003 done @ 5426b84 — bulk actions + ImportCsvDialog → /admin/kol-csv-import + admin entry link
-- F004 done @ c6ec0f3 — AddKolDialog mount in /match header
-- F005 done @ d523de6 — AI sidebar 升级为 AiSuggestionsClient 包装（campaign-context）
+## ✅ BL-065-match-page-internal-rewrite DONE（7/7 done, fix_rounds=0, Reviewer signoff v2）
+- F001-F005 done — /match unified workbench + 双视图 + Filter/Search/SaveSearch 合并 + bulk actions/admin CSV + AddKolDialog + AI sidebar（campaign-context）
 - F006 done @ abdec9f — 删除 /discovery + /database 整页 + match.* i18n 完整化 + e2e 迁移（net -4658 lines）
-- F007 done @ c5b5c31 — audit script + signoff draft + update-visual-baselines run 25783090333 + prod deploy run 25783092395。Prod health git_sha=c5b5c31 ✓ + audit PASS=7 FAIL=0 WARN=1。Signoff draft: docs/test-reports/BL-065-signoff-2026-05-13.md
-- **Reviewer 任务：** L1 复验 + bl065-f007-prod-audit.sh 二次 + 24h pm2 monitor 评估（用户授权自行决定加速）+ signoff v2 + progress.json reverifying → done
+- F007 done @ c5b5c31 — staging/prod deploy + baseline regen + prod audit。Reviewer L1 PASS（lint/typecheck/Vitest/match E2E/full failed-spec rerun）+ prod read-only audit PASS=7 FAIL=0 WARN=1；WARN row-count 已用 superuser read 补证 total=3941 live=1357 soft_deleted=2584；admin route gate local probe PASS。Signoff: docs/test-reports/BL-065-signoff-2026-05-13.md §8/§9
 ## ✅ BL-064-top-level-ia-refactor DONE — prod git_sha=9b1b15b
 ## ✅ BL-063-isSaved-decommission DONE — prod deploy run 25643437421
 ## ✅ BL-061 / BL-060 / BL-059 / BL-012 / BL-055 / BL-052 / BL-051a / BL-049 / BL-021+023 / BL-043+044 全 DONE
@@ -30,4 +25,4 @@ type: project
 1. 5/17 第一次 weekly growth-curve check（重跑 BL-061 F003 SQL）
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 ## 角色 / Backlog
-- 默认：CLI=planner+generator，Codex=evaluator / Backlog 20 条 / BL-066 / BL-067 / BL-068 / BL-048 / BL-070 cleanup 后续解锁
+- 默认：CLI=planner+generator，Codex=evaluator / Backlog 20 条 / BL-066 / BL-067 / BL-068 / BL-048 / BL-070 cleanup 已解锁
