@@ -88,7 +88,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 9.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "messages/{cn,en,ja,ko,es}.json 加 match.* 完整 keys（覆盖 SummaryBar / FilterSidebar / 双视图 / SaveSearchControls / BulkActionBar / AddKolDialog / AI 推荐 sidebar）",
       "旧 discovery.* / database.* keys 标 // deprecated by BL-065（comment 注释），BL-070 完整迁移后删",
