@@ -136,11 +136,11 @@
   },
   {
     "id": "F008",
-    "title": "i18n 5 语言 + e2e campaign-match-flow.spec.ts + match-fidelity 适配",
+    "title": "i18n 5 语言 + e2e campaign-match-flow.spec.ts + match-fidelity 适配 + /campaigns/[id] redirect 移除",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 8.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "messages/{en,zh,ja,ko,es}.json 加 campaigns.detail.aiPanel.* 完整 keys（Brief / 中部 AI 主面板 / 操作按钮 / 空态 / loading / 来源 chip）",
       "删除 campaigns.detail.aiSuggestions.* keys 内容（标 _deprecated_by_BL-066 留 BL-070 删）",
