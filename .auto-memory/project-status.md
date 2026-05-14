@@ -3,9 +3,9 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔨 BL-066-campaign-detail-ai-main-panel BUILDING（5/9, fix_rounds=0, staging=432b219）
-- F001-F005 ✅ → F006-F009 待做 / role_assignments=planner johnsong + generator Kimi + evaluator Reviewer
-- F006 pre-impl audit @ b2ae0bb 等 Planner 裁决 (5 决议点: source 白名单 manual vs manual_legacy / runAvailableKols 删 / addButton i18n 清理深度 / 表格列结构 / fidelity assertion. Generator 建议 #1:C #2:A #3:C #4:C #5:B)
+## 🔨 BL-066-campaign-detail-ai-main-panel BUILDING（6/9, fix_rounds=0, staging=40b6707）
+- F001-F006 ✅ → F007-F009 待做 / role_assignments=planner johnsong + generator Kimi + evaluator Reviewer
+- F006 @ ba0c5fc git mv CampaignKolPanel→AcceptedKolsPanel + 6 列 read-only + source chip 独立列 (AI/CSV/Legacy) + view-profile open_in_new + backfill migration UPDATE 10 rows manual→manual_legacy + 删 runAvailableKolsForCampaign + i18n 5 locale 新 keys + deprecated marker / F006 audit 裁决 `#1:C #2:A #3:C #4:A #5:B` (Planner johnsong @ a682cde, 仅 #4 偏离 Generator 建议 — Table.tsx 实测 fully flexible 无 col cap, 6 列 README 字面安全) / v0.9.22 候选: Generator audit 起草前实测原子组件 surface 字面
 - F002 audit 裁决 `#1:A #2:B #3:B #4:B #5:C` + #6 (Planner johnsong @ e2d6b71)
 ## ✅ BL-065 DONE 7/7 prod=c5b5c31 + BL-065-R1=4562895 + signoff 5/14
 ## ✅ BL-064 prod=9b1b15b / BL-063 / BL-061-060-059 / BL-012 / BL-055-052-051a-049 / BL-021+023 / BL-043+044 全 DONE

@@ -98,7 +98,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 8.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "git mv src/app/[locale]/(app)/campaigns/[id]/CampaignKolPanel.tsx → AcceptedKolsPanel.tsx",
       "删除组件内 AddKolDialog 入口 + 「添加 KOL」 button",
