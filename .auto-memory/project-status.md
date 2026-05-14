@@ -3,12 +3,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔄 BL-065-match-page-internal-rewrite REVERIFYING（7/7 implemented, fix_rounds=1, BL-065-R1 修复后待 Reviewer 复验）
+## ✅ BL-065-match-page-internal-rewrite DONE（7/7 implemented, fix_rounds=1, Reviewer 复验通过）
 - F001-F005 done — /match unified workbench + 双视图 + Filter/Search/SaveSearch 合并 + bulk actions/admin CSV + AddKolDialog + AI sidebar（campaign-context）
 - F006 done @ abdec9f — 删除 /discovery + /database 整页 + match.* i18n 完整化 + e2e 迁移（net -4658 lines）
 - F007 prod deployed @ c5b5c31 — staging/prod deploy + baseline regen + prod audit PASS=7/0/1
 - BL-065-R1 fix @ 4562895 — /admin/kol-csv-import 用 tImport.raw() 取参数化模板（successTemplate + rowErrorTemplate），避免 next-intl ICU 格式器在 server render 时遇未绑定占位符 throw FORMATTING_ERROR。F003 latent bug：老 /database 同样写法但 middleware 302 掩盖。+ 回归守门 page-i18n-fidelity.test.ts 2 case + CI 25787001116 全 8 jobs 绿 + staging verified @ 4562895
-- **Reviewer 任务（reverifying）：** L1 复验 + admin/marketer 双角色 /admin/kol-csv-import 探针（admin 渲染无 FORMATTING_ERROR / marketer 302→/match）+ page-i18n-fidelity test 2/2 PASS 确认 + signoff §8/§9 完结 + reverifying → done
+- Reviewer 复验 @ 2026-05-14 — L1 复验 + admin/marketer 双角色 /admin/kol-csv-import 探针通过（admin 渲染无 FORMATTING_ERROR / marketer 302→/match）+ page-i18n-fidelity test 2/2 PASS 确认 + signoff 完成，`docs/test-reports/BL-065-signoff-2026-05-14.md`
 ## ✅ BL-064-top-level-ia-refactor DONE — prod git_sha=9b1b15b
 ## ✅ BL-063-isSaved-decommission DONE — prod deploy run 25643437421
 ## ✅ BL-061 / BL-060 / BL-059 / BL-012 / BL-055 / BL-052 / BL-051a / BL-049 / BL-021+023 / BL-043+044 全 DONE
