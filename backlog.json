@@ -385,5 +385,25 @@
       "weekly-cron"
     ],
     "discovered_in": "BL-063 F005 staging dry-run 2026-05-11 by Generator johnsong — engagement_rate non_null_pct 2.44% 实测 vs 6.7% baseline；分母漂移非 BL-063 regression"
+  },
+  {
+    "id": "BL-070",
+    "title": "二次清理 — 旧 i18n key / 未用 API 路由 / Dependabot PR 评估 / dead code 收尾",
+    "description": "**触发：** BL-065 + BL-066 设计阶段刻意留下的 deprecated marker / 暂不删的兼容路径 / 自动化生成的 dep upgrade PR 待评估。\n\n**清理范围（5 类）：**\n\n1. **deprecated i18n keys**（来源 BL-065-F006 + BL-066-F006）：\n   - `discovery.*` / `database.*` 顶层 namespace（BL-065-F006 已 atomic 删 /discovery + /database 文件夹，但 i18n key 留作 BL-070 删；含 KEEP_AS_EN_PATHS allowlist 旧 path 一并清）\n   - `match.headerActions.*` / `match.addKolForm.*`（BL-066-F005 删 AddKolDialog 后留 `_deprecated_by_BL-066` marker）\n   - `campaigns.detail.aiSuggestions.*`（BL-066-F002 删 AiSuggestionsCard mount 后留 marker）\n   - `campaigns.detail.{activity,revenue,health,emailChart}.*`（BL-066-F002 unmount 6 组件 + 加 marker）\n   - `campaigns.detail.kolPanel.{addButton,aiNativeMigrationTooltip,addDialog}.*`（BL-066-F006 加 marker）\n\n2. **未用 API 路由 / 函数**（dead code）：\n   - `/api/database/export-csv` 路由（BL-065-F003 client-side CSV blob 取代，但 API endpoint 留 BL-070 评估）\n   - `generateCampaignSuggestionsAction` + AiSuggestionsClient + AiSuggestionsCard（BL-066-F002 unmount + spec §F002 acceptance 第 5 条 explicit \"保留供未来批次使用\"；BL-070 评估是否真有未来批次用 — 若无则 atomic 删）\n   - 6 unmount 组件文件（CampaignHealthCard / ActivityTimelineCard / EmailPerformanceChart + Impl / CampaignRevenueRecorder / CampaignStatusController / detail-insights.ts `loadCampaignDetailInsights`，BL-066-F002 加 `_deprecated_by_BL-066` marker）\n\n3. **Dependabot 10 PR 评估**（截至 2026-05-14）：\n   - **安全 5 个** PR #1/#2/#3/#4/#10：GH Actions bumps（codecov / cache / checkout / upload-artifact / setup-node）— CI 全 PASS，可批量 merge\n   - **失败 5 个** PR #5-#9：npm bumps 需 case-by-case：\n     - #5 next-ecosystem：Next 16 主框架升级，影响 API\n     - #6 prisma-ecosystem：Prisma 7 + @prisma/client 升级，影响 schema/migration\n     - #7 vitest-ecosystem：vitest pool/fork worker 行为变化（BL-049 / BL-021 踩过）\n     - #8 typescript 5.9.3 → 6.0.3：major release，几乎肯定 break，建议 close\n     - #9 prettier-plugin-tailwindcss 0.7.2 → 0.8.0：formatter only 但 CI 红需查根因\n   - Dependabot 配置 `.github/dependabot.yml`（BL-049-F004 设置，每周一开 PR）\n\n4. **schema default 评估**：kol_campaign.source @default(\"manual\") — BL-066-F006 backfill manual→manual_legacy 后，default 是否改为 'manual_legacy' 或保留 'manual' 作 dev 信号（spec §F006 当前选保留 'manual' 不动）\n\n5. **nav legacy key 残留**（如 BL-064 删 7 路由后 nav.dashboard / nav.kolDiscovery / nav.kolDatabase / nav.knowledgeBase / nav.emailCenter / nav.analytics 等历史 nav key 是否仍存）— bl065-f007-prod-audit.sh §7 已实测「no active legacy nav.* code references」但 i18n key 字面可能仍存。BL-070 grep 实测后 atomic 清\n\n**估工：** ~1-2 day Generator + 0.5 day Reviewer\n\n**依赖：** BL-066 done（不能与 BL-066 并行，避免 main 多路变动）\n\n**触发时机：** BL-066 整体 done + Reviewer signoff 后；BL-066 done-phase Planner 起 BL-070 spec",
+    "decisions": [
+      "用户 2026-05-14 16:30+ 决议：BL-066 building 期间 10 个 Dependabot PR 全部暂不处理，等 BL-066 done 后 BL-070 一并评估",
+      "BL-070 spec 起草前 Planner 必须 grep 实物状态：旧 i18n key 是否仍被实代码引用 / API 路由是否仍被外部调用方依赖 / Dependabot PR 是否在评估期内有新版本（Dependabot 下周一自动 rebase）",
+      "schema default kol_campaign.source 保留 'manual' 不改（BL-066-F006 audit §裁决 #1=C 已 lock）；BL-070 评估是否在 2 周稳定后改 default"
+    ],
+    "confirmed_at": "2026-05-14T20:30+0800",
+    "priority": "low",
+    "tags": [
+      "cleanup",
+      "technical-debt",
+      "post-bl-066",
+      "dependabot",
+      "i18n-cleanup"
+    ],
+    "discovered_in": "BL-065-F006 + BL-066-F002 + BL-066-F005 + BL-066-F006 spec lock 阶段刻意留的 deprecated marker / 兼容路径"
   }
 ]
