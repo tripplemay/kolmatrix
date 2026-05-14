@@ -27,10 +27,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import {
-  runCampaignDetail,
-  runAvailableKolsForCampaign,
-} from "@/lib/campaigns/detail";
+import { runCampaignDetail } from "@/lib/campaigns/detail";
 
 import { AiRecommendationPanel } from "./AiRecommendationPanel";
 import { BriefSummaryPanel } from "./BriefSummaryPanel";
@@ -58,8 +55,6 @@ export default async function CampaignDetailPage({ params }: Props) {
 
   const campaign = await runCampaignDetail(tenantId, id);
   if (!campaign) notFound();
-
-  const availableKols = await runAvailableKolsForCampaign(tenantId, id);
 
   const t = await getTranslations("campaigns.detail");
   const tKolStatus = await getTranslations("campaigns.detail.kolStatus");
@@ -108,7 +103,6 @@ export default async function CampaignDetailPage({ params }: Props) {
         campaignId={campaign.id}
         campaignStatus={campaign.status}
         kols={campaign.kols}
-        available={availableKols}
         labels={kolPanelLabels(t)}
         statusLabels={kolStatusLabels(tKolStatus)}
         errorLabels={errorLabels(tErrors)}

@@ -829,7 +829,8 @@
       "duplicateLabel": "이 핸들 + 플랫폼 조합은 이미 존재합니다.",
       "rateLimitLabel": "작업 횟수가 많습니다. 잠시 후 다시 시도하세요.",
       "invalidUrlLabel": "URL이 유효하지 않습니다 (https://…)",
-      "invalidEmailLabel": "이메일 형식이 올바르지 않습니다"
+      "invalidEmailLabel": "이메일 형식이 올바르지 않습니다",
+      "_deprecated_by_BL-066": "BL-066-F005에서 수동 KOL 추가 폼을 폐기했습니다. BL-070에서 본 네임스페이스를 제거합니다。"
     },
     "dialog": {
       "title": "캠페인에 추가",
@@ -855,7 +856,8 @@
       "import": "CSV 가져오기",
       "importTooltip": "CSV 파일에서 KOL을 일괄 가져오기",
       "addKol": "KOL 추가",
-      "addKolTooltip": "라이브러리에 KOL을 수동으로 추가"
+      "addKolTooltip": "라이브러리에 KOL을 수동으로 추가",
+      "_deprecated_by_BL-066": "BL-066-F005에서 수동 KOL 추가 폼을 폐기했습니다. BL-070에서 본 네임스페이스를 제거합니다。"
     }
   },
   "campaigns": {

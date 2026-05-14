@@ -10,7 +10,8 @@
  *   3. Status pill filter on the sidebar (match-status-pill-*).
  *   4. AI suggestions sidebar mounts only with a valid ?campaignId=
  *      (resolves tenant-scoped per BL-065-F005).
- *   5. Add KOL button mounts (match.headerActions trigger).
+ *   5. (removed by BL-066-F005) Add KOL button mount — manual add path
+ *      retired in favor of AI recommendation flow on /campaigns/[id].
  *
  * BM1-F009 / BM2 F011-001 lessons:
  *   - no `waitForLoadState("networkidle")`
@@ -97,17 +98,9 @@ test.describe("/match fidelity (BL-065-F006)", () => {
     }
   });
 
-  test("Add KOL trigger mounts in the header actions row", async ({ page }) => {
-    await page.goto("/en/match");
-    await expect(page.getByTestId("match-page")).toBeVisible({
-      timeout: 15_000,
-    });
-    // The AddKolDialog renders a button with data-testid="database-add-kol"
-    // (kept stable for cross-batch test parity — see the legacy
-    // BL-024-F001 testid; BL-065-F006 inherits it via git mv).
-    const trigger = page.getByTestId("database-add-kol");
-    await expect(trigger).toBeVisible();
-  });
+  // BL-066-F005: "Add KOL trigger mounts in the header actions row" case
+  // removed. AddKolDialog deleted; AI recommendation flow on /campaigns/[id]
+  // replaces the manual add path.
 
   test("?campaignId= without a real campaign falls back to 2-column workbench (no AI sidebar)", async ({
     page,

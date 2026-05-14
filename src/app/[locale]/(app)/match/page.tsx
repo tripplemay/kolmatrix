@@ -44,7 +44,6 @@ import { redirect } from "next/navigation";
 
 import Link from "next/link";
 
-import { AddKolDialog } from "./AddKolDialog";
 import { QuickStats } from "./QuickStats";
 import { SaveSearchControls } from "./SaveSearchControls";
 import { loadDatabaseStats } from "./stats";
@@ -145,8 +144,9 @@ export default async function MatchPage({ params, searchParams }: Props) {
   const tStatus = await getTranslations("relationshipStatus");
   const tSavedSearch = await getTranslations("match.savedSearch");
   const tAdminEntry = await getTranslations("match.adminEntry");
-  const tDbHeader = await getTranslations("match.headerActions");
-  const tAddKol = await getTranslations("match.addKolForm");
+  // BL-066-F005: tDbHeader/tAddKol aliases removed with AddKolDialog mount.
+  // match.headerActions / match.addKolForm i18n keys are kept (deprecated
+  // markers) for BL-070 to atomic-delete.
   const format = await getFormatter();
 
   const isAdmin = isAdminRole(session.user.role);
@@ -268,27 +268,7 @@ export default async function MatchPage({ params, searchParams }: Props) {
               saveFailed: tSavedSearch("saveSearchFailed"),
             }}
           />
-          <AddKolDialog
-            triggerLabel={tDbHeader("addKol")}
-            triggerTitle={tDbHeader("addKolTooltip")}
-            dialogTitle={tAddKol("title")}
-            platformLabel={tAddKol("platformLabel")}
-            handleLabel={tAddKol("handleLabel")}
-            handlePlaceholder={tAddKol("handlePlaceholder")}
-            displayNameLabel={tAddKol("displayNameLabel")}
-            urlLabel={tAddKol("urlLabel")}
-            emailLabel={tAddKol("emailLabel")}
-            followerCountLabel={tAddKol("followerCountLabel")}
-            submitLabel={tAddKol("submitLabel")}
-            submittingLabel={tAddKol("submittingLabel")}
-            cancelLabel={tAddKol("cancelLabel")}
-            successLabel={tAddKol("successLabel")}
-            errorLabel={tAddKol("errorLabel")}
-            duplicateLabel={tAddKol("duplicateLabel")}
-            rateLimitLabel={tAddKol("rateLimitLabel")}
-            invalidUrlLabel={tAddKol("invalidUrlLabel")}
-            invalidEmailLabel={tAddKol("invalidEmailLabel")}
-          />
+          {/* BL-066-F005: AddKolDialog removed (manual add path retired). */}
         </div>
       </header>
 

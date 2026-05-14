@@ -829,7 +829,8 @@
       "duplicateLabel": "Ya existe un KOL con este handle + plataforma.",
       "rateLimitLabel": "Demasiadas solicitudes. Espera un poco.",
       "invalidUrlLabel": "URL no válida (https://…)",
-      "invalidEmailLabel": "Correo no válido"
+      "invalidEmailLabel": "Correo no válido",
+      "_deprecated_by_BL-066": "BL-066-F005 retira el formulario manual de añadir KOL. BL-070 eliminará este espacio de nombres."
     },
     "dialog": {
       "title": "Añadir a Campaña",
@@ -855,7 +856,8 @@
       "import": "Importar CSV",
       "importTooltip": "Importar KOLs en bloque desde un archivo CSV",
       "addKol": "Añadir KOL",
-      "addKolTooltip": "Añadir un KOL manualmente a tu biblioteca"
+      "addKolTooltip": "Añadir un KOL manualmente a tu biblioteca",
+      "_deprecated_by_BL-066": "BL-066-F005 retira el formulario manual de añadir KOL. BL-070 eliminará este espacio de nombres."
     }
   },
   "campaigns": {

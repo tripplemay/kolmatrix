@@ -829,7 +829,8 @@
       "duplicateLabel": "该 handle + 平台组合已存在。",
       "rateLimitLabel": "操作过于频繁，请稍候。",
       "invalidUrlLabel": "URL 必须有效（https://…）",
-      "invalidEmailLabel": "邮箱格式错误"
+      "invalidEmailLabel": "邮箱格式错误",
+      "_deprecated_by_BL-066": "BL-066-F005 已弃用手动添加 KOL 表单，待 BL-070 删除本命名空间。"
     },
     "dialog": {
       "title": "加入营销活动",
@@ -855,7 +856,8 @@
       "import": "导入 CSV",
       "importTooltip": "通过 CSV 文件批量导入 KOL",
       "addKol": "新增 KOL",
-      "addKolTooltip": "手动新增一个 KOL 到库中"
+      "addKolTooltip": "手动新增一个 KOL 到库中",
+      "_deprecated_by_BL-066": "BL-066-F005 已弃用手动添加 KOL 表单，待 BL-070 删除本命名空间。"
     }
   },
   "campaigns": {

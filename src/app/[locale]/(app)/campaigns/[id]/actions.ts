@@ -13,7 +13,6 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import {
   CampaignKolError,
-  addKolToCampaign,
   removeKolFromCampaign,
   updateKolCampaign,
 } from "@/lib/campaigns/kol-operations";
@@ -154,39 +153,11 @@ export async function recordRevenueAction(
   return { ok: true };
 }
 
-export async function addKolAction(
-  _prev: ActionState,
-  formData: FormData
-): Promise<ActionState> {
-  const session = await requireSession();
-  if (!session) return { ok: false, error: "unauthorized" };
-  const id = String(formData.get("campaignId") ?? "");
-  const kolId = String(formData.get("kolId") ?? "");
-  const feeRaw = String(formData.get("kolFee") ?? "").trim();
-  if (!UUID_RE.test(id) || !UUID_RE.test(kolId)) {
-    return { ok: false, error: "invalid_input" };
-  }
-  let kolFee: number | null | undefined = undefined;
-  if (feeRaw !== "") {
-    if (!/^\d+(\.\d{1,2})?$/.test(feeRaw)) {
-      return { ok: false, error: "feeInvalid" };
-    }
-    kolFee = Number(feeRaw);
-  }
-  try {
-    await addKolToCampaign(session.tenantId, session.userId, id, {
-      kolId,
-      kolFee,
-    });
-  } catch (err) {
-    if (err instanceof CampaignKolError) {
-      return { ok: false, error: err.code };
-    }
-    return { ok: false, error: "generic" };
-  }
-  revalidate(id);
-  return { ok: true };
-}
+// BL-066-F005: addKolAction (campaigns/[id] AddKolDialog form) removed.
+// AddKolDialog.tsx is gitrm'd in the same commit; AI recommendation flow
+// (AiRecommendationPanel + acceptKolToCampaignAction in recommend-actions.ts)
+// replaces it. addKolToCampaign lib helper is kept (bulkAddKolsToCampaign +
+// other paths still use it).
 
 export async function removeKolAction(
   _prev: ActionState,

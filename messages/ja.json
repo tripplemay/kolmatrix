@@ -829,7 +829,8 @@
       "duplicateLabel": "このハンドル + プラットフォームの組み合わせはすでに存在します。",
       "rateLimitLabel": "操作が多すぎます。少し待ってから再試行してください。",
       "invalidUrlLabel": "URLが無効です（https://…）",
-      "invalidEmailLabel": "メールアドレスが無効です"
+      "invalidEmailLabel": "メールアドレスが無効です",
+      "_deprecated_by_BL-066": "BL-066-F005 で手動 KOL 追加フォームを廃止。BL-070 で本ネームスペースを削除予定。"
     },
     "dialog": {
       "title": "キャンペーンに追加",
@@ -855,7 +856,8 @@
       "import": "CSVをインポート",
       "importTooltip": "CSVファイルからKOLを一括インポート",
       "addKol": "KOLを追加",
-      "addKolTooltip": "ライブラリに手動でKOLを追加"
+      "addKolTooltip": "ライブラリに手動でKOLを追加",
+      "_deprecated_by_BL-066": "BL-066-F005 で手動 KOL 追加フォームを廃止。BL-070 で本ネームスペースを削除予定。"
     }
   },
   "campaigns": {

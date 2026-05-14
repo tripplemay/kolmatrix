@@ -60,13 +60,9 @@ describe("/campaigns/:id fidelity guards (BL-066 F002)", () => {
     expect(lineCount(panel)).toBeLessThanOrEqual(250);
   });
 
-  it("AddKolDialog uses the public <Dialog> atom (no hand-rolled modal)", () => {
-    const dlg = read("AddKolDialog.tsx");
-    expect(dlg).toMatch(/from "@\/components\/ui"/);
-    expect(dlg).toMatch(/<Dialog\b/);
-    expect(dlg).toMatch(/<DialogPanel\b/);
-    expect(dlg).not.toMatch(/role="dialog"/); // no manual ARIA
-  });
+  // BL-066-F005: AddKolDialog.tsx deleted (AI recommendation flow
+  // replaces manual add). Original guard read the file and asserted the
+  // public <Dialog> atom + no manual ARIA — moot once the file is gone.
 
   it("CampaignHeader drops INPUT_CLASS local and uses <Input> + <Button>", () => {
     const hdr = read("CampaignHeader.tsx");
