@@ -5,9 +5,8 @@ type: project
 ---
 ## 🔨 BL-066-campaign-detail-ai-main-panel BUILDING（5/9, fix_rounds=0, staging=432b219）
 - F001-F005 ✅ → F006-F009 待做 / role_assignments=planner johnsong + generator Kimi + evaluator Reviewer
-- F001 @ 3724ad6 Stitch 3 屏 / F002 @ 7e39c9a 三段 layout + BriefSummaryPanel + AiRecommendationPanel skeleton + 6 文件 @deprecated_by_BL-066 marker / F003 @ 8f85d5b AiRecommendationPanel full impl + smart-match valueScore 扩展 / F004 @ 8e03a52 acceptKolToCampaignAction + kol_campaign.source migration / F005 @ 432b219 删 AddKolDialog × 2 + addKolAction 清理
+- F006 pre-impl audit @ b2ae0bb 等 Planner 裁决 (5 决议点: source 白名单 manual vs manual_legacy / runAvailableKols 删 / addButton i18n 清理深度 / 表格列结构 / fidelity assertion. Generator 建议 #1:C #2:A #3:C #4:C #5:B)
 - F002 audit 裁决 `#1:A #2:B #3:B #4:B #5:C` + #6 (Planner johnsong @ e2d6b71)
-- 下一步 F006: CampaignKolPanel git mv → AcceptedKolsPanel + source chip + 删 contactStatus/kolFee edit 入口 (~8h)
 ## ✅ BL-065 DONE 7/7 prod=c5b5c31 + BL-065-R1=4562895 + signoff 5/14
 ## ✅ BL-064 prod=9b1b15b / BL-063 / BL-061-060-059 / BL-012 / BL-055-052-051a-049 / BL-021+023 / BL-043+044 全 DONE
 ## 关键决议（已 lock）
