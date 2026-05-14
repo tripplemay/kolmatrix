@@ -1043,8 +1043,8 @@
         }
       },
       "kolPanel": {
-        "title": "KOLs en esta campaña",
-        "empty": "Aún no hay KOLs. Añada creadores guardados para iniciar el contacto.",
+        "title": "KOLs aceptados",
+        "empty": "Aún no hay KOLs. Acepta recomendaciones de IA arriba o importa vía CSV.",
         "addButton": "Añadir KOLs",
         "aiNativeMigrationTooltip": "Pool completo de KOLs — la experiencia IA nativa llegará pronto",
         "addDialog": {
@@ -1057,12 +1057,22 @@
         },
         "columns": {
           "creator": "Creador",
-          "contactStatus": "Estado de contacto",
+          "source": "Origen",
+          "contactStatus": "Estado",
           "fee": "Tarifa (USD)",
+          "addedAt": "Añadido",
           "actions": "Acciones"
         },
+        "sourceChip": {
+          "ai": "AI",
+          "csv": "CSV",
+          "legacy": "Heredado"
+        },
+        "viewProfile": "Ver perfil",
+        "feeUnset": "—",
         "remove": "Eliminar",
-        "removeConfirm": "¿Eliminar este KOL de la campaña?"
+        "removeConfirm": "¿Eliminar este KOL de la campaña?",
+        "_deprecated_by_BL-066": "BL-066-F006 retira addButton/aiNativeMigrationTooltip/addDialog.*/remove/removeConfirm. BL-070 los eliminará."
       },
       "kolStatus": {
         "pending": "Pendiente",

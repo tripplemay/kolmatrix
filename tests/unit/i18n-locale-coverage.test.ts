@@ -290,6 +290,14 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   "admin.apifyPreview.statsCards.footer.gateOpen",
   "admin.apifyPreview.statsCards.footer.gateBlocked",
   "admin.apifyPreview.statsCards.footer.sampleNote",
+
+  // BL-066-F006 — AcceptedKolsPanel source chip + fee placeholder.
+  // "AI" / "CSV" are tech codes that read identically across locales;
+  // feeUnset is a literal em-dash glyph used as the empty-state hint
+  // in the fee column.
+  "campaigns.detail.kolPanel.sourceChip.ai",
+  "campaigns.detail.kolPanel.sourceChip.csv",
+  "campaigns.detail.kolPanel.feeUnset",
 ]);
 
 const en = load("en");

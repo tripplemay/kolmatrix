@@ -992,8 +992,8 @@
         }
       },
       "kolPanel": {
-        "title": "活动内 KOL",
-        "empty": "还没有 KOL。添加保存过的创作者开始触达。",
+        "title": "已确认 KOL",
+        "empty": "尚未确认 KOL。请在上方接受 AI 推荐或通过 CSV 导入。",
         "addButton": "添加 KOL",
         "aiNativeMigrationTooltip": "全量 KOL 池，AI native 完整版即将上线",
         "addDialog": {
@@ -1006,12 +1006,22 @@
         },
         "columns": {
           "creator": "创作者",
-          "contactStatus": "沟通状态",
+          "source": "来源",
+          "contactStatus": "状态",
           "fee": "费用（美元）",
+          "addedAt": "加入时间",
           "actions": "操作"
         },
+        "sourceChip": {
+          "ai": "AI",
+          "csv": "CSV",
+          "legacy": "历史"
+        },
+        "viewProfile": "查看资料",
+        "feeUnset": "—",
         "remove": "移除",
-        "removeConfirm": "确定要将此 KOL 从活动中移除吗？"
+        "removeConfirm": "确定要将此 KOL 从活动中移除吗？",
+        "_deprecated_by_BL-066": "BL-066-F006 已弃用 addButton/aiNativeMigrationTooltip/addDialog.*/remove/removeConfirm，待 BL-070 删除。"
       },
       "kolStatus": {
         "pending": "待联系",

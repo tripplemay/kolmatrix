@@ -8,8 +8,8 @@
  *   ┌──────────────────────────────────────────────┐
  *   │ Breadcrumb                                    │
  *   │ BriefSummaryPanel (status pills + 4-col grid) │
- *   │ AiRecommendationPanel skeleton (F003 = real)  │
- *   │ CampaignKolPanel (沿用; F006 = AcceptedKols)  │
+ *   │ AiRecommendationPanel (smart-match top 30)    │
+ *   │ AcceptedKolsPanel (read-only + source chip)   │
  *   └──────────────────────────────────────────────┘
  *
  * Unmount (per F002 audit §裁决 #3=B; 6 files + sidebar 3 files):
@@ -29,9 +29,9 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { runCampaignDetail } from "@/lib/campaigns/detail";
 
+import { AcceptedKolsPanel } from "./AcceptedKolsPanel";
 import { AiRecommendationPanel } from "./AiRecommendationPanel";
 import { BriefSummaryPanel } from "./BriefSummaryPanel";
-import { CampaignKolPanel } from "./CampaignKolPanel";
 
 export const metadata = { title: "Campaign — KOLMatrix" };
 
@@ -58,7 +58,6 @@ export default async function CampaignDetailPage({ params }: Props) {
 
   const t = await getTranslations("campaigns.detail");
   const tKolStatus = await getTranslations("campaigns.detail.kolStatus");
-  const tErrors = await getTranslations("campaigns.detail.errors");
 
   const acceptedCount = campaign.kols.length;
   const contactedCount = campaign.kols.filter((k) =>
@@ -99,13 +98,11 @@ export default async function CampaignDetailPage({ params }: Props) {
         labels={aiPanelLabels(t)}
       />
 
-      <CampaignKolPanel
-        campaignId={campaign.id}
-        campaignStatus={campaign.status}
+      <AcceptedKolsPanel
+        locale={locale}
         kols={campaign.kols}
         labels={kolPanelLabels(t)}
         statusLabels={kolStatusLabels(tKolStatus)}
-        errorLabels={errorLabels(tErrors)}
       />
     </div>
   );
@@ -205,24 +202,21 @@ function kolPanelLabels(t: TFn) {
   return {
     title: t("kolPanel.title"),
     empty: t("kolPanel.empty"),
-    addButton: t("kolPanel.addButton"),
-    aiNativeMigrationTooltip: t("kolPanel.aiNativeMigrationTooltip"),
-    addDialog: {
-      title: t("kolPanel.addDialog.title"),
-      searchPlaceholder: t("kolPanel.addDialog.searchPlaceholder"),
-      empty: t("kolPanel.addDialog.empty"),
-      feeLabel: t("kolPanel.addDialog.feeLabel"),
-      submit: t("kolPanel.addDialog.submit"),
-      close: t("kolPanel.addDialog.close"),
-    },
     columns: {
       creator: t("kolPanel.columns.creator"),
+      source: t("kolPanel.columns.source"),
       contactStatus: t("kolPanel.columns.contactStatus"),
       fee: t("kolPanel.columns.fee"),
+      addedAt: t("kolPanel.columns.addedAt"),
       actions: t("kolPanel.columns.actions"),
     },
-    remove: t("kolPanel.remove"),
-    removeConfirm: t("kolPanel.removeConfirm"),
+    sourceChip: {
+      ai: t("kolPanel.sourceChip.ai"),
+      csv: t("kolPanel.sourceChip.csv"),
+      legacy: t("kolPanel.sourceChip.legacy"),
+    },
+    viewProfile: t("kolPanel.viewProfile"),
+    feeUnset: t("kolPanel.feeUnset"),
   };
 }
 
@@ -234,20 +228,5 @@ function kolStatusLabels(t: TFn) {
     signed: t("signed"),
     delivered: t("delivered"),
     paid: t("paid"),
-  };
-}
-
-function errorLabels(t: TFn) {
-  return {
-    campaign_not_found: t("notFound"),
-    kol_not_found: t("kolNotFound"),
-    link_not_found: t("linkNotFound"),
-    already_linked: t("alreadyLinked"),
-    invalid_fee: t("invalidFee"),
-    invalid_status: t("invalidStatus"),
-    feeInvalid: t("invalidFee"),
-    invalid_input: t("generic"),
-    unauthorized: t("unauthorized"),
-    generic: t("generic"),
   };
 }

@@ -1,11 +1,12 @@
 /**
  * BM2-F005 · Campaign detail / KolCampaign CRUD integration spec
  *
- * Covers the shared helpers (`runCampaignDetail` /
- * `runAvailableKolsForCampaign` / `addKolToCampaign` /
+ * Covers the shared helpers (`runCampaignDetail` / `addKolToCampaign` /
  * `removeKolFromCampaign` / `updateKolCampaign` /
  * `transitionCampaignStatus` / `recordCampaignRevenue`) that back
- * both the Server Actions and the REST routes.
+ * both the Server Actions and the REST routes. `runAvailableKolsFor-
+ * Campaign` was retired in BL-066-F006 alongside the manual add-to-
+ * campaign path.
  */
 import {
   afterAll,
@@ -133,7 +134,7 @@ async function seedWorld(
   };
 }
 
-describe("runCampaignDetail + runAvailableKolsForCampaign", () => {
+describe("runCampaignDetail", () => {
   it("returns the campaign with product + kolCampaigns", async () => {
     const w = await seedWorld(TENANT_A, OWNER_A, 2);
     await mod.kolOps.addKolToCampaign(w.tenantId, w.ownerId, w.campaignId, {
@@ -154,25 +155,6 @@ describe("runCampaignDetail + runAvailableKolsForCampaign", () => {
     await seedWorld(TENANT_B, OWNER_B, 1);
     const asB = await mod.detail.runCampaignDetail(TENANT_B, w.campaignId);
     expect(asB).toBeNull();
-  });
-
-  it("runAvailableKolsForCampaign excludes KOLs already in the campaign (full-tenant pool per BL-063 F001)", async () => {
-    // BL-063 F001: pool widened from isSaved=true to all non-soft-
-    // deleted KOLs. kol[3] (savedCount=3 means kol[3].isSaved=false)
-    // now belongs in the pool — the saved/discovered split is gone.
-    const w = await seedWorld(TENANT_A, OWNER_A, 4, { savedCount: 3 });
-    await mod.kolOps.addKolToCampaign(w.tenantId, w.ownerId, w.campaignId, {
-      kolId: w.kolIds[0]!,
-    });
-    const available = await mod.detail.runAvailableKolsForCampaign(
-      w.tenantId,
-      w.campaignId
-    );
-    const ids = available.map((a) => a.id);
-    expect(ids).toContain(w.kolIds[1]);
-    expect(ids).toContain(w.kolIds[2]);
-    expect(ids).toContain(w.kolIds[3]); // BL-063: unsaved KOL now in pool
-    expect(ids).not.toContain(w.kolIds[0]); // already linked
   });
 });
 

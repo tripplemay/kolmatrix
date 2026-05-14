@@ -1043,8 +1043,8 @@
         }
       },
       "kolPanel": {
-        "title": "このキャンペーンのKOL",
-        "empty": "まだKOLはいません。保存したクリエイターを追加してアウトリーチを開始しましょう。",
+        "title": "承認済み KOL",
+        "empty": "まだ KOL がいません。上の AI レコメンデーションを承認するか、CSV でインポートしてください。",
         "addButton": "KOLを追加",
         "aiNativeMigrationTooltip": "全KOLプール — AIネイティブ完全版は間もなく公開",
         "addDialog": {
@@ -1057,12 +1057,22 @@
         },
         "columns": {
           "creator": "クリエイター",
-          "contactStatus": "連絡状況",
+          "source": "ソース",
+          "contactStatus": "ステータス",
           "fee": "料金 (USD)",
+          "addedAt": "追加日",
           "actions": "アクション"
         },
+        "sourceChip": {
+          "ai": "AI",
+          "csv": "CSV",
+          "legacy": "従来"
+        },
+        "viewProfile": "プロフィールを表示",
+        "feeUnset": "—",
         "remove": "削除",
-        "removeConfirm": "このKOLをキャンペーンから削除しますか？"
+        "removeConfirm": "このKOLをキャンペーンから削除しますか？",
+        "_deprecated_by_BL-066": "BL-066-F006 で addButton/aiNativeMigrationTooltip/addDialog.*/remove/removeConfirm は廃止予定。BL-070 で削除します。"
       },
       "kolStatus": {
         "pending": "保留中",

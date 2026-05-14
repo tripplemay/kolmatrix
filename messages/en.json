@@ -992,8 +992,8 @@
         }
       },
       "kolPanel": {
-        "title": "KOLs in this campaign",
-        "empty": "No KOLs yet. Add saved creators to kick off outreach.",
+        "title": "Accepted KOLs",
+        "empty": "No KOLs yet. Accept AI recommendations above or import via CSV.",
         "addButton": "Add KOLs",
         "aiNativeMigrationTooltip": "Full KOL pool — AI native experience coming soon",
         "addDialog": {
@@ -1006,12 +1006,22 @@
         },
         "columns": {
           "creator": "Creator",
-          "contactStatus": "Contact status",
+          "source": "Source",
+          "contactStatus": "Status",
           "fee": "Fee (USD)",
+          "addedAt": "Added",
           "actions": "Actions"
         },
+        "sourceChip": {
+          "ai": "AI",
+          "csv": "CSV",
+          "legacy": "Legacy"
+        },
+        "viewProfile": "View profile",
+        "feeUnset": "—",
         "remove": "Remove",
-        "removeConfirm": "Remove this KOL from the campaign?"
+        "removeConfirm": "Remove this KOL from the campaign?",
+        "_deprecated_by_BL-066": "BL-066-F006 retired addButton/aiNativeMigrationTooltip/addDialog.*/remove/removeConfirm. BL-070 will delete those keys."
       },
       "kolStatus": {
         "pending": "Pending",

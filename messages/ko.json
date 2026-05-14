@@ -1043,8 +1043,8 @@
         }
       },
       "kolPanel": {
-        "title": "이 캠페인에 참여한 KOL",
-        "empty": "아직 KOL이 없습니다. 저장된 크리에이터를 추가하여 아웃리치를 시작하세요.",
+        "title": "수락된 KOL",
+        "empty": "아직 KOL이 없습니다. 위의 AI 추천을 수락하거나 CSV로 가져오세요.",
         "addButton": "KOL 추가",
         "aiNativeMigrationTooltip": "전체 KOL 풀 — AI 네이티브 정식 버전 곧 출시",
         "addDialog": {
@@ -1057,12 +1057,22 @@
         },
         "columns": {
           "creator": "크리에이터",
-          "contactStatus": "연락 상태",
+          "source": "출처",
+          "contactStatus": "상태",
           "fee": "비용 (USD)",
+          "addedAt": "추가일",
           "actions": "작업"
         },
+        "sourceChip": {
+          "ai": "AI",
+          "csv": "CSV",
+          "legacy": "기존"
+        },
+        "viewProfile": "프로필 보기",
+        "feeUnset": "—",
         "remove": "제거",
-        "removeConfirm": "이 KOL을 캠페인에서 제거하시겠습니까?"
+        "removeConfirm": "이 KOL을 캠페인에서 제거하시겠습니까?",
+        "_deprecated_by_BL-066": "BL-066-F006으로 addButton/aiNativeMigrationTooltip/addDialog.*/remove/removeConfirm을 사용 중단. BL-070에서 삭제 예정."
       },
       "kolStatus": {
         "pending": "대기 중",

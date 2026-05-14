@@ -26,6 +26,10 @@ export interface CampaignKolRow {
   contactStatus: string;
   kolFee: number | null;
   addedAt: string;
+  // BL-066-F006: kol_campaign.source backs the AcceptedKolsPanel source
+  // chip and gates which rows render at all (whitelist =
+  // ai_smart_match / csv_import / manual_legacy).
+  source: string;
 }
 
 export interface CampaignDetailRow {
@@ -113,6 +117,7 @@ export async function runCampaignDetail(
             id: true,
             status: true,
             kolFee: true,
+            source: true,
             createdAt: true,
             kol: {
               select: {
@@ -153,6 +158,7 @@ export async function runCampaignDetail(
       contactStatus: kc.status,
       kolFee: kc.kolFee == null ? null : Number(kc.kolFee.toString()),
       addedAt: kc.createdAt.toISOString(),
+      source: kc.source,
     }));
 
     return {
@@ -190,46 +196,8 @@ export async function runCampaignDetail(
   });
 }
 
-/**
- * Candidates NOT yet in the campaign. Used by the AddKolDialog.
- *
- * BL-063 F001: pool widened from "isSaved=true" to all non-soft-deleted
- * KOLs. ADR-013 deprecates the saved/discovered split — every campaign
- * pulls from the full tenant pool. The 100-row cap is MVP scaffolding;
- * BL-064+ replaces this with the AI-native recommend-by-relevance flow.
- */
-export async function runAvailableKolsForCampaign(
-  tenantId: string,
-  campaignId: string
-): Promise<
-  Array<{
-    id: string;
-    displayName: string;
-    handle: string;
-    platform: string;
-    avatarUrl: string | null;
-    followerCount: number;
-  }>
-> {
-  return withTenant(tenantId, async (tx) => {
-    const linked = await tx.kolCampaign.findMany({
-      where: { campaignId },
-      select: { kolId: true },
-    });
-    const exclude = new Set(linked.map((l) => l.kolId));
-    const pool = await tx.kol.findMany({
-      where: { deletedAt: null },
-      select: {
-        id: true,
-        displayName: true,
-        handle: true,
-        platform: true,
-        avatarUrl: true,
-        followerCount: true,
-      },
-      orderBy: [{ valueScore: "desc" }, { createdAt: "desc" }],
-      take: 200, // small safety cap before the Set filter
-    });
-    return pool.filter((k) => !exclude.has(k.id)).slice(0, 100);
-  });
-}
+// BL-066-F006: `runAvailableKolsForCampaign` deleted alongside the
+// AddKolDialog removal (F005 + F006 form one atomic retirement of the
+// manual add-to-campaign path). The AI recommendation flow on
+// /campaigns/[id] is the canonical path now; CSV import is the only
+// other supported entry point.

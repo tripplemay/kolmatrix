@@ -1,12 +1,13 @@
 /**
- * BL-066-F002 · Source-level fidelity guards for /campaigns/:id rewrite.
+ * BL-066-F002 + F006 · Source-level fidelity guards for /campaigns/:id.
  *
- * Static greps over the [id] folder. Now locks the three-section
- * AI-native layout (Brief / AiRecommendation / KOL panel) per F002
- * audit §裁决 #5=C (底部 CampaignKolPanel 沿用; F006 才 git mv).
- * Original 2-col + 3 Insights cards layout was BM2-F005 / MVP-vf-F005;
- * those four sidebar/inline components are unmount-only (files kept
- * with @deprecated_by_BL-066 marker for BL-070 atomic delete).
+ * Static greps over the [id] folder. Locks the three-section AI-native
+ * layout (Brief / AiRecommendation / AcceptedKolsPanel) — after F006
+ * the bottom panel is renamed and rendered read-only with a source
+ * chip column. Original 2-col + 3 Insights cards layout was BM2-F005
+ * / MVP-vf-F005; those four sidebar/inline components are
+ * unmount-only (files kept with @deprecated_by_BL-066 marker for
+ * BL-070 atomic delete).
  */
 import { readFileSync } from "fs";
 import { resolve } from "path";
@@ -23,12 +24,12 @@ function lineCount(s: string): number {
   return s.split("\n").length;
 }
 
-describe("/campaigns/:id fidelity guards (BL-066 F002)", () => {
+describe("/campaigns/:id fidelity guards (BL-066 F002 + F006)", () => {
   it("page wires the three-section AI-native layout", () => {
     const page = read("page.tsx");
     expect(page).toMatch(/<BriefSummaryPanel\b/);
     expect(page).toMatch(/<AiRecommendationPanel\b/);
-    expect(page).toMatch(/<CampaignKolPanel\b/);
+    expect(page).toMatch(/<AcceptedKolsPanel\b/);
   });
 
   it("page no longer mounts BM2-F005 sidebar / inline components", () => {
@@ -55,9 +56,37 @@ describe("/campaigns/:id fidelity guards (BL-066 F002)", () => {
     }
   });
 
-  it("CampaignKolPanel slimmed to <= 250 lines", () => {
-    const panel = read("CampaignKolPanel.tsx");
+  it("AcceptedKolsPanel slimmed to <= 250 lines", () => {
+    const panel = read("AcceptedKolsPanel.tsx");
     expect(lineCount(panel)).toBeLessThanOrEqual(250);
+  });
+
+  it("AcceptedKolsPanel filters kol_campaign rows to the source whitelist", () => {
+    const panel = read("AcceptedKolsPanel.tsx");
+    // BL-066-F006: spec §F006 #C locks the whitelist; the backfill
+    // migration moves pre-F004 'manual' rows into 'manual_legacy' so
+    // the three values below cover every visible row.
+    expect(panel).toMatch(/ai_smart_match/);
+    expect(panel).toMatch(/csv_import/);
+    expect(panel).toMatch(/manual_legacy/);
+  });
+
+  it("AcceptedKolRow exposes a source chip and renders the status / fee read-only", () => {
+    const row = read("AcceptedKolRow.tsx");
+    // Source chip column is the F006 anchor — independent column,
+    // not inlined into the creator cell (per F006 audit §裁决 #4=A).
+    expect(row).toMatch(/accepted-kol-source-chip/);
+    expect(row).toMatch(/sourceChipLabels/);
+    // Status / fee cells are read-only after F006 — no <Select> /
+    // <Input> mutation surfaces (those were removed alongside the
+    // manual-edit entries).
+    expect(row).not.toMatch(/<Select\b/);
+    expect(row).not.toMatch(/<Input\b/);
+    // View-profile link is the only action — deep links into the
+    // KOL detail page; remove button was retired with the edit
+    // surfaces.
+    expect(row).toMatch(/accepted-kol-view-profile/);
+    expect(row).not.toMatch(/campaign-kol-remove/);
   });
 
   // BL-066-F005: AddKolDialog.tsx deleted (AI recommendation flow
@@ -79,12 +108,11 @@ describe("/campaigns/:id fidelity guards (BL-066 F002)", () => {
     expect(card).not.toMatch(/runMatchTooltip/);
   });
 
-  it("CampaignKolRow uses <Select>/<Input>/<TCell> from the public ui atoms", () => {
-    const row = read("CampaignKolRow.tsx");
+  it("AcceptedKolRow uses <TCell>/<TRow> from the public ui atoms", () => {
+    const row = read("AcceptedKolRow.tsx");
     expect(row).toMatch(/from "@\/components\/ui"/);
-    expect(row).toMatch(/<Select\b/);
-    expect(row).toMatch(/<Input\b/);
     expect(row).toMatch(/<TRow\b/);
+    expect(row).toMatch(/<TCell\b/);
   });
 
   it("page.tsx never passes function props across the RSC boundary", () => {
