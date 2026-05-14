@@ -1,54 +1,36 @@
 {
-  "status": "done",
-  "user_goal": "BL-065-match-page-internal-rewrite — ADR-013 AI Native 转向 Phase 2 第一批：Match 页内部 UI 实质重写，合并 Discovery + Database 为统一 KOL 工作台。7 features：F001 Match 页 layout + 双视图 / F002 Filter+Search+SaveSearchControls 合并 / F003 BulkActionBar 集成 + ImportCsvDialog 移 /admin / F004 AddKolDialog 保留 + UI 集成 / F005 SmartMatchDialog → AI 推荐 sidebar (campaign-context mode) / F006 i18n 5 语言 + e2e + 删 /discovery + /database 整页 27 文件 / F007 staging + prod redeploy + 24h 监控 + signoff。预估 ~5-7 day Generator + 1 day Reviewer。本批次完成后 BL-066 Campaign 详情页 AI 推荐主面板 + BL-048 valueScore 优化（Phase 2 并行）启动。本批次不动 Campaign 详情页内部 UI（BL-066 工作）/ B3 自然语言 refine（BL-068）/ C3 完整 explainability（BL-067 — 本批次仅 C2 占位）。关联 docs/specs/BL-065-match-page-internal-rewrite-spec.md / ADR-013 / vision §2 §3 / roadmap §4。",
-  "total_features": 7,
-  "completed_features": 7,
-  "fix_rounds": 1,
-  "current_sprint": "BL-065-match-page-internal-rewrite",
-  "last_updated": "2026-05-13T16:25+0800",
+  "status": "planning",
+  "user_goal": "BL-066-campaign-detail-ai-main-panel — ADR-013 AI Native Phase 2 第二批：/campaigns/[id] 详情页升级为 AI 推荐主面板（顶 Brief / 中 AI 主面板 top 30 候选 + 接受/跳过/换一批 / 底 AcceptedKolsPanel）+ AddKolDialog 完全删除 + BL-048 valueScore 公式 v2 合入 + Stitch 设计稿新建 + 视觉 baseline regen。9 features，~9-11 day Generator + 1 day Reviewer 估算。决策点 4 个用户 5/14 全 lock：#A 复用 /api/kols/smart-match / #B 完全删 AddKolDialog / #C BL-048 合并 / #D Stitch 新建 + #E client-state status / #F localStorage 24h。本批次完成后解锁 Phase 3：BL-067 C3 双向 explainability / BL-068 B3 自然语言 refine / BL-070 二次清理。关联 docs/specs/BL-066-campaign-detail-ai-main-panel-spec.md / ADR-013 / vision §2 §3 / roadmap §4 BL-066+BL-048。",
+  "total_features": 9,
+  "completed_features": 0,
+  "fix_rounds": 0,
+  "current_sprint": "BL-066-campaign-detail-ai-main-panel",
+  "last_updated": "2026-05-14T11:00+0800",
   "reference_docs": [
-    "docs/specs/BL-065-match-page-internal-rewrite-spec.md",
+    "docs/specs/BL-066-campaign-detail-ai-main-panel-spec.md",
     "docs/adr/ADR-013-ai-native-product-pivot.md",
     "docs/product/ai-native-vision.md",
     "docs/product/ai-native-roadmap.md",
-    "src/app/[locale]/(app)/match/page.tsx",
-    "src/app/[locale]/(app)/discovery/",
-    "src/app/[locale]/(app)/database/",
-    "src/app/[locale]/(app)/admin/apify-preview/",
-    "src/components/app-shell/Nav.tsx",
-    "messages/cn.json",
-    "messages/en.json"
+    "src/app/[locale]/(app)/campaigns/[id]/",
+    "src/app/[locale]/(app)/match/",
+    "src/lib/kol/value-score.ts",
+    "src/app/api/kols/smart-match/route.ts",
+    "design-draft/bl066-campaign-detail-ai-main-panel/",
+    "messages/en.json",
+    "messages/zh.json"
   ],
   "docs": {
-    "spec": "docs/specs/BL-065-match-page-internal-rewrite-spec.md",
+    "spec": "docs/specs/BL-066-campaign-detail-ai-main-panel-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/BL-065-signoff-2026-05-14.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": null,
-  "generator_handoff": {
-    "from": "Generator",
-    "to": "Reviewer",
-    "status": "reverifying",
-    "summary": "BL-065-R1 fixed @ 4562895 — /admin/kol-csv-import server render now uses tImport.raw() for the two parameterized templates (successTemplate + rowErrorTemplate). Latent ICU formatter bug from /database route relocation is resolved.",
-    "fix_commit": "4562895",
-    "fix_root_cause": "ImportCsvDialog substitutes {imported}/{skipped}/{row}/{message} via String.replace (raw template, not ICU). Server-side tImport(key) ran them through next-intl's ICU formatter and threw FORMATTING_ERROR. The same wiring existed on /database/page.tsx before BL-065 (BL-024-F001-2) but middleware 302'd /database → /match so the page never actually rendered. F003 mounted the dialog on /admin/kol-csv-import which DOES render, exposing the bug.",
-    "fix_summary": "tImport(\"successTemplate\") → tImport.raw(\"successTemplate\") as string (same for rowErrorTemplate). .raw(key) is next-intl's documented API for retrieving the literal message string without ICU evaluation (use-intl/dist/types/core/createBaseTranslator.d.ts).",
-    "regression_test": "src/app/[locale]/admin/kol-csv-import/__tests__/page-i18n-fidelity.test.ts — 2 cases: (a) successTemplate + rowErrorTemplate use .raw(); (b) plain non-parameterized keys (title/body/uploadLabel/etc.) stay on tImport() to preserve future ICU support.",
-    "ci_status": "CI run 25787001116 全 8 jobs PASS",
-    "staging_status": "staging deploy verified @ 4562895 (curl /api/health git_sha matches HEAD; pm2 logs 200 lines no FORMATTING_ERROR after reload)",
-    "required_reverify": [
-      "L1 (lint / typecheck / vitest / playwright) on c66cb0eb+",
-      "Login as admin@kolmatrix.local on local 3099 → /en/admin/kol-csv-import → confirm server logs no FORMATTING_ERROR",
-      "Login as marketer@kolmatrix.local → /en/admin/kol-csv-import → confirm 302 → /en/match",
-      "Confirm src/app/[locale]/admin/kol-csv-import/__tests__/page-i18n-fidelity.test.ts 2/2 PASS",
-      "Optional: prod re-audit (no prod redeploy needed unless user acks — fix is staging-only verified). If user gates prod, redeploy + scripts/bl065-f007-prod-audit.sh again.",
-      "Finalize signoff §8 + §9 + flip progress.status reverifying → done"
-    ]
-  },
+  "generator_handoff": null,
   "session_notes": {
-    "Reviewer": "[2026-05-14 13:49 +0800] BL-065 reverifying complete. L1 stack started via scripts/test/codex-setup.sh on 3099; lint passed with 2 pre-existing warnings, typecheck PASS, vitest PASS (162 files / 1142 tests). Playwright probe: admin@kolmatrix.local stays on /en/admin/kol-csv-import and no FORMATTING_ERROR; marketer@kolmatrix.local redirects to /en/match. Server log shows GET /en/admin/kol-csv-import 200 and GET /en/match 200, no runtime intl error. Final signoff written at docs/test-reports/BL-065-signoff-2026-05-14.md."
+    "johnsong": "[2026-05-14 11:00 BJT Planner johnsong — BL-066 起批次 + BL-065 done 收尾完成 + v0.9.21 框架沉淀]\n\nBL-065 done 收尾（5/14 上午完成）：\n  1. project-status.md 校验整合 28 行（≤30 cap），加 5/14 v0.9.21 沉淀 marker\n  2. proposed-learnings 4 条用户 5/14 全确认沉淀：\n     - BL-064 IA refactor redirect scope wire-readiness → framework/harness/generator.md §9 + 短摘要\n     - BL-065-R1 next-intl `.raw()` vs ICU template route migration → planner.md 铁律 1 矩阵 +1 行 + 短摘要\n     - BL-065-F006 atomic delete commit + CI 多轮自修 + Checkbox + UUID guard → generator.md §10 + 短摘要\n     - BL-065 fix-rounds=1 latent vs 新引入 + Reviewer role-gate probe → evaluator.md §20 + planner.md §fix-rounds 数解读 + 短摘要\n  3. CHANGELOG v0.9.21 entry + archive proposed-learnings-archive-v0.9.21.md（66 行）\n  4. role_assignments 已 null（无需清）\n  5. commit 1f65a76 推送\n\nBL-066 起批次（5/14 11:00）：\n  1. 用户 5/14 选 BL-066 为下一批次（候选 BL-066/BL-048/BL-070/BL-054 之 BL-066，P0 Phase 2 第二批）\n  2. 4 决策点 ack：#A AI 推荐源复用 /api/kols/smart-match / #B AddKolDialog 完全删除（/campaigns/[id] + /match）/ #C BL-048 合入本 batch（atomic 发布 + 避免 staging valueScore 双源不同步）/ #D Stitch 设计稿新建（F001）\n  3. spec 起草 docs/specs/BL-066-campaign-detail-ai-main-panel-spec.md 含 9 features + 6 决策点 + 5 风险 + 7 不变量\n  4. features.json 9 entries（F001-F009）含完整 acceptance + executor:generator\n  5. progress.json status done → planning，sprint = BL-066-campaign-detail-ai-main-panel\n\n关键设计要点（Generator 起工时必读）：\n- F001 是 Planner 主导任务（Stitch 设计稿新建）— Generator F002 不开工 until F001 done\n- F003 AiRecommendationPanel 是核心组件，复用 /api/kols/smart-match endpoint（productId → top KOL cosine matches）\n- F004 acceptKolAction 写 kol_campaign 表，先核 schema.prisma 看 source 列是否存在（缺则同 commit 加 migration）\n- F005 删 AddKolDialog 不破坏 e2e match-fidelity 其他 case\n- F007 BL-048 valueScore 公式 v2：follower log10×10 cap 80 / engagement 阶梯 / categoryScore normalize 15。spec §3 F007 锁具体公式\n- F009 prod redeploy 必须等用户 ack 时间窗（per BL-063/064/065 实战流程）\n\n下一步：用户 ack BL-066 spec → Planner 切 status planning → building → Generator (cli=johnsong) 接 F001 Stitch 设计稿（独立 Planner 任务，可与 Generator F002+ 并行准备）→ F002-F009 顺序实施。\n",
+    "Reviewer": null
   },
   "features": []
 }
