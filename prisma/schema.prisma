@@ -296,6 +296,11 @@ model KolCampaign {
   // BM1-F001: BM2 will use this for negotiated KOL fees. match_score
   // stays as the existing B0 column (adjudication #A skip).
   kolFee         Decimal?  @map("kol_fee") @db.Decimal(10, 2)
+  // BL-066-F004: provenance ("ai_smart_match" | "manual" | "csv_import" |
+  // "manual_legacy"). Backfill default "manual" keeps pre-BL-066 rows
+  // intact; AcceptedKolsPanel (F006) groups by this column for the
+  // source chip.
+  source         String    @default("manual") @db.VarChar(20)
 
   kol      Kol      @relation(fields: [kolId], references: [id])
   campaign Campaign @relation(fields: [campaignId], references: [id])
