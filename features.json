@@ -80,7 +80,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "git rm src/app/[locale]/(app)/campaigns/[id]/AddKolDialog.tsx",
       "git rm src/app/[locale]/(app)/match/AddKolDialog.tsx",
