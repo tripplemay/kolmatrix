@@ -39,3 +39,7 @@ type: feedback
 ## SQL 跨 tenant 全量查询 RLS 注意（2026-05-10 BL-061 实战）
 
 跨 tenant 全量验收 SQL 必须 `sudo -u postgres psql kolmatrix(_staging)` superuser bypass RLS。普通 `kolmatrix_app` role + Prisma RLS 跨 tenant 看 0 行（不是数据缺失，是 RLS 视角限制）。Reviewer only-read 验收尤其要走 superuser path。
+
+## L1 + 角色门禁手动探针（2026-05-13 BL-065-R1 实战，v0.9.21）
+
+L1 全绿（lint / typecheck / vitest / playwright fidelity / audit script）不等于 verifying PASS。Reviewer 必须**手动跑角色门禁探针**：登录 admin / marketer 双账号 → 访问角色限定路由 → **看 server console / pm2 logs** 是否含 `Error:` / `FORMATTING_ERROR` / `next-intl error`。Server console error 不影响 HTTP 200/307 状态码，CI 全绿和 audit script 全 PASS 都不会抓到。BL-065-R1 即是案例：admin 进入 /admin/kol-csv-import HTTP 200 但 server 日志含 FORMATTING_ERROR — 手动 probe 触发 fix-round 1。完整：`framework/harness/evaluator.md §20`。

@@ -5,6 +5,28 @@
 
 ---
 
+## v0.9.21 — 2026-05-14（BL-064 + BL-065 沉淀，4 条 learnings）
+
+**来源批次：**
+- BL-064 fix-round 3（IA refactor 7→4 路由 / embed-old-components redirect scope wire-readiness）
+- BL-065-R1（/admin/kol-csv-import next-intl FORMATTING_ERROR latent bug — Codex Reviewer 手动 admin role probe 发现）
+- BL-065-F006（大型 atomic delete commit 净 -4658 lines / CI 3 轮自修才全绿 / Checkbox E2E selector + UUID guard pattern）
+- BL-065-F007 fix-rounds=1（latent vs 新引入区分 + Reviewer role-gate probe 价值）
+
+**触发原因：**
+- BL-064 redirect 12→6 缩减是 fix-round 1-3 实战才确定的最优 scope；embed-old destination 上 redirect 反而 UX 比 kept 差。规律值得沉淀避免下次 IA refactor 重新踩
+- BL-065-R1 是路由迁移暴露的 6 个月 latent bug — t(key) 在 server 看到未绑定 ICU 占位符抛 FORMATTING_ERROR；老路由被 redirect 掩盖。CI 全绿 + audit PASS 都漏，Reviewer 手动 admin role probe 才抓到 → 角色门禁手动探针价值需明文沉淀
+- BL-065-F006 大型 delete commit 本地 L1 全绿但 CI 3 轮才全绿 — baseline-tracking / fidelity-grep / types-regen 类测试只在 CI 完整链路暴露。删除批次执行模板 + 预扫清单需沉淀
+
+**变更：**
+- 修改 `framework/harness/planner.md`：(1) 铁律 1 矩阵新增 1 行 — i18n template 在 server 组件 + 路由迁移核查；(2) 新增 §"fix-rounds 数解读"段（latent vs 新引入区分 + 二维统计 + Reviewer role-gate probe 价值）
+- 修改 `framework/harness/generator.md`：新增 §9 "IA refactor / route migration redirect scope wire-readiness 评估" + §10 "大型删除批次执行模板"
+- 修改 `framework/harness/evaluator.md`：新增 §20 "L1 + 角色门禁手动探针"
+- 同步写入 `.auto-memory/role-context/{generator,planner,evaluator}.md` 短摘要段（3 + 2 + 1 段）
+- 归档 `framework/archive/proposed-learnings-archive-v0.9.21.md`
+
+---
+
 ## v0.9.20 — 2026-05-10（BL-060 沉淀，2 条 learnings）
 
 **来源批次：**

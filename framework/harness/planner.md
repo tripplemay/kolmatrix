@@ -258,6 +258,7 @@ Planner 写 spec，若涉及以下内容，**必须先 Read 对应文件核实**
 | **`.auto-memory/project-status.md` / `session_notes` 等记忆涉及外部协作方 / 第三方仓库 / 跨项目状态的条目（"X 团队已交付 / 已部署 / 已审过 / 已上线"类断言）（v0.9.17 新增）** | **`gh api repos/<owner>/<repo>` 实物核查 + 看 `updatedAt` 是否后于记忆写入时间；内部 fork 用 `git log --all --since=<记忆时间戳>`；跨项目部署用 `curl <service-url>/health`；时间戳 ≥3 天的"提前交付"类条目尤其必查** |
 | **auth role enum / 用户角色 / 权限 enum / DB schema 字段值（v0.9.18 新增）** | **不可依赖字面 `'admin'` / `'user'` 等假设 — 必须 `grep -rn "role" src/auth.ts src/lib/auth/ prisma/schema.prisma prisma/seed.ts` 验证真实 enum 值；spec lock 前必查 (BL-012 F001 案例：spec 写 `role === 'admin'` 但实际 seed 创建 `tenant_admin` → fix-round 1 改 `['platform_admin', 'tenant_admin'].includes(role)`)** |
 | **外部 API response zod schema（fork / 第三方 / 跨服务 GET 响应）（v0.9.19 新增）** | **SSH 拉 ≥5-10 真数据 row sample → JSON parse 验证 zod schema 兼容；文档注释含"多 / 原结构 / 灵活"等 union 信号必须 `z.union([...])` + `.passthrough()` 容忍未知字段 (BL-012 F002 案例：spec/audit 仅看文档 sample，prod 真数据 41 fields shape mismatch → fix-round 2 改 union)** |
+| **i18n template 在 server 组件 + 路由迁移（v0.9.21 新增）** | **路由迁移类批次 spec 起草前，grep 所有目标组件 `t(key)` 调用 + 检查对应 messages/*.json 模板含 `{x}` token 时区分两套约定：(1) ICU 真 placeholder（t-call 必须传值）；(2) client-side 自定义 token（`String.replace` 替换标记）→ 后者必须用 `t.raw(key)` 取原文。否则 latent FORMATTING_ERROR 会在新路由真实渲染时爆 (BL-065-R1 案例：F003 把 ImportCsvDialog 挪 /database → /admin/kol-csv-import，老路由 302 掩盖 6 个月，新路由渲染立刻触发；fix: `tImport("successTemplate") → tImport.raw("successTemplate") as string` + page-i18n-fidelity.test.ts 回归守门)** |
 
 **反面案例（v0.9.11 新增类）：** BL-020 F001 spec 起草时假设 `productId` 是 UUID（沿袭 audit §3 CR-1 文字描述），未 grep `schema.prisma` → Generator pre-impl audit 反向纠错指出 `Product.id` 实为 `@default(cuid())`，套 UUID_RE 会破 4 调用方 + 5 既有 fixture（25-char CUID）测试全红。Planner 短格式裁决 #1:A 修订全文 + 修订 acceptance regex 为 `/^c[a-z0-9]{24,}$/i`。本可在 spec lock 前 grep schema.prisma 1 次避免。
 
@@ -291,6 +292,18 @@ Planner Kimi 5/7 在 `.auto-memory/project-status.md:16` 记录「爬虫团队 5
 - 标注 `file:line` 来源（例：`migration.sql:40-80`）
 
 **Generator 发现规格偏差时**：开工前提出"规格偏差报告"暂停；Planner 修订 spec 后再开工。此为双方义务。
+
+### fix-rounds 数解读（v0.9.21 新增 — BL-065 沉淀）
+
+**事实链：** BL-065 整批次 7 features Generator 自测 + CI 全程 0 fix-round；fix-round=1 来自 Reviewer L1 admin role 手动探针发现 BL-065-R1（FORMATTING_ERROR），是 F003 路由迁移暴露 BL-024 时代 latent bug，**非本批次新引入**。修复 0 改动业务逻辑，仅切换 `tImport()` → `tImport.raw()` + 加回归测试。
+
+**规则：**
+
+A. **fix-round 数不一定反映本批次质量** — 大体量 page consolidation / IA refactor / route migration 类批次会暴露上游 latent bug（路由从未渲染 → 真实渲染暴露 latent FORMATTING_ERROR / cross-tenant query / dead import 等）。这类 fix-round 应在 signoff 中标注「latent bug exposed by F00X route migration」与本批次新引入 bug 区分，避免 reviewer 在 done-phase 对 fix-rounds=1 的批次给低分
+
+B. **统计意义：** 仅本批次新引入的逻辑/接口/UI bug 计入"本批次 fix-round"；latent bug exposure 应另行标注（signoff §N.X "Latent bug exposed by F00X route migration"），未来按二维统计：(introduced, latent) 而不仅 fix_rounds 单维
+
+C. **Reviewer 角色门禁手动探针价值** — Codex Reviewer L1 不仅是 lint/typecheck/vitest 自动重跑；还包括手动 admin/marketer 双角色路由探针（如 BL-065 verifying 时 codex 登录 admin + marketer 双账号验 `/admin/kol-csv-import` role-gate）。该手动 probe 抓住的是 CI 全绿但 server 端日志含 runtime 错误的实际问题 — **server 端 console error 不计入 HTTP 响应码**，仅 PASS 状态码不能证明无错误
 
 ### 铁律 2：Code Review 报告的事实性断言按"线索"处理，不按"真相"采信
 

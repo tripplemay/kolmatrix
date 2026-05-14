@@ -40,3 +40,26 @@ type: feedback
 ## 扩范围 vs 单点修的判断（2026-05-10 BL-060 实战）
 
 fixing 阶段发现 Reviewer 反馈问题**指向 infrastructure 层**（e2e suite 稳定性/配置漂移/资源争用）而非原 spec acceptance 范围 → 不要「5 分钟修一行」，在 evaluator_feedback 或 session_notes 写"根因 X，建议 Planner 评估扩 Fxxx vs 独立 batch" → 用户 ack 后再扩范围。反例：BL-060 fix-round 1（cc82a54）单点放宽正则未上报 suite-level isolation → PARTIAL 浪费一轮（fix-round 2 f75cafd storageState 根治）。
+
+## IA refactor redirect scope 评估（2026-05-13 BL-064 沉淀，v0.9.21）
+
+IA refactor / page consolidation 类批次 spec 起草 redirect 规则时，**逐条评估 destination route wire-readiness**：destination 已 wire 该 content → redirect OK；仅 embed-old 占位（URL 换名内容不变）→ kept 更优。redirect scope 缩减是良性 fix-round 不计质量。BL-064 fix-round 1→3 把 12 条预期 redirect 缩到 6 条（5 content-equivalent + 1 parametric），其余 4 条改 kept 推迟到 destination wire 后再启。完整：`framework/harness/generator.md §9`。
+
+## i18n template 使用约定（2026-05-13 BL-065-R1 沉淀，v0.9.21）
+
+next-intl `{x}` 占位符两套约定不可混：
+- **ICU placeholder**：t-call 必须传值，如 `t("count", { count: 5 })`
+- **client-side String.replace token**：模板字面字符串，server 端取值必须用 **`t.raw(key)`** 绕过 ICU 格式器，否则 server render 时 ICU 看到未绑定 placeholder 即抛 FORMATTING_ERROR
+
+**路由迁移类批次 spec lock 前 grep 全仓 `t(key)` 调用 + 检查 messages/*.json 模板含 `{x}` 是否走 client-side .replace**。回归守门用 fidelity-grep 模式锁 `.raw()` 用法。完整：`framework/harness/planner.md` 铁律 1 矩阵 v0.9.21 行。
+
+## 删除文件类批次的 CI 多轮自修预期（2026-05-13 BL-065-F006 沉淀，v0.9.21）
+
+大型 delete commit（git mv + 删除 N 文件 + i18n 完整化）本地 L1 全绿 ≠ CI 全绿。CI 会暴露：
+- baseline-tracking / fidelity-grep 测试期望特定文件存在 → 同步更新清单
+- `.next/types/validator.ts` Next.js 自动生成 page module 引用 → 删除前 `rm -rf .next` 后 typecheck
+- material-symbols-outlined.woff2 subset 自动缩小 → `bash scripts/regenerate-material-symbols-subset.sh` + 提交
+- base-ui Checkbox E2E：用 `getByRole('checkbox').click()` 而非 `locator('input[type=checkbox]').check()`（后者卡 sr-only helper viewport-out 超时）
+- 上游路由保留 stale ids（如 BL-064 `/campaigns/abc-123` 用于 redirect E2E），下游 page Prisma findFirst 前必须 UUID guard
+
+CI 多轮自修属预期（BL-065-F006 3 轮才全绿）；single atomic commit 优于多 sub-commit。完整：`framework/harness/generator.md §10`。

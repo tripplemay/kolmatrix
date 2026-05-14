@@ -29,3 +29,16 @@ type: feedback
 - 即时提出：影响当前决策的规则变更，对话中提出 → 用户确认 → 立即写入
 - 后台队列：不紧急的，追加到 `framework/proposed-learnings.md`
 - **不得未经用户确认直接修改 `framework/` 文件**（proposed-learnings.md 除外）
+
+## IA refactor 类批次 redirect 清单（2026-05-13 BL-064 沉淀，v0.9.21）
+
+spec 起草时对每条预期 redirect 标注 destination route 的 wire-readiness：
+- ✅ destination 已 wire 该 content → spec 列入 redirect
+- ⏸️ destination 仅 embed-old 占位 → kept deep-link 优先，推迟到后续批次 wire 后再启 redirect
+- ⚠️ destination 部分 wire（如 form 已 wire 但 list 未 wire）→ 按 sub-path 拆分
+
+redirect scope 缩减不计质量。完整：`framework/harness/generator.md §9`。
+
+## fix-rounds 数解读（2026-05-13 BL-065 沉淀，v0.9.21）
+
+大体量 page consolidation / route migration 类批次 fix-round 可能来自 **latent bug exposed by route migration**（如老路由 302 掩盖 6 个月的 next-intl FORMATTING_ERROR，新路由真实渲染暴露）。这类 fix-round 应在 signoff 中标注「latent bug exposed by F00X route migration」与本批次新引入 bug 区分；done-phase 评分不应统一按 fix_rounds 单维。完整：`framework/harness/planner.md §"fix-rounds 数解读"`。

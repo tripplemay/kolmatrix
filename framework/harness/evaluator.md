@@ -406,3 +406,27 @@ nvm use                          # 不一致时切换；无 nvm 装 Node 20 LTS
 **处理规则：** 跨 tenant 全量验收 SQL 必须 `sudo -u postgres psql kolmatrix(_staging)` superuser bypass RLS。普通 `kolmatrix_app` role + Prisma RLS 跨 tenant 看 0 行（不是数据缺失，是 RLS 视角限制）。Reviewer only-read 验收尤其要走 superuser path。
 
 **来源：** BL-061 F003 Generator 实战发现 + Codex Reviewer signoff 确认。
+
+---
+
+## 20. L1 + 角色门禁手动探针（v0.9.21 — BL-065-R1 沉淀）
+
+**背景：** BL-065 verifying 阶段 L1 全绿（lint 0 errors / typecheck PASS / vitest 162 files 1142 tests PASS / Playwright match-fidelity 7 passed / prod read-only audit PASS=7 FAIL=0 WARN=1），但 Codex Reviewer 在本地 admin role 探针时发现 `/en/admin/kol-csv-import` server 端日志含 `FORMATTING_ERROR: variable "imported" was not provided`，HTTP 仍 200 返回 — **server console error 不计入 HTTP 响应码**。
+
+**规则：** L1 全绿不等于 verifying PASS。Reviewer 必须在 L1 自动化之上**手动跑角色门禁探针**：
+
+1. **登录每个角色账号**（admin@kolmatrix.local / marketer@kolmatrix.local / 等），用 Playwright 或浏览器 cookie 直访问角色限定路由
+2. **观察 server 端 console / pm2 logs** 是否含 `Error:` / `FORMATTING_ERROR` / `route-not-found` / `next-intl error` 等 runtime 错误 — 这类错误**不影响 HTTP 200/307 状态码**，CI 全绿 + audit script 全 PASS 都不会抓到
+3. **覆盖所有角色 + 路由组合**（admin / marketer / platform_admin 等），尤其 batch 新增的角色限定路由（如 BL-065 F003 新增 /admin/kol-csv-import）
+
+**典型抓住的问题：**
+- next-intl ICU 模板未绑定占位符（BL-065-R1 案例：`tImport("successTemplate")` 模板含 `{imported}` 但 t-call 未传值）
+- React rendering error 但 server fallback 返回上一帧内容
+- 模糊的 console.error / TypeError 在 production build minified 后不影响 HTTP
+- 角色 enum mismatch（`role === "admin"` vs 实际 `tenant_admin`，导致 hidden link 不渲染但页面正常加载）
+
+**反模式：** 仅 audit HTTP 状态码 + JSON health endpoint，认为「无 5xx = 无错误」— 这种判定漏掉所有 200/307 状态码下的 server console runtime error。
+
+**实战 case：** BL-065-R1 — Reviewer 在 codex L1 启动 3099 后用 marketer + admin 双账号登录 `/en/admin/kol-csv-import`：admin 进入页面 + 含 import/csv 文本（HTTP 200），同时 next server 日志含 FORMATTING_ERROR；marketer 被 302 到 /en/match（HTTP 200）。前者是 L1 自动化漏掉的 runtime 错误，后者是 role-gate 正确。**手动 probe 找出前者，触发 fix-round 1**。
+
+**来源：** BL-065-R1 Codex Reviewer verifying 实战（2026-05-13 13:49 BJT codex-setup.sh + playwright probe）。

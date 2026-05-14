@@ -237,3 +237,65 @@ fontSize={(d: WordcloudDatum) => d.value}
 ```
 
 来源：KOLMatrix B5 fixing-1（commit f8fca4b）。
+
+---
+
+## 9. IA refactor / route migration redirect scope wire-readiness 评估（v0.9.21 新增）
+
+**背景：** BL-064 顶层 IA refactor 7→4 路由 spec §4 预期 ~12 条 redirect（7 老路由 + 子路径继承 + parametric），fix-round 1-3 实战发现 embed-old-components 占位策略下若 destination route **未 wire ready**（如 /campaigns/new → /brief?action=new 但 /brief 仅 embed /knowledge-base，没 wire form action），用户体验比 kept 旧路由 **差** — 跳转后 URL 换名但内容仍是旧的，反而 confusing。
+
+**规则：**
+
+A. **redirect scope 根据 destination wire-readiness 评估** — 不是所有老路由都立即 redirect。destination route 必须含等效或更优功能才启 redirect；否则 kept deep-link 让 UX 不退化
+
+B. **embed-old-components 占位策略下的 redirect 评估清单**（spec 起草时套用）：
+
+| destination 状态 | 决策 |
+|---|---|
+| 已 wire 该 content（实质功能在新路由）| redirect OK |
+| 仅 embed-old 占位（URL 换名但内容不变）| **kept 更优**（用户认知不混乱）|
+| 部分 wire（如 form embed 但 list 未 wire）| 按 sub-path 拆分；list path kept，form path redirect |
+
+C. **redirect scope 缩减是良性 fix-round** — 不计入"质量问题"，反映 IA refactor 需要 building 中段实战验证才能确定最优 scope。BL-064 fix-round 1→3 把 12 条 redirect 缩减到 6 条（5 content-equivalent + 1 parametric），其余 4+ 条改 kept deep-link 推迟到后续批次 wire destination 后再启
+
+来源：KOLMatrix BL-064 fix-round 3 实战（顶层 IA refactor 7→4 路由）。
+
+---
+
+## 10. 大型删除批次执行模板（v0.9.21 新增）
+
+**背景：** BL-065-F006 单 commit ad76eb1：64 files / +1466 / -6124（净 -4658 lines）。本地 L1 全绿即推送，CI 3 轮自修才全绿 — woff2 stale / edge-states-coverage / visual-baselines-shape / UUID guard / Checkbox locator 等 baseline-tracking / fidelity-grep / next.js types-regen 类测试只在 CI 完整链路才暴露。
+
+**Pattern：**
+
+A. **本地 L1 全绿 ≠ CI 全绿** — 删除文件类操作会触发：
+   1. `tests/integration/*-fidelity.test.ts` 类 grep 测试期望特定文件存在
+   2. `tests/screenshots/baseline/*.png` 类视觉 baseline 数量断言
+   3. `tests/unit/visual-baselines-shape.test.ts` 类清单测试（git-tracked 数量）
+   4. `.next/types/validator.ts` Next.js 自动生成 page module 引用（删除前应 `rm -rf .next` 清缓存再 typecheck）
+   5. material-symbols-outlined.woff2 / 任何 build-derived 资源 — 删除组件时 subset 会自动缩小，本地 regen + 提交
+
+B. **删除前预扫清单（建议 Generator 在 Phase 1 开始前执行）：**
+```bash
+# 全仓引用 grep
+grep -rln "<deleted-folder>" src/ tests/
+# Integration test 引用
+grep -l "from.*<deleted-module>" tests/integration/
+# Baseline PNG 同名
+ls tests/screenshots/baseline/*<deleted-feature>*.png 2>/dev/null
+# Next.js cache
+rm -rf .next && NODE_OPTIONS='--max-old-space-size=4096' npm run typecheck
+```
+
+C. **base-ui Checkbox E2E 选择器陷阱**：base-ui Checkbox 渲染 visible `role="checkbox"` button + sr-only aria-hidden `<input type="checkbox">`。`locator('input[type=checkbox]').check()` 会选 helper 卡 viewport 重试超时；**用 `getByRole('checkbox').click()`** 选 visible widget
+
+D. **UUID guard pattern**：上游路由可能保留 stale ids（如 BL-064 redirect `/campaigns/abc-123 → /match?campaignId=abc-123` 用于 redirect E2E），下游 page 在调用 Prisma `findFirst({ where: { id } })` 前必须校验 UUID shape：
+```typescript
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+if (!value || !UUID_RE.test(value)) return null;  // silent fallback
+```
+否则 driverAdapterError 500（"invalid input syntax for type uuid"）
+
+E. **大型 atomic delete commit 优于多 sub-commit** — single commit atomic rollback、git log 单条目、易于 PR review。CI 失败时多轮自修（fix(BL-XXX): xxx）每轮独立、被 CI 全程捕获，不污染产品代码
+
+来源：KOLMatrix BL-065-F006 atomic delete commit 实战（3 轮 CI 自修后全绿，CI run 25782189342）。
