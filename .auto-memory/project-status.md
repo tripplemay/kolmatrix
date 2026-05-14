@@ -4,7 +4,7 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 🔨 BL-066-campaign-detail-ai-main-panel BUILDING（6/9, fix_rounds=0, staging=40b6707）
-- F001-F006 ✅ → F007-F009 待做 / role_assignments=planner johnsong + generator Kimi + evaluator Reviewer
+- F001-F006 ✅ → F007 audit pending @ ba3a829（docs/specs/BL-066-F007-value-score-v2-audit.md 8 决议点 等 Planner johnsong 裁决）→ F008-F009 待做 / role_assignments=planner johnsong + generator Kimi + evaluator Reviewer
 - F006 @ ba0c5fc git mv CampaignKolPanel→AcceptedKolsPanel + 6 列 read-only + source chip 独立列 (AI/CSV/Legacy) + view-profile open_in_new + backfill migration UPDATE 10 rows manual→manual_legacy + 删 runAvailableKolsForCampaign + i18n 5 locale 新 keys + deprecated marker / F006 audit 裁决 `#1:C #2:A #3:C #4:A #5:B` (Planner johnsong @ a682cde, 仅 #4 偏离 Generator 建议 — Table.tsx 实测 fully flexible 无 col cap, 6 列 README 字面安全) / v0.9.22 候选: Generator audit 起草前实测原子组件 surface 字面
 - F002 audit 裁决 `#1:A #2:B #3:B #4:B #5:C` + #6 (Planner johnsong @ e2d6b71)
 ## ✅ BL-065 DONE 7/7 prod=c5b5c31 + BL-065-R1=4562895 + signoff 5/14
