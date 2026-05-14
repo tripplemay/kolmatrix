@@ -72,11 +72,23 @@ BL-023 全量 recompute 后 prod top-15 valueScore=100 含 2080-12.6M 粉双峰�
 **周期：** ~1.5 day Generator + 1h Reviewer
 **Acceptance：**
 - `src/app/[locale]/(app)/campaigns/[id]/page.tsx` 重写：替换现 layout（CampaignHeader + CampaignKolPanel + sidebar）为新三段（Brief 顶 / AI 主面板中 / AcceptedKolsPanel 底）
-- 严格按 Stitch F001 1:1 还原（按 generator.md §设计稿还原规则）
-- 数据 load：复用 `runCampaignDetail(tenantId, id)` 现 query + 新增 smart-match 调用（F003 提供 client wrapper）
-- 空态 / loading 态按 Stitch 还原
-- 移除 AiSuggestionsCard sidebar（被中部主面板替代；保留 generateCampaignSuggestionsAction 给未来其它批次使用，本批次仅卸载 UI）
-- L1 lint 0 / tsc 0 / unit test PASS（≥3 case 验三段渲染 + Brief 摘要数据 + 空态）
+- 严格按 Stitch F001 main.html 1:1 还原（loading.html Brief 区漂移以 main.html 为 canonical — per F002 audit §裁决 #7）
+- 数据 load：复用 `runCampaignDetail(tenantId, id)` 现 query — **不扩 schema**（F002 audit §裁决 #1=A）
+- **Brief 4 列口径锁**（F002 audit §裁决 #1）：
+  - ① Target Market = `campaign.markets.join(", ")` 或 fallback `"Global"` 当 markets=[]
+  - ② Demographics = `product.targetAudience` 直显（Product.targetAudience 是 required String non-null per schema.prisma:11）
+  - ③ Budget = `budgetAmount ? formatCurrency(budgetAmount, budgetCurrency) : "—"`
+  - ④ 按钮组：Edit Brief 链 `/${locale}/campaigns/[id]/edit` + Launch Comm 链 `/${locale}/reach?campaignId=[id]`
+- **计数派生口径锁**（F002 audit §裁决 #4=B 白名单）：
+  - Accepted 计数 = `kols.length`（不显 "/N target" — kpiTarget 未规范化留 BL-068）
+  - Contacted 计数 = `kols.filter(k => ["contacted","quoted","signed","delivered","paid"].includes(k.contactStatus)).length`
+- 中部 AI 区：F002 同 commit 起 `AiRecommendationPanel.tsx` skeleton（F002 audit §裁决 #2=B）— skeleton 仅含 (a) props productId / campaignId / matchScore-pool=null + (b) 固定渲染 `loading.html` skeleton 或 `empty.html` 空态选枝 + (c) **不调 smart-match endpoint**（F003 才加 fetch / status state / 5 卡片 / 4 按钮，spec §F003 acceptance 边界严格）
+- 底部 panel **F002 完全不动**（F002 audit §裁决 #5=C）— 沿用 CampaignKolPanel 现名 + 现 AddKol 入口；F006 才 git mv + 删入口 + source chip 重构
+- 空态 / loading 态按 Stitch 还原（empty.html "Reconnect product" CTA 链 `/${locale}/campaigns/[id]/edit` — F002 audit §裁决 #6）
+- 移除 AiSuggestionsCard sidebar mount（保留 generateCampaignSuggestionsAction 给未来批次；AiSuggestionsCard / Client / ai-suggestions-actions.ts 3 文件 **不加 deprecated marker**，仅 unmount）
+- 同 commit 加 `/* @deprecated_by_BL-066: page.tsx unmount 后 0 引用；BL-070 删除 */` 顶部 comment 到 6 unmount 组件（F002 audit §裁决 #3=B）：CampaignHealthCard / ActivityTimelineCard / EmailPerformanceChart + Impl / CampaignRevenueRecorder / CampaignStatusController / detail-insights.ts (`loadCampaignDetailInsights`)；i18n key `campaigns.detail.activity.*` / `campaigns.detail.revenue.*` / `campaigns.detail.health.*` / `campaigns.detail.insights.emailChart.*` 加 `_deprecated_by_BL-066` 子 key（不破坏现 i18n-locale-coverage gate）
+- 更新 `campaign-detail-fidelity.test.ts`：删 4 个 component import expect（CampaignHealthCard / AiSuggestionsCard / ActivityTimelineCard / EmailPerformanceChart）+ 加 BriefSummaryPanel / AiRecommendationPanel 期望；CampaignKolPanel expect 不动（per #5）
+- L1 lint 0 / tsc 0 / unit test PASS（≥3 case 验三段渲染 + Brief 4 列 + Contacted 派生口径 + 空态 product=null fallback）
 - staging git_sha 与本 commit 一致
 
 ### F003 — AiRecommendationPanel 组件 — smart-match 集成 + 接受/跳过/换一批 状态层
@@ -209,6 +221,9 @@ BL-023 全量 recompute 后 prod top-15 valueScore=100 含 2080-12.6M 粉双峰�
 - **F009 prod redeploy 必须用户 ack 时间窗**（per BL-063/064/065 实战流程）
 - **BL-048 valueScore recompute 必须先 staging + audit_log 完整 + 用户 ack 后才上 prod**
 - **删除 AddKolDialog 不得破坏 e2e match-fidelity 其他 case（仅删该 1 case）**
+- **F002 完全不动底部 panel**（F002 audit §裁决 #5=C）— 沿用 CampaignKolPanel 现名 + 现 AddKol 入口；F006 atomic 完成 git mv + 删入口 + source chip 重构
+- **F002 中部 AiRecommendationPanel.tsx skeleton 不得调 smart-match endpoint**（F002 audit §裁决 #2=B）— skeleton 仅 mount 固定 empty/loading 视觉，F003 才加 fetch + 交互层
+- **F002 不扩 KolCampaign / Product / Campaign schema**（F002 audit §裁决 #1=A）— Brief 区数据全部从 runCampaignDetail 现 query 派生
 
 ---
 

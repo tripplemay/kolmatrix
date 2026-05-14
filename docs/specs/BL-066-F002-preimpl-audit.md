@@ -172,6 +172,36 @@ F002 acceptance 第 1 条要求"新三段 layout"；spec §3 F003 acceptance 第
 
 ---
 
+## 5. Planner 裁决（2026-05-14 16:55 BJT · johnsong）
+
+**短格式：** `#1:A #2:B #3:B #4:B #5:C` + `#6: /${locale}/campaigns/${campaign.id}/edit`
+
+| # | 决议 | 理由（按 P5 复用价值原则）|
+|---|---|---|
+| **1** | **A — 限现字段派生** | (1) spec §3 F002 acceptance 第 3 条「复用 runCampaignDetail 现 query」是硬约束 — B 扩 schema 是 BL-068 / BL-069 Brief 路由实质化的工作，越界违反铁律 #10 spec-driven 边界。(2) C 缩 4→3 列偏离 Stitch 1:1 还原原则（generator.md §设计稿还原规则）。(3) **口径锁**：Brief 4 列 = ① Target Market (`campaign.markets.join(", ")` 或 fallback "Global" 当 markets=[])；② Demographics (`product.targetAudience` 直显 — 实测 Product.targetAudience 是 required String + non-null per schema.prisma:11，无 fake 默认值需求)；③ Budget (`budgetAmount ? formatCurrency(budgetAmount, budgetCurrency) : "—"`)；④ 按钮组（Edit Brief 链 `/${locale}/campaigns/[id]/edit` + Launch Comm 链 `/${locale}/reach?campaignId=[id]`）。(4) **"/30 target" 隐藏**：仅显 accepted 计数（kols.length），不显 "/N target"（kpiTarget 是 unknown JSON 未规范化；spec lock 留 BL-068）。 |
+| **2** | **B — F002 起 AiRecommendationPanel.tsx skeleton** | (1) F002 acceptance 第 4 条「空态/loading 态按 Stitch 还原」+ 第 6 条「≥3 case 验三段渲染 + 空态」要求 F002 完成时中部"空态"可视觉验收；A 改 page.tsx 两次违反 atomic 原则；C placeholder 无法验「空态按 Stitch 还原」。(2) **范围锁**：F002 commit 起 AiRecommendationPanel.tsx 仅含 (a) props 接 productId / campaignId / matchScore-pool placeholder=null + (b) 固定渲染 `loading.html` skeleton 或 `empty.html` 空态（per productId null 与否选枝） + (c) **不调 smart-match endpoint**（spec §3 F003 acceptance 第 2 条 explicit "F003 调用 /api/kols/smart-match"，F002 仅 mount skeleton）。F003 commit 在同文件 add `useEffect` + fetch + status state + 5 卡片 + 4 按钮 = 与 spec acceptance 边界严格相符。 |
+| **3** | **B — F002 同步加 `// _deprecated_by_BL-066` 注释 + 关联 i18n marker（不删，不 skip test）** | (1) Kimi A 方案"完全不动"风险是 future PR 误改 dead code（如 BL-067 加 explainability 时再 import AiSuggestionsCard 制造 import 死循环）；(2) B 仅是源码顶部 `/* @deprecated_by_BL-066: page.tsx unmount 后 0 引用；BL-070 删除 */` comment + i18n key 加 `_deprecated_by_BL-066` 子 key（不破坏现 i18n-locale-coverage gate），不修改任何 import/export 关系，**不破坏任何 e2e/integration test**（spec §6 不变量第 7 条 "删除 AddKolDialog 不得破坏 e2e match-fidelity 其他 case" 原则推广）；(3) C 删 6 文件 +1.5h 超 F002 scope + 破坏现 e2e 风险高，留 BL-070 atomic 删。**6 文件清单**（per audit §2.3）：CampaignHealthCard / ActivityTimelineCard / EmailPerformanceChart + Impl / CampaignRevenueRecorder / CampaignStatusController / detail-insights.ts (`loadCampaignDetailInsights`)。AiSuggestionsCard / AiSuggestionsClient / ai-suggestions-actions.ts **不加 deprecated marker**（spec §3 F002 acceptance 第 5 条 explicit "保留供未来批次使用"）。 |
+| **4** | **B — 白名单显式枚举** | (1) Kimi 推荐 B 已对齐 schema 实物：grep 实测 `src/lib/campaigns/kol-campaign-status.ts:16-23` 锁 enum 6 值 `pending → contacted → quoted → signed → delivered → paid`；B 白名单 = 后 5 个（除 pending）正确；(2) A "非 pending = contacted"未来 enum 加新 status（如 "rejected" / "paused"）时 silent drift；(3) **口径锁**：`contactedCount = kols.filter(k => ["contacted","quoted","signed","delivered","paid"].includes(k.contactStatus)).length`。 |
+| **5** | **C — F002 完全不动底部 panel，F006 一次性做** | (1) features.json 边界严格 — F002 acceptance 第 1 条「替换现 layout」只指 page.tsx 重组三段，底部 panel 仍 mount 现 CampaignKolPanel 名字 + 现 AddKol button 入口；(2) F006 acceptance 第 1 条 explicit `git mv CampaignKolPanel.tsx → AcceptedKolsPanel.tsx` + 第 2 条「删 AddKol button 入口」+ 第 3 条「仅显已确认 KOL + source chip」 = F006 atomic 完成底部全部改造；(3) B 跨 feature 边界（F002 提前完成 F006 1/3 工作）违反铁律 #10 spec-driven 边界 + features.json 实际归属漂移；(4) **F002 不删 AddKol 按钮 = 不会破坏现 fidelity test 第 30 行 CampaignKolPanel mount 期望**（test 仅删 `<CampaignHealthCard\b/ <AiSuggestionsCard\b/ <ActivityTimelineCard\b/ <EmailPerformanceChart\b/` 4 个期望 — per audit §2.2，不删 CampaignKolPanel 期望）。 |
+| **6** | **`/${locale}/campaigns/${campaign.id}/edit`** | empty.html "Reconnect product" CTA wire 到 campaign edit 页（在那里 marketer 选 / 换 product）。非 `/products/${product.id}/edit` 因 product 可能已删（empty 触发条件之一），edit 页内 select 新 product 是合理 flow。 |
+
+### 同步修订的文件清单
+
+- `docs/specs/BL-066-campaign-detail-ai-main-panel-spec.md` §3 F002 acceptance — embed #1/#4 口径 + #2 F002 起 AiRecommendationPanel.tsx skeleton 边界 + #3 deprecated marker 处理；§6 不变量加「F002 不动底部 panel」第 8 条
+- `features.json` F002 acceptance — embed #1 Brief 4 列口径 + #4 contactedCount 公式 + #2 skeleton 范围 + #3 deprecated marker
+- 本审计文档 §3 决议请求表保留供历史 reference
+
+### 漂移 #5 / #7 处理
+
+- **#5 platform chip 硬编码颜色** — F003 范围，不在 F002 解决；F003 实装时按 platform 派生 token，本审计仅登记不入 features acceptance
+- **#7 loading.html Brief 区与 main.html 不同** — 以 `main.html` 为 canonical，loading 态 Brief 区沿用 main 4 列结构（仅中部 AI 区切 loading skeleton 骨架）
+
+### Generator 可直接开工
+
+收到此裁决后 Kimi 按 audit §5 7-9 步骤直接开工，**不必再确认任何 #1-#6 决议**。F002 提交时直接走 staging deploy + commit + push + CI 自检。
+
+---
+
 ## 7. 相关文档
 
 - `docs/specs/BL-066-campaign-detail-ai-main-panel-spec.md`（主 spec）
