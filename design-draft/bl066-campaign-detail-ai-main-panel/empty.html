@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Campaign Detail · AI Recommendation Main Panel - KOLMatrix</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed-dim": "#f3bf26",
+                    "on-secondary": "#450086",
+                    "surface-bright": "#31394e",
+                    "inverse-on-surface": "#283044",
+                    "on-secondary-container": "#d5b5ff",
+                    "tertiary-container": "#fec931",
+                    "surface-container-lowest": "#060d20",
+                    "on-secondary-fixed-variant": "#6200bc",
+                    "on-primary-fixed": "#001f24",
+                    "on-primary": "#00363d",
+                    "on-tertiary-fixed-variant": "#594400",
+                    "error": "#ffb4ab",
+                    "on-surface": "#dbe2fd",
+                    "surface-container-highest": "#2d3449",
+                    "surface": "#0b1326",
+                    "on-error-container": "#ffdad6",
+                    "primary-fixed": "#9cf0ff",
+                    "on-tertiary-container": "#6f5500",
+                    "on-surface-variant": "#bac9cc",
+                    "on-background": "#dbe2fd",
+                    "inverse-primary": "#006875",
+                    "surface-dim": "#0b1326",
+                    "surface-container-high": "#222a3e",
+                    "error-container": "#93000a",
+                    "background": "#0b1326",
+                    "primary": "#c3f5ff",
+                    "on-secondary-fixed": "#290055",
+                    "inverse-surface": "#dbe2fd",
+                    "on-tertiary": "#3e2e00",
+                    "on-tertiary-fixed": "#251a00",
+                    "outline": "#849396",
+                    "on-primary-container": "#00626e",
+                    "tertiary-fixed": "#ffdf96",
+                    "surface-container": "#171f33",
+                    "secondary": "#d8b9ff",
+                    "primary-fixed-dim": "#00daf3",
+                    "surface-tint": "#00daf3",
+                    "outline-variant": "#3b494c",
+                    "secondary-container": "#6e06d0",
+                    "tertiary": "#ffeac0",
+                    "surface-variant": "#2d3449",
+                    "on-error": "#690005",
+                    "surface-container-low": "#131b2e",
+                    "secondary-fixed": "#eddcff",
+                    "on-primary-fixed-variant": "#004f58",
+                    "primary-container": "#00e5ff",
+                    "secondary-fixed-dim": "#d8b9ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "display": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b1326; color: #dbe2fd; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen overflow-x-hidden flex">
+<!-- SIDEBAR -->
+<aside class="fixed left-0 top-0 w-[240px] h-full z-50 bg-[#060e20] shadow-[20px_0_20px_-20px_rgba(0,229,255,0.03)] flex flex-col py-6 px-6 font-['Inter'] tracking-tight antialiased border-none">
+<!-- Logo Block -->
+<div class="flex items-center gap-3 mb-8">
+<div class="w-10 h-10 rounded-[10px] bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] flex items-center justify-center">
+<span class="font-bold text-[#0b1326] text-lg">K</span>
+</div>
+<div class="flex flex-col">
+<span class="text-white font-bold bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] text-transparent bg-clip-text text-lg leading-tight">KOLMatrix</span>
+<span class="text-[#6B7280] text-[9px] font-semibold uppercase tracking-[0.15em] leading-tight mt-0.5">NEURAL VELOCITY</span>
+</div>
+</div>
+<!-- Navigation List -->
+<nav class="flex-grow flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-medium text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-[20px]">travel_explore</span>
+<span class="font-medium text-sm">KOL Discovery</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+<span class="font-medium text-sm">KOL Database</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#00E5FF] font-semibold border-l-2 border-[#00E5FF] bg-gradient-to-r from-[rgba(0,229,255,0.10)] to-transparent" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#00E5FF]">rocket_launch</span>
+<span class="text-sm">Campaigns</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-[20px]">forward_to_inbox</span>
+<span class="font-medium text-sm">Email Center</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+<span class="font-medium text-sm">Products</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-[20px]">query_stats</span>
+<span class="font-medium text-sm">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:bg-[#222a3d]/50 hover:text-[#dae2fd] transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-medium text-sm">Settings</span>
+</a>
+</nav>
+<!-- User Chip -->
+<div class="flex items-center gap-3 p-3 rounded-[10px] hover:bg-[#222a3d]/40 transition-colors cursor-pointer mt-auto">
+<img alt="Sarah Chen Avatar" class="w-9 h-9 rounded-full object-cover border border-[#2d3449]" data-alt="A futuristic portrait of a tech operations lead in a high-tech corporate environment. The image should feature cool, neural network inspired lighting with cyan and deep navy hues, emphasizing a professional yet advanced technological aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNesCdW1laSYv4mmCj_JpgjtHLIGLBcKBZiG4tAeewe0E7tAwVNhg3XtE7yDoXosGywZX7EjoEi-6S_sF8DF4AcyGvGXfxwbu69V8rhEsO9vaW4MorVs6_fxBcKk94owaB8LWMmBrSH_tm_C25bPaniUL0yCmee_kGcJ68m_KYKXFoOhc2DfKrGJ2tyicp78z4F88Wa6DsnY1j90B7vZOS9jeVGKFdfHZ0CzUgTa-ErJdSf3ZnKTthmX9Cn8YgZy9AUHZd-dISO8o"/>
+<div class="flex flex-col">
+<span class="text-white text-sm font-semibold">Sarah Chen</span>
+<span class="text-[#6B7280] text-[11px]">Ops Lead</span>
+</div>
+</div>
+</aside>
+<!-- MAIN CONTENT AREA -->
+<div class="ml-[240px] flex-1 flex flex-col min-h-screen">
+<!-- TOP BAR -->
+<header class="sticky top-0 z-40 h-16 bg-[#0b1326]/85 backdrop-blur-2xl shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex justify-between items-center px-8 border-none">
+<div class="flex-none">
+<h1 class="font-['Inter'] font-semibold text-white text-base">Campaign Detail</h1>
+</div>
+<div class="flex-1 max-w-[480px] mx-auto">
+<div class="relative flex items-center bg-[#2d3449] rounded-full h-10 px-4 focus-within:ring-1 focus-within:ring-[#00E5FF] focus-within:shadow-[0_0_4px_rgba(0,229,255,0.2)] transition-all">
+<span class="material-symbols-outlined text-[#6B7280] text-[18px] mr-2">search</span>
+<input class="bg-transparent border-none text-[#dbe2fd] text-[13px] placeholder-[#6B7280] w-full focus:ring-0 p-0 font-['Inter']" placeholder="Search KOLs, campaigns, emails..." type="text"/>
+<div class="px-1.5 py-0.5 rounded border border-[#3b494c] bg-[#171f33] ml-2 flex-none">
+<span class="text-[#6B7280] text-[11px] font-medium font-['Inter']">Cmd+K</span>
+</div>
+</div>
+</div>
+<div class="flex-none flex items-center gap-4">
+<button class="flex items-center gap-1 text-[#bac9cc] hover:text-[#00E5FF] transition-colors">
+<span class="text-[13px] font-medium font-['Inter']">EN</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+<button class="relative text-[#bac9cc] hover:text-[#00E5FF] transition-colors">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<span class="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-[#00E5FF] rounded-full shadow-[0_0_4px_#00E5FF]"></span>
+</button>
+<div class="w-[1px] h-6 bg-[#bac9cc]/15"></div>
+<button class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+<img alt="User" class="w-8 h-8 rounded-full object-cover" data-alt="A small circular avatar portrait of a female professional with short dark hair, illuminated by soft blue tech lighting in a dark room." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6m1tw5FkWKOP4AkMmOAiq-MvZVqwxYWLtayVhgT7muUcnb5LOsoABiF6say1AjV06mvBYtUeZIoKi_N8smApqwL6rC0S-DL7rMIoT4oQYI5m1QpnK6IVPJFfJwUJx48Y9gZ5AOze8AeMVDRVck2PwpRQ5HohJoybl-bSxuhHM9Ytan_bVdONn8aYWMnIGv1QuG9XFXmztApLEFxJWkUvpleM-yJ3Qz44Lr29zUT19-LWQxWv6XP9zbHcZqpX7CgOihmkp_QVzE3U"/>
+<span class="material-symbols-outlined text-[#bac9cc] text-[16px]">expand_more</span>
+</button>
+</div>
+</header>
+<!-- PAGE CONTENT -->
+<main class="p-8 flex flex-col gap-6 w-full max-w-7xl mx-auto">
+<!-- SECTION A: Brief Summary -->
+<section class="bg-surface-container-high rounded-[12px] p-6 backdrop-blur-[20px] bg-opacity-80 flex flex-col gap-4 border border-outline-variant/30">
+<div class="flex justify-between items-start">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<span class="px-2 py-1 rounded-md bg-[#00E5FF]/10 text-[#00E5FF] text-xs font-semibold uppercase tracking-wider border border-[#00E5FF]/20 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">fiber_manual_record</span> Active
+                            </span>
+<h2 class="text-2xl font-bold text-white tracking-[-0.02em]">Galactic Forge Alpha</h2>
+</div>
+<p class="text-on-surface-variant text-sm max-w-2xl leading-relaxed">
+                            Q3 global launch campaign targeting mid-tier to macro strategy game streamers. Focus on high-engagement gameplay showcases and initial player acquisition in NA and EU regions.
+                        </p>
+</div>
+<div class="flex gap-3">
+<button class="px-4 py-2 rounded-[8px] bg-surface-container-highest text-on-surface hover:bg-surface-container-highest/80 transition-colors text-sm font-medium border border-outline-variant/50">Edit Brief</button>
+<button class="px-4 py-2 rounded-[8px] bg-gradient-to-r from-[#00daf3] to-[#c3f5ff] text-surface font-semibold hover:opacity-90 transition-opacity text-sm shadow-[0_0_15px_rgba(0,229,255,0.3)]">Manage Settings</button>
+</div>
+</div>
+<div class="grid grid-cols-4 gap-4 mt-2">
+<div class="bg-surface p-4 rounded-[10px] border border-surface-container-highest">
+<span class="text-on-surface-variant text-xs uppercase tracking-wider font-semibold block mb-1">Target Audience</span>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="px-2 py-1 bg-tertiary-container/10 text-tertiary-container text-xs rounded-md border border-tertiary-container/20">Strategy Gaming</span>
+<span class="px-2 py-1 bg-tertiary-container/10 text-tertiary-container text-xs rounded-md border border-tertiary-container/20">PC/Console</span>
+</div>
+</div>
+<div class="bg-surface p-4 rounded-[10px] border border-surface-container-highest">
+<span class="text-on-surface-variant text-xs uppercase tracking-wider font-semibold block mb-1">Budget Allocation</span>
+<span class="text-xl font-bold text-white block mt-1">$45,000</span>
+<span class="text-primary-fixed text-xs mt-1 block">15% utilized</span>
+</div>
+<div class="bg-surface p-4 rounded-[10px] border border-surface-container-highest">
+<span class="text-on-surface-variant text-xs uppercase tracking-wider font-semibold block mb-1">Accepted KOLs</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-xl font-bold text-[#00E5FF]">12</span>
+<span class="text-on-surface-variant text-sm">/ 20 target</span>
+</div>
+</div>
+<div class="bg-surface p-4 rounded-[10px] border border-surface-container-highest">
+<span class="text-on-surface-variant text-xs uppercase tracking-wider font-semibold block mb-1">Contacted</span>
+<span class="text-xl font-bold text-white block mt-1">8</span>
+<span class="text-on-surface-variant text-xs mt-1 block">Awaiting response</span>
+</div>
+</div>
+</section>
+<!-- SECTION B: AI RECOMMENDATION - EMPTY STATE -->
+<section class="bg-[#131b2e] rounded-[16px] p-[32px] flex flex-col items-center justify-center text-center border border-outline-variant/20 shadow-[0_4px_30px_rgba(0,0,0,0.2)] min-h-[400px]">
+<div class="relative w-[120px] h-[120px] flex items-center justify-center mb-6">
+<div class="absolute inset-0 rounded-full border-2 border-dashed border-slate-500/30 animate-[spin_10s_linear_infinite]"></div>
+<div class="w-[80px] h-[80px] rounded-full bg-[#00E5FF]/10 flex items-center justify-center shadow-[0_0_30px_rgba(0,229,255,0.15)] relative">
+<span class="material-symbols-outlined text-[40px] text-[#00E5FF]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<!-- Ambient glow behind icon -->
+<div class="absolute inset-0 rounded-full bg-[#00E5FF] blur-[20px] opacity-20"></div>
+</div>
+</div>
+<span class="text-[#00E5FF] text-[11px] uppercase tracking-[0.1em] font-semibold mb-2 block">AI RECOMMENDATIONS</span>
+<h2 class="text-white text-[22px] font-bold mb-3 tracking-[-0.01em]">No candidates yet</h2>
+<p class="text-slate-300 text-[14px] max-w-[400px] leading-relaxed mb-8">
+                    AI recommendations couldn't be generated for this campaign because the product knowledge base lacks sufficient data points to create accurate matchmaking vectors.
+                </p>
+<div class="flex flex-col items-center gap-3 w-full max-w-[300px]">
+<button class="w-full py-2.5 rounded-[8px] bg-gradient-to-r from-[#00daf3] to-[#c3f5ff] text-surface font-semibold hover:opacity-90 transition-opacity text-sm shadow-[0_0_15px_rgba(0,229,255,0.25)] flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">hub</span>
+                        Reconnect product
+                    </button>
+<button class="w-full py-2.5 rounded-[8px] bg-transparent text-on-surface hover:bg-surface-container-highest transition-colors text-sm font-medium border border-outline-variant/50">
+                        Open product knowledge base
+                    </button>
+<a class="text-primary-fixed text-[13px] hover:underline mt-2 font-medium" href="#">What does smart-match need?</a>
+</div>
+<div class="mt-8 pt-6 border-t border-outline-variant/30 w-full max-w-[400px]">
+<p class="text-slate-500 text-[11px] flex items-center justify-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">info</span>
+                        If product context is fresh, the neural engine runs syncs every 4 hours.
+                    </p>
+</div>
+</section>
+<!-- SECTION C: Accepted KOLs (Placeholder to match request context) -->
+<section class="bg-surface-container-high rounded-[12px] p-6 border border-outline-variant/30">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-lg font-bold text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-[#00E5FF]">check_circle</span>
+                        Accepted KOLs
+                    </h3>
+<button class="text-primary-fixed text-sm font-medium hover:underline flex items-center gap-1">View all <span class="material-symbols-outlined text-[16px]">arrow_forward</span></button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="text-on-surface-variant text-xs uppercase tracking-wider border-b border-outline-variant/40">
+<th class="pb-3 font-medium">Creator</th>
+<th class="pb-3 font-medium">Platform</th>
+<th class="pb-3 font-medium">Est. Reach</th>
+<th class="pb-3 font-medium">Status</th>
+<th class="pb-3 font-medium text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="text-sm divide-y divide-outline-variant/20">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-highest/30 transition-colors">
+<td class="py-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container/20 flex items-center justify-center text-secondary font-bold text-xs">AS</div>
+<span class="font-medium text-white">Aiko Streams</span>
+</div>
+</td>
+<td class="py-3 text-on-surface">Twitch</td>
+<td class="py-3 text-on-surface">240K</td>
+<td class="py-3">
+<span class="px-2 py-1 rounded-md bg-tertiary-container/10 text-tertiary-container text-xs border border-tertiary-container/20">Brief Sent</span>
+</td>
+<td class="py-3 text-right">
+<button class="text-on-surface-variant hover:text-white"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-highest/30 transition-colors">
+<td class="py-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container/20 flex items-center justify-center text-primary-fixed font-bold text-xs">CG</div>
+<span class="font-medium text-white">Carlos Galaxy</span>
+</div>
+</td>
+<td class="py-3 text-on-surface">YouTube</td>
+<td class="py-3 text-on-surface">1.2M</td>
+<td class="py-3">
+<span class="px-2 py-1 rounded-md bg-[#00E5FF]/10 text-[#00E5FF] text-xs border border-[#00E5FF]/20">Contract Signed</span>
+</td>
+<td class="py-3 text-right">
+<button class="text-on-surface-variant hover:text-white"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-highest/30 transition-colors">
+<td class="py-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-error-container/20 flex items-center justify-center text-error font-bold text-xs">NG</div>
+<span class="font-medium text-white">Nova Gaming</span>
+</div>
+</td>
+<td class="py-3 text-on-surface">TikTok</td>
+<td class="py-3 text-on-surface">850K</td>
+<td class="py-3">
+<span class="px-2 py-1 rounded-md bg-on-surface-variant/10 text-on-surface-variant text-xs border border-on-surface-variant/20">Initial Outreach</span>
+</td>
+<td class="py-3 text-right">
+<button class="text-on-surface-variant hover:text-white"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</main>
+</div>
+</body></html>

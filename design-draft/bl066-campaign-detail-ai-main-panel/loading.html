@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Campaign Detail · AI Recommendation Loading - KOLMatrix</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#f3bf26",
+                        "on-secondary": "#450086",
+                        "surface-bright": "#31394e",
+                        "inverse-on-surface": "#283044",
+                        "on-secondary-container": "#d5b5ff",
+                        "tertiary-container": "#fec931",
+                        "surface-container-lowest": "#060d20",
+                        "on-secondary-fixed-variant": "#6200bc",
+                        "on-primary-fixed": "#001f24",
+                        "on-primary": "#00363d",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "error": "#ffb4ab",
+                        "on-surface": "#dbe2fd",
+                        "surface-container-highest": "#2d3449",
+                        "surface": "#0b1326",
+                        "on-error-container": "#ffdad6",
+                        "primary-fixed": "#9cf0ff",
+                        "on-tertiary-container": "#6f5500",
+                        "on-surface-variant": "#bac9cc",
+                        "on-background": "#dbe2fd",
+                        "inverse-primary": "#006875",
+                        "surface-dim": "#0b1326",
+                        "surface-container-high": "#222a3e",
+                        "error-container": "#93000a",
+                        "background": "#0b1326",
+                        "primary": "#c3f5ff",
+                        "on-secondary-fixed": "#290055",
+                        "inverse-surface": "#dbe2fd",
+                        "on-tertiary": "#3e2e00",
+                        "on-tertiary-fixed": "#251a00",
+                        "outline": "#849396",
+                        "on-primary-container": "#00626e",
+                        "tertiary-fixed": "#ffdf96",
+                        "surface-container": "#171f33",
+                        "secondary": "#d8b9ff",
+                        "primary-fixed-dim": "#00daf3",
+                        "surface-tint": "#00daf3",
+                        "outline-variant": "#3b494c",
+                        "secondary-container": "#6e06d0",
+                        "tertiary": "#ffeac0",
+                        "surface-variant": "#2d3449",
+                        "on-error": "#690005",
+                        "surface-container-low": "#131b2e",
+                        "secondary-fixed": "#eddcff",
+                        "on-primary-fixed-variant": "#004f58",
+                        "primary-container": "#00e5ff",
+                        "secondary-fixed-dim": "#d8b9ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "display": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b1326; color: #dbe2fd; }
+        .glass-panel { background: rgba(19, 27, 46, 0.5); backdrop-filter: blur(20px); }
+        .shimmer {
+            background: linear-gradient(90deg, #2d3449 25%, #3b494c 50%, #2d3449 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .progress-indeterminate {
+            width: 100%;
+            height: 2px;
+            background-color: #2d3449;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-indeterminate::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 50%;
+            background-color: #00e5ff;
+            animation: indeterminate 1.5s infinite linear;
+            transform-origin: 0% 50%;
+        }
+        @keyframes indeterminate {
+            0% { transform: translateX(-100%) scaleX(0.2); }
+            50% { transform: translateX(0) scaleX(0.5); }
+            100% { transform: translateX(200%) scaleX(0.2); }
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- SIDEBAR - LEFT -->
+<aside class="fixed left-0 top-0 w-[240px] h-full z-50 bg-[#060e20] shadow-[20px_0_20px_-20px_rgba(0,229,255,0.03)] flex flex-col py-6 px-6">
+<!-- Logo Block -->
+<div class="mb-8 flex items-center gap-3">
+<div class="w-10 h-10 rounded-[10px] bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] flex items-center justify-center shrink-0">
+<span class="font-['Inter'] font-bold text-lg text-[#060e20]">K</span>
+</div>
+<div>
+<h1 class="font-['Inter'] font-bold text-lg text-white bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] text-transparent bg-clip-text">KOLMatrix</h1>
+<p class="font-['Inter'] font-semibold text-[9px] uppercase tracking-[0.15em] text-[#6B7280] mt-0.5">NEURAL VELOCITY</p>
+</div>
+</div>
+<!-- Navigation List -->
+<nav class="flex-1 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-on-surface-variant hover:bg-[#222a3d]/50 hover:text-inverse-surface hover:text-[#00E5FF] transition-all duration-300 font-['Inter'] font-medium text-sm group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary-container">dashboard</span>
+                Dashboard
+            </a>
+<!-- Active State using fallback "Match" -> KOL Discovery -->
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-primary-container font-semibold border-l-2 border-primary-container bg-gradient-to-r from-[rgba(0,229,255,0.10)] to-transparent font-['Inter'] text-sm" href="#">
+<span class="material-symbols-outlined text-[20px] text-primary-container">travel_explore</span>
+                KOL Discovery
+            </a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-on-surface-variant hover:bg-[#222a3d]/50 hover:text-inverse-surface hover:text-[#00E5FF] transition-all duration-300 font-['Inter'] font-medium text-sm group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary-container">groups</span>
+                KOL Database
+            </a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-on-surface-variant hover:bg-[#222a3d]/50 hover:text-inverse-surface hover:text-[#00E5FF] transition-all duration-300 font-['Inter'] font-medium text-sm group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary-container">rocket_launch</span>
+                Campaigns
+            </a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-on-surface-variant hover:bg-[#222a3d]/50 hover:text-inverse-surface hover:text-[#00E5FF] transition-all duration-300 font-['Inter'] font-medium text-sm group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary-container">forward_to_inbox</span>
+                Email Center
+            </a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-on-surface-variant hover:bg-[#222a3d]/50 hover:text-inverse-surface hover:text-[#00E5FF] transition-all duration-300 font-['Inter'] font-medium text-sm group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary-container">inventory_2</span>
+                Products
+            </a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-on-surface-variant hover:bg-[#222a3d]/50 hover:text-inverse-surface hover:text-[#00E5FF] transition-all duration-300 font-['Inter'] font-medium text-sm group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary-container">query_stats</span>
+                Analytics
+            </a>
+<a class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-on-surface-variant hover:bg-[#222a3d]/50 hover:text-inverse-surface hover:text-[#00E5FF] transition-all duration-300 font-['Inter'] font-medium text-sm group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary-container">settings</span>
+                Settings
+            </a>
+</nav>
+<!-- User Chip -->
+<div class="mt-auto flex items-center gap-3 p-3 rounded-[10px] hover:bg-[rgba(34,42,61,0.4)] transition-colors cursor-pointer group">
+<img alt="Sarah Chen Avatar" class="w-9 h-9 rounded-full object-cover group-hover:ring-2 group-hover:ring-primary-container transition-all" data-alt="A polished, professional corporate headshot of an Asian woman in her 30s. She is lit with high-end, soft studio lighting against a dark, neural velocity tech background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQuolHOWj53Lu_cDtb0A4tGroh-R-Iuc97akbej4i2K6vCg57IBbng1L7TuAlekHuIVE9B2q8r49MUiWsBxvqmbzZnM0eEHpjL-XCXKyFcgzbL6IOSR7RkZIAcE2RXrrJkFw58GJIlSJe3CH7d_x2xhxqitQIILneITT5JbN8xzqhNrTaQCQN6zCN7BaJ1va6Q-7W4myskXVkiBZ-8GrILONPs_AIXv4P5074TNlJImdDmckzIB6B3iWar-tY8m5L61Yy2hcIJOZc"/>
+<div class="flex-1 min-w-0">
+<p class="font-['Inter'] font-semibold text-sm text-white truncate">Sarah Chen</p>
+<p class="font-['Inter'] font-normal text-[11px] text-[#6B7280] truncate">Ops Lead</p>
+</div>
+<span class="material-symbols-outlined text-[18px] text-slate-500">chevron_right</span>
+</div>
+</aside>
+<!-- TOP BAR -->
+<header class="fixed top-0 right-0 w-[calc(100%-240px)] h-16 z-40 bg-[#0b1326]/85 backdrop-blur-2xl shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex justify-between items-center px-8">
+<!-- LEFT - Page title -->
+<div class="flex-none">
+<h2 class="font-['Inter'] font-semibold text-base text-white">Campaign Detail</h2>
+</div>
+<!-- CENTER - Global search -->
+<div class="flex-1 max-w-[480px] mx-auto">
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-[18px] text-[#6B7280]">search</span>
+</div>
+<input class="w-full h-10 pl-10 pr-16 rounded-full bg-surface-container-highest border-transparent text-sm text-inverse-surface placeholder-[#6B7280] focus:ring-1 focus:ring-primary-container focus:border-primary-container focus:bg-surface-container-highest transition-all shadow-[0_0_0_0_rgba(0,229,255,0)] focus:shadow-[0_0_12px_4px_rgba(0,229,255,0.2)]" placeholder="Search KOLs, campaigns, emails..." type="text"/>
+<div class="absolute inset-y-0 right-0 pr-2 flex items-center">
+<kbd class="hidden sm:inline-block border border-outline-variant rounded-[4px] px-2 py-0.5 text-[11px] font-medium text-[#6B7280] bg-surface-container-highest">Cmd+K</kbd>
+</div>
+</div>
+</div>
+<!-- RIGHT - Action cluster -->
+<div class="flex-none flex items-center gap-4">
+<button class="flex items-center gap-1 text-[13px] font-medium text-on-surface-variant hover:text-primary-container transition-colors">
+                EN <span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+<button class="relative text-on-surface-variant hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<span class="absolute top-0 right-0 block h-1.5 w-1.5 rounded-full bg-error ring-2 ring-surface"></span>
+</button>
+<div class="w-px h-6 bg-[rgba(186,201,204,0.15)]"></div>
+<button class="flex items-center gap-1 group">
+<img alt="Avatar" class="w-8 h-8 rounded-full object-cover group-hover:ring-2 group-hover:ring-primary-container transition-all" data-alt="A polished, professional corporate headshot of an Asian woman in her 30s. She is lit with high-end, soft studio lighting against a dark, neural velocity tech background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBI6jabGWBd9kScuKSLxe308tlwJeKf7kehTr_pgwwiXjeoVRFyy1yEWTDQ29sMZmlb_TLSUqtKdYcVp4gekRvAFSTRvEyS6Lh4dUHWuu2Kx575PuflHp4JQ7VtGPfo4qtjLmH_amu9ZRKULLQJUhf9KxRVVy-ySDTVX2p55aHu5QRynZ54G9jHmeqeCK2cS17gZ1m_GvktObOvZpf-ou3msr183meVBVzDu155mSnEivbM9l8T32X6ZmaIZRQcMr0hfO0DTigqpQo"/>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant group-hover:text-primary-container">expand_more</span>
+</button>
+</div>
+</header>
+<!-- MAIN CONTENT CANVAS -->
+<main class="ml-[240px] mt-16 p-8 min-h-[calc(100vh-64px)] overflow-x-hidden">
+<div class="max-w-[1440px] mx-auto space-y-6">
+<!-- SECTION A: Brief Summary (Loaded) -->
+<section class="bg-surface-container-low rounded-[12px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.2)]">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="text-xl font-bold tracking-[-0.02em] text-white flex items-center gap-2">
+                            Galactic Forge Alpha
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-primary-container/10 text-primary-container border border-primary-container/20 tracking-wider">ACTIVE</span>
+</h3>
+<p class="text-sm text-on-surface-variant mt-1">Multi-region sci-fi MMORPG launch campaign focusing on deep lore integration.</p>
+</div>
+<div class="flex items-center gap-4 text-sm text-on-surface-variant">
+<div class="flex flex-col items-end">
+<span class="text-[11px] uppercase tracking-wider">Budget Remaining</span>
+<span class="font-bold text-white">$145,000</span>
+</div>
+<div class="w-px h-8 bg-surface-container-highest"></div>
+<div class="flex flex-col items-end">
+<span class="text-[11px] uppercase tracking-wider">Target Reach</span>
+<span class="font-bold text-primary-fixed">12.5M</span>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION B: AI RECOMMENDATION - LOADING SKELETON -->
+<section class="bg-surface-container-low rounded-[16px] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.3)] border border-surface-container-highest/50 overflow-hidden relative">
+<!-- Ambient glow behind skeleton container -->
+<div class="absolute inset-0 bg-primary-container/5 blur-[80px] pointer-events-none"></div>
+<!-- Header -->
+<div class="flex justify-between items-center mb-6 relative z-10">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[24px] text-primary-container animate-pulse">auto_awesome</span>
+<h3 class="text-[20px] font-bold tracking-[-0.02em] text-white">Loading AI recommendations...</h3>
+<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-surface-container-highest text-on-surface-variant border border-surface-container-highest flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container animate-ping"></span>
+                            Smart-match in flight
+                        </span>
+</div>
+<div class="text-sm font-medium text-primary-container/70 animate-pulse">
+                        Querying cosine similarity...
+                    </div>
+</div>
+<!-- Progress Bar -->
+<div class="progress-indeterminate mb-8 rounded-full"></div>
+<!-- Grid: 2 rows of 5 skeleton cards -->
+<div class="grid grid-cols-5 gap-4 relative z-10">
+<!-- Skeleton Card 1 -->
+<div class="bg-surface-container rounded-[12px] p-4 border border-surface-container-highest/30">
+<div class="flex justify-between items-start mb-4">
+<div class="w-11 h-11 rounded-full shimmer"></div>
+<div class="w-12 h-12 rounded-full shimmer"></div>
+</div>
+<div class="space-y-2 mb-4">
+<div class="h-4 w-3/4 rounded shimmer"></div>
+<div class="h-3 w-1/2 rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mb-4">
+<div class="h-5 w-16 rounded-full shimmer"></div>
+<div class="h-5 w-12 rounded-full shimmer"></div>
+</div>
+<div class="mb-4">
+<span class="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase mb-1 block">Why</span>
+<div class="h-3 w-full rounded shimmer mb-1"></div>
+<div class="h-3 w-4/5 rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mt-auto">
+<div class="h-8 w-full rounded shimmer opacity-40"></div>
+<div class="h-8 w-8 rounded shimmer opacity-40 shrink-0"></div>
+</div>
+</div>
+<!-- Skeleton Card 2 -->
+<div class="bg-surface-container rounded-[12px] p-4 border border-surface-container-highest/30">
+<div class="flex justify-between items-start mb-4">
+<div class="w-11 h-11 rounded-full shimmer"></div>
+<div class="w-12 h-12 rounded-full shimmer"></div>
+</div>
+<div class="space-y-2 mb-4">
+<div class="h-4 w-2/3 rounded shimmer"></div>
+<div class="h-3 w-1/3 rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mb-4">
+<div class="h-5 w-14 rounded-full shimmer"></div>
+<div class="h-5 w-20 rounded-full shimmer"></div>
+</div>
+<div class="mb-4">
+<span class="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase mb-1 block">Why</span>
+<div class="h-3 w-[90%] rounded shimmer mb-1"></div>
+<div class="h-3 w-3/4 rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mt-auto">
+<div class="h-8 w-full rounded shimmer opacity-40"></div>
+<div class="h-8 w-8 rounded shimmer opacity-40 shrink-0"></div>
+</div>
+</div>
+<!-- Skeleton Card 3 -->
+<div class="bg-surface-container rounded-[12px] p-4 border border-surface-container-highest/30">
+<div class="flex justify-between items-start mb-4">
+<div class="w-11 h-11 rounded-full shimmer"></div>
+<div class="w-12 h-12 rounded-full shimmer"></div>
+</div>
+<div class="space-y-2 mb-4">
+<div class="h-4 w-[80%] rounded shimmer"></div>
+<div class="h-3 w-1/2 rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mb-4">
+<div class="h-5 w-12 rounded-full shimmer"></div>
+<div class="h-5 w-16 rounded-full shimmer"></div>
+</div>
+<div class="mb-4">
+<span class="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase mb-1 block">Why</span>
+<div class="h-3 w-full rounded shimmer mb-1"></div>
+<div class="h-3 w-[85%] rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mt-auto">
+<div class="h-8 w-full rounded shimmer opacity-40"></div>
+<div class="h-8 w-8 rounded shimmer opacity-40 shrink-0"></div>
+</div>
+</div>
+<!-- Skeleton Card 4 -->
+<div class="bg-surface-container rounded-[12px] p-4 border border-surface-container-highest/30">
+<div class="flex justify-between items-start mb-4">
+<div class="w-11 h-11 rounded-full shimmer"></div>
+<div class="w-12 h-12 rounded-full shimmer"></div>
+</div>
+<div class="space-y-2 mb-4">
+<div class="h-4 w-[60%] rounded shimmer"></div>
+<div class="h-3 w-[40%] rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mb-4">
+<div class="h-5 w-20 rounded-full shimmer"></div>
+<div class="h-5 w-12 rounded-full shimmer"></div>
+</div>
+<div class="mb-4">
+<span class="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase mb-1 block">Why</span>
+<div class="h-3 w-[95%] rounded shimmer mb-1"></div>
+<div class="h-3 w-[70%] rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mt-auto">
+<div class="h-8 w-full rounded shimmer opacity-40"></div>
+<div class="h-8 w-8 rounded shimmer opacity-40 shrink-0"></div>
+</div>
+</div>
+<!-- Skeleton Card 5 -->
+<div class="bg-surface-container rounded-[12px] p-4 border border-surface-container-highest/30">
+<div class="flex justify-between items-start mb-4">
+<div class="w-11 h-11 rounded-full shimmer"></div>
+<div class="w-12 h-12 rounded-full shimmer"></div>
+</div>
+<div class="space-y-2 mb-4">
+<div class="h-4 w-3/4 rounded shimmer"></div>
+<div class="h-3 w-[55%] rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mb-4">
+<div class="h-5 w-16 rounded-full shimmer"></div>
+<div class="h-5 w-14 rounded-full shimmer"></div>
+</div>
+<div class="mb-4">
+<span class="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase mb-1 block">Why</span>
+<div class="h-3 w-[88%] rounded shimmer mb-1"></div>
+<div class="h-3 w-[80%] rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mt-auto">
+<div class="h-8 w-full rounded shimmer opacity-40"></div>
+<div class="h-8 w-8 rounded shimmer opacity-40 shrink-0"></div>
+</div>
+</div>
+<!-- Skeleton Card 6 -->
+<div class="bg-surface-container rounded-[12px] p-4 border border-surface-container-highest/30">
+<div class="flex justify-between items-start mb-4">
+<div class="w-11 h-11 rounded-full shimmer"></div>
+<div class="w-12 h-12 rounded-full shimmer"></div>
+</div>
+<div class="space-y-2 mb-4">
+<div class="h-4 w-[85%] rounded shimmer"></div>
+<div class="h-3 w-1/2 rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mb-4">
+<div class="h-5 w-14 rounded-full shimmer"></div>
+<div class="h-5 w-12 rounded-full shimmer"></div>
+</div>
+<div class="mb-4">
+<span class="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase mb-1 block">Why</span>
+<div class="h-3 w-full rounded shimmer mb-1"></div>
+<div class="h-3 w-3/4 rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mt-auto">
+<div class="h-8 w-full rounded shimmer opacity-40"></div>
+<div class="h-8 w-8 rounded shimmer opacity-40 shrink-0"></div>
+</div>
+</div>
+<!-- Skeleton Card 7 -->
+<div class="bg-surface-container rounded-[12px] p-4 border border-surface-container-highest/30">
+<div class="flex justify-between items-start mb-4">
+<div class="w-11 h-11 rounded-full shimmer"></div>
+<div class="w-12 h-12 rounded-full shimmer"></div>
+</div>
+<div class="space-y-2 mb-4">
+<div class="h-4 w-[70%] rounded shimmer"></div>
+<div class="h-3 w-[45%] rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mb-4">
+<div class="h-5 w-16 rounded-full shimmer"></div>
+<div class="h-5 w-20 rounded-full shimmer"></div>
+</div>
+<div class="mb-4">
+<span class="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase mb-1 block">Why</span>
+<div class="h-3 w-[92%] rounded shimmer mb-1"></div>
+<div class="h-3 w-[65%] rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mt-auto">
+<div class="h-8 w-full rounded shimmer opacity-40"></div>
+<div class="h-8 w-8 rounded shimmer opacity-40 shrink-0"></div>
+</div>
+</div>
+<!-- Skeleton Card 8 -->
+<div class="bg-surface-container rounded-[12px] p-4 border border-surface-container-highest/30">
+<div class="flex justify-between items-start mb-4">
+<div class="w-11 h-11 rounded-full shimmer"></div>
+<div class="w-12 h-12 rounded-full shimmer"></div>
+</div>
+<div class="space-y-2 mb-4">
+<div class="h-4 w-[75%] rounded shimmer"></div>
+<div class="h-3 w-[50%] rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mb-4">
+<div class="h-5 w-12 rounded-full shimmer"></div>
+<div class="h-5 w-14 rounded-full shimmer"></div>
+</div>
+<div class="mb-4">
+<span class="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase mb-1 block">Why</span>
+<div class="h-3 w-[85%] rounded shimmer mb-1"></div>
+<div class="h-3 w-4/5 rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mt-auto">
+<div class="h-8 w-full rounded shimmer opacity-40"></div>
+<div class="h-8 w-8 rounded shimmer opacity-40 shrink-0"></div>
+</div>
+</div>
+<!-- Skeleton Card 9 -->
+<div class="bg-surface-container rounded-[12px] p-4 border border-surface-container-highest/30">
+<div class="flex justify-between items-start mb-4">
+<div class="w-11 h-11 rounded-full shimmer"></div>
+<div class="w-12 h-12 rounded-full shimmer"></div>
+</div>
+<div class="space-y-2 mb-4">
+<div class="h-4 w-[65%] rounded shimmer"></div>
+<div class="h-3 w-[40%] rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mb-4">
+<div class="h-5 w-20 rounded-full shimmer"></div>
+<div class="h-5 w-16 rounded-full shimmer"></div>
+</div>
+<div class="mb-4">
+<span class="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase mb-1 block">Why</span>
+<div class="h-3 w-full rounded shimmer mb-1"></div>
+<div class="h-3 w-[75%] rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mt-auto">
+<div class="h-8 w-full rounded shimmer opacity-40"></div>
+<div class="h-8 w-8 rounded shimmer opacity-40 shrink-0"></div>
+</div>
+</div>
+<!-- Skeleton Card 10 -->
+<div class="bg-surface-container rounded-[12px] p-4 border border-surface-container-highest/30">
+<div class="flex justify-between items-start mb-4">
+<div class="w-11 h-11 rounded-full shimmer"></div>
+<div class="w-12 h-12 rounded-full shimmer"></div>
+</div>
+<div class="space-y-2 mb-4">
+<div class="h-4 w-[80%] rounded shimmer"></div>
+<div class="h-3 w-[60%] rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mb-4">
+<div class="h-5 w-14 rounded-full shimmer"></div>
+<div class="h-5 w-12 rounded-full shimmer"></div>
+</div>
+<div class="mb-4">
+<span class="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase mb-1 block">Why</span>
+<div class="h-3 w-[90%] rounded shimmer mb-1"></div>
+<div class="h-3 w-[85%] rounded shimmer"></div>
+</div>
+<div class="flex gap-2 mt-auto">
+<div class="h-8 w-full rounded shimmer opacity-40"></div>
+<div class="h-8 w-8 rounded shimmer opacity-40 shrink-0"></div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<div class="mt-6 text-center relative z-10">
+<p class="text-[12px] text-slate-500 italic">Typically &lt;500ms · longer if product embed is JIT-generating first time</p>
+</div>
+</section>
+<!-- SECTION C: Accepted KOLs (Loaded) -->
+<section class="bg-surface-container-low rounded-[12px] shadow-[0_4px_24px_rgba(0,0,0,0.2)] overflow-hidden">
+<div class="p-4 border-b border-surface-container-highest flex justify-between items-center bg-surface-container-highest/20">
+<h3 class="text-base font-semibold text-white">Accepted Roster (3)</h3>
+<button class="text-sm font-medium text-primary-container hover:text-primary transition-colors flex items-center gap-1">
+                        View Full List <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-sm text-on-surface-variant">
+<thead class="text-xs uppercase bg-surface-container-highest/50 text-on-surface-variant font-medium">
+<tr>
+<th class="px-6 py-3">KOL</th>
+<th class="px-6 py-3">Platform</th>
+<th class="px-6 py-3">Audience Score</th>
+<th class="px-6 py-3">Status</th>
+<th class="px-6 py-3 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-highest">
+<tr class="hover:bg-surface-container-highest/30 transition-colors">
+<td class="px-6 py-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest shimmer"></div>
+<span class="font-medium text-white">NovaStriker</span>
+</td>
+<td class="px-6 py-4">Twitch, YouTube</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 max-w-[100px]">
+<div class="bg-primary-container h-1.5 rounded-full" style="width: 92%"></div>
+</div>
+<span class="text-xs font-semibold text-primary-fixed">92</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 rounded text-[10px] font-medium bg-[#00e5ff]/10 text-[#00e5ff] border border-[#00e5ff]/20">ACCEPTED</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant hover:text-white"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/30 transition-colors">
+<td class="px-6 py-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest shimmer"></div>
+<span class="font-medium text-white">LoreKeeper X</span>
+</td>
+<td class="px-6 py-4">YouTube</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 max-w-[100px]">
+<div class="bg-primary-container h-1.5 rounded-full" style="width: 88%"></div>
+</div>
+<span class="text-xs font-semibold text-primary-fixed">88</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 rounded text-[10px] font-medium bg-[#00e5ff]/10 text-[#00e5ff] border border-[#00e5ff]/20">ACCEPTED</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant hover:text-white"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</main>
+</body></html>

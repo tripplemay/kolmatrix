@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 8.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "新 Stitch 项目 bl066-campaign-detail-ai-main-panel 含 3 屏：主屏（顶 Brief / 中 AI 主面板 top 5-30 候选 + valueScore + 一句话\"为什么\"占位 / 底 AcceptedKolsPanel）/ 空态 / Loading 态骨架屏",
       "Stitch URL + screenshot 写入 design-draft/bl066-campaign-detail-ai-main-panel/",

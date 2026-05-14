@@ -27,6 +27,9 @@
 | `knowledge-base.html` + `.png` | `12dafe39c3414d23bb674df95db140b7` | 产品知识库（录入 + AI 生成素材）| **BM1 F003** |
 | `crm-relationship.html` + `.png` | `2a1b5f8b059e4dd2b842268a88a03067` | KOL 关系管理 CRM（6 阶段 + 漏斗，MVP 简化版）| **BM2 F007** |
 | `weekly-report.html` + `.png` | `739c35deff2c43ebb00e3cc04f582462` | AI 周报（给客户看，PDF + 分享链接）| **BM2 F010** |
+| `../bl066-campaign-detail-ai-main-panel/main.html` + `.png` | `campaign_detail_ai_recommendation_main_panel` | Campaign 详情 AI 推荐主面板（Brief / AI 主面板 / Accepted）| **BL-066 F001** |
+| `../bl066-campaign-detail-ai-main-panel/empty.html` + `.png` | `campaign_detail_empty_state_kolmatrix` | 同上 · 空态（无 AI 候选，引导 reconnect product）| **BL-066 F001** |
+| `../bl066-campaign-detail-ai-main-panel/loading.html` + `.png` | `campaign_detail_loading_kolmatrix` | 同上 · Loading 骨架（smart-match in flight）| **BL-066 F001** |
 
 ## 使用方式
 

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Campaign Detail · AI Recommendation Main Panel - KOLMatrix</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#131b2e",
+                        "on-surface": "#dbe2fd",
+                        "inverse-on-surface": "#283044",
+                        "surface-container-highest": "#2d3449",
+                        "on-secondary-fixed": "#290055",
+                        "on-primary-fixed": "#001f24",
+                        "error": "#ffb4ab",
+                        "secondary-container": "#6e06d0",
+                        "secondary": "#d8b9ff",
+                        "on-secondary-container": "#d5b5ff",
+                        "tertiary-fixed": "#ffdf96",
+                        "secondary-fixed-dim": "#d8b9ff",
+                        "surface": "#0b1326",
+                        "on-primary": "#00363d",
+                        "tertiary-fixed-dim": "#f3bf26",
+                        "surface-tint": "#00daf3",
+                        "secondary-fixed": "#eddcff",
+                        "primary-fixed": "#9cf0ff",
+                        "error-container": "#93000a",
+                        "primary": "#c3f5ff",
+                        "surface-container-lowest": "#060d20",
+                        "on-tertiary-container": "#6f5500",
+                        "background": "#0b1326",
+                        "on-secondary-fixed-variant": "#6200bc",
+                        "surface-container-high": "#222a3e",
+                        "surface-bright": "#31394e",
+                        "on-primary-container": "#00626e",
+                        "on-secondary": "#450086",
+                        "on-error": "#690005",
+                        "tertiary-container": "#fec931",
+                        "inverse-primary": "#006875",
+                        "on-primary-fixed-variant": "#004f58",
+                        "primary-fixed-dim": "#00daf3",
+                        "outline-variant": "#3b494c",
+                        "surface-variant": "#2d3449",
+                        "on-tertiary-fixed": "#251a00",
+                        "tertiary": "#ffeac0",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "surface-dim": "#0b1326",
+                        "on-tertiary": "#3e2e00",
+                        "inverse-surface": "#dbe2fd",
+                        "on-surface-variant": "#bac9cc",
+                        "surface-container": "#171f33",
+                        "outline": "#849396",
+                        "on-error-container": "#ffdad6",
+                        "on-background": "#dbe2fd",
+                        "primary-container": "#00e5ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "display": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b1326; color: #dbe2fd; }
+        .glass-panel { background: rgba(11, 19, 38, 0.2); backdrop-filter: blur(24px); border: 1px solid rgba(0, 229, 255, 0.1); }
+        .glow-hover:hover { box-shadow: 0 0 15px rgba(0, 229, 255, 0.3); border-color: rgba(0, 229, 255, 0.5); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- SIDEBAR -->
+<nav class="fixed left-0 top-0 h-full w-[240px] flex flex-col bg-[#060e20] shadow-[20px_0_20px_rgba(0,229,255,0.03)] p-6 space-y-1 z-50">
+<!-- Logo Block -->
+<div class="flex items-center gap-3 mb-8 h-14">
+<div class="w-10 h-10 rounded-[10px] bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] flex items-center justify-center shrink-0">
+<span class="font-headline font-bold text-lg text-[#0b1326]">K</span>
+</div>
+<div class="flex flex-col justify-center">
+<span class="font-headline font-bold text-lg bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] bg-clip-text text-transparent">KOLMatrix</span>
+<span class="font-headline font-semibold text-[9px] tracking-[0.15em] text-[#6B7280] uppercase">NEURAL VELOCITY</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex-grow flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-body font-medium text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">travel_explore</span>
+<span class="font-body font-medium text-sm">KOL Discovery</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+<span class="font-body font-medium text-sm">KOL Database</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#00E5FF] font-semibold border-l-2 border-[#00E5FF] bg-gradient-to-r from-[rgba(0,229,255,0.1)] to-transparent transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#00E5FF]">rocket_launch</span>
+<span class="font-body text-sm">Campaigns</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">forward_to_inbox</span>
+<span class="font-body font-medium text-sm">Email Center</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+<span class="font-body font-medium text-sm">Products</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">query_stats</span>
+<span class="font-body font-medium text-sm">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-[#bac9cc] hover:text-[#dae2fd] hover:bg-[#222a3d]/50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-body font-medium text-sm">Settings</span>
+</a>
+</div>
+<!-- User Chip -->
+<div class="flex items-center gap-3 p-3 rounded-[10px] hover:bg-[#222a3d]/40 cursor-pointer transition-colors mt-auto">
+<img alt="Sarah Chen" class="w-9 h-9 rounded-full object-cover ring-2 ring-transparent hover:ring-[#00E5FF]/50 transition-all" data-alt="A small, professional circular avatar portrait of an Asian woman with dark hair, looking directly at the camera with a subtle smile. The portrait is well-lit, conveying competence and approachability. The image uses the overarching Neural Velocity color palette, featuring deep navy and bright cyan accents in the lighting. The overall mood is modern, high-tech, and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDyKd-f8XUC2SgcOrIqy7T0bXwg4KX8CF4C5Np2HXb2llnoGQQxEhNcUUpVUZcOXWor_3n9hNmm_mdP1-2UCX0_TMcocxFHFPJwEJu7QQT6of2ysMAFCSKQ7kkBE9nwfyOimNc06SOD7D2XHHzJyI2AmJvtcmls5v-N-DPhmrdmNocQzYmcQ5W1g6TegPe3WIiObDOYgPBCRRbJ-oXZ7kVVZsPYKwucdB7lBUdnBfzc_ItOwm0HOAlwmGgafnvs5gCorFlhVZtwkU"/>
+<div class="flex flex-col flex-grow">
+<span class="font-headline font-semibold text-sm text-white">Sarah Chen</span>
+<span class="font-body text-[11px] text-[#6B7280]">Ops Lead</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-slate-500">chevron_right</span>
+</div>
+</nav>
+<!-- MAIN CONTENT AREA -->
+<div class="flex-1 ml-[240px] flex flex-col h-full bg-background overflow-hidden relative">
+<!-- Ambient Background Glows -->
+<div class="absolute top-0 right-0 w-[600px] h-[600px] bg-[#00E5FF] opacity-[0.03] rounded-full blur-[120px] pointer-events-none"></div>
+<div class="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-[#9D50FF] opacity-[0.02] rounded-full blur-[100px] pointer-events-none"></div>
+<!-- TOP BAR -->
+<header class="sticky top-0 right-0 w-full h-16 bg-[#0b1326]/85 backdrop-blur-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex justify-between items-center px-8 z-40">
+<div class="flex-none flex items-center gap-4">
+<span class="font-headline font-semibold text-base text-white">Campaign Detail</span>
+<div class="h-4 w-[1px] bg-outline-variant/30"></div>
+<div class="flex items-center gap-2 text-sm text-on-surface-variant font-medium">
+<span class="hover:text-primary transition-colors cursor-pointer">Campaigns</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary-fixed">Galactic Forge Alpha</span>
+</div>
+</div>
+<div class="flex-1 max-w-[480px] mx-auto relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[18px] text-[#6B7280] group-focus-within:text-[#00E5FF] transition-colors">search</span>
+<input class="w-full h-10 bg-surface-container-highest rounded-full pl-11 pr-16 text-[13px] text-on-surface placeholder:text-[#6B7280] border border-transparent focus:border-[#00E5FF] focus:ring-4 focus:ring-[#00E5FF]/20 transition-all outline-none" placeholder="Search KOLs, campaigns, emails..." type="text"/>
+<div class="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded border border-[#6B7280]/30 text-[11px] font-medium text-[#6B7280]">Cmd+K</div>
+</div>
+<div class="flex-none flex items-center gap-4">
+<button class="flex items-center gap-1 text-[13px] font-medium text-on-surface-variant hover:text-[#00E5FF] transition-colors">
+                    EN <span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+<button class="relative text-on-surface-variant hover:text-[#00E5FF] transition-colors">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<span class="absolute top-0 right-0 w-1.5 h-1.5 bg-error rounded-full ring-2 ring-background"></span>
+</button>
+<div class="w-[1px] h-6 bg-outline-variant/30"></div>
+<button class="flex items-center gap-2">
+<img alt="Sarah Chen" class="w-8 h-8 rounded-full object-cover ring-2 ring-transparent hover:ring-[#00E5FF]/50 transition-all" data-alt="A small, professional circular avatar portrait of an Asian woman with dark hair, looking directly at the camera with a subtle smile. The portrait is well-lit, conveying competence and approachability. The image uses the overarching Neural Velocity color palette, featuring deep navy and bright cyan accents in the lighting. The overall mood is modern, high-tech, and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB26ZYd9LQvYbNteWrnsJwIVr2xy4Cs_EKO6GbR9xxC7SuFKAfZn9SRpXlSBv1_Vk9kxW_AOqhmJbQe_v47XdDay-JFuvrz6Mjm6JStrEreNVJQNzEICvGnKD8VWUBtL_XLPZi-H_Yi655m64Wk6pCmEu8skgmaBIGoobeaj4wgXzswzAHZVS-cQmuoGTgIL4ajqLZArWrp1NOtHmWLMBMWBf32IwT-6GSfQ11zl6ruttMgvD-0X0TFLQMRm-7r_Aw1D_zgulvJyTY"/>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">expand_more</span>
+</button>
+</div>
+</header>
+<!-- SCROLLABLE CONTENT -->
+<main class="flex-1 overflow-y-auto p-8 flex flex-col gap-6 relative z-10">
+<!-- SECTION A: Brief Summary -->
+<section class="glass-panel rounded-[16px] p-6 flex flex-col gap-4 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#00daf3] to-transparent"></div>
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-3">
+<span class="px-2.5 py-1 rounded-full bg-primary-container/10 text-primary-fixed text-xs font-semibold border border-primary-container/20 flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-fixed animate-pulse"></span>
+                                ACTIVE
+                            </span>
+<span class="px-2.5 py-1 rounded-full bg-secondary-container/20 text-secondary-fixed-dim text-xs font-semibold border border-secondary-container/30 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">auto_awesome</span>
+                                AI-DRIVEN
+                            </span>
+</div>
+<h1 class="text-3xl font-headline font-bold text-white tracking-tight">Galactic Forge Alpha</h1>
+</div>
+<div class="flex gap-4">
+<div class="flex flex-col items-end gap-1">
+<span class="text-on-surface-variant text-xs uppercase tracking-wider font-medium">Accepted</span>
+<div class="flex items-baseline gap-1">
+<span class="text-2xl font-display font-bold text-white">12</span>
+<span class="text-on-surface-variant text-sm">/ 30</span>
+</div>
+</div>
+<div class="w-[1px] bg-outline-variant/30 self-stretch my-1"></div>
+<div class="flex flex-col items-end gap-1">
+<span class="text-on-surface-variant text-xs uppercase tracking-wider font-medium">Contacted</span>
+<span class="text-2xl font-display font-bold text-primary-fixed">8</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-4 gap-4 mt-2">
+<div class="bg-surface-container/50 rounded-lg p-3 border border-outline-variant/20">
+<span class="text-on-surface-variant text-xs block mb-1">Target Market</span>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary-fixed">public</span>
+<span class="text-sm font-medium text-white">Mobile, APAC</span>
+</div>
+</div>
+<div class="bg-surface-container/50 rounded-lg p-3 border border-outline-variant/20">
+<span class="text-on-surface-variant text-xs block mb-1">Demographics</span>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-secondary-fixed-dim">groups</span>
+<span class="text-sm font-medium text-white">18-30, Strategy</span>
+</div>
+</div>
+<div class="bg-surface-container/50 rounded-lg p-3 border border-outline-variant/20">
+<span class="text-on-surface-variant text-xs block mb-1">Budget</span>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-[#00E5FF]">attach_money</span>
+<span class="text-sm font-medium text-white">$50,000</span>
+</div>
+</div>
+<div class="flex items-center justify-end gap-3">
+<button class="px-4 py-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface text-sm font-medium transition-colors border border-outline-variant/30">Edit Brief</button>
+<button class="px-4 py-2 rounded-lg bg-gradient-to-r from-[#00daf3] to-[#c3f5ff] text-[#0b1326] text-sm font-bold shadow-[0_0_15px_rgba(0,229,255,0.3)] hover:shadow-[0_0_25px_rgba(0,229,255,0.5)] transition-all">Launch Comm</button>
+</div>
+</div>
+</section>
+<!-- SECTION B: AI Recommendation Panel -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[24px] text-primary-fixed animate-pulse">auto_awesome</span>
+<h2 class="text-xl font-headline font-semibold text-white">AI Recommended KOLs</h2>
+<span class="text-xs text-on-surface-variant bg-surface-container-highest px-2 py-1 rounded font-mono border border-outline-variant/20">Sourced from /api/kols/smart-match</span>
+</div>
+<button class="px-3 py-1.5 rounded-lg border border-primary-container/30 text-primary-fixed text-sm font-medium hover:bg-primary-container/10 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">refresh</span>
+                        Show next 5
+                    </button>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<!-- KOL Card 1 -->
+<div class="glass-panel rounded-[16px] p-5 flex flex-col gap-4 glow-hover transition-all group">
+<div class="flex gap-4">
+<img alt="Avatar" class="w-14 h-14 rounded-xl object-cover border border-outline-variant/30 group-hover:border-primary-container/50 transition-colors" data-alt="A medium close-up portrait of a young male gamer with short dark hair, wearing a stylish streetwear hoodie. He is brightly lit by neon blue and purple gaming lights in a dark room. The image conveys energy and focus, fitting a high-tech gaming aesthetic within a deep navy and electric cyan color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKNYVmdQH7sXcQQbZb4aEc2Zy8iFGyzXV7utLZ73puJ-kyMPGO7uypHSpgMFdUvZ0DhiyeHOvtb0hdBBwwxMtRdBAiOImd_VcZaCbbGGechzF47c4uQWVjR5Hpjz9EypZ6ZAQa5DGBTq3uev4fWmftXJ_lJIPYaidC654u1dvWbL1KsQ_oPqBJ3fr9sqAkOWoACxz7kNBOaW0HbFAwSNbNTWoOaiP1-15d3UClpjal_AeCWWOM-Aj6rxzrK0Hs3iJ-4OrKTSB1fuQ"/>
+<div class="flex flex-col flex-1">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-semibold text-white">NovaStriker</h3>
+<div class="flex items-center gap-1 bg-surface-container-highest px-2 py-0.5 rounded text-primary-fixed border border-primary-container/20">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+<span class="font-bold text-sm">94</span>
+</div>
+</div>
+<div class="flex gap-2 mt-1.5">
+<span class="text-[10px] uppercase font-bold text-[#FF0000] bg-[#FF0000]/10 px-1.5 py-0.5 rounded border border-[#FF0000]/20">YouTube</span>
+<span class="text-[10px] uppercase font-bold text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant/30">Mobile Strategy</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low/50 rounded-lg p-3 border border-outline-variant/10 text-sm text-on-surface-variant relative">
+<span class="material-symbols-outlined absolute top-3 right-3 text-[14px] text-secondary-fixed-dim opacity-50">psychology</span>
+<p class="pr-6"><strong class="text-primary-fixed font-medium">Why we suggest this:</strong> High cosine similarity (0.92) with past successful 'Mobile APAC' campaigns. Audience demographic perfectly aligns with 18-30 strategy gamers.</p>
+</div>
+<div class="flex gap-2 mt-auto pt-2">
+<button class="flex-1 bg-primary-container/10 hover:bg-primary-container/20 text-primary-fixed border border-primary-container/30 rounded-lg py-2 text-sm font-semibold transition-colors">Accept</button>
+<button class="px-3 py-2 bg-surface-container border border-outline-variant/30 hover:bg-surface-bright rounded-lg text-on-surface-variant text-sm transition-colors" title="Skip">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+<button class="px-3 py-2 bg-surface-container border border-outline-variant/30 hover:bg-surface-bright rounded-lg text-on-surface-variant text-sm transition-colors" title="View Profile">
+<span class="material-symbols-outlined text-[18px]">open_in_new</span>
+</button>
+</div>
+</div>
+<!-- KOL Card 2 -->
+<div class="glass-panel rounded-[16px] p-5 flex flex-col gap-4 glow-hover transition-all group">
+<div class="flex gap-4">
+<img alt="Avatar" class="w-14 h-14 rounded-xl object-cover border border-outline-variant/30 group-hover:border-primary-container/50 transition-colors" data-alt="A close-up portrait of a female content creator with brightly colored neon pink and blue hair. She is wearing high-end headphones with glowing accents. The lighting is dramatic, with deep shadows and vibrant cyan and purple rim lighting. The mood is energetic and futuristic, aligning with a high-end tech aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHf74Ylsb6ozZSiGYQZUYVxWwhOCOJ6fjzzAV4V0NQXWXpbDpdzTvipcK6OKRcO7EeiP1kkPmwy7CU8WrQCV0iw1epuGv3DnGi6CQfd_72fEFMK7uUzqPBHf2EK_FjhrOO7GH30hxpaon3vDXCipYhC5kFJiRZCS8_VYg0EmdFdSyvgGJnW6x187UOQ6o294X1qz5xF8QNUFsGCAxCFEkpwmuuGzb4crHsTHgkEZjRPRoSu7ExUEUfHprT-2rzFJTCWH5h3FQLao8"/>
+<div class="flex flex-col flex-1">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-semibold text-white">CyberQueen</h3>
+<div class="flex items-center gap-1 bg-surface-container-highest px-2 py-0.5 rounded text-primary-fixed border border-primary-container/20">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+<span class="font-bold text-sm">91</span>
+</div>
+</div>
+<div class="flex gap-2 mt-1.5">
+<span class="text-[10px] uppercase font-bold text-[#9146FF] bg-[#9146FF]/10 px-1.5 py-0.5 rounded border border-[#9146FF]/20">Twitch</span>
+<span class="text-[10px] uppercase font-bold text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant/30">Action RPG</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low/50 rounded-lg p-3 border border-outline-variant/10 text-sm text-on-surface-variant relative">
+<span class="material-symbols-outlined absolute top-3 right-3 text-[14px] text-secondary-fixed-dim opacity-50">psychology</span>
+<p class="pr-6"><strong class="text-primary-fixed font-medium">Why we suggest this:</strong> Strong engagement metrics in APAC region. Predictive modeling indicates 3x ROI potential based on her recent performance in strategy titles.</p>
+</div>
+<div class="flex gap-2 mt-auto pt-2">
+<button class="flex-1 bg-primary-container/10 hover:bg-primary-container/20 text-primary-fixed border border-primary-container/30 rounded-lg py-2 text-sm font-semibold transition-colors">Accept</button>
+<button class="px-3 py-2 bg-surface-container border border-outline-variant/30 hover:bg-surface-bright rounded-lg text-on-surface-variant text-sm transition-colors" title="Skip">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+<button class="px-3 py-2 bg-surface-container border border-outline-variant/30 hover:bg-surface-bright rounded-lg text-on-surface-variant text-sm transition-colors" title="View Profile">
+<span class="material-symbols-outlined text-[18px]">open_in_new</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- FOOTER -->
+<footer class="bg-surface-container-lowest border-t border-outline-variant/20 px-8 py-3 text-xs text-on-surface-variant flex items-center gap-2 z-10 relative">
+<span class="material-symbols-outlined text-[14px]">history</span>
+<span>Last activity: Sarah Chen accepted <strong class="text-white font-medium">NovaStriker</strong> · 12 mins ago</span>
+</footer>
+</div>
+</body></html>
