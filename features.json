@@ -19,7 +19,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 12.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/app/[locale]/(app)/campaigns/[id]/page.tsx 重写为三段（Brief 顶 / AiRecommendationPanel skeleton 中 / 底沿用 CampaignKolPanel 现名 + 现 AddKol 入口；F006 才重构底部）",
       "严格按 Stitch F001 main.html 1:1 还原（loading.html Brief 区漂移以 main.html 为 canonical）",
