@@ -3,8 +3,9 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔨 BL-066-campaign-detail-ai-main-panel BUILDING（6.5/9, fix_rounds=0, staging=71c6ef0 含 F007 v2 recompute apply）
-- F001-F006 ✅ → F007 impl + staging deploy + recompute apply 完成 @ 71c6ef0（audit_log id 670 row_count=3891 13.7s spread 49-100；Planner #7=B (b) 字面失败但语义达成 — 42 真 mega clamp 100；3 候选 (i)/(ii)/(iii) 等 Planner 裁决见 progress.json session_notes.Kimi）→ F008-F009 待做 / role_assignments=planner johnsong + generator Kimi + evaluator Reviewer
+## 🔨 BL-066-campaign-detail-ai-main-panel BUILDING（7/9, fix_rounds=0, staging=71c6ef0 含 F007 v2 recompute apply）
+- F001-F007 ✅ → F008-F009 待做 / role_assignments=planner johnsong + generator Kimi + evaluator Reviewer
+- F007 @ 71c6ef0 value-score v2 公式 + ADR-014 + recompute TS 脚本 + 24 单测 / staging recompute apply @ audit_log id 670 (row_count=3891 13.7s spread 49-100) / Planner #7=B 重裁决 (用户 ack 2026-05-15 选项 i): (a') max-follower vs min-follower value_score 跨度实测 51 ✓ (b') 全 dataset spread ≥ 5 实测 51 + top-15 最小 follower ≥ 100K 实测 1.72M ✓ — audit doc §7 量化验证补充裁决 lock / prod recompute 留 F009 batch finale per #8=C
 - F006 @ ba0c5fc git mv CampaignKolPanel→AcceptedKolsPanel + 6 列 read-only + source chip 独立列 (AI/CSV/Legacy) + view-profile open_in_new + backfill migration UPDATE 10 rows manual→manual_legacy + 删 runAvailableKolsForCampaign + i18n 5 locale 新 keys + deprecated marker / F006 audit 裁决 `#1:C #2:A #3:C #4:A #5:B` (Planner johnsong @ a682cde, 仅 #4 偏离 Generator 建议 — Table.tsx 实测 fully flexible 无 col cap, 6 列 README 字面安全) / v0.9.22 候选: Generator audit 起草前实测原子组件 surface 字面
 - F002 audit 裁决 `#1:A #2:B #3:B #4:B #5:C` + #6 (Planner johnsong @ e2d6b71)
 ## ✅ BL-065 DONE 7/7 prod=c5b5c31 + BL-065-R1=4562895 + signoff 5/14

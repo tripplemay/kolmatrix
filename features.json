@@ -120,7 +120,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 20.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/lib/kol/value-score.ts 三处 (F007 audit §裁决 #1+#2+#3): followerScore = Math.min(80, log10(max(followers,100)) × 10) / categoryScore = Math.min(15, length × 8) / engagementScoreFromRate 6 档 ladder: null→12, <5% real→8, ≥5%→12, ≥8%→16, ≥12%→20, ≥16%→25 / RAW_MAX=95",
       "数学自洽: sub-sum max 80+25+15=120, round(120×100/95)=126 clamp 100; 普通 1M+ mega 落 90+ 区间形成区分",

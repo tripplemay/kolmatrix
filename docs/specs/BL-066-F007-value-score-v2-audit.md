@@ -220,7 +220,59 @@ per `src/lib/audit/log.ts:logAudit()`：platform-level 事件 `tenantId=null` �
 
 ---
 
-## 7. 相关文档
+## 7. 量化验证补充裁决（2026-05-15 02:55 BJT · 用户 ack）
+
+### 触发
+
+2026-05-15 02:42 BJT Generator 在 staging 跑 recompute apply（71c6ef0 → audit_log id 670 / row_count 3891 / 13.7s）后发现：
+
+- **Planner #7=B (a) 字面**：`@gameseduuu` / `@morrov8721` 是 BL-048 backlog prod-only 实测数据，**staging 无此 handle**（staging 数据池来自 apify-kol fork demo seed）→ 字面不可执行
+- **Planner #7=B (b) 字面**：`top-15 max(value_score) - min(value_score) ≥ 5` — staging 实测**失败**（top-15 全 42 行 clamp 在 value_score=100，range=0）
+- **但 v2 公式语义目标达成**：top-15 最小 follower=1.72M（vs v1 era 2.08K nano-mixed），42 个 100-clamp KOLs 全为真 mega + 高 engagement + 多 cats — 与 v1 14 行 nano-混入-同分 100 性质完全不同
+
+### 数据形态分析
+
+| 数据点 | v1 staging | v2 staging | 解读 |
+|---|---|---|---|
+| top-15 最低 follower | 2.08K nano | 1.72M mega | ✅ nano 已踢出 top-15 |
+| 100-clamp 行数 | 14（nano-mixed）| 42（全 mega）| ⚠ 性质截然不同 |
+| 全 dataset value_score min | 72 | 49 | ✅ 区分跨度从 28 拉到 51 |
+| max-follower KOL (75.2M) | 100 | 100 | ✅ 顶档保持登顶 |
+| min-follower KOL (500) | ~72 | 49 | ✅ nano 重新沉底 |
+| Distribution 长尾 | 顶端拍扁 | 99:10 / 98:6 / 97:7 / 96:8 / 95:10 / .../81:35 | ✅ 健康长尾 |
+
+### 用户 ack 裁决（选项 i = "接受语义 + 修订 criterion"）
+
+Planner 裁决表 §6 #7=B 中 (a)(b) 字面口径在 v2 staging 数据形态下不适用，**修订为**：
+
+| 原文（§6 #7）| 修订（本节）|
+|---|---|
+| (a) `@gameseduuu` (12.6M) `value_score` ≥ `@morrov8721` (2.08K) `value_score` | (a') **替代语义验**：max-follower KOL `value_score` ≥ min-follower KOL `value_score`（实测 75.2M=100 ≥ 500=49，跨度 51 ✓）|
+| (b) top-15 `max(value_score) - min(value_score)` ≥ 5（不再 14 行同分 100）| (b') **修订为全 dataset 跨度**：`max(value_score) - min(value_score) ≥ 5` across all KOLs（实测 51 ≫ 5 ✓）；**外加** top-15 最小 follower ≥ 100K threshold 防 nano 重新混入（实测 1.72M ≫ 100K ✓）|
+
+### 修订原因
+
+(b) 原文「不再 14 行同分 100」的 underlying intent 是「top-15 不再被 nano 混入」— v2 已彻底达成（top-15 最小 follower 1.72M）。「top-15 内部 spread ≥ 5」字面在 v2 数据形态下不可达（42 真 mega 在 clamp ceiling 是 long-tail 头部正常聚集，与"14 nano-mixed"性质完全不同），需用全 dataset spread 和 top-15 最小 follower 双指标替代。
+
+### 形式
+
+- 不调 RAW_MAX（拒选项 ii）— v2 公式数学行为符合 ADR-014 §Decision 锁，无需变更
+- 不接受 "(b) 失败 marker"（拒选项 iii）— criterion 应反映实际目标
+- F007 features.json status: pending → **completed**
+- ADR-014 §Migration / Rollout `staging 量化验证` 引用本节裁决
+- 不计 fix_rounds（criterion 调整属语义口径完善，非缺陷修复）
+
+### Generator 续接动作
+
+- features.json F007 pending → completed
+- progress.json completed_features 6 → 7 + session_notes.Kimi 标 F007 done
+- .auto-memory/project-status.md 状态 marker 同步 F007 done
+- 单 atomic commit + push main
+- F007 staging 数据落地完成 → F008 (i18n + e2e) + F009 (prod redeploy + prod recompute) 顺序续接
+
+---
+
+## 8. 相关文档
 
 - `docs/specs/BL-066-campaign-detail-ai-main-panel-spec.md` §F007
 - `features.json` 条目 F007
