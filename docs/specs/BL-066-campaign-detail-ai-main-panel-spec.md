@@ -147,18 +147,22 @@ BL-023 全量 recompute 后 prod top-15 valueScore=100 含 2080-12.6M 粉双峰�
 
 ### F007 — BL-048 valueScore 公式优化合入
 
-**周期：** ~2-3 day Generator + 1 day Reviewer（含 ADR-014 起草 + recompute SQL ops + 全量 SQL apply）
+**周期：** ~2-3 day Generator + 1 day Reviewer（含 ADR-014 起草 + recompute 脚本 + staging apply；prod apply 留 F009）
 **Acceptance：**
-- 修改 `src/lib/kol/value-score.ts`（如不存在则在 BL-023 实装位置）：
-  - followerScore: `min(50, log10(followerCount) × 10) + cap 80`（拉伸到 1M+ 才接近满分）
-  - categoryScore: 仅按 length（保留现 logic）但 normalize 范围调到 max 15（让 follower + engagement 占更大权重）
-  - engagementScoreFromRate: 改阶梯 — `>= 5% → 12`, `>= 8% → 16`, `>= 12% → 20`, `>= 16% → 25`（nano 高 engagement 不再一刀切到 20）
-  - RAW_MAX 改 95（normalize 总分）
-- 新增 ADR `docs/adr/ADR-014-value-score-formula-v2.md`：背景 + 三处调整理由 + 公式 before/after + impact analysis（top-15 分布变化预期 mega 重登顶 + nano 区分度回来）
-- 单测扩充：value-score.test.ts 加 ≥6 case 覆盖新公式
-- Recompute SQL ops（独立 SSH session）：staging 跑 `UPDATE kol SET value_score = <formula>(...)`；prod 同步（用户 ack 时间窗）；audit_log 写 `value_score_recompute_v2` event with row_count
-- 验证 staging prod top-15 不再出现 2K vs 12.6M 同分；mega-tier 重登顶
-- L1 PASS
+- 修改 `src/lib/kol/value-score.ts`（per F007 audit §裁决 #1+#2+#3）：
+  - **followerScore** = `Math.min(80, Math.log10(Math.max(followers, 100)) × 10)`（cap 80 / multiplier 10 — 1M ≈ 60 / 100M ≈ 80 / 100 粉 ≈ 20；裁决 #1=A 纠 spec 字面表达失误）
+  - **categoryScore** = `Math.min(15, length × 8)`（裁决 #3=A — 仅改 cap，斜率不变；1 cat=8, 2+=15）
+  - **engagementScoreFromRate** 完整 6 档 ladder（裁决 #2=B）：`null/NaN → 12`（placeholder 保 BL-023 era 不动）/ `<5% real → 8` / `≥5% → 12` / `≥8% → 16` / `≥12% → 20` / `≥16% → 25`
+  - **RAW_MAX** = `95`
+- **数学自洽校验**：sub-sum max = 80 + 25 + 15 = 120；`round(120 × 100 / 95) = 126 → clamp 100`（modifier=1.0），普通 1M+ mega 落 90+ 区间形成区分
+- 新增 ADR `docs/adr/ADR-014-value-score-formula-v2.md`（裁决 §Generator 可直接开工 4 处边界）：§Status=Accepted §Date=2026-05-15 §Authors=Planner johnsong + 用户（per BL-066 决策点 #C 5/14 锁）§Context BL-048 backlog 复述 + §Decision 三参数全列含数学验证表 + §Consequences impact 表 + §Alternatives
+- 单测扩充：`tests/unit/value-score.test.ts` 重写 engagement describe 段为 6 档新 ladder + 改其它 ≥7 case expected（per F007 audit §4.4 case 改造表）+ 加 ≥6 new case：cap 80 followerScore（1e8/1e9/1e6 边界）/ new ladder boundary（4.9% vs 5%, 7.9% vs 8%, 11.9% vs 12%, 15.9% vs 16%）/ categoryScore cap 15 at length=N / normalize 顶档 modifier=1.05 → clamp 100 / regression v2 公式 12.6M vs 2K 差 ≥20 total
+- **Recompute 实现技术锁**（裁决 #4=B）：`scripts/bl066-f007-recompute-value-score.ts` TS 脚本（"use server" 复用 prisma client）— fetch all KOLs（含 followerCount/engagementRate/categories/engagementAuthenticity）→ loop call `computeKolValueScore()` → `UPDATE kol SET value_score = N WHERE id = $id`（chunked transaction 100/batch）→ end-of-run single `logAudit()` event；脚本调函数 = 公式单源（避免 SQL CASE WHEN dual-source drift）
+- **audit_log shape 锁**（裁决 #5=A）：`logAudit({ actorId: <admin@kolmatrix.local user uuid>, action: 'value_score.recompute_v2', targetType: 'kol', targetId: '__bulk_recompute__', tenantId: null, after: { formula_version: 'v2', row_count, env, min_before, max_before, min_after, max_after, sample_diffs: [...≤200] } })`；actorId 脚本启动时 `prisma.user.findFirst({ where: { email: 'admin@kolmatrix.local' } })` 取
+- **F007 deploy 边界锁**（裁决 #6=A + #8=C）：F007 commit 推 main 后 SSH staging 走完整 deploy（pull + npm ci + migrate deploy + NODE_OPTIONS build + pm2 reload）→ 在 cron 静默窗（北京 04:00-06:00）外手动跑 staging recompute → 收 stdout into commit message metadata → curl staging /api/health git_sha verify。**Prod recompute 留 F009 batch finale**（spec §F009 第 1 行扩为双段）
+- **量化验证锁**（裁决 #7=B）：staging recompute 后直接 SQL `SELECT id, handle, follower_count, value_score FROM kol ORDER BY value_score DESC LIMIT 15` 验：(a) @gameseduuu (12.6M) value_score ≥ @morrov8721 (2.08K) value_score；(b) top-15 内 `max(value_score) - min(value_score) ≥ 5`（不再 14 行同分 100）
+- L1 PASS（lint + tsc + vitest）
+- staging git_sha 与本 commit 一致
 
 ### F008 — i18n 5 语言 + e2e (campaign-match-flow.spec.ts) + match-fidelity 适配
 
@@ -180,7 +184,7 @@ BL-023 全量 recompute 后 prod top-15 valueScore=100 含 2080-12.6M 粉双峰�
 
 **周期：** ~0.5-1 day Generator + 1 day Reviewer
 **Acceptance：**
-- staging deploy via deploy-staging.yml（含 BL-048 valueScore recompute SQL）
+- staging deploy via deploy-staging.yml；**staging valueScore recompute 已在 F007 落地**（裁决 #6=A），F009 仅做 staging 代码 deploy + (用户 ack 时间窗后) prod 代码 deploy + **prod recompute apply**（裁决 #8=C — recompute 双段：F007 staging-only + F009 prod-only，audit_log 完整记录）
 - 视觉 baseline regen via update-visual-baselines workflow（en-campaign-detail.png 必新生成 + 可能更新 en-match.png）
 - 团队 staging dogfood spot check（Planner 在 building 后期给清单）
 - prod redeploy 用户 ack 时间窗（per BL-063/064/065 实战流程）
@@ -228,6 +232,7 @@ BL-023 全量 recompute 后 prod top-15 valueScore=100 含 2080-12.6M 粉双峰�
 - **F002 完全不动底部 panel**（F002 audit §裁决 #5=C）— 沿用 CampaignKolPanel 现名 + 现 AddKol 入口；F006 atomic 完成 git mv + 删入口 + source chip 重构
 - **F002 中部 AiRecommendationPanel.tsx skeleton 不得调 smart-match endpoint**（F002 audit §裁决 #2=B）— skeleton 仅 mount 固定 empty/loading 视觉，F003 才加 fetch + 交互层
 - **F002 不扩 KolCampaign / Product / Campaign schema**（F002 audit §裁决 #1=A）— Brief 区数据全部从 runCampaignDetail 现 query 派生
+- **F007 仅 staging apply valueScore recompute；prod recompute 留 F009 batch finale**（F007 audit §裁决 #8=C）— 消除 spec §F007 末段 "prod 同步" 与 §F009 第 1 行 "deploy 含 recompute SQL" 的字面矛盾；prod ops 集中在 F009 减少 prod risk windows，沿 BL-065 实战模式
 
 ---
 

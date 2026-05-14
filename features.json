@@ -116,19 +116,21 @@
   },
   {
     "id": "F007",
-    "title": "BL-048 valueScore 公式 v2 合入 + ADR-014 + recompute SQL ops（决策点 #C）",
+    "title": "BL-048 valueScore 公式 v2 合入 + ADR-014 + recompute 脚本 + staging apply (prod 留 F009)",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 20.0,
     "status": "pending",
     "acceptance": [
-      "修改 src/lib/kol/value-score.ts 三处：followerScore log10×10 + cap 80 / categoryScore normalize max 15 / engagementScore 阶梯（5%→12, 8%→16, 12%→20, 16%→25）/ RAW_MAX 95",
-      "新增 docs/adr/ADR-014-value-score-formula-v2.md：背景 + 三处调整理由 + 公式 before/after + impact analysis",
-      "value-score.test.ts 单测扩充 ≥6 case 覆盖新公式",
-      "Recompute SQL ops（独立 SSH session）：staging 跑 UPDATE kol SET value_score = <formula>(...) 后 prod 同步（用户 ack 时间窗）",
-      "audit_log 写 value_score_recompute_v2 event with row_count",
-      "验证 staging + prod top-15 不再 2K vs 12.6M 同分；mega-tier 重登顶",
-      "L1 PASS",
+      "src/lib/kol/value-score.ts 三处 (F007 audit §裁决 #1+#2+#3): followerScore = Math.min(80, log10(max(followers,100)) × 10) / categoryScore = Math.min(15, length × 8) / engagementScoreFromRate 6 档 ladder: null→12, <5% real→8, ≥5%→12, ≥8%→16, ≥12%→20, ≥16%→25 / RAW_MAX=95",
+      "数学自洽: sub-sum max 80+25+15=120, round(120×100/95)=126 clamp 100; 普通 1M+ mega 落 90+ 区间形成区分",
+      "docs/adr/ADR-014-value-score-formula-v2.md: §Status=Accepted §Date=2026-05-15 §Authors=Planner johnsong + 用户 (BL-066 #C 5/14 锁) §Context BL-048 backlog 复述 + §Decision 三参数全列含数学验证表 + §Consequences impact 表 + §Alternatives",
+      "tests/unit/value-score.test.ts: 重写 engagement describe 段为 6 档新 ladder + 改 ≥7 case expected (per F007 audit §4.4 表) + 加 ≥6 new case (cap 80 followerScore 1e8/1e9/1e6 / new ladder 4.9% vs 5%, 7.9% vs 8%, 11.9% vs 12%, 15.9% vs 16% / categoryScore cap 15 / normalize 顶档 modifier=1.05 clamp 100 / regression v2 12.6M vs 2K 差 ≥20)",
+      "recompute 实现 (F007 audit §裁决 #4=B 单源原则): scripts/bl066-f007-recompute-value-score.ts TS 脚本 fetch all KOLs + loop call computeKolValueScore() + UPDATE chunked 100/batch; 公式调函数避免 SQL CASE WHEN dual-source drift",
+      "audit_log shape (F007 audit §裁决 #5=A): logAudit({ actorId: <admin@kolmatrix.local user uuid via prisma findFirst>, action: 'value_score.recompute_v2', targetType: 'kol', targetId: '__bulk_recompute__', tenantId: null, after: { formula_version, row_count, env, min/max_before/after, sample_diffs: ≤200 } })",
+      "F007 deploy 边界 (F007 audit §裁决 #6=A + #8=C): F007 commit 推 main 后 SSH staging deploy + 在 cron 静默窗 (北京 04:00-06:00) 外手动跑 staging recompute + 收 stdout into commit message metadata; **prod recompute 留 F009 batch finale**",
+      "量化验证 (F007 audit §裁决 #7=B): staging recompute 后 SQL SELECT top-15 验 (a) @gameseduuu (12.6M) value_score ≥ @morrov8721 (2.08K) value_score + (b) top-15 内 max-min value_score ≥ 5 (不再 14 行同分 100)",
+      "L1 PASS (lint + tsc + vitest)",
       "staging git_sha 与本 commit 一致"
     ]
   },
@@ -156,7 +158,7 @@
     "estimated_hours": 6.0,
     "status": "pending",
     "acceptance": [
-      "staging deploy via deploy-staging.yml（含 BL-048 valueScore recompute SQL）",
+      "staging deploy via deploy-staging.yml (F007 audit §裁决 #8=C: staging valueScore recompute 已在 F007 落地; F009 仅做代码 deploy + 用户 ack 时间窗后 prod 代码 deploy + prod recompute apply 双段)",
       "视觉 baseline regen via update-visual-baselines workflow（en-campaign-detail.png 必新生成）",
       "团队 staging dogfood spot check（Planner 在 building 后期给清单）",
       "prod redeploy 用户 ack 时间窗",

@@ -187,6 +187,39 @@ per `src/lib/audit/log.ts:logAudit()`：platform-level 事件 `tenantId=null` �
 | 预留 — Planner 裁决回环 + ADR-014 evaluator 复议 | 2.5h |
 | **合计** | **~15h**（在 spec 估 20h 范围内 / Reviewer 复议 1d 独立） |
 
+## 6. Planner 裁决（2026-05-15 02:00 BJT · johnsong）
+
+**短格式：** `#1:A #2:B #3:A #4:B #5:A #6:A #7:B #8:C` —— 全部与 Generator 建议一致。
+
+| # | 决议 | 理由（per P5 复用价值原则）|
+|---|---|---|
+| **1** | **A — `min(80, log10(max(followers,100)) × 10)`** | (1) spec §F007 字面 `min(50, ...) + cap 80` 数学不通（min 后值 ≤50 加 cap 80 无意义）— 应视为 spec 表达失误，本审计纠正。(2) features.json 简表 `log10×10 cap 80` + BL-048 backlog 「让 1M+ 才接近满分」字面 = A 解读自洽。(3) 数学验证：100M→80 / 12.6M→71 / 1M→60 / 100K→50 / 2K→33 — 拉档机制成立，让 @gameseduuu(12.6M) vs @morrov8721(2K) 差 38 分；sub-sum max 120 vs RAW_MAX 95 故意"超 1" 让真正 mega+高 engagement+多 cats 同时满足才到 100，普通 mega 在 90+ 区间形成区分。(4) C 方案 cap 50 不解决核心问题（2K vs 12.6M 仍差不开）。 |
+| **2** | **B — 5 档 ladder + null=12 placeholder 保持** | (1) spec §F007 字面只锁 ≥5% 4 档，B 最贴 spec — `<5% real→8` 补一档 + null→12 保持向后兼容（BL-023 era placeholder）。(2) A 6 档 `<2%` / `2-5%` 细分 spec 字面未列，越界违反铁律 #10 spec-driven 边界；现 138 KOL real engagement 数据分辨 <2% vs 2-5% 数据不足。(3) C 8 档过度。(4) **完整 ladder 锁**：`null→12 / <5% real→8 / ≥5%→12 / ≥8%→16 / ≥12%→20 / ≥16%→25`。 |
+| **3** | **A — `min(15, length × 8)` 仅改 cap** | (1) spec §F007 字面 "normalize max 15" 最自然解读 = 仅改 cap 不改 weight。(2) 现 138 KOL 中位 3-5 cats，A vs B/C 实际差异仅在 1-cat KOL 这少数群体，不值得改算法。(3) A 改动最小 + 最贴 spec — single source of truth 原则。 |
+| **4** | **B — TS 脚本调 `computeKolValueScore()` 循环 UPDATE** | (1) **单源原则**：公式存于 `value-score.ts`，脚本调同函数 = 公式单源；纯 SQL UPDATE 含 CASE WHEN ladder 是 dual-source 风险（后续公式调整必须同步两处 → drift）。(2) 性能 3700 KOL × 0.05s ≈ 3min 可接受。(3) 脚本结构同 `scripts/kol-quality-weekly.ts` 模式 + audit_log 单 event 写在脚本末尾（per #5）。(4) C bulk-write 性能优势在 3700 行 dataset 不明显。 |
+| **5** | **A — 单 platform-level 事件含 row_count + sample_diffs** | (1) B 每行 audit (≥3700 行) 噪音过大 + 加重 audit_log RLS 性能瓶颈。(2) C 把 sample 同入 docs/test-reports 与 A inline sample_diffs 冗余；signoff doc 嵌脚本 stdout 已足够。(3) **shape 锁**：`logAudit({ actorId: <admin user uuid>, action: 'value_score.recompute_v2', targetType: 'kol', targetId: '__bulk_recompute__', tenantId: null, after: { formula_version: 'v2', row_count, env, min_before, max_before, min_after, max_after, sample_diffs: ≤200 } })`；actorId 复用 `seed.ts` admin@kolmatrix.local user UUID（脚本启动时 prisma fetch by email 实时取）。 |
+| **6** | **A — F007 commit 即 staging deploy + apply staging recompute** | (1) spec §F007 acceptance 末行 "staging git_sha 与本 commit 一致" 强 implies 推 main 即 deploy。(2) F007 完成时 staging 立即可验 acceptance「mega-tier 重登顶」(per #7) — B/C 延后阻碍量化验证。(3) F006 实战已建 atomic-commit + staging-immediate-deploy 模式，A 保持一致性。(4) prod apply 单独留 F009 batch finale（per #8）。 |
+| **7** | **B — 排序顺位 + range 双维量化** | (1) A 阈值 100K 偏严（真实可能 50K + 16% engagement + 5 cats 命中 100，A 误标 fail）。(2) C "≤3 行" 硬卡可能误伤合理结果。(3) B 抓"排序 + 区间宽度"两维最贴 spec §F007 双语义「mega-tier 重登顶 + nano 区分度回来」。(4) **量化锁**：(a) `@gameseduuu` (12.6M) `value_score` ≥ `@morrov8721` (2.08K) `value_score`；(b) top-15 内 max(value_score) - min(value_score) ≥ 5（不再 14 行同分 100）。 |
+| **8** | **C — prod recompute 推迟到 F009 batch finale** | (1) spec 内部 F007 vs F009 矛盾（F007 末行 "prod 同步" vs F009 第 1 行 "staging deploy 含 recompute SQL"）— Planner P3 规则要求扫全文消除矛盾。(2) BL-065 实战：prod ops 集中在最后 1 feature 减少 prod risk windows。(3) F007 commit 推 main 触发 staging deploy；prod 是 F009 手动 trigger 的另一次 deploy。(4) **同步修订 spec**：F007 acceptance 末段「Recompute SQL ops」改为 staging-only；F009 acceptance 第 1 行扩为 "staging+prod recompute SQL apply" 双段；spec §6 不变量加「F007 仅 staging apply；prod recompute 留 F009 batch finale」第 11 条。 |
+
+### 同步修订的文件清单
+
+- `docs/specs/BL-066-campaign-detail-ai-main-panel-spec.md`：
+  - §F007 acceptance — embed 8 决议口径（公式参数 / engagement 完整 ladder / category cap / recompute 实现方式 / audit event shape / staging-immediate-deploy / 量化标准 / staging-only deploy 边界）
+  - §F009 acceptance 第 1 行扩为 staging+prod recompute 双段
+  - §6 不变量加「F007 仅 staging apply；prod recompute 留 F009 batch finale」第 11 条
+- `features.json` F007 acceptance — embed 8 决议短行
+- 本审计文档 §6 Planner 裁决段追加（本段）；§3 决议表保留供历史 reference
+
+### Generator 可直接开工
+
+收到此裁决后 Generator 按 audit §5 1-14 步骤直接开工，**不必再确认任何 #1-#8 决议**。注意：
+- **ADR-014 起草边界**：与 F007 commit 同 batch 落地，`§Status=Accepted`、`§Date=2026-05-15`、`§Authors=Planner johnsong + 用户 (per BL-066 决策点 #C 5/14 锁)`、`§Decision` 三参数全列含数学验证表
+- **F007 staging recompute** 在 cron 静默窗（北京 04:00-06:00）外手动跑（per audit §4.2 并发风险 — daily sync `scripts/kol-sync-daily.ts` 静默期外才安全）；commit message 嵌 `[staging deployed @ {sha} @ {ts}, recompute @ row_count, top-15 verify pass]` metadata
+- **F009 prod recompute** 留 F009 batch finale（用户 ack 时间窗后 + audit_log 完整 + min/max/sample 验证）
+
+---
+
 ## 7. 相关文档
 
 - `docs/specs/BL-066-campaign-detail-ai-main-panel-spec.md` §F007
