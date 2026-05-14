@@ -42,7 +42,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 16.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "新组件 src/app/[locale]/(app)/campaigns/[id]/AiRecommendationPanel.tsx（\"use client\"）",
       "调用 /api/kols/smart-match POST { productId, count: 30 } 取候选 top 30 KOLs（cosine matchScore desc）",
@@ -62,7 +62,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 8.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "新文件 src/app/[locale]/(app)/campaigns/[id]/recommend-actions.ts（\"use server\"）含 acceptKolToCampaignAction({ campaignId, kolId, source: \"ai_smart_match\" })",
       "写入 kol_campaign 表：{ campaignId, kolId, contactStatus: \"not_contacted\", source: \"ai_smart_match\", addedAt: now }（先 grep schema.prisma 确认 source 字段；如缺则同 commit 加 migration）",
