@@ -86,19 +86,15 @@ const IA_REDIRECT_RULES: ReadonlyArray<IaRedirectRule> = [
   //
   //   /campaigns       → kept; BL-066 makes /match honor view=campaigns
   //   /campaigns/new   → kept; BL-069 wires /brief form
+  //   /campaigns/[id]  → kept (BL-066-F008 removed the prior 302→
+  //                     /match?campaignId=:id rule — F002 wired the
+  //                     three-section renderer back on, F008 closes
+  //                     the redirect loop so users actually reach it.
+  //                     See ia-refactor-redirects.spec.ts KEPT_PATHS.)
   //   /roi             → kept; BL-070 unifies /insight + /roi
   //   /weekly-report   → kept; BL-070 unifies under /insight
   //   /analytics       → kept; BL-070 unifies under /insight
   //
-  // Only /campaigns/[id] still redirects to /match?campaignId=:id per
-  // adjudication §B — BL-066 will land the matching renderer; until
-  // then users see Discovery with the campaignId param visible.
-  {
-    // Negative lookahead — `/campaigns/new` is a kept path (see comment
-    // above); only treat single-segment subpaths as id captures.
-    pattern: /^\/campaigns\/(?!new$)([^/?]+)(\?.*)?$/,
-    resolve: (m) => `/match?campaignId=${encodeURIComponent(m[1]!)}`,
-  },
   // Content-equivalent exact-prefix redirects. NOTE: BL-064-F006
   // discovered the F001 new-IA shells (/insight /match /brief /reach)
   // are *root-only* — they re-export the legacy page.tsx default but

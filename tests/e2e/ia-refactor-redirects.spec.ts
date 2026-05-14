@@ -35,13 +35,9 @@ const REDIRECT_CASES: Array<{ from: string; expect: RegExp; note?: string }> = [
   { from: "/database", expect: /\/match(\/|\?|$)/ },
   { from: "/knowledge-base", expect: /\/brief(\/|\?|$)/ },
   { from: "/outreach", expect: /\/reach(\/|\?|$)/ },
-  // /campaigns/[id] — still redirects per adjudication §B; BL-066
-  // wires the actual renderer
-  {
-    from: "/campaigns/abc-123",
-    expect: /\/match\?campaignId=abc-123/,
-    note: "spec §4 #B",
-  },
+  // BL-066-F008 — /campaigns/[id] redirect removed (F002 wired the
+  // three-section renderer; the prior 302→/match?campaignId=:id stub
+  // is no longer needed). Moved to KEPT_PATHS below.
 ];
 
 test.describe("BL-064 IA refactor 302 redirects", () => {
@@ -80,6 +76,12 @@ test.describe("BL-064 — sub-routes intentionally NOT redirected (Adjudication 
     // the deferred-to-batch mapping.
     "/campaigns",
     "/campaigns/new",
+    // BL-066-F008 — /campaigns/[id] previously 302→/match?campaignId=:id
+    // under BL-064; F002 wired the three-section renderer back on +
+    // F008 removed the redirect rule so users actually land on the new
+    // layout. A bogus UUID renders 404 at the same path (notFound()),
+    // which satisfies "stays in legacy area".
+    "/campaigns/00000000-0000-0000-0000-000000000000",
     "/roi",
     "/weekly-report",
     "/analytics",

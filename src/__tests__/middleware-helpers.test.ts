@@ -83,33 +83,17 @@ describe("resolveIaRefactorRedirect — BL-064-F002", () => {
     expect(resolveIaRefactorRedirect("/knowledge-base/foo/bar")).toBeNull();
   });
 
-  it("handles /campaigns family per spec §4 #B + BL-064-F005 fix-round-2", () => {
+  it("handles /campaigns family per spec §4 #B + BL-066-F008 fix-round (all kept now)", () => {
     // /campaigns list — kept (BL-066 wires /match view=campaigns)
     expect(resolveIaRefactorRedirect("/campaigns")).toBeNull();
     // /campaigns/new — kept (BL-069 wires /brief form)
     expect(resolveIaRefactorRedirect("/campaigns/new")).toBeNull();
-    // /campaigns/[id] — still redirects per adjudication §B (BL-066
-    // makes /match render campaignId; until then user sees Discovery
-    // with the campaignId param visible)
-    expect(resolveIaRefactorRedirect("/campaigns/abc-123")).toBe(
-      "/match?campaignId=abc-123"
-    );
-    expect(resolveIaRefactorRedirect("/campaigns/clxyz789")).toBe(
-      "/match?campaignId=clxyz789"
-    );
-  });
-
-  it("url-encodes campaign id (defense against weird chars)", () => {
-    expect(resolveIaRefactorRedirect("/campaigns/hello%20world")).toBe(
-      "/match?campaignId=hello%2520world"
-    );
-  });
-
-  it("orders /campaigns rules correctly — /new is kept, [id] still redirects", () => {
-    expect(resolveIaRefactorRedirect("/campaigns/new")).toBeNull();
-    expect(resolveIaRefactorRedirect("/campaigns/abc-123")).toBe(
-      "/match?campaignId=abc-123"
-    );
-    expect(resolveIaRefactorRedirect("/campaigns")).toBeNull();
+    // BL-066-F008 — /campaigns/[id] redirect removed; F002 wired the
+    // three-section renderer back on, F008 closes the redirect loop.
+    expect(resolveIaRefactorRedirect("/campaigns/abc-123")).toBeNull();
+    expect(resolveIaRefactorRedirect("/campaigns/clxyz789")).toBeNull();
+    expect(
+      resolveIaRefactorRedirect("/campaigns/00000000-0000-0000-0000-000000000000")
+    ).toBeNull();
   });
 });
