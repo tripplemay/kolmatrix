@@ -53,6 +53,10 @@ export interface CampaignDetailRow {
     name: string;
     category: string;
     downloadUrl: string | null;
+    // BL-066-F002 — surfaced for BriefSummaryPanel Demographics column
+    // (per F002 audit §裁决 #1=A: product.targetAudience 直显). Schema
+    // guarantees non-null String, so no fallback parsing needed.
+    targetAudience: string;
     // BL-051a-F009 — surfaces tombstoned products to the detail UI so
     // the campaign card shows "(Product deleted)" instead of broken
     // metadata. F007 already prevents new campaigns from picking a
@@ -95,6 +99,8 @@ export async function runCampaignDetail(
             name: true,
             category: true,
             downloadUrl: true,
+            // BL-066-F002: needed by BriefSummaryPanel Demographics col.
+            targetAudience: true,
             // BL-051a-F009: include the tombstone flag so the UI can
             // render the "(Product deleted)" defense. Prisma relation
             // includes don't auto-filter on deletedAt, so a soft-
@@ -175,6 +181,7 @@ export async function runCampaignDetail(
             name: row.product.name,
             category: row.product.category,
             downloadUrl: row.product.downloadUrl,
+            targetAudience: row.product.targetAudience,
             isDeleted: row.product.deletedAt !== null,
           }
         : null,

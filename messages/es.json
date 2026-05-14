@@ -990,6 +990,40 @@
         "endDate": "Fecha de finalización",
         "game": "Juego / título"
       },
+      "brief": {
+        "statusActive": "Activa",
+        "statusDraft": "Borrador",
+        "statusCompleted": "Completada",
+        "aiDrivenBadge": "Impulsada por IA",
+        "targetMarket": "Mercado objetivo",
+        "targetMarketDefault": "Global (es)",
+        "demographics": "Audiencia",
+        "demographicsUnset": "Sin definir",
+        "budget": "Presupuesto",
+        "budgetUnset": "Sin definir",
+        "acceptedLabel": "Aceptados",
+        "contactedLabel": "Contactados",
+        "editBrief": "Editar Brief",
+        "launchComm": "Lanzar contacto"
+      },
+      "aiPanel": {
+        "empty": {
+          "eyebrow": "Recomendaciones IA",
+          "heading": "Aún no hay candidatos",
+          "body": "No se pudieron generar recomendaciones de IA porque la base de conocimientos del producto carece de suficientes datos para construir vectores de match precisos.",
+          "reconnectCta": "Reconectar producto",
+          "kbCta": "Abrir base de conocimientos",
+          "helpLink": "¿Qué necesita smart-match?",
+          "info": "Si el contexto del producto está al día, el motor neural se sincroniza cada 4 horas."
+        },
+        "loading": {
+          "heading": "Cargando recomendaciones IA…",
+          "badge": "Smart-match en curso",
+          "subtitle": "Calculando similitud coseno…",
+          "whyEyebrow": "Motivo",
+          "footer": "Normalmente <500ms · más lento si la inserción del producto se genera JIT por primera vez"
+        }
+      },
       "kolPanel": {
         "title": "KOLs en esta campaña",
         "empty": "Aún no hay KOLs. Añada creadores guardados para iniciar el contacto.",
@@ -1027,7 +1061,8 @@
         "save": "Guardar",
         "saving": "Guardando…",
         "clear": "Borrar",
-        "helper": "Registre los ingresos atribuibles siempre que los tenga. Los valores borrados restablecen el ROI a —."
+        "helper": "Registre los ingresos atribuibles siempre que los tenga. Los valores borrados restablecen el ROI a —.",
+        "_deprecated_by_BL-066": "BL-070 eliminará este espacio de nombres tras la entrega atómica de BL-066."
       },
       "statusController": {
         "title": "Ciclo de vida",
@@ -1048,7 +1083,8 @@
           "title": "Rendimiento del correo electrónico",
           "empty": "Sin actividad de correo electrónico en los últimos 14 días.",
           "contacted": "Contactado",
-          "replied": "Respondido"
+          "replied": "Respondido",
+          "_deprecated_by_BL-066": "BL-070 eliminará este espacio de nombres tras la entrega atómica de BL-066."
         },
         "health": {
           "heading": "Estado de la Campaña",
@@ -1058,7 +1094,8 @@
           "closeout": "Cierre",
           "noEndDate": "—",
           "daysLeft": "{days, plural, =0 {Cierra hoy} one {# día restante} other {# días restantes}}",
-          "overdue": "{days, plural, one {# día de retraso} other {# días de retraso}}"
+          "overdue": "{days, plural, one {# día de retraso} other {# días de retraso}}",
+          "_deprecated_by_BL-066": "BL-070 eliminará este espacio de nombres tras la entrega atómica de BL-066."
         },
         "ai": {
           "heading": "Sugerencias AI",
@@ -1082,7 +1119,8 @@
             "campaign_status_changed": "Estado de la campaña cambiado",
             "campaign_revenue_recorded": "Ingresos registrados",
             "kol_bulk_added_to_campaign": "KOLs añadidos masivamente"
-          }
+          },
+          "_deprecated_by_BL-066": "BL-070 eliminará este espacio de nombres tras la entrega atómica de BL-066."
         }
       },
       "errors": {

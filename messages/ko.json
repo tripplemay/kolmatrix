@@ -990,6 +990,40 @@
         "endDate": "종료일",
         "game": "게임 / 제목"
       },
+      "brief": {
+        "statusActive": "진행 중",
+        "statusDraft": "초안",
+        "statusCompleted": "완료",
+        "aiDrivenBadge": "AI 기반",
+        "targetMarket": "대상 시장",
+        "targetMarketDefault": "글로벌",
+        "demographics": "타깃 인구",
+        "demographicsUnset": "미설정",
+        "budget": "예산",
+        "budgetUnset": "미설정",
+        "acceptedLabel": "확정",
+        "contactedLabel": "연락 완료",
+        "editBrief": "브리프 편집",
+        "launchComm": "아웃리치 시작"
+      },
+      "aiPanel": {
+        "empty": {
+          "eyebrow": "AI 추천",
+          "heading": "아직 후보가 없습니다",
+          "body": "이 캠페인에 대한 AI 추천을 생성할 수 없습니다. 제품 지식 베이스에 정확한 매칭 벡터를 만들기에 데이터가 부족합니다.",
+          "reconnectCta": "제품 다시 연결",
+          "kbCta": "제품 지식 베이스 열기",
+          "helpLink": "스마트 매치에 필요한 정보는?",
+          "info": "제품 정보가 최신이면 신경 엔진은 4시간마다 동기화합니다."
+        },
+        "loading": {
+          "heading": "AI 추천 불러오는 중…",
+          "badge": "스마트 매치 진행 중",
+          "subtitle": "코사인 유사도 계산 중…",
+          "whyEyebrow": "추천 이유",
+          "footer": "일반적으로 <500ms · 첫 JIT 제품 임베딩 생성 시 더 오래 걸릴 수 있습니다"
+        }
+      },
       "kolPanel": {
         "title": "이 캠페인에 참여한 KOL",
         "empty": "아직 KOL이 없습니다. 저장된 크리에이터를 추가하여 아웃리치를 시작하세요.",
@@ -1027,7 +1061,8 @@
         "save": "저장",
         "saving": "저장 중…",
         "clear": "지우기",
-        "helper": "가능한 경우 기여 매출을 기록하세요. 지워진 값은 ROI를 —로 재설정합니다."
+        "helper": "가능한 경우 기여 매출을 기록하세요. 지워진 값은 ROI를 —로 재설정합니다.",
+        "_deprecated_by_BL-066": "BL-066 원자적 배포 후 BL-070에서 본 네임스페이스를 제거합니다。"
       },
       "statusController": {
         "title": "라이프사이클",
@@ -1048,7 +1083,8 @@
           "title": "이메일 성능",
           "empty": "지난 14일 동안 이메일 활동이 없습니다.",
           "contacted": "연락됨",
-          "replied": "회신됨"
+          "replied": "회신됨",
+          "_deprecated_by_BL-066": "BL-066 원자적 배포 후 BL-070에서 본 네임스페이스를 제거합니다。"
         },
         "health": {
           "heading": "캠페인 건강 상태",
@@ -1058,7 +1094,8 @@
           "closeout": "종료",
           "noEndDate": "—",
           "daysLeft": "{days, plural, =0 {오늘 종료} one {# 남은 일} other {# 남은 일}}",
-          "overdue": "{days, plural, one {# 일 연체} other {# 일 연체}}"
+          "overdue": "{days, plural, one {# 일 연체} other {# 일 연체}}",
+          "_deprecated_by_BL-066": "BL-066 원자적 배포 후 BL-070에서 본 네임스페이스를 제거합니다。"
         },
         "ai": {
           "heading": "AI 제안",
@@ -1082,7 +1119,8 @@
             "campaign_status_changed": "캠페인 상태 변경됨",
             "campaign_revenue_recorded": "매출 기록됨",
             "kol_bulk_added_to_campaign": "KOL 일괄 추가됨"
-          }
+          },
+          "_deprecated_by_BL-066": "BL-066 원자적 배포 후 BL-070에서 본 네임스페이스를 제거합니다。"
         }
       },
       "errors": {

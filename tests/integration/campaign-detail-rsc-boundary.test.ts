@@ -36,10 +36,15 @@ const CONTROLLER = resolve(
 );
 
 describe("Campaign detail RSC -> Client boundary (BM2-F011-001)", () => {
+  // BL-066-F002: page.tsx no longer mounts CampaignStatusController
+  // (3-section AI-native layout — controller file kept with
+  // @deprecated_by_BL-066 marker for BL-070 atomic delete). The
+  // original page.tsx-side guard is folded into the file-level guard
+  // below; once BL-070 deletes the controller, this whole suite goes
+  // away.
   it("page.tsx must not pass a function as transitionTo (RSC violation)", () => {
     const src = readFileSync(PAGE, "utf-8");
     expect(src).not.toMatch(/transitionTo\s*:\s*\(\s*next\s*:\s*string\s*\)\s*=>/);
-    expect(src).toMatch(/transitionTo\s*:\s*\{[\s\S]*?draft\s*:[\s\S]*?active\s*:[\s\S]*?completed\s*:/);
   });
 
   it("CampaignStatusController accepts a Record<string,string>, not a function", () => {

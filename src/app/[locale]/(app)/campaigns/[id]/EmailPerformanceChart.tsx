@@ -1,3 +1,4 @@
+/* @deprecated_by_BL-066: /campaigns/[id]/page.tsx unmount 后 0 引用; BL-070 删除 */
 /**
  * MVP-vf-F005 / BIx-F005-D · Email Performance line chart wrapper.
  *

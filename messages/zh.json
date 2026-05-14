@@ -939,6 +939,40 @@
         "endDate": "结束日期",
         "game": "游戏标题"
       },
+      "brief": {
+        "statusActive": "进行中",
+        "statusDraft": "草稿",
+        "statusCompleted": "已完成",
+        "aiDrivenBadge": "AI 驱动",
+        "targetMarket": "目标市场",
+        "targetMarketDefault": "全球",
+        "demographics": "受众画像",
+        "demographicsUnset": "未设置",
+        "budget": "预算",
+        "budgetUnset": "未设置",
+        "acceptedLabel": "已接受",
+        "contactedLabel": "已接触",
+        "editBrief": "编辑活动",
+        "launchComm": "启动触达"
+      },
+      "aiPanel": {
+        "empty": {
+          "eyebrow": "AI 推荐",
+          "heading": "暂无候选 KOL",
+          "body": "无法为本活动生成 AI 推荐 — 产品知识库数据不足，无法构建精准匹配向量。",
+          "reconnectCta": "重新关联产品",
+          "kbCta": "打开产品库",
+          "helpLink": "智能匹配需要什么？",
+          "info": "若产品上下文是最新，神经引擎每 4 小时执行一次同步。"
+        },
+        "loading": {
+          "heading": "正在生成 AI 推荐…",
+          "badge": "智能匹配进行中",
+          "subtitle": "正在计算余弦相似度…",
+          "whyEyebrow": "原因",
+          "footer": "通常 <500ms · 首次 JIT 生成产品嵌入会稍慢"
+        }
+      },
       "kolPanel": {
         "title": "活动内 KOL",
         "empty": "还没有 KOL。添加保存过的创作者开始触达。",
@@ -976,7 +1010,8 @@
         "save": "保存",
         "saving": "保存中…",
         "clear": "清空",
-        "helper": "有可归因收入时填进来。清空后 ROI 会回到 —。"
+        "helper": "有可归因收入时填进来。清空后 ROI 会回到 —。",
+        "_deprecated_by_BL-066": "BL-070 将在 BL-066 原子化上线后移除本命名空间。"
       },
       "statusController": {
         "title": "生命周期",
@@ -997,7 +1032,8 @@
           "title": "邮件表现",
           "empty": "近 14 天暂无邮件活动。",
           "contacted": "已触达",
-          "replied": "已回复"
+          "replied": "已回复",
+          "_deprecated_by_BL-066": "BL-070 将在 BL-066 原子化上线后移除本命名空间。"
         },
         "health": {
           "heading": "活动健康度",
@@ -1007,7 +1043,8 @@
           "closeout": "结案倒计时",
           "noEndDate": "—",
           "daysLeft": "{days, plural, =0 {今日结案} other {还剩 # 天}}",
-          "overdue": "{days, plural, one {已逾期 # 天} other {已逾期 # 天}}"
+          "overdue": "{days, plural, one {已逾期 # 天} other {已逾期 # 天}}",
+          "_deprecated_by_BL-066": "BL-070 将在 BL-066 原子化上线后移除本命名空间。"
         },
         "ai": {
           "heading": "AI 建议",
@@ -1031,7 +1068,8 @@
             "campaign_status_changed": "活动状态变更",
             "campaign_revenue_recorded": "录入营收",
             "kol_bulk_added_to_campaign": "批量加入 KOL"
-          }
+          },
+          "_deprecated_by_BL-066": "BL-070 将在 BL-066 原子化上线后移除本命名空间。"
         }
       },
       "errors": {

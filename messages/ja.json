@@ -990,6 +990,40 @@
         "endDate": "終了日",
         "game": "ゲーム / タイトル"
       },
+      "brief": {
+        "statusActive": "進行中",
+        "statusDraft": "下書き",
+        "statusCompleted": "完了",
+        "aiDrivenBadge": "AI 駆動",
+        "targetMarket": "ターゲット市場",
+        "targetMarketDefault": "グローバル",
+        "demographics": "ターゲット層",
+        "demographicsUnset": "未設定",
+        "budget": "予算",
+        "budgetUnset": "未設定",
+        "acceptedLabel": "承認済み",
+        "contactedLabel": "連絡済み",
+        "editBrief": "ブリーフを編集",
+        "launchComm": "アウトリーチ開始"
+      },
+      "aiPanel": {
+        "empty": {
+          "eyebrow": "AI レコメンデーション",
+          "heading": "候補がまだありません",
+          "body": "このキャンペーンの AI レコメンデーションを生成できませんでした。プロダクト ナレッジベースのデータ ポイントが不足しており、精度の高いマッチング ベクトルを構築できません。",
+          "reconnectCta": "プロダクトを再接続",
+          "kbCta": "プロダクト ナレッジベースを開く",
+          "helpLink": "スマートマッチに必要なものは？",
+          "info": "プロダクト コンテキストが最新の場合、ニューラル エンジンは 4 時間ごとに同期します。"
+        },
+        "loading": {
+          "heading": "AI レコメンデーション読み込み中…",
+          "badge": "スマートマッチ実行中",
+          "subtitle": "コサイン類似度を計算中…",
+          "whyEyebrow": "理由",
+          "footer": "通常 <500ms · 初回 JIT プロダクト埋め込み生成時は遅くなる場合があります"
+        }
+      },
       "kolPanel": {
         "title": "このキャンペーンのKOL",
         "empty": "まだKOLはいません。保存したクリエイターを追加してアウトリーチを開始しましょう。",
@@ -1027,7 +1061,8 @@
         "save": "保存",
         "saving": "保存中…",
         "clear": "クリア",
-        "helper": "収益がある場合は、関連する収益を記録してください。クリアされた値はROIを—にリセットします。"
+        "helper": "収益がある場合は、関連する収益を記録してください。クリアされた値はROIを—にリセットします。",
+        "_deprecated_by_BL-066": "BL-070 が BL-066 のアトミック リリース後にこのネームスペースを削除します。"
       },
       "statusController": {
         "title": "ライフサイクル",
@@ -1048,7 +1083,8 @@
           "title": "メールパフォーマンス",
           "empty": "過去14日間にメール活動がありません。",
           "contacted": "連絡済み",
-          "replied": "返信済み"
+          "replied": "返信済み",
+          "_deprecated_by_BL-066": "BL-070 が BL-066 のアトミック リリース後にこのネームスペースを削除します。"
         },
         "health": {
           "heading": "キャンペーンの健全性",
@@ -1058,7 +1094,8 @@
           "closeout": "締め切り",
           "noEndDate": "—",
           "daysLeft": "{days, plural, =0 {本日締切} one {残り # 日} other {残り # 日}}",
-          "overdue": "{days, plural, one {期限を # 日超過} other {期限を # 日超過}}"
+          "overdue": "{days, plural, one {期限を # 日超過} other {期限を # 日超過}}",
+          "_deprecated_by_BL-066": "BL-070 が BL-066 のアトミック リリース後にこのネームスペースを削除します。"
         },
         "ai": {
           "heading": "AI 提案",
@@ -1082,7 +1119,8 @@
             "campaign_status_changed": "キャンペーンのステータスが変更されました",
             "campaign_revenue_recorded": "収益が記録されました",
             "kol_bulk_added_to_campaign": "KOLが一括追加されました"
-          }
+          },
+          "_deprecated_by_BL-066": "BL-070 が BL-066 のアトミック リリース後にこのネームスペースを削除します。"
         }
       },
       "errors": {

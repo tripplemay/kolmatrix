@@ -1,20 +1,26 @@
 /**
- * BM2-F005 + MVP-vf-F005 · Campaign detail page /campaigns/:id
+ * BL-066-F002 · Campaign detail page /campaigns/[id]
  *
- * Layout per the Stitch campaign-detail prototype:
- *   ┌──────────────────────────────────────────────┬──────────────┐
- *   │ Breadcrumb                                    │              │
- *   │ Header (4 KPI + edit)                         │              │
- *   │ KOL panel (table + Add Dialog)                │  Right rail  │
- *   │ Email Performance chart                       │  • Health    │
- *   │ Revenue + Status grid                         │  • AI hints  │
- *   │ Outreach CTA                                  │  • Activity  │
- *   └──────────────────────────────────────────────┴──────────────┘
+ * Three-section AI-native layout per design-draft/bl066-campaign-detail-
+ * ai-main-panel/main.html (1:1 还原 except known Stitch drifts logged
+ * in README §"已知 Stitch 渲染漂移"):
  *
- * The right column (320 px) hosts the three Insights cards stacked
- * vertically. Existing F005 sub-components (Header / Revenue /
- * Status / KolPanel) are untouched aside from the panel split — the
- * page-level work here is the layout grid + Insights wiring.
+ *   ┌──────────────────────────────────────────────┐
+ *   │ Breadcrumb                                    │
+ *   │ BriefSummaryPanel (status pills + 4-col grid) │
+ *   │ AiRecommendationPanel skeleton (F003 = real)  │
+ *   │ CampaignKolPanel (沿用; F006 = AcceptedKols)  │
+ *   └──────────────────────────────────────────────┘
+ *
+ * Unmount (per F002 audit §裁决 #3=B; 6 files + sidebar 3 files):
+ *   - CampaignHeader → replaced by BriefSummaryPanel
+ *   - sidebar: AiSuggestionsCard / CampaignHealthCard / ActivityTimelineCard
+ *   - inline: EmailPerformanceChart / CampaignRevenueRecorder /
+ *             CampaignStatusController / OutreachCta
+ *
+ * Counts derivation per F002 audit §裁决 #4=B 白名单:
+ *   contacted = kols.filter(k => k.contactStatus in [contacted,quoted,
+ *                signed,delivered,paid]).length
  */
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
@@ -25,18 +31,20 @@ import {
   runCampaignDetail,
   runAvailableKolsForCampaign,
 } from "@/lib/campaigns/detail";
-import { loadCampaignDetailInsights } from "@/lib/campaigns/detail-insights";
 
-import { ActivityTimelineCard } from "./ActivityTimelineCard";
-import { AiSuggestionsCard } from "./AiSuggestionsCard";
-import { CampaignHeader } from "./CampaignHeader";
-import { CampaignHealthCard } from "./CampaignHealthCard";
+import { AiRecommendationPanel } from "./AiRecommendationPanel";
+import { BriefSummaryPanel } from "./BriefSummaryPanel";
 import { CampaignKolPanel } from "./CampaignKolPanel";
-import { CampaignRevenueRecorder } from "./CampaignRevenueRecorder";
-import { CampaignStatusController } from "./CampaignStatusController";
-import { EmailPerformanceChart } from "./EmailPerformanceChart";
 
 export const metadata = { title: "Campaign — KOLMatrix" };
+
+const CONTACTED_STATUSES = new Set([
+  "contacted",
+  "quoted",
+  "signed",
+  "delivered",
+  "paid",
+]);
 
 interface Props {
   params: Promise<{ locale: string; id: string }>;
@@ -51,127 +59,59 @@ export default async function CampaignDetailPage({ params }: Props) {
   const campaign = await runCampaignDetail(tenantId, id);
   if (!campaign) notFound();
 
-  const [availableKols, insights] = await Promise.all([
-    runAvailableKolsForCampaign(tenantId, id),
-    loadCampaignDetailInsights(tenantId, id, {
-      spendTotal: campaign.spendTotal,
-      revenueRecorded: campaign.revenueRecorded,
-      budgetAmount: campaign.budgetAmount,
-      endDate: campaign.endDate,
-    }),
-  ]);
+  const availableKols = await runAvailableKolsForCampaign(tenantId, id);
 
   const t = await getTranslations("campaigns.detail");
-  const tStatus = await getTranslations("campaigns.status");
   const tKolStatus = await getTranslations("campaigns.detail.kolStatus");
   const tErrors = await getTranslations("campaigns.detail.errors");
-  const tEmailChart = await getTranslations(
-    "campaigns.detail.insights.emailChart"
-  );
-  // BL-051a-F009 — productDeleted strings live in the knowledgeBase
-  // namespace because they describe a product lifecycle state, not a
-  // campaign concern; loading both lets headerLabels stay
-  // self-contained.
-  const tKb = await getTranslations("knowledgeBase");
 
-  const hasEmailableKols = campaign.kols.some(
-    (k) => k.hasEmail && k.contactStatus !== "paid"
-  );
-  const outreachHref = `/${locale}/outreach?campaignId=${campaign.id}`;
+  const acceptedCount = campaign.kols.length;
+  const contactedCount = campaign.kols.filter((k) =>
+    CONTACTED_STATUSES.has(k.contactStatus)
+  ).length;
+
+  const productId = campaign.product?.isDeleted
+    ? null
+    : (campaign.product?.id ?? null);
 
   return (
-    <div className="mx-auto max-w-[1600px] pb-16">
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 pb-16">
       <Breadcrumb locale={locale} name={campaign.name} label={t("breadcrumb")} />
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <main className="flex min-w-0 flex-col gap-6">
-          <CampaignHeader
-            campaign={{
-              id: campaign.id,
-              name: campaign.name,
-              status: campaign.status,
-              game: campaign.game,
-              budgetAmount: campaign.budgetAmount,
-              spendTotal: campaign.spendTotal,
-              revenueRecorded: campaign.revenueRecorded,
-              roiPercent: campaign.roiPercent,
-              startDate: campaign.startDate,
-              endDate: campaign.endDate,
-              product: campaign.product,
-              ownerName: campaign.ownerName,
-              locale,
-            }}
-            labels={headerLabels(t, tStatus, tErrors, tKb, campaign.status)}
-          />
+      <BriefSummaryPanel
+        campaign={{
+          id: campaign.id,
+          name: campaign.name,
+          status: campaign.status,
+          markets: campaign.markets,
+          budgetAmount: campaign.budgetAmount,
+          budgetCurrency: campaign.budgetCurrency,
+          productTargetAudience:
+            campaign.product && !campaign.product.isDeleted
+              ? campaign.product.targetAudience
+              : null,
+        }}
+        counts={{ accepted: acceptedCount, contacted: contactedCount }}
+        locale={locale}
+        labels={briefLabels(t)}
+      />
 
-          <CampaignKolPanel
-            campaignId={campaign.id}
-            campaignStatus={campaign.status}
-            kols={campaign.kols}
-            available={availableKols}
-            labels={kolPanelLabels(t)}
-            statusLabels={kolStatusLabels(tKolStatus)}
-            errorLabels={errorLabels(tErrors)}
-          />
+      <AiRecommendationPanel
+        productId={productId}
+        campaignId={campaign.id}
+        locale={locale}
+        labels={aiPanelLabels(t)}
+      />
 
-          <EmailPerformanceChart
-            data={insights.emailSeries}
-            labels={{
-              title: tEmailChart("title"),
-              empty: tEmailChart("empty"),
-              contacted: tEmailChart("contacted"),
-              replied: tEmailChart("replied"),
-            }}
-          />
-
-          <section className="grid gap-6 lg:grid-cols-2">
-            <CampaignRevenueRecorder
-              campaignId={campaign.id}
-              status={campaign.status}
-              revenue={campaign.revenueRecorded}
-              spendTotal={campaign.spendTotal}
-              roiPercent={campaign.roiPercent}
-              labels={revenueLabels(t)}
-              errorLabels={revenueErrorLabels(tErrors)}
-            />
-            <CampaignStatusController
-              campaignId={campaign.id}
-              status={campaign.status}
-              startedAt={campaign.startedAt}
-              closedAt={campaign.closedAt}
-              labels={statusControllerLabels(t, tStatus)}
-              statusLabels={{
-                draft: tStatus("draft"),
-                active: tStatus("active"),
-                completed: tStatus("completed"),
-              }}
-              errorLabels={statusErrorLabels(tErrors)}
-            />
-          </section>
-
-          <OutreachCta
-            href={outreachHref}
-            title={t("outreach.title")}
-            ready={hasEmailableKols ? t("outreach.ready") : t("outreach.noEmailable")}
-            cta={t("outreach.cta")}
-            enabled={hasEmailableKols}
-          />
-        </main>
-
-        <aside
-          className="flex flex-col gap-6 lg:sticky lg:top-20 lg:self-start"
-          data-testid="campaign-detail-insights"
-        >
-          <CampaignHealthCard health={insights.health} />
-          <AiSuggestionsCard
-            tenantId={tenantId}
-            campaignId={campaign.id}
-            locale={locale}
-            uncontactedKolCount={insights.health.uncontactedKolCount}
-          />
-          <ActivityTimelineCard rows={insights.activity} />
-        </aside>
-      </div>
+      <CampaignKolPanel
+        campaignId={campaign.id}
+        campaignStatus={campaign.status}
+        kols={campaign.kols}
+        available={availableKols}
+        labels={kolPanelLabels(t)}
+        statusLabels={kolStatusLabels(tKolStatus)}
+        errorLabels={errorLabels(tErrors)}
+      />
     </div>
   );
 }
@@ -192,7 +132,7 @@ function Breadcrumb({
     >
       <Link
         href={`/${locale}/campaigns`}
-        className="transition-colors hover:text-cyan"
+        className="hover:text-cyan transition-colors"
         data-testid="campaign-breadcrumb-campaigns"
       >
         {label}
@@ -203,93 +143,54 @@ function Breadcrumb({
   );
 }
 
-function OutreachCta({
-  href,
-  title,
-  ready,
-  cta,
-  enabled,
-}: {
-  href: string;
-  title: string;
-  ready: string;
-  cta: string;
-  enabled: boolean;
-}) {
-  return (
-    <section
-      className="glass-panel flex flex-col gap-3 rounded-2xl border border-on-surface/5 p-6 md:flex-row md:items-center md:justify-between"
-      data-testid="campaign-outreach-cta"
-    >
-      <div>
-        <h2 className="text-lg font-semibold text-white">{title}</h2>
-        <p className="mt-1 text-sm text-on-surface-variant">{ready}</p>
-      </div>
-      {enabled ? (
-        <Link
-          href={href}
-          className="gradient-cta inline-flex items-center gap-2 self-start rounded-lg px-5 py-2.5 text-sm font-bold text-on-primary"
-          data-testid="campaign-outreach-link"
-        >
-          <span className="material-symbols-outlined text-[18px]" aria-hidden>
-            forward_to_inbox
-          </span>
-          {cta}
-        </Link>
-      ) : null}
-    </section>
-  );
-}
-
 // ----------------------------------------------------------------------
-// Label assemblers — keep page.tsx body legible by extracting the dense
-// nested-prop construction used by the existing F005 children. Each
-// returns a plain object (no closures cross the RSC boundary).
+// Label assemblers — plain object returns; no closures cross the RSC
+// boundary (campaign-detail-fidelity.test.ts line 79 guards this).
 // ----------------------------------------------------------------------
 
-function headerLabels(
-  t: Awaited<ReturnType<typeof getTranslations>>,
-  tStatus: Awaited<ReturnType<typeof getTranslations>>,
-  tErrors: Awaited<ReturnType<typeof getTranslations>>,
-  tKb: Awaited<ReturnType<typeof getTranslations>>,
-  status: string
-) {
-  const statusKey =
-    status === "draft" || status === "active" || status === "completed"
-      ? status
-      : "all";
+type TFn = Awaited<ReturnType<typeof getTranslations>>;
+
+function briefLabels(t: TFn) {
   return {
-    statusBadge: tStatus(statusKey as "all" | "draft" | "active" | "completed"),
-    edit: t("edit"),
-    save: t("save"),
-    cancel: t("cancel"),
-    kpi: {
-      budget: t("kpi.budget"),
-      spend: t("kpi.spend"),
-      revenue: t("kpi.revenue"),
-      roi: t("kpi.roi"),
-    },
-    fields: {
-      name: t("fields.name"),
-      budget: t("fields.budget"),
-      startDate: t("fields.startDate"),
-      endDate: t("fields.endDate"),
-      game: t("fields.game"),
-    },
-    errors: {
-      endBeforeStart: tErrors("endBeforeStart"),
-      unauthorized: tErrors("unauthorized"),
-      generic: tErrors("generic"),
-      validation_failed: tErrors("validationFailed"),
-      not_found: tErrors("notFound"),
-    },
-    unsetValue: t("unset"),
-    productDeleted: tKb("productDeleted"),
-    productDeletedTooltip: tKb("productDeletedTooltip"),
+    statusActive: t("brief.statusActive"),
+    statusDraft: t("brief.statusDraft"),
+    statusCompleted: t("brief.statusCompleted"),
+    aiDrivenBadge: t("brief.aiDrivenBadge"),
+    targetMarket: t("brief.targetMarket"),
+    targetMarketDefault: t("brief.targetMarketDefault"),
+    demographics: t("brief.demographics"),
+    demographicsUnset: t("brief.demographicsUnset"),
+    budget: t("brief.budget"),
+    budgetUnset: t("brief.budgetUnset"),
+    acceptedLabel: t("brief.acceptedLabel"),
+    contactedLabel: t("brief.contactedLabel"),
+    editBrief: t("brief.editBrief"),
+    launchComm: t("brief.launchComm"),
   };
 }
 
-function kolPanelLabels(t: Awaited<ReturnType<typeof getTranslations>>) {
+function aiPanelLabels(t: TFn) {
+  return {
+    empty: {
+      eyebrow: t("aiPanel.empty.eyebrow"),
+      heading: t("aiPanel.empty.heading"),
+      body: t("aiPanel.empty.body"),
+      reconnectCta: t("aiPanel.empty.reconnectCta"),
+      kbCta: t("aiPanel.empty.kbCta"),
+      helpLink: t("aiPanel.empty.helpLink"),
+      info: t("aiPanel.empty.info"),
+    },
+    loading: {
+      heading: t("aiPanel.loading.heading"),
+      badge: t("aiPanel.loading.badge"),
+      subtitle: t("aiPanel.loading.subtitle"),
+      whyEyebrow: t("aiPanel.loading.whyEyebrow"),
+      footer: t("aiPanel.loading.footer"),
+    },
+  };
+}
+
+function kolPanelLabels(t: TFn) {
   return {
     title: t("kolPanel.title"),
     empty: t("kolPanel.empty"),
@@ -314,7 +215,7 @@ function kolPanelLabels(t: Awaited<ReturnType<typeof getTranslations>>) {
   };
 }
 
-function kolStatusLabels(t: Awaited<ReturnType<typeof getTranslations>>) {
+function kolStatusLabels(t: TFn) {
   return {
     pending: t("pending"),
     contacted: t("contacted"),
@@ -325,7 +226,7 @@ function kolStatusLabels(t: Awaited<ReturnType<typeof getTranslations>>) {
   };
 }
 
-function errorLabels(t: Awaited<ReturnType<typeof getTranslations>>) {
+function errorLabels(t: TFn) {
   return {
     campaign_not_found: t("notFound"),
     kol_not_found: t("kolNotFound"),
@@ -337,56 +238,5 @@ function errorLabels(t: Awaited<ReturnType<typeof getTranslations>>) {
     invalid_input: t("generic"),
     unauthorized: t("unauthorized"),
     generic: t("generic"),
-  };
-}
-
-function revenueLabels(t: Awaited<ReturnType<typeof getTranslations>>) {
-  return {
-    title: t("revenue.title"),
-    lockedBody: t("revenue.lockedBody"),
-    placeholder: t("revenue.placeholder"),
-    save: t("revenue.save"),
-    saving: t("revenue.saving"),
-    clear: t("revenue.clear"),
-    helper: t("revenue.helper"),
-  };
-}
-
-function revenueErrorLabels(t: Awaited<ReturnType<typeof getTranslations>>) {
-  return {
-    revenueInvalid: t("revenueInvalid"),
-    forbidden_when_completed: t("forbiddenWhenCompleted"),
-    generic: t("generic"),
-    not_found: t("notFound"),
-    unauthorized: t("unauthorized"),
-    invalid_input: t("generic"),
-  };
-}
-
-function statusControllerLabels(
-  t: Awaited<ReturnType<typeof getTranslations>>,
-  tStatus: Awaited<ReturnType<typeof getTranslations>>
-) {
-  return {
-    title: t("statusController.title"),
-    transitionTo: {
-      draft: t("statusController.transitionTo", { next: tStatus("draft") }),
-      active: t("statusController.transitionTo", { next: tStatus("active") }),
-      completed: t("statusController.transitionTo", { next: tStatus("completed") }),
-    },
-    reactivate: t("statusController.reactivate"),
-    currentLabel: t("statusController.currentLabel"),
-    startedAtLabel: t("statusController.startedAtLabel"),
-    closedAtLabel: t("statusController.closedAtLabel"),
-  };
-}
-
-function statusErrorLabels(t: Awaited<ReturnType<typeof getTranslations>>) {
-  return {
-    invalid_transition: t("invalidTransition"),
-    not_found: t("notFound"),
-    generic: t("generic"),
-    unauthorized: t("unauthorized"),
-    invalid_input: t("generic"),
   };
 }

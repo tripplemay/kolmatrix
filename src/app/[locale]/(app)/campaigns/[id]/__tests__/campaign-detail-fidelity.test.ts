@@ -1,11 +1,12 @@
 /**
- * MVP-vf-F005 · Source-level fidelity guards for /campaigns/:id rewrite.
+ * BL-066-F002 · Source-level fidelity guards for /campaigns/:id rewrite.
  *
- * Static greps over the [id] folder. Locks in the structural goals
- * from the F005 acceptance: 2-col layout, three Insights cards, Add
- * Dialog using the public <Dialog> atom, CampaignKolPanel ≤ 250
- * lines, no INPUT_CLASS local, no function props across the RSC
- * boundary.
+ * Static greps over the [id] folder. Now locks the three-section
+ * AI-native layout (Brief / AiRecommendation / KOL panel) per F002
+ * audit §裁决 #5=C (底部 CampaignKolPanel 沿用; F006 才 git mv).
+ * Original 2-col + 3 Insights cards layout was BM2-F005 / MVP-vf-F005;
+ * those four sidebar/inline components are unmount-only (files kept
+ * with @deprecated_by_BL-066 marker for BL-070 atomic delete).
  */
 import { readFileSync } from "fs";
 import { resolve } from "path";
@@ -22,15 +23,36 @@ function lineCount(s: string): number {
   return s.split("\n").length;
 }
 
-describe("/campaigns/:id fidelity guards (MVP-vf-F005)", () => {
-  it("page wires the 2-column layout with the right rail", () => {
+describe("/campaigns/:id fidelity guards (BL-066 F002)", () => {
+  it("page wires the three-section AI-native layout", () => {
     const page = read("page.tsx");
-    expect(page).toMatch(/lg:grid-cols-\[minmax\(0,1fr\)_320px\]/);
-    expect(page).toMatch(/data-testid="campaign-detail-insights"/);
-    expect(page).toMatch(/<CampaignHealthCard\b/);
-    expect(page).toMatch(/<AiSuggestionsCard\b/);
-    expect(page).toMatch(/<ActivityTimelineCard\b/);
-    expect(page).toMatch(/<EmailPerformanceChart\b/);
+    expect(page).toMatch(/<BriefSummaryPanel\b/);
+    expect(page).toMatch(/<AiRecommendationPanel\b/);
+    expect(page).toMatch(/<CampaignKolPanel\b/);
+  });
+
+  it("page no longer mounts BM2-F005 sidebar / inline components", () => {
+    const page = read("page.tsx");
+    expect(page).not.toMatch(/<CampaignHealthCard\b/);
+    expect(page).not.toMatch(/<AiSuggestionsCard\b/);
+    expect(page).not.toMatch(/<ActivityTimelineCard\b/);
+    expect(page).not.toMatch(/<EmailPerformanceChart\b/);
+    expect(page).not.toMatch(/<CampaignRevenueRecorder\b/);
+    expect(page).not.toMatch(/<CampaignStatusController\b/);
+    expect(page).not.toMatch(/<CampaignHeader\b/);
+  });
+
+  it("the 6 unmount component files carry @deprecated_by_BL-066 marker", () => {
+    for (const f of [
+      "CampaignHealthCard.tsx",
+      "ActivityTimelineCard.tsx",
+      "EmailPerformanceChart.tsx",
+      "EmailPerformanceChartImpl.tsx",
+      "CampaignRevenueRecorder.tsx",
+      "CampaignStatusController.tsx",
+    ]) {
+      expect(read(f), f).toMatch(/@deprecated_by_BL-066/);
+    }
   });
 
   it("CampaignKolPanel slimmed to <= 250 lines", () => {

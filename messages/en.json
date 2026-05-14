@@ -939,6 +939,40 @@
         "endDate": "End date",
         "game": "Game / title"
       },
+      "brief": {
+        "statusActive": "Active",
+        "statusDraft": "Draft",
+        "statusCompleted": "Completed",
+        "aiDrivenBadge": "AI-driven",
+        "targetMarket": "Target market",
+        "targetMarketDefault": "Global",
+        "demographics": "Audience",
+        "demographicsUnset": "Not set",
+        "budget": "Budget",
+        "budgetUnset": "Not set",
+        "acceptedLabel": "Accepted",
+        "contactedLabel": "Contacted",
+        "editBrief": "Edit Brief",
+        "launchComm": "Launch comms"
+      },
+      "aiPanel": {
+        "empty": {
+          "eyebrow": "AI recommendations",
+          "heading": "No candidates yet",
+          "body": "AI recommendations couldn't be generated for this campaign because the product knowledge base lacks sufficient data points to create accurate matchmaking vectors.",
+          "reconnectCta": "Reconnect product",
+          "kbCta": "Open product knowledge base",
+          "helpLink": "What does smart-match need?",
+          "info": "If product context is fresh, the neural engine runs syncs every 4 hours."
+        },
+        "loading": {
+          "heading": "Loading AI recommendations…",
+          "badge": "Smart-match in flight",
+          "subtitle": "Querying cosine similarity…",
+          "whyEyebrow": "Why",
+          "footer": "Typically <500ms · longer if product embed is JIT-generating first time"
+        }
+      },
       "kolPanel": {
         "title": "KOLs in this campaign",
         "empty": "No KOLs yet. Add saved creators to kick off outreach.",
@@ -976,7 +1010,8 @@
         "save": "Save",
         "saving": "Saving…",
         "clear": "Clear",
-        "helper": "Record the attributable revenue whenever you have it. Cleared values reset ROI to —."
+        "helper": "Record the attributable revenue whenever you have it. Cleared values reset ROI to —.",
+        "_deprecated_by_BL-066": "BL-070 will remove this namespace after BL-066 atomic ship."
       },
       "statusController": {
         "title": "Lifecycle",
@@ -997,7 +1032,8 @@
           "title": "Email Performance",
           "empty": "No email activity in the last 14 days.",
           "contacted": "Contacted",
-          "replied": "Replied"
+          "replied": "Replied",
+          "_deprecated_by_BL-066": "BL-070 will remove this namespace after BL-066 atomic ship."
         },
         "health": {
           "heading": "Campaign Health",
@@ -1007,7 +1043,8 @@
           "closeout": "Closeout",
           "noEndDate": "—",
           "daysLeft": "{days, plural, =0 {Closes today} one {# day left} other {# days left}}",
-          "overdue": "{days, plural, one {# day overdue} other {# days overdue}}"
+          "overdue": "{days, plural, one {# day overdue} other {# days overdue}}",
+          "_deprecated_by_BL-066": "BL-070 will remove this namespace after BL-066 atomic ship."
         },
         "ai": {
           "heading": "AI Suggestions",
@@ -1031,7 +1068,8 @@
             "campaign_status_changed": "Campaign status changed",
             "campaign_revenue_recorded": "Revenue recorded",
             "kol_bulk_added_to_campaign": "KOLs bulk-added"
-          }
+          },
+          "_deprecated_by_BL-066": "BL-070 will remove this namespace after BL-066 atomic ship."
         }
       },
       "errors": {
