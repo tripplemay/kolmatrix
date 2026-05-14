@@ -41,9 +41,11 @@ test.use({ storageState: "playwright/.auth/marketer.json" });
 
 /**
  * Navigate to /campaigns and return the first campaign's detail URL,
- * or null when the tenant has zero campaigns. The list page may also
- * 302 to /match?view=campaigns under BL-064-F002, in which case the
- * campaign row anchor lives inside the table widget.
+ * or null when the tenant has zero campaigns.
+ *
+ * Reads the `data-campaign-id` attribute on the first `campaign-row`
+ * testid (CampaignsTable.tsx:83-84) — robust to anchor-href shape
+ * changes and locale prefixing.
  */
 async function firstCampaignDetailUrl(page: Page): Promise<string | null> {
   await page.goto("/en/campaigns");
@@ -52,16 +54,11 @@ async function firstCampaignDetailUrl(page: Page): Promise<string | null> {
     timeout: 15_000,
   });
 
-  // Look for the first row link → detail. Both the table and the empty
-  // state may render; the empty state has no link to follow.
-  const detailLink = page
-    .locator('a[href*="/campaigns/"]')
-    .filter({ hasNot: page.locator('[href$="/campaigns"]') })
-    .filter({ hasNot: page.locator('[href$="/campaigns/new"]') })
-    .first();
-  const count = await detailLink.count();
-  if (count === 0) return null;
-  return await detailLink.getAttribute("href");
+  const firstRow = page.getByTestId("campaign-row").first();
+  if ((await firstRow.count()) === 0) return null;
+  const id = await firstRow.getAttribute("data-campaign-id");
+  if (!id) return null;
+  return `/en/campaigns/${id}`;
 }
 
 test.describe("BL-066-F008 · /campaigns/[id] AI recommendation flow", () => {
