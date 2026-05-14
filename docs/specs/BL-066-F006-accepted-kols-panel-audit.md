@@ -86,6 +86,34 @@ Stitch main.html 仅渲染顶 Brief + 中 AI 卡，**底部 Accepted KOLs 表格
 | SSH staging deploy + verify + state-file commits | 1h |
 | **合计** | **~7.5h**（在 spec 估 8h 范围内） |
 
+## 6. Planner 裁决（2026-05-14 20:00 BJT · johnsong）
+
+**短格式：** `#1:C #2:A #3:C #4:A #5:B`
+
+| # | 决议 | 理由（per Planner P5 复用价值原则）|
+|---|---|---|
+| **1** | **C — F006 同 commit 加 backfill migration** | (1) spec §F006 acceptance 第 2 条字面 lock filter `source IN ('ai_smart_match','csv_import','manual_legacy')`，不含 `'manual'`；选 B（兼容 'manual'）= spec drift。(2) schema 与 spec 一致比 silent fallback 干净 — atomic migration 让现有 BM2-F005 era + BL-063 era 行成 `'manual_legacy'` 后 `manual` 不再合法存量。(3) **migration 范围锁**：新 migration `prisma/migrations/20260514XXXXXX_bl066_f006_source_manual_legacy_backfill/migration.sql` 含 (a) UP: `UPDATE kol_campaign SET source = 'manual_legacy' WHERE source = 'manual';` + (b) DOWN (per `scripts/validate-rollback-sql.sh` 铁律): `-- ROLLBACK\n-- UPDATE kol_campaign SET source = 'manual' WHERE source = 'manual_legacy';` 注释段。(4) **不改 schema.prisma default**（保 `@default("manual")` 不动）— 让未来误写 default 路径行成 'manual'，被 spec filter 隐藏 = dev 信号（spec 字面 lock 隐含约束未来所有写入必须显式 set source）。(5) F009 staging deploy 阶段 SSH 验证 `audit_log` 完整记录 backfill row_count（用 BL-048 valueScore recompute 同模式 audit pattern）。 |
+| **2** | **A — 删除 `runAvailableKolsForCampaign` + 关联 integration test case** | (1) F005 已 atomic 删 `addKolAction` + AddKolDialog 路径 — F006 顺势删 `src/lib/campaigns/detail.ts:201` `runAvailableKolsForCampaign`（0 page.tsx 调用方）+ `tests/integration/campaign-detail.test.ts:159` 关联描述块；同 commit 落地。(2) `kolOps.addKolToCampaign` test helper 保留（Kimi 已识别正确）— 它是 RLS-aware write helper，未来 CSV 导入路径仍用。(3) F005 已建 atomic 删模式（删整个手动加 KOL 链路）— F006 删 dead code 是同模式延续。(4) **不接受 C 方案**（detail-deprecated.ts + skip）— 等于把 dead code 移到新文件，反增维护表面积。 |
+| **3** | **C — i18n 走 F005 deprecated marker 模式 + Labels interface atomic 清** | (1) F005 实战已验 i18n key 整体删风险（破坏 i18n-locale-coverage gate）→ `_deprecated_by_BL-066` marker 模式安全；同模式应用于 `kolPanel.addButton / aiNativeMigrationTooltip / addDialog.*` 5 locale。(2) Labels interface 字段是 CampaignKolPanel.tsx 内部 surface，已 0 引用（per audit §2.2 第 3 条）— atomic 删无风险。(3) page.tsx label assembler 段（per audit §2.2 第 3 条 line 208-216）属内部 surface，atomic 清。(4) **不接受 A 方案**（整体删 i18n）— 破现 gate 风险大于收益。 |
+| **4** | **A — 严格按 README 6 列结构** | (1) **核 Table 原子组件实测**：`src/components/ui/Table.tsx` line 1-40 是纯 `<table>` wrapper（forwardRef + className 透传），列数完全由 THead/TRow/TCell 自由组合决定，**无 column 数约束**。Kimi 审计 §3 #4 「与现行 Table grid 不完全对齐」担心**与实物不符**。(2) `design-draft/bl066-campaign-detail-ai-main-panel/README.md` 是 F001 canonical 设计稿来源，§"Accepted KOLs 区"明示 6 列结构 = `avatar+name / Source chip / status pill / fee / addedAt / open_in_new icon`；BL-066 #B 决策 "AI / CSV / Legacy 区分明确" 语义要求 source chip 独立列（不能 inline 到 creator cell 信息密度过高）。(3) C 方案 5 列「creator(含 source chip inline)」违反 BL-066 #B 决策语义。(4) **Generator 实测如果 Table 实际有 column 数 hard cap 再来加 audit**（v0.9.21 planner.md 铁律 1 矩阵 v0.9.14 行已立"audit 起草前 grep 实物状态"原则；Kimi 本审计漏 grep Table.tsx 源码字面就推断 hard cap 是反面案例，未来 Generator 起 audit 前先实测对应实物结构）。 |
+| **5** | **B — fidelity test 加 source chip + read-only 锁** | (1) Kimi 推荐 B 已合理：path rename + source chip 渲染锁（`getByText AI/CSV/Legacy`）+ contactStatus / kolFee read-only 锁（无 `<Select` / `<Input`）— 锁 F006 核心 invariant 防止未来 PR 误改回交互态。(2) A 太弱（只改 path 无新 assertion，无法捕捉 source chip / read-only 回归）。(3) C 的 lineCount guard 过度（F006 后 ~150 行无 cap 必要 — 与现 BL-065 fidelity test 模式一致）。 |
+
+### 同步修订的文件清单
+
+- `docs/specs/BL-066-campaign-detail-ai-main-panel-spec.md` §F006 acceptance — embed #1 migration 范围 + #4 6 列结构锁
+- `features.json` F006 acceptance — embed 5 决议细节
+- 本审计文档 §6 Planner 裁决段追加；§3 决议请求表保留供历史 reference
+
+### Generator 实战经验沉淀（追加到 proposed-learnings 后置）
+
+**Kimi 在 F006 audit §3 #4 漂移：** 审计字面假设「与现行 Table grid 不完全对齐」未先 grep `src/components/ui/Table.tsx` 实物。Planner 实测 Table 是 fully flexible wrapper 无约束 → A 方案安全。 **沉淀候选**：planner.md 铁律 1 矩阵 v0.9.21 行（i18n template route migration）后追加 v0.9.22 行 — 「Generator pre-impl audit 起草前实测对应 atomic 组件 surface 字面」。BL-066 done-phase Planner 再 batch 收集到 proposed-learnings 一并归。
+
+### Generator 可直接开工
+
+收到此裁决后 Kimi 按 audit §5 1-13 步骤直接开工，**不必再确认任何 #1-#5 决议**。F006 提交时直接走 staging deploy + commit + push + CI 自检。F009 staging deploy 时验证 backfill audit_log row_count。
+
+---
+
 ## 7. 相关文档
 
 - `docs/specs/BL-066-campaign-detail-ai-main-panel-spec.md` §F006

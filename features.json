@@ -94,7 +94,7 @@
   },
   {
     "id": "F006",
-    "title": "CampaignKolPanel → AcceptedKolsPanel 重构（仅显已确认 KOL + source chip）",
+    "title": "CampaignKolPanel → AcceptedKolsPanel 重构（仅显已确认 KOL + source chip + backfill migration）",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 8.0,
@@ -103,8 +103,13 @@
       "git mv src/app/[locale]/(app)/campaigns/[id]/CampaignKolPanel.tsx → AcceptedKolsPanel.tsx",
       "删除组件内 AddKolDialog 入口 + 「添加 KOL」 button",
       "UI 仅显已确认 KOL（kol_campaign source IN ('ai_smart_match', 'csv_import', 'manual_legacy')）",
-      "卡片显 source chip（AI / CSV / Legacy）方便区分来源",
-      "移除手动 contactStatus / kolFee 编辑入口（保留只读显示；outreach flow 后续写）",
+      "F006 同 commit backfill migration (F006 audit §裁决 #1=C): prisma/migrations/20260514XXXXXX_bl066_f006_source_manual_legacy_backfill/migration.sql UP UPDATE kol_campaign SET source='manual_legacy' WHERE source='manual'; + DOWN ROLLBACK 注释段 per scripts/validate-rollback-sql.sh 铁律; schema.prisma default 不动",
+      "6 列表格结构 (F006 audit §裁决 #4=A per README): avatar+name / Source chip 独立列 / status pill / fee / addedAt / actions(open_in_new icon 链 /[locale]/kols/[kolId])",
+      "卡片显 source chip（AI / CSV / Legacy）独立列；符合 BL-066 #B 决策 AI/CSV/Legacy 区分明确语义",
+      "删 dead code (F006 audit §裁决 #2=A): src/lib/campaigns/detail.ts runAvailableKolsForCampaign + tests/integration/campaign-detail.test.ts:159 关联描述块; kolOps.addKolToCampaign test helper 保留",
+      "i18n 混合策略 (F006 audit §裁决 #3=C): messages 中 kolPanel.addButton/aiNativeMigrationTooltip/addDialog.* 加 _deprecated_by_BL-066 marker (保 gate 绿); Labels interface 字段 + page.tsx label assembler 段 atomic 清; 新增 kolPanel.columns.source + kolPanel.sourceChip.{ai,csv,legacy} keys",
+      "移除手动 contactStatus / kolFee 编辑入口（保留只读显示）",
+      "fidelity test (F006 audit §裁决 #5=B): campaign-detail-fidelity.test.ts 改 path + match name + 加 source chip 渲染锁 (getByText AI/CSV/Legacy) + 锁 contactStatus/kolFee read-only (无 <Select / <Input)",
       "L1 PASS",
       "staging git_sha 与本 commit 一致"
     ]

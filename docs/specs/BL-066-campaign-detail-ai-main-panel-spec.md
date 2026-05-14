@@ -137,8 +137,12 @@ BL-023 全量 recompute 后 prod top-15 valueScore=100 含 2080-12.6M 粉双峰�
 - `git mv src/app/[locale]/(app)/campaigns/[id]/CampaignKolPanel.tsx → AcceptedKolsPanel.tsx`
 - 删除组件内 AddKolDialog 入口 + 「添加 KOL」 button
 - UI 改造：仅显已确认 KOL（kol_campaign 表 source IN ('ai_smart_match', 'csv_import', 'manual_legacy')）
-- 卡片显 source chip（AI / CSV / Legacy）方便 marketer 区分来源
+- **F006 同 commit backfill migration**（F006 audit §裁决 #1=C）：`prisma/migrations/20260514XXXXXX_bl066_f006_source_manual_legacy_backfill/migration.sql` 含 UP `UPDATE kol_campaign SET source = 'manual_legacy' WHERE source = 'manual';` + DOWN ROLLBACK 注释段 `-- ROLLBACK\n-- UPDATE kol_campaign SET source = 'manual' WHERE source = 'manual_legacy';`（per `scripts/validate-rollback-sql.sh` 铁律）。schema.prisma `@default("manual")` 不动 — 未来误写 default 路径行被 filter 隐藏 = dev 信号。F009 staging deploy 阶段验证 audit_log row_count。
+- **6 列表格结构锁**（F006 audit §裁决 #4=A，per `design-draft/bl066-campaign-detail-ai-main-panel/README.md` §Accepted KOLs 区）：`avatar+name / Source chip(独立列) / status pill / fee / addedAt / actions(open_in_new icon 链 /[locale]/kols/[kolId])`。source chip 独立列符合 BL-066 #B 决策 "AI / CSV / Legacy 区分明确" 语义。
+- **删 dead code**（F006 audit §裁决 #2=A）：`src/lib/campaigns/detail.ts` 删 `runAvailableKolsForCampaign` 函数 + `tests/integration/campaign-detail.test.ts:159` 关联描述块删；`kolOps.addKolToCampaign` test helper 保留（RLS-aware write helper 未来 CSV 路径仍用）。
+- **i18n + Labels interface 混合策略**（F006 audit §裁决 #3=C）：messages/{en,zh,ja,ko,es}.json 中 `kolPanel.addButton / aiNativeMigrationTooltip / addDialog.*` 加 `_deprecated_by_BL-066` 子 key（保 i18n-locale-coverage gate 绿，BL-070 atomic 删）；CampaignKolPanel.tsx Labels interface 字段 atomic 删（内部 surface 0 引用无风险）；page.tsx label assembler 段 atomic 清。新增 `kolPanel.columns.source` + `kolPanel.sourceChip.{ai,csv,legacy}` keys。
 - 移除手动 contactStatus / kolFee 编辑入口（保留只读显示；后续 outreach flow 写）
+- **fidelity test 锁**（F006 audit §裁决 #5=B）：`campaign-detail-fidelity.test.ts` 改文件 path/match name + 新增 assertion 锁 source chip 渲染（`getByText AI/CSV/Legacy`）+ 锁 contactStatus / kolFee read-only（无 `<Select` / `<Input`）
 - L1 PASS
 
 ### F007 — BL-048 valueScore 公式优化合入
