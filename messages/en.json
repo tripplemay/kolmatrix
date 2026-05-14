@@ -971,6 +971,22 @@
           "subtitle": "Querying cosine similarity…",
           "whyEyebrow": "Why",
           "footer": "Typically <500ms · longer if product embed is JIT-generating first time"
+        },
+        "active": {
+          "heading": "AI Recommended KOLs",
+          "sourcedFrom": "Sourced from /api/kols/smart-match",
+          "showNext": "Show next 5",
+          "whyPrefix": "Why we suggest this",
+          "whyTemplate": "matched on cosine similarity {matchScore}; valueScore {valueScore}",
+          "acceptCta": "Accept",
+          "skipCta": "Skip",
+          "viewProfileCta": "View profile",
+          "followers": "followers",
+          "matchScore": "Visible",
+          "noScore": "n/a",
+          "errorBanner": "Could not load AI recommendations",
+          "retryCta": "Retry",
+          "exhaustedBody": "You've reviewed every candidate in this batch. Fetch a fresh top 30 to keep going."
         }
       },
       "kolPanel": {

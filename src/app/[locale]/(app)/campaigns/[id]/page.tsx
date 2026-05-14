@@ -99,6 +99,7 @@ export default async function CampaignDetailPage({ params }: Props) {
       <AiRecommendationPanel
         productId={productId}
         campaignId={campaign.id}
+        tenantId={tenantId}
         locale={locale}
         labels={aiPanelLabels(t)}
       />
@@ -186,6 +187,22 @@ function aiPanelLabels(t: TFn) {
       subtitle: t("aiPanel.loading.subtitle"),
       whyEyebrow: t("aiPanel.loading.whyEyebrow"),
       footer: t("aiPanel.loading.footer"),
+    },
+    active: {
+      heading: t("aiPanel.active.heading"),
+      sourcedFrom: t("aiPanel.active.sourcedFrom"),
+      showNext: t("aiPanel.active.showNext"),
+      whyPrefix: t("aiPanel.active.whyPrefix"),
+      whyTemplate: t("aiPanel.active.whyTemplate"),
+      acceptCta: t("aiPanel.active.acceptCta"),
+      skipCta: t("aiPanel.active.skipCta"),
+      viewProfileCta: t("aiPanel.active.viewProfileCta"),
+      followers: t("aiPanel.active.followers"),
+      matchScore: t("aiPanel.active.matchScore"),
+      noScore: t("aiPanel.active.noScore"),
+      errorBanner: t("aiPanel.active.errorBanner"),
+      retryCta: t("aiPanel.active.retryCta"),
+      exhaustedBody: t("aiPanel.active.exhaustedBody"),
     },
   };
 }

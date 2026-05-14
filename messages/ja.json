@@ -1022,6 +1022,22 @@
           "subtitle": "コサイン類似度を計算中…",
           "whyEyebrow": "理由",
           "footer": "通常 <500ms · 初回 JIT プロダクト埋め込み生成時は遅くなる場合があります"
+        },
+        "active": {
+          "heading": "AI 推奨 KOL",
+          "sourcedFrom": "取得元 /api/kols/smart-match",
+          "showNext": "次の 5 件を表示",
+          "whyPrefix": "おすすめ理由",
+          "whyTemplate": "コサイン類似度 {matchScore} でマッチ; valueScore {valueScore}",
+          "acceptCta": "承認",
+          "skipCta": "スキップ",
+          "viewProfileCta": "プロフィール",
+          "followers": "フォロワー",
+          "matchScore": "表示中",
+          "noScore": "なし",
+          "errorBanner": "AI レコメンデーションを読み込めませんでした",
+          "retryCta": "再試行",
+          "exhaustedBody": "このバッチの候補をすべて確認しました。次の 30 件を取得してください。"
         }
       },
       "kolPanel": {

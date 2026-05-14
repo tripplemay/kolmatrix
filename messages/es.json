@@ -1022,6 +1022,22 @@
           "subtitle": "Calculando similitud coseno…",
           "whyEyebrow": "Motivo",
           "footer": "Normalmente <500ms · más lento si la inserción del producto se genera JIT por primera vez"
+        },
+        "active": {
+          "heading": "KOLs recomendados por IA",
+          "sourcedFrom": "Origen /api/kols/smart-match",
+          "showNext": "Siguientes 5",
+          "whyPrefix": "Por qué lo sugerimos",
+          "whyTemplate": "emparejado por similitud coseno {matchScore}; valueScore {valueScore}",
+          "acceptCta": "Aceptar",
+          "skipCta": "Saltar",
+          "viewProfileCta": "Ver perfil",
+          "followers": "seguidores",
+          "matchScore": "Visibles",
+          "noScore": "sin datos",
+          "errorBanner": "No se pudieron cargar las recomendaciones",
+          "retryCta": "Reintentar",
+          "exhaustedBody": "Has revisado todos los candidatos. Trae los próximos 30 para continuar."
         }
       },
       "kolPanel": {

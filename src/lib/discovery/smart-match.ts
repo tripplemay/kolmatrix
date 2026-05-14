@@ -63,6 +63,13 @@ export interface SmartMatchKolHit {
   similarity: number;
   /** UI-friendly 0-100 score, derived from similarity. */
   matchScore: number;
+  /**
+   * BL-066-F003: surfaced so the AiRecommendationPanel C2 "Why we
+   * suggest this" line ("matched on cosine similarity {matchScore};
+   * valueScore {valueScore}") can render without a second round-trip.
+   * Nullable because KOL.value_score is nullable in schema.prisma.
+   */
+  valueScore: number | null;
 }
 
 export interface SmartMatchProductBrief {
@@ -213,6 +220,7 @@ export async function runSmartMatch(
     country_code: string | null;
     categories: string[];
     distance: number;
+    value_score: number | null;
   }>;
   try {
     rows = await withTenant(input.tenantId, (tx) =>
@@ -226,6 +234,7 @@ export async function runSmartMatch(
           follower_count,
           country_code,
           categories,
+          value_score,
           ("embedding" <=> ${lit}::vector(${dimsRaw})) AS distance
         FROM "kol"
         WHERE "embedding" IS NOT NULL
@@ -257,6 +266,7 @@ export async function runSmartMatch(
       distance,
       similarity,
       matchScore: similarityToScore(similarity),
+      valueScore: r.value_score == null ? null : Number(r.value_score),
     };
   });
 

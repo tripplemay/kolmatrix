@@ -971,6 +971,22 @@
           "subtitle": "正在计算余弦相似度…",
           "whyEyebrow": "原因",
           "footer": "通常 <500ms · 首次 JIT 生成产品嵌入会稍慢"
+        },
+        "active": {
+          "heading": "AI 推荐 KOL",
+          "sourcedFrom": "来源 /api/kols/smart-match",
+          "showNext": "换一批 (5 个)",
+          "whyPrefix": "推荐理由",
+          "whyTemplate": "基于余弦相似度 {matchScore} 匹配；valueScore {valueScore}",
+          "acceptCta": "接受",
+          "skipCta": "跳过",
+          "viewProfileCta": "查看主页",
+          "followers": "粉丝",
+          "matchScore": "已显示",
+          "noScore": "无",
+          "errorBanner": "无法加载 AI 推荐",
+          "retryCta": "重试",
+          "exhaustedBody": "本批 30 个候选已浏览完毕，拉取新一批 30 个继续。"
         }
       },
       "kolPanel": {
