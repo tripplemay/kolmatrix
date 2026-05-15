@@ -43,12 +43,17 @@ const EXPECTED_BASELINES: ReadonlyArray<{ name: string; width: number }> = [
   { name: "en-campaigns.png", width: 1280 },
   { name: "en-crm.png", width: 1280 },
   // BL-065-F006 — en-database.png + en-discovery.png removed alongside
-  // the deleted /database + /discovery routes. F007 will add the new
-  // en-match.png baseline via the update-visual-baselines workflow.
+  // the deleted /database + /discovery routes. BL-066-F009 lands the
+  // new en-match.png baseline (see entry below).
   { name: "en-knowledge-base-bottom.png", width: 1280 },
   { name: "en-knowledge-base.png", width: 1280 },
   { name: "en-kols-detail.png", width: 1280 },
   { name: "en-login.png", width: 1280 },
+  // BL-066-F009 — en-match.png lands the unified workbench baseline.
+  // Width = 1332 (not 1280) because /match page renders a horizontal-
+  // scroll grid that extends the body beyond the viewport; fullPage
+  // captures the actual scrollWidth.
+  { name: "en-match.png", width: 1332 },
   { name: "en-network-status-online.png", width: 1280 },
   { name: "en-outreach-templates-badge.png", width: 976 },
   { name: "en-outreach-templates.png", width: 1280 },
