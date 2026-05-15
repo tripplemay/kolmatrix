@@ -32,14 +32,24 @@ import { cn } from "@/lib/utils";
 import { StatusDot } from "./StatusDot";
 import { TagChip } from "./TagChip";
 
+// BL-067-F002 added 2 explanation AssetTypes that are internal cache rows
+// (Asset.name encodes the campaignId/kolId/locale cache key — never shown
+// via this user-facing AssetCard). Labels/icons exist only to satisfy the
+// exhaustive `Record<AssetCardData["type"], ...>` contract; if a row of
+// these types ever leaks into the card list, the UI shows the placeholder
+// label so the issue is visible rather than crashing.
 const TYPE_LABEL: Record<AssetCardData["type"], string> = {
   email: "Email",
   video_script: "Video",
+  ai_recommendation_explanation_short: "Recommendation (short)",
+  ai_recommendation_explanation_detailed: "Recommendation (detailed)",
 };
 
 const TYPE_ICON: Record<AssetCardData["type"], string> = {
   email: "mail",
   video_script: "movie",
+  ai_recommendation_explanation_short: "psychology",
+  ai_recommendation_explanation_detailed: "psychology",
 };
 
 const STATUS_LABEL: Record<AssetStatus, string> = {
