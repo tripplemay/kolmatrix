@@ -156,7 +156,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 6.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "staging deploy via deploy-staging.yml (F007 audit §裁决 #8=C: staging valueScore recompute 已在 F007 落地; F009 仅做代码 deploy + 用户 ack 时间窗后 prod 代码 deploy + prod recompute apply 双段)",
       "视觉 baseline regen via update-visual-baselines workflow（en-campaign-detail.png 必新生成）",
