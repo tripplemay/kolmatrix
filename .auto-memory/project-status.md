@@ -3,7 +3,7 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔍 BL-066-campaign-detail-ai-main-panel REVERIFYING（9/9, fix_rounds=0, prod=f2a8210, signoff=BL-066-signoff-2026-05-15.md）
+## ✅ BL-066-campaign-detail-ai-main-panel DONE（9/9, fix_rounds=0, prod=f2a8210, signoff=BL-066-signoff-2026-05-15.md）
 - F001-F009 ✅ Generator 段 → Reviewer 接手 24h pm2 monitor + 终签 (BL-065 加速模式可省略 24h)
 - F009 @ 09:21 prod deploy run 25895017122 / 09:25 prod recompute apply (1397 rows / spread 52 / audit_log id=2617) / 09:58 prod-audit script PASS=11 FAIL=0 WARN=0 (v1→v5 5 次 fix: §6 audit_log 表名 + §5 grep deprecated marker filter + §1 ancestor-on-main + origin/main detached HEAD + SIGPIPE capture-then-grep). 同会话 b115367/f2a8210 修 CI 红: visual-regression viewport-only fix + woff2 regen + EXPECTED_BASELINES sync (en-match.png width=1332)
 - F008 @ f29344b 新 tests/e2e/campaign-match-flow.spec.ts 6 case + 移除 BL-064 sediment /campaigns/[id] → /match?campaignId 302 redirect
