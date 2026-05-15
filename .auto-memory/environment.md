@@ -39,6 +39,8 @@ type: reference
 - **Actions 清单：**
   - **BM2 (2026-04-23 创建)：** `kol-email-customize` / `roi-insights` / `weekly-report-for-client`
   - **B5-F004 (2026-04-30 创建)：** `kol-topic-extract` (action_id `cmokr9z880009bn18sre31yf0`, model claude-haiku-4.5, 用于 KOL 详情页词云从 6 视频标题提取 5-10 关键词 + weight，单次 ~$0.001) — env var `AIGCGATEWAY_KOL_TOPIC_ACTION_ID` 待 SSH 落入 `.env.production` + `.env.staging`
+  - **BL-067-F001 (2026-05-15 创建)：** `kol-recommendation-explain-short` (action_id `cmp6ifb5w0035bnrrljflmtcn`, model claude-haiku-4.5, 用于 AiRecommendationPanel C3 短版 1 句话解释, 5 locale JSON 1 call 输出, ~$0.0015/call) — env var `AIGCGATEWAY_EXPLAIN_SHORT_ACTION_ID` 待 SSH 落入 prod + staging
+  - **BL-067-F001 (2026-05-15 创建)：** `kol-recommendation-explain-detailed` (action_id `cmp6ihdt109jebnrqdj215aft`, model claude-haiku-4.5, 用于 DetailedExplanationDialog 5 段结构化详细解释, 5 locale × 5 段 = 25 段 JSON, ~$0.008/call 用户主动触发) — env var `AIGCGATEWAY_EXPLAIN_DETAILED_ACTION_ID` 待 SSH 落入 prod + staging
   - 早期 B2 设想的 kol-eval-bulk/precision/campaign-match/email-personalize 未启用（MVP 未走 AI 匹配路线）
 - **集成决策：** 见 ADR-009
 
