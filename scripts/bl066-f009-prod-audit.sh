@@ -71,12 +71,16 @@ HEALTH_SHA=$(echo "$HEALTH" | python3 -c "import json,sys; print(json.load(sys.s
 if [ "$HEAD" = "$HEALTH_SHA" ]; then
   green "✓ git_sha=$HEAD matches health.git_sha=$HEALTH_SHA exactly"
   PASS=$((PASS + 1))
-elif [ "$HEALTH_SHA" != "?" ] && git log --oneline -10 main 2>/dev/null | grep -q "^$HEALTH_SHA"; then
-  COMMITS_BEHIND=$(git rev-list --count "${HEALTH_SHA}..main" 2>/dev/null || echo "?")
-  green "✓ health.git_sha=$HEALTH_SHA is $COMMITS_BEHIND commit(s) behind HEAD=$HEAD on main (ops-only follow-up OK)"
+elif [ "$HEALTH_SHA" != "?" ] && git log --oneline -10 origin/main 2>/dev/null | grep -q "^$HEALTH_SHA"; then
+  # Use origin/main (last-fetched remote ref) instead of `main` because
+  # deploy-prod.sh leaves the working tree at detached HEAD and the local
+  # `main` branch in /opt/kolmatrix can be stale (frozen at whichever
+  # commit was main when the repo was first cloned).
+  COMMITS_BEHIND=$(git rev-list --count "${HEALTH_SHA}..origin/main" 2>/dev/null || echo "?")
+  green "✓ health.git_sha=$HEALTH_SHA is $COMMITS_BEHIND commit(s) behind origin/main HEAD=$HEAD (ops-only follow-up OK)"
   PASS=$((PASS + 1))
 else
-  red "✗ git_sha mismatch: health.git_sha=$HEALTH_SHA is NOT on main last 10 commits (deploy may be stale or orphan)"
+  red "✗ git_sha mismatch: health.git_sha=$HEALTH_SHA is NOT on origin/main last 10 commits (deploy may be stale or orphan)"
   FAIL=$((FAIL + 1))
 fi
 
