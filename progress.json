@@ -1,36 +1,33 @@
 {
-  "status": "done",
-  "user_goal": "BL-066-campaign-detail-ai-main-panel — ADR-013 AI Native Phase 2 第二批：/campaigns/[id] 详情页升级为 AI 推荐主面板（顶 Brief / 中 AI 主面板 top 30 候选 + 接受/跳过/换一批 / 底 AcceptedKolsPanel）+ AddKolDialog 完全删除 + BL-048 valueScore 公式 v2 合入 + Stitch 设计稿新建 + 视觉 baseline regen。9 features，~9-11 day Generator + 1 day Reviewer 估算。决策点 4 个用户 5/14 全 lock：#A 复用 /api/kols/smart-match / #B 完全删 AddKolDialog / #C BL-048 合并 / #D Stitch 新建 + #E client-state status / #F localStorage 24h。本批次完成后解锁 Phase 3：BL-067 C3 双向 explainability / BL-068 B3 自然语言 refine / BL-070 二次清理。关联 docs/specs/BL-066-campaign-detail-ai-main-panel-spec.md / ADR-013 / vision §2 §3 / roadmap §4 BL-066+BL-048。",
-  "total_features": 9,
-  "completed_features": 9,
+  "status": "planning",
+  "user_goal": "BL-067-explainability-c3 — ADR-013 AI Native Phase 3 第一批：/campaigns/[id] AiRecommendationPanel 升级为 C3 双向 explainability（每卡 short 1 句话 LLM 解释 + 用户主动 query 详细 5 段 dialog）。7 features F001-F007，~6 day Generator + 1 day Reviewer。8 决策点用户 5/15 brainstorming 全 lock：#1 ready-to-build / #2 campaign 创建后批量预生成 top 30 × 5 locale / #3 skip/replace 保持 client-state-only / #4 ? icon → Modal Dialog / #5 1 次 LLM call 输出 5 locale JSON / #6 haiku-4.5 + 沿用 BL-034 F005 cap $5/day/tenant / #7 silent fallback to C2 / #8 AiRecommendationPanel mount + smart-match 返回后即触发。本批次完成后解锁 Phase 3 第二批 BL-068 B3 自然语言 refine。关联 docs/specs/BL-067-explainability-c3-spec.md @ 5275a79 / ADR-013 §Decision #5 / vision §3 场景 2/4 + §7 原则 4 / roadmap §5 BL-067 + §11 Phase 3 verifying gate.",
+  "total_features": 7,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "BL-066-campaign-detail-ai-main-panel",
-  "last_updated": "2026-05-15T10:15+0800",
+  "current_sprint": "BL-067-explainability-c3",
+  "last_updated": "2026-05-15T11:00+0800",
   "reference_docs": [
-    "docs/specs/BL-066-campaign-detail-ai-main-panel-spec.md",
+    "docs/specs/BL-067-explainability-c3-spec.md",
     "docs/adr/ADR-013-ai-native-product-pivot.md",
+    "docs/adr/ADR-009-aigcgateway-integration.md",
     "docs/product/ai-native-vision.md",
     "docs/product/ai-native-roadmap.md",
-    "src/app/[locale]/(app)/campaigns/[id]/",
-    "src/app/[locale]/(app)/match/",
-    "src/lib/kol/value-score.ts",
-    "src/app/api/kols/smart-match/route.ts",
-    "design-draft/bl066-campaign-detail-ai-main-panel/",
+    "src/app/[locale]/(app)/campaigns/[id]/AiRecommendationPanel.tsx",
+    "src/lib/cost-cap/check.ts",
     "messages/en.json",
     "messages/zh.json"
   ],
   "docs": {
-    "spec": "docs/specs/BL-066-campaign-detail-ai-main-panel-spec.md",
+    "spec": "docs/specs/BL-067-explainability-c3-spec.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/BL-066-signoff-2026-05-15.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": null,
-  "generator_handoff": "[2026-05-15 10:15 BJT Reviewer → done]\n\nBL-066 F009 复验已完成：\n  - prod audit PASS=11 FAIL=0 WARN=0\n  - /api/health git_sha=f2a8210 on origin/main ancestry\n  - /en/campaigns, /en/match, /api/kols/smart-match, audit_log, source distribution, pm2 logs, value_score spread 全绿\n  - signoff finalized at docs/test-reports/BL-066-signoff-2026-05-15.md\n  - progress.json status=done\n\nNo further Reviewer action pending.",
+  "generator_handoff": null,
   "session_notes": {
-    "Kimi_F008": "[2026-05-15 04:10 BJT Generator — F008 完成 8/9 staging=f29344b]\n\nF008 commits 段:\n  a8e38f7 feat(F008): tests/e2e/campaign-match-flow.spec.ts 6 case (初版)\n  93b1131 fix(F008): firstCampaignDetailUrl 改用 campaign-row testid + data-campaign-id (CI 25879970411 5/6 fail 修)\n  f29344b fix(F008): 移除 /campaigns/[id] → /match?campaignId 302 redirect (BL-064 sediment — F002 建好 layout 但 redirect 仍生效, F008 关闭 redirect loop)\n\nL1: lint 0 errors / tsc clean / middleware-helpers.test.ts 10/10 PASS. CI run 25882157112 success 8m44s. Staging deploy run 25882625630 success 3m52s. SSH 验证 git_sha = f29344b 匹配 main.\n\nF008 done. BL-066 进度 8/9 (剩 F009 prod redeploy + 视觉 baseline regen + prod recompute apply + 24h 监控 + signoff, spec 估 6h).",
-    "Reviewer": "[2026-05-15 10:15 +0800] BL-066 reverifying -> done. Re-ran /opt/kolmatrix/scripts/bl066-f009-prod-audit.sh over SSH: PASS=11 FAIL=0 WARN=0. Verified /api/health git_sha=f2a8210 on origin/main ancestry, /en/campaigns and /en/match route gates, /api/kols/smart-match still registered, AddKolDialog/addKolAction residuals absent, audit_log row 2617 for value_score.recompute_v2 env=prod present, kol_campaign.source only manual_legacy, pm2 logs clean, value_score spread=52. Signoff finalized at docs/test-reports/BL-066-signoff-2026-05-15.md."
+    "johnsong": "[2026-05-15 11:00 BJT Planner johnsong — BL-067 formal batch 启动 / planning 状态]\n\nBL-066 done 收尾完成 (commit 46e803a) → BL-067 立即启动 (用户 5/15 ack: '立即启动 BL-067 formal batch' + 'BL-067 独立走' + 'role_assignments 默认映射')。\n\n本会话动作:\n  1. BL-066 done 收尾 4 步: project-status 措辞归档 + proposed-learnings 加 3 条 (#2 多 audit 串联 / #3 量化 criterion 语义优先 / #4 audit 前实测原子组件 surface) + 清 role_assignments + commit 46e803a push main\n  2. BL-067 spec brainstorming 8 决策点全 lock (commit 5275a79): #1 ready-to-build / #2 batch 预生成 top30×5 locale / #3 client-state-only / #4 ? icon dialog / #5 1 call 5 locale JSON / #6 haiku-4.5 + BL-034 F005 cap / #7 silent fallback to C2 / #8 mount + smart-match 后触发\n  3. features.json 重写为 BL-067 F001-F007 (本 commit)\n  4. progress.json status: done → planning (features 已 ready 等切 building)\n\nBL-067 启动检查清单 (下一动作):\n  - role_assignments=null → 默认映射: Claude CLI = planner+generator / Codex = evaluator\n  - 本机单 .agent-id=johnsong 即同时承担 planner+generator (BL-066 时由 Kimi 临时代理 generator, 本次直接 johnsong 同一身份)\n  - 下一会话或本会话续 → 状态切 planning → building (Planner 切 status='building' commit) → Generator 起 F001 (aigcgateway 2 action 注册)\n  - F001 起工前必 grep schema.prisma 确认 AssetType enum 现状 (F002 migration 前提)\n  - F001 起工前必 SSH 跑 MCP `list_models` 确认 claude-haiku-4-5 可用 + `get_balance` 余额\n\nProposed learnings 3 条 (用户 5/15 ack) 留 BL-067 done 时正式入 framework/ + CHANGELOG + 归档。\n\nBL-067 关键参数锁 (Generator 起工时复述):\n  - 模型: claude-haiku-4-5 (per #6)\n  - cap: 沿用 BL-034 F005 $5/day/tenant (per #6)\n  - cache TTL: 24h (per §5 不变量 #3)\n  - cache key: (campaignId, kolId, locale) 三元组 (per §5 不变量 #2)\n  - silent fallback: pre-warm 路径不 toast / dialog 路径 cap 满才 toast (per §5 不变量 #4 #5)\n  - cost 估算: ~$0.055/campaign (short $0.045 + detailed avg $0.010)\n  - prompt 必含 valueScoreBreakdown 4 维度 (per §5 不变量 #8)\n  - JSON 解析失败不 retry (per §5 不变量 #9)\n  - prewarm jobId 幂等: prewarm-{tenantId}-{campaignId} (per §5 不变量 #10)"
   },
   "features": []
 }
