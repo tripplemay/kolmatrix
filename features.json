@@ -107,7 +107,9 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 8.0,
-    "status": "pending",
+    "status": "done",
+    "done_commit": "e06c56f",
+    "done_at": "2026-05-15T15:30+0800",
     "acceptance": [
       "`messages/{en,zh,ja,ko,es}.json` 加 `campaigns.detail.explainability.*` 完整 keys：`queryButtonLabel` / `dialogTitle` (带 KOL handle 占位) / `loading` / `unavailable` (5s timeout fallback) / `capExhaustedToast` (仅 F004 dialog 路径 cap 满才显，pre-warm 静默) / `segments.matchScore.title` / `segments.categoryFit.title` / `segments.recentActivity.title` / `segments.audienceFit.title` / `segments.brandHistory.title` / `c2Fallback` (BL-066 现 C2 文案集中到 i18n)",
       "5 语言全 cover 不留 `_deprecated_by_*` marker（新 keys）",
@@ -122,7 +124,9 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "pending",
+    "status": "generator_done",
+    "generator_done_at": "2026-05-15T15:35+0800",
+    "generator_handoff_note": "Generator-side deliverables complete: staging deploy run 25905913066 @ e06c56f (env vars synced per F001 SSH ops); scripts/bl067-cost-audit.ts shipped. Reviewer side pending: visual baseline regen via update-visual-baselines workflow + en-campaign-detail-detailed-dialog.png new baseline (needs mocked dialog state) + dogfood spot-check + signoff doc + status flow planning→verifying. AI panel cards are masked in en-campaign-detail.png so existing baseline likely passes without regen unless mask shifts.",
     "acceptance": [
       "staging deploy via `deploy-staging.yml`（含 `AIGCGATEWAY_EXPLAIN_SHORT_ACTION_ID` + `AIGCGATEWAY_EXPLAIN_DETAILED_ACTION_ID` 两个新 env var via SSH 落 `.env.staging`，与 prod 配齐 5 处 sync 协议风格）",
       "视觉 baseline regen via `update-visual-baselines` workflow：`en-campaign-detail.png` 必新生成（含 short explanation 显示态 + `?` icon）+ `en-campaign-detail-detailed-dialog.png` 新增（Dialog 打开态）",

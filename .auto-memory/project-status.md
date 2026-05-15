@@ -3,10 +3,13 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔨 BL-067-explainability-c3 BUILDING（2/7 ✅ F001+F002, fix_rounds=0, spec=9a78c2d Planner 修订版）
-- ✅ F001 @ dd7870c (6h) aigcgateway 2 action + run-action.ts SDK (9 tests) + SSH env vars; short=cmp6ifb5w0035bnrrljflmtcn / detailed=cmp6ihdt109jebnrqdj215aft (haiku-4.5)
-- ✅ F002 @ a39087c (~3h actual vs 8.5h est, 早完成) AssetType enum +2 values migration applied staging / checkLlmCostBudget 包装 / explainability/cache.ts (read/write × short/detailed + 9 tests TTL boundary + RLS + parse guard) / cleanup-expired-explanation-assets.ts + GH Action cron 22:30 UTC = 06:30 BJT
-- F003 (4h) panel C2→C3 + `?` icon → F004 (8h) DetailedDialog → F005 (12h) InMemoryJobQueue fire-and-forget worker (audit #4:B) → F006 (8h) i18n + e2e 6 case → F007 (4h) staging + 视觉 baseline + cost 监控 + signoff
+## 🔨 BL-067-explainability-c3 BUILDING → READY-FOR-VERIFYING（7/7 ✅ Generator 段全完成, fix_rounds=0, spec=9a78c2d Planner 修订版）
+- ✅ F001 @ dd7870c | F002 @ a39087c | F003 @ cdebf38 | F004 @ a6aa58a | F005 @ 4e2afb4 | F006 @ e06c56f | F007 generator_done @ e06c56f
+- Actions: short=cmp6ifb5w0035bnrrljflmtcn / detailed=cmp6ihdt109jebnrqdj215aft (haiku-4.5, ~$0.0015/short + ~$0.008/detailed)
+- Tests: 32 unit + 11 e2e (cache.ts 9 / cost-cap.ts 14 / run-action.ts 9 / cache.test 9 / explain-recommendations-worker.test 8 / explainability-actions.test 6 / AiRecommendationPanel.test 12 / campaign-explainability-flow e2e 6)
+- L1 全绿 every commit (lint 0 / tsc 0 / vitest all green / staging deploy auto migrate); cleanup cron at 22:30 UTC = 06:30 BJT scheduled
+- F007 Generator 段交付：scripts/bl067-cost-audit.ts + staging git_sha = main HEAD e06c56f
+- F007 Reviewer 段待办：(1) 触发 update-visual-baselines workflow regen en-campaign-detail.png + 新增 en-campaign-detail-detailed-dialog.png (2) staging dogfood 清单 docs/test-reports/BL-067-staging-spot-check.md (3) 24h aigcgateway dashboard cost monitor (4) docs/test-reports/BL-067-signoff-2026-05-XX.md (5) Planner status building→verifying flip
 - 6 议题 F001 audit 全 ack 默认 #1-#6:A 或 #4:B，详 9433bc3 / 9a78c2d
 ## ✅ BL-066-campaign-detail-ai-main-panel DONE（9/9, fix_rounds=0, prod=f2a8210, signoff=BL-066-signoff-2026-05-15.md）
 - F001-F009 ✅ Generator 段 → Reviewer 接手 24h pm2 monitor + 终签 (BL-065 加速模式可省略 24h)
