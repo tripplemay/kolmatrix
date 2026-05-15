@@ -1138,7 +1138,8 @@
           "brandHistory": {
             "title": "品牌合作历史"
           }
-        }
+        },
+        "c2Fallback": "基于余弦相似度 {matchScore} 匹配；valueScore {valueScore}"
       }
     },
     "new": {

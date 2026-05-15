@@ -87,7 +87,9 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 12.0,
-    "status": "pending",
+    "status": "done",
+    "done_commit": "4e2afb4",
+    "done_at": "2026-05-15T15:20+0800",
     "acceptance": [
       "新 worker `src/lib/queue/explain-recommendations-worker.ts` 处理 job type `recommendation-explain-prewarm`（**InMemoryJobQueue 模式 per F001 audit §4:B**）：注册 worker handler via 现有 `src/lib/jobs/queue.ts` 的 `register(name, handler)` API；Payload `{ tenantId, campaignId, kolIds[] }`；idempotencyKey `prewarm-{tenantId}-{campaignId}` 同进程内幂等（进程重启后 mount self-heal 自然重新 enqueue）；handler 内手写 1 次 retry（仅网络错误 retry，JSON 解析失败不 retry）",
       "Worker 主循环：for each kolId → `checkLlmCostBudget(tenantId)` `{ allowed: false }` → break / 查 5 locale 全 hit 则 skip / **inline import `computeKolValueScore from '@/lib/kol/value-score'`**（per F001 audit §3:A）拿 breakdown.{follower, engagement, category} / 拼 input { kol, campaign, valueScoreBreakdown, locales[5] } → **走 F001 新 `runAigcAction({ actionId, variables, tenantId, actionLabel })`**（per F001 audit §6:A，**非** inline POST）→ 解析 5 locale JSON → for each locale writeShortExplanation → audit_log `ai_recommendation.explain_short_generated` payload { kolId, locales: 5, tokenUsage, costUsd }",

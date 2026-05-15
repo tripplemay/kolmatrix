@@ -1189,7 +1189,8 @@
           "brandHistory": {
             "title": "Historial de Marcas"
           }
-        }
+        },
+        "c2Fallback": "emparejado por similitud coseno {matchScore}; valueScore {valueScore}"
       }
     }
   },

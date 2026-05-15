@@ -1138,7 +1138,8 @@
           "brandHistory": {
             "title": "Brand History"
           }
-        }
+        },
+        "c2Fallback": "matched on cosine similarity {matchScore}; valueScore {valueScore}"
       }
     },
     "new": {

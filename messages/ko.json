@@ -1189,7 +1189,8 @@
           "brandHistory": {
             "title": "브랜드 협업 이력"
           }
-        }
+        },
+        "c2Fallback": "코사인 유사도 {matchScore} 매칭; valueScore {valueScore}"
       }
     }
   },

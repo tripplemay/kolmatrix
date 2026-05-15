@@ -1189,7 +1189,8 @@
           "brandHistory": {
             "title": "ブランド連携履歴"
           }
-        }
+        },
+        "c2Fallback": "コサイン類似度 {matchScore} でマッチ; valueScore {valueScore}"
       }
     }
   },
