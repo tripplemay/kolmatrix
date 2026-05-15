@@ -14,7 +14,8 @@
  *   - en-login.png              — unauthenticated `/en/login` (BAux1-F004)
  *   - en-request-access.png     — unauthenticated `/en/request-access` (BAux1-F004)
  *   - en-campaigns.png          — authenticated `/en/campaigns` (BM2-F003 + MVP-vf-F004)
- *   - en-campaign-detail.png    — authenticated `/en/campaigns/:id` (BM2-F005 + MVP-vf-F005, masks expanded 2026-04-27)
+ *   - en-campaign-detail.png    — authenticated `/en/campaigns/:id` (BM2-F005 + MVP-vf-F005 + BL-066-F009 mask refresh for the 3-panel AI-native layout, 2026-05-15)
+ *   - en-match.png              — authenticated `/en/match` unified workbench (BL-065-F006 placeholder, BL-066-F009 lands the baseline)
  *   - en-outreach.png           — authenticated `/en/outreach` (BM2-F006)
  *   - en-outreach-templates.png — authenticated `/en/outreach/templates` (BM2-F006)
  *   - en-crm.png                — authenticated `/en/crm` (BM2-F007)
@@ -223,11 +224,40 @@ test.describe("Authenticated BM1 visual regression", () => {
     });
   });
 
-  // BL-065-F006 — the legacy `discovery full-page` + `database full-page`
-  // visual cases were deleted with their routes. The unified workbench
-  // is exercised by tests/e2e/match-fidelity.spec.ts (functional) and a
-  // future en-match.png baseline will be added once F007 regenerates
-  // visual baselines via the update-visual-baselines workflow.
+  // BL-065-F006 retired the legacy `discovery full-page` +
+  // `database full-page` cases with their routes. BL-066-F009 lands
+  // the unified workbench baseline below.
+  test("match full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
+    test.skip(
+      shouldSkipMissingBaseline("en-match.png", test.info()),
+      "Baseline en-match.png missing — run the 'Update visual baselines' workflow."
+    );
+    test.setTimeout(90_000);
+    await login(page);
+    await page.goto("/en/match");
+    await page.waitForSelector(
+      '[data-testid="match-grid"], [data-testid="match-empty"]',
+      { timeout: 60_000 }
+    );
+    await fontsReady(page);
+    await imagesReady(page);
+
+    // KOL grid is seed-bound, AI sidebar fetches cosine recommendations
+    // that drift across runs, and the active-filters chip row varies
+    // with default sort. Mask all three so the chrome (header, filter
+    // dropdowns, view toggles) drives the visual signal.
+    const grid = page.locator('[data-testid="match-grid"]');
+    const aiSidebar = page.locator('[data-testid="match-ai-sidebar"]');
+    const activeFilters = page.locator('[data-testid="match-active-filters"]');
+
+    await expect(page).toHaveScreenshot("en-match.png", {
+      fullPage: true,
+      animations: "disabled",
+      mask: [grid, aiSidebar, activeFilters],
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
+  });
 });
 
 test.describe("Authenticated BM2 visual regression", () => {
@@ -268,22 +298,22 @@ test.describe("Authenticated BM2 visual regression", () => {
     });
   });
 
-  test.skip("campaign detail full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
-    // BL-064-F002 — /campaigns/[id] 302→/match?campaignId=:id (per
-    // adjudication §4 #B). /match currently embeds /discovery and does
-    // NOT yet render campaign detail (BL-066 wires that). The legacy
-    // campaign-detail-title testid no longer mounts under the redirect
-    // target, so the baseline cannot be regenerated until BL-066
-    // ships. Skipped at the test level.
+  test("campaign detail full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
+    // BL-066-F008 removed the /campaigns/[id] → /match?campaignId 302
+    // sediment (middleware-helpers.ts §93-95); F002 wired the 3-section
+    // AI-native layout (Brief / AI recommendation / Accepted KOLs);
+    // F006 renamed the bottom panel to AcceptedKolsPanel. The detail
+    // route now renders directly and the baseline can be (re-)captured
+    // via update-visual-baselines.
     test.skip(
       shouldSkipMissingBaseline("en-campaign-detail.png", test.info()),
       "Baseline en-campaign-detail.png missing — run the 'Update visual baselines' workflow."
     );
-    // CI cold-compile of /campaigns/:id is the slowest authenticated
-    // RSC route (joins on KOL + EmailLog + CampaignMetric); Generator
+    // Cold-compile of /campaigns/:id remains the slowest authenticated
+    // RSC route (joins on KOL + EmailLog + CampaignMetric); raise the
+    // test timeout for the regenerate-on-cold-runner path. Generator
     // already paid for that timeout three times on journey-b
-    // (commits f92a7f0 / 83c10e6 / 0a12e13). Default 30s test
-    // timeout is too tight for the regenerate-on-cold-runner path.
+    // (commits f92a7f0 / 83c10e6 / 0a12e13).
     test.setTimeout(90_000);
     await login(page);
     await page.goto("/en/campaigns");
@@ -302,34 +332,30 @@ test.describe("Authenticated BM2 visual regression", () => {
       test.skip(true, `Unexpected campaign row href: ${href ?? "(null)"}`);
     }
     await page.goto(href!);
-    await page.waitForSelector('[data-testid="campaign-detail-title"]', {
+    // BL-066 layout root sentinel.
+    await page.waitForSelector('[data-testid="campaign-brief-summary"]', {
       timeout: 60_000,
     });
     await fontsReady(page);
 
-    const title = page.getByTestId("campaign-detail-title");
-    const status = page.getByTestId("campaign-detail-status");
-    const productLink = page.getByTestId("campaign-product-link");
-    // MVP-vf-F005 right rail + email chart additions move per run:
-    //   - ActivityTimelineCard renders `format.relativeTime(createdAt,
-    //     { now: new Date() })`. The seed pins createdAt but `now` is
-    //     real-time, so labels shift from "just now" → "1 day ago"
-    //     overnight and exceed maxDiffPixels.
-    //   - EmailPerformanceChart uses recharts ResponsiveContainer; the
-    //     container width/height race occasionally renders at -1×-1
-    //     and bails before laying out, leaving an empty area whose
-    //     pixel diff vs. baseline blows the threshold.
-    // Masking both regions stabilises the visual signal on the
-    // structural page chrome around them.
-    const activity = page.getByTestId("campaign-activity-timeline");
-    const emailChart = page.getByTestId("campaign-email-perf-chart");
-    const healthCard = page.getByTestId("campaign-health-card");
-    const aiCard = page.getByTestId("campaign-ai-suggestions-card");
+    // Mask the three dynamic content panels:
+    //   - campaign-brief-summary  : campaign name / markets / budget /
+    //     accepted+contacted counts all vary per tenant
+    //   - campaign-ai-recommendation-card : fires /api/kols/smart-match
+    //     which returns non-deterministic cosine-ranked candidates;
+    //     skeleton/empty/active/exhausted state itself drifts run to run
+    //   - accepted-kols-panel     : per-tenant KOL rows + source chips
+    // Breadcrumb name span (no testid) also varies with campaign name —
+    // mask the whole <nav>.
+    const breadcrumb = page.locator('nav[aria-label="Breadcrumb"]');
+    const brief = page.getByTestId("campaign-brief-summary");
+    const aiPanel = page.getByTestId("campaign-ai-recommendation-card");
+    const acceptedKols = page.getByTestId("accepted-kols-panel");
 
     await expect(page).toHaveScreenshot("en-campaign-detail.png", {
       fullPage: true,
       animations: "disabled",
-      mask: [title, status, productLink, activity, emailChart, healthCard, aiCard],
+      mask: [breadcrumb, brief, aiPanel, acceptedKols],
       threshold: 0.02,
       maxDiffPixels: 8000,
     });
