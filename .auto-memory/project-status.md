@@ -3,11 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔨 BL-067-explainability-c3 BUILDING（1/7 ✅ F001 @ dd7870c, fix_rounds=0, spec=9a78c2d Planner 修订版）
-- ✅ F001 (6h actual) aigcgateway 2 action + run-action.ts SDK (9 unit tests) + prompt design doc + SSH 落 env vars (prod+staging additive append) + staging deploy run 25903337133 git_sha=dd7870c
-- F001 actions: short=cmp6ifb5w0035bnrrljflmtcn / detailed=cmp6ihdt109jebnrqdj215aft (haiku-4.5, dry_run est. 1450/1650 input ≤ 2000 ceiling)
-- F002 (8.5h) asset 缓存层 + checkLlmCostBudget 包装 + AssetType migration + cleanup cron 06:30 BJT → F003 (4h) panel C2→C3 + `?` icon → F004 (8h) DetailedDialog → F005 (12h) InMemoryJobQueue fire-and-forget worker (audit #4:B) → F006 (8h) i18n + e2e 6 case → F007 (4h) staging + 视觉 baseline + cost 监控 + signoff
-- 6 议题 F001 audit 全 ack 默认 #1-#6:A 或 #4:B，详 9433bc3
+## 🔨 BL-067-explainability-c3 BUILDING（2/7 ✅ F001+F002, fix_rounds=0, spec=9a78c2d Planner 修订版）
+- ✅ F001 @ dd7870c (6h) aigcgateway 2 action + run-action.ts SDK (9 tests) + SSH env vars; short=cmp6ifb5w0035bnrrljflmtcn / detailed=cmp6ihdt109jebnrqdj215aft (haiku-4.5)
+- ✅ F002 @ a39087c (~3h actual vs 8.5h est, 早完成) AssetType enum +2 values migration applied staging / checkLlmCostBudget 包装 / explainability/cache.ts (read/write × short/detailed + 9 tests TTL boundary + RLS + parse guard) / cleanup-expired-explanation-assets.ts + GH Action cron 22:30 UTC = 06:30 BJT
+- F003 (4h) panel C2→C3 + `?` icon → F004 (8h) DetailedDialog → F005 (12h) InMemoryJobQueue fire-and-forget worker (audit #4:B) → F006 (8h) i18n + e2e 6 case → F007 (4h) staging + 视觉 baseline + cost 监控 + signoff
+- 6 议题 F001 audit 全 ack 默认 #1-#6:A 或 #4:B，详 9433bc3 / 9a78c2d
 ## ✅ BL-066-campaign-detail-ai-main-panel DONE（9/9, fix_rounds=0, prod=f2a8210, signoff=BL-066-signoff-2026-05-15.md）
 - F001-F009 ✅ Generator 段 → Reviewer 接手 24h pm2 monitor + 终签 (BL-065 加速模式可省略 24h)
 - F009 @ 09:21 prod deploy run 25895017122 / 09:25 prod recompute apply (1397 rows / spread 52 / audit_log id=2617) / 09:58 prod-audit script PASS=11 FAIL=0 WARN=0 (v1→v5 5 次 fix: §6 audit_log 表名 + §5 grep deprecated marker filter + §1 ancestor-on-main + origin/main detached HEAD + SIGPIPE capture-then-grep). 同会话 b115367/f2a8210 修 CI 红: visual-regression viewport-only fix + woff2 regen + EXPECTED_BASELINES sync (en-match.png width=1332)

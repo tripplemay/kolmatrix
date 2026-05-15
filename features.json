@@ -29,7 +29,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 8.5,
-    "status": "pending",
+    "status": "done",
+    "done_commit": "a39087c",
+    "done_at": "2026-05-15T14:45+0800",
+    "migration": "20260515065000_bl067_f002_explanation_asset_types",
     "acceptance": [
       "Migration `prisma/migrations/20260516XXXXXX_bl067_f002_explanation_asset_types/migration.sql`：加 enum 值 `ai_recommendation_explanation_short` / `ai_recommendation_explanation_detailed` 到 `AssetType` enum（**起工前 grep schema.prisma 确认现有 enum 值仅 `email` + `video_script`**）+ DOWN rollback 注释（per `scripts/validate-rollback-sql.sh` 铁律）+ schema.prisma 同步加 enum",
       "新文件 `src/lib/explainability/cache.ts` 封装：`readShortExplanation(tenantId, campaignId, kolId, locale): Promise<string | null>` 查 asset 表 type=short + createdAt > now-24h；`writeShortExplanation(tenantId, campaignId, kolId, locale, content): Promise<void>` 写一行一 locale（payload 含 short 文本 + metadata { kolId, campaignId, generatedAt, tokenUsage, costUsd }）；`readDetailedExplanation(...)` 返回 5 段结构对象；`writeDetailedExplanation(...)` 同模式",
