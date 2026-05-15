@@ -1165,6 +1165,9 @@
         "invalidTransition": "해당 상태 변경은 허용되지 않습니다.",
         "forbiddenWhenCompleted": "캠페인이 완료되지 않은 상태에서만 매출을 수정할 수 있습니다.",
         "revenueInvalid": "매출은 음수가 아닌 숫자여야 합니다."
+      },
+      "explainability": {
+        "queryButtonLabel": "자세한 설명 보기"
       }
     }
   },

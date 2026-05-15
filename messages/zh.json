@@ -1114,6 +1114,9 @@
         "invalidTransition": "不允许的状态变更。",
         "forbiddenWhenCompleted": "活动完成后不能修改收入，需先重新激活。",
         "revenueInvalid": "收入需为非负数字。"
+      },
+      "explainability": {
+        "queryButtonLabel": "查看详细解释"
       }
     },
     "new": {

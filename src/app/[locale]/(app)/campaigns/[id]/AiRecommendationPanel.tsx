@@ -36,6 +36,7 @@ import {
 } from "react";
 
 import { acceptKolToCampaignAction } from "./recommend-actions";
+import { readShortExplanationsBatchAction } from "./explainability-actions";
 
 interface KolHit {
   id: string;
@@ -83,6 +84,8 @@ interface ActiveLabels {
   errorBanner: string;
   retryCta: string;
   exhaustedBody: string;
+  /** BL-067-F003 — aria-label for the per-card `?` icon trigger. */
+  queryButtonLabel: string;
 }
 
 interface Labels {
@@ -206,6 +209,12 @@ function ActiveOrLoading({
     () => readCache(key) == null
   );
   const [error, setError] = useState<string | null>(null);
+  // BL-067-F003 — per-KOL cached short explanation. `null` = cache miss
+  // (render C2 fallback). Map shape avoids re-rendering when an unrelated
+  // pool member changes (useMemo'd KolCard reads its own kolId only).
+  const [shortExplanations, setShortExplanations] = useState<
+    Record<string, string | null>
+  >({});
   const [, startTransition] = useTransition();
   const didInit = useRef(false);
   const hadCacheOnMount = useRef<boolean | null>(null);
@@ -270,6 +279,36 @@ function ActiveOrLoading({
       fetchedAt: Date.now(),
     });
   }, [pool, accepted, skipped, replaced, key]);
+
+  // BL-067-F003 — batch-read pre-warmed short explanations on pool / locale
+  // change. Misses render the C2 fallback (per spec §5 不变量 #4 silent),
+  // server-action errors degrade to all-miss without surfacing a toast.
+  // Pool size is bounded by TOP_K=30 + MAX_KOL_IDS=60 server guard.
+  useEffect(() => {
+    if (pool.length === 0) return;
+    const kolIds = pool.map((k) => k.id);
+    let cancelled = false;
+    void readShortExplanationsBatchAction({
+      campaignId,
+      kolIds,
+      locale,
+    })
+      .then((res) => {
+        if (cancelled) return;
+        if (res.ok) {
+          setShortExplanations(res.results);
+        }
+        // !res.ok → silent — keep prior state, C2 fallback already in
+        // place for empty entries.
+      })
+      .catch((err) => {
+        // Network / parse failure: silent fallback per spec §5 不变量 #4.
+        console.error("[BL-067-F003] readShortExplanationsBatch failed:", err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [pool, campaignId, locale]);
 
   const visible = useMemo(
     () =>
@@ -348,6 +387,7 @@ function ActiveOrLoading({
       onSkip={onSkip}
       onReplaceAll={onReplaceAll}
       bannerError={error}
+      shortExplanations={shortExplanations}
     />
   );
 }
@@ -361,6 +401,7 @@ function ActivePanel({
   onSkip,
   onReplaceAll,
   bannerError,
+  shortExplanations,
 }: {
   visible: KolHit[];
   pool: KolHit[];
@@ -370,6 +411,7 @@ function ActivePanel({
   onSkip: (kolId: string) => void;
   onReplaceAll: () => void;
   bannerError: string | null;
+  shortExplanations: Record<string, string | null>;
 }) {
   return (
     <section
@@ -448,6 +490,7 @@ function ActivePanel({
               locale={locale}
               onAccept={() => onAccept(kol)}
               onSkip={() => onSkip(kol.id)}
+              shortExplanation={shortExplanations[kol.id] ?? null}
             />
           ))}
         </div>
@@ -466,25 +509,49 @@ function KolCard({
   locale,
   onAccept,
   onSkip,
+  shortExplanation,
 }: {
   kol: KolHit;
   labels: ActiveLabels;
   locale: string;
   onAccept: () => void;
   onSkip: () => void;
+  /**
+   * BL-067-F003 — pre-warmed LLM 1-sentence explanation (cache HIT) or
+   * `null` (cache MISS → C2 fallback). Always render the `?` trigger
+   * regardless of hit/miss per spec §5 不变量 #6.
+   */
+  shortExplanation: string | null;
 }) {
   const valueScoreLabel =
     kol.valueScore == null ? labels.noScore : String(kol.valueScore);
-  const why = labels.whyTemplate
+  const c2Fallback = labels.whyTemplate
     .replace("{matchScore}", String(kol.matchScore))
     .replace("{valueScore}", valueScoreLabel);
+  const why = shortExplanation ?? c2Fallback;
 
   return (
     <article
-      className="glass-panel group flex flex-col gap-4 rounded-[16px] border border-on-surface/5 p-5 transition-all hover:border-cyan/40 hover:shadow-[0_0_15px_rgba(0,229,255,0.3)]"
+      className="glass-panel group relative flex flex-col gap-4 rounded-[16px] border border-on-surface/5 p-5 transition-all hover:border-cyan/40 hover:shadow-[0_0_15px_rgba(0,229,255,0.3)]"
       data-testid="campaign-ai-recommendation-card"
       data-kol-id={kol.id}
     >
+      <button
+        type="button"
+        data-testid={`explain-trigger-${kol.id}`}
+        aria-label={labels.queryButtonLabel}
+        title={labels.queryButtonLabel}
+        className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full border border-outline-variant/30 bg-surface/80 text-on-surface-variant transition-colors hover:border-cyan/40 hover:text-cyan-fixed"
+        onClick={() => {
+          // BL-067-F004 wires DetailedExplanationDialog here. F003 ships
+          // only the entry point + ARIA contract so the panel is shippable
+          // independently of the dialog (per audit §4:B fire-and-forget).
+        }}
+      >
+        <span className="material-symbols-outlined text-[16px]" aria-hidden>
+          help_outline
+        </span>
+      </button>
       <div className="flex gap-4">
         {kol.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element

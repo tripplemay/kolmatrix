@@ -1114,6 +1114,9 @@
         "invalidTransition": "That status change is not allowed.",
         "forbiddenWhenCompleted": "Revenue can only be edited while the campaign is not completed.",
         "revenueInvalid": "Revenue must be a non-negative number."
+      },
+      "explainability": {
+        "queryButtonLabel": "View detailed explanation"
       }
     },
     "new": {

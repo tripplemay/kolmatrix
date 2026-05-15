@@ -1165,6 +1165,9 @@
         "invalidTransition": "そのステータス変更は許可されていません。",
         "forbiddenWhenCompleted": "キャンペーンが完了していない間のみ、収益を編集できます。",
         "revenueInvalid": "収益は非負の数値である必要があります。"
+      },
+      "explainability": {
+        "queryButtonLabel": "詳しい説明を見る"
       }
     }
   },

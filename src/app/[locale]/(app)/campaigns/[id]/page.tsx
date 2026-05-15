@@ -194,6 +194,10 @@ function aiPanelLabels(t: TFn) {
       errorBanner: t("aiPanel.active.errorBanner"),
       retryCta: t("aiPanel.active.retryCta"),
       exhaustedBody: t("aiPanel.active.exhaustedBody"),
+      // BL-067-F003 — `?` icon aria-label. Lives under `campaigns.detail.explainability.*`
+      // namespace (per F006 spec) rather than the panel's own subtree so future
+      // explainability keys can stack alongside it without re-namespacing.
+      queryButtonLabel: t("explainability.queryButtonLabel"),
     },
   };
 }

@@ -1165,6 +1165,9 @@
         "invalidTransition": "Ese cambio de estado no está permitido.",
         "forbiddenWhenCompleted": "Los ingresos solo se pueden editar cuando la campaña no está completada.",
         "revenueInvalid": "Los ingresos deben ser un número no negativo."
+      },
+      "explainability": {
+        "queryButtonLabel": "Ver explicación detallada"
       }
     }
   },

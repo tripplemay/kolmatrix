@@ -24,6 +24,15 @@ vi.mock("../recommend-actions", () => ({
   acceptKolToCampaignAction: (...args: unknown[]) => acceptMock(...args),
 }));
 
+// BL-067-F003 — mock the new server action so the mount-time batch read
+// resolves deterministically across all panel tests (default: empty cache,
+// all misses → C2 fallback). Individual tests can override per-call.
+const readShortExplanationsBatchMock = vi.fn();
+vi.mock("../explainability-actions", () => ({
+  readShortExplanationsBatchAction: (...args: unknown[]) =>
+    readShortExplanationsBatchMock(...args),
+}));
+
 // Map-backed Storage so the panel cache reads + writes stay deterministic.
 beforeAll(() => {
   const store = new Map<string, string>();
@@ -81,6 +90,7 @@ const LABELS = {
     errorBanner: "Could not load",
     retryCta: "Retry",
     exhaustedBody: "All done",
+    queryButtonLabel: "View detailed explanation",
   },
 };
 
@@ -109,6 +119,10 @@ beforeEach(() => {
   routerRefresh.mockReset();
   acceptMock.mockReset();
   fetchMock.mockReset();
+  readShortExplanationsBatchMock.mockReset();
+  // Default: empty cache so every KOL renders the C2 fallback (matches
+  // BL-066 baseline behaviour). Individual F003 tests override this.
+  readShortExplanationsBatchMock.mockResolvedValue({ ok: true, results: {} });
   vi.stubGlobal("fetch", fetchMock);
 });
 
@@ -312,5 +326,127 @@ describe("AiRecommendationPanel (BL-066 F003)", () => {
       ).toHaveLength(5)
     );
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  // ---------- BL-067-F003 ----------
+  describe("BL-067-F003 — short explanation rendering + `?` icon trigger", () => {
+    it("calls readShortExplanationsBatchAction after smart-match returns with correct args", async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: makePool(30) }),
+      });
+      render(
+        <AiRecommendationPanel
+          productId="prod-1"
+          campaignId={CAMPAIGN}
+          tenantId={TENANT}
+          locale="zh"
+          labels={LABELS}
+        />
+      );
+
+      await waitFor(() => {
+        expect(readShortExplanationsBatchMock).toHaveBeenCalledTimes(1);
+      });
+      const call = readShortExplanationsBatchMock.mock.calls[0]![0] as {
+        campaignId: string;
+        kolIds: string[];
+        locale: string;
+      };
+      expect(call.campaignId).toBe(CAMPAIGN);
+      expect(call.locale).toBe("zh");
+      expect(call.kolIds).toHaveLength(30);
+      expect(call.kolIds[0]).toBe("kol-0");
+    });
+
+    it("renders the LLM short explanation when the cache returns a hit", async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: makePool(5) }),
+      });
+      readShortExplanationsBatchMock.mockResolvedValueOnce({
+        ok: true,
+        results: {
+          "kol-0": "LLM-generated short rationale for KOL 0",
+        },
+      });
+
+      render(
+        <AiRecommendationPanel
+          productId="prod-1"
+          campaignId={CAMPAIGN}
+          tenantId={TENANT}
+          locale="en"
+          labels={LABELS}
+        />
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/LLM-generated short rationale for KOL 0/)
+        ).toBeInTheDocument();
+      });
+      // The C2 fallback for kol-0 must NOT also render (substitution
+      // happens — pick a uniquely identifying substring from the template).
+      expect(
+        screen.queryByText(/match 90; value 80/)
+      ).not.toBeInTheDocument();
+    });
+
+    it("falls back to the C2 'whyTemplate' when the cache misses", async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: makePool(5) }),
+      });
+      // Default beforeEach mock returns `{ ok: true, results: {} }` so
+      // every kolId resolves to MISS → C2 fallback.
+      render(
+        <AiRecommendationPanel
+          productId="prod-1"
+          campaignId={CAMPAIGN}
+          tenantId={TENANT}
+          locale="en"
+          labels={LABELS}
+        />
+      );
+
+      await waitFor(() => {
+        // kol-0 has matchScore=90, valueScore=80 → "match 90; value 80"
+        expect(screen.getByText(/match 90; value 80/)).toBeInTheDocument();
+      });
+    });
+
+    it("renders the `?` icon trigger per card with testid + aria-label", async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: makePool(5) }),
+      });
+      render(
+        <AiRecommendationPanel
+          productId="prod-1"
+          campaignId={CAMPAIGN}
+          tenantId={TENANT}
+          locale="en"
+          labels={LABELS}
+        />
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getAllByTestId("campaign-ai-recommendation-card")
+        ).toHaveLength(5);
+      });
+
+      // Lock testid prefix shape AND aria-label content for each visible card.
+      for (let i = 0; i < 5; i += 1) {
+        const trigger = screen.getByTestId(`explain-trigger-kol-${i}`);
+        expect(trigger).toBeInTheDocument();
+        expect(trigger.getAttribute("aria-label")).toBe(
+          "View detailed explanation",
+        );
+        // Per spec §5 不变量 #6 — the `?` icon must render regardless of
+        // hit/miss; this is the cache-miss branch (beforeEach default).
+      }
+    });
   });
 });
