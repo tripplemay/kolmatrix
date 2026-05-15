@@ -14,7 +14,7 @@
  *   - en-login.png              — unauthenticated `/en/login` (BAux1-F004)
  *   - en-request-access.png     — unauthenticated `/en/request-access` (BAux1-F004)
  *   - en-campaigns.png          — authenticated `/en/campaigns` (BM2-F003 + MVP-vf-F004)
- *   - en-campaign-detail.png    — authenticated `/en/campaigns/:id` (BM2-F005 + MVP-vf-F005 + BL-066-F009 mask refresh for the 3-panel AI-native layout, 2026-05-15)
+ *   - en-campaign-detail.png    — authenticated `/en/campaigns/:id` (BM2-F005 + MVP-vf-F005 + BL-066-F009 mask refresh + viewport-only fix for 3-panel AI-native layout, 2026-05-15)
  *   - en-match.png              — authenticated `/en/match` unified workbench (BL-065-F006 placeholder, BL-066-F009 lands the baseline)
  *   - en-outreach.png           — authenticated `/en/outreach` (BM2-F006)
  *   - en-outreach-templates.png — authenticated `/en/outreach/templates` (BM2-F006)
@@ -298,13 +298,25 @@ test.describe("Authenticated BM2 visual regression", () => {
     });
   });
 
-  test("campaign detail full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
+  test("campaign detail viewport screenshot diffs < 2% vs baseline", async ({ page }) => {
     // BL-066-F008 removed the /campaigns/[id] → /match?campaignId 302
     // sediment (middleware-helpers.ts §93-95); F002 wired the 3-section
     // AI-native layout (Brief / AI recommendation / Accepted KOLs);
     // F006 renamed the bottom panel to AcceptedKolsPanel. The detail
     // route now renders directly and the baseline can be (re-)captured
     // via update-visual-baselines.
+    //
+    // BL-066-F009 follow-up: switched from `fullPage: true` to a
+    // viewport-only screenshot (default 1280×720). Root cause for the
+    // initial F009 baseline regen vs CI E2E mismatch (1126 vs 865 px
+    // tall, 70% pixel diff): `.first()` selects a non-deterministic
+    // campaign whose AcceptedKolsPanel row count drives the fullPage
+    // height. Mask doesn't help — fullPage capture height is set by
+    // the page's actual scroll height regardless of which regions are
+    // masked. Viewport-only fixes the screenshot dimensions to the
+    // playwright config viewport, and the layout/chrome (top nav,
+    // sidebar, breadcrumb area, brief panel framing) carries the
+    // visual signal.
     test.skip(
       shouldSkipMissingBaseline("en-campaign-detail.png", test.info()),
       "Baseline en-campaign-detail.png missing — run the 'Update visual baselines' workflow."
@@ -338,7 +350,8 @@ test.describe("Authenticated BM2 visual regression", () => {
     });
     await fontsReady(page);
 
-    // Mask the three dynamic content panels:
+    // Mask the three dynamic content panels (in case they intersect
+    // the viewport; mask is a no-op for regions outside the capture):
     //   - campaign-brief-summary  : campaign name / markets / budget /
     //     accepted+contacted counts all vary per tenant
     //   - campaign-ai-recommendation-card : fires /api/kols/smart-match
@@ -353,7 +366,6 @@ test.describe("Authenticated BM2 visual regression", () => {
     const acceptedKols = page.getByTestId("accepted-kols-panel");
 
     await expect(page).toHaveScreenshot("en-campaign-detail.png", {
-      fullPage: true,
       animations: "disabled",
       mask: [breadcrumb, brief, aiPanel, acceptedKols],
       threshold: 0.02,
