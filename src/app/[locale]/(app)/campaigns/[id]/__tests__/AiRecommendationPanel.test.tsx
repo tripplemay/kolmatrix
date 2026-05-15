@@ -37,6 +37,16 @@ vi.mock("../explainability-actions", () => ({
     requestDetailedMock(...args),
 }));
 
+// BL-067-F005 — mock prewarm action so smart-match return doesn't fail
+// trying to load auth() / jobQueue in jsdom. All existing tests should
+// pass regardless of whether prewarm is mocked or not — the panel calls
+// it fire-and-forget after a successful fetchPool.
+const enqueuePrewarmMock = vi.fn();
+vi.mock("../prewarm-actions", () => ({
+  enqueueExplanationPrewarmAction: (...args: unknown[]) =>
+    enqueuePrewarmMock(...args),
+}));
+
 // Map-backed Storage so the panel cache reads + writes stay deterministic.
 beforeAll(() => {
   const store = new Map<string, string>();
@@ -149,6 +159,8 @@ beforeEach(() => {
     ok: true,
     data: { segments: null, fallbackToC2: false, traceId: null },
   });
+  enqueuePrewarmMock.mockReset();
+  enqueuePrewarmMock.mockResolvedValue({ ok: true, jobId: "test-job" });
   vi.stubGlobal("fetch", fetchMock);
 });
 
@@ -473,6 +485,43 @@ describe("AiRecommendationPanel (BL-066 F003)", () => {
         // Per spec §5 不变量 #6 — the `?` icon must render regardless of
         // hit/miss; this is the cache-miss branch (beforeEach default).
       }
+    });
+
+    it("enqueues pre-warm action after smart-match returns top-30 (F005 wiring)", async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: makePool(30) }),
+      });
+      render(
+        <AiRecommendationPanel
+          productId="prod-1"
+          campaignId={CAMPAIGN}
+          tenantId={TENANT}
+          locale="en"
+          labels={LABELS}
+        />
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getAllByTestId("campaign-ai-recommendation-card")
+        ).toHaveLength(5);
+      });
+
+      // The pre-warm action should fire once with the 30 kolIds and the
+      // current campaignId. Locale is intentionally NOT passed — the
+      // worker pre-warms all 5 locales in one LLM call per spec §5
+      // 不变量 #5 / decision #5.
+      await waitFor(() => {
+        expect(enqueuePrewarmMock).toHaveBeenCalledTimes(1);
+      });
+      const call = enqueuePrewarmMock.mock.calls[0]![0] as {
+        campaignId: string;
+        kolIds: string[];
+      };
+      expect(call.campaignId).toBe(CAMPAIGN);
+      expect(call.kolIds).toHaveLength(30);
+      expect(call.kolIds[0]).toBe("kol-0");
     });
 
     it("clicking the `?` icon opens DetailedExplanationDialog for that kolId (F004 wiring)", async () => {

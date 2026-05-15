@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-067-explainability-c3 — ADR-013 AI Native Phase 3 第一批：/campaigns/[id] AiRecommendationPanel 升级为 C3 双向 explainability（每卡 short 1 句话 LLM 解释 + 用户主动 query 详细 5 段 dialog）。7 features F001-F007，~6 day Generator + 1 day Reviewer。8 决策点用户 5/15 brainstorming 全 lock：#1 ready-to-build / #2 campaign 创建后批量预生成 top 30 × 5 locale / #3 skip/replace 保持 client-state-only / #4 ? icon → Modal Dialog / #5 1 次 LLM call 输出 5 locale JSON / #6 haiku-4.5 + 沿用 BL-034 F005 cap $5/day/tenant / #7 silent fallback to C2 / #8 AiRecommendationPanel mount + smart-match 返回后即触发。本批次完成后解锁 Phase 3 第二批 BL-068 B3 自然语言 refine。关联 docs/specs/BL-067-explainability-c3-spec.md @ 5275a79 / ADR-013 §Decision #5 / vision §3 场景 2/4 + §7 原则 4 / roadmap §5 BL-067 + §11 Phase 3 verifying gate.",
   "total_features": 7,
-  "completed_features": 3,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "BL-067-explainability-c3",
-  "last_updated": "2026-05-15T15:00+0800",
+  "last_updated": "2026-05-15T15:20+0800",
   "reference_docs": [
     "docs/specs/BL-067-explainability-c3-spec.md",
     "docs/adr/ADR-013-ai-native-product-pivot.md",

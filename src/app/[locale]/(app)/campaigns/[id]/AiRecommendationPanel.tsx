@@ -37,6 +37,7 @@ import {
 
 import { acceptKolToCampaignAction } from "./recommend-actions";
 import { readShortExplanationsBatchAction } from "./explainability-actions";
+import { enqueueExplanationPrewarmAction } from "./prewarm-actions";
 import {
   DetailedExplanationDialog,
   type DetailedExplanationLabels,
@@ -260,12 +261,27 @@ function ActiveOrLoading({
         replaced: [],
         fetchedAt: Date.now(),
       });
+      // BL-067-F005 — fire-and-forget pre-warm enqueue. server action
+      // idempotency key dedupes re-mounts inside the same process. We
+      // do not await; the action's internal `jobQueue.add(...)` with
+      // delay:1 returns in <10ms anyway. Empty pool = action noop.
+      if (next.length > 0) {
+        void enqueueExplanationPrewarmAction({
+          campaignId,
+          kolIds: next.map((k) => k.id),
+        }).catch((err) => {
+          console.error(
+            "[BL-067-F005] enqueueExplanationPrewarmAction failed:",
+            err,
+          );
+        });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "fetch_failed");
     } finally {
       setLoading(false);
     }
-  }, [productId, key, accepted, skipped]);
+  }, [productId, campaignId, key, accepted, skipped]);
 
   // Fetch fresh on first mount only when no cached pool was hydrated.
   // (Lazy initial state above handled the cache-hit branch — no setState

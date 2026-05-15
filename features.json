@@ -68,7 +68,9 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 8.0,
-    "status": "pending",
+    "status": "done",
+    "done_commit": "a6aa58a",
+    "done_at": "2026-05-15T15:10+0800",
     "acceptance": [
       "新组件 `src/app/[locale]/(app)/campaigns/[id]/DetailedExplanationDialog.tsx`（\"use client\"）：Props `{ kolId, campaignId, kol, valueScore, open, onClose }` / 首次打开调 server action `requestDetailedExplanationAction({ campaignId, kolId, locale })` / Loading skeleton 渲染 5 段骨架 / 5s 超时 fallback 显 `campaigns.detail.explainability.unavailable` 文案 + 关闭按钮 / 渲染 5 段结构（标题 i18n + LLM 内容）：matchScore / categoryFit / recentActivity / audienceFit / brandHistory",
       "新文件 `src/app/[locale]/(app)/campaigns/[id]/explainability-actions.ts`（\"use server\"）含 `requestDetailedExplanationAction({ campaignId, kolId, locale }): Promise<{ segments | null; fallbackToC2: boolean }>` 流程：（1）查 cache → HIT 返回；（2）MISS → `checkLlmCostCap(tenantId)` → 满 → 返回 `{ segments: null, fallbackToC2: true }`；（3）未满 → 拼 input 调 aigcgateway `run_action(AIGCGATEWAY_EXPLAIN_DETAILED_ACTION_ID, input)` → 解析 JSON → `writeDetailedExplanation` per locale → 返回当前 locale segments",

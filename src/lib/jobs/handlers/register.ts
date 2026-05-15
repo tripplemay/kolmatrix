@@ -9,4 +9,11 @@
 //     await sendWithResend(payload);
 //   });
 
+// BL-067-F005 · short-explanation pre-warm worker. Idempotency key
+// `prewarm-{tenantId}-{campaignId}` keeps re-mount within the same
+// process from re-triggering the LLM batch.
+import { registerExplainPrewarmHandler } from "@/lib/queue/explain-recommendations-worker";
+
+registerExplainPrewarmHandler();
+
 export {};
