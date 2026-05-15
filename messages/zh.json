@@ -1116,7 +1116,29 @@
         "revenueInvalid": "收入需为非负数字。"
       },
       "explainability": {
-        "queryButtonLabel": "查看详细解释"
+        "queryButtonLabel": "查看详细解释",
+        "dialogTitle": "为什么推荐 @{handle}",
+        "loading": "正在生成详细解释……",
+        "unavailable": "详细解释暂时不可用，请稍后重试。",
+        "capExhaustedToast": "当前租户的每日 AI 配额已用尽，仅显示简要说明。",
+        "closeCta": "关闭",
+        "segments": {
+          "matchScore": {
+            "title": "匹配分数"
+          },
+          "categoryFit": {
+            "title": "品类契合"
+          },
+          "recentActivity": {
+            "title": "近期活跃度"
+          },
+          "audienceFit": {
+            "title": "受众契合"
+          },
+          "brandHistory": {
+            "title": "品牌合作历史"
+          }
+        }
       }
     },
     "new": {

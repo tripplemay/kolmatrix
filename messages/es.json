@@ -1167,7 +1167,29 @@
         "revenueInvalid": "Los ingresos deben ser un número no negativo."
       },
       "explainability": {
-        "queryButtonLabel": "Ver explicación detallada"
+        "queryButtonLabel": "Ver explicación detallada",
+        "dialogTitle": "Por qué recomendamos a @{handle}",
+        "loading": "Generando explicación detallada…",
+        "unavailable": "La explicación detallada no está disponible en este momento. Inténtalo de nuevo más tarde.",
+        "capExhaustedToast": "Se alcanzó la cuota diaria de IA para este tenant. Se muestra un resumen breve.",
+        "closeCta": "Cerrar",
+        "segments": {
+          "matchScore": {
+            "title": "Puntuación de Coincidencia"
+          },
+          "categoryFit": {
+            "title": "Ajuste de Categoría"
+          },
+          "recentActivity": {
+            "title": "Actividad Reciente"
+          },
+          "audienceFit": {
+            "title": "Ajuste de Audiencia"
+          },
+          "brandHistory": {
+            "title": "Historial de Marcas"
+          }
+        }
       }
     }
   },

@@ -1167,7 +1167,29 @@
         "revenueInvalid": "収益は非負の数値である必要があります。"
       },
       "explainability": {
-        "queryButtonLabel": "詳しい説明を見る"
+        "queryButtonLabel": "詳しい説明を見る",
+        "dialogTitle": "@{handle} さんを推薦する理由",
+        "loading": "詳しい説明を生成中…",
+        "unavailable": "詳しい説明は一時的に利用できません。後ほど再度お試しください。",
+        "capExhaustedToast": "本日の AI 利用上限に達しました。簡易版を表示します。",
+        "closeCta": "閉じる",
+        "segments": {
+          "matchScore": {
+            "title": "マッチスコア"
+          },
+          "categoryFit": {
+            "title": "カテゴリ適合度"
+          },
+          "recentActivity": {
+            "title": "直近のアクティビティ"
+          },
+          "audienceFit": {
+            "title": "オーディエンス適合度"
+          },
+          "brandHistory": {
+            "title": "ブランド連携履歴"
+          }
+        }
       }
     }
   },

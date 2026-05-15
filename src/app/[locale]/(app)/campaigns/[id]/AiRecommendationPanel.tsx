@@ -37,6 +37,10 @@ import {
 
 import { acceptKolToCampaignAction } from "./recommend-actions";
 import { readShortExplanationsBatchAction } from "./explainability-actions";
+import {
+  DetailedExplanationDialog,
+  type DetailedExplanationLabels,
+} from "./DetailedExplanationDialog";
 
 interface KolHit {
   id: string;
@@ -92,6 +96,8 @@ interface Labels {
   empty: EmptyLabels;
   loading: LoadingLabels;
   active: ActiveLabels;
+  /** BL-067-F004 — DetailedExplanationDialog labels. */
+  explainabilityDialog: DetailedExplanationLabels;
 }
 
 interface Props {
@@ -215,6 +221,10 @@ function ActiveOrLoading({
   const [shortExplanations, setShortExplanations] = useState<
     Record<string, string | null>
   >({});
+  // BL-067-F004 — currently-open DetailedExplanationDialog target kolId
+  // (null when closed). The dialog is mounted once at this scope so we
+  // don't pay the React reconciliation cost of 30 hidden dialog trees.
+  const [openDialogKolId, setOpenDialogKolId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const didInit = useRef(false);
   const hadCacheOnMount = useRef<boolean | null>(null);
@@ -377,18 +387,37 @@ function ActiveOrLoading({
     );
   }
 
+  const openDialogKol =
+    openDialogKolId == null
+      ? null
+      : pool.find((k) => k.id === openDialogKolId) ?? null;
+
   return (
-    <ActivePanel
-      visible={visible}
-      pool={pool}
-      labels={labels.active}
-      locale={locale}
-      onAccept={onAccept}
-      onSkip={onSkip}
-      onReplaceAll={onReplaceAll}
-      bannerError={error}
-      shortExplanations={shortExplanations}
-    />
+    <>
+      <ActivePanel
+        visible={visible}
+        pool={pool}
+        labels={labels.active}
+        locale={locale}
+        onAccept={onAccept}
+        onSkip={onSkip}
+        onReplaceAll={onReplaceAll}
+        bannerError={error}
+        shortExplanations={shortExplanations}
+        onOpenDialog={setOpenDialogKolId}
+      />
+      {openDialogKol ? (
+        <DetailedExplanationDialog
+          open={openDialogKolId !== null}
+          onClose={() => setOpenDialogKolId(null)}
+          kolId={openDialogKol.id}
+          campaignId={campaignId}
+          kolHandle={openDialogKol.handle}
+          locale={locale}
+          labels={labels.explainabilityDialog}
+        />
+      ) : null}
+    </>
   );
 }
 
@@ -402,6 +431,7 @@ function ActivePanel({
   onReplaceAll,
   bannerError,
   shortExplanations,
+  onOpenDialog,
 }: {
   visible: KolHit[];
   pool: KolHit[];
@@ -412,6 +442,7 @@ function ActivePanel({
   onReplaceAll: () => void;
   bannerError: string | null;
   shortExplanations: Record<string, string | null>;
+  onOpenDialog: (kolId: string) => void;
 }) {
   return (
     <section
@@ -491,6 +522,7 @@ function ActivePanel({
               onAccept={() => onAccept(kol)}
               onSkip={() => onSkip(kol.id)}
               shortExplanation={shortExplanations[kol.id] ?? null}
+              onOpenDialog={() => onOpenDialog(kol.id)}
             />
           ))}
         </div>
@@ -510,6 +542,7 @@ function KolCard({
   onAccept,
   onSkip,
   shortExplanation,
+  onOpenDialog,
 }: {
   kol: KolHit;
   labels: ActiveLabels;
@@ -522,6 +555,8 @@ function KolCard({
    * regardless of hit/miss per spec §5 不变量 #6.
    */
   shortExplanation: string | null;
+  /** BL-067-F004 — invoked when the `?` icon is clicked. */
+  onOpenDialog: () => void;
 }) {
   const valueScoreLabel =
     kol.valueScore == null ? labels.noScore : String(kol.valueScore);
@@ -542,11 +577,7 @@ function KolCard({
         aria-label={labels.queryButtonLabel}
         title={labels.queryButtonLabel}
         className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full border border-outline-variant/30 bg-surface/80 text-on-surface-variant transition-colors hover:border-cyan/40 hover:text-cyan-fixed"
-        onClick={() => {
-          // BL-067-F004 wires DetailedExplanationDialog here. F003 ships
-          // only the entry point + ARIA contract so the panel is shippable
-          // independently of the dialog (per audit §4:B fire-and-forget).
-        }}
+        onClick={onOpenDialog}
       >
         <span className="material-symbols-outlined text-[16px]" aria-hidden>
           help_outline

@@ -1116,7 +1116,29 @@
         "revenueInvalid": "Revenue must be a non-negative number."
       },
       "explainability": {
-        "queryButtonLabel": "View detailed explanation"
+        "queryButtonLabel": "View detailed explanation",
+        "dialogTitle": "Why we recommend @{handle}",
+        "loading": "Generating detailed explanation…",
+        "unavailable": "Detailed explanation is temporarily unavailable. Please try again later.",
+        "capExhaustedToast": "Daily AI quota reached for this tenant. Showing a brief summary instead.",
+        "closeCta": "Close",
+        "segments": {
+          "matchScore": {
+            "title": "Match Score"
+          },
+          "categoryFit": {
+            "title": "Category Fit"
+          },
+          "recentActivity": {
+            "title": "Recent Activity"
+          },
+          "audienceFit": {
+            "title": "Audience Fit"
+          },
+          "brandHistory": {
+            "title": "Brand History"
+          }
+        }
       }
     },
     "new": {

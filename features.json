@@ -49,7 +49,9 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "pending",
+    "status": "done",
+    "done_commit": "cdebf38",
+    "done_at": "2026-05-15T15:00+0800",
     "acceptance": [
       "升级 BL-066 F003 中的 `_explanation_placeholder` 占位段：mount 时 batch 调 `Promise.all(top30.map(kol => readShortExplanation(tenantId, campaignId, kol.id, locale)))` → 渲染 per kol：HIT → 显 LLM short / MISS → 显 C2 fallback 文案（`cosine match {matchScore} | valueScore {valueScore}` 保持现状）",
       "每个 KOL 卡片右上加 `help_outline` Material Symbols icon：`data-testid='explain-trigger-{kolId}'` + aria-label 取自 i18n key `campaigns.detail.explainability.queryButtonLabel` + 点击打开 `DetailedExplanationDialog`（F004）",

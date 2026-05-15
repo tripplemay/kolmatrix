@@ -1167,7 +1167,29 @@
         "revenueInvalid": "매출은 음수가 아닌 숫자여야 합니다."
       },
       "explainability": {
-        "queryButtonLabel": "자세한 설명 보기"
+        "queryButtonLabel": "자세한 설명 보기",
+        "dialogTitle": "@{handle}님을 추천하는 이유",
+        "loading": "자세한 설명을 생성하는 중…",
+        "unavailable": "자세한 설명을 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.",
+        "capExhaustedToast": "오늘의 AI 사용 한도에 도달했습니다. 간단 요약만 표시됩니다.",
+        "closeCta": "닫기",
+        "segments": {
+          "matchScore": {
+            "title": "매칭 점수"
+          },
+          "categoryFit": {
+            "title": "카테고리 적합도"
+          },
+          "recentActivity": {
+            "title": "최근 활동"
+          },
+          "audienceFit": {
+            "title": "오디언스 적합도"
+          },
+          "brandHistory": {
+            "title": "브랜드 협업 이력"
+          }
+        }
       }
     }
   },

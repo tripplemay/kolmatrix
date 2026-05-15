@@ -199,6 +199,30 @@ function aiPanelLabels(t: TFn) {
       // explainability keys can stack alongside it without re-namespacing.
       queryButtonLabel: t("explainability.queryButtonLabel"),
     },
+    // BL-067-F004 — DetailedExplanationDialog labels. Title uses
+    // `t.raw(...)` (template with `{handle}` placeholder; client-side
+    // String.replace at render time per role-context i18n template
+    // sediment v0.9.21).
+    explainabilityDialog: {
+      dialogTitle: t.raw("explainability.dialogTitle") as string,
+      loading: t("explainability.loading"),
+      unavailable: t("explainability.unavailable"),
+      capExhaustedToast: t("explainability.capExhaustedToast"),
+      closeCta: t("explainability.closeCta"),
+      segments: {
+        matchScore: { title: t("explainability.segments.matchScore.title") },
+        categoryFit: { title: t("explainability.segments.categoryFit.title") },
+        recentActivity: {
+          title: t("explainability.segments.recentActivity.title"),
+        },
+        audienceFit: {
+          title: t("explainability.segments.audienceFit.title"),
+        },
+        brandHistory: {
+          title: t("explainability.segments.brandHistory.title"),
+        },
+      },
+    },
   };
 }
 

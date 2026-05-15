@@ -28,9 +28,13 @@ vi.mock("../recommend-actions", () => ({
 // resolves deterministically across all panel tests (default: empty cache,
 // all misses → C2 fallback). Individual tests can override per-call.
 const readShortExplanationsBatchMock = vi.fn();
+// BL-067-F004 — mock detailed action so dialog open path is deterministic.
+const requestDetailedMock = vi.fn();
 vi.mock("../explainability-actions", () => ({
   readShortExplanationsBatchAction: (...args: unknown[]) =>
     readShortExplanationsBatchMock(...args),
+  requestDetailedExplanationAction: (...args: unknown[]) =>
+    requestDetailedMock(...args),
 }));
 
 // Map-backed Storage so the panel cache reads + writes stay deterministic.
@@ -92,6 +96,23 @@ const LABELS = {
     exhaustedBody: "All done",
     queryButtonLabel: "View detailed explanation",
   },
+  // BL-067-F004 — labels for DetailedExplanationDialog. Required by the
+  // `Labels` interface even when no test exercises the dialog open path,
+  // because the panel passes them through unconditionally.
+  explainabilityDialog: {
+    dialogTitle: "Why we recommend @{handle}",
+    loading: "Loading detailed explanation",
+    unavailable: "Detailed explanation unavailable",
+    capExhaustedToast: "Daily AI quota reached",
+    closeCta: "Close",
+    segments: {
+      matchScore: { title: "Match Score" },
+      categoryFit: { title: "Category Fit" },
+      recentActivity: { title: "Recent Activity" },
+      audienceFit: { title: "Audience Fit" },
+      brandHistory: { title: "Brand History" },
+    },
+  },
 };
 
 const TENANT = "11111111-2222-3333-4444-555555555555";
@@ -123,6 +144,11 @@ beforeEach(() => {
   // Default: empty cache so every KOL renders the C2 fallback (matches
   // BL-066 baseline behaviour). Individual F003 tests override this.
   readShortExplanationsBatchMock.mockResolvedValue({ ok: true, results: {} });
+  requestDetailedMock.mockReset();
+  requestDetailedMock.mockResolvedValue({
+    ok: true,
+    data: { segments: null, fallbackToC2: false, traceId: null },
+  });
   vi.stubGlobal("fetch", fetchMock);
 });
 
@@ -447,6 +473,61 @@ describe("AiRecommendationPanel (BL-066 F003)", () => {
         // Per spec §5 不变量 #6 — the `?` icon must render regardless of
         // hit/miss; this is the cache-miss branch (beforeEach default).
       }
+    });
+
+    it("clicking the `?` icon opens DetailedExplanationDialog for that kolId (F004 wiring)", async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: makePool(5) }),
+      });
+      requestDetailedMock.mockResolvedValueOnce({
+        ok: true,
+        data: {
+          segments: {
+            matchScore: "ms-text",
+            categoryFit: "cf-text",
+            recentActivity: "ra-text",
+            audienceFit: "af-text",
+            brandHistory: "bh-text",
+          },
+          fallbackToC2: false,
+          traceId: "trace-test",
+        },
+      });
+
+      render(
+        <AiRecommendationPanel
+          productId="prod-1"
+          campaignId={CAMPAIGN}
+          tenantId={TENANT}
+          locale="en"
+          labels={LABELS}
+        />
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getAllByTestId("campaign-ai-recommendation-card")
+        ).toHaveLength(5);
+      });
+
+      // Click trigger for kol-0 — should fire the server action with that
+      // kolId + the panel's locale.
+      fireEvent.click(screen.getByTestId("explain-trigger-kol-0"));
+
+      await waitFor(() => {
+        expect(requestDetailedMock).toHaveBeenCalledTimes(1);
+      });
+      const call = requestDetailedMock.mock.calls[0]![0] as {
+        campaignId: string;
+        kolId: string;
+        locale: string;
+      };
+      expect(call).toEqual({
+        campaignId: CAMPAIGN,
+        kolId: "kol-0",
+        locale: "en",
+      });
     });
   });
 });
