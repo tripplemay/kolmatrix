@@ -5,7 +5,13 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 6.0,
-    "status": "pending",
+    "status": "done",
+    "done_commit": "dd7870c",
+    "done_at": "2026-05-15T14:15+0800",
+    "actions_registered": {
+      "short": "cmp6ifb5w0035bnrrljflmtcn",
+      "detailed": "cmp6ihdt109jebnrqdj215aft"
+    },
     "acceptance": [
       "创建 `kol-recommendation-explain-short` action via MCP `create_action`：model=`claude-haiku-4-5` / variables=`kol_json` `campaign_json` `value_score_breakdown_json` `locales_json` / response_format=`json_object` / prompt（system，中文骨架）要求每个 locale 生成 ≤80 字一句话解释（命中 follower/engagement/category/内容质量 4 维度信号）→ 输出 JSON `{ en: '...', zh: '...', ja: '...', ko: '...', es: '...' }`",
       "创建 `kol-recommendation-explain-detailed` action：同模型 / 同变量结构 / response_format=`json_object` / prompt 要求输出 5 段结构化 JSON 每段 ≤200 字 per locale → 顶层 JSON `{ en: { matchScore, categoryFit, recentActivity, audienceFit, brandHistory }, zh: {...}, ja: {...}, ko: {...}, es: {...} }`",

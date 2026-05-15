@@ -3,11 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔨 BL-067-explainability-c3 BUILDING（0/7, fix_rounds=0, F001 audit 6 议题裁决 done @ Planner johnsong, Generator 起 F001 即可）
-- F001 audit 6 议题全 ack 默认建议 #1:A/#2:A/#3:A/#4:B/#5:A/#6:A：F002 cost-cap 包装 (src/lib/ai/cost-cap.ts 而非 spec 原写错) + flat meter 保留 + F005 inline computeKolValueScore + InMemoryJobQueue fire-and-forget (非 BullMQ) + cleanup cron 06:30/14:30 + F001 +run-action.ts SDK 抽象层
-- F001 6h → F002 8.5h → F003 4h → F004 8h → F005 12h → F006 8h → F007 4h = 50.5h ≈ 6.3 day (+2.5h 在偏差范围)
-- 8 决策点 brainstorming 5/15 全 lock；F001 audit doc + Planner 裁决段 docs/specs/BL-067-F001-preimpl-audit.md §9
-- Generator 起工回执后立即起 F001: prompt design doc + run-action.ts SDK + MCP create_action × 2 + dry_run + SSH env vars
+## 🔨 BL-067-explainability-c3 BUILDING（1/7 ✅ F001 @ dd7870c, fix_rounds=0, spec=9a78c2d Planner 修订版）
+- ✅ F001 (6h actual) aigcgateway 2 action + run-action.ts SDK (9 unit tests) + prompt design doc + SSH 落 env vars (prod+staging additive append) + staging deploy run 25903337133 git_sha=dd7870c
+- F001 actions: short=cmp6ifb5w0035bnrrljflmtcn / detailed=cmp6ihdt109jebnrqdj215aft (haiku-4.5, dry_run est. 1450/1650 input ≤ 2000 ceiling)
+- F002 (8.5h) asset 缓存层 + checkLlmCostBudget 包装 + AssetType migration + cleanup cron 06:30 BJT → F003 (4h) panel C2→C3 + `?` icon → F004 (8h) DetailedDialog → F005 (12h) InMemoryJobQueue fire-and-forget worker (audit #4:B) → F006 (8h) i18n + e2e 6 case → F007 (4h) staging + 视觉 baseline + cost 监控 + signoff
+- 6 议题 F001 audit 全 ack 默认 #1-#6:A 或 #4:B，详 9433bc3
 ## ✅ BL-066-campaign-detail-ai-main-panel DONE（9/9, fix_rounds=0, prod=f2a8210, signoff=BL-066-signoff-2026-05-15.md）
 - F001-F009 ✅ Generator 段 → Reviewer 接手 24h pm2 monitor + 终签 (BL-065 加速模式可省略 24h)
 - F009 @ 09:21 prod deploy run 25895017122 / 09:25 prod recompute apply (1397 rows / spread 52 / audit_log id=2617) / 09:58 prod-audit script PASS=11 FAIL=0 WARN=0 (v1→v5 5 次 fix: §6 audit_log 表名 + §5 grep deprecated marker filter + §1 ancestor-on-main + origin/main detached HEAD + SIGPIPE capture-then-grep). 同会话 b115367/f2a8210 修 CI 红: visual-regression viewport-only fix + woff2 regen + EXPECTED_BASELINES sync (en-match.png width=1332)
