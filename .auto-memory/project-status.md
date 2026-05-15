@@ -3,10 +3,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 📋 BL-067-explainability-c3 PLANNING（0/7, fix_rounds=0, spec=5275a79, role_assignments=null 默认映射）
-- F001-F007 待做：F001 aigcgateway 2 action 注册（4h）/ F002 asset 缓存层 + BL-034 F005 cap 复用（8h）/ F003 AiRecommendationPanel C2→C3 升级 + `?` icon（4h）/ F004 DetailedExplanationDialog + server action（8h）/ F005 BullMQ pre-warm worker + mount trigger（12h）/ F006 5 语言 i18n + e2e 6 case（8h）/ F007 staging deploy + 视觉 baseline + 24h cost 监控 + signoff（4h）
-- 8 决策点 brainstorming 5/15 全 lock：#1 ready-to-build / #2 batch 预生成 top30×5 locale / #3 client-state-only / #4 `?` icon dialog / #5 1 call 5 locale JSON / #6 haiku-4.5 + BL-034 F005 cap $5/day/tenant / #7 silent fallback to C2 / #8 mount + smart-match 后触发
-- 下一动作：Planner 切 status: planning → building → Generator 起 F001（grep schema.prisma + SSH 跑 MCP list_models / get_balance 前置检查）
+## 🔨 BL-067-explainability-c3 BUILDING（0/7, fix_rounds=0, spec=5275a79, role_assignments=null 默认映射，commit 6005602 起 planning → building）
+- F001 aigcgateway 2 action（4h）→ F002 asset 缓存层 + cap 复用（8h）→ F003 panel C2→C3 + `?` icon（4h）→ F004 DetailedDialog + server action（8h）→ F005 BullMQ pre-warm worker + trigger（12h）→ F006 i18n + e2e 6 case（8h）→ F007 staging + 视觉 baseline + cost 监控 + signoff（4h）
+- 8 决策点 brainstorming 5/15 全 lock：#1 ready-to-build / #2 batch 预生成 top30×5 locale / #3 client-state-only / #4 `?` icon dialog / #5 1 call 5 locale JSON / #6 haiku-4.5 + BL-034 F005 cap / #7 silent fallback to C2 / #8 mount + smart-match 后触发
+- Generator 起步 checklist 已 session_notes.johnsong_planner 详写：grep schema.prisma AssetType + SSH MCP list_models / get_balance / cost-cap/check.ts 函数签名 + F001 起 prompt design doc + 落 AIGCGATEWAY_EXPLAIN_* env
 ## ✅ BL-066-campaign-detail-ai-main-panel DONE（9/9, fix_rounds=0, prod=f2a8210, signoff=BL-066-signoff-2026-05-15.md）
 - F001-F009 ✅ Generator 段 → Reviewer 接手 24h pm2 monitor + 终签 (BL-065 加速模式可省略 24h)
 - F009 @ 09:21 prod deploy run 25895017122 / 09:25 prod recompute apply (1397 rows / spread 52 / audit_log id=2617) / 09:58 prod-audit script PASS=11 FAIL=0 WARN=0 (v1→v5 5 次 fix: §6 audit_log 表名 + §5 grep deprecated marker filter + §1 ancestor-on-main + origin/main detached HEAD + SIGPIPE capture-then-grep). 同会话 b115367/f2a8210 修 CI 红: visual-regression viewport-only fix + woff2 regen + EXPECTED_BASELINES sync (en-match.png width=1332)
