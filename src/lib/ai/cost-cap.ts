@@ -120,6 +120,28 @@ export async function recordAiUsage(
   });
 }
 
+/**
+ * BL-067-F002 (per F001 audit §1:A) · Non-throwing boolean wrapper around
+ * `assertDailyCostBudget` for BL-067 callers (F004 dialog server action +
+ * F005 pre-warm worker) that need silent fallback to C2 (per spec §5
+ * 不变量 #4 #5) instead of try/catch on the AiDailyCostExceededError throw.
+ *
+ * Reuses the same count(event_log) query path — no duplicate logic. Existing
+ * BL-034 callers (customize.ts / topic-cloud.ts) continue using
+ * `assertDailyCostBudget` for back-compat (per F001 audit §1:A constraint).
+ */
+export async function checkLlmCostBudget(
+  tenantId: string,
+): Promise<{ allowed: boolean }> {
+  try {
+    await assertDailyCostBudget(tenantId);
+    return { allowed: true };
+  } catch (err) {
+    if (err instanceof AiDailyCostExceededError) return { allowed: false };
+    throw err;
+  }
+}
+
 // Internal exports for unit tests that need to introspect the constants
 // without re-deriving them.
 export const __internal = {

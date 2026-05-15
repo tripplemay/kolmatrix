@@ -83,3 +83,23 @@ describe("assertDailyCostBudget", () => {
     await expect(assertDailyCostBudget(TENANT_ID)).resolves.toBeUndefined();
   });
 });
+
+describe("checkLlmCostBudget (BL-067-F002, per F001 audit §1:A)", () => {
+  it("returns { allowed: true } when assertDailyCostBudget does not throw", async () => {
+    eventLogCount.mockResolvedValueOnce(0);
+    const { checkLlmCostBudget } = await import("@/lib/ai/cost-cap");
+    await expect(checkLlmCostBudget(TENANT_ID)).resolves.toEqual({ allowed: true });
+  });
+
+  it("returns { allowed: false } when the daily cap is hit (catches AiDailyCostExceededError)", async () => {
+    eventLogCount.mockResolvedValueOnce(500);
+    const { checkLlmCostBudget } = await import("@/lib/ai/cost-cap");
+    await expect(checkLlmCostBudget(TENANT_ID)).resolves.toEqual({ allowed: false });
+  });
+
+  it("re-throws unexpected errors (not AiDailyCostExceededError) so callers see DB problems", async () => {
+    eventLogCount.mockRejectedValueOnce(new Error("connection lost"));
+    const { checkLlmCostBudget } = await import("@/lib/ai/cost-cap");
+    await expect(checkLlmCostBudget(TENANT_ID)).rejects.toThrow(/connection lost/);
+  });
+});

@@ -1,0 +1,31 @@
+-- BL-067-F002: add 2 AssetType enum values for /campaigns/[id] explainability cache.
+--
+-- Per spec §F002 + BL-067-F001 audit §5:A — short/detailed AI-generated explanations
+-- ride on the existing Asset table (cache key encoded in `name` field as
+-- `explain-{short|detailed}/{campaignId}/{kolId}/{locale}`) with 24h TTL,
+-- garbage-collected by scripts/cleanup-expired-explanation-assets.ts (cron 06:30 BJT).
+--
+-- Reuses the BL-034-era Asset RLS policy (tenant_id = session GUC OR tenant_id IS NULL)
+-- so no separate RLS wiring is needed. cache.ts must run all reads + writes through
+-- withTenant() so the GUC is set before the query reaches the policy gate.
+--
+-- Postgres ALTER TYPE ADD VALUE has a transaction caveat: when invoked inside an
+-- explicit BEGIN, the new value cannot be used in the same transaction. Prisma's
+-- migrate-deploy runs each statement in its own implicit commit (no `BEGIN` wrap
+-- around enum ALTERs since PG14+), so subsequent migrations and runtime code see
+-- the new values immediately.
+--
+-- ROLLBACK:
+--   Postgres does NOT support `ALTER TYPE ... DROP VALUE`. To remove these
+--   enum values you must recreate the type:
+--     1. DELETE / migrate rows of these types out of `asset` first
+--     2. CREATE TYPE "AssetType_old" AS ENUM ('email', 'video_script');
+--     3. ALTER TABLE "asset" ALTER COLUMN "type" TYPE "AssetType_old"
+--        USING type::text::"AssetType_old";
+--     4. DROP TYPE "AssetType";
+--     5. ALTER TYPE "AssetType_old" RENAME TO "AssetType";
+--   In practice, leave orphaned enum values in place (zero runtime cost) rather
+--   than risk the rename dance during an incident.
+
+ALTER TYPE "AssetType" ADD VALUE 'ai_recommendation_explanation_short';
+ALTER TYPE "AssetType" ADD VALUE 'ai_recommendation_explanation_detailed';

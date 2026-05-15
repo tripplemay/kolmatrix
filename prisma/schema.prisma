@@ -602,6 +602,8 @@ model KolSyncCursor {
 enum AssetType {
   email
   video_script
+  ai_recommendation_explanation_short
+  ai_recommendation_explanation_detailed
 }
 
 enum AssetSource {

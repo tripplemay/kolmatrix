@@ -1,0 +1,66 @@
+name: Cron — Cleanup expired explanation assets (BL-067-F002)
+
+# Per F001 audit §5:A — runs daily at 22:30 UTC (06:30 BJT), in the gap
+# between the kol-sync-daily 04:00-06:00 BJT window and the rest of the day
+# so concurrent UPDATE/DELETE on `asset` doesn't lock-churn against
+# pre-warm worker inserts (F005 runs on user mount, no fixed schedule, but
+# heaviest mid-day BJT when ops team dogfoods).
+#
+# Workflow_dispatch is provided so ops can also trigger ad-hoc cleanups
+# during incident response (e.g. testing the prod cap rollback).
+
+on:
+  schedule:
+    - cron: '30 22 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Count only, don't delete"
+        default: false
+        type: boolean
+
+concurrency:
+  # Two overlapping cleanup runs would race on the same DELETE; queue them.
+  group: cron-cleanup-explanation-assets
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    name: Run cleanup-expired-explanation-assets on VPS
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      # Reuse the production environment for PROD_HOST / PROD_USER / PROD_SSH_KEY
+      # (same VPS as prod app). The cron deletes against the prod DB only;
+      # staging cache rows are short-lived enough that staging doesn't need
+      # its own cleanup pass per dogfood cycle.
+      name: production
+    steps:
+      - name: SSH + run cleanup script on VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          envs: DRY_RUN
+          script: |
+            set -euo pipefail
+            cd /opt/kolmatrix
+            # Export .env.production so DATABASE_URL is in scope for tsx.
+            set -a
+            source .env.production
+            set +a
+            if [[ "${DRY_RUN:-false}" == "true" ]]; then
+              npx tsx scripts/cleanup-expired-explanation-assets.ts --dry-run
+            else
+              npx tsx scripts/cleanup-expired-explanation-assets.ts
+            fi
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Cleanup cron failed — asset table will accumulate expired BL-067 rows until next run."
+          echo "Check ops dashboard for asset growth; manual fallback:"
+          echo "  ssh tripplezhou@... && cd /opt/kolmatrix && npx tsx scripts/cleanup-expired-explanation-assets.ts"
