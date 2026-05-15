@@ -68,14 +68,21 @@ fi
 HEALTH=$(curl -s "${HEALTH_URL}?token=${TOKEN}")
 echo "$HEALTH" | python3 -m json.tool 2>/dev/null || echo "$HEALTH"
 HEALTH_SHA=$(echo "$HEALTH" | python3 -c "import json,sys; print(json.load(sys.stdin).get('git_sha','?'))" 2>/dev/null || echo "?")
+# Use origin/main (last-fetched remote ref) instead of `main` because
+# deploy-prod.sh leaves the working tree at detached HEAD and the local
+# `main` branch in /opt/kolmatrix can be stale (frozen at whichever
+# commit was main when the repo was first cloned).
+#
+# Capture into a variable then grep, instead of piping `git log | grep -q`
+# — `set -o pipefail` + `grep -q` is a classic SIGPIPE trap: grep -q exits
+# on first match, git log gets EPIPE writing the rest of the output, exit
+# 141 (SIGPIPE) propagates through the pipe, and the branch fails even
+# though grep actually matched. Capture-then-match dodges the trap.
+RECENT_MAIN_LOG=$(git --no-pager log --color=never --oneline -10 origin/main 2>/dev/null || echo "")
 if [ "$HEAD" = "$HEALTH_SHA" ]; then
   green "✓ git_sha=$HEAD matches health.git_sha=$HEALTH_SHA exactly"
   PASS=$((PASS + 1))
-elif [ "$HEALTH_SHA" != "?" ] && git log --oneline -10 origin/main 2>/dev/null | grep -q "^$HEALTH_SHA"; then
-  # Use origin/main (last-fetched remote ref) instead of `main` because
-  # deploy-prod.sh leaves the working tree at detached HEAD and the local
-  # `main` branch in /opt/kolmatrix can be stale (frozen at whichever
-  # commit was main when the repo was first cloned).
+elif [ "$HEALTH_SHA" != "?" ] && echo "$RECENT_MAIN_LOG" | grep -q "^$HEALTH_SHA"; then
   COMMITS_BEHIND=$(git rev-list --count "${HEALTH_SHA}..origin/main" 2>/dev/null || echo "?")
   green "✓ health.git_sha=$HEALTH_SHA is $COMMITS_BEHIND commit(s) behind origin/main HEAD=$HEAD (ops-only follow-up OK)"
   PASS=$((PASS + 1))
