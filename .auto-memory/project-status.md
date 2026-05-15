@@ -3,10 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔨 BL-067-explainability-c3 BUILDING（0/7, fix_rounds=0, spec=5275a79, role_assignments=null 默认映射，commit 6005602 起 planning → building）
-- F001 aigcgateway 2 action（4h）→ F002 asset 缓存层 + cap 复用（8h）→ F003 panel C2→C3 + `?` icon（4h）→ F004 DetailedDialog + server action（8h）→ F005 BullMQ pre-warm worker + trigger（12h）→ F006 i18n + e2e 6 case（8h）→ F007 staging + 视觉 baseline + cost 监控 + signoff（4h）
-- 8 决策点 brainstorming 5/15 全 lock：#1 ready-to-build / #2 batch 预生成 top30×5 locale / #3 client-state-only / #4 `?` icon dialog / #5 1 call 5 locale JSON / #6 haiku-4.5 + BL-034 F005 cap / #7 silent fallback to C2 / #8 mount + smart-match 后触发
-- Generator 起步 checklist 已 session_notes.johnsong_planner 详写：grep schema.prisma AssetType + SSH MCP list_models / get_balance / cost-cap/check.ts 函数签名 + F001 起 prompt design doc + 落 AIGCGATEWAY_EXPLAIN_* env
+## 🔨 BL-067-explainability-c3 BUILDING（0/7, fix_rounds=0, F001 audit 6 议题裁决 done @ Planner johnsong, Generator 起 F001 即可）
+- F001 audit 6 议题全 ack 默认建议 #1:A/#2:A/#3:A/#4:B/#5:A/#6:A：F002 cost-cap 包装 (src/lib/ai/cost-cap.ts 而非 spec 原写错) + flat meter 保留 + F005 inline computeKolValueScore + InMemoryJobQueue fire-and-forget (非 BullMQ) + cleanup cron 06:30/14:30 + F001 +run-action.ts SDK 抽象层
+- F001 6h → F002 8.5h → F003 4h → F004 8h → F005 12h → F006 8h → F007 4h = 50.5h ≈ 6.3 day (+2.5h 在偏差范围)
+- 8 决策点 brainstorming 5/15 全 lock；F001 audit doc + Planner 裁决段 docs/specs/BL-067-F001-preimpl-audit.md §9
+- Generator 起工回执后立即起 F001: prompt design doc + run-action.ts SDK + MCP create_action × 2 + dry_run + SSH env vars
 ## ✅ BL-066-campaign-detail-ai-main-panel DONE（9/9, fix_rounds=0, prod=f2a8210, signoff=BL-066-signoff-2026-05-15.md）
 - F001-F009 ✅ Generator 段 → Reviewer 接手 24h pm2 monitor + 终签 (BL-065 加速模式可省略 24h)
 - F009 @ 09:21 prod deploy run 25895017122 / 09:25 prod recompute apply (1397 rows / spread 52 / audit_log id=2617) / 09:58 prod-audit script PASS=11 FAIL=0 WARN=0 (v1→v5 5 次 fix: §6 audit_log 表名 + §5 grep deprecated marker filter + §1 ancestor-on-main + origin/main detached HEAD + SIGPIPE capture-then-grep). 同会话 b115367/f2a8210 修 CI 红: visual-regression viewport-only fix + woff2 regen + EXPECTED_BASELINES sync (en-match.png width=1332)
@@ -25,6 +26,5 @@ type: project
 1. 5/17 第一次 weekly growth-curve check（重跑 BL-061 F003 SQL）
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 ## 角色 / Backlog
-- role_assignments 已清空 (BL-066 done); 历史: planner=johnsong / generator=Kimi / evaluator=Reviewer
-- BL-067 spec 已 drafted @ 5275a79 (7 features ready-to-build, 8 决策点 lock, 6 day Generator + 1 day Reviewer); 等用户 ack 启动新 batch
-- Backlog 20 条 / Phase 3 后续: BL-067 C3 explainability / BL-068 B3 自然语言 refine / Phase 4: BL-069 Brief / BL-070 Insight unify + 二次清理
+- BL-067 building: role_assignments=null 默认映射 (cli=planner+generator johnsong / codex=evaluator); 历史 BL-066: planner=johnsong/generator=Kimi/evaluator=Reviewer
+- Backlog 20 条 / Phase 3 后续: BL-068 B3 自然语言 refine / Phase 4: BL-069 Brief / BL-070 Insight unify + 二次清理

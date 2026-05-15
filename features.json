@@ -1,33 +1,34 @@
 [
   {
     "id": "F001",
-    "title": "aigcgateway 2 action 注册（kol-recommendation-explain-short + detailed，claude-haiku-4-5，JSON 5 locale 输出）",
+    "title": "aigcgateway 2 action 注册 + run-action.ts SDK 统一抽象层（per F001 audit §6:A）",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 4.0,
+    "estimated_hours": 6.0,
     "status": "pending",
     "acceptance": [
       "创建 `kol-recommendation-explain-short` action via MCP `create_action`：model=`claude-haiku-4-5` / variables=`kol_json` `campaign_json` `value_score_breakdown_json` `locales_json` / response_format=`json_object` / prompt（system，中文骨架）要求每个 locale 生成 ≤80 字一句话解释（命中 follower/engagement/category/内容质量 4 维度信号）→ 输出 JSON `{ en: '...', zh: '...', ja: '...', ko: '...', es: '...' }`",
       "创建 `kol-recommendation-explain-detailed` action：同模型 / 同变量结构 / response_format=`json_object` / prompt 要求输出 5 段结构化 JSON 每段 ≤200 字 per locale → 顶层 JSON `{ en: { matchScore, categoryFit, recentActivity, audienceFit, brandHistory }, zh: {...}, ja: {...}, ko: {...}, es: {...} }`",
       "两 action ID 落 `.env.staging` + `.env.production` 变量 `AIGCGATEWAY_EXPLAIN_SHORT_ACTION_ID` 和 `AIGCGATEWAY_EXPLAIN_DETAILED_ACTION_ID`（SSH ops 落地，参考 B5-F004 模式）",
       "两 action 走 MCP `run_action` dry_run 验证 prompt 渲染正确 + token 估算（实测 ceiling：short ≤2000 input + ≤800 output；detailed ≤2000 input + ≤3500 output；如 dry_run 超 ceiling 则裁 input 字段或更严限定字数）",
-      "F001 commit 含 prompt 原文（中文系统提示）+ 输入 schema 文档化（建议落 `docs/specs/BL-067-F001-prompt-design.md`）",
-      "L1 PASS（无代码改动，仅 action 注册 + env 文档化；如有 prompt 单测则同 commit 加）",
+      "F001 commit 含 prompt 原文（中文系统提示）+ 输入 schema 文档化落 `docs/specs/BL-067-F001-prompt-design.md`",
+      "**新建 `src/lib/aigc/run-action.ts` 统一 SDK 抽象层**（per F001 audit §6:A 裁决）：`runAigcAction<T>(opts: { actionId, variables, tenantId, actionLabel, timeoutMs? }): Promise<{ output: T; usage: { totalTokens, costUsd }; traceId }>` 内部 `assertDailyCostBudget` → POST `/actions/run` → `parseFencedJson` → `recordAiUsage` → typed return；复用现 `fetchWithRetry` / `xml-escape` / `parseFencedJson` 三个 BL-034/BL-035 基础设施；单测 ≥4 case (success / cost-cap throw / aigcgateway 5xx error / JSON 解析失败)；**约束**：不动 customize.ts / topic-cloud.ts 现有 caller（向后兼容），仅 BL-067 新 caller 用新抽象",
+      "L1 PASS（lint + tsc + vitest）",
       "staging git_sha 与本 commit 一致"
     ]
   },
   {
     "id": "F002",
-    "title": "asset 缓存层 + cost cap 复用（BL-034 F005 中央策略 + 24h TTL + 2 新 type enum）",
+    "title": "asset 缓存层 + checkLlmCostBudget boolean 包装 + cleanup cron（per F001 audit §1:A §5:A）",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 8.0,
+    "estimated_hours": 8.5,
     "status": "pending",
     "acceptance": [
-      "Migration `prisma/migrations/20260516XXXXXX_bl067_f002_explanation_asset_types/migration.sql`：加 enum 值 `ai_recommendation_explanation_short` / `ai_recommendation_explanation_detailed` 到 `AssetType` enum + DOWN rollback 注释（per `scripts/validate-rollback-sql.sh` 铁律）+ schema.prisma 同步加 enum",
+      "Migration `prisma/migrations/20260516XXXXXX_bl067_f002_explanation_asset_types/migration.sql`：加 enum 值 `ai_recommendation_explanation_short` / `ai_recommendation_explanation_detailed` 到 `AssetType` enum（**起工前 grep schema.prisma 确认现有 enum 值仅 `email` + `video_script`**）+ DOWN rollback 注释（per `scripts/validate-rollback-sql.sh` 铁律）+ schema.prisma 同步加 enum",
       "新文件 `src/lib/explainability/cache.ts` 封装：`readShortExplanation(tenantId, campaignId, kolId, locale): Promise<string | null>` 查 asset 表 type=short + createdAt > now-24h；`writeShortExplanation(tenantId, campaignId, kolId, locale, content): Promise<void>` 写一行一 locale（payload 含 short 文本 + metadata { kolId, campaignId, generatedAt, tokenUsage, costUsd }）；`readDetailedExplanation(...)` 返回 5 段结构对象；`writeDetailedExplanation(...)` 同模式",
-      "cost cap 复用：导入 `src/lib/cost-cap/check.ts`（BL-034 F005 中央策略）`checkLlmCostCap(tenantId): { allowed: boolean; remainingUsd: number }`；BL-067 不新增 cap 计算代码",
-      "Cleanup 调研：F002 起工前先 grep 现有 asset cleanup 机制；如已有按 createdAt TTL 删 → 沿用；如无 → F002 范围同 commit 加 `scripts/cleanup-expired-explanation-assets.ts` per-day cron",
+      "**cost cap 复用（per F001 audit §1:A 裁决修订）**：在现有 `src/lib/ai/cost-cap.ts`（BL-034 F005，**非** spec 原写的 `src/lib/cost-cap/check.ts`）加 ≤15 LOC 包装函数 `checkLlmCostBudget(tenantId): Promise<{ allowed: boolean }>` — 复用同一 count 查询逻辑，`assertDailyCostBudget` 不动保 customize.ts / topic-cloud.ts 向后兼容；BL-067 4-5 处新 caller 用 boolean API 减 try/catch 噪音",
+      "**Cleanup cron（per F001 audit §5:A 裁决修订）**：F002 同 commit 新建 `scripts/cleanup-expired-explanation-assets.ts`（仅删 type IN (ai_recommendation_explanation_short, ai_recommendation_explanation_detailed) + createdAt < now - 24h 行）+ GitHub Actions workflow `.github/workflows/cron-cleanup-explanation-assets.yml`（**Generator 起工前必 grep `scripts/kol-sync-daily.ts` 或 `.github/workflows/cron-*.yml` 确认 daily sync schedule，cleanup cron 选不冲突时段 — 推荐 06:30 BJT 或 14:30 BJT，避开 04:00-06:00 cron 静默窗**）",
       "单测 ≥6 case：read hit / read miss / read expired (>24h) / write success / write RLS denied / TTL boundary (exactly 24h - 1ms)",
       "L1 PASS（lint + tsc + vitest）",
       "staging git_sha 与本 commit 一致"
@@ -69,19 +70,20 @@
   },
   {
     "id": "F005",
-    "title": "BullMQ pre-warm worker + AiRecommendationPanel mount trigger（幂等 jobId）",
+    "title": "InMemoryJobQueue pre-warm worker (fire-and-forget delay:1) + AiRecommendationPanel mount trigger（per F001 audit §3:A §4:B §6:A）",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 12.0,
     "status": "pending",
     "acceptance": [
-      "新 worker `src/lib/queue/explain-recommendations-worker.ts` 处理 job type `recommendation-explain-prewarm`：Payload `{ tenantId, campaignId, kolIds[] }` / jobId 幂等 `prewarm-{tenantId}-{campaignId}`（同 jobId 已 active/waiting/delayed 则 noop）/ Worker concurrency=2 + retry=1（仅网络错误 retry，JSON 解析失败不 retry）",
-      "Worker 主循环：for each kolId → `checkLlmCostCap(tenantId)` 满 break / 查 5 locale 全 hit 则 skip / 拼 input { kol, campaign, valueScoreBreakdown, locales[5] } → aigcgateway runAction(SHORT_ACTION_ID) → 解析 5 locale JSON → for each locale writeShortExplanation → audit_log `ai_recommendation.explain_short_generated` payload { kolId, locales: 5, tokenUsage, costUsd }",
-      "新文件 `src/app/[locale]/(app)/campaigns/[id]/prewarm-actions.ts`（\"use server\"）含 `enqueueExplanationPrewarmAction({ campaignId, kolIds }): Promise<void>` server 端 enqueue",
-      "AiRecommendationPanel（F003 改造的延续）mount + smart-match 返回 top30 后调 `enqueueExplanationPrewarmAction({ campaignId, kolIds: top30.map(k => k.id) })`；server 端 enqueue 幂等：同 jobId 已存在 → noop（per BullMQ `jobId` 行为）；用户进出页面多次不会触发重复 LLM 调用",
-      "单测 ≥5 case：success / cap 满静默 break / LLM error skip 当前 KOL / 幂等 jobId / 空 kolIds noop",
+      "新 worker `src/lib/queue/explain-recommendations-worker.ts` 处理 job type `recommendation-explain-prewarm`（**InMemoryJobQueue 模式 per F001 audit §4:B**）：注册 worker handler via 现有 `src/lib/jobs/queue.ts` 的 `register(name, handler)` API；Payload `{ tenantId, campaignId, kolIds[] }`；idempotencyKey `prewarm-{tenantId}-{campaignId}` 同进程内幂等（进程重启后 mount self-heal 自然重新 enqueue）；handler 内手写 1 次 retry（仅网络错误 retry，JSON 解析失败不 retry）",
+      "Worker 主循环：for each kolId → `checkLlmCostBudget(tenantId)` `{ allowed: false }` → break / 查 5 locale 全 hit 则 skip / **inline import `computeKolValueScore from '@/lib/kol/value-score'`**（per F001 audit §3:A）拿 breakdown.{follower, engagement, category} / 拼 input { kol, campaign, valueScoreBreakdown, locales[5] } → **走 F001 新 `runAigcAction({ actionId, variables, tenantId, actionLabel })`**（per F001 audit §6:A，**非** inline POST）→ 解析 5 locale JSON → for each locale writeShortExplanation → audit_log `ai_recommendation.explain_short_generated` payload { kolId, locales: 5, tokenUsage, costUsd }",
+      "新文件 `src/app/[locale]/(app)/campaigns/[id]/prewarm-actions.ts`（\"use server\"）含 `enqueueExplanationPrewarmAction({ campaignId, kolIds }): Promise<void>` server 端 **`void jobQueue.add('recommendation-explain-prewarm', payload, { idempotencyKey, delay: 1 })`** fire-and-forget（delay:1 让 LLM 跑入下一 tick，server action 立即 return 不阻塞 mount）",
+      "AiRecommendationPanel（F003 改造的延续）mount + smart-match 返回 top30 后调 `enqueueExplanationPrewarmAction({ campaignId, kolIds: top30.map(k => k.id) })`；server 端 enqueue 幂等：同 idempotencyKey 已存在 → noop（per InMemoryJobQueue 行为）；用户进出页面多次不会触发重复 LLM 调用（同进程内）",
+      "单测 ≥5 case：success / cap 满静默 break / LLM error skip 当前 KOL / 幂等 idempotencyKey / 空 kolIds noop",
       "L1 PASS",
-      "staging git_sha 与本 commit 一致"
+      "staging git_sha 与本 commit 一致",
+      "**Dogfood 期监测**：BL-067 dogfood 期间若 PM2 reload 频次 > 2 次/day 或用户报 short explanation 频繁 miss → BL-067 done 评估升级 BullMQ（fix-round 或下批次）"
     ]
   },
   {

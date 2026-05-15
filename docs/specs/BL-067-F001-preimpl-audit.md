@@ -241,3 +241,67 @@ F004 + F005 两 caller 如各自 inline POST → 重复 ~80 LOC × 2 = 160 LOC �
 - `src/lib/kol/value-score.ts:87 computeKolValueScore`（§3 evidence）
 - `docs/adr/ADR-014-value-score-formula-v2.md`（§3 breakdown 公式 source）
 - `framework/harness/pre-impl-adjudication.md`（BL-066 已 3 次审计模式，v0.9.21 ROI 验证）
+
+---
+
+## §9 Planner 裁决（2026-05-15 11:30 BJT / johnsong）
+
+### 裁决汇总
+
+| # | 议题 | 裁决 | 与 Generator 推荐 |
+|---|------|------|------------------|
+| #1 | cost-cap 函数签名 | **A** | ✓ 一致 |
+| #2 | 计费模型口径 | **A** | ✓ 一致 |
+| #3 | valueScoreBreakdown 数据源 | **A** | ✓ 一致 |
+| #4 | BullMQ vs InMemory | **B** | ✓ 一致 |
+| #5 | Asset cleanup cron | **A** | ✓ 一致 |
+| #6 | aigcgateway 统一 SDK | **A** | ✓ 一致 |
+
+**6 项全 ack Generator 默认建议。** 总工时 +3.5h（spec 6 day 估算偏差范围内，不重排）。
+
+### 各项裁决理由（简短）
+
+**#1:A** — 15 LOC 包装最小侵入。`assertDailyCostBudget` 不动保 customize.ts / topic-cloud.ts 向后兼容，BL-067 4-5 处 caller 复用 `checkLlmCostBudget` boolean API 减 try/catch 噪音。
+
+**#2:A** — flat 模型属 BL-034 MVP 注释自定边界（"BL-040+ graduate"），BL-067 不越界。meter view 30 calls × $0.01 = $0.30/campaign × 5/day = $1.50/day ≪ $5 cap，**安全余量足够，不会误触 cap**。spec §6 cost 估算口径修订（meter view 写明 + 真实 token spend 预估保留作 BL-040 触发点参考）由本 commit 同步落实。
+
+**#3:A** — `computeKolValueScore` 是 pure 函数 + KOL 行已有 follower/engagement/categories 字段，inline 调用零额外查询。决策点 #1 lock + ADR-013 explainability 原则 4 必须保留 4 维度细分分数喂 LLM，C 降级直接拒。
+
+**#4:B** — 4 条理由支撑：（1）当前 PM2 是 cluster=1 single instance，多 worker 并发 / 跨进程不是痛点；（2）BullMQ 引入是 B5 sprint 原计划独立 batch 推进，不属于 BL-067 spec acceptance；（3）InMemoryJobQueue + delay:1 已满足决策点 #2 "异步 pre-warm" 不阻塞 mount；（4）进程重启丢 prewarm 风险通过 mount self-heal mitigate（用户重 enter campaign → 重新 enqueue 同 jobId），可观察 dogfood 期 PM2 reload 频率确认实际影响。**如 dogfood 期发现 PM2 reload 频次 > 2 次/day 或用户报 short explanation 频繁 miss，BL-067 done 时评估是否升级 BullMQ（作 fix-round 或下个 batch）。**
+
+**#5:A** — spec §6 风险表"asset 表膨胀"必须根治。**Generator 起工前必 confirm cron 时机**：实测 daily sync 真实 schedule（参考 `scripts/kol-sync-daily.ts` 或 `.github/workflows/` cron yml），cleanup cron 选不冲突时段（推荐 **06:30 BJT** 或 **14:30 BJT** 避开任何 daily 自动 sync 窗口）。Audit doc §5 "04:30 BJT" 时机错（在 04:00-06:00 cron 静默窗内），Generator 起工时修正。
+
+**#6:A** — 三份 inline 实测案例（customize.ts + topic-cloud.ts + BL-067 即将再加 2 处）+ BL-068 还会再加 1 处 → 沉淀点错过将持续付出 cost。F001 +2h 抽 `src/lib/aigc/run-action.ts` SDK 抽象层最经济。**约束：** 不动 customize.ts / topic-cloud.ts 现有 caller（向后兼容），仅 BL-067 新 caller 用新抽象。长期迁移 customize.ts + topic-cloud.ts 留 BL-068 done 阶段评估（作 proposed-learning 候选）。
+
+### F001 / F002 / F005 spec acceptance 同步修订（本 commit 落地）
+
+**F001（4h → 6h）：**
+- ✅ acceptance 新增 1 条：建立 `src/lib/aigc/run-action.ts` 统一 SDK 抽象层（runAigcAction<T>(opts) 含 cost-cap + audit + typed return）+ ≥4 unit tests 复用现有 fetchWithRetry / xml-escape / parseFencedJson
+
+**F002（8h → 8.5h）：**
+- ✅ "导入 src/lib/cost-cap/check.ts checkLlmCostCap" → 改 "在现有 `src/lib/ai/cost-cap.ts` 加 15 LOC 包装函数 `checkLlmCostBudget(tenantId): Promise<{ allowed: boolean }>`（复用同一 count 查询逻辑，assertDailyCostBudget 不动）"
+
+**F005（12h → 12h）：**
+- ✅ "Worker concurrency=2 + retry=1" → 改 "InMemoryJobQueue + delay:1 fire-and-forget 模式（server action 立即 return 不阻塞 mount）+ worker handler 内手写 1 次 retry（仅网络错误）"
+- ✅ "为 5 locale 全 hit 则 skip" → 锁定 worker step 4 input：F005 worker inline import `computeKolValueScore from '@/lib/kol/value-score'`，per KOL 计算 valueScoreBreakdown breakdown.{follower, engagement, category}
+
+**spec §5 不变量同步调整：**
+- ✅ #1 表述微调：cost cap 复用现 `src/lib/ai/cost-cap.ts` + F002 加 boolean 包装 `checkLlmCostBudget`
+- ✅ #10 措辞调整：InMemoryJobQueue idempotencyKey Map 同进程内幂等；进程重启后 mount self-heal 重新 enqueue 同 jobId
+
+**spec §6 cost 估算表同步调整：**
+- ✅ flat $0.01/call meter view 写明：30 calls × $0.01 = $0.30/campaign + 5 campaigns/day = $1.50/day ≪ $5 cap
+- ✅ 真实 token spend 估算保留（haiku-4.5 ~$0.0015/call × 30 = $0.045/campaign）作 BL-040 升真实 cost meter 时触发点参考
+
+### Generator 起工动作（裁决回执后立即可起）
+
+1. F001 起 prompt design doc + run-action.ts SDK 抽象层 + MCP create_action × 2 + SSH 落 env vars
+2. F002 起工前 grep daily sync cron schedule confirm cleanup 时机不冲突（06:30 / 14:30 二选一）+ schema.prisma AssetType enum 加 2 值 + checkLlmCostBudget 包装 + cleanup script
+3. F005 用 InMemoryJobQueue + delay:1 fire-and-forget + inline computeKolValueScore + handler 内 retry
+
+### 若实施中出现 #7+ 新议题
+
+按 v0.9.21 模式，Generator 可单独起 `docs/specs/BL-067-F00X-preimpl-audit-v2.md` 请 Planner 二次裁决，**不要 inline 自行决策**（铁律 #6 executor 边界 + #10 spec-driven feature 号归属）。
+
+---
+
