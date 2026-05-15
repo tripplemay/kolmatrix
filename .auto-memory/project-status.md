@@ -3,21 +3,16 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔨 BL-067-explainability-c3 BUILDING → READY-FOR-VERIFYING（7/7 ✅ Generator 段全完成, fix_rounds=0, spec=9a78c2d Planner 修订版）
-- ✅ F001 @ dd7870c | F002 @ a39087c | F003 @ cdebf38 | F004 @ a6aa58a | F005 @ 4e2afb4 | F006 @ e06c56f | F007 generator_done @ e06c56f
-- Actions: short=cmp6ifb5w0035bnrrljflmtcn / detailed=cmp6ihdt109jebnrqdj215aft (haiku-4.5, ~$0.0015/short + ~$0.008/detailed)
-- Tests: 32 unit + 11 e2e (cache.ts 9 / cost-cap.ts 14 / run-action.ts 9 / cache.test 9 / explain-recommendations-worker.test 8 / explainability-actions.test 6 / AiRecommendationPanel.test 12 / campaign-explainability-flow e2e 6)
-- L1 全绿 every commit (lint 0 / tsc 0 / vitest all green / staging deploy auto migrate); cleanup cron at 22:30 UTC = 06:30 BJT scheduled
-- F007 Generator 段交付：scripts/bl067-cost-audit.ts + staging git_sha = main HEAD e06c56f
-- F007 Reviewer 段待办：(1) 触发 update-visual-baselines workflow regen en-campaign-detail.png + 新增 en-campaign-detail-detailed-dialog.png (2) staging dogfood 清单 docs/test-reports/BL-067-staging-spot-check.md (3) 24h aigcgateway dashboard cost monitor (4) docs/test-reports/BL-067-signoff-2026-05-XX.md (5) Planner status building→verifying flip
-- 6 议题 F001 audit 全 ack 默认 #1-#6:A 或 #4:B，详 9433bc3 / 9a78c2d
-## ✅ BL-066-campaign-detail-ai-main-panel DONE（9/9, fix_rounds=0, prod=f2a8210, signoff=BL-066-signoff-2026-05-15.md）
-- F001-F009 ✅ Generator 段 → Reviewer 接手 24h pm2 monitor + 终签 (BL-065 加速模式可省略 24h)
-- F009 @ 09:21 prod deploy run 25895017122 / 09:25 prod recompute apply (1397 rows / spread 52 / audit_log id=2617) / 09:58 prod-audit script PASS=11 FAIL=0 WARN=0 (v1→v5 5 次 fix: §6 audit_log 表名 + §5 grep deprecated marker filter + §1 ancestor-on-main + origin/main detached HEAD + SIGPIPE capture-then-grep). 同会话 b115367/f2a8210 修 CI 红: visual-regression viewport-only fix + woff2 regen + EXPECTED_BASELINES sync (en-match.png width=1332)
-- F008 @ f29344b 新 tests/e2e/campaign-match-flow.spec.ts 6 case + 移除 BL-064 sediment /campaigns/[id] → /match?campaignId 302 redirect
-- F007 @ 71c6ef0 value-score v2 公式 + ADR-014 + recompute TS 脚本 / staging recompute apply @ audit_log id 670 (3891 rows 13.7s spread 49-100) / Planner #7=B 重裁决 (用户 ack 选项 i): 全 dataset spread 51 ≫ 5 + top-15 最小 follower 1.72M ≫ 100K / prod recompute 留 F009 per #8=C
-- F006 @ ba0c5fc git mv CampaignKolPanel→AcceptedKolsPanel + 6 列 read-only + source chip 独立列 (AI/CSV/Legacy) + view-profile open_in_new + backfill migration UPDATE 10 rows manual→manual_legacy + 删 runAvailableKolsForCampaign + i18n 5 locale 新 keys + deprecated marker / F006 audit 裁决 `#1:C #2:A #3:C #4:A #5:B` (Planner johnsong @ a682cde, 仅 #4 偏离 Generator 建议 — Table.tsx 实测 fully flexible 无 col cap, 6 列 README 字面安全) / v0.9.22 候选: Generator audit 起草前实测原子组件 surface 字面
-- F002 audit 裁决 `#1:A #2:B #3:B #4:B #5:C` + #6 (Planner johnsong @ e2d6b71)
+## 🔍 BL-067-explainability-c3 VERIFYING（7/7 Generator ✅ + Planner spot check 清单出, fix_rounds=0, Codex evaluator 接手）
+- ✅ F001 @ dd7870c | F002 @ a39087c | F003 @ cdebf38 | F004 @ a6aa58a | F005 @ 4e2afb4 | F006 @ e06c56f | F007 generator @ fbc836a
+- Actions: short=cmp6ifb5w0035bnrrljflmtcn / detailed=cmp6ihdt109jebnrqdj215aft (haiku-4.5, $48.16 余额, 0 LLM calls 至本 commit)
+- Tests: 52 unit + 6 e2e / L1 全绿 every commit / cleanup cron 22:30 UTC = 06:30 BJT scheduled / staging git_sha = main HEAD
+- 6 audit 裁决代码层 grep 验证 ✅ (#1:A cost-cap.ts:133 / #3:A worker:43 / #4:B prewarm-actions:81-85 / #6:A run-action.ts:141 复用 fetchWithRetry+parseFencedJson)
+- Codex 接手清单 docs/test-reports/BL-067-staging-spot-check.md (§1 ≥5 game cat campaign × short / §2 ≥3 detailed dialog / §3 5 locale / §4 cap 模拟 / §5 perf gate / §6 chaos / §7 BL-066 回归 / §8 24h cost / §9 signoff 触发)
+- status building → verifying @ 16:00 BJT 本 commit, role_assignments=null 默认映射 codex 自动接手
+## ✅ BL-066-campaign-detail-ai-main-panel DONE（9/9, fix_rounds=0, prod=f2a8210, signoff=BL-066-signoff-2026-05-15.md, prod-audit PASS=11/FAIL=0/WARN=0）
+- F009 prod deploy + recompute apply (1397 rows spread=52, audit_log 2617) + audit script v1→v5 5 次 fix / F008 e2e 6 case + redirect 移除 / F007 value-score v2 + ADR-014 / F006 AcceptedKolsPanel 重构 + source chip + backfill / F002 三段 layout 重写
+- 3 audit 裁决: F002 #1A#2B#3B#4B#5C+#6 @ e2d6b71 / F006 #1C#2A#3C#4A#5B @ a682cde / F007 #1A#2B#3A#4B#5A#6A#7B#8C @ 1fc4d52
 ## ✅ BL-065 DONE 7/7 prod=c5b5c31 + BL-065-R1=4562895 + signoff 5/14
 ## ✅ BL-064 prod=9b1b15b / BL-063 / BL-061-060-059 / BL-012 / BL-055-052-051a-049 / BL-021+023 / BL-043+044 全 DONE
 ## 关键决议（已 lock）
@@ -29,5 +24,5 @@ type: project
 1. 5/17 第一次 weekly growth-curve check（重跑 BL-061 F003 SQL）
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 ## 角色 / Backlog
-- BL-067 building: role_assignments=null 默认映射 (cli=planner+generator johnsong / codex=evaluator); 历史 BL-066: planner=johnsong/generator=Kimi/evaluator=Reviewer
+- BL-067 verifying: role_assignments=null 默认映射 (codex=evaluator 接手); 历史 BL-066: planner=johnsong/generator=Kimi/evaluator=Reviewer
 - Backlog 20 条 / Phase 3 后续: BL-068 B3 自然语言 refine / Phase 4: BL-069 Brief / BL-070 Insight unify + 二次清理
