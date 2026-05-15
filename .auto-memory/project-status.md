@@ -3,13 +3,13 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔍 BL-067-explainability-c3 VERIFYING（7/7 Generator ✅ + Planner spot check 清单出, fix_rounds=0, Codex evaluator 接手）
+## 🔧 BL-067-explainability-c3 FIXING（7/7 Generator ✅ + Reviewer 发现 staging 阻塞, fix_rounds=1）
 - ✅ F001 @ dd7870c | F002 @ a39087c | F003 @ cdebf38 | F004 @ a6aa58a | F005 @ 4e2afb4 | F006 @ e06c56f | F007 generator @ fbc836a
 - Actions: short=cmp6ifb5w0035bnrrljflmtcn / detailed=cmp6ihdt109jebnrqdj215aft (haiku-4.5, $48.16 余额, 0 LLM calls 至本 commit)
 - Tests: 52 unit + 6 e2e / L1 全绿 every commit / cleanup cron 22:30 UTC = 06:30 BJT scheduled / staging git_sha = main HEAD
 - 6 audit 裁决代码层 grep 验证 ✅ (#1:A cost-cap.ts:133 / #3:A worker:43 / #4:B prewarm-actions:81-85 / #6:A run-action.ts:141 复用 fetchWithRetry+parseFencedJson)
 - Codex 接手清单 docs/test-reports/BL-067-staging-spot-check.md (§1 ≥5 game cat campaign × short / §2 ≥3 detailed dialog / §3 5 locale / §4 cap 模拟 / §5 perf gate / §6 chaos / §7 BL-066 回归 / §8 24h cost / §9 signoff 触发)
-- status building → verifying @ 16:00 BJT 本 commit, role_assignments=null 默认映射 codex 自动接手
+- status verifying → fixing @ 16:45 BJT 本轮复验，role_assignments=null 默认映射 codex 继续接手
 ## ✅ BL-066-campaign-detail-ai-main-panel DONE（9/9, fix_rounds=0, prod=f2a8210, signoff=BL-066-signoff-2026-05-15.md, prod-audit PASS=11/FAIL=0/WARN=0）
 - F009 prod deploy + recompute apply (1397 rows spread=52, audit_log 2617) + audit script v1→v5 5 次 fix / F008 e2e 6 case + redirect 移除 / F007 value-score v2 + ADR-014 / F006 AcceptedKolsPanel 重构 + source chip + backfill / F002 三段 layout 重写
 - 3 audit 裁决: F002 #1A#2B#3B#4B#5C+#6 @ e2d6b71 / F006 #1C#2A#3C#4A#5B @ a682cde / F007 #1A#2B#3A#4B#5A#6A#7B#8C @ 1fc4d52
