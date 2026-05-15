@@ -34,7 +34,8 @@ vi.mock("@/lib/events/log", () => ({
   logEvent: (...args: unknown[]) => logEventMock(...args),
 }));
 
-const { POST, applyWebhookEvent } = await import("../route");
+const { POST } = await import("../route");
+const { applyWebhookEvent } = await import("../handler");
 
 const SECRET = "whsec_" + Buffer.alloc(32, 1).toString("base64");
 const TENANT = "11111111-2222-3333-4444-555555555555";

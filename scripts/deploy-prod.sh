@@ -98,11 +98,24 @@ sudo -u postgres psql \
 
 echo "── 7/9  next build"
 # Node default old-gen heap is 2 GB; the TypeScript-check pass on the
-# current codebase + Next 16 Turbopack pipeline OOMs at ~2 GB.
+# current codebase + Next 16 webpack pipeline OOMs at ~2 GB.
 # NODE_OPTIONS prefix didn't reach Next's worker fork through
 # appleboy/ssh-action; invoke node directly so --max-old-space-size
 # lands in the parent's execArgv and child workers inherit it.
-node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build
+#
+# BL-067 fix-round 1 (2026-05-15 reviewer blocker) — force webpack to
+# avoid Next.js 16.2.4 Turbopack production-build bug. `next build`
+# without --webpack defaults to Turbopack on 16.2.x, which emits a
+# .next/build/ dir + .next/turbopack 0-byte sentinel but does NOT
+# write .next/BUILD_ID. Then server.js bootstraps `next({ dev: false })`
+# → app.prepare() throws "Could not find a production build in the .next
+# directory" (https://nextjs.org/docs/messages/production-start-no-build-id).
+# Symptom: per-page chunks 404 with text/plain "Not found" (PM2 keeps the
+# prior worker alive because the new one crashes at boot).
+# Wipe stale Turbopack outputs so a partial Turbopack pass from an earlier
+# deploy can't poison the webpack output (cache/ stays for speed).
+rm -rf .next/build .next/turbopack .next/static/[A-Za-z0-9]*
+node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build --webpack
 
 echo "── 8/9  pm2 reload kolmatrix (zero-downtime)"
 pm2 reload kolmatrix --update-env

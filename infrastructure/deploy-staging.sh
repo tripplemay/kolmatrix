@@ -96,7 +96,19 @@ sudo -u postgres psql \
   -c "ALTER ROLE kolmatrix_app WITH PASSWORD '$KOLMATRIX_APP_PASSWORD';"
 
 echo "── 5/7 next build"
-node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build
+# BL-067 fix-round 1 (2026-05-15 reviewer blocker) — force webpack to avoid
+# Next.js 16.2.4 Turbopack production-build bug. `next build` without
+# --webpack defaults to Turbopack on 16.2.x, which emits .next/build/ +
+# .next/turbopack 0-byte sentinel but does NOT write .next/BUILD_ID. Then
+# server.js bootstraps `next({ dev: false })` which calls app.prepare()
+# and throws "Could not find a production build in the .next directory
+# (https://nextjs.org/docs/messages/production-start-no-build-id)".
+# Symptom: per-page chunks 404 with text/plain "Not found" (PM2 keeps
+# the prior process alive because the new one crashes at boot).
+# Wipe stale build artifacts so a partial Turbopack output from earlier
+# deploys can't poison the webpack output (cache/ stays for speed).
+rm -rf .next/build .next/turbopack .next/static/[A-Za-z0-9]*
+node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build --webpack
 
 echo "── 6/7 pm2 restart $APP_NAME --update-env"
 pm2 restart "$APP_NAME" --update-env >/dev/null
