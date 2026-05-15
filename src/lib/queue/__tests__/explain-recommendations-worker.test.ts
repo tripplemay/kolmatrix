@@ -48,8 +48,9 @@ vi.mock("@/lib/audit/log", () => ({ logAudit: logAuditMock }));
 
 vi.mock("@/lib/kol/value-score", () => ({
   computeKolValueScore: () => ({
-    score: 88,
-    breakdown: { follower: 63, engagement: 16, category: 15 },
+    total: 88,
+    rawBreakdown: { follower: 63, engagement: 16, category: 15 },
+    authenticityModifier: 1.0,
   }),
 }));
 

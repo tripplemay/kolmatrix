@@ -41,8 +41,30 @@ export const VideoScriptContentSchema = z.object({
   durationHintSec: z.number().int().positive().max(3600).optional(),
 });
 
+// BL-067-F002 — explanation cache content schemas. The `name` field on
+// the Asset row encodes the (campaignId, kolId, locale) cache key (per
+// src/lib/explainability/cache.ts), so the content schema only needs
+// to validate the rendered LLM payload.
+export const AiRecommendationExplanationShortContentSchema = z.object({
+  text: z.string().min(1).max(2_000),
+});
+
+export const AiRecommendationExplanationDetailedContentSchema = z.object({
+  matchScore: z.string().min(1).max(2_000),
+  categoryFit: z.string().min(1).max(2_000),
+  recentActivity: z.string().min(1).max(2_000),
+  audienceFit: z.string().min(1).max(2_000),
+  brandHistory: z.string().min(1).max(2_000),
+});
+
 type EmailContent = z.infer<typeof EmailContentSchema>;
 type VideoScriptContent = z.infer<typeof VideoScriptContentSchema>;
+type AiRecommendationExplanationShortContent = z.infer<
+  typeof AiRecommendationExplanationShortContentSchema
+>;
+type AiRecommendationExplanationDetailedContent = z.infer<
+  typeof AiRecommendationExplanationDetailedContentSchema
+>;
 
 /**
  * Map AssetType → content Zod schema. Use with
@@ -54,9 +76,15 @@ type VideoScriptContent = z.infer<typeof VideoScriptContentSchema>;
 export const ASSET_CONTENT_SCHEMAS = {
   email: EmailContentSchema,
   video_script: VideoScriptContentSchema,
+  ai_recommendation_explanation_short:
+    AiRecommendationExplanationShortContentSchema,
+  ai_recommendation_explanation_detailed:
+    AiRecommendationExplanationDetailedContentSchema,
 } as const satisfies Record<AssetType, z.ZodTypeAny>;
 
 export type AssetContentByType = {
   email: EmailContent;
   video_script: VideoScriptContent;
+  ai_recommendation_explanation_short: AiRecommendationExplanationShortContent;
+  ai_recommendation_explanation_detailed: AiRecommendationExplanationDetailedContent;
 };

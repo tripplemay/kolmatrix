@@ -292,7 +292,7 @@ test.describe("BL-067-F006 · /campaigns/[id] C3 explainability flow", () => {
 
     // Switch to zh locale via URL substitution. The panel re-mounts with
     // locale=zh and useEffect re-fires for the new locale.
-    const zhHref = href.replace(/^\/en\//, "/zh/");
+    const zhHref = href!.replace(/^\/en\//, "/zh/");
     await page.goto(zhHref);
     await expect(
       page.getByTestId("campaign-ai-recommendation-active").or(

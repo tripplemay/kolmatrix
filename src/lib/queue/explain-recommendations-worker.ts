@@ -183,7 +183,7 @@ export async function processExplainPrewarm(
       engagementRate: engagementRateNumber,
       categories: kolRow.categories,
       engagementAuthenticity: kolRow.engagementAuthenticity,
-    }).breakdown;
+    }).rawBreakdown;
 
     const kolPayload = {
       id: kolId,

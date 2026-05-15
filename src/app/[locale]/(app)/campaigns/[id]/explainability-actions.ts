@@ -273,8 +273,14 @@ export async function requestDetailedExplanationAction(
     });
     if (!fetched.k) return { ok: false, error: "kol_not_found" };
     if (!fetched.c) return { ok: false, error: "campaign_not_found" };
-    kolRow = fetched.k as typeof kolRow;
-    campaignRow = fetched.c as typeof campaignRow;
+    // Double cast through unknown: Prisma's engagementRate is Decimal
+    // (a class with many methods) while our local type narrows to
+    // `{ toNumber: () => number } | null`. The shapes don't structurally
+    // overlap enough for TS strict-mode to allow a direct cast — the
+    // recommended workaround per the TS error message is to route
+    // through `unknown` first. Functionally equivalent at runtime.
+    kolRow = fetched.k as unknown as typeof kolRow;
+    campaignRow = fetched.c as unknown as typeof campaignRow;
   } catch (err) {
     console.error("[requestDetailedExplanationAction] fetch error:", err);
     return { ok: false, error: "internal_error" };
@@ -289,7 +295,7 @@ export async function requestDetailedExplanationAction(
     engagementRate: engagementRateNumber,
     categories: kolRow!.categories,
     engagementAuthenticity: kolRow!.engagementAuthenticity,
-  }).breakdown;
+  }).rawBreakdown;
 
   const kolPayload = {
     id: input.kolId,
