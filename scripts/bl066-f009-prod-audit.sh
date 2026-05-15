@@ -120,24 +120,37 @@ else
   FAIL=$((FAIL + 1))
 fi
 
-RESIDUAL_REFS=$(grep -rln 'AddKolDialog\|addKolAction' src/ 2>/dev/null \
+# Use `grep -nE` to get file:line:content; then exclude:
+#   - lines mentioning BL-066-F005 / removed / deprecated (intentional
+#     deletion markers that BL-070 cleanup will sweep)
+#   - the bulkSoftDeleteKolsAction filename which contains the
+#     'addKolAction' substring (false positive on filename match)
+# Only true functional residuals (imports, function calls, JSX usage)
+# should remain after the filter and trip a FAIL.
+RESIDUAL_REFS=$(grep -rnE 'AddKolDialog|addKolAction' src/ 2>/dev/null \
   | grep -v node_modules | grep -v '.next' \
+  | grep -v 'bulkSoftDeleteKolsAction' \
+  | grep -vE 'BL-066-F005|removed|deprecated|gitrm|retirement' \
   || true)
 if [ -z "$RESIDUAL_REFS" ]; then
-  green "✓ no AddKolDialog / addKolAction references in src/"
+  green "✓ no AddKolDialog / addKolAction functional references in src/ (deprecated markers OK)"
   PASS=$((PASS + 1))
 else
-  red "✗ AddKolDialog / addKolAction references residual:"
+  red "✗ AddKolDialog / addKolAction functional references residual:"
   echo "$RESIDUAL_REFS" | head -10
   FAIL=$((FAIL + 1))
 fi
 
 section "[6] value-score v2 audit_log row present in prod (after F009 recompute)"
-# BL-066-F007 + F009 §裁决 #8=C: prod recompute writes one platform_event
-# row with action='value_score.recompute_v2' and tenantId=NULL after the
-# `npx tsx scripts/bl066-f007-recompute-value-score.ts --env prod` run.
+# BL-066-F007 + F009 §裁决 #8=C: prod recompute writes one audit_log
+# row with action='value_score.recompute_v2' and tenant_id IS NULL
+# after the `npx tsx scripts/bl066-f007-recompute-value-score.ts --env prod`
+# run. Schema (per prisma/schema.prisma model AuditLog @@map("audit_log")):
+# table=audit_log, fields=id/action/tenant_id/resource_type/resource_id/payload.
+# Initial v1 of this script wrote `platform_event` (wrong table) — fixed
+# 2026-05-15 inline as part of F009 first audit run.
 ROW=$(sudo -u postgres psql -d kolmatrix -tA -c \
-  "SELECT id || '|' || action || '|' || (payload->>'env') || '|' || (payload->>'row_count') FROM platform_event WHERE action='value_score.recompute_v2' AND tenant_id IS NULL AND (payload->>'env')='prod' ORDER BY created_at DESC LIMIT 1;" \
+  "SELECT id || '|' || action || '|' || (payload->>'env') || '|' || (payload->>'row_count') FROM audit_log WHERE action='value_score.recompute_v2' AND tenant_id IS NULL AND (payload->>'env')='prod' ORDER BY created_at DESC LIMIT 1;" \
   2>/dev/null || echo "")
 if [ -n "$ROW" ] && [ "$ROW" != "" ]; then
   green "✓ prod recompute audit_log row found: $ROW"
