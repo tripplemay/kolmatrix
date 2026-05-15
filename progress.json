@@ -25,11 +25,7 @@
     "signoff": "docs/test-reports/BL-066-signoff-2026-05-15.md",
     "framework_reviewed": false
   },
-  "role_assignments": {
-    "planner": "johnsong",
-    "generator": "Kimi",
-    "evaluator": "Reviewer"
-  },
+  "role_assignments": null,
   "evaluator_feedback": null,
   "generator_handoff": "[2026-05-15 10:15 BJT Reviewer → done]\n\nBL-066 F009 复验已完成：\n  - prod audit PASS=11 FAIL=0 WARN=0\n  - /api/health git_sha=f2a8210 on origin/main ancestry\n  - /en/campaigns, /en/match, /api/kols/smart-match, audit_log, source distribution, pm2 logs, value_score spread 全绿\n  - signoff finalized at docs/test-reports/BL-066-signoff-2026-05-15.md\n  - progress.json status=done\n\nNo further Reviewer action pending.",
   "session_notes": {

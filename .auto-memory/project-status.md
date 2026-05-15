@@ -21,5 +21,6 @@ type: project
 1. 5/17 第一次 weekly growth-curve check（重跑 BL-061 F003 SQL）
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 ## 角色 / Backlog
-- BL-066 期间: planner=johnsong / generator=Kimi (本机 .agent-id=johnsong 临时代理) / evaluator=Reviewer (Codex)
-- Backlog 20 条 / BL-066 后续 P0: BL-067 C3 双向 explainability / BL-068 B3 自然语言 refine / BL-070 二次清理
+- role_assignments 已清空 (BL-066 done); 历史: planner=johnsong / generator=Kimi / evaluator=Reviewer
+- BL-067 spec 已 drafted @ 5275a79 (7 features ready-to-build, 8 决策点 lock, 6 day Generator + 1 day Reviewer); 等用户 ack 启动新 batch
+- Backlog 20 条 / Phase 3 后续: BL-067 C3 explainability / BL-068 B3 自然语言 refine / Phase 4: BL-069 Brief / BL-070 Insight unify + 二次清理

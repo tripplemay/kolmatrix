@@ -36,3 +36,38 @@
 ---
 
 <!-- 新条目从这里开始追加 -->
+
+## [2026-05-15] Claude CLI — 来源：BL-066 done 阶段收尾 / Planner johnsong
+
+**类型：** 模板修订
+
+**内容：** 连续 3 次 pre-impl audit + Planner 裁决模式（F002 / F006 / F007 共 18 决议点 lock）→ 9 features + 0 fix-round 一次性成型（fix_rounds=0），验证 v0.9.21 pre-impl-adjudication 模式 ROI。批次级"3 audit 串联"是新粒度（以往多为单 feature 一 audit），值得作为大批次（≥ 9 features）的推荐节奏沉淀。
+
+**建议写入：** `framework/harness/pre-impl-adjudication.md` 新段 §"批次级多 audit 串联模式"（具体规模门槛 + 适用判断 + 与 fix-rounds 关系实证）
+
+**状态：** 用户 2026-05-15 已 ack — 待 BL-067 done 阶段或专门 framework 沉淀 batch 时正式写入 framework/ + CHANGELOG + 归档
+
+---
+
+## [2026-05-15] Claude CLI — 来源：BL-066 F007 §7 量化验证补充裁决 / Planner johnsong
+
+**类型：** 新规律 / 新坑
+
+**内容：** verifying gate 量化 criterion 设计应锚定**语义信号**而非**字面数字**。BL-066 F007 staging recompute 后字面 criterion (b)「top-15 内 max-min ≥ 5」失败（top-15 全 clamp 100），但语义 BL-048 fix（mega-nano 不再同 100）已达成；用户 ack 选项 (i) data-driven 修订 criterion 为 (a') 全 dataset spread + (b') top-15 最小 follower threshold，而非调 formula。Evaluator 起草 criterion 时如不预判 dataset 真实形态会落入字面陷阱。
+
+**建议写入：** `framework/harness/evaluator.md` 新段 §"量化 verifying gate criterion 设计"（含字面陷阱反面案例 + data-form-aware 设计 checklist）
+
+**状态：** 用户 2026-05-15 已 ack — 待 BL-067 done 阶段或专门 framework 沉淀 batch 时正式写入 framework/ + CHANGELOG + 归档
+
+---
+
+## [2026-05-15] Claude CLI — 来源：BL-066 F006 audit 裁决 / Planner johnsong（v0.9.22 候选）
+
+**类型：** 新规律
+
+**内容：** Generator 在 pre-impl audit 起草前必须**实测原子组件实际 surface**，而非按 README / 类型签名"字面想象"。BL-066 F006 案例：Table.tsx README 看似有 col cap 限制，Generator audit 建议保守拆列，但 Planner 实测 Table.tsx fully flexible 无 col cap，最终裁决 #4=A（6 列方案）偏离 Generator 建议。此案例说明 audit 输入若基于"文档/类型签名想象"会产生系统性保守偏差，Planner 反复实测纠偏成本高。
+
+**建议写入：** `framework/harness/generator.md` 新段 §"audit 起草前的实测节奏"（含 BL-066 F006 反面案例 + 实测优先级 checklist：原子组件 / 路径配置 / SQL 实际行为 / API response shape）
+
+**状态：** 用户 2026-05-15 已 ack — 待 BL-067 done 阶段或专门 framework 沉淀 batch 时正式写入 framework/ + CHANGELOG + 归档
+
