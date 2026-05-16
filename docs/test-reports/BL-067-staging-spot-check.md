@@ -240,3 +240,42 @@
 - `progress.json.session_notes.johnsong_generator` Generator 段交付清单
 - `docs/test-reports/BL-066-signoff-2026-05-15.md`（signoff doc 模板参考）
 - `docs/product/ai-native-roadmap.md §11 Phase 3 verifying gate`（性能 / 覆盖率门槛）
+
+---
+
+## §10 Planner 裁决补充（2026-05-16 BJT / johnsong）
+
+Reviewer 经 round 1 复验（`BL-067-reverify-round1-2026-05-16.md`）+ controlled verification（`BL-067-controlled-verification-2026-05-16.md`）后，3 项 acceptance 边界用户 5/16 ack 降级（per BL-066 F007 §7 量化验证语义优于字面 模式）：
+
+### §1 降级：5 game category → "≥3 cat 实测 PASS"
+
+**裁决理由：** staging seed 当前仅 3 active campaign / 3 game category（PUBG Mobile / Genshin Impact / Honor of Kings）。这是 **staging seed 数据 gap，非 BL-067 功能 gap**。3 个不同 category 已 sufficient 验证多 category 短解释生成质量与 cache key 隔离正确性。补 staging seed 数据是跨批次维护工作（入 backlog），不阻塞 BL-067 signoff。
+
+**修订 §1 acceptance：** "≥3 个不同游戏品类 campaign 实测 short 渲染" 替代原 "≥5"。Reviewer signoff doc 中标注此降级 + 数据 gap 入 backlog（BL-070 二次清理或独立 staging-seed-maintenance batch 处理）。
+
+### §5 perf 量化降级：接受 functional PASS
+
+**裁决理由：** core paths T1-T5 + cap simulation + chaos test 全部 PASS 已充分验证功能正确性。perf gate（smart-match<2s / enqueue<100ms / pre-warm<60s / dialog<5s）在功能 PASS 前提下属 dogfood 期自然观察项 — 如 dogfood 用户报 "mount 30s+ 仍无 short"才是 real issue 需 fix-round。
+
+**修订 §5 acceptance：** 不强制 Chrome DevTools 量测；Reviewer signoff doc 中标注"functional PASS, perf 量化留 dogfood 期 ad-hoc 观察"。BL-066 同模式。
+
+### §8 24h soak 加速：脚本验证 + cap 实测即 sufficient
+
+**裁决理由：** 沿用 BL-065 / BL-066 Reviewer 自评加速模式。`scripts/bl067-cost-audit.ts --hours=24` 脚本已实测可执行（calls=0/tokens=0/cost=0），聚合口径正确；§4 cap simulation 已 PASS 证明 cap 满路径行为；当前 cost=0 表明无生产 LLM 调用泄漏。真 24h soak 数据留 BL-067 done 后 dogfood 期自然累积，每次 dogfood 都通过 cost-audit script 抽查即可。
+
+**修订 §8 acceptance：** 脚本可执行 + cap PASS + 当前 cost=0 即 sufficient；省略真 24h soak。Reviewer signoff doc 中标注此加速。
+
+---
+
+## §11 Reviewer signoff 起步指引
+
+按上述 §10 裁决，Reviewer 可立即起草 `docs/test-reports/BL-067-signoff-2026-05-16.md`（模板参考 `BL-066-signoff-2026-05-15.md`），内容应含：
+
+1. **§1-§9 验收结果汇总**（按本 doc §10 修订后的 acceptance）
+2. **fix-round 1 总结**（引 `BL-067-fixround1-2026-05-15.md` + 3 commits f284d35/6dbe231/aa79ce0 root cause/fix/verification）
+3. **Reverify round 1 + controlled verification 引用**
+4. **caveats 列表：** §1 staging seed 数据 gap（入 backlog）/ §5 perf 量化留 dogfood / §8 真 24h soak 留 dogfood
+5. **Harness 结论：** status reverifying → done
+6. **prod redeploy 触发条件：** 用户 ack 时间窗 + scripts/deploy-prod.sh 已自动应用 fix-round 1 的 --webpack flag + Turbopack artifact cleanup
+
+Reviewer 起 signoff doc + commit 切 `status: reverifying → done` 后 BL-067 整个批次完成，Planner 接 done 阶段收尾（proposed-learnings 整理 / 询问下一批次 BL-068）。
