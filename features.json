@@ -5,7 +5,9 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "pending",
+    "status": "completed",
+    "completed_at": "2026-05-16T17:40+0800",
+    "completion_notes": "Action 注册 cmp8mk1qj0005bno3k590u7zs (model=claude-haiku-4.5, 3 vars=raw_query/current_pool_json/user_locale); MCP dry_run PASS (rendered ~2800 input token < 3000 ceiling); SSH 落 AIGCGATEWAY_REFINE_ACTION_ID 到 prod + staging .env 含 backup + pm2 reload --update-env + health 200 healthy. Spec acceptance #1-7 全 PASS（注：spec 描述的 response_format=json_object / max_tokens 字段 aigcgateway create_action API 不支持，BL-067 F001 audit §1 已沉淀此现实，本 F001 沿用 — system prompt 内嵌「输出必须是合法 JSON 对象」约束足够）. F002 起工时 spec 措辞漂移 3 项按 BL-067 F004 模式自动对齐（rateLimitBatchSend 签名 / actionLabel snake_case / audience_breakdown 字段不存在 → LLM 软推断 fallback，详见 docs/specs/BL-068-F001-prompt-design.md §1）.",
     "acceptance": [
       "创建 `kol-refine-natural-language` action via MCP `create_action`：model=`claude-haiku-4-5`（per 决策点 #7 沿用 BL-067 模型）/ variables=`raw_query` `current_pool_json` `user_locale` / response_format=`json_object` / prompt（system，中文骨架）要求 LLM 解析自然语言 refine 指令 → 输出 JSON `{ ordered_kol_ids: string[30], parsed_filters: { tier?, audience_gender?, categories?, locale?, ... }, feedback_summary: { en, zh, ja, ko, es }, unparsable: false }`；若不可解析输出 `{ unparsable: true, reason_locale: { en, zh, ja, ko, es } }`",
       "Action ID 落 `.env.staging` + `.env.production` 变量 `AIGCGATEWAY_REFINE_ACTION_ID`（SSH ops 落地，同 BL-067 F001 模式）",

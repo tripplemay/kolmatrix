@@ -41,6 +41,7 @@ type: reference
   - **B5-F004 (2026-04-30 创建)：** `kol-topic-extract` (action_id `cmokr9z880009bn18sre31yf0`, model claude-haiku-4.5, 用于 KOL 详情页词云从 6 视频标题提取 5-10 关键词 + weight，单次 ~$0.001) — env var `AIGCGATEWAY_KOL_TOPIC_ACTION_ID` 待 SSH 落入 `.env.production` + `.env.staging`
   - **BL-067-F001 (2026-05-15 创建)：** `kol-recommendation-explain-short` (action_id `cmp6ifb5w0035bnrrljflmtcn`, model claude-haiku-4.5, 用于 AiRecommendationPanel C3 短版 1 句话解释, 5 locale JSON 1 call 输出, ~$0.0015/call) — env var `AIGCGATEWAY_EXPLAIN_SHORT_ACTION_ID` 待 SSH 落入 prod + staging
   - **BL-067-F001 (2026-05-15 创建)：** `kol-recommendation-explain-detailed` (action_id `cmp6ihdt109jebnrqdj215aft`, model claude-haiku-4.5, 用于 DetailedExplanationDialog 5 段结构化详细解释, 5 locale × 5 段 = 25 段 JSON, ~$0.008/call 用户主动触发) — env var `AIGCGATEWAY_EXPLAIN_DETAILED_ACTION_ID` 待 SSH 落入 prod + staging
+  - **BL-068-F001 (2026-05-16 创建)：** `kol-refine-natural-language` (action_id `cmp8mk1qj0005bno3k590u7zs`, model claude-haiku-4.5, 用于 RefineInputBar 自然语言重排 top-30 KOL 池 + 5 locale feedback + parsed_filters audit, ~$0.0075/call) — env var `AIGCGATEWAY_REFINE_ACTION_ID` 已 SSH 落入 prod + staging（2026-05-16 17:38 BJT，backup `.env.{production,staging}.bl068-f001.20260516-173854`，pm2 reload --update-env 完成，health 200 healthy）
   - 早期 B2 设想的 kol-eval-bulk/precision/campaign-match/email-personalize 未启用（MVP 未走 AI 匹配路线）
 - **集成决策：** 见 ADR-009
 
