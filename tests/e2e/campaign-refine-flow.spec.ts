@@ -122,48 +122,46 @@ async function mockRefineAction(
     errorKind?: "unparsable" | "malformed" | "permutation_invalid";
   },
 ): Promise<void> {
-  // CRITICAL: route handlers are evaluated in LIFO order — the most-recent
-  // page.route() wins. If this handler is registered AFTER mockSmartMatch,
-  // `route.continue()` would BYPASS mockSmartMatch and hit the real
-  // network. `route.fallback()` re-evaluates the earlier handlers, so
-  // mockSmartMatch still services /api/kols/smart-match.
+  // Next.js encodes server-action references as a hash header + opaque
+  // multipart FormData body, so `body.includes("applyRefineAction")` is
+  // unreliable. Match instead on URL pattern + next-action header +
+  // POST, and use `{ times: 1 }` so this handler only fires for the
+  // FIRST matching request after install — that's the explicit Refine
+  // click we just triggered. Mount-time actions (prewarm, batch-read,
+  // their retries on hydration mismatch) fall through to fallback().
   //
-  // Body matching `body.includes("applyRefineAction")` is unreliable —
-  // Next.js encodes server-action references as a hash in the
-  // `next-action` header + multipart FormData body that does NOT
-  // include the function name literally. Instead we match on URL
-  // pattern (campaign or match page) + the next-action header. By
-  // the time tests install this mock, the panel is already active and
-  // mount-time server actions (prewarm, batch-read) have completed,
-  // so the next server-action POST is unambiguously the refine call
-  // the user just triggered.
-  await page.route("**", async (route) => {
-    const req = route.request();
-    const headers = req.headers();
-    const isServerAction = (headers["next-action"] ?? "").length > 0;
-    const url = req.url();
-    const isCampaignOrMatchPage =
-      /\/[a-z]{2}\/(campaigns\/[0-9a-f-]{36}|match(\?|$))/.test(url);
-    if (isServerAction && req.method() === "POST" && isCampaignOrMatchPage) {
-      await route.fulfill({
-        status: 200,
-        contentType: "text/plain;charset=UTF-8",
-        body: JSON.stringify({ ok: true, data: responseData }),
-      });
-      return;
-    }
-    await route.fallback();
-  });
+  // route.fallback() re-evaluates earlier handlers (mockSmartMatch)
+  // so /api/kols/smart-match still gets mocked.
+  await page.route(
+    "**",
+    async (route) => {
+      const req = route.request();
+      const headers = req.headers();
+      const isServerAction = (headers["next-action"] ?? "").length > 0;
+      const url = req.url();
+      const isCampaignOrMatchPage =
+        /\/[a-z]{2}\/(campaigns\/[0-9a-f-]{36}|match(\?|$))/.test(url);
+      if (isServerAction && req.method() === "POST" && isCampaignOrMatchPage) {
+        await route.fulfill({
+          status: 200,
+          contentType: "text/plain;charset=UTF-8",
+          body: JSON.stringify({ ok: true, data: responseData }),
+        });
+        return;
+      }
+      await route.fallback();
+    },
+    { times: 1 },
+  );
 }
 
 /**
  * Wait for any in-flight mount-time server actions (prewarm,
  * batch-read short explanations) to settle before installing the
- * looser mockRefineAction. Without this guard, those POSTs to the
- * same page path would be caught by mockRefineAction and corrupted.
- *
- * networkidle = 500ms with no network activity, which is enough for
- * the fire-and-forget mount actions to round-trip on the dev server.
+ * mockRefineAction. With `{ times: 1 }` on the refine mock this is
+ * less critical, but it still avoids the case where the FIRST
+ * post-install request is a stray mount-time retry rather than the
+ * refine click.
  */
 async function waitForMountActionsSettled(page: Page): Promise<void> {
   await page.waitForLoadState("networkidle", { timeout: 10_000 });
