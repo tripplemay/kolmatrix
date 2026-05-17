@@ -61,6 +61,7 @@ type ToastState =
   | { kind: "idle" }
   | { kind: "success"; text: string }
   | { kind: "unparsable"; text: string }
+  | { kind: "permutation" }
   | { kind: "cap" }
   | { kind: "network" };
 
@@ -127,8 +128,15 @@ export function RefineInputBar({
       return;
     }
     if (data.unparsable) {
-      // Prefer the LLM's per-locale explanation when present; otherwise
-      // fall back to the generic unparsableToast string.
+      // BL-068-F005 — distinguish the 3 unparsable sub-paths via the
+      // F002 server `errorKind` discriminator: permutation invalid
+      // gets its own toast key + variant; plain unparsable + malformed
+      // share the unparsable toast (with LLM per-locale reason when
+      // present, fallback to unparsableToast string otherwise).
+      if (data.errorKind === "permutation_invalid") {
+        setToast({ kind: "permutation" });
+        return;
+      }
       const text =
         data.feedback && data.feedback.trim().length > 0
           ? data.feedback
@@ -313,6 +321,23 @@ function RefineToast({
           hourglass_empty
         </span>
         <p>{labels.capExhaustedToast}</p>
+      </div>
+    );
+  }
+  if (toast.kind === "permutation") {
+    return (
+      <div
+        className="flex items-start gap-2 rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-sm text-error"
+        data-testid="campaign-refine-toast-permutation"
+        role="status"
+      >
+        <span
+          className="material-symbols-outlined text-[16px]"
+          aria-hidden
+        >
+          warning
+        </span>
+        <p>{labels.permutationInvalid}</p>
       </div>
     );
   }

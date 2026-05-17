@@ -235,6 +235,7 @@ describe("applyRefineAction", () => {
     expect(res.data.feedback).toBe("please be more specific-zh");
     expect(res.data.unparsable).toBe(true);
     expect(res.data.capExhausted).toBe(false);
+    expect(res.data.errorKind).toBe("unparsable");
 
     expect(logAuditMock).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -279,6 +280,7 @@ describe("applyRefineAction", () => {
     expect(res.data.feedback).toBe("");
     expect(res.data.unparsable).toBe(true);
     expect(res.data.capExhausted).toBe(false);
+    expect(res.data.errorKind).toBe("permutation_invalid");
 
     expect(logAuditMock).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -396,6 +398,7 @@ describe("applyRefineAction", () => {
     expect(res.data.orderedKolIds).toEqual(POOL_IDS);
     expect(res.data.unparsable).toBe(true);
     expect(res.data.feedback).toBe("");
+    expect(res.data.errorKind).toBe("malformed");
     expect(logAuditMock).toHaveBeenCalledWith(
       expect.objectContaining({
         action: "ai_recommendation.refine_parse_failed",

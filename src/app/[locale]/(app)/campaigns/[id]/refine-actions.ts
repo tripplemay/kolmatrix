@@ -78,6 +78,13 @@ export interface ApplyRefineSuccessData {
   unparsable: boolean;
   /** True when cost-cap blocked the call (pre-check or in-flight race). */
   capExhausted: boolean;
+  /**
+   * BL-068-F005 — discriminator on the 3 unparsable sub-paths so the
+   * client can render a distinct toast for permutation invalid
+   * (`permutationInvalid` i18n key) vs. plain unparsable. Only set
+   * when `unparsable === true`; absent on success and capExhausted.
+   */
+  errorKind?: "unparsable" | "malformed" | "permutation_invalid";
 }
 
 export type ApplyRefineActionResult =
@@ -317,6 +324,7 @@ export async function applyRefineAction(
         feedback: reason,
         unparsable: true,
         capExhausted: false,
+        errorKind: "unparsable",
       },
     };
   }
@@ -345,6 +353,7 @@ export async function applyRefineAction(
         feedback: "",
         unparsable: true,
         capExhausted: false,
+        errorKind: "malformed",
       },
     };
   }
@@ -383,6 +392,7 @@ export async function applyRefineAction(
         feedback: "",
         unparsable: true,
         capExhausted: false,
+        errorKind: "permutation_invalid",
       },
     };
   }

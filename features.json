@@ -83,7 +83,9 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "pending",
+    "status": "completed",
+    "completed_at": "2026-05-17T20:50+0800",
+    "completion_notes": "F002 refine-actions.ts: ApplyRefineSuccessData 加 optional errorKind: 'unparsable' | 'malformed' | 'permutation_invalid' (backward compatible, 仅 unparsable=true 时 set). 3 unparsable branches 分别 populate (LLM unparsable → 'unparsable' / malformed missing-ordered_kol_ids → 'malformed' / permutation invalid → 'permutation_invalid'). 现有 9 case refine-actions.test.ts 加 3 个 expect(res.data.errorKind).toBe(...) 断言 (sub-branch contract 锁). F003 RefineInputBar.tsx: ToastState 加 5th variant 'permutation'; onRefine unparsable 分支按 errorKind discriminate (permutation_invalid → setToast({kind:'permutation'}) 显 labels.permutationInvalid / else 沿用 unparsable toast 显 LLM feedback 或 unparsableToast fallback); 新 RefineToast case render permutation toast 用 testid campaign-refine-toast-permutation. rawQuery preservation 在 F003 已锁 (success 唯一 setRawQuery('')) — F005 新增测验证 5 个错误路径全 preserve. 新文件 __tests__/RefineInputBar.test.tsx 10 case (spec ≥5 要求): unparsable with LLM feedback / unparsable empty feedback fallback / permutation_invalid distinct toast / capExhausted preserve / network ok:false preserve / 5s timeout via fake timers + advanceTimersByTimeAsync / 4 locale (zh/ja/ko/es) it.each parameterized permutation 测每 locale 独自 permutationInvalid 字符串 + no English leak. Map-backed localStorage 复用 AiRecommendationPanel.test.tsx 模式. L1: lint 0 errors / tsc 0 / vitest 171 files 1232 tests PASS (campaigns/[id]/__tests__ + match = 125, full 1232 — F004 1214 + 10 new F005 RefineInputBar tests + 8 ambient tests that previously emitted async stderr now resolved cleanly). Spec acceptance #1-6 全 PASS.",
     "acceptance": [
       "F002 server action 已含 unparsable + capExhausted + permutation 路径，本 feature 聚焦 client-side 错误边界 UI 强化",
       "F003 RefineInputBar 错误状态 UI：unparsable toast 显 LLM 解释 (per locale) + raw query 保留 input 让用户修改重试；capExhausted toast 显 `campaigns.detail.refine.capExhaustedToast`；网络 5xx timeout toast 显 `campaigns.detail.refine.networkError`",
