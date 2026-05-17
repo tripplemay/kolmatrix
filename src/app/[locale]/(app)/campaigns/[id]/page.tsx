@@ -184,7 +184,12 @@ function aiPanelLabels(t: TFn) {
       sourcedFrom: t("aiPanel.active.sourcedFrom"),
       showNext: t("aiPanel.active.showNext"),
       whyPrefix: t("aiPanel.active.whyPrefix"),
-      whyTemplate: t("aiPanel.active.whyTemplate"),
+      // BL-066 i18n template hotfix (CI FORMATTING_ERROR fix, 2026-05-16) —
+      // per generator.md §"i18n template 使用约定 (v0.9.21)": templates with
+      // `{matchScore}` / `{valueScore}` placeholders are client-side .replace
+      // tokens, NOT ICU placeholders. Must use t.raw() to bypass the ICU
+      // formatter; otherwise server SSR throws on the unbound placeholder.
+      whyTemplate: t.raw("aiPanel.active.whyTemplate"),
       acceptCta: t("aiPanel.active.acceptCta"),
       skipCta: t("aiPanel.active.skipCta"),
       viewProfileCta: t("aiPanel.active.viewProfileCta"),
