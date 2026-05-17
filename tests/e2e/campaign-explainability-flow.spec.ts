@@ -47,6 +47,84 @@ const DETAILED_SAMPLE = {
     "Tier-typical gaming brand partnerships are likely, but specific brand names are not yet collected.",
 };
 
+// 5-KOL stable pool — mounted via mockSmartMatch to make case 1 + 6
+// deterministic in CI where AIGCGATEWAY_* env is absent and the real
+// smart-match endpoint returns 500 (panel would render error state
+// instead of active, blocking the mount assertions). Mirrors
+// tests/e2e/campaign-refine-flow.spec.ts POOL shape (BL-068-F006).
+const SMART_MATCH_POOL = [
+  {
+    id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    displayName: "Alpha Creator",
+    handle: "alpha",
+    platform: "youtube",
+    avatarUrl: null,
+    followerCount: 100000,
+    countryCode: "US",
+    categories: ["Strategy"],
+    matchScore: 95,
+    valueScore: 90,
+  },
+  {
+    id: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+    displayName: "Beta Creator",
+    handle: "beta",
+    platform: "twitch",
+    avatarUrl: null,
+    followerCount: 80000,
+    countryCode: "JP",
+    categories: ["Action"],
+    matchScore: 88,
+    valueScore: 80,
+  },
+  {
+    id: "cccccccc-cccc-cccc-cccc-cccccccccccc",
+    displayName: "Gamma Creator",
+    handle: "gamma",
+    platform: "tiktok",
+    avatarUrl: null,
+    followerCount: 60000,
+    countryCode: "KR",
+    categories: ["RPG"],
+    matchScore: 80,
+    valueScore: 70,
+  },
+  {
+    id: "dddddddd-dddd-dddd-dddd-dddddddddddd",
+    displayName: "Delta Creator",
+    handle: "delta",
+    platform: "youtube",
+    avatarUrl: null,
+    followerCount: 40000,
+    countryCode: "ES",
+    categories: ["Strategy"],
+    matchScore: 72,
+    valueScore: 60,
+  },
+  {
+    id: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
+    displayName: "Epsilon Creator",
+    handle: "epsilon",
+    platform: "youtube",
+    avatarUrl: null,
+    followerCount: 20000,
+    countryCode: "DE",
+    categories: ["Strategy"],
+    matchScore: 65,
+    valueScore: 50,
+  },
+];
+
+async function mockSmartMatch(page: Page): Promise<void> {
+  await page.route("**/api/kols/smart-match", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ results: SMART_MATCH_POOL }),
+    });
+  });
+}
+
 async function firstCampaignDetailUrl(page: Page): Promise<string | null> {
   await page.goto("/en/campaigns");
   await page.waitForURL(/\/(en|zh|ja|ko|es)\/(campaigns|match)(\/|\?|$)/);
@@ -103,6 +181,13 @@ test.describe("BL-067-F006 · /campaigns/[id] C3 explainability flow", () => {
   }) => {
     const href = await firstCampaignDetailUrl(page);
     if (!href) test.skip(true, "Tenant has no seeded campaigns");
+
+    // CI has no AIGCGATEWAY_* env → real /api/kols/smart-match returns
+    // 500 and the panel renders the error banner state instead of
+    // active. Mock the endpoint to inject a stable 5-KOL pool so the
+    // mount-time assertions can run deterministically (mirrors
+    // BL-068-F006 campaign-refine-flow.spec.ts mock pattern).
+    await mockSmartMatch(page);
 
     await page.goto(href!);
     await expect(
@@ -282,6 +367,10 @@ test.describe("BL-067-F006 · /campaigns/[id] C3 explainability flow", () => {
   }) => {
     const href = await firstCampaignDetailUrl(page);
     if (!href) test.skip(true, "Tenant has no seeded campaigns");
+
+    // CI mock — same reason as case 1; locale switch re-mounts the
+    // panel, both en + zh paths need smart-match to resolve.
+    await mockSmartMatch(page);
 
     await page.goto(href!);
     await expect(
