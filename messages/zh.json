@@ -860,6 +860,53 @@
       "_deprecated_by_BL-066": "BL-066-F005 已弃用手动添加 KOL 表单，待 BL-070 删除本命名空间。"
     }
   },
+  "brief": {
+    "pageTitle": "Brief",
+    "subtitle": "用自然语言描述营销 brief 让 AI 自动填表，或手动填写。",
+    "tabCampaign": "活动",
+    "tabProducts": "产品",
+    "aiInputBar": {
+      "placeholder": "例如：Q2 2026 推 Genshin Impact 给东南亚游戏受众，预算 $10K USD...",
+      "generateButton": "生成",
+      "loading": "解析中…",
+      "feedbackPrefix": "AI：",
+      "unparsableToast": "无法解析 brief，请尝试包含市场、预算或受众等信息。",
+      "malformedToast": "AI 返回数据异常，请手动填写表单。",
+      "productCrossTenantToast": "AI 建议的产品不在你的产品库中 — 请先在「产品」标签页注册。",
+      "capExhaustedToast": "今日 AI 额度已用尽，请手动填表。",
+      "networkError": "网络错误，请重试。"
+    },
+    "form": {
+      "name": "活动名称（可选）",
+      "nameHint": "简短标签，最多 80 字符；留空则自动按产品+市场命名。",
+      "productSelectorLabel": "产品",
+      "manageProductsLink": "管理产品",
+      "noProducts": "暂无产品。请先在「产品」标签页注册一个产品。",
+      "budgetAmount": "预算",
+      "budgetCurrency": "币种",
+      "budgetHint": "可选。用于在活动列表页计算花费 / 预算比。",
+      "startDate": "开始日期",
+      "endDate": "结束日期",
+      "markets": "目标市场",
+      "targetAudience": "目标受众",
+      "targetAudienceHint": "自由文本描述（最多 500 字符）。AI 会据此精化 KOL 推荐。",
+      "categories": "类目",
+      "categoriesHint": "逗号分隔，小写连字符（例：mobile-game, rpg, esports）。",
+      "submit": "创建活动",
+      "submitting": "创建中…",
+      "aiDiffHintPrefix": "AI 建议："
+    },
+    "markets": {
+      "global": "全球",
+      "us": "美国",
+      "eu": "欧洲",
+      "jp": "日本",
+      "kr": "韩国",
+      "sea": "东南亚",
+      "cn": "中国大陆",
+      "latam": "拉美"
+    }
+  },
   "campaigns": {
     "title": "营销活动",
     "subtitle": "统一规划、执行并度量每一次推广。",

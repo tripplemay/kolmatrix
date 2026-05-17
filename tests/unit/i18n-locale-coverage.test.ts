@@ -202,6 +202,12 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   "campaigns.new.markets.us",
   "campaigns.new.markets.eu",
   "campaigns.new.markets.latam",
+  // BL-069-F003 — /brief route. "Brief" is a marketing-industry
+  // loanword used identically across en/zh/es; market codes follow
+  // the same convention as campaigns.new.markets above.
+  "brief.pageTitle",
+  "brief.markets.global",
+  "brief.markets.latam",
   "outreach.performance.statWindowValue",
   "outreach.domainHealth.dkim",
   "outreach.recentReplies.subjectPrefix",

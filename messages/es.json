@@ -860,6 +860,53 @@
       "_deprecated_by_BL-066": "BL-066-F005 retira el formulario manual de añadir KOL. BL-070 eliminará este espacio de nombres."
     }
   },
+  "brief": {
+    "pageTitle": "Brief",
+    "subtitle": "Describe tu brief en lenguaje natural y deja que la IA complete el formulario, o complétalo manualmente.",
+    "tabCampaign": "Campaña",
+    "tabProducts": "Productos",
+    "aiInputBar": {
+      "placeholder": "Ej.: Empuja Genshin Impact a jugadores SEA, presupuesto $10K para Q2 2026...",
+      "generateButton": "Generar",
+      "loading": "Analizando…",
+      "feedbackPrefix": "IA:",
+      "unparsableToast": "No se pudo analizar el brief. Intenta incluir mercado, presupuesto o público.",
+      "malformedToast": "La respuesta de IA no es válida. Por favor completa el formulario manualmente.",
+      "productCrossTenantToast": "La IA sugirió un producto que no está en tu biblioteca — regístralo en la pestaña 'Productos' primero.",
+      "capExhaustedToast": "Cuota diaria de IA agotada. Por favor completa el formulario manualmente.",
+      "networkError": "Error de red. Reintenta por favor."
+    },
+    "form": {
+      "name": "Nombre de campaña (opcional)",
+      "nameHint": "Etiqueta corta, máximo 80 caracteres. Vacío para auto-nombrar por producto + mercado.",
+      "productSelectorLabel": "Producto",
+      "manageProductsLink": "Gestionar productos",
+      "noProducts": "Sin productos aún. Regístralo en la pestaña 'Productos' para empezar una campaña.",
+      "budgetAmount": "Presupuesto",
+      "budgetCurrency": "Moneda",
+      "budgetHint": "Opcional. Usado para calcular Gasto vs Presupuesto en la lista.",
+      "startDate": "Fecha de inicio",
+      "endDate": "Fecha de fin",
+      "markets": "Mercados objetivo",
+      "targetAudience": "Audiencia objetivo",
+      "targetAudienceHint": "Descripción libre (máx. 500 caracteres). Usado por IA para refinar recomendaciones de KOL.",
+      "categories": "Categorías",
+      "categoriesHint": "Separadas por comas, minúsculas y guiones (ej.: mobile-game, rpg, esports).",
+      "submit": "Crear campaña",
+      "submitting": "Creando…",
+      "aiDiffHintPrefix": "IA sugiere:"
+    },
+    "markets": {
+      "global": "Global",
+      "us": "EE.UU.",
+      "eu": "UE",
+      "jp": "Japón",
+      "kr": "Corea",
+      "sea": "Sudeste asiático",
+      "cn": "China continental",
+      "latam": "LATAM"
+    }
+  },
   "campaigns": {
     "title": "Campañas",
     "subtitle": "Planifique, ejecute y mida cada iniciativa de contacto.",

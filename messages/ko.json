@@ -860,6 +860,53 @@
       "_deprecated_by_BL-066": "BL-066-F005에서 수동 KOL 추가 폼을 폐기했습니다. BL-070에서 본 네임스페이스를 제거합니다。"
     }
   },
+  "brief": {
+    "pageTitle": "브리프",
+    "subtitle": "자연어로 브리프를 작성하면 AI가 폼을 자동 채웁니다. 수동 입력도 가능합니다.",
+    "tabCampaign": "캠페인",
+    "tabProducts": "제품",
+    "aiInputBar": {
+      "placeholder": "예: Q2 2026 Genshin Impact를 SEA 게이머에게 푸시, 예산 $10K USD...",
+      "generateButton": "생성",
+      "loading": "분석 중…",
+      "feedbackPrefix": "AI 분석:",
+      "unparsableToast": "브리프를 분석할 수 없습니다. 시장, 예산, 타겟층을 포함해보세요.",
+      "malformedToast": "AI 응답 형식이 잘못되었습니다. 폼을 수동으로 입력하세요.",
+      "productCrossTenantToast": "AI가 제안한 제품이 라이브러리에 없습니다 — '제품' 탭에서 먼저 등록하세요.",
+      "capExhaustedToast": "오늘 AI 할당량을 모두 사용했습니다. 폼을 수동으로 입력하세요.",
+      "networkError": "네트워크 오류. 다시 시도해주세요."
+    },
+    "form": {
+      "name": "캠페인 이름 (선택)",
+      "nameHint": "짧은 식별자, 최대 80자. 비워두면 제품 + 시장 조합으로 자동 명명.",
+      "productSelectorLabel": "제품",
+      "manageProductsLink": "제품 관리",
+      "noProducts": "등록된 제품이 없습니다. '제품' 탭에서 먼저 등록하세요.",
+      "budgetAmount": "예산",
+      "budgetCurrency": "통화",
+      "budgetHint": "선택. 리스트 페이지의 지출 vs 예산 계산에 사용.",
+      "startDate": "시작일",
+      "endDate": "종료일",
+      "markets": "타겟 시장",
+      "targetAudience": "타겟 오디언스",
+      "targetAudienceHint": "자유 기술 (최대 500자). AI가 KOL 추천 정제에 사용.",
+      "categories": "카테고리",
+      "categoriesHint": "쉼표 구분, 소문자 하이픈 (예: mobile-game, rpg, esports).",
+      "submit": "캠페인 생성",
+      "submitting": "생성 중…",
+      "aiDiffHintPrefix": "AI 제안:"
+    },
+    "markets": {
+      "global": "글로벌",
+      "us": "미국",
+      "eu": "유럽",
+      "jp": "일본",
+      "kr": "한국",
+      "sea": "동남아시아",
+      "cn": "중국 본토",
+      "latam": "중남미"
+    }
+  },
   "campaigns": {
     "title": "캠페인",
     "subtitle": "모든 아웃리치 푸시를 계획하고 실행하며 측정하세요.",

@@ -3,12 +3,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔨 BL-069-brief-page-merge BUILDING（2/7, fix_rounds=0, spec=cf2fdab, role_assignments=null 默认映射）
-- ✅ F001 action=cmp9wbt7q05xjbno11fuoim9l v2 (input=2495/output=414/$0.0046) ✅ F002 brief-actions.ts 11 步 (cuid 验证 + dedupe + 3 audit + errorKind 3 子路径 + 9 单测 19/19 无 regression) → F003 /brief layout (8h) → F004 ?tab=products KB 迁移 (6h) → F005 提交跳 /match + BL-067 prewarm (4h) → F006 redirect 3 条 + 5 i18n + e2e 6 case (6h) → F007 staging + cost 监控 + signoff (4h)
+## 🔨 BL-069-brief-page-merge BUILDING（3/7, fix_rounds=0, spec=cf2fdab, role_assignments=null 默认映射）
+- ✅ F001 action=cmp9wbt7q05xjbno11fuoim9l v2 ✅ F002 brief-actions.ts 11 步 ✅ F003 /brief layout: BriefAiInputBar (RefineInputBar 模式) + CampaignForm (forwardRef 受控 state, 8 字段, diff hint §5 不变量 #6) + page.tsx (tab routing) + 5 locale i18n brief.* 完整 + 7 case 测 → F004 ?tab=products KB 迁移 (6h) → F005 提交跳 /match + BL-067 prewarm (4h) → F006 redirect 3 条 + 5 i18n 老 KB 加 _deprecated_by_BL-069 + e2e 6 case (6h) → F007 staging + cost 监控 + signoff (4h)
 - 8 决策点 5/17 全 lock：#1 ready-to-build / #2 完全 redirect 301 / #3 表单字段 + KOL prewarm / #4 表单 + 顶部 AI input bar / #5 全复用 v0.9.22 基础设施 / #6 product list 内嵌 + ?tab=products / #7 toast unparsable + 保留空表单 / #8 audit log raw brief
-- 复用 v0.9.22 沉淀：runAigcAction SDK + checkLlmCostBudget + prompt v3 自检 § + silent fallback + 5 locale + dedupe-then-validate 模式；F001 cost=$0.0046/call (与 §6 估算 $0.0045 一致)；5 用户 day + 5 campaign prewarm = $1.75 meter (35% cap)
-- F001+F002 spec ↔ codebase drift 自决 3 项: F001 v1 prompt input=4241 超 ceiling 2500 → v2 裁剪；F002 Product.id 是 cuid 非 UUID + Product.category 是单字段非数组 (mapper wrap [category] 让 prompt 不动)
-- BL-067-F006 CI flaky inline fix (用户 ack option B): explainability flow case 1+6 加 mockSmartMatch 复用 BL-068-F006 POOL 模式，CI 8/8 全绿 ✓ (含 E2E)，解锁 BL-069 CI 守门
+- 复用 v0.9.22 沉淀：runAigcAction SDK + checkLlmCostBudget + prompt v3 自检 § + silent fallback + 5 locale + dedupe-then-validate；F001 cost=$0.0046/call；5 用户 day + 5 prewarm = $1.75 meter (35% cap)
+- F001+F002+F003 spec drift 自决 3 项 (F001 v1 prompt 超 ceiling→v2 裁剪 / F002 Product.id 是 cuid / Product.category 单字段→mapper wrap) + F003 用户 5/18 ack option B 新建 brief/CampaignForm 而非 git mv，forwardRef+useImperativeHandle 解耦 onParsed wire
+- BL-067-F006 CI flaky inline fix (用户 ack option B): mockSmartMatch case 1+6，CI 8/8 全绿 ✓ 解锁 BL-069 CI 守门
 ## ✅ BL-068-conversational-refine DONE（7/7, fix_rounds=3, signoff=BL-068-signoff-2026-05-17.md, 24h parse gate 16/20=80% PASS, deduped 35% LLM noise tolerated via server fallback）
 ## ✅ BL-067-explainability-c3 DONE（7/7 + fix-round 1 + signoff 2026-05-16, prod redeploy 待用户 ack 时间窗 deploy-prod.sh 已含 --webpack 防御）
 - 3 项 P5 裁决: §1 5 cat→3 cat 降级 (staging seed gap → BL-070 backlog) / §5 perf 留 dogfood / §8 真 24h soak 加速省略

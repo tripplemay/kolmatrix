@@ -43,7 +43,8 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 8.0,
-    "status": "pending",
+    "status": "completed",
+    "completion_notes": "新建 4 文件: brief/page.tsx (server, fetch products + i18n labels + tab routing) + brief/BriefPageClient.tsx (client wrapper, ref-based wiring) + brief/BriefAiInputBar.tsx (RefineInputBar 模式, soft 5s timer + 6 toast variants含errorKind 3 子路径区分) + brief/CampaignForm.tsx (forwardRef + useImperativeHandle 暴露 applyParsed, 受控 state, 8 字段: product/name/budget(amount+currency)/dates/markets/targetAudience/categories + diff hint per §5 不变量 #6 仅填空字段). i18n 5 locale 完整 brief.* 命名空间 (pageTitle/tabCampaign/tabProducts/aiInputBar.*/form.*/markets.*) en/zh/ja/ko/es 全 cover. F005 submit 暂为 console.log stub. F004 ?tab=products 占位待 F004 实装 ProductListPanel. __tests__/BriefPageClient.test.tsx 7 case (spec ≥5): mount 空表单 / Generate 成功填空字段 / unparsable 表单不变+toast / cap 满 toast / 已填字段不被覆盖 + diff hint 显 / network 错 / product_cross_tenant distinct toast. L1 PASS: lint 0 errors / tsc 0 / vitest brief/ 16/16 (F002 9 + F003 7) + 全量回归无 regression. staging deploy 5 步 + curl /api/health 验 git_sha 一致.",
     "acceptance": [
       "新文件 `src/app/[locale]/(app)/brief/page.tsx`（server component）：顶部 BriefAiInputBar 组件 (client) + 中部 CampaignForm 组件 (client) + 默认 tab 渲 form, ?tab=products 渲 F004 ProductListPanel",
       "BriefAiInputBar (client) `src/app/[locale]/(app)/brief/BriefAiInputBar.tsx`：Props `{ locale, onParsed }` / input bar (placeholder=`brief.aiInputPlaceholder`) + 'Generate' button + Loading state 5s timeout (per BL-067 F004 同模式) / 点击 Generate → 调 F002 parseBriefAction → 成功 (unparsable=false) → onParsed(parsedFields) 自动填 CampaignForm 字段 / unparsable → toast `brief.aiUnparsableToast` (BL-068 silent fallback 同模式) / capExhausted → toast `brief.aiCapExhaustedToast` / 5s timeout → toast `brief.aiNetworkError`",

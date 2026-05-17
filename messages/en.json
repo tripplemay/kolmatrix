@@ -860,6 +860,53 @@
       "_deprecated_by_BL-066": "BL-066-F005 retired Add KOL form. BL-070 will delete this namespace."
     }
   },
+  "brief": {
+    "pageTitle": "Brief",
+    "subtitle": "Describe your campaign in natural language and let AI fill the form, or fill it manually.",
+    "tabCampaign": "Campaign",
+    "tabProducts": "Products",
+    "aiInputBar": {
+      "placeholder": "e.g., Push Genshin Impact to SEA gamers, $10K budget for Q2 2026...",
+      "generateButton": "Generate",
+      "loading": "Parsing…",
+      "feedbackPrefix": "AI:",
+      "unparsableToast": "Could not parse the brief. Try including market, budget, or audience.",
+      "malformedToast": "AI response was malformed. Please fill the form manually.",
+      "productCrossTenantToast": "AI suggested a product that isn't in your library yet — register it in 'Products' tab first.",
+      "capExhaustedToast": "Daily AI quota reached. Please fill the form manually.",
+      "networkError": "Network error. Please retry."
+    },
+    "form": {
+      "name": "Campaign name (optional)",
+      "nameHint": "A short label, max 80 chars. Leave blank to auto-name from product + market.",
+      "productSelectorLabel": "Product",
+      "manageProductsLink": "Manage products",
+      "noProducts": "No products yet. Register one in the Products tab to start a campaign.",
+      "budgetAmount": "Budget",
+      "budgetCurrency": "Currency",
+      "budgetHint": "Optional. Used to compute Spend vs. Budget on the list page.",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "markets": "Target markets",
+      "targetAudience": "Target audience",
+      "targetAudienceHint": "Free-text description (max 500 chars). Used by AI to refine KOL recommendations.",
+      "categories": "Categories",
+      "categoriesHint": "Comma-separated, lowercase (e.g., mobile-game, rpg, esports).",
+      "submit": "Create Campaign",
+      "submitting": "Creating…",
+      "aiDiffHintPrefix": "AI suggests:"
+    },
+    "markets": {
+      "global": "Global",
+      "us": "US",
+      "eu": "EU",
+      "jp": "Japan",
+      "kr": "Korea",
+      "sea": "Southeast Asia",
+      "cn": "Mainland China",
+      "latam": "LATAM"
+    }
+  },
   "campaigns": {
     "title": "Campaigns",
     "subtitle": "Plan, run, and measure every outreach push.",

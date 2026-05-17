@@ -860,6 +860,53 @@
       "_deprecated_by_BL-066": "BL-066-F005 で手動 KOL 追加フォームを廃止。BL-070 で本ネームスペースを削除予定。"
     }
   },
+  "brief": {
+    "pageTitle": "ブリーフ",
+    "subtitle": "自然言語でブリーフを記述すると AI が自動入力します。手動入力も可能です。",
+    "tabCampaign": "キャンペーン",
+    "tabProducts": "プロダクト",
+    "aiInputBar": {
+      "placeholder": "例：Q2 2026 に Genshin Impact を SEA ゲーマー向けにプッシュ、予算 $10K USD...",
+      "generateButton": "生成",
+      "loading": "解析中…",
+      "feedbackPrefix": "AI：",
+      "unparsableToast": "ブリーフを解析できません。市場・予算・ターゲットなどを含めてください。",
+      "malformedToast": "AI の応答が不正です。フォームを手動で入力してください。",
+      "productCrossTenantToast": "AI が提案したプロダクトはライブラリにありません — まず「プロダクト」タブで登録してください。",
+      "capExhaustedToast": "本日の AI クォータを使い切りました。フォームを手動で入力してください。",
+      "networkError": "ネットワークエラーが発生しました。再試行してください。"
+    },
+    "form": {
+      "name": "キャンペーン名（任意）",
+      "nameHint": "短い識別名、最大 80 文字。空欄の場合はプロダクト + 市場で自動命名。",
+      "productSelectorLabel": "プロダクト",
+      "manageProductsLink": "プロダクト管理",
+      "noProducts": "プロダクト未登録。「プロダクト」タブで先に登録してください。",
+      "budgetAmount": "予算",
+      "budgetCurrency": "通貨",
+      "budgetHint": "任意。リスト画面での予算 vs 支出計算に使用。",
+      "startDate": "開始日",
+      "endDate": "終了日",
+      "markets": "ターゲット市場",
+      "targetAudience": "ターゲットオーディエンス",
+      "targetAudienceHint": "自由記述（最大 500 文字）。AI が KOL 推薦を精緻化する際に使用。",
+      "categories": "カテゴリー",
+      "categoriesHint": "カンマ区切り、小文字ハイフン（例：mobile-game, rpg, esports）。",
+      "submit": "キャンペーンを作成",
+      "submitting": "作成中…",
+      "aiDiffHintPrefix": "AI 提案："
+    },
+    "markets": {
+      "global": "グローバル",
+      "us": "米国",
+      "eu": "欧州",
+      "jp": "日本",
+      "kr": "韓国",
+      "sea": "東南アジア",
+      "cn": "中国本土",
+      "latam": "中南米"
+    }
+  },
   "campaigns": {
     "title": "キャンペーン",
     "subtitle": "すべてのアウトリーチプッシュを計画、実行、測定します。",
