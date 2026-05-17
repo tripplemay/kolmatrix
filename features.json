@@ -24,7 +24,8 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 6.0,
-    "status": "pending",
+    "status": "completed",
+    "completion_notes": "新文件 src/app/[locale]/(app)/brief/brief-actions.ts (use server) parseBriefAction 11 步流程，复用 BL-067 F001 SDK + BL-068 F002 audit/dedupe 模式。3 audit action types ai_brief.parse_{cap_exhausted,unparsable,applied} dot 形式；actionLabel 'ai_brief_parse' snake_case (event_log group-by 一致)。spec ↔ codebase drift 自决 2 项：(1) Product.id 是 cuid 不是 UUID → 验证用 Set membership 不用 UUID regex (2) Product.category 是单 String 字段不是数组 → mapper 时 wrap [product.category] 让 prompt 不动。__tests__/brief-actions.test.ts 9 case 全 mock 跨模块依赖 (auth/cost-cap/aigc SDK/audit/rate-limit/prisma): success + cap pre-check + unparsable + productId 跨 tenant + rate limit + 5 locale (zh) + race cap + malformed + unauthorized。L1 PASS: lint 0 errors / tsc 0 / vitest 19/19 (F002 9 + BL-068 F002 10 无 regression)。F002 含运行时代码 → staging deploy 5 步硬要求 (git pull + npm ci + prisma migrate + GIT_SHA build + pm2 reload --update-env) → curl staging /api/health git_sha == 本 commit short.",
     "acceptance": [
       "新文件 `src/app/[locale]/(app)/brief/brief-actions.ts`（\"use server\"）含 `parseBriefAction({ rawBrief, locale }): Promise<{ parsed: BriefFields | null; feedback: string; unparsable: boolean; capExhausted: boolean }>` 流程：(1) session auth + tenant scope / (2) checkLlmCostBudget 满 → capExhausted=true + audit_log ai_brief.parse_cap_exhausted / (3) rateLimitBatchSend block → throw / (4) fetch available products via withTenant RLS / (5) 拼装 input + 调 runAigcAction(BRIEF_PARSE_ACTION_ID, variables, tenantId) / (6) unparsable=true → audit_log ai_brief.parse_unparsable / (7) unparsable=false → 验 productId 跨 tenant + 返回 parsed + audit_log ai_brief.parse_applied",
       "audit_log shape: `logAudit({ actorId, action: 'ai_brief.parse_*', targetType: 'brief', targetId: 'draft', tenantId, after: { raw_brief?, parsed_fields?, unparsable?, locale } })`",
