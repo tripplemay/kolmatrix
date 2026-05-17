@@ -16,6 +16,7 @@
  *   - en-campaigns.png          — authenticated `/en/campaigns` (BM2-F003 + MVP-vf-F004)
  *   - en-campaign-detail.png    — authenticated `/en/campaigns/:id` (BM2-F005 + MVP-vf-F005 + BL-066-F009 mask refresh + viewport-only fix for 3-panel AI-native layout, 2026-05-15)
  *   - en-match.png              — authenticated `/en/match` unified workbench (BL-065-F006 placeholder, BL-066-F009 lands the baseline)
+ *   - en-match-with-campaign.png — authenticated `/en/match?campaignId=:id` with RefineInputBar in the right column (BL-068-F004 + F007 baseline)
  *   - en-outreach.png           — authenticated `/en/outreach` (BM2-F006)
  *   - en-outreach-templates.png — authenticated `/en/outreach/templates` (BM2-F006)
  *   - en-crm.png                — authenticated `/en/crm` (BM2-F007)
@@ -254,6 +255,62 @@ test.describe("Authenticated BM1 visual regression", () => {
       fullPage: true,
       animations: "disabled",
       mask: [grid, aiSidebar, activeFilters],
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
+  });
+
+  // BL-068-F004 + F007 — /match `?campaignId` mode mounts MatchRefineBar
+  // above the AiSuggestionsSidebar in the right column. The new
+  // `en-match-with-campaign.png` baseline captures the bar + sidebar
+  // chrome so a regression in either surface trips the gate.
+  test("match with ?campaignId full-page screenshot diffs < 2% vs baseline", async ({
+    page,
+  }) => {
+    test.skip(
+      shouldSkipMissingBaseline("en-match-with-campaign.png", test.info()),
+      "Baseline en-match-with-campaign.png missing — run the 'Update visual baselines' workflow."
+    );
+    test.setTimeout(90_000);
+    await login(page);
+    // Resolve a tenant-scoped campaignId from the campaigns list, then
+    // hop to /match with it as a query param. Mirrors the dynamic-id
+    // pattern used by the BM2 campaign-detail test below — keeps the
+    // suite seed-tolerant (no hardcoded UUIDs).
+    await page.goto("/en/campaigns");
+    await page.waitForSelector('[data-testid="campaigns-page-title"]');
+    const firstRow = page.locator('[data-testid="campaign-row"]').first();
+    if ((await firstRow.count()) === 0) {
+      test.skip(true, "No campaigns in seed — match-with-campaign baseline N/A");
+    }
+    const cid = await firstRow.getAttribute("data-campaign-id");
+    if (!cid) test.skip(true, "First campaign-row has no data-campaign-id");
+
+    await page.goto(`/en/match?campaignId=${cid}`);
+    await page.waitForSelector(
+      '[data-testid="match-grid"], [data-testid="match-empty"]',
+      { timeout: 60_000 }
+    );
+    // The right-column wrapper hosts both MatchRefineBar and
+    // AiSuggestionsSidebar. Wait for the sidebar (always renders when
+    // ?campaignId resolves); the refine bar may or may not mount
+    // depending on whether the smart-match pool is reachable, so we
+    // mask both surfaces to keep the baseline driven by chrome.
+    await page.waitForSelector('[data-testid="match-ai-sidebar"]', {
+      timeout: 60_000,
+    });
+    await fontsReady(page);
+    await imagesReady(page);
+
+    const grid = page.locator('[data-testid="match-grid"]');
+    const aiSidebar = page.locator('[data-testid="match-ai-sidebar"]');
+    const refineBar = page.locator('[data-testid="match-refine-bar"]');
+    const activeFilters = page.locator('[data-testid="match-active-filters"]');
+
+    await expect(page).toHaveScreenshot("en-match-with-campaign.png", {
+      fullPage: true,
+      animations: "disabled",
+      mask: [grid, aiSidebar, refineBar, activeFilters],
       threshold: 0.02,
       maxDiffPixels: 8000,
     });

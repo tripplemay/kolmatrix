@@ -3,14 +3,15 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔨 BL-068-conversational-refine BUILDING（6/7, fix_rounds=0, spec=13d9794, role_assignments=null 默认映射）
-- ✅ F001 aigcgateway action 注册 cmp8mk1qj0005bno3k590u7zs + prompt design + SSH env (1.5h, 5/16 17:40, 88012ac)
-- ✅ F002 refine-actions.ts server action 9/9 单测 + 6 audit types (commit 494243c) + 3 BL-067 CI hotfix inline (4487c79) (2h, 5/16 17:55)
-- ✅ F003 RefineInputBar.tsx + AiRecommendationPanel refine cache + posMap reorder + 5 locale i18n + 5 vitest cases (ab933fc) (2h, 5/17 18:45)
-- ✅ F004 src/lib/refine-cache.ts shared + MatchRefineBar.tsx wrapper + /match mount + productId select + 10 vitest cases (8da0840) (1.5h, 5/17 19:50)
-- ✅ F005 errorKind discriminator + 5th 'permutation' toast variant + 10 new RefineInputBar.test.tsx (4 error paths + 5s timeout fake timers + 4 locale it.each) + 3 errorKind 断言 (6af0b3e) (1h, 5/17 20:50)
-- ✅ F006 i18n 5 locale audit (F003+F005 已加齐) + tests/e2e/campaign-refine-flow.spec.ts 6 case (smart-match mock + applyRefineAction server-action mock + UUID pool fixture + cache key derive for TTL boundary) (40min actual vs 6h estimate, 5/17 21:30)
-- → F007 staging deploy + 视觉 baseline regen (en-campaign-detail + en-match-with-campaign 必新生成) + scripts/bl068-cost-audit.ts + dogfood spot check (Codex 责任) + signoff (Codex 责任) (4h, F007 是混合 generator+codex 任务)
+## 🔍 BL-068-conversational-refine VERIFYING（7/7 Generator portion done, status: building → verifying, Codex 接手 signoff, spec=13d9794）
+- ✅ F001 aigcgateway action cmp8mk1qj0005bno3k590u7zs + SSH env (1.5h, 88012ac)
+- ✅ F002 refine-actions.ts 9 单测 + 6 audit types (494243c) + 3 BL-067 CI hotfix inline (4487c79) (2h)
+- ✅ F003 RefineInputBar + AiRecommendationPanel refine cache + 5 locale i18n + 5 vitest cases (ab933fc) (2h)
+- ✅ F004 src/lib/refine-cache.ts shared + MatchRefineBar.tsx + /match mount + 10 vitest cases (8da0840) (1.5h)
+- ✅ F005 F002 errorKind discriminator + RefineInputBar 5th 'permutation' toast + 10 new client tests (6af0b3e) (1h)
+- ✅ F006 i18n audit + tests/e2e/campaign-refine-flow.spec.ts 6 case (9355f43) (40min)
+- ✅ F007 Generator: scripts/bl068-cost-audit.ts + en-match-with-campaign visual test + update-visual-baselines workflow trigger (45min, 5/17 22:15). **Codex 接手**: dogfood spot check ≥10 query × 4 维度 + 24h cost ≤ team actual × 1.5 + parse success rate ≥ 80% gate + signoff docs/test-reports/BL-068-signoff-2026-05-XX.md
+- **F006 e2e 重要发现**: F006 push 后 CI 看似 7/8 PASS (visual fail) 但实际 chromium project (含 F006 6 case) **从未运行** — playwright project deps 'chromium' depends on 'visual', visual fail 触发依赖断开. F007 修 baseline 解锁; baseline auto-commit 后 CI 应让 F006 真正运行
 - **CI 7/8 jobs PASS, E2E 仍红**（campaign-explainability-flow.spec.ts:101 BL-067-F006 测 1）。根因：CI 无 AIGCGATEWAY_* env → smart-match embedding 调 fail → panel 渲 error testid → 测试只等 active/empty 故 30s timeout。**待 Planner 起 BL-067 followup batch 处理**（CI yaml 加 secrets / 测试 mock smart-match / 单行宽容 error testid 三选一），不属 BL-068 范围
 - 8 决策点 5/16 全 lock：#1 ready-to-build / #2 /campaigns/[id] + /match 两处 / #3 重排现 top 30 / #4 toast unparsable + 保留现池 / #5 stateful localStorage 24h TTL / #6 audit log raw query / #7 全复用 BL-067 基础设施 / #8 顶部 inline input bar
 - 复用 BL-067 沉淀：runAigcAction SDK (src/lib/aigc/run-action.ts) + checkLlmCostBudget (src/lib/ai/cost-cap.ts:133) + 5 locale JSON 模式 + silent fallback 哲学；cost 估算 5 用户 day = $1.25 meter (25% cap 利用率)
