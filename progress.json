@@ -1,5 +1,5 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "BL-068-conversational-refine — ADR-013 AI Native Phase 3 第二批：/campaigns/[id] AiRecommendationPanel + /match?campaignId mode 加 RefineInputBar，用户自然语言 refine → LLM 解析 → 重排现 top 30 池 + toast feedback + localStorage 24h TTL stateful。7 features F001-F007，~4 day Generator + 1 day Reviewer (大量复用 BL-067 沉淀 SDK + cost-cap + UI 框架)。8 决策点用户 5/16 brainstorming 全 lock：#1 ready-to-build / #2 /campaigns/[id] + /match 两处 / #3 重排现 top 30 (不重调 smart-match) / #4 Toast unparsable + 保留现池 / #5 Stateful + localStorage 24h TTL / #6 audit log raw query 作 Phase 5 学习数据 / #7 全复用 BL-067 基础设施 (haiku-4.5 + checkLlmCostBudget + runAigcAction + rateLimitBatchSend + 5 locale) / #8 面板顶部 inline input bar。本批次完成后解锁 Phase 4：BL-069 Brief / BL-070 Insight unify + 二次清理。关联 docs/specs/BL-068-conversational-refine-spec.md @ 13d9794 / ADR-013 §Decision #4 / vision §3 场景 3 + §7 原则 3 'Refine over Filter' / roadmap §5 BL-068 + §11 Phase 3 verifying gate (parse success rate ≥80%).",
   "total_features": 7,
   "completed_features": 7,
