@@ -3,16 +3,15 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔁 BL-068-conversational-refine REVERIFYING（fix-round 2 完成 2026-05-17 19:30, spec=13d9794）
+## 🔧 BL-068-conversational-refine FIXING（reverify failed again 2026-05-17 19:45, spec=13d9794）
 - ✅ fix-round 1 已验证: B1-B4 全修
-- ✅ fix-round 2 修 B5/B6:
-  - 根因: F001 prompt v1 全文 7+ 处硬编码 '30 KOL' → staging 池 29 时 LLM 凑足 30 幻觉补 2 ID
-  - 修复: MCP create_action_version 创 v2 (action_id 不变, version_id cmp9nzwgz05ejbno1fvxngn7v 已 set_active=true)
-  - v2 prompt: 所有 30 → 动态 N (current_pool_json 实际长度) + §⚠️ 关键不变量块 + §0 '先数清楚输入池' + 边界处理新 '输入池 N < 30' 行
-  - 验证: MCP run_action 实测同 B6 失败 query → 29-KOL 池返 29 IDs ✓ (trace_id trc_qdao852bxkbwnf52fundk7ie)
-  - 不动 source code: refine-actions.ts F002 strict permutation 验证保留作双重防御
-  - 不需 staging deploy / CI run (action_id 不变, version aigcgateway server-side 激活)
-- **Codex 复验 (reverifying)**: 在 /en/campaigns/382f... 重发 B6 query 验 success toast + 跑 cost-audit 验 parse rate ≥80% gate + 完整 10+ dogfood 覆盖 en/zh × 4 维度 → 写 signoff docs/test-reports/BL-068-signoff-2026-05-XX.md, status reverifying → done
+- ❌ fix-round 2 未清掉 B5/B6：
+  - 实际 staging 结果：B6 原 query `fewer micro creators, more female audience in Japan` 仍触发 `ai_recommendation.refine_permutation_invalid`
+  - 最新 drift 从上一轮 `29 -> 31` 收敛成 `29 -> 30`，但仍未通过 strict permutation
+  - 最新 trace: `trc_ew4fi0u4hihjdw07bu73xer3`
+  - 24h parse success rate 反而是 `20.00% (1/5)`，继续低于 `>=80%` gate
+- Codex 报告：`docs/test-reports/BL-068-reverify-fix-round-2-2026-05-17.md`
+- 下轮 generator 重点：抓出 `returned_count=30` 的完整模型输出，定位多出的那个 ID 来源；只改 prompt 还不够
 - **CI 7/8 jobs PASS, E2E 仍红**（campaign-explainability-flow.spec.ts:101 / :280，属 BL-067 followup，不是本批新 blocker）
 - 8 决策点 5/16 全 lock：#1 ready-to-build / #2 /campaigns/[id] + /match 两处 / #3 重排现 top 30 / #4 toast unparsable + 保留现池 / #5 stateful localStorage 24h TTL / #6 audit log raw query / #7 全复用 BL-067 基础设施 / #8 顶部 inline input bar
 - 复用 BL-067 沉淀：runAigcAction SDK (src/lib/aigc/run-action.ts) + checkLlmCostBudget (src/lib/ai/cost-cap.ts:133) + 5 locale JSON 模式 + silent fallback 哲学；cost 估算 5 用户 day = $1.25 meter (25% cap 利用率)
