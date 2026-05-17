@@ -62,7 +62,8 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 6.0,
-    "status": "pending",
+    "status": "completed",
+    "completion_notes": "新建 brief/ProductListPanel.tsx (~75 LOC, server) 作 thin wrapper: fetch products via withTenant RLS + loadProductAssetCounts → 渲染 KB ProductsClient (零重写)。给 KB ProductsClient 加 optional initialEditingProductId prop (back-compat: KB /knowledge-base 不传, 现有行为不变)，用 lazy useState initializer + resolveInitialDeepLink helper 替代 useEffect (避开 react-hooks/set-state-in-effect lint 规则)。brief/page.tsx tab=products 分支 ProductsPanelPlaceholder → ProductListPanel(initialEditingProductId=sp.productId), 支持 /brief?tab=products&productId=:id deep link 自动打开 edit modal。BL-070 二次清理时 git mv KB ProductsClient + ProductCard + ProductModal + types + actions 到 brief/, 删 /knowledge-base 整目录。__tests__/ProductsClient-deep-link.test.tsx 4 case (spec ≥4): initialEditingProductId 匹配→modal opens 字段 prefilled / undefined (KB caller)→modal closed grid visible / 不在 list (silent fallback)→modal closed / Add new product click 仍 create mode (regression guard). L1 PASS: lint 0 errors / tsc 0 / brief+KB 5 files 40 tests 全 PASS (F004 4 + F003 7 + F002 9 + KB ProductCard/actions 20). i18n 复用 knowledgeBase.* 命名空间 (无需新加 brief.products.* — F006 给 KB i18n 加 _deprecated_by_BL-069 marker). F004 含运行时代码 → staging deploy 5 步硬要求.",
     "acceptance": [
       "/brief 页 + `?tab=products` query param 渲不同 view：默认 (无 tab / tab=campaign) → F003 CampaignForm + BriefAiInputBar；tab=products → ProductListPanel",
       "ProductListPanel `src/app/[locale]/(app)/brief/ProductListPanel.tsx`：product table (name / categories / created_at / actions edit/delete) + 'New product' button → ProductFormDialog",

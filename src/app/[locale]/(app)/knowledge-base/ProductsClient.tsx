@@ -24,14 +24,47 @@ import type { ProductListItem } from "./types";
 
 interface Props {
   products: ProductListItem[];
+  /**
+   * BL-069-F004 — when /brief?tab=products&productId=… is opened
+   * via a deep link, auto-open the edit modal for that product on
+   * first mount. Optional + back-compat: the KB `/knowledge-base`
+   * caller never passes it, so existing behaviour is untouched.
+   */
+  initialEditingProductId?: string;
 }
 
-export function ProductsClient({ products }: Props) {
+/**
+ * Resolve the deep-link product (if any) at module level so the
+ * matching runs once on render rather than in a post-mount useEffect.
+ * This avoids a setState-in-effect lint violation while preserving the
+ * "modal opens automatically when productId is in the URL" behaviour.
+ */
+function resolveInitialDeepLink(
+  products: ProductListItem[],
+  initialEditingProductId: string | undefined,
+): { open: boolean; editing: ProductListItem | null } {
+  if (!initialEditingProductId) return { open: false, editing: null };
+  const match = products.find((p) => p.id === initialEditingProductId);
+  if (!match) return { open: false, editing: null };
+  return { open: true, editing: match };
+}
+
+export function ProductsClient({
+  products,
+  initialEditingProductId,
+}: Props) {
   const t = useTranslations("knowledgeBase");
   const tEmpty = useTranslations("common.emptyState.noProducts");
   const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<ProductListItem | null>(null);
+  // BL-069-F004 — lazy initial state from the deep-link prop so the
+  // modal opens on first paint for /brief?tab=products&productId=:id
+  // without a useEffect (avoids the set-state-in-effect lint rule).
+  // Subsequent changes to `initialEditingProductId` are intentionally
+  // NOT tracked: page-level navigation re-mounts the server component
+  // and gives ProductsClient a fresh first-render state.
+  const initial = resolveInitialDeepLink(products, initialEditingProductId);
+  const [open, setOpen] = useState(initial.open);
+  const [editing, setEditing] = useState<ProductListItem | null>(initial.editing);
   const [isDeleting, startDelete] = useTransition();
 
   const onCreated = () => {

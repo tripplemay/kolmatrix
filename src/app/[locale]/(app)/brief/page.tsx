@@ -25,6 +25,7 @@ import { auth } from "@/auth";
 import { withTenant } from "@/lib/db";
 
 import { BriefPageClient } from "./BriefPageClient";
+import { ProductListPanel } from "./ProductListPanel";
 
 export const metadata = { title: "Brief — KOLMatrix" };
 
@@ -46,6 +47,11 @@ export default async function BriefPage({ params, searchParams }: Props) {
   if (!tenantId) redirect("/login");
 
   const tab = pickFirst(sp.tab) ?? "campaign";
+  // BL-069-F004 — deep link from /knowledge-base/[id] (F006 wires the
+  // 301 redirect) lands here with ?tab=products&productId=:id and we
+  // auto-open the edit modal for that product on first paint.
+  const deepLinkProductId =
+    tab === "products" ? pickFirst(sp.productId) : undefined;
 
   const products = await withTenant(tenantId, (tx) =>
     tx.product.findMany({
@@ -108,7 +114,7 @@ export default async function BriefPage({ params, searchParams }: Props) {
       </nav>
 
       {tab === "products" ? (
-        <ProductsPanelPlaceholder />
+        <ProductListPanel initialEditingProductId={deepLinkProductId} />
       ) : (
         <BriefPageClient
           locale={locale}
@@ -161,19 +167,3 @@ export default async function BriefPage({ params, searchParams }: Props) {
   );
 }
 
-/**
- * F003 placeholder for the products tab. F004 will replace this with
- * a real ProductListPanel (CRUD migrated from /knowledge-base).
- */
-function ProductsPanelPlaceholder() {
-  return (
-    <div
-      className="glass-panel rounded-2xl border border-on-surface/5 p-8 text-center text-on-surface-variant"
-      data-testid="brief-products-panel-placeholder"
-    >
-      <p className="text-sm">
-        Product list panel will land in BL-069-F004 (migrated from /knowledge-base).
-      </p>
-    </div>
-  );
-}
