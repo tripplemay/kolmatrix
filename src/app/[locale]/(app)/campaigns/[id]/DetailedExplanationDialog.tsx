@@ -100,11 +100,15 @@ export function DetailedExplanationDialog({
 
   // BL-067-F004 — first-open trigger. Re-firing for the same (kolId, locale)
   // tuple is suppressed (cache hit will be fast on second open anyway).
+  // BL-068-F002 hotfix: removed `setState({kind:"idle"})` in the close branch
+  // to satisfy react-hooks/set-state-in-effect. The parent (AiRecommendationPanel)
+  // conditionally renders the dialog (mount/unmount on open toggle) so a fresh
+  // mount initializes state to `idle` via useState's initial value — the
+  // synchronous reset here is dead code in normal use. firedFor ref reset
+  // is preserved for the defensive same-component-tree case.
   useEffect(() => {
     if (!open) {
-      // Reset for next open so a different KOL re-triggers the fetch.
       firedFor.current = null;
-      setState({ kind: "idle" });
       return;
     }
     const key = `${campaignId}:${kolId}:${locale}`;
