@@ -29,6 +29,18 @@
  *   - Each test opens a fresh page, so localStorage starts clean
  *     unless explicitly seeded via addInitScript.
  *   - test.skip() when the marketer tenant has no seeded campaigns.
+ *
+ * Mock install order (locked by 3 CI iterations on F007):
+ *   1. mockSmartMatch BEFORE navigation — first /api/kols/smart-match
+ *      hit must already be intercepted (otherwise panel renders error
+ *      state in CI without AIGCGATEWAY env).
+ *   2. Navigate + wait for `campaign-ai-recommendation-active`.
+ *   3. waitForMountActionsSettled — networkidle 500ms — so the
+ *      mount-time server actions (prewarm + readShortExplanationsBatch)
+ *      complete before installing the refine mock.
+ *   4. mockRefineAction with `{ times: 1 }` — fires only for the FIRST
+ *      matching POST after install (the explicit Refine click); any
+ *      stray mount-time retry falls through to fallback.
  */
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
