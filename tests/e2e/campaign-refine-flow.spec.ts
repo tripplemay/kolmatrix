@@ -123,20 +123,28 @@ async function mockRefineAction(
   },
 ): Promise<void> {
   // CRITICAL: route handlers are evaluated in LIFO order — the most-recent
-  // page.route() wins. If this handler is registered AFTER mockSmartMatch
-  // (the standard sequence in our tests), `route.continue()` would
-  // BYPASS the earlier mockSmartMatch handler and hit the real network,
-  // which would fail in CI (no AIGCGATEWAY_* env → smart-match returns
-  // 500 → AiRecommendationPanel renders the error banner instead of the
-  // active state). `route.fallback()` re-evaluates the earlier handlers,
-  // letting mockSmartMatch service /api/kols/smart-match while this one
-  // services the applyRefineAction server-action POST.
+  // page.route() wins. If this handler is registered AFTER mockSmartMatch,
+  // `route.continue()` would BYPASS mockSmartMatch and hit the real
+  // network. `route.fallback()` re-evaluates the earlier handlers, so
+  // mockSmartMatch still services /api/kols/smart-match.
+  //
+  // Body matching `body.includes("applyRefineAction")` is unreliable —
+  // Next.js encodes server-action references as a hash in the
+  // `next-action` header + multipart FormData body that does NOT
+  // include the function name literally. Instead we match on URL
+  // pattern (campaign or match page) + the next-action header. By
+  // the time tests install this mock, the panel is already active and
+  // mount-time server actions (prewarm, batch-read) have completed,
+  // so the next server-action POST is unambiguously the refine call
+  // the user just triggered.
   await page.route("**", async (route) => {
     const req = route.request();
     const headers = req.headers();
     const isServerAction = (headers["next-action"] ?? "").length > 0;
-    const body = req.postData() ?? "";
-    if (isServerAction && body.includes("applyRefineAction")) {
+    const url = req.url();
+    const isCampaignOrMatchPage =
+      /\/[a-z]{2}\/(campaigns\/[0-9a-f-]{36}|match(\?|$))/.test(url);
+    if (isServerAction && req.method() === "POST" && isCampaignOrMatchPage) {
       await route.fulfill({
         status: 200,
         contentType: "text/plain;charset=UTF-8",
@@ -146,6 +154,19 @@ async function mockRefineAction(
     }
     await route.fallback();
   });
+}
+
+/**
+ * Wait for any in-flight mount-time server actions (prewarm,
+ * batch-read short explanations) to settle before installing the
+ * looser mockRefineAction. Without this guard, those POSTs to the
+ * same page path would be caught by mockRefineAction and corrupted.
+ *
+ * networkidle = 500ms with no network activity, which is enough for
+ * the fire-and-forget mount actions to round-trip on the dev server.
+ */
+async function waitForMountActionsSettled(page: Page): Promise<void> {
+  await page.waitForLoadState("networkidle", { timeout: 10_000 });
 }
 
 async function firstCampaignDetailUrl(
@@ -219,17 +240,18 @@ test.describe("BL-068-F006 · /campaigns/[id] + /match conversational refine flo
     const found = await firstCampaignDetailUrl(page);
     if (!found) test.skip(true, "Tenant has no seeded campaigns");
     await mockSmartMatch(page);
+
+    await page.goto(found!.href);
+    await expect(
+      page.getByTestId("campaign-ai-recommendation-active"),
+    ).toBeVisible({ timeout: 15_000 });
+    await waitForMountActionsSettled(page);
     await mockRefineAction(page, {
       orderedKolIds: REVERSED_IDS,
       feedback: "Reranked by AI",
       unparsable: false,
       capExhausted: false,
     });
-
-    await page.goto(found!.href);
-    await expect(
-      page.getByTestId("campaign-ai-recommendation-active"),
-    ).toBeVisible({ timeout: 15_000 });
 
     const before = await readVisibleKolIds(page);
     expect(before[0]).toBe(POOL_IDS[0]);
@@ -253,6 +275,12 @@ test.describe("BL-068-F006 · /campaigns/[id] + /match conversational refine flo
     const found = await firstCampaignDetailUrl(page);
     if (!found) test.skip(true, "Tenant has no seeded campaigns");
     await mockSmartMatch(page);
+
+    await page.goto(found!.href);
+    await expect(
+      page.getByTestId("campaign-ai-recommendation-active"),
+    ).toBeVisible({ timeout: 15_000 });
+    await waitForMountActionsSettled(page);
     await mockRefineAction(page, {
       orderedKolIds: POOL_IDS,
       feedback: "Please be more specific about audience.",
@@ -260,11 +288,6 @@ test.describe("BL-068-F006 · /campaigns/[id] + /match conversational refine flo
       capExhausted: false,
       errorKind: "unparsable",
     });
-
-    await page.goto(found!.href);
-    await expect(
-      page.getByTestId("campaign-ai-recommendation-active"),
-    ).toBeVisible({ timeout: 15_000 });
 
     const before = await readVisibleKolIds(page);
     await submitRefine(page, "vibe");
@@ -290,17 +313,18 @@ test.describe("BL-068-F006 · /campaigns/[id] + /match conversational refine flo
     const found = await firstCampaignDetailUrl(page);
     if (!found) test.skip(true, "Tenant has no seeded campaigns");
     await mockSmartMatch(page);
+
+    await page.goto(found!.href);
+    await expect(
+      page.getByTestId("campaign-ai-recommendation-active"),
+    ).toBeVisible({ timeout: 15_000 });
+    await waitForMountActionsSettled(page);
     await mockRefineAction(page, {
       orderedKolIds: POOL_IDS,
       feedback: "",
       unparsable: false,
       capExhausted: true,
     });
-
-    await page.goto(found!.href);
-    await expect(
-      page.getByTestId("campaign-ai-recommendation-active"),
-    ).toBeVisible({ timeout: 15_000 });
 
     const before = await readVisibleKolIds(page);
     await submitRefine(page, "anything");
@@ -318,17 +342,18 @@ test.describe("BL-068-F006 · /campaigns/[id] + /match conversational refine flo
     const found = await firstCampaignDetailUrl(page);
     if (!found) test.skip(true, "Tenant has no seeded campaigns");
     await mockSmartMatch(page);
+
+    await page.goto(found!.href);
+    await expect(
+      page.getByTestId("campaign-ai-recommendation-active"),
+    ).toBeVisible({ timeout: 15_000 });
+    await waitForMountActionsSettled(page);
     await mockRefineAction(page, {
       orderedKolIds: REVERSED_IDS,
       feedback: "Reranked",
       unparsable: false,
       capExhausted: false,
     });
-
-    await page.goto(found!.href);
-    await expect(
-      page.getByTestId("campaign-ai-recommendation-active"),
-    ).toBeVisible({ timeout: 15_000 });
 
     // Apply a refine first so we have state to reset.
     await submitRefine(page, "swap order");
