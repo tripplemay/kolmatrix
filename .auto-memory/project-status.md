@@ -3,10 +3,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ✅ BL-068-conversational-refine DONE（7/7, fix_rounds=3, signoff=BL-068-signoff-2026-05-17.md, 24h parse gate 16/20=80.00% PASS）
-- fix-round 1 B1-B4 修 / fix-round 2 prompt v2 动态 N (drift 29→31→29→30) / fix-round 3 真因 (LLM 返 30 重复 1 id, MCP get_log_detail trace 抓出) + Layer 1 server dedupe-then-validate + Layer 2 prompt v3 自检 § (cmp9pak6g000dbno3canjkxxh)
-- Soft-watch: S1 deduped_total 7/20 = 35% LLM 偶发重复仍依赖 server 兜底 (medium 风险) / S2 BL-067 explainability E2E 红项 followup (low 独立 backlog)
-- 复用 BL-067 沉淀: runAigcAction SDK / checkLlmCostBudget / 5 locale JSON / silent fallback; staging sha=2328f6e; cost 5 用户 day=$1.25 (25% cap)
+## 🔨 BL-069-brief-page-merge BUILDING（0/7, fix_rounds=0, spec=cf2fdab, role_assignments=null 默认映射）
+- F001 aigcgateway kol-brief-parse action + 复用 BL-067 SDK + BL-068 prompt v3 (4h) → F002 brief-actions.ts server action (productId 跨 tenant 验证 + 3 audit) (6h) → F003 /brief 页 layout (form + AI input bar + product selector + diff hint) (8h) → F004 ?tab=products KB 迁移 (6h) → F005 提交后跳 /match + BL-067 prewarm trigger (4h) → F006 老路由 redirect 3 条 + 5 语言 i18n + e2e 6 case (6h) → F007 staging + cost 监控 + signoff (4h)
+- 8 决策点 5/17 全 lock：#1 ready-to-build / #2 完全 redirect 301 / #3 表单字段 + KOL prewarm / #4 表单 + 顶部 AI input bar / #5 全复用 v0.9.22 基础设施 / #6 product list 内嵌 + ?tab=products / #7 toast unparsable + 保留空表单 / #8 audit log raw brief
+- 复用 v0.9.22 沉淀：runAigcAction SDK + checkLlmCostBudget + prompt v3 自检 § + silent fallback + 5 locale + dedupe-then-validate 模式 (productId 跨 tenant 验证)；cost 估算 5 用户 day + 5 campaign prewarm = $1.75 meter (35% cap)
+- Generator 新会话起步: git pull → 读 MEMORY/project-status/spec + archive/v0.9.22 (13 条沉淀直接复用) → F001 pre-impl audit (可选, BL-067/BL-068 同模式) → F001 起 prompt design + MCP create_action + dry_run + SSH env vars
+## ✅ BL-068-conversational-refine DONE（7/7, fix_rounds=3, signoff=BL-068-signoff-2026-05-17.md, 24h parse gate 16/20=80% PASS, deduped 35% LLM noise tolerated via server fallback）
 ## ✅ BL-067-explainability-c3 DONE（7/7 + fix-round 1 + signoff 2026-05-16, prod redeploy 待用户 ack 时间窗 deploy-prod.sh 已含 --webpack 防御）
 - 3 项 P5 裁决: §1 5 cat→3 cat 降级 (staging seed gap → BL-070 backlog) / §5 perf 留 dogfood / §8 真 24h soak 加速省略
 ## ✅ BL-066-campaign-detail-ai-main-panel DONE（9/9, fix_rounds=0, prod=f2a8210, signoff=BL-066-signoff-2026-05-15.md, prod-audit PASS=11/FAIL=0/WARN=0）
@@ -23,5 +25,5 @@ type: project
 1. 5/17 第一次 weekly growth-curve check（重跑 BL-061 F003 SQL）
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 ## 角色 / Backlog
-- BL-068 done: role_assignments=null 默认映射; 历史 BL-066: planner=johnsong/generator=Kimi/evaluator=Reviewer
-- Phase 3 全 DONE ✅; Backlog 20 条 / Phase 4 后续: BL-069 Brief 合并 / BL-070 Insight unify + 二次清理 / Phase 5 候选 (个性化学习 / skip-replace 写 DB / comparative query)
+- BL-069 building: role_assignments=null 默认映射 (cli=planner+generator johnsong / codex=evaluator); 历史 BL-066: planner=johnsong/generator=Kimi/evaluator=Reviewer
+- Phase 3 全 DONE ✅ / Phase 4 building (BL-069 当前 + BL-070 后续 Insight unify + 二次清理) / 距对外上线 ~5 周; framework v0.9.22 沉淀 archive 完整 + harness/*.md 段落起草留下批次
