@@ -42,6 +42,11 @@ import {
   DetailedExplanationDialog,
   type DetailedExplanationLabels,
 } from "./DetailedExplanationDialog";
+import {
+  RefineInputBar,
+  type RefineLabels,
+  type RefineAppliedPayload,
+} from "./RefineInputBar";
 
 interface KolHit {
   id: string;
@@ -99,6 +104,8 @@ interface Labels {
   active: ActiveLabels;
   /** BL-067-F004 — DetailedExplanationDialog labels. */
   explainabilityDialog: DetailedExplanationLabels;
+  /** BL-068-F003 — RefineInputBar labels (mounted above the pool). */
+  refine: RefineLabels;
 }
 
 interface Props {
@@ -148,6 +155,58 @@ function writeCache(key: string, value: CacheShape): void {
   }
 }
 
+// BL-068-F003 — independent refine cache (separate key + shape from the
+// smart-match pool cache above). Per spec §5 不变量 #3 the 24h TTL is
+// strict from createdAt (ISO8601 per spec); shared key namespace
+// `refine-{tenantId}-{campaignId}` lets F004 /match?campaignId mode
+// hydrate the same state on a different route.
+interface RefineCacheShape {
+  orderedKolIds: string[];
+  feedback: string;
+  rawQuery: string;
+  /** ISO8601 timestamp (Date#toISOString). TTL computed via Date.parse. */
+  createdAt: string;
+}
+
+function refineCacheKey(tenantId: string, campaignId: string): string {
+  return `refine-${tenantId}-${campaignId}`;
+}
+
+function readRefineCache(key: string): RefineCacheShape | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as RefineCacheShape;
+    if (!Array.isArray(parsed.orderedKolIds)) return null;
+    if (typeof parsed.createdAt !== "string") return null;
+    const createdAtMs = Date.parse(parsed.createdAt);
+    if (!Number.isFinite(createdAtMs)) return null;
+    if (Date.now() - createdAtMs > TTL_MS) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeRefineCache(key: string, value: RefineCacheShape): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // best-effort — quota errors are silently ignored (BL-021 fix-1 pattern)
+  }
+}
+
+function clearRefineCache(key: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    // best-effort
+  }
+}
+
 export function AiRecommendationPanel({
   productId,
   campaignId,
@@ -194,6 +253,10 @@ function ActiveOrLoading({
     () => cacheKey(tenantId, campaignId),
     [tenantId, campaignId]
   );
+  const refineKey = useMemo(
+    () => refineCacheKey(tenantId, campaignId),
+    [tenantId, campaignId],
+  );
 
   // Lazy initial state hydrates from localStorage on first render so the
   // initial paint shows cached cards (no skeleton flash) and there are
@@ -216,6 +279,15 @@ function ActiveOrLoading({
     () => readCache(key) == null
   );
   const [error, setError] = useState<string | null>(null);
+  // BL-068-F003 — refine order + last LLM feedback hydrated from the
+  // independent refine cache. Empty array = no refine applied (default
+  // valueScore desc ordering from the smart-match endpoint stands).
+  const [refineOrder, setRefineOrder] = useState<string[]>(
+    () => readRefineCache(refineKey)?.orderedKolIds ?? [],
+  );
+  const [refineFeedback, setRefineFeedback] = useState<string | null>(
+    () => readRefineCache(refineKey)?.feedback ?? null,
+  );
   // BL-067-F003 — per-KOL cached short explanation. `null` = cache miss
   // (render C2 fallback). Map shape avoids re-rendering when an unrelated
   // pool member changes (useMemo'd KolCard reads its own kolId only).
@@ -336,15 +408,26 @@ function ActiveOrLoading({
     };
   }, [pool, campaignId, locale]);
 
-  const visible = useMemo(
-    () =>
-      pool
-        .filter(
-          (k) => !accepted.has(k.id) && !skipped.has(k.id) && !replaced.has(k.id)
-        )
-        .slice(0, VISIBLE_BATCH),
-    [pool, accepted, skipped, replaced]
-  );
+  const visible = useMemo(() => {
+    const base = pool.filter(
+      (k) => !accepted.has(k.id) && !skipped.has(k.id) && !replaced.has(k.id),
+    );
+    if (refineOrder.length === 0) {
+      return base.slice(0, VISIBLE_BATCH);
+    }
+    // Apply refine order: items present in refineOrder sort by their
+    // position there; items absent from refineOrder (e.g. pool refetched
+    // with new KOLs that the refine didn't see) fall to the tail in
+    // their original pool order. We do not drop them — the user should
+    // still see the rest of the pool, just demoted below the refined set.
+    const posMap = new Map(refineOrder.map((id, idx) => [id, idx]));
+    const sorted = [...base].sort((a, b) => {
+      const pa = posMap.has(a.id) ? posMap.get(a.id)! : Number.MAX_SAFE_INTEGER;
+      const pb = posMap.has(b.id) ? posMap.get(b.id)! : Number.MAX_SAFE_INTEGER;
+      return pa - pb;
+    });
+    return sorted.slice(0, VISIBLE_BATCH);
+  }, [pool, accepted, skipped, replaced, refineOrder]);
 
   const onAccept = useCallback(
     (kol: KolHit) => {
@@ -389,6 +472,30 @@ function ActiveOrLoading({
     });
   }, [visible, fetchPool]);
 
+  // BL-068-F003 — refine apply / reset handlers. Apply writes the
+  // ordered IDs + feedback to the independent refine cache (24h TTL
+  // ISO8601 per spec §5 不变量 #3); reset removes the cache entirely so
+  // the next mount falls through to the default valueScore desc order.
+  const onRefineApplied = useCallback(
+    (payload: RefineAppliedPayload) => {
+      setRefineOrder(payload.orderedKolIds);
+      setRefineFeedback(payload.feedback);
+      writeRefineCache(refineKey, {
+        orderedKolIds: payload.orderedKolIds,
+        feedback: payload.feedback,
+        rawQuery: payload.rawQuery,
+        createdAt: new Date().toISOString(),
+      });
+    },
+    [refineKey],
+  );
+
+  const onRefineReset = useCallback(() => {
+    setRefineOrder([]);
+    setRefineFeedback(null);
+    clearRefineCache(refineKey);
+  }, [refineKey]);
+
   if (loading) {
     return <LoadingSkeleton labels={labels.loading} />;
   }
@@ -409,7 +516,17 @@ function ActiveOrLoading({
       : pool.find((k) => k.id === openDialogKolId) ?? null;
 
   return (
-    <>
+    <div className="flex flex-col gap-3">
+      <RefineInputBar
+        campaignId={campaignId}
+        currentPoolIds={visible.map((k) => k.id)}
+        locale={locale}
+        hasRefineState={refineOrder.length > 0}
+        lastFeedback={refineFeedback}
+        onRefineApplied={onRefineApplied}
+        onReset={onRefineReset}
+        labels={labels.refine}
+      />
       <ActivePanel
         visible={visible}
         pool={pool}
@@ -433,7 +550,7 @@ function ActiveOrLoading({
           labels={labels.explainabilityDialog}
         />
       ) : null}
-    </>
+    </div>
   );
 }
 

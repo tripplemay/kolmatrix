@@ -228,6 +228,21 @@ function aiPanelLabels(t: TFn) {
         },
       },
     },
+    // BL-068-F003 — RefineInputBar labels. All keys are plain strings
+    // (no ICU placeholders), so regular t() is correct; the dynamic
+    // refine feedback content comes from the server action's `feedback`
+    // field rendered as-is.
+    refine: {
+      inputPlaceholder: t("refine.inputPlaceholder"),
+      applyButton: t("refine.applyButton"),
+      resetButton: t("refine.resetButton"),
+      loading: t("refine.loading"),
+      feedbackPrefix: t("refine.feedbackPrefix"),
+      unparsableToast: t("refine.unparsableToast"),
+      capExhaustedToast: t("refine.capExhaustedToast"),
+      networkError: t("refine.networkError"),
+      permutationInvalid: t("refine.permutationInvalid"),
+    },
   };
 }
 

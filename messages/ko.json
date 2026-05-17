@@ -1191,6 +1191,17 @@
           }
         },
         "c2Fallback": "코사인 유사도 {matchScore} 매칭; valueScore {valueScore}"
+      },
+      "refine": {
+        "inputPlaceholder": "AI 정제: 예: micro tier 감소, 여성 시청자 추가",
+        "applyButton": "정제",
+        "resetButton": "AI 기본으로 재설정",
+        "loading": "정제 중…",
+        "feedbackPrefix": "재정렬됨",
+        "unparsableToast": "이해할 수 없습니다. 더 구체적으로 입력해 주세요.",
+        "capExhaustedToast": "오늘 AI 할당량을 모두 사용했습니다. 현재 후보는 유지됩니다.",
+        "networkError": "정제 시간이 초과되었습니다. 다시 시도해 주세요.",
+        "permutationInvalid": "재정렬 결과가 유효하지 않습니다. 현재 후보는 유지됩니다."
       }
     }
   },

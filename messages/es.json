@@ -1191,6 +1191,17 @@
           }
         },
         "c2Fallback": "emparejado por similitud coseno {matchScore}; valueScore {valueScore}"
+      },
+      "refine": {
+        "inputPlaceholder": "Refinar con IA: ej. menos micro creators, más audiencia femenina",
+        "applyButton": "Refinar",
+        "resetButton": "Restablecer al orden de IA",
+        "loading": "Refinando…",
+        "feedbackPrefix": "Reordenado",
+        "unparsableToast": "No se pudo entender — intenta ser más específico.",
+        "capExhaustedToast": "Se alcanzó la cuota diaria de IA. El grupo actual no cambia.",
+        "networkError": "Tiempo de espera agotado. Inténtalo de nuevo.",
+        "permutationInvalid": "El resultado del reordenamiento no es válido. El grupo actual no cambia."
       }
     }
   },

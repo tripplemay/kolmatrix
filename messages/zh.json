@@ -1140,6 +1140,17 @@
           }
         },
         "c2Fallback": "基于余弦相似度 {matchScore} 匹配；valueScore {valueScore}"
+      },
+      "refine": {
+        "inputPlaceholder": "用 AI 微调：例如减少 micro tier、多加女性受众",
+        "applyButton": "重排",
+        "resetButton": "还原 AI 默认排序",
+        "loading": "重排中…",
+        "feedbackPrefix": "已重排",
+        "unparsableToast": "无法理解，请尝试更具体的描述。",
+        "capExhaustedToast": "今日 AI 额度已用完，候选池保持不变。",
+        "networkError": "重排超时，请重试。",
+        "permutationInvalid": "重排结果无效，候选池保持不变。"
       }
     },
     "new": {

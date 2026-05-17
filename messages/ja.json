@@ -1191,6 +1191,17 @@
           }
         },
         "c2Fallback": "コサイン類似度 {matchScore} でマッチ; valueScore {valueScore}"
+      },
+      "refine": {
+        "inputPlaceholder": "AI で絞り込み：例: micro tier を減らし、女性視聴者を増やす",
+        "applyButton": "絞り込み",
+        "resetButton": "AI デフォルトに戻す",
+        "loading": "絞り込み中…",
+        "feedbackPrefix": "並び替え済み",
+        "unparsableToast": "理解できませんでした。もう少し具体的に指定してください。",
+        "capExhaustedToast": "本日の AI 利用上限に達しました。現在の候補は変更されません。",
+        "networkError": "絞り込みがタイムアウトしました。再試行してください。",
+        "permutationInvalid": "並び替え結果が無効でした。現在の候補は変更されません。"
       }
     }
   },

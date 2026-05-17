@@ -1140,6 +1140,17 @@
           }
         },
         "c2Fallback": "matched on cosine similarity {matchScore}; valueScore {valueScore}"
+      },
+      "refine": {
+        "inputPlaceholder": "Refine with AI: e.g., fewer micro creators, more female audience",
+        "applyButton": "Refine",
+        "resetButton": "Reset to AI default",
+        "loading": "Refining…",
+        "feedbackPrefix": "Reranked",
+        "unparsableToast": "Couldn't understand — try being more specific.",
+        "capExhaustedToast": "Daily AI quota reached. Current pool unchanged.",
+        "networkError": "Refine timed out. Please try again.",
+        "permutationInvalid": "Rerank result was invalid. Current pool unchanged."
       }
     },
     "new": {

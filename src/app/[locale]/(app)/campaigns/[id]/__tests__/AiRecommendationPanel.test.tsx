@@ -47,6 +47,15 @@ vi.mock("../prewarm-actions", () => ({
     enqueuePrewarmMock(...args),
 }));
 
+// BL-068-F003 — mock the refine server action used by the newly mounted
+// RefineInputBar. Default: noop unless a test overrides — only the new
+// F003 describe block exercises this path so BL-066/BL-067 tests don't
+// need to interact with it.
+const applyRefineMock = vi.fn();
+vi.mock("../refine-actions", () => ({
+  applyRefineAction: (...args: unknown[]) => applyRefineMock(...args),
+}));
+
 // Map-backed Storage so the panel cache reads + writes stay deterministic.
 beforeAll(() => {
   const store = new Map<string, string>();
@@ -123,6 +132,19 @@ const LABELS = {
       brandHistory: { title: "Brand History" },
     },
   },
+  // BL-068-F003 — RefineInputBar labels. Required by the Labels
+  // interface; only the new F003 describe block asserts against these.
+  refine: {
+    inputPlaceholder: "Refine with AI",
+    applyButton: "Refine",
+    resetButton: "Reset to AI default",
+    loading: "Refining…",
+    feedbackPrefix: "Reranked",
+    unparsableToast: "Couldn't understand",
+    capExhaustedToast: "Daily AI quota reached",
+    networkError: "Refine timed out",
+    permutationInvalid: "Rerank invalid",
+  },
 };
 
 const TENANT = "11111111-2222-3333-4444-555555555555";
@@ -161,6 +183,7 @@ beforeEach(() => {
   });
   enqueuePrewarmMock.mockReset();
   enqueuePrewarmMock.mockResolvedValue({ ok: true, jobId: "test-job" });
+  applyRefineMock.mockReset();
   vi.stubGlobal("fetch", fetchMock);
 });
 
@@ -577,6 +600,311 @@ describe("AiRecommendationPanel (BL-066 F003)", () => {
         kolId: "kol-0",
         locale: "en",
       });
+    });
+  });
+
+  // ---------- BL-068-F003 ----------
+  describe("BL-068-F003 — refine cache + RefineInputBar integration", () => {
+    const REFINE_KEY = `refine-${TENANT}-${CAMPAIGN}`;
+
+    it("hydrates refine order from cache and reorders the visible top 5", async () => {
+      // Seed the smart-match pool cache so the panel does not fetch.
+      window.localStorage.setItem(
+        `campaign-recommendations-${TENANT}-${CAMPAIGN}`,
+        JSON.stringify({
+          pool: makePool(10),
+          accepted: [],
+          skipped: [],
+          replaced: [],
+          fetchedAt: Date.now(),
+        }),
+      );
+      // Seed the refine cache with a reverse order — kol-9 should come
+      // first instead of kol-0.
+      window.localStorage.setItem(
+        REFINE_KEY,
+        JSON.stringify({
+          orderedKolIds: Array.from({ length: 10 }, (_, i) => `kol-${9 - i}`),
+          feedback: "Reranked by AI",
+          rawQuery: "fewer micro creators",
+          createdAt: new Date().toISOString(),
+        }),
+      );
+
+      render(
+        <AiRecommendationPanel
+          productId="prod-1"
+          campaignId={CAMPAIGN}
+          tenantId={TENANT}
+          locale="en"
+          labels={LABELS}
+        />,
+      );
+
+      await waitFor(() =>
+        expect(
+          screen.getAllByTestId("campaign-ai-recommendation-card"),
+        ).toHaveLength(5),
+      );
+      const ids = screen
+        .getAllByTestId("campaign-ai-recommendation-card")
+        .map((el) => el.getAttribute("data-kol-id"));
+      expect(ids).toEqual(["kol-9", "kol-8", "kol-7", "kol-6", "kol-5"]);
+      // Reset button visible because refine state present.
+      expect(
+        screen.getByTestId("campaign-refine-reset"),
+      ).toBeInTheDocument();
+      // Sticky feedback toast shows the stored feedback.
+      expect(
+        screen.getByTestId("campaign-refine-toast-success"),
+      ).toHaveTextContent("Reranked by AI");
+    });
+
+    it("renders default valueScore order when refine cache is missing", async () => {
+      window.localStorage.setItem(
+        `campaign-recommendations-${TENANT}-${CAMPAIGN}`,
+        JSON.stringify({
+          pool: makePool(10),
+          accepted: [],
+          skipped: [],
+          replaced: [],
+          fetchedAt: Date.now(),
+        }),
+      );
+
+      render(
+        <AiRecommendationPanel
+          productId="prod-1"
+          campaignId={CAMPAIGN}
+          tenantId={TENANT}
+          locale="en"
+          labels={LABELS}
+        />,
+      );
+
+      await waitFor(() =>
+        expect(
+          screen.getAllByTestId("campaign-ai-recommendation-card"),
+        ).toHaveLength(5),
+      );
+      const ids = screen
+        .getAllByTestId("campaign-ai-recommendation-card")
+        .map((el) => el.getAttribute("data-kol-id"));
+      expect(ids).toEqual(["kol-0", "kol-1", "kol-2", "kol-3", "kol-4"]);
+      // Reset hidden because no refine applied.
+      expect(
+        screen.queryByTestId("campaign-refine-reset"),
+      ).not.toBeInTheDocument();
+      // No sticky feedback either.
+      expect(
+        screen.queryByTestId("campaign-refine-toast-success"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("Refine submit calls server action, reorders pool, writes cache, shows feedback toast", async () => {
+      window.localStorage.setItem(
+        `campaign-recommendations-${TENANT}-${CAMPAIGN}`,
+        JSON.stringify({
+          pool: makePool(5),
+          accepted: [],
+          skipped: [],
+          replaced: [],
+          fetchedAt: Date.now(),
+        }),
+      );
+      applyRefineMock.mockResolvedValueOnce({
+        ok: true,
+        data: {
+          orderedKolIds: ["kol-4", "kol-3", "kol-2", "kol-1", "kol-0"],
+          feedback: "Female audience boosted +12%",
+          unparsable: false,
+          capExhausted: false,
+        },
+      });
+
+      render(
+        <AiRecommendationPanel
+          productId="prod-1"
+          campaignId={CAMPAIGN}
+          tenantId={TENANT}
+          locale="en"
+          labels={LABELS}
+        />,
+      );
+
+      await waitFor(() =>
+        expect(
+          screen.getAllByTestId("campaign-ai-recommendation-card"),
+        ).toHaveLength(5),
+      );
+
+      const input = screen.getByTestId("campaign-refine-input");
+      fireEvent.change(input, {
+        target: { value: "more female audience" },
+      });
+      fireEvent.click(screen.getByTestId("campaign-refine-apply"));
+
+      await waitFor(() => {
+        expect(applyRefineMock).toHaveBeenCalledTimes(1);
+      });
+      const call = applyRefineMock.mock.calls[0]![0] as {
+        campaignId: string;
+        rawQuery: string;
+        currentPoolIds: string[];
+        locale: string;
+      };
+      expect(call.campaignId).toBe(CAMPAIGN);
+      expect(call.rawQuery).toBe("more female audience");
+      expect(call.locale).toBe("en");
+      expect(call.currentPoolIds).toEqual([
+        "kol-0",
+        "kol-1",
+        "kol-2",
+        "kol-3",
+        "kol-4",
+      ]);
+
+      // After success: pool reordered, feedback toast visible, cache written.
+      await waitFor(() => {
+        const ids = screen
+          .getAllByTestId("campaign-ai-recommendation-card")
+          .map((el) => el.getAttribute("data-kol-id"));
+        expect(ids).toEqual(["kol-4", "kol-3", "kol-2", "kol-1", "kol-0"]);
+      });
+      expect(
+        screen.getByTestId("campaign-refine-toast-success"),
+      ).toHaveTextContent("Female audience boosted +12%");
+      const cached = JSON.parse(
+        window.localStorage.getItem(REFINE_KEY) ?? "{}",
+      );
+      expect(cached.orderedKolIds).toEqual([
+        "kol-4",
+        "kol-3",
+        "kol-2",
+        "kol-1",
+        "kol-0",
+      ]);
+      expect(cached.feedback).toBe("Female audience boosted +12%");
+      expect(cached.rawQuery).toBe("more female audience");
+      expect(typeof cached.createdAt).toBe("string");
+      expect(Number.isFinite(Date.parse(cached.createdAt))).toBe(true);
+      // Reset button now visible.
+      expect(
+        screen.getByTestId("campaign-refine-reset"),
+      ).toBeInTheDocument();
+    });
+
+    it("Reset clears the refine cache, restores default order, hides Reset button", async () => {
+      window.localStorage.setItem(
+        `campaign-recommendations-${TENANT}-${CAMPAIGN}`,
+        JSON.stringify({
+          pool: makePool(5),
+          accepted: [],
+          skipped: [],
+          replaced: [],
+          fetchedAt: Date.now(),
+        }),
+      );
+      window.localStorage.setItem(
+        REFINE_KEY,
+        JSON.stringify({
+          orderedKolIds: ["kol-4", "kol-3", "kol-2", "kol-1", "kol-0"],
+          feedback: "Reranked",
+          rawQuery: "anything",
+          createdAt: new Date().toISOString(),
+        }),
+      );
+
+      render(
+        <AiRecommendationPanel
+          productId="prod-1"
+          campaignId={CAMPAIGN}
+          tenantId={TENANT}
+          locale="en"
+          labels={LABELS}
+        />,
+      );
+
+      await waitFor(() =>
+        expect(
+          screen.getAllByTestId("campaign-ai-recommendation-card"),
+        ).toHaveLength(5),
+      );
+      // Confirm reversed order from the cache.
+      const before = screen
+        .getAllByTestId("campaign-ai-recommendation-card")
+        .map((el) => el.getAttribute("data-kol-id"));
+      expect(before[0]).toBe("kol-4");
+
+      fireEvent.click(screen.getByTestId("campaign-refine-reset"));
+
+      await waitFor(() => {
+        const ids = screen
+          .getAllByTestId("campaign-ai-recommendation-card")
+          .map((el) => el.getAttribute("data-kol-id"));
+        expect(ids).toEqual(["kol-0", "kol-1", "kol-2", "kol-3", "kol-4"]);
+      });
+      expect(window.localStorage.getItem(REFINE_KEY)).toBeNull();
+      expect(
+        screen.queryByTestId("campaign-refine-reset"),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("campaign-refine-toast-success"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("ignores refine cache when createdAt is older than 24h (TTL boundary)", async () => {
+      window.localStorage.setItem(
+        `campaign-recommendations-${TENANT}-${CAMPAIGN}`,
+        JSON.stringify({
+          pool: makePool(5),
+          accepted: [],
+          skipped: [],
+          replaced: [],
+          fetchedAt: Date.now(),
+        }),
+      );
+      // 24h + 1 minute ago — outside the 24h TTL window.
+      const oldIso = new Date(
+        Date.now() - (24 * 60 * 60 * 1000 + 60_000),
+      ).toISOString();
+      window.localStorage.setItem(
+        REFINE_KEY,
+        JSON.stringify({
+          orderedKolIds: ["kol-4", "kol-3", "kol-2", "kol-1", "kol-0"],
+          feedback: "Stale rerank",
+          rawQuery: "ancient",
+          createdAt: oldIso,
+        }),
+      );
+
+      render(
+        <AiRecommendationPanel
+          productId="prod-1"
+          campaignId={CAMPAIGN}
+          tenantId={TENANT}
+          locale="en"
+          labels={LABELS}
+        />,
+      );
+
+      await waitFor(() =>
+        expect(
+          screen.getAllByTestId("campaign-ai-recommendation-card"),
+        ).toHaveLength(5),
+      );
+      const ids = screen
+        .getAllByTestId("campaign-ai-recommendation-card")
+        .map((el) => el.getAttribute("data-kol-id"));
+      // Default order — stale cache ignored.
+      expect(ids).toEqual(["kol-0", "kol-1", "kol-2", "kol-3", "kol-4"]);
+      // Reset hidden, sticky feedback hidden — cache treated as miss.
+      expect(
+        screen.queryByTestId("campaign-refine-reset"),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("campaign-refine-toast-success"),
+      ).not.toBeInTheDocument();
     });
   });
 });
