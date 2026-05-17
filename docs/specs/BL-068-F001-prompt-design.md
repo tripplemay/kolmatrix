@@ -6,6 +6,17 @@
 
 ---
 
+## §0 版本历史（aigcgateway action `cmp8mk1qj0005bno3k590u7zs`）
+
+| 版本 | 创建 / 激活 | version_id | 关键变更 |
+|---|---|---|---|
+| **v2 (active)** | 2026-05-17 fix-round 2 | `cmp9nzwgz05ejbno1fvxngn7v` | **B5/B6 修复**：所有 "30 KOL" 硬编码替换为动态 N（= `current_pool_json` 数组实际长度）。Reviewer 2026-05-17 staging reverify 抓到 LLM 对 29-KOL 池返 31 IDs，根因是 v1 prompt 反复锚定 "30"，LLM "凑足 30" 幻觉补足。v2 新增 §⚠️ "关键不变量" 块（位于安全规则之前）+ 任务流程新增 §0 "先数清楚输入池"。边界处理新增 "输入池 N < 30" 行。本地测试用 29-KOL 池 + staging 失败 query (`fewer micro creators, more female audience in Japan`) → run_action 返 29 IDs ✓ 修复确认 |
+| v1 (deprecated 2026-05-17 18:53) | 2026-05-16 17:33 | `cmp8mk1qw0007bno3knrb1rv4` | Initial version. 反复锚 "30 KOL" 导致 B5/B6 |
+
+**v2 完整 prompt 见 aigcgateway console** 或 `mcp get_action_detail cmp8mk1qj0005bno3k590u7zs`. §3 下方保留的 prompt 文本是 v1 历史记录，作为对比参考；新 N-anchor 行为以 v2 为准。
+
+---
+
 ## §1 Pre-Impl Self-Audit 结论（Generator 自评，无 drift 不起独立 audit doc）
 
 按 `framework/harness/pre-impl-adjudication.md` v0.9.21 §4.4 原则，**简单 feature 不需漫长 audit；只在触发条件命中时写**。F001 范围（action 注册 + prompt 文档 + env 落地）零代码改动，BL-067 沉淀的基础设施 100% 复用，无架构歧义。
