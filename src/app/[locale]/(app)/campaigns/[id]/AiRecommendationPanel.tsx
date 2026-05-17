@@ -480,7 +480,14 @@ function ActiveOrLoading({
     <div className="flex flex-col gap-3">
       <RefineInputBar
         campaignId={campaignId}
-        currentPoolIds={visible.map((k) => k.id)}
+        // BL-068 fix-round 1 (B2): send the full top-30 pool, not just the
+        // visible-5. Spec §F002 / §5 不变量 #3 require the refine to
+        // operate over the current top-30; the server then returns a
+        // permutation of that 30 and the visible-window useMemo above
+        // applies it. Sending visible.map (5 IDs) made the LLM treat the
+        // pool as 5 and surface "current pool only has 5 KOLs" unparsable
+        // feedback on staging (2026-05-17 spot-check).
+        currentPoolIds={pool.map((k) => k.id)}
         locale={locale}
         hasRefineState={refineOrder.length > 0}
         lastFeedback={refineFeedback}

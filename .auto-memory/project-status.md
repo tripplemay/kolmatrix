@@ -3,20 +3,17 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔧 BL-068-conversational-refine FIXING（Reviewer 2026-05-17 验收失败，spec=13d9794）
-- ✅ F001 aigcgateway action cmp8mk1qj0005bno3k590u7zs + SSH env (1.5h, 88012ac)
-- ✅ F002 refine-actions.ts 9 单测 + 6 audit types (494243c) + 3 BL-067 CI hotfix inline (4487c79) (2h)
-- ✅ F003 RefineInputBar + AiRecommendationPanel refine cache + 5 locale i18n + 5 vitest cases (ab933fc) (2h)
-- ✅ F004 src/lib/refine-cache.ts shared + MatchRefineBar.tsx + /match mount + 10 vitest cases (8da0840) (1.5h)
-- ✅ F005 F002 errorKind discriminator + RefineInputBar 5th 'permutation' toast + 10 new client tests (6af0b3e) (1h)
-- ✅ F006 i18n audit + tests/e2e/campaign-refine-flow.spec.ts 6 case (9355f43) (40min)
-- ✅ F007 Generator: scripts/bl068-cost-audit.ts + en-match-with-campaign visual test + update-visual-baselines workflow trigger
-- ❌ Reviewer L2 blockers (docs/test-reports/BL-068-staging-spot-check.md):
-  1. `/campaigns/[id]` refine UI 5s timeout 覆盖真实 server 200/unparsable 响应，主链不可用
-  2. request body 仅发送 visible 5 `currentPoolIds`；spec 要求重排现有 top-30 池
-  3. `scripts/bl068-cost-audit.ts --hours=24` 在 staging 返回 `0 calls`，但 SQL 直查 24h 有 `ai_recommendation.refine_unparsable=2`
-  4. staging deploy sha `fbd90013ff9632503a1a9db42f04ec87b9bbcc2c` != current main HEAD `1e5b2b7`
-- BL-068 当前状态：`verifying -> fixing`；尚未满足 parse success rate ≥80% gate，`docs.signoff` 仍为 null
+## 🔁 BL-068-conversational-refine REVERIFYING（fix-round 1 完成 2026-05-17 18:30, spec=13d9794）
+- ✅ F001-F007 见下方历史
+- ✅ fix-round 1 (status fixing→reverifying):
+  - B1 ✓ RefineInputBar.tsx onRefine 重构: 删 Promise.race, 5s timer 变 SOFT (network toast as hint), await 真实 action 让结果总是 wins
+  - B2 ✓ AiRecommendationPanel.tsx:483 currentPoolIds={visible.map(...)} → {pool.map(...)} (5 → 30 IDs)
+  - B3 ✓ scripts/bl068-cost-audit.ts 优先 DATABASE_ADMIN_URL 绕 RLS, fallback DATABASE_URL + warn
+  - B4 → staging deploy 同 commit 后 SSH 跑
+  - 单测加 B1 late-response + B2 pool=10 regression (RefineInputBar +1 / AiRecommendationPanel B2 改测) — 防回退
+  - L1: lint 0 errors / tsc 0 / targeted vitest 18 files 126 tests PASS
+- **Codex 复验清单 (reverifying)**: 重做 spot-check T2/T6/T7/T8 + audit script PASS + dogfood ≥10 query × 4 维度 + parse success rate ≥80% gate. signoff 写 docs/test-reports/BL-068-signoff-2026-05-18.md, status reverifying → done (or fixing if 残留)
+- DATABASE_ADMIN_URL 落 staging 前置: SSH grep 验, 缺则用户 ops 落地 (kolmatrix superuser connection string)
 - **CI 7/8 jobs PASS, E2E 仍红**（campaign-explainability-flow.spec.ts:101 / :280，属 BL-067 followup，不是本批新 blocker）
 - 8 决策点 5/16 全 lock：#1 ready-to-build / #2 /campaigns/[id] + /match 两处 / #3 重排现 top 30 / #4 toast unparsable + 保留现池 / #5 stateful localStorage 24h TTL / #6 audit log raw query / #7 全复用 BL-067 基础设施 / #8 顶部 inline input bar
 - 复用 BL-067 沉淀：runAigcAction SDK (src/lib/aigc/run-action.ts) + checkLlmCostBudget (src/lib/ai/cost-cap.ts:133) + 5 locale JSON 模式 + silent fallback 哲学；cost 估算 5 用户 day = $1.25 meter (25% cap 利用率)

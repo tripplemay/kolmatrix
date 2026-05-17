@@ -280,9 +280,11 @@ describe("RefineInputBar — F005 error paths", () => {
     ).toBe("retry me");
   });
 
-  it("5s timeout: server hangs past the deadline, network toast renders + rawQuery preserved", async () => {
+  it("5s soft timeout: server hangs past the deadline, network toast renders as soft hint + rawQuery preserved", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
-    // applyRefineAction never resolves — the 5s setTimeout race wins.
+    // applyRefineAction never resolves — soft 5s timer fires the network
+    // toast (BL-068 fix-round 1: not a hard timeout — the action stays
+    // awaited so a late response would still override this toast).
     applyRefineMock.mockReturnValueOnce(new Promise(() => {}));
 
     renderBar();
@@ -298,6 +300,60 @@ describe("RefineInputBar — F005 error paths", () => {
     expect(
       (screen.getByTestId("campaign-refine-input") as HTMLInputElement).value,
     ).toBe("hangs");
+  });
+
+  it("BL-068 fix-round 1 (B1): server response that arrives AFTER the 5s soft timer OVERRIDES the network toast with the real result", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    // Resolve after 6s — past the 5s soft timer. Behavior contract:
+    // 5s → soft network toast shows (transient hint)
+    // 6s → real unparsable response arrives → unparsable toast REPLACES
+    // network toast. The reverse — network toast lingering after the
+    // server responded — was the staging blocker B1.
+    let resolveAction!: (
+      value: Awaited<ReturnType<typeof applyRefineMock>>,
+    ) => void;
+    applyRefineMock.mockReturnValueOnce(
+      new Promise((res) => {
+        resolveAction = res;
+      }),
+    );
+
+    renderBar();
+    await submit("slow");
+
+    await vi.advanceTimersByTimeAsync(5_001);
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("campaign-refine-toast-network"),
+      ).toBeInTheDocument();
+    });
+
+    // Server finally responds with an unparsable result.
+    resolveAction({
+      ok: true,
+      data: {
+        orderedKolIds: POOL,
+        feedback: "Late but real: please be more specific",
+        unparsable: true,
+        capExhausted: false,
+        errorKind: "unparsable",
+      },
+    });
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("campaign-refine-toast-unparsable"),
+      ).toHaveTextContent("Late but real: please be more specific");
+    });
+    // The soft network toast must be replaced — not stacked.
+    expect(
+      screen.queryByTestId("campaign-refine-toast-network"),
+    ).not.toBeInTheDocument();
+    // rawQuery still preserved through the whole flow.
+    expect(
+      (screen.getByTestId("campaign-refine-input") as HTMLInputElement).value,
+    ).toBe("slow");
   });
 
   it.each([

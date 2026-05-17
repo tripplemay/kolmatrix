@@ -91,33 +91,41 @@ export function RefineInputBar({
     setSubmitting(true);
     setToast({ kind: "idle" });
 
-    const timeoutPromise = new Promise<"timeout">((resolve) =>
-      setTimeout(() => resolve("timeout"), REFINE_TIMEOUT_MS),
-    );
-    let result: Awaited<ReturnType<typeof applyRefineAction>> | "timeout";
+    // BL-068 fix-round 1 (B1): the original `Promise.race(action, timeout)`
+    // let the 5-second timer "win" the race and discard the real server
+    // response — staging spot-check (2026-05-17) caught a 200/unparsable
+    // response surfacing as `Refine timed out`. The fix: timer is a SOFT
+    // hint that flips the toast to `network` after 5s but does NOT abort
+    // the await; the real response then OVERRIDES the hint when it
+    // arrives. Hard timeout is owned by runAigcAction(timeoutMs:30_000)
+    // server-side — if that fires, applyRefineAction returns ok:false
+    // and the network toast stays. The `inflightId` guard on every
+    // setState ensures a stale late response from a prior submit can't
+    // overwrite a newer one.
+    const softTimer: ReturnType<typeof setTimeout> = setTimeout(() => {
+      if (id !== inflightId.current) return;
+      setToast({ kind: "network" });
+    }, REFINE_TIMEOUT_MS);
+
+    let result: Awaited<ReturnType<typeof applyRefineAction>>;
     try {
-      result = await Promise.race([
-        applyRefineAction({
-          campaignId,
-          rawQuery: trimmed,
-          currentPoolIds,
-          locale,
-        }),
-        timeoutPromise,
-      ]);
+      result = await applyRefineAction({
+        campaignId,
+        rawQuery: trimmed,
+        currentPoolIds,
+        locale,
+      });
     } catch {
+      clearTimeout(softTimer);
       if (id !== inflightId.current) return;
       setSubmitting(false);
       setToast({ kind: "network" });
       return;
     }
+    clearTimeout(softTimer);
     if (id !== inflightId.current) return;
     setSubmitting(false);
 
-    if (result === "timeout") {
-      setToast({ kind: "network" });
-      return;
-    }
     if (!result.ok) {
       setToast({ kind: "network" });
       return;

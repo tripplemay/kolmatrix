@@ -69,10 +69,30 @@ const PARSE_SUCCESS_GATE = 0.8;
 
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
-  const databaseUrl = process.env.DATABASE_URL;
+  // BL-068 fix-round 1 (B3): platform-wide audit query needs admin
+  // connection. DATABASE_URL uses the kolmatrix_app role which has RLS
+  // enforcement scoped to the session tenant — running this script
+  // without setting a tenant ctx returns 0 rows even when SQL direct
+  // query shows entries (caught on staging 2026-05-17 spot-check, 2
+  // `ai_recommendation.refine_unparsable` rows invisible to the script).
+  // Prefer DATABASE_ADMIN_URL (superuser, RLS bypass for SELECT); fall
+  // back to DATABASE_URL with a stderr warning so the operator knows
+  // the result may be empty under RLS scope.
+  const adminUrl = process.env.DATABASE_ADMIN_URL;
+  const fallbackUrl = process.env.DATABASE_URL;
+  const databaseUrl = adminUrl ?? fallbackUrl;
   if (!databaseUrl) {
-    console.error("[cost-audit] DATABASE_URL missing — set in .env");
+    console.error(
+      "[cost-audit] DATABASE_ADMIN_URL / DATABASE_URL missing — set in .env",
+    );
     process.exit(1);
+  }
+  if (!adminUrl) {
+    console.warn(
+      "[cost-audit] WARNING: DATABASE_ADMIN_URL not set, falling back to " +
+        "DATABASE_URL. If audit_log has RLS, this query may return 0 rows " +
+        "even when entries exist. Set DATABASE_ADMIN_URL for accurate counts.",
+    );
   }
   const adapter = new PrismaPg({ connectionString: databaseUrl });
   const prisma = new PrismaClient({ adapter });

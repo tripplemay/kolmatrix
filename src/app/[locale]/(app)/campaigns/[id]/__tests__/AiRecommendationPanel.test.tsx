@@ -701,11 +701,17 @@ describe("AiRecommendationPanel (BL-066 F003)", () => {
       ).not.toBeInTheDocument();
     });
 
-    it("Refine submit calls server action, reorders pool, writes cache, shows feedback toast", async () => {
+    it("Refine submit calls server action with FULL pool (BL-068 fix-round 1 B2: not just visible-5), reorders, writes cache, shows feedback toast", async () => {
+      // Seed pool of 10 KOLs but visible window is 5. Pre-fix the call
+      // would send only ["kol-0"..."kol-4"] (the visible-5); post-fix it
+      // must send all 10. Spec §F002 / §5 不变量 #3 require operating
+      // on the current top-30. Reviewer caught the regression on staging
+      // (2026-05-17 spot-check B2: server reported "pool only has 5
+      // KOLs" unparsable feedback because client sent only 5 IDs).
       window.localStorage.setItem(
         `campaign-recommendations-${TENANT}-${CAMPAIGN}`,
         JSON.stringify({
-          pool: makePool(5),
+          pool: makePool(10),
           accepted: [],
           skipped: [],
           replaced: [],
@@ -756,12 +762,21 @@ describe("AiRecommendationPanel (BL-066 F003)", () => {
       expect(call.campaignId).toBe(CAMPAIGN);
       expect(call.rawQuery).toBe("more female audience");
       expect(call.locale).toBe("en");
+      // Locks the regression: ALL 10 IDs (full pool) must be sent, not
+      // only the visible-5. If a future refactor reverts to visible.map
+      // this assertion fails loudly.
+      expect(call.currentPoolIds).toHaveLength(10);
       expect(call.currentPoolIds).toEqual([
         "kol-0",
         "kol-1",
         "kol-2",
         "kol-3",
         "kol-4",
+        "kol-5",
+        "kol-6",
+        "kol-7",
+        "kol-8",
+        "kol-9",
       ]);
 
       // After success: pool reordered, feedback toast visible, cache written.
