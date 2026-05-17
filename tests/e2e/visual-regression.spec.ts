@@ -251,20 +251,20 @@ test.describe("Authenticated BM1 visual regression", () => {
     const aiSidebar = page.locator('[data-testid="match-ai-sidebar"]');
     const activeFilters = page.locator('[data-testid="match-active-filters"]');
 
+    // BL-068-F007: switched from `fullPage: true` to viewport-only.
+    // Root cause for the persistent /match visual failure on CI: page
+    // height was drifting 4px between the update-visual-baselines
+    // workflow runner and the CI runner (sub-pixel font rendering
+    // affecting scroll height of the masked grid below the fold).
+    // When image dimensions mismatch, Playwright fails the assertion
+    // BEFORE comparing pixels, so maxDiffPixels can't absorb a
+    // size delta — only switching to viewport-only fixes it. Same
+    // fix the BM2 en-campaign-detail test landed (BL-066-F009).
     await expect(page).toHaveScreenshot("en-match.png", {
-      fullPage: true,
       animations: "disabled",
       mask: [grid, aiSidebar, activeFilters],
       threshold: 0.02,
-      // BL-068-F007: /match shows a persistent ~4px page-height drift
-      // between the update-visual-baselines workflow runner and the CI
-      // ubuntu-latest runner (both ubuntu-latest but with slightly
-      // different font-rendering output). Diff is 25_396 px (3x the
-      // 8000 budget) but visually identical chrome — dynamic content
-      // is masked already. Raising maxDiffPixels to 30_000 absorbs the
-      // sub-pixel runner variance without masking a real regression
-      // (a chrome change at this scale would still trip the gate).
-      maxDiffPixels: 30_000,
+      maxDiffPixels: 8000,
     });
   });
 
@@ -315,17 +315,16 @@ test.describe("Authenticated BM1 visual regression", () => {
     const refineBar = page.locator('[data-testid="match-refine-bar"]');
     const activeFilters = page.locator('[data-testid="match-active-filters"]');
 
+    // Viewport-only (no fullPage) for the same reason as en-match.png
+    // above — page-height drift between runners trips the size check
+    // before pixel comparison. Viewport-only locks dimensions to the
+    // configured Playwright viewport (1280x720 default) so the chrome
+    // up-top drives the visual signal.
     await expect(page).toHaveScreenshot("en-match-with-campaign.png", {
-      fullPage: true,
       animations: "disabled",
       mask: [grid, aiSidebar, refineBar, activeFilters],
       threshold: 0.02,
-      // Same workflow-runner ↔ CI-runner variance as the en-match.png
-      // baseline above (BL-068-F007). Diff is 26_554 px / 1717 vs
-      // 1732 page-height; chrome is identical post-mask. Lift the
-      // budget to 30_000 so the runner variance does not flake the
-      // suite.
-      maxDiffPixels: 30_000,
+      maxDiffPixels: 8000,
     });
   });
 });

@@ -49,16 +49,14 @@ const EXPECTED_BASELINES: ReadonlyArray<{ name: string; width: number }> = [
   { name: "en-knowledge-base.png", width: 1280 },
   { name: "en-kols-detail.png", width: 1280 },
   { name: "en-login.png", width: 1280 },
-  // BL-066-F009 — en-match.png lands the unified workbench baseline.
-  // Width = 1332 (not 1280) because /match page renders a horizontal-
-  // scroll grid that extends the body beyond the viewport; fullPage
-  // captures the actual scrollWidth.
-  { name: "en-match.png", width: 1332 },
-  // BL-068-F007 — /match `?campaignId` mode mounts MatchRefineBar in the
-  // right column. Width = 1280 (not 1332) because mounting the AI
-  // sidebar in that mode adds a 3rd column to the grid which absorbs
-  // the horizontal slack — page now fits within the 1280 viewport, so
-  // fullPage capture matches the configured viewport width.
+  // BL-068-F007 — both /match baselines now viewport-only (1280x720
+  // default Playwright Desktop Chrome) instead of fullPage. fullPage
+  // was tripping a persistent page-height drift between CI runners
+  // (4px for en-match.png, 15px for en-match-with-campaign.png) that
+  // Playwright fails on BEFORE pixel comparison. Switching to viewport
+  // locks dimensions to the device default and lets the chrome at the
+  // top of the page drive the visual signal.
+  { name: "en-match.png", width: 1280 },
   { name: "en-match-with-campaign.png", width: 1280 },
   { name: "en-network-status-online.png", width: 1280 },
   { name: "en-outreach-templates-badge.png", width: 976 },
