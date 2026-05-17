@@ -3,11 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔨 BL-069-brief-page-merge BUILDING（0/7, fix_rounds=0, spec=cf2fdab, role_assignments=null 默认映射）
-- F001 aigcgateway kol-brief-parse action + 复用 BL-067 SDK + BL-068 prompt v3 (4h) → F002 brief-actions.ts server action (productId 跨 tenant 验证 + 3 audit) (6h) → F003 /brief 页 layout (form + AI input bar + product selector + diff hint) (8h) → F004 ?tab=products KB 迁移 (6h) → F005 提交后跳 /match + BL-067 prewarm trigger (4h) → F006 老路由 redirect 3 条 + 5 语言 i18n + e2e 6 case (6h) → F007 staging + cost 监控 + signoff (4h)
+## 🔨 BL-069-brief-page-merge BUILDING（1/7, fix_rounds=0, spec=cf2fdab, role_assignments=null 默认映射）
+- ✅ F001 kol-brief-parse action 注册 (action_id=cmp9wbt7q05xjbno11fuoim9l, v2 active input=2495≤2500/output=414≤1200/cost=$0.0046, env落prod+staging, doc=BL-069-F001-prompt-design.md) → F002 brief-actions.ts (6h, productId 跨 tenant + 3 audit) → F003 /brief 页 layout (8h) → F004 ?tab=products KB 迁移 (6h) → F005 提交跳 /match + BL-067 prewarm (4h) → F006 redirect 3 条 + 5 i18n + e2e 6 case (6h) → F007 staging + cost 监控 + signoff (4h)
 - 8 决策点 5/17 全 lock：#1 ready-to-build / #2 完全 redirect 301 / #3 表单字段 + KOL prewarm / #4 表单 + 顶部 AI input bar / #5 全复用 v0.9.22 基础设施 / #6 product list 内嵌 + ?tab=products / #7 toast unparsable + 保留空表单 / #8 audit log raw brief
-- 复用 v0.9.22 沉淀：runAigcAction SDK + checkLlmCostBudget + prompt v3 自检 § + silent fallback + 5 locale + dedupe-then-validate 模式 (productId 跨 tenant 验证)；cost 估算 5 用户 day + 5 campaign prewarm = $1.75 meter (35% cap)
-- Generator 新会话起步: git pull → 读 MEMORY/project-status/spec + archive/v0.9.22 (13 条沉淀直接复用) → F001 pre-impl audit (可选, BL-067/BL-068 同模式) → F001 起 prompt design + MCP create_action + dry_run + SSH env vars
+- 复用 v0.9.22 沉淀：runAigcAction SDK + checkLlmCostBudget + prompt v3 自检 § + silent fallback + 5 locale + dedupe-then-validate 模式；F001 实测 cost=$0.0046/call 与 spec §6 估算 $0.0045 一致 ✓；5 用户 day + 5 campaign prewarm = $1.75 meter (35% cap)
+- F001 spec ↔ codebase drift 自决: v1 prompt input=4241 超 ceiling 2500 → v2 裁剪 markets/budget/dates 表为 inline，保全部不变量+自检 §+末尾 reminder (与 BL-067/BL-068 F001 同模式)
 ## ✅ BL-068-conversational-refine DONE（7/7, fix_rounds=3, signoff=BL-068-signoff-2026-05-17.md, 24h parse gate 16/20=80% PASS, deduped 35% LLM noise tolerated via server fallback）
 ## ✅ BL-067-explainability-c3 DONE（7/7 + fix-round 1 + signoff 2026-05-16, prod redeploy 待用户 ack 时间窗 deploy-prod.sh 已含 --webpack 防御）
 - 3 项 P5 裁决: §1 5 cat→3 cat 降级 (staging seed gap → BL-070 backlog) / §5 perf 留 dogfood / §8 真 24h soak 加速省略

@@ -5,7 +5,8 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "pending",
+    "status": "completed",
+    "completion_notes": "Action `kol-brief-parse` 注册成功 action_id=`cmp9wbt7q05xjbno11fuoim9l`，v1 (initial) input=4241 token 超 spec ceiling 2500 → v2 (active, version_id `cmp9wh9iz05xnbno1tyxxe6g7`) 裁剪后 input=2495 ✓ / output=414 ✓ / cost=$0.0046/call (与 spec §6 估算 $0.0045 一致)。LLM 输出 7 字段全正确：productId 严格 pool 内 / markets 标准化 (东南亚→SEA) / budget 提取 (10000 USD) / categories 小写连字符 / dates Q2 推断 (2026-04-01~06-30) / 5 locale feedback 全 / target_audience 提取。docs/specs/BL-069-F001-prompt-design.md 起草完整 (8 段含 §0 版本 + 调用契约 + token 估算 + SSH ops)。SSH 落 `AIGCGATEWAY_BRIEF_PARSE_ACTION_ID` 到 prod + staging .env (backup `.env.{production,staging}.bl069-f001.20260517-150531`，pm2 reload --update-env，health 200 healthy)。environment.md Actions 清单已更新。F001 spec ↔ codebase drift 上报：v1 prompt token 量超 spec ceiling，Generator 自决裁剪到 v2 (与 BL-067/BL-068 F001 处理 spec drift 同模式)，实测值落 §0 版本表 + §5 估算表。仅 docs + env 改动 → staging deploy 硬要求豁免 (per generator.md)。trace `trc_oc5ngzk11ouvox154akgweek`。",
     "acceptance": [
       "创建 `kol-brief-parse` action via MCP `create_action`：model=`claude-haiku-4-5`（per 决策点 #5 沿用 v0.9.22 模型）/ variables=`raw_brief` `available_products_json` `user_locale` / response_format=`json_object` / prompt（system，中文骨架，含 BL-068 v0.9.22 #11 prompt v3 模式：§⚠️ 自检 + 末尾 reminder）要求 LLM 解析自然语言 brief → 输出 JSON `{ productId?, markets: string[], budget: { amount, currency } | null, target_audience: string, categories: string[], start_date?, end_date?, feedback_summary: { en, zh, ja, ko, es }, unparsable: false }`；若不可解析输出 `{ unparsable: true, reason_locale: { en, zh, ja, ko, es } }`",
       "Action ID 落 `.env.staging` + `.env.production` 变量 `AIGCGATEWAY_BRIEF_PARSE_ACTION_ID`（SSH ops 落地，同 BL-067/BL-068 F001 模式 5 处 sync 协议）",
