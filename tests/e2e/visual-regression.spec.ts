@@ -203,6 +203,15 @@ test.describe("Authenticated BM1 visual regression", () => {
 
   test("knowledge-base full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
     test.skip(
+      true,
+      "BL-069-F003 replaced /brief KB re-export with CampaignForm + AI bar; " +
+        "/knowledge-base 302→/brief no longer renders kb-grid. F004 will mount " +
+        "ProductListPanel under /brief?tab=products and F006 will retarget the " +
+        "redirect; F007 update-visual-baselines workflow will regenerate the " +
+        "baseline against the new product list view. BL-070 二次清理 will then " +
+        "delete /knowledge-base entirely."
+    );
+    test.skip(
       shouldSkipMissingBaseline("en-knowledge-base.png", test.info()),
       "Baseline en-knowledge-base.png missing — run the 'Update visual baselines' workflow."
     );
@@ -889,6 +898,14 @@ test.describe("BL-055 hotfix — visual regression", () => {
   test("knowledge-base no longer renders the RECENT_AI_ACTIVITY mock section (BL-055 F003)", async ({
     page,
   }) => {
+    test.skip(
+      true,
+      "BL-069-F003 replaced /brief KB re-export with CampaignForm + AI bar; " +
+        "/knowledge-base 302→/brief no longer renders kb-grid (the negative " +
+        "RECENT_AI_ACTIVITY assertion the BL-055 hotfix protects is now " +
+        "moot because the section no longer mounts at all). BL-070 二次清理 " +
+        "will delete /knowledge-base entirely and remove this test."
+    );
     test.skip(
       shouldSkipMissingBaseline("en-knowledge-base-bottom.png", test.info()),
       "Baseline en-knowledge-base-bottom.png missing — run the 'Update visual baselines' workflow."
