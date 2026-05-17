@@ -54,6 +54,12 @@ const EXPECTED_BASELINES: ReadonlyArray<{ name: string; width: number }> = [
   // scroll grid that extends the body beyond the viewport; fullPage
   // captures the actual scrollWidth.
   { name: "en-match.png", width: 1332 },
+  // BL-068-F007 — /match `?campaignId` mode mounts MatchRefineBar in the
+  // right column. Width = 1280 (not 1332) because mounting the AI
+  // sidebar in that mode adds a 3rd column to the grid which absorbs
+  // the horizontal slack — page now fits within the 1280 viewport, so
+  // fullPage capture matches the configured viewport width.
+  { name: "en-match-with-campaign.png", width: 1280 },
   { name: "en-network-status-online.png", width: 1280 },
   { name: "en-outreach-templates-badge.png", width: 976 },
   { name: "en-outreach-templates.png", width: 1280 },
