@@ -131,3 +131,63 @@
 
 **状态：** 用户 2026-05-16 已 ack — 待 BL-068 done 阶段或专门 framework 沉淀 batch 时正式写入 framework/ + CHANGELOG + 归档
 
+---
+
+## [2026-05-17] Claude CLI — 来源：BL-068 fix-round 3 真因发现 / Generator johnsong
+
+**类型：** 新坑 / 工具链
+
+**内容：** **MCP `get_log_detail` trace 抓 LLM 实际输出**作为 LLM fix-round 标准动作。BL-068 fix-round 1+2 凭"LLM 幻觉新增 ID"推断 fix prompt（加约束 / 动态 N），收敛 drift 但仍不通过。fix-round 3 Generator 通过 MCP `get_log_detail trc_ew4fi0u4hihjdw07bu73xer3` 抓出 LLM **实际返回**：30 IDs 中**重复 1 个已有 id**（`8f93d2c0` 在 index 8 + 29），不是幻觉新 ID。真因 = dedupe 问题非 set-membership 问题，前两轮 fix prompt 都打错点。**规律：** LLM 类 fix-round 必先 MCP trace 抓真实输出 + 与预期 diff，不要凭"LLM 应该怎样"推断。aigcgateway dashboard `logs` API + `get_log_detail` 是关键工具链。**应用：** 每次 LLM-related fix-round 第一动作 = trace 5-10 个 failed call 找模式，不要直接改 prompt。
+
+**建议写入：** `framework/harness/generator.md` 新段 §"LLM fix-round 必先 MCP trace 抓真因"（含 BL-068 fix-round 1+2 反面案例 + fix-round 3 trace 方法 + MCP get_log_detail 用法）
+
+**状态：** 用户 2026-05-17 已 ack — 待 v0.9.22 集中沉淀
+
+---
+
+## [2026-05-17] Claude CLI — 来源：BL-068 F002 + fix-round 3 / Generator johnsong
+
+**类型：** 新规律
+
+**内容：** **LLM 输出 noise 兼容：dedupe-then-validate 模式**。LLM (如 Claude Haiku) 即使 prompt 严格约束仍会产生 noise（重复 ID / 顺序漂移 / 字段命名差异），server 端不应严格 reject 而应**先归一化再验证**。BL-068 fix-round 3 `refine-actions.ts` Layer 1 fix: LLM 输出 30 IDs 有 dup → **先 dedupe 保 first-occurrence 序** → 去重后 set == input set 即接受为 `refine_applied`（audit 加 `deduped_count` 监控 LLM noise rate）→ 仅当去重后仍偏离才落 `permutation_invalid`。**对比：** BL-067 F005 permutation 严格 reject 模式更保守，但 BL-068 dogfood 数据证明 35% LLM call 有 dup → 严格 reject 会让 fix-round +N 都解不掉，dedupe-then-validate 才能让 functionality 落地。**应用：** 所有 LLM 数组类输出（KOL IDs / category list / tag set）都应 dedupe-then-validate + audit log noise rate 监控；运营观察 noise rate > 50% 才考虑升级模型或重写 prompt。
+
+**建议写入：** `framework/harness/ai-action-contract.md` 新段 §"LLM 输出 noise 兼容: dedupe-then-validate 模式"（含 BL-068 35% dedupe rate 实战数据 + audit `deduped_count` 字段模式 + 与严格 reject 对比表）
+
+**状态：** 用户 2026-05-17 已 ack — 待 v0.9.22 集中沉淀
+
+---
+
+## [2026-05-17] Claude CLI — 来源：BL-068 fix-round 3 prompt v3 / Generator johnsong
+
+**类型：** 模板修订
+
+**内容：** **Prompt 自检 § + 末尾 reminder 双层强化模式**。Claude Haiku 在 prompt 单点约束（如"不要重复 ID"）不够时（dup ID / format drift），加 §⚠️ **"输出前自检 3 项"块** + **末尾再加 1 段最后提醒**强化约束。BL-068 fix-round 3 prompt v3 (cmp9pak6g000dbno3canjkxxh) 加 self-check §（"输出前自检：ID 不重复 / 数量精确 / 全部来自 input pool"）+ 末尾 "记得：30 个不同 ID，无重复" 双层 → 配合 server dedupe 兜底，BL-068 24h dogfood 16/20 = 80% 达标。Self-check 内容显式引用 fix-round 3 真实 trace 加压（"你之前犯过这个错"），强化模型 attention。**应用：** prompt v3 模式适用 Claude Haiku / Sonnet 在 array-like / strict-schema 输出场景；GPT-4o 类模型可能不需要这么重的约束（待对比测试）。
+
+**建议写入：** `framework/harness/ai-action-contract.md` 新段 §"Prompt 自检 § + 末尾 reminder 双层强化模式"（含 BL-068 prompt v1→v2→v3 演进案例 + self-check 模板 + 不同模型适用边界提示）
+
+**状态：** 用户 2026-05-17 已 ack — 待 v0.9.22 集中沉淀
+
+---
+
+## [2026-05-17] Claude CLI — 来源：BL-068-F006 commit 1e5b2b7 / Generator johnsong
+
+**类型：** 新规律
+
+**内容：** **server-action 类测试 mock infeasible → skip in CI + staging dogfood cover 模式**。BL-068 e2e refine-action 测试因 Next.js server action mock 在 vitest/playwright 环境不可行（需要真实 Next.js runtime + Redis + Postgres），强行 mock 会引入大量 fragility。Generator 用 `test.skip` 跳过 CI 中的 server-action 直接测试，转由 staging dogfood + audit_log 实测覆盖。这与 BL-067 §8 "24h soak 时间门槛留 dogfood 累积" 模式同源（CI 不可行 → 转 dogfood 实测）。**规律：** 测试 mock 复杂度 > 测试价值 时，标 `test.skip` + 在 spec acceptance 文档化"该路径由 staging dogfood + audit_log 实测覆盖" + dogfood checklist 包含此路径。**反例：** 不应该 `test.skip` 简化 CI 红 — 必须有 dogfood 替代覆盖才能 skip。
+
+**建议写入：** `framework/harness/evaluator.md` 新段 §"测试 mock infeasible 时的 dogfood 替代覆盖模式"（含 BL-067 §8 + BL-068-F006 两个实战案例 + 适用判断 checklist）
+
+**状态：** 用户 2026-05-17 已 ack — 待 v0.9.22 集中沉淀
+
+---
+
+## [2026-05-17] Claude CLI — 来源：BL-068 fix-rounds 3 轮回顾 / Planner johnsong
+
+**类型：** 新规律 / 反面案例
+
+**内容：** **fix-rounds 多轮 + 真因深挖代价**：表面 fix 不解决根本问题时 fix-rounds 会指数级增长。BL-068 案例：fix-round 1 修 B1-B4 client-side blockers 正常；fix-round 2 修 prompt 凭"LLM 幻觉新增 ID"假设（v1 prompt → v2 动态 N），收敛 drift 但 B6 仍不通过；fix-round 3 才通过 MCP trace 抓出 dup-not-hallucination 真因。**代价：** fix-round 2 工时浪费 (prompt v2 + 单测调整) + 用户体验延迟 1 天。**预防：** v0.9.22 候选 #9 (MCP trace 抓真因) 是这条规律的工具化版本。**Planner 反思：** verifying 阶段 Reviewer 报"prompt 解析失败"时，Planner 应裁决"先 trace 抓真实数据再 fix"而非直接 ack Generator prompt 调优 — 这是 verifying gate 设计的盲点（gate criterion 只看 success rate 不看 failure mode）。
+
+**建议写入：** `framework/harness/planner.md` 新段 §"verifying gate 失败时优先 trace 真因而非直接 ack fix" + 合并入 #9 (MCP trace) 形成 LLM fix-round 完整方法论
+
+**状态：** 用户 2026-05-17 已 ack — 待 v0.9.22 集中沉淀
+
