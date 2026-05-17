@@ -47,6 +47,12 @@ import {
   type RefineLabels,
   type RefineAppliedPayload,
 } from "./RefineInputBar";
+import {
+  refineCacheKey,
+  readRefineCache,
+  writeRefineCache,
+  clearRefineCache,
+} from "@/lib/refine-cache";
 
 interface KolHit {
   id: string;
@@ -155,57 +161,12 @@ function writeCache(key: string, value: CacheShape): void {
   }
 }
 
-// BL-068-F003 — independent refine cache (separate key + shape from the
-// smart-match pool cache above). Per spec §5 不变量 #3 the 24h TTL is
-// strict from createdAt (ISO8601 per spec); shared key namespace
-// `refine-{tenantId}-{campaignId}` lets F004 /match?campaignId mode
-// hydrate the same state on a different route.
-interface RefineCacheShape {
-  orderedKolIds: string[];
-  feedback: string;
-  rawQuery: string;
-  /** ISO8601 timestamp (Date#toISOString). TTL computed via Date.parse. */
-  createdAt: string;
-}
-
-function refineCacheKey(tenantId: string, campaignId: string): string {
-  return `refine-${tenantId}-${campaignId}`;
-}
-
-function readRefineCache(key: string): RefineCacheShape | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as RefineCacheShape;
-    if (!Array.isArray(parsed.orderedKolIds)) return null;
-    if (typeof parsed.createdAt !== "string") return null;
-    const createdAtMs = Date.parse(parsed.createdAt);
-    if (!Number.isFinite(createdAtMs)) return null;
-    if (Date.now() - createdAtMs > TTL_MS) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-function writeRefineCache(key: string, value: RefineCacheShape): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // best-effort — quota errors are silently ignored (BL-021 fix-1 pattern)
-  }
-}
-
-function clearRefineCache(key: string): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.removeItem(key);
-  } catch {
-    // best-effort
-  }
-}
+// BL-068-F003 → F004: the refine cache helpers (key
+// `refine-{tenantId}-{campaignId}`, shape {orderedKolIds, feedback,
+// rawQuery, createdAt:ISO8601}, TTL 24h) moved to @/lib/refine-cache so
+// the /match `?campaignId` mode can read / write the same key without
+// reaching into this component. See src/lib/refine-cache.ts for the
+// contract — spec §5 不变量 #3 (TTL) + #7 (cross-page key).
 
 export function AiRecommendationPanel({
   productId,

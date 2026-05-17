@@ -74,13 +74,18 @@ describe("/match AI sidebar — F005 upgrade (BL-065-F005)", () => {
 });
 
 describe("/match page wires the AI sidebar tenant-scoped (BL-065-F005)", () => {
-  it("page.tsx looks up the campaign tenant-scoped (id + name only)", () => {
+  it("page.tsx looks up the campaign tenant-scoped (id + name required; BL-068-F004 extends with productId)", () => {
     const page = read("page.tsx");
     // The findFirst lives inside withTenant(tenantId, …) so RLS strips
     // foreign-tenant rows even before the JS check.
     expect(page).toMatch(/tx\.campaign\.findFirst\(/);
     expect(page).toMatch(/where: \{ id: campaignId, deletedAt: null \}/);
-    expect(page).toMatch(/select: \{ id: true, name: true \}/);
+    // F005 needs id + name; F004 (BL-068) adds productId so MatchRefineBar
+    // can fall back to /api/kols/smart-match. The assertion stays open
+    // about additional fields so later features can extend the select
+    // without breaking this guard.
+    expect(page).toMatch(/select:\s*\{[^}]*\bid:\s*true[^}]*\}/);
+    expect(page).toMatch(/select:\s*\{[^}]*\bname:\s*true[^}]*\}/);
   });
 
   it("sidebar is only rendered when the campaign resolves (not just when ?campaignId is set)", () => {

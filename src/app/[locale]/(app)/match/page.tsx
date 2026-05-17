@@ -58,6 +58,7 @@ import { MatchActiveFilters } from "./MatchActiveFilters";
 import { MatchFilterSidebar } from "./MatchFilterSidebar";
 import { MatchKolCard } from "./MatchKolCard";
 import { MatchKolTable } from "./MatchKolTable";
+import { MatchRefineBar } from "./MatchRefineBar";
 import { MatchSearchBar } from "./MatchSearchBar";
 import { MatchSummaryBar } from "./MatchSummaryBar";
 import { MatchTableSearch } from "./MatchTableSearch";
@@ -128,11 +129,15 @@ export default async function MatchPage({ params, searchParams }: Props) {
     // belongs to another tenant (RLS strips it). In that case the
     // sidebar is silently dropped — the marketer still sees the full
     // workbench, just without the campaign-context recommendations.
+    // BL-068-F004 — productId added to the select so MatchRefineBar can
+    // fall back to /api/kols/smart-match when the localStorage pool
+    // cache is empty. Null productId (deleted product) keeps the refine
+    // bar inert (renders nothing) without breaking the sidebar.
     campaignId
       ? withTenant(tenantId, (tx) =>
           tx.campaign.findFirst({
             where: { id: campaignId, deletedAt: null },
-            select: { id: true, name: true },
+            select: { id: true, name: true, productId: true },
           }),
         )
       : Promise.resolve(null),
@@ -144,6 +149,10 @@ export default async function MatchPage({ params, searchParams }: Props) {
   const tStatus = await getTranslations("relationshipStatus");
   const tSavedSearch = await getTranslations("match.savedSearch");
   const tAdminEntry = await getTranslations("match.adminEntry");
+  // BL-068-F004 — reuse the campaigns.detail.refine.* bundle that F003
+  // added; no new /match-scoped i18n keys per spec §F004 (RefineInputBar
+  // is the same component, same labels, just a different mount site).
+  const tRefine = await getTranslations("campaigns.detail.refine");
   // BL-066-F005: tDbHeader/tAddKol aliases removed with AddKolDialog mount.
   // match.headerActions / match.addKolForm i18n keys are kept (deprecated
   // markers) for BL-070 to atomic-delete.
@@ -356,12 +365,31 @@ export default async function MatchPage({ params, searchParams }: Props) {
         </section>
 
         {showAiSidebar && campaign ? (
-          <AiSuggestionsSidebar
-            campaignId={campaign.id}
-            tenantId={tenantId}
-            locale={locale}
-            campaignName={campaign.name}
-          />
+          <div className="flex flex-col gap-4">
+            <MatchRefineBar
+              campaignId={campaign.id}
+              productId={campaign.productId ?? null}
+              tenantId={tenantId}
+              locale={locale}
+              labels={{
+                inputPlaceholder: tRefine("inputPlaceholder"),
+                applyButton: tRefine("applyButton"),
+                resetButton: tRefine("resetButton"),
+                loading: tRefine("loading"),
+                feedbackPrefix: tRefine("feedbackPrefix"),
+                unparsableToast: tRefine("unparsableToast"),
+                capExhaustedToast: tRefine("capExhaustedToast"),
+                networkError: tRefine("networkError"),
+                permutationInvalid: tRefine("permutationInvalid"),
+              }}
+            />
+            <AiSuggestionsSidebar
+              campaignId={campaign.id}
+              tenantId={tenantId}
+              locale={locale}
+              campaignName={campaign.name}
+            />
+          </div>
         ) : null}
       </div>
     </div>
