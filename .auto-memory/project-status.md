@@ -3,17 +3,17 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔁 BL-068-conversational-refine REVERIFYING（fix-round 3 完成 2026-05-17 20:10, spec=13d9794）
+## ✅ BL-068-conversational-refine DONE（signoff 2026-05-17, spec=13d9794, fix_rounds=3）
 - ✅ fix-round 1: B1-B4 全修
-- ✅ fix-round 2: prompt v2 (动态 N) 部分 — drift 29→31 收敛到 29→30 但仍不通过
-- ✅ fix-round 3 真因 + 双层修复:
-  - **真因** (通过 MCP get_log_detail trc_ew4fi0u4hihjdw07bu73xer3 抓出): LLM 返 30 IDs 是**重复 1 个已有 id** 凑足 30 (`8f93d2c0` 在 index 8 + 29), 不是幻觉新 ID. v2 prompt 明禁重复但 Claude Haiku 仍违反.
-  - **Layer 1**: refine-actions.ts 加 dedupe-then-validate. LLM 输出有 dup 时先去重保 first-occurrence 序, 去重后 set == input set 即接受为 refine_applied (audit 加 deduped_count 字段监控). 仅当去重后仍偏离才落 permutation_invalid.
-  - **Layer 2**: prompt v3 (version_id cmp9pak6g000dbno3canjkxxh) 加 §⚠️ '输出前自检 3 项' 块 + 末尾再加 1 段最后提醒. Self-check 显式引用 fix-round 3 的真实 trace 加压.
-  - 单测 +1 dedupe case (LLM dup → server dedupe → refine_applied + audit deduped_count=1)
-  - L1: lint 0 / tsc 0 / vitest 127 PASS (126 prior + 1 new)
-- 部署: F002 source 改 → staging deploy 完整流程必跑. CI 应触发.
-- **Codex 复验 (fix_rounds=3)**: 重发 B6 原 query 验 success toast / 跑 cost-audit 验 parse rate ≥ 80% gate / 关注新字段 deduped_count 监控 LLM 行为 / 完整 10+ dogfood → signoff or fix-round 4
+- ✅ fix-round 2: prompt v2 (动态 N) 将 drift 从 `29→31` 收敛到 `29→30`
+- ✅ fix-round 3: dedupe-then-validate + prompt v3 完成最终闭环
+  - staging sha = `2328f6e`
+  - B6 原 query `fewer micro creators, more female audience in Japan` 真实 UI PASS
+  - 审计确认 server dedupe 生效：最新 B6 `deduped_count=2`, trace `trc_vivjj5fw14d6lz8iopot60sz`
+  - 追加 dogfood 成功样本后，24h parse success rate = `16/20 = 80.00%`，达到 gate
+  - signoff: `docs/test-reports/BL-068-signoff-2026-05-17.md`
+- Soft-watch:
+  - `deduped_total=7` 说明模型仍偶发重复 ID，当前由 server 侧去重兜底；后续继续观察
 - **CI 7/8 jobs PASS, E2E 仍红**（campaign-explainability-flow.spec.ts:101 / :280，属 BL-067 followup，不是本批新 blocker）
 - **CI 7/8 jobs PASS, E2E 仍红**（campaign-explainability-flow.spec.ts:101 / :280，属 BL-067 followup，不是本批新 blocker）
 - 8 决策点 5/16 全 lock：#1 ready-to-build / #2 /campaigns/[id] + /match 两处 / #3 重排现 top 30 / #4 toast unparsable + 保留现池 / #5 stateful localStorage 24h TTL / #6 audit log raw query / #7 全复用 BL-067 基础设施 / #8 顶部 inline input bar
