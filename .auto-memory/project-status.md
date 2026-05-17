@@ -3,19 +3,23 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔍 BL-068-conversational-refine VERIFYING（7/7 Generator portion done, status: building → verifying, Codex 接手 signoff, spec=13d9794）
+## 🔧 BL-068-conversational-refine FIXING（Reviewer 2026-05-17 验收失败，spec=13d9794）
 - ✅ F001 aigcgateway action cmp8mk1qj0005bno3k590u7zs + SSH env (1.5h, 88012ac)
 - ✅ F002 refine-actions.ts 9 单测 + 6 audit types (494243c) + 3 BL-067 CI hotfix inline (4487c79) (2h)
 - ✅ F003 RefineInputBar + AiRecommendationPanel refine cache + 5 locale i18n + 5 vitest cases (ab933fc) (2h)
 - ✅ F004 src/lib/refine-cache.ts shared + MatchRefineBar.tsx + /match mount + 10 vitest cases (8da0840) (1.5h)
 - ✅ F005 F002 errorKind discriminator + RefineInputBar 5th 'permutation' toast + 10 new client tests (6af0b3e) (1h)
 - ✅ F006 i18n audit + tests/e2e/campaign-refine-flow.spec.ts 6 case (9355f43) (40min)
-- ✅ F007 Generator: scripts/bl068-cost-audit.ts + en-match-with-campaign visual test + update-visual-baselines workflow trigger (45min, 5/17 22:15). **Codex 接手**: dogfood spot check ≥10 query × 4 维度 + 24h cost ≤ team actual × 1.5 + parse success rate ≥ 80% gate + signoff docs/test-reports/BL-068-signoff-2026-05-XX.md
-- **F006 e2e 重要发现**: F006 push 后 CI 看似 7/8 PASS (visual fail) 但实际 chromium project (含 F006 6 case) **从未运行** — playwright project deps 'chromium' depends on 'visual', visual fail 触发依赖断开. F007 修 baseline 解锁; baseline auto-commit 后 CI 应让 F006 真正运行
-- **CI 7/8 jobs PASS, E2E 仍红**（campaign-explainability-flow.spec.ts:101 BL-067-F006 测 1）。根因：CI 无 AIGCGATEWAY_* env → smart-match embedding 调 fail → panel 渲 error testid → 测试只等 active/empty 故 30s timeout。**待 Planner 起 BL-067 followup batch 处理**（CI yaml 加 secrets / 测试 mock smart-match / 单行宽容 error testid 三选一），不属 BL-068 范围
+- ✅ F007 Generator: scripts/bl068-cost-audit.ts + en-match-with-campaign visual test + update-visual-baselines workflow trigger
+- ❌ Reviewer L2 blockers (docs/test-reports/BL-068-staging-spot-check.md):
+  1. `/campaigns/[id]` refine UI 5s timeout 覆盖真实 server 200/unparsable 响应，主链不可用
+  2. request body 仅发送 visible 5 `currentPoolIds`；spec 要求重排现有 top-30 池
+  3. `scripts/bl068-cost-audit.ts --hours=24` 在 staging 返回 `0 calls`，但 SQL 直查 24h 有 `ai_recommendation.refine_unparsable=2`
+  4. staging deploy sha `fbd90013ff9632503a1a9db42f04ec87b9bbcc2c` != current main HEAD `1e5b2b7`
+- BL-068 当前状态：`verifying -> fixing`；尚未满足 parse success rate ≥80% gate，`docs.signoff` 仍为 null
+- **CI 7/8 jobs PASS, E2E 仍红**（campaign-explainability-flow.spec.ts:101 / :280，属 BL-067 followup，不是本批新 blocker）
 - 8 决策点 5/16 全 lock：#1 ready-to-build / #2 /campaigns/[id] + /match 两处 / #3 重排现 top 30 / #4 toast unparsable + 保留现池 / #5 stateful localStorage 24h TTL / #6 audit log raw query / #7 全复用 BL-067 基础设施 / #8 顶部 inline input bar
 - 复用 BL-067 沉淀：runAigcAction SDK (src/lib/aigc/run-action.ts) + checkLlmCostBudget (src/lib/ai/cost-cap.ts:133) + 5 locale JSON 模式 + silent fallback 哲学；cost 估算 5 用户 day = $1.25 meter (25% cap 利用率)
-- F007 起工：是 BL-068 最后 feature + 混合 generator+codex 任务. Generator 部分: (a) trigger deploy-staging.yml workflow (env 已 F001 落), (b) trigger update-visual-baselines workflow (一并修 /match 4px drift + 加 RefineInputBar 新 baseline en-campaign-detail / en-match-with-campaign), (e) 写 scripts/bl068-cost-audit.ts (拉 audit_log type='ai_recommendation.refine_*' 累计 cost/token/call + parse success rate, gate ≥80%). Codex 部分: (c) dogfood spot check ≥10 query × 4 维度 + ≥3 unparsable + cap 模拟 → docs/test-reports/BL-068-staging-spot-check.md, (d) 24h cost ≤ team actual × 1.5, (f) signoff docs/test-reports/BL-068-signoff-2026-05-XX.md. 看用户/Planner 是否要拆 F007 成 Generator + Codex 两阶段
 ## ✅ BL-067-explainability-c3 DONE（7/7 + fix-round 1 + signoff 2026-05-16, prod redeploy 待用户 ack 时间窗 deploy-prod.sh 已含 --webpack 防御）
 - 3 项 P5 裁决: §1 5 cat→3 cat 降级 (staging seed gap → BL-070 backlog) / §5 perf 留 dogfood / §8 真 24h soak 加速省略
 ## ✅ BL-066-campaign-detail-ai-main-panel DONE（9/9, fix_rounds=0, prod=f2a8210, signoff=BL-066-signoff-2026-05-15.md, prod-audit PASS=11/FAIL=0/WARN=0）
