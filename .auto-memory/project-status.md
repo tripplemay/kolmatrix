@@ -4,9 +4,10 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 🔨 BL-068-conversational-refine BUILDING（2/7, fix_rounds=0, spec=13d9794, role_assignments=null 默认映射）
-- ✅ F001 aigcgateway action 注册 cmp8mk1qj0005bno3k590u7zs + prompt design doc + SSH env vars 落 prod+staging (1.5h actual vs 4h estimate, 5/16 17:40)
-- ✅ F002 refine-actions.ts server action 9/9 单测 + 6 audit types + 同 commit 修 BL-067 CI 遗留 (DetailedExplanationDialog setState-in-effect + material-symbols woff2 stale, 用户 5/16 ack option A inline) (2h actual vs 6h estimate, 5/16 17:55)
+- ✅ F001 aigcgateway action 注册 cmp8mk1qj0005bno3k590u7zs + prompt design doc + SSH env vars 落 prod+staging (1.5h actual vs 4h estimate, 5/16 17:40, commit 88012ac)
+- ✅ F002 refine-actions.ts server action 9/9 单测 + 6 audit types (commit 494243c, staging git_sha 验证) + 3 个 BL-067 CI hotfix inline (用户 5/16 ack option A: setState-in-effect / material-symbols woff2 / page.tsx whyTemplate t.raw, commit 4487c79) (2h actual vs 6h estimate, 5/16 17:55)
 - → F003 RefineInputBar + AiRecommendationPanel + localStorage 24h TTL (6h) → F004 Match ?campaignId mode 复用 RefineInputBar (3h) → F005 错误边界 client UI + 5 locale (4h) → F006 i18n + e2e 6 case (6h) → F007 staging + cost 监控 + signoff (4h)
+- **CI 7/8 jobs PASS, E2E 仍红**（campaign-explainability-flow.spec.ts:101 BL-067-F006 测 1）。根因：CI 无 AIGCGATEWAY_* env → smart-match embedding 调 fail → panel 渲 error testid → 测试只等 active/empty 故 30s timeout。**待 Planner 起 BL-067 followup batch 处理**（CI yaml 加 secrets / 测试 mock smart-match / 单行宽容 error testid 三选一），不属 BL-068 范围
 - 8 决策点 5/16 全 lock：#1 ready-to-build / #2 /campaigns/[id] + /match 两处 / #3 重排现 top 30 / #4 toast unparsable + 保留现池 / #5 stateful localStorage 24h TTL / #6 audit log raw query / #7 全复用 BL-067 基础设施 / #8 顶部 inline input bar
 - 复用 BL-067 沉淀：runAigcAction SDK (src/lib/aigc/run-action.ts) + checkLlmCostBudget (src/lib/ai/cost-cap.ts:133) + 5 locale JSON 模式 + silent fallback 哲学；cost 估算 5 用户 day = $1.25 meter (25% cap 利用率)
 - F002 起工：读 docs/specs/BL-068-F001-prompt-design.md §4 调用契约（完整代码骨架）+ BL-067 F004 explainability-actions.ts 作模板。actionLabel snake_case `ai_recommendation_refine`；rateLimitBatchSend(userId) 返 RateLimitResult 不 throw；audience_breakdown KOL schema 无字段 → LLM 软推断（已在 prompt 中处理）
