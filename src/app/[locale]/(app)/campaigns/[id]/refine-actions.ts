@@ -358,17 +358,48 @@ export async function applyRefineAction(
     };
   }
 
-  // Branch 3: permutation validation (strict same-set + no dupes + same length).
+  // Branch 3: permutation validation with dedupe-then-validate fallback.
+  //
+  // BL-068 fix-round 3 (B6 root cause): LLM (claude-haiku-4.5) under
+  // "reach 30" pressure sometimes pads a 29-KOL pool by DUPLICATING an
+  // existing id rather than fabricating new ones. Trace
+  // trc_ew4fi0u4hihjdw07bu73xer3 showed `8f93d2c0...` returned twice.
+  // The fix-round 2 prompt v2 forbade duplicates explicitly, but the
+  // model still violated under the count pressure.
+  //
+  // Two-layer defence:
+  //   1. Prompt v3 adds an explicit final self-check step (LLM-side)
+  //   2. Server-side dedupe-then-validate (this branch): when the
+  //      LLM output has duplicates, dedupe preserving first-occurrence
+  //      order. If the deduped set == input set AND deduped length ==
+  //      N → use the deduped order as `refine_applied` (audit logs
+  //      include `deduped_count` so we can monitor LLM behaviour).
+  //      Otherwise fall through to `permutation_invalid` as before.
+  //
+  // This is safe because input ⊆ output ⊆ input means no hallucinated
+  // ids — only LLM verbosity. Refusing the user's refine over a
+  // benign duplicate would be over-strict in the spec's spirit
+  // (§5 不变量 #5: silent fallback preserves UX).
   const returnedIds = parsed.ordered_kol_ids as string[];
   const expectedSet = new Set(input.currentPoolIds);
-  const returnedSet = new Set(returnedIds);
-  const isPermutation =
-    returnedIds.length === input.currentPoolIds.length &&
-    returnedSet.size === returnedIds.length &&
-    [...expectedSet].every((id) => returnedSet.has(id));
-  if (!isPermutation) {
-    const missing = [...expectedSet].filter((id) => !returnedSet.has(id));
-    const extra = returnedIds.filter((id) => !expectedSet.has(id));
+
+  const seen = new Set<string>();
+  const dedupedIds: string[] = [];
+  for (const id of returnedIds) {
+    if (!seen.has(id)) {
+      seen.add(id);
+      dedupedIds.push(id);
+    }
+  }
+  const dupedCount = returnedIds.length - dedupedIds.length;
+
+  const isDedupedPermutation =
+    dedupedIds.length === input.currentPoolIds.length &&
+    [...expectedSet].every((id) => seen.has(id));
+
+  if (!isDedupedPermutation) {
+    const missing = [...expectedSet].filter((id) => !seen.has(id));
+    const extra = dedupedIds.filter((id) => !expectedSet.has(id));
     void logAudit({
       actorId: userId,
       action: "ai_recommendation.refine_permutation_invalid",
@@ -380,6 +411,7 @@ export async function applyRefineAction(
         locale,
         expected_count: input.currentPoolIds.length,
         returned_count: returnedIds.length,
+        deduped_count: dupedCount,
         missing_ids: missing,
         extra_ids: extra,
         traceId,
@@ -397,7 +429,7 @@ export async function applyRefineAction(
     };
   }
 
-  // Branch 4: success.
+  // Branch 4: success — use dedupedIds (== returnedIds when no dupes).
   const feedback = readLocaleString(parsed.feedback_summary, locale);
   void logAudit({
     actorId: userId,
@@ -408,17 +440,21 @@ export async function applyRefineAction(
     after: {
       raw_query: input.rawQuery,
       parsed_filters: parsed.parsed_filters ?? null,
-      result_kol_ids: returnedIds,
+      result_kol_ids: dedupedIds,
       locale,
       token_usage: llmResult.usage.totalTokens,
       cost_usd: llmResult.usage.costUsd,
+      // Surface LLM verbosity so the team can monitor whether the
+      // dedupe fallback is fixing a problem we should also fix in the
+      // prompt; 0 in the happy path.
+      deduped_count: dupedCount,
       traceId,
     },
   });
   return {
     ok: true,
     data: {
-      orderedKolIds: returnedIds,
+      orderedKolIds: dedupedIds,
       feedback,
       unparsable: false,
       capExhausted: false,

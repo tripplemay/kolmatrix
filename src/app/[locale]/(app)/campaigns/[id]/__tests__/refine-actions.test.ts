@@ -289,8 +289,72 @@ describe("applyRefineAction", () => {
           raw_query: "boost gaming",
           expected_count: POOL_IDS.length,
           returned_count: hallucinated.length,
+          // BL-068 fix-round 3: dedupe-then-validate logs duplicate
+          // count alongside missing/extra; here there are no duplicates,
+          // only a hallucinated id, so deduped_count = 0.
+          deduped_count: 0,
           missing_ids: [POOL_IDS[2]],
           extra_ids: ["55555555-5555-5555-5555-555555555555"],
+        }),
+      }),
+    );
+  });
+
+  it("BL-068 fix-round 3: LLM duplicates an existing id (no hallucinations) → server dedupes + treats as refine_applied with deduped_count>0", async () => {
+    // Real-world repro from staging trace trc_ew4fi0u4hihjdw07bu73xer3:
+    // LLM padded a 29-KOL pool to 30 by repeating one id. With v2 server
+    // strict validation, this fell to permutation_invalid (UI showed
+    // "Rerank result was invalid"). Fix-round 3 added dedupe-then-
+    // validate — when input ⊆ output ⊆ input (only verbosity, no
+    // hallucinations), the server now dedupes preserving first
+    // occurrence and treats the deduped order as a valid permutation.
+    // Audit logs `deduped_count` so the team can monitor LLM behaviour.
+    const duplicated = [
+      POOL_IDS[2]!,
+      POOL_IDS[0]!,
+      POOL_IDS[1]!,
+      POOL_IDS[0]!, // duplicate — LLM padding to "reach 4" when pool is 3
+    ];
+    runAigcActionMock.mockResolvedValueOnce({
+      output: {
+        unparsable: false,
+        ordered_kol_ids: duplicated,
+        parsed_filters: { tier: "macro" },
+        feedback_summary: fiveLocaleFeedback("rerank"),
+      },
+      usage: { promptTokens: 1500, completionTokens: 700, totalTokens: 2200, costUsd: 0.008 },
+      traceId: "trace-deduped",
+    });
+
+    const { applyRefineAction } = await import("../refine-actions");
+    const res = await applyRefineAction({
+      campaignId: CAMPAIGN_ID,
+      rawQuery: "macro tier please",
+      currentPoolIds: POOL_IDS,
+      locale: "en",
+    });
+
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    // Dedupe must preserve first-occurrence order: [POOL_IDS[2],
+    // POOL_IDS[0], POOL_IDS[1]] — the trailing POOL_IDS[0] is dropped
+    // because POOL_IDS[0] was already seen earlier. The deduped set
+    // now matches the input set, so this becomes a valid permutation.
+    expect(res.data.orderedKolIds).toEqual([POOL_IDS[2], POOL_IDS[0], POOL_IDS[1]]);
+    expect(res.data.unparsable).toBe(false);
+    expect(res.data.capExhausted).toBe(false);
+    expect(res.data.feedback).toBe("rerank-en");
+
+    // Audit logs refine_applied (not permutation_invalid) with the
+    // deduped_count > 0 signal.
+    expect(logAuditMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "ai_recommendation.refine_applied",
+        after: expect.objectContaining({
+          raw_query: "macro tier please",
+          result_kol_ids: [POOL_IDS[2], POOL_IDS[0], POOL_IDS[1]],
+          deduped_count: 1,
+          locale: "en",
         }),
       }),
     );

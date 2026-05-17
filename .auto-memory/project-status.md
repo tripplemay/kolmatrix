@@ -3,15 +3,18 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔧 BL-068-conversational-refine FIXING（reverify failed again 2026-05-17 19:45, spec=13d9794）
-- ✅ fix-round 1 已验证: B1-B4 全修
-- ❌ fix-round 2 未清掉 B5/B6：
-  - 实际 staging 结果：B6 原 query `fewer micro creators, more female audience in Japan` 仍触发 `ai_recommendation.refine_permutation_invalid`
-  - 最新 drift 从上一轮 `29 -> 31` 收敛成 `29 -> 30`，但仍未通过 strict permutation
-  - 最新 trace: `trc_ew4fi0u4hihjdw07bu73xer3`
-  - 24h parse success rate 反而是 `20.00% (1/5)`，继续低于 `>=80%` gate
-- Codex 报告：`docs/test-reports/BL-068-reverify-fix-round-2-2026-05-17.md`
-- 下轮 generator 重点：抓出 `returned_count=30` 的完整模型输出，定位多出的那个 ID 来源；只改 prompt 还不够
+## 🔁 BL-068-conversational-refine REVERIFYING（fix-round 3 完成 2026-05-17 20:10, spec=13d9794）
+- ✅ fix-round 1: B1-B4 全修
+- ✅ fix-round 2: prompt v2 (动态 N) 部分 — drift 29→31 收敛到 29→30 但仍不通过
+- ✅ fix-round 3 真因 + 双层修复:
+  - **真因** (通过 MCP get_log_detail trc_ew4fi0u4hihjdw07bu73xer3 抓出): LLM 返 30 IDs 是**重复 1 个已有 id** 凑足 30 (`8f93d2c0` 在 index 8 + 29), 不是幻觉新 ID. v2 prompt 明禁重复但 Claude Haiku 仍违反.
+  - **Layer 1**: refine-actions.ts 加 dedupe-then-validate. LLM 输出有 dup 时先去重保 first-occurrence 序, 去重后 set == input set 即接受为 refine_applied (audit 加 deduped_count 字段监控). 仅当去重后仍偏离才落 permutation_invalid.
+  - **Layer 2**: prompt v3 (version_id cmp9pak6g000dbno3canjkxxh) 加 §⚠️ '输出前自检 3 项' 块 + 末尾再加 1 段最后提醒. Self-check 显式引用 fix-round 3 的真实 trace 加压.
+  - 单测 +1 dedupe case (LLM dup → server dedupe → refine_applied + audit deduped_count=1)
+  - L1: lint 0 / tsc 0 / vitest 127 PASS (126 prior + 1 new)
+- 部署: F002 source 改 → staging deploy 完整流程必跑. CI 应触发.
+- **Codex 复验 (fix_rounds=3)**: 重发 B6 原 query 验 success toast / 跑 cost-audit 验 parse rate ≥ 80% gate / 关注新字段 deduped_count 监控 LLM 行为 / 完整 10+ dogfood → signoff or fix-round 4
+- **CI 7/8 jobs PASS, E2E 仍红**（campaign-explainability-flow.spec.ts:101 / :280，属 BL-067 followup，不是本批新 blocker）
 - **CI 7/8 jobs PASS, E2E 仍红**（campaign-explainability-flow.spec.ts:101 / :280，属 BL-067 followup，不是本批新 blocker）
 - 8 决策点 5/16 全 lock：#1 ready-to-build / #2 /campaigns/[id] + /match 两处 / #3 重排现 top 30 / #4 toast unparsable + 保留现池 / #5 stateful localStorage 24h TTL / #6 audit log raw query / #7 全复用 BL-067 基础设施 / #8 顶部 inline input bar
 - 复用 BL-067 沉淀：runAigcAction SDK (src/lib/aigc/run-action.ts) + checkLlmCostBudget (src/lib/ai/cost-cap.ts:133) + 5 locale JSON 模式 + silent fallback 哲学；cost 估算 5 用户 day = $1.25 meter (25% cap 利用率)
