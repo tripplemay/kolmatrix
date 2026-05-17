@@ -5,6 +5,55 @@
 
 ---
 
+## v0.9.22 — 2026-05-17（BL-066 + BL-067 + BL-068 沉淀，13 条 learnings — 中等深度沉淀）
+
+**来源批次：**
+- BL-066 done 收尾（5/15, 3 条 — F002/F006/F007 audit 模式 + 量化 criterion 语义 + audit 起草前实测原子组件）
+- BL-067 done 收尾（5/16, 5 条 — Next.js Turbopack BUILD_ID bug + InMemoryJobQueue MVP + runAigcAction SDK 抽象层 + audit 命中率信号 + webpack typecheck checklist）
+- BL-068 done 收尾（5/17, 5 条 — MCP get_log_detail trace 抓真因 + dedupe-then-validate + prompt 自检 § + mock infeasible dogfood 替代 + verifying gate 优先 trace 反思）
+
+**触发原因：**
+- Phase 3 完整 done 后整体回顾：BL-066 fix_rounds=0 一次成型 vs BL-068 fix_rounds=3 真因深挖代价对比，沉淀 LLM 类批次完整方法论
+- BL-067 Turbopack BUILD_ID bug 是 Next.js 16.2.x 上游 known issue 需文档化防御
+- BL-067 runAigcAction SDK 抽象层 + BL-068 dedupe-then-validate 是 LLM 类 caller 通用模式
+- BL-068 fix-round 2→3 真因发现（dup not hallucination）是 LLM fix-round 标准方法论触发点
+
+**13 条 1-line summary（详见 `framework/archive/proposed-learnings-archive-v0.9.22.md` §1-§3）：**
+
+| # | 1-line summary | 类型 | 来源 | 待写入文件 |
+|---|---|---|---|---|
+| #1 | 批次级多 audit 串联模式 (BL-066 F002+F006+F007 3 audit → 0 fix-round 一次成型) | 模板修订 | BL-066 | pre-impl-adjudication.md |
+| #2 | verifying gate 量化 criterion 锚定语义而非字面（BL-066 F007 §7 反面案例） | 新规律 / 新坑 | BL-066 | evaluator.md |
+| #3 | Generator audit 起草前实测原子组件 surface（BL-066 F006 Table.tsx 反面案例） | 新规律 | BL-066 | generator.md |
+| #4 | Next.js 16.2.x Turbopack 生产 build BUILD_ID bug + --webpack 防御（BL-067 fix-round 1 f284d35 实战） | 新坑 / 模板修订 | BL-067 | deploy-patterns.md |
+| #5 | InMemoryJobQueue fire-and-forget + mount self-heal 模式（BullMQ MVP 前置方案） | 新规律 | BL-067 | generator.md |
+| #6 | aigcgateway caller SDK 抽象层沉淀触发门槛（≥3 inline + 即将第 4 处） | 模板修订 | BL-067 | ai-action-contract.md |
+| #7 | pre-impl-adjudication Generator 建议命中率作为 audit 质量信号（4 audit 累积统计） | 新规律 | BL-067 | pre-impl-adjudication.md |
+| #8 | Next.js 16 webpack 严格 typecheck 暴露 hidden TS errors checklist | 新坑 | BL-067 | generator.md（或合并 #4 同段） |
+| #9 | MCP `get_log_detail` trace 抓 LLM 真实输出作为 LLM fix-round 标准动作 | 新坑 / 工具链 | BL-068 | generator.md |
+| #10 | LLM 输出 noise 兼容 dedupe-then-validate 模式（BL-068 35% dup rate 实战） | 新规律 | BL-068 | ai-action-contract.md |
+| #11 | Prompt 自检 § + 末尾 reminder 双层强化模式（Claude Haiku 单点约束不够时） | 模板修订 | BL-068 | ai-action-contract.md |
+| #12 | 测试 mock infeasible 时的 dogfood 替代覆盖模式（与 BL-067 §8 24h soak 同源） | 新规律 | BL-068 | evaluator.md |
+| #13 | verifying gate 失败时优先 trace 真因而非直接 ack fix（与 #9 配对方法论） | 新规律 / 反面案例 | BL-068 | planner.md |
+
+**沉淀模式（中等深度）：**
+
+- ✅ `framework/archive/proposed-learnings-archive-v0.9.22.md` 新建归档 13 条全文（保留所有 detail + 实战案例 + 待写入文件 cross-reference）
+- ✅ `framework/proposed-learnings.md` 清空 13 条 + 加 v0.9.22 历史 marker（同 v0.9.20 风格）
+- ✅ `framework/CHANGELOG.md` v0.9.22 段（本段，含 13 条 1-line summary + 待写入文件 cross-reference）
+- ⏸️ `framework/harness/*.md` 实际段落起草（估 12 段 × 30-80 行 = 600-1000 LOC docs）**留独立 framework batch 或合并 v0.9.23 同沉淀**，避免 v0.9.22 commit 范围过大冲淡 BL-069 启动节奏
+
+**沉淀模式参考：** v0.9.20 沉淀（"归档暂未写... git history 已有 commits cae1f8f / 821c094 完整记录"）采用类似轻沉淀；本 v0.9.22 比 v0.9.20 更深一层（archive 完整保留 + CHANGELOG 完整 cross-reference），但 framework/harness/* 段落同样留下批次。
+
+**变更：**
+- 新建 `framework/archive/proposed-learnings-archive-v0.9.22.md`（13 条完整归档 + 待写入位置表）
+- 修改 `framework/proposed-learnings.md`：清空 13 条 + 加 v0.9.22 历史 marker
+- 修改 `framework/CHANGELOG.md`：加 v0.9.22 段（本段）
+
+**下次 framework batch 起步指引：** 按 archive §1-§3 逐条对应 `framework/harness/*.md` 文件 append 实际段落。优先级建议（按 BL-069+ 使用频次）：(1) `ai-action-contract.md` 3 段（BL-069 Brief 自然语言解析直接复用 LLM 模式）/ (2) `generator.md` 4 段（含 audit 实测 + MCP trace 是 Generator 标准动作）/ (3) `pre-impl-adjudication.md` 2 段（4 audit 统计可固化）/ (4) 其余文件段落随 BL-070+ 自然沉淀。
+
+---
+
 ## v0.9.21 — 2026-05-14（BL-064 + BL-065 沉淀，4 条 learnings）
 
 **来源批次：**
