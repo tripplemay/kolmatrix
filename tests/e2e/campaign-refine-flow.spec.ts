@@ -122,6 +122,15 @@ async function mockRefineAction(
     errorKind?: "unparsable" | "malformed" | "permutation_invalid";
   },
 ): Promise<void> {
+  // CRITICAL: route handlers are evaluated in LIFO order — the most-recent
+  // page.route() wins. If this handler is registered AFTER mockSmartMatch
+  // (the standard sequence in our tests), `route.continue()` would
+  // BYPASS the earlier mockSmartMatch handler and hit the real network,
+  // which would fail in CI (no AIGCGATEWAY_* env → smart-match returns
+  // 500 → AiRecommendationPanel renders the error banner instead of the
+  // active state). `route.fallback()` re-evaluates the earlier handlers,
+  // letting mockSmartMatch service /api/kols/smart-match while this one
+  // services the applyRefineAction server-action POST.
   await page.route("**", async (route) => {
     const req = route.request();
     const headers = req.headers();
@@ -135,7 +144,7 @@ async function mockRefineAction(
       });
       return;
     }
-    await route.continue();
+    await route.fallback();
   });
 }
 
