@@ -216,7 +216,7 @@ export async function updateKolEmailAction(
     return { ok: false, error: "db_error" };
   }
 
-  revalidatePath("/[locale]/outreach", "page");
+  revalidatePath("/[locale]/reach", "page");
   return { ok: true };
 }
 
@@ -332,7 +332,7 @@ export async function sendBatchAction(
     return { ok: false, error: "db_error" };
   }
 
-  revalidatePath("/[locale]/outreach", "page");
+  revalidatePath("/[locale]/reach", "page");
   revalidatePath(`/[locale]/campaigns/${parsed.data.campaignId}`, "page");
   return { ok: true, data: result };
 }
@@ -421,8 +421,8 @@ export async function saveTemplateAction(
     },
   });
 
-  void revalidatePath("/[locale]/outreach", "page");
-  void revalidatePath("/[locale]/outreach/templates", "page");
+  void revalidatePath("/[locale]/reach", "page");
+  void revalidatePath("/[locale]/reach/templates", "page");
   return { ok: true, data: template };
 }
 
@@ -454,8 +454,8 @@ export async function duplicateTemplateAction(
     payload: { templateId },
   });
 
-  void revalidatePath("/[locale]/outreach", "page");
-  void revalidatePath("/[locale]/outreach/templates", "page");
+  void revalidatePath("/[locale]/reach", "page");
+  void revalidatePath("/[locale]/reach/templates", "page");
   return { ok: true, data: template };
 }
 
@@ -486,8 +486,8 @@ export async function deleteTemplateAction(
     resourceId: templateId,
   });
 
-  void revalidatePath("/[locale]/outreach", "page");
-  void revalidatePath("/[locale]/outreach/templates", "page");
+  void revalidatePath("/[locale]/reach", "page");
+  void revalidatePath("/[locale]/reach/templates", "page");
   return { ok: true };
 }
 

@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 12.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "新建 `src/app/[locale]/(app)/reach/page.tsx`（server component）+ subroute（如 `/reach/[campaignId]` 等，per 现 outreach 结构）",
       "迁移 outreach 全部功能：邮件 composer + thread view + schedule + tracking（不动 AI 邮件个性化 — F002 单独迁）",

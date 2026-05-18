@@ -93,7 +93,7 @@ beforeEach(async () => {
 describe("/outreach/tracking page", () => {
   it("redirects to /login when there is no session", async () => {
     authMock.mockResolvedValue(null);
-    const mod = await import("@/app/[locale]/(app)/outreach/tracking/page");
+    const mod = await import("@/app/[locale]/(app)/reach/tracking/page");
     await expect(
       mod.default({
         params: Promise.resolve({ locale: "en" }),
@@ -111,7 +111,7 @@ describe("/outreach/tracking page", () => {
     await seedEmailLog(tenantA, "bounced", "Tenant A bounced");
     await seedEmailLog(tenantB, "delivered", "Tenant B delivered");
 
-    const mod = await import("@/app/[locale]/(app)/outreach/tracking/page");
+    const mod = await import("@/app/[locale]/(app)/reach/tracking/page");
     const PageEl = await mod.default({
       params: Promise.resolve({ locale: "en" }),
       searchParams: Promise.resolve({ status: "delivered" }),

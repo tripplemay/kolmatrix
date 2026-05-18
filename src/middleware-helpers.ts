@@ -87,13 +87,15 @@ type IaRedirectRule = {
 
 const IA_REDIRECT_RULES: ReadonlyArray<IaRedirectRule> = [
   // BL-064-F005 fix-round-2 — F002 redirect scope is constrained to
-  // *content-equivalent* sources. The new IA shells (F001 A2 embed-old)
-  // each embed ONE old page:
+  // *content-equivalent* sources. BL-070-F001 + F003 promoted /reach
+  // and (in F003) /insight from embed-old shells to real routes with
+  // their own content; the redirect rules below match the migrated
+  // pages:
   //
-  //   /brief    embeds /knowledge-base
-  //   /match    embeds /discovery
-  //   /reach    embeds /outreach
-  //   /insight  embeds /dashboard
+  //   /brief    → real route (BL-069-F003)
+  //   /match    → real route (BL-065)
+  //   /reach    → real route (BL-070-F001, was embed-old /outreach)
+  //   /insight  → real route (BL-070-F003, was embed-old /dashboard)
   //
   // Routes whose content lives elsewhere (campaigns form / roi cards /
   // weekly-report) cannot be safely 302'd to the new IA — the user
@@ -112,14 +114,9 @@ const IA_REDIRECT_RULES: ReadonlyArray<IaRedirectRule> = [
   //   /weekly-report   → kept; BL-070 unifies under /insight
   //   /analytics       → kept; BL-070 unifies under /insight
   //
-  // Content-equivalent exact-prefix redirects. NOTE: BL-064-F006
-  // discovered the F001 new-IA shells (/insight /match /brief /reach)
-  // are *root-only* — they re-export the legacy page.tsx default but
-  // do NOT mount sub-routes (/reach has no templates/suppression/
-  // tracking children). So we redirect exact-match only. Sub-paths
-  // (e.g. /outreach/templates) stay as kept deep-link paths and
-  // continue to render their legacy markup. BL-070 will fold the sub-
-  // routes when the new IA gets its real implementation.
+  // BL-070-F004 will git rm both the old route directories and these
+  // rules outright (same-batch cleanup per spec §4 decision #5 —
+  // legacy URLs return 404 once the redirect window closes).
   { pattern: /^\/dashboard$/, resolve: () => "/insight" },
   { pattern: /^\/discovery$/, resolve: () => "/match" },
   { pattern: /^\/database$/, resolve: () => "/match" },
@@ -155,7 +152,17 @@ const IA_REDIRECT_RULES: ReadonlyArray<IaRedirectRule> = [
     resolve: () => "/brief?action=new",
     status: 301,
   },
-  { pattern: /^\/outreach$/, resolve: () => "/reach" },
+  // BL-070-F001 — /outreach (+ all sub-paths: templates / tracking /
+  // suppression) now lives under /reach. Spec §F001 acceptance #3
+  // requires 301 permanent + sub-path inheritance via prefix swap
+  // (per BL-069 v0.9.22 #14 IaRedirectRule status field pattern).
+  // F004 will git rm this rule outright; the legacy URL then 404s
+  // (same-batch cleanup per spec §4 decision #5).
+  {
+    pattern: /^\/outreach(\/.*)?$/,
+    resolve: (m) => `/reach${m[1] ?? ""}`,
+    status: 301,
+  },
 ];
 
 export interface IaRedirectResult {

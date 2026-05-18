@@ -89,7 +89,7 @@ beforeEach(async () => {
 describe("/outreach/suppression page", () => {
   it("redirects to /login when there is no session", async () => {
     authMock.mockResolvedValue(null);
-    const mod = await import("@/app/[locale]/(app)/outreach/suppression/page");
+    const mod = await import("@/app/[locale]/(app)/reach/suppression/page");
     await expect(
       mod.default({
         params: Promise.resolve({ locale: "en" }),
@@ -106,7 +106,7 @@ describe("/outreach/suppression page", () => {
     await seedSuppression(tenantA, "Alpha KOL", "permanent_bounce");
     await seedSuppression(tenantB, "Beta KOL", "permanent_bounce");
 
-    const mod = await import("@/app/[locale]/(app)/outreach/suppression/page");
+    const mod = await import("@/app/[locale]/(app)/reach/suppression/page");
     const PageEl = await mod.default({
       params: Promise.resolve({ locale: "en" }),
       searchParams: Promise.resolve({}),

@@ -119,7 +119,7 @@ const { generateRoiInsightsAction } = await import("@/app/[locale]/(app)/roi/act
 const { generateWeeklyReportAction } = await import(
   "@/app/[locale]/(app)/weekly-report/actions"
 );
-const { sendBatchAction } = await import("@/app/[locale]/(app)/outreach/actions");
+const { sendBatchAction } = await import("@/app/[locale]/(app)/reach/actions");
 const { POST: smartMatchPOST } = await import("@/app/api/kols/smart-match/route");
 
 const TENANT = "11111111-2222-3333-4444-555555555555";

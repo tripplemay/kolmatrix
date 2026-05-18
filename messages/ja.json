@@ -1094,7 +1094,10 @@
           "noScore": "なし",
           "errorBanner": "AI レコメンデーションを読み込めませんでした",
           "retryCta": "再試行",
-          "exhaustedBody": "このバッチの候補をすべて確認しました。次の 30 件を取得してください。"
+          "exhaustedBody": "このバッチの候補をすべて確認しました。次の 30 件を取得してください。",
+          "acceptToastMessage": "{handle} を承認しました — Reach でメールを送信しますか？",
+          "acceptToastCta": "Reach で表示",
+          "acceptToastDismiss": "閉じる"
         }
       },
       "kolPanel": {

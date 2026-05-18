@@ -13,13 +13,16 @@
  *   - /campaigns（含 /campaigns/{cuid|uuid|alphanumeric-segment}）
  *   - /kols/{id}
  *   - /assets（含 ?查询串，由 dashboard 用）
- *   - /outreach
+ *   - /reach（BL-070-F001 promoted; /outreach kept until F004 deletes redirect）
  *   - /database
  *   - /knowledge-base
+ *   - /brief（BL-069 IA route — AI suggestions may deep-link）
+ *   - /insight（BL-070-F003 — same）
+ *   - /match（BL-065 — same）
  */
 
 const SAFE_PATH_RE =
-  /^\/(?:campaigns(?:\/[a-z0-9-]+)?|kols\/[a-z0-9-]+|assets(?:\?[a-zA-Z0-9_=&-]*)?|outreach|database|knowledge-base)$/;
+  /^\/(?:campaigns(?:\/[a-z0-9-]+)?|kols\/[a-z0-9-]+|assets(?:\?[a-zA-Z0-9_=&-]*)?|outreach|reach|database|knowledge-base|brief|insight|match)$/;
 
 const FALLBACK = "/campaigns";
 

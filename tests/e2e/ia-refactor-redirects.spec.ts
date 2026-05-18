@@ -60,7 +60,28 @@ const REDIRECT_CASES: RedirectCase[] = [
     status: 301,
     note: "BL-069-F006 deep-link",
   },
-  { from: "/outreach", expect: /\/reach(\/|\?|$)/, status: 302 },
+  // BL-070-F001 — /outreach (+ sub-paths via prefix swap) promoted to
+  // 301 permanent now that /reach is a real route. Spec §F001
+  // acceptance #3 ("301 redirect per BL-069 v0.9.22 #14 模式").
+  { from: "/outreach", expect: /\/reach(\/|\?|$)/, status: 301 },
+  {
+    from: "/outreach/templates",
+    expect: /\/reach\/templates(\/|\?|$)/,
+    status: 301,
+    note: "BL-070-F001 sub-path inheritance",
+  },
+  {
+    from: "/outreach/tracking",
+    expect: /\/reach\/tracking(\/|\?|$)/,
+    status: 301,
+    note: "BL-070-F001 sub-path inheritance",
+  },
+  {
+    from: "/outreach/suppression",
+    expect: /\/reach\/suppression(\/|\?|$)/,
+    status: 301,
+    note: "BL-070-F001 sub-path inheritance",
+  },
   // BL-069-F006 + fix-round 1 — /campaigns/new permanent redirect.
   { from: "/campaigns/new", expect: /\/brief\?action=new/, status: 301 },
   // BL-066-F008 — /campaigns/[id] redirect removed (F002 wired the
@@ -137,11 +158,9 @@ test.describe("BL-064 — sub-routes intentionally NOT redirected (Adjudication 
     "/roi",
     "/weekly-report",
     "/analytics",
-    // BL-064-F006 fix-round-3 — outreach sub-paths kept; /reach has
-    // no sub-routes yet (BL-070 will land those).
-    "/outreach/templates",
-    "/outreach/suppression",
-    "/outreach/tracking",
+    // BL-070-F001 promoted /outreach/{templates,suppression,tracking} to
+    // 301 sub-path redirects (moved to REDIRECT_CASES above) — KEPT_PATHS
+    // no longer covers them.
   ];
   for (const path of KEPT_PATHS) {
     test(`${path} stays in legacy area (no 302 to new IA)`, async ({ page }) => {

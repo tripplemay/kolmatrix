@@ -1094,7 +1094,10 @@
           "noScore": "없음",
           "errorBanner": "AI 추천을 불러올 수 없습니다",
           "retryCta": "다시 시도",
-          "exhaustedBody": "이번 배치의 모든 후보를 확인했습니다. 다음 30개를 가져오세요."
+          "exhaustedBody": "이번 배치의 모든 후보를 확인했습니다. 다음 30개를 가져오세요.",
+          "acceptToastMessage": "{handle} 수락 완료 — Reach에서 메일을 보내시겠습니까?",
+          "acceptToastCta": "Reach에서 보기",
+          "acceptToastDismiss": "닫기"
         }
       },
       "kolPanel": {

@@ -1094,7 +1094,10 @@
           "noScore": "sin datos",
           "errorBanner": "No se pudieron cargar las recomendaciones",
           "retryCta": "Reintentar",
-          "exhaustedBody": "Has revisado todos los candidatos. Trae los próximos 30 para continuar."
+          "exhaustedBody": "Has revisado todos los candidatos. Trae los próximos 30 para continuar.",
+          "acceptToastMessage": "{handle} aceptado — ¿enviar comunicaciones en Reach?",
+          "acceptToastCta": "Ver en Reach",
+          "acceptToastDismiss": "Descartar"
         }
       },
       "kolPanel": {

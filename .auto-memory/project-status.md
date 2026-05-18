@@ -3,8 +3,8 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔨 BL-070-reach-insight-cleanup BUILDING（0/8, fix_rounds=0, spec=0947d58, role_assignments=null 默认映射, 项目近期最后一批）
-- F001 /reach 路由 + Outreach 迁移 + Match→Reach 衔接 (12h) → F002 customize.ts + topic-cloud.ts 迁移 runAigcAction SDK v0.9.22 #6 (8h) → F003 /insight 路由 + Dashboard + Reports 合并 + 4 条 301 (10h) → F004 5 老路由目录 git rm + middleware redirect 删 (4h) → F005 6 BL-066 unmount 组件 + i18n deprecated keys 全删 (4h) → F006 4 路由 IA e2e suite 全量重写 (16h) → F007 视觉 baseline 全量 regen + reach/insight i18n 5 locale (6h) → F008 staging + prod deploy + 24h 监控 + 对外上线 12 项 checklist signoff (8h)
+## 🔨 BL-070-reach-insight-cleanup BUILDING（1/8, fix_rounds=0, spec=0947d58, role_assignments=null 默认映射, 项目近期最后一批）
+- ✅ F001 /reach 路由 + Outreach 全量迁移 (git mv 17 files) + /outreach(/.*)? wildcard 301 + Match→Reach toast 衔接 (AiRecommendationPanel onAccept) + 5 locale toast keys + L1 全过 → F002 customize.ts + topic-cloud.ts 迁移 runAigcAction SDK v0.9.22 #6 (8h) → F003 /insight 路由 + Dashboard + Reports 合并 + 4 条 301 (10h) → F004 5 老路由目录 git rm + middleware redirect 删 (4h) → F005 6 BL-066 unmount 组件 + i18n deprecated keys 全删 (4h) → F006 4 路由 IA e2e suite 全量重写 (16h) → F007 视觉 baseline 全量 regen + reach/insight i18n 5 locale (6h) → F008 staging + prod deploy + 24h 监控 + 对外上线 12 项 checklist signoff (8h)
 - 8 决策点 5/18-19 全 lock：#1 ready-to-build / #2 Reach 迁移+Match衔接+customize 迁 / #3 Insight 仅合并 / #4 二次清理全清 / #5 BL-070 同批即停 redirect (老路由 404) / #6 e2e 完整重写+老 e2e 清理 / #7 §10 12 项 checklist + signoff doc 验 / #8 全复用 v0.9.22
 - 复用 v0.9.22 沉淀: runAigcAction SDK (F002) + IaRedirectRule status field (F004) + Turbopack --webpack 防御 (F008) + 13 条 archive 经验; BL-070 自身 0 incremental LLM cost
 - 本批次 done = Phase 4 完整 done = 4 路由 IA 闭环 = 对外上线 ready (距 ~2 周)

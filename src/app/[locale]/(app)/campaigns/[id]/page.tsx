@@ -203,6 +203,14 @@ function aiPanelLabels(t: TFn) {
       // namespace (per F006 spec) rather than the panel's own subtree so future
       // explainability keys can stack alongside it without re-namespacing.
       queryButtonLabel: t("explainability.queryButtonLabel"),
+      // BL-070-F001 — Match→Reach 衔接 toast. `acceptToastMessage`
+      // carries a `{handle}` placeholder consumed by client-side
+      // String.replace at render time (per i18n template sediment
+      // v0.9.21), so we read it via t.raw() to bypass the ICU
+      // formatter — otherwise SSR throws on the unbound placeholder.
+      acceptToastMessage: t.raw("aiPanel.active.acceptToastMessage") as string,
+      acceptToastCta: t("aiPanel.active.acceptToastCta"),
+      acceptToastDismiss: t("aiPanel.active.acceptToastDismiss"),
     },
     // BL-067-F004 — DetailedExplanationDialog labels. Title uses
     // `t.raw(...)` (template with `{handle}` placeholder; client-side

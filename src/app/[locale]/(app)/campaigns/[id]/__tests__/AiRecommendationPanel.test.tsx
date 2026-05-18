@@ -114,6 +114,12 @@ const LABELS = {
     retryCta: "Retry",
     exhaustedBody: "All done",
     queryButtonLabel: "View detailed explanation",
+    // BL-070-F001 — Match→Reach 衔接 toast labels. `{handle}` is a
+    // client-side String.replace token; the panel substitutes the
+    // accepted KOL's handle before rendering.
+    acceptToastMessage: "{handle} accepted — send outreach in Reach?",
+    acceptToastCta: "View in Reach",
+    acceptToastDismiss: "Dismiss",
   },
   // BL-067-F004 — labels for DetailedExplanationDialog. Required by the
   // `Labels` interface even when no test exercises the dialog open path,
@@ -387,6 +393,174 @@ describe("AiRecommendationPanel (BL-066 F003)", () => {
       ).toHaveLength(5)
     );
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  // ---------- BL-070-F001 ----------
+  describe("BL-070-F001 — Match→Reach 衔接 toast after Accept", () => {
+    it("surfaces a toast with the accepted KOL handle + View in Reach CTA", async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: makePool(5) }),
+      });
+      acceptMock.mockResolvedValueOnce({ ok: true, kolCampaignId: "link-1" });
+
+      render(
+        <AiRecommendationPanel
+          productId="prod-1"
+          campaignId={CAMPAIGN}
+          tenantId={TENANT}
+          locale="en"
+          labels={LABELS}
+        />,
+      );
+      await waitFor(() =>
+        expect(
+          screen.getAllByTestId("campaign-ai-recommendation-card"),
+        ).toHaveLength(5),
+      );
+
+      // Toast hidden before Accept.
+      expect(
+        screen.queryByTestId("campaign-ai-recommendation-accept-toast"),
+      ).not.toBeInTheDocument();
+
+      const firstCard = screen.getAllByTestId(
+        "campaign-ai-recommendation-card",
+      )[0]!;
+      fireEvent.click(
+        firstCard.querySelector(
+          '[data-testid="campaign-ai-recommendation-accept"]',
+        )!,
+      );
+
+      // Toast surfaces with the KOL handle substituted into the message
+      // and a deep-link CTA pointing at /:locale/reach?campaignId=...
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("campaign-ai-recommendation-accept-toast"),
+        ).toBeInTheDocument();
+      });
+      expect(
+        screen.getByTestId("campaign-ai-recommendation-accept-toast"),
+      ).toHaveTextContent("@kol_0 accepted");
+      const cta = screen.getByTestId(
+        "campaign-ai-recommendation-accept-toast-cta",
+      );
+      expect(cta).toHaveAttribute(
+        "href",
+        `/en/reach?campaignId=${encodeURIComponent(CAMPAIGN)}`,
+      );
+      expect(cta).toHaveTextContent("View in Reach");
+    });
+
+    it("dismiss button hides the toast without affecting accepted state", async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: makePool(5) }),
+      });
+      acceptMock.mockResolvedValueOnce({ ok: true, kolCampaignId: "link-2" });
+
+      render(
+        <AiRecommendationPanel
+          productId="prod-1"
+          campaignId={CAMPAIGN}
+          tenantId={TENANT}
+          locale="zh"
+          labels={LABELS}
+        />,
+      );
+      await waitFor(() =>
+        expect(
+          screen.getAllByTestId("campaign-ai-recommendation-card"),
+        ).toHaveLength(5),
+      );
+
+      const firstCard = screen.getAllByTestId(
+        "campaign-ai-recommendation-card",
+      )[0]!;
+      const firstKolId = firstCard.getAttribute("data-kol-id");
+      fireEvent.click(
+        firstCard.querySelector(
+          '[data-testid="campaign-ai-recommendation-accept"]',
+        )!,
+      );
+
+      await waitFor(() =>
+        expect(
+          screen.getByTestId("campaign-ai-recommendation-accept-toast"),
+        ).toBeInTheDocument(),
+      );
+
+      // Locale switch surfaces in the toast CTA href (zh prefix).
+      expect(
+        screen.getByTestId("campaign-ai-recommendation-accept-toast-cta"),
+      ).toHaveAttribute(
+        "href",
+        `/zh/reach?campaignId=${encodeURIComponent(CAMPAIGN)}`,
+      );
+
+      fireEvent.click(
+        screen.getByTestId("campaign-ai-recommendation-accept-toast-dismiss"),
+      );
+
+      await waitFor(() =>
+        expect(
+          screen.queryByTestId("campaign-ai-recommendation-accept-toast"),
+        ).not.toBeInTheDocument(),
+      );
+      // Accepted state survives the dismiss — the KOL must remain
+      // out of the visible-5 (i.e. the accept didn't get rolled back
+      // by closing the toast).
+      const remaining = screen
+        .getAllByTestId("campaign-ai-recommendation-card")
+        .map((el) => el.getAttribute("data-kol-id"));
+      expect(remaining).not.toContain(firstKolId);
+    });
+
+    it("does NOT surface a toast when the server action fails", async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: makePool(5) }),
+      });
+      acceptMock.mockResolvedValueOnce({
+        ok: false,
+        error: "rate_limit_exceeded",
+      });
+
+      render(
+        <AiRecommendationPanel
+          productId="prod-1"
+          campaignId={CAMPAIGN}
+          tenantId={TENANT}
+          locale="en"
+          labels={LABELS}
+        />,
+      );
+      await waitFor(() =>
+        expect(
+          screen.getAllByTestId("campaign-ai-recommendation-card"),
+        ).toHaveLength(5),
+      );
+
+      const firstCard = screen.getAllByTestId(
+        "campaign-ai-recommendation-card",
+      )[0]!;
+      fireEvent.click(
+        firstCard.querySelector(
+          '[data-testid="campaign-ai-recommendation-accept"]',
+        )!,
+      );
+
+      await waitFor(() =>
+        expect(
+          screen.getByTestId("campaign-ai-recommendation-banner-error"),
+        ).toBeInTheDocument(),
+      );
+      // Error path must NOT show the success toast.
+      expect(
+        screen.queryByTestId("campaign-ai-recommendation-accept-toast"),
+      ).not.toBeInTheDocument();
+    });
   });
 
   // ---------- BL-067-F003 ----------

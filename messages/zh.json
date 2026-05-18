@@ -1042,7 +1042,10 @@
           "noScore": "无",
           "errorBanner": "无法加载 AI 推荐",
           "retryCta": "重试",
-          "exhaustedBody": "本批 30 个候选已浏览完毕，拉取新一批 30 个继续。"
+          "exhaustedBody": "本批 30 个候选已浏览完毕，拉取新一批 30 个继续。",
+          "acceptToastMessage": "{handle} 已添加 — 前往 Reach 发送邮件？",
+          "acceptToastCta": "在 Reach 中查看",
+          "acceptToastDismiss": "关闭"
         }
       },
       "kolPanel": {

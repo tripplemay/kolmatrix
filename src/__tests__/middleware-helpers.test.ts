@@ -69,9 +69,34 @@ describe("resolveIaRefactorRedirect — BL-064-F002", () => {
       path: "/match",
       status: 302,
     });
+  });
+
+  it("BL-070-F001 — /outreach bare 301 permanent (route promoted to /reach)", () => {
     expect(resolveIaRefactorRedirect("/outreach")).toEqual({
       path: "/reach",
-      status: 302,
+      status: 301,
+    });
+  });
+
+  it("BL-070-F001 — /outreach sub-paths inherit via prefix swap (301)", () => {
+    expect(resolveIaRefactorRedirect("/outreach/templates")).toEqual({
+      path: "/reach/templates",
+      status: 301,
+    });
+    expect(resolveIaRefactorRedirect("/outreach/tracking")).toEqual({
+      path: "/reach/tracking",
+      status: 301,
+    });
+    expect(resolveIaRefactorRedirect("/outreach/suppression")).toEqual({
+      path: "/reach/suppression",
+      status: 301,
+    });
+    // Trailing extras (query string is handled upstream by middleware
+    // before the bare path hits this helper; we just verify nested
+    // segments survive the swap intact).
+    expect(resolveIaRefactorRedirect("/outreach/tracking/abc-123")).toEqual({
+      path: "/reach/tracking/abc-123",
+      status: 301,
     });
   });
 
@@ -113,17 +138,18 @@ describe("resolveIaRefactorRedirect — BL-064-F002", () => {
     expect(resolveIaRefactorRedirect("/analytics")).toBeNull();
   });
 
-  it("BL-064-F006 fix-round-3 — exact-match only (new IA shells have no sub-routes)", () => {
-    // Sub-paths stay as kept deep-link paths; the legacy markup
-    // continues to render under the original URL.
-    expect(resolveIaRefactorRedirect("/outreach/templates")).toBeNull();
-    expect(resolveIaRefactorRedirect("/outreach/suppression")).toBeNull();
-    expect(resolveIaRefactorRedirect("/outreach/tracking")).toBeNull();
+  it("BL-064-F006 fix-round-3 — exact-match only for shells without sub-routes", () => {
+    // /dashboard sub-paths stay null (kept legacy URL) — BL-070-F003 may
+    // promote /insight to a real route but the dashboard sub-routes are
+    // not in scope today.
     expect(resolveIaRefactorRedirect("/dashboard/anything")).toBeNull();
     // BL-069-F006 restricted the KB deep-link rule to a SINGLE segment
     // after `/knowledge-base/`; multi-segment paths still fall through
     // to null (they were never valid KB routes anyway).
     expect(resolveIaRefactorRedirect("/knowledge-base/foo/bar")).toBeNull();
+    // /outreach sub-paths now redirect under BL-070-F001 (asserted in
+    // the dedicated describe block above); they used to be null until
+    // /reach was promoted from embed-old shell to a real route.
   });
 
   it("handles /campaigns family — list + [id] still kept (BL-066-F008)", () => {

@@ -102,6 +102,17 @@ interface ActiveLabels {
   exhaustedBody: string;
   /** BL-067-F003 — aria-label for the per-card `?` icon trigger. */
   queryButtonLabel: string;
+  /**
+   * BL-070-F001 — Match→Reach 衔接 toast labels. Surfaced after a
+   * successful Accept so the marketer can jump straight to /reach
+   * without abandoning the recommendation pool. Per spec §F001
+   * acceptance #4 + §5 不变量 #7 the CTA is non-blocking (toast +
+   * link, not router.push) so the user can keep accepting more KOLs.
+   * Contains `{handle}` placeholder for the accepted KOL handle.
+   */
+  acceptToastMessage: string;
+  acceptToastCta: string;
+  acceptToastDismiss: string;
 }
 
 interface Labels {
@@ -259,6 +270,14 @@ function ActiveOrLoading({
   // (null when closed). The dialog is mounted once at this scope so we
   // don't pay the React reconciliation cost of 30 hidden dialog trees.
   const [openDialogKolId, setOpenDialogKolId] = useState<string | null>(null);
+  // BL-070-F001 — Match→Reach 衔接 toast state. Holds the latest
+  // accepted KOL handle so the toast can name them ("@kol_99 accepted —
+  // ready to send outreach?"). null = no toast visible. Re-accepts
+  // overwrite the prior toast contents; the user dismisses or clicks
+  // the CTA to clear (per spec §F001 acceptance #4 — non-blocking).
+  const [acceptedToast, setAcceptedToast] = useState<{ handle: string } | null>(
+    null,
+  );
   const [, startTransition] = useTransition();
   const didInit = useRef(false);
   const hadCacheOnMount = useRef<boolean | null>(null);
@@ -404,6 +423,11 @@ function ActiveOrLoading({
             next.add(kol.id);
             return next;
           });
+          // BL-070-F001 — Match→Reach 衔接: surface a non-blocking
+          // toast naming the accepted KOL with a deep-link CTA to
+          // /reach?campaignId=:id so the marketer can hop straight
+          // to the email composer if they're done picking.
+          setAcceptedToast({ handle: kol.handle });
           router.refresh();
         } else {
           setError(res.error);
@@ -412,6 +436,10 @@ function ActiveOrLoading({
     },
     [campaignId, router]
   );
+
+  const onDismissAcceptedToast = useCallback(() => {
+    setAcceptedToast(null);
+  }, []);
 
   const onSkip = useCallback((kolId: string) => {
     setSkipped((prev) => {
@@ -500,10 +528,13 @@ function ActiveOrLoading({
         pool={pool}
         labels={labels.active}
         locale={locale}
+        campaignId={campaignId}
         onAccept={onAccept}
         onSkip={onSkip}
         onReplaceAll={onReplaceAll}
         bannerError={error}
+        acceptedToast={acceptedToast}
+        onDismissAcceptedToast={onDismissAcceptedToast}
         shortExplanations={shortExplanations}
         onOpenDialog={setOpenDialogKolId}
       />
@@ -527,10 +558,13 @@ function ActivePanel({
   pool,
   labels,
   locale,
+  campaignId,
   onAccept,
   onSkip,
   onReplaceAll,
   bannerError,
+  acceptedToast,
+  onDismissAcceptedToast,
   shortExplanations,
   onOpenDialog,
 }: {
@@ -538,10 +572,15 @@ function ActivePanel({
   pool: KolHit[];
   labels: ActiveLabels;
   locale: string;
+  /** BL-070-F001 — needed to build the Reach deep-link in the toast. */
+  campaignId: string;
   onAccept: (kol: KolHit) => void;
   onSkip: (kolId: string) => void;
   onReplaceAll: () => void;
   bannerError: string | null;
+  /** BL-070-F001 — latest accepted KOL toast payload; null hides it. */
+  acceptedToast: { handle: string } | null;
+  onDismissAcceptedToast: () => void;
   shortExplanations: Record<string, string | null>;
   onOpenDialog: (kolId: string) => void;
 }) {
@@ -580,6 +619,50 @@ function ActivePanel({
           {labels.showNext}
         </button>
       </div>
+
+      {acceptedToast ? (
+        <div
+          className="flex items-center justify-between gap-3 rounded-lg border border-cyan/30 bg-cyan/10 px-4 py-2 text-sm text-cyan-fixed"
+          data-testid="campaign-ai-recommendation-accept-toast"
+          role="status"
+        >
+          <span className="flex items-center gap-2">
+            <span
+              className="material-symbols-outlined text-[18px]"
+              aria-hidden
+            >
+              mark_email_unread
+            </span>
+            {labels.acceptToastMessage.replace(
+              "{handle}",
+              `@${acceptedToast.handle}`,
+            )}
+          </span>
+          <span className="flex items-center gap-2">
+            <Link
+              href={`/${locale}/reach?campaignId=${encodeURIComponent(campaignId)}`}
+              className="rounded border border-cyan/40 bg-cyan/20 px-3 py-1 text-xs font-semibold text-cyan-fixed transition-colors hover:bg-cyan/30"
+              data-testid="campaign-ai-recommendation-accept-toast-cta"
+            >
+              {labels.acceptToastCta}
+            </Link>
+            <button
+              type="button"
+              onClick={onDismissAcceptedToast}
+              className="rounded p-1 text-cyan-fixed/70 transition-colors hover:bg-cyan/20 hover:text-cyan-fixed"
+              aria-label={labels.acceptToastDismiss}
+              data-testid="campaign-ai-recommendation-accept-toast-dismiss"
+            >
+              <span
+                className="material-symbols-outlined text-[16px]"
+                aria-hidden
+              >
+                close
+              </span>
+            </button>
+          </span>
+        </div>
+      ) : null}
 
       {bannerError ? (
         <div

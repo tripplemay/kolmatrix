@@ -142,7 +142,7 @@ export default async function TrackingPage({ params, searchParams }: Props) {
         statusFilter={status}
         nextCursorHref={
           nextCursor
-            ? `/${locale}/outreach/tracking?${new URLSearchParams({
+            ? `/${locale}/reach/tracking?${new URLSearchParams({
                 status,
                 cursor: nextCursor,
               }).toString()}`
@@ -167,7 +167,7 @@ export default async function TrackingPage({ params, searchParams }: Props) {
           emptyState: t("emptyState"),
           nextPage: t("nextPage"),
         }}
-        basePath={`/${locale}/outreach/tracking`}
+        basePath={`/${locale}/reach/tracking`}
       />
     </div>
   );

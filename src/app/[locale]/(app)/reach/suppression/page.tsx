@@ -122,7 +122,7 @@ export default async function SuppressionPage({ params, searchParams }: Props) {
         rows={tableRows}
         nextCursorHref={
           nextCursor
-            ? `/${locale}/outreach/suppression?${new URLSearchParams({
+            ? `/${locale}/reach/suppression?${new URLSearchParams({
                 cursor: nextCursor,
               }).toString()}`
             : null

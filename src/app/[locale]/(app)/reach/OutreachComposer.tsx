@@ -403,7 +403,7 @@ export function OutreachComposer({
               const next = e.target.value;
               setSelectedCampaignId(next || null);
               const url =
-                next === "" ? `/${locale}/outreach` : `/${locale}/outreach?campaignId=${next}`;
+                next === "" ? `/${locale}/reach` : `/${locale}/reach?campaignId=${next}`;
               router.push(url);
             }}
           >

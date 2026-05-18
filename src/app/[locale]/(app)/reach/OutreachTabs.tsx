@@ -66,13 +66,13 @@ export async function OutreachTabs({
         const tooltip = tab.tooltipKey ? t(tab.tooltipKey) : undefined;
         const href =
           tab.id === "overview"
-            ? `/${locale}/outreach`
+            ? `/${locale}/reach`
             : tab.id === "templates"
-              ? `/${locale}/outreach/templates`
+              ? `/${locale}/reach/templates`
               : tab.id === "tracking"
-                ? `/${locale}/outreach/tracking`
+                ? `/${locale}/reach/tracking`
                 : tab.id === "suppression"
-                  ? `/${locale}/outreach/suppression`
+                  ? `/${locale}/reach/suppression`
                   : undefined;
         const content = (
           <>
