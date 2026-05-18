@@ -3,11 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ⏳ BL-069-brief-page-merge REVERIFYING（7/7, fix_rounds=1, spec=cf2fdab, Generator fix-round 1 完成）
-- ✅ 首轮通过项：staging sha=ec26ba6 对齐；dogfood 14 applied + 3 unparsable；brief→submit→/match 链路通过；parse rate 83.33% PASS
-- ✅ B1 修复 (fix-round 1): middleware-helpers.ts IaRedirectRule 加 optional status field (default 302) + BL-069 3 条 = 301 + middleware.ts 用 rule.status + resolveIaRefactorRedirect 返 {path, status} + 13 case 单测 PASS + e2e ia-refactor-redirects.spec.ts REDIRECT_CASES 加 status field + assert response.status()
-- ✅ B2 修复 (fix-round 1): BRIEF_FORCE_CAP_EXHAUSTED env flag staging-only 短路 cap fallback (严格 === 'true' 防 typo, audit forced=true) + docs/dev/bl069-cap-exhausted-simulation-runbook.md (备份+tee+pm2 reload+UX 验+清理) + 2 单测 (启用/'yes'非严格 regression guard)
-- 📄 Reviewer 复验入口: curl -I /en/knowledge-base 应见 301 (B1) / 详 bl069-cap-exhausted-simulation-runbook (B2) / 24h parse rate 应仍 ≥80% / 写 signoff doc
+## ✅ BL-069-brief-page-merge DONE（7/7, fix_rounds=1, signoff=BL-069-signoff-2026-05-18.md）
+- ✅ fix-round 1 复验通过：登录态 `/knowledge-base` / `/knowledge-base/[productId]` / `/campaigns/new` 均返回 `301`
+- ✅ cap 模拟通过：`BRIEF_FORCE_CAP_EXHAUSTED=true` 命中 toast + 空表单 + audit `forced=true`，清理后正常 parse 恢复
+- ✅ 24h parse gate：`17/21 = 80.95% PASS`
+- 📄 Signoff：`docs/test-reports/BL-069-signoff-2026-05-18.md`
 ## ✅ BL-068-conversational-refine DONE（7/7, fix_rounds=3, signoff=BL-068-signoff-2026-05-17.md, 24h parse gate 16/20=80% PASS, deduped 35% LLM noise tolerated via server fallback）
 ## ✅ BL-067-explainability-c3 DONE（7/7 + fix-round 1 + signoff 2026-05-16, prod redeploy 待用户 ack 时间窗 deploy-prod.sh 已含 --webpack 防御）
 - 3 项 P5 裁决: §1 5 cat→3 cat 降级 (staging seed gap → BL-070 backlog) / §5 perf 留 dogfood / §8 真 24h soak 加速省略
@@ -25,5 +25,5 @@ type: project
 1. 5/17 第一次 weekly growth-curve check（重跑 BL-061 F003 SQL）
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 ## 角色 / Backlog
-- BL-069 reverifying: role_assignments=null 默认映射 (cli=johnsong fix-round 1 done / codex=Reviewer 复验)；历史 BL-066: planner=johnsong/generator=Kimi/evaluator=Reviewer
-- Phase 3 全 DONE ✅ / Phase 4 BL-069 reverifying ⏳ (BL-070 后续 Insight unify + 二次清理) / 距对外上线 ~5 周
+- BL-069 done: role_assignments=null 默认映射 (cli=johnsong / codex=Reviewer 已完成签收)；历史 BL-066: planner=johnsong/generator=Kimi/evaluator=Reviewer
+- Phase 3 全 DONE ✅ / Phase 4 BL-069 done ✅ (BL-070 后续 Insight unify + 二次清理) / 距对外上线 ~5 周
