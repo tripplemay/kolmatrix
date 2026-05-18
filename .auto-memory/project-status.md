@@ -3,11 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ⏳ BL-069-brief-page-merge VERIFYING（7/7 Generator portion done, fix_rounds=0, spec=cf2fdab, Reviewer 接手 dogfood + signoff）
-- ✅ F001-F006 全 done (action 注册 / brief-actions / /brief layout / ProductListPanel / createCampaignFromBriefAction / redirect 3 条 + i18n marker + e2e 6 case) ✅ F007 Generator portion: scripts/bl069-cost-audit.ts (~210 LOC parse rate ≥80% gate) + visual-regression.spec.ts 加 en-brief + en-brief-products 2 case + 触发 update-visual-baselines workflow auto-commit en-brief.png + en-brief-products.png → status: building → verifying
-- 复用 BL-067/068 v0.9.22 沉淀: runAigcAction SDK + checkLlmCostBudget + prompt v3 自检 § + dedupe-then-validate + silent fallback + 5 locale (F001 cost=$0.0046/call, 与 §6 估算 $0.0045 一致)
-- Reviewer 接手 (per F007 acceptance): staging dogfood ≥10 brief query × 4 维度 + ≥3 unparsable + cap 满模拟 + 端到端 brief→submit→/match prewarm 验链路连贯 + bl069-cost-audit script 跑 24h 验 parse rate ≥80% + 24h cost ≤ dogfood ×1.5 + docs/test-reports/BL-069-staging-spot-check.md + signoff doc + status reverifying → done
-- 8 决策点 5/17 全 lock + spec drift 自决 3 项 (F001 v1 prompt 超 ceiling→v2 裁剪 / F002 Product.id cuid / Product.category 单字段 mapper wrap) + 用户决策 ack F003 option B 新建 brief/CampaignForm + F005 option B 复用 createCampaignRecord + auto-name option A + F006 inline 修 BL-067-F006 CI flaky (mockSmartMatch case 1+6) + F006 brief-flow e2e cases 3/4/5 skip CI (BL-068-F006 同 server-action mock 限制)
+## 🔧 BL-069-brief-page-merge FIXING（7/7 Generator portion done, fix_rounds=0, spec=cf2fdab, Reviewer 首轮验收 FAIL）
+- ✅ 首轮通过项：staging sha=ec26ba6 对齐；`/brief` AI parse dogfood 14 applied + 3 unparsable；`brief -> submit -> /match?campaignId=` 真链路通过；`scripts/bl069-cost-audit.ts --hours=24` = 15/18 = 83.33% PASS
+- ❌ Blocker B1（High）：legacy redirect HTTP 状态码与 spec 不符。登录态真实请求均为 `302`，不是 spec 要求的 `301`：`/knowledge-base` → `/brief?tab=products`、`/knowledge-base/[productId]` → `/brief?tab=products&productId=...`、`/campaigns/new` → `/brief?action=new`
+- ❌ Blocker B2（Medium）：cap 满模拟未完成。当前 staging/仓库没有 reviewer 可安全执行的注入开关或文档化步骤，只看到单测 mock 覆盖
+- 📄 Reviewer 报告：`docs/test-reports/BL-069-staging-spot-check.md`；下一轮 Generator 需先裁决 redirect 语义（实现改 301 或 spec 改 302）并补 staging-only cap 模拟路径，再切 `reverifying`
 ## ✅ BL-068-conversational-refine DONE（7/7, fix_rounds=3, signoff=BL-068-signoff-2026-05-17.md, 24h parse gate 16/20=80% PASS, deduped 35% LLM noise tolerated via server fallback）
 ## ✅ BL-067-explainability-c3 DONE（7/7 + fix-round 1 + signoff 2026-05-16, prod redeploy 待用户 ack 时间窗 deploy-prod.sh 已含 --webpack 防御）
 - 3 项 P5 裁决: §1 5 cat→3 cat 降级 (staging seed gap → BL-070 backlog) / §5 perf 留 dogfood / §8 真 24h soak 加速省略
@@ -25,5 +25,5 @@ type: project
 1. 5/17 第一次 weekly growth-curve check（重跑 BL-061 F003 SQL）
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 ## 角色 / Backlog
-- BL-069 verifying: role_assignments=null 默认映射 (cli=johnsong generator portion done / codex=evaluator 接手 dogfood + signoff); 历史 BL-066: planner=johnsong/generator=Kimi/evaluator=Reviewer
-- Phase 3 全 DONE ✅ / Phase 4 BL-069 verifying ⏳ (BL-070 后续 Insight unify + 二次清理) / 距对外上线 ~5 周
+- BL-069 fixing: role_assignments=null 默认映射 (cli=johnsong 接手修复 / codex=Reviewer 待下轮 reverifying)；历史 BL-066: planner=johnsong/generator=Kimi/evaluator=Reviewer
+- Phase 3 全 DONE ✅ / Phase 4 BL-069 fixing 🔧 (BL-070 后续 Insight unify + 二次清理) / 距对外上线 ~5 周
