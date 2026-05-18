@@ -905,6 +905,12 @@
       "sea": "Sudeste asiático",
       "cn": "China continental",
       "latam": "LATAM"
+    },
+    "submitErrors": {
+      "unauthorized": "Por favor inicia sesión de nuevo para crear una campaña.",
+      "validationFailed": "Selecciona un producto antes de enviar.",
+      "productNotFound": "El producto seleccionado ya no está disponible — elige otro.",
+      "internalError": "No se pudo crear la campaña. Inténtalo de nuevo."
     }
   },
   "campaigns": {

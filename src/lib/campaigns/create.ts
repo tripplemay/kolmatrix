@@ -9,6 +9,8 @@
  * spec §F004. event_log receives a `campaign.created` row
  * (fire-and-forget — failures there don't roll back the campaign).
  */
+import type { Prisma } from "@prisma/client";
+
 import { withTenant } from "@/lib/db";
 import { logEvent } from "@/lib/events/log";
 
@@ -16,6 +18,24 @@ import type { CreateCampaignInput } from "./schema";
 
 export interface CreateCampaignResult {
   id: string;
+}
+
+/**
+ * BL-069-F005 extension fields. Optional — BL-066 callers (Server
+ * Action + /api/campaigns) pass `CreateCampaignInput` unchanged and
+ * land in the back-compat path (budgetCurrency="USD", no briefMeta).
+ */
+export interface CreateCampaignExtras {
+  /** ISO-4217 three-letter currency code. Defaults to "USD" (BL-066
+   *  back-compat) when omitted; brief parser passes "CNY"/"JPY"/etc. */
+  budgetCurrency?: string;
+  /** Free-form brief metadata stashed in kpi_target JSON. F005 uses
+   *  this to persist the LLM-parsed targetAudience + categories that
+   *  Campaign schema doesn't have dedicated columns for. */
+  briefMeta?: {
+    targetAudience?: string;
+    categories?: string[];
+  };
 }
 
 export class CampaignCreateError extends Error {
@@ -32,7 +52,8 @@ export class CampaignCreateError extends Error {
 
 export async function createCampaignRecord(
   tenantId: string,
-  input: CreateCampaignInput
+  input: CreateCampaignInput,
+  extras: CreateCampaignExtras = {}
 ): Promise<CreateCampaignResult> {
   try {
     const campaign = await withTenant(tenantId, async (tx) => {
@@ -54,6 +75,22 @@ export async function createCampaignRecord(
         );
       }
 
+      // kpi_target JSON — merges BM2's `brief` slot (free-text KPI
+      // brief) with the BL-069-F005 extras (targetAudience + categories
+      // from the LLM brief parser). Prisma wants the whole field
+      // omitted (rather than set to null) when no keys would land, so
+      // we accumulate keys into `kpiBuilder` (mutable record) and cast
+      // to InputJsonValue at assignment time.
+      const kpiBuilder: Record<string, unknown> = {};
+      if (input.kpiTarget != null) kpiBuilder.brief = input.kpiTarget;
+      if (extras.briefMeta?.targetAudience) {
+        kpiBuilder.targetAudience = extras.briefMeta.targetAudience;
+      }
+      if (extras.briefMeta?.categories && extras.briefMeta.categories.length > 0) {
+        kpiBuilder.categories = extras.briefMeta.categories;
+      }
+      const kpiPayload = kpiBuilder as Prisma.InputJsonValue;
+
       return tx.campaign.create({
         data: {
           tenantId,
@@ -65,19 +102,15 @@ export async function createCampaignRecord(
             input.budgetAmount == null
               ? null
               : input.budgetAmount.toFixed(2),
-          budgetCurrency: "USD",
+          budgetCurrency: extras.budgetCurrency ?? "USD",
           startDate: input.startDate,
           endDate: input.endDate,
           ownerUserId: input.ownerUserId,
           game: input.game,
           markets: input.markets,
-          // kpi_target is JSONB; stash the free-text brief under a
-          // stable key so future structured targets can land next to it
-          // without a schema migration. Prisma wants the field omitted
-          // when empty rather than set to null (NullableJsonNullValue).
-          ...(input.kpiTarget == null
+          ...(Object.keys(kpiBuilder).length === 0
             ? {}
-            : { kpiTarget: { brief: input.kpiTarget } }),
+            : { kpiTarget: kpiPayload }),
         },
         select: { id: true },
       });

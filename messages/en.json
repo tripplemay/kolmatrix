@@ -905,6 +905,12 @@
       "sea": "Southeast Asia",
       "cn": "Mainland China",
       "latam": "LATAM"
+    },
+    "submitErrors": {
+      "unauthorized": "Please sign in again to create a campaign.",
+      "validationFailed": "Please pick a product before submitting.",
+      "productNotFound": "Selected product is no longer available — pick another.",
+      "internalError": "Could not create the campaign. Please try again."
     }
   },
   "campaigns": {

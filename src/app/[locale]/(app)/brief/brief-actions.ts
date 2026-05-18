@@ -56,6 +56,14 @@ import { runAigcAction, AiDailyCostExceededError } from "@/lib/aigc/run-action";
 import { wrapUserInput } from "@/lib/ai/xml-escape";
 import { checkLlmCostBudget } from "@/lib/ai/cost-cap";
 import { logAudit } from "@/lib/audit/log";
+import {
+  createCampaignRecord,
+  CampaignCreateError,
+} from "@/lib/campaigns/create";
+import {
+  CAMPAIGN_MARKETS,
+  type CampaignMarket,
+} from "@/lib/campaigns/schema";
 import { withTenant } from "@/lib/db";
 import { rateLimitBatchSend } from "@/lib/rate-limit-batch";
 
@@ -459,4 +467,193 @@ function validateIsoDate(d: unknown): string | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return null;
   const parsed = new Date(d);
   return isNaN(parsed.getTime()) ? null : d;
+}
+
+// ---------------------------------------------------------------------------
+// BL-069-F005 · createCampaignFromBriefAction
+// ---------------------------------------------------------------------------
+
+/**
+ * Input shape from the BriefPageClient submit handler — mirrors the
+ * `ParsedBriefFields` returned by `parseBriefAction` PLUS an optional
+ * user-edited `name`. The form lets the user override every parsed
+ * field before submit, so the action treats the input as authoritative
+ * and does NOT re-call the LLM.
+ */
+export interface CreateCampaignFromBriefInput {
+  /** Optional user-typed name. Empty/whitespace → auto-generate from
+   *  product name + first market (user ack option A 2026-05-18). */
+  name?: string;
+  productId: string;
+  markets: string[];
+  budget: { amount: number; currency: string } | null;
+  startDate: string | null;
+  endDate: string | null;
+  targetAudience: string;
+  categories: string[];
+}
+
+export type CreateCampaignFromBriefError =
+  | "unauthorized"
+  | "validation_failed"
+  | "product_not_found"
+  | "internal_error";
+
+export type CreateCampaignFromBriefResult =
+  | { ok: true; campaignId: string }
+  | { ok: false; error: CreateCampaignFromBriefError };
+
+const NAME_MAX_LEN = 80;
+const CURRENCY_RE = /^[A-Z]{3}$/;
+
+/**
+ * Persist a campaign created via the AI brief flow. Reuses
+ * `createCampaignRecord` (BM2-F004 sediment) so tenant scoping +
+ * product validation + event_log are identical to /campaigns/new,
+ * while routing brief-specific fields (target_audience, categories,
+ * non-USD budgetCurrency) through the F005 `extras` channel that
+ * stashes them in the `kpi_target` JSON column (0 schema migration).
+ *
+ * Per spec §F005:
+ *   - On success, returns `{ ok: true, campaignId }`; caller
+ *     (BriefPageClient) router.push("/match?campaignId=:id") so the
+ *     /match mount triggers the BL-067 F005 pre-warm worker.
+ *   - On failure, returns `{ ok: false, error }` and the client
+ *     surfaces a toast; the form stays usable.
+ */
+export async function createCampaignFromBriefAction(
+  input: CreateCampaignFromBriefInput,
+): Promise<CreateCampaignFromBriefResult> {
+  // 1. Session auth
+  const session = await auth();
+  const tenantId = session?.user?.tenantId;
+  const userId = session?.user?.id;
+  if (!tenantId || !UUID_RE.test(tenantId) || !userId || !UUID_RE.test(userId)) {
+    return { ok: false, error: "unauthorized" };
+  }
+
+  // 2. Input validation — productId is required + non-empty; markets
+  // get normalised to the CAMPAIGN_MARKETS enum (LLM returns uppercase
+  // "SEA"/"JP" while the enum is lowercase).
+  if (typeof input.productId !== "string" || input.productId.length === 0) {
+    return { ok: false, error: "validation_failed" };
+  }
+  if (input.productId.length > 64) {
+    return { ok: false, error: "validation_failed" };
+  }
+  const normalizedMarkets = (input.markets ?? [])
+    .filter((m): m is string => typeof m === "string")
+    .map((m) => m.toLowerCase())
+    .filter((m): m is CampaignMarket =>
+      (CAMPAIGN_MARKETS as readonly string[]).includes(m),
+    );
+
+  // 3. Look up the product name now so we can auto-generate a campaign
+  // name when the user left the field blank. Cross-tenant access is
+  // blocked by RLS; missing or soft-deleted product → product_not_found.
+  let productName: string;
+  try {
+    const product = await withTenant(tenantId, (tx) =>
+      tx.product.findFirst({
+        where: { id: input.productId, deletedAt: null },
+        select: { name: true },
+      }),
+    );
+    if (!product) {
+      return { ok: false, error: "product_not_found" };
+    }
+    productName = product.name;
+  } catch (err) {
+    console.error("[createCampaignFromBriefAction] product lookup failed:", err);
+    return { ok: false, error: "internal_error" };
+  }
+
+  // 4. Resolve campaign name (user input > auto-generated).
+  const trimmedName = input.name?.trim() ?? "";
+  const autoName = `${productName} — ${(normalizedMarkets[0] ?? "global").toUpperCase()}`;
+  const finalName = (trimmedName.length > 0 ? trimmedName : autoName).slice(
+    0,
+    NAME_MAX_LEN,
+  );
+
+  // 5. Coerce ISO dates → Date | undefined (createCampaignRecord
+  // tolerates undefined for both endpoints).
+  const startDateObj =
+    input.startDate && /^\d{4}-\d{2}-\d{2}$/.test(input.startDate)
+      ? new Date(input.startDate)
+      : undefined;
+  const endDateObj =
+    input.endDate && /^\d{4}-\d{2}-\d{2}$/.test(input.endDate)
+      ? new Date(input.endDate)
+      : undefined;
+  // Reject invalid Date objects (NaN getTime) silently — leave both
+  // unset rather than persist garbage; UX-wise this matches BL-068's
+  // silent-fallback ethos (§5 不变量 #4).
+  const safeStart =
+    startDateObj && !isNaN(startDateObj.getTime()) ? startDateObj : undefined;
+  const safeEnd =
+    endDateObj && !isNaN(endDateObj.getTime()) ? endDateObj : undefined;
+
+  // 6. Validate currency code; budgetAmount must be > 0 to count.
+  const currency =
+    input.budget &&
+    typeof input.budget.amount === "number" &&
+    input.budget.amount > 0 &&
+    typeof input.budget.currency === "string" &&
+    CURRENCY_RE.test(input.budget.currency.toUpperCase())
+      ? input.budget.currency.toUpperCase()
+      : undefined;
+  const budgetAmount =
+    input.budget && typeof input.budget.amount === "number" && input.budget.amount > 0
+      ? input.budget.amount
+      : undefined;
+
+  // 7. Dedupe + clamp categories; targetAudience already validated by
+  // F002 parser but defensive-clamp anyway.
+  const dedupedCategories = Array.from(
+    new Set(
+      (input.categories ?? []).filter(
+        (c): c is string => typeof c === "string" && c.length > 0,
+      ),
+    ),
+  );
+  const trimmedAudience =
+    typeof input.targetAudience === "string"
+      ? input.targetAudience.slice(0, 500)
+      : "";
+
+  // 8. Delegate to BM2 sediment + F005 extras channel.
+  try {
+    const result = await createCampaignRecord(
+      tenantId,
+      {
+        name: finalName,
+        productId: input.productId,
+        budgetAmount,
+        startDate: safeStart,
+        endDate: safeEnd,
+        game: undefined,
+        markets: normalizedMarkets,
+        kpiTarget: undefined,
+        ownerUserId: userId,
+      },
+      {
+        budgetCurrency: currency,
+        briefMeta: {
+          targetAudience: trimmedAudience || undefined,
+          categories: dedupedCategories,
+        },
+      },
+    );
+    return { ok: true, campaignId: result.id };
+  } catch (err) {
+    if (err instanceof CampaignCreateError) {
+      if (err.code === "product_not_found") {
+        return { ok: false, error: "product_not_found" };
+      }
+      return { ok: false, error: "internal_error" };
+    }
+    console.error("[createCampaignFromBriefAction] createCampaignRecord:", err);
+    return { ok: false, error: "internal_error" };
+  }
 }

@@ -81,7 +81,8 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "pending",
+    "status": "completed",
+    "completion_notes": "决策点 (用户 5/18 ack option B + auto-name option A): brief-actions.ts 新建 createCampaignFromBriefAction 复用 createCampaignRecord 沉淀, kpiTarget JSON stash {brief, targetAudience, categories} 0 schema migration. createCampaignRecord 加 optional 3rd 参 CreateCampaignExtras {budgetCurrency?, briefMeta?} (back-compat BL-066 callers 不变). BriefPageClient onSubmit stub → 真 createCampaignFromBriefAction 调用 + router.push(/{locale}/match?campaignId=...) 成功后 / submitError state + brief-submit-error banner 失败时. auto-name 规则: 用户填名 → 用; 留空 → '{productName} — {markets[0].toUpperCase()}'. i18n brief.submitErrors.{unauthorized,validationFailed,productNotFound,internalError} 4 keys × 5 locale = 20 entries. 单测: brief-create-campaign.test.ts 5 case (success + auto-name + user-typed name override + unauthorized + product_not_found + db_error 5/5 PASS) + BriefPageClient.test.tsx 加 3 case (router.push success / product_not_found banner / 客户端 validation guard) 10/10 PASS. L1: lint 0 errors / tsc 0 / vitest brief+KB+campaigns+i18n 17 files 133 tests PASS. /match?campaignId mount 已 wire BL-067 F005 prewarm (不动 BL-066/067 实装). F005 含运行时代码 + Campaign budgetCurrency 字段从硬编码升级 → staging deploy 5 步硬要求.",
     "acceptance": [
       "F003 CampaignForm 提交流程 server action `createCampaignFromBriefAction({ productId, markets, budget, dates, target_audience })`（新建在 brief-actions.ts 或 reuse BL-066 现有 createCampaignAction，必要时扩字段 + 同 commit 加 migration）",
       "成功 → router.push(`/match?campaignId=${newCampaign.id}`) (client component, 用 next/navigation)",

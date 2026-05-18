@@ -905,6 +905,12 @@
       "sea": "东南亚",
       "cn": "中国大陆",
       "latam": "拉美"
+    },
+    "submitErrors": {
+      "unauthorized": "登录已过期，请重新登录后创建活动。",
+      "validationFailed": "请先选择产品再提交。",
+      "productNotFound": "所选产品已下架，请选择其他产品。",
+      "internalError": "活动创建失败，请重试。"
     }
   },
   "campaigns": {

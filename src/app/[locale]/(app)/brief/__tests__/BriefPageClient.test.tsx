@@ -19,9 +19,17 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const pushMock = vi.fn();
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: pushMock, refresh: vi.fn() }),
+}));
+
 const parseBriefMock = vi.fn();
+const createCampaignFromBriefMock = vi.fn();
 vi.mock("../brief-actions", () => ({
   parseBriefAction: (...args: unknown[]) => parseBriefMock(...args),
+  createCampaignFromBriefAction: (...args: unknown[]) =>
+    createCampaignFromBriefMock(...args),
 }));
 
 const { BriefPageClient } = await import("../BriefPageClient");
@@ -76,6 +84,13 @@ const MARKET_LABELS = {
   latam: "LATAM",
 };
 
+const SUBMIT_ERROR_LABELS = {
+  unauthorized: "Please sign in again.",
+  validationFailed: "Pick a product first.",
+  productNotFound: "Product not found.",
+  internalError: "Could not create campaign.",
+};
+
 function renderClient() {
   return render(
     <BriefPageClient
@@ -84,6 +99,7 @@ function renderClient() {
       aiLabels={AI_LABELS}
       formLabels={FORM_LABELS}
       marketLabels={MARKET_LABELS}
+      submitErrorLabels={SUBMIT_ERROR_LABELS}
     />,
   );
 }
@@ -97,6 +113,8 @@ async function submitBrief(text: string) {
 
 beforeEach(() => {
   parseBriefMock.mockReset();
+  createCampaignFromBriefMock.mockReset();
+  pushMock.mockReset();
 });
 
 afterEach(() => {
@@ -308,5 +326,59 @@ describe("BL-069-F003 BriefPageClient", () => {
     });
     // Plain unparsable toast must NOT also render.
     expect(screen.queryByTestId("brief-ai-toast-unparsable")).toBeNull();
+  });
+
+  it("8. submit success → createCampaignFromBriefAction called + router.push to /match (F005)", async () => {
+    createCampaignFromBriefMock.mockResolvedValue({
+      ok: true,
+      campaignId: "newcamp-aaaa-bbbb-cccc-ddddeeeeffff",
+    });
+    renderClient();
+    // Pick a product so client-side guard passes.
+    fireEvent.change(screen.getByTestId("brief-product-select"), {
+      target: { value: PRODUCTS[0].id },
+    });
+    // Fire the submit button (form onSubmit).
+    fireEvent.click(screen.getByTestId("brief-submit"));
+    await waitFor(() => {
+      expect(createCampaignFromBriefMock).toHaveBeenCalledTimes(1);
+    });
+    // router.push to /en/match?campaignId=... was invoked.
+    expect(pushMock).toHaveBeenCalledWith(
+      "/en/match?campaignId=newcamp-aaaa-bbbb-cccc-ddddeeeeffff",
+    );
+    // No submit-error banner rendered.
+    expect(screen.queryByTestId("brief-submit-error")).toBeNull();
+  });
+
+  it("9. submit fail (product_not_found) → error banner + no router.push (F005)", async () => {
+    createCampaignFromBriefMock.mockResolvedValue({
+      ok: false,
+      error: "product_not_found",
+    });
+    renderClient();
+    fireEvent.change(screen.getByTestId("brief-product-select"), {
+      target: { value: PRODUCTS[0].id },
+    });
+    fireEvent.click(screen.getByTestId("brief-submit"));
+    await waitFor(() => {
+      expect(screen.getByTestId("brief-submit-error")).toHaveTextContent(
+        "Product not found.",
+      );
+    });
+    expect(pushMock).not.toHaveBeenCalled();
+  });
+
+  it("10. submit without product → inline validation error, no action call (F005)", async () => {
+    renderClient();
+    // No product picked. Submit triggers client-side guard.
+    fireEvent.click(screen.getByTestId("brief-submit"));
+    await waitFor(() => {
+      expect(screen.getByTestId("brief-submit-error")).toHaveTextContent(
+        "Pick a product first.",
+      );
+    });
+    expect(createCampaignFromBriefMock).not.toHaveBeenCalled();
+    expect(pushMock).not.toHaveBeenCalled();
   });
 });

@@ -65,6 +65,7 @@ export default async function BriefPage({ params, searchParams }: Props) {
   const tAi = await getTranslations("brief.aiInputBar");
   const tForm = await getTranslations("brief.form");
   const tMarkets = await getTranslations("brief.markets");
+  const tSubmit = await getTranslations("brief.submitErrors");
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 pb-16">
@@ -160,6 +161,12 @@ export default async function BriefPage({ params, searchParams }: Props) {
             sea: tMarkets("sea"),
             cn: tMarkets("cn"),
             latam: tMarkets("latam"),
+          }}
+          submitErrorLabels={{
+            unauthorized: tSubmit("unauthorized"),
+            validationFailed: tSubmit("validationFailed"),
+            productNotFound: tSubmit("productNotFound"),
+            internalError: tSubmit("internalError"),
           }}
         />
       )}

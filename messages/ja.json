@@ -905,6 +905,12 @@
       "sea": "東南アジア",
       "cn": "中国本土",
       "latam": "中南米"
+    },
+    "submitErrors": {
+      "unauthorized": "セッション切れです。再ログイン後にキャンペーンを作成してください。",
+      "validationFailed": "送信前にプロダクトを選択してください。",
+      "productNotFound": "選択したプロダクトは利用できません。別のものを選んでください。",
+      "internalError": "キャンペーンの作成に失敗しました。再試行してください。"
     }
   },
   "campaigns": {
