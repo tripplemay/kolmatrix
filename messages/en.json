@@ -227,6 +227,7 @@
     }
   },
   "knowledgeBase": {
+    "_deprecated_by_BL-069": "BL-069-F006 redirects /knowledge-base → /brief?tab=products. Strings stay live so the embedded ProductsClient still renders; BL-070 二次清理 will delete this namespace + the /knowledge-base route altogether.",
     "breadcrumbRoot": "Products",
     "breadcrumbCurrent": "Knowledge Base",
     "title": "Product Knowledge Base",
@@ -1207,6 +1208,7 @@
       }
     },
     "new": {
+      "_deprecated_by_BL-069": "BL-069-F006 redirects /campaigns/new → /brief?action=new. The BM2 CampaignForm strings live so the legacy route still works during deploy; BL-070 二次清理 will delete /campaigns/new + this namespace.",
       "title": "New Campaign",
       "subtitle": "Register a launch so you can invite creators and track its ROI.",
       "backToList": "Back to Campaigns",

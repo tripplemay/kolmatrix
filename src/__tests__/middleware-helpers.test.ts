@@ -60,8 +60,29 @@ describe("resolveIaRefactorRedirect — BL-064-F002", () => {
     expect(resolveIaRefactorRedirect("/dashboard")).toBe("/insight");
     expect(resolveIaRefactorRedirect("/discovery")).toBe("/match");
     expect(resolveIaRefactorRedirect("/database")).toBe("/match");
-    expect(resolveIaRefactorRedirect("/knowledge-base")).toBe("/brief");
+    // BL-069-F006 upgraded the bare KB redirect to include `?tab=products`
+    // so the new /brief layout doesn't surprise users who bookmarked KB.
+    expect(resolveIaRefactorRedirect("/knowledge-base")).toBe(
+      "/brief?tab=products"
+    );
     expect(resolveIaRefactorRedirect("/outreach")).toBe("/reach");
+  });
+
+  it("BL-069-F006 — KB deep-link preserves productId on redirect", () => {
+    // Product.id is cuid; the `[productId]` rule encodes the segment so
+    // a future cuid that contains `&` / `=` can't break the query.
+    expect(
+      resolveIaRefactorRedirect("/knowledge-base/cprod1111111111111111")
+    ).toBe("/brief?tab=products&productId=cprod1111111111111111");
+    expect(resolveIaRefactorRedirect("/knowledge-base/foo")).toBe(
+      "/brief?tab=products&productId=foo"
+    );
+  });
+
+  it("BL-069-F006 — /campaigns/new now redirects to /brief?action=new", () => {
+    expect(resolveIaRefactorRedirect("/campaigns/new")).toBe(
+      "/brief?action=new"
+    );
   });
 
   it("BL-064-F005 fix-round-2 — analytics sub-routes are kept (not redirected)", () => {
@@ -80,14 +101,15 @@ describe("resolveIaRefactorRedirect — BL-064-F002", () => {
     expect(resolveIaRefactorRedirect("/outreach/suppression")).toBeNull();
     expect(resolveIaRefactorRedirect("/outreach/tracking")).toBeNull();
     expect(resolveIaRefactorRedirect("/dashboard/anything")).toBeNull();
+    // BL-069-F006 restricted the KB deep-link rule to a SINGLE segment
+    // after `/knowledge-base/`; multi-segment paths still fall through
+    // to null (they were never valid KB routes anyway).
     expect(resolveIaRefactorRedirect("/knowledge-base/foo/bar")).toBeNull();
   });
 
-  it("handles /campaigns family per spec §4 #B + BL-066-F008 fix-round (all kept now)", () => {
+  it("handles /campaigns family — list + [id] still kept (BL-066-F008)", () => {
     // /campaigns list — kept (BL-066 wires /match view=campaigns)
     expect(resolveIaRefactorRedirect("/campaigns")).toBeNull();
-    // /campaigns/new — kept (BL-069 wires /brief form)
-    expect(resolveIaRefactorRedirect("/campaigns/new")).toBeNull();
     // BL-066-F008 — /campaigns/[id] redirect removed; F002 wired the
     // three-section renderer back on, F008 closes the redirect loop.
     expect(resolveIaRefactorRedirect("/campaigns/abc-123")).toBeNull();

@@ -33,8 +33,21 @@ const REDIRECT_CASES: Array<{ from: string; expect: RegExp; note?: string }> = [
   { from: "/dashboard", expect: /\/insight(\/|\?|$)/ },
   { from: "/discovery", expect: /\/match(\/|\?|$)/ },
   { from: "/database", expect: /\/match(\/|\?|$)/ },
-  { from: "/knowledge-base", expect: /\/brief(\/|\?|$)/ },
+  // BL-069-F006 upgraded the KB redirects to land directly on the
+  // products tab so users hit the migrated UI (F004 ProductListPanel)
+  // rather than the AI brief form that F003 mounts at /brief root.
+  { from: "/knowledge-base", expect: /\/brief\?tab=products/ },
+  {
+    from: "/knowledge-base/cprod1111111111111111",
+    expect: /\/brief\?tab=products&productId=cprod1111111111111111/,
+    note: "BL-069-F006 deep-link",
+  },
   { from: "/outreach", expect: /\/reach(\/|\?|$)/ },
+  // BL-069-F006 — /campaigns/new now redirects to /brief?action=new
+  // (was kept under BL-064). The brief form replaces the legacy create-
+  // campaign route; `action=new` is a reserved hint for a future
+  // "skip-AI / open empty form" affordance.
+  { from: "/campaigns/new", expect: /\/brief\?action=new/ },
   // BL-066-F008 — /campaigns/[id] redirect removed (F002 wired the
   // three-section renderer; the prior 302→/match?campaignId=:id stub
   // is no longer needed). Moved to KEPT_PATHS below.
@@ -75,7 +88,8 @@ test.describe("BL-064 — sub-routes intentionally NOT redirected (Adjudication 
     // weekly-report / analytics). See src/middleware-helpers.ts for
     // the deferred-to-batch mapping.
     "/campaigns",
-    "/campaigns/new",
+    // BL-069-F006 removed /campaigns/new from KEPT_PATHS — it now
+    // 302s to /brief?action=new (see REDIRECT_CASES above).
     // BL-066-F008 — /campaigns/[id] previously 302→/match?campaignId=:id
     // under BL-064; F002 wired the three-section renderer back on +
     // F008 removed the redirect rule so users actually land on the new

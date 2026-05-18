@@ -3,8 +3,8 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔨 BL-069-brief-page-merge BUILDING（5/7, fix_rounds=0, spec=cf2fdab, role_assignments=null 默认映射）
-- ✅ F001 action=cmp9wbt7q05xjbno11fuoim9l v2 ✅ F002 brief-actions.ts 11 步 ✅ F003 /brief layout ✅ F004 ProductListPanel + deep link ✅ F005 createCampaignFromBriefAction (复用 createCampaignRecord + 加 CreateCampaignExtras {budgetCurrency, briefMeta}, 0 schema migration via kpiTarget JSON stash; auto-name '{productName} — {market[0]}'; router.push /{locale}/match?campaignId=:id 成功后; submitError banner 失败) + 5 单测 + i18n 4 submitErrors keys 5 locale → F006 redirect 3 条 + i18n 老 KB 加 _deprecated_by_BL-069 + e2e 6 case (6h) → F007 staging + cost 监控 + signoff (4h)
+## 🔨 BL-069-brief-page-merge BUILDING（6/7, fix_rounds=0, spec=cf2fdab, role_assignments=null 默认映射）
+- ✅ F001 ✅ F002 ✅ F003 ✅ F004 ✅ F005 createCampaignFromBriefAction + auto-name + router.push ✅ F006 middleware 3 条 redirect (/knowledge-base → ?tab=products / /knowledge-base/[id] → ?tab=products&productId / /campaigns/new → ?action=new) + i18n 5 locale knowledgeBase+campaigns.new _deprecated_by_BL-069 marker + tests/e2e/brief-flow.spec.ts 6 case + middleware-helpers.test.ts 12 case + ia-refactor-redirects e2e 加 3 case → F007 staging + 视觉 baseline regen (4 png: en-brief, en-brief-products, en-knowledge-base 重生, en-knowledge-base-bottom) + 24h cost 监控 + signoff (4h, 混合 generator infra + codex 责 dogfood/signoff)
 - 8 决策点 5/17 全 lock：#1 ready-to-build / #2 完全 redirect 301 / #3 表单字段 + KOL prewarm / #4 表单 + 顶部 AI input bar / #5 全复用 v0.9.22 基础设施 / #6 product list 内嵌 + ?tab=products / #7 toast unparsable + 保留空表单 / #8 audit log raw brief
 - 复用 v0.9.22 沉淀：runAigcAction SDK + checkLlmCostBudget + prompt v3 自检 § + silent fallback + 5 locale + dedupe-then-validate；F001 cost=$0.0046/call；5 用户 day + 5 prewarm = $1.75 meter (35% cap)
 - F001+F002+F003 spec drift 自决 3 项 (F001 v1 prompt 超 ceiling→v2 裁剪 / F002 Product.id 是 cuid / Product.category 单字段→mapper wrap) + F003 用户 5/18 ack option B 新建 brief/CampaignForm 而非 git mv，forwardRef+useImperativeHandle 解耦 onParsed wire

@@ -100,7 +100,8 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 6.0,
-    "status": "pending",
+    "status": "completed",
+    "completion_notes": "middleware-helpers.ts IA_REDIRECT_RULES 升级: /knowledge-base → /brief?tab=products (BL-064 现 → /brief 升级带 query) + 新加 /knowledge-base/[productId] regex 单段 capture → /brief?tab=products&productId=:id (encodeURIComponent 防特殊字符) + 新加 /campaigns/new → /brief?action=new (BL-064 时 kept, F006 wire). 顺序: deep-link rule 在 bare rule 之前 (more-specific first). middleware-helpers.test.ts 12 case PASS (含新 KB deep-link + /campaigns/new redirect + KB 子路径 /foo/bar 仍 null). tests/e2e/ia-refactor-redirects.spec.ts REDIRECT_CASES 加 3 条 (KB bare + KB deep-link + campaigns/new), KEPT_PATHS 移除 /campaigns/new. i18n 5 locale knowledgeBase._deprecated_by_BL-069 + campaigns.new._deprecated_by_BL-069 marker 各 5 文本翻译 (en/zh/ja/ko/es) — i18n-locale-coverage parity 8/8 PASS (markers 各 locale 不同字面). 新 tests/e2e/brief-flow.spec.ts 6 case (1. 默认 tab 渲 BriefAiInputBar + CampaignForm / 2. ?tab=products 渲 ProductListPanel / 3. Generate success → form fields auto-filled + success toast / 4. Generate unparsable → toast + form empty / 5. Submit → router.push /match?campaignId / 6. /knowledge-base + /campaigns/new redirect 验). L1 PASS: lint 0 errors / tsc 0 / vitest 18 files 145 tests (middleware 12 + brief 20 + KB 16 + campaigns 27 + i18n 8 + ...). F006 含运行时 middleware 改动 → staging deploy 5 步硬要求.",
     "acceptance": [
       "**老路由 redirect（per 决策点 #2 完全 301 redirect）**：(1) /knowledge-base → /brief?tab=products / (2) /knowledge-base/[productId] → /brief?tab=products&productId=xxx (保 deep link) / (3) /campaigns/new → /brief?action=new",
       "middleware-helpers.ts 加 3 条 REDIRECT_RULES + `src/__tests__/middleware-helpers.test.ts` 同步加 case",

@@ -227,6 +227,7 @@
     }
   },
   "knowledgeBase": {
+    "_deprecated_by_BL-069": "BL-069-F006 で /knowledge-base → /brief?tab=products にリダイレクト。埋め込みの ProductsClient がレンダリングするため文字列は残置；BL-070 二次清理で本ネームスペースと /knowledge-base ルートを削除予定。",
     "breadcrumbRoot": "製品",
     "breadcrumbCurrent": "ナレッジベース",
     "title": "製品ナレッジベース",
@@ -976,6 +977,7 @@
       "body": "フィルターをクリアするか、検索範囲を広げてみてください。"
     },
     "new": {
+      "_deprecated_by_BL-069": "BL-069-F006 で /campaigns/new → /brief?action=new にリダイレクト。デプロイ期間中も旧ルートが動作するよう BM2 CampaignForm の文字列は残置；BL-070 二次清理で /campaigns/new と本ネームスペースを削除予定。",
       "title": "新しいキャンペーン",
       "subtitle": "キャンペーンを登録すると、クリエイターを招待し、ROIを追跡できます。",
       "backToList": "キャンペーン一覧に戻る",

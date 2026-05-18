@@ -106,7 +106,24 @@ const IA_REDIRECT_RULES: ReadonlyArray<IaRedirectRule> = [
   { pattern: /^\/dashboard$/, resolve: () => "/insight" },
   { pattern: /^\/discovery$/, resolve: () => "/match" },
   { pattern: /^\/database$/, resolve: () => "/match" },
-  { pattern: /^\/knowledge-base$/, resolve: () => "/brief" },
+  // BL-069-F006 — KB now redirects with the `?tab=products` query
+  // string so the brand-new /brief layout (BriefAiInputBar +
+  // CampaignForm) doesn't hijack users who bookmarked the legacy KB.
+  // Order matters: the `[productId]` deep-link rule must match before
+  // the bare `/knowledge-base` rule (more specific first), and we
+  // restrict the id segment to a single path piece so multi-segment
+  // sub-paths (/knowledge-base/foo/bar) still fall through to null.
+  {
+    pattern: /^\/knowledge-base\/([^/]+)$/,
+    resolve: (m) =>
+      `/brief?tab=products&productId=${encodeURIComponent(m[1] ?? "")}`,
+  },
+  { pattern: /^\/knowledge-base$/, resolve: () => "/brief?tab=products" },
+  // BL-069-F006 — /campaigns/new now lands on the AI-driven /brief
+  // form. The `action=new` query hint is reserved for a future
+  // "skip-AI / open empty form directly" affordance (Phase 5 candidate);
+  // the brief page renders the same CampaignForm regardless today.
+  { pattern: /^\/campaigns\/new$/, resolve: () => "/brief?action=new" },
   { pattern: /^\/outreach$/, resolve: () => "/reach" },
 ];
 

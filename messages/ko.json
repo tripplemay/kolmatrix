@@ -227,6 +227,7 @@
     }
   },
   "knowledgeBase": {
+    "_deprecated_by_BL-069": "BL-069-F006에서 /knowledge-base → /brief?tab=products로 리디렉션합니다. 임베드된 ProductsClient가 계속 렌더링되도록 문자열은 유지; BL-070 이차 정리에서 본 네임스페이스와 /knowledge-base 경로를 삭제할 예정입니다.",
     "breadcrumbRoot": "제품",
     "breadcrumbCurrent": "지식 베이스",
     "title": "제품 지식 베이스",
@@ -976,6 +977,7 @@
       "body": "필터를 초기화하거나 검색 범위를 넓혀보세요."
     },
     "new": {
+      "_deprecated_by_BL-069": "BL-069-F006에서 /campaigns/new → /brief?action=new로 리디렉션합니다. 배포 기간 동안 레거시 경로가 동작하도록 BM2 CampaignForm 문자열은 유지; BL-070 이차 정리에서 /campaigns/new와 본 네임스페이스를 삭제할 예정입니다.",
       "title": "새 캠페인",
       "subtitle": "캠페인을 등록하여 크리에이터를 초대하고 ROI를 추적할 수 있습니다.",
       "backToList": "캠페인 목록으로 돌아가기",

@@ -227,6 +227,7 @@
     }
   },
   "knowledgeBase": {
+    "_deprecated_by_BL-069": "BL-069-F006 redirige /knowledge-base → /brief?tab=products. Los textos permanecen para que el ProductsClient embebido siga renderizando; la limpieza secundaria BL-070 eliminará este espacio de nombres y la ruta /knowledge-base.",
     "breadcrumbRoot": "Productos",
     "breadcrumbCurrent": "Base de conocimientos",
     "title": "Base de conocimientos del producto",
@@ -976,6 +977,7 @@
       "body": "Intente borrar los filtros o ampliar la búsqueda."
     },
     "new": {
+      "_deprecated_by_BL-069": "BL-069-F006 redirige /campaigns/new → /brief?action=new. Los textos de BM2 CampaignForm permanecen para que la ruta legada funcione durante el despliegue; la limpieza secundaria BL-070 eliminará /campaigns/new y este espacio de nombres.",
       "title": "Nueva Campaña",
       "subtitle": "Registra un lanzamiento para invitar creadores y hacer seguimiento de su ROI.",
       "backToList": "Volver a Campañas",

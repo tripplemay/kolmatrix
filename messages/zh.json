@@ -227,6 +227,7 @@
     }
   },
   "knowledgeBase": {
+    "_deprecated_by_BL-069": "BL-069-F006 已将 /knowledge-base → /brief?tab=products 重定向。文案保留以让嵌入式 ProductsClient 继续渲染；BL-070 二次清理将删除本命名空间和 /knowledge-base 路由。",
     "breadcrumbRoot": "产品",
     "breadcrumbCurrent": "知识库",
     "title": "产品知识库",
@@ -1207,6 +1208,7 @@
       }
     },
     "new": {
+      "_deprecated_by_BL-069": "BL-069-F006 已将 /campaigns/new → /brief?action=new 重定向。BM2 CampaignForm 文案保留以让旧路由在部署窗口期可用；BL-070 二次清理将删除 /campaigns/new 和本命名空间。",
       "title": "新建活动",
       "subtitle": "登记一次推广后即可邀请创作者并追踪 ROI。",
       "backToList": "返回活动列表",
