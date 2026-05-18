@@ -74,25 +74,36 @@ test.describe("BL-064 IA refactor redirects (302 default + BL-069 301)", () => {
       for (const { from, expect: expectRegex, status, note } of REDIRECT_CASES) {
         const label = `${from} → ${expectRegex} (${status}${note ? `, ${note}` : ""})`;
         test(label, async ({ page }) => {
-          // page.goto returns the response of the first request,
-          // which is the redirect itself when waitUntil:"commit" is
-          // set. Capture it so we can assert the HTTP status code
-          // (BL-069 fix-round 1 B1: spec §F006 requires 301 for the
-          // /knowledge-base + /campaigns/new family; everything else
+          // page.goto auto-follows redirects (its `response` is the
+          // FINAL 200, not the intermediate 30x). Use APIRequestContext
+          // with `maxRedirects: 0` to capture the actual redirect
+          // response so we can assert its status code + Location
+          // header (BL-069 fix-round 1 B1: spec §F006 requires 301
+          // for the /knowledge-base + /campaigns/new family; the rest
           // stays 302 per BL-064 §4 #C revert-flexibility default).
-          const response = await page.goto(`/${locale}${from}`, {
-            waitUntil: "commit",
-          });
-          expect(response, `no response for /${locale}${from}`).not.toBeNull();
-          expect(response!.status()).toBe(status);
+          const apiResponse = await page.context().request.get(
+            `/${locale}${from}`,
+            { maxRedirects: 0, failOnStatusCode: false },
+          );
+          expect(
+            apiResponse.status(),
+            `expected ${status} for /${locale}${from}`,
+          ).toBe(status);
+          const location = apiResponse.headers()["location"] ?? "";
+          expect(
+            location,
+            `Location header missing or mismatched for /${locale}${from}`,
+          ).toMatch(expectRegex);
+          expect(location).toContain(`/${locale}/`);
 
-          // Wait for final landing URL (the browser then follows the
-          // redirect to the new IA path).
+          // Then drive a real browser navigation so we also catch any
+          // regression that breaks the post-redirect render. page.goto
+          // follows the chain to the new IA path.
+          await page.goto(`/${locale}${from}`);
           await page.waitForURL((url) => {
             const path = url.pathname + url.search;
             return new RegExp(`^/${locale}`).test(path) && expectRegex.test(path);
           });
-          // Locale prefix must survive the redirect.
           expect(page.url()).toContain(`/${locale}/`);
         });
       }
