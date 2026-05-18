@@ -3,11 +3,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ✅ BL-069-brief-page-merge DONE（7/7, fix_rounds=1, signoff=BL-069-signoff-2026-05-18.md）
-- ✅ fix-round 1 复验通过：登录态 `/knowledge-base` / `/knowledge-base/[productId]` / `/campaigns/new` 均返回 `301`
-- ✅ cap 模拟通过：`BRIEF_FORCE_CAP_EXHAUSTED=true` 命中 toast + 空表单 + audit `forced=true`，清理后正常 parse 恢复
-- ✅ 24h parse gate：`17/21 = 80.95% PASS`
-- 📄 Signoff: docs/test-reports/BL-069-signoff-2026-05-18.md / Soft-watch S1: 24h gate 边际通过 80.95% 仅高出阈值 0.95%, 继续观察 (medium 触发即 prompt 调优或 follow-up)
+## 🔨 BL-070-reach-insight-cleanup BUILDING（0/8, fix_rounds=0, spec=0947d58, role_assignments=null 默认映射, 项目近期最后一批）
+- F001 /reach 路由 + Outreach 迁移 + Match→Reach 衔接 (12h) → F002 customize.ts + topic-cloud.ts 迁移 runAigcAction SDK v0.9.22 #6 (8h) → F003 /insight 路由 + Dashboard + Reports 合并 + 4 条 301 (10h) → F004 5 老路由目录 git rm + middleware redirect 删 (4h) → F005 6 BL-066 unmount 组件 + i18n deprecated keys 全删 (4h) → F006 4 路由 IA e2e suite 全量重写 (16h) → F007 视觉 baseline 全量 regen + reach/insight i18n 5 locale (6h) → F008 staging + prod deploy + 24h 监控 + 对外上线 12 项 checklist signoff (8h)
+- 8 决策点 5/18-19 全 lock：#1 ready-to-build / #2 Reach 迁移+Match衔接+customize 迁 / #3 Insight 仅合并 / #4 二次清理全清 / #5 BL-070 同批即停 redirect (老路由 404) / #6 e2e 完整重写+老 e2e 清理 / #7 §10 12 项 checklist + signoff doc 验 / #8 全复用 v0.9.22
+- 复用 v0.9.22 沉淀: runAigcAction SDK (F002) + IaRedirectRule status field (F004) + Turbopack --webpack 防御 (F008) + 13 条 archive 经验; BL-070 自身 0 incremental LLM cost
+- 本批次 done = Phase 4 完整 done = 4 路由 IA 闭环 = 对外上线 ready (距 ~2 周)
+## ✅ BL-069-brief-page-merge DONE（7/7, fix_rounds=1, signoff=BL-069-signoff-2026-05-18.md, 24h parse gate 17/21=80.95% PASS 边际, Soft-watch S1 继续观察）
 ## ✅ BL-068-conversational-refine DONE（7/7, fix_rounds=3, signoff=BL-068-signoff-2026-05-17.md, 24h parse gate 16/20=80% PASS, deduped 35% LLM noise tolerated via server fallback）
 ## ✅ BL-067-explainability-c3 DONE（7/7 + fix-round 1 + signoff 2026-05-16, prod redeploy 待用户 ack 时间窗 deploy-prod.sh 已含 --webpack 防御）
 - 3 项 P5 裁决: §1 5 cat→3 cat 降级 (staging seed gap → BL-070 backlog) / §5 perf 留 dogfood / §8 真 24h soak 加速省略
@@ -25,5 +26,5 @@ type: project
 1. 5/17 第一次 weekly growth-curve check（重跑 BL-061 F003 SQL）
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 ## 角色 / Backlog
-- BL-069 done: role_assignments=null 默认映射 (cli=johnsong / codex=Reviewer 已完成签收)；历史 BL-066: planner=johnsong/generator=Kimi/evaluator=Reviewer
-- Phase 3 全 DONE ✅ / Phase 4 BL-069 done ✅ (BL-070 待启 — 项目近期最后一批 Reach + Insight unify + 二次清理) / 距对外上线 ~2-3 周 (BL-070 done 即可)
+- BL-070 building: role_assignments=null 默认映射; 历史 BL-066: planner=johnsong/generator=Kimi/evaluator=Reviewer
+- Phase 3 全 DONE ✅ / Phase 4: BL-069 ✅ + BL-070 building 🚧 (项目近期最后一批) / BL-070 done = 对外上线 ready (距 ~2 周)
