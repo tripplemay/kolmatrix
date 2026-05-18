@@ -78,23 +78,29 @@ export default auth((req) => {
     return NextResponse.redirect(new URL(`/${locale}/dashboard`, nextUrl));
   }
 
-  // BL-064-F002 — Phase 1 IA refactor 302 redirects. Applied AFTER the
+  // BL-064-F002 — Phase 1 IA refactor redirects. Applied AFTER the
   // auth + login special cases so unauthenticated users still see /login
   // first, and authenticated users land on the new IA path directly.
-  // /dashboard → /insight, /knowledge-base → /brief, etc. (incl. sub-route
-  // inheritance). Status 302 (temporary) per Planner adjudication §4 #C to
-  // preserve revert flexibility during Phase 1 transition.
-  const iaRedirectPath = resolveIaRefactorRedirect(bare);
-  if (iaRedirectPath) {
+  // /dashboard → /insight, /knowledge-base → /brief?tab=products, etc.
+  //
+  // Status code is per-rule (BL-069 fix-round 1):
+  //   - Default 302 (temporary) preserves BL-064 §4 #C revert flexibility
+  //     for the still-transitional IA shells.
+  //   - BL-069's three /knowledge-base + /campaigns/new rules carry
+  //     status=301 (permanent) per spec §F006 acceptance — destinations
+  //     are content-equivalent + legacy routes are scheduled for
+  //     deletion by BL-070 二次清理.
+  const iaRedirect = resolveIaRefactorRedirect(bare);
+  if (iaRedirect) {
     const locale = resolveTargetLocale(req);
-    const target = new URL(`/${locale}${iaRedirectPath}`, nextUrl);
+    const target = new URL(`/${locale}${iaRedirect.path}`, nextUrl);
     // Preserve any query params the caller had (e.g. ?status=active on
     // /campaigns?status=active). Only set when not already supplied by the
     // redirect target (e.g. ?view=campaigns wins on /campaigns).
     nextUrl.searchParams.forEach((value, key) => {
       if (!target.searchParams.has(key)) target.searchParams.set(key, value);
     });
-    return NextResponse.redirect(target, 302);
+    return NextResponse.redirect(target, iaRedirect.status);
   }
 
   return handleI18nRouting(req);

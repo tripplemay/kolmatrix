@@ -23,44 +23,71 @@ const LOCALES = ["en", "zh", "ja", "ko", "es"] as const;
 // The regex form lets us accept either the literal new path or a path
 // with extra query/hash that middleware preserves (e.g. /campaigns →
 // /match?view=campaigns).
-const REDIRECT_CASES: Array<{ from: string; expect: RegExp; note?: string }> = [
+interface RedirectCase {
+  from: string;
+  expect: RegExp;
+  /** HTTP status the middleware returns for this redirect. BL-064
+   *  defaults are 302 (temporary, preserves revert flexibility per
+   *  Planner §4 #C). BL-069-F006 rules are 301 (permanent — spec
+   *  §F006 acceptance #1) and locked by BL-069 fix-round 1 after
+   *  Reviewer flagged the 302 mismatch (B1). */
+  status: 301 | 302;
+  note?: string;
+}
+
+const REDIRECT_CASES: RedirectCase[] = [
   // BL-064-F005 fix-round-2 — F002 redirect scope is restricted to
   // content-equivalent sources. Routes whose content lives elsewhere
   // (campaigns form / roi cards / weekly-report) are now kept paths
   // (asserted in the KEPT_PATHS describe below). See
   // src/middleware-helpers.ts IA_REDIRECT_RULES for the canonical
   // contract and the deferred-to-batch mapping.
-  { from: "/dashboard", expect: /\/insight(\/|\?|$)/ },
-  { from: "/discovery", expect: /\/match(\/|\?|$)/ },
-  { from: "/database", expect: /\/match(\/|\?|$)/ },
-  // BL-069-F006 upgraded the KB redirects to land directly on the
-  // products tab so users hit the migrated UI (F004 ProductListPanel)
-  // rather than the AI brief form that F003 mounts at /brief root.
-  { from: "/knowledge-base", expect: /\/brief\?tab=products/ },
+  { from: "/dashboard", expect: /\/insight(\/|\?|$)/, status: 302 },
+  { from: "/discovery", expect: /\/match(\/|\?|$)/, status: 302 },
+  { from: "/database", expect: /\/match(\/|\?|$)/, status: 302 },
+  // BL-069-F006 + fix-round 1 — KB redirects to /brief?tab=products
+  // with 301 PERMANENT status (spec §F006 acceptance #1 "完全 301
+  // redirect"). Reviewer flagged the prior 302 implementation as
+  // blocker B1 on 2026-05-18 staging spot-check.
+  {
+    from: "/knowledge-base",
+    expect: /\/brief\?tab=products/,
+    status: 301,
+  },
   {
     from: "/knowledge-base/cprod1111111111111111",
     expect: /\/brief\?tab=products&productId=cprod1111111111111111/,
+    status: 301,
     note: "BL-069-F006 deep-link",
   },
-  { from: "/outreach", expect: /\/reach(\/|\?|$)/ },
-  // BL-069-F006 — /campaigns/new now redirects to /brief?action=new
-  // (was kept under BL-064). The brief form replaces the legacy create-
-  // campaign route; `action=new` is a reserved hint for a future
-  // "skip-AI / open empty form" affordance.
-  { from: "/campaigns/new", expect: /\/brief\?action=new/ },
+  { from: "/outreach", expect: /\/reach(\/|\?|$)/, status: 302 },
+  // BL-069-F006 + fix-round 1 — /campaigns/new permanent redirect.
+  { from: "/campaigns/new", expect: /\/brief\?action=new/, status: 301 },
   // BL-066-F008 — /campaigns/[id] redirect removed (F002 wired the
   // three-section renderer; the prior 302→/match?campaignId=:id stub
   // is no longer needed). Moved to KEPT_PATHS below.
 ];
 
-test.describe("BL-064 IA refactor 302 redirects", () => {
+test.describe("BL-064 IA refactor redirects (302 default + BL-069 301)", () => {
   for (const locale of LOCALES) {
     test.describe(`locale=${locale}`, () => {
-      for (const { from, expect: expectRegex, note } of REDIRECT_CASES) {
-        const label = note ? `${from} → ${expectRegex} (${note})` : `${from} → ${expectRegex}`;
+      for (const { from, expect: expectRegex, status, note } of REDIRECT_CASES) {
+        const label = `${from} → ${expectRegex} (${status}${note ? `, ${note}` : ""})`;
         test(label, async ({ page }) => {
-          await page.goto(`/${locale}${from}`);
-          // Wait for final landing URL (302 followed by GET on new IA).
+          // page.goto returns the response of the first request,
+          // which is the redirect itself when waitUntil:"commit" is
+          // set. Capture it so we can assert the HTTP status code
+          // (BL-069 fix-round 1 B1: spec §F006 requires 301 for the
+          // /knowledge-base + /campaigns/new family; everything else
+          // stays 302 per BL-064 §4 #C revert-flexibility default).
+          const response = await page.goto(`/${locale}${from}`, {
+            waitUntil: "commit",
+          });
+          expect(response, `no response for /${locale}${from}`).not.toBeNull();
+          expect(response!.status()).toBe(status);
+
+          // Wait for final landing URL (the browser then follows the
+          // redirect to the new IA path).
           await page.waitForURL((url) => {
             const path = url.pathname + url.search;
             return new RegExp(`^/${locale}`).test(path) && expectRegex.test(path);

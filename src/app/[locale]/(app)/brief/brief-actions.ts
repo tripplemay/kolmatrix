@@ -179,7 +179,38 @@ export async function parseBriefAction(
     };
   }
 
-  // 4. Cost-cap pre-check (silent fallback per §5 不变量 #4)
+  // 4. Cost-cap pre-check (silent fallback per §5 不变量 #4).
+  //
+  // BL-069 fix-round 1 (Reviewer B2): the env flag
+  // `BRIEF_FORCE_CAP_EXHAUSTED=true` short-circuits the budget check
+  // so Reviewer can verify the cap-fallback UX on staging without an
+  // unsafe real-cap-blow simulation. Production must never set this
+  // flag (the staging /opt/kolmatrix-staging/.env.staging file is the
+  // only intended consumer per docs/runbooks/bl069-cap-exhausted-
+  // simulation.md). When set we still write the audit row (with a
+  // `forced` marker so dashboards don't confuse it with real cap
+  // events) and skip the real `checkLlmCostBudget` call.
+  const forceCap =
+    process.env.BRIEF_FORCE_CAP_EXHAUSTED === "true";
+  if (forceCap) {
+    void logAudit({
+      actorId: userId,
+      action: "ai_brief.parse_cap_exhausted",
+      targetType: "brief",
+      targetId: "draft",
+      tenantId,
+      after: { raw_brief: input.rawBrief, locale, forced: true },
+    });
+    return {
+      ok: true,
+      data: {
+        parsed: null,
+        feedback: "",
+        unparsable: false,
+        capExhausted: true,
+      },
+    };
+  }
   const budget = await checkLlmCostBudget(tenantId);
   if (!budget.allowed) {
     void logAudit({

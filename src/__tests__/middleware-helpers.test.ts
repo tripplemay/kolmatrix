@@ -56,33 +56,52 @@ describe("resolveIaRefactorRedirect — BL-064-F002", () => {
     expect(resolveIaRefactorRedirect("/admin/apify-preview")).toBeNull();
   });
 
-  it("maps Phase 1 IA single-level routes", () => {
-    expect(resolveIaRefactorRedirect("/dashboard")).toBe("/insight");
-    expect(resolveIaRefactorRedirect("/discovery")).toBe("/match");
-    expect(resolveIaRefactorRedirect("/database")).toBe("/match");
-    // BL-069-F006 upgraded the bare KB redirect to include `?tab=products`
-    // so the new /brief layout doesn't surprise users who bookmarked KB.
-    expect(resolveIaRefactorRedirect("/knowledge-base")).toBe(
-      "/brief?tab=products"
-    );
-    expect(resolveIaRefactorRedirect("/outreach")).toBe("/reach");
+  it("maps Phase 1 IA single-level routes (302 — BL-064 default)", () => {
+    expect(resolveIaRefactorRedirect("/dashboard")).toEqual({
+      path: "/insight",
+      status: 302,
+    });
+    expect(resolveIaRefactorRedirect("/discovery")).toEqual({
+      path: "/match",
+      status: 302,
+    });
+    expect(resolveIaRefactorRedirect("/database")).toEqual({
+      path: "/match",
+      status: 302,
+    });
+    expect(resolveIaRefactorRedirect("/outreach")).toEqual({
+      path: "/reach",
+      status: 302,
+    });
   });
 
-  it("BL-069-F006 — KB deep-link preserves productId on redirect", () => {
+  it("BL-069-F006 + fix-round 1 — /knowledge-base bare redirect is 301 permanent", () => {
+    expect(resolveIaRefactorRedirect("/knowledge-base")).toEqual({
+      path: "/brief?tab=products",
+      status: 301,
+    });
+  });
+
+  it("BL-069-F006 + fix-round 1 — KB deep-link preserves productId + 301", () => {
     // Product.id is cuid; the `[productId]` rule encodes the segment so
     // a future cuid that contains `&` / `=` can't break the query.
     expect(
       resolveIaRefactorRedirect("/knowledge-base/cprod1111111111111111")
-    ).toBe("/brief?tab=products&productId=cprod1111111111111111");
-    expect(resolveIaRefactorRedirect("/knowledge-base/foo")).toBe(
-      "/brief?tab=products&productId=foo"
-    );
+    ).toEqual({
+      path: "/brief?tab=products&productId=cprod1111111111111111",
+      status: 301,
+    });
+    expect(resolveIaRefactorRedirect("/knowledge-base/foo")).toEqual({
+      path: "/brief?tab=products&productId=foo",
+      status: 301,
+    });
   });
 
-  it("BL-069-F006 — /campaigns/new now redirects to /brief?action=new", () => {
-    expect(resolveIaRefactorRedirect("/campaigns/new")).toBe(
-      "/brief?action=new"
-    );
+  it("BL-069-F006 + fix-round 1 — /campaigns/new redirects to /brief?action=new (301)", () => {
+    expect(resolveIaRefactorRedirect("/campaigns/new")).toEqual({
+      path: "/brief?action=new",
+      status: 301,
+    });
   });
 
   it("BL-064-F005 fix-round-2 — analytics sub-routes are kept (not redirected)", () => {

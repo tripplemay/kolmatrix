@@ -66,6 +66,23 @@ export function isProtected(pathname: string): boolean {
 type IaRedirectRule = {
   pattern: RegExp;
   resolve: (m: RegExpMatchArray) => string;
+  /**
+   * HTTP status code to return for this redirect.
+   *   - 302 (default) — BL-064 default. Temporary; preserves revert
+   *     flexibility during the Phase 1 IA transition (per Planner
+   *     adjudication §4 #C).
+   *   - 301 — permanent. Used by BL-069-F006 for the three
+   *     "/knowledge-base*" + "/campaigns/new" rules whose destinations
+   *     are content-equivalent and locked by spec (acceptance §F006
+   *     "完全 301 redirect"). Per BL-069 fix-round 1 (Reviewer B1).
+   *
+   * `resolveIaRefactorRedirect` returns `{ path, status }` so the
+   * middleware can apply the rule-specific HTTP status without a
+   * second lookup. Callers that don't care about the status (eg.
+   * vitest unit assertions that only check the destination) can
+   * destructure `.path`.
+   */
+  status?: 301 | 302;
 };
 
 const IA_REDIRECT_RULES: ReadonlyArray<IaRedirectRule> = [
@@ -113,24 +130,49 @@ const IA_REDIRECT_RULES: ReadonlyArray<IaRedirectRule> = [
   // the bare `/knowledge-base` rule (more specific first), and we
   // restrict the id segment to a single path piece so multi-segment
   // sub-paths (/knowledge-base/foo/bar) still fall through to null.
+  //
+  // BL-069 fix-round 1 (Reviewer B1): all three BL-069 rules carry
+  // status=301 because spec §F006 acceptance #1 wrote "完全 301
+  // redirect" — destination is content-equivalent + permanent (the
+  // legacy routes are being retired by BL-070 二次清理).
   {
     pattern: /^\/knowledge-base\/([^/]+)$/,
     resolve: (m) =>
       `/brief?tab=products&productId=${encodeURIComponent(m[1] ?? "")}`,
+    status: 301,
   },
-  { pattern: /^\/knowledge-base$/, resolve: () => "/brief?tab=products" },
+  {
+    pattern: /^\/knowledge-base$/,
+    resolve: () => "/brief?tab=products",
+    status: 301,
+  },
   // BL-069-F006 — /campaigns/new now lands on the AI-driven /brief
   // form. The `action=new` query hint is reserved for a future
   // "skip-AI / open empty form directly" affordance (Phase 5 candidate);
   // the brief page renders the same CampaignForm regardless today.
-  { pattern: /^\/campaigns\/new$/, resolve: () => "/brief?action=new" },
+  {
+    pattern: /^\/campaigns\/new$/,
+    resolve: () => "/brief?action=new",
+    status: 301,
+  },
   { pattern: /^\/outreach$/, resolve: () => "/reach" },
 ];
 
-export function resolveIaRefactorRedirect(barePath: string): string | null {
+export interface IaRedirectResult {
+  path: string;
+  /** HTTP status code; defaults to 302 when the matched rule omits
+   *  `status`. */
+  status: 301 | 302;
+}
+
+export function resolveIaRefactorRedirect(
+  barePath: string,
+): IaRedirectResult | null {
   for (const rule of IA_REDIRECT_RULES) {
     const match = barePath.match(rule.pattern);
-    if (match) return rule.resolve(match);
+    if (match) {
+      return { path: rule.resolve(match), status: rule.status ?? 302 };
+    }
   }
   return null;
 }

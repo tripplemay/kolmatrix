@@ -118,6 +118,7 @@ function validParsedOutput(productId: string | null) {
 }
 
 const ORIGINAL_BRIEF_ID = process.env.AIGCGATEWAY_BRIEF_PARSE_ACTION_ID;
+const ORIGINAL_FORCE_CAP = process.env.BRIEF_FORCE_CAP_EXHAUSTED;
 
 beforeEach(() => {
   authMock.mockReset();
@@ -134,6 +135,10 @@ beforeEach(() => {
   productFindMany.mockReset();
   productFindMany.mockResolvedValue(makeProductRows(PRODUCT_IDS));
   process.env.AIGCGATEWAY_BRIEF_PARSE_ACTION_ID = "act-brief-test";
+  // BL-069 fix-round 1 (B2) — make sure each test starts without the
+  // staging-only force-cap flag set; tests that need it set it
+  // explicitly + the afterEach below restores the original.
+  delete process.env.BRIEF_FORCE_CAP_EXHAUSTED;
 });
 
 afterEach(() => {
@@ -141,6 +146,11 @@ afterEach(() => {
     delete process.env.AIGCGATEWAY_BRIEF_PARSE_ACTION_ID;
   } else {
     process.env.AIGCGATEWAY_BRIEF_PARSE_ACTION_ID = ORIGINAL_BRIEF_ID;
+  }
+  if (ORIGINAL_FORCE_CAP === undefined) {
+    delete process.env.BRIEF_FORCE_CAP_EXHAUSTED;
+  } else {
+    process.env.BRIEF_FORCE_CAP_EXHAUSTED = ORIGINAL_FORCE_CAP;
   }
 });
 
@@ -384,5 +394,72 @@ describe("BL-069-F002 parseBriefAction", () => {
     expect(result.error).toBe("unauthorized");
     expect(rateLimitBatchSendMock).not.toHaveBeenCalled();
     expect(runAigcActionMock).not.toHaveBeenCalled();
+  });
+
+  // BL-069 fix-round 1 (Reviewer B2) — staging-only env flag that
+  // short-circuits the budget check so dogfood spot-check can verify
+  // cap UX without burning real cap. See docs/dev/bl069-cap-exhausted-
+  // simulation-runbook.md.
+  it("10. BRIEF_FORCE_CAP_EXHAUSTED=true → cap fallback without LLM call + audit forced=true", async () => {
+    process.env.BRIEF_FORCE_CAP_EXHAUSTED = "true";
+    const { parseBriefAction } = await import("../brief-actions");
+    const result = await parseBriefAction({
+      rawBrief: "Q2 cap sim test",
+      locale: "en",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("ok=false");
+    expect(result.data.capExhausted).toBe(true);
+    expect(result.data.parsed).toBeNull();
+    // Real cap-budget check + LLM call MUST be skipped.
+    expect(checkLlmCostBudgetMock).not.toHaveBeenCalled();
+    expect(runAigcActionMock).not.toHaveBeenCalled();
+    // Audit row still written but with `forced: true` so dashboards
+    // can split real cap events from staging simulation.
+    expect(logAuditMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "ai_brief.parse_cap_exhausted",
+        after: expect.objectContaining({ forced: true }),
+      }),
+    );
+  });
+
+  it("11. BRIEF_FORCE_CAP_EXHAUSTED unset / non-'true' → normal path runs (regression guard)", async () => {
+    // Defensive: the flag must be a STRICT-equal 'true' string; any
+    // other value falls through to the real cap check (we don't want
+    // a typo'd "1" or "yes" to accidentally trigger fallback on prod).
+    process.env.BRIEF_FORCE_CAP_EXHAUSTED = "yes";
+    runAigcActionMock.mockResolvedValue({
+      output: {
+        unparsable: false,
+        productId: PRODUCT_IDS[0],
+        markets: ["SEA"],
+        budget: { amount: 5000, currency: "USD" },
+        target_audience: "regression guard audience",
+        categories: ["mobile-game"],
+        start_date: "2026-07-01",
+        end_date: "2026-09-30",
+        feedback_summary: fiveLocaleStrings("regression"),
+      },
+      usage: {
+        totalTokens: 2900,
+        promptTokens: 2495,
+        completionTokens: 414,
+        costUsd: 0.0046,
+      },
+      traceId: "trc_regression",
+    });
+    const { parseBriefAction } = await import("../brief-actions");
+    const result = await parseBriefAction({
+      rawBrief: "regression query — flag set to non-'true'",
+      locale: "en",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("ok=false");
+    expect(result.data.capExhausted).toBe(false);
+    // Real cap check + LLM call MUST have run.
+    expect(checkLlmCostBudgetMock).toHaveBeenCalledTimes(1);
+    expect(runAigcActionMock).toHaveBeenCalledTimes(1);
+    expect(result.data.parsed?.productId).toBe(PRODUCT_IDS[0]);
   });
 });
