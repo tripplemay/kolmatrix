@@ -38,3 +38,43 @@
 ---
 
 <!-- 新条目从这里开始追加 -->
+
+## [2026-05-18] Claude CLI — 来源：BL-069 fix-round 1 B1 / Generator + Planner johnsong
+
+**类型：** 新规律
+
+**内容：** **middleware IaRedirectRule 加 optional `status` field 模式** — 向后兼容（default 302）+ per-rule override 301，让同一 middleware 实现支持混合 301/302 redirect。BL-069 fix-round 1 案例：BL-064 IA refactor 时全部 redirect 默认 302（开发期保留 rollback 能力），BL-069 spec 要求 KB+Campaigns/new → /brief 用 301 永久（per 决策点 #2 用户 ack 完全 redirect）。Reviewer L2 验出 302，fix-round 1 修：`IaRedirectRule` interface 加 `status?: 301 | 302` field（default 302），BL-069 3 条 rule 设 status=301，middleware.ts 用 `rule.status ?? 302`，e2e ia-refactor-redirects.spec.ts REDIRECT_CASES 加 status field + `assert response.status()`。**应用：** 未来 IA refactor 类批次 redirect 设计时，spec 内显式规定 status，middleware 实现端 optional field + default 安全；避免"全 302"或"全 301"硬编码导致 mixed-rule 批次重写。
+
+**建议写入：** `framework/harness/generator.md` 新段 §"middleware IaRedirectRule mixed-status 模式"（含 BL-069 fix-round 1 案例 + IaRedirectRule interface 签名模板 + spec 表 status 字段示例）或合并入 v0.9.22 #5 InMemoryJobQueue 同段（基础设施 MVP 模式）
+
+**状态：** 用户 2026-05-18 已 ack — 待 BL-070 done 阶段或专门 framework 沉淀 batch 时正式写入 framework/ + CHANGELOG + 归档
+
+---
+
+## [2026-05-18] Claude CLI — 来源：BL-069 fix-round 1 B2 / Generator + Planner johnsong
+
+**类型：** 新规律 / 模板修订
+
+**内容：** **staging-only env flag + runbook 让 Reviewer 可执行受控 chaos test 模式**。BL-069 fix-round 1 案例：F002 spec acceptance 含 cap 满 silent fallback 路径，但 Reviewer L2 时发现无 staging-only 模拟入口（dev only 路径用 mock，staging 真实跑需触发真 cap 满即烧真钱）→ Reviewer 标 B2 medium blocker。fix-round 1 修：(1) 加 `BRIEF_FORCE_CAP_EXHAUSTED=true` staging-only env flag（严格 `=== 'true'` 防 typo / audit `forced=true` 字段标记）短路 cap 检查；(2) 写 `docs/dev/bl069-cap-exhausted-simulation-runbook.md`（备份 + tee + pm2 reload + UX 验 + 清理 5 步）；(3) 2 单测（启用 enable / `'yes'` 非严格 regression guard）。**对比 BL-067 §6 chaos test 模式（改 .env.staging API key）：** 本模式更安全 — 专用 flag 不破坏全 API key；runbook 显式 + 严格 `=== 'true'` 防 typo；audit `forced` 字段让 dashboard 监控可区分真 cap 满 vs 模拟。**应用：** 所有"chaos/edge case 实测"类 acceptance（cap 满 / network error / 5xx mock）都应用此模式 — spec 内显式规定 staging-only flag + runbook 路径，避免 Reviewer L2 卡壳。
+
+**建议写入：** `framework/harness/evaluator.md` 新段 §"chaos test 模式：staging-only env flag + runbook"（含 BL-069 fix-round 1 案例 + 对比 BL-067 §6 模式 + flag 命名规范 + runbook 5 步模板）
+
+**状态：** 用户 2026-05-18 已 ack — 待 BL-070 done 阶段或专门 framework 沉淀 batch 时正式写入 framework/ + CHANGELOG + 归档
+
+---
+
+## [2026-05-18] Claude CLI — 来源：BL-068 vs BL-069 fix-rounds 对比 / Planner johnsong
+
+**类型：** 新规律 / 反面案例对比
+
+**内容：** **fix-round 类型分类：implementation-gap vs LLM-behavior**。BL-068 fix-rounds=3（B1-B4 client + B5-B6 prompt + B6 真因 dedupe），BL-069 fix-rounds=1（B1 redirect status + B2 chaos flag）— **数量差 3x，原因 = fix-round 类型不同**。
+
+**类型 A: implementation-gap fix-round**（BL-069 B1+B2）— Generator 实装与 spec 字面有差距（302 vs 301 / 缺 chaos flag），Reviewer L2 报，Generator 直接修代码即可，**1 轮通过**。
+
+**类型 B: LLM-behavior fix-round**（BL-068 B5-B6）— LLM 实际输出与 prompt 预期不一致（凑足 N / 重复 ID），需要 MCP trace 抓真因（v0.9.22 #9）+ server-side fallback（dedupe-then-validate v0.9.22 #10）+ prompt 强化（自检 § v0.9.22 #11），**多 fix-round 才收敛**。
+
+**应用：** Planner 在 Reviewer 报 verifying 失败时先分类（A or B），A 直接 ack Generator 修代码 + 推估 1 fix-round 通过；B 必先 trace（v0.9.22 #13）+ 推估 2-3 fix-round 通过。预期 fix_rounds 数 = 1 + N(B 类 blockers)。**沉淀价值：** 帮助 Planner 起草 batch 计划时按 LLM 类批次 vs 静态实装类批次区分预期 fix_rounds 数（影响排期 + 用户期望管理）。
+
+**建议写入：** `framework/harness/planner.md` 新段 §"fix-round 类型分类：A implementation-gap vs B LLM-behavior"（含 BL-068 vs BL-069 对比表 + 预期 fix_rounds 数公式 + 与 v0.9.22 #13 配对使用）
+
+**状态：** 用户 2026-05-18 已 ack — 待 BL-070 done 阶段或专门 framework 沉淀 batch 时正式写入 framework/ + CHANGELOG + 归档

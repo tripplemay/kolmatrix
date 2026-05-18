@@ -7,7 +7,7 @@ type: project
 - ✅ fix-round 1 复验通过：登录态 `/knowledge-base` / `/knowledge-base/[productId]` / `/campaigns/new` 均返回 `301`
 - ✅ cap 模拟通过：`BRIEF_FORCE_CAP_EXHAUSTED=true` 命中 toast + 空表单 + audit `forced=true`，清理后正常 parse 恢复
 - ✅ 24h parse gate：`17/21 = 80.95% PASS`
-- 📄 Signoff：`docs/test-reports/BL-069-signoff-2026-05-18.md`
+- 📄 Signoff: docs/test-reports/BL-069-signoff-2026-05-18.md / Soft-watch S1: 24h gate 边际通过 80.95% 仅高出阈值 0.95%, 继续观察 (medium 触发即 prompt 调优或 follow-up)
 ## ✅ BL-068-conversational-refine DONE（7/7, fix_rounds=3, signoff=BL-068-signoff-2026-05-17.md, 24h parse gate 16/20=80% PASS, deduped 35% LLM noise tolerated via server fallback）
 ## ✅ BL-067-explainability-c3 DONE（7/7 + fix-round 1 + signoff 2026-05-16, prod redeploy 待用户 ack 时间窗 deploy-prod.sh 已含 --webpack 防御）
 - 3 项 P5 裁决: §1 5 cat→3 cat 降级 (staging seed gap → BL-070 backlog) / §5 perf 留 dogfood / §8 真 24h soak 加速省略
@@ -26,4 +26,4 @@ type: project
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 ## 角色 / Backlog
 - BL-069 done: role_assignments=null 默认映射 (cli=johnsong / codex=Reviewer 已完成签收)；历史 BL-066: planner=johnsong/generator=Kimi/evaluator=Reviewer
-- Phase 3 全 DONE ✅ / Phase 4 BL-069 done ✅ (BL-070 后续 Insight unify + 二次清理) / 距对外上线 ~5 周
+- Phase 3 全 DONE ✅ / Phase 4 BL-069 done ✅ (BL-070 待启 — 项目近期最后一批 Reach + Insight unify + 二次清理) / 距对外上线 ~2-3 周 (BL-070 done 即可)
