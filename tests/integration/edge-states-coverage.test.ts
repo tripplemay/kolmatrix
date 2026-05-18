@@ -30,7 +30,10 @@ const PAGES_THAT_NEED_ERROR_TSX = [
   "knowledge-base",
   "campaigns",
   "campaigns/[id]",
-  "outreach",
+  // BL-070-F001 — `outreach` route promoted to `reach` (git mv).
+  // F004 will delete the legacy route entirely; until then the new
+  // /reach directory carries the same `error.tsx`.
+  "reach",
   "crm",
   "roi",
   "weekly-report",
