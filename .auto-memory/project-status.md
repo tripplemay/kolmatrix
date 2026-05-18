@@ -3,12 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔨 BL-069-brief-page-merge BUILDING（6/7, fix_rounds=0, spec=cf2fdab, role_assignments=null 默认映射）
-- ✅ F001 ✅ F002 ✅ F003 ✅ F004 ✅ F005 createCampaignFromBriefAction + auto-name + router.push ✅ F006 middleware 3 条 redirect (/knowledge-base → ?tab=products / /knowledge-base/[id] → ?tab=products&productId / /campaigns/new → ?action=new) + i18n 5 locale knowledgeBase+campaigns.new _deprecated_by_BL-069 marker + tests/e2e/brief-flow.spec.ts 6 case + middleware-helpers.test.ts 12 case + ia-refactor-redirects e2e 加 3 case → F007 staging + 视觉 baseline regen (4 png: en-brief, en-brief-products, en-knowledge-base 重生, en-knowledge-base-bottom) + 24h cost 监控 + signoff (4h, 混合 generator infra + codex 责 dogfood/signoff)
-- 8 决策点 5/17 全 lock：#1 ready-to-build / #2 完全 redirect 301 / #3 表单字段 + KOL prewarm / #4 表单 + 顶部 AI input bar / #5 全复用 v0.9.22 基础设施 / #6 product list 内嵌 + ?tab=products / #7 toast unparsable + 保留空表单 / #8 audit log raw brief
-- 复用 v0.9.22 沉淀：runAigcAction SDK + checkLlmCostBudget + prompt v3 自检 § + silent fallback + 5 locale + dedupe-then-validate；F001 cost=$0.0046/call；5 用户 day + 5 prewarm = $1.75 meter (35% cap)
-- F001+F002+F003 spec drift 自决 3 项 (F001 v1 prompt 超 ceiling→v2 裁剪 / F002 Product.id 是 cuid / Product.category 单字段→mapper wrap) + F003 用户 5/18 ack option B 新建 brief/CampaignForm 而非 git mv，forwardRef+useImperativeHandle 解耦 onParsed wire
-- BL-067-F006 CI flaky inline fix (用户 ack option B): mockSmartMatch case 1+6，CI 8/8 全绿 ✓ 解锁 BL-069 CI 守门
+## ⏳ BL-069-brief-page-merge VERIFYING（7/7 Generator portion done, fix_rounds=0, spec=cf2fdab, Reviewer 接手 dogfood + signoff）
+- ✅ F001-F006 全 done (action 注册 / brief-actions / /brief layout / ProductListPanel / createCampaignFromBriefAction / redirect 3 条 + i18n marker + e2e 6 case) ✅ F007 Generator portion: scripts/bl069-cost-audit.ts (~210 LOC parse rate ≥80% gate) + visual-regression.spec.ts 加 en-brief + en-brief-products 2 case + 触发 update-visual-baselines workflow auto-commit en-brief.png + en-brief-products.png → status: building → verifying
+- 复用 BL-067/068 v0.9.22 沉淀: runAigcAction SDK + checkLlmCostBudget + prompt v3 自检 § + dedupe-then-validate + silent fallback + 5 locale (F001 cost=$0.0046/call, 与 §6 估算 $0.0045 一致)
+- Reviewer 接手 (per F007 acceptance): staging dogfood ≥10 brief query × 4 维度 + ≥3 unparsable + cap 满模拟 + 端到端 brief→submit→/match prewarm 验链路连贯 + bl069-cost-audit script 跑 24h 验 parse rate ≥80% + 24h cost ≤ dogfood ×1.5 + docs/test-reports/BL-069-staging-spot-check.md + signoff doc + status reverifying → done
+- 8 决策点 5/17 全 lock + spec drift 自决 3 项 (F001 v1 prompt 超 ceiling→v2 裁剪 / F002 Product.id cuid / Product.category 单字段 mapper wrap) + 用户决策 ack F003 option B 新建 brief/CampaignForm + F005 option B 复用 createCampaignRecord + auto-name option A + F006 inline 修 BL-067-F006 CI flaky (mockSmartMatch case 1+6) + F006 brief-flow e2e cases 3/4/5 skip CI (BL-068-F006 同 server-action mock 限制)
 ## ✅ BL-068-conversational-refine DONE（7/7, fix_rounds=3, signoff=BL-068-signoff-2026-05-17.md, 24h parse gate 16/20=80% PASS, deduped 35% LLM noise tolerated via server fallback）
 ## ✅ BL-067-explainability-c3 DONE（7/7 + fix-round 1 + signoff 2026-05-16, prod redeploy 待用户 ack 时间窗 deploy-prod.sh 已含 --webpack 防御）
 - 3 项 P5 裁决: §1 5 cat→3 cat 降级 (staging seed gap → BL-070 backlog) / §5 perf 留 dogfood / §8 真 24h soak 加速省略
@@ -26,5 +25,5 @@ type: project
 1. 5/17 第一次 weekly growth-curve check（重跑 BL-061 F003 SQL）
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 ## 角色 / Backlog
-- BL-069 building: role_assignments=null 默认映射 (cli=planner+generator johnsong / codex=evaluator); 历史 BL-066: planner=johnsong/generator=Kimi/evaluator=Reviewer
-- Phase 3 全 DONE ✅ / Phase 4 building (BL-069 当前 + BL-070 后续 Insight unify + 二次清理) / 距对外上线 ~5 周; framework v0.9.22 沉淀 archive 完整 + harness/*.md 段落起草留下批次
+- BL-069 verifying: role_assignments=null 默认映射 (cli=johnsong generator portion done / codex=evaluator 接手 dogfood + signoff); 历史 BL-066: planner=johnsong/generator=Kimi/evaluator=Reviewer
+- Phase 3 全 DONE ✅ / Phase 4 BL-069 verifying ⏳ (BL-070 后续 Insight unify + 二次清理) / 距对外上线 ~5 周

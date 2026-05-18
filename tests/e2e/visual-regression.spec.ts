@@ -234,6 +234,68 @@ test.describe("Authenticated BM1 visual regression", () => {
     });
   });
 
+  // BL-069-F007 — new /brief layout (BriefAiInputBar + CampaignForm).
+  // Baseline locks the AI escape-hatch above the form + the form's
+  // 8-field structure (product / name / budget split / dates /
+  // markets / target audience / categories / submit) so a future
+  // accidental reshuffle gets caught before merge. The product
+  // selector content is tenant-dependent → mask the <select>.
+  test("brief full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
+    test.skip(
+      shouldSkipMissingBaseline("en-brief.png", test.info()),
+      "Baseline en-brief.png missing — run the 'Update visual baselines' workflow."
+    );
+    await login(page);
+    await page.goto("/en/brief");
+    await page.waitForSelector('[data-testid="brief-campaign-form"]');
+    await page.waitForSelector('[data-testid="brief-ai-input-bar"]');
+    await fontsReady(page);
+
+    // Tenant-dependent <select> options would otherwise drift across
+    // CI runs that pick up new seed data; mask the dropdown body.
+    const productSelect = page.getByTestId("brief-product-select");
+
+    await expect(page).toHaveScreenshot("en-brief.png", {
+      fullPage: true,
+      animations: "disabled",
+      mask: [productSelect],
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
+  });
+
+  // BL-069-F007 — /brief?tab=products renders the migrated KB CRUD.
+  // Same kb-grid testid as the legacy /knowledge-base baseline above,
+  // but now wrapped in the BL-069 ProductListPanel + tab nav. F006
+  // redirected /knowledge-base → /brief?tab=products so this is the
+  // canonical entry point going forward; BL-070 二次清理 will retire
+  // the old en-knowledge-base.png alongside the route.
+  test("brief?tab=products full-page screenshot diffs < 2% vs baseline", async ({
+    page,
+  }) => {
+    test.skip(
+      shouldSkipMissingBaseline("en-brief-products.png", test.info()),
+      "Baseline en-brief-products.png missing — run the 'Update visual baselines' workflow."
+    );
+    await login(page);
+    await page.goto("/en/brief?tab=products");
+    await page.waitForSelector(
+      '[data-testid="brief-product-list-panel"]'
+    );
+    await page.waitForSelector('[data-testid="kb-grid"], [data-testid="kb-empty"]');
+    await fontsReady(page);
+
+    const grid = page.getByTestId("kb-grid");
+
+    await expect(page).toHaveScreenshot("en-brief-products.png", {
+      fullPage: true,
+      animations: "disabled",
+      mask: [grid],
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
+  });
+
   // BL-065-F006 retired the legacy `discovery full-page` +
   // `database full-page` cases with their routes. BL-066-F009 lands
   // the unified workbench baseline below.
