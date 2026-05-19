@@ -111,7 +111,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 6.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "触发 `.github/workflows/update-visual-baselines.yml` workflow 全量重 gen baseline（含 reach 新 baseline + insight 新 baseline + 删除老 baseline）",
       "新生成 baseline 列表：`en-reach.png` + `en-reach-detail.png`（subroute）+ `en-insight.png` + `en-insight-reports.png`（?tab=reports）+ 重新生成 `en-brief.png` / `en-brief-products.png` / `en-match.png` / `en-match-with-campaign.png` / `en-campaign-detail.png` / `en-campaign-detail-detailed-dialog.png`（视觉漂移修）",
