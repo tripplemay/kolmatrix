@@ -25,6 +25,7 @@ vi.mock("next/navigation", () => ({
     replace: vi.fn(),
     refresh: vi.fn(),
   }),
+  useSearchParams: () => ({ get: () => null }),
 }));
 
 vi.mock("next/link", () => ({
@@ -101,7 +102,12 @@ describe("RequestAccessForm", () => {
 
   it("marks ToS checkbox present and unchecked by default", () => {
     renderIntl(<RequestAccessForm locale="en" />);
-    const tos = screen.getByRole("checkbox") as HTMLInputElement;
+    // T2 added a second checkbox (wantsDemo); find by name attribute to stay
+    // specific — the label text isn't reliably computed as accessible name
+    // because the input is nested inside a <span> within the <label>.
+    const checkboxes = screen.getAllByRole("checkbox") as HTMLInputElement[];
+    const tos = checkboxes.find((el) => el.name === "tosAccepted");
+    expect(tos).toBeDefined();
     expect(tos).not.toBeChecked();
     expect(tos).toHaveAttribute("name", "tosAccepted");
   });
