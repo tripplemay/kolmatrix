@@ -10,7 +10,7 @@ import {
 
 import { CAMPAIGNS_OPTIONS, ROLE_OPTIONS } from "./form-options";
 
-const AccessRequestSchema = z.object({
+export const AccessRequestSchema = z.object({
   firstName: z.string().trim().min(1).max(64),
   lastName: z.string().trim().min(1).max(64),
   email: z.string().trim().email().max(320),
@@ -23,6 +23,10 @@ const AccessRequestSchema = z.object({
     .max(2000)
     .optional()
     .transform((v) => (v && v.length > 0 ? v : undefined)),
+  wantsDemo: z
+    .union([z.literal("on"), z.literal("true"), z.literal("false"), z.undefined()])
+    .optional()
+    .transform((v) => v === "on" || v === "true"),
 });
 
 export type SubmitAccessRequestState = {
