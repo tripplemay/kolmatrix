@@ -125,7 +125,8 @@
       "backToLogin": "返回登录",
       "errorGeneric": "出了点问题，请稍后重试。",
       "errorInvalidInput": "请检查标红的字段后重试。",
-      "errorTosRequired": "请勾选服务条款后继续。"
+      "errorTosRequired": "请勾选服务条款后继续。",
+      "wantsDemoLabel": "希望产品经理与我进行 1v1 演示"
     }
   },
   "dashboard": {

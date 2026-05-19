@@ -125,7 +125,8 @@
       "backToLogin": "Back to sign in",
       "errorGeneric": "Something went wrong. Please try again in a moment.",
       "errorInvalidInput": "Please check the highlighted fields and try again.",
-      "errorTosRequired": "You must accept the Terms of Service to continue."
+      "errorTosRequired": "You must accept the Terms of Service to continue.",
+      "wantsDemoLabel": "I'd like a 1:1 product demo from a product manager"
     }
   },
   "dashboard": {

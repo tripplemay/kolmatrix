@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { cloneElement, useActionState, useEffect } from "react";
 
 import {
@@ -43,6 +43,8 @@ export function RequestAccessForm({ locale }: Props) {
   const t = useTranslations("auth.requestAccess");
   const router = useRouter();
   const [state, formAction, pending] = useActionState(submitAccessRequest, initial);
+  const searchParams = useSearchParams();
+  const wantsDemoDefault = searchParams.get("demo") === "1";
 
   useEffect(() => {
     if (state.ok) {
@@ -163,6 +165,17 @@ export function RequestAccessForm({ locale }: Props) {
             className={`${UNDERLINE_INPUT} resize-none`}
           />
         </FieldWrapper>
+
+        <label className="flex items-start gap-2 text-sm text-on-surface-variant">
+          <input
+            type="checkbox"
+            name="wantsDemo"
+            defaultChecked={wantsDemoDefault}
+            className="mt-1 h-4 w-4 accent-cyan"
+            data-testid="request-access-wants-demo"
+          />
+          <span>{t("wantsDemoLabel")}</span>
+        </label>
 
         <label className="flex items-start gap-3 pt-2">
           <span className="flex h-5 items-center">
