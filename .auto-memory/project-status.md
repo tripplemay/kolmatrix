@@ -3,8 +3,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔨 BL-070-reach-insight-cleanup BUILDING（1/8, fix_rounds=0, spec=0947d58, role_assignments=null 默认映射, 项目近期最后一批）
-- ✅ F001 done (commit 2b24fc1 + CI 自修 191eca6, staging=2b24fc1): /reach 全量迁移 (git mv 17) + /outreach(/.*)? wildcard 301 + Match→Reach AiRecommendationPanel toast 衔接 + 5 locale toast i18n + L1+CI 全过 → F002 customize.ts + topic-cloud.ts 迁移 runAigcAction SDK v0.9.22 #6 (8h) → F003 /insight 路由 + Dashboard + Reports 合并 + 4 条 301 (10h) → F004 5 老路由目录 git rm + middleware redirect 删 (4h) → F005 6 BL-066 unmount 组件 + i18n deprecated keys 全删 (4h) → F006 4 路由 IA e2e suite 全量重写 (16h) → F007 视觉 baseline 全量 regen + reach/insight i18n 5 locale (6h) → F008 staging + prod deploy + 24h 监控 + 对外上线 12 项 checklist signoff (8h)
+## 🔨 BL-070-reach-insight-cleanup BUILDING（2/8, fix_rounds=0, spec=0947d58, role_assignments=null 默认映射, 项目近期最后一批）
+- ✅ F001 done (2b24fc1 + CI 自修 191eca6, staging=2b24fc1): /reach 全量迁移 (git mv 17) + /outreach(/.*)? wildcard 301 + Match→Reach AiRecommendationPanel toast 衔接 + 5 locale toast i18n + L1+CI 全过
+- ✅ F002 done: customize.ts + topic-cloud.ts → runAigcAction SDK 迁移 (v0.9.22 #6 落地), customize.ts -47 LOC + topic-cloud.ts -9 LOC, 5 错误 code 映射 (missing_env/http_error/invalid_response/timeout/daily_cost_exceeded), opts.apiKey/baseUrl 删除走 env, 加 opts.tenantId for cost-cap. 副效果: topic-cloud.ts 首次加 cost-cap + ai.usage meter (per §5 #8 基础设施层归一化). 全 174 files 1268 tests PASS.
+- → F003 /insight 路由 + Dashboard + Reports 合并 + 4 条 301 (10h) → F004 5 老路由目录 git rm + middleware redirect 删 (4h) → F005 6 BL-066 unmount 组件 + i18n deprecated keys 全删 (4h) → F006 4 路由 IA e2e suite 全量重写 (16h) → F007 视觉 baseline 全量 regen + reach/insight i18n 5 locale (6h) → F008 staging + prod deploy + 24h 监控 + 对外上线 12 项 checklist signoff (8h)
 - 8 决策点 5/18-19 全 lock：#1 ready-to-build / #2 Reach 迁移+Match衔接+customize 迁 / #3 Insight 仅合并 / #4 二次清理全清 / #5 BL-070 同批即停 redirect (老路由 404) / #6 e2e 完整重写+老 e2e 清理 / #7 §10 12 项 checklist + signoff doc 验 / #8 全复用 v0.9.22
 - 复用 v0.9.22 沉淀: runAigcAction SDK (F002) + IaRedirectRule status field (F004) + Turbopack --webpack 防御 (F008) + 13 条 archive 经验; BL-070 自身 0 incremental LLM cost
 - 本批次 done = Phase 4 完整 done = 4 路由 IA 闭环 = 对外上线 ready (距 ~2 周)

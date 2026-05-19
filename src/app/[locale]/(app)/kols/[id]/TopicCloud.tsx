@@ -41,7 +41,8 @@ export async function TopicCloud(props: Props) {
     kolId: props.kolId,
     titles: props.recentVideoTitles,
     metadata: props.metadata,
-    apiKey: process.env.AIGCGATEWAY_API_KEY,
+    // BL-070-F002: apiKey + baseUrl env vars are now read inside
+    // `runAigcAction`; only the action id is plumbed through.
     actionId: process.env.AIGCGATEWAY_KOL_TOPIC_ACTION_ID,
   });
 

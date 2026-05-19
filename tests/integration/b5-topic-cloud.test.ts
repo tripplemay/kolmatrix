@@ -21,6 +21,15 @@ afterAll(async () => {
 
 beforeEach(async () => {
   fetchMock.mockReset();
+  // BL-070-F002 — topic-cloud now routes through `runAigcAction` which
+  // reads AIGCGATEWAY_API_KEY / AIGCGATEWAY_BASE_URL from env. Tests
+  // used to plumb these via opts.apiKey / opts.baseUrl; the SDK has
+  // taken ownership of both.
+  process.env.AIGCGATEWAY_API_KEY = "pk_test";
+  process.env.AIGCGATEWAY_BASE_URL = "https://aigc.example.test/v1";
+  // Disable the per-tenant daily cost cap so the integration tests
+  // exercise the success path without seeding event_log rows.
+  process.env.AI_DAILY_COST_USD_PER_TENANT_MAX = "0";
   await cleanDb();
 });
 
@@ -67,7 +76,6 @@ describe("B5-F006 topic cloud loader", () => {
       kolId,
       titles: ["Latest RPG build guide"],
       metadata: cached,
-      apiKey: "test-key",
       actionId: "action-123",
       now: () => Date.parse("2026-04-30T12:00:00.000Z"),
     });
@@ -91,9 +99,7 @@ describe("B5-F006 topic cloud loader", () => {
       kolId,
       titles: ["FPS ranked climb", "Ranked loadout tips"],
       metadata: {},
-      apiKey: "test-key",
       actionId: "action-123",
-      baseUrl: "https://aigc.example.com/v1",
       now: () => Date.parse("2026-04-30T12:00:00.000Z"),
     });
 
@@ -135,12 +141,15 @@ describe("B5-F006 topic cloud loader", () => {
       kolId,
       titles: ["MMO raid guide"],
       metadata: cached,
-      apiKey: "test-key",
       actionId: "action-123",
       now: () => Date.parse("2026-04-30T12:00:00.000Z"),
     });
 
     expect(result).toEqual([{ term: "MMO", weight: 0.6 }]);
+    // The mock returns { ok: false } with no status — runAigcAction's
+    // retry layer treats undefined status as non-retryable so we still
+    // see exactly one fetch before the catch-all collapses to the
+    // stale-cache fallback.
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     const saved = await getAdminPrisma().kol.findUniqueOrThrow({ where: { id: kolId } });
@@ -162,7 +171,6 @@ describe("B5-F006 topic cloud loader", () => {
       kolId,
       titles: ["Strategy macro fundamentals"],
       metadata: cached,
-      apiKey: "test-key",
       actionId: undefined,
       now: () => Date.parse("2026-04-30T12:00:00.000Z"),
     });

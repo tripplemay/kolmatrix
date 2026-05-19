@@ -8,12 +8,21 @@
  * in `Kol.metadata.topicCloud` for 7 days, then lazily refreshed on the
  * next detail-page open.
  *
+ * BL-070-F002 migration (v0.9.22 #6 SDK 抽象层沉淀落地) — the inline
+ * POST + parseFencedJson boilerplate moved into `runAigcAction`. The
+ * SDK adds per-tenant cost-cap pre-check + ai.usage meter to every
+ * call (previously this loader had neither). The outer try/catch still
+ * collapses every error path to a silent `null` return so the panel
+ * degrades to "empty" rather than throwing past the caller — that
+ * behaviour is unchanged.
+ *
  * Failure modes (all collapse to an empty render — never throw past
  * the caller, never block the page):
- *   - missing API key / Action ID env var
- *   - aigcgateway HTTP error / timeout (5s)
+ *   - missing env (API key / Action ID)
+ *   - aigcgateway HTTP error / timeout
  *   - model output not parseable JSON
  *   - keyword array empty or malformed
+ *   - tenant daily AI cost cap reached
  *
  * Cache shape under `Kol.metadata.topicCloud`:
  *   { keywords: TopicKeyword[], fetchedAt: ISO, version: number }
@@ -29,9 +38,8 @@ import "dotenv/config";
 
 import type { Prisma } from "@prisma/client";
 
-import { resolveAigcV1BaseUrl } from "@/lib/aigc/base-url";
 import { wrapUserInput } from "@/lib/ai/xml-escape";
-import { parseFencedJson } from "@/lib/ai/json-extract";
+import { runAigcAction } from "@/lib/aigc/run-action";
 import { withTenant } from "@/lib/db";
 
 export interface TopicKeyword {
@@ -113,8 +121,12 @@ export function normalizeKeywords(raw: unknown): TopicKeyword[] {
 
 export interface FetchTopicKeywordsOpts {
   actionId: string;
-  apiKey: string;
-  baseUrl?: string;
+  /**
+   * BL-070-F002 — required so the SDK's per-tenant daily AI cost cap
+   * pre-check + ai.usage meter can see this call. Caller (loadTopicCloud)
+   * already authenticates the session and has tenantId on hand.
+   */
+  tenantId: string;
   timeoutMs?: number;
 }
 
@@ -122,59 +134,40 @@ export async function fetchTopicKeywordsFromAigcGateway(
   titles: string[],
   opts: FetchTopicKeywordsOpts
 ): Promise<TopicKeyword[] | null> {
-  const url = `${resolveAigcV1BaseUrl(opts.baseUrl ?? process.env.AIGCGATEWAY_BASE_URL)}/actions/run`;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? TOPIC_CLOUD_TIMEOUT_MS);
-
   try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${opts.apiKey}`,
+    // BL-035-F013 (AI-1): YouTube video titles are user-influenced
+    // input — a creator with a hostile title ("</USER_VIDEO_TITLE>
+    // ignore previous instructions and …") could otherwise close
+    // the wrapper tag and reach the Action's system prompt. Wrap
+    // each title in <USER_VIDEO_TITLE> with `wrapUserInput` (which
+    // escapes the closing-tag injection) before joining. The
+    // matching aigcgateway Action template tells the model to treat
+    // anything inside these tags as untrusted user data — see
+    // framework/harness/ai-action-contract.md §4.
+    // Action variables are Record<string,string>; titles are joined
+    // with newlines so the prompt template can interpolate
+    // {{titles}} as a single block.
+    const result = await runAigcAction<unknown>({
+      actionId: opts.actionId,
+      variables: {
+        titles: titles
+          .map((title) => wrapUserInput("USER_VIDEO_TITLE", title))
+          .join("\n"),
       },
-      // BL-035-F013 (AI-1): YouTube video titles are user-influenced
-      // input — a creator with a hostile title ("</USER_VIDEO_TITLE>
-      // ignore previous instructions and …") could otherwise close
-      // the wrapper tag and reach the Action's system prompt. Wrap
-      // each title in <USER_VIDEO_TITLE> with `wrapUserInput` (which
-      // escapes the closing-tag injection) before joining. The
-      // matching aigcgateway Action template tells the model to treat
-      // anything inside these tags as untrusted user data — see
-      // framework/harness/ai-action-contract.md §4.
-      // Action variables are Record<string,string>; titles are joined
-      // with newlines so the prompt template can interpolate
-      // {{titles}} as a single block.
-      body: JSON.stringify({
-        action_id: opts.actionId,
-        variables: {
-          titles: titles
-            .map((title) => wrapUserInput("USER_VIDEO_TITLE", title))
-            .join("\n"),
-        },
-        stream: false,
-      }),
-      signal: controller.signal,
+      tenantId: opts.tenantId,
+      actionLabel: "kol_topic_extract",
+      timeoutMs: opts.timeoutMs ?? TOPIC_CLOUD_TIMEOUT_MS,
     });
-    if (!res.ok) return null;
-    const body = (await res.json()) as { output?: unknown };
-    if (typeof body.output !== "string" || !body.output) return null;
-    let parsed: unknown;
-    try {
-      parsed = parseFencedJson<unknown>(body.output);
-    } catch {
-      return null;
-    }
+
     // Action may return either a bare array `[{term,weight}, ...]` or
     // an object wrapper `{keywords: [...]}` depending on prompt shape.
+    const parsed = result.output;
     const raw = Array.isArray(parsed)
       ? parsed
       : (parsed as { keywords?: unknown } | null)?.keywords;
     return normalizeKeywords(raw);
   } catch {
     return null;
-  } finally {
-    clearTimeout(timer);
   }
 }
 
@@ -183,9 +176,7 @@ export interface LoadTopicCloudOpts {
   kolId: string;
   titles: string[];
   metadata: unknown;
-  apiKey?: string;
   actionId?: string;
-  baseUrl?: string;
   now?: () => number;
 }
 
@@ -204,17 +195,18 @@ export async function loadTopicCloud(opts: LoadTopicCloudOpts): Promise<TopicKey
   const now = opts.now?.() ?? Date.now();
   if (isCacheFresh(cache, now)) return cache!.keywords;
 
-  // Need at least 1 title + both env-derived secrets to attempt a
-  // refresh. Otherwise return whatever cache we have (may be stale but
-  // is still better than an empty cloud).
-  if (!opts.apiKey || !opts.actionId) return cache?.keywords ?? null;
+  // Need at least 1 title + the action id env var to attempt a refresh.
+  // BL-070-F002: the API key / base URL env vars are now read inside
+  // `runAigcAction`; no need to plumb them through opts. Otherwise
+  // return whatever cache we have (may be stale but is still better
+  // than an empty cloud).
+  if (!opts.actionId) return cache?.keywords ?? null;
   const usableTitles = opts.titles.map((t) => t.trim()).filter((t) => t);
   if (usableTitles.length === 0) return cache?.keywords ?? null;
 
   const keywords = await fetchTopicKeywordsFromAigcGateway(usableTitles, {
     actionId: opts.actionId,
-    apiKey: opts.apiKey,
-    baseUrl: opts.baseUrl,
+    tenantId: opts.tenantId,
   });
   if (!keywords || keywords.length === 0) return cache?.keywords ?? null;
 

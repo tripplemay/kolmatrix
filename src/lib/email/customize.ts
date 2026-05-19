@@ -1,32 +1,45 @@
 /**
  * BM2-F006 · aigcgateway `kol-email-customize` Action client.
  *
- * Per pre-impl adjudication §12.3 the action run endpoint is
- *   POST {BASE}/actions/run
- * with { action_id, variables, stream:false } body + Bearer auth. Model used by the
- * action is Claude Haiku 4.5 — Claude habitually wraps structured
- * output in ```json fences, so responses always go through
- * `parseFencedJson`.
+ * BL-070-F002 migration (v0.9.22 #6 SDK 抽象层沉淀落地) — the inline
+ * POST + parseFencedJson + cost-cap + meter + error-mapping boilerplate
+ * was lifted into `@/lib/aigc/run-action` (`runAigcAction`) so this
+ * file is now a thin wrapper that:
+ *
+ *   1. Maps the typed `CustomizeEmailInput` into the action's wire
+ *      variables (`toVariables` — unchanged from BL-034).
+ *   2. Invokes `runAigcAction` (which runs cost-cap pre-check + POST
+ *      with retry + parseFencedJson + meter).
+ *   3. Translates the SDK's typed errors back into domain-specific
+ *      `CustomizeEmailError` codes so existing callers
+ *      (outreach/actions.ts customizeAction) keep their stable error
+ *      surface ("missing_env" / "http_error" / "invalid_response" /
+ *      "timeout" / "daily_cost_exceeded").
+ *
+ * The variable contract (`KOL_EMAIL_CUSTOMIZE_VARIABLE_KEYS` + the
+ * `toVariables` mapping) is unchanged; downstream code + the gateway
+ * action template are untouched.
  */
 import "dotenv/config";
 
-import { parseFencedJson } from "@/lib/ai/json-extract";
 import {
   AiDailyCostExceededError,
-  assertDailyCostBudget,
-  recordAiUsage,
-} from "@/lib/ai/cost-cap";
+  AigcActionConfigError,
+  AigcActionHttpError,
+  AigcActionParseError,
+  AigcActionTimeoutError,
+  runAigcAction,
+} from "@/lib/aigc/run-action";
 import { wrapUserInput } from "@/lib/ai/xml-escape";
-import { fetchWithRetry, resolveAigcV1BaseUrl } from "@/lib/aigc/fetch-with-retry";
 
 export const KOL_EMAIL_CUSTOMIZE_ACTION_ID = "cmob2z6j00001bnole7i8lg9h";
 
 export interface CustomizeEmailInput {
   /**
    * BL-034 F005 fix-round 1: required so the per-tenant daily cost cap
-   * can pre-check + post-meter the AI request. Callers
-   * (outreach/actions.ts) already authenticate the session and have
-   * tenantId on hand.
+   * (now applied inside `runAigcAction`) can pre-check + post-meter the
+   * AI request. Callers (outreach/actions.ts) already authenticate the
+   * session and have tenantId on hand.
    */
   tenantId: string;
   product: {
@@ -67,10 +80,6 @@ export class CustomizeEmailError extends Error {
     super(message);
     this.name = "CustomizeEmailError";
   }
-}
-
-function baseUrl(): string {
-  return resolveAigcV1BaseUrl(process.env.AIGCGATEWAY_BASE_URL);
 }
 
 /**
@@ -125,19 +134,23 @@ export function toVariables(
   };
 }
 
-export async function customizeEmail(input: CustomizeEmailInput): Promise<CustomizeEmailResult> {
-  const apiKey = process.env.AIGCGATEWAY_API_KEY;
-  if (!apiKey) {
-    throw new CustomizeEmailError("missing_env", "AIGCGATEWAY_API_KEY is not set");
-  }
+interface RawCustomizeOutput {
+  subject?: unknown;
+  body?: unknown;
+  rationale?: unknown;
+}
 
-  // BL-034 F005 fix-round 1: per-tenant daily AI cost cap. Throws
-  // AiDailyCostExceededError when the running estimate (count × $0.01)
-  // hits AI_DAILY_COST_USD_PER_TENANT_MAX. Re-wrap as
-  // CustomizeEmailError so the caller's `error: err.code` switch handles
-  // it (UI maps to "今日 AI 调用配额已用尽").
+export async function customizeEmail(
+  input: CustomizeEmailInput,
+): Promise<CustomizeEmailResult> {
+  let result;
   try {
-    await assertDailyCostBudget(input.tenantId);
+    result = await runAigcAction<RawCustomizeOutput>({
+      actionId: KOL_EMAIL_CUSTOMIZE_ACTION_ID,
+      variables: toVariables(input),
+      tenantId: input.tenantId,
+      actionLabel: "kol_email_customize",
+    });
   } catch (err) {
     if (err instanceof AiDailyCostExceededError) {
       throw new CustomizeEmailError(
@@ -145,93 +158,33 @@ export async function customizeEmail(input: CustomizeEmailInput): Promise<Custom
         `tenant daily AI cost cap reached: ${err.message}`,
       );
     }
+    if (err instanceof AigcActionConfigError) {
+      throw new CustomizeEmailError("missing_env", err.message);
+    }
+    if (err instanceof AigcActionTimeoutError) {
+      throw new CustomizeEmailError("timeout", err.message);
+    }
+    if (err instanceof AigcActionHttpError) {
+      throw new CustomizeEmailError("http_error", err.message);
+    }
+    if (err instanceof AigcActionParseError) {
+      throw new CustomizeEmailError("invalid_response", err.message);
+    }
     throw err;
   }
 
-  const url = `${baseUrl()}/actions/run`;
-
-  let res: Response;
-  try {
-    res = await fetchWithRetry(
-      url,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          action_id: KOL_EMAIL_CUSTOMIZE_ACTION_ID,
-          variables: toVariables(input),
-          stream: false,
-        }),
-      },
-      { retries: 1, timeoutMs: 30_000 }
-    );
-  } catch (err) {
-    if (err instanceof Error && err.name === "AbortError") {
-      throw new CustomizeEmailError("timeout", "aigcgateway request timed out");
-    }
-    throw new CustomizeEmailError(
-      "http_error",
-      `aigcgateway fetch failed: ${(err as Error).message}`
-    );
-  }
-
-  if (!res.ok) {
-    // BL-035-F007 (AI-H2): the previous error string echoed up to
-    // 200 chars of the gateway response back to the client, which
-    // could include user-controlled prompt fragments (and any PII
-    // they carried). Keep the body for ops on the server log but
-    // surface only the status to the caller.
-    const text = await res.text().catch(() => "");
-    console.error(
-      "[aigcgateway full] customizeEmail status=%d body=%s",
-      res.status,
-      text,
-    );
-    throw new CustomizeEmailError(
-      "http_error",
-      `aigcgateway responded ${res.status}`,
-    );
-  }
-
-  const body = (await res.json()) as {
-    output?: string;
-    traceId?: string;
-    trace_id?: string;
-  };
-  if (!body.output) {
-    throw new CustomizeEmailError("invalid_response", "aigcgateway response missing `output`");
-  }
-
-  let parsed: { subject?: unknown; body?: unknown; rationale?: unknown };
-  try {
-    parsed = parseFencedJson<typeof parsed>(body.output);
-  } catch (err) {
+  const { subject, body, rationale } = result.output;
+  if (typeof subject !== "string" || typeof body !== "string") {
     throw new CustomizeEmailError(
       "invalid_response",
-      `aigcgateway output not parseable JSON: ${(err as Error).message}`
+      "aigcgateway output missing `subject` or `body` string",
     );
   }
-
-  if (typeof parsed.subject !== "string" || typeof parsed.body !== "string") {
-    throw new CustomizeEmailError(
-      "invalid_response",
-      "aigcgateway output missing `subject` or `body` string"
-    );
-  }
-
-  // BL-034 F005 fix-round 1: meter the successful AI call so the next
-  // request's `assertDailyCostBudget` sees it. Failure here only impacts
-  // the cost-cap accuracy (logEvent already swallows DB errors), never
-  // the customize result we return to the caller.
-  await recordAiUsage(input.tenantId, "kol_email_customize");
 
   return {
-    subject: parsed.subject,
-    body: parsed.body,
-    rationale: typeof parsed.rationale === "string" ? parsed.rationale : undefined,
-    traceId: body.traceId ?? body.trace_id,
+    subject,
+    body,
+    rationale: typeof rationale === "string" ? rationale : undefined,
+    traceId: result.traceId ?? undefined,
   };
 }

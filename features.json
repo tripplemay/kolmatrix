@@ -23,7 +23,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 8.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "改 `src/lib/email/customize.ts`：inline POST `/actions/run` → 调 `runAigcAction({ actionId: AIGCGATEWAY_EMAIL_CUSTOMIZE_ACTION_ID, variables, tenantId, actionLabel: 'email_customize' })`（复用 BL-067 F001 沉淀 SDK）",
       "改 `src/lib/kol-detail/topic-cloud.ts`：同模式迁移",
