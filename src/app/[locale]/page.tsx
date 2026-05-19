@@ -1,6 +1,8 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 
 import { LandingPage } from "./(marketing)/_components/LandingPage";
 
@@ -16,6 +18,32 @@ import { LandingPage } from "./(marketing)/_components/LandingPage";
  */
 interface Props {
   params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "landing.meta" });
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://kol.guangai.ai";
+  const url = `${baseUrl}/${locale}`;
+  return {
+    title: t("title"),
+    description: t("description"),
+    openGraph: {
+      title: t("title"),
+      description: t("description"),
+      url,
+      images: [{ url: "/landing/og-image.png", width: 1200, height: 630 }],
+      locale,
+    },
+    twitter: { card: "summary_large_image" },
+    alternates: {
+      canonical: url,
+      languages: {
+        zh: `${baseUrl}/zh`,
+        en: `${baseUrl}/en`,
+      },
+    },
+  };
 }
 
 export default async function LocalizedRootPage({ params }: Props) {
