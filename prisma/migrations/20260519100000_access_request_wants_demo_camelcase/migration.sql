@@ -3,4 +3,7 @@
 -- lastName, campaignsPerQuarter, etc. are all camelCase, NOT
 -- snake_case + @map). Originally added as snake_case in
 -- 20260519092852_access_request_wants_demo/; this migration aligns it.
+--
+-- ROLLBACK:
+--   ALTER TABLE "access_request" RENAME COLUMN "wantsDemo" TO "wants_demo";
 ALTER TABLE "access_request" RENAME COLUMN "wants_demo" TO "wantsDemo";
