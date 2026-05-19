@@ -2040,7 +2040,26 @@
       },
       "steps": ["Find KOLs", "AI Match", "Outreach", "Collaborate", "Measure"]
     },
-    "trust": {},
+    "trust": {
+      "sectionTitle": "Enterprise-grade security and compliance",
+      "items": {
+        "encryption": {
+          "icon": "🔒",
+          "title": "Enterprise data encryption",
+          "body": "TLS 1.3 in transit + Postgres RLS multi-tenant isolation"
+        },
+        "email": {
+          "icon": "✉️",
+          "title": "Email compliance",
+          "body": "Resend SPF / DKIM / DMARC fully verified, reputation 98"
+        },
+        "partners": {
+          "icon": "🤝",
+          "title": "Partners in conversation",
+          "body": "Top global game publishers in discussion — list coming soon"
+        }
+      }
+    },
     "faq": {},
     "footerCta": {}
   }

@@ -2040,7 +2040,26 @@
       },
       "steps": ["找 KOL", "AI 匹配", "发起合作", "邮件协作", "数据复盘"]
     },
-    "trust": {},
+    "trust": {
+      "sectionTitle": "企业级合规与安全",
+      "items": {
+        "encryption": {
+          "icon": "🔒",
+          "title": "企业级数据加密",
+          "body": "TLS 1.3 传输加密 + Postgres RLS 多租户隔离"
+        },
+        "email": {
+          "icon": "✉️",
+          "title": "邮件合规资质",
+          "body": "Resend SPF / DKIM / DMARC 全认证，信誉分 98"
+        },
+        "partners": {
+          "icon": "🤝",
+          "title": "合作伙伴洽谈中",
+          "body": "头部出海游戏发行商接洽中，名单稍后公开"
+        }
+      }
+    },
     "faq": {},
     "footerCta": {}
   }
