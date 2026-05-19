@@ -1,11 +1,11 @@
 {
-  "status": "verifying",
+  "status": "fixing",
   "user_goal": "BL-070-reach-insight-cleanup — ADR-013 AI Native Phase 4 第二批 / 本项目近期最后一批: 实装 /reach (Outreach 迁移 + Match→Reach 衔接 + customize.ts/topic-cloud.ts 迁移 runAigcAction) + /insight (Dashboard + Reports 合并 + 4 条 301) + 二次清理 (5 老路由目录 git rm + 6 unmount 组件 + i18n deprecated keys 全删 + middleware redirect 即停老路由 404) + 4 路由 IA 全量 e2e suite 重写 + 视觉 baseline 全量 regen + 对外上线 12 项 checklist signoff。8 features F001-F008，~8-10 day Generator + 2 day Reviewer (最大批次, 项目近期最后一批)。8 决策点用户 5/18-19 brainstorming 全 lock：#1 ready-to-build / #2 Reach 路径迁移 + Match衔接 + customize 迁移 / #3 Insight 仅合并 (AI 学到偏好留 Phase 5) / #4 二次清理全清 / #5 BL-070 同批即停 redirect (老路由 404, 项目近期未 prod 上线 SEO 风险可控) / #6 e2e 完整重写 + 老 e2e 清理 / #7 嵌入 spec §10 12 项 checklist + signoff doc 验证 / #8 基础设施全 ack 复用 v0.9.22。本批次 done = Phase 4 完整 done = 4 路由 IA 完整闭环 = 对外上线 ready (距 ~2 周)。关联 docs/specs/BL-070-reach-insight-cleanup-spec.md @ 0947d58 / ADR-013 §Decision #1 / vision §2 Reach+Insight 路由 + §3 场景 4-5 + §6 客户画像 / roadmap §6 BL-070 + §11 Phase 4 verifying gate.",
   "total_features": 8,
-  "completed_features": 7,
+  "completed_features": 5,
   "fix_rounds": 0,
   "current_sprint": "BL-070-reach-insight-cleanup",
-  "last_updated": "2026-05-19T17:30+0800",
+  "last_updated": "2026-05-20T01:25+0800",
   "reference_docs": [
     "docs/specs/BL-070-reach-insight-cleanup-spec.md",
     "docs/adr/ADR-013-ai-native-product-pivot.md",
@@ -26,12 +26,37 @@
   ],
   "docs": {
     "spec": "docs/specs/BL-070-reach-insight-cleanup-spec.md",
-    "test_cases": null,
+    "test_cases": "docs/test-reports/BL-070-verifying-2026-05-20.md",
     "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
+  "evaluator_feedback": {
+    "summary": "BL-070 首轮验收失败：定向 BL-070 E2E 仍有 4 个 conversational refine blocker，且当前 main 还存在 landing 页多语言覆盖回归。",
+    "pass_count": 5,
+    "partial_count": 0,
+    "fail_count": 3,
+    "issues": [
+      {
+        "feature_id": "F006",
+        "result": "FAIL",
+        "description": "`tests/e2e/match-flow.spec.ts` conversational refine 4 个用例失败；页面统一落到 `Refine timed out. Please try again.`，success/unparsable/cap/reset 分支均未命中。",
+        "steps_to_reproduce": "1. 启动 L1 3099 环境 2. 运行 `bash scripts/test/codex-e2e.sh tests/e2e/match-flow.spec.ts` 3. 查看 729/764/801/831 四个 refine 用例，均在 /campaigns/[id] 页看到 timeout fallback 而非预期 toast。"
+      },
+      {
+        "feature_id": "F007",
+        "result": "FAIL",
+        "description": "`tests/unit/i18n-locale-coverage.test.ts` 失败：ja/ko/es 各缺 85 个新文案叶子节点，zh 仍有 11 个 landing 相关值与 en 相同且不在 allowlist。",
+        "steps_to_reproduce": "1. 运行 `npx vitest run tests/unit/i18n-locale-coverage.test.ts` 2. 观察 `landing.*` 与 `auth.requestAccess.wantsDemoLabel` 相关断言失败。"
+      },
+      {
+        "feature_id": "F008",
+        "result": "FAIL",
+        "description": "首轮 verifying 未通过，prod deploy / 24h 监控 / signoff checklist 不能继续推进。",
+        "steps_to_reproduce": "在 L1 验证阶段先复现 F006 与 F007 blocker；在 blocker 未修复前不得进入 signoff。"
+      }
+    ]
+  },
   "generator_handoff": "[BL-070 generator 域内完成 7/8 + F008 部分; 切 verifying — 首轮验收 fix_rounds=0] Generator johnsong 完成 F001-F007 全部 + F008 generator 域内任务 (scripts/bl070-prod-audit.sh + docs/test-reports/BL-070-signoff-2026-05-19.md skeleton). Staging HEAD=cb35e51 ✓ deploy + CI 全绿.\n\n## ⚠️ Evaluator 状态机注意 (per harness-rules §状态流转图 + framework/harness/evaluator.md §12)\n\n**本批次首轮 verifying (fix_rounds=0), F008 剩余任务非'修复'而是'验收 + 上线 ops'**：\n  - 当前 status=verifying（不是 fixing/reverifying）\n  - Generator 域内 F001-F007 + F008 部分已完成, **不存在需修复的 blocker**\n  - F008 剩余 = prod deploy ops + 12 项 checklist 验收, 由 Evaluator + 用户协作\n  - 正确路径: **verifying → done**（首轮 PASS, per evaluator.md §12 + BIx-mvp-polish-pass / BL-025 先例)\n  - 仅当 Evaluator 验收过程中发现真 blocker → 切 verifying → fixing → reverifying → done\n  - features.json F008 status='pending' 是因 Evaluator 域内任务未完成（非 Generator 未完成）, Evaluator 完成 12 项 checklist 后改 'completed'\n\n## F008 剩余任务 (Evaluator / 用户协作):\n\n1. **prod deploy 触发 (用户 ack 时间窗)**: BL-067+068+069+070 累积 prod deploy. 触发: `gh workflow run deploy-prod.yml --ref main`. deploy-prod.sh 已含 v0.9.22 #4 --webpack 防御 (per §5 不变量 #9).\n\n2. **bl070-prod-audit.sh 首跑** (prod deploy 完成立即): `ssh tripplezhou@34.180.93.185 'bash /opt/kolmatrix/scripts/bl070-prod-audit.sh'`. 覆盖 12 项 checklist 中的自动化项 (§1-§12): 4 路由 active / 7 老路由 404 / 5 locale routable / 6 unmount 组件残余 / 7 老 routes 目录残余 / 9 i18n marker 残余 / 10 reach+insight ns 占位 / 25 baseline PNG 数 / git_sha 验 / pm2 logs grep BL-070 errors / AI cost 24h.\n\n3. **bl070-prod-audit.sh 24h 复跑** (deploy 后 ~24h): 同命令, 覆盖 §11 pm2 logs 24h window 验证 0 新增 BL-070-related error.\n\n4. **手动 checklist 项 §5-§9** (script 不能自动验):\n   - §5 4 路由 e2e suite 全 PASS → check CI run for prod commit, E2E job 全绿\n   - §6 视觉 baseline 全 PASS → check CI E2E visual project (25 baselines)\n   - §7 a11y ≥90 → Lighthouse a11y audit 主 4 IA 路由 ≥90\n   - §8 Lighthouse 性能 ≥80 → Lighthouse perf 主 4 IA 路由 ≥80\n   - §9 ≥5 marketer dogfood spot check → 邀 5 marketer 跑 brief → match → reach → insight 流程, 0 P0/P1 bug\n\n5. **填 signoff doc 最终结论** (docs/test-reports/BL-070-signoff-2026-05-19.md):\n   - §4 12 项 checklist 表格的 Status 列填具体 PASS/FAIL/WARN 计数\n   - §1 顶部时间线填具体 timestamp + run id\n   - §7 最终签字\n\n6. **progress.json status: verifying → done** (12 项全 PASS 后)\n\n## v0.9.23 候选 3 条 (Planner done 阶段集中沉淀, signoff doc §5 已列):\n- F004#1 删显式子路由前必须先加上游 [id] UUID guard\n- F004#2 notFound() + next-intl 包装 HTTP status 不可预测\n- F005#1 删 i18n deprecated ns 前必须 grep 实际 callers\n\n## 资源指引\n- audit script: scripts/bl070-prod-audit.sh\n- signoff skeleton: docs/test-reports/BL-070-signoff-2026-05-19.md\n- spec §10 12 项 checklist: docs/specs/BL-070-reach-insight-cleanup-spec.md §10\n- staging 验证 baseline: HEAD=cb35e51, 4 路由 307→/login, 老路径全 404 (F004/F005/F007 staging deploy 后已验)",
   "session_notes": {
     "johnsong_planner": "[2026-05-20 BJT Planner johnsong — BL-070 F008 staging dogfood spot check 清单出 / 等用户 ack prod deploy + Evaluator 接手]\n\n承接路径:\n  5/19 11:00 BL-070 batch start (commit b5ef010)\n  → 5/19 Generator johnsong 完成 F001-F007 全部 + F008 generator 域内 (audit script + signoff skeleton @ f7eac8d)\n  → 5/19 17:30 切 status=verifying, Generator handoff 详尽列 F008 §5-§9 手动 checklist (Evaluator + 用户)\n  → 5/20 本会话: Planner 出 BL-070 staging dogfood spot check 清单 + 等用户 ack prod deploy 触发\n\n## 本会话动作\n\n1. git pull 同步 + 检查 BL-070 状态 (verifying 7/8 + Generator handoff 详尽)\n2. 发现 landing page 18 commits 独立任务 (98c9a90 → ff2d407, 用户独立指派, Planner 不介入)\n3. 用户 5/20 ack 3 项决策:\n   - Planner 下一动作: 等用户 ack prod deploy + Evaluator 接手 (本会话 Planner 出清单)\n   - Landing page: 不需要 Planner review (用户独立任务)\n   - F008 prod deploy: 本会话 Planner 出清单 + 用户后续 ack 触发\n4. 落 docs/test-reports/BL-070-staging-spot-check.md (BL-070 F008 §5-§9 手动 checklist 实测指引, 4 §自动化 §1-§4 + 5 §手动 §5-§9 + Soft-watch 4 项 + signoff 触发条件)\n   - §5 4 路由 e2e 40+ case 验证步骤\n   - §6 25 baseline 视觉验证 + 8 老 baseline 已 git rm 验\n   - §7 a11y ≥90 lighthouse audit 4 IA 路由\n   - §8 perf ≥80 lighthouse audit\n   - §9 ≥5 marketer 端到端 brief→match→reach→insight 链路 spot check (5 step 详细路径) + 5 locale 切换\n5. progress.json session_notes.johnsong_planner 覆盖写本会话 (per harness §5b)\n\n## v0.9.23 候选累计 (Planner BL-070 done 阶段集中沉淀)\n\n  v0.9.22 待写 framework/harness/*.md 12 段:\n    - ai-action-contract.md 3 段 (#6 SDK 抽象层 / #10 dedupe / #11 prompt 自检)\n    - generator.md 4 段 (#3 audit 实测 / #5 InMemoryJobQueue / #8 webpack typecheck / #9 MCP trace)\n    - evaluator.md 2 段 (#2 量化 criterion / #12 mock infeasible)\n    - pre-impl-adjudication.md 2 段 (#1 多 audit 串联 / #7 命中率)\n    - deploy-patterns.md 1 段 (#4 Turbopack)\n    - planner.md 1 段 (#13 verifying gate trace)\n  BL-069 新 3 段 (#14-#16): IaRedirectRule status / staging chaos flag runbook / fix-round 类型分类\n  BL-070 新 3 段 (#17-#19, 已在 signoff doc skeleton §5 列出):\n    #17 F004#1 删显式子路由前必须先加上游 [id] UUID guard\n    #18 F004#2 notFound() + next-intl 包装 HTTP status 不可预测\n    #19 F005#1 删 i18n deprecated ns 前必须 grep 实际 callers\n  累计 ~18 段 framework/harness/*.md + 3+3 条 archive 完整保留 = ~1500-2000 LOC docs (BL-070 done 必做)\n\n## F008 验收后续 (Evaluator + 用户协作, 不是 Planner)\n\n  1. 用户 ack prod deploy 时间窗 → trigger gh workflow run deploy-prod.yml --ref main\n  2. Evaluator 跑 bl070-prod-audit.sh 首跑 (deploy 完成立即) + 24h 复跑\n  3. Evaluator/用户协作 §5-§9 5 项手动 checklist (per docs/test-reports/BL-070-staging-spot-check.md)\n  4. Evaluator 填 docs/test-reports/BL-070-signoff-2026-05-19.md §4 12 项 checklist 表 + §1 时间线 + §7 终签\n  5. Evaluator status: verifying → done\n  → BL-070 done = Phase 4 完整 done = 4 路由 IA 闭环 = 对外上线 ready\n\n## Planner BL-070 done 阶段续接\n\n  - 收 Evaluator signoff 后立即起 v0.9.23 集中沉淀 commit\n  - 写 BL-070 done 收尾 commit (proposed-learnings 5 条新候选评估 + project-status BL-070 DONE marker + 时间 estimate '对外上线 distance')\n  - 询问 Phase 5 候选启动 (个性化学习 / skip-replace 写 DB / comparative query / AI 学到偏好 / Brief 模板库 / KOL data coverage)\n  - 对外上线后真客户 onboarding 准备",
