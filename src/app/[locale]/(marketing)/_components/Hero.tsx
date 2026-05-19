@@ -2,15 +2,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
+import { prisma } from "@/lib/db";
+
 interface Props {
   locale: string;
 }
 
-// T14 replaces this with a real count read from the DB.
-const KOL_COUNT_DISPLAY = 2500;
+function roundDownTo500(n: number): number {
+  return Math.max(500, Math.floor(n / 500) * 500);
+}
 
 export async function Hero({ locale }: Props) {
   const t = await getTranslations("landing.hero");
+  const kolCount = await prisma.kol.count();
+  const kolCountDisplay = roundDownTo500(kolCount);
 
   return (
     <section
@@ -37,7 +42,7 @@ export async function Hero({ locale }: Props) {
           <ul className="mt-8 grid grid-cols-2 gap-3">
             <li className="rounded-xl border border-cyan/20 bg-cyan/5 px-4 py-3 text-sm text-on-surface">
               <span aria-hidden="true" className="mr-2">🎮</span>
-              {t("kpis.kolLibrary", { count: KOL_COUNT_DISPLAY })}
+              {t("kpis.kolLibrary", { count: kolCountDisplay })}
             </li>
             <li className="rounded-xl border border-cyan/20 bg-cyan/5 px-4 py-3 text-sm text-on-surface">
               <span aria-hidden="true" className="mr-2">🌐</span>
