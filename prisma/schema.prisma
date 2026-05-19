@@ -438,7 +438,7 @@ model AccessRequest {
   role                String    @db.VarChar(64)
   campaignsPerQuarter String    @db.VarChar(32)
   games               String?   @db.Text
-  wantsDemo            Boolean   @default(false) @map("wants_demo")
+  wantsDemo           Boolean   @default(false)
   status              String    @default("pending") @db.VarChar(16)
   reviewedBy          String?   @db.VarChar(320)
   reviewedAt          DateTime?

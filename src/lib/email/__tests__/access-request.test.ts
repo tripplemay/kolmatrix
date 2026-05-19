@@ -33,6 +33,7 @@ function makePayload(
     role: "marketing-manager",
     campaignsPerQuarter: "6-20",
     games: "Astra: Midnight Gauntlet",
+    wantsDemo: false,
     createdAt: new Date("2026-04-21T10:00:00Z"),
     ...overrides,
   };

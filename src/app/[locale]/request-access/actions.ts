@@ -91,6 +91,7 @@ export async function submitAccessRequest(
       role: record.role,
       campaignsPerQuarter: record.campaignsPerQuarter,
       games: record.games,
+      wantsDemo: data.wantsDemo,
       createdAt: record.createdAt,
     };
     await sendAccessRequestNotification(payload);

@@ -41,6 +41,7 @@ export type AccessRequestNotificationPayload = {
   role: string;
   campaignsPerQuarter: string;
   games: string | null;
+  wantsDemo: boolean;
   createdAt: Date;
 };
 
@@ -75,9 +76,14 @@ function buildBodyHtml(req: AccessRequestNotificationPayload): string {
         </tr>`
     )
     .join("");
+  const demoBadge = req.wantsDemo
+    ? `<div style="display:inline-block;margin-bottom:16px;padding:6px 12px;background:#fef3c7;border:1px solid #f59e0b;border-radius:4px;font-size:13px;font-weight:700;color:#92400e">
+        DEMO REQUESTED — this lead wants a 1-on-1 demo
+      </div>`
+    : "";
   return `
     <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;color:#0f172a">
-      <p style="font-size:14px;margin:0 0 16px">A new access request has been submitted:</p>
+      ${demoBadge}<p style="font-size:14px;margin:0 0 16px">A new access request has been submitted:</p>
       <table style="font-size:14px;border-collapse:collapse;width:100%">${rowsHtml}</table>
       <p style="font-size:12px;color:#6b7280;margin:24px 0 0">
         To approve, SSH into the VPS and run the access-request approval runbook

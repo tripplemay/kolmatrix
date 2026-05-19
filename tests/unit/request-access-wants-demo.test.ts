@@ -1,14 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 
-// Mock server-side imports so the schema can be tested in unit context
-// without a live DB or email provider.
+// actions.ts is a "use server" file that imports prisma + email helpers
+// at module scope; mock prevents Prisma client init during unit test.
 vi.mock("@/lib/db", () => ({ prisma: {} }));
 vi.mock("@/lib/email/access-request", () => ({
   sendAccessRequestNotification: vi.fn(),
 }));
 
-// Re-import the schema once it's exported (Step 4). Until then this
-// import will fail at compile time — that IS the failing test.
 import { AccessRequestSchema } from "@/app/[locale]/request-access/actions";
 
 describe("AccessRequestSchema.wantsDemo", () => {
@@ -34,5 +32,10 @@ describe("AccessRequestSchema.wantsDemo", () => {
   it("parses wantsDemo='false' to false", () => {
     const r = AccessRequestSchema.parse({ ...base, wantsDemo: "false" });
     expect(r.wantsDemo).toBe(false);
+  });
+
+  it("parses wantsDemo='true' to true", () => {
+    const r = AccessRequestSchema.parse({ ...base, wantsDemo: "true" });
+    expect(r.wantsDemo).toBe(true);
   });
 });
