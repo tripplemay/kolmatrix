@@ -5,9 +5,9 @@
  * layout (Brief / AiRecommendation / AcceptedKolsPanel) — after F006
  * the bottom panel is renamed and rendered read-only with a source
  * chip column. Original 2-col + 3 Insights cards layout was BM2-F005
- * / MVP-vf-F005; those four sidebar/inline components are
- * unmount-only (files kept with @deprecated_by_BL-066 marker for
- * BL-070 atomic delete).
+ * / MVP-vf-F005; BL-070-F005 二次清理 deleted the 6 unmount files
+ * outright. The negative-mount guard below stays so a regression that
+ * re-introduces any of those components surfaces here.
  */
 import { readFileSync } from "fs";
 import { resolve } from "path";
@@ -43,7 +43,11 @@ describe("/campaigns/:id fidelity guards (BL-066 F002 + F006)", () => {
     expect(page).not.toMatch(/<CampaignHeader\b/);
   });
 
-  it("the 6 unmount component files carry @deprecated_by_BL-066 marker", () => {
+  it("BL-070-F005 二次清理 — the 6 BL-066 unmount component files are gone", () => {
+    // Files were git rm'd in F005; this regression guard catches an
+    // accidental re-add by asserting their source paths do not resolve.
+    // Lives here (not as a filesystem grep) so it stays adjacent to the
+    // page.tsx negative-mount guard above for easy review.
     for (const f of [
       "CampaignHealthCard.tsx",
       "ActivityTimelineCard.tsx",
@@ -52,7 +56,10 @@ describe("/campaigns/:id fidelity guards (BL-066 F002 + F006)", () => {
       "CampaignRevenueRecorder.tsx",
       "CampaignStatusController.tsx",
     ]) {
-      expect(read(f), f).toMatch(/@deprecated_by_BL-066/);
+      expect(
+        () => read(f),
+        `${f} must NOT exist (BL-070-F005 deleted it)`,
+      ).toThrow();
     }
   });
 

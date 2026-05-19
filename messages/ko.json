@@ -12,13 +12,6 @@
     "reachDescription": "이메일 아웃리치 및 답신 관리",
     "insight": "인사이트",
     "insightDescription": "결과, ROI, 회고",
-    "dashboard": "대시보드",
-    "kolDiscovery": "KOL 발견",
-    "kolDatabase": "KOL 데이터베이스",
-    "campaigns": "캠페인",
-    "emailCenter": "이메일 센터",
-    "knowledgeBase": "지식 베이스",
-    "analytics": "분석",
     "settings": "설정"
   },
   "topbar": {
@@ -227,7 +220,6 @@
     }
   },
   "knowledgeBase": {
-    "_deprecated_by_BL-069": "BL-069-F006에서 /knowledge-base → /brief?tab=products로 리디렉션합니다. 임베드된 ProductsClient가 계속 렌더링되도록 문자열은 유지; BL-070 이차 정리에서 본 네임스페이스와 /knowledge-base 경로를 삭제할 예정입니다.",
     "breadcrumbRoot": "제품",
     "breadcrumbCurrent": "지식 베이스",
     "title": "제품 지식 베이스",
@@ -813,26 +805,6 @@
       "selectAllAria": "이 페이지의 모든 행 선택",
       "selectRowAria": "{name} 선택"
     },
-    "addKolForm": {
-      "title": "KOL 추가",
-      "platformLabel": "플랫폼",
-      "handleLabel": "핸들",
-      "handlePlaceholder": "@channelhandle",
-      "displayNameLabel": "표시 이름",
-      "urlLabel": "URL (선택)",
-      "emailLabel": "이메일 (선택)",
-      "followerCountLabel": "팔로워 수 (선택)",
-      "submitLabel": "KOL 추가",
-      "submittingLabel": "추가 중…",
-      "cancelLabel": "취소",
-      "successLabel": "KOL이 추가되었습니다.",
-      "errorLabel": "추가 실패.",
-      "duplicateLabel": "이 핸들 + 플랫폼 조합은 이미 존재합니다.",
-      "rateLimitLabel": "작업 횟수가 많습니다. 잠시 후 다시 시도하세요.",
-      "invalidUrlLabel": "URL이 유효하지 않습니다 (https://…)",
-      "invalidEmailLabel": "이메일 형식이 올바르지 않습니다",
-      "_deprecated_by_BL-066": "BL-066-F005에서 수동 KOL 추가 폼을 폐기했습니다. BL-070에서 본 네임스페이스를 제거합니다。"
-    },
     "dialog": {
       "title": "캠페인에 추가",
       "body": "선택한 {count}명의 KOL을 추가할 캠페인을 선택하세요. 기존 연결은 자동으로 건너뜁니다.",
@@ -849,16 +821,6 @@
       "activeCollabs": "활성 협업 수",
       "avgScore": "평균 AI 점수",
       "followerReach": "팔로워 도달 범위"
-    },
-    "headerActions": {
-      "subtitle": "{count, plural, =0 {라이브러리에 KOL이 아직 없습니다} one {라이브러리에 #명의 KOL이 있습니다} other {라이브러리에 #명의 KOL이 있습니다}}",
-      "export": "내보내기",
-      "exportTooltip": "저장된 KOL을 CSV로 다운로드",
-      "import": "CSV 가져오기",
-      "importTooltip": "CSV 파일에서 KOL을 일괄 가져오기",
-      "addKol": "KOL 추가",
-      "addKolTooltip": "라이브러리에 KOL을 수동으로 추가",
-      "_deprecated_by_BL-066": "BL-066-F005에서 수동 KOL 추가 폼을 폐기했습니다. BL-070에서 본 네임스페이스를 제거합니다。"
     }
   },
   "brief": {
@@ -976,58 +938,6 @@
       "title": "해당 필터에 일치하는 캠페인이 없습니다",
       "body": "필터를 초기화하거나 검색 범위를 넓혀보세요."
     },
-    "new": {
-      "_deprecated_by_BL-069": "BL-069-F006에서 /campaigns/new → /brief?action=new로 리디렉션합니다. 배포 기간 동안 레거시 경로가 동작하도록 BM2 CampaignForm 문자열은 유지; BL-070 이차 정리에서 /campaigns/new와 본 네임스페이스를 삭제할 예정입니다.",
-      "title": "새 캠페인",
-      "subtitle": "캠페인을 등록하여 크리에이터를 초대하고 ROI를 추적할 수 있습니다.",
-      "backToList": "캠페인 목록으로 돌아가기",
-      "submit": "캠페인 생성",
-      "submitting": "생성 중…",
-      "fields": {
-        "name": "캠페인 이름",
-        "nameHint": "80자 이내의 짧고 인식 가능한 라벨입니다.",
-        "product": "제품",
-        "budget": "총 예산(USD)",
-        "budgetHint": "선택 사항입니다. 목록 페이지에서 지출 대비 예산을 계산하는 데 사용됩니다.",
-        "startDate": "시작 날짜",
-        "endDate": "종료 날짜",
-        "game": "게임 / 제목(선택 사항)",
-        "gameHint": "제품 이름과 다른 경우 입력하세요.",
-        "markets": "대상 시장",
-        "kpiTarget": "KPI 목표(선택 사항)",
-        "kpiTargetHint": "자유 텍스트로 간단히 입력하세요(예: '30일 내에 2백만 조회수')."
-      },
-      "markets": {
-        "global": "전 세계",
-        "us": "US",
-        "eu": "EU",
-        "jp": "일본",
-        "kr": "한국",
-        "sea": "동남아시아",
-        "cn": "중국 본토",
-        "latam": "라틴 아메리카"
-      },
-      "noProducts": {
-        "title": "아직 제품이 없습니다",
-        "body": "캠페인은 제품을 대상으로 실행됩니다. 지식 베이스에서 첫 번째 제품을 등록한 후 돌아오세요.",
-        "cta": "지식 베이스로 이동"
-      },
-      "errors": {
-        "nameRequired": "캠페인에 이름을 지정하세요.",
-        "productIdRequired": "제품을 선택하세요.",
-        "productNotFound": "해당 제품은 더 이상 사용할 수 없습니다.",
-        "budgetInvalid": "예산은 숫자여야 합니다(예: 10000.00).",
-        "budgetOverflow": "예산이 너무 커서 기록할 수 없습니다.",
-        "dateInvalid": "유효하지 않은 날짜입니다.",
-        "endBeforeStart": "종료 날짜는 시작 날짜보다 이전일 수 없습니다.",
-        "ownerInvalid": "소유자 세션이 유효하지 않은 것 같습니다. 다시 로그인하세요.",
-        "generic": "문제가 발생했습니다. 다시 시도하세요.",
-        "unauthorized": "캠페인을 생성하려면 로그인하세요."
-      },
-      "smartMatch": {
-        "banner": "{count, plural, one {1 KOL} other {# KOLs}} 스마트 매치에서 추천한 크리에이터는 이 캠페인을 저장하면 연결됩니다."
-      }
-    },
     "detail": {
       "breadcrumb": "캠페인",
       "edit": "편집",
@@ -1127,10 +1037,7 @@
           "legacy": "기존"
         },
         "viewProfile": "프로필 보기",
-        "feeUnset": "—",
-        "remove": "제거",
-        "removeConfirm": "이 KOL을 캠페인에서 제거하시겠습니까?",
-        "_deprecated_by_BL-066": "BL-066-F006으로 addButton/aiNativeMigrationTooltip/addDialog.*/remove/removeConfirm을 사용 중단. BL-070에서 삭제 예정."
+        "feeUnset": "—"
       },
       "kolStatus": {
         "pending": "대기 중",
@@ -1139,16 +1046,6 @@
         "signed": "계약 체결됨",
         "delivered": "전달됨",
         "paid": "결제됨"
-      },
-      "revenue": {
-        "title": "매출",
-        "lockedBody": "이 캠페인은 완료되었습니다. 매출이 잠겨 있습니다. 다시 활성화하여 편집하세요.",
-        "placeholder": "12000.00",
-        "save": "저장",
-        "saving": "저장 중…",
-        "clear": "지우기",
-        "helper": "가능한 경우 기여 매출을 기록하세요. 지워진 값은 ROI를 —로 재설정합니다.",
-        "_deprecated_by_BL-066": "BL-066 원자적 배포 후 BL-070에서 본 네임스페이스를 제거합니다。"
       },
       "statusController": {
         "title": "라이프사이클",
@@ -1165,24 +1062,6 @@
         "cta": "아웃리치 작성기 열기"
       },
       "insights": {
-        "emailChart": {
-          "title": "이메일 성능",
-          "empty": "지난 14일 동안 이메일 활동이 없습니다.",
-          "contacted": "연락됨",
-          "replied": "회신됨",
-          "_deprecated_by_BL-066": "BL-066 원자적 배포 후 BL-070에서 본 네임스페이스를 제거합니다。"
-        },
-        "health": {
-          "heading": "캠페인 건강 상태",
-          "spendRate": "지출 비율",
-          "spendRateAria": "지출 비율 링 진행률",
-          "revenueVsBudget": "매출 / 예산",
-          "closeout": "종료",
-          "noEndDate": "—",
-          "daysLeft": "{days, plural, =0 {오늘 종료} one {# 남은 일} other {# 남은 일}}",
-          "overdue": "{days, plural, one {# 일 연체} other {# 일 연체}}",
-          "_deprecated_by_BL-066": "BL-066 원자적 배포 후 BL-070에서 본 네임스페이스를 제거합니다。"
-        },
         "ai": {
           "heading": "AI 제안",
           "nextSteps": "{count, plural, =0 {연결된 KOL이 모두 paid 상태입니다. Discovery에서 새 후보를 추가하세요.} one {미접촉 KOL #명에게 우선 발송하세요.} other {미접촉 KOL #명에게 우선 발송하세요.}}",
@@ -1192,21 +1071,6 @@
           "cachedPrefix": "캐시",
           "empty": "한 번 생성하면 24시간 캐시됩니다.",
           "error": "제안 생성에 실패했습니다. 다시 시도해 주세요."
-        },
-        "activity": {
-          "heading": "최근 활동",
-          "empty": "아직 캠페인 활동이 없습니다.",
-          "actions": {
-            "campaign_created": "캠페인 생성됨",
-            "campaign_kol_added": "KOL 추가됨",
-            "campaign_kol_removed": "KOL 제거됨",
-            "campaign_kol_fee_updated": "KOL 비용 업데이트됨",
-            "campaign_kol_status_changed": "KOL 상태 변경됨",
-            "campaign_status_changed": "캠페인 상태 변경됨",
-            "campaign_revenue_recorded": "매출 기록됨",
-            "kol_bulk_added_to_campaign": "KOL 일괄 추가됨"
-          },
-          "_deprecated_by_BL-066": "BL-066 원자적 배포 후 BL-070에서 본 네임스페이스를 제거합니다。"
         }
       },
       "errors": {

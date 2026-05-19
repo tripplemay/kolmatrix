@@ -12,13 +12,6 @@
     "reachDescription": "Email outreach and replies",
     "insight": "Insight",
     "insightDescription": "Results, ROI, and retrospectives",
-    "dashboard": "Dashboard",
-    "kolDiscovery": "KOL Discovery",
-    "kolDatabase": "KOL Database",
-    "campaigns": "Campaigns",
-    "emailCenter": "Email Center",
-    "knowledgeBase": "Knowledge Base",
-    "analytics": "Analytics",
     "settings": "Settings"
   },
   "topbar": {
@@ -227,7 +220,6 @@
     }
   },
   "knowledgeBase": {
-    "_deprecated_by_BL-069": "BL-069-F006 redirects /knowledge-base → /brief?tab=products. Strings stay live so the embedded ProductsClient still renders; BL-070 二次清理 will delete this namespace + the /knowledge-base route altogether.",
     "breadcrumbRoot": "Products",
     "breadcrumbCurrent": "Knowledge Base",
     "title": "Product Knowledge Base",
@@ -813,26 +805,6 @@
       "selectAllAria": "Select all rows on this page",
       "selectRowAria": "Select {name}"
     },
-    "addKolForm": {
-      "title": "Add a KOL",
-      "platformLabel": "Platform",
-      "handleLabel": "Handle",
-      "handlePlaceholder": "@channelhandle",
-      "displayNameLabel": "Display name",
-      "urlLabel": "URL (optional)",
-      "emailLabel": "Email (optional)",
-      "followerCountLabel": "Follower count (optional)",
-      "submitLabel": "Add KOL",
-      "submittingLabel": "Adding…",
-      "cancelLabel": "Cancel",
-      "successLabel": "KOL added.",
-      "errorLabel": "Could not add KOL.",
-      "duplicateLabel": "A KOL with this handle + platform already exists.",
-      "rateLimitLabel": "Too many additions — please slow down.",
-      "invalidUrlLabel": "URL must be valid (https://…)",
-      "invalidEmailLabel": "Email must be valid",
-      "_deprecated_by_BL-066": "BL-066-F005 retired Add KOL form. BL-070 will delete this namespace."
-    },
     "dialog": {
       "title": "Add to Campaign",
       "body": "Pick a campaign to add the {count} selected KOLs to. Existing links are skipped automatically.",
@@ -849,16 +821,6 @@
       "activeCollabs": "Active Collabs",
       "avgScore": "Avg AI Score",
       "followerReach": "Follower Reach"
-    },
-    "headerActions": {
-      "subtitle": "{count, plural, =0 {No KOLs in your library yet} one {# KOL in your library} other {# KOLs in your library}}",
-      "export": "Export",
-      "exportTooltip": "Download saved KOLs as CSV",
-      "import": "Import CSV",
-      "importTooltip": "Bulk-import KOLs from a CSV file",
-      "addKol": "Add KOL",
-      "addKolTooltip": "Manually add a KOL to your library",
-      "_deprecated_by_BL-066": "BL-066-F005 retired Add KOL form. BL-070 will delete this namespace."
     }
   },
   "brief": {
@@ -1075,10 +1037,7 @@
           "legacy": "Legacy"
         },
         "viewProfile": "View profile",
-        "feeUnset": "—",
-        "remove": "Remove",
-        "removeConfirm": "Remove this KOL from the campaign?",
-        "_deprecated_by_BL-066": "BL-066-F006 retired addButton/aiNativeMigrationTooltip/addDialog.*/remove/removeConfirm. BL-070 will delete those keys."
+        "feeUnset": "—"
       },
       "kolStatus": {
         "pending": "Pending",
@@ -1087,16 +1046,6 @@
         "signed": "Signed",
         "delivered": "Delivered",
         "paid": "Paid"
-      },
-      "revenue": {
-        "title": "Revenue",
-        "lockedBody": "This campaign is completed — revenue is locked. Reactivate to edit.",
-        "placeholder": "12000.00",
-        "save": "Save",
-        "saving": "Saving…",
-        "clear": "Clear",
-        "helper": "Record the attributable revenue whenever you have it. Cleared values reset ROI to —.",
-        "_deprecated_by_BL-066": "BL-070 will remove this namespace after BL-066 atomic ship."
       },
       "statusController": {
         "title": "Lifecycle",
@@ -1113,24 +1062,6 @@
         "cta": "Open Outreach composer"
       },
       "insights": {
-        "emailChart": {
-          "title": "Email Performance",
-          "empty": "No email activity in the last 14 days.",
-          "contacted": "Contacted",
-          "replied": "Replied",
-          "_deprecated_by_BL-066": "BL-070 will remove this namespace after BL-066 atomic ship."
-        },
-        "health": {
-          "heading": "Campaign Health",
-          "spendRate": "Spend rate",
-          "spendRateAria": "Spend rate ring progress",
-          "revenueVsBudget": "Revenue / budget",
-          "closeout": "Closeout",
-          "noEndDate": "—",
-          "daysLeft": "{days, plural, =0 {Closes today} one {# day left} other {# days left}}",
-          "overdue": "{days, plural, one {# day overdue} other {# days overdue}}",
-          "_deprecated_by_BL-066": "BL-070 will remove this namespace after BL-066 atomic ship."
-        },
         "ai": {
           "heading": "AI Suggestions",
           "nextSteps": "{count, plural, =0 {Every linked KOL is paid up — pick a new candidate from Discovery.} one {Send to # uncontacted KOL.} other {Send to # uncontacted KOLs.}}",
@@ -1140,21 +1071,6 @@
           "cachedPrefix": "Cached",
           "empty": "Generate once to cache for 24 hours.",
           "error": "Could not generate suggestions. Please retry."
-        },
-        "activity": {
-          "heading": "Recent Activity",
-          "empty": "No campaign activity yet.",
-          "actions": {
-            "campaign_created": "Campaign created",
-            "campaign_kol_added": "KOL added",
-            "campaign_kol_removed": "KOL removed",
-            "campaign_kol_fee_updated": "KOL fee updated",
-            "campaign_kol_status_changed": "KOL status changed",
-            "campaign_status_changed": "Campaign status changed",
-            "campaign_revenue_recorded": "Revenue recorded",
-            "kol_bulk_added_to_campaign": "KOLs bulk-added"
-          },
-          "_deprecated_by_BL-066": "BL-070 will remove this namespace after BL-066 atomic ship."
         }
       },
       "errors": {
@@ -1208,58 +1124,6 @@
         "capExhaustedToast": "Daily AI quota reached. Current pool unchanged.",
         "networkError": "Refine timed out. Please try again.",
         "permutationInvalid": "Rerank result was invalid. Current pool unchanged."
-      }
-    },
-    "new": {
-      "_deprecated_by_BL-069": "BL-069-F006 redirects /campaigns/new → /brief?action=new. The BM2 CampaignForm strings live so the legacy route still works during deploy; BL-070 二次清理 will delete /campaigns/new + this namespace.",
-      "title": "New Campaign",
-      "subtitle": "Register a launch so you can invite creators and track its ROI.",
-      "backToList": "Back to Campaigns",
-      "submit": "Create Campaign",
-      "submitting": "Creating…",
-      "fields": {
-        "name": "Campaign name",
-        "nameHint": "A short, recognisable label — max 80 chars.",
-        "product": "Product",
-        "budget": "Total budget (USD)",
-        "budgetHint": "Optional. Used to compute Spend vs. Budget on the list page.",
-        "startDate": "Start date",
-        "endDate": "End date",
-        "game": "Game / title (optional)",
-        "gameHint": "Fill when different from the product name.",
-        "markets": "Target markets",
-        "kpiTarget": "KPI target (optional)",
-        "kpiTargetHint": "Free-text brief — e.g., '2M views in 30 days'."
-      },
-      "markets": {
-        "global": "Global",
-        "us": "US",
-        "eu": "EU",
-        "jp": "Japan",
-        "kr": "Korea",
-        "sea": "Southeast Asia",
-        "cn": "Mainland China",
-        "latam": "LATAM"
-      },
-      "noProducts": {
-        "title": "No products yet",
-        "body": "Campaigns run against a product. Register your first one in Knowledge Base, then come back.",
-        "cta": "Go to Knowledge Base"
-      },
-      "errors": {
-        "nameRequired": "Give the campaign a name.",
-        "productIdRequired": "Pick a product.",
-        "productNotFound": "That product is no longer available.",
-        "budgetInvalid": "Budget must be a number (e.g., 10000.00).",
-        "budgetOverflow": "Budget is too large for our records.",
-        "dateInvalid": "Invalid date.",
-        "endBeforeStart": "End date cannot be before the start date.",
-        "ownerInvalid": "Owner session looks invalid — please sign in again.",
-        "generic": "Something went wrong. Please try again.",
-        "unauthorized": "Please sign in to create campaigns."
-      },
-      "smartMatch": {
-        "banner": "{count, plural, one {1 KOL} other {# KOLs}} from Smart Match will be linked once you save this campaign."
       }
     }
   },

@@ -10,17 +10,12 @@
  * 路由但 deriveActiveNav 把它们映射到内容对应的新 nav id（assets→brief
  * / crm→reach / kols→match），deep link 不死。
  *
- * **Deprecated nav.* i18n keys (cleaned up by BL-070-F005):**
- * The legacy `nav.dashboard / kolDiscovery / kolDatabase / campaigns /
- * emailCenter / knowledgeBase / analytics` keys are still present in
- * `messages/{en,zh,ja,ko,es}.json` under `_deprecated_by_BL-064` /
- * `_deprecated_by_BL-066/067/069` markers so any straggler t-call
- * doesn't crash; BL-070-F005 removes them now that the routes they
- * named no longer exist (BL-070-F004 retired them).
- *
- * `nav.settings` is intentionally NOT deprecated — it now lives in
- * the UserAvatarMenu dropdown (adjudication §1) but the key is still
- * read there.
+ * BL-070-F005 二次清理 — the legacy `nav.dashboard / kolDiscovery /
+ * kolDatabase / campaigns / emailCenter / knowledgeBase / analytics`
+ * keys (and their `*Description` siblings) were deleted from all 5
+ * locale bundles now that the routes they named no longer exist
+ * (BL-070-F004 retired them). `nav.settings` stays — it's read by the
+ * UserAvatarMenu dropdown (adjudication §1).
  *
  * **BL-014 review pending markers (ja/ko/es):** The new
  * `nav.brief/match/reach/insight` (+ description) translations in

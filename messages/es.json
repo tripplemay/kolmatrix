@@ -12,13 +12,6 @@
     "reachDescription": "Difusión por correo y respuestas",
     "insight": "Análisis",
     "insightDescription": "Resultados, ROI y retrospectivas",
-    "dashboard": "Panel",
-    "kolDiscovery": "Descubrir KOL",
-    "kolDatabase": "Base de datos de KOL",
-    "campaigns": "Campañas",
-    "emailCenter": "Centro de correo electrónico",
-    "knowledgeBase": "Base de conocimientos",
-    "analytics": "Análisis",
     "settings": "Configuración"
   },
   "topbar": {
@@ -227,7 +220,6 @@
     }
   },
   "knowledgeBase": {
-    "_deprecated_by_BL-069": "BL-069-F006 redirige /knowledge-base → /brief?tab=products. Los textos permanecen para que el ProductsClient embebido siga renderizando; la limpieza secundaria BL-070 eliminará este espacio de nombres y la ruta /knowledge-base.",
     "breadcrumbRoot": "Productos",
     "breadcrumbCurrent": "Base de conocimientos",
     "title": "Base de conocimientos del producto",
@@ -813,26 +805,6 @@
       "selectAllAria": "Seleccionar todas las filas de esta página",
       "selectRowAria": "Seleccionar {name}"
     },
-    "addKolForm": {
-      "title": "Añadir un KOL",
-      "platformLabel": "Plataforma",
-      "handleLabel": "Handle",
-      "handlePlaceholder": "@channelhandle",
-      "displayNameLabel": "Nombre",
-      "urlLabel": "URL (opcional)",
-      "emailLabel": "Correo (opcional)",
-      "followerCountLabel": "Seguidores (opcional)",
-      "submitLabel": "Añadir KOL",
-      "submittingLabel": "Añadiendo…",
-      "cancelLabel": "Cancelar",
-      "successLabel": "KOL añadido.",
-      "errorLabel": "No se pudo añadir el KOL.",
-      "duplicateLabel": "Ya existe un KOL con este handle + plataforma.",
-      "rateLimitLabel": "Demasiadas solicitudes. Espera un poco.",
-      "invalidUrlLabel": "URL no válida (https://…)",
-      "invalidEmailLabel": "Correo no válido",
-      "_deprecated_by_BL-066": "BL-066-F005 retira el formulario manual de añadir KOL. BL-070 eliminará este espacio de nombres."
-    },
     "dialog": {
       "title": "Añadir a Campaña",
       "body": "Seleccione una Campaña para añadir los {count} KOLs seleccionados. Los enlaces existentes se omiten automáticamente.",
@@ -849,16 +821,6 @@
       "activeCollabs": "Colaboraciones activas",
       "avgScore": "Puntuación media AI",
       "followerReach": "Alcance de seguidores"
-    },
-    "headerActions": {
-      "subtitle": "{count, plural, =0 {Aún no hay KOLs en tu biblioteca} one {# KOL en tu biblioteca} other {# KOLs en tu biblioteca}}",
-      "export": "Exportar",
-      "exportTooltip": "Descargar los KOLs guardados como CSV",
-      "import": "Importar CSV",
-      "importTooltip": "Importar KOLs en bloque desde un archivo CSV",
-      "addKol": "Añadir KOL",
-      "addKolTooltip": "Añadir un KOL manualmente a tu biblioteca",
-      "_deprecated_by_BL-066": "BL-066-F005 retira el formulario manual de añadir KOL. BL-070 eliminará este espacio de nombres."
     }
   },
   "brief": {
@@ -976,58 +938,6 @@
       "title": "Ninguna campaña coincide con esos filtros",
       "body": "Intente borrar los filtros o ampliar la búsqueda."
     },
-    "new": {
-      "_deprecated_by_BL-069": "BL-069-F006 redirige /campaigns/new → /brief?action=new. Los textos de BM2 CampaignForm permanecen para que la ruta legada funcione durante el despliegue; la limpieza secundaria BL-070 eliminará /campaigns/new y este espacio de nombres.",
-      "title": "Nueva Campaña",
-      "subtitle": "Registra un lanzamiento para invitar creadores y hacer seguimiento de su ROI.",
-      "backToList": "Volver a Campañas",
-      "submit": "Crear Campaña",
-      "submitting": "Creando…",
-      "fields": {
-        "name": "Nombre de la Campaña",
-        "nameHint": "Una etiqueta corta y reconocible; máximo 80 caracteres.",
-        "product": "Producto",
-        "budget": "Presupuesto total (USD)",
-        "budgetHint": "Opcional. Se utiliza para calcular Gasto vs. Presupuesto en la vista de lista.",
-        "startDate": "Fecha de inicio",
-        "endDate": "Fecha de finalización",
-        "game": "Juego / título (opcional)",
-        "gameHint": "Rellénalo si es diferente del nombre del producto.",
-        "markets": "Mercados objetivo",
-        "kpiTarget": "Objetivo de KPI (opcional)",
-        "kpiTargetHint": "Descripción en texto libre; ej. '2M de visualizaciones en 30 días'."
-      },
-      "markets": {
-        "global": "Global",
-        "us": "US",
-        "eu": "EU",
-        "jp": "Japón",
-        "kr": "Corea",
-        "sea": "Sudeste Asiático",
-        "cn": "China continental",
-        "latam": "LATAM"
-      },
-      "noProducts": {
-        "title": "Aún no hay productos",
-        "body": "Las Campañas se ejecutan contra un producto. Registra el tuyo primero en la Base de conocimientos y luego vuelve.",
-        "cta": "Ir a Base de conocimientos"
-      },
-      "errors": {
-        "nameRequired": "Asigna un nombre a la campaña.",
-        "productIdRequired": "Selecciona un producto.",
-        "productNotFound": "Ese producto ya no está disponible.",
-        "budgetInvalid": "El presupuesto debe ser un número (ej. 10000.00).",
-        "budgetOverflow": "El presupuesto es demasiado grande para nuestros registros.",
-        "dateInvalid": "Fecha inválida.",
-        "endBeforeStart": "La fecha de finalización no puede ser anterior a la fecha de inicio.",
-        "ownerInvalid": "La sesión del propietario parece inválida; por favor, inicia sesión de nuevo.",
-        "generic": "Algo salió mal. Por favor, inténtalo de nuevo.",
-        "unauthorized": "Por favor, inicia sesión para crear campañas."
-      },
-      "smartMatch": {
-        "banner": "{count, plural, one {1 KOL} other {# KOLs}} de Contacto inteligente se vincularán una vez que guarde esta Campaña."
-      }
-    },
     "detail": {
       "breadcrumb": "Campañas",
       "edit": "Editar",
@@ -1127,10 +1037,7 @@
           "legacy": "Heredado"
         },
         "viewProfile": "Ver perfil",
-        "feeUnset": "—",
-        "remove": "Eliminar",
-        "removeConfirm": "¿Eliminar este KOL de la campaña?",
-        "_deprecated_by_BL-066": "BL-066-F006 retira addButton/aiNativeMigrationTooltip/addDialog.*/remove/removeConfirm. BL-070 los eliminará."
+        "feeUnset": "—"
       },
       "kolStatus": {
         "pending": "Pendiente",
@@ -1139,16 +1046,6 @@
         "signed": "Firmado",
         "delivered": "Entregado",
         "paid": "Pagado"
-      },
-      "revenue": {
-        "title": "Ingresos",
-        "lockedBody": "Esta campaña ha finalizado: los ingresos están bloqueados. Reactívala para editar.",
-        "placeholder": "12000.00",
-        "save": "Guardar",
-        "saving": "Guardando…",
-        "clear": "Borrar",
-        "helper": "Registre los ingresos atribuibles siempre que los tenga. Los valores borrados restablecen el ROI a —.",
-        "_deprecated_by_BL-066": "BL-070 eliminará este espacio de nombres tras la entrega atómica de BL-066."
       },
       "statusController": {
         "title": "Ciclo de vida",
@@ -1165,24 +1062,6 @@
         "cta": "Abrir compositor de Contacto"
       },
       "insights": {
-        "emailChart": {
-          "title": "Rendimiento del correo electrónico",
-          "empty": "Sin actividad de correo electrónico en los últimos 14 días.",
-          "contacted": "Contactado",
-          "replied": "Respondido",
-          "_deprecated_by_BL-066": "BL-070 eliminará este espacio de nombres tras la entrega atómica de BL-066."
-        },
-        "health": {
-          "heading": "Estado de la Campaña",
-          "spendRate": "Tasa de gasto",
-          "spendRateAria": "Progreso del anillo de tasa de gasto",
-          "revenueVsBudget": "Ingresos / presupuesto",
-          "closeout": "Cierre",
-          "noEndDate": "—",
-          "daysLeft": "{days, plural, =0 {Cierra hoy} one {# día restante} other {# días restantes}}",
-          "overdue": "{days, plural, one {# día de retraso} other {# días de retraso}}",
-          "_deprecated_by_BL-066": "BL-070 eliminará este espacio de nombres tras la entrega atómica de BL-066."
-        },
         "ai": {
           "heading": "Sugerencias AI",
           "nextSteps": "{count, plural, =0 {Todos los KOL vinculados ya están en paid; añade nuevos candidatos desde Descubrir.} one {Envía primero a # KOL sin contactar.} other {Envía primero a # KOLs sin contactar.}}",
@@ -1192,21 +1071,6 @@
           "cachedPrefix": "En caché",
           "empty": "Tras la primera generación se guarda en caché por 24 h.",
           "error": "No se pudieron generar sugerencias. Intenta de nuevo."
-        },
-        "activity": {
-          "heading": "Actividad reciente",
-          "empty": "Aún no hay actividad de campaña.",
-          "actions": {
-            "campaign_created": "Campaña creada",
-            "campaign_kol_added": "KOL añadido",
-            "campaign_kol_removed": "KOL eliminado",
-            "campaign_kol_fee_updated": "Tarifa de KOL actualizada",
-            "campaign_kol_status_changed": "Estado del KOL cambiado",
-            "campaign_status_changed": "Estado de la campaña cambiado",
-            "campaign_revenue_recorded": "Ingresos registrados",
-            "kol_bulk_added_to_campaign": "KOLs añadidos masivamente"
-          },
-          "_deprecated_by_BL-066": "BL-070 eliminará este espacio de nombres tras la entrega atómica de BL-066."
         }
       },
       "errors": {

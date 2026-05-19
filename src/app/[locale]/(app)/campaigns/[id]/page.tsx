@@ -2,8 +2,7 @@
  * BL-066-F002 · Campaign detail page /campaigns/[id]
  *
  * Three-section AI-native layout per design-draft/bl066-campaign-detail-
- * ai-main-panel/main.html (1:1 还原 except known Stitch drifts logged
- * in README §"已知 Stitch 渲染漂移"):
+ * ai-main-panel/main.html:
  *
  *   ┌──────────────────────────────────────────────┐
  *   │ Breadcrumb                                    │
@@ -12,11 +11,10 @@
  *   │ AcceptedKolsPanel (read-only + source chip)   │
  *   └──────────────────────────────────────────────┘
  *
- * Unmount (per F002 audit §裁决 #3=B; 6 files + sidebar 3 files):
- *   - CampaignHeader → replaced by BriefSummaryPanel
- *   - sidebar: AiSuggestionsCard / CampaignHealthCard / ActivityTimelineCard
- *   - inline: EmailPerformanceChart / CampaignRevenueRecorder /
- *             CampaignStatusController / OutreachCta
+ * BL-070-F005 二次清理 — deleted the 6 unmount components
+ * (CampaignHealthCard / ActivityTimelineCard / EmailPerformanceChart{,Impl}
+ * / CampaignRevenueRecorder / CampaignStatusController) + detail-insights
+ * loader that BL-066-F002 retired with `_deprecated_by_BL-066` markers.
  *
  * Counts derivation per F002 audit §裁决 #4=B 白名单:
  *   contacted = kols.filter(k => k.contactStatus in [contacted,quoted,

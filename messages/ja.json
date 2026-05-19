@@ -12,13 +12,6 @@
     "reachDescription": "メールアウトリーチと返信管理",
     "insight": "インサイト",
     "insightDescription": "結果、ROI、振り返り",
-    "dashboard": "ダッシュボード",
-    "kolDiscovery": "KOL 発見",
-    "kolDatabase": "KOL データベース",
-    "campaigns": "キャンペーン",
-    "emailCenter": "メールセンター",
-    "knowledgeBase": "ナレッジベース",
-    "analytics": "分析",
     "settings": "設定"
   },
   "topbar": {
@@ -227,7 +220,6 @@
     }
   },
   "knowledgeBase": {
-    "_deprecated_by_BL-069": "BL-069-F006 で /knowledge-base → /brief?tab=products にリダイレクト。埋め込みの ProductsClient がレンダリングするため文字列は残置；BL-070 二次清理で本ネームスペースと /knowledge-base ルートを削除予定。",
     "breadcrumbRoot": "製品",
     "breadcrumbCurrent": "ナレッジベース",
     "title": "製品ナレッジベース",
@@ -813,26 +805,6 @@
       "selectAllAria": "このページのすべての行を選択",
       "selectRowAria": "{name}を選択"
     },
-    "addKolForm": {
-      "title": "KOLを追加",
-      "platformLabel": "プラットフォーム",
-      "handleLabel": "ハンドル",
-      "handlePlaceholder": "@channelhandle",
-      "displayNameLabel": "表示名",
-      "urlLabel": "URL（任意）",
-      "emailLabel": "メール（任意）",
-      "followerCountLabel": "フォロワー数（任意）",
-      "submitLabel": "KOLを追加",
-      "submittingLabel": "追加中…",
-      "cancelLabel": "キャンセル",
-      "successLabel": "KOLを追加しました。",
-      "errorLabel": "追加に失敗しました。",
-      "duplicateLabel": "このハンドル + プラットフォームの組み合わせはすでに存在します。",
-      "rateLimitLabel": "操作が多すぎます。少し待ってから再試行してください。",
-      "invalidUrlLabel": "URLが無効です（https://…）",
-      "invalidEmailLabel": "メールアドレスが無効です",
-      "_deprecated_by_BL-066": "BL-066-F005 で手動 KOL 追加フォームを廃止。BL-070 で本ネームスペースを削除予定。"
-    },
     "dialog": {
       "title": "キャンペーンに追加",
       "body": "選択した {count} 人のKOLを追加するキャンペーンを選択してください。既存のリンクは自動的にスキップされます。",
@@ -849,16 +821,6 @@
       "activeCollabs": "アクティブなコラボ数",
       "avgScore": "平均AIスコア",
       "followerReach": "フォロワーのリーチ"
-    },
-    "headerActions": {
-      "subtitle": "{count, plural, =0 {まだライブラリにKOLがありません} one {ライブラリに#件のKOLがあります} other {ライブラリに#件のKOLがあります}}",
-      "export": "エクスポート",
-      "exportTooltip": "保存済みKOLをCSVでダウンロード",
-      "import": "CSVをインポート",
-      "importTooltip": "CSVファイルからKOLを一括インポート",
-      "addKol": "KOLを追加",
-      "addKolTooltip": "ライブラリに手動でKOLを追加",
-      "_deprecated_by_BL-066": "BL-066-F005 で手動 KOL 追加フォームを廃止。BL-070 で本ネームスペースを削除予定。"
     }
   },
   "brief": {
@@ -976,58 +938,6 @@
       "title": "それらのフィルターに一致するキャンペーンはありません",
       "body": "フィルターをクリアするか、検索範囲を広げてみてください。"
     },
-    "new": {
-      "_deprecated_by_BL-069": "BL-069-F006 で /campaigns/new → /brief?action=new にリダイレクト。デプロイ期間中も旧ルートが動作するよう BM2 CampaignForm の文字列は残置；BL-070 二次清理で /campaigns/new と本ネームスペースを削除予定。",
-      "title": "新しいキャンペーン",
-      "subtitle": "キャンペーンを登録すると、クリエイターを招待し、ROIを追跡できます。",
-      "backToList": "キャンペーン一覧に戻る",
-      "submit": "キャンペーンを作成",
-      "submitting": "作成中…",
-      "fields": {
-        "name": "キャンペーン名",
-        "nameHint": "短くて分かりやすいラベル — 最大80文字。",
-        "product": "商品",
-        "budget": "総予算（USD）",
-        "budgetHint": "オプション。一覧ページで支出と予算を比較するために使用されます。",
-        "startDate": "開始日",
-        "endDate": "終了日",
-        "game": "ゲーム / タイトル（オプション）",
-        "gameHint": "商品名と異なる場合に記入してください。",
-        "markets": "ターゲット市場",
-        "kpiTarget": "KPI目標（オプション）",
-        "kpiTargetHint": "自由記述の簡単な説明 — 例: '30日で200万回の視聴数'。"
-      },
-      "markets": {
-        "global": "グローバル",
-        "us": "US",
-        "eu": "EU",
-        "jp": "日本",
-        "kr": "韓国",
-        "sea": "東南アジア",
-        "cn": "中国本土",
-        "latam": "ラテンアメリカ"
-      },
-      "noProducts": {
-        "title": "まだ商品がありません",
-        "body": "キャンペーンは商品に対して実行されます。まずナレッジベースで最初の商品を登録してから、戻ってきてください。",
-        "cta": "ナレッジベースに移動"
-      },
-      "errors": {
-        "nameRequired": "キャンペーンに名前を付けてください。",
-        "productIdRequired": "商品を選択してください。",
-        "productNotFound": "その商品はもう利用できません。",
-        "budgetInvalid": "予算は数値である必要があります（例: 10000.00）。",
-        "budgetOverflow": "予算が大きすぎて記録できません。",
-        "dateInvalid": "無効な日付です。",
-        "endBeforeStart": "終了日は開始日より前に設定できません。",
-        "ownerInvalid": "オーナーのセッションが無効のようです — 再度ログインしてください。",
-        "generic": "何かがうまくいきませんでした。再度試してください。",
-        "unauthorized": "キャンペーンを作成するにはログインしてください。"
-      },
-      "smartMatch": {
-        "banner": "{count, plural, one {1 KOL} other {# KOLs}} スマートマッチからのKOLが、このキャンペーンを保存するとリンクされます。"
-      }
-    },
     "detail": {
       "breadcrumb": "キャンペーン",
       "edit": "編集",
@@ -1127,10 +1037,7 @@
           "legacy": "従来"
         },
         "viewProfile": "プロフィールを表示",
-        "feeUnset": "—",
-        "remove": "削除",
-        "removeConfirm": "このKOLをキャンペーンから削除しますか？",
-        "_deprecated_by_BL-066": "BL-066-F006 で addButton/aiNativeMigrationTooltip/addDialog.*/remove/removeConfirm は廃止予定。BL-070 で削除します。"
+        "feeUnset": "—"
       },
       "kolStatus": {
         "pending": "保留中",
@@ -1139,16 +1046,6 @@
         "signed": "契約済み",
         "delivered": "配信済み",
         "paid": "支払済み"
-      },
-      "revenue": {
-        "title": "収益",
-        "lockedBody": "このキャンペーンは完了しています — 収益はロックされています。再アクティブ化して編集してください。",
-        "placeholder": "12000.00",
-        "save": "保存",
-        "saving": "保存中…",
-        "clear": "クリア",
-        "helper": "収益がある場合は、関連する収益を記録してください。クリアされた値はROIを—にリセットします。",
-        "_deprecated_by_BL-066": "BL-070 が BL-066 のアトミック リリース後にこのネームスペースを削除します。"
       },
       "statusController": {
         "title": "ライフサイクル",
@@ -1165,24 +1062,6 @@
         "cta": "アウトリーチコンポーザーを開く"
       },
       "insights": {
-        "emailChart": {
-          "title": "メールパフォーマンス",
-          "empty": "過去14日間にメール活動がありません。",
-          "contacted": "連絡済み",
-          "replied": "返信済み",
-          "_deprecated_by_BL-066": "BL-070 が BL-066 のアトミック リリース後にこのネームスペースを削除します。"
-        },
-        "health": {
-          "heading": "キャンペーンの健全性",
-          "spendRate": "支出率",
-          "spendRateAria": "支出率のリング進捗",
-          "revenueVsBudget": "収益 / 予算",
-          "closeout": "締め切り",
-          "noEndDate": "—",
-          "daysLeft": "{days, plural, =0 {本日締切} one {残り # 日} other {残り # 日}}",
-          "overdue": "{days, plural, one {期限を # 日超過} other {期限を # 日超過}}",
-          "_deprecated_by_BL-066": "BL-070 が BL-066 のアトミック リリース後にこのネームスペースを削除します。"
-        },
         "ai": {
           "heading": "AI 提案",
           "nextSteps": "{count, plural, =0 {連携済みKOLはすべて paid です。Discovery から候補を追加してください。} one {未連絡のKOL # 件へ優先送信しましょう。} other {未連絡のKOL # 件へ優先送信しましょう。}}",
@@ -1192,21 +1071,6 @@
           "cachedPrefix": "キャッシュ",
           "empty": "初回生成後は24時間キャッシュされます。",
           "error": "提案の生成に失敗しました。再試行してください。"
-        },
-        "activity": {
-          "heading": "最近の活動",
-          "empty": "まだキャンペーン活動がありません。",
-          "actions": {
-            "campaign_created": "キャンペーンが作成されました",
-            "campaign_kol_added": "KOLが追加されました",
-            "campaign_kol_removed": "KOLが削除されました",
-            "campaign_kol_fee_updated": "KOLの料金が更新されました",
-            "campaign_kol_status_changed": "KOLのステータスが変更されました",
-            "campaign_status_changed": "キャンペーンのステータスが変更されました",
-            "campaign_revenue_recorded": "収益が記録されました",
-            "kol_bulk_added_to_campaign": "KOLが一括追加されました"
-          },
-          "_deprecated_by_BL-066": "BL-070 が BL-066 のアトミック リリース後にこのネームスペースを削除します。"
         }
       },
       "errors": {
