@@ -36,16 +36,20 @@ describe("deriveActiveNav — BL-064-F003 4-route IA + sub-route mapping (Adjudi
     expect(deriveActiveNav("/en/some-unmapped-path")).toBe("insight");
   });
 
-  it("maps legacy top-level routes to their content-equivalent new nav (defensive fallback for non-redirected callers)", () => {
+  it("BL-070-F004 — retired legacy top-level routes fall through to the default insight (their dirs were deleted in this batch and now 404)", () => {
+    // These paths no longer hit deriveActiveNav in practice (middleware
+    // serves 404 before nav is rendered), but the helper is also called
+    // by unit tests / Storybook, so anything that doesn't match an
+    // explicit branch must safely fall back to `insight` rather than
+    // throwing.
     expect(deriveActiveNav("/en/dashboard")).toBe("insight");
-    expect(deriveActiveNav("/en/roi")).toBe("insight");
-    expect(deriveActiveNav("/en/weekly-report")).toBe("insight");
+    expect(deriveActiveNav("/en/discovery")).toBe("insight");
+    expect(deriveActiveNav("/en/database")).toBe("insight");
+    expect(deriveActiveNav("/en/knowledge-base")).toBe("insight");
+    expect(deriveActiveNav("/en/outreach")).toBe("insight");
+    expect(deriveActiveNav("/en/emails")).toBe("insight");
     expect(deriveActiveNav("/en/analytics")).toBe("insight");
-    expect(deriveActiveNav("/en/discovery")).toBe("match");
-    expect(deriveActiveNav("/en/database")).toBe("match");
-    expect(deriveActiveNav("/en/knowledge-base")).toBe("brief");
-    expect(deriveActiveNav("/en/outreach")).toBe("reach");
-    expect(deriveActiveNav("/en/emails")).toBe("reach");
+    expect(deriveActiveNav("/en/weekly-report")).toBe("insight");
   });
 
   it("maps kept sub-routes to new IA per Adjudication #3", () => {
@@ -56,12 +60,18 @@ describe("deriveActiveNav — BL-064-F003 4-route IA + sub-route mapping (Adjudi
     expect(deriveActiveNav("/en/crm")).toBe("reach");
     // /kols/[id] → match (KOL detail belongs to Match selection workflow)
     expect(deriveActiveNav("/en/kols/abc-123")).toBe("match");
+    // /roi → insight (ROI deep-link folds into the Insight surface)
+    expect(deriveActiveNav("/en/roi")).toBe("insight");
   });
 
-  it("splits /campaigns by depth: /new → brief (creation), list+[id] → match (selection)", () => {
-    expect(deriveActiveNav("/en/campaigns/new")).toBe("brief");
+  it("BL-070-F004 — /campaigns list + [id] route to match (campaigns/new was deleted in this batch)", () => {
     expect(deriveActiveNav("/en/campaigns")).toBe("match");
     expect(deriveActiveNav("/en/campaigns/abc-123")).toBe("match");
+    // /campaigns/new used to be a real creation page that nav split to
+    // brief; the page was retired in F004 (brief is the canonical AI
+    // creation surface now), so the deep link 404s and the helper just
+    // routes to the campaigns family default.
+    expect(deriveActiveNav("/en/campaigns/new")).toBe("match");
   });
 
   it("strips leading locale prefix for every supported locale", () => {

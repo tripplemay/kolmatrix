@@ -3,10 +3,10 @@
  *
  * Three tabs (URL state `?tab=`):
  *   - `dashboard` (default) — KPI strip / workflow / activity / ROI.
- *     Embeds the existing `<DashboardPage>` server component directly
- *     so the dashboard render logic stays in one place during the
- *     BL-070 transition; F004 retires the `/dashboard/` route entirely
- *     and `/insight` becomes the canonical surface.
+ *     Embeds the shared `<DashboardContent>` server component from
+ *     `@/features/dashboard` (BL-070-F004 extracted it out of the
+ *     retired `/dashboard/page.tsx` so the render logic lives in one
+ *     place after the legacy route is deleted).
  *   - `reports` — entry point to weekly reports (the bulk of the
  *     content lives at the migrated `/insight/weekly-report/` sub-
  *     route, which preserves the full BM2-F010 page).
@@ -18,7 +18,7 @@
  * needed for the bar itself).
  *
  * Auth: redirects to `/login` when the session is missing. The
- * downstream `<DashboardPage>` re-checks, but performing the check
+ * downstream `<DashboardContent>` re-checks, but performing the check
  * here too lets the tab nav render before the redirect.
  */
 import { getTranslations } from "next-intl/server";
@@ -26,7 +26,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import DashboardPage from "@/app/[locale]/(app)/dashboard/page";
+import { DashboardContent } from "@/features/dashboard/DashboardContent";
 
 import { InsightTabs, pickInsightTab } from "./InsightTabs";
 
@@ -63,7 +63,7 @@ export default async function InsightPage({ params, searchParams }: Props) {
       <InsightTabs locale={locale} activeTab={tab} />
 
       {tab === "dashboard" ? (
-        <DashboardPage params={params} />
+        <DashboardContent locale={locale} />
       ) : tab === "reports" ? (
         <ReportsPanel locale={locale} />
       ) : (

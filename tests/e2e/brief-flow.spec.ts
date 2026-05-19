@@ -216,17 +216,20 @@ test.describe("BL-069-F006 · /brief end-to-end smoke", () => {
     );
   });
 
-  test("6. Legacy route redirects — /knowledge-base + /campaigns/new", async ({
+  test("6. BL-070-F004 — legacy /knowledge-base + /campaigns/new now 404 (redirects retired)", async ({
     page,
   }) => {
-    // /knowledge-base → /brief?tab=products
-    await page.goto("/en/knowledge-base");
-    await page.waitForURL(/\/en\/brief\?tab=products/, { timeout: 10_000 });
-    expect(page.url()).toContain("/en/brief?tab=products");
-
-    // /campaigns/new → /brief?action=new
-    await page.goto("/en/campaigns/new");
-    await page.waitForURL(/\/en\/brief\?action=new/, { timeout: 10_000 });
-    expect(page.url()).toContain("/en/brief?action=new");
+    // BL-070-F004 retired the IA refactor redirect rules per decision
+    // §5 ("BL-070 同批即停 redirect"); the canonical 404 assertion lives
+    // in ia-refactor-cleanup-2026-05-19.spec.ts. This brief-flow spec
+    // smoke-checks the two routes that brief is the destination of so a
+    // regression that re-adds the legacy directory surfaces here too.
+    for (const path of ["/en/knowledge-base", "/en/campaigns/new"]) {
+      const apiResponse = await page.context().request.get(path, {
+        maxRedirects: 0,
+        failOnStatusCode: false,
+      });
+      expect(apiResponse.status(), `expected 404 for ${path}`).toBe(404);
+    }
   });
 });

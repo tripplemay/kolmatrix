@@ -66,7 +66,7 @@ beforeEach(() => {
   markAiAssetsPending.mockReset();
 });
 
-describe("knowledge-base product actions", () => {
+describe("brief product actions (BL-070-F004 git mv from knowledge-base)", () => {
   it("allows a cuid productId through updateProduct and reaches Prisma", async () => {
     const update = vi.fn().mockResolvedValue({
       id: PRODUCT_ID,
@@ -111,7 +111,7 @@ describe("knowledge-base product actions", () => {
         resourceId: PRODUCT_ID,
       })
     );
-    expect(revalidatePath).toHaveBeenCalledWith("/[locale]/knowledge-base", "page");
+    expect(revalidatePath).toHaveBeenCalledWith("/[locale]/brief", "page");
     expect(markAiAssetsPending).not.toHaveBeenCalled();
     expect(generateAiAssets).not.toHaveBeenCalled();
   });
@@ -159,7 +159,7 @@ describe("knowledge-base product actions", () => {
         resourceId: PRODUCT_ID,
       })
     );
-    expect(revalidatePath).toHaveBeenCalledWith("/[locale]/knowledge-base", "page");
+    expect(revalidatePath).toHaveBeenCalledWith("/[locale]/brief", "page");
   });
 
   it("still rejects updateProduct when tenantId is not a UUID", async () => {
@@ -239,7 +239,7 @@ describe("knowledge-base product actions", () => {
         resourceId: PRODUCT_ID,
       })
     );
-    expect(revalidatePath).toHaveBeenCalledWith("/[locale]/knowledge-base", "page");
+    expect(revalidatePath).toHaveBeenCalledWith("/[locale]/brief", "page");
   });
 
   it("triggerAiGeneration returns not_found when the product is missing or soft-deleted", async () => {

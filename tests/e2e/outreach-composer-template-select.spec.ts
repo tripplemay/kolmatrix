@@ -37,9 +37,10 @@ async function login(page: import("@playwright/test").Page) {
 
 async function gotoOutreachWithFirstCampaign(page: import("@playwright/test").Page) {
   await login(page);
-  await page.goto("/en/outreach");
-  // BL-064-F002 — /outreach 302→/reach (incl. sub-routes)
-  await page.waitForURL(/\/(outreach|reach)/);
+  // BL-070-F004 retired /outreach (F001 git mv'd to /reach; F004
+  // deleted the redirect rule). Navigate to /reach directly.
+  await page.goto("/en/reach");
+  await page.waitForURL(/\/reach/);
   await expect(page.getByTestId("outreach-page")).toBeVisible({ timeout: 10_000 });
   // Pick the first non-empty option in the campaign select; the picker
   // only renders once a campaign is selected (OutreachComposer.tsx:435).

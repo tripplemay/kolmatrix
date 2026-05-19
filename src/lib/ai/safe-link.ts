@@ -9,20 +9,18 @@
  * `safeAiActionLink` 强制把任何不匹配站内白名单的输入降级为 `/campaigns`。
  * 调用方负责拼 locale prefix（例：``/${locale}${safeAiActionLink(s.action_link)}``）。
  *
- * 白名单覆盖当前 AI suggestions 实际能引用的内部目的地：
+ * BL-070-F004 — legacy /outreach / /database / /knowledge-base entries
+ * were dropped after the routes were retired. Whitelisted destinations
+ * are now the 4 IA routes + the kept sub-routes that still have a
+ * page:
  *   - /campaigns（含 /campaigns/{cuid|uuid|alphanumeric-segment}）
  *   - /kols/{id}
- *   - /assets（含 ?查询串，由 dashboard 用）
- *   - /reach（BL-070-F001 promoted; /outreach kept until F004 deletes redirect）
- *   - /database
- *   - /knowledge-base
- *   - /brief（BL-069 IA route — AI suggestions may deep-link）
- *   - /insight（BL-070-F003 — same）
- *   - /match（BL-065 — same）
+ *   - /assets（含 ?查询串）
+ *   - /brief / /match / /reach / /insight (4 new IA top-level routes)
  */
 
 const SAFE_PATH_RE =
-  /^\/(?:campaigns(?:\/[a-z0-9-]+)?|kols\/[a-z0-9-]+|assets(?:\?[a-zA-Z0-9_=&-]*)?|outreach|reach|database|knowledge-base|brief|insight|match)$/;
+  /^\/(?:campaigns(?:\/[a-z0-9-]+)?|kols\/[a-z0-9-]+|assets(?:\?[a-zA-Z0-9_=&-]*)?|brief|match|reach|insight)$/;
 
 const FALLBACK = "/campaigns";
 

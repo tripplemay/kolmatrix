@@ -61,7 +61,7 @@ vi.mock("@/lib/products/generateAiAssets", () => ({
   markAiAssetsPending: vi.fn(),
 }));
 
-const { deleteProduct } = await import("@/app/[locale]/(app)/knowledge-base/actions");
+const { deleteProduct } = await import("@/app/[locale]/(app)/brief/actions");
 
 const TENANT = "11111111-2222-3333-4444-555555555555";
 const USER = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";

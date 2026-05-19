@@ -1,26 +1,29 @@
 /**
  * BL-069-F004 · ProductsClient deep-link auto-open behavior.
  *
- * Verifies the new optional `initialEditingProductId` prop added in
- * F004 so /brief?tab=products&productId=:id (which F006 wires the
- * redirect for, and BL-070 二次清理 will eventually consolidate) can
- * land directly on the edit modal for a specific product.
+ * Verifies the optional `initialEditingProductId` prop so
+ * /brief?tab=products&productId=:id can land directly on the edit
+ * modal for a specific product.
  *
  * 4 cases (spec acceptance ≥4):
  *   1. initialEditingProductId matches a product → modal opens on
  *      mount with that product's data prefilled (header shows the
  *      "edit" title flavour).
- *   2. initialEditingProductId is undefined (existing /knowledge-base
- *      caller path) → modal stays closed; full grid is rendered.
+ *   2. initialEditingProductId is undefined → modal stays closed;
+ *      full grid is rendered.
  *   3. initialEditingProductId points at an ID not in the products
  *      list → modal stays closed (silent fallback — no error toast,
  *      matches §5 不变量 #4 silent-fallback ethos used across BL-069).
  *   4. Explicit "Add new product" click still opens the modal in
- *      create mode (regression guard — verifies the new useEffect
+ *      create mode (regression guard — verifies the deep-link path
  *      didn't shadow the existing onClick path).
  *
- * The KB actions module is mocked so deleteProduct never reaches the
- * server action layer; mocking next/navigation's useRouter prevents
+ * BL-070-F004 — the product CRUD components were git mv'd from
+ * /knowledge-base into /brief, so this spec now imports from the
+ * sibling `../` directly instead of cross-route `../../knowledge-base`.
+ *
+ * The product actions module is mocked so deleteProduct never reaches
+ * the server action layer; mocking next/navigation's useRouter prevents
  * router.refresh() from blowing up in jsdom.
  */
 import { fireEvent, render, screen } from "@testing-library/react";
@@ -31,7 +34,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
 }));
 
-vi.mock("../../knowledge-base/actions", () => ({
+vi.mock("../actions", () => ({
   deleteProduct: vi.fn().mockResolvedValue({ ok: true }),
   triggerAiGeneration: vi.fn().mockResolvedValue({ ok: true }),
   createProduct: vi.fn().mockResolvedValue({ ok: true }),
@@ -39,8 +42,8 @@ vi.mock("../../knowledge-base/actions", () => ({
   loadProductAssetsAction: vi.fn().mockResolvedValue([]),
 }));
 
-import { ProductsClient } from "../../knowledge-base/ProductsClient";
-import type { ProductListItem } from "../../knowledge-base/types";
+import { ProductsClient } from "../ProductsClient";
+import type { ProductListItem } from "../types";
 
 const messages = {
   common: {

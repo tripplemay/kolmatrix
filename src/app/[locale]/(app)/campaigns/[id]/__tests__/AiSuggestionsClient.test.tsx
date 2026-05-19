@@ -105,7 +105,11 @@ describe("AiSuggestionsClient — safeAiActionLink integration (BL-020-F002)", (
   });
 
   it("preserves a white-listed action_link unchanged", async () => {
-    seedCache("/outreach");
+    // BL-070-F004 — /outreach was retired (route now 404s). The
+    // safe-link whitelist now covers the 4 new IA top-level routes
+    // (/brief /match /reach /insight) + kept sub-routes. /reach is
+    // the canonical replacement for the legacy /outreach destination.
+    seedCache("/reach");
 
     render(
       <AiSuggestionsClient
@@ -120,6 +124,6 @@ describe("AiSuggestionsClient — safeAiActionLink integration (BL-020-F002)", (
     generateButton.click();
 
     const link = await screen.findByTestId("campaign-suggestion-link");
-    expect(link.getAttribute("href")).toBe(`/${LOCALE}/outreach`);
+    expect(link.getAttribute("href")).toBe(`/${LOCALE}/reach`);
   });
 });

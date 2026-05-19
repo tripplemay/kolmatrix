@@ -10,21 +10,15 @@
  * 路由但 deriveActiveNav 把它们映射到内容对应的新 nav id（assets→brief
  * / crm→reach / kols→match），deep link 不死。
  *
- * **BL-064-F004 messages deprecations (delete in BL-070):**
- * The following keys still live in `messages/{en,zh,ja,ko,es}.json` so
- * any straggler `t("nav.dashboard")` callsite doesn't crash, but they
- * are deprecated by this batch and must be removed when BL-070
- * completes the full per-route UI migration:
+ * **Deprecated nav.* i18n keys (cleaned up by BL-070-F005):**
+ * The legacy `nav.dashboard / kolDiscovery / kolDatabase / campaigns /
+ * emailCenter / knowledgeBase / analytics` keys are still present in
+ * `messages/{en,zh,ja,ko,es}.json` under `_deprecated_by_BL-064` /
+ * `_deprecated_by_BL-066/067/069` markers so any straggler t-call
+ * doesn't crash; BL-070-F005 removes them now that the routes they
+ * named no longer exist (BL-070-F004 retired them).
  *
- *   nav.dashboard       — replaced by nav.insight
- *   nav.kolDiscovery    — replaced by nav.match
- *   nav.kolDatabase     — folded into nav.match (BL-065 removes /database)
- *   nav.campaigns       — folded into nav.match (campaigns surface)
- *   nav.emailCenter     — replaced by nav.reach
- *   nav.knowledgeBase   — replaced by nav.brief
- *   nav.analytics       — replaced by nav.insight
- *
- * `nav.settings` is intentionally NOT in the list — it now lives in
+ * `nav.settings` is intentionally NOT deprecated — it now lives in
  * the UserAvatarMenu dropdown (adjudication §1) but the key is still
  * read there.
  *
@@ -79,17 +73,19 @@ export const NAV_ITEMS: NavItem[] = [
 
 /**
  * Derive which sidebar nav item should be visually active for a given
- * URL. Handles three classes of input:
+ * URL. Handles two classes of input:
  *
  *   1. New IA top-level paths (`/brief`, `/match`, `/reach`, `/insight`).
- *   2. Legacy paths that BL-064-F002 302-redirects (`/dashboard`,
- *      `/discovery`, `/database`, `/knowledge-base`, `/outreach`, `/roi`,
- *      `/weekly-report`, `/analytics`). These are still listed here as
- *      a defensive fallback for any caller that bypasses middleware
- *      (e.g. unit tests, Storybook).
- *   3. Sub-routes that are intentionally NOT redirected (adjudication
- *      #3): `/assets` → brief, `/crm` → reach, `/kols/[id]` → match,
- *      and `/campaigns` (split between brief/match by depth).
+ *   2. Sub-routes that are intentionally NOT 302'd (adjudication §3):
+ *      `/assets` → brief, `/crm` → reach, `/kols/[id]` → match,
+ *      `/roi` → insight, `/campaigns` → match.
+ *
+ * BL-070-F004 — every legacy top-level route (`/dashboard`,
+ * `/discovery`, `/database`, `/knowledge-base`, `/outreach`,
+ * `/emails`, `/weekly-report`, `/analytics`) was retired and now 404s,
+ * so the defensive fallback rows for them were deleted. The default
+ * branch returns `insight` (canonical landing) for any other unknown
+ * path, including a stray hit on a deleted legacy URL.
  */
 export function deriveActiveNav(pathname: string): NavItemId {
   const path = pathname.replace(/^\/(en|zh|ja|ko|es)(?=\/|$)/, "") || "/";
@@ -100,27 +96,13 @@ export function deriveActiveNav(pathname: string): NavItemId {
   if (path.startsWith("/reach")) return "reach";
   if (path.startsWith("/insight")) return "insight";
 
-  // 2. Legacy top-level routes (defensive — F002 normally 302-redirects)
-  if (path.startsWith("/knowledge-base")) return "brief";
-  if (path.startsWith("/discovery")) return "match";
-  if (path.startsWith("/database")) return "match";
-  if (path.startsWith("/outreach")) return "reach";
-  if (path.startsWith("/emails")) return "reach";
-  if (path.startsWith("/dashboard")) return "insight";
-  if (path.startsWith("/roi")) return "insight";
-  if (path.startsWith("/weekly-report")) return "insight";
-  if (path.startsWith("/analytics")) return "insight";
-
-  // 3. Kept sub-routes (adjudication #3)
+  // 2. Kept sub-routes (adjudication §3)
   if (path.startsWith("/assets")) return "brief"; // KB→Asset flow lives under Brief in new IA
   if (path.startsWith("/crm")) return "reach"; // CRM under Reach (email surface)
   if (path.startsWith("/kols")) return "match"; // KOL detail page belongs to Match
+  if (path.startsWith("/roi")) return "insight"; // ROI deep-link folds into the Insight surface
+  if (path.startsWith("/campaigns")) return "match"; // campaigns list + [id] live in match
 
-  // /campaigns family split — /campaigns/new is brief (creation),
-  // /campaigns + /campaigns/[id] live in match (selection workflow)
-  if (path.startsWith("/campaigns/new")) return "brief";
-  if (path.startsWith("/campaigns")) return "match";
-
-  // Fallback: insight (canonical landing per adjudication #1 / vision §2)
+  // Fallback: insight (canonical landing per adjudication §1 / vision §2)
   return "insight";
 }

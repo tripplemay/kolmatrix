@@ -2,30 +2,21 @@
  * BL-069-F004 · Product list panel for /brief?tab=products.
  *
  * Server component that fetches the tenant's products (RLS via
- * withTenant, identical to /knowledge-base/page.tsx) + asset counts,
- * then renders the existing KB ProductsClient. Reuses the full KB
- * CRUD surface (ProductCard + ProductModal + delete confirm flow,
- * including BL-051a-F008 cascade prompt) instead of forking a copy.
+ * withTenant) + asset counts, then renders the product CRUD client.
  *
- * Deep-link support: when /brief?tab=products&productId=:id arrives
- * via redirect from /knowledge-base/[id] (F006 will wire that
- * middleware rule), ProductsClient.initialEditingProductId auto-
- * opens the edit modal for that product on first mount.
- *
- * BL-070 二次清理: once redirects are stable, git mv ProductsClient +
- * ProductCard + ProductModal + types.ts + actions.ts into brief/ and
- * remove /knowledge-base/page.tsx altogether. Until then the dual-
- * mount keeps both /brief?tab=products + /knowledge-base working off
- * the same KB CRUD source so behaviour stays consistent during the
- * IA migration window.
+ * BL-070-F004: the legacy `/knowledge-base` route was retired and its
+ * CRUD components (`ProductsClient` + `ProductCard` + `ProductModal` +
+ * `actions.ts` + `types.ts`) were git mv'd into `brief/` so /brief is
+ * the single home for product management. Deep links from the old KB
+ * URLs now 404 (BL-070 同批即停 redirect per decision §5).
  */
 import { auth } from "@/auth";
 import { loadProductAssetCounts } from "@/lib/assets/queries";
 import { withTenant } from "@/lib/db";
 import type { ProductAiAssets } from "@/lib/products/generateAiAssets";
 
-import { ProductsClient } from "../knowledge-base/ProductsClient";
-import type { ProductListItem } from "../knowledge-base/types";
+import { ProductsClient } from "./ProductsClient";
+import type { ProductListItem } from "./types";
 
 interface Props {
   /** Optional — when the user hits /brief?tab=products&productId=:id

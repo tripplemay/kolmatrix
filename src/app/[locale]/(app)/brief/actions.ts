@@ -126,7 +126,7 @@ export async function createProduct(
       });
     }
 
-    revalidatePath("/[locale]/knowledge-base", "page");
+    revalidatePath("/[locale]/brief", "page");
 
     return { ok: true, productId: product.id };
   } catch (err) {
@@ -225,7 +225,7 @@ export async function updateProduct(
       });
     }
 
-    revalidatePath("/[locale]/knowledge-base", "page");
+    revalidatePath("/[locale]/brief", "page");
     return { ok: true, productId: product.id };
   } catch (err) {
     console.error("[knowledge-base] updateProduct failed:", err);
@@ -293,7 +293,7 @@ export async function triggerAiGeneration(
       resourceId: product.id,
     });
 
-    revalidatePath("/[locale]/knowledge-base", "page");
+    revalidatePath("/[locale]/brief", "page");
     return { ok: true };
   } catch (err) {
     console.error("[knowledge-base] triggerAiGeneration failed:", err);
@@ -419,7 +419,7 @@ export async function deleteProduct(
       resourceId: normalizedProductId,
     });
 
-    revalidatePath("/[locale]/knowledge-base", "page");
+    revalidatePath("/[locale]/brief", "page");
     return { ok: true, cascadeCount: result.counts };
   } catch (err) {
     console.error("[knowledge-base] deleteProduct failed:", err);

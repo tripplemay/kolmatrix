@@ -534,6 +534,12 @@ test.describe("Authenticated BM2 visual regression", () => {
   test("outreach template library full-page screenshot diffs < 2% vs baseline", async ({
     page,
   }) => {
+    test.skip(
+      true,
+      "BL-070-F004 retired /outreach — content moved to /reach/templates. " +
+        "F007 (visual baseline 全量 regen) will produce a new en-reach-templates.png " +
+        "and either unskip this test against the new path or delete it.",
+    );
     await login(page);
     await page.goto("/en/outreach/templates");
     await page.waitForSelector('[data-testid="outreach-template-library"]');
@@ -603,6 +609,13 @@ test.describe("Authenticated BM2 visual regression", () => {
   test("weekly-report empty state full-page screenshot diffs < 2% vs baseline", async ({
     page,
   }) => {
+    test.skip(
+      true,
+      "BL-070-F004 deleted the /weekly-report redirect rule (F003 git mv'd the " +
+        "route to /insight/weekly-report). F007 (visual baseline 全量 regen) will " +
+        "produce a new baseline against /insight/weekly-report and either unskip " +
+        "this test against the new path or delete it.",
+    );
     test.skip(
       shouldSkipMissingBaseline("en-weekly-report.png", test.info()),
       "Baseline en-weekly-report.png missing — run the 'Update visual baselines' workflow."
@@ -816,6 +829,12 @@ test.describe("Authenticated BL-026 visual regression", () => {
     page,
   }) => {
     test.skip(
+      true,
+      "BL-070-F004 retired /outreach — content lives at /reach (F001 git mv). " +
+        "F007 (visual baseline 全量 regen) will produce a new en-reach.png against " +
+        "the new path and either unskip this test or delete it.",
+    );
+    test.skip(
       shouldSkipMissingBaseline("en-outreach.png", test.info()),
       "Baseline en-outreach.png missing — run the 'Update visual baselines' workflow."
     );
@@ -908,7 +927,10 @@ test.describe("BL-055 hotfix — visual regression", () => {
       "Baseline en-sidebar-logo.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
-    await page.goto("/en/dashboard");
+    // BL-070-F004 — /dashboard route was retired. /insight is the new
+    // canonical post-login surface and the embedded DashboardContent
+    // still renders the dashboard-kpi-row testid this baseline relies on.
+    await page.goto("/en/insight");
     await page.waitForSelector('[data-testid="dashboard-kpi-row"]');
     await fontsReady(page);
 
@@ -930,7 +952,10 @@ test.describe("BL-055 hotfix — visual regression", () => {
       "Baseline zh-sidebar-logo.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
-    await page.goto("/zh/dashboard");
+    // BL-070-F004 — /dashboard route was retired; use the canonical
+    // /insight surface (DashboardContent is embedded under the default
+    // tab and still renders the dashboard-kpi-row testid).
+    await page.goto("/zh/insight");
     await page.waitForSelector('[data-testid="dashboard-kpi-row"]');
     await fontsReady(page);
 
@@ -947,6 +972,12 @@ test.describe("BL-055 hotfix — visual regression", () => {
   });
 
   test("outreach templates tab badge shows the real count (BL-055 F002)", async ({ page }) => {
+    test.skip(
+      true,
+      "BL-070-F004 retired /outreach (F001 git mv'd the route to /reach). " +
+        "F007 will regenerate the badge baseline against /reach and either " +
+        "unskip this test or delete it.",
+    );
     test.skip(
       shouldSkipMissingBaseline("en-outreach-templates-badge.png", test.info()),
       "Baseline en-outreach-templates-badge.png missing — run the 'Update visual baselines' workflow."

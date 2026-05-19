@@ -56,18 +56,22 @@ test.describe("BM2 Journey A — Discovery → Campaigns → Outreach", () => {
     await page.waitForURL(/\/(en|zh|ja|ko|es)\/(campaigns|match)(\/|\?|$)/);
     await expect(page.getByTestId("campaigns-page-title")).toBeVisible();
 
-    // Step 4 — New-campaign form reachable.
-    await page.goto("/en/campaigns/new");
-    // BL-064-F002 — /campaigns/new 302→/brief?action=new
-    await page.waitForURL(/\/(en|zh|ja|ko|es)\/(campaigns\/new|brief)(\/|\?|$)/);
+    // Step 4 — Campaign creation surface reachable.
+    // BL-070-F004 retired /campaigns/new entirely (the AI-driven /brief
+    // is now the canonical creation surface — decision §5 closed the
+    // redirect window). Navigate to /brief directly + assert the form
+    // mounts.
+    await page.goto("/en/brief");
+    await page.waitForURL(/\/(en|zh|ja|ko|es)\/brief(\/|\?|$)/);
     await expect(
       page.locator('input[name="name"], input[id*="name" i]').first()
     ).toBeVisible({ timeout: 15_000 });
 
-    // Step 5 — Outreach page reachable + tabs visible.
-    await page.goto("/en/outreach");
-    // BL-064-F002 — /outreach 302→/reach
-    await page.waitForURL(/\/(en|zh|ja|ko|es)\/(outreach|reach)(\/|\?|$)/);
+    // Step 5 — Reach page reachable + tabs visible.
+    // BL-070-F004 retired /outreach (F001 git mv'd the route to /reach;
+    // F004 deleted the redirect rule). Navigate to /reach directly.
+    await page.goto("/en/reach");
+    await page.waitForURL(/\/(en|zh|ja|ko|es)\/reach(\/|\?|$)/);
     await expect(page.getByTestId("outreach-page")).toBeVisible({
       timeout: 15_000,
     });

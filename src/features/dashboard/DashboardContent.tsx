@@ -1,3 +1,9 @@
+/**
+ * Dashboard render block — extracted from the retired `/dashboard` route
+ * (BL-070-F004) so `/insight?tab=dashboard` can embed it without depending
+ * on an obsolete `page.tsx`. Server component; receives `locale` directly
+ * because the embedding page already awaited `params`.
+ */
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
@@ -25,14 +31,11 @@ import { loadRoiTrend } from "@/lib/roi/queries";
 
 import { fetchDashboardData, mapCampaign, mapKol } from "./data";
 
-export const metadata = { title: "Dashboard — KOLMatrix" };
-
 interface Props {
-  params: Promise<{ locale: string }>;
+  locale: string;
 }
 
-export default async function DashboardPage({ params }: Props) {
-  const { locale: rawLocale } = await params;
+export async function DashboardContent({ locale: rawLocale }: Props) {
   const locale = isLocale(rawLocale) ? rawLocale : routing.defaultLocale;
   const session = await auth();
   const tenantId = session?.user.tenantId;
@@ -82,7 +85,6 @@ export default async function DashboardPage({ params }: Props) {
         trends={kpiTrends}
       />
 
-      {/* F001: 3 new dashboard elements */}
       <WorkflowSteps
         productCount={d.productCount}
         kolCount={d.kolCount}

@@ -62,8 +62,8 @@ test.describe("BL-025-F008 send-to-outreach", () => {
     const sendBtn = page.getByRole("button", { name: /Send to Outreach/i });
     await expect(sendBtn).toBeVisible();
     await sendBtn.click();
-    // BL-064-F002 — /outreach 302→/reach; both forms acceptable.
-    await page.waitForURL(/\/(outreach|reach)\?prefilledAssetId=/);
+    // BL-070-F004 retired /outreach; the destination is now /reach.
+    await page.waitForURL(/\/reach\?prefilledAssetId=/);
 
     await expect(page.getByTestId("outreach-prefilled-banner")).toBeVisible();
     await expect(page.getByTestId("outreach-prefilled-banner")).toContainText(
@@ -104,9 +104,11 @@ test.describe("BL-025-F008 send-to-outreach", () => {
   }) => {
     await login(page);
     const locale = localePrefix(page.url());
+    // BL-070-F004 retired /outreach (F001 git mv'd to /reach; F004
+    // deleted the redirect rule). Navigate to /reach directly.
     // A UUID that won't match any seeded template.
     await page.goto(
-      `/${locale}/outreach?prefilledAssetId=00000000-0000-0000-4000-000000000000`
+      `/${locale}/reach?prefilledAssetId=00000000-0000-0000-4000-000000000000`
     );
 
     await expect(page.getByTestId("outreach-prefilled-banner")).toBeVisible();

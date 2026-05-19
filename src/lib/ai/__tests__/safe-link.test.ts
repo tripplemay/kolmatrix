@@ -14,12 +14,25 @@ describe("safeAiActionLink — BL-020-F002 (CR-2) white-list", () => {
       ["/kols/some-handle"],
       ["/assets"],
       ["/assets?type=email&status=draft"],
-      ["/outreach"],
-      ["/database"],
-      ["/knowledge-base"],
+      // BL-070-F004 — the 4 new IA top-level routes replace the
+      // legacy /outreach + /database + /knowledge-base whitelist
+      // entries (those routes were retired in this batch).
+      ["/brief"],
+      ["/match"],
+      ["/reach"],
+      ["/insight"],
     ])("returns the input unchanged: %s", (input) => {
       expect(safeAiActionLink(input)).toBe(input);
     });
+  });
+
+  describe("BL-070-F004 retired legacy paths fall back (route deleted in this batch)", () => {
+    it.each([["/outreach"], ["/database"], ["/knowledge-base"], ["/dashboard"]])(
+      "rejects retired legacy path: %s",
+      (input) => {
+        expect(safeAiActionLink(input)).toBe(FALLBACK);
+      },
+    );
   });
 
   describe("hostile inputs fall back to /campaigns", () => {

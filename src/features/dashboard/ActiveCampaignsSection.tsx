@@ -8,7 +8,7 @@ import { getTranslations } from "next-intl/server";
 
 import { CampaignRow, GhostButton, SectionHeader } from "@/components/common";
 
-import type { DashboardCampaign } from "@/app/[locale]/(app)/dashboard/data";
+import type { DashboardCampaign } from "@/features/dashboard/data";
 
 interface Props {
   campaigns: DashboardCampaign[];

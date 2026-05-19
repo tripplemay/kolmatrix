@@ -54,9 +54,9 @@ test.describe("BM2 Journey B — Campaign → ROI → Weekly Report", () => {
     // the relations the detail page requires for full render).
 
     // Step 4 — ROI page reachable + KPI strip visible.
+    // /roi stays as a kept sub-route per adjudication §3 (no redirect).
     await page.goto("/en/roi");
-    // BL-064-F002 — /roi 302→/insight
-    await page.waitForURL(/\/(en|zh|ja|ko|es)\/(roi|insight)(\/|\?|$)/);
+    await page.waitForURL(/\/(en|zh|ja|ko|es)\/roi(\/|\?|$)/);
     await expect(page.getByTestId("roi-page-title")).toBeVisible({
       timeout: 15_000,
     });
@@ -67,9 +67,10 @@ test.describe("BM2 Journey B — Campaign → ROI → Weekly Report", () => {
     // visible or a previously-generated report renders. Both are valid
     // green paths (we don't force a real AI call in CI to keep the
     // suite cost- and credential-free).
-    await page.goto("/en/weekly-report");
-    // BL-064-F002 — /weekly-report 302→/insight
-    await page.waitForURL(/\/(en|zh|ja|ko|es)\/(weekly-report|insight)(\/|\?|$)/);
+    // BL-070-F003 git mv'd the route to /insight/weekly-report;
+    // BL-070-F004 deleted the legacy /weekly-report redirect.
+    await page.goto("/en/insight/weekly-report");
+    await page.waitForURL(/\/(en|zh|ja|ko|es)\/insight\/weekly-report(\/|\?|$)/);
     await expect(page.getByTestId("weekly-report-page-title")).toBeVisible({
       timeout: 15_000,
     });

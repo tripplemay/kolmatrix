@@ -83,18 +83,11 @@ export default auth((req) => {
     return NextResponse.redirect(new URL(`/${locale}/insight`, nextUrl));
   }
 
-  // BL-064-F002 — Phase 1 IA refactor redirects. Applied AFTER the
-  // auth + login special cases so unauthenticated users still see /login
-  // first, and authenticated users land on the new IA path directly.
-  // /dashboard → /insight, /knowledge-base → /brief?tab=products, etc.
-  //
-  // Status code is per-rule (BL-069 fix-round 1):
-  //   - Default 302 (temporary) preserves BL-064 §4 #C revert flexibility
-  //     for the still-transitional IA shells.
-  //   - BL-069's three /knowledge-base + /campaigns/new rules carry
-  //     status=301 (permanent) per spec §F006 acceptance — destinations
-  //     are content-equivalent + legacy routes are scheduled for
-  //     deletion by BL-070 二次清理.
+  // IA refactor redirect hook. The rule list was cleared by BL-070-F004
+  // (二次清理 per decision §5 — every retired legacy route now 404s
+  // outright), so this call is effectively a no-op today, but the hook
+  // stays wired so any future Phase 5 batch can re-introduce redirects
+  // by appending to IA_REDIRECT_RULES without touching middleware.ts.
   const iaRedirect = resolveIaRefactorRedirect(bare);
   if (iaRedirect) {
     const locale = resolveTargetLocale(req);

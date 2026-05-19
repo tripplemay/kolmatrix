@@ -21,25 +21,22 @@ import { describe, expect, it } from "vitest";
 const APP_ROOT = resolve(__dirname, "../../src/app/[locale]/(app)");
 
 const PAGES_THAT_NEED_ERROR_TSX = [
-  "dashboard",
-  // BL-065-F006 — `discovery` + `database` routes deleted alongside
-  // their error.tsx files (the new /match workbench is the
-  // replacement surface and ships its own error.tsx).
+  // BL-070-F004 — `dashboard` + `knowledge-base` routes were deleted
+  // alongside their error.tsx files (their content lives under
+  // /insight + /brief now, and the legacy URLs 404). The previous
+  // BL-065-F006 cleanup similarly removed `discovery` + `database`.
   "match",
   "kols/[id]",
-  "knowledge-base",
   "campaigns",
   "campaigns/[id]",
-  // BL-070-F001 — `outreach` route promoted to `reach` (git mv).
-  // F004 will delete the legacy route entirely; until then the new
-  // /reach directory carries the same `error.tsx`.
+  // BL-070-F001 — `outreach` was git mv'd to `reach`; the legacy
+  // directory is gone after F004 cleanup. /reach keeps the inherited
+  // error.tsx.
   "reach",
   "crm",
   "roi",
   // BL-070-F003 — `weekly-report` route moved to `insight/weekly-report`
-  // (git mv) and `insight` got a new error.tsx will be added by F003
-  // follow-up if needed. The insight/weekly-report path inherits its
-  // existing error.tsx (moved alongside the page.tsx).
+  // (git mv); the sub-route inherits its existing error.tsx.
   "insight/weekly-report",
 ] as const;
 

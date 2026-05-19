@@ -24,7 +24,7 @@ import {
 } from "../helpers/db";
 
 type FetchDashboardData = typeof import(
-  "@/app/[locale]/(app)/dashboard/data"
+  "@/features/dashboard/data"
 ).fetchDashboardData;
 
 let fetchDashboardData: FetchDashboardData;
@@ -32,7 +32,7 @@ let fetchDashboardData: FetchDashboardData;
 beforeAll(async () => {
   await setupTestDb();
   ({ fetchDashboardData } = await import(
-    "@/app/[locale]/(app)/dashboard/data"
+    "@/features/dashboard/data"
   ));
 });
 
