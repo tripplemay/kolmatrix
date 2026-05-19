@@ -216,20 +216,34 @@ test.describe("BL-069-F006 · /brief end-to-end smoke", () => {
     );
   });
 
-  test("6. BL-070-F004 — legacy /knowledge-base + /campaigns/new now 404 (redirects retired)", async ({
+  test("6. BL-070-F004 — legacy /knowledge-base 404 + /campaigns/new no longer redirects to /brief", async ({
     page,
   }) => {
     // BL-070-F004 retired the IA refactor redirect rules per decision
-    // §5 ("BL-070 同批即停 redirect"); the canonical 404 assertion lives
-    // in ia-refactor-cleanup-2026-05-19.spec.ts. This brief-flow spec
-    // smoke-checks the two routes that brief is the destination of so a
-    // regression that re-adds the legacy directory surfaces here too.
-    for (const path of ["/en/knowledge-base", "/en/campaigns/new"]) {
-      const apiResponse = await page.context().request.get(path, {
-        maxRedirects: 0,
-        failOnStatusCode: false,
-      });
-      expect(apiResponse.status(), `expected 404 for ${path}`).toBe(404);
-    }
+    // §5 ("BL-070 同批即停 redirect"); the canonical assertion lives in
+    // ia-refactor-cleanup-2026-05-19.spec.ts. This brief-flow smoke
+    // catches a regression that re-adds the two redirects that used to
+    // land on /brief.
+    //
+    // /knowledge-base directory was deleted → strict 404.
+    const kb = await page.context().request.get("/en/knowledge-base", {
+      maxRedirects: 0,
+      failOnStatusCode: false,
+    });
+    expect(kb.status(), "expected 404 for /en/knowledge-base").toBe(404);
+
+    // /campaigns/new now falls through to /campaigns/[id]/page.tsx
+    // (UUID guard → notFound). The i18n middleware can surface that
+    // as 200 with a not-found body or as 404; the F004 contract is
+    // "does not redirect to /brief".
+    const cn = await page.context().request.get("/en/campaigns/new", {
+      maxRedirects: 0,
+      failOnStatusCode: false,
+    });
+    expect(
+      [200, 404].includes(cn.status()),
+      `expected 200 or 404 for /en/campaigns/new, got ${cn.status()}`,
+    ).toBe(true);
+    expect(cn.headers()["location"] ?? "").not.toContain("/brief");
   });
 });
