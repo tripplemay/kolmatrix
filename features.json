@@ -95,7 +95,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 16.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "`tests/e2e/` 老 spec 全清：删 `dashboard-fidelity.spec.ts` / `discovery-fidelity.spec.ts` / `database-*` / `outreach-*` / `knowledge-base-*` / `reports-*` / `campaigns-new-*` 等 7-10 个 deprecated spec 文件",
       "4 路由 IA 全量 e2e suite 重写：(1) `tests/e2e/brief-flow.spec.ts`（BL-069 F006 已有 6 case，保留 + 验证 4 路由统一性）/ (2) `tests/e2e/match-flow.spec.ts`（**合并** 现 match-fidelity + campaign-match-flow + campaign-explainability-flow + campaign-refine-flow → 1 个统一 suite，~12 case）/ (3) `tests/e2e/reach-flow.spec.ts`（**新建**，~6 case：reach 页 mount / outreach 迁移 / 邮件 composer / Match accept→Reach 衔接 / 老路由 redirect / cleanup 后 404 验）/ (4) `tests/e2e/insight-flow.spec.ts`（**新建**，~6 case：insight 页 mount + tab 切换 / dashboard 内容 / reports 内容 / 老路由 redirect / cleanup 后 404 验）",
