@@ -2031,7 +2031,15 @@
         }
       }
     },
-    "demo": {},
+    "demo": {
+      "sectionTitle": "Here's what KolMatrix actually looks like",
+      "screenshotAlts": {
+        "match": "/match overview — AI matching + KOL library",
+        "reach": "/reach overview — Email Center",
+        "insight": "/insight overview — analytics dashboard"
+      },
+      "steps": ["Find KOLs", "AI Match", "Outreach", "Collaborate", "Measure"]
+    },
     "trust": {},
     "faq": {},
     "footerCta": {}

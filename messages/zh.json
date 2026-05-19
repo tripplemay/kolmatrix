@@ -2031,7 +2031,15 @@
         }
       }
     },
-    "demo": {},
+    "demo": {
+      "sectionTitle": "看一眼 KolMatrix 的实际样子",
+      "screenshotAlts": {
+        "match": "/match 全景 — AI 匹配 + KOL 库",
+        "reach": "/reach 全景 — Email Center",
+        "insight": "/insight 全景 — 数据看板"
+      },
+      "steps": ["找 KOL", "AI 匹配", "发起合作", "邮件协作", "数据复盘"]
+    },
     "trust": {},
     "faq": {},
     "footerCta": {}
