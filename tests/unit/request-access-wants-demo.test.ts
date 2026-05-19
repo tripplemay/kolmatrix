@@ -1,13 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
-// actions.ts is a "use server" file that imports prisma + email helpers
-// at module scope; mock prevents Prisma client init during unit test.
-vi.mock("@/lib/db", () => ({ prisma: {} }));
-vi.mock("@/lib/email/access-request", () => ({
-  sendAccessRequestNotification: vi.fn(),
-}));
-
-import { AccessRequestSchema } from "@/app/[locale]/request-access/actions";
+import { AccessRequestSchema } from "@/app/[locale]/request-access/schema";
 
 describe("AccessRequestSchema.wantsDemo", () => {
   const base = {

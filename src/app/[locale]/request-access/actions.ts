@@ -1,33 +1,12 @@
 "use server";
 
-import { z } from "zod";
-
 import { prisma } from "@/lib/db";
 import {
   sendAccessRequestNotification,
   type AccessRequestNotificationPayload,
 } from "@/lib/email/access-request";
 
-import { CAMPAIGNS_OPTIONS, ROLE_OPTIONS } from "./form-options";
-
-export const AccessRequestSchema = z.object({
-  firstName: z.string().trim().min(1).max(64),
-  lastName: z.string().trim().min(1).max(64),
-  email: z.string().trim().email().max(320),
-  company: z.string().trim().min(1).max(128),
-  role: z.enum(ROLE_OPTIONS),
-  campaignsPerQuarter: z.enum(CAMPAIGNS_OPTIONS),
-  games: z
-    .string()
-    .trim()
-    .max(2000)
-    .optional()
-    .transform((v) => (v && v.length > 0 ? v : undefined)),
-  wantsDemo: z
-    .union([z.literal("on"), z.literal("true"), z.literal("false"), z.undefined()])
-    .optional()
-    .transform((v) => v === "on" || v === "true"),
-});
+import { AccessRequestSchema } from "./schema";
 
 export type SubmitAccessRequestState = {
   ok: boolean;
