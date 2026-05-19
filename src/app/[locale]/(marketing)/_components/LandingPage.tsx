@@ -1,10 +1,11 @@
-/**
- * 2026-05-19 landing page · Marketing landing page composition root.
- *
- * Stage 1 ships an empty shell so middleware + page.tsx routing can
- * be verified end-to-end before the section components land in
- * Stage 2 (Tasks 6-12).
- */
+import { Hero } from "./Hero";
+import { PainPoints } from "./PainPoints";
+import { Features } from "./Features";
+import { EmailCenterDemo } from "./EmailCenterDemo";
+import { TrustPlaceholder } from "./TrustPlaceholder";
+import { FAQ } from "./FAQ";
+import { FooterCTA } from "./FooterCTA";
+
 interface Props {
   locale: string;
 }
@@ -16,12 +17,13 @@ export function LandingPage({ locale }: Props) {
       data-testid="landing-page"
       data-locale={locale}
     >
-      <section data-testid="landing-hero" className="px-6 py-20 text-center">
-        <h1 className="text-3xl font-bold text-white">KolMatrix</h1>
-        <p className="mt-4 text-on-surface-variant">
-          [Stage 2 — section components land here]
-        </p>
-      </section>
+      <Hero locale={locale} />
+      <PainPoints />
+      <Features locale={locale} />
+      <EmailCenterDemo />
+      <TrustPlaceholder />
+      <FAQ />
+      <FooterCTA locale={locale} />
     </main>
   );
 }

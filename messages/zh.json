@@ -1947,5 +1947,18 @@
       "reports": "报告",
       "analytics": "分析"
     }
+  },
+  "landing": {
+    "meta": {
+      "title": "KolMatrix — 全球游戏 KOL 营销指挥中心",
+      "description": "AI 智能匹配 · 全流程协作 · 邮件合规一站搞定。覆盖 YouTube/TikTok/Twitch/Bilibili 全平台游戏 KOL 投放。"
+    },
+    "hero": {},
+    "painPoints": {},
+    "features": {},
+    "demo": {},
+    "trust": {},
+    "faq": {},
+    "footerCta": {}
   }
 }
