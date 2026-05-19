@@ -1934,5 +1934,18 @@
     "engagementRate": {
       "tooltip": "YouTube/X のエンゲージメント率はチャンネル視聴回数を代理指標として使用しています（実際のいいね数ではありません）。プラットフォーム間の比較はあくまで概算です。"
     }
+  },
+  "reach": {
+    "pageTitle": "Reach",
+    "subtitle": "メール作成、ドメイン健全性、返信を一画面で。"
+  },
+  "insight": {
+    "pageTitle": "Insight",
+    "subtitle": "ダッシュボード、レポート、近日アナリティクス — KOL マーケティング全体像。",
+    "tabs": {
+      "dashboard": "ダッシュボード",
+      "reports": "レポート",
+      "analytics": "アナリティクス"
+    }
   }
 }

@@ -208,6 +208,13 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   "brief.pageTitle",
   "brief.markets.global",
   "brief.markets.latam",
+  // BL-070-F007 — /reach + /insight new IA route names. Both are
+  // marketing-industry loanwords intentionally rendered identically
+  // across all 5 locales (consistent with nav.brief / nav.match keeping
+  // "Brief"/"Match"). Native-translation review pending per BL-014
+  // backlog if the product brief evolves.
+  "reach.pageTitle",
+  "insight.pageTitle",
   "outreach.performance.statWindowValue",
   "outreach.domainHealth.dkim",
   "outreach.recentReplies.subjectPrefix",

@@ -171,15 +171,12 @@ test.describe("Authenticated BM1 visual regression", () => {
     "Visual regression baseline is Linux-canonical (CI + WSL). Non-Linux runs skip."
   );
 
-  test("dashboard full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
-    test.skip(
-      true,
-      "BL-070-F003 wrapped DashboardPage in /insight tab nav (InsightTabs) — " +
-        "dashboard.png baseline now diffs by the new tab strip above the page. " +
-        "F007 update-visual-baselines workflow regenerates the baseline against " +
-        "the new /insight?tab=dashboard chrome; remove this skip in the same " +
-        "commit that lands the regen.",
-    );
+  test("insight (default dashboard tab) full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
+    // BL-070-F007 unskipped after baseline regen against the new
+    // /insight chrome (BL-070-F003 wraps DashboardContent in InsightTabs).
+    // login() auto-lands on /insight per BL-070-F003 root redirect; the
+    // embedded DashboardContent still exposes dashboard-kpi-row, so the
+    // existing selector keeps working unchanged.
     test.skip(
       shouldSkipMissingBaseline("dashboard.png", test.info()),
       "Baseline dashboard.png missing — run the 'Update visual baselines' workflow."
@@ -209,38 +206,10 @@ test.describe("Authenticated BM1 visual regression", () => {
     });
   });
 
-  test("knowledge-base full-page screenshot diffs < 2% vs baseline", async ({ page }) => {
-    test.skip(
-      true,
-      "BL-069-F003 replaced /brief KB re-export with CampaignForm + AI bar; " +
-        "/knowledge-base 302→/brief no longer renders kb-grid. F004 will mount " +
-        "ProductListPanel under /brief?tab=products and F006 will retarget the " +
-        "redirect; F007 update-visual-baselines workflow will regenerate the " +
-        "baseline against the new product list view. BL-070 二次清理 will then " +
-        "delete /knowledge-base entirely."
-    );
-    test.skip(
-      shouldSkipMissingBaseline("en-knowledge-base.png", test.info()),
-      "Baseline en-knowledge-base.png missing — run the 'Update visual baselines' workflow."
-    );
-    await login(page);
-    // BL-064-F003 sidebar dropped the "Knowledge Base" link; go direct
-    // (F002 302→/brief, content unchanged).
-    await page.goto("/en/knowledge-base");
-    await page.waitForURL(/\/(knowledge-base|brief)(\/|\?|$)/);
-    await page.waitForSelector('[data-testid="kb-grid"], [data-testid="kb-empty"]');
-    await fontsReady(page);
-
-    const grid = page.getByTestId("kb-grid");
-
-    await expect(page).toHaveScreenshot("en-knowledge-base.png", {
-      fullPage: true,
-      animations: "disabled",
-      mask: [grid],
-      threshold: 0.02,
-      maxDiffPixels: 8000,
-    });
-  });
+  // BL-070-F007 — `knowledge-base full-page` baseline test deleted. The
+  // /knowledge-base route was retired by BL-070-F004; the migrated KB
+  // CRUD lives under /brief?tab=products and is covered by the
+  // `en-brief-products.png` baseline below.
 
   // BL-069-F007 — new /brief layout (BriefAiInputBar + CampaignForm).
   // Baseline locks the AI escape-hatch above the form + the form's
@@ -272,12 +241,34 @@ test.describe("Authenticated BM1 visual regression", () => {
     });
   });
 
+  // BL-070-F007 — new /insight reports tab. dashboard.png above
+  // captures /insight default tab (DashboardContent embedded);
+  // en-insight-reports.png captures ?tab=reports which renders the
+  // launch-pad panel with the weekly-report link.
+  test("insight ?tab=reports full-page screenshot diffs < 2% vs baseline", async ({
+    page,
+  }) => {
+    test.skip(
+      shouldSkipMissingBaseline("en-insight-reports.png", test.info()),
+      "Baseline en-insight-reports.png missing — run the 'Update visual baselines' workflow."
+    );
+    await login(page);
+    await page.goto("/en/insight?tab=reports");
+    await page.waitForSelector('[data-testid="insight-reports-panel"]');
+    await fontsReady(page);
+
+    await expect(page).toHaveScreenshot("en-insight-reports.png", {
+      fullPage: true,
+      animations: "disabled",
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
+  });
+
   // BL-069-F007 — /brief?tab=products renders the migrated KB CRUD.
-  // Same kb-grid testid as the legacy /knowledge-base baseline above,
-  // but now wrapped in the BL-069 ProductListPanel + tab nav. F006
-  // redirected /knowledge-base → /brief?tab=products so this is the
-  // canonical entry point going forward; BL-070 二次清理 will retire
-  // the old en-knowledge-base.png alongside the route.
+  // The BL-070-F004 cleanup retired the legacy /knowledge-base route;
+  // this is the canonical entry point for product management going
+  // forward.
   test("brief?tab=products full-page screenshot diffs < 2% vs baseline", async ({
     page,
   }) => {
@@ -531,23 +522,24 @@ test.describe("Authenticated BM2 visual regression", () => {
   // observed on CI run 25277266277.
 
 
-  test("outreach template library full-page screenshot diffs < 2% vs baseline", async ({
+  test("reach template library full-page screenshot diffs < 2% vs baseline", async ({
     page,
   }) => {
+    // BL-070-F007 unskipped after BL-070-F001 git mv /outreach → /reach
+    // + F004 deleted the legacy redirect. Path swapped to /en/reach/templates
+    // and baseline renamed from en-outreach-templates.png → en-reach-templates.png.
     test.skip(
-      true,
-      "BL-070-F004 retired /outreach — content moved to /reach/templates. " +
-        "F007 (visual baseline 全量 regen) will produce a new en-reach-templates.png " +
-        "and either unskip this test against the new path or delete it.",
+      shouldSkipMissingBaseline("en-reach-templates.png", test.info()),
+      "Baseline en-reach-templates.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
-    await page.goto("/en/outreach/templates");
+    await page.goto("/en/reach/templates");
     await page.waitForSelector('[data-testid="outreach-template-library"]');
     await fontsReady(page);
 
     const preview = page.locator('[data-testid="outreach-preview-panel"]');
 
-    await expect(page).toHaveScreenshot("en-outreach-templates.png", {
+    await expect(page).toHaveScreenshot("en-reach-templates.png", {
       fullPage: true,
       animations: "disabled",
       mask: [preview],
@@ -606,22 +598,18 @@ test.describe("Authenticated BM2 visual regression", () => {
     });
   });
 
-  test("weekly-report empty state full-page screenshot diffs < 2% vs baseline", async ({
+  test("insight weekly-report empty state full-page screenshot diffs < 2% vs baseline", async ({
     page,
   }) => {
+    // BL-070-F007 unskipped after BL-070-F003 git mv /weekly-report → /insight/weekly-report
+    // + F004 deleted the legacy redirect. Path swapped to /en/insight/weekly-report
+    // and baseline renamed from en-weekly-report.png → en-insight-weekly-report.png.
     test.skip(
-      true,
-      "BL-070-F004 deleted the /weekly-report redirect rule (F003 git mv'd the " +
-        "route to /insight/weekly-report). F007 (visual baseline 全量 regen) will " +
-        "produce a new baseline against /insight/weekly-report and either unskip " +
-        "this test against the new path or delete it.",
-    );
-    test.skip(
-      shouldSkipMissingBaseline("en-weekly-report.png", test.info()),
-      "Baseline en-weekly-report.png missing — run the 'Update visual baselines' workflow."
+      shouldSkipMissingBaseline("en-insight-weekly-report.png", test.info()),
+      "Baseline en-insight-weekly-report.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
-    await page.goto("/en/weekly-report");
+    await page.goto("/en/insight/weekly-report");
     await page.waitForSelector('[data-testid="weekly-report-page-title"]');
     await fontsReady(page);
 
@@ -633,7 +621,7 @@ test.describe("Authenticated BM2 visual regression", () => {
     const history = page.getByTestId("weekly-report-history-select");
     const brandHeader = page.getByTestId("weekly-report-brand-header");
 
-    await expect(page).toHaveScreenshot("en-weekly-report.png", {
+    await expect(page).toHaveScreenshot("en-insight-weekly-report.png", {
       fullPage: true,
       animations: "disabled",
       mask: [empty, sectionB, history, brandHeader],
@@ -825,21 +813,17 @@ test.describe("Authenticated BL-026 visual regression", () => {
     });
   });
 
-  test("en-outreach (composer search + product filter) diffs < 2% vs baseline", async ({
+  test("en-reach (composer search + product filter) diffs < 2% vs baseline", async ({
     page,
   }) => {
+    // BL-070-F007 unskipped after BL-070-F001 git mv /outreach → /reach.
+    // Path swapped to /en/reach and baseline renamed en-outreach.png → en-reach.png.
     test.skip(
-      true,
-      "BL-070-F004 retired /outreach — content lives at /reach (F001 git mv). " +
-        "F007 (visual baseline 全量 regen) will produce a new en-reach.png against " +
-        "the new path and either unskip this test or delete it.",
-    );
-    test.skip(
-      shouldSkipMissingBaseline("en-outreach.png", test.info()),
-      "Baseline en-outreach.png missing — run the 'Update visual baselines' workflow."
+      shouldSkipMissingBaseline("en-reach.png", test.info()),
+      "Baseline en-reach.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
-    await page.goto("/en/outreach");
+    await page.goto("/en/reach");
     await page.waitForSelector('[data-testid="outreach-composer"]');
     await fontsReady(page);
 
@@ -850,7 +834,7 @@ test.describe("Authenticated BL-026 visual regression", () => {
     const previewSubject = page.getByTestId("outreach-preview-subject");
     const previewBody = page.getByTestId("outreach-preview-body");
 
-    await expect(page).toHaveScreenshot("en-outreach.png", {
+    await expect(page).toHaveScreenshot("en-reach.png", {
       fullPage: true,
       animations: "disabled",
       mask: [previewSubject, previewBody],
@@ -885,14 +869,10 @@ test.describe("BL-055 hotfix — visual regression", () => {
     "Visual regression baseline is Linux-canonical (CI + WSL). Non-Linux runs skip."
   );
 
-  test("dashboard online state has no network-status banner (BL-055 F001)", async ({ page }) => {
-    test.skip(
-      true,
-      "BL-070-F003 wrapped /dashboard in /insight tab nav — the captured " +
-        "viewport now includes InsightTabs above the dashboard chrome, so " +
-        "en-network-status-online.png diffs. F007 regenerates against the " +
-        "new chrome and removes this skip.",
-    );
+  test("insight online state has no network-status banner (BL-055 F001)", async ({ page }) => {
+    // BL-070-F007 unskipped after baseline regen captures the new
+    // /insight chrome (InsightTabs above DashboardContent). login()
+    // auto-lands on /insight per BL-070-F003 root redirect.
     test.skip(
       shouldSkipMissingBaseline("en-network-status-online.png", test.info()),
       "Baseline en-network-status-online.png missing — run the 'Update visual baselines' workflow."
@@ -971,19 +951,17 @@ test.describe("BL-055 hotfix — visual regression", () => {
     });
   });
 
-  test("outreach templates tab badge shows the real count (BL-055 F002)", async ({ page }) => {
+  test("reach templates tab badge shows the real count (BL-055 F002)", async ({ page }) => {
+    // BL-070-F007 unskipped after BL-070-F001 git mv /outreach → /reach.
+    // Path swapped to /en/reach; baseline renamed en-outreach-templates-badge.png
+    // → en-reach-templates-badge.png (testids inside the page stayed
+    // `outreach-*` because the components themselves were git mv'd, not renamed).
     test.skip(
-      true,
-      "BL-070-F004 retired /outreach (F001 git mv'd the route to /reach). " +
-        "F007 will regenerate the badge baseline against /reach and either " +
-        "unskip this test or delete it.",
-    );
-    test.skip(
-      shouldSkipMissingBaseline("en-outreach-templates-badge.png", test.info()),
-      "Baseline en-outreach-templates-badge.png missing — run the 'Update visual baselines' workflow."
+      shouldSkipMissingBaseline("en-reach-templates-badge.png", test.info()),
+      "Baseline en-reach-templates-badge.png missing — run the 'Update visual baselines' workflow."
     );
     await login(page);
-    await page.goto("/en/outreach");
+    await page.goto("/en/reach");
     await page.waitForSelector('[data-testid="outreach-tabs"]');
     await fontsReady(page);
 
@@ -996,47 +974,18 @@ test.describe("BL-055 hotfix — visual regression", () => {
     expect(badgeText).not.toMatch(/\b10\b/);
 
     const tabsStrip = page.getByTestId("outreach-tabs");
-    await expect(tabsStrip).toHaveScreenshot("en-outreach-templates-badge.png", {
+    await expect(tabsStrip).toHaveScreenshot("en-reach-templates-badge.png", {
       animations: "disabled",
       threshold: 0.02,
       maxDiffPixels: 4000,
     });
   });
 
-  test("knowledge-base no longer renders the RECENT_AI_ACTIVITY mock section (BL-055 F003)", async ({
-    page,
-  }) => {
-    test.skip(
-      true,
-      "BL-069-F003 replaced /brief KB re-export with CampaignForm + AI bar; " +
-        "/knowledge-base 302→/brief no longer renders kb-grid (the negative " +
-        "RECENT_AI_ACTIVITY assertion the BL-055 hotfix protects is now " +
-        "moot because the section no longer mounts at all). BL-070 二次清理 " +
-        "will delete /knowledge-base entirely and remove this test."
-    );
-    test.skip(
-      shouldSkipMissingBaseline("en-knowledge-base-bottom.png", test.info()),
-      "Baseline en-knowledge-base-bottom.png missing — run the 'Update visual baselines' workflow."
-    );
-    await login(page);
-    await page.goto("/en/knowledge-base");
-    await page.waitForSelector('[data-testid="kb-grid"], [data-testid="kb-empty"]');
-    await fontsReady(page);
-
-    // The mock section advertised "RECENT AI ACTIVITY" + "2.1 Credits"
-    // strings; both must be gone now.
-    await expect(page.getByText(/RECENT AI ACTIVITY/i)).toHaveCount(0);
-    await expect(page.getByText(/2\.1 Credits/)).toHaveCount(0);
-
-    const grid = page.getByTestId("kb-grid");
-    await expect(page).toHaveScreenshot("en-knowledge-base-bottom.png", {
-      fullPage: true,
-      animations: "disabled",
-      mask: [grid],
-      threshold: 0.02,
-      maxDiffPixels: 8000,
-    });
-  });
+  // BL-070-F007 — `knowledge-base no longer renders the RECENT_AI_ACTIVITY`
+  // baseline test deleted. The BL-055 hotfix that motivated it (proving the
+  // mock section was gone from /knowledge-base) is moot now that BL-070-F004
+  // retired the entire /knowledge-base route. The migrated KB CRUD at
+  // /brief?tab=products is covered by en-brief-products.png above.
 });
 
 test.describe("Auth cinematic — visual regression", () => {

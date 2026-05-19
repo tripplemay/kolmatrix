@@ -1933,5 +1933,18 @@
     "engagementRate": {
       "tooltip": "YouTube/X engagement_rate uses channel views as proxy (not literal like counts). Cross-platform comparison is approximate."
     }
+  },
+  "reach": {
+    "pageTitle": "Reach",
+    "subtitle": "Compose campaigns, track domain health, and watch every reply land."
+  },
+  "insight": {
+    "pageTitle": "Insight",
+    "subtitle": "Dashboard, reports, and (soon) analytics — your global KOL marketing pulse.",
+    "tabs": {
+      "dashboard": "Dashboard",
+      "reports": "Reports",
+      "analytics": "Analytics"
+    }
   }
 }

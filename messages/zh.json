@@ -1933,5 +1933,18 @@
     "engagementRate": {
       "tooltip": "YouTube/X 的互动率使用频道观看次数作代理（非字面点赞数）。跨平台对比为近似值。"
     }
+  },
+  "reach": {
+    "pageTitle": "Reach",
+    "subtitle": "撰写邮件、跟踪域名健康度、第一时间看到每条回复。"
+  },
+  "insight": {
+    "pageTitle": "Insight",
+    "subtitle": "Dashboard、Reports、(即将) Analytics — 全局 KOL 营销脉搏。",
+    "tabs": {
+      "dashboard": "仪表盘",
+      "reports": "报告",
+      "analytics": "分析"
+    }
   }
 }

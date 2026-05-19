@@ -1934,5 +1934,18 @@
     "engagementRate": {
       "tooltip": "YouTube/X의 참여율은 채널 조회수를 대리 지표로 사용합니다(실제 좋아요 수가 아님). 플랫폼 간 비교는 근사값입니다."
     }
+  },
+  "reach": {
+    "pageTitle": "Reach",
+    "subtitle": "이메일 작성, 도메인 상태, 모든 답장을 한 곳에서."
+  },
+  "insight": {
+    "pageTitle": "Insight",
+    "subtitle": "대시보드, 리포트, 곧 출시될 분석 — 글로벌 KOL 마케팅 현황.",
+    "tabs": {
+      "dashboard": "대시보드",
+      "reports": "리포트",
+      "analytics": "분석"
+    }
   }
 }

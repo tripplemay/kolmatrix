@@ -1934,5 +1934,18 @@
     "engagementRate": {
       "tooltip": "La tasa de interacción de YouTube/X usa las vistas del canal como aproximación (no son los me gusta literales). La comparación entre plataformas es aproximada."
     }
+  },
+  "reach": {
+    "pageTitle": "Reach",
+    "subtitle": "Componer campañas, monitorear salud de dominio, ver cada respuesta."
+  },
+  "insight": {
+    "pageTitle": "Insight",
+    "subtitle": "Panel, reportes, y (próximamente) análisis — tu pulso global de marketing KOL.",
+    "tabs": {
+      "dashboard": "Panel",
+      "reports": "Reportes",
+      "analytics": "Análisis"
+    }
   }
 }
