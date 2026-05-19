@@ -78,7 +78,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "`git rm` 6 文件（BL-066 F002 acceptance 写明的 `_deprecated_by_BL-066` 文件）：(1) `src/app/[locale]/(app)/campaigns/[id]/CampaignHealthCard.tsx` / (2) `ActivityTimelineCard.tsx` / (3) `EmailPerformanceChart.tsx` + Impl / (4) `CampaignRevenueRecorder.tsx` / (5) `CampaignStatusController.tsx` / (6) `src/lib/campaigns/detail-insights.ts` `loadCampaignDetailInsights`",
       "**同 commit grep 全仓 import 验证 0 引用**（per §5 不变量 #3 / BL-066 F002 acceptance 'page.tsx unmount 后 0 引用'）",
