@@ -25,6 +25,13 @@ on:
       - "framework/**"
       - "**/*.md"
       - "harness-rules.md"
+  # BL-070 fix-round 1 — added so we can manually trigger CI on bot
+  # commits (e.g., update-visual-baselines.yml auto-commits with the
+  # default GITHUB_TOKEN, which by design does NOT cascade to other
+  # workflows). Without workflow_dispatch the only path to re-run CI
+  # against a bot-committed head was an unrelated code push, which is
+  # noisy. Manual trigger from gh CLI / Actions UI is much cleaner.
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
