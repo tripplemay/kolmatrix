@@ -4,6 +4,9 @@
 # Claude Code runtime locks
 .claude/
 
+# Superpowers brainstorming session artifacts (本机临时, 不入 git)
+.superpowers/
+
 # OS / editor
 .DS_Store
 *.swp
