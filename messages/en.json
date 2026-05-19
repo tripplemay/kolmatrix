@@ -2060,7 +2060,31 @@
         }
       }
     },
-    "faq": {},
+    "faq": {
+      "sectionTitle": "Frequently asked",
+      "items": [
+        {
+          "q": "Does the KOL library support genre-level filtering?",
+          "a": "Yes — RPG, card, casual, competitive, and more. Filter by gameplay style, art style, and target region."
+        },
+        {
+          "q": "How does AI matching score creator fit?",
+          "a": "We combine semantic analysis of your brief with a creator's historical collaboration data via aigcgateway. Every recommendation comes with a fit score and a per-criterion explanation."
+        },
+        {
+          "q": "Do DKIM/SPF settings require an engineer?",
+          "a": "No. Our guided setup deploys compliant DNS records in under 3 minutes, no DevOps needed."
+        },
+        {
+          "q": "How fresh is the data?",
+          "a": "Email opens and statuses are real-time. Plays and engagement metrics update T+1. Audience profiles refresh weekly."
+        },
+        {
+          "q": "What does the trial account include?",
+          "a": "Full access to all six modules — real data filtering, AI matching, template sending, and analytics."
+        }
+      ]
+    },
     "footerCta": {}
   }
 }
