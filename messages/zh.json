@@ -1996,7 +1996,41 @@
       },
       "tagline": "找达人 → AI 匹配 → 发起合作 → 邮件协作 → 数据复盘 — 一站搞定"
     },
-    "features": {},
+    "features": {
+      "sectionTitle": "覆盖全流程的 6 大核心模块",
+      "items": {
+        "library": {
+          "title": "游戏垂类 KOL 库",
+          "body": "15 维筛选，按品类 / 画风 / 地区 / 粉丝画像精准定位",
+          "linkLabel": "前往 /match"
+        },
+        "aiMatch": {
+          "title": "AI 智能匹配",
+          "body": "上传游戏素材，AI 自动推荐高契合度 KOL 组合",
+          "linkLabel": "前往 /match"
+        },
+        "insight": {
+          "title": "多平台数据分析",
+          "body": "播放 / 互动 / 受众画像 / 转化实时看板",
+          "linkLabel": "前往 /insight"
+        },
+        "reach": {
+          "title": "邮件协作 & 合规中心",
+          "body": "DKIM/SPF/DMARC 一键配置 + 信誉分 98 + 全流程追踪",
+          "linkLabel": "前往 /reach"
+        },
+        "crm": {
+          "title": "KOL CRM 管理",
+          "body": "标签 / 分组 / 沟通记录 / 合作进度一体化",
+          "linkLabel": "前往 /crm"
+        },
+        "roi": {
+          "title": "数据复盘 & ROI",
+          "body": "曝光 / 互动 / 引流 / 转化 / ROI 全维度追踪",
+          "linkLabel": "前往 /roi"
+        }
+      }
+    },
     "demo": {},
     "trust": {},
     "faq": {},

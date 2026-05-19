@@ -1996,7 +1996,41 @@
       },
       "tagline": "Find → AI Match → Outreach → Collaborate → Measure — all in one place"
     },
-    "features": {},
+    "features": {
+      "sectionTitle": "Six modules cover the full lifecycle",
+      "items": {
+        "library": {
+          "title": "Game-vertical KOL library",
+          "body": "15-dimension filtering by genre, style, region, audience profile",
+          "linkLabel": "Open /match"
+        },
+        "aiMatch": {
+          "title": "AI-powered matching",
+          "body": "Upload your brief; AI recommends the highest-fit creator mix",
+          "linkLabel": "Open /match"
+        },
+        "insight": {
+          "title": "Multi-platform analytics",
+          "body": "Plays, engagement, audience profile, conversion — all in one dashboard",
+          "linkLabel": "Open /insight"
+        },
+        "reach": {
+          "title": "Email collaboration & compliance",
+          "body": "One-click DKIM/SPF/DMARC + reputation 98 + full-funnel tracking",
+          "linkLabel": "Open /reach"
+        },
+        "crm": {
+          "title": "KOL CRM",
+          "body": "Tags, segments, conversation history, deal progress — unified",
+          "linkLabel": "Open /crm"
+        },
+        "roi": {
+          "title": "Reporting & ROI",
+          "body": "Impressions, engagement, traffic, conversion, ROI — every dimension",
+          "linkLabel": "Open /roi"
+        }
+      }
+    },
     "demo": {},
     "trust": {},
     "faq": {},
