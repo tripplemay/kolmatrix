@@ -2085,6 +2085,15 @@
         }
       ]
     },
-    "footerCta": {}
+    "footerCta": {
+      "sectionTitle": "立即开启全球游戏 KOL 高效投放",
+      "ctaPrimary": "申请试用",
+      "ctaSecondary": "预约 1v1 演示",
+      "footerLine": "© 2026 KolMatrix · 全球游戏 KOL 营销 SaaS",
+      "links": {
+        "privacy": "隐私政策",
+        "terms": "服务条款"
+      }
+    }
   }
 }

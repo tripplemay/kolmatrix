@@ -2085,6 +2085,15 @@
         }
       ]
     },
-    "footerCta": {}
+    "footerCta": {
+      "sectionTitle": "Start running smarter KOL campaigns today",
+      "ctaPrimary": "Request a trial",
+      "ctaSecondary": "Book a 1:1 demo",
+      "footerLine": "© 2026 KolMatrix · Global Game KOL Marketing SaaS",
+      "links": {
+        "privacy": "Privacy",
+        "terms": "Terms"
+      }
+    }
   }
 }
