@@ -27,25 +27,18 @@ const {
 } = await import("@/middleware-helpers");
 
 describe("PROTECTED_PREFIXES", () => {
-  it("contains every authed top-level route (B0 legacy + BL-064 new IA) in declared order", () => {
-    // Order is significant for review/audit, but not enforced as
-    // alphabet-sorted (BL-064-F001 added 4 new-IA paths at the end of the
-    // list to keep the diff minimal while the legacy routes are still
-    // alive via F002 302-redirects). Once BL-070 removes the legacy
-    // paths, this list can be re-sorted.
+  it("contains the 4 IA top-level routes + kept sub-routes (BL-070-F004 trimmed list)", () => {
+    // BL-070-F004 retired the 8 legacy top-level routes (/dashboard
+    // /discovery /database /emails /knowledge-base /analytics
+    // /weekly-report /outreach) — they now 404 outright, so no auth
+    // gating is needed. The remaining list is the 4 new IA routes plus
+    // the kept sub-routes whose pages still render under the legacy
+    // names (kols / campaigns / crm / roi / settings).
     expect(PROTECTED_PREFIXES).toEqual([
-      "/dashboard",
-      "/discovery",
-      "/database",
       "/kols",
       "/campaigns",
-      "/emails",
-      "/knowledge-base",
-      "/analytics",
       "/crm",
       "/roi",
-      "/weekly-report",
-      "/outreach",
       "/settings",
       // BL-064-F001 — Phase 1 4-route IA
       "/brief",
@@ -58,7 +51,7 @@ describe("PROTECTED_PREFIXES", () => {
 
 describe("stripLocale", () => {
   it("peels off known locales and leaves the remainder", () => {
-    expect(stripLocale("/en/dashboard")).toBe("/dashboard");
+    expect(stripLocale("/en/insight")).toBe("/insight");
     expect(stripLocale("/zh/kols/discover")).toBe("/kols/discover");
     expect(stripLocale("/ja/campaigns/abc")).toBe("/campaigns/abc");
     expect(stripLocale("/ko")).toBe("/");
@@ -68,21 +61,23 @@ describe("stripLocale", () => {
   it("leaves non-locale prefixes unchanged", () => {
     expect(stripLocale("/login")).toBe("/login");
     expect(stripLocale("/api/auth/session")).toBe("/api/auth/session");
-    expect(stripLocale("/dashboard")).toBe("/dashboard");
+    expect(stripLocale("/insight")).toBe("/insight");
     expect(stripLocale("/")).toBe("/");
   });
 
   it("leaves unknown 2-letter prefixes alone (fr, de, ...)", () => {
-    expect(stripLocale("/fr/dashboard")).toBe("/fr/dashboard");
+    expect(stripLocale("/fr/insight")).toBe("/fr/insight");
   });
 });
 
 describe("isProtected", () => {
-  it("returns true for protected top-level paths", () => {
-    expect(isProtected("/dashboard")).toBe(true);
+  it("returns true for protected top-level paths (BL-070-F004 trimmed list)", () => {
+    expect(isProtected("/insight")).toBe(true);
     expect(isProtected("/kols")).toBe(true);
     expect(isProtected("/campaigns")).toBe(true);
-    expect(isProtected("/emails")).toBe(true);
+    expect(isProtected("/brief")).toBe(true);
+    expect(isProtected("/match")).toBe(true);
+    expect(isProtected("/reach")).toBe(true);
     expect(isProtected("/settings")).toBe(true);
   });
 
@@ -90,6 +85,22 @@ describe("isProtected", () => {
     expect(isProtected("/kols/discover")).toBe(true);
     expect(isProtected("/campaigns/abc-123")).toBe(true);
     expect(isProtected("/settings/team/members")).toBe(true);
+    expect(isProtected("/insight/weekly-report/abc")).toBe(true);
+  });
+
+  it("BL-070-F004 — retired legacy routes no longer count as protected (they 404 outright)", () => {
+    for (const legacy of [
+      "/dashboard",
+      "/discovery",
+      "/database",
+      "/emails",
+      "/knowledge-base",
+      "/analytics",
+      "/weekly-report",
+      "/outreach",
+    ]) {
+      expect(isProtected(legacy)).toBe(false);
+    }
   });
 
   it("returns false for the login + marketing routes", () => {
@@ -97,22 +108,22 @@ describe("isProtected", () => {
     expect(isProtected("/")).toBe(false);
   });
 
-  it("does not treat similar prefixes as protected (e.g. /dashboarding)", () => {
-    expect(isProtected("/dashboarding")).toBe(false);
+  it("does not treat similar prefixes as protected (e.g. /insightful)", () => {
+    expect(isProtected("/insightful")).toBe(false);
     expect(isProtected("/kolsmith")).toBe(false);
   });
 });
 
-describe("dashboard gate — composed decision", () => {
-  it("detects unauthenticated /dashboard as redirect-to-login case", () => {
-    const bare = stripLocale("/en/dashboard");
+describe("insight gate — composed decision", () => {
+  it("detects unauthenticated /insight as redirect-to-login case", () => {
+    const bare = stripLocale("/en/insight");
     const authed = false;
     // Middleware flow: `isProtected(bare) && !authed` → redirect('/login').
     expect(isProtected(bare) && !authed).toBe(true);
   });
 
-  it("lets an authenticated user stay on /dashboard", () => {
-    const bare = stripLocale("/en/dashboard");
+  it("lets an authenticated user stay on /insight", () => {
+    const bare = stripLocale("/en/insight");
     const authed = true;
     expect(isProtected(bare) && !authed).toBe(false);
   });

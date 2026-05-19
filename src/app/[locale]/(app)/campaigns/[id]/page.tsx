@@ -47,11 +47,23 @@ interface Props {
   params: Promise<{ locale: string; id: string }>;
 }
 
+// Campaign.id is a UUID v4 — `c[id]` accepts any string segment but
+// only UUID-shaped values reach Prisma. BL-070-F004 retired the
+// /campaigns/new explicit route, so `/campaigns/new` now falls through
+// to this dynamic segment; without the guard, `findFirst({ id: 'new' })`
+// raises a Prisma "invalid input syntax for type uuid" 500. Anything
+// non-UUID notFound()s here so the legacy /campaigns/new URL surfaces
+// the framework 404 instead.
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default async function CampaignDetailPage({ params }: Props) {
   const { locale, id } = await params;
   const session = await auth();
   const tenantId = session?.user?.tenantId;
   if (!tenantId) redirect("/login");
+
+  if (!UUID_RE.test(id)) notFound();
 
   const campaign = await runCampaignDetail(tenantId, id);
   if (!campaign) notFound();
