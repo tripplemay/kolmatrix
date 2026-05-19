@@ -1953,7 +1953,23 @@
       "title": "KolMatrix — 全球游戏 KOL 营销指挥中心",
       "description": "AI 智能匹配 · 全流程协作 · 邮件合规一站搞定。覆盖 YouTube/TikTok/Twitch/Bilibili 全平台游戏 KOL 投放。"
     },
-    "hero": {},
+    "hero": {
+      "kicker": "KolMatrix",
+      "title": "全球游戏 KOL 营销指挥中心",
+      "subtitle": "AI 智能匹配 · 全流程协作 · 邮件合规一站搞定 — 让游戏出海 KOL 投放效率提升 10 倍",
+      "kpis": {
+        "kolLibrary": "{count}+ 游戏垂类 KOL 库",
+        "platforms": "4 大平台覆盖",
+        "platformsHint": "YouTube · TikTok · Twitch · Bilibili",
+        "aiMatch": "AI 智能匹配",
+        "aiMatchHint": "上传素材，3 分钟锁定最优达人",
+        "compliance": "DKIM/SPF 合规 + 98% 信誉分"
+      },
+      "ctaPrimary": "立即申请试用",
+      "ctaSecondary": "预约 1v1 演示",
+      "screenshotAiAlt": "KolMatrix /match AI suggestions sidebar",
+      "screenshotReachAlt": "KolMatrix /reach email center domain health"
+    },
     "painPoints": {},
     "features": {},
     "demo": {},

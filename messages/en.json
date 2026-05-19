@@ -1953,7 +1953,23 @@
       "title": "KolMatrix — Global Game KOL Marketing Command Center",
       "description": "AI-powered matching, end-to-end collaboration, and email compliance in one place. Covering KOLs across YouTube, TikTok, Twitch, and Bilibili."
     },
-    "hero": {},
+    "hero": {
+      "kicker": "KolMatrix",
+      "title": "Global Game KOL Marketing Command Center",
+      "subtitle": "AI-powered matching · end-to-end collaboration · email compliance — 10× faster KOL outreach for game studios",
+      "kpis": {
+        "kolLibrary": "{count}+ Game-vertical KOLs",
+        "platforms": "4 major platforms",
+        "platformsHint": "YouTube · TikTok · Twitch · Bilibili",
+        "aiMatch": "AI Match",
+        "aiMatchHint": "Upload a brief, get the right creators in 3 minutes",
+        "compliance": "DKIM/SPF compliance + 98 reputation"
+      },
+      "ctaPrimary": "Request a trial",
+      "ctaSecondary": "Book a 1:1 demo",
+      "screenshotAiAlt": "KolMatrix /match AI suggestions sidebar",
+      "screenshotReachAlt": "KolMatrix /reach email center domain health"
+    },
     "painPoints": {},
     "features": {},
     "demo": {},
