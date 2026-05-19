@@ -1970,7 +1970,32 @@
       "screenshotAiAlt": "KolMatrix /match AI suggestions sidebar",
       "screenshotReachAlt": "KolMatrix /reach email center domain health"
     },
-    "painPoints": {},
+    "painPoints": {
+      "sectionTitle": "游戏出海 KOL 营销 4 大痛点",
+      "items": {
+        "find": {
+          "icon": "🔍",
+          "title": "跨平台找 KOL 慢",
+          "body": "筛选散、数据不准，4 大平台来回切换效率低"
+        },
+        "match": {
+          "icon": "🎯",
+          "title": "受众分析模糊匹配不准",
+          "body": "凭感觉投放，ROI 不可控，烧钱不见声量"
+        },
+        "email": {
+          "icon": "📭",
+          "title": "邮件送达率低开信率为 0",
+          "body": "不知道是合规配置问题还是内容问题"
+        },
+        "workflow": {
+          "icon": "⚙️",
+          "title": "全流程割裂合规风险高",
+          "body": "合作进度全靠人工 Excel 统计，回款复盘没体系"
+        }
+      },
+      "tagline": "找达人 → AI 匹配 → 发起合作 → 邮件协作 → 数据复盘 — 一站搞定"
+    },
     "features": {},
     "demo": {},
     "trust": {},

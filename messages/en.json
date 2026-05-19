@@ -1970,7 +1970,32 @@
       "screenshotAiAlt": "KolMatrix /match AI suggestions sidebar",
       "screenshotReachAlt": "KolMatrix /reach email center domain health"
     },
-    "painPoints": {},
+    "painPoints": {
+      "sectionTitle": "Four challenges every game studio faces",
+      "items": {
+        "find": {
+          "icon": "🔍",
+          "title": "Cross-platform KOL discovery is slow",
+          "body": "Scattered data, inconsistent metrics, four platforms to juggle"
+        },
+        "match": {
+          "icon": "🎯",
+          "title": "Audience fit is a gut call",
+          "body": "Imprecise matching, unpredictable ROI, wasted spend"
+        },
+        "email": {
+          "icon": "📭",
+          "title": "Emails never reach the inbox",
+          "body": "Open rate stuck at zero with no way to tell if it's compliance or content"
+        },
+        "workflow": {
+          "icon": "⚙️",
+          "title": "Workflow is fragmented and risky",
+          "body": "Progress tracked in spreadsheets; compliance gaps create brand risk"
+        }
+      },
+      "tagline": "Find → AI Match → Outreach → Collaborate → Measure — all in one place"
+    },
     "features": {},
     "demo": {},
     "trust": {},
