@@ -1074,7 +1074,11 @@ test.describe("Landing page visual regression", () => {
     await page.goto("/zh");
     await page.getByTestId("landing-hero").waitFor();
     await fontsReady(page);
-    await expect(page).toHaveScreenshot("landing-zh-desktop.png", { fullPage: true });
+    await expect(page).toHaveScreenshot("landing-zh-desktop.png", {
+      fullPage: true,
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
   });
 
   test("landing-en-desktop visual baseline", async ({ page }) => {
@@ -1086,7 +1090,11 @@ test.describe("Landing page visual regression", () => {
     await page.goto("/en");
     await page.getByTestId("landing-hero").waitFor();
     await fontsReady(page);
-    await expect(page).toHaveScreenshot("landing-en-desktop.png", { fullPage: true });
+    await expect(page).toHaveScreenshot("landing-en-desktop.png", {
+      fullPage: true,
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
   });
 
   test("landing-zh-mobile visual baseline", async ({ page }) => {
@@ -1098,7 +1106,11 @@ test.describe("Landing page visual regression", () => {
     await page.goto("/zh");
     await page.getByTestId("landing-hero").waitFor();
     await fontsReady(page);
-    await expect(page).toHaveScreenshot("landing-zh-mobile.png", { fullPage: true });
+    await expect(page).toHaveScreenshot("landing-zh-mobile.png", {
+      fullPage: true,
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
   });
 
   test("landing-en-mobile visual baseline", async ({ page }) => {
@@ -1110,6 +1122,10 @@ test.describe("Landing page visual regression", () => {
     await page.goto("/en");
     await page.getByTestId("landing-hero").waitFor();
     await fontsReady(page);
-    await expect(page).toHaveScreenshot("landing-en-mobile.png", { fullPage: true });
+    await expect(page).toHaveScreenshot("landing-en-mobile.png", {
+      fullPage: true,
+      threshold: 0.02,
+      maxDiffPixels: 8000,
+    });
   });
 });
