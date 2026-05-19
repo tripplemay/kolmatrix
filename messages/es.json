@@ -125,7 +125,8 @@
       "backToLogin": "Volver a iniciar sesión",
       "errorGeneric": "Algo salió mal. Por favor, inténtalo de nuevo en un momento.",
       "errorInvalidInput": "Por favor, comprueba los campos resaltados e inténtalo de nuevo.",
-      "errorTosRequired": "Debes aceptar los Términos de Servicio para continuar."
+      "errorTosRequired": "Debes aceptar los Términos de Servicio para continuar.",
+      "wantsDemoLabel": "Quiero una demo 1:1 del producto con un product manager"
     }
   },
   "dashboard": {
@@ -1946,6 +1947,154 @@
       "dashboard": "Panel",
       "reports": "Reportes",
       "analytics": "Análisis"
+    }
+  },
+  "landing": {
+    "meta": {
+      "title": "KolMatrix — Centro de mando de marketing global de KOL para videojuegos",
+      "description": "Matching con IA, colaboración integral y cumplimiento de correo en un solo lugar. Cubrimos KOL de YouTube, TikTok, Twitch y Bilibili."
+    },
+    "hero": {
+      "kicker": "KolMatrix",
+      "title": "Centro de mando de marketing global de KOL para videojuegos",
+      "subtitle": "Matching con IA · colaboración integral · cumplimiento de correo — outreach de KOL 10× más rápido para estudios de videojuegos",
+      "kpis": {
+        "kolLibrary": "{count}+ KOL especializados en videojuegos",
+        "platforms": "4 plataformas principales",
+        "platformsHint": "YouTube · TikTok · Twitch · Bilibili",
+        "aiMatch": "Matching con IA",
+        "aiMatchHint": "Sube un brief y obtén a los creadores adecuados en 3 minutos",
+        "compliance": "Cumplimiento DKIM/SPF + reputación 98"
+      },
+      "ctaPrimary": "Solicitar prueba",
+      "ctaSecondary": "Reservar demo 1:1",
+      "screenshotAiAlt": "Barra lateral de sugerencias de IA de KolMatrix /match",
+      "screenshotReachAlt": "Estado del dominio del centro de correo de KolMatrix /reach"
+    },
+    "painPoints": {
+      "sectionTitle": "Cuatro retos que enfrenta todo estudio de videojuegos",
+      "items": {
+        "find": {
+          "icon": "🔍",
+          "title": "Descubrir KOL entre plataformas es lento",
+          "body": "Datos dispersos, métricas inconsistentes y cuatro plataformas que gestionar"
+        },
+        "match": {
+          "icon": "🎯",
+          "title": "El encaje de audiencia se decide por intuición",
+          "body": "Matching impreciso, ROI impredecible y presupuesto desperdiciado"
+        },
+        "email": {
+          "icon": "📭",
+          "title": "Los correos no llegan a la bandeja de entrada",
+          "body": "Tasa de apertura en cero sin saber si es por compliance o contenido"
+        },
+        "workflow": {
+          "icon": "⚙️",
+          "title": "Flujo de trabajo fragmentado y arriesgado",
+          "body": "Progreso seguido en hojas de cálculo; los huecos de compliance crean riesgo de marca"
+        }
+      },
+      "tagline": "Encontrar → Matching con IA → Outreach → Colaborar → Medir — todo en un solo lugar"
+    },
+    "features": {
+      "sectionTitle": "Seis módulos que cubren todo el ciclo de vida",
+      "items": {
+        "library": {
+          "title": "Biblioteca de KOL especializada en videojuegos",
+          "body": "Filtrado en 15 dimensiones por género, estilo, región y perfil de audiencia",
+          "linkLabel": "Abrir /match"
+        },
+        "aiMatch": {
+          "title": "Matching con IA",
+          "body": "Sube tu brief; la IA recomienda la mezcla de creadores con mayor encaje",
+          "linkLabel": "Abrir /match"
+        },
+        "insight": {
+          "title": "Analítica multiplataforma",
+          "body": "Reproducciones, engagement, perfil de audiencia y conversión en un solo dashboard",
+          "linkLabel": "Abrir /insight"
+        },
+        "reach": {
+          "title": "Colaboración y compliance de correo",
+          "body": "DKIM/SPF/DMARC con un clic + reputación 98 + seguimiento del embudo completo",
+          "linkLabel": "Abrir /reach"
+        },
+        "crm": {
+          "title": "CRM de KOL",
+          "body": "Etiquetas, segmentos, historial de conversación y progreso de deals unificados",
+          "linkLabel": "Abrir /crm"
+        },
+        "roi": {
+          "title": "Reportes y ROI",
+          "body": "Impresiones, engagement, tráfico, conversión y ROI en cada dimensión",
+          "linkLabel": "Abrir /roi"
+        }
+      }
+    },
+    "demo": {
+      "sectionTitle": "Así se ve KolMatrix en realidad",
+      "screenshotAlts": {
+        "match": "Vista general de /match — matching con IA + biblioteca de KOL",
+        "reach": "Vista general de /reach — Email Center",
+        "insight": "Vista general de /insight — dashboard de analítica"
+      },
+      "steps": ["Encontrar KOL", "Matching con IA", "Contactar", "Colaborar", "Medir"]
+    },
+    "trust": {
+      "sectionTitle": "Seguridad y cumplimiento de nivel empresarial",
+      "items": {
+        "encryption": {
+          "icon": "🔒",
+          "title": "Cifrado de datos de nivel empresarial",
+          "body": "TLS 1.3 en tránsito + aislamiento multi-tenant con Postgres RLS"
+        },
+        "email": {
+          "icon": "✉️",
+          "title": "Cumplimiento de correo",
+          "body": "Resend SPF / DKIM / DMARC totalmente verificados, reputación 98"
+        },
+        "partners": {
+          "icon": "🤝",
+          "title": "Partners en conversación",
+          "body": "Editoras globales líderes de videojuegos en conversación — lista próximamente"
+        }
+      }
+    },
+    "faq": {
+      "sectionTitle": "Preguntas frecuentes",
+      "items": [
+        {
+          "q": "¿La biblioteca de KOL admite filtros por género de juego?",
+          "a": "Sí — RPG, cartas, casual, competitivo y más. Filtra por estilo de juego, estilo artístico y región objetivo."
+        },
+        {
+          "q": "¿Cómo calcula la IA el encaje de cada creador?",
+          "a": "Combinamos análisis semántico de tu brief con el historial de colaboraciones del creador mediante aigcgateway. Cada recomendación incluye una puntuación de encaje y una explicación por criterio."
+        },
+        {
+          "q": "¿Configurar DKIM/SPF requiere un ingeniero?",
+          "a": "No. Nuestra configuración guiada despliega registros DNS conformes en menos de 3 minutos, sin DevOps."
+        },
+        {
+          "q": "¿Con qué frecuencia se actualizan los datos?",
+          "a": "Las aperturas y estados de correo son en tiempo real. Las métricas de reproducción y engagement se actualizan T+1. Los perfiles de audiencia se refrescan semanalmente."
+        },
+        {
+          "q": "¿Qué incluye la cuenta de prueba?",
+          "a": "Acceso completo a los seis módulos — filtrado con datos reales, matching con IA, envío de plantillas y analítica."
+        }
+      ]
+    },
+    "footerCta": {
+      "sectionTitle": "Empieza hoy a ejecutar campañas KOL más inteligentes",
+      "ctaPrimary": "Solicitar prueba",
+      "ctaSecondary": "Reservar demo 1:1",
+      "footerLine": "© 2026 KolMatrix · SaaS de marketing global de KOL para videojuegos",
+      "links": {
+        "privacy": "Privacidad",
+        "terms": "Términos"
+      }
     }
   }
 }

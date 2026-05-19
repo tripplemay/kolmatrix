@@ -24,13 +24,16 @@
  *   - mockSmartMatch is installed BEFORE navigation (no AIGCGATEWAY env
  *     in CI → real endpoint 500s otherwise; documented in
  *     campaign-refine-flow.spec.ts header).
- *   - mockRefineAction uses `{ times: 1 }` so it fires only for the
- *     explicit Refine click, not mount-time prewarm retries.
+ *   - mockRefineAction matches server-action POST bodies whose payload
+ *     contains "applyRefineAction" (mirrors mockDetailedExplanationResponse),
+ *     so the refine mock no longer collides with mount-time prewarm /
+ *     recommend / batch-read actions. (BL-070 fix-round 1 lock — was
+ *     `{ times: 1 }` URL-only filter; surfaced the dev-mode "Refine
+ *     timed out" fallback when the FIRST server action after mount was
+ *     a prewarm rather than the explicit Refine click.)
  *   - test.skip() when tenant has no seeded campaigns.
  *   - No `waitForLoadState("networkidle")` except where the source spec
  *     intentionally needed it (waitForMountActionsSettled).
- *   - Cases 2-5 of the refine block stay skipped in CI per
- *     BL-068-F007 mock-fragility note (unit suite covers behaviour).
  */
 import { expect, test } from "@playwright/test";
 import type { Page, Route } from "@playwright/test";
@@ -190,27 +193,29 @@ async function mockRefineAction(
     errorKind?: "unparsable" | "malformed" | "permutation_invalid";
   },
 ): Promise<void> {
-  await page.route(
-    "**",
-    async (route) => {
-      const req = route.request();
-      const headers = req.headers();
-      const isServerAction = (headers["next-action"] ?? "").length > 0;
-      const url = req.url();
-      const isCampaignOrMatchPage =
-        /\/[a-z]{2}\/(campaigns\/[0-9a-f-]{36}|match(\?|$))/.test(url);
-      if (isServerAction && req.method() === "POST" && isCampaignOrMatchPage) {
-        await route.fulfill({
-          status: 200,
-          contentType: "text/plain;charset=UTF-8",
-          body: JSON.stringify({ ok: true, data: responseData }),
-        });
-        return;
-      }
-      await route.fallback();
-    },
-    { times: 1 },
-  );
+  // BL-070 fix-round 1 — was: URL+method+`{ times: 1 }`; that swallowed
+  // the FIRST server-action POST after mount, which in dev mode is often
+  // a prewarm/recommend action rather than applyRefineAction → real refine
+  // fell through to the unconfigured aigcgateway and surfaced the
+  // page-level "Refine timed out" fallback. Switched to the body-name
+  // filter (same pattern as mockDetailedExplanationResponse above), so
+  // the mock fires only for applyRefineAction and other mount-time
+  // server actions fall through cleanly via route.fallback().
+  await page.route("**", async (route) => {
+    const req = route.request();
+    const headers = req.headers();
+    const isServerAction = (headers["next-action"] ?? "").length > 0;
+    const body = req.postData() ?? "";
+    if (isServerAction && body.includes("applyRefineAction")) {
+      await route.fulfill({
+        status: 200,
+        contentType: "text/plain;charset=UTF-8",
+        body: JSON.stringify({ ok: true, data: responseData }),
+      });
+      return;
+    }
+    await route.fallback();
+  });
 }
 
 async function waitForMountActionsSettled(page: Page): Promise<void> {
@@ -232,12 +237,6 @@ async function readVisibleKolIds(page: Page): Promise<string[]> {
   }
   return ids;
 }
-
-const SKIP_REFINE_IN_CI =
-  "Skipped in CI — server-action mock cannot reliably distinguish " +
-  "applyRefineAction from mount-time prewarm/batch-read in dev mode. " +
-  "Behaviour locked by unit suite (RefineInputBar 10 + AiRecPanel 5 + " +
-  "MatchRefineBar 4) + F007 staging dogfood spot-check.";
 
 // ---------------------------------------------------------------------
 // 1. /match page fidelity (BL-065-F006)
@@ -729,7 +728,6 @@ test.describe("BL-068-F006 · /campaigns/[id] + /match conversational refine flo
   test("Refine success: pool reorders, success toast visible, Reset button appears", async ({
     page,
   }) => {
-    test.skip(!!process.env.CI, SKIP_REFINE_IN_CI);
     const found = await firstCampaignDetailUrl(page);
     if (!found) test.skip(true, "Tenant has no seeded campaigns");
     await mockSmartMatch(page);
@@ -764,7 +762,6 @@ test.describe("BL-068-F006 · /campaigns/[id] + /match conversational refine flo
   test("Refine unparsable: unparsable toast shows LLM reason, pool unchanged, rawQuery preserved", async ({
     page,
   }) => {
-    test.skip(!!process.env.CI, SKIP_REFINE_IN_CI);
     const found = await firstCampaignDetailUrl(page);
     if (!found) test.skip(true, "Tenant has no seeded campaigns");
     await mockSmartMatch(page);
@@ -801,7 +798,6 @@ test.describe("BL-068-F006 · /campaigns/[id] + /match conversational refine flo
   test("Refine cap exhausted: capExhausted toast renders, pool unchanged", async ({
     page,
   }) => {
-    test.skip(!!process.env.CI, SKIP_REFINE_IN_CI);
     const found = await firstCampaignDetailUrl(page);
     if (!found) test.skip(true, "Tenant has no seeded campaigns");
     await mockSmartMatch(page);
@@ -831,7 +827,6 @@ test.describe("BL-068-F006 · /campaigns/[id] + /match conversational refine flo
   test("Reset to AI default: pool reverts to default order, Reset hidden, refine cache key cleared", async ({
     page,
   }) => {
-    test.skip(!!process.env.CI, SKIP_REFINE_IN_CI);
     const found = await firstCampaignDetailUrl(page);
     if (!found) test.skip(true, "Tenant has no seeded campaigns");
     await mockSmartMatch(page);
