@@ -40,6 +40,7 @@
     "kol-embed:backfill": "tsx scripts/kol-embed-backfill.ts",
     "kol-embed:backfill:dry": "tsx scripts/kol-embed-backfill.ts --dry",
     "seed:email-templates": "tsx scripts/seed-email-templates.ts",
+    "landing:capture": "tsx scripts/capture-landing-screenshots.ts",
     "render:stitch-previews": "tsx scripts/render-stitch-previews.ts",
     "i18n:translate": "tsx scripts/i18n-translate.ts",
     "i18n:translate:dry": "tsx scripts/i18n-translate.ts --dry-run",
