@@ -60,7 +60,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "`git rm -r` 5 老路由目录：(1) `src/app/[locale]/(app)/knowledge-base/`（BL-069 redirect 已生效，现 git rm 目录 + middleware redirect 删）/ (2) `src/app/[locale]/(app)/campaigns/new/`（BL-069 redirect 已生效）/ (3) `src/app/[locale]/(app)/outreach/`（F001 迁移完成）/ (4) `src/app/[locale]/(app)/dashboard/`（F003 迁移完成）/ (5) `src/app/[locale]/(app)/reports/`（F003 迁移完成）",
       "`src/middleware-helpers.ts` IA_REDIRECT_RULES 删除 ≥6 条规则（BL-064 + BL-069 共 6+ 条 redirect → 老路由删除后规则失效改 404）",
