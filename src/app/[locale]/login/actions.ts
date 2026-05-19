@@ -48,13 +48,16 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
 
   // BM1-F009 fix: redirect to a locale-prefixed path so the post-login
   // Server Action RSC navigation lands on the final URL directly. If we
-  // redirect to the bare `/dashboard`, middleware 307s it to
-  // `/en/dashboard` on the server, but Next keeps the browser URL at the
-  // Server Action's original redirectTo (`/dashboard`) while the
-  // rendered RSC payload is for `/en/dashboard`. That URL-vs-content
+  // redirect to the bare `/insight`, middleware 307s it to
+  // `/en/insight` on the server, but Next keeps the browser URL at the
+  // Server Action's original redirectTo (`/insight`) while the
+  // rendered RSC payload is for `/en/insight`. That URL-vs-content
   // mismatch breaks subsequent client-side navigation — the sidebar
-  // link click sees the router's state for `/dashboard` and hangs
+  // link click sees the router's state for `/insight` and hangs
   // resolving the transition on staging (Reviewer 2026-04-23 report).
+  //
+  // BL-070-F003 — landing surface flipped from /dashboard to /insight
+  // (dashboard content lives in the default `?tab=dashboard` view).
   const currentLocale = await getLocale().catch(() => undefined);
   const locale = isLocale(currentLocale) ? currentLocale : routing.defaultLocale;
 
@@ -62,7 +65,7 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
     await signIn("credentials", {
       email,
       password,
-      redirectTo: `/${locale}/dashboard`,
+      redirectTo: `/${locale}/insight`,
     });
   } catch (error) {
     if (error instanceof AuthError) {

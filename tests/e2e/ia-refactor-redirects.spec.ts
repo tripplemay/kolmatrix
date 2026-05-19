@@ -42,7 +42,33 @@ const REDIRECT_CASES: RedirectCase[] = [
   // (asserted in the KEPT_PATHS describe below). See
   // src/middleware-helpers.ts IA_REDIRECT_RULES for the canonical
   // contract and the deferred-to-batch mapping.
-  { from: "/dashboard", expect: /\/insight(\/|\?|$)/, status: 302 },
+  // BL-070-F003 — /dashboard + /reports + /analytics + /weekly-report
+  // family all 301 to the corresponding /insight surface now that the
+  // route is real (was embed-old shell under BL-064).
+  {
+    from: "/dashboard",
+    expect: /\/insight\?tab=dashboard/,
+    status: 301,
+    note: "BL-070-F003 dashboard tab",
+  },
+  {
+    from: "/reports",
+    expect: /\/insight\?tab=reports/,
+    status: 301,
+    note: "BL-070-F003 reports tab",
+  },
+  {
+    from: "/analytics",
+    expect: /\/insight\?tab=analytics/,
+    status: 301,
+    note: "BL-070-F003 analytics tab",
+  },
+  {
+    from: "/weekly-report",
+    expect: /\/insight\/weekly-report(\/|\?|$)/,
+    status: 301,
+    note: "BL-070-F003 weekly-report subroute migration",
+  },
   { from: "/discovery", expect: /\/match(\/|\?|$)/, status: 302 },
   { from: "/database", expect: /\/match(\/|\?|$)/, status: 302 },
   // BL-069-F006 + fix-round 1 — KB redirects to /brief?tab=products
@@ -156,8 +182,9 @@ test.describe("BL-064 — sub-routes intentionally NOT redirected (Adjudication 
     // which satisfies "stays in legacy area".
     "/campaigns/00000000-0000-0000-0000-000000000000",
     "/roi",
-    "/weekly-report",
-    "/analytics",
+    // BL-070-F003 — /weekly-report + /analytics now 301 to /insight
+    // (moved to REDIRECT_CASES above); /roi stays kept because the
+    // Insight tab layout keeps ROI cards inside the dashboard tab.
     // BL-070-F001 promoted /outreach/{templates,suppression,tracking} to
     // 301 sub-path redirects (moved to REDIRECT_CASES above) — KEPT_PATHS
     // no longer covers them.

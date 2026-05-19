@@ -57,10 +57,6 @@ describe("resolveIaRefactorRedirect — BL-064-F002", () => {
   });
 
   it("maps Phase 1 IA single-level routes (302 — BL-064 default)", () => {
-    expect(resolveIaRefactorRedirect("/dashboard")).toEqual({
-      path: "/insight",
-      status: 302,
-    });
     expect(resolveIaRefactorRedirect("/discovery")).toEqual({
       path: "/match",
       status: 302,
@@ -68,6 +64,40 @@ describe("resolveIaRefactorRedirect — BL-064-F002", () => {
     expect(resolveIaRefactorRedirect("/database")).toEqual({
       path: "/match",
       status: 302,
+    });
+  });
+
+  it("BL-070-F003 — /dashboard → /insight?tab=dashboard (301 permanent)", () => {
+    expect(resolveIaRefactorRedirect("/dashboard")).toEqual({
+      path: "/insight?tab=dashboard",
+      status: 301,
+    });
+  });
+
+  it("BL-070-F003 — /reports → /insight?tab=reports (301 permanent)", () => {
+    expect(resolveIaRefactorRedirect("/reports")).toEqual({
+      path: "/insight?tab=reports",
+      status: 301,
+    });
+  });
+
+  it("BL-070-F003 — /analytics → /insight?tab=analytics (301 permanent)", () => {
+    expect(resolveIaRefactorRedirect("/analytics")).toEqual({
+      path: "/insight?tab=analytics",
+      status: 301,
+    });
+  });
+
+  it("BL-070-F003 — /weekly-report bare + sub-paths → /insight/weekly-report (301)", () => {
+    expect(resolveIaRefactorRedirect("/weekly-report")).toEqual({
+      path: "/insight/weekly-report",
+      status: 301,
+    });
+    // Sub-paths inherit via prefix swap (same pattern as BL-070-F001
+    // /outreach → /reach wildcard) so deep links survive the route move.
+    expect(resolveIaRefactorRedirect("/weekly-report/abc-123")).toEqual({
+      path: "/insight/weekly-report/abc-123",
+      status: 301,
     });
   });
 
@@ -129,13 +159,12 @@ describe("resolveIaRefactorRedirect — BL-064-F002", () => {
     });
   });
 
-  it("BL-064-F005 fix-round-2 — analytics sub-routes are kept (not redirected)", () => {
-    // Original adjudication §2 mapped these to /insight, but /insight
-    // embeds /dashboard (no roi/weekly-report cards). BL-070 unifies
-    // these later. For now they're kept deep-link paths.
+  it("BL-070-F003 — /roi stays kept (Insight 仅合并 dashboard+reports)", () => {
+    // /weekly-report + /analytics now redirect (asserted above);
+    // /roi stays as a kept deep-link path because the Insight tabs
+    // chose dashboard / reports / analytics — /roi gets folded into
+    // the dashboard tab's content (it already renders ROI cards).
     expect(resolveIaRefactorRedirect("/roi")).toBeNull();
-    expect(resolveIaRefactorRedirect("/weekly-report")).toBeNull();
-    expect(resolveIaRefactorRedirect("/analytics")).toBeNull();
   });
 
   it("BL-064-F006 fix-round-3 — exact-match only for shells without sub-routes", () => {

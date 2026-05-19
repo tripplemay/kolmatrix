@@ -43,7 +43,7 @@ export async function RoiHeader({ locale, range }: Props) {
         className="flex items-center gap-2 text-xs text-on-surface-variant"
       >
         <Link
-          href={`/${locale}/dashboard`}
+          href={`/${locale}/insight`}
           className="hover:text-on-surface"
         >
           {t("crumbAnalytics")}

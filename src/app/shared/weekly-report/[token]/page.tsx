@@ -21,9 +21,9 @@ import { logEvent } from "@/lib/events/log";
 import { splitByH2 } from "@/lib/weekly-report/markdown-split";
 import { validateShareToken } from "@/lib/weekly-report/persistence";
 
-import { WeeklyReportInsightsPanel } from "../../../[locale]/(app)/weekly-report/WeeklyReportInsightsPanel";
-import { WeeklyReportPrintStyles } from "../../../[locale]/(app)/weekly-report/WeeklyReportPrintStyles";
-import { WeeklyReportRenderer } from "../../../[locale]/(app)/weekly-report/WeeklyReportRenderer";
+import { WeeklyReportInsightsPanel } from "../../../[locale]/(app)/insight/weekly-report/WeeklyReportInsightsPanel";
+import { WeeklyReportPrintStyles } from "../../../[locale]/(app)/insight/weekly-report/WeeklyReportPrintStyles";
+import { WeeklyReportRenderer } from "../../../[locale]/(app)/insight/weekly-report/WeeklyReportRenderer";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";

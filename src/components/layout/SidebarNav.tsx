@@ -17,7 +17,9 @@ import { deriveActiveNav, NAV_ITEMS } from "./nav-config";
 export function SidebarNav() {
   const locale = useLocale();
   const t = useTranslations("nav");
-  const pathname = usePathname() ?? "/dashboard";
+  // BL-070-F003 — fallback path flipped to /insight (the new canonical
+  // landing surface; dashboard content lives in the default tab).
+  const pathname = usePathname() ?? "/insight";
   const activeId = deriveActiveNav(pathname);
   return (
     <nav aria-label="Primary" className="mt-8 flex-1">

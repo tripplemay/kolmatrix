@@ -81,7 +81,7 @@ export default async function ApifyPreviewPage({ params, searchParams }: Props) 
     redirect(`/${locale}/login`);
   }
   if (!isAdminRole(session.user.role)) {
-    redirect(`/${locale}/dashboard`);
+    redirect(`/${locale}/insight`);
   }
 
   const t = await getTranslations({ locale, namespace: "admin.apifyPreview" });

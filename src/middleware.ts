@@ -17,7 +17,7 @@ const { auth } = NextAuth(authConfig);
 
 /**
  * BM1-F008: resolve the locale to use for a redirect (to /login or
- * /dashboard) when we would otherwise hand off to next-intl and risk
+ * /insight) when we would otherwise hand off to next-intl and risk
  * auto-detecting a non-allowlisted locale (e.g. ja/ko/es rendering
  * English stubs). Precedence, most specific first:
  *   1. Locale prefix already present in the current URL
@@ -43,10 +43,14 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  // BM1-F008: root path `/` — detect + redirect to /{locale}/dashboard.
+  // BM1-F008: root path `/` — detect + redirect to the user's home
+  // surface. BL-070-F003 switched the canonical landing from
+  // `/dashboard` to `/insight` (dashboard content now lives in the
+  // default `?tab=dashboard` view); going straight to /insight avoids
+  // the extra 301 hop that the legacy /dashboard redirect would add.
   if (pathname === "/") {
     const locale = resolveTargetLocale(req);
-    return NextResponse.redirect(new URL(`/${locale}/dashboard`, nextUrl));
+    return NextResponse.redirect(new URL(`/${locale}/insight`, nextUrl));
   }
 
   const bare = stripLocale(pathname);
@@ -62,11 +66,12 @@ export default auth((req) => {
   if (bare === "/login" && pathname === "/login") {
     // Unprefixed /login — either our login shortcut or an already-logged-in
     // user hitting it directly. Either way, pin the locale before next-intl
-    // can auto-detect into a ja/ko/es stub page.
+    // can auto-detect into a ja/ko/es stub page. BL-070-F003 — landing
+    // surface is /insight (dashboard content lives in the default tab).
     if (req.auth) {
       const userLocale = req.auth.user?.locale;
       const locale = isLocale(userLocale) ? userLocale : resolveTargetLocale(req);
-      return NextResponse.redirect(new URL(`/${locale}/dashboard`, nextUrl));
+      return NextResponse.redirect(new URL(`/${locale}/insight`, nextUrl));
     }
     const locale = resolveTargetLocale(req);
     return NextResponse.redirect(new URL(`/${locale}/login`, nextUrl));
@@ -75,7 +80,7 @@ export default auth((req) => {
   if (bare === "/login" && req.auth) {
     const userLocale = req.auth.user?.locale;
     const locale = isLocale(userLocale) ? userLocale : routing.defaultLocale;
-    return NextResponse.redirect(new URL(`/${locale}/dashboard`, nextUrl));
+    return NextResponse.redirect(new URL(`/${locale}/insight`, nextUrl));
   }
 
   // BL-064-F002 — Phase 1 IA refactor redirects. Applied AFTER the

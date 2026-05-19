@@ -15,7 +15,9 @@ import { usePathname } from "next/navigation";
 import { deriveActiveNav, NAV_ITEMS } from "./nav-config";
 
 export function PageTitleClient() {
-  const pathname = usePathname() ?? "/dashboard";
+  // BL-070-F003 — fallback path flipped to /insight per the new
+  // canonical landing surface (dashboard content lives in tab=dashboard).
+  const pathname = usePathname() ?? "/insight";
   const t = useTranslations("nav");
   const activeId = deriveActiveNav(pathname);
   const activeItem = NAV_ITEMS.find((n) => n.id === activeId);

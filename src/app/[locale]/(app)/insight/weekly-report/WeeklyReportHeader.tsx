@@ -59,7 +59,10 @@ export async function WeeklyReportHeader({
         aria-label="Breadcrumb"
         className="flex items-center gap-2 text-xs text-on-surface-variant"
       >
-        <Link href={`/${locale}/dashboard`} className="hover:text-on-surface">
+        <Link
+          href={`/${locale}/insight?tab=reports`}
+          className="hover:text-on-surface"
+        >
           {t("crumbReports")}
         </Link>
         <span aria-hidden>/</span>

@@ -117,9 +117,37 @@ const IA_REDIRECT_RULES: ReadonlyArray<IaRedirectRule> = [
   // BL-070-F004 will git rm both the old route directories and these
   // rules outright (same-batch cleanup per spec §4 decision #5 —
   // legacy URLs return 404 once the redirect window closes).
-  { pattern: /^\/dashboard$/, resolve: () => "/insight" },
+  // BL-070-F003 — `/dashboard` becomes the default `/insight` tab.
+  // 301 permanent now that `/insight` is a real route with the
+  // dashboard content wired in (was 302 under BL-064 embed-old).
+  {
+    pattern: /^\/dashboard$/,
+    resolve: () => "/insight?tab=dashboard",
+    status: 301,
+  },
   { pattern: /^\/discovery$/, resolve: () => "/match" },
   { pattern: /^\/database$/, resolve: () => "/match" },
+  // BL-070-F003 — Insight tabs (reports / analytics) + weekly-report
+  // sub-route migration. The legacy `/reports` and `/analytics` URLs
+  // never existed as routes — these rules land hypothetical bookmarks
+  // on the right tab. `/weekly-report` was a real route (BM2-F010);
+  // its directory moved to `/insight/weekly-report/` via git mv in
+  // this commit. Spec §F003 acceptance §5 ("4 条 301 redirect").
+  {
+    pattern: /^\/reports$/,
+    resolve: () => "/insight?tab=reports",
+    status: 301,
+  },
+  {
+    pattern: /^\/analytics$/,
+    resolve: () => "/insight?tab=analytics",
+    status: 301,
+  },
+  {
+    pattern: /^\/weekly-report(\/.*)?$/,
+    resolve: (m) => `/insight/weekly-report${m[1] ?? ""}`,
+    status: 301,
+  },
   // BL-069-F006 — KB now redirects with the `?tab=products` query
   // string so the brand-new /brief layout (BriefAiInputBar +
   // CampaignForm) doesn't hijack users who bookmarked the legacy KB.

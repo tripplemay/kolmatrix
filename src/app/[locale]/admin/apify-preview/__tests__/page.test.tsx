@@ -128,9 +128,9 @@ describe("BL-012-F001 /[locale]/admin/apify-preview auth gate", () => {
         params: Promise.resolve({ locale: "zh" }),
         searchParams: emptySearchParams,
       })
-    ).rejects.toThrow("NEXT_REDIRECT:/zh/dashboard");
+    ).rejects.toThrow("NEXT_REDIRECT:/zh/insight");
 
-    expect(redirectMock).toHaveBeenCalledWith("/zh/dashboard");
+    expect(redirectMock).toHaveBeenCalledWith("/zh/insight");
     expect(fetchApifyKolPageMock).not.toHaveBeenCalled();
   });
 
@@ -150,8 +150,8 @@ describe("BL-012-F001 /[locale]/admin/apify-preview auth gate", () => {
         params: Promise.resolve({ locale: "en" }),
         searchParams: emptySearchParams,
       })
-    ).rejects.toThrow("NEXT_REDIRECT:/en/dashboard");
-    expect(redirectMock).toHaveBeenCalledWith("/en/dashboard");
+    ).rejects.toThrow("NEXT_REDIRECT:/en/insight");
+    expect(redirectMock).toHaveBeenCalledWith("/en/insight");
   });
 
   it("redirects unauthenticated visitors to the locale-prefixed login", async () => {

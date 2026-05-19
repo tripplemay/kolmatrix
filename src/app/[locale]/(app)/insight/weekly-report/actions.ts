@@ -179,7 +179,7 @@ export async function generateWeeklyReportAction(
     },
   });
 
-  revalidatePath("/[locale]/weekly-report", "page");
+  revalidatePath("/[locale]/insight/weekly-report", "page");
 
   return { ok: true, reportId: row.id, markdown: report.markdown };
 }
@@ -334,7 +334,7 @@ export async function revokeShareTokenAction(
         after: { revokedAt: result.revokedAt.toISOString() },
       });
     }
-    revalidatePath("/[locale]/weekly-report", "page");
+    revalidatePath("/[locale]/insight/weekly-report", "page");
     return {
       ok: true,
       revokedAt: result.revokedAt.toISOString(),

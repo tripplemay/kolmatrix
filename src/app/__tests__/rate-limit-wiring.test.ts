@@ -117,7 +117,7 @@ vi.mock("@/lib/discovery/smart-match", async () => {
 
 const { generateRoiInsightsAction } = await import("@/app/[locale]/(app)/roi/actions");
 const { generateWeeklyReportAction } = await import(
-  "@/app/[locale]/(app)/weekly-report/actions"
+  "@/app/[locale]/(app)/insight/weekly-report/actions"
 );
 const { sendBatchAction } = await import("@/app/[locale]/(app)/reach/actions");
 const { POST: smartMatchPOST } = await import("@/app/api/kols/smart-match/route");

@@ -36,7 +36,11 @@ const PAGES_THAT_NEED_ERROR_TSX = [
   "reach",
   "crm",
   "roi",
-  "weekly-report",
+  // BL-070-F003 — `weekly-report` route moved to `insight/weekly-report`
+  // (git mv) and `insight` got a new error.tsx will be added by F003
+  // follow-up if needed. The insight/weekly-report path inherits its
+  // existing error.tsx (moved alongside the page.tsx).
+  "insight/weekly-report",
 ] as const;
 
 describe("edge-states coverage (BIx-vf F003)", () => {

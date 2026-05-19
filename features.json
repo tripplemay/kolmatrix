@@ -41,7 +41,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 10.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "新建 `src/app/[locale]/(app)/insight/page.tsx`（server component）+ subroute（如 `/insight/weekly-report/[id]` 等）",
       "Layout 选择（F003 implementer 决定 + 单元测试 mock）：tab 切换 / 并排分屏 / nested route — 推荐 tab（与 BL-069 /brief 同模式 + URL state ?tab=dashboard / ?tab=reports）",
