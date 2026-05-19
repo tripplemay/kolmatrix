@@ -1,20 +1,28 @@
 import { redirect } from "next/navigation";
 
+import { auth } from "@/auth";
+
+import { LandingPage } from "./(marketing)/_components/LandingPage";
+
 /**
- * BM1-F008 · Localized root redirect.
+ * 2026-05-19 landing page · Root locale page.
  *
- * `/` is handled by the middleware (which performs Accept-Language /
- * cookie detection → redirects to `/{locale}/insight`). When a user
- * types `/zh/` or `/en/` directly, we still need a page to resolve;
- * this one shortcuts to /insight (BL-070-F003 made it the canonical
- * landing surface) so the auth middleware can then route
- * unauthenticated traffic to /login as usual.
+ * Anonymous → render marketing landing.
+ * Authenticated → redirect to /insight (user's home surface).
+ *
+ * Middleware also performs this split for the un-prefixed `/` so
+ * authenticated users skip the landing page entirely; this server
+ * component is the fallback for direct `/zh/` or `/en/` visits.
  */
 interface Props {
   params: Promise<{ locale: string }>;
 }
 
-export default async function LocalizedRootPage({ params }: Props): Promise<never> {
+export default async function LocalizedRootPage({ params }: Props) {
   const { locale } = await params;
-  redirect(`/${locale}/insight`);
+  const session = await auth();
+  if (session?.user) {
+    redirect(`/${locale}/insight`);
+  }
+  return <LandingPage locale={locale} />;
 }

@@ -1,15 +1,26 @@
 import { expect, test } from "@playwright/test";
 
 /**
- * Placeholder E2E: proves the Playwright install + webServer + redirect
- * chain are wired correctly. A hit on `/` goes
- *   `/` → `/${defaultLocale}/dashboard` → `/login` (unauthenticated).
- * The document <title> always ends in "KOLMatrix" via the root layout
- * template, so that is what we assert against.
- *
- * F008 layers the real marketer login flow on top of this.
+ * 2026-05-19 landing page · Anonymous root path renders the
+ * marketing landing page; authenticated users get redirected to
+ * /insight. The full content lives in
+ * src/app/[locale]/(marketing)/_components/LandingPage.tsx.
  */
-test("root URL reaches a page whose title ends in KOLMatrix", async ({ page }) => {
-  await page.goto("/");
-  await expect(page).toHaveTitle(/KOLMatrix/);
+test.describe("Anonymous root path", () => {
+  test("/ resolves to /<locale>/ and shows the landing page", async ({ page }) => {
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/(zh|en)\/?$/);
+    await expect(page.getByTestId("landing-hero")).toBeVisible();
+  });
+
+  test("/zh shows the landing page in Chinese", async ({ page }) => {
+    await page.goto("/zh");
+    await expect(page.getByTestId("landing-hero")).toBeVisible();
+    await expect(page).toHaveTitle(/KolMatrix|KOLMatrix/);
+  });
+
+  test("/en shows the landing page in English", async ({ page }) => {
+    await page.goto("/en");
+    await expect(page.getByTestId("landing-hero")).toBeVisible();
+  });
 });

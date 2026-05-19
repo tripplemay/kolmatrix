@@ -8,6 +8,7 @@ import { isLocale, LOCALE_COOKIE_NAME, routing } from "@/i18n/routing";
 import {
   detectLocaleFromAcceptLanguage,
   isProtected,
+  resolveAuthAwareRoot,
   resolveIaRefactorRedirect,
   stripLocale,
 } from "@/middleware-helpers";
@@ -50,7 +51,12 @@ export default auth((req) => {
   // the extra 301 hop that the legacy /dashboard redirect would add.
   if (pathname === "/") {
     const locale = resolveTargetLocale(req);
-    return NextResponse.redirect(new URL(`/${locale}/insight`, nextUrl));
+    // Fail-safe by construction: NextAuth's auth() wrapper returns
+    // req.auth=undefined on session lookup errors. Boolean(undefined)=false
+    // → routes to the landing page rather than locking everyone in /login
+    // (matches spec §9 "fail-safe to landing").
+    const target = resolveAuthAwareRoot({ locale, hasSession: Boolean(req.auth) });
+    return NextResponse.redirect(new URL(target, nextUrl));
   }
 
   const bare = stripLocale(pathname);
