@@ -24,3 +24,18 @@ test.describe("Anonymous root path", () => {
     await expect(page.getByTestId("landing-hero")).toBeVisible();
   });
 });
+
+test.describe("Landing CTAs", () => {
+  test("Hero primary CTA goes to /request-access", async ({ page }) => {
+    await page.goto("/zh");
+    await page.getByTestId("landing-cta-primary").click();
+    await expect(page).toHaveURL(/\/zh\/request-access$/);
+  });
+
+  test("Hero secondary CTA goes to /request-access?demo=1 with wantsDemo pre-checked", async ({ page }) => {
+    await page.goto("/zh");
+    await page.getByTestId("landing-cta-secondary").click();
+    await expect(page).toHaveURL(/\/zh\/request-access\?demo=1$/);
+    await expect(page.getByTestId("request-access-wants-demo")).toBeChecked();
+  });
+});

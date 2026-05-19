@@ -1045,3 +1045,71 @@ test.describe("Auth cinematic — visual regression", () => {
     });
   });
 });
+
+// Landing page visual baselines — unauthenticated, anonymous users only.
+// The marketing landing page is gated to anonymous visitors (authenticated
+// users are redirected to /insight). These 4 baselines lock the landing
+// page chrome across the two supported locales (zh / en) and two viewport
+// sizes (desktop 1280px / mobile 375px).
+//
+// Baseline generation: npm run test:e2e -- tests/e2e/visual-regression.spec.ts
+//   --update-snapshots --grep "landing-"
+// (requires a running dev server with DB seeded so prisma.kol.count() resolves)
+test.describe("Landing page visual regression", () => {
+  test.skip(
+    process.platform !== "linux",
+    "Visual regression baseline is Linux-canonical (CI + WSL). Non-Linux runs skip."
+  );
+
+  // Explicitly unauthenticated — no storageState / login() call.
+  // The landing page only renders for anonymous visitors.
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test("landing-zh-desktop visual baseline", async ({ page }) => {
+    test.skip(
+      shouldSkipMissingBaseline("landing-zh-desktop.png", test.info()),
+      "Baseline landing-zh-desktop.png missing — run with --update-snapshots in an env with DB."
+    );
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/zh");
+    await page.getByTestId("landing-hero").waitFor();
+    await fontsReady(page);
+    await expect(page).toHaveScreenshot("landing-zh-desktop.png", { fullPage: true });
+  });
+
+  test("landing-en-desktop visual baseline", async ({ page }) => {
+    test.skip(
+      shouldSkipMissingBaseline("landing-en-desktop.png", test.info()),
+      "Baseline landing-en-desktop.png missing — run with --update-snapshots in an env with DB."
+    );
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/en");
+    await page.getByTestId("landing-hero").waitFor();
+    await fontsReady(page);
+    await expect(page).toHaveScreenshot("landing-en-desktop.png", { fullPage: true });
+  });
+
+  test("landing-zh-mobile visual baseline", async ({ page }) => {
+    test.skip(
+      shouldSkipMissingBaseline("landing-zh-mobile.png", test.info()),
+      "Baseline landing-zh-mobile.png missing — run with --update-snapshots in an env with DB."
+    );
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto("/zh");
+    await page.getByTestId("landing-hero").waitFor();
+    await fontsReady(page);
+    await expect(page).toHaveScreenshot("landing-zh-mobile.png", { fullPage: true });
+  });
+
+  test("landing-en-mobile visual baseline", async ({ page }) => {
+    test.skip(
+      shouldSkipMissingBaseline("landing-en-mobile.png", test.info()),
+      "Baseline landing-en-mobile.png missing — run with --update-snapshots in an env with DB."
+    );
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto("/en");
+    await page.getByTestId("landing-hero").waitFor();
+    await fontsReady(page);
+    await expect(page).toHaveScreenshot("landing-en-mobile.png", { fullPage: true });
+  });
+});
