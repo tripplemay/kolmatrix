@@ -134,3 +134,22 @@ export function detectLocaleFromAcceptLanguage(
   }
   return "en";
 }
+
+/**
+ * 2026-05-19 landing page · Determines the redirect target for `/`
+ * based on whether the request carries an authenticated session.
+ *
+ * - Authenticated → user's home surface (`/insight`)
+ * - Anonymous → marketing landing page (`/{locale}/`)
+ *
+ * Extracted so middleware.ts can stay short and the decision is
+ * trivially unit-testable.
+ */
+export function resolveAuthAwareRoot(args: {
+  locale: string;
+  hasSession: boolean | undefined;
+}): string {
+  return args.hasSession
+    ? `/${args.locale}/insight`
+    : `/${args.locale}/`;
+}
