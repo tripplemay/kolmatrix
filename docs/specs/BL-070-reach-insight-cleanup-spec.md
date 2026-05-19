@@ -236,7 +236,7 @@ BL-064 完成 4 路由 IA 顶级 nav + 老路由 redirect 兜底；BL-065 实装
 - 24h prod 监控：scripts/bl070-prod-audit.sh（类比 BL-066 F009 bl066-f009-prod-audit.sh）验 4 路由全 active / 老路由 404 / cost cap 内 / 0 P0 bug
 - 对外上线 ready checklist（per §10）：Reviewer signoff doc 逐项验证
 - `docs/test-reports/BL-070-signoff-2026-05-XX.md` Reviewer 写最终结论：所有 8 features + cleanup + e2e 全 PASS + checklist 全通过
-- Reviewer 复验全部 acceptance + signoff，progress.json `status: reverifying → done`
+- Reviewer 复验全部 acceptance + signoff，progress.json `status: verifying → done`（首轮 PASS, fix_rounds=0, per harness-rules §状态流转图 + framework/harness/evaluator.md §12 "首轮 verifying PASS 硬条件" — 直接走 verifying→done，**不必经过 fixing→reverifying**）；若验收发现 BL-070 引入新 blocker → `status: verifying → fixing → reverifying → done` 走 fix-round 路径
 - **本批次 done → 对外上线 ready**
 
 ---

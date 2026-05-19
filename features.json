@@ -135,7 +135,7 @@
       "24h prod 监控：`scripts/bl070-prod-audit.sh`（类比 BL-066 F009 bl066-f009-prod-audit.sh）验 4 路由全 active / 老路由 404 / cost cap 内 / 0 P0 bug",
       "**对外上线 ready checklist（per §10 12 项，Reviewer signoff doc 逐项验证）**：(1) 4 路由全 active / (2) 7 老路由全 404 / (3) 5 locale UI 全 PASS / (4) cost cap < $5/day/tenant / (5) 4 路由 e2e suite 全 PASS / (6) 视觉 baseline 全 PASS / (7) a11y ≥90 / (8) Lighthouse 性能 ≥80 / (9) ≥5 marketer dogfood spot check / (10) 24h 监控数据正常 / (11) prod /api/health git_sha 验 / (12) i18n-locale-coverage parity 8/8 PASS",
       "`docs/test-reports/BL-070-signoff-2026-05-XX.md` Reviewer 写最终结论：所有 8 features + cleanup + e2e 全 PASS + checklist 全 12 项通过",
-      "Reviewer 复验全部 acceptance + signoff，progress.json `status: reverifying → done`",
+      "Reviewer 复验全部 acceptance + signoff，progress.json `status: verifying → done`（首轮 PASS, fix_rounds=0, per harness-rules + evaluator.md §12 — 直接 verifying→done, 不必经 fixing→reverifying）；若验收发现 BL-070 引入新 blocker → status: verifying → fixing → reverifying → done 走 fix-round",
       "**本批次 done = Phase 4 完整 done = 4 路由 IA 完整闭环 = 对外上线 ready**"
     ]
   }
