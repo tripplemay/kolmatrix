@@ -14,7 +14,9 @@ type: project
   - 05e5c1f locale-detection.spec.ts 5 case 预期更新 (`/{locale}/login` → `/{locale}/?$`, resolveAuthAwareRoot anon → landing)
 - 🆕 CI 基础设施: 637b163 ci.yml 加 workflow_dispatch (github-actions[bot] commit 默认不 cascade CI)
 - ✅ Reviewer 2026-05-20 L1 reverifying PASS: `docs/test-reports/BL-070-reverifying-2026-05-20.md`
-- ⏸️ F008 仍 pending: prod deploy ack / 24h 监控 / signoff doc (Reviewer + 用户协作, 不 Generator)
+- 🧪 F008 prod 首跑已做：prod HEAD/health/git_sha/老路由 404/5 locale/cost/CI-E2E 均通过；audit script 有 2 个误报 + 1 个旧 baseline 口径 warning
+- ❌ 当前真实 blocker（F008）: 本地登录态 Lighthouse performance 未达标（brief 78 / match 75 / reach 75 / insight 75；a11y 96/95/97/91 已过）
+- ⏸️ F008 仍 pending: deploy 后 24h audit 复跑 + ≥5 marketer dogfood + 最终 signoff
 - CI 全绿 @ 05e5c1f (run 26121789868), staging health=healthy
 - v0.9.23 候选 fix-round 1 净新增 4 条 → 累计 7 条 BL-070 sediment (#21 RSC mock 不可用 / #22 prisma rollback skeleton / #23 'use server' export 约束 / #24 bot commit 不 cascade); 合 Planner done 阶段集中沉淀
 - 本批次 reverifying done = Phase 4 完整 done = 4 路由 IA 闭环 = 对外上线 ready (距 ~2 周)

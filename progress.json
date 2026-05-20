@@ -32,7 +32,7 @@
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "BL-070 fix-round 1 已通过 L1 复验：F006/F007 本地恢复为绿，当前仅剩 F008 的 prod signoff 步骤未执行。",
+    "summary": "BL-070 fix-round 1 已通过 L1 复验，prod 首轮 audit 也已完成；当前真正阻塞集中在 F008：Lighthouse performance 未达 ≥80，以及 24h 复跑和 5 marketer dogfood 尚未完成。",
     "pass_count": 7,
     "partial_count": 1,
     "fail_count": 0,
@@ -40,8 +40,8 @@
       {
         "feature_id": "F008",
         "result": "PARTIAL",
-        "description": "本地 reverifying 已完成，但 prod deploy、prod audit、24h 监控、dogfood 和最终 signoff 仍未执行，因此批次尚不能置为 done。",
-        "steps_to_reproduce": "等待用户确认 prod 时间窗后，执行 `gh workflow run deploy-prod.yml --ref main`，随后按 signoff 文档完成 audit 与 checklist。"
+        "description": "prod deploy 已完成，首轮 prod audit 已完成，但 signoff 仍未满足：本地登录态 Lighthouse performance 为 brief 78 / match 75 / reach 75 / insight 75，低于 checklist 要求的 ≥80；此外 24h audit 复跑与 ≥5 marketer dogfood 仍待完成。",
+        "steps_to_reproduce": "1. 复用 `playwright/.auth/marketer.json` 登录态在 `http://localhost:3099/en/{brief,match,reach,insight}` 运行 Lighthouse 2. 观察 performance 分别为 78/75/75/75 3. 等待 deploy 后 24h 重跑 `ssh tripplezhou@34.180.93.185 'bash /opt/kolmatrix/scripts/bl070-prod-audit.sh'` 4. 组织 5 位 marketer 完成 dogfood。"
       }
     ]
   },
