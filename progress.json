@@ -26,34 +26,22 @@
   ],
   "docs": {
     "spec": "docs/specs/BL-070-reach-insight-cleanup-spec.md",
-    "test_cases": "docs/test-reports/BL-070-verifying-2026-05-20.md",
+    "test_cases": "docs/test-reports/BL-070-reverifying-2026-05-20.md",
     "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "BL-070 首轮验收失败：定向 BL-070 E2E 仍有 4 个 conversational refine blocker，且当前 main 还存在 landing 页多语言覆盖回归。",
-    "pass_count": 5,
-    "partial_count": 0,
-    "fail_count": 3,
+    "summary": "BL-070 fix-round 1 已通过 L1 复验：F006/F007 本地恢复为绿，当前仅剩 F008 的 prod signoff 步骤未执行。",
+    "pass_count": 7,
+    "partial_count": 1,
+    "fail_count": 0,
     "issues": [
       {
-        "feature_id": "F006",
-        "result": "FAIL",
-        "description": "`tests/e2e/match-flow.spec.ts` conversational refine 4 个用例失败；页面统一落到 `Refine timed out. Please try again.`，success/unparsable/cap/reset 分支均未命中。",
-        "steps_to_reproduce": "1. 启动 L1 3099 环境 2. 运行 `bash scripts/test/codex-e2e.sh tests/e2e/match-flow.spec.ts` 3. 查看 729/764/801/831 四个 refine 用例，均在 /campaigns/[id] 页看到 timeout fallback 而非预期 toast。"
-      },
-      {
-        "feature_id": "F007",
-        "result": "FAIL",
-        "description": "`tests/unit/i18n-locale-coverage.test.ts` 失败：ja/ko/es 各缺 85 个新文案叶子节点，zh 仍有 11 个 landing 相关值与 en 相同且不在 allowlist。",
-        "steps_to_reproduce": "1. 运行 `npx vitest run tests/unit/i18n-locale-coverage.test.ts` 2. 观察 `landing.*` 与 `auth.requestAccess.wantsDemoLabel` 相关断言失败。"
-      },
-      {
         "feature_id": "F008",
-        "result": "FAIL",
-        "description": "首轮 verifying 未通过，prod deploy / 24h 监控 / signoff checklist 不能继续推进。",
-        "steps_to_reproduce": "在 L1 验证阶段先复现 F006 与 F007 blocker；在 blocker 未修复前不得进入 signoff。"
+        "result": "PARTIAL",
+        "description": "本地 reverifying 已完成，但 prod deploy、prod audit、24h 监控、dogfood 和最终 signoff 仍未执行，因此批次尚不能置为 done。",
+        "steps_to_reproduce": "等待用户确认 prod 时间窗后，执行 `gh workflow run deploy-prod.yml --ref main`，随后按 signoff 文档完成 audit 与 checklist。"
       }
     ]
   },

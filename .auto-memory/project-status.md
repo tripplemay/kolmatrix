@@ -13,6 +13,7 @@ type: project
   - 7009c8e bot-commit visual baseline regen (landing-zh-{desktop,mobile} + en-request-access)
   - 05e5c1f locale-detection.spec.ts 5 case 预期更新 (`/{locale}/login` → `/{locale}/?$`, resolveAuthAwareRoot anon → landing)
 - 🆕 CI 基础设施: 637b163 ci.yml 加 workflow_dispatch (github-actions[bot] commit 默认不 cascade CI)
+- ✅ Reviewer 2026-05-20 L1 reverifying PASS: `docs/test-reports/BL-070-reverifying-2026-05-20.md`
 - ⏸️ F008 仍 pending: prod deploy ack / 24h 监控 / signoff doc (Reviewer + 用户协作, 不 Generator)
 - CI 全绿 @ 05e5c1f (run 26121789868), staging health=healthy
 - v0.9.23 候选 fix-round 1 净新增 4 条 → 累计 7 条 BL-070 sediment (#21 RSC mock 不可用 / #22 prisma rollback skeleton / #23 'use server' export 约束 / #24 bot commit 不 cascade); 合 Planner done 阶段集中沉淀
@@ -30,5 +31,5 @@ type: project
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 3. BL-070 F008: prod deploy 触发 (用户 ack 时间窗) + 24h 监控 + ≥5 marketer dogfood spot check
 ## 角色 / Backlog
-- BL-070 reverifying: Reviewer 接 5/20 Reviewer 报告→已修, 等 reverifying L1 → F008 推进
+- BL-070 reverifying: F006/F007 已本地复验通过，等待 F008 prod signoff 步骤
 - Phase 3 全 DONE ✅ / Phase 4: BL-069 ✅ + BL-070 reverifying 🚧 7/8 / BL-070 done = 对外上线 ready (距 ~2 周)
