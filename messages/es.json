@@ -1955,31 +1955,15 @@
       "description": "Matching con IA, colaboración integral y cumplimiento de correo en un solo lugar. Cubrimos KOL de YouTube, TikTok, Twitch y Bilibili."
     },
     "hero": {
-      "kicker": "KolMatrix",
-      "title": "Centro de mando de marketing global de KOL para videojuegos",
-      "subtitle": "Matching con IA · colaboración integral · cumplimiento de correo — outreach de KOL 10× más rápido para estudios de videojuegos",
-      "kpis": {
-        "categories": {
-          "title": "Biblioteca KOL multi-género",
-          "hint": "RPG · Cartas · Casual · Competitivo · Simulación"
-        },
-        "platforms": {
-          "title": "Cobertura en 4 plataformas",
-          "hint": "YouTube · TikTok · Twitch · Bilibili"
-        },
-        "aiMatch": {
-          "title": "Emparejamiento con IA",
-          "hint": "Sube un brief y obtén los creadores ideales en 3 minutos"
-        },
-        "compliance": {
-          "title": "Cumplimiento DKIM/SPF",
-          "hint": "Reputación 98, entrega en bandeja sin mantenimiento"
-        }
-      },
+      "kicker": "KOLMATRIX",
+      "eyebrow": "GAME · KOL · AI · NATIVE",
+      "title_line1": "Hecho para",
+      "title_line2": "creadores de juegos.",
+      "subtitle": "Un centro de comando nativo de IA para el marketing global de KOLs de gaming.",
       "ctaPrimary": "Solicitar prueba",
       "ctaSecondary": "Reservar demo 1:1",
-      "screenshotAiAlt": "Barra lateral de sugerencias de IA de KolMatrix /match",
-      "screenshotReachAlt": "Estado del dominio del centro de correo de KolMatrix /reach"
+      "videoAlt": "Demostración del producto KolMatrix en bucle",
+      "videoFallbackHint": "(Animación no disponible; mostrando imagen estática)"
     },
     "painPoints": {
       "sectionTitle": "Cuatro retos que enfrenta todo estudio de videojuegos",

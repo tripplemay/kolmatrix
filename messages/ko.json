@@ -1955,31 +1955,15 @@
       "description": "AI 정밀 매칭, 전 과정 협업, 메일 컴플라이언스를 한곳에. YouTube · TikTok · Twitch · Bilibili 전 플랫폼 게임 KOL을 모두 커버합니다."
     },
     "hero": {
-      "kicker": "KolMatrix",
-      "title": "글로벌 게임 KOL 마케팅 컨트롤 타워",
-      "subtitle": "AI 정밀 매칭 · 전 과정 협업 · 메일 컴플라이언스를 한곳에 — 게임 해외 진출 KOL 마케팅 효율을 10배로",
-      "kpis": {
-        "categories": {
-          "title": "전체 게임 카테고리 KOL 라이브러리",
-          "hint": "RPG · 카드 · 캐주얼 · 경쟁 · 시뮬레이션"
-        },
-        "platforms": {
-          "title": "4 대 플랫폼 커버",
-          "hint": "YouTube · TikTok · Twitch · Bilibili"
-        },
-        "aiMatch": {
-          "title": "AI 스마트 매칭",
-          "hint": "브리프 업로드 후 3 분 안에 최적 크리에이터 확정"
-        },
-        "compliance": {
-          "title": "DKIM/SPF 컴플라이언스",
-          "hint": "신뢰도 98, 유지보수 없이 인박스 도달"
-        }
-      },
-      "ctaPrimary": "체험판 신청",
+      "kicker": "KOLMATRIX",
+      "eyebrow": "GAME · KOL · AI · NATIVE",
+      "title_line1": "게임 크리에이터를",
+      "title_line2": "위해.",
+      "subtitle": "글로벌 게임 KOL 마케팅을 위한 AI 네이티브 지휘 센터.",
+      "ctaPrimary": "체험 신청",
       "ctaSecondary": "1:1 데모 예약",
-      "screenshotAiAlt": "KolMatrix /match AI 추천 사이드바",
-      "screenshotReachAlt": "KolMatrix /reach 이메일 센터 도메인 상태"
+      "videoAlt": "KolMatrix 제품 데모 루프",
+      "videoFallbackHint": "(애니메이션을 사용할 수 없어 정지 이미지를 표시합니다)"
     },
     "painPoints": {
       "sectionTitle": "게임 스튜디오가 마주하는 4가지 과제",

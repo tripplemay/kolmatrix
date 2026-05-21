@@ -1954,31 +1954,15 @@
       "description": "AI 智能匹配 · 全流程协作 · 邮件合规一站搞定。覆盖 YouTube/TikTok/Twitch/Bilibili 全平台游戏 KOL 投放。"
     },
     "hero": {
-      "kicker": "KolMatrix",
-      "title": "全球游戏 KOL 营销指挥中心",
-      "subtitle": "AI 智能匹配 · 全流程协作 · 邮件合规一站搞定 — 让游戏出海 KOL 投放效率提升 10 倍",
-      "kpis": {
-        "categories": {
-          "title": "全游戏品类 KOL 库",
-          "hint": "RPG · 卡牌 · 休闲 · 竞技 · 模拟"
-        },
-        "platforms": {
-          "title": "4 大平台覆盖",
-          "hint": "YouTube · TikTok · Twitch · Bilibili"
-        },
-        "aiMatch": {
-          "title": "AI 智能匹配",
-          "hint": "上传素材，3 分钟锁定最优达人"
-        },
-        "compliance": {
-          "title": "DKIM/SPF 合规",
-          "hint": "信誉分 98，邮件 0 维护进收件箱"
-        }
-      },
+      "kicker": "KOLMATRIX",
+      "eyebrow": "GAME · KOL · AI · NATIVE",
+      "title_line1": "为游戏出海",
+      "title_line2": "而生",
+      "subtitle": "AI 原生 · 一站式 · 全球游戏 KOL 指挥中心 — 从找人到投放复盘，一气呵成。",
       "ctaPrimary": "立即申请试用",
       "ctaSecondary": "预约 1v1 演示",
-      "screenshotAiAlt": "KolMatrix /match AI 推荐侧栏",
-      "screenshotReachAlt": "KolMatrix /reach 邮件中心域名健康度"
+      "videoAlt": "KolMatrix 产品演示循环",
+      "videoFallbackHint": "（动画版本不可用，已显示静态截图）"
     },
     "painPoints": {
       "sectionTitle": "游戏出海 KOL 营销 4 大痛点",

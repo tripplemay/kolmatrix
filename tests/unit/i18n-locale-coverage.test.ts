@@ -312,14 +312,11 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   "campaigns.detail.kolPanel.sourceChip.csv",
   "campaigns.detail.kolPanel.feeUnset",
 
-  // landing-page (independent batch) — brand kicker + platform/category
-  // proper-noun lists intentionally render identically across all 5
-  // locales. KolMatrix is the brand name; "YouTube · TikTok · Twitch ·
-  // Bilibili" matches the discovery.platforms.* keep-as-en convention.
-  // Material Symbols glyph names (component-side, not i18n) replaced
-  // the 2026-05-19 emoji-icon i18n leaves.
+  // landing-page (cinematic v2 redesign 2026-05-21) — brand kicker
+  // and eyebrow tag are language-neutral by design (KolMatrix is the
+  // brand; GAME · KOL · AI · NATIVE is a proper-noun chain).
   "landing.hero.kicker",
-  "landing.hero.kpis.platforms.hint",
+  "landing.hero.eyebrow",
   // beforeAfter table — "After" column header is the brand name across
   // all locales (matches landing.hero.kicker convention).
   "landing.beforeAfter.colAfter",

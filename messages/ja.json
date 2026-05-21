@@ -1955,31 +1955,15 @@
       "description": "AI による精密マッチング、フルファネルのコラボレーション、メールコンプライアンスをワンストップで。YouTube・TikTok・Twitch・Bilibili 全プラットフォームのゲーム KOL をカバー。"
     },
     "hero": {
-      "kicker": "KolMatrix",
-      "title": "グローバルゲーム KOL マーケティングの司令塔",
-      "subtitle": "AI 精密マッチング・フルファネル協業・メールコンプライアンスをワンストップで — ゲーム海外展開の KOL 施策を 10 倍効率化",
-      "kpis": {
-        "categories": {
-          "title": "全ゲームジャンル KOL ライブラリ",
-          "hint": "RPG · カード · カジュアル · 競技 · シミュレーション"
-        },
-        "platforms": {
-          "title": "4 大プラットフォーム対応",
-          "hint": "YouTube · TikTok · Twitch · Bilibili"
-        },
-        "aiMatch": {
-          "title": "AI スマートマッチング",
-          "hint": "ブリーフをアップロードして 3 分で最適クリエイターをロックオン"
-        },
-        "compliance": {
-          "title": "DKIM/SPF コンプライアンス",
-          "hint": "信頼度スコア 98、メンテ不要で受信箱に届く"
-        }
-      },
-      "ctaPrimary": "トライアルを申請",
-      "ctaSecondary": "1:1 デモを予約",
-      "screenshotAiAlt": "KolMatrix /match AI 推奨サイドバー",
-      "screenshotReachAlt": "KolMatrix /reach メールセンターのドメインヘルス"
+      "kicker": "KOLMATRIX",
+      "eyebrow": "GAME · KOL · AI · NATIVE",
+      "title_line1": "ゲームクリエイター",
+      "title_line2": "のために。",
+      "subtitle": "グローバルゲーム KOL マーケティングのための AI ネイティブ指揮センター。",
+      "ctaPrimary": "トライアル申請",
+      "ctaSecondary": "1:1 デモ予約",
+      "videoAlt": "KolMatrix プロダクトデモループ",
+      "videoFallbackHint": "(アニメーションは利用できません。静止画を表示中)"
     },
     "painPoints": {
       "sectionTitle": "ゲームスタジオが直面する 4 つの課題",
