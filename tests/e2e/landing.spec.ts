@@ -23,6 +23,26 @@ test.describe("Anonymous root path", () => {
     await page.goto("/en");
     await expect(page.getByTestId("landing-hero")).toBeVisible();
   });
+
+  test("hero video element is present with correct attributes", async ({ page }) => {
+    await page.goto("/zh");
+    const video = page.getByTestId("landing-hero-video");
+    await expect(video).toBeAttached();
+    // Don't assert visible — video may be hidden via motion-reduce: at the
+    // CSS level if the test browser has prefers-reduced-motion enabled.
+    await expect(video).toHaveAttribute("autoplay", "");
+    await expect(video).toHaveAttribute("muted", "");
+    await expect(video).toHaveAttribute("loop", "");
+    await expect(video).toHaveAttribute("playsinline", "");
+    await expect(video).toHaveAttribute("poster", "/landing/hero/hero-poster.jpg");
+  });
+
+  test("hero poster image is fetchable", async ({ request }) => {
+    const res = await request.get("/landing/hero/hero-poster.jpg");
+    expect(res.ok()).toBe(true);
+    const contentType = res.headers()["content-type"];
+    expect(contentType).toMatch(/image\/jpeg/);
+  });
 });
 
 test.describe("Landing CTAs", () => {
