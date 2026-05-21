@@ -30,14 +30,14 @@ const materialSymbols = localFont({
 // utility classes. App side stays on Inter via `font-sans`.
 const geistSans = localFont({
   src: "./fonts/Geist-Variable.woff2",
-  variable: "--font-geist-sans",
+  variable: "--font-geist-sans-raw",
   display: "swap",
   weight: "100 900",
 });
 
 const geistMono = localFont({
   src: "./fonts/GeistMono-Variable.woff2",
-  variable: "--font-geist-mono",
+  variable: "--font-geist-mono-raw",
   display: "swap",
   weight: "100 900",
 });

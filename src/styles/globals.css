@@ -75,8 +75,8 @@
   /* Typography */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
   /* Cinematic v2 landing — Geist family. App side stays on Inter (--font-sans). */
-  --font-geist: var(--font-geist-sans), ui-sans-serif, -apple-system, "PingFang SC", "Source Han Sans", sans-serif;
-  --font-geist-mono: var(--font-geist-mono), "SF Mono", Menlo, "Source Han Mono", monospace;
+  --font-geist: var(--font-geist-sans-raw), ui-sans-serif, -apple-system, "PingFang SC", "Source Han Sans", sans-serif;
+  --font-geist-mono: var(--font-geist-mono-raw), "SF Mono", Menlo, "Source Han Mono", monospace;
 }
 
 /* ============================================================
