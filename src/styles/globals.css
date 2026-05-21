@@ -29,6 +29,7 @@
   /* Brand — purple (secondary / classification) */
   --color-purple: #9D50FF;
   --color-purple-container: #6e06d0;
+  --color-purple-fixed: #c8a3ff;  /* lighter purple for high-contrast text on dark bg */
 
   /* Navy surface stack (color-layered, no 1px borders) */
   --color-navy-base: #0b1326;
