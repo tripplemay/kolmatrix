@@ -1959,12 +1959,22 @@
       "title": "グローバルゲーム KOL マーケティングの司令塔",
       "subtitle": "AI 精密マッチング・フルファネル協業・メールコンプライアンスをワンストップで — ゲーム海外展開の KOL 施策を 10 倍効率化",
       "kpis": {
-        "kolLibrary": "{count}+ ゲーム特化 KOL データベース",
-        "platforms": "4 大プラットフォーム対応",
-        "platformsHint": "YouTube · TikTok · Twitch · Bilibili",
-        "aiMatch": "AI スマートマッチング",
-        "aiMatchHint": "ブリーフをアップロードして 3 分で最適クリエイターをロックオン",
-        "compliance": "DKIM/SPF コンプライアンス + 信頼度スコア 98"
+        "categories": {
+          "title": "全ゲームジャンル KOL ライブラリ",
+          "hint": "RPG · カード · カジュアル · 競技 · シミュレーション"
+        },
+        "platforms": {
+          "title": "4 大プラットフォーム対応",
+          "hint": "YouTube · TikTok · Twitch · Bilibili"
+        },
+        "aiMatch": {
+          "title": "AI スマートマッチング",
+          "hint": "ブリーフをアップロードして 3 分で最適クリエイターをロックオン"
+        },
+        "compliance": {
+          "title": "DKIM/SPF コンプライアンス",
+          "hint": "信頼度スコア 98、メンテ不要で受信箱に届く"
+        }
       },
       "ctaPrimary": "トライアルを申請",
       "ctaSecondary": "1:1 デモを予約",
@@ -1975,22 +1985,18 @@
       "sectionTitle": "ゲームスタジオが直面する 4 つの課題",
       "items": {
         "find": {
-          "icon": "🔍",
           "title": "クロスプラットフォームの KOL 発掘が遅い",
           "body": "データが分散し指標もバラバラ、4 大プラットフォームの行き来で効率が低下"
         },
         "match": {
-          "icon": "🎯",
           "title": "オーディエンス分析が勘任せでマッチング精度が低い",
           "body": "感覚的な配信、ROI が読めず予算が無駄になる"
         },
         "email": {
-          "icon": "📭",
           "title": "メール送達率が低く開封率が 0",
           "body": "コンプライアンスの問題かコンテンツの問題か判別できない"
         },
         "workflow": {
-          "icon": "⚙️",
           "title": "ワークフローが分断しコンプライアンスリスクが高い",
           "body": "進捗を Excel で手作業管理、コンプライアンスの不備がブランドリスクに直結"
         }
@@ -2039,25 +2045,28 @@
         "reach": "/reach の全景 — Email Center",
         "insight": "/insight の全景 — 分析ダッシュボード"
       },
-      "steps": ["KOL 発掘", "AI マッチ", "アウトリーチ", "コラボ", "効果測定"]
+      "steps": [
+        "KOL 発掘",
+        "AI マッチ",
+        "アウトリーチ",
+        "コラボ",
+        "効果測定"
+      ]
     },
     "trust": {
       "sectionTitle": "エンタープライズ級のセキュリティとコンプライアンス",
       "items": {
         "encryption": {
-          "icon": "🔒",
           "title": "エンタープライズ級データ暗号化",
           "body": "TLS 1.3 通信暗号化 + Postgres RLS によるマルチテナント分離"
         },
         "email": {
-          "icon": "✉️",
           "title": "メールコンプライアンス認証",
           "body": "Resend SPF / DKIM / DMARC をフル認証、信頼度 98"
         },
-        "partners": {
-          "icon": "🤝",
-          "title": "パートナーと商談中",
-          "body": "海外展開トップゲームパブリッシャーと商談中、リストは近日公開"
+        "stack": {
+          "title": "モダンスタック採用",
+          "body": "Anthropic Claude · Resend · Next.js · Postgres RLS で構築"
         }
       }
     },
@@ -2090,10 +2099,39 @@
       "sectionTitle": "今すぐグローバルゲーム KOL の高効率施策を始めましょう",
       "ctaPrimary": "トライアルを申請",
       "ctaSecondary": "1:1 デモを予約",
-      "footerLine": "© 2026 KolMatrix · グローバルゲーム KOL マーケティング SaaS",
-      "links": {
-        "privacy": "プライバシー",
-        "terms": "利用規約"
+      "footerLine": "© 2026 KolMatrix · グローバルゲーム KOL マーケティング SaaS"
+    },
+    "nav": {
+      "login": "サインイン",
+      "cta": "トライアル申請"
+    },
+    "beforeAfter": {
+      "sectionTitle": "従来フロー vs KolMatrix",
+      "demoBadge": "イメージ値",
+      "colTask": "ステップ",
+      "colBefore": "従来フロー",
+      "colAfter": "KolMatrix",
+      "rows": {
+        "discover": {
+          "task": "KOL 探索",
+          "before": "4 プラットフォーム横断、30 名絞り込みに 4 時間",
+          "after": "1 つのライブラリで 15 軸絞り、5 分でショートリスト"
+        },
+        "match": {
+          "task": "適合度評価",
+          "before": "勘で判断、精度 50% 前後",
+          "after": "マルチモーダル AI レコメンド + 適合スコア"
+        },
+        "email": {
+          "task": "アウトリーチ",
+          "before": "DKIM/SPF 手動設定、到達率は不安定",
+          "after": "ワンクリック合規 + スコア 98 リアルタイム監視"
+        },
+        "review": {
+          "task": "効果検証",
+          "before": "3 プラットフォーム CSV を Excel で集計",
+          "after": "リアルタイムダッシュボード · 4 プラットフォーム自動アトリビューション"
+        }
       }
     }
   }

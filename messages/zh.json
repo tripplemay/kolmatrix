@@ -1958,12 +1958,22 @@
       "title": "全球游戏 KOL 营销指挥中心",
       "subtitle": "AI 智能匹配 · 全流程协作 · 邮件合规一站搞定 — 让游戏出海 KOL 投放效率提升 10 倍",
       "kpis": {
-        "kolLibrary": "{count}+ 游戏垂类 KOL 库",
-        "platforms": "4 大平台覆盖",
-        "platformsHint": "YouTube · TikTok · Twitch · Bilibili",
-        "aiMatch": "AI 智能匹配",
-        "aiMatchHint": "上传素材，3 分钟锁定最优达人",
-        "compliance": "DKIM/SPF 合规 + 98% 信誉分"
+        "categories": {
+          "title": "全游戏品类 KOL 库",
+          "hint": "RPG · 卡牌 · 休闲 · 竞技 · 模拟"
+        },
+        "platforms": {
+          "title": "4 大平台覆盖",
+          "hint": "YouTube · TikTok · Twitch · Bilibili"
+        },
+        "aiMatch": {
+          "title": "AI 智能匹配",
+          "hint": "上传素材，3 分钟锁定最优达人"
+        },
+        "compliance": {
+          "title": "DKIM/SPF 合规",
+          "hint": "信誉分 98，邮件 0 维护进收件箱"
+        }
       },
       "ctaPrimary": "立即申请试用",
       "ctaSecondary": "预约 1v1 演示",
@@ -1974,22 +1984,18 @@
       "sectionTitle": "游戏出海 KOL 营销 4 大痛点",
       "items": {
         "find": {
-          "icon": "🔍",
           "title": "跨平台找 KOL 慢",
           "body": "筛选散、数据不准，4 大平台来回切换效率低"
         },
         "match": {
-          "icon": "🎯",
           "title": "受众分析模糊匹配不准",
           "body": "凭感觉投放，ROI 不可控，烧钱不见声量"
         },
         "email": {
-          "icon": "📭",
           "title": "邮件送达率低开信率为 0",
           "body": "不知道是合规配置问题还是内容问题"
         },
         "workflow": {
-          "icon": "⚙️",
           "title": "全流程割裂合规风险高",
           "body": "合作进度全靠人工 Excel 统计，回款复盘没体系"
         }
@@ -2038,25 +2044,28 @@
         "reach": "/reach 全景 — Email Center",
         "insight": "/insight 全景 — 数据看板"
       },
-      "steps": ["找 KOL", "AI 匹配", "发起合作", "邮件协作", "数据复盘"]
+      "steps": [
+        "找 KOL",
+        "AI 匹配",
+        "发起合作",
+        "邮件协作",
+        "数据复盘"
+      ]
     },
     "trust": {
       "sectionTitle": "企业级合规与安全",
       "items": {
         "encryption": {
-          "icon": "🔒",
           "title": "企业级数据加密",
           "body": "TLS 1.3 传输加密 + Postgres RLS 多租户隔离"
         },
         "email": {
-          "icon": "✉️",
           "title": "邮件合规资质",
           "body": "Resend SPF / DKIM / DMARC 全认证，信誉分 98"
         },
-        "partners": {
-          "icon": "🤝",
-          "title": "合作伙伴洽谈中",
-          "body": "头部出海游戏发行商接洽中，名单稍后公开"
+        "stack": {
+          "title": "现代技术栈背书",
+          "body": "由 Anthropic Claude · Resend · Next.js · Postgres RLS 驱动"
         }
       }
     },
@@ -2089,10 +2098,39 @@
       "sectionTitle": "立即开启全球游戏 KOL 高效投放",
       "ctaPrimary": "申请试用",
       "ctaSecondary": "预约 1v1 演示",
-      "footerLine": "© 2026 KolMatrix · 全球游戏 KOL 营销 SaaS",
-      "links": {
-        "privacy": "隐私政策",
-        "terms": "服务条款"
+      "footerLine": "© 2026 KolMatrix · 全球游戏 KOL 营销 SaaS"
+    },
+    "nav": {
+      "login": "登录",
+      "cta": "申请试用"
+    },
+    "beforeAfter": {
+      "sectionTitle": "传统流程 vs KolMatrix",
+      "demoBadge": "演示数据",
+      "colTask": "环节",
+      "colBefore": "传统流程",
+      "colAfter": "KolMatrix",
+      "rows": {
+        "discover": {
+          "task": "找 KOL",
+          "before": "4 平台来回切，4 小时筛 30 人",
+          "after": "1 个库 15 维筛，5 分钟出短名单"
+        },
+        "match": {
+          "task": "评估匹配度",
+          "before": "凭经验拍脑袋，准度 50%",
+          "after": "AI 多模态推荐，附契合度分"
+        },
+        "email": {
+          "task": "邮件触达",
+          "before": "DKIM/SPF 自配置，送达率忽高忽低",
+          "after": "一键合规 + 信誉分 98 实时监控"
+        },
+        "review": {
+          "task": "数据复盘",
+          "before": "Excel 拼合 3 平台导出表",
+          "after": "实时看板 · 4 平台自动归因"
+        }
       }
     }
   }

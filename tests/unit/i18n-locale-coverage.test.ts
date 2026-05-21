@@ -312,22 +312,17 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   "campaigns.detail.kolPanel.sourceChip.csv",
   "campaigns.detail.kolPanel.feeUnset",
 
-  // landing-page (independent batch, 18 commits 98c9a90 → ff2d407) —
-  // brand kicker, platform-name list, and 7 section-icon emoji glyphs
-  // intentionally render identically across all 5 locales. KolMatrix
-  // is the brand name; "YouTube · TikTok · Twitch · Bilibili" is a
-  // platform proper-noun list (matching the discovery.platforms.* /
-  // match.platforms.* keep-as-en convention above); emoji glyphs are
-  // language-neutral by definition.
+  // landing-page (independent batch) — brand kicker + platform/category
+  // proper-noun lists intentionally render identically across all 5
+  // locales. KolMatrix is the brand name; "YouTube · TikTok · Twitch ·
+  // Bilibili" matches the discovery.platforms.* keep-as-en convention.
+  // Material Symbols glyph names (component-side, not i18n) replaced
+  // the 2026-05-19 emoji-icon i18n leaves.
   "landing.hero.kicker",
-  "landing.hero.kpis.platformsHint",
-  "landing.painPoints.items.find.icon",
-  "landing.painPoints.items.match.icon",
-  "landing.painPoints.items.email.icon",
-  "landing.painPoints.items.workflow.icon",
-  "landing.trust.items.encryption.icon",
-  "landing.trust.items.email.icon",
-  "landing.trust.items.partners.icon",
+  "landing.hero.kpis.platforms.hint",
+  // beforeAfter table — "After" column header is the brand name across
+  // all locales (matches landing.hero.kicker convention).
+  "landing.beforeAfter.colAfter",
   // "KOL CRM" — both tokens are industry acronyms already kept-as-en
   // elsewhere (assets.usedIn.kolFallback for KOL; CRM has no
   // localized equivalent in common ja/ko marketing usage). es renders

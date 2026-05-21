@@ -1959,12 +1959,22 @@
       "title": "Centro de mando de marketing global de KOL para videojuegos",
       "subtitle": "Matching con IA · colaboración integral · cumplimiento de correo — outreach de KOL 10× más rápido para estudios de videojuegos",
       "kpis": {
-        "kolLibrary": "{count}+ KOL especializados en videojuegos",
-        "platforms": "4 plataformas principales",
-        "platformsHint": "YouTube · TikTok · Twitch · Bilibili",
-        "aiMatch": "Matching con IA",
-        "aiMatchHint": "Sube un brief y obtén a los creadores adecuados en 3 minutos",
-        "compliance": "Cumplimiento DKIM/SPF + reputación 98"
+        "categories": {
+          "title": "Biblioteca KOL multi-género",
+          "hint": "RPG · Cartas · Casual · Competitivo · Simulación"
+        },
+        "platforms": {
+          "title": "Cobertura en 4 plataformas",
+          "hint": "YouTube · TikTok · Twitch · Bilibili"
+        },
+        "aiMatch": {
+          "title": "Emparejamiento con IA",
+          "hint": "Sube un brief y obtén los creadores ideales en 3 minutos"
+        },
+        "compliance": {
+          "title": "Cumplimiento DKIM/SPF",
+          "hint": "Reputación 98, entrega en bandeja sin mantenimiento"
+        }
       },
       "ctaPrimary": "Solicitar prueba",
       "ctaSecondary": "Reservar demo 1:1",
@@ -1975,22 +1985,18 @@
       "sectionTitle": "Cuatro retos que enfrenta todo estudio de videojuegos",
       "items": {
         "find": {
-          "icon": "🔍",
           "title": "Descubrir KOL entre plataformas es lento",
           "body": "Datos dispersos, métricas inconsistentes y cuatro plataformas que gestionar"
         },
         "match": {
-          "icon": "🎯",
           "title": "El encaje de audiencia se decide por intuición",
           "body": "Matching impreciso, ROI impredecible y presupuesto desperdiciado"
         },
         "email": {
-          "icon": "📭",
           "title": "Los correos no llegan a la bandeja de entrada",
           "body": "Tasa de apertura en cero sin saber si es por compliance o contenido"
         },
         "workflow": {
-          "icon": "⚙️",
           "title": "Flujo de trabajo fragmentado y arriesgado",
           "body": "Progreso seguido en hojas de cálculo; los huecos de compliance crean riesgo de marca"
         }
@@ -2039,25 +2045,28 @@
         "reach": "Vista general de /reach — Email Center",
         "insight": "Vista general de /insight — dashboard de analítica"
       },
-      "steps": ["Encontrar KOL", "Matching con IA", "Contactar", "Colaborar", "Medir"]
+      "steps": [
+        "Encontrar KOL",
+        "Matching con IA",
+        "Contactar",
+        "Colaborar",
+        "Medir"
+      ]
     },
     "trust": {
       "sectionTitle": "Seguridad y cumplimiento de nivel empresarial",
       "items": {
         "encryption": {
-          "icon": "🔒",
           "title": "Cifrado de datos de nivel empresarial",
           "body": "TLS 1.3 en tránsito + aislamiento multi-tenant con Postgres RLS"
         },
         "email": {
-          "icon": "✉️",
           "title": "Cumplimiento de correo",
           "body": "Resend SPF / DKIM / DMARC totalmente verificados, reputación 98"
         },
-        "partners": {
-          "icon": "🤝",
-          "title": "Partners en conversación",
-          "body": "Editoras globales líderes de videojuegos en conversación — lista próximamente"
+        "stack": {
+          "title": "Construido sobre un stack moderno",
+          "body": "Impulsado por Anthropic Claude · Resend · Next.js · Postgres RLS"
         }
       }
     },
@@ -2090,10 +2099,39 @@
       "sectionTitle": "Empieza hoy a ejecutar campañas KOL más inteligentes",
       "ctaPrimary": "Solicitar prueba",
       "ctaSecondary": "Reservar demo 1:1",
-      "footerLine": "© 2026 KolMatrix · SaaS de marketing global de KOL para videojuegos",
-      "links": {
-        "privacy": "Privacidad",
-        "terms": "Términos"
+      "footerLine": "© 2026 KolMatrix · SaaS de marketing global de KOL para videojuegos"
+    },
+    "nav": {
+      "login": "Iniciar sesión",
+      "cta": "Solicitar prueba"
+    },
+    "beforeAfter": {
+      "sectionTitle": "Flujo tradicional vs KolMatrix",
+      "demoBadge": "Ilustrativo",
+      "colTask": "Etapa",
+      "colBefore": "Flujo tradicional",
+      "colAfter": "KolMatrix",
+      "rows": {
+        "discover": {
+          "task": "Encontrar KOLs",
+          "before": "Alternar 4 plataformas, 4 h para preseleccionar 30",
+          "after": "Una biblioteca, 15 filtros, lista corta en 5 minutos"
+        },
+        "match": {
+          "task": "Evaluar afinidad",
+          "before": "Decisión intuitiva, precisión ~50%",
+          "after": "Recomendaciones IA multimodal con puntaje de afinidad"
+        },
+        "email": {
+          "task": "Contactar",
+          "before": "DKIM/SPF manual, entrega irregular",
+          "after": "Cumplimiento en un clic + reputación 98 en vivo"
+        },
+        "review": {
+          "task": "Medir resultados",
+          "before": "Combinar export Excel de 3 plataformas",
+          "after": "Panel en vivo · atribución automática multi-plataforma"
+        }
       }
     }
   }

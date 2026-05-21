@@ -36,16 +36,6 @@ export async function FooterCTA({ locale }: Props) {
         </div>
         <div className="mt-16 text-xs text-on-surface-variant">
           <p>{t("footerLine")}</p>
-          <p className="mt-2 flex justify-center gap-4">
-            {/* Privacy / Terms routes don't yet exist — use # so we don't ship dead links */}
-            <a href="#" className="cursor-default opacity-50">
-              {t("links.privacy")}
-            </a>
-            <span aria-hidden="true">·</span>
-            <a href="#" className="cursor-default opacity-50">
-              {t("links.terms")}
-            </a>
-          </p>
         </div>
       </div>
     </section>

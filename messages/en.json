@@ -1958,12 +1958,22 @@
       "title": "Global Game KOL Marketing Command Center",
       "subtitle": "AI-powered matching · end-to-end collaboration · email compliance — 10× faster KOL outreach for game studios",
       "kpis": {
-        "kolLibrary": "{count}+ Game-vertical KOLs",
-        "platforms": "4 major platforms",
-        "platformsHint": "YouTube · TikTok · Twitch · Bilibili",
-        "aiMatch": "AI Match",
-        "aiMatchHint": "Upload a brief, get the right creators in 3 minutes",
-        "compliance": "DKIM/SPF compliance + 98 reputation"
+        "categories": {
+          "title": "All gaming verticals",
+          "hint": "RPG · Card · Casual · Competitive · Simulation"
+        },
+        "platforms": {
+          "title": "4 major platforms",
+          "hint": "YouTube · TikTok · Twitch · Bilibili"
+        },
+        "aiMatch": {
+          "title": "AI-powered matching",
+          "hint": "Upload a brief, get the right creators in 3 minutes"
+        },
+        "compliance": {
+          "title": "DKIM/SPF compliance",
+          "hint": "Reputation 98, zero-maintenance inbox delivery"
+        }
       },
       "ctaPrimary": "Request a trial",
       "ctaSecondary": "Book a 1:1 demo",
@@ -1974,22 +1984,18 @@
       "sectionTitle": "Four challenges every game studio faces",
       "items": {
         "find": {
-          "icon": "🔍",
           "title": "Cross-platform KOL discovery is slow",
           "body": "Scattered data, inconsistent metrics, four platforms to juggle"
         },
         "match": {
-          "icon": "🎯",
           "title": "Audience fit is a gut call",
           "body": "Imprecise matching, unpredictable ROI, wasted spend"
         },
         "email": {
-          "icon": "📭",
           "title": "Emails never reach the inbox",
           "body": "Open rate stuck at zero with no way to tell if it's compliance or content"
         },
         "workflow": {
-          "icon": "⚙️",
           "title": "Workflow is fragmented and risky",
           "body": "Progress tracked in spreadsheets; compliance gaps create brand risk"
         }
@@ -2038,25 +2044,28 @@
         "reach": "/reach overview — Email Center",
         "insight": "/insight overview — analytics dashboard"
       },
-      "steps": ["Find KOLs", "AI Match", "Outreach", "Collaborate", "Measure"]
+      "steps": [
+        "Find KOLs",
+        "AI Match",
+        "Outreach",
+        "Collaborate",
+        "Measure"
+      ]
     },
     "trust": {
       "sectionTitle": "Enterprise-grade security and compliance",
       "items": {
         "encryption": {
-          "icon": "🔒",
           "title": "Enterprise data encryption",
           "body": "TLS 1.3 in transit + Postgres RLS multi-tenant isolation"
         },
         "email": {
-          "icon": "✉️",
           "title": "Email compliance",
           "body": "Resend SPF / DKIM / DMARC fully verified, reputation 98"
         },
-        "partners": {
-          "icon": "🤝",
-          "title": "Partners in conversation",
-          "body": "Top global game publishers in discussion — list coming soon"
+        "stack": {
+          "title": "Built on a modern stack",
+          "body": "Powered by Anthropic Claude · Resend · Next.js · Postgres RLS"
         }
       }
     },
@@ -2089,10 +2098,39 @@
       "sectionTitle": "Start running smarter KOL campaigns today",
       "ctaPrimary": "Request a trial",
       "ctaSecondary": "Book a 1:1 demo",
-      "footerLine": "© 2026 KolMatrix · Global Game KOL Marketing SaaS",
-      "links": {
-        "privacy": "Privacy",
-        "terms": "Terms"
+      "footerLine": "© 2026 KolMatrix · Global Game KOL Marketing SaaS"
+    },
+    "nav": {
+      "login": "Sign in",
+      "cta": "Request a trial"
+    },
+    "beforeAfter": {
+      "sectionTitle": "Old workflow vs KolMatrix",
+      "demoBadge": "Illustrative",
+      "colTask": "Step",
+      "colBefore": "Old workflow",
+      "colAfter": "KolMatrix",
+      "rows": {
+        "discover": {
+          "task": "Find KOLs",
+          "before": "Bounce across 4 platforms, 4 hrs to shortlist 30",
+          "after": "One library, 15 filters, shortlist in 5 minutes"
+        },
+        "match": {
+          "task": "Assess fit",
+          "before": "Gut call, ~50% precision",
+          "after": "Multimodal AI recs with fit scores"
+        },
+        "email": {
+          "task": "Outreach",
+          "before": "Hand-rolled DKIM/SPF, deliverability swings",
+          "after": "One-click compliance + reputation 98 live"
+        },
+        "review": {
+          "task": "Measure",
+          "before": "Excel-stitch 3 platform exports",
+          "after": "Real-time dashboard · 4-platform attribution"
+        }
       }
     }
   }

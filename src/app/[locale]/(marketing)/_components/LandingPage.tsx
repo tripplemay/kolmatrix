@@ -1,5 +1,7 @@
+import { TopNav } from "./TopNav";
 import { Hero } from "./Hero";
 import { PainPoints } from "./PainPoints";
+import { BeforeAfter } from "./BeforeAfter";
 import { Features } from "./Features";
 import { EmailCenterDemo } from "./EmailCenterDemo";
 import { TrustPlaceholder } from "./TrustPlaceholder";
@@ -17,8 +19,10 @@ export function LandingPage({ locale }: Props) {
       data-testid="landing-page"
       data-locale={locale}
     >
+      <TopNav locale={locale} />
       <Hero locale={locale} />
       <PainPoints />
+      <BeforeAfter />
       <Features locale={locale} />
       <EmailCenterDemo />
       <TrustPlaceholder />

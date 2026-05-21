@@ -50,7 +50,7 @@ export async function Features({ locale }: Props) {
               key={key}
               href={`/${locale}${href}`}
               data-testid={`landing-feature-${key}`}
-              className={`group flex flex-col gap-4 rounded-2xl border p-6 transition hover:bg-cyan/5 ${accentClass(accent)}`}
+              className={`group flex flex-col gap-4 rounded-2xl border p-6 transition duration-200 hover:-translate-y-1 hover:border-cyan/60 hover:shadow-[0_12px_32px_rgba(0,229,255,0.18)] ${accentClass(accent)}`}
             >
               <h3 className={`text-base font-semibold ${titleColorClass(accent)}`}>
                 {t(`items.${key}.title`)}
@@ -58,13 +58,13 @@ export async function Features({ locale }: Props) {
               <p className="text-sm text-on-surface-variant">
                 {t(`items.${key}.body`)}
               </p>
-              <div className="mt-auto overflow-hidden rounded-xl border border-cyan/10">
+              <div className="mt-auto overflow-hidden rounded-xl border border-cyan/10 transition group-hover:border-cyan/30">
                 <Image
                   src={screenshot}
                   alt={t(`items.${key}.title`)}
                   width={480}
                   height={300}
-                  className="h-auto w-full opacity-90 transition group-hover:opacity-100"
+                  className="h-auto w-full opacity-90 transition duration-200 group-hover:scale-[1.02] group-hover:opacity-100"
                 />
               </div>
             </a>

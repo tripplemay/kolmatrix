@@ -1,8 +1,19 @@
 import { getTranslations } from "next-intl/server";
 
+interface PainItem {
+  key: "find" | "match" | "email" | "workflow";
+  icon: string;
+}
+
+const ITEMS: ReadonlyArray<PainItem> = [
+  { key: "find", icon: "search" },
+  { key: "match", icon: "track_changes" },
+  { key: "email", icon: "unsubscribe" },
+  { key: "workflow", icon: "settings" },
+];
+
 export async function PainPoints() {
   const t = await getTranslations("landing.painPoints");
-  const items = ["find", "match", "email", "workflow"] as const;
 
   return (
     <section
@@ -14,15 +25,18 @@ export async function PainPoints() {
           {t("sectionTitle")}
         </h2>
         <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {items.map((key) => (
+          {ITEMS.map(({ key, icon }) => (
             <div
               key={key}
               data-testid={`landing-painpoint-${key}`}
-              className="rounded-2xl bg-surface-container p-6"
+              className="rounded-2xl bg-surface-container p-6 transition hover:bg-surface-container/80"
             >
-              <div className="text-2xl" aria-hidden="true">
-                {t(`items.${key}.icon`)}
-              </div>
+              <span
+                className="material-symbols-outlined text-[24px] text-cyan"
+                aria-hidden="true"
+              >
+                {icon}
+              </span>
               <h3 className="mt-3 text-sm font-semibold text-white">
                 {t(`items.${key}.title`)}
               </h3>
