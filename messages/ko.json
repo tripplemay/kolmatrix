@@ -2060,6 +2060,11 @@
           "title": "현대적인 기술 스택 기반",
           "body": "Anthropic Claude · Resend · Next.js · Postgres RLS 기반 구축"
         }
+      },
+      "intro": {
+        "label": "신뢰와 컴플라이언스",
+        "title": "기업의 검증을 견디는\n인프라 위에.",
+        "subtitle": "암호화, 이메일 컴플라이언스, 현대적인 기술 스택 — 첫날부터 엔터프라이즈 수준."
       }
     },
     "faq": {

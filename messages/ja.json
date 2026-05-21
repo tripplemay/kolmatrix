@@ -2060,6 +2060,11 @@
           "title": "モダンスタック採用",
           "body": "Anthropic Claude · Resend · Next.js · Postgres RLS で構築"
         }
+      },
+      "intro": {
+        "label": "信頼性とコンプライアンス",
+        "title": "企業の精査に耐える\nインフラを基盤に。",
+        "subtitle": "暗号化、メールコンプライアンス、モダンスタックの信頼性 — 初日からエンタープライズグレード。"
       }
     },
     "faq": {

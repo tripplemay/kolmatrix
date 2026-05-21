@@ -2059,6 +2059,11 @@
           "title": "Built on a modern stack",
           "body": "Powered by Anthropic Claude · Resend · Next.js · Postgres RLS"
         }
+      },
+      "intro": {
+        "label": "TRUST & COMPLIANCE",
+        "title": "Built on infrastructure\nthat holds up.",
+        "subtitle": "Encryption, email compliance, modern stack credibility — enterprise-grade from day one."
       }
     },
     "faq": {

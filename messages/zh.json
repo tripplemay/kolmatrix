@@ -2059,6 +2059,11 @@
           "title": "现代技术栈背书",
           "body": "由 Anthropic Claude · Resend · Next.js · Postgres RLS 驱动"
         }
+      },
+      "intro": {
+        "label": "信任与合规",
+        "title": "经得起企业\n审视的基础设施。",
+        "subtitle": "数据加密、邮件合规、技术栈背书 — 上线第一天就以企业级标准搭建。"
       }
     },
     "faq": {

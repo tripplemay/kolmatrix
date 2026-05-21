@@ -1,4 +1,6 @@
 import { getTranslations } from "next-intl/server";
+import { StickyStack } from "@/components/landing/StickyStack";
+import { ScrollFadeIn } from "@/components/landing/ScrollFadeIn";
 
 interface TrustItem {
   key: "encryption" | "email" | "stack";
@@ -15,37 +17,45 @@ export async function TrustPlaceholder() {
   const t = await getTranslations("landing.trust");
 
   return (
-    <section
-      data-testid="landing-trust"
-      className="bg-surface px-6 py-24 lg:px-12"
+    <StickyStack
+      sectionTestId="landing-trust"
+      bgClassName="bg-surface-light"
+      textClassName="text-on-surface-light"
+      leftContent={
+        <>
+          <div className="font-geist-mono text-[11px] tracking-[0.3em] text-cyan uppercase">
+            {t("intro.label")}
+          </div>
+          <h2 className="mt-4 font-geist text-4xl lg:text-5xl font-bold tracking-tight whitespace-pre-line">
+            {t("intro.title")}
+          </h2>
+          <p className="mt-5 text-base text-on-surface-light-variant max-w-md leading-relaxed">
+            {t("intro.subtitle")}
+          </p>
+        </>
+      }
     >
-      <div className="mx-auto max-w-6xl">
-        <h2 className="text-center text-2xl font-bold tracking-tight text-white lg:text-3xl">
-          {t("sectionTitle")}
-        </h2>
-        <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-          {ITEMS.map(({ key, icon }) => (
-            <div
-              key={key}
-              data-testid={`landing-trust-${key}`}
-              className="flex flex-col items-center rounded-2xl border border-cyan/15 bg-surface-container p-8 text-center"
+      {ITEMS.map(({ key, icon }, idx) => (
+        <ScrollFadeIn key={key} delayMs={idx * 150}>
+          <div
+            data-testid={`landing-trust-${key}`}
+            className="rounded-2xl border border-on-surface-light/10 bg-surface-light-container p-8 transition hover:border-cyan/40 hover:shadow-[0_8px_28px_rgba(0,229,255,0.15)]"
+          >
+            <span
+              className="material-symbols-outlined text-[32px] text-cyan"
+              aria-hidden="true"
             >
-              <span
-                className="material-symbols-outlined text-[32px] text-cyan"
-                aria-hidden="true"
-              >
-                {icon}
-              </span>
-              <h3 className="mt-4 text-base font-semibold text-white">
-                {t(`items.${key}.title`)}
-              </h3>
-              <p className="mt-3 text-sm text-on-surface-variant">
-                {t(`items.${key}.body`)}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+              {icon}
+            </span>
+            <h3 className="mt-5 font-geist text-lg font-semibold text-on-surface-light">
+              {t(`items.${key}.title`)}
+            </h3>
+            <p className="mt-3 text-sm text-on-surface-light-variant leading-relaxed">
+              {t(`items.${key}.body`)}
+            </p>
+          </div>
+        </ScrollFadeIn>
+      ))}
+    </StickyStack>
   );
 }

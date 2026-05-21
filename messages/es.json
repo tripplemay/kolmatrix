@@ -2060,6 +2060,11 @@
           "title": "Construido sobre un stack moderno",
           "body": "Impulsado por Anthropic Claude · Resend · Next.js · Postgres RLS"
         }
+      },
+      "intro": {
+        "label": "CONFIANZA Y CUMPLIMIENTO",
+        "title": "Sobre infraestructura\nque aguanta el escrutinio.",
+        "subtitle": "Cifrado, cumplimiento de correo, stack moderno — nivel empresarial desde el día uno."
       }
     },
     "faq": {
