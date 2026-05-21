@@ -49,6 +49,19 @@
   --color-outline: #849396;
   --color-outline-variant: #3b494c;
 
+  /* Landing-page light theme tokens (BL-landing-cinematic-v2).
+     Used only by landing-page light sections; app side unaffected. */
+  --color-surface-light: #f7f5f0;
+  --color-surface-light-container: #ffffff;
+  --color-surface-light-container-lowest: #ede9df;
+  --color-on-surface-light: #1a1a1a;
+  --color-on-surface-light-variant: #5a5a5a;
+  --color-on-surface-light-muted: #7a7a7a;
+
+  /* Glow accents (rgba so they compose with backgrounds) */
+  --glow-cyan: rgba(0, 229, 255, 0.5);
+  --glow-purple: rgba(157, 80, 255, 0.45);
+
   /* Semantic state */
   --color-warning: #fec931;
   --color-error: #ffb4ab;
