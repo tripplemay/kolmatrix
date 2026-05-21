@@ -285,3 +285,50 @@
   -webkit-font-feature-settings: "liga";
   -webkit-font-smoothing: antialiased;
 }
+
+/* ============================================================
+   Cinematic v2 landing — motion-safety + mobile fallback
+   ============================================================ */
+
+/* Reduced-motion: kill anim durations + force [data-parallax] back to normal flow. */
+@media (prefers-reduced-motion: reduce) {
+  [data-landing-cinematic] *,
+  [data-landing-cinematic] *::before,
+  [data-landing-cinematic] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  [data-landing-cinematic] [data-parallax="sticky"] {
+    position: static !important;
+    top: auto !important;
+  }
+}
+
+/* Mobile (<1024px): disable sticky parallax — too jittery on touch devices. */
+@media (max-width: 1023px) {
+  [data-landing-cinematic] [data-parallax="sticky"] {
+    position: static !important;
+    top: auto !important;
+  }
+}
+
+/* Cinematic gradient text recipe — reusable utility */
+.cinematic-text {
+  background: linear-gradient(135deg, #ffffff 0%, var(--color-cyan) 50%, var(--color-purple) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 80px rgba(0, 229, 255, 0.4);
+}
+
+/* CTA glow-pulse for FooterCTA */
+@keyframes landing-cta-pulse {
+  0%, 100% { box-shadow: 0 0 24px var(--glow-cyan); }
+  50% { box-shadow: 0 0 40px var(--glow-cyan), 0 0 0 6px rgba(0, 229, 255, 0.15); }
+}
+.cta-glow-pulse {
+  animation: landing-cta-pulse 3s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta-glow-pulse { animation: none; box-shadow: 0 0 24px var(--glow-cyan); }
+}
