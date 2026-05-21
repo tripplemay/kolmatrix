@@ -2029,17 +2029,20 @@
     },
     "demo": {
       "sectionTitle": "Así se ve KolMatrix en realidad",
-      "screenshotAlts": {
-        "match": "Vista general de /match — matching con IA + biblioteca de KOL",
-        "reach": "Vista general de /reach — Email Center",
-        "insight": "Vista general de /insight — dashboard de analítica"
-      },
-      "steps": [
-        "Encontrar KOL",
-        "Matching con IA",
-        "Contactar",
-        "Colaborar",
-        "Medir"
+      "screenshotAlt": "Vista principal de /match en KolMatrix — recomendaciones IA + biblioteca de KOLs",
+      "callouts": [
+        {
+          "title": "Descubre en minutos, no en horas",
+          "body": "Sube un brief; la IA clasifica creadores en 4 plataformas según 15 dimensiones y devuelve un top-30 con puntuaciones de afinidad en menos de 5 minutos."
+        },
+        {
+          "title": "Outreach con cumplimiento integrado",
+          "body": "Centro de correo con Resend y DKIM/SPF/DMARC listos. Reputación 98+ para que tu outreach en frío llegue a la bandeja de entrada."
+        },
+        {
+          "title": "Atribución multi-plataforma",
+          "body": "Reproducciones, engagement, tráfico, conversión, ROI — todo. 4 plataformas con atribución automática. Sin cosido de Excel."
+        }
       ]
     },
     "trust": {

@@ -2028,17 +2028,20 @@
     },
     "demo": {
       "sectionTitle": "Here's what KolMatrix actually looks like",
-      "screenshotAlts": {
-        "match": "/match overview — AI matching + KOL library",
-        "reach": "/reach overview — Email Center",
-        "insight": "/insight overview — analytics dashboard"
-      },
-      "steps": [
-        "Find KOLs",
-        "AI Match",
-        "Outreach",
-        "Collaborate",
-        "Measure"
+      "screenshotAlt": "KolMatrix /match main view — AI recommendations + KOL library",
+      "callouts": [
+        {
+          "title": "Discovery in minutes, not hours",
+          "body": "Upload a brief; AI ranks creators across 4 platforms on 15 dimensions and returns a top-30 shortlist with fit scores in under 5 minutes."
+        },
+        {
+          "title": "Outreach with built-in compliance",
+          "body": "Resend-powered email center with DKIM/SPF/DMARC out of the box. Reputation 98+ keeps cold outreach in the inbox."
+        },
+        {
+          "title": "Attribution across all 4 platforms",
+          "body": "Plays, engagement, traffic, conversion, ROI — every dimension. Four platforms auto-attributed. No more Excel stitching."
+        }
       ]
     },
     "trust": {

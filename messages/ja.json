@@ -2028,18 +2028,21 @@
       }
     },
     "demo": {
-      "sectionTitle": "KolMatrix の実際の画面をご紹介",
-      "screenshotAlts": {
-        "match": "/match の全景 — AI マッチ + KOL ライブラリ",
-        "reach": "/reach の全景 — Email Center",
-        "insight": "/insight の全景 — 分析ダッシュボード"
-      },
-      "steps": [
-        "KOL 発掘",
-        "AI マッチ",
-        "アウトリーチ",
-        "コラボ",
-        "効果測定"
+      "sectionTitle": "KolMatrix の実際の様子",
+      "screenshotAlt": "KolMatrix /match メインビュー — AI レコメンド + KOL ライブラリ",
+      "callouts": [
+        {
+          "title": "数時間ではなく数分で発見",
+          "body": "ブリーフをアップロードすると、AI が 4 プラットフォームの KOL を 15 軸でランク付け、5 分以内にトップ 30 候補リスト + 適合スコアを返します。"
+        },
+        {
+          "title": "DKIM/SPF をワンクリックで設定",
+          "body": "Resend 搭載のメールセンターは DKIM/SPF/DMARC を標準装備。信頼度スコア 98+ でコールドアウトリーチも受信箱に届きます。"
+        },
+        {
+          "title": "4 プラットフォーム横断アトリビューション",
+          "body": "再生数、エンゲージメント、トラフィック、コンバージョン、ROI — 全指標を 4 プラットフォーム自動帰属。Excel での集計は不要です。"
+        }
       ]
     },
     "trust": {

@@ -2028,17 +2028,20 @@
     },
     "demo": {
       "sectionTitle": "看一眼 KolMatrix 的实际样子",
-      "screenshotAlts": {
-        "match": "/match 全景 — AI 匹配 + KOL 库",
-        "reach": "/reach 全景 — Email Center",
-        "insight": "/insight 全景 — 数据看板"
-      },
-      "steps": [
-        "找 KOL",
-        "AI 匹配",
-        "发起合作",
-        "邮件协作",
-        "数据复盘"
+      "screenshotAlt": "KolMatrix /match 主面板 — AI 推荐 + KOL 库",
+      "callouts": [
+        {
+          "title": "找 KOL，从 4 小时到 5 分钟",
+          "body": "上传产品 brief，AI 在 15 个维度筛选全球 4 大平台 KOL 库，5 分钟内给出 TOP-30 候选名单 + 契合度分数。"
+        },
+        {
+          "title": "发起合作，DKIM/SPF 一键合规",
+          "body": "Resend 合规邮件中心内置，DKIM/SPF/DMARC 三套合规验证开箱可用，信誉分 98+ 让冷邮件落进收件箱。"
+        },
+        {
+          "title": "复盘 ROI，4 平台自动归因",
+          "body": "播放、互动、引流、转化、ROI 全维度看板，4 大平台数据自动归因，告别人工 Excel 拼接。"
+        }
       ]
     },
     "trust": {
