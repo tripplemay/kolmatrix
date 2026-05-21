@@ -25,6 +25,23 @@ const materialSymbols = localFont({
   style: "normal",
 });
 
+// Cinematic v2 landing page — Geist Sans + Mono. Only landing-page
+// components opt in via Tailwind `font-geist` / `font-geist-mono`
+// utility classes. App side stays on Inter via `font-sans`.
+const geistSans = localFont({
+  src: "./fonts/Geist-Variable.woff2",
+  variable: "--font-geist-sans",
+  display: "swap",
+  weight: "100 900",
+});
+
+const geistMono = localFont({
+  src: "./fonts/GeistMono-Variable.woff2",
+  variable: "--font-geist-mono",
+  display: "swap",
+  weight: "100 900",
+});
+
 export const metadata: Metadata = {
   title: "KOLMatrix",
   // BL-055 F005 — replaces the Stitch-design codename "Neural Velocity"
@@ -48,7 +65,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${inter.variable} ${materialSymbols.variable} h-full antialiased`}
+      className={`${inter.variable} ${materialSymbols.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="bg-background text-foreground flex min-h-full flex-col font-sans">
         {children}
