@@ -71,18 +71,20 @@ Net-new in v3 (this brainstorm 2026-05-22):
 
 ### 4.1 Section-by-section layout
 
+Section order matches current `LandingPage.tsx` (no reordering — preserves dark/light alternation through the existing `SectionTransition` chain).
+
 | # | Section | Theme | Sticky? | Height | Content shape |
 |---|---|---|---|---|---|
 | 1 | Hero ★ | 🌑 dark | no | ~1 vp (min-h-screen) | Single video bg + eyebrow + H1 (Geist 124/56px) + sub + dual CTA + ↓ scroll cue. KPI strip removed. |
 | 2 | PainPoints | ☀️ light | no | ~1 vp | H3 "Game-creator marketing today is broken in 4 ways." + 2×2 card grid (4 pain cards, each = icon + title + 1 evidence line). `py-24`. fade-up only. |
-| 3 | Features | 🌑 dark | no | ~1.5 vp | H3 "Six modules. One workflow." + 3×2 grid (6 module cards: Brief / Match / Reach / Insight / CRM / ROI; each = icon + name + outcome + mechanism). `py-24`. fade-up only. |
-| 4 | ProductDemo ★ | 🌑 dark | **sticky parallax (cinematic #2)** | ~2 vp (minHeight 200vh) | Left: 3 callouts (Discover / Outreach / Attribution) scroll past. Right: sticky screenshot, swaps `/match` → `/reach` → `/insight` per active callout (cross-fade 500ms). Scales 1.0 → 1.08. |
-| 5 | BeforeAfter | ☀️ light | no | ~1 vp | H3 "Old workflow vs KolMatrix" + static 3-col grid (Old | step label | New) × 4 rows (Find KOLs / Reach Out / Measure / Iterate). `py-24`. fade-up only. |
-| 6 | Trust | ☀️ light | no | ~0.7 vp | 2-card horizontal: Compliance (SPF/DKIM/DMARC + GDPR/CCPA) + 99.9% Uptime (PM2 cluster + public health endpoint). `py-20`. fade-up only. |
-| 7 | FAQ | 🌑 dark | no | ~1 vp | Existing 5-Q&A accordion, copy rewritten for specificity (each A includes a concrete number or product reference). fade-up only. SectionTransition between §6→§7 keeps the dark/light cadence. |
+| 3 | BeforeAfter | 🌑 dark | no | ~1 vp | H3 "Old workflow vs KolMatrix" + static 3-col grid (Old | step label | New) × 4 rows (Find KOLs / Reach Out / Measure / Iterate). `py-24`. fade-up only. **Sticky parallax + scroll-driven row-highlight removed.** |
+| 4 | Features | ☀️ light | no | ~1.5 vp | H3 "Six modules. One workflow." + 3×2 grid (6 module cards: Brief / Match / Reach / Insight / CRM / ROI; each = card with title + body + product thumbnail screenshot from `public/landing/screenshots/`). `py-24`. fade-up only. **StickyStack wrapper removed.** |
+| 5 | ProductDemo ★ | 🌑 dark | **sticky parallax (cinematic #2)** | ~2 vp (minHeight 200vh) | Left: 3 callouts (Discover / Outreach / Attribution) scroll past. Right: sticky screenshot, swaps `/match` → `/reach` → `/insight` per active callout (cross-fade 500ms). Scales 1.0 → 1.08. |
+| 6 | Trust | ☀️ light | no | ~0.7 vp | 2-card horizontal: Compliance (SPF/DKIM/DMARC + GDPR/CCPA) + 99.9% Uptime (PM2 cluster + public health endpoint). `py-20`. fade-up only. **StickyStack wrapper removed.** |
+| 7 | FAQ | 🌑 dark | no | ~1 vp | Existing 5-Q&A accordion, copy rewritten for specificity (each A includes a concrete number or product reference). fade-up only. |
 | 8 | FooterCTA | 🌑 dark | no | ~0.7 vp | Large H2 + single primary CTA "Request access →" with glow-pulse. 1-line footer (©, year, "Built in 东京"). |
 
-**Total ~10 viewports** (vs current 15 vp).
+**Total ~10 viewports** (vs current 15 vp). All 7 `SectionTransition` placements in `LandingPage.tsx` unchanged (alternation preserved).
 
 ### 4.2 Component delta (vs current main)
 
@@ -95,7 +97,7 @@ Net-new in v3 (this brainstorm 2026-05-22):
 | `BeforeAfter.tsx` | 🔴 rewrite | Light static 3-col grid (Old / label / New) × 4 rows. Remove sticky row-highlight. py-24. |
 | `TrustPlaceholder.tsx` | 🔴 rename + rewrite | Rename file → `Trust.tsx` + matching import. Light 2-card horizontal. Remove StickyStack call. py-20. |
 | `FAQ.tsx` | 🟡 copy | Rewrite 5 questions for specificity. No structural change. |
-| `FooterCTA.tsx` | 🟢 minor | Verify glow-pulse still applied. 1-line footer copy review. |
+| `FooterCTA.tsx` | 🟡 minor | Remove secondary CTA (`landing-footer-cta-secondary`) — keep single primary "Request access →" with glow-pulse. 1-line footer copy review. |
 | `SectionTransition.tsx` | 🟢 untouched | 6 instances in LandingPage stay. |
 | `TopNav.tsx` | 🟢 untouched | K-letter logomark deferred. |
 | `LandingPage.tsx` | 🟡 rewire | EmailCenterDemo → ProductDemo. TrustPlaceholder → Trust. Section order unchanged. |
