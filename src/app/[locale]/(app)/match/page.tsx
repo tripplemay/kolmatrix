@@ -457,12 +457,28 @@ async function QuickStatsAsync({ tenantId }: { tenantId: string }) {
 }
 
 function QuickStatsSkeleton() {
+  // BL-070-F010/F011 CLS fix-round (fix-round 3) — fallback must mirror the
+  // real QuickStats grid layout pixel-for-pixel so the Suspense flush does not
+  // shift the main column grid below. Original `h-[88px]` was 62px short of
+  // the actual StatCard height (p-6 + label + text-3xl value + trend row
+  // ≈ 150px on lg+), which caused a 0.348 CLS on /en/match (Lighthouse
+  // identified `div.grid lg:grid-cols-[260px_minmax(0,1fr)]` as the shifted
+  // node — i.e. the entire workspace below QuickStats moved when the swap
+  // happened). Reproducing the real grid + 4 placeholder cards at the
+  // correct h-[150px] reservation eliminates the layout shift.
   return (
     <div
-      className="glass-panel flex h-[88px] w-full animate-pulse items-center justify-between gap-4 rounded-2xl border border-on-surface/5 px-6"
+      className="grid grid-cols-2 gap-4 lg:grid-cols-4"
       data-testid="match-quick-stats-skeleton"
       aria-hidden
-    />
+    >
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div
+          key={i}
+          className="bg-surface-low h-[150px] animate-pulse rounded-[16px]"
+        />
+      ))}
+    </div>
   );
 }
 
@@ -515,11 +531,18 @@ async function SavedSearchAsync({
 }
 
 function SaveSearchControlsSkeleton() {
+  // BL-070 fix-round 3 — width needs to be wide enough to keep the header's
+  // `flex-wrap` from reflowing when the real component (Button + count label
+  // + Select ≈ 460px) replaces this fallback. A too-narrow skeleton would
+  // shift the header from 1 line to 2 lines on swap, compounding CLS.
   return (
     <div
-      className="glass-panel h-9 w-44 animate-pulse rounded-lg border border-on-surface/5"
+      className="flex h-9 items-center gap-3"
       data-testid="match-saved-search-skeleton"
       aria-hidden
-    />
+    >
+      <div className="glass-panel h-9 w-32 animate-pulse rounded-lg border border-on-surface/5" />
+      <div className="glass-panel h-7 w-[280px] animate-pulse rounded-lg border border-on-surface/5" />
+    </div>
   );
 }
