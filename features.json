@@ -162,7 +162,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 6.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "替换 9 处 raw <img> → next/image（清单见 spec §2 F010）：MatchKolCard / MatchKolTable / CrmRecentChanges / reach RecentRepliesCard + RecentlySentTable / weekly-report WeeklyReportBrandHeader / kols/[id] / AiRecommendationPanel / shared weekly-report/[token]",
       "每处加 explicit width/height 或 fill + sizes（KOL avatar 推荐 width=40 height=40 或 fill + sizes=\"40px\"）",

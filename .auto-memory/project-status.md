@@ -3,18 +3,18 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🧪 BL-070-reach-insight-cleanup FIXING (9/11, fix_rounds=3, staging spot-check @ bf15b62)
+## 🧪 BL-070-reach-insight-cleanup REVERIFYING (10/11, fix_rounds=4, staging @ cadbda5)
 - ✅ F001-F005 done (无变, 见 git log)
 - ✅ F006 done (合并 e2e ec39157 + fix-round 1 always-skip 4 refine case a5a4cf1)
 - ✅ F007 done (5-locale landing.* 完整 + parity 8/8 PASS @ fc71862)
-- ✅ F009 done (75acf1e + bf15b62) — next/dynamic chunk-split 生效；L1 功能复验 + Lighthouse score/TBT/LCP 通过
-- ❌ F010 未签收 — 9 处 raw img → next/image 已落地，但 `/en/match` Lighthouse CLS 3 次稳定 `0.348`（要求 `<0.05`），需回 fixing
-- ✅ F011 done (bf15b62) — /match + /reach Suspense defer 未引入活跃 E2E 回归；FCP/LCP/TBT 通过
-- 🧪 Reviewer 本轮结果: clean 3099 实例上 typecheck PASS / 关键 unit PASS / perf unit PASS / 定向 e2e `133 passed / 43 skipped / 0 failed`; visual baseline contract PASS，但 pixel diff 本地 29 skip（Linux-canonical）
-- 📏 Lighthouse 3-run median: brief `97`, match `80`, reach `92`, insight `95`; 唯一 blocker = `/match` CLS `0.348`
-- ⏸️ F008 仍 pending: 先修 `/match` CLS，再重跑 Lighthouse 4×3；之后才能继续 prod redeploy + 24h audit + ≥5 marketer dogfood + §10 12 项 checklist 收尾
-- 🆕 fix-round 2 新沉淀 3 候选 (v0.9.23 集中处理): #26 perf spec acceptance 起草必须分类 client vs server async / #27 异构 CDN avatar 用 next/image unoptimized + explicit dims 优于 remotePatterns 累积白名单 / #28 引入 lazy boundary 必须同步老 fidelity test importer+JSX 断言
-- v0.9.23 候选累计 ~8 条 (fix-round 1 #21-24 + planner #25 + generator #26-28)
+- ✅ F009 done (75acf1e+bf15b62) — next/dynamic chunk-split 4 路由 (Reviewer fix-round 2 PASS)
+- ✅ F010 done (75acf1e+cadbda5) — next/image migration; fix-round 3 解锁 /match CLS (0.348 → 0.0075 stable 3-run)
+- ✅ F011 done (bf15b62+cadbda5) — /match + /reach Suspense defer; skeleton 高度/宽度像素级镜像实际组件
+- 🧪 fix-round 3 修复定位: Lighthouse `cls-culprits-insight` 直指主网格下移; 根因 = QuickStatsSkeleton h-88px vs 实际 grid h-150px 的 62px 反差 → 整个 1039px 高工作区下移 → CLS 0.348. 修复: skeleton 重写为同 grid + 4×150px 卡槽; SaveSearchControlsSkeleton 加宽防 header wrap.
+- 📏 fix-round 3 本地 3-run Lighthouse: /en/match perf 95 / CLS 0.0075 / LCP 1.6s / TBT 0ms — 全过 addendum 阈值
+- ⏸️ F008 仍 pending: §10 #8 Lighthouse 已解锁, 待 Reviewer fix-round 3 复验全 PASS → prod redeploy + #9 ≥5 marketer dogfood + #10 24h audit + #11 prod git_sha + signoff doc
+- 🆕 v0.9.23 候选累计 ~10 条: fix-round 1 #21-24 + planner #25 + generator #26-30 (新增 #29 Suspense skeleton 必须像素级镜像实际外层结构 / #30 fallback 宽度在 flex-wrap 父容器下必须等宽防横向 reflow)
+- 反思: F011 Suspense PR push 前未做 Lighthouse 本地 dry-run → Reviewer fix-round 2 才捕 CLS → 沉淀: Suspense 落地必配 Lighthouse Desktop logged-in 自测
 - 本批次 reverifying done = Phase 4 完整 done = 4 路由 IA 闭环 = 对外上线 ready (距 ~2 周)
 ## ✅ BL-069-brief-page-merge DONE（7/7, fix_rounds=1）
 ## ✅ BL-068-conversational-refine DONE（7/7, fix_rounds=3）
@@ -28,7 +28,7 @@ type: project
 ## 用户手工待办
 1. 5/17 weekly growth-curve check（重跑 BL-061 F003 SQL）
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
-3. BL-070 F008: Reviewer L2 全 PASS 后 prod redeploy 触发 + 24h 监控 + ≥5 marketer dogfood + signoff
+3. BL-070 F008: Reviewer fix-round 3 复验全 PASS 后 prod redeploy 触发 + 24h 监控 + ≥5 marketer dogfood + signoff
 ## 角色 / Backlog
-- BL-070 fixing: F010 `/match` CLS blocker（0.348 > 0.05）待 Generator 修复；修后回 Reviewer 重跑 Lighthouse 4×3
-- Phase 3 全 DONE ✅ / Phase 4: BL-069 ✅ + BL-070 fixing 🚧 9/11 / BL-070 done = 对外上线 ready
+- BL-070 reverifying: F009-F011 全 Generator 域完成 @ cadbda5, 等 Reviewer fix-round 3 复验 Lighthouse 4 路由 × 3 + sanity check 其余 3 路由 CLS 仍 0
+- Phase 3 全 DONE ✅ / Phase 4: BL-069 ✅ + BL-070 reverifying 🚧 10/11 / BL-070 done = 对外上线 ready
