@@ -136,7 +136,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "framework/CHANGELOG.md 顶部新增 v0.9.23 段 ~80-120 LOC：31 条 sediment 1-line summary（按目标文件分组）+ 11 项结构变更（D1-D12 各 1 行）+ 编号错乱修 4 处 + cowork 死文档清理 3 处",
       "framework/archive/proposed-learnings-archive-v0.9.23.md 新建：31 条全文（不省略，保留 source-of-truth）+ 11 项结构变更详细 before/after（每项含 decision lock 引 BL-071 spec）",

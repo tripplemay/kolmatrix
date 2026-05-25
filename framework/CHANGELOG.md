@@ -5,6 +5,109 @@
 
 ---
 
+## v0.9.23 — 2026-05-25（BL-071 harness-cleanup + v0.9.23 framework sediment + 12 决策点 lock + 31 条 sediment inline-merge）
+
+**来源批次：**
+- BL-071-harness-cleanup（5/25 1 day）— Phase A0 audit + A1 12 决策点 lock + B 重组 + C 31 条 sediment + D 收尾 + E Reviewer L1+L2 抽样
+- 31 条 sediment source：v0.9.22 archive 13 + BL-069 user-acked 3 + BL-070 user-acked 12 + BL-071 audit §5 缺失 3
+
+**触发原因：**
+- v0.9.22 沉淀完成时 framework/harness/*.md 实际段落起草留独立 framework batch（避免冲淡 BL-069 节奏）→ 累积到 v0.9.23 一并沉淀
+- BL-070 done 后 backlog 累积 28 条 sediment + framework 结构问题（5 处重复 + 4 处编号错乱 + cowork 死文档 + chronological-append 反模式）→ 用户 ack 全做 5-day phased
+- 12 决策点 D1-D12 5/25 三批 12 问题用户 lock：D1/D2 保原名 banner + 同步 / D3 cowork 全清 / D4 planner.md 拆 3 文件 / D5 evaluator.md topic 重组 / D6 scope tag / D7 inline-merge / D8 sediment workflow header / D9 3 层入口 / D10 case subdir / D11 全做 5-day / D12 fix_rounds 计数
+
+**11 项结构变更（D1-D12 lock 落地）：**
+
+| Decision | 变更 | 文件 | F |
+|---|---|---|---|
+| D1 | framework/harness/harness-rules.md 顶部加 TEMPLATE banner + 同步铁律 #11/#12 抽象版（去 commit hash） | framework/harness/harness-rules.md | F001 |
+| D2 | framework/memory/ 5 文件顶部加 HTML 注释 banner（MEMORY / project-status / environment / user-role / reference-docs） | framework/memory/*.md | F001 |
+| D3 | cowork 死文档全清：git rm framework/cowork-constraint-design.md（90 LOC）+ 删 bootstrap.sh line 100 防御性 mv + 删 framework/README.md §历史说明段 | framework/cowork-* + bootstrap.sh + README.md | F002 |
+| D4 | planner.md 625 LOC 拆 3 文件 + 索引页：planner-workflow.md 217 / planner-arbitration.md 160 / planner-checklists.md 321 / planner.md 24 索引 | framework/harness/planner*.md | F003 |
+| D5 | evaluator.md 432 LOC 按 topic 重组 §10-§20 11 段合并到 §10 L1 前置 / §11 L2 手段 / §12 验收口径 / §13 测试设计（F008 补全） | framework/harness/evaluator.md | F004 |
+| D6 | framework/harness/*.md scope tag frontmatter（10 framework-generic + 2 mixed + 2 project-specific）+ framework/README.md §scope tag 用法 | framework/harness/*.md + README.md | F005 |
+| D7 | sediment 写入规则 D7 inline-merge 强制规则正式化（禁 chronological-append §N）入 proposed-learnings.md header | framework/proposed-learnings.md | F007 |
+| D8 | sediment workflow doc 合并入 proposed-learnings.md header §「写入流程」段 ~69 LOC | framework/proposed-learnings.md | F007 |
+| D9 | framework/README.md 顶部加 banner + §「新规则演进流程（防漂移）」段 21 LOC（4 步流程：落地→评估→回流→登记） | framework/README.md | F001 |
+| D10 | 项目特定 case 文件移 checklists/ subdir：material-symbols-pattern.md + i18n-namespace-add-checklist.md + framework/README.md §checklists subdir 用法 | framework/harness/checklists/* | F006 |
+| D11 | 全做 5-day phased（A0 audit + A1 lock + B 重组 F001-F007 + C sediment F008 + D 收尾 F009 + E Reviewer F010） | 整批次 | — |
+| D12 | fix_rounds 计数语义入 planner-workflow.md §「阶段转换 + fix_rounds 计数」（verifying→fixing→reverifying 循环次数 ≠ 任意 fix commit 数 + BL-070 反例） | framework/harness/planner-workflow.md | F003 |
+
+**编号错乱修复 4 处（F004 + F007）：**
+
+| 文件 | 修复 |
+|---|---|
+| evaluator.md | §3 / §4 / §7 重复编号清理 → §1-§9 核心 workflow 编号连续 |
+| pre-impl-adjudication.md | 原 §11 partial-pending → §10（顺接 §9）；原 §10 版本历史 → §11 last（F008 加 §11 多 audit 串联后版本历史 → §12） |
+| deploy-patterns.md | 原 §5.1 spec/deploy-script/yml workflow → §6 独立 topic + §1.7 PM2 reload .env merge 入 §1.6（D7 inline-merge 示范） |
+| generator.md | §7 重复（"框架提案" + "Handoff 说明"）→ §7 框架提案 / §8 Handoff，§8-§10 顺延为 §9-§11 |
+
+**cowork 死文档清理 3 处（F002）：**
+
+| 位置 | 操作 |
+|---|---|
+| framework/cowork-constraint-design.md | git rm 整文件 90 LOC（早期 "Cowork = Claude Desktop 作为 Planner" 设计决策记录，文档自述 "Cowork 不再参与" 已与现实脱节） |
+| framework/bootstrap.sh line 100 | 删除 cowork-constraint-design.md 防御性 mv 整行 |
+| framework/README.md line 88-95 | 删除 §「历史说明」段（cowork 历史交给 CHANGELOG v0.7.0 + framework/archive/proposed-learnings-archive-v0.5.md 承担） |
+
+**31 条 sediment 1-line summary（按目标文件分组，详见 `framework/archive/proposed-learnings-archive-v0.9.23.md`）：**
+
+| # | 1-line summary | 类型 | 来源 | 写入位置 |
+|---|---|---|---|---|
+| #1 | 批次级多 audit 串联模式（≥9 features 推荐 3 audit）| 模板修订 | v0.9.22 BL-066 | pre-impl-adjudication.md §11 |
+| #2 | 量化 verifying gate criterion 设计（语义 vs 字面陷阱）| 新规律/新坑 | v0.9.22 BL-066 | evaluator.md §13.1 |
+| #3 | Generator audit 起草前实测原子组件 surface | 新规律 | v0.9.22 BL-066 | generator.md §12.1 |
+| #4 | Next.js 16.x Turbopack BUILD_ID bug + --webpack 防御 | 新坑/模板 | v0.9.22 BL-067 | deploy-patterns.md §7 |
+| #5 | InMemoryJobQueue + fire-and-forget + mount self-heal MVP 模式 | 新规律 | v0.9.22 BL-067 | generator.md §13 |
+| #6 | aigcgateway caller SDK 抽象层沉淀触发门槛 ≥3 重复 | 模板修订 | v0.9.22 BL-067 | ai-action-contract.md §5 |
+| #7 | Generator 建议命中率作为 audit 质量信号 | 新规律 | v0.9.22 BL-067 | pre-impl-adjudication.md §6.4 |
+| #8 | Next.js / 构建器切换 hidden TS errors checklist | 新坑 | v0.9.22 BL-067 | generator.md §12.2 |
+| #9 | LLM fix-round 必先 MCP trace 抓真因 | 新坑/工具链 | v0.9.22 BL-068 | generator.md §12.3 |
+| #10 | LLM 输出 dedupe-then-validate 模式 | 新规律 | v0.9.22 BL-068 | ai-action-contract.md §3.4 |
+| #11 | Prompt 自检 § + 末尾 reminder 双层强化 | 模板修订 | v0.9.22 BL-068 | ai-action-contract.md §3.5 |
+| #12 | mock 不可用三件套 always-skip + unit + staging | 新规律 | v0.9.22 BL-068 | evaluator.md §13.2（与 #21 合并段） |
+| #13 | verifying gate 失败时优先 trace 真因 | 新规律/反例 | v0.9.22 BL-068 | planner-arbitration.md §P5.3 |
+| #14 | middleware IaRedirectRule mixed-status 模式 | 新规律 | BL-069 | generator.md §10D |
+| #15 | staging-only chaos test flag + runbook | 新规律/模板 | BL-069 | evaluator.md §13.3 |
+| #16 | fix-round 类型分类 A implementation-gap vs B LLM-behavior | 新规律/对比 | BL-069 | planner-workflow.md §D12 扩展 |
+| #17 | 删显式子路由前必加上游 [id] UUID guard | 新坑 | BL-070-F004 | generator.md §11F |
+| #18 | next-intl + notFound() HTTP status 不可靠 | 新坑 | BL-070-F004 | generator.md §11G |
+| #19 | i18n deprecated ns 删除前 caller-grep 自检 | 新坑 | BL-070-F005 | generator.md §11H |
+| #21 | e2e server-action mock 不可用 RSC wire format | 新坑 | BL-070-F006 | evaluator.md §13.2（与 #12 合并段） |
+| #22 | prisma migrate dev wrap script 自动注入 ROLLBACK skeleton | 模板修订 | BL-070 | generator.md §14.1 |
+| #23 | Next.js 16 'use server' file-level directive 约束 | 新坑 | BL-070 | generator.md §14.2 |
+| #24 | github-actions[bot] commit 不 cascade CI → workflow_dispatch 通解 | 模板修订 | BL-070 | deploy-patterns.md §4.1 扩展 |
+| #25 | perf 量化门槛入 acceptance 反 retrofit 模式 | 新规律 | BL-070 Planner | planner-checklists.md §perf 合并段（与 #26） |
+| #26 | perf acceptance 区分 client (chunk-split) vs server (Suspense) | 新规律 | BL-070-F009 | planner-checklists.md §perf 合并段（与 #25） |
+| #27 | next/image 异构 CDN unoptimized + explicit dims | 新规律 | BL-070-F010 | generator.md §15.1 |
+| #28 | lazy boundary 引入时 fidelity test 同步清单 | 新坑 | BL-070-F009 | generator.md §11I |
+| #29+#30 | Suspense fallback skeleton 像素级镜像（高度 + 宽度等宽 flex-wrap）+ Lighthouse cls-culprits-insight 定位法 | 新规律（合并段，两 source）| BL-070-F011 | generator.md §15.2 |
+| audit §5.1 | staging deploy 前置 git pull --ff-only 硬要求 | 模板修订 | BL-071 audit | deploy-patterns.md §3.2 step 2 注释 |
+| audit §5.2 | session_notes 写作惯例（覆盖不追加 + 段落建议 + 禁忌）| 模板修订 | BL-071 audit | planner-workflow.md §5b |
+| audit §5.3 | commit message 格式规范 + 铁律 #10 commit-tag 一致性 | 模板修订 | BL-071 audit | planner-workflow.md §commit |
+
+**同主题合并段 3 组（D7 强制 inline-merge 示范）：**
+
+| 合并段 | 合并 source | 写入位置 |
+|---|---|---|
+| Suspense fallback 规范 | BL-070 #29 + #30（高度镜像 + 宽度等宽，两 source）| generator.md §15.2 |
+| mock 不可用三件套 | v0.9.22 #12 + BL-070 #21（BL-068 + BL-070 实证）| evaluator.md §13.2 |
+| perf 量化门槛 + client/server 分类 | BL-070 #25 + #26（量化 + 分类两 source）| planner-checklists.md §perf 段尾 |
+
+**统计：**
+- 11 项结构变更 D1-D12 + 编号修复 4 处 + cowork 清理 3 处 = 18 项结构层落地
+- 31 条 sediment inline-merge 物理 29 段（含 3 组合并）
+- 0 条 chronological-append §N（per D7 强制）
+- framework/harness/ 新增 LOC ~693（per F008 commit diff）
+- 0 行业务代码改动（src/ / prisma/migrations/ / tests/ 全部不动）
+
+**架构影响：**
+- 三层入口（CLAUDE.md → harness-rules.md → .auto-memory/）正式化 + framework/ template 与项目根 instance 关系明示（D1/D2/D9）
+- 沉淀工作流统一到 proposed-learnings.md header（D7+D8），未来 sediment 走单一路径不再散落
+- scope tag（framework-generic / project-specific / mixed）让 framework template 可被复用筛选（D6）
+
+---
+
 ## v0.9.22 — 2026-05-17（BL-066 + BL-067 + BL-068 沉淀，13 条 learnings — 中等深度沉淀）
 
 **来源批次：**
