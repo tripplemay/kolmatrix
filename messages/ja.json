@@ -1947,6 +1947,14 @@
       "dashboard": "ダッシュボード",
       "reports": "レポート",
       "analytics": "アナリティクス"
+    },
+    "reports": {
+      "title": "Reports",
+      "body": "テナント向けに AI が生成する週次パフォーマンスレポート。"
+    },
+    "analytics": {
+      "title": "Analytics",
+      "body": "Phase 5 — 公開リリース後に登場。AI 学習による好みとキャンペーン横断のトレンド分析にご期待ください。"
     }
   },
   "landing": {

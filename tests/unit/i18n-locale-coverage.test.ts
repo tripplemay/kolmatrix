@@ -215,6 +215,18 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   // backlog if the product brief evolves.
   "reach.pageTitle",
   "insight.pageTitle",
+  // BL-072-F002 — /insight panel h2 titles ("Reports"/"Analytics")
+  // are intentionally kept-en brand labels in every locale (A1 lock:
+  // brand kept-en for Insight/Dashboard/Reports/Analytics). The body
+  // copy under each title is fully translated; tab labels stay native
+  // (tabs.dashboard/reports/analytics intentionally NOT on this list).
+  // insight.subtitle is partially brand-kept (Dashboard/Reports/
+  // Analytics tokens inside translated copy) but the full string is
+  // already locale-distinct, so it does not need an allowlist entry —
+  // listed here only as a defensive guard against future drift.
+  "insight.subtitle",
+  "insight.reports.title",
+  "insight.analytics.title",
   "outreach.performance.statWindowValue",
   "outreach.domainHealth.dkim",
   "outreach.recentReplies.subjectPrefix",

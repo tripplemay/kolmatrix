@@ -1947,6 +1947,14 @@
       "dashboard": "Panel",
       "reports": "Reportes",
       "analytics": "Análisis"
+    },
+    "reports": {
+      "title": "Reports",
+      "body": "Reportes semanales de rendimiento generados por IA para tu tenant."
+    },
+    "analytics": {
+      "title": "Analytics",
+      "body": "Fase 5 — disponible tras el lanzamiento público. Espera preferencias aprendidas por IA y análisis de tendencias entre campañas."
     }
   },
   "landing": {

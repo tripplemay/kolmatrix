@@ -1946,6 +1946,14 @@
       "dashboard": "仪表盘",
       "reports": "报告",
       "analytics": "分析"
+    },
+    "reports": {
+      "title": "Reports",
+      "body": "为你的租户 AI 生成的周度营销表现报告。"
+    },
+    "analytics": {
+      "title": "Analytics",
+      "body": "Phase 5 — 公开发布后上线。敬请期待 AI 学到的偏好与跨活动趋势分析。"
     }
   },
   "landing": {

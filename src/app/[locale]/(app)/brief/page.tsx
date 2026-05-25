@@ -72,7 +72,7 @@ export default async function BriefPage({ params, searchParams }: Props) {
   const tSubmit = await getTranslations("brief.submitErrors");
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 pb-16">
+    <div className="mx-auto max-w-[1600px] space-y-6 pb-16">
       <header>
         <h1
           data-testid="brief-page-title"

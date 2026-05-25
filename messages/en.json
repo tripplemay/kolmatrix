@@ -1946,6 +1946,14 @@
       "dashboard": "Dashboard",
       "reports": "Reports",
       "analytics": "Analytics"
+    },
+    "reports": {
+      "title": "Reports",
+      "body": "AI-generated weekly performance reports for your tenant."
+    },
+    "analytics": {
+      "title": "Analytics",
+      "body": "Phase 5 — coming after the public launch. Stay tuned for AI-learned preferences and cross-campaign trend analysis."
     }
   },
   "landing": {
