@@ -5,7 +5,7 @@
   "completed_features": 10,
   "fix_rounds": 4,
   "current_sprint": "BL-070-reach-insight-cleanup",
-  "last_updated": "2026-05-25T14:32+0800",
+  "last_updated": "2026-05-25T16:31+0800",
   "reference_docs": [
     "docs/specs/BL-070-reach-insight-cleanup-spec.md",
     "docs/adr/ADR-013-ai-native-product-pivot.md",
@@ -33,7 +33,7 @@
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "BL-070 fix-round 3 已解锁 /en/match CLS 阻塞 (0.348 → 0.0075, 3-run 中位数 stable);Generator 域内 F009/F010/F011 全部解锁. F008 仍 PARTIAL 待 prod redeploy + 24h audit + ≥5 marketer dogfood + final signoff.",
+    "summary": "BL-070 fix-round 3 本地复验已通过：clean 3099 实例上定向 E2E `133 passed / 43 skipped / 0 failed`，Lighthouse 4 路由 × 3 全过；/en/match CLS 已稳定降至 0.008。当前已无本地代码 blocker，F008 仅剩 prod redeploy / 24h audit / ≥5 marketer dogfood / final signoff。",
     "pass_count": 10,
     "partial_count": 1,
     "fail_count": 0,
@@ -41,8 +41,8 @@
       {
         "feature_id": "F008",
         "result": "PARTIAL",
-        "description": "F008 §10 12 项 checklist 中 #8 Lighthouse perf 已解锁 (fix-round 3 后 /match perf 95 / CLS 0.0075); #5 e2e + #6 视觉 baseline + #7 a11y 已 PASS (Reviewer fix-round 2 复验通过); 剩余 #9 ≥5 marketer dogfood + #10 24h prod audit + #11 prod /api/health git_sha 验 + final signoff doc 待 prod redeploy 后跑.",
-        "steps_to_reproduce": "1. Reviewer 复验本 fix-round 3 (Lighthouse 4 路由 × 3) 全 PASS 后 → 2. 用户 ack prod deploy 时间窗 → 3. 触发 deploy-prod.yml → 4. 跑 scripts/bl070-prod-audit.sh 首跑 + 24h 复跑 → 5. ≥5 marketer dogfood spot check → 6. 写 docs/test-reports/BL-070-signoff-2026-05-XX.md → status reverifying → done."
+        "description": "F008 §10 中本地相关 gate 已全部通过：fix-round 3 复验结果为 brief 98 / match 96 / reach 93 / insight 95（3-run median），/en/match CLS 稳定为 0.008，定向 E2E 为 133 passed / 43 skipped / 0 failed。剩余未完成项均为 prod-facing checklist：prod redeploy、prod health git_sha、24h audit、≥5 marketer dogfood、final signoff doc。",
+        "steps_to_reproduce": "1. 在 clean `3099` 实例上运行 `bash scripts/test/codex-e2e.sh tests/e2e/brief-flow.spec.ts tests/e2e/match-flow.spec.ts tests/e2e/reach-flow.spec.ts tests/e2e/insight-flow.spec.ts tests/e2e/ia-refactor-cleanup-2026-05-19.spec.ts tests/e2e/locale-detection.spec.ts tests/e2e/request-access.spec.ts`，确认 `133 passed / 43 skipped / 0 failed` 2. 复用 `playwright/.auth/marketer.json` 对 `http://localhost:3099/en/{brief,match,reach,insight}` 各运行 Lighthouse Desktop preset 3 次，确认 /match CLS 为 0.008 且 4 路由 score 均 ≥ 80 3. 用户 ack prod deploy 时间窗后继续 prod signoff 流程。"
       }
     ]
   },

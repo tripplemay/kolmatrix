@@ -3,46 +3,43 @@
 > Date: 2026-05-25
 > Batch: `BL-070-reach-insight-cleanup`
 > Evaluator: `codex: Reviewer`
-> Verdict: `FAIL`
+> Verdict: `L1 PASS, F008 pending`
 
 ## Summary
 
-BL-070 fix-round 2 clears the functional reverification set on a clean local L1 instance and restores the Lighthouse performance score gate, but it still does not satisfy the full perf addendum acceptance.
+BL-070 fix-round 3 passes local reverification.
 
 - Functional L1 reverification: PASS
-- Lighthouse desktop logged-in median scores: PASS
-- Full Lighthouse metric gate: FAIL
+- Perf addendum unit set: PASS
+- Targeted E2E reverification: PASS
+- Lighthouse desktop logged-in `4 routes × 3 runs`: PASS
 
-Blocking finding:
+The previous blocker is resolved:
 
-- `/en/match` still violates the addendum CLS threshold. Across 3 Lighthouse desktop logged-in runs, CLS remained `0.348`, above the required `< 0.05`.
+- `/en/match` CLS no longer fails the addendum gate
+- measured result across all 3 runs: `0.008`
 
-Because `F010` acceptance explicitly requires `CLS < 0.05 each`, this fix-round is not signoff-ready and should return to `fixing`.
+The batch is still not `done` because `F008` remains a prod-facing checklist item set, not because of a local code blocker.
 
 ## Environment
 
-- Synced HEAD: `e66ec35`
-- Staging spot check: `bf15b62` + `/api/health` healthy
-- Local L1 app: restarted clean via `bash scripts/test/codex-setup.sh` on port `3099`
+- Synced HEAD: `fc79f43`
+- Local L1 app: clean restart via `bash scripts/test/codex-setup.sh` on port `3099`
 
 Important note:
 
-- An old local `next dev` listener from `2026-05-19 17:21` was initially occupying `3099`.
-- That stale process produced a false `request-access` failure.
-- After killing it and restarting a clean current-HEAD L1 instance, `request-access` passed and the targeted E2E suite went green.
+- A `3099` listener started at `2026-05-25 14:02` was already present before this reverification.
+- Because that predates the current `progress.json.last_updated = 2026-05-25T14:32+0800`, it was treated as stale and replaced with a fresh current-HEAD instance before any verdict was recorded.
 
 ## Commands Run
 
 ```bash
 git pull --ff-only origin main
-ssh tripplezhou@34.180.93.185 'cd /opt/kolmatrix-staging && git rev-parse --short HEAD && curl -fsSL http://localhost:3002/api/health'
 bash scripts/test/codex-setup.sh
 bash scripts/test/codex-wait.sh
 npm run typecheck
-npx vitest run tests/unit/i18n-locale-coverage.test.ts tests/unit/request-access-wants-demo.test.ts src/__tests__/middleware-helpers.test.ts
 npx vitest run tests/unit/bl070-f009-lazy-boundaries.test.ts tests/unit/bl070-f010-next-image-migration.test.ts tests/unit/bl070-f011-suspense-stream.test.ts tests/unit/visual-baselines-shape.test.ts
 bash scripts/test/codex-e2e.sh tests/e2e/brief-flow.spec.ts tests/e2e/match-flow.spec.ts tests/e2e/reach-flow.spec.ts tests/e2e/insight-flow.spec.ts tests/e2e/ia-refactor-cleanup-2026-05-19.spec.ts tests/e2e/locale-detection.spec.ts tests/e2e/request-access.spec.ts
-bash scripts/test/codex-e2e.sh tests/e2e/visual-regression.spec.ts
 ```
 
 Lighthouse desktop logged-in runs used `playwright/.auth/marketer.json` cookies against:
@@ -57,7 +54,6 @@ Lighthouse desktop logged-in runs used `playwright/.auth/marketer.json` cookies 
 ### Static / unit
 
 - `npm run typecheck` PASS
-- Core reverification unit set PASS: `20/20`
 - Perf addendum unit set PASS: `29/29`
 
 ### Targeted E2E
@@ -70,22 +66,19 @@ On the clean current-HEAD `3099` instance:
 
 Relevant points:
 
-- `tests/e2e/request-access.spec.ts` full flow PASS after clean restart
-- `tests/e2e/match-flow.spec.ts` remaining active coverage PASS
-- historical skip-only cases remain explicit SKIP by design:
-  - AI recommendation card mutate flows
-  - C3 detailed-explanation/cache-miss/cap branches
-  - BL-068 refine branch-result flows
+- `tests/e2e/match-flow.spec.ts` active coverage PASS
+- `tests/e2e/request-access.spec.ts` full flow PASS
+- `tests/e2e/reach-flow.spec.ts` PASS
+- `tests/e2e/insight-flow.spec.ts` PASS
+- `tests/e2e/ia-refactor-cleanup-2026-05-19.spec.ts` PASS
+- `tests/e2e/locale-detection.spec.ts` PASS
 
-### Visual baseline verification
+Historical skip-only cases remain explicit SKIP by design:
 
-- `tests/unit/visual-baselines-shape.test.ts` PASS
-- `tests/e2e/visual-regression.spec.ts` local result: `29 skipped`
-
-Assessment:
-
-- This is expected on non-Linux local runs because the visual spec is Linux-canonical.
-- Local reverification can only prove the baseline contract test, not pixel-diff parity.
+- AI recommendation card mutate flows
+- C3 detailed-explanation/cache-miss/cap branches
+- BL-068 refine branch-result flows
+- brief-flow AI server-action mock branches
 
 ### Lighthouse desktop logged-in
 
@@ -93,16 +86,17 @@ Median-of-3 summary:
 
 | Route | Scores | Median | FCP | LCP | TBT | CLS | Verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `/en/brief` | `95 / 97 / 97` | `97` | `0.3s` | `1.2-1.5s` | `0ms` | `0` | PASS |
-| `/en/match` | `81 / 80 / 80` | `80` | `0.3s` | `1.2-1.3s` | `0ms` | `0.348` | FAIL |
-| `/en/reach` | `95 / 92 / 92` | `92` | `0.3s` | `1.6-1.8s` | `0ms` | `0` | PASS |
-| `/en/insight` | `96 / 95 / 95` | `95` | `0.3s` | `1.5s` | `0ms` | `0` | PASS |
+| `/en/brief` | `98 / 98 / 97` | `98` | `0.3s` | `1.2-1.3s` | `0ms` | `0` | PASS |
+| `/en/match` | `96 / 96 / 96` | `96` | `0.3s` | `1.4-1.5s` | `0ms` | `0.008` | PASS |
+| `/en/reach` | `93 / 93 / 93` | `93` | `0.3s` | `1.7s` | `0ms` | `0` | PASS |
+| `/en/insight` | `94 / 95 / 95` | `95` | `0.3s` | `1.5-1.6s` | `0ms` | `0` | PASS |
 
 Interpretation:
 
-- The previous `performance >= 80` blocker is resolved.
-- `/match` still fails the stricter metric gate because CLS is consistently high.
-- The repeated `0.348` value across all 3 runs suggests a stable layout-shift issue, not one-off noise.
+- The prior `/en/match` CLS blocker is resolved.
+- All 4 routes satisfy the score gate `>= 80`.
+- All 4 routes satisfy `TBT < 200ms`, `LCP < 2.5s`, `FCP < 1.5s`, and `CLS < 0.05`.
+- `/match` is no longer marginal; it passes cleanly with a stable CLS result across all 3 runs.
 
 ## Feature Assessment
 
@@ -110,41 +104,42 @@ Interpretation:
 
 Result: `PASS`
 
-- Bundle splitting and lazy boundaries did not regress the functional suite.
-- Lighthouse score / TBT / LCP outcomes are now comfortably inside threshold on `/brief`, `/reach`, `/insight`, and enough to lift `/match` to score `80`.
+- Bundle splitting / lazy-boundary work remains functionally stable.
+- No regression surfaced in the targeted reverification set.
 
 ### F010
 
-Result: `FAIL`
+Result: `PASS`
 
-- Acceptance requires `CLS < 0.05 each`.
-- `/en/match` median and per-run CLS remain `0.348`.
-- Therefore the image/perf round cannot be accepted as complete.
+- `/en/match` CLS issue reported in the previous reverification is fixed.
+- The route now passes the full Lighthouse metric gate, including the previously failing CLS threshold.
 
 ### F011
 
 Result: `PASS`
 
-- Suspense/deferred loading changes did not introduce active E2E regressions.
-- FCP/LCP/TBT stayed within the addendum thresholds in this reverification set.
+- Revised Suspense skeleton sizing does not introduce active E2E regressions.
+- The intended perf outcome is visible in Lighthouse on `/match`.
 
 ### F008
 
-Result: `PENDING / BLOCKED`
+Result: `PARTIAL`
 
-Still not signoff-ready because:
+Still not complete because the remaining work is outside this local L1 reverification:
 
-- `F010` acceptance is not met
-- visual pixel-diff parity was not locally executable on macOS
-- prod redeploy / 24h audit / dogfood / final signoff remain downstream work
+- prod redeploy
+- prod `/api/health` git SHA verification
+- first prod audit + 24h rerun
+- `>= 5` marketer dogfood
+- final signoff document completion
 
 ## Conclusion
 
-BL-070 fix-round 2 improves the batch materially and clears the earlier performance-score blocker, but it does not complete the perf addendum.
+BL-070 fix-round 3 clears the local reverification gate.
 
-Required next step:
+Current next step:
 
-- return batch status to `fixing`
-- treat `F010` as the active blocker
-- investigate and eliminate stable CLS on `/en/match`
-- rerun Lighthouse desktop logged-in 3x on all 4 IA routes after the fix
+- keep batch in `reverifying`
+- treat `F009`, `F010`, `F011` as reverified PASS
+- continue `F008` prod-facing checklist execution
+- only move to `done` after signoff evidence is completed and `docs.signoff` is populated
