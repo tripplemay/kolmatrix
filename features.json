@@ -20,7 +20,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/app/[locale]/(app)/insight/page.tsx 6 处硬编码英文改 t() 调用: L61 h1 → t('pageTitle') / L64 subtitle → t('subtitle') / L98 ReportsPanel h2 → t('reports.title') / L100 body → t('reports.body') / L119 AnalyticsPanel h2 → t('analytics.title') / L121 body → t('analytics.body')",
       "InsightTabs 调用加 labels prop: `labels={{dashboard: t('tabs.dashboard'), reports: t('tabs.reports'), analytics: t('tabs.analytics')}}` (中文模式下 tab 显 '仪表盘/报告/分析')",

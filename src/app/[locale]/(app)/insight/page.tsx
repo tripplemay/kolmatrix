@@ -80,7 +80,7 @@ export default async function InsightPage({ params, searchParams }: Props) {
         ? await renderDashboardTab(locale)
         : tab === "reports"
           ? <ReportsPanel locale={locale} />
-          : <AnalyticsPanel locale={locale} />}
+          : <AnalyticsPanel />}
     </div>
   );
 }
@@ -117,7 +117,7 @@ async function ReportsPanel({ locale }: { locale: string }) {
   );
 }
 
-async function AnalyticsPanel({ locale: _locale }: { locale: string }) {
+async function AnalyticsPanel() {
   // BL-070-F003 — analytics tab is a Phase 5 placeholder per spec
   // §2 (Insight 重构深度 "仅合并 + 路径迁移"; AI-learned-preferences
   // and the real analytics surface are out of scope for BL-070).
