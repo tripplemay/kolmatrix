@@ -216,7 +216,47 @@ KOLMatrix MVP-internal-demo-prep fixing-1（C-03 /database 三卡）案例：
 
 **Reviewer 配套：** 验收 perf acceptance 时先确认 spec 列了工具且 devDeps 已含，再跑工具拿数字。两步缺任一 → 直接标 PARTIAL（不是 FAIL，但需 Planner 补 spec 后重验）。
 
-来源：BIx F005 + framework CHANGELOG v0.9.6 [#2]。
+### Perf 量化门槛入 acceptance + client/server 分类（v0.9.23 #25 + #26 合并段，两 source）
+
+**反 retrofit 模式（#25 source）：** 对外上线 ready checklist 中 Lighthouse perf 类硬门槛，**必须在 spec 起草阶段就列入 acceptance**，而非 batch end-stage（F001-F007 全 done 后）才发现 perf 不达标触发 fix-round 攻关。
+
+**实证反面（BL-070）：** F008 §10 #8 在 batch end-stage 才发现 perf 75-78 < 80 → 触发 fix-round 2 perf 攻关（+3 features F009/F010/F011 + 2 fix-rounds CI 自修），延期 ~2 day。**根因：** spec 起草时未把 perf score / TBT / LCP / CLS 量化门槛列为 acceptance，Generator 实装时也没同步 `next/dynamic` + `next/image` + Suspense 模式 → batch 末尾 retrofit perf 成本爆炸。
+
+**Spec 起草模板（任何含客户端组件的 batch）：**
+
+```markdown
+## §X. Perf acceptance（v0.9.23 起 spec 必含）
+
+- [ ] **Lighthouse Desktop logged-in score ≥ 80** (categories.performance)
+- [ ] **TBT < 200ms**（Total Blocking Time）
+- [ ] **LCP < 2.5s**（Largest Contentful Paint）
+- [ ] **CLS < 0.1**（Cumulative Layout Shift）
+- [ ] Generator PR push 前必跑 `npx lighthouse http://localhost:3001/<route> --preset=desktop` 自测
+- [ ] Reviewer L2 验时跑同样命令，签收报告附 Lighthouse JSON
+```
+
+**client/server 分类决策树（#26 source）：** spec perf optimization 类 acceptance 必须**分类 client component (chunk-split 靶) vs server async (Suspense 靶)**，**不该混在一条 `ssr:false` acceptance line 里**。
+
+| 组件类型 | 优化模式 | acceptance 措辞 |
+|---|---|---|
+| **Client component**（含 'use client'，贡献 JS bundle）| `next/dynamic({ ssr: false })` chunk-split | "X 组件 lazy load via next/dynamic ssr:false（减 client JS bundle ~Y KB gzipped）" |
+| **Server component**（async server fn，无 client JS 贡献）| Suspense + skeleton 镜像（per §15.2 generator.md）| "Y 组件 Suspense boundary（fallback skeleton 同 outer 高度 + 宽度，CLS reservation）" |
+| **Hybrid**（server fetch + client interaction）| 拆 server + client 两组件，分别用上述两模式 | 两条 acceptance line |
+
+**反面实证（BL-070）：** F009 spec acceptance 列出 reach 5 组件 `ssr:false` 懒载，但其中 4 个（SendingPerformanceChart / RecentRepliesCard / RecentlySentTable / TopTemplatesCard）为 server 组件 — **零 client JS 贡献，不该走 `ssr:false`**（违 spec §5 不变量 #5「不增 client JS bundle」）。实际只 OutreachComposer 走 `ssr:false`，其余 4 个 server 组件的 SSR 延迟由 F011 Suspense 治理。
+
+**Spec 起草自检 checklist：**
+- [ ] 每条 perf optimization acceptance 都标注 client / server / hybrid 分类
+- [ ] client component → `next/dynamic({ ssr: false })` 措辞
+- [ ] server component → `Suspense + skeleton 镜像` 措辞
+- [ ] 不要混用 `ssr:false` 在 server component 上
+
+来源（双 source 合并）：
+- BL-070 batch-end perf retrofit 实战（v0.9.23 #25，用户 2026-05-25 ack）
+- BL-070 F009 spec 把 server 组件错配 ssr:false 实证（v0.9.23 #26，用户 2026-05-25 ack）
+- 两条同主题 inline-merge 为单段「Perf 量化门槛入 acceptance + client/server 分类」（per D7 强制合并）
+
+来源：BIx F005 + framework CHANGELOG v0.9.6 [#2] + BL-070 v0.9.23 #25+#26 双 source 合并。
 
 ---
 

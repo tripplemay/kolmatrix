@@ -116,7 +116,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 14.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "ai-action-contract.md 3 段（v0.9.22 #6 SDK 抽象层 / #10 dedupe-then-validate / #11 prompt 自检）— 全 inline-merge 入 §4.7 / §5 / §6 现有段，禁开新 §",
       "generator.md 12 段（v0.9.22 #3 #5 #8 #9 共 4 段 + BL-069 #14 + BL-070 #17-19 #22 #23 #27 #28 #29+#30 合并共 8 段）— BL-070 #29+#30 必合并为单段「Suspense fallback 规范」含两条 source",

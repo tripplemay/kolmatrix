@@ -263,7 +263,20 @@ B. **embed-old-components 占位策略下的 redirect 评估清单**（spec 起�
 
 C. **redirect scope 缩减是良性 fix-round** — 不计入"质量问题"，反映 IA refactor 需要 building 中段实战验证才能确定最优 scope。BL-064 fix-round 1→3 把 12 条 redirect 缩减到 6 条（5 content-equivalent + 1 parametric），其余 4+ 条改 kept deep-link 推迟到后续批次 wire destination 后再启
 
-来源：KOLMatrix BL-064 fix-round 3 实战（顶层 IA refactor 7→4 路由）。
+D. **IaRedirectRule mixed-status 模式（v0.9.23 #14）：** 同一 middleware 实现支持混合 301/302 redirect — `IaRedirectRule` interface 加 `status?: 301 | 302` field（default 302 向后兼容），per-rule override 301。middleware 用 `rule.status ?? 302`，e2e REDIRECT_CASES 加 status field + `assert response.status()`。开发期默认 302（保留 rollback 能力），稳定后某些 rule 升 301（永久重定向）：
+```typescript
+// middleware.ts
+export interface IaRedirectRule {
+  from: string | RegExp;
+  to: string;
+  status?: 301 | 302;  // default 302; per-rule override
+}
+const finalStatus = matched.status ?? 302;
+return NextResponse.redirect(new URL(matched.to, req.url), finalStatus);
+```
+来源：BL-069 fix-round 1 B1 — KB+Campaigns/new → /brief 需 301 永久但 BL-064 默认 302 → fix 加 status field 解决 mixed-rule 批次重写。
+
+来源：KOLMatrix BL-064 fix-round 3 实战（顶层 IA refactor 7→4 路由）+ BL-069 fix-round 1 v0.9.23 #14（用户 2026-05-18 ack）扩展子段 D inline-merge。
 
 ---
 
@@ -303,4 +316,271 @@ if (!value || !UUID_RE.test(value)) return null;  // silent fallback
 
 E. **大型 atomic delete commit 优于多 sub-commit** — single commit atomic rollback、git log 单条目、易于 PR review。CI 失败时多轮自修（fix(BL-XXX): xxx）每轮独立、被 CI 全程捕获，不污染产品代码
 
-来源：KOLMatrix BL-065-F006 atomic delete commit 实战（3 轮 CI 自修后全绿，CI run 25782189342）。
+F. **删显式子路由前必须先加上游 [id] UUID guard（v0.9.23 #17 扩展 D）：** 删 `src/app/[locale]/(app)/<resource>/new/page.tsx` 等显式子路由后，Next.js fallback 到动态 `[id]/page.tsx` → Prisma `findFirst({ id: 'new' })` 抛 `invalid input syntax for type uuid` 500。同 commit 必须给动态 `[id]/page.tsx` 加 `UUID_RE.test(id)` guard 走 `notFound()`。grep 自查：
+```bash
+find src/app -name 'page.tsx' -path '*\[*\]*' | while read p; do
+  grep -L "UUID_RE\|isUuid" "$p" && echo "MISSING guard: $p"
+done
+```
+来源：BL-070-F004 #1 删 `campaigns/new/page.tsx` fallback 到动态 `[id]/page.tsx` 触发 500。
+
+G. **next-intl + `notFound()` HTTP status 不可靠（v0.9.23 #18）：** Next.js 15 App Router server component `notFound()` 标准是 404，但 next-intl middleware 包装响应后实际 status 可能 surface 为 200 + not-found body。e2e 验路由废弃时不能严格 `expect(status).toBe(404)`，应用 belt-and-suspenders：
+```typescript
+// e2e/route-deprecation.spec.ts
+const response = await page.goto("/zh/old-route", { waitUntil: "domcontentloaded" });
+expect(response?.status()).toBeOneOf([200, 404]);  // next-intl 包装后 status 不可靠
+expect(page.url()).not.toContain("/old-route");    // 或验未 redirect 到错误目的地
+await expect(page.getByText(/not found|页面不存在/i)).toBeVisible();  // 验 page body
+```
+来源：BL-070-F004 #2 删路由 e2e 验证时 status assertion 误判。
+
+H. **i18n deprecated ns 删除前必须 grep 实际 callers（v0.9.23 #19）：** ns 可能跨 batch git mv 后仍 in use（如 BL-070-F004 把 KB CRUD 组件搬到 brief/ 但组件内部仍 `useTranslations("knowledgeBase")`）。盲信 marker `will delete this namespace` 整 ns 删会破 production。Python 批处理脚本应内嵌该自检：
+```bash
+# 删 ns 前必跑：0 caller 才能整 ns 删
+grep -rln 'useTranslations\|getTranslations' src/ | xargs grep -l '"<ns-name>"'
+```
+0 命中才整 ns 删；有命中先修组件再删 ns（或保 ns 但更名说明）。来源：BL-070-F005 #1 git mv 后老组件仍引用 deprecated ns。
+
+I. **lazy boundary 引入时的 fidelity test 同步清单（v0.9.23 #28）：** 把组件改名为 `XxxLazy` 后（如 `MatchRefineBar` → `MatchRefineBarLazy`），老 fidelity test 断言 `import { OldName } from "./OldName"` 失败。引入 lazy boundary 时必同步检查：
+```bash
+# fidelity test 引用扫
+grep -rln 'import.*"\./<old-component-name>"' tests/integration/*-fidelity.test.*
+# 同 commit 改 fidelity test 的 import name + assertion 文本
+```
+来源：BL-070 fix-round 2 #28 把 MatchRefineBar 改 Lazy 后 `f004-bl068-refine-fidelity` 测试断言失败，必须同步改 2 case。
+
+来源：KOLMatrix BL-065-F006 atomic delete commit 实战（3 轮 CI 自修后全绿，CI run 25782189342）+ BL-070-F004/F005/F009 v0.9.23 候选 #17/#18/#19/#28（用户 2026-05-25 ack）扩展子段 F-I inline-merge。
+
+---
+
+## 12. Audit 起草 + LLM fix-round 工具链（v0.9.22 #3 + #8 + #9 沉淀）
+
+跨多批次实战暴露的 audit / fix-round 工具链 3 项规则。
+
+### 12.1 Audit 起草前必实测原子组件 surface（v0.9.22 #3）
+
+Generator 在 pre-impl audit 起草前必须**实测原子组件实际 surface**，而非按 README / 类型签名"字面想象"。
+
+**实测优先级 checklist：**
+1. **原子组件实测：** Read 组件源码 + 验 props 类型签名（如 BL-066 F006 Table.tsx README 看似有 col cap，实测 forwardRef + className 透传 fully flexible）
+2. **路径配置实测：** `find` / `grep` 实际文件位置（如 spec 写 `/foo/bar` 但实际位置可能漂移）
+3. **SQL 实际行为实测：** `ssh prod-db` sample 5-10 rows（如 zod schema 与 prod 数据 shape 比对）
+4. **API response shape 实测：** 跨服务 GET 拉真数据 JSON parse 验证
+
+**反面（BL-066 F006）：** Generator audit 建议保守拆列（怕 Table col cap），Planner 实测纠偏 fully flexible → 裁决 #4=A（6 列方案）偏离 Generator 建议。系统性"文档想象"偏差需 Planner 反复实测纠偏，成本高。
+
+**配套 Planner 端：** Generator 建议命中率 ≥80% 时 Planner 裁决可降复杂度（直接 ack + 短理由）；< 80% 时 Planner 需深挖偏离项 + 沉淀新规律。详见 `framework/harness/pre-impl-adjudication.md §12`。
+
+来源：BL-066 F006 audit 实战 + v0.9.22 #3。
+
+### 12.2 Next.js / 构建器切换 hidden TS errors checklist（v0.9.22 #8）
+
+Turbopack ↔ webpack 切换时 webpack 严格 typecheck 暴露 hidden TS errors：
+
+| Hidden 错误类型 | 触发场景 | 修法 |
+|---|---|---|
+| `Record<AssetType, ...>` 加新 enum 值未补 entry | enum 扩张 | webpack exhaustive check 强制补 entry（Turbopack 宽松不报） |
+| 字段命名漂移（`breakdown` → `rawBreakdown`）| refactor 漏更新 caller | webpack 严格 typecheck 报 / Turbopack 容忍 undefined access |
+| `href!` 非空断言缺失 | e2e spec 用 `as` cast 替代 | 加 non-null assertion 或修类型 |
+| 测试 mock 同步 shape 与真实 type | mock 漂移 | webpack typecheck 直接 fail；Turbopack 静默 |
+
+**应用：** Next.js 升级 / Turbopack ↔ webpack 切换时必跑：
+```bash
+npx tsc --noEmit --strict           # 全项目 typecheck
+grep -rn 'Record<' src/             # 全 enum 用法 audit
+grep -rn '! \|as any' src/          # non-null assertion / cast audit
+```
+
+来源：BL-067 fix-round 1 commit 6dbe231（修 4 处 hidden TS errors） + v0.9.22 #8。
+
+### 12.3 LLM fix-round 必先 MCP trace 抓真因（v0.9.22 #9）
+
+LLM 类 fix-round 必先 MCP `get_log_detail` trace 抓真实输出 + 与预期 diff，不要凭"LLM 应该怎样"推断。
+
+**反例（BL-068 fix-round 1+2）：** 凭"LLM 幻觉新增 ID"假设改 prompt（加约束 / 动态 N），收敛 drift 但仍不通过 → fix-round 3 通过 MCP `get_log_detail trc_ew4fi0u4hihjdw07bu73xer3` 抓出 LLM **实际返回**：30 IDs 中**重复 1 个已有 id**（index 8 + 29），不是幻觉新 ID。真因 = dedupe 问题非 set-membership 问题，前两轮 fix prompt 都打错点。
+
+**工具链：**
+- aigcgateway dashboard `logs` API + MCP `list_logs(project_id, limit=20)` 列 failed call
+- MCP `get_log_detail(log_id)` 抓 input variables + output text + metadata（latency / cost / model）
+- diff 真实输出 vs 预期 → 找模式（dup ID / format drift / missing field）
+
+**应用：** 每次 LLM-related fix-round 第一动作 = trace 5-10 个 failed call 找模式，不要直接改 prompt。Planner 配套规则：verifying gate 失败时优先 trace 真因而非直接 ack fix（详见 `planner-arbitration.md`）。
+
+来源：BL-068 fix-round 3 MCP trace 实战 + v0.9.22 #9。
+
+---
+
+## 13. 基础设施 MVP 模式 — InMemoryJobQueue + fire-and-forget + mount self-heal（v0.9.22 #5）
+
+适用于 PM2 single-instance cluster=1 架构的 BullMQ 前置方案。
+
+**模式核心：**
+
+1. **server action `void jobQueue.add(name, payload, { idempotencyKey, delay: 1 })`** — 让 LLM 异步跑入下一 tick，server action 立即 return 不阻塞 mount
+2. **进程重启丢 prewarm** — 由用户重 enter 页面触发 mount self-heal 自然恢复
+3. **idempotencyKey 同进程内幂等防重** — 防止 mount race condition 重复 enqueue
+4. **worker concurrency 由 setTimeout 隐式 1** — 不并发，简化错误处理
+
+**升 BullMQ 的触发条件（任一命中）：**
+- (a) PM2 reload 频次 > 2 次/day（重启丢任务 UX 影响）
+- (b) scale-out 到 cluster>1（in-memory 不跨进程）
+- (c) job 处理时间 > 60s 致 mount→short 完成延迟感知（用户重 enter 页面已超过预期）
+
+**反面适用：** 不适用于"必须可靠交付"类 job（如付款回调 / 关键业务事件 — 需 BullMQ Redis 持久化）。
+
+**实战案例：** BL-067 F005 InMemoryJobQueue 实装支持 prewarm 异步执行（探索类查询，丢失可重试）；BL-068 +1 caller 沿用。Spec acceptance 措辞模板：「场景 P95 latency 容忍 = 用户 mount self-heal 即可恢复（fire-and-forget MVP）」/「BullMQ 升级条件触发后启独立 batch」。
+
+来源：BL-067 F005 实战 + v0.9.22 #5。
+
+---
+
+## 14. 编译时约束 / migration 工程化（BL-070 #22 + #23 沉淀）
+
+### 14.1 `prisma migrate dev` wrap script — 自动注入 ROLLBACK skeleton（BL-070 #22）
+
+`prisma migrate dev` 创 migration 不自动加 ROLLBACK 注释，`scripts/validate-rollback-sql.sh` 是后置 CI 检查，触发 CI 红才发现。**建议 wrap script 自动注入 ROLLBACK skeleton 从生产源头避免 CI 红：**
+
+```bash
+#!/usr/bin/env bash
+# scripts/prisma-migrate-dev-wrap.sh
+npx prisma migrate dev "$@"
+
+# 找最新 migration 文件，未含 ROLLBACK 注释则注入 skeleton
+LATEST=$(ls -t prisma/migrations/*/migration.sql | head -1)
+if ! grep -q "^-- ROLLBACK:" "$LATEST"; then
+  cat >> "$LATEST" <<EOF
+
+-- ROLLBACK: <inverse SQL here>
+-- TODO(BL-XXX): fill in inverse SQL before merge
+EOF
+  echo "✓ Injected ROLLBACK skeleton in $LATEST — please fill before commit"
+fi
+```
+
+**配置 package.json：**
+```json
+{
+  "scripts": {
+    "db:migrate": "bash scripts/prisma-migrate-dev-wrap.sh"
+  }
+}
+```
+
+来源：BL-070 fix-round 1 #22 — `scripts/validate-rollback-sql.sh` CI 检查触发后回头补 ROLLBACK 注释（fix-round 浪费）；上游 wrap 自动注入避免。
+
+### 14.2 Next.js 16 `'use server'` file-level directive 约束清单（BL-070 #23）
+
+Next.js 16 `'use server'` 文件**禁非 async function exports**。在此文件里加 zod schema / 常量 / 普通对象 / 类的 export 会触发 build/runtime error。
+
+**约束清单：**
+- ✅ `export async function actionName(...) { ... }` — 允许
+- ❌ `export const SchemaName = z.object({ ... })` — 禁
+- ❌ `export const CONSTANT = "value"` — 禁
+- ❌ `export class Helper { ... }` — 禁
+- ❌ `export type AliasName = ...` — 禁（类型在某些版本严格）
+
+**zod schema 抽离模板：**
+```typescript
+// src/app/[locale]/request-access/schema.ts  (无 'use server')
+import { z } from "zod";
+export const AccessRequestSchema = z.object({
+  email: z.string().email(),
+  // ...
+});
+export type AccessRequest = z.infer<typeof AccessRequestSchema>;
+
+// src/app/[locale]/request-access/actions.ts  (含 'use server')
+"use server";
+import { AccessRequestSchema } from "./schema";
+export async function requestAccess(input: unknown) {
+  const data = AccessRequestSchema.parse(input);
+  // ...
+}
+```
+
+来源：BL-070 fix-round 1 #23 — landing batch 加 `AccessRequestSchema` 到 actions.ts 触发 Next.js 16 build error，抽到独立 `schema.ts` 解。
+
+---
+
+## 15. Perf / image / Suspense 落地（v0.9.23 #27 + #29+#30 合并段）
+
+### 15.1 next/image 异构 CDN 落地：unoptimized + explicit dims（BL-070 #27）
+
+异构 CDN avatar/logo 场景，`unoptimized={true}` + explicit dims 是最稳的 next/image 落地姿势，优于强上 `images.remotePatterns` 累积白名单。
+
+**理由：**
+- 多平台 KOL avatar CDN（YT 现；TikTok/Twitch/Bilibili later）远多于 `next.config.ts` whitelist 能覆盖
+- `unoptimized` 跳 AVIF/WebP 转换通路但保留 explicit width/height 的 **CLS reservation 收益**（核心 UX 价值）
+- 小尺寸 avatar (32-64px) 优化收益微；大图 (banner 1200×240) 也 unoptimized — 低流量 detail page 不致命
+
+**落地模板：**
+```tsx
+<Image
+  src={kol.avatarUrl}                // 异构 CDN（YT / TikTok / Twitch / Bilibili）
+  alt={kol.displayName}
+  width={48}                         // explicit dims 保 CLS reservation
+  height={48}
+  unoptimized                        // 跳 Next.js AVIF/WebP 转换通路
+  className="rounded-full"
+/>
+```
+
+**反面：** 强上 `images.remotePatterns` 累积白名单 → build error（新 CDN 未及时 PR）或运行时 403（白名单未含）。
+
+来源：BL-070 fix-round 2 #27 — KOL avatar 多平台 CDN whitelist 维护成本爆炸 → `unoptimized + explicit dims` 解。
+
+### 15.2 Suspense fallback 规范（v0.9.23 #29+#30 合并段，两 source）
+
+Suspense fallback skeleton 必须**像素级镜像实际 outer 结构**（高度 + 宽度），否则 swap 时触发 CLS（垂直反差）和 flex-wrap reflow（横向反差间接放大垂直 CLS）。
+
+**双层规范：**
+
+**(A) 高度镜像（#29 source — `/match` CLS 0.348 → 0.008 fix）：**
+
+skeleton 必须等于实际渲染内容的**总高度**，不仅 `glass-panel + animate-pulse` 视觉。skeleton 高度差异会按下游 shifted 内容总高度（如 1039px 高的主网格）放大 CLS 评分。
+
+```tsx
+// ❌ 反面：88px skeleton swap 为 150px 实际卡 → 62px 反差 × 4 卡 × 整网格高度 = CLS 0.348
+<Suspense fallback={<div className="h-22 glass-panel animate-pulse" />}>
+  <KolMatchGrid />
+</Suspense>
+
+// ✅ 正确：skeleton 同 grid 同高度 4×150px 卡槽 → CLS 0.008
+<Suspense fallback={
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {Array.from({ length: 4 }).map((_, i) => (
+      <div key={i} className="h-[150px] glass-panel animate-pulse" />
+    ))}
+  </div>
+}>
+  <KolMatchGrid />
+</Suspense>
+```
+
+**(B) 宽度等宽（#30 source — `flex-wrap` 父容器下横向 reflow 间接放大 CLS）：**
+
+skeleton 宽度在 `flex-wrap` 父容器下必须**与实际等宽**（或更宽），否则 swap 时横向 reflow 触发换行 → 间接放大垂直 CLS。
+
+```tsx
+// ❌ 反面：SaveSearchControlsSkeleton w-44（~176px）swap 为 ~460px 实际 → flex-wrap header 换行 → 垂直 reflow
+<Suspense fallback={<div className="w-44 h-9 animate-pulse" />}>
+  <SaveSearchControls />
+</Suspense>
+
+// ✅ 正确：等宽 ~460px
+<Suspense fallback={<div className="w-[460px] h-9 animate-pulse" />}>
+  <SaveSearchControls />
+</Suspense>
+```
+
+**Lighthouse 13.x audit 定位工具（#30 附加）：** `cls-culprits-insight` 在 JSON 输出 path = `details.items[].node.selector + snippet + boundingRect` — 比 `layout-shift-elements` 更准确直指 shift target。后续优化 perf 优先 grep 此键定位 CLS 元素。
+
+**Lighthouse 落地自测（关联反思）：** Suspense PR push 前必跑 Lighthouse Desktop logged-in 自测，不要等 Reviewer fix-round 才捕 CLS。本地跑：
+```bash
+npx lighthouse http://localhost:3001/<route> --preset=desktop --view --only-categories=performance
+```
+
+来源（双 source）：
+- BL-070 fix-round 3 #29（`/match` CLS 0.348 → 0.008 高度镜像 fix）
+- BL-070 fix-round 3 #30（`SaveSearchControls` flex-wrap 横向 reflow → 宽度等宽 fix + Lighthouse `cls-culprits-insight` 定位法）
+- 两条同主题 inline-merge 为 §15.2 「Suspense fallback 规范」单段含两 source（per D7 强制合并）+ 用户 2026-05-25 ack。

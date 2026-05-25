@@ -183,7 +183,55 @@ KB AI 生成 5 套邮件模板（`generateAiAssets.ts:88-97`），prompt 未指�
 
 BL-032 backfill 修复了 15 条历史数据 + prompt 修复了未来生成；但 AI 偶尔仍可能不遵循 prompt（claude-haiku-4.5 generation 不确定性，medium-prob 风险），**无 server-side validation 兜底则下次同坑**。
 
-### 3.4 适用范围
+### 3.4 dedupe-then-validate 模式（LLM 输出 noise 兼容，v0.9.22 #10）
+
+LLM（如 Claude Haiku）即使 prompt 严格约束仍会产生 noise（重复 ID / 顺序漂移 / 字段命名差异），server 端不应严格 reject，而应**先归一化再验证**。
+
+**模式：**
+1. **dedupe-then-validate：** 接收 LLM 数组输出 → dedupe 保 first-occurrence 序 → 验证去重后 set == input set → 接受为正常路径
+2. **audit deduped_count 监控 noise rate：** 在 audit log 加 `deduped_count` 字段记录 LLM 输出 noise 数量，运营观察 noise rate > 50% 才考虑升级模型或重写 prompt
+3. **保守 reject 路径：** 仅当去重后仍偏离才落 `permutation_invalid` / `set_mismatch` 类标记
+
+**对比严格 reject 模式（如 BL-067 F005 permutation 路径）：** 严格 reject 在 dogfood 数据证明 35% LLM call 有 dup 的场景下会让 fix-round +N 都解不掉，dedupe-then-validate 才能让 functionality 落地。
+
+**应用：** 所有 LLM 数组类输出（KOL IDs / category list / tag set）都应 dedupe-then-validate + audit log noise rate 监控。
+
+**来源：** BL-068 fix-round 3 `refine-actions.ts` Layer 1 fix（LLM 30 IDs 输出 35% 含 dup，dedupe 后 set match input → 接受 refine_applied）+ v0.9.22 #10 用户 2026-05-17 ack。
+
+### 3.5 Prompt 自检 § + 末尾 reminder 双层强化模式（v0.9.22 #11）
+
+Claude Haiku 在 prompt 单点约束（如"不要重复 ID"）不够时（dup ID / format drift），加 §⚠️ **"输出前自检 3 项"块** + **末尾再加 1 段最后提醒**双层强化约束。
+
+**模板：**
+
+```
+<prompt body>
+
+⚠️ 输出前自检（必须）：
+1. <约束 1，如 "ID 不重复"，越具体越好，可引用反例 trace>
+2. <约束 2，如 "数量精确为 N">
+3. <约束 3，如 "全部来自 input pool，无新增 ID">
+
+<output schema description>
+
+记得：<约束 1 简版强化>，<约束 2 简版强化>。
+```
+
+**关键设计：**
+- self-check § 内容显式引用历史 fix-round 真实 trace 加压（"你之前犯过这个错"），强化模型 attention
+- 末尾 1 段 reminder 是冗余设计 — 单层 self-check 在 Claude Haiku context 末段 attention 衰减时仍可能 drift，双层兜底
+- 必配合 server dedupe-then-validate（§3.4），prompt 强化 + server fallback = 双层防御
+
+**适用边界：**
+- ✅ Claude Haiku / Sonnet 的 array-like / strict-schema 输出场景
+- ⚠️ GPT-4o 类模型可能不需要这么重的约束（待对比测试）
+- ❌ 自由文本类输出（如邮件正文）不适用
+
+**实战数据：** BL-068 fix-round 3 prompt v3 + server dedupe 配合 → 24h dogfood 16/20 = 80% 达标（前 prompt v1/v2 单点约束 dup ID 频发）。
+
+**来源：** BL-068 prompt v1→v2→v3 演进 + v0.9.22 #11 用户 2026-05-17 ack。
+
+### 3.6 适用范围
 
 - 邮件模板生成（KB / Wizard）
 - 视频脚本生成（如未来加 token 替换）
@@ -327,6 +375,47 @@ KOLMatrix `docs/reviews/backend-full-scan-2026-05-04.md` AI-CRIT-5 + AI-H5；BL-
 - KOLMatrix BL-035 F013 (2026-05-05) + BL-024 Q2 ops (2026-05-05 23:30) 12 次 max_tokens 推延 Soft-watch
 - 2026-05-06 Planner johnsong 实测对照（mcp `chat` max_tokens=15 截断生效 vs `run_action` 无 max_tokens 参数 + 用户 Dashboard UI 实地确认无字段）→ 修订 v0.9.13 §4.7 假设
 - Planner johnsong 在 BL-024 generator_handoff 提案 + 用户 2026-05-06 全 Accept（v0.9.13 候选 #2）+ 2026-05-06 实测后修订
+
+---
+
+## 5. aigcgateway caller SDK 抽象层沉淀触发门槛（v0.9.22 #6）
+
+当 codebase 出现 N 处 inline POST `/actions/run` + `parseFencedJson` + cost-cap + audit + error mapping 重复 → 抽统一 `runAigcAction<T>(opts)` SDK。
+
+**触发门槛：** ≥3 处 inline 重复 + 即将出现第 4 处 → 沉淀 SDK 抽象层。
+
+- 早于此门槛沉淀 = 过早抽象（callers 还没收敛出共性，过早抽提的 SDK API 不稳）
+- 晚于此门槛沉淀 = 维护噩梦（每改一处要同步改 N 处，bug 易漏）
+
+**实战案例：** BL-067 起前已有 customize.ts + topic-cloud.ts 两份 inline 实现，BL-067 即将再加 2 处（C3 短解释 + DetailedExplanationDialog 5 段），BL-068 还会加 1 处（refine 自然语言）→ 命中 ≥3 + 即将第 4 处门槛 → BL-067 F001 +2h 落 `src/lib/aigc/run-action.ts` SDK 242 LOC + 9 unit tests，BL-067 F004 + F005 两 caller 直接复用，BL-068 + 未来 LLM caller 沿用。
+
+**SDK 签名模板：**
+
+```typescript
+// src/lib/aigc/run-action.ts
+export async function runAigcAction<T>(opts: {
+  actionId: string;
+  variables: Record<string, unknown>;
+  costCap?: { maxUsdPerTenantPerDay: number; tenantId: string };
+  parseResponse: (raw: string) => T;
+  audit: {
+    action: string;
+    tenantId: string;
+    userId: string;
+    payload?: unknown;
+  };
+}): Promise<T> {
+  // 1. cost-cap check (Redis lookup tenant daily cost; reject if exceeded)
+  // 2. POST /v1/actions/run with variables
+  // 3. parseFencedJson + parseResponse callback
+  // 4. record audit (with cost, latency, dedup hint)
+  // 5. error mapping (rate-limit / network / parse → 统一异常类型)
+}
+```
+
+**约束：** 抽 SDK 时不动现有 caller 保向后兼容，迁移留下个批次评估（避免 scope creep）。
+
+**来源：** BL-067 F001 实战 + v0.9.22 #6 用户 2026-05-16 ack。
 
 ---
 

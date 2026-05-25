@@ -233,7 +233,10 @@ KOLMatrix B5 fixing-2 → fixing-3 → fixing-7 + MVP fixing-2 累积暴露：
 # 1. SSH 进 staging（KEX 设置见 environment.md）
 ssh tripplezhou@<staging-ip>
 
-# 2. 拉代码到 deploy 路径
+# 2. 拉代码到 deploy 路径（⚠️ git pull --ff-only 是硬要求，非可选）
+#    根因：远端可能在本地 generator 推 commit 后又被其他 agent 推 chore/state，
+#    本地 staging 路径若不 pull 则 build 出来的 git_sha 落后 main HEAD，
+#    切 verifying 时 Reviewer SHA 对齐 fail 触发死循环（详见 §3.4）。
 cd /opt/<app>-staging
 git pull --ff-only origin main
 
@@ -306,7 +309,22 @@ KOLMatrix B5 F006 case（commits 14ea522 / 172c2df / 5b2f622）：
 - GitHub 默认 policy：**用 GITHUB_TOKEN 推的 commit 不触发其他 workflow**（防 infinite loop）
 - 结果：visual baseline 重生后 visual regression CI 没跑 → 没人知道 baseline 是否真匹配 → 后续 PR 跑 visual regression 才发现 baseline still off
 
-**解决方法：** baseline regen workflow 之后**必须跟一个 real-content commit 触发下游 CI**。空 commit 不够（paths-ignore matches all 时 CI skip）。
+**扩范围（v0.9.23 #24，BL-070 fix-round 1 实证）：** 同样适用所有 `github-actions[bot]` 默认 `GITHUB_TOKEN` commit — 这是 GitHub 默认安全行为（防止 bot commit 触发无限 CI 循环）。**通解：** 所有需在 bot commit 后手动重跑的 workflow 必加 `workflow_dispatch` trigger，让维护者可以手动 dispatch：
+
+```yaml
+# .github/workflows/ci.yml / deploy-staging.yml / deploy-prod.yml / update-visual-baselines.yml
+on:
+  push:
+    branches: [main]
+    paths-ignore: [...]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:  # ← 必加，bot commit 后手动重跑入口
+```
+
+适用 workflow 清单（必加 `workflow_dispatch`）：`ci.yml` / `deploy-staging.yml` / `deploy-prod.yml` / `update-visual-baselines.yml` / 任何其他需 bot commit 后手动重跑的 workflow。
+
+**解决方法（实操）：** baseline regen workflow 之后**必须跟一个 real-content commit 触发下游 CI**（也可手动 `workflow_dispatch`）。空 commit 不够（paths-ignore matches all 时 CI skip）。
 
 ### 4.2 Spec / Generator checklist
 
@@ -423,6 +441,45 @@ Planner johnsong 在 BL-024 prod redeploy ops 准备阶段（2026-05-05 23:00）
 **反面案例（已落 BL-024 F006 retroactive hotfix）：** BL-034 F001 spec acceptance 写 ALTER ROLE 段 done @ dbbfbb3 但 prod CRIT-1 实际未修 1+ 周（直至 2026-05-05 Planner 实地核查）。本可在 BL-034 F001 spec lock 时加「同 commit 改 yml」检查项 + Reviewer L2 deploy log warning 抓取避免。
 
 **来源：** KOLMatrix BL-024-F006 retroactive hotfix（commit eacbbbb，BL-034 F001 root cause 1+ 周后实地核查发现）。Generator Kimi 在 BL-024 generator_handoff 提案 + Planner johnsong 实地核查 + 用户 2026-05-06 全 Accept（v0.9.13 候选 #1）。
+
+---
+
+## 7. Next.js 16.x Turbopack 生产 build 兼容性陷阱 + --webpack 防御（v0.9.22 #4）
+
+**坑：** Next.js 16.2.x 默认 `next build` 走 Turbopack → 生产构建**不写 `.next/BUILD_ID` 文件**（仅在 `.next/static/<hash>/` 子目录名编码 BUILD_ID）。但 `server.js` 用 `next({ dev: false })` + `app.prepare()` 启动时**仍走旧 webpack 路径**读 `.next/BUILD_ID` 文本 → 抛 `production-start-no-build-id` → 进程启动失败 → PM2 fallback 旧 worker → 旧 worker 内存 build manifest 不含新 chunks → per-chunk 404 ErrorBoundary。
+
+**防御（全栈 force --webpack）：**
+
+```jsonc
+// package.json — build script 强制 --webpack flag
+{
+  "scripts": {
+    "build": "next build --webpack",
+    "build:turbopack": "next build"
+  }
+}
+```
+
+```bash
+# scripts/deploy-staging.sh / deploy-prod.sh — 同 commit 加清旧 Turbopack 残留
+rm -rf .next/build .next/turbopack .next/static/[A-Za-z0-9]*
+# 注意：不动 .next/cache 保 build 加速（webpack cache 仍可复用）
+
+NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) npm run build
+```
+
+**附加（v0.9.22 #8 链接）：** webpack 严格 typecheck 比 Turbopack 严，迁移时常暴露 hidden TS errors（如 BL-067 commit 6dbe231 修 4 处 Record exhaustive / undefined access / mock shape）。Next.js 升级 / Turbopack ↔ webpack 切换 checklist 详见 `framework/harness/generator.md §12.2`。
+
+**应用：** 任何使用 custom `server.js` + `next({ dev: false })` 的项目（如 Next.js custom server 路径，参 §1）必须 force `--webpack`，不要依赖默认 Turbopack。
+
+**build artifact 健康检查（建议加 deploy script）：**
+```bash
+# deploy 前置检查
+[ -f .next/BUILD_ID ] || (echo "✗ Missing .next/BUILD_ID — Turbopack build 异常" && exit 1)
+[ -f .next/required-server-files.json ] || (echo "✗ Missing required-server-files.json" && exit 1)
+```
+
+来源：BL-067 fix-round 1 commit f284d35 实战验证 + v0.9.22 #4（用户 2026-05-16 ack）。
 
 ---
 

@@ -186,6 +186,19 @@ executor:codex 的典型场景：压力测试执行、code review、安全审计
 **latent bug exposure 标注（v0.9.21 BL-065 沉淀）：**
 fix_rounds 不直接反映本批次质量。大体量 page consolidation / IA refactor / route migration 类批次会暴露上游 latent bug（路由从未渲染 → 真实渲染暴露 latent FORMATTING_ERROR / cross-tenant query / dead import 等）。这类 fix-round 应在 signoff 中标注「latent bug exposed by F00X route migration」与本批次新引入 bug 区分。未来按二维统计：(introduced, latent) 而不仅 fix_rounds 单维。
 
+**fix-round 类型分类（v0.9.23 #16，BL-068 vs BL-069 对比沉淀）：**
+
+| 类型 | 特征 | 预估 fix-rounds | 实证 |
+|---|---|---|---|
+| **A. implementation-gap fix-round** | Generator 实装与 spec 字面有差距（302 vs 301 / 缺 chaos flag）| 1 轮通过 | BL-069 fix_rounds=1（B1 redirect status + B2 chaos flag）|
+| **B. LLM-behavior fix-round** | LLM 实际输出与 prompt 预期不一致（凑足 N / 重复 ID）| 2-3 轮收敛 | BL-068 fix_rounds=3（B1-B4 client + B5-B6 prompt 真因 trace） |
+
+**预期 fix_rounds 数公式：** `预期 fix_rounds = 1 + N(B 类 blockers)`
+
+**应用：** Planner 在 batch 计划起草时按 LLM 类批次 vs 静态实装类批次区分预期 fix_rounds 数，影响排期 + 用户期望管理。配套 Reviewer 报失败时按类型分类裁决（详见 `planner-arbitration.md §P5.3 verifying gate 失败时优先 trace 真因`）。
+
+来源：BL-068 vs BL-069 fix-rounds 数量差实证 + v0.9.23 #16（用户 2026-05-18 ack）。
+
 ---
 
 ## status = "done" 时的收尾流程
@@ -219,4 +232,36 @@ fix_rounds 不直接反映本批次质量。大体量 page consolidation / IA re
 
 **5b. 写入 session_notes：** 在 progress.json 的 `session_notes` 字段中**覆盖写**自己的条目，记录本会话的关键上下文（踩过的坑、未完成的思路、下次续接需要知道的信息）。
 
-> 写作惯例细则将在 BL-071 F008 sediment 写入阶段补全。
+**session_notes 写作惯例（BL-071 audit §5.2 沉淀）：**
+
+- **格式：** 顶部一行 `[YYYY-MM-DD HH:MM TZ Role agent-id — 一句话标题]`，后接 markdown 多段
+- **覆盖不追加：** 同一 agent 重新写入会覆盖原值；上一会话的 session_notes 内容应由 agent 自己复制到 git commit message 或 project-status.md 后再覆盖
+- **段落建议：** "本次完成" / "决策点" / "踩到的坑" / "下一步" — 让接手 agent 一眼读懂当前节奏
+- **禁忌：** 不写 todo（todo 进 features.json / project-status.md）；不写 commit 摘要（commit message 已有）；不写设计决策（决策入 ADR 或 spec）
+
+---
+
+## Commit message 格式规范（BL-071 audit §5.3 沉淀）
+
+所有 Generator / Planner / Evaluator commit 必须遵守：
+
+```
+<type>(<batch>-F<num>): <一句话总结>
+
+<可选多段 body>
+```
+
+| 字段 | 取值 |
+|---|---|
+| type | feat / fix / docs / test / chore / refactor / perf / ci / plan / state |
+| batch | features.json 所属批次 id（如 `BL-071`） |
+| num | 本 commit 对应的 feature id（如 `F003`）；docs-only commit 用 `docs(<batch>):` 不带 F 号；state-only commit 用 `state(<batch>):` |
+
+**铁律 #10 commit-tag 一致性：** `feat(<batch>-F<num>)` 标签必须能对应 features.json 实际条目，否则 Reviewer 拒绝签收（commit 标 F003 但实际改 F004 文件 = 越界，需 revert + 重做）。
+
+**body 含义：**
+- 第 1 段：本 commit 落地的具体改动（按文件分组列）
+- 第 2 段（可选）：验收手段 / grep 验证结果 / 决策引用（不写也行）
+- 第 3 段（可选）：CI / staging deploy 结果引用（如适用）
+
+**禁忌：** body 不写 `🤖 Generated with Claude Code` 等 attribution（用户 ~/.claude/settings.json 已全局禁用）；不写"本次完成 N task"等 progress 性内容（progress 入 progress.json session_notes）。

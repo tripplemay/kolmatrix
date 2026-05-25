@@ -223,6 +223,29 @@ B0 sprint 实测：
 ### 6.3 决议可复用性
 裁决理由应具备复用价值。"因为 johnsong 这么建议" 不够 —— 要说明"同 designMd / 同 Stitch 多数派 / 减少后续维护成本"等可被下个 Planner 理解的逻辑。
 
+### 6.4 Generator 建议命中率作为 audit 质量信号（v0.9.22 #7）
+
+Planner 在累积裁决多个 audit 后，可以**Generator 建议命中率**作为 audit 质量信号 + 裁决复杂度调整依据。
+
+**累积统计实证（BL-066-BL-067 实战）：**
+
+| Audit | Generator 建议命中率 | Planner 裁决复杂度 | 偏离项 |
+|---|---|---|---|
+| BL-067 F001 audit | 6/6 = 100% | 直接 ack + 短理由（低复杂度）| 0 |
+| BL-066 F002 audit | 4/5 = 80% | 标准裁决 | #5 偏离 |
+| BL-066 F006 audit | 4/5 = 80% | 标准裁决 | #4 偏离（Generator 未实测 Table.tsx surface） |
+| BL-066 F007 audit | 7/8 = 87.5% | 标准裁决 + 重裁决一次 | #7 重裁决 |
+
+**规则：**
+
+- **命中率 ≥80%：** Planner 裁决可降复杂度（直接 ack + 短理由），节省 turnaround 时间
+- **命中率 < 80%：** Planner 需深挖偏离项，从中沉淀新规律（如 BL-066 F006 #4 沉淀为 v0.9.22 #3「audit 起草前实测原子组件」）
+- **累积命中率持续 < 70%：** 警示 Generator audit 起草纪律有偏差，需起 framework 修订或更新 audit 模板
+
+**应用：** 4 次 audit 累积后即可作 Generator audit 质量指标；Planner 在 done 阶段评估批次质量时纳入此指标（与 fix_rounds 一起作为质量 dashboard）。
+
+来源：BL-066 + BL-067 4 次 audit 实战 + v0.9.22 #7（用户 2026-05-16 ack）。
+
 ---
 
 ## 7. 与其他 harness 机制的关系
@@ -372,7 +395,41 @@ Generator 在 building 实装某 feature 时，发现 spec acceptance 包含**�
 
 ---
 
-## 11. 版本历史
+## 11. 批次级多 audit 串联模式（v0.9.22 #1）
+
+**适用：** 大批次（≥ 9 features）的推荐节奏沉淀。单 feature 单 audit 是默认；批次级 N audit 串联（N≥3）是新粒度。
+
+**实证（BL-066 BL-067 BL-068 累积）：**
+
+| 批次 | 规模 | Audit 数 | Generator 建议命中率 | fix_rounds | 沉淀价值 |
+|---|---|---|---|---|---|
+| BL-066 | 9 features | 3（F002 / F006 / F007 共 18 决议点）| 平均 87% | **0** | 9 features 0 fix-round 一次性成型，验证 pre-impl 模式 ROI |
+| BL-067 | 8 features | 1（F001 6 议题）| 100% | 1 | SDK 抽象层一次性 + 1 fix-round（Turbopack BUILD_ID） |
+| BL-068 | 7 features | 0 | n/a | 3 | LLM-behavior fix-round 多轮 — 不用 pre-impl audit |
+
+**适用判断：**
+
+| 批次规模 | 建议 audit 数 | 理由 |
+|---|---|---|
+| < 5 features | 0-1 | feature 数少，spec 模糊面少；不必每个 feature 一审计 |
+| 5-8 features | 1-2 | 至多关键 2 features 起 audit（含跨组件 / 数据模型 / 跨页变体） |
+| ≥ 9 features | **3+ 串联** | 高 fan-out 批次需充分预 lock，避免 fix-round 累积 |
+| LLM-behavior 类（如 prompt 调优） | 0 | pre-impl audit 不适用 — LLM 行为不可预审，需 trace 实测后 fix |
+
+**与 fix-rounds 关系（实证）：** ≥9 features 批次走 3 audit 串联可达 fix_rounds=0；< 3 audit 串联通常 fix_rounds ≥ 1（漏 lock 决策点）。
+
+**Planner 推荐节奏：**
+1. **批次开工前评估 features.json** — feature 数 + 跨页 / 跨组件 / 数据模型 / 性能等"决策点密度"
+2. **选 3-N 个高密度 feature 起 audit** — 不必每个 feature 都审计
+3. **Audit 间隔同步：** 每个 audit Planner 裁决后立即修订 spec → 下一个 audit 基于最新 spec 起草，避免重复审计同一议题
+
+**反面：** ≥9 features 批次不做 audit 串联 → fix-rounds 累积 + 用户体验延迟 + 范围漂移。
+
+来源：BL-066 + BL-067 + BL-068 累积实战 + v0.9.22 #1（用户 2026-05-15 ack）。
+
+---
+
+## 12. 版本历史
 
 | 日期 | 修订 | 来源 |
 |---|---|---|
@@ -380,4 +437,5 @@ Generator 在 building 实装某 feature 时，发现 spec acceptance 包含**�
 | 2026-04-20 | §9.1 Planner 写 spec 自检清单 | KOLMatrix BI1-F010 acceptance 偏离案例 |
 | 2026-05-01 | §9.2 数据准备步骤 + 白名单 ID 防抽样污染 | KOLMatrix B5 fixing-3 + MVP fixing-2 |
 | 2026-05-05 | §10 Building 中段良性 partial-pending 变种（v0.9.12 — BL-034 F005 沉淀）| KOLMatrix BL-034 F005 实测 → Planner 短格式裁决 → fix-round 1 |
-| 2026-05-25 | §10/§11 编号错乱修复（BL-071 F007，D7 lock）| 原 §11 partial-pending 顺接为 §10，原 §10 版本历史移至 §11 last |
+| 2026-05-25 | §6.4 Generator 建议命中率 + §11 批次级多 audit 串联模式（BL-071 F008 v0.9.22 #1 + #7 inline-merge）| BL-066 + BL-067 累积实战，用户 2026-05-15 / 2026-05-16 ack |
+| 2026-05-25 | §10/§11/§12 编号修复（BL-071 F007 + F008）| F007 顺接 §10/§11；F008 加 §11 后 §11→§12 |

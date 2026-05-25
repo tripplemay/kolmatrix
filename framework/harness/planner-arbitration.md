@@ -91,6 +91,31 @@ git log --oneline <building-start>..HEAD -- <失败测试文件路径>
 
 **实物范例（BL-052 5/8 00:10）：** `tests/integration/pre-commit-hook.test.ts` 引入自 BL-027-F004（commit `2c8af8a`），依赖脚本 `scripts/regenerate-material-symbols-subset.sh` 引入自 BL-025-F009 / BIx-mvp-polish-pass。BL-052 13 commits（`c4afd5a..3ba3fe2`）零修改这两文件 → 范围正交 → 建 BL-054-flaky-network-test-isolate（medium，~2-4h Generator + 0.5h Reviewer）→ Reviewer 复验仅 BL-052 引入代码 → grade B+ / Ready @ commit `722fc66`（5/8 01:07）。
 
+### 规则 P5.3：verifying gate 失败时优先 trace 真因而非直接 ack fix（v0.9.22 #13）
+
+**与 P5 / P5.2 关系：** P5 强调"裁决理由复用"，P5.2 强调"范围正交"，P5.3 强调"故障类型分类"。三者形成 verifying gate 失败时的完整裁决方法论。
+
+**核心规则：** Reviewer 报 verifying 失败时（特别 LLM-related batch），Planner 必须先做"**故障类型分类**" — 是 implementation-gap 还是 LLM-behavior？
+
+| 故障类型 | 特征 | Planner 裁决 |
+|---|---|---|
+| **A. implementation-gap**（如 redirect 302 vs 301 / 缺 chaos flag）| Generator 实装与 spec 字面有差距 | 直接 ack Generator 修代码，预估 1 fix-round 通过 |
+| **B. LLM-behavior**（如 prompt 输出 dup / 凑足 N）| LLM 实际输出与 prompt 预期不一致 | **必先要求 trace 真因**（MCP `get_log_detail` 抓 5-10 failed call）+ 推估 2-3 fix-round 通过 |
+
+**反例（BL-068 fix-round 2 浪费）：** Reviewer 报"prompt 解析失败"时 Planner 没 trace 真因即直接 ack Generator 调 prompt（凭 "LLM 应该幻觉新 ID" 假设）→ prompt v2 收敛 drift 但 B6 仍不通过 → fix-round 3 才 MCP trace 抓出 dup-not-hallucination 真因 → 浪费 fix-round 2 + 用户体验延迟 1 天。
+
+**verifying gate 设计盲点：** Reviewer 的 gate criterion 通常只看 success rate（如 80% PASS），不看 failure mode。Planner 必须主动要求 Reviewer trace 失败 mode（特别 LLM-batch）。
+
+**应用清单（Planner 收到 Reviewer verifying 失败报告时）：**
+- [ ] 故障是否 LLM-behavior 类？（输出 shape / format / 数量 / 重复 等）
+- [ ] 如是，要求 Reviewer 立即 trace 5-10 failed call（MCP get_log_detail）
+- [ ] 看真实输出 vs 预期 → 找 pattern（dup / drift / missing）
+- [ ] 然后才 ack Generator 修 prompt + server fallback（dedupe-then-validate / 自检 §）
+
+**配套 Generator 端：** LLM fix-round 必先 MCP trace 抓真因（详见 `framework/harness/generator.md §12.3`）。
+
+来源：BL-068 fix-round 2 浪费实战 + v0.9.22 #13（用户 2026-05-17 ack）。
+
 ---
 
 ## Code Review 报告事实性断言按"线索"处理

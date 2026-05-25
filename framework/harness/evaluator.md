@@ -374,12 +374,91 @@ git diff --name-only <staging-sha>..HEAD
 
 ---
 
-## §13. 测试设计（占位，BL-071 F008 sediment 写入）
+## §13. 测试设计（v0.9.22 #2 + #12+BL-070 #21 合并 + BL-069 #15 沉淀）
 
-本段为 BL-071 F008 sediment 写入预留：v0.9.22 #2 量化 criterion / #12 mock infeasible + BL-070 #21 e2e server-action mock 不可用 等 inline-merge 到此 topic。
+### §13.1 量化 verifying gate criterion 设计（v0.9.22 #2）
 
-**先期占位骨架：**
+verifying gate 量化 criterion 必须**锚定语义信号**而非**字面数字**。Acceptance 文字写"快"/"少"/"几乎无"等定性词时，Evaluator 必须要求 Planner 修订为可量化 threshold；同时**预判 dataset 真实形态**避免落入"字面陷阱"。
 
-- **量化 criterion**（v0.9.22 #2）：acceptance 文字写"快"/"少"/"几乎无"等定性词时，Evaluator 必须要求 Planner 修订为可量化 threshold（如 ≥ 200KB gzipped / ≥ 80% test coverage / p95 < 200ms）。无量化 = 验收无据可拉
-- **mock 不可用三件套**（v0.9.22 #12 + BL-070 #21 合并段）：next.js server action 不可被 vitest mock（unit test 不可达）→ 三件套规约：always-skip + 退到 unit pure function + staging real run
-- **staging chaos flag runbook**（BL-069 #15）：staging 维持 chaos flag（如 `CHAOS_DELAY_MS` / `CHAOS_FAIL_RATE`）让 Evaluator 在不影响 prod 的前提下注入故障验证 fallback 路径
+**字面陷阱反面案例：** BL-066 F007 spec 写「top-15 内 max-min ≥ 5」criterion，staging recompute 后 top-15 全 clamp 100，criterion 字面失败但 BL-048 mega-nano 不再同 100 的**语义**已达成。用户 ack 选项 (i) data-driven 修订 criterion 为 (a') 全 dataset spread + (b') top-15 最小 follower threshold，而非调 formula。
+
+**data-form-aware 设计 checklist：**
+- [ ] 预跑 staging recompute 一次看真实 dataset 形态（是否含 clamp / NULL / outlier）
+- [ ] 设计 criterion 时锚定语义（如「mega-nano 区分度」）而非字面数字（如「max-min ≥ 5」）
+- [ ] 数字层 criterion 必伴 fallback：若字面 fail，是否能改 data-driven 修订（无需 fix formula）
+
+**应用：** 所有数字层 acceptance criterion（perf / size / coverage / 量化质量）必经"语义 vs 字面"自检 + dataset 形态预跑。
+
+来源：BL-066 F007 staging recompute 实战 + v0.9.22 #2（用户 2026-05-15 ack）。
+
+### §13.2 mock 不可用三件套：always-skip + unit pure function + staging dogfood（v0.9.22 #12 + BL-070 #21 合并段，两 source）
+
+**Server-action 类测试 mock infeasible** 时的三件套规约。
+
+**触发场景（两 source 实战）：**
+
+- **(v0.9.22 #12 source)** BL-068 e2e refine-action 测试因 Next.js server action mock 在 vitest/playwright 环境**不可行**（需要真实 Next.js runtime + Redis + Postgres），强行 mock 引入大量 fragility
+- **(BL-070 #21 source)** BL-070 F006 4 个 refine e2e case 在 mock fired 后 toast 永远 timeout，根因 = Playwright `page.route.fulfill({body: JSON.stringify(...)})` 返 plain JSON **不满足 Next.js RSC wire format** → client deserialise throw → catch 走 network toast。任何 body shape filter 都救不了
+
+**三件套规约：**
+
+| 件 | 内容 | 适用 |
+|---|---|---|
+| 1️⃣ **always-skip in CI** | `test.skip(true, SKIP_*_REASON)` 在 spec 文件顶部 always-skip server-action e2e | CI 不可达路径 |
+| 2️⃣ **unit pure function** | 抽 server-action 内部纯函数（validation / dedupe / transform）写 vitest 单测覆盖 | Unit-testable 逻辑 |
+| 3️⃣ **staging dogfood** | spec acceptance 文档化"该路径由 staging dogfood + audit_log 实测覆盖"+ dogfood checklist 含此路径 | 端到端真实验证 |
+
+**Skip 模板：**
+```typescript
+// tests/e2e/feature-name.spec.ts
+import { test, expect } from "@playwright/test";
+
+const SKIP_SERVER_ACTION_REASON =
+  "Next.js server action 在 e2e 不可 mock（RSC wire format 不可由 route.fulfill 满足）。" +
+  "本路径由 staging dogfood + audit_log 覆盖 — 见 docs/specs/<batch>-spec.md §6 dogfood checklist。";
+
+test.describe("Feature X", () => {
+  test.skip(true, SKIP_SERVER_ACTION_REASON);
+  // test cases skeleton kept for documentation
+});
+```
+
+**反例：** 不应该 `test.skip` 简化 CI 红 — 必须有 dogfood 替代覆盖才能 skip，否则等于无验收。Reviewer 审 spec 时验：每个 always-skip server-action e2e 是否在 spec dogfood checklist 列入对应路径。
+
+**适用判断 checklist：**
+- [ ] 测试 mock 复杂度 > 测试价值？ → skip + dogfood
+- [ ] 测试 mock 是否可由 `vi.fn()` / `route.fulfill` 简单覆盖？ → 优先 mock
+- [ ] CI 跑测试是否需要真实 Next.js runtime + Redis + Postgres？ → 无法 mock，必 skip + dogfood
+
+来源（双 source）：
+- BL-067 §8 + BL-068-F006 实战（v0.9.22 #12，用户 2026-05-17 ack）
+- BL-070 F006 RSC wire format 不可 mock 实证（v0.9.23 #21，用户 2026-05-25 ack）
+- 两条同主题 inline-merge 为 §13.2 单段（per D7 强制合并）
+
+### §13.3 staging-only env flag + runbook 让 Reviewer 可执行受控 chaos test（BL-069 #15）
+
+**Chaos test 模式：** 所有"chaos / edge case 实测"类 acceptance（cap 满 / network error / 5xx mock）应有 staging-only env flag + runbook 入 spec acceptance，避免 Reviewer L2 卡壳烧真钱。
+
+**模式核心（BL-069 fix-round 1 B2 case）：**
+
+1. **专用 staging-only env flag**（如 `BRIEF_FORCE_CAP_EXHAUSTED=true`）严格 `=== 'true'` 防 typo
+2. **audit 加 `forced=true` 字段**让 dashboard 监控可区分真 cap 满 vs 模拟
+3. **runbook 5 步：** 备份 .env → 加 flag tee → pm2 reload → UX 验 → 清理（restore .env + reload）
+4. **2 单测保护：** (a) 启用 enable case / (b) `'yes'` / 其他字符串非严格 regression guard
+
+**对比 BL-067 §6 chaos test 模式（改 .env.staging API key）：**
+
+| 维度 | BL-067 §6 模式 | BL-069 #15 staging flag 模式 |
+|---|---|---|
+| 影响范围 | 整 API key 失效 | 仅当前路径 short-circuit |
+| 防 typo | ❌ key 改错全 CI 红 | ✅ 严格 `=== 'true'` |
+| Audit 可区分 | ❌ | ✅ `forced=true` 字段 |
+| 复杂度 | 简单（改 .env 即可） | 中（需写 flag + runbook + 单测） |
+
+**flag 命名规范：** `<FEATURE>_FORCE_<SCENARIO>=true`（如 `BRIEF_FORCE_CAP_EXHAUSTED` / `KOL_FORCE_FETCH_ERROR` / `AI_FORCE_RATE_LIMIT`）。
+
+**runbook 5 步模板：** 见 `docs/dev/bl069-cap-exhausted-simulation-runbook.md`（备份 + tee + pm2 reload + UX 验 + 清理）。
+
+**应用：** spec 起草凡列 "chaos test / edge case 实测" 类 acceptance，必含 staging-only flag + runbook + 单测三组件，避免 Reviewer L2 时发现无入口卡壳。
+
+来源：BL-069 fix-round 1 B2 + v0.9.23 #15（用户 2026-05-18 ack）。
