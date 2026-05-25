@@ -21,7 +21,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "`git rm framework/cowork-constraint-design.md`（整文件 90 LOC 删除）",
       "改 `framework/bootstrap.sh` line 100：删除 cowork-constraint-design.md 防御性 mv 整行",
@@ -35,7 +35,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 6.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "拆 `framework/harness/planner.md` 625 LOC → planner-workflow.md (~200) + planner-arbitration.md (~200) + planner-checklists.md (~250) 3 文件",
       "planner-workflow.md 含 §0-§6 启动流程 + 阶段流转 + done 收尾 + 用户反馈处理 + 新增 §「阶段转换 + fix_rounds 计数语义」（D12：fix_rounds = verifying→fixing→reverifying 循环次数，不是任意 fix commit 数）+ BL-070 反例 ≥5 LOC",

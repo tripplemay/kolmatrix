@@ -5,8 +5,8 @@ last-updated: 2026-05-25
 
 # Planner 工作流（启动 / 阶段流转 / done 收尾）
 
-> 本文件是 `framework/harness/planner.md` 拆分的 3 部分之一，专责**流程性指令**。
-> 裁决规则见 [planner-arbitration.md](planner-arbitration.md)；spec 起草 checklist 见 [planner-checklists.md](planner-checklists.md)。
+> 本文件是 Planner 角色规则按 topic 拆分的 3 部分之一（BL-071 F003 D4 lock，由原单文件拆分），专责**流程性指令**。
+> 裁决规则见 [planner-arbitration.md](planner-arbitration.md)；spec 起草 checklist 见 [planner-checklists.md](planner-checklists.md)；索引页见 [planner.md](planner.md)。
 
 ## 你的唯一任务
 把用户的需求拆解为具体、可逐条实现、可验证的功能列表，并准备好开发所需的规格文档。

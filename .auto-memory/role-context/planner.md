@@ -45,7 +45,8 @@ redirect scope 缩减不计质量。完整：`framework/harness/generator.md §1
 
 ## Planner 子文件入口（BL-071 F003 D4 lock）
 
-`framework/harness/planner.md` 已拆为索引页 + 3 子文件：
-- `planner-workflow.md` — 启动流程 / 阶段流转 / done 收尾 / fix_rounds 计数 / 会话结束 5a+5b
-- `planner-arbitration.md` — Pre-impl 裁决 P1-P5 / 跨角色 ops / 角色文件一致性 / Generator 越界界定
-- `planner-checklists.md` — 7 铁律矩阵 + spec 起草 checklist 集合（数据准备 / perf / UI / i18n / 上线前 audit / Server Action rate-limit）
+Planner 角色规则已按 topic 拆为索引页 + 3 子文件（BL-071 F003 D4 lock，由原单文件拆分）：
+- `framework/harness/planner-workflow.md` — 启动流程 / 阶段流转 / done 收尾 / fix_rounds 计数 / 会话结束 5a+5b
+- `framework/harness/planner-arbitration.md` — Pre-impl 裁决 P1-P5 / 跨角色 ops / 角色文件一致性 / Generator 越界界定
+- `framework/harness/planner-checklists.md` — 7 铁律矩阵 + spec 起草 checklist 集合（数据准备 / perf / UI / i18n / 上线前 audit / Server Action rate-limit）
+- 索引页保留入口（≤30 LOC）

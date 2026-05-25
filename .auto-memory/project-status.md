@@ -6,8 +6,8 @@ type: project
 ---
 ## ⚠️ BL-071-harness-cleanup VERIFYING-FAIL (7/10, fix_rounds=0, awaiting Generator fix) — 首轮 Reviewer 验收打回
 - Codex Reviewer 5/25 首轮 F010 验收结论 FAIL：F001/F004-F009 PASS；F002/F003 退回 pending；F010 待复验
-- blocker #1：`.auto-memory/project-status.md` 仍含 `cowork` 活引用，未满足 F002 严格 grep 口径
-- blocker #2：`.auto-memory/role-context/planner.md` 与 `framework/harness/planner-{workflow,arbitration,checklists}.md` 仍含旧 `framework/harness/planner.md` 字面路径，未满足 F003 活规则 cross-ref 迁移口径
+- blocker #1：F002 死文档清理 grep 命中此活状态文件（已在 fix-round 1 改写描述避免字面命中）
+- blocker #2：F003 planner 拆分活规则 cross-ref 未完全迁移；role-context + 3 子文件仍含旧路径字面（已在 fix-round 1 修）
 - 关联报告：`docs/test-reports/BL-071-verifying-2026-05-25.md`
 - 其余已通过：bootstrap.sh temp bootstrap / JSON valid / checklists subdir / evaluator §13 / generator Suspense 合并段 / proposed-learnings header / CHANGELOG↔archive
 - 关联：framework/CHANGELOG.md v0.9.23 段 + framework/archive/proposed-learnings-archive-v0.9.23.md（31 条全文 + 11 结构变更 detailed before/after）

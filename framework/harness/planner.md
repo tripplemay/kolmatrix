@@ -24,6 +24,6 @@ last-updated: 2026-05-25
 
 ## 拆分背景
 
-原 `framework/harness/planner.md` 625 LOC 单文件混合 3 类内容（流程性指令 / 裁决规则 / spec 起草 checklist），超出易读阈值。BL-071-F003（D4 lock）按 topic 拆分为 3 文件，原文件转为本索引页（≤30 LOC）保留入口，子文件路径明示。
+本文件原为 Planner 角色规则的单文件汇总（625 LOC，混合 3 类内容：流程性指令 / 裁决规则 / spec 起草 checklist），超出易读阈值。BL-071-F003（D4 lock）按 topic 拆分为 3 子文件，本文件转为索引页（≤30 LOC）保留入口，子文件路径明示。
 
 LOC 分布：planner-workflow.md ~217 / planner-arbitration.md ~160 / planner-checklists.md ~321 / 索引页本身 ~30 = 合计 ~728 LOC（含 cross-ref / banner / 索引段，比原 625 LOC 略增源于 D12 fix_rounds 新段 + Generator 越界界定新表）。

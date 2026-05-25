@@ -5,8 +5,8 @@ last-updated: 2026-05-25
 
 # Planner 铁律与 Spec 起草 Checklist 集合
 
-> 本文件是 `framework/harness/planner.md` 拆分的 3 部分之一，专责**铁律矩阵 + spec 起草 checklist**。
-> 启动流程见 [planner-workflow.md](planner-workflow.md)；裁决规则见 [planner-arbitration.md](planner-arbitration.md)。
+> 本文件是 Planner 角色规则按 topic 拆分的 3 部分之一（BL-071 F003 D4 lock，由原单文件拆分），专责**铁律矩阵 + spec 起草 checklist**。
+> 启动流程见 [planner-workflow.md](planner-workflow.md)；裁决规则见 [planner-arbitration.md](planner-arbitration.md)；索引页见 [planner.md](planner.md)。
 
 ---
 

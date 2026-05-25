@@ -5,8 +5,8 @@ last-updated: 2026-05-25
 
 # Planner 裁决与越界界定
 
-> 本文件是 `framework/harness/planner.md` 拆分的 3 部分之一，专责**裁决规则**。
-> 启动流程见 [planner-workflow.md](planner-workflow.md)；spec 起草 checklist 见 [planner-checklists.md](planner-checklists.md)。
+> 本文件是 Planner 角色规则按 topic 拆分的 3 部分之一（BL-071 F003 D4 lock，由原单文件拆分），专责**裁决规则**。
+> 启动流程见 [planner-workflow.md](planner-workflow.md)；spec 起草 checklist 见 [planner-checklists.md](planner-checklists.md)；索引页见 [planner.md](planner.md)。
 
 ---
 
