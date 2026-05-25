@@ -138,5 +138,56 @@
       "Reviewer 复验全部 acceptance + signoff，progress.json `status: verifying → done`（首轮 PASS, fix_rounds=0, per harness-rules + evaluator.md §12 — 直接 verifying→done, 不必经 fixing→reverifying）；若验收发现 BL-070 引入新 blocker → status: verifying → fixing → reverifying → done 走 fix-round",
       "**本批次 done = Phase 4 完整 done = 4 路由 IA 完整闭环 = 对外上线 ready**"
     ]
+  },
+  {
+    "id": "F009",
+    "title": "JS bundle 拆 chunk（next/dynamic 4 路由）— TBT 攻关，perf score 单点最大杠杆",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 12.0,
+    "status": "pending",
+    "acceptance": [
+      "/reach page.tsx：OutreachComposer (38.9KB) + SendingPerformanceChart (recharts) + RecentRepliesCard + RecentlySentTable + TopTemplatesCard 改 next/dynamic ssr:false 懒载（保留 OutreachQuickStats 同步以保 LCP）；composer 加 loading 占位高度匹配最终高度防 CLS",
+      "/match page.tsx：按 ?view= 分支懒载 MatchKolTable vs MatchKolCard；AddToCampaignDialog + ConfirmDeleteDialog + MatchRefineBar + AiSuggestionsSidebar 按需 next/dynamic",
+      "/brief page.tsx：tab=campaign 不导入 ProductListPanel 链路（ProductCard/ProductModal/ProductsClient）；tab=products 不导入 BriefPageClient 链路（CampaignForm/BriefAiInputBar）",
+      "/insight page.tsx：tab=reports/analytics 不导入 DashboardContent；tab=dashboard 保同步（默认 tab LCP 优先）",
+      "量化：4 路由本地登录态 Lighthouse desktop TBT < 200ms each + perf score ≥80 each + a11y 不退化（仍 ≥90）",
+      "现有 page-level e2e 全过；新增 ≥1 case 验 tab 切换前后 client bundle 差异",
+      "L1 PASS（typecheck + lint + vitest）+ staging git_sha 一致"
+    ]
+  },
+  {
+    "id": "F010",
+    "title": "Image 优化 — 9 处 raw <img> → next/image（LCP + CLS 攻关）",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 6.0,
+    "status": "pending",
+    "acceptance": [
+      "替换 9 处 raw <img> → next/image（清单见 spec §2 F010）：MatchKolCard / MatchKolTable / CrmRecentChanges / reach RecentRepliesCard + RecentlySentTable / weekly-report WeeklyReportBrandHeader / kols/[id] / AiRecommendationPanel / shared weekly-report/[token]",
+      "每处加 explicit width/height 或 fill + sizes（KOL avatar 推荐 width=40 height=40 或 fill + sizes=\"40px\"）",
+      "移除 9 处对应 eslint-disable-next-line @next/next/no-img-element",
+      "外部 CDN domain 不在 images.remotePatterns 内时补全 whitelist（当前：YT + Stitch；新 CDN 加注释来源）",
+      "量化：4 路由本地登录态 Lighthouse desktop CLS < 0.05 each + LCP < 2.5s each",
+      "视觉 baseline 不破坏；如必然漂移走 update-visual-baselines.yml regen + commit message 注明根因",
+      "L1 PASS + staging git_sha 一致"
+    ]
+  },
+  {
+    "id": "F011",
+    "title": "SSR Suspense stream — defer 非主表 DB 调用（/match + /reach），LCP 攻关",
+    "executor": "generator",
+    "priority": "medium",
+    "estimated_hours": 8.0,
+    "status": "pending",
+    "acceptance": [
+      "/match page.tsx：runMatchSearch 保顶层 await；loadDatabaseStats 与 savedSearches 改 Suspense + skeleton；campaign lookup 保顶层（影响 sidebar mount 判断）",
+      "/reach page.tsx：loadOutreachComposerData + runEmailQuickStats 保顶层；runSendingPerformance30d / runTopTemplates / runRecentReplies / runRecentlySent 改 Suspense + skeleton",
+      "skeleton 共用 glass-panel animate-pulse 类，高度匹配实际组件防 CLS",
+      "/brief 与 /insight 不动（SSR 数据流较轻无明显收益）",
+      "量化：4 路由本地登录态 Lighthouse desktop FCP < 1.5s each + LCP -300ms vs F008 baseline（实测前后对比写入 signoff）",
+      "现有 page-level e2e 全过；如 loading state 影响时序加 waitFor 而非改 acceptance",
+      "L1 PASS + staging git_sha 一致"
+    ]
   }
 ]

@@ -3,22 +3,19 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🧪 BL-070-reach-insight-cleanup REVERIFYING (7/8, fix_rounds=1, spec=0947d58, staging=05e5c1f)
+## 🧪 BL-070-reach-insight-cleanup FIXING (7/11, fix_rounds=2, perf 攻关 in-flight)
 - ✅ F001-F005 done (无变, 见 git log)
-- ✅ F006 done (合并 e2e ec39157 + fix-round 1 a5a4cf1 把 4 refine result-branch case `test.skip(true, SKIP_REFINE_E2E_REASON)` always-skip — Playwright route.fulfill 不满足 Next.js RSC wire format, brief-flow.spec.ts 同问题 precedent; 覆盖留 RefineInputBar 10+AiRecPanel 5+MatchRefineBar 4 unit + staging dogfood)
-- ✅ F007 done (3f3d9b1+...+cb35e51 原始 + fix-round 1 fc71862 补 5-locale landing.* 完整 namespace + auth.wantsDemoLabel + 9 KEEP_AS_EN allowlist + zh screenshot 真翻译 — i18n-locale-coverage 8/8 PASS)
-- 🆕 fix-round 1 副带修 landing batch 遗留 (4 条; 不修则 BL-070 reverifying CI gate 红挡):
-  - 13cdc3f migration ROLLBACK 注释 (`20260519100000_access_request_wants_demo_camelcase`)
-  - a5a4cf1 `src/app/[locale]/request-access/schema.ts` 抽离 AccessRequestSchema (Next.js 16 'use server' file 仅允 async function exports)
-  - 7009c8e bot-commit visual baseline regen (landing-zh-{desktop,mobile} + en-request-access)
-  - 05e5c1f locale-detection.spec.ts 5 case 预期更新 (`/{locale}/login` → `/{locale}/?$`, resolveAuthAwareRoot anon → landing)
-- 🆕 CI 基础设施: 637b163 ci.yml 加 workflow_dispatch (github-actions[bot] commit 默认不 cascade CI)
-- ✅ Reviewer 2026-05-20 L1 reverifying PASS: `docs/test-reports/BL-070-reverifying-2026-05-20.md`
-- 🧪 F008 prod 首跑已做：prod HEAD/health/git_sha/老路由 404/5 locale/cost/CI-E2E 均通过；audit script 有 2 个误报 + 1 个旧 baseline 口径 warning
-- ❌ 当前真实 blocker（F008）: 本地登录态 Lighthouse performance 未达标（brief 78 / match 75 / reach 75 / insight 75；a11y 96/95/97/91 已过）
-- ⏸️ F008 仍 pending: deploy 后 24h audit 复跑 + ≥5 marketer dogfood + 最终 signoff
-- CI 全绿 @ 05e5c1f (run 26121789868), staging health=healthy
-- v0.9.23 候选 fix-round 1 净新增 4 条 → 累计 7 条 BL-070 sediment (#21 RSC mock 不可用 / #22 prisma rollback skeleton / #23 'use server' export 约束 / #24 bot commit 不 cascade); 合 Planner done 阶段集中沉淀
+- ✅ F006 done (合并 e2e ec39157 + fix-round 1 always-skip 4 refine case)
+- ✅ F007 done (5-locale landing.* 完整 namespace + i18n parity 8/8 PASS @ fc71862)
+- ✅ Reviewer 2026-05-20 L1 reverifying PASS (docs/test-reports/BL-070-reverifying-2026-05-20.md)
+- 🧪 F008 partial: 4 自动化 §1-§4 PASS, 5 手动 §5-§9 + signoff PENDING; §10 #8 Lighthouse perf 75-78 < 80 (brief78/match75/reach75/insight75) 唯一硬阻塞
+- 🆕 fix-round 2 启动 (Planner Kimi 2026-05-25, 用户 ack 方案 A): 新增 F009/F010/F011 perf 攻关 3 features, addendum spec @ docs/specs/BL-070-perf-optimization-addendum-spec.md
+  - F009 high 12h: next/dynamic 拆 4 路由 client bundle (TBT 攻关, 单点最大杠杆)
+  - F010 high 6h: 9 处 raw <img> → next/image (LCP + CLS 攻关)
+  - F011 medium 8h: /match + /reach SSR Suspense stream defer 非主表 DB call (LCP 攻关)
+- F009-F011 完成后 Generator 切 fixing→reverifying → Reviewer L2 跑 Lighthouse 复测 (4 路由 × 3 跑) + 续 F008 §9 dogfood + §10 24h audit
+- 当前 staging healthy @ 05e5c1f, CI 全绿 run 26121789868
+- v0.9.23 候选累计 7+1=8 条 (BL-070 sediment +1 from Kimi: perf 量化门槛应入 spec acceptance 而非 batch 末 retrofit); 合 Planner done 阶段集中沉淀
 - 本批次 reverifying done = Phase 4 完整 done = 4 路由 IA 闭环 = 对外上线 ready (距 ~2 周)
 ## ✅ BL-069-brief-page-merge DONE（7/7, fix_rounds=1）
 ## ✅ BL-068-conversational-refine DONE（7/7, fix_rounds=3）
@@ -28,10 +25,11 @@ type: project
 ## 关键决议（已 lock）
 - 5/10 ADR-013 AI Native 转向 Phase 1-4 / BL-048 合入 Phase 2 第二批
 - 5/14 BL-066 决策点 + framework v0.9.21 沉淀
+- 5/25 BL-070 fix-round 2 入场: F008 §10 #8 Lighthouse perf 75-78 < 80 触发 perf 攻关 3 features (方案 A 全做)
 ## 用户手工待办
 1. 5/17 weekly growth-curve check（重跑 BL-061 F003 SQL）
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
-3. BL-070 F008: prod deploy 触发 (用户 ack 时间窗) + 24h 监控 + ≥5 marketer dogfood spot check
+3. BL-070 F008: F009-F011 done 后用户 ack prod deploy + 24h 监控 + ≥5 marketer dogfood
 ## 角色 / Backlog
-- BL-070 reverifying: F006/F007 已本地复验通过，等待 F008 prod signoff 步骤
-- Phase 3 全 DONE ✅ / Phase 4: BL-069 ✅ + BL-070 reverifying 🚧 7/8 / BL-070 done = 对外上线 ready (距 ~2 周)
+- BL-070 fixing: F009/F010/F011 待 Generator 接手 (按 F009→F010→F011 顺序, F009 单点最大杠杆优先)
+- Phase 3 全 DONE ✅ / Phase 4: BL-069 ✅ + BL-070 fixing 🚧 7/11 / BL-070 done = 对外上线 ready
