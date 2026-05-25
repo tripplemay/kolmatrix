@@ -4,11 +4,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-072-prod-hotfix BUILDING (5/8, fix_rounds=0) — Generator 5/8 完成
-- ✅ F001 /brief 宽度 (7278af0) ✅ F002 /insight i18n wiring (7278af0) ✅ F004 table_rows (915ffcb) ✅ F005 Pattern 6 + checklist (915ffcb) ✅ F006 10 处 outbound link + i18n IA rename (2727104)
-- 🚧 F003 i18n 全 audit (5h, next session) / F007 CI 防御三件套 (5h) / F008 Reviewer signoff (codex 3h)
-- Baseline regen × 2 (run 26406110567 + 26406781056) — current HEAD 37a1d02 含全部 F001-F006 + 新 baselines
-- CI manual workflow_dispatch 26407006431 in_progress @ 37a1d02 验证 baseline regen 后 green
+## 🚧 BL-072-prod-hotfix BUILDING done (7/8 Generator, fix_rounds=0) — F008 待 Codex
+- ✅ F001-F007 全 landed, main HEAD f4f1a68, CI 26408129120 success ✓
+- 🚧 待: staging deploy (Generator 硬要求) + status building→verifying + F008 Reviewer signoff (codex 3h)
+- Baseline regen × 2 (run 26406110567 / 26406781056) — 4 prod issues 全修
+- 5 commits: 7278af0 F001+F002 / 915ffcb F004+F005 / 2727104 F006 / 2dddc99 F003 / f4f1a68 F007
 - A1 lock 全部 ack 实施 (顺序 C / 范围 A / i18n A brand kept-en / link 目标 A)
 ## ✅ BL-071 DONE (10/10, fix_rounds=1, tag bl071-done @ 99c43fc) — framework v0.9.23 闭环
 - 12 决策点 D1-D12 全 lock 实施; 11 项结构变更 + 31 条 sediment inline-merge + 0 chronological-append
