@@ -5,7 +5,7 @@
   "completed_features": 10,
   "fix_rounds": 4,
   "current_sprint": "BL-070-reach-insight-cleanup",
-  "last_updated": "2026-05-25T16:31+0800",
+  "last_updated": "2026-05-25T16:44+0800",
   "reference_docs": [
     "docs/specs/BL-070-reach-insight-cleanup-spec.md",
     "docs/adr/ADR-013-ai-native-product-pivot.md",
@@ -33,7 +33,7 @@
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "BL-070 fix-round 3 本地复验已通过：clean 3099 实例上定向 E2E `133 passed / 43 skipped / 0 failed`，Lighthouse 4 路由 × 3 全过；/en/match CLS 已稳定降至 0.008。当前已无本地代码 blocker，F008 仅剩 prod redeploy / 24h audit / ≥5 marketer dogfood / final signoff。",
+    "summary": "BL-070 当前本地与 prod 首跑验收均已通过：prod HEAD/health.git_sha = `fc79f43`，`bl070-prod-audit.sh` 的 6 个 FAIL 经人工复核全部为脚本口径问题，真实产品 blocker 已清空。F008 剩余仅为 24h audit、≥5 marketer dogfood 和 final signoff。",
     "pass_count": 10,
     "partial_count": 1,
     "fail_count": 0,
@@ -41,8 +41,8 @@
       {
         "feature_id": "F008",
         "result": "PARTIAL",
-        "description": "F008 §10 中本地相关 gate 已全部通过：fix-round 3 复验结果为 brief 98 / match 96 / reach 93 / insight 95（3-run median），/en/match CLS 稳定为 0.008，定向 E2E 为 133 passed / 43 skipped / 0 failed。剩余未完成项均为 prod-facing checklist：prod redeploy、prod health git_sha、24h audit、≥5 marketer dogfood、final signoff doc。",
-        "steps_to_reproduce": "1. 在 clean `3099` 实例上运行 `bash scripts/test/codex-e2e.sh tests/e2e/brief-flow.spec.ts tests/e2e/match-flow.spec.ts tests/e2e/reach-flow.spec.ts tests/e2e/insight-flow.spec.ts tests/e2e/ia-refactor-cleanup-2026-05-19.spec.ts tests/e2e/locale-detection.spec.ts tests/e2e/request-access.spec.ts`，确认 `133 passed / 43 skipped / 0 failed` 2. 复用 `playwright/.auth/marketer.json` 对 `http://localhost:3099/en/{brief,match,reach,insight}` 各运行 Lighthouse Desktop preset 3 次，确认 /match CLS 为 0.008 且 4 路由 score 均 ≥ 80 3. 用户 ack prod deploy 时间窗后继续 prod signoff 流程。"
+        "description": "F008 的本地与 prod 首跑 gate 已通过：本地 fix-round 3 复验结果为 brief 98 / match 96 / reach 93 / insight 95（3-run median），/en/match CLS 稳定为 0.008，定向 E2E 为 133 passed / 43 skipped / 0 failed；prod 现已部署到 `fc79f43`，health.git_sha 同为 `fc79f43`，首轮 prod audit 中 6 个 FAIL 经人工复核均为脚本误报或旧 baseline 口径。剩余未完成项仅为 24h audit、≥5 marketer dogfood、final signoff doc。",
+        "steps_to_reproduce": "1. 确认 prod HEAD 与 health.git_sha 均为 `fc79f43` 2. 运行 `ssh tripplezhou@34.180.93.185 'bash /opt/kolmatrix/scripts/bl070-prod-audit.sh'`，观察原始输出 `PASS=33 FAIL=6 WARN=1` 3. 人工复核：5 locale `_deprecated_by_` marker 实际均为 0；`src/middleware-helpers.ts` redirect rule count 实际为 0；baseline 实际为 29 非脚本写死的 25 4. 24h 后复跑 audit，并收集 ≥5 marketer dogfood 证据后完成终签。"
       }
     ]
   },
