@@ -4,12 +4,14 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-073-prod-hotfix BUILDING (0/8, fix_rounds=0) — Material Symbols bare + brief 嵌套 + i18n + 防御升级 + filter UX
-- 5/26 用户 deploy prod 后实测报 4 issues: #1 8 漏 ligature (multi-line span bare) / #2 BriefPageClient 嵌套 max-w-3xl / #3 IA 缺活动 nav / #4 match search 空 (4A i18n key MISSING + 4B data coverage NULL)
-- A0+A1 完成 5/26: 3 独立批次 (BL-073 本批 #1+#2+#4A+防御 / BL-074 IA v2 #3 / BL-075 data coverage #4B)
-- F001-F008 pending ~12h. 含 Pattern 7 防御 (bare in multi-line) + i18n key existence test v2 + filter UX (country/language disable)
-- BL-074 + BL-075 已 backlog 排队 (depends_on BL-073 done)
-- Planner Kimi SSH prod 实测: withTenant + runMatchSearch 后端完美 (count=1385); 根因数据层 country_code/language NULL
+## 🔍 BL-073-prod-hotfix VERIFYING (7/7 Generator done, fix_rounds=0) — F008 codex pending
+- ✅ F001-F007 全 landed @ main HEAD 853992a (含 baseline regen), CI 26419651586 success ✓
+- ✅ Staging deployed @ 853992a @ 2026-05-26T05:10+0800 (git_sha verify match ✓ healthy)
+- 🔍 F008 Codex Reviewer signoff (L1 6 项 + L2 staging 抽样 6 项)
+- Baseline regen × 1 (run 26419495834 → 853992a, 仅 en-brief.png drift from F003)
+- 2 user commits: 10fbb79 F001+F002+F003 / 99b7244 F004+F005+F006+F007
+- A1 lock 全部 ack 实施 (3 独立批次 / Pattern 7 / i18n MISSING fix / STRICT_MS_ICONS)
+- BL-074 (IA v2) + BL-075 (data coverage) backlog 排队 depends_on BL-073 done
 ## ✅ BL-072-prod-hotfix DONE (8/8, fix_rounds=1, tag bl072-done @ bc24e09) — 4 prod hotfix + CI 防御三件套完成并终签
 - Codex Reviewer 5/26 复验 PASS：唯一 blocker（/insight unused warning）已修；`npm run lint` 回到 0 errors / 3 warnings；signoff 已落 `docs/test-reports/BL-072-signoff-2026-05-26.md`
 - L1 通过：lint 3 warnings soft-watch / `npx tsc --noEmit` PASS；上轮已验证 `npm test` 185 files 1322 tests PASS、stale path grep 0、subset regen 含 `table_rows`、zh insight keys 完整
