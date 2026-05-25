@@ -1,5 +1,30 @@
 [
   {
+    "id": "BL-072",
+    "title": "Prod hotfix — /brief 宽度 + /insight i18n + Material Symbols table_rows + 10 处 IA outbound stale links",
+    "description": "**触发：** 2026-05-25 17:30+ BJT 用户在 prod 实地报告 4 个 P1/P2 issue (3 P1 + 1 P2)，Planner Kimi 5/25 本会话 grep 全量根因 + 总根因模式分析，写入 audit doc `docs/test-reports/BL-072-prod-hotfix-audit-2026-05-25.md` (~430 LOC, §1-§10 完整 4 issue 详细根因 + 修复方案 + A1 lock 决策 + features 预案 + sediment 候选)。\n\n**4 issues 概况：**\n1. /brief 宽度 `max-w-3xl` (768px) vs 其他 3 路由 `max-w-[1600px]` 视觉不一致 [P2] — 1 处 fix\n2. /insight 中文模式大量英文 — page.tsx 6 处硬编码 + InsightTabs labels prop 未传 + ReportsPanel/AnalyticsPanel zh.json keys 缺 [P1] — 3-5 处 fix\n3. /match TABLE_RO 字面文字 — Material Symbols 子集字体不含 `table_rows` glyph + script Pattern 1-5 不能捕跨行 JSX 三元 [P1] — 2 处 fix\n4. /insight QuickActions / GreetingBar 等 click 404 — BL-070-F004 删 5 老路由 + 即停 redirect 时未 grep 全仓 outbound 链接 [P1] — 10 处 fix\n\n**总根因模式：** BL-070 IA refactor 大范围结构改动后**缺乏 outbound 一致性扫描**（visual 宽度 / i18n 消费侧 / Material Symbols manifest / 路由 outbound links）+ 4 维度测试基建都不命中。\n\n**预案 features (~20-25h ≈ 3 day Generator + 0.5 day Reviewer，方案 A 完整版 lock 5/25)：**\n- F001 /brief 宽度对齐 4 路由 + form 行宽 spot check (0.5h)\n- F002 /insight i18n wiring 补全 (page + InsightTabs + zh.json keys + 5 locale + KEEP_AS_EN_PATHS allowlist，brand kept-en 策略) (2.5h)\n- F003 i18n 全面 audit 修复 (/reach + 4 路由嵌入组件 hardcoded English sweep + 5 locale 完善度) (4-6h)\n- F004 Material Symbols `table_rows` 加 manifest + 重生 woff2 (0.5h)\n- F005 改 regenerate script Pattern 6 JSX 三元 grep + manifest 增量维护惯例 (2h)\n- F006 10 处 outbound stale link 修复 + i18n key 标签同步 (3-4h)\n- F007 CI 防御三件套 (link-target audit + Material Symbols glyph 三向断言 + i18n page-side 探针) (4-6h)\n- F008 Reviewer L1+L2 + signoff (3h)\n\n**依赖：** BL-071 先完（用户 5/25 ack 顺序 C；BL-071 framework-only 与 BL-072 src/ 业务码不冲突域，但顺序避免 merge 复杂）。\n\n**沉淀价值 (BL-072 done 后)：** 4 条规律候选（IA refactor outbound 一致性扫描 / Material Symbols Pattern 6 模板 / i18n 消费侧探针 / 删路由前 grep callers）入下个 framework sediment batch（与 v0.9.23 26 条积压同 batch 处理 OR 单独 v0.9.24 batch）。",
+    "decisions": [
+      "用户 5/25 18:30 lock 顺序=C: BL-071 先完后 BL-072 (BL-071 framework only 与 BL-072 src/ 业务码不冲突域但顺序避免 merge)",
+      "用户 5/25 lock 范围=A 完整版 (F001-F008, ~20-25h)，含 i18n 全 audit + Material Symbols Pattern 6 + CI 三向防御，长期收益最大",
+      "用户 5/25 lock i18n 翻译策略=A brand kept-en (Insight/Dashboard/Reports/Analytics 全保英文 brand，与 sidebar.insight='洞察' 形成 nav 本地化 + brand 英文双层; test 加 KEEP_AS_EN_PATHS allowlist)",
+      "用户 5/25 lock stale link 目标=A: CrmPipelineBars → /crm?status=, kols/[id] → /kols (语义合理不混路由)",
+      "Planner Kimi 起 audit doc 完整含 §1-§10，含 4 issue 各自详细根因 + 修复方案 + features 预案 + sediment 候选; BL-071 done 后 Planner 读 backlog.json + audit doc 直接起 spec + features.json"
+    ],
+    "confirmed_at": "2026-05-25T18:30+0800",
+    "priority": "high",
+    "tags": [
+      "prod-hotfix",
+      "i18n",
+      "material-symbols",
+      "ia-refactor-outbound",
+      "visual-consistency"
+    ],
+    "discovered_in": "用户 prod 实测 2026-05-25 (BL-070 done 当日)",
+    "audit_doc": "docs/test-reports/BL-072-prod-hotfix-audit-2026-05-25.md",
+    "depends_on": "BL-071 done",
+    "estimated_total_hours": 22.5
+  },
+  {
     "id": "BL-054",
     "title": "flaky network test isolate — pre-commit-hook.test.ts woff2 拉网络抖动隔离",
     "description": "**触发：** 2026-05-08 BL-052 verifying 阶段 Reviewer 跑默认 `npm run test:integration` 套件 fail，定位 `tests/integration/pre-commit-hook.test.ts` 的 'icon staged + woff2 matches script output → hook PASS' 用例：完整套件并发跑时 `scripts/regenerate-material-symbols-subset.sh` 报 'failed (network? quota? typo in manifest?)'，单文件隔离跑 PASS。\n\n**根因：** 该测试在 hook path 调用 `regenerate-material-symbols-subset.sh`，脚本依赖 Google Fonts 网络拉取 subset woff2。完整 `test:integration` 套件并发跑时网络竞争 / quota 抖动 → flaky；单文件 PASS 证明逻辑正确，仅环境时序敏感。\n\n**实物追溯：**\n- `tests/integration/pre-commit-hook.test.ts` 来自 BL-027-F004（commit 2c8af8a）\n- `scripts/regenerate-material-symbols-subset.sh` 来自 BL-025-F009 / BIx-mvp-polish-pass\n- `framework/templates/pre-commit-hook.sh`（4980B）依赖该脚本\n\n**业务影响评估：**\n- ❌ 阻塞 Reviewer 默认 `npm run test:integration` 全绿门槛\n- ❌ CI 路径如启用 `test:integration` 默认套件会概率性红\n- ✅ 不影响 BL-052 等业务批次实际功能（BL-052 已用 P5 裁决放过：docs/test-reports/BL-052-verifying-2026-05-07.md §Planner 裁决）\n- ✅ 不影响 prod / staging 健康（hook 仅本地 dev 路径）\n\n**3 候选修复方向（Generator 开工时择优 + Pre-impl audit 确认）：**\n\n| 方向 | 方案 | 优劣 |\n|---|---|---|\n| **A 隔离 + serial（推荐）** | 加 `npm run test:integration:network` 单独串行跑该 test；默认 `test:integration` 排除 `pre-commit-hook.test.ts` | 改动小（package.json + vitest config 各 ~5 行），保留网络验证路径，CI 单独跑该 job |\n| B 预生成缓存 | 提前在 git checkout 阶段缓存 Google Fonts subset woff2 到 `node_modules/.cache/material-symbols-subset/`，hook 优先读缓存，缓存缺失才拉网络 | 复杂，需缓存失效策略；省网络但 dev 首次仍需拉 |\n| C 移到 e2e 套件 | 该 test 移到 `tests/e2e/` Playwright network-allowed 跑，CI nightly 跑 | 测试本质属 hook integration 不属 e2e，语义不洁 |\n\n**实装范围（Generator 工时 ~2-4h）：**\n\n- F001 vitest config 改造：vitest.integration.config.ts 加 `testNamePattern` exclude `pre-commit-hook.test.ts` 默认套件 + 新增 vitest.integration-network.config.ts 仅含网络型 test\n- F002 package.json 加 script `test:integration:network` 调用新 config（serial mode + 长 timeout）\n- F003 CI workflow `ci.yml` 改 `npm run test:integration` 跑默认 + `npm run test:integration:network` 跑独立 job（network job 允许 retry 2 次）\n- F004 docs/dev/ 加 testing-strategy.md 段说明 'network-dependent integration tests' 隔离策略\n- F005 grep 全仓还有哪些类似网络型 integration test 一并隔离（v0.9.14 完整模式 grep 防漏）\n\n**依赖：** 无\n\n**ADR-worthy：** 弱 — 测试策略变更但范围窄 / 影响仅 framework templates。如发现还有 ≥3 处类似网络型测试（F005 grep 命中），建议升 ADR-014 'Integration test isolation strategy'。\n\n**预估工时：** 2-4h Generator + 0.5h Reviewer\n\n**触发时机：** BL-052 done 后（5/8 周一晚）任何时段 / 不阻塞 5/13 上线（BL-052 + BL-054 均可在 5/13 前完成，但即使 BL-054 拖到 5/14+ 也无生产影响）。",

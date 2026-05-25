@@ -24,6 +24,7 @@ type: project
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 3. **BL-070 post-launch ops（5/25 ack 归 backlog）：** 24h 后跑 `ssh tripplezhou@34.180.93.185 'bash /opt/kolmatrix/scripts/bl070-prod-audit.sh'` + 邀 ≥5 marketer prod dogfood 反馈 0 P0/P1；全过则 signoff §4 #9/#10 DEFERRED→PASS
 ## 角色 / Backlog (下批次候选 — BL-071 done 后)
+- ★ **BL-072 prod hotfix (5/25 audit + A1 lock 完成, audit doc docs/test-reports/BL-072-prod-hotfix-audit-2026-05-25.md)：** 4 issues (3 P1 + 1 P2) — /brief 宽度 + /insight i18n + Material Symbols table_rows + 10 处 IA outbound stale links. 8 features ~20-25h. 顺序 C / 范围 A 完整版 / brand kept-en / link 目标 A 已全 lock. 真客户立刻遇到, BL-071 done 后立即起.
 - Phase 5：个性化学习 / AI 学到偏好 / Brief 模板库 / comparative query / skip-replace 写 DB
 - BL-062 backlog：KOL data coverage gap 治理
 - 真客户 onboarding 准备：db:seed 验证 + tenant cleanup + 监控仪表板
