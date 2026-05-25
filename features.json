@@ -152,7 +152,7 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "L1 自动化 6 项 PASS：(1) find framework/ frontmatter scope tag 完整 (2) grep `framework/harness/planner.md` 仅命中历史保留 (3) grep cowork 仅命中 4 历史保留 (4) backlog.json + progress.json + features.json valid JSON (5) bootstrap.sh dry-run 或实际 cp 到 /tmp 比对 (6) checklists/ subdir 移动正确",
       "L2 抽样选读 5 项 PASS：(1) planner-workflow.md / planner-arbitration.md / planner-checklists.md 真按 topic 拆分非简单切割 (2) evaluator.md 新 §13 测试设计真按 topic 合并（v0.9.22 #2+#12+BL-070 #21）(3) generator.md BL-070 #29+#30 Suspense fallback 真合并为 1 段含两 source (4) proposed-learnings.md header §「写入流程」真正式化 D7+D8 (5) CHANGELOG v0.9.23 ↔ archive v0.9.23.md 1-to-1 对应",

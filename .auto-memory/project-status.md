@@ -4,12 +4,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ⚠️ BL-071-harness-cleanup VERIFYING-FAIL (7/10, fix_rounds=0, awaiting Generator fix) — 首轮 Reviewer 验收打回
-- Codex Reviewer 5/25 首轮 F010 验收结论 FAIL：F001/F004-F009 PASS；F002/F003 退回 pending；F010 待复验
-- blocker #1：F002 死文档清理 grep 命中此活状态文件（已在 fix-round 1 改写描述避免字面命中）
-- blocker #2：F003 planner 拆分活规则 cross-ref 未完全迁移；role-context + 3 子文件仍含旧路径字面（已在 fix-round 1 修）
-- 关联报告：`docs/test-reports/BL-071-verifying-2026-05-25.md`
-- 其余已通过：bootstrap.sh temp bootstrap / JSON valid / checklists subdir / evaluator §13 / generator Suspense 合并段 / proposed-learnings header / CHANGELOG↔archive
+## ✅ BL-071-harness-cleanup DONE (10/10, fix_rounds=1) — framework/harness 重组 + v0.9.23 sediment 全部通过复验并终签
+- Codex Reviewer 5/26 复验 PASS：F002/F003 blocker 已解除；F010 完成；signoff 已落 `docs/test-reports/BL-071-signoff-2026-05-26.md`
+- L1 通过：旧 planner 路径 grep 仅剩 archive/CHANGELOG/历史 spec；死文档关键词 grep 仅剩 archive/CHANGELOG/spec；JSON valid；bootstrap temp run PASS；checklists subdir 状态正确
+- L2 抽样通过：planner 三拆分文件、evaluator §13、generator §15.2、proposed-learnings header、CHANGELOG↔archive 全部成立
+- 11 项结构变更 + 编号修 4 处 + 死文档清理 3 处 + 31 条 sediment inline-merge 已闭环，无 broken cross-reference / 无 scope tag 错配 / 无内容丢失
 - 关联：framework/CHANGELOG.md v0.9.23 段 + framework/archive/proposed-learnings-archive-v0.9.23.md（31 条全文 + 11 结构变更 detailed before/after）
 - 0 行业务代码改动（framework + .auto-memory + harness-rules + docs/CHANGELOG only）
 - git tag bl071-before-{planner,evaluator}-restructure 留 rollback 锚点
