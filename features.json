@@ -1,163 +1,138 @@
 [
   {
     "id": "F001",
-    "title": "项目根 vs framework/ template 关系明示（D1+D2+D9 banner + 内容同步 + 防漂移流程）",
+    "title": "/brief 宽度对齐 4 路由 max-w-[1600px] + form 行宽 spot check（Issue #1）",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.5,
-    "status": "completed",
+    "estimated_hours": 0.5,
+    "status": "pending",
     "acceptance": [
-      "`framework/harness/harness-rules.md` 顶部加 template banner（注明：本文件为 template，agent 运行时不读，新铁律先 add 项目根再 port）",
-      "同步 framework/harness/harness-rules.md 内容到与项目根 harness-rules.md 一致（含铁律 #12 `git diff --cached` 验 staged，抽象版去掉项目特定 BIx commit hash，保留通用原则）",
-      "`framework/memory/` 5 个文件（MEMORY.md + project-status.md + environment.md + user-role.md + reference-docs.md）顶部加 frontmatter `<!-- TEMPLATE FILE: copy to .auto-memory/ via bootstrap.sh -->`",
-      "`framework/README.md` 顶部加 banner（注明：本目录是 template 维护人参考，agent 运行时读 CLAUDE.md → harness-rules.md（项目根）→ .auto-memory/，不读本文件）",
-      "`framework/README.md` 新增 §「新规则演进流程」段 ≥20 LOC，含 4 步流程（新铁律先 add 项目根 → 评估抽象 → port template → CHANGELOG 同步）",
-      "grep 全仓验 cross-reference 无 broken：`grep -rln 'framework/harness/harness-rules.md\\|framework/memory/' framework/ .auto-memory/ docs/ --include='*.md' --include='*.sh' --include='*.json'`"
+      "`src/app/[locale]/(app)/brief/page.tsx:75` 改 `max-w-3xl` → `max-w-[1600px]`，与 /match /reach /insight 对齐",
+      "/brief?tab=campaign 在宽屏 (1600+) 渲染时 CampaignForm 行宽保持可读（≤720-800px 单字段宽，必要时给 form 子容器加 `max-w-2xl mx-auto`）",
+      "/brief?tab=products ProductListPanel 在宽屏渲染填满 1600px 容器",
+      "4 路由 (brief/match/reach/insight) 顶部 header 视觉宽度一致（manual inspect 或加 e2e visual snap）",
+      "L1 PASS (lint + tsc + vitest)"
     ]
   },
   {
     "id": "F002",
-    "title": "cowork 死文档全清（D3：删 framework/cowork-constraint-design.md + bootstrap.sh line 100 + README §历史段）",
+    "title": "/insight i18n wiring 补全 + InsightTabs labels + 缺 zh.json keys 补 + 5 locale + KEEP_AS_EN_PATHS allowlist（Issue #2, brand kept-en 策略 lock A）",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.0,
-    "status": "completed",
+    "estimated_hours": 2.5,
+    "status": "pending",
     "acceptance": [
-      "`git rm framework/cowork-constraint-design.md`（整文件 90 LOC 删除）",
-      "改 `framework/bootstrap.sh` line 100：删除 cowork-constraint-design.md 防御性 mv 整行",
-      "改 `framework/README.md`：删除 line 88 §「历史说明」cowork 段（Cowork 历史交给 CHANGELOG v0.7.0 + framework/archive/proposed-learnings-archive-v0.5.md 承担）",
-      "grep 验残留：`grep -rln -i 'cowork' framework/ .auto-memory/ docs/specs/ docs/dev/ --include='*.md' --include='*.json' --include='*.sh'` 仅命中 4 历史保留文件（CHANGELOG.md / archive/proposed-learnings-archive-v0.5.md / docs/specs/BL-071-harness-cleanup-spec.md / docs/test-reports/BL-071-harness-audit-2026-05-25.md）"
+      "src/app/[locale]/(app)/insight/page.tsx 6 处硬编码英文改 t() 调用: L61 h1 → t('pageTitle') / L64 subtitle → t('subtitle') / L98 ReportsPanel h2 → t('reports.title') / L100 body → t('reports.body') / L119 AnalyticsPanel h2 → t('analytics.title') / L121 body → t('analytics.body')",
+      "InsightTabs 调用加 labels prop: `labels={{dashboard: t('tabs.dashboard'), reports: t('tabs.reports'), analytics: t('tabs.analytics')}}` (中文模式下 tab 显 '仪表盘/报告/分析')",
+      "messages/{zh,en,ja,ko,es}.json `insight` namespace 补 4 新 keys: insight.reports.{title,body} + insight.analytics.{title,body} (5 locale 完整翻译，title 全保英文 brand, body 真翻)",
+      "tests/unit/i18n-locale-coverage.test.ts KEEP_AS_EN_PATHS allowlist 加 brand kept-en 路径: insight.pageTitle / insight.subtitle / insight.reports.title / insight.analytics.title (tabs.* 不加白名单，已真翻为中文)",
+      "i18n-locale-coverage test 跑后 8/8 PASS (5 locale × en + 自身)",
+      "staging 中文模式访问 /insight 实测: heading='Insight' brand + tabs='仪表盘/报告/分析' 中文 + body 段中文"
     ]
   },
   {
     "id": "F003",
-    "title": "planner.md 拆 3 文件 (workflow + arbitration + checklists) + D12 fix_rounds 计数语义入 workflow",
+    "title": "i18n 全面 audit 修复（/reach + 4 路由嵌入组件 hardcoded English sweep + 5 locale 完善度）",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 6.0,
-    "status": "completed",
+    "estimated_hours": 5.0,
+    "status": "pending",
     "acceptance": [
-      "拆 `framework/harness/planner.md` 625 LOC → planner-workflow.md (~200) + planner-arbitration.md (~200) + planner-checklists.md (~250) 3 文件",
-      "planner-workflow.md 含 §0-§6 启动流程 + 阶段流转 + done 收尾 + 用户反馈处理 + 新增 §「阶段转换 + fix_rounds 计数语义」（D12：fix_rounds = verifying→fixing→reverifying 循环次数，不是任意 fix commit 数）+ BL-070 反例 ≥5 LOC",
-      "planner-arbitration.md 含 Pre-impl P1-P5 五级裁决 + spec 调整规则 + Generator 越界界定",
-      "planner-checklists.md 含 7 铁律矩阵 + spec 起草 checklist 集合（数据准备 + perf + UI + i18n + rate-limit + Server Action 等全部集中）",
-      "原 `framework/harness/planner.md` 改为 ~30 LOC 索引页（列 3 子文件 + 一句话描述 + 跳转），保留向后兼容",
-      ".auto-memory/role-context/planner.md 短摘要 cross-ref 更新指向新 3 文件",
-      "framework/harness/pre-impl-adjudication.md + evaluator.md + generator.md 等内部对 planner.md 段的 cross-reference 全部按内容定位到新文件",
-      "grep `framework/harness/planner.md` 引用仅命中 archive / CHANGELOG / 旧 commit 历史保留（活规则全部更新）"
+      "/reach/page.tsx 全 grep raw English literal ≥4 char (排除 data-testid/className/icon/metadata)，凡用户可见硬编码改 t() (t() 调用从 10 → ≥18 预估)",
+      "/insight 嵌入组件 sweep (src/features/dashboard/ DashboardContent.tsx + KpiRow.tsx + WorkflowSteps.tsx + QuickActions.tsx + GreetingBar.tsx + RecentActivityCard.tsx + ActiveCampaignsSection.tsx 等)，硬编码改 t()",
+      "/match 嵌入组件 sweep (src/app/[locale]/(app)/match/ 除 page.tsx 外其他组件)",
+      "/brief 嵌入组件 sweep (src/app/[locale]/(app)/brief/ 除 page.tsx 外其他组件)",
+      "5 locale 翻译质量 spot check 10-15 个高频 keys (随机抽 zh/ja/ko/es) 验无明显机器翻译瑕疵",
+      "KEEP_AS_EN_PATHS allowlist 增量记录 brand kept-en 路径 (与 F002 累计预期 ~10-15 条)",
+      "i18n-locale-coverage test 跑后仍 8/8 PASS",
+      "staging 中文模式访问 4 路由实测: 无明显英文露出 (除 brand kept-en)"
     ]
   },
   {
     "id": "F004",
-    "title": "evaluator.md 按 topic 重组（L1 前置 / L2 手段 / 验收口径 / 测试设计）+ 编号撞车修复",
+    "title": "Material Symbols `table_rows` 加 manifest + 重生 woff2（Issue #3 快修）",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 5.0,
-    "status": "completed",
+    "estimated_hours": 0.5,
+    "status": "pending",
     "acceptance": [
-      "framework/harness/evaluator.md 432 LOC 按 topic 重组：§1-§9 核心 workflow 保留（修 §3 §4 编号撞车）",
-      "原 §10-§20 11 段合并到 4 新 topic 段：§10 L1 验收前置（prisma generate + .nvmrc + lint matrix）+ §11 L2 验收手段（fire-and-forget audit + E2E suite + SQL RLS + L1 角色门禁 + Material Symbols）+ §12 验收口径（SHA + Smoke + 首轮 PASS）+ §13 测试设计（占位 F008 时 BL-070 #21 + v0.9.22 #2 #12 inline-merge）",
-      "原 §10-§20 内容无丢失，每条 sediment 在新结构能找到归宿（diff 验证）",
-      "LOC ±10% 范围（预期 432 → ~420 含编号 cleanup）",
-      ".auto-memory/role-context/evaluator.md 短摘要 cross-ref 全部指向新段",
-      "拆前打 git tag `bl071-before-evaluator-restructure` 留 rollback 锚点"
+      "scripts/material-symbols-icons-manifest.txt 追加 1 行: `table_rows  # match/MatchSummaryBar.tsx:98  | JSX ternary (BL-072-F004)`",
+      "运行 `bash scripts/regenerate-material-symbols-subset.sh` 重生 src/app/fonts/material-symbols-outlined.woff2",
+      "woff2 size 略增 (预期 11008B → 11200-11500B 加 1 glyph)",
+      "commit 含 manifest 行 + woff2 文件 + script 输出含 `table_rows` ICON_COUNT 新值",
+      "staging 实测 /match view-toggle: grid_view + table_rows 两态都正确渲染 icon glyph (不再字面文字)"
     ]
   },
   {
     "id": "F005",
-    "title": "framework/harness/*.md scope tag 添加（D6 frontmatter project-specific / framework-generic / mixed）",
+    "title": "regenerate script Pattern 6 JSX 三元 grep + manifest 维护惯例文档化（Issue #3 防同类）",
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 2.0,
-    "status": "completed",
+    "status": "pending",
     "acceptance": [
-      "F003+F004 后的 11 framework 文件全部加 YAML frontmatter scope tag",
-      "framework-generic 类（harness-rules / planner-workflow / planner-arbitration / planner-checklists / generator / evaluator / pre-impl-adjudication / ai-action-contract / ui-fidelity-guardrail）标 `scope: framework-generic`",
-      "mixed 类（deploy-patterns / database-patterns）标 `scope: mixed` + `project-specific-sections: [§X, §Y]` 列项目特定段编号",
-      "project-specific 类（checklists/material-symbols-pattern + checklists/i18n-namespace-add-checklist，F006 完成后位置）标 `scope: project-specific`",
-      "framework/README.md 新增 §「scope tag 用法说明」段 ≥15 LOC（如何复用、如何筛选、mixed 怎么读）"
+      "scripts/regenerate-material-symbols-subset.sh 加 Pattern 6: 匹配 `material-symbols-outlined` 上下文 ±5 行内 quoted string，经 false-positive 词排除清单 (来自本批 F005 实测 audit: true/false/undefined/null/inherit/currentColor/cyan/purple/neutral/sm/md/lg/xl/left/right/top/bottom/center/start/end/grid/swap/email/body/cta/h2/title/truncate/invisible/normal/platforms/card/table/ai_generated/duplicate/offline 等)",
+      "Pattern 6 跑后 ICON_COUNT 与原值持平或略增 (验证无 regression)",
+      "Pattern 6 自然发现 `table_rows` (即便 manifest 暂时去掉该行 Pattern 6 也能命中)",
+      "framework/harness/checklists/material-symbols-pattern.md 新增 §「manifest 增量维护」≥30 LOC: 何时手工追 manifest (JSX 三元 / 对象 value 非 icon: key / return 语句 / ?? fallback) + 必填 path label 含 file:line + JSX 三元 / return 等类型 + IA refactor 改名时同步 manifest path label",
+      "framework/harness/checklists/material-symbols-pattern.md scope tag 保 `scope: project-specific`"
     ]
   },
   {
     "id": "F006",
-    "title": "项目特定 case 文件移 framework/harness/checklists/ subdir（D10）",
+    "title": "10 处 outbound stale link 修复 + i18n key 标签同步（Issue #4, link 目标 lock A）",
     "executor": "generator",
-    "priority": "medium",
-    "estimated_hours": 1.5,
-    "status": "completed",
+    "priority": "high",
+    "estimated_hours": 3.5,
+    "status": "pending",
     "acceptance": [
-      "`mkdir -p framework/harness/checklists/`",
-      "`git mv framework/harness/material-symbols-pattern.md framework/harness/checklists/material-symbols-pattern.md`",
-      "`git mv framework/harness/i18n-namespace-add-checklist.md framework/harness/checklists/i18n-namespace-add-checklist.md`",
-      "grep 全仓更新 cross-reference 路径：`grep -rln 'framework/harness/material-symbols-pattern.md\\|framework/harness/i18n-namespace-add-checklist.md' framework/ .auto-memory/ docs/specs/ docs/dev/`",
-      "framework/README.md 新增 §「checklists subdir 用法」段 ≥15 LOC（subdir 内放项目特定 case checklist；framework-generic 留顶层）",
-      "检查 bootstrap.sh 同步：若有 explicit 列举这两文件路径则改 cp 路径；无则跳过",
-      "grep 移动后原位置：`find framework/harness -maxdepth 1 -name 'material-symbols*' -o -name 'i18n-namespace*'` 应空"
+      "QuickActions.tsx:22 `/knowledge-base` → `/brief?tab=products`",
+      "QuickActions.tsx:23 `/discovery` → `/match`",
+      "QuickActions.tsx:24 `/database` → `/match?view=table`",
+      "GreetingBar.tsx:29 `/campaigns/new` → `/brief`",
+      "CrmPipelineBars.tsx:55 `/database?status=` → `/crm?status=` (lock A)",
+      "WeeklyReportHeader.tsx:100 `/weekly-report?range=` → `/insight/weekly-report?range=`",
+      "WeeklyReportNavSelectors.tsx:57 `/weekly-report?` → `/insight/weekly-report?`",
+      "kols/[id]/page.tsx:157 `/database` → `/kols` (lock A)",
+      "campaigns/page.tsx:69 `/campaigns/new` (newCampaignHref) → `/brief`",
+      "campaigns/AiSuggestionsCard.tsx:12 `/discovery` (fallback) → `/match`",
+      "QuickActions i18n key 标签 5 locale 同步: knowledgeBase/discovery/database key 标签按新 IA 改 (zh: 录入产品→管理产品 / 发现 KOL→匹配 KOL 等; 5 locale × 6-8 leaves 完整翻译; 实际命名待 Generator 读现有 zh.json 后决定)",
+      "grep 全仓 active code 残留: `grep -rEn \"['\\\"\\`]/(knowledge-base|discovery|database|outreach|emails|analytics|dashboard|reports|weekly-report|campaigns/new)\" src/ --include='*.tsx' --include='*.ts' | grep -v '__tests__\\|\\.test\\.\\|/api/'` 返 0 命中",
+      "staging 中文模式实测 /insight QuickActions 4 按钮 + GreetingBar 新建活动 + /campaigns + /crm + /kols/<id> + /insight/weekly-report click 全部到达新 IA 路由不 404"
     ]
   },
   {
     "id": "F007",
-    "title": "sediment 写入规则正式化（D7+D8 入 proposed-learnings.md header）+ 编号错乱修复（pre-impl / deploy-patterns / generator）",
+    "title": "CI / test 防御三件套（link-target audit + Material Symbols glyph 三向断言 + i18n page-side 消费侧探针）",
     "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 3.0,
-    "status": "completed",
+    "priority": "medium",
+    "estimated_hours": 5.0,
+    "status": "pending",
     "acceptance": [
-      "framework/proposed-learnings.md 顶部新增 §「写入流程」段 ≥40 LOC：含 4 步流程（propose → ack → inline-merge → archive）+ D7 inline-merge 强制规则（禁 chronological-append §N，找贴近 topic 段合并矩阵行/加子段/修订段内文字，找不到才开新 topic）+ sediment 类型分类（新规律/新坑/模板修订/铁律补充）+ 写入位置决策树",
-      "修复 framework/harness/pre-impl-adjudication.md §11 位置错乱：重排 §10（顺接） / §11 历史段 last",
-      "修复 framework/harness/deploy-patterns.md §5.1 编号错乱：重命名为 §6 独立 topic（PM2 reload 不重读 .env 与 v0.9.7 §1.6 合并 inline-merge）",
-      "修复 framework/harness/generator.md §7 重复编号：§7 框架提案 / §8 Handoff 说明分开，原 §8-§10 顺延为 §9-§11",
-      "编号修复同步更新所有内部 cross-ref：grep `§N` 全文验证（特别 pre-impl-adjudication §11 / deploy-patterns §6 / generator §8-§11）"
+      "tests/unit/link-target-audit.test.ts 创建: 扫 src/ 所有 .tsx/.ts 文件 href 字面 (含模板 ${locale}/...) → 抽 path prefix → 比对实际路由树 + IA_REDIRECT_RULES → 不在两者命中 fail 列 file:line; 第一版 advisory (warning)",
+      "tests/unit/material-symbols-coverage.test.ts 创建: 三向断言 (1) src/ 提及 ligature ⊆ manifest (含 Pattern 6 检测) (2) manifest ⊆ woff2 glyph 表 (3) src/ ⊆ woff2 glyph 表; 用 fontkit npm pkg 读 woff2 glyph 表; 含 false-positive 排除清单与 F005 Pattern 6 同步",
+      "tests/unit/i18n-page-side-consumption.test.ts 创建: 扫 4 路由 page.tsx + 主组件 (*Client.tsx/*Panel.tsx/*Bar.tsx)，grep raw English literal ≥4 char 在 JSX text content / attribute value，排除 data-testid/data-state/className/icon name/CSS variant/注释/metadata，命中且不在 KEEP_AS_EN_PATHS allowlist → fail; 第一版 advisory (仅 4 路由 page.tsx)，稳定后扩展嵌入组件",
+      "3 test 文件 advisory 模式 PASS (warning 优先于 fail)",
+      "link-target-audit test 跑后 0 fail (F006 修复全部 10 处后)",
+      "material-symbols-coverage 三向断言 PASS (F004 加 table_rows 后)",
+      "i18n-page-side-consumption test 跑后 0 fail (F002 + F003 修复后)",
+      ".github/workflows/ci.yml 加这 3 个 test job (与现有 vitest 共跑)",
+      "后续 PR 触发 3 test 防御性运行验证"
     ]
   },
   {
     "id": "F008",
-    "title": "31 条 sediment 写入（v0.9.22 13 + BL-069 3 + BL-070 12 + audit §5 缺失 3）按新结构 inline-merge",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 14.0,
-    "status": "completed",
-    "acceptance": [
-      "ai-action-contract.md 3 段（v0.9.22 #6 SDK 抽象层 / #10 dedupe-then-validate / #11 prompt 自检）— 全 inline-merge 入 §4.7 / §5 / §6 现有段，禁开新 §",
-      "generator.md 12 段（v0.9.22 #3 #5 #8 #9 共 4 段 + BL-069 #14 + BL-070 #17-19 #22 #23 #27 #28 #29+#30 合并共 8 段）— BL-070 #29+#30 必合并为单段「Suspense fallback 规范」含两条 source",
-      "evaluator.md 3 段（v0.9.22 #2 量化 criterion + #12 mock infeasible + BL-070 #21 e2e server-action mock 不可用）— #12+#21 必合并为同段「mock 不可用三件套（always-skip + unit + staging）」；BL-069 #15 staging chaos flag runbook → §11 L2 验收手段 chaos test 子段",
-      "pre-impl-adjudication.md 2 段（v0.9.22 #1 多 audit 串联 + #7 命中率）— inline-merge 入 §3 audit 设计或 §9.1 spec 自检清单",
-      "deploy-patterns.md 3 段（v0.9.22 #4 Turbopack + BL-070 #24 github-actions[bot] workflow_dispatch + audit §5.1 staging deploy 前置 git pull）— audit §5.1 inline-merge §3.2 deploy 步骤",
-      "planner-workflow.md / planner-arbitration.md / planner-checklists.md 分摊 5 段（v0.9.22 #13 verifying gate trace → arbitration P5 / BL-069 #16 fix-round 类型 A vs B → workflow §阶段转换合并 D12 / BL-070 #25+#26 perf 量化门槛+client/server 分类 → checklists §perf 合并为单段 / audit §5.2 session_notes 写作惯例 → workflow §5b / audit §5.3 commit message 格式 → workflow §commit 规范)",
-      "0 条以 chronological-append §N 方式落地（D7 强制；F010 L2 #4 验证）",
-      "同主题多条合并必须合并段名保留两 source 信息（#29+#30 / #12+#21 / #25+#26 三组）",
-      "31 条对应 framework/harness/*.md 新内容 LOC 合计 ~600-1000（与 audit 估一致）",
-      "proposed-learnings.md 13 个 `<!-- vX 沉淀完成 -->` HTML 注释保留 + 15 条 BL-069/070 entries 全部清空（archive 保留全文）"
-    ]
-  },
-  {
-    "id": "F009",
-    "title": "CHANGELOG v0.9.23 + archive v0.9.23.md + backlog cleanup + .auto-memory 同步",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 3.5,
-    "status": "completed",
-    "acceptance": [
-      "framework/CHANGELOG.md 顶部新增 v0.9.23 段 ~80-120 LOC：31 条 sediment 1-line summary（按目标文件分组）+ 11 项结构变更（D1-D12 各 1 行）+ 编号错乱修 4 处 + cowork 死文档清理 3 处",
-      "framework/archive/proposed-learnings-archive-v0.9.23.md 新建：31 条全文（不省略，保留 source-of-truth）+ 11 项结构变更详细 before/after（每项含 decision lock 引 BL-071 spec）",
-      "framework/proposed-learnings.md 清空所有未 archived entries（保留 header + §「写入流程」+ 新增 `<!-- v0.9.23 沉淀完成 marker -->` HTML 注释）",
-      ".auto-memory/MEMORY.md 索引同步：若 framework/harness/planner.md 拆为 3 文件需同步 T2 链接到新 3 文件路径",
-      ".auto-memory/project-status.md 覆盖写 BL-071 进度 marker（done 后再次覆盖）",
-      "backlog.json 整理：BL-070 post-launch ops 项移到用户手工待办（如已在则跳过）；已 closed 项（如 BL-046 closed-merged）归 archive，确认整体 valid JSON（`python3 -c 'import json; json.load(open(\"backlog.json\"))'`）"
-    ]
-  },
-  {
-    "id": "F010",
-    "title": "Reviewer L1+L2 抽样验证（executor:codex）— 11 验收项 + signoff doc 终签",
+    "title": "Reviewer L1+L2 抽样验证 + signoff doc 终签（executor:codex）",
     "executor": "codex",
     "priority": "high",
-    "estimated_hours": 4.0,
-    "status": "completed",
+    "estimated_hours": 3.0,
+    "status": "pending",
     "acceptance": [
-      "L1 自动化 6 项 PASS：(1) find framework/ frontmatter scope tag 完整 (2) grep `framework/harness/planner.md` 仅命中历史保留 (3) grep cowork 仅命中 4 历史保留 (4) backlog.json + progress.json + features.json valid JSON (5) bootstrap.sh dry-run 或实际 cp 到 /tmp 比对 (6) checklists/ subdir 移动正确",
-      "L2 抽样选读 5 项 PASS：(1) planner-workflow.md / planner-arbitration.md / planner-checklists.md 真按 topic 拆分非简单切割 (2) evaluator.md 新 §13 测试设计真按 topic 合并（v0.9.22 #2+#12+BL-070 #21）(3) generator.md BL-070 #29+#30 Suspense fallback 真合并为 1 段含两 source (4) proposed-learnings.md header §「写入流程」真正式化 D7+D8 (5) CHANGELOG v0.9.23 ↔ archive v0.9.23.md 1-to-1 对应",
-      "0 broken cross-reference / 0 内容丢失 / 0 scope tag 错配",
-      "signoff doc `docs/test-reports/BL-071-signoff-2026-05-XX.md` 完整含 L1/L2 结果 + sample 引用 + 终签"
+      "L1 自动化 6 项 PASS: (1) npm run lint (2) npx tsc --noEmit (3) npm test 含 F007 新增 3 test (4) grep 全仓 active code 老路径返 0 命中 (5) 4 路由 page.tsx max-w-[1600px] 一致 (6) Material Symbols subset 含 table_rows + messages/zh.json insight.reports.{title,body}/insight.analytics.{title,body}",
+      "L2 staging 抽样实测 6 项 PASS: (1) /insight 中文模式 heading=Insight brand + tabs=仪表盘/报告/分析 + body 中文 (2) /match view-toggle icon 两态都正确 (3) /brief 宽度对齐 (4) /insight QuickActions 4 按钮不 404 (5) /crm CrmPipelineBars click 到 /crm?status (6) /kols/<id> Back 到 /kols",
+      "0 broken cross-reference / 0 hardcoded English (除 brand allowlist) / 0 stale link / 0 Material Symbols 字面文字",
+      "signoff doc docs/test-reports/BL-072-signoff-2026-05-XX.md 含 L1/L2 结果 + sample 引用 + 终签",
+      "Reviewer 出 evaluator_feedback 含 fail_count=0 (或仅 deferred 项有合理 DEFERRED 注)"
     ]
   }
 ]
