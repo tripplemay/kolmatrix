@@ -184,12 +184,12 @@
       "trendAccumulating": "Datos de tendencia acumulándose, disponible después de 7 días"
     },
     "quickActions": {
-      "knowledgeBase": "Añadir producto",
-      "knowledgeBaseDescription": "Registra un juego; AI redacta los activos de contacto.",
-      "discovery": "Descubrir KOLs",
-      "discoveryDescription": "Filtra más de 2.500 creadores usando 15 señales.",
-      "database": "Base de datos de KOLs",
-      "databaseDescription": "Revisa tu lista corta de creadores guardados.",
+      "knowledgeBase": "Gestionar Productos",
+      "knowledgeBaseDescription": "Añadir/editar entradas de juego; IA genera material de outreach automáticamente.",
+      "discovery": "Match de KOLs",
+      "discoveryDescription": "Filtrar 2.500+ creadores en 15 dimensiones.",
+      "database": "Lista de KOLs",
+      "databaseDescription": "Explora el pool de KOLs guardados en vista de tabla.",
       "campaigns": "Lanzar campaña",
       "campaignsDescription": "Inicia contacto y rastrea ROI.",
       "comingSoon": "BM2",

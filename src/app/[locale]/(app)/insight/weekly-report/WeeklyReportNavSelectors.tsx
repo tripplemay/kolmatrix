@@ -54,7 +54,7 @@ export function WeeklyReportNavSelectors({
         next.set(key, value);
       }
       const qs = next.toString();
-      router.push(`/${locale}/weekly-report${qs ? `?${qs}` : ""}`);
+      router.push(`/${locale}/insight/weekly-report${qs ? `?${qs}` : ""}`);
     },
     [router, searchParams, locale]
   );

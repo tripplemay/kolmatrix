@@ -97,7 +97,7 @@ export async function WeeklyReportHeader({
               return (
                 <Link
                   key={r.key}
-                  href={`/${locale}/weekly-report?range=${r.key}`}
+                  href={`/${locale}/insight/weekly-report?range=${r.key}`}
                   data-testid={`weekly-report-range-${r.key}`}
                   aria-current={active ? "page" : undefined}
                   prefetch={false}

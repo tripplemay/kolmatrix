@@ -184,12 +184,12 @@
       "trendAccumulating": "趋势数据累积中，7 天后可见"
     },
     "quickActions": {
-      "knowledgeBase": "录入产品",
-      "knowledgeBaseDescription": "新增游戏条目，AI 自动生成触达素材。",
-      "discovery": "发现 KOL",
+      "knowledgeBase": "管理产品",
+      "knowledgeBaseDescription": "新增/编辑游戏条目，AI 自动生成触达素材。",
+      "discovery": "匹配 KOL",
       "discoveryDescription": "基于 15 维筛选 2,500+ 创作者。",
-      "database": "KOL 数据库",
-      "databaseDescription": "查看已保存的候选 KOL。",
+      "database": "KOL 列表",
+      "databaseDescription": "在表格视图浏览已保存的 KOL 池。",
       "campaigns": "新建活动",
       "campaignsDescription": "启动触达并追踪 ROI。",
       "comingSoon": "BM2",

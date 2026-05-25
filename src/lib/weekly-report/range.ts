@@ -1,5 +1,5 @@
 /**
- * BL-024-F003 — `/weekly-report` time-range toggle.
+ * BL-024-F003 — `/insight/weekly-report` time-range toggle.
  *
  * - `lastWeek`  → current ISO week (Mon-Sun, 7 days)
  * - `lastMonth` → trailing 28 days (4 ISO weeks ending current Sunday)

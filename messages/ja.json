@@ -184,12 +184,12 @@
       "trendAccumulating": "トレンドデータ蓄積中、7日後に表示"
     },
     "quickActions": {
-      "knowledgeBase": "商品を追加する",
-      "knowledgeBaseDescription": "ゲームを記録します；AI がアウトリーチ資産を作成します。",
-      "discovery": "KOL を発見する",
-      "discoveryDescription": "15 の指標に基づいて 2,500 以上のクリエイターを絞り込みます。",
-      "database": "KOL データベース",
-      "databaseDescription": "保存したクリエイターのショートリストを確認します。",
+      "knowledgeBase": "プロダクト管理",
+      "knowledgeBaseDescription": "ゲームエントリーを追加/編集、AI がアウトリーチ素材を自動生成。",
+      "discovery": "KOL マッチ",
+      "discoveryDescription": "15 次元で 2,500+ クリエイターを絞り込む。",
+      "database": "KOL 一覧",
+      "databaseDescription": "保存済み KOL プールをテーブルビューで閲覧。",
       "campaigns": "キャンペーンを開始する",
       "campaignsDescription": "アウトリーチを開始し、ROI を追跡します。",
       "comingSoon": "BM2",

@@ -9,7 +9,7 @@ interface Props {
 
 export async function AiSuggestionsCard({ locale, firstCampaignId }: Props) {
   const t = await getTranslations("campaigns.aiSuggestions");
-  const href = firstCampaignId ? `/${locale}/campaigns/${firstCampaignId}` : `/${locale}/discovery`;
+  const href = firstCampaignId ? `/${locale}/campaigns/${firstCampaignId}` : `/${locale}/match`;
   return (
     <GlassPanel data-testid="campaigns-ai-suggestions" className="space-y-3 p-5">
       <div className="flex items-center gap-2">

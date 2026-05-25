@@ -184,12 +184,12 @@
       "trendAccumulating": "Trend data accumulating, available after 7 days"
     },
     "quickActions": {
-      "knowledgeBase": "Add product",
-      "knowledgeBaseDescription": "Record a game; AI drafts outreach assets.",
-      "discovery": "Discover KOLs",
-      "discoveryDescription": "Filter 2,500+ creators across 15 signals.",
-      "database": "KOL Database",
-      "databaseDescription": "Review your saved creator shortlist.",
+      "knowledgeBase": "Manage Products",
+      "knowledgeBaseDescription": "Add/edit game entries; AI auto-generates outreach assets.",
+      "discovery": "Match KOLs",
+      "discoveryDescription": "Filter 2,500+ creators across 15 dimensions.",
+      "database": "KOL List",
+      "databaseDescription": "Browse the saved KOL pool in table view.",
       "campaigns": "Launch campaign",
       "campaignsDescription": "Spin up outreach & track ROI.",
       "comingSoon": "BM2",

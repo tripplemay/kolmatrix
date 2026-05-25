@@ -84,7 +84,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "QuickActions.tsx:22 `/knowledge-base` → `/brief?tab=products`",
       "QuickActions.tsx:23 `/discovery` → `/match`",

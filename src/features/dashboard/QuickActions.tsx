@@ -19,9 +19,9 @@ interface QuickAction {
 }
 
 const ACTIONS: QuickAction[] = [
-  { key: "knowledgeBase", href: "/knowledge-base", icon: "inventory_2", tone: "cyan" },
-  { key: "discovery", href: "/discovery", icon: "travel_explore", tone: "cyan-soft" },
-  { key: "database", href: "/database", icon: "groups", tone: "purple" },
+  { key: "knowledgeBase", href: "/brief?tab=products", icon: "inventory_2", tone: "cyan" },
+  { key: "discovery", href: "/match", icon: "travel_explore", tone: "cyan-soft" },
+  { key: "database", href: "/match?view=table", icon: "groups", tone: "purple" },
   { key: "campaigns", href: "/campaigns", icon: "rocket_launch", tone: "cyan" },
 ];
 

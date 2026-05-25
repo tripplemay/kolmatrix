@@ -66,7 +66,7 @@ export default async function CampaignsPage({ params, searchParams }: Props) {
   const tPager = await getTranslations("discovery.pagination");
 
   const basePath = `/${locale}/campaigns`;
-  const newCampaignHref = `/${locale}/campaigns/new`;
+  const newCampaignHref = `/${locale}/brief`;
 
   const withFilter = (overrides: Parameters<typeof serializeCampaignFilters>[1]) => {
     const q = serializeCampaignFilters(filters, overrides).toString();

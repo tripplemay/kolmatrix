@@ -1,5 +1,5 @@
 /**
- * Pure date helpers for `/weekly-report` — no DB / framework deps so
+ * Pure date helpers for `/insight/weekly-report` — no DB / framework deps so
  * range/range tests can import without spinning up Prisma.
  */
 const DAY_MS = 24 * 60 * 60 * 1000;

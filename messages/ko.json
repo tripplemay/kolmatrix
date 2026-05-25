@@ -184,12 +184,12 @@
       "trendAccumulating": "추세 데이터 수집 중, 7일 후 표시"
     },
     "quickActions": {
-      "knowledgeBase": "제품 추가",
-      "knowledgeBaseDescription": "게임을 기록하세요; AI가 아웃리치 자산을 작성합니다.",
-      "discovery": "KOL 찾기",
-      "discoveryDescription": "15가지 신호를 기준으로 2,500명 이상의 크리에이터를 필터링하세요.",
-      "database": "KOL 데이터베이스",
-      "databaseDescription": "저장한 크리에이터 단축 목록을 검토하세요.",
+      "knowledgeBase": "제품 관리",
+      "knowledgeBaseDescription": "게임 항목 추가/편집, AI 가 아웃리치 자료를 자동 생성합니다.",
+      "discovery": "KOL 매칭",
+      "discoveryDescription": "15 가지 차원에서 2,500+ 크리에이터를 필터링합니다.",
+      "database": "KOL 목록",
+      "databaseDescription": "저장된 KOL 풀을 표 형식으로 탐색합니다.",
       "campaigns": "캠페인 시작",
       "campaignsDescription": "아웃리치를 시작하고 ROI를 추적하세요.",
       "comingSoon": "BM2",

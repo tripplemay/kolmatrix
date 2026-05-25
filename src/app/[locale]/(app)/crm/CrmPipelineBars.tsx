@@ -1,11 +1,11 @@
 /**
  * BM2-F007 · Pipeline by stage horizontal bars (Stitch B-left).
  *
- * Each bar is a `<Link>` to `/database?status=<status>` per Planner
- * adjudication §13 #F:D, fusing the Stitch visual block with the
- * spec §1 "click → /database" semantic. Long-term gets the cyan
- * highlight + animate-pulse; paused/terminated render as smaller
- * secondary bars below the primary 4 stages, mirroring the design.
+ * Each bar is a `<Link>` to `/crm?status=<status>` (BL-072-F006 lock A
+ * re-aimed from the deprecated `/database` route to the CRM workspace
+ * the bars belong to). Long-term gets the cyan highlight +
+ * animate-pulse; paused/terminated render as smaller secondary bars
+ * below the primary 4 stages, mirroring the design.
  */
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
@@ -52,7 +52,7 @@ export async function CrmPipelineBars({ buckets, locale }: Props) {
     return (
       <Link
         key={status}
-        href={`/${locale}/database?status=${status}`}
+        href={`/${locale}/crm?status=${status}`}
         prefetch={false}
         data-testid="crm-pipeline-bar"
         data-status={status}

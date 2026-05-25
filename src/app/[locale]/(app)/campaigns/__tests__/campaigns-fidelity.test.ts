@@ -75,11 +75,14 @@ describe("/campaigns fidelity guards (MVP-vf-F004)", () => {
     expect(fb).toMatch(/from "@\/components\/common"/);
   });
 
-  it("AI Suggestions card hardcodes the /discovery jump per acceptance", () => {
+  it("AI Suggestions card hardcodes the /match jump per acceptance (BL-072-F006 IA refactor: /discovery → /match)", () => {
     const card = read("AiSuggestionsCard.tsx");
     expect(card).toMatch(/data-testid="campaigns-ai-suggestions"/);
     expect(card).toMatch(/data-testid="campaigns-ai-suggestions-cta"/);
-    expect(card).toMatch(/\/discovery/);
+    expect(card).toMatch(/\/match/);
+    // Ensure no residual /discovery references survive the BL-072 IA
+    // refactor — the legacy /discovery route was retired in BL-065.
+    expect(card).not.toMatch(/\/discovery/);
   });
 
   it("page.tsx never passes function props across the RSC boundary", () => {

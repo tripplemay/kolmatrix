@@ -26,7 +26,7 @@ export async function GreetingBar({ name, dateLabel, locale }: Props) {
       </div>
       <GradientButton
         size="lg"
-        href={`/${locale}/campaigns/new`}
+        href={`/${locale}/brief`}
         icon={
           <span className="material-symbols-outlined text-[20px]" aria-hidden>
             add

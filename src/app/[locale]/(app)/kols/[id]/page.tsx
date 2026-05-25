@@ -154,7 +154,7 @@ export default async function KolProfilePage({ params, searchParams }: Props) {
   return (
     <div className="mx-auto max-w-[1400px] space-y-6 pb-16">
       <Breadcrumb
-        href={`/${locale}/database`}
+        href={`/${locale}/kols`}
         backLabel={t("backToDatabase")}
         currentName={kol.displayName}
       />
