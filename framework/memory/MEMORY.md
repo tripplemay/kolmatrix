@@ -1,3 +1,5 @@
+<!-- TEMPLATE FILE: copy to .auto-memory/ via bootstrap.sh — agent 运行时读 .auto-memory/MEMORY.md，本文件不参与运行时加载 -->
+
 # Memory Index
 
 ## T0 — 每次启动必读

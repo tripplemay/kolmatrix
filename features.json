@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "`framework/harness/harness-rules.md` 顶部加 template banner（注明：本文件为 template，agent 运行时不读，新铁律先 add 项目根再 port）",
       "同步 framework/harness/harness-rules.md 内容到与项目根 harness-rules.md 一致（含铁律 #12 `git diff --cached` 验 staged，抽象版去掉项目特定 BIx commit hash，保留通用原则）",

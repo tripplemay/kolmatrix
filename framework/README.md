@@ -1,3 +1,10 @@
+<!--
+TEMPLATE-MAINTAINER FILE — 本目录是 template 维护人的参考。
+- 项目运行时 agent 读：项目根 `CLAUDE.md` → 项目根 `harness-rules.md` → `.auto-memory/` → 角色文件（项目根 `planner.md` / `generator.md` / `evaluator.md`）。
+- agent **不读** `framework/` 下任何文件做运行决策。本目录的所有文件（含本 README、`harness/*.md`、`memory/*.md`）都是 template 副本，用于 `bootstrap.sh` 初始化新项目、或回流沉淀（新铁律 / 新模式）的归宿。
+- 防漂移流程见下方 §「新规则演进流程」段。
+-->
+
 # Triad Workflow
 
 > **三角色 · 状态机 · 无自评** —— Claude CLI + Codex 协同开发的工程化框架
@@ -337,6 +344,28 @@ docs/test-reports/[批次名称]-signoff-YYYY-MM-DD.md
 ```
 
 使用 `framework/templates/signoff-report.md` 模板。`progress.json.docs.signoff` 为空不得置 done。
+
+---
+
+## 新规则演进流程（防漂移）
+
+framework 是 template，项目根是 instance。两者必然漂移：项目实战暴露新铁律 → 先在项目根落地 → 评估抽象后回流 template。本节定义这条单向回流路径，避免"两边都改、各改各的、长期分叉"。
+
+**4 步流程：**
+
+1. **落地（项目根）**：新铁律先 add 到当前项目根的 `harness-rules.md` / `planner.md` / `generator.md` / `evaluator.md`。允许写项目特定的 commit hash / 文件名 / 反例引用，越具体越好（实证胜过抽象）。
+2. **评估（done 阶段）**：批次 done 收尾时，Planner 在 `framework/proposed-learnings.md` 追加一条提案，判断该规则属于 `framework-generic`（普适所有项目）/ `project-specific`（仅本项目）/ `mixed`（含通用骨架但有项目细节）。
+3. **回流（用户 ack 后）**：framework-generic 的规则去掉项目特定引用（commit hash → "实战 incident" / 具体文件名 → 抽象表述）后 port 到 `framework/harness/` 对应 template 文件；mixed 的入 template 时用 `scope: mixed` frontmatter 标注哪些段是 project-specific；project-specific 的不回流。
+4. **登记（CHANGELOG 同步）**：任何 template 回流都必须在 `framework/CHANGELOG.md` 顶部新增 vX.Y.Z 段说明回流来源（批次号 + 1-line summary），同时把 `proposed-learnings.md` 对应 entry 归档到 `framework/archive/proposed-learnings-archive-vX.Y.Z.md` 保留全文。
+
+**禁忌：**
+- 禁直接改 `framework/harness/*.md` 跳过项目根落地（template 没经过实证就抽象 = 拍脑袋规则，必腐烂）
+- 禁忘记 CHANGELOG 登记（CHANGELOG 是 template 漂移的可审计轨迹，缺则下次定 sediment 工作量无据可依）
+- 禁回流时不去项目特定引用（template 含某项目专属 commit hash 时，新项目 bootstrap 后第一眼困惑）
+
+**回流粒度：** 一条规则一次回流，不打包；多条规则同批回流则在 CHANGELOG 内逐条列。粒度细才能让 archive 回查时 1-to-1 对应。
+
+**sediment 写入规则细则见 `framework/proposed-learnings.md` 顶部 §「写入流程」。**
 
 ---
 

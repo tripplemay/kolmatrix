@@ -1,3 +1,4 @@
+<!-- TEMPLATE FILE: copy to .auto-memory/ via bootstrap.sh — agent 运行时读 .auto-memory/user-role.md，本文件不参与运行时加载 -->
 ---
 name: user-role
 description: 用户角色、技术背景和工作方式
