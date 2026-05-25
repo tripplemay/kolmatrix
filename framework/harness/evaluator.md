@@ -19,24 +19,24 @@
 
 ## 执行步骤
 
-### 1. 确认当前阶段
+### §1. 确认当前阶段
 读取 progress.json：
 - `verifying`：首轮（Generator 完成实现，或 Codex-only 批次直接进入）
 - `reverifying`：复验（Generator 已根据上轮 evaluator_feedback 修复，fix_rounds 已更新）
 
-同时读取 `.auto-memory/MEMORY.md` 及 `project-aigcgateway.md`，了解项目当前状态、已知遗留问题和环境信息（Staging 地址等）。`.auto-memory/` 是唯一记忆源，验收前必须读取，避免基于过期信息打分。
+同时读取 `.auto-memory/MEMORY.md` 及 `project-status.md`，了解项目当前状态、已知遗留问题和环境信息（Staging 地址等）。`.auto-memory/` 是唯一记忆源，验收前必须读取，避免基于过期信息打分。
 
-### 2. 编写测试（视批次复杂度决定）
+### §2. 编写测试（视批次复杂度决定）
 读取 `docs/specs/` 下的规格文档，判断是否需要在执行前先准备测试资产：
 
 - **单元测试**：针对 Generator 实现的核心逻辑，编写并运行（发现问题直接记入 evaluator_feedback）
 - **E2E / 集成测试脚本**：如 `docs/test-cases/` 下无现成用例，按规格文档自行编写
 - **压测脚本**：如批次包含性能验收，编写压测脚本（放在 `scripts/` 下）
 
-简单批次（增删改查类）可跳过此步骤，直接进入步骤 3。
+简单批次（增删改查类）可跳过此步骤，直接进入 §3。
 复杂批次（新引擎、新计费逻辑、外部集成）建议写测试用例文档后再执行。
 
-### 3. 执行 executor:codex 功能（如有）
+### §3. 执行 executor:codex 功能（如有）
 打开 features.json，找出所有 `executor:codex` 且 status 为 `pending` 的功能：
 
 - 读取 `generator_handoff`（如有），了解 Generator 提供的工具 / 脚本及注意事项
@@ -50,11 +50,11 @@
 - 安全审计：扫描指定接口 / 模块，输出漏洞清单
 - E2E 执行：运行 `scripts/e2e-test.ts`，记录结果
 
-### 3. 启动项目（适用于需要运行时验证的批次）
+### §4. 启动项目（适用于需要运行时验证的批次）
 对于涉及代码实现的批次，运行项目，确认它能正常启动。如果无法启动，直接记为严重问题。
 对于 Codex-only 批次（全部 executor:codex），可跳过此步骤。
 
-### 4. 逐条验证功能
+### §5. 逐条验证功能
 打开 features.json，对每条 status = "completed" 的功能（包括 executor:generator 和 executor:codex）：
 - 按照 acceptance 标准逐条检查
 - 尝试正常使用路径
@@ -64,7 +64,7 @@
   - [L1]：本地环境可验证
   - [L2]：依赖外部服务，仅在 Staging 环境验证，本地出现 FAIL 不代表产品 Bug
 
-### 4. 评分标准（对每个功能）
+### §6. 评分标准（对每个功能）
 - PASS：完全符合 acceptance 标准
 - PARTIAL：主要功能可用，但有小问题（说明具体是什么）
 - FAIL：无法使用或严重不符（说明具体原因和复现步骤）
@@ -91,7 +91,7 @@
 
 **验收标准：完全还原 HTML 代码。** 原型 HTML 是 source of truth，acceptance 只是摘要。实现应该是原型的机械翻译（HTML → React），不是语义重写。
 
-### 5. 生成反馈报告
+### §7. 生成反馈报告
 将结果写入 progress.json 的 evaluator_feedback：
 ```json
 {
@@ -112,7 +112,7 @@
 }
 ```
 
-### 6. 写 signoff 报告（reverifying → done 时）
+### §8. 写 signoff 报告（reverifying → done 时）
 当所有功能全部 PASS，在置 `done` 之前：
 - 在 `docs/test-reports/` 下创建签收报告（文件名：`[批次名称]-signoff-YYYY-MM-DD.md`）
 - 使用 `framework/templates/signoff-report.md` 模板
@@ -120,49 +120,24 @@
 
 **signoff 为空，不得置 done。**
 
-### 7. 更新 progress.json
+### §9. 更新 progress.json + features.json + 框架提案
 
-**有问题时（FAIL 或 PARTIAL 存在）：**
+**progress.json — 有问题时（FAIL 或 PARTIAL 存在）：**
 ```json
-{
-  "status": "fixing",
-  "evaluator_feedback": { ... }
-}
+{ "status": "fixing", "evaluator_feedback": { ... } }
 ```
 
-**全部 PASS 且 signoff 已写入时：**
+**progress.json — 全部 PASS 且 signoff 已写入时：**
 ```json
 {
   "status": "done",
-  "docs": {
-    "signoff": "test-reports/[批次名称]-signoff-YYYY-MM-DD.md"
-  }
+  "docs": { "signoff": "test-reports/[批次名称]-signoff-YYYY-MM-DD.md" }
 }
 ```
 
-### 8. 更新 features.json
-将 FAIL 和 PARTIAL 的功能 status 改回 "pending"，等待 Generator 修复。
+**features.json：** FAIL 和 PARTIAL 功能 status 改回 "pending"，等待 Generator 修复。
 
-### 9. 框架提案（可选）
-验收过程中如果遇到以下情况，在 `framework/proposed-learnings.md` 末尾追加一条提案：
-- acceptance 标准太模糊导致无法客观判定 PASS / FAIL
-- 某类 Bug 是系统性的（说明 Generator 指令或模板需要补充）
-- 验收步骤中发现某个通用的验证方法值得固化
-- 某个 PARTIAL 反复出现，说明验收标准写法需要改进
-
-**不得直接修改 `framework/` 其他文件**，只能追加到 `framework/proposed-learnings.md`。格式：
-
-```markdown
-## [YYYY-MM-DD] Evaluator — 来源：F-XXX
-
-**类型：** 新规律 / 新坑 / 模板修订 / 铁律补充
-
-**内容：** [一句话描述，足够让用户判断是否值得沉淀]
-
-**建议写入：** `framework/README.md` §经验教训 / `framework/harness/generator.md` / 其他
-
-**状态：** 待确认
-```
+**框架提案（可选）：** 验收过程发现新规律 / 新坑 / 模板修订 / 铁律补充，按 `framework/proposed-learnings.md` 顶部 §「写入流程」格式追加提案，**不直接修改 framework/ 其他文件**。
 
 ## 完成标准
 - 有问题：status 置为 `fixing`，FAIL/PARTIAL 功能改回 pending
@@ -170,7 +145,163 @@
 
 ---
 
-## 10. SHA 对齐严收紧的边界（chore-only 差异容许）
+## §10. L1 验收前置（环境与本地工具）
+
+Reviewer 在 L1 跑 lint / typecheck / vitest / build 之前必须完成的环境前置。任一漏掉都可能产生本地 fail / CI PASS 的误判，浪费 1 轮 fixing。
+
+### §10.1 prisma generate（含 schema 改动批次必跑）
+
+**背景：** Reviewer L1 跑 `npx tsc --noEmit` 时如本机 prisma client 在最近 schema migration 后未重生，会出现 80+ "Property 'X' does not exist on PrismaClient" 误报。看似 in-flight 批次引入实际是本地环境状态。
+
+**L1 标配前置命令（顺序固定）：**
+
+```bash
+# Reviewer L1 启动必跑
+npx prisma generate    # 1. 重生 prisma client（30s）
+npx tsc --noEmit       # 2. 然后跑 tsc（确保读最新 client types）
+npm run lint           # 3. lint 跑（独立于 prisma client，但同一阶段一起跑）
+```
+
+**适用范围：**
+- 任何含 schema.prisma 改动的批次
+- Reviewer 切到新 worktree 或 git pull 含 migration 后首跑
+- CI 不受影响（CI 在 npm ci 后自动跑 postinstall hook 触发 prisma generate）
+
+**反面：** BL-033 Reviewer 接 verifying 跑 tsc 80 errors，prisma generate 后立即清空。来源：BL-033 Reviewer signoff §Framework Learnings。
+
+### §10.2 Node 版本与 .nvmrc 一致
+
+**背景：** Node 25.x 引入 native `localStorage`，但要 `--localstorage-file <path>` flag 才启用持久化路径；无 flag 时 jsdom 29 的 `window.localStorage` shim 与 Node 25 native 占位 detect 互斥触发 fall-through，结果 `window.localStorage` 变 `undefined`。所有触及 `window.localStorage.setItem/getItem/clear` 的测试 100% fail，且本地复现明显但 CI（Node 20 LTS）不复现 — Reviewer 误判风险高。
+
+**L1 启动前置 + 误判判据：**
+
+```bash
+node -v                          # 必须与项目根 .nvmrc 一致
+cat .nvmrc                       # 当前锁 Node 20（lts/iron）
+nvm use                          # 不一致时切换；无 nvm 装 Node 20 LTS
+```
+
+**适用范围：**
+- 任何含 jsdom 环境单测 / `window.localStorage` / `window.sessionStorage` 测试的批次
+- Node 22+ 引入 native `Web Storage` API 后均可能触发兼容性新坑
+- 本机 fail 但 CI PASS 的 jsdom 类测试，**先核 Node 版本一致性**，不一致时本机 fail 不算反面证据
+
+**反面：** BL-020-F002 本机 Node 25.7 + jsdom 29 跑 `AiSuggestionsClient.test.tsx` 2 集成 case fail，CI run 25330969685 Node 20 PASS。来源：BL-020-F002。
+
+### §10.3 lint warnings 处理矩阵
+
+**背景：** Reviewer L1 跑 `npm run lint` 时遇 0 errors + N warnings 时无明文判据。BL-034 F007/F008 测试文件各引入 1 个 unused import warning（`afterEach` / `beforeEach`），lint 0 errors / 3 warnings 不阻断 PASS（exit code 0）但模糊地带触发 reverifying 阶段决策成本。
+
+**处理矩阵：**
+
+| 情境 | 处理 |
+|---|---|
+| 0 errors + ≤3 unused-import-style warning（含批次之前的既有 + 本批次引入）| **Soft-watch 不阻断 done**；建议下批次顺手清理（1 行 edit）；signoff §Soft-watch 段落记账 |
+| 0 errors + ≥4 warning，**或**非 unused-import 类 warning（如 `@typescript-eslint/no-explicit-any` / `no-empty-function` / `react-hooks/exhaustive-deps` 等）| **切 fixing fix-round +1** 让 Generator 处理；这类 warning 通常隐含潜在 bug 或类型不安全 |
+| ≥1 error | **必切 fixing**，与 errors 对待相同 |
+
+**判据细化：**
+- **unused-import-style** 范畴：unused-vars / unused-imports / no-unused-imports — 死代码，不影响运行时行为
+- **非 unused-import 类** 范畴：no-explicit-any / no-empty-function / exhaustive-deps / no-floating-promises — 潜在 bug
+
+**Reviewer 处理流程：**
+1. 跑 `npm run lint` 看 errors / warnings 计数
+2. 按矩阵判决：Soft-watch 入 signoff §Soft-watch / 切 fixing
+3. Soft-watch 时 signoff 必须列具体文件:行 + warning 类型 + "建议下批次顺手清理"
+4. 切 fixing 时 evaluator_feedback.issues 列具体 warning 详情让 Generator 定位
+
+**反面：** BL-034 F007/F008 unused import warning → Soft-watch S8。来源：BL-034 提案 v0.9.12（2026-05-05 用户全 Accept）。
+
+---
+
+## §11. L2 验收手段（业务层 + 集成层探针）
+
+L1 自动化全绿 ≠ verifying PASS。L2 是真正的"功能验收"层，对应 staging 环境真实路径 + 业务规则验证。
+
+### §11.1 fire-and-forget audit pattern 测试约束
+
+**背景：** Server actions 用 `void logAudit({...})` fire-and-forget 模式（不 await）让业务路径少一次 round-trip，但 integration test 在 action 返回后立即查 audit_log 会偶发 race（CI 高并发下成立，本地 dev 不易复现）。
+
+**case 站点：** `src/app/[locale]/(app)/kols/[id]/actions.ts:83`（`void logAudit`）+ `tests/integration/kol-profile.test.ts:127`（`expect(audits).toHaveLength(1)`）。
+
+**两选一规约：**
+
+| 方案 | 适用场景 |
+|---|---|
+| (A) **Action 内部 `await logAudit`** | 业务路径不是热点（< 100 RPS） + 测试需观察 audit_log，简单可靠 |
+| (B) **测试改用 `vi.waitFor(() => expect(audits)...)`** | 业务路径是热点，必须保留 fire-and-forget；waitFor 50-100ms retry 上限 |
+
+**Generator 选择决策（开工时落 generator_handoff）：** 优先 (A)，仅在业务路径明确是热点（>100 RPS / <100ms p99）时降级 (B)。
+
+**Reviewer 验收：** 看到 `void logAudit` + integration test 直接 `expect(audits)` 同时存在 → 直接标 PARTIAL（race condition 风险），要求 Generator 选 (A) 或 (B) 之一显式声明。
+
+来源：BL-025 F004 CI flaky `kol-profile.test.ts`。
+
+### §11.2 E2E suite 稳定性诊断
+
+**背景：** BL-060 fix-round 1 单点放宽 timeout/正则只缓解症状，整组 E2E 仍 FAIL；fix-round 2 抽 `tests/e2e/<role>.setup.ts` + 各 spec opt-in `test.use({ storageState })`，N 次 login 收敛 1 次后 suite PASS。
+
+**诊断信号：** 单例 PASS / 整组 FAIL = **suite-level isolation 问题**（不是 case 内容/正则问题）。
+
+**候选根因：**
+- 每 case `beforeEach` 重 login 累积抖动
+- staging 8GB RAM 资源压力
+
+**根治方案：** 抽 `tests/e2e/<role>.setup.ts` + 各 spec opt-in `test.use({ storageState })`，N 次 login 收敛 1 次。
+
+**反模式：** 单点放宽 timeout / 正则只缓解症状，不解决 suite-level isolation。
+
+来源：BL-060 fix-round 1（cc82a54 正则放宽失败）→ fix-round 2（f75cafd storageState PASS）。
+
+### §11.3 SQL 跨 tenant 全量查询 RLS 注意
+
+**背景：** BL-061 F003 验收时 Reviewer 用 `kolmatrix_app` role + Prisma RLS 跨 tenant 查 audit_log 返回 0 行，误判为数据缺失；实际是 RLS 视角限制。
+
+**处理规则：** 跨 tenant 全量验收 SQL 必须 `sudo -u postgres psql kolmatrix(_staging)` superuser bypass RLS。普通 `kolmatrix_app` role + Prisma RLS 跨 tenant 看 0 行（不是数据缺失，是 RLS 视角限制）。Reviewer only-read 验收尤其要走 superuser path。
+
+来源：BL-061 F003 Generator 实战发现 + Codex Reviewer signoff 确认。
+
+### §11.4 L1 + 角色门禁手动探针
+
+**背景：** BL-065 verifying 阶段 L1 全绿（lint 0 errors / typecheck PASS / vitest 162 files 1142 tests PASS / Playwright match-fidelity 7 passed / prod read-only audit PASS=7 FAIL=0 WARN=1），但 Codex Reviewer 在本地 admin role 探针时发现 `/en/admin/kol-csv-import` server 端日志含 `FORMATTING_ERROR: variable "imported" was not provided`，HTTP 仍 200 返回 — **server console error 不计入 HTTP 响应码**。
+
+**规则：** L1 全绿不等于 verifying PASS。Reviewer 必须在 L1 自动化之上**手动跑角色门禁探针**：
+
+1. **登录每个角色账号**（admin@kolmatrix.local / marketer@kolmatrix.local / 等），用 Playwright 或浏览器 cookie 直访问角色限定路由
+2. **观察 server 端 console / pm2 logs** 是否含 `Error:` / `FORMATTING_ERROR` / `route-not-found` / `next-intl error` 等 runtime 错误 — 这类错误**不影响 HTTP 200/307 状态码**，CI 全绿 + audit script 全 PASS 都不会抓到
+3. **覆盖所有角色 + 路由组合**（admin / marketer / platform_admin 等），尤其 batch 新增的角色限定路由（如 BL-065 F003 新增 /admin/kol-csv-import）
+
+**典型抓住的问题：**
+- next-intl ICU 模板未绑定占位符（BL-065-R1 案例：`tImport("successTemplate")` 模板含 `{imported}` 但 t-call 未传值）
+- React rendering error 但 server fallback 返回上一帧内容
+- 模糊的 console.error / TypeError 在 production build minified 后不影响 HTTP
+- 角色 enum mismatch（`role === "admin"` vs 实际 `tenant_admin`，导致 hidden link 不渲染但页面正常加载）
+
+**反模式：** 仅 audit HTTP 状态码 + JSON health endpoint，认为「无 5xx = 无错误」— 这种判定漏掉所有 200/307 状态码下的 server console runtime error。
+
+来源：BL-065-R1 Codex Reviewer verifying 实战（2026-05-13 13:49 BJT codex-setup.sh + playwright probe）。
+
+### §11.5 字体子集 / Material Symbols spot check
+
+**背景：** BIx F005-B Material Symbols self-host 子集脚本仅 3 grep pattern，漏 5 类动态范式（JSX prop / 三元 / 对象值 key≠icon / 数组元素 / return + ?? fallback），prod 用户在 dashboard / discovery / crm / roi / database / knowledge-base 6 页都看到 19 个字符方框（`TRENDING_FLAT` / `bookmark_added` 等）。spec §F005 acceptance "100+ 处 material-symbols-outlined 全渲染无字符方框" 是抽样验证，未跑全 callsite。
+
+**Reviewer L2 烟测处理规则：**
+
+| 情境 | 处理 |
+|---|---|
+| Feature 含字体子集（Material Symbols / Font Awesome subset / 自定义 woff2 等） | L2 烟测必须 spot check ≥ 5 个 dynamic callsite（不只看 grep 出的 baseline icons）。dynamic = JSX prop / 三元 / 对象值 / 数组 / return + ?? fallback 等 grep pattern 难命中的写法 |
+| Spot check 命中字符方框 / 缺字 | 标 FAIL，触发 fixing。同时建议 Generator 在 manifest 文件显式列漏 icon |
+| 子集脚本无 manifest 文件兜底 | signoff 注 soft-watch："字体子集脚本仅靠 grep，建议下批次加 manifest 兜底" |
+
+**配套：** 详见 `framework/harness/checklists/material-symbols-pattern.md`（D10 lock 后位置；5 漏范式 + manifest 维护 + CI 守门 test 完整 pattern）。
+
+来源：BIx hotfix bb637a1（19 漏 icon prod 暴露）+ BL-025-F009 守门加固。
+
+---
+
+## §12. 验收口径（首轮 PASS 硬条件 / SHA 对齐 / checklist 文本管理）
+
+### §12.1 SHA 对齐严收紧的边界（chore-only 差异容许）
 
 **背景：** `chore(state)` / `chore(planner)` / `test(...)` 等 commits 仅改状态机 / 测试 / 文档文件，paths-ignore 配置使其不触发 staging/prod deploy。但严格按 "staging /api/health.git_sha = HEAD" 验收会卡死循环（Reviewer 标 FAIL → Generator 触发 chore commit 同步状态 → SHA 又 mismatch → 又 FAIL...）。
 
@@ -193,9 +324,7 @@ git diff --name-only <staging-sha>..HEAD
 
 来源：KOLMatrix B5 fixing-7（reverifying-6 SHA mismatch 死循环风险）。
 
----
-
-## 11. Smoke checklist 文本陈旧时直接 update 而非标 FAIL
+### §12.2 Smoke checklist 文本陈旧时直接 update 而非标 FAIL
 
 **背景：** Planner 起草 prod L2 smoke checklist 时，每条 UI 元素描述（"X 卡可见" / "Y 按钮存在"）有时基于 spec 文本而非实际代码。Spec 演化中文本可能与代码漂移。
 
@@ -203,7 +332,7 @@ git diff --name-only <staging-sha>..HEAD
 
 | 情境 | 处理 |
 |---|---|
-| Checklist 描述 element A，代码实际是 element A'（功能等价、命名漂移） | **直接修正 checklist 文本**，标 PASS。在 signoff 备注「checklist 文本 update：A → A' （命名实际是 X 而非 Y）」|
+| Checklist 描述 element A，代码实际是 element A'（功能等价、命名漂移） | **直接修正 checklist 文本**，标 PASS。在 signoff 备注「checklist 文本 update：A → A'（命名实际是 X 而非 Y）」|
 | Checklist 描述 element A，代码完全无该元素 / 功能 | 标 **FAIL**，按 acceptance 走 fixing |
 | Checklist 描述 N 个元素，代码有 N+1 个（多出一个） | 不算 FAIL，但 signoff 注「实际多出元素 Z，建议下次更新 checklist」|
 
@@ -211,9 +340,7 @@ git diff --name-only <staging-sha>..HEAD
 
 **Planner 配套防御：** verifying 前 grep 实际代码验证 checklist 元素存在性（详见 `planner-checklists.md §"verifying 前 checklist 起草必须 grep 实际代码验证"`，BL-071 F003 拆分后位置）。
 
----
-
-## 12. 首轮 verifying PASS（fix_rounds=0）的硬条件
+### §12.3 首轮 verifying PASS（fix_rounds=0）的硬条件
 
 **背景：** BIx-mvp-polish-pass + BL-025-asset-library 两个连续批次首轮验收即 PASS（fix_rounds=0），跳过 fixing/reverifying 直接切 done。验证两次后形成可复用判据。
 
@@ -238,195 +365,16 @@ git diff --name-only <staging-sha>..HEAD
 4. 对每条 soft-watch 检查 progress.json / spec / signoff §6 是否有明文兜底
 5. 缺任一兜底 → 标 FAIL，回 Generator 补；全有 → 切 done
 
-来源：BIx-mvp-polish-pass signoff（2026-05-02）+ BL-025-asset-library signoff（2026-05-03）+ framework CHANGELOG v0.9.6 [#3]。
+来源：BIx-mvp-polish-pass signoff（2026-05-02）+ BL-025-asset-library signoff（2026-05-03）。
 
 ---
 
-## 13. L2 烟测含字体子集（Material Symbols / etc）必须 ≥ 5 dynamic callsite spot check
+## §13. 测试设计（占位，BL-071 F008 sediment 写入）
 
-**背景：** BIx F005-B Material Symbols self-host 子集脚本仅 3 grep pattern，漏 5 类动态范式（JSX prop / 三元 / 对象值 key≠icon / 数组元素 / return + ?? fallback），prod 用户在 dashboard / discovery / crm / roi / database / knowledge-base 6 页都看到 19 个字符方框（`TRENDING_FLAT` / `bookmark_added` 等）。spec §F005 acceptance "100+ 处 material-symbols-outlined 全渲染无字符方框" 是抽样验证，未跑全 callsite。
+本段为 BL-071 F008 sediment 写入预留：v0.9.22 #2 量化 criterion / #12 mock infeasible + BL-070 #21 e2e server-action mock 不可用 等 inline-merge 到此 topic。
 
-**Reviewer L2 烟测处理规则：**
+**先期占位骨架：**
 
-| 情境 | 处理 |
-|---|---|
-| Feature 含字体子集（Material Symbols / Font Awesome subset / 自定义 woff2 等） | L2 烟测必须 spot check ≥ 5 个 dynamic callsite（不只看 grep 出的 baseline icons）。dynamic = JSX prop / 三元 / 对象值 / 数组 / return + ?? fallback 等 grep pattern 难命中的写法 |
-| Spot check 命中字符方框 / 缺字 | 标 FAIL，触发 fixing。同时建议 Generator 在 manifest 文件显式列漏 icon |
-| 子集脚本无 manifest 文件兜底 | signoff 注 soft-watch："字体子集脚本仅靠 grep，建议下批次加 manifest 兜底" |
-
-**配套：** 详见 `framework/harness/material-symbols-pattern.md`（5 漏范式 + manifest 维护 + CI 守门 test 完整 pattern）。该文件已在 BL-025-F009 落地。
-
-来源：BIx hotfix bb637a1（19 漏 icon prod 暴露）+ BL-025-F009 守门加固 + framework CHANGELOG v0.9.6 [#6]。
-
----
-
-## 14. 回归测试稳定性 — fire-and-forget audit pattern 测试约束
-
-**背景：** Server actions 用 `void logAudit({...})` fire-and-forget 模式（不 await）让业务路径少一次 round-trip，但 integration test 在 action 返回后立即查 audit_log 会偶发 race（CI 高并发下成立，本地 dev 不易复现）。BL-025 F003/F004 两轮跨同 commit 一次 PASS 一次 FAIL 验证为 flake，rerun 全绿。
-
-**case 站点：** `src/app/[locale]/(app)/kols/[id]/actions.ts:83`（`void logAudit`）+ `tests/integration/kol-profile.test.ts:127`（`expect(audits).toHaveLength(1)`）。
-
-**两选一规约：**
-
-| 方案 | 适用场景 |
-|---|---|
-| (A) **Action 内部 `await logAudit`** | 业务路径不是热点（< 100 RPS） + 测试需观察 audit_log，简单可靠 |
-| (B) **测试改用 `vi.waitFor(() => expect(audits)...)`** | 业务路径是热点，必须保留 fire-and-forget；waitFor 50-100ms retry 上限 |
-
-**Generator 选择决策（开工时落 generator_handoff）：** 优先 (A)，仅在业务路径明确是热点（>100 RPS / <100ms p99）时降级 (B)。
-
-**Reviewer 验收：** 看到 `void logAudit` + integration test 直接 `expect(audits)` 同时存在 → 直接标 PARTIAL（race condition 风险），要求 Generator 选 (A) 或 (B) 之一显式声明。
-
-来源：BL-025 F004 CI flaky `kol-profile.test.ts` + framework CHANGELOG v0.9.6 [#7]。
-
----
-
-## 15. L1 本机 tsc 跑前必先 `prisma generate`（v0.9.10 — BL-033 沉淀）
-
-**背景：** Reviewer L1 跑 `npx tsc --noEmit` 时如本机 prisma client 在最近 schema migration 后未重生，会出现 80+ "Property 'asset' does not exist on PrismaClient" 误报。看似 in-flight 批次引入实际是本地环境状态。
-
-**误报模式：**
-```
-src/app/[locale]/(app)/assets/actions.ts:142:23 - error TS2339:
-Property 'asset' does not exist on type 'PrismaClient<...>'.
-```
-
-类似错误 80+ 行但真实代码完全正确。Reviewer 误判为"批次引入"将导致：
-
-1. Reviewer 拒绝接收，写 evaluator_feedback "TypeScript 80 errors"
-2. Generator 困惑 "本地 npm test 全绿 + CI 8/8 success 怎么 tsc 80 errors"
-3. 浪费 1 轮排查时间发现是 prisma client 未生成
-
-**修订规则（L1 标配前置命令，顺序固定）：**
-
-```bash
-# Reviewer L1 启动必跑
-npx prisma generate    # 1. 重生 prisma client（30s）
-npx tsc --noEmit       # 2. 然后跑 tsc（确保读最新 client types）
-npm run lint           # 3. lint 跑（独立于 prisma client，但同一阶段一起跑）
-```
-
-**适用范围：**
-
-- 任何含 schema.prisma 改动的批次（BL-025/BL-030/F004 等）
-- Reviewer 切到新 worktree 或 git pull 含 migration 后首跑
-- CI 不受影响（CI 在 npm ci 后自动跑 postinstall hook 触发 prisma generate）
-
-**反面（BL-033 Reviewer 命中）：** Reviewer 接 BL-033 verifying 启动跑 tsc，因前批次 schema 改过 + 本机未跑 prisma generate → 80 errors。`prisma generate` 后立即清空。本可作为 L1 标配前置避免误判。
-
-来源：BL-033 Reviewer signoff §Framework Learnings 新坑。
-
----
-
-## 16. L1 本机 Node 版本必须与 `.nvmrc` 一致（v0.9.11 — BL-020-F002 沉淀）
-
-**背景：** Node 25.x 引入 native `localStorage`，但要 `--localstorage-file <path>` flag 才启用持久化路径；无 flag 时 jsdom 29 的 `window.localStorage` shim 与 Node 25 native 占位 detect 互斥触发 fall-through，结果 `window.localStorage` 变 `undefined`。所有触及 `window.localStorage.setItem/getItem/clear` 的测试 100% fail，且本地复现明显但 CI（Node 20 LTS）不复现 — Reviewer 误判风险高。
-
-**误报模式：**
-```
-TypeError: window.localStorage.setItem is not a function
-  at AiSuggestionsClient.test.tsx:42
-```
-
-类似错误集中在 jsdom + localStorage 路径，本机 fail / CI Node 20 PASS。
-
-**修订规则（L1 启动前置 + 误判判据）：**
-
-```bash
-# Reviewer / Generator L1 启动必查
-node -v                          # 必须与项目根 .nvmrc 一致
-cat .nvmrc                       # 当前锁 Node 20（lts/iron）
-nvm use                          # 不一致时切换；无 nvm 装 Node 20 LTS
-```
-
-**适用范围：**
-
-- 任何含 jsdom 环境单测 / `window.localStorage` / `window.sessionStorage` 测试的批次
-- Node 22+ 引入 native `Web Storage` API 后均可能触发兼容性新坑
-- 本机 fail 但 CI PASS 的 jsdom 类测试，**先核 Node 版本一致性**，不一致时本机 fail 不算反面证据
-
-**反面（BL-020-F002 命中）：** Reviewer 本机 Node 25.7 + jsdom 29 跑 `AiSuggestionsClient.test.tsx` 2 集成 case fail，CI run 25330969685 Node 20 PASS。验证差异源于 Node 25 native localStorage incompat，不是产品 bug；锁 Soft-watch S4 + 本规则。
-
-**来源：** BL-020-F002 Reviewer L1 本机 unit fail / CI PASS 对比。
-
----
-
-## 17. lint warnings 在 reverifying 阶段的处理矩阵（v0.9.12 — BL-034 F007/F008 沉淀）
-
-**背景：** Reviewer L1 跑 `npm run lint` 时遇 0 errors + N warnings 时无明文判据：是否切 fixing fix-round +1 让 Generator 处理？还是 Soft-watch 入 backlog？BL-034 F007/F008 测试文件各引入 1 个 unused import warning（`afterEach` / `beforeEach`），lint 0 errors / 3 warnings（其中 1 既有 youtube 无关 + 2 BL-034 引入），不阻断 PASS（exit code 0）但模糊地带触发 reverifying 阶段决策成本。
-
-**处理矩阵：**
-
-| 情境 | 处理 |
-|---|---|
-| 0 errors + ≤3 unused-import-style warning（含批次之前的既有 + 本批次引入）| **Soft-watch 不阻断 done**；建议下批次顺手清理（1 行 edit）；signoff §Soft-watch 段落记账 |
-| 0 errors + ≥4 warning，**或**非 unused-import 类 warning（如 `@typescript-eslint/no-explicit-any` / `no-empty-function` / `react-hooks/exhaustive-deps` 等）| **切 fixing fix-round +1** 让 Generator 处理；这类 warning 通常隐含潜在 bug 或 类型不安全 |
-| ≥1 error | **必切 fixing**，与 errors 对待相同 |
-
-**判据细化：**
-
-- **unused-import-style** 范畴包括：unused-vars / unused-imports / no-unused-imports — 这些是死代码，不影响运行时行为
-- **非 unused-import 类** 范畴包括：no-explicit-any / no-empty-function / exhaustive-deps / no-floating-promises — 这些是潜在 bug
-
-**Reviewer 处理流程：**
-
-1. 跑 `npm run lint` 看 errors / warnings 计数
-2. 按矩阵判决：Soft-watch 入 signoff §Soft-watch / 切 fixing
-3. Soft-watch 时 signoff 必须列具体文件:行 + warning 类型 + "建议下批次顺手清理"
-4. 切 fixing 时 evaluator_feedback.issues 列具体 warning 详情让 Generator 定位
-
-**反面（BL-034 F007/F008 命中）：** `src/app/api/health/__tests__/route.test.ts:18` 与 `tests/integration/db-platform-admin-nullif.test.ts:13` 各 1 个 unused import warning（'afterEach' / 'beforeEach'）— 按本矩阵 = unused-import + ≤3 个 → **Soft-watch 入 BL-034 signoff §Soft-watch S8**，不阻断 done。下批次（BL-035 或更后）顺手清。
-
-**来源：** BL-034 F007 + F008 测试文件 unused import 入 Soft-watch S8。Reviewer 在 reverifying 阶段无明文判据 → 提案 v0.9.12 沉淀（用户 2026-05-05 全 Accept）。
-
----
-
-## 18. E2E suite 稳定性诊断（v0.9.20 — BL-060 沉淀）
-
-**背景：** BL-060 fix-round 1 单点放宽 timeout/正则只缓解症状，整组 E2E 仍 FAIL；fix-round 2 抽 `tests/e2e/<role>.setup.ts` + 各 spec opt-in `test.use({ storageState })`，N 次 login 收敛 1 次后 suite PASS。
-
-**诊断信号：** 单例 PASS / 整组 FAIL = **suite-level isolation 问题**（不是 case 内容/正则问题）。
-
-**候选根因：**
-- 每 case `beforeEach` 重 login 累积抖动
-- staging 8GB RAM 资源压力
-
-**根治方案：** 抽 `tests/e2e/<role>.setup.ts` + 各 spec opt-in `test.use({ storageState })`，N 次 login 收敛 1 次。
-
-**反模式：** 单点放宽 timeout / 正则只缓解症状，不解决 suite-level isolation。
-
-**来源：** BL-060 fix-round 1（cc82a54 正则放宽失败）→ fix-round 2（f75cafd storageState PASS）。
-
----
-
-## 19. SQL 跨 tenant 全量查询 RLS 注意（v0.9.20 — BL-061 沉淀）
-
-**背景：** BL-061 F003 验收时 Reviewer 用 `kolmatrix_app` role + Prisma RLS 跨 tenant 查 audit_log 返回 0 行，误判为数据缺失；实际是 RLS 视角限制。
-
-**处理规则：** 跨 tenant 全量验收 SQL 必须 `sudo -u postgres psql kolmatrix(_staging)` superuser bypass RLS。普通 `kolmatrix_app` role + Prisma RLS 跨 tenant 看 0 行（不是数据缺失，是 RLS 视角限制）。Reviewer only-read 验收尤其要走 superuser path。
-
-**来源：** BL-061 F003 Generator 实战发现 + Codex Reviewer signoff 确认。
-
----
-
-## 20. L1 + 角色门禁手动探针（v0.9.21 — BL-065-R1 沉淀）
-
-**背景：** BL-065 verifying 阶段 L1 全绿（lint 0 errors / typecheck PASS / vitest 162 files 1142 tests PASS / Playwright match-fidelity 7 passed / prod read-only audit PASS=7 FAIL=0 WARN=1），但 Codex Reviewer 在本地 admin role 探针时发现 `/en/admin/kol-csv-import` server 端日志含 `FORMATTING_ERROR: variable "imported" was not provided`，HTTP 仍 200 返回 — **server console error 不计入 HTTP 响应码**。
-
-**规则：** L1 全绿不等于 verifying PASS。Reviewer 必须在 L1 自动化之上**手动跑角色门禁探针**：
-
-1. **登录每个角色账号**（admin@kolmatrix.local / marketer@kolmatrix.local / 等），用 Playwright 或浏览器 cookie 直访问角色限定路由
-2. **观察 server 端 console / pm2 logs** 是否含 `Error:` / `FORMATTING_ERROR` / `route-not-found` / `next-intl error` 等 runtime 错误 — 这类错误**不影响 HTTP 200/307 状态码**，CI 全绿 + audit script 全 PASS 都不会抓到
-3. **覆盖所有角色 + 路由组合**（admin / marketer / platform_admin 等），尤其 batch 新增的角色限定路由（如 BL-065 F003 新增 /admin/kol-csv-import）
-
-**典型抓住的问题：**
-- next-intl ICU 模板未绑定占位符（BL-065-R1 案例：`tImport("successTemplate")` 模板含 `{imported}` 但 t-call 未传值）
-- React rendering error 但 server fallback 返回上一帧内容
-- 模糊的 console.error / TypeError 在 production build minified 后不影响 HTTP
-- 角色 enum mismatch（`role === "admin"` vs 实际 `tenant_admin`，导致 hidden link 不渲染但页面正常加载）
-
-**反模式：** 仅 audit HTTP 状态码 + JSON health endpoint，认为「无 5xx = 无错误」— 这种判定漏掉所有 200/307 状态码下的 server console runtime error。
-
-**实战 case：** BL-065-R1 — Reviewer 在 codex L1 启动 3099 后用 marketer + admin 双账号登录 `/en/admin/kol-csv-import`：admin 进入页面 + 含 import/csv 文本（HTTP 200），同时 next server 日志含 FORMATTING_ERROR；marketer 被 302 到 /en/match（HTTP 200）。前者是 L1 自动化漏掉的 runtime 错误，后者是 role-gate 正确。**手动 probe 找出前者，触发 fix-round 1**。
-
-**来源：** BL-065-R1 Codex Reviewer verifying 实战（2026-05-13 13:49 BJT codex-setup.sh + playwright probe）。
+- **量化 criterion**（v0.9.22 #2）：acceptance 文字写"快"/"少"/"几乎无"等定性词时，Evaluator 必须要求 Planner 修订为可量化 threshold（如 ≥ 200KB gzipped / ≥ 80% test coverage / p95 < 200ms）。无量化 = 验收无据可拉
+- **mock 不可用三件套**（v0.9.22 #12 + BL-070 #21 合并段）：next.js server action 不可被 vitest mock（unit test 不可达）→ 三件套规约：always-skip + 退到 unit pure function + staging real run
+- **staging chaos flag runbook**（BL-069 #15）：staging 维持 chaos flag（如 `CHAOS_DELAY_MS` / `CHAOS_FAIL_RATE`）让 Evaluator 在不影响 prod 的前提下注入故障验证 fallback 路径

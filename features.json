@@ -53,7 +53,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 5.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "framework/harness/evaluator.md 432 LOC 按 topic 重组：§1-§9 核心 workflow 保留（修 §3 §4 编号撞车）",
       "原 §10-§20 11 段合并到 4 新 topic 段：§10 L1 验收前置（prisma generate + .nvmrc + lint matrix）+ §11 L2 验收手段（fire-and-forget audit + E2E suite + SQL RLS + L1 角色门禁 + Material Symbols）+ §12 验收口径（SHA + Smoke + 首轮 PASS）+ §13 测试设计（占位 F008 时 BL-070 #21 + v0.9.22 #2 #12 inline-merge）",

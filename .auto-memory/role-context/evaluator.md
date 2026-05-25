@@ -42,4 +42,13 @@ type: feedback
 
 ## L1 + 角色门禁手动探针（2026-05-13 BL-065-R1 实战，v0.9.21）
 
-L1 全绿（lint / typecheck / vitest / playwright fidelity / audit script）不等于 verifying PASS。Reviewer 必须**手动跑角色门禁探针**：登录 admin / marketer 双账号 → 访问角色限定路由 → **看 server console / pm2 logs** 是否含 `Error:` / `FORMATTING_ERROR` / `next-intl error`。Server console error 不影响 HTTP 200/307 状态码，CI 全绿和 audit script 全 PASS 都不会抓到。BL-065-R1 即是案例：admin 进入 /admin/kol-csv-import HTTP 200 但 server 日志含 FORMATTING_ERROR — 手动 probe 触发 fix-round 1。完整：`framework/harness/evaluator.md §20`。
+L1 全绿（lint / typecheck / vitest / playwright fidelity / audit script）不等于 verifying PASS。Reviewer 必须**手动跑角色门禁探针**：登录 admin / marketer 双账号 → 访问角色限定路由 → **看 server console / pm2 logs** 是否含 `Error:` / `FORMATTING_ERROR` / `next-intl error`。Server console error 不影响 HTTP 200/307 状态码，CI 全绿和 audit script 全 PASS 都不会抓到。BL-065-R1 即是案例：admin 进入 /admin/kol-csv-import HTTP 200 但 server 日志含 FORMATTING_ERROR — 手动 probe 触发 fix-round 1。完整：`framework/harness/evaluator.md §11.4`（BL-071 F004 重组后位置）。
+
+## 新结构索引（BL-071 F004 D5 lock，2026-05-25）
+
+evaluator.md 432 LOC 按 topic 重组为：
+- §1-§9 核心 workflow（编号撞车修复）
+- §10 L1 验收前置：prisma generate / .nvmrc / lint warnings 矩阵
+- §11 L2 验收手段：fire-and-forget audit / E2E suite / SQL RLS / 手动角色探针 / 字体子集 spot check
+- §12 验收口径：SHA 对齐 chore-only 容许 / Smoke checklist 文本陈旧处理 / 首轮 PASS 硬条件
+- §13 测试设计（占位 — F008 sediment 写入 v0.9.22 #2 量化 + #12 mock infeasible + BL-070 #21 server-action mock 不可用）
