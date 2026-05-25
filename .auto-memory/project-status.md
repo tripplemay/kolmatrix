@@ -4,9 +4,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-072-prod-hotfix BUILDING done (7/8 Generator, fix_rounds=0) — F008 待 Codex
-- ✅ F001-F007 全 landed, main HEAD f4f1a68, CI 26408129120 success ✓
-- 🚧 待: staging deploy (Generator 硬要求) + status building→verifying + F008 Reviewer signoff (codex 3h)
+## 🔍 BL-072-prod-hotfix VERIFYING (7/7 Generator done, fix_rounds=0) — F008 codex pending
+- ✅ F001-F007 全 landed @ main HEAD da90891, CI 26408129120 success ✓
+- ✅ Staging deployed @ da90891 @ 2026-05-26T00:34+0800 (git_sha 验证 match local HEAD)
+- 🔍 F008 Codex Reviewer signoff (L1 6 项 + L2 staging 抽样 6 项 + signoff doc)
 - Baseline regen × 2 (run 26406110567 / 26406781056) — 4 prod issues 全修
 - 5 commits: 7278af0 F001+F002 / 915ffcb F004+F005 / 2727104 F006 / 2dddc99 F003 / f4f1a68 F007
 - A1 lock 全部 ack 实施 (顺序 C / 范围 A / i18n A brand kept-en / link 目标 A)
