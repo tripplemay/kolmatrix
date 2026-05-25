@@ -4,13 +4,13 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ⚠️ BL-072-prod-hotfix VERIFYING-FAIL (6/8, fix_rounds=0, awaiting Generator fix) — 功能面通过，lint warning 阈值阻断 signoff
-- Codex Reviewer 5/26 首轮 F008 验收结论 FAIL：L2 staging 6 项抽样全 PASS；L1 除 lint 外均 PASS；F002 退回 pending；F008 待复验
-- blocker：`npm run lint` = 0 errors / 4 warnings，超出 evaluator §10.3 放行阈值；其中 `src/app/[locale]/(app)/insight/page.tsx:120:41` `_locale` unused 为本批次 commit `7278af0` 引入
-- 其余通过：`npx tsc --noEmit` PASS / `npm test` 185 files 1322 tests PASS / stale path grep 0 / brief≈insight 1136px / subset regen 含 `table_rows` / zh insight keys 完整 / staging 6 项全 PASS
-- 关联报告：`docs/test-reports/BL-072-verifying-2026-05-26.md`
-- 最小修复路径：清掉 `/insight/page.tsx` unused warning 后重跑 lint；若总 warning 回到 ≤3，可按当前规则 soft-watch 放行
-- staging @ `da90891` 保持 healthy，用户可继续看已修复的 4 个 prod-facing 问题，当前阻塞是发布门槛不是功能回归
+## 🔁 BL-072-prod-hotfix REVERIFYING (7/7, fix_rounds=1, awaiting Codex re-signoff)
+- fix-round 1 commit 6fa1897: 删 AnalyticsPanel locale 入参 + 调用点 prop (next-intl getTranslations 自动取 server context locale, 不需 prop)
+- lint: 0 errors / 3 warnings (从 4 降, 低于 evaluator §10.3 阈值)
+- 其余 L1 全 PASS: tsc 0 / vitest 185×1322 / 首轮 staging 6 项已全 PASS
+- staging redeployed @ 6fa1897 @ 2026-05-26T00:55+0800 (git_sha match ✓ healthy)
+- 关联首轮 fail 报告: docs/test-reports/BL-072-verifying-2026-05-26.md
+- F002 pending → completed, evaluator_feedback cleared, Codex Reviewer 复验 F008
 ## ✅ BL-071 DONE (10/10, fix_rounds=1, tag bl071-done @ 99c43fc) — framework v0.9.23 闭环
 - 12 决策点 D1-D12 全 lock 实施; 11 项结构变更 + 31 条 sediment inline-merge + 0 chronological-append
 - 关联: framework/CHANGELOG.md v0.9.23 + framework/archive/proposed-learnings-archive-v0.9.23.md
