@@ -101,7 +101,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "framework/proposed-learnings.md 顶部新增 §「写入流程」段 ≥40 LOC：含 4 步流程（propose → ack → inline-merge → archive）+ D7 inline-merge 强制规则（禁 chronological-append §N，找贴近 topic 段合并矩阵行/加子段/修订段内文字，找不到才开新 topic）+ sediment 类型分类（新规律/新坑/模板修订/铁律补充）+ 写入位置决策树",
       "修复 framework/harness/pre-impl-adjudication.md §11 位置错乱：重排 §10（顺接） / §11 历史段 last",

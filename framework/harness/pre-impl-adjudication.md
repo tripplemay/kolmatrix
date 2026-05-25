@@ -301,11 +301,11 @@ B0 sprint 实测：
 
 ---
 
-## 11. Building 中段良性 partial-pending 变种（v0.9.12 — BL-034 F005 沉淀）
+## 10. Building 中段良性 partial-pending 变种（v0.9.12 — BL-034 F005 沉淀）
 
-**与 §1-§10 主 pattern（pre-impl audit）的关系：** 本节描述同一裁决机制的**触发时机变种** — 主 pattern 在 building 启动**前**（Generator 看 spec 阶段），本变种在 building **中段**（Generator 已写部分代码，发现 spec 与现实有未在 pre-impl 阶段暴露的偏差）。机制（Generator 主动停 + Planner 短格式裁决 + 单步实装）相同，但**状态机切换不同**：建议切 `fixing` 而非 `verifying`。
+**与 §1-§9 主 pattern（pre-impl audit）的关系：** 本节描述同一裁决机制的**触发时机变种** — 主 pattern 在 building 启动**前**（Generator 看 spec 阶段），本变种在 building **中段**（Generator 已写部分代码，发现 spec 与现实有未在 pre-impl 阶段暴露的偏差）。机制（Generator 主动停 + Planner 短格式裁决 + 单步实装）相同，但**状态机切换不同**：建议切 `fixing` 而非 `verifying`。
 
-### 11.1 触发条件
+### 10.1 触发条件
 
 Generator 在 building 实装某 feature 时，发现 spec acceptance 包含**实装才能暴露的偏差**：
 
@@ -318,7 +318,7 @@ Generator 在 building 实装某 feature 时，发现 spec acceptance 包含**�
 
 **判据：偏差是 pre-impl 阶段**无法**暴露的**（需要 Read 实装代码 / 跑 dry-run / 触达 prod 数据才看到）→ 不是 spec 起草质量问题，是天然 building 中段才显形 → 走本变种处理；偏差是 pre-impl 阶段**应当**能暴露的（Read schema / grep 调用方就能看见）→ 是 spec 起草质量问题 → 走 §1-§10 主 pattern 反向召回责任 + Planner 修订 spec。
 
-### 11.2 Generator 行为指引
+### 10.2 Generator 行为指引
 
 发现偏差时，Generator **必须主动停下未完成 feature**（不要盲目"按 spec 字面"实装错的目标），按以下步骤：
 
@@ -329,7 +329,7 @@ Generator 在 building 实装某 feature 时，发现 spec acceptance 包含**�
    - **推荐方案** 1-3 选（推 BL-XXX / fix-round 1 完成可控部分 / accept partial 等）
 3. **不切 verifying**（state 仍 `building`），而是在 commit message + project-status.md 注明「partial-pending 等 Planner 裁决」
 
-### 11.3 Planner 短格式裁决格式
+### 10.3 Planner 短格式裁决格式
 
 收到 generator_handoff partial-pending 后，Planner **必须优先裁决**（同 pre-impl audit 优先级）：
 
@@ -351,7 +351,7 @@ Generator 在 building 实装某 feature 时，发现 spec acceptance 包含**�
 **状态机切换：** building → fixing（fix_rounds += 1） — Generator 接手完成 acceptance 修订后的 pending 子项 → reverifying → done
 ```
 
-### 11.4 状态机切换规则
+### 10.4 状态机切换规则
 
 | 现状 | 行动 | 状态切换 |
 |---|---|---|
@@ -362,7 +362,7 @@ Generator 在 building 实装某 feature 时，发现 spec acceptance 包含**�
 
 **关键：不切 verifying。** 主 pattern（pre-impl audit）裁决后 Generator 重新进 building；本变种裁决后 Generator 已经 building 过一段，等价于"修复 partial 完成"，应进 fixing 而非 verifying。`fix_rounds` 反映了一次额外的实装开销 — 比 first-round PASS（fix_rounds=0）质量低，但也比传统 verifying-then-fix 模式（先标 partial 切 verifying 再 fixing）少一次浪费的 reverifying round。
 
-### 11.5 反面案例
+### 10.5 反面案例
 
 **KOLMatrix BL-034 F005 实战（2026-05-05）：** Generator Kimi 实装 F005 时发现 spec 列 9 处 max_tokens 中 7 处走 aigcgateway actions/run 服务端 Action 模板，KOLMatrix 客户端代码不可覆盖；同理 4 处 wrap 中 topic-cloud videoTitles 走 actions/run。Generator 主动停下 + 推 commit 3466898（partial 部分稳定状态）+ 写 generator_handoff 8 段详列已做 / 未做 / 推荐 → Planner johnsong 14:00 短格式裁决方案 A：fix-round 1 完成 cost cap MVP（建立可控范围 ~45min），actions/run 服务端配置部分推 BL-035 F013 → Generator commit bb11ed1 完成 cost cap MVP + 07a6db4 deploy-staging.sh fix-up → Reviewer reverifying PASS @ 07a6db4。**总周转 ~3.5h，状态机流转 building (7/8 + partial) → fixing (fix_rounds=1) → reverifying → done，比假设走「先 verifying 再 fixing」节省 1 个 round。**
 
@@ -372,11 +372,12 @@ Generator 在 building 实装某 feature 时，发现 spec acceptance 包含**�
 
 ---
 
-## 10. 版本历史
+## 11. 版本历史
 
 | 日期 | 修订 | 来源 |
 |---|---|---|
 | 2026-04-19 | 初版沉淀 | KOLMatrix B0 sprint 实测 |
 | 2026-04-20 | §9.1 Planner 写 spec 自检清单 | KOLMatrix BI1-F010 acceptance 偏离案例 |
 | 2026-05-01 | §9.2 数据准备步骤 + 白名单 ID 防抽样污染 | KOLMatrix B5 fixing-3 + MVP fixing-2 |
-| 2026-05-05 | §11 Building 中段良性 partial-pending 变种（v0.9.12 — BL-034 F005 沉淀）| KOLMatrix BL-034 F005 实测 → Planner 短格式裁决 → fix-round 1 |
+| 2026-05-05 | §10 Building 中段良性 partial-pending 变种（v0.9.12 — BL-034 F005 沉淀）| KOLMatrix BL-034 F005 实测 → Planner 短格式裁决 → fix-round 1 |
+| 2026-05-25 | §10/§11 编号错乱修复（BL-071 F007，D7 lock）| 原 §11 partial-pending 顺接为 §10，原 §10 版本历史移至 §11 last |

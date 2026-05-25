@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-071-harness-cleanup — v0.9.23 framework sediment + 12 决策点 lock 后的全面 harness 重组. 10 features F001-F010 / ~5 day (A0 audit ✓ + A1 lock ✓ + B 重组 F001-F007 1-1.5d + C sediment F008 1.5-2d + D 收尾 F009 0.5d + E Reviewer F010 0.5d). 12 决策点 D1-D12 5/25 全 lock: D1 harness-rules.md template 保原名 + banner + 同步内容 / D2 framework/memory/ 保原名 + frontmatter banner / D3 cowork 死文档全清 / D4 planner.md 拆 3 文件 (workflow + arbitration + checklists) / D5 evaluator.md 按 topic 重组单文件 / D6 frontmatter scope tag / D7 sediment 强制 inline-merge 禁 chronological-append / D8 sediment workflow 入 proposed-learnings.md header / D9 保 3 层入口 + framework/README banner / D10 case 文件移 framework/harness/checklists/ / D11 全做 5-day phased / D12 fix_rounds 计数语义入 planner-workflow.md. 31 条 sediment 写入 (v0.9.22 archive 13 + BL-069 user-acked 3 + BL-070 user-acked 12 + audit §5 缺失 3). 0 行业务代码改动 (framework + .auto-memory + harness-rules + docs/CHANGELOG only). 关联 docs/specs/BL-071-harness-cleanup-spec.md @ 本 commit / docs/test-reports/BL-071-harness-audit-2026-05-25.md @ 8aa4ccd Phase A0 audit.",
   "total_features": 10,
-  "completed_features": 6,
+  "completed_features": 7,
   "fix_rounds": 0,
   "current_sprint": "BL-071-harness-cleanup",
-  "last_updated": "2026-05-25T21:30+0800",
+  "last_updated": "2026-05-25T22:00+0800",
   "reference_docs": [
     "docs/specs/BL-071-harness-cleanup-spec.md",
     "docs/test-reports/BL-071-harness-audit-2026-05-25.md",

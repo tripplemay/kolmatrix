@@ -37,7 +37,7 @@ spec 起草时对每条预期 redirect 标注 destination route 的 wire-readine
 - ⏸️ destination 仅 embed-old 占位 → kept deep-link 优先，推迟到后续批次 wire 后再启 redirect
 - ⚠️ destination 部分 wire（如 form 已 wire 但 list 未 wire）→ 按 sub-path 拆分
 
-redirect scope 缩减不计质量。完整：`framework/harness/generator.md §9`。
+redirect scope 缩减不计质量。完整：`framework/harness/generator.md §10`（BL-071 F007 编号修复后位置）。
 
 ## fix-rounds 数解读（2026-05-13 BL-065 沉淀，v0.9.21）
 

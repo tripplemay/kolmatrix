@@ -7,6 +7,76 @@
 
 ---
 
+## 写入流程（D7 + D8 lock，BL-071 F007）
+
+sediment（沉淀）从 proposed-learnings.md 走向 `framework/harness/*.md` 的标准路径。本节是 D8 lock 把"散落在多个角色文件 + 经验记忆"的沉淀工作流统一到 proposed-learnings.md header 一处的产物。
+
+### 4 步流程
+
+| 步 | 谁做 | 何时 | 产物 |
+|---|---|---|---|
+| **1. propose** | Generator / Evaluator | 批次 building / verifying / fixing / reverifying 任意阶段发现 | 追加 entry 到 `framework/proposed-learnings.md` 末尾（line 40 起新条目区），格式见下 |
+| **2. 用户 ack** | 用户 | done 阶段 Planner 逐条提交时 / 即时对话中 | 用户回复"ack"或等同措辞；含修订意见时 entry 文字按意见修订后再 ack |
+| **3. inline-merge** | Planner | done 阶段（或独立 framework sediment batch） | 按 D7 inline-merge 规则写入 `framework/harness/*.md` 对应 topic 段（不是 chronological-append §N，详见下文） |
+| **4. archive** | Planner | inline-merge 完成同 commit | 归档 entry 全文到 `framework/archive/proposed-learnings-archive-vX.Y.Z.md` + 加 `<!-- vX.Y.Z 沉淀完成 -->` HTML 注释到本文件 header markers 块 + 从新条目区移除原 entry + `framework/CHANGELOG.md` 顶部新增 vX.Y.Z 段 1-line summary |
+
+### D7 inline-merge 强制规则（禁 chronological-append §N）
+
+**核心：** 新 sediment 必须找贴近的 topic 段合并，**不得**通过追加 `§N` chronological 段落落地。
+
+**inline-merge 优先级（从高到低尝试）：**
+
+1. **合并矩阵行：** 目标文件已有矩阵/表格（如 planner-checklists.md 铁律 1 矩阵 / generator.md 测试边界矩阵）→ 新规律若属同一维度，直接加新行
+2. **加子段：** topic 段已存在但新内容是该 topic 的延伸 / 反例 / 实战 → 加子段 §X.Y（如 deploy-patterns.md §3.2 加 §3.2.1 staging deploy 前置 git pull）
+3. **修订段内文字：** 新内容是对已有规则的细化 / 边界澄清 → 直接修订段内某段文字（如 evaluator.md §11.1 fire-and-forget 段加一句"或 vi.waitFor 50-100ms retry"）
+4. **开新 topic 段（最后手段）：** 仅当上述 3 个都不适用 — 即新 sediment 真的代表一个全新维度，topic 在现有文件中无对应位置 → 开新 ## 段
+
+**反模式：** 追加 `## §N. 新规律 X` 到文件末尾时间序排，这是 v0.9.22 之前的旧习。BL-071 audit §3.1 暴露 evaluator.md §10-§20 11 段时间序最严重。
+
+### sediment 类型分类
+
+| 类型 | 含义 | 典型写入位置 |
+|---|---|---|
+| **新规律** | 跨多批次复现的稳定模式 | 合并入矩阵 / 加子段 |
+| **新坑** | 单次踩坑但有借鉴价值 | "踩坑列表"段 / 反例段 |
+| **模板修订** | 已有 spec / signoff / acceptance 模板需调整 | 直接 inline 改原段 |
+| **铁律补充** | 升级 harness-rules.md 铁律列表（影响所有项目） | `harness-rules.md` 新增/修订铁律 + 必须用户书面 ack + framework-generic 抽象后 port template |
+
+### 写入位置决策树
+
+```
+是 sediment 还是？
+├─ 否 → 不进 proposed-learnings.md，可能进 ADR 或 spec 反例段
+└─ 是
+   ├─ 影响所有项目（铁律级）？
+   │  ├─ 是 → harness-rules.md 铁律 + 用户书面 ack 才能 port template
+   │  └─ 否
+   │     ├─ 影响多角色？
+   │     │  ├─ 是 → 多文件同步（按角色 cross-ref 矩阵）
+   │     │  └─ 否 → 单角色文件
+   │     └─ 项目特定 vs framework-generic？
+   │        ├─ 项目特定 → 当前项目根 + framework-generic template 不动
+   │        └─ framework-generic → 项目根 + framework-generic template 同步
+   └─ 是 ADR-worthy（跨批次影响 / 不可逆 / 当时辩论过的关键决策）？
+      └─ 是 → 加 ADR 文件 + 引用 proposed-learnings entry 作为来源
+```
+
+### Entry 格式（追加到本文件新条目区）
+
+```markdown
+## [YYYY-MM-DD] {Claude CLI / Codex / Generator agent-id} — 来源：{触发场景简述：批次 ID + feature ID + fix-round 编号 / audit 名}
+
+**类型：** 新规律 / 新坑 / 模板修订 / 铁律补充
+
+**内容：** [一句话总结 → 多段详述 → 含具体 commit hash / file:line / 反例 case]
+
+**建议写入：** `framework/harness/{file}.md` §{具体段名 or 矩阵行编号} / 配套 cross-ref / 同主题合并提示
+
+**状态：** 用户 YYYY-MM-DD 已 ack — 待 done 阶段 / 专门 framework sediment batch 正式写入
+```
+
+---
+
 <!-- 2026-05-04: v0.9.9 沉淀完成（8 条 learnings 来源 BL-030/BL-031/BL-032），全部已写入 framework/ 对应文件 + CHANGELOG。 -->
 
 <!-- 2026-05-04: v0.9.10 沉淀完成（3 条 learnings 来源 BL-033 + prod-mvp-readiness-audit），全部已写入 framework/ 对应文件 + CHANGELOG。 -->

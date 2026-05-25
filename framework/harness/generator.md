@@ -190,7 +190,7 @@ gh run list --limit 3 --branch main
 **状态：** 待确认
 ```
 
-### 7. Handoff 说明（存在 executor:codex 功能时）
+### 8. Handoff 说明（存在 executor:codex 功能时）
 当所有 `executor:generator` 功能完成后，如果存在 `executor:codex` 的功能，在 progress.json 中写入 `generator_handoff`，说明：
 - Generator 已完成哪些工具 / 脚本
 - Codex 需要执行哪些 executor:codex 功能
@@ -202,7 +202,7 @@ gh run list --limit 3 --branch main
 
 ---
 
-## 8. Alpha / Beta / RC 依赖必须 ambient `.d.ts` shim 兜底
+## 9. Alpha / Beta / RC 依赖必须 ambient `.d.ts` shim 兜底
 
 **背景：** KOLMatrix B5 fixing-1（commit f8fca4b）暴露：
 
@@ -245,7 +245,7 @@ fontSize={(d: WordcloudDatum) => d.value}
 
 ---
 
-## 9. IA refactor / route migration redirect scope wire-readiness 评估（v0.9.21 新增）
+## 10. IA refactor / route migration redirect scope wire-readiness 评估（v0.9.21 新增）
 
 **背景：** BL-064 顶层 IA refactor 7→4 路由 spec §4 预期 ~12 条 redirect（7 老路由 + 子路径继承 + parametric），fix-round 1-3 实战发现 embed-old-components 占位策略下若 destination route **未 wire ready**（如 /campaigns/new → /brief?action=new 但 /brief 仅 embed /knowledge-base，没 wire form action），用户体验比 kept 旧路由 **差** — 跳转后 URL 换名但内容仍是旧的，反而 confusing。
 
@@ -267,7 +267,7 @@ C. **redirect scope 缩减是良性 fix-round** — 不计入"质量问题"，�
 
 ---
 
-## 10. 大型删除批次执行模板（v0.9.21 新增）
+## 11. 大型删除批次执行模板（v0.9.21 新增）
 
 **背景：** BL-065-F006 单 commit ad76eb1：64 files / +1466 / -6124（净 -4658 lines）。本地 L1 全绿即推送，CI 3 轮自修才全绿 — woff2 stale / edge-states-coverage / visual-baselines-shape / UUID guard / Checkbox locator 等 baseline-tracking / fidelity-grep / next.js types-regen 类测试只在 CI 完整链路才暴露。
 

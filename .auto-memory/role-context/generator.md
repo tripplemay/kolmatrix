@@ -43,7 +43,7 @@ fixing 阶段发现 Reviewer 反馈问题**指向 infrastructure 层**（e2e sui
 
 ## IA refactor redirect scope 评估（2026-05-13 BL-064 沉淀，v0.9.21）
 
-IA refactor / page consolidation 类批次 spec 起草 redirect 规则时，**逐条评估 destination route wire-readiness**：destination 已 wire 该 content → redirect OK；仅 embed-old 占位（URL 换名内容不变）→ kept 更优。redirect scope 缩减是良性 fix-round 不计质量。BL-064 fix-round 1→3 把 12 条预期 redirect 缩到 6 条（5 content-equivalent + 1 parametric），其余 4 条改 kept 推迟到 destination wire 后再启。完整：`framework/harness/generator.md §9`。
+IA refactor / page consolidation 类批次 spec 起草 redirect 规则时，**逐条评估 destination route wire-readiness**：destination 已 wire 该 content → redirect OK；仅 embed-old 占位（URL 换名内容不变）→ kept 更优。redirect scope 缩减是良性 fix-round 不计质量。BL-064 fix-round 1→3 把 12 条预期 redirect 缩到 6 条（5 content-equivalent + 1 parametric），其余 4 条改 kept 推迟到 destination wire 后再启。完整：`framework/harness/generator.md §10`（BL-071 F007 编号修复后位置）。
 
 ## i18n template 使用约定（2026-05-13 BL-065-R1 沉淀，v0.9.21）
 
@@ -62,4 +62,4 @@ next-intl `{x}` 占位符两套约定不可混：
 - base-ui Checkbox E2E：用 `getByRole('checkbox').click()` 而非 `locator('input[type=checkbox]').check()`（后者卡 sr-only helper viewport-out 超时）
 - 上游路由保留 stale ids（如 BL-064 `/campaigns/abc-123` 用于 redirect E2E），下游 page Prisma findFirst 前必须 UUID guard
 
-CI 多轮自修属预期（BL-065-F006 3 轮才全绿）；single atomic commit 优于多 sub-commit。完整：`framework/harness/generator.md §10`。
+CI 多轮自修属预期（BL-065-F006 3 轮才全绿）；single atomic commit 优于多 sub-commit。完整：`framework/harness/generator.md §11`（BL-071 F007 编号修复后位置）。
