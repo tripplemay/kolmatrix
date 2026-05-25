@@ -40,7 +40,7 @@ Generator 实现 UI 页面时常见 3 类偏离：
 
 > **⚠️ 严格强制 — Planner spec 起草自检 checklist + Reviewer L1 受理前 checklist**
 >
-> Planner 起草 UI 类 feature spec 必须自检 4 段全含（见 `planner.md` §UI 类 spec 起草前 mandatory self-check checklist）；Reviewer L1 受理前必须 grep spec 确认 4 段都在，缺任一段 → 拒收 spec 退回 Planner 补全（不是 FAIL feature，是规格本身不合规）。
+> Planner 起草 UI 类 feature spec 必须自检 4 段全含（见 `planner-checklists.md §"UI 类 spec 起草前 mandatory self-check checklist"`，BL-071 F003 拆分后位置）；Reviewer L1 受理前必须 grep spec 确认 4 段都在，缺任一段 → 拒收 spec 退回 Planner 补全（不是 FAIL feature，是规格本身不合规）。
 >
 > 反面案例：BL-025 spec v1 仅含 §2.1，§2.2/2.3/2.4 全缺，靠用户 challenge 才补 → 来源 v0.9.6 [#5]。
 

@@ -51,7 +51,7 @@ next-intl `{x}` 占位符两套约定不可混：
 - **ICU placeholder**：t-call 必须传值，如 `t("count", { count: 5 })`
 - **client-side String.replace token**：模板字面字符串，server 端取值必须用 **`t.raw(key)`** 绕过 ICU 格式器，否则 server render 时 ICU 看到未绑定 placeholder 即抛 FORMATTING_ERROR
 
-**路由迁移类批次 spec lock 前 grep 全仓 `t(key)` 调用 + 检查 messages/*.json 模板含 `{x}` 是否走 client-side .replace**。回归守门用 fidelity-grep 模式锁 `.raw()` 用法。完整：`framework/harness/planner.md` 铁律 1 矩阵 v0.9.21 行。
+**路由迁移类批次 spec lock 前 grep 全仓 `t(key)` 调用 + 检查 messages/*.json 模板含 `{x}` 是否走 client-side .replace**。回归守门用 fidelity-grep 模式锁 `.raw()` 用法。完整：`framework/harness/planner-checklists.md §"铁律 1"` 矩阵 v0.9.21 行（BL-071 F003 拆分后位置）。
 
 ## 删除文件类批次的 CI 多轮自修预期（2026-05-13 BL-065-F006 沉淀，v0.9.21）
 

@@ -150,7 +150,7 @@ Generator git pull 看到裁决 → 真正开始实现
 
 ### 4.1 Planner 凭印象裁决
 **错误：** Planner 没读代码就下结论
-**正确：** 按 `planner.md` 铁律 1「涉及代码细节必须核查源码」，Read 现状再判
+**正确：** 按 `planner-checklists.md §"铁律 1：spec 涉及具体代码细节时必须核查源码"`（BL-071 F003 拆分后位置），Read 现状再判
 
 ### 4.2 Generator 审计过度笼统
 **错误：** "F005 有歧义，请 Planner 确认" —— 没列具体分歧点
@@ -255,7 +255,7 @@ B0 sprint 实测：
 
 新 sprint 启动时，Planner 确认：
 
-- [ ] `planner.md` 引用了本文件（§规格偏差处理）
+- [ ] `planner.md` 索引页或 `planner-arbitration.md` 引用了本文件（§Pre-impl 裁决 P1-P5 段；BL-071 F003 拆分后位置）
 - [ ] `generator.md` 引用了本文件（§开工前审计）
 - [ ] `.auto-memory/MEMORY.md` T2 条目触发条件含"pre-impl 审计"
 - [ ] `features.json` 的 acceptance 足够清晰，不留 3 类错误场景（§1）

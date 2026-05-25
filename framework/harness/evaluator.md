@@ -209,7 +209,7 @@ git diff --name-only <staging-sha>..HEAD
 
 来源：KOLMatrix MVP-internal-demo-prep fixing-1（C-03 /database 三卡名 spec 写 "Market Intel/Campaign Timing/Budget Benchmark" 但实际代码是 "AI Intelligence/Coverage Gap/Engagement"）。Reviewer 标 FAIL 触发 fixing 浪费 1 轮；正解是直接 update checklist 文本。
 
-**Planner 配套防御：** verifying 前 grep 实际代码验证 checklist 元素存在性（详见 `planner.md` "verifying 前 checklist 起草"）。
+**Planner 配套防御：** verifying 前 grep 实际代码验证 checklist 元素存在性（详见 `planner-checklists.md §"verifying 前 checklist 起草必须 grep 实际代码验证"`，BL-071 F003 拆分后位置）。
 
 ---
 

@@ -41,4 +41,11 @@ redirect scope 缩减不计质量。完整：`framework/harness/generator.md §9
 
 ## fix-rounds 数解读（2026-05-13 BL-065 沉淀，v0.9.21）
 
-大体量 page consolidation / route migration 类批次 fix-round 可能来自 **latent bug exposed by route migration**（如老路由 302 掩盖 6 个月的 next-intl FORMATTING_ERROR，新路由真实渲染暴露）。这类 fix-round 应在 signoff 中标注「latent bug exposed by F00X route migration」与本批次新引入 bug 区分；done-phase 评分不应统一按 fix_rounds 单维。完整：`framework/harness/planner.md §"fix-rounds 数解读"`。
+大体量 page consolidation / route migration 类批次 fix-round 可能来自 **latent bug exposed by route migration**（如老路由 302 掩盖 6 个月的 next-intl FORMATTING_ERROR，新路由真实渲染暴露）。这类 fix-round 应在 signoff 中标注「latent bug exposed by F00X route migration」与本批次新引入 bug 区分；done-phase 评分不应统一按 fix_rounds 单维。完整：`framework/harness/planner-workflow.md §"阶段转换 + fix_rounds 计数语义"`（BL-071 F003 拆分后位置）。
+
+## Planner 子文件入口（BL-071 F003 D4 lock）
+
+`framework/harness/planner.md` 已拆为索引页 + 3 子文件：
+- `planner-workflow.md` — 启动流程 / 阶段流转 / done 收尾 / fix_rounds 计数 / 会话结束 5a+5b
+- `planner-arbitration.md` — Pre-impl 裁决 P1-P5 / 跨角色 ops / 角色文件一致性 / Generator 越界界定
+- `planner-checklists.md` — 7 铁律矩阵 + spec 起草 checklist 集合（数据准备 / perf / UI / i18n / 上线前 audit / Server Action rate-limit）
