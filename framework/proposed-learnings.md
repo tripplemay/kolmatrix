@@ -78,3 +78,161 @@
 **建议写入：** `framework/harness/planner.md` 新段 §"fix-round 类型分类：A implementation-gap vs B LLM-behavior"（含 BL-068 vs BL-069 对比表 + 预期 fix_rounds 数公式 + 与 v0.9.22 #13 配对使用）
 
 **状态：** 用户 2026-05-18 已 ack — 待 BL-070 done 阶段或专门 framework 沉淀 batch 时正式写入 framework/ + CHANGELOG + 归档
+
+---
+
+<!-- BL-070 done @ 2026-05-25 Planner Kimi 批量追加 12 条 v0.9.23 候选 (#17-19 fix-round 0 + #21-24 fix-round 1 + #25 Planner + #26-28 fix-round 2 + #29-30 fix-round 3). 用户 2026-05-25 ack 方案 A — 本会话仅追加 proposed-learnings.md，存量 26 条整体留专门 framework sediment batch 落 framework/harness/*.md + CHANGELOG + archive. -->
+
+## [2026-05-19] Claude CLI — 来源：BL-070-F004 #1 / Generator johnsong
+
+**类型：** 新坑（v0.9.23 候选 #17，扩展 v0.9.21 BL-064-F006 沉淀范围）
+
+**内容：** **删显式子路由前必须先加上游 [id] UUID guard**。BL-070-F004 案例：删 `src/app/[locale]/(app)/campaigns/new/page.tsx` 后 Next.js fallback 到动态 `/campaigns/[id]/page.tsx` → Prisma `findFirst({ id: 'new' })` 抛 `invalid input syntax for type uuid` 500。同 commit 必须给动态 `[id]/page.tsx` 加 `UUID_RE.test(id)` guard 走 `notFound()`。grep 自查：`find src/app -name 'page.tsx' -path '*\[*\]*'` 列动态路由后逐个查是否已有 guard。
+
+**建议写入：** `framework/harness/generator.md` 新段 §"删显式子路由前的 UUID guard 检查清单"（扩展 v0.9.21 BL-064-F006 沉淀）
+
+**状态：** 用户 2026-05-25 已 ack — 待 framework sediment batch 正式写入
+
+---
+
+## [2026-05-19] Claude CLI — 来源：BL-070-F004 #2 / Generator johnsong
+
+**类型：** 新坑（v0.9.23 候选 #18）
+
+**内容：** **`notFound()` 在 next-intl 包装下 HTTP status 不可预测（200 或 404）**。Next.js 15 App Router server component `notFound()` 标准是 404，但 next-intl middleware 包装响应后实际 status 可能 surface 为 200 + not-found body。e2e 验路由废弃时不能严格 `expect(status).toBe(404)`，应 `expect(status).toBeOneOf([200, 404])` + 验 Location header 不含错误目的地（或验 page body 含 "not found" 文案 + URL 未变化）。
+
+**建议写入：** `framework/harness/generator.md` 新段 §"next-intl + notFound() HTTP status 不可靠"（含 e2e assertion 模板）
+
+**状态：** 用户 2026-05-25 已 ack — 待 framework sediment batch 正式写入
+
+---
+
+## [2026-05-19] Claude CLI — 来源：BL-070-F005 #1 / Generator johnsong
+
+**类型：** 新坑（v0.9.23 候选 #19）
+
+**内容：** **删 i18n deprecated ns 前必须 grep 实际 callers，ns 可能跨 batch git mv 后仍 in use**。BL-070-F004 git mv 把 KB CRUD 组件搬到 brief/ 但组件内部仍 `useTranslations("knowledgeBase")`。盲信 marker `will delete this namespace` 整 ns 删会破 production。Python 批处理脚本应内嵌该自检：`grep -rln 'useTranslations|getTranslations.*"<ns>"' src/` 0 caller 才能整 ns 删。
+
+**建议写入：** `framework/harness/generator.md` 新段 §"i18n deprecated ns 删除前的 caller-grep 自检"（含 Python 批处理脚本模板）
+
+**状态：** 用户 2026-05-25 已 ack — 待 framework sediment batch 正式写入
+
+---
+
+## [2026-05-20] Claude CLI — 来源：BL-070 fix-round 1 #21 / Generator johnsong
+
+**类型：** 新坑（v0.9.23 候选 #21）
+
+**内容：** **e2e server-action mock 不可用 — RSC wire format 不可由 Playwright `route.fulfill` 满足**。BL-070 F006 4 个 refine e2e case 在 mock fired 后 toast 永远 timeout，根因 = Playwright `page.route.fulfill({body: JSON.stringify(...)})` 返 plain JSON 不满足 Next.js RSC wire format → client deserialise throw → catch 走 network toast。任何 body shape filter 都救不了。必须 `test.skip(true, SKIP_*_REASON)` always-skip + unit suite + staging dogfood 覆盖。同 brief-flow.spec.ts cases 3-5 历史 precedent。
+
+**建议写入：** `framework/harness/evaluator.md` 新段 §"e2e server-action mock 不可用：always-skip + unit + staging 三件套"（含 RSC wire format 解释 + skip 模板）
+
+**状态：** 用户 2026-05-25 已 ack — 待 framework sediment batch 正式写入
+
+---
+
+## [2026-05-20] Claude CLI — 来源：BL-070 fix-round 1 #22 / Generator johnsong
+
+**类型：** 模板修订（v0.9.23 候选 #22）
+
+**内容：** **`prisma migrate dev` 创 migration 不自动加 ROLLBACK 注释**，`scripts/validate-rollback-sql.sh` 是后置 CI 检查，触发 CI 红。建议 `prisma migrate dev` wrap script 自动注入 ROLLBACK skeleton（`-- ROLLBACK: <inverse SQL here>`），从生产源头避免 CI 红。
+
+**建议写入：** `framework/harness/generator.md` 新段 §"prisma migrate dev wrap script — 自动注入 ROLLBACK skeleton"
+
+**状态：** 用户 2026-05-25 已 ack — 待 framework sediment batch 正式写入
+
+---
+
+## [2026-05-20] Claude CLI — 来源：BL-070 fix-round 1 #23 / Generator johnsong
+
+**类型：** 新坑（v0.9.23 候选 #23）
+
+**内容：** **Next.js 16 `'use server'` file-level directive 禁非 async function exports**。在 `'use server'` 文件里加 zod schema/常量 / 普通对象/类的 export 会触发 build/runtime error。zod schema/常量必须独立到 `schema.ts` / `constants.ts` 等无 `'use server'` 的模块。BL-070 fix-round 1 实证：landing batch 加 `AccessRequestSchema` 到 actions.ts 触发，必须抽到 `src/app/[locale]/request-access/schema.ts`。
+
+**建议写入：** `framework/harness/generator.md` 新段 §"'use server' file-level directive 约束清单"（含 zod schema 抽离模板）
+
+**状态：** 用户 2026-05-25 已 ack — 待 framework sediment batch 正式写入
+
+---
+
+## [2026-05-20] Claude CLI — 来源：BL-070 fix-round 1 #24 / Generator johnsong
+
+**类型：** 模板修订（v0.9.23 候选 #24）
+
+**内容：** **`github-actions[bot]` 默认 `GITHUB_TOKEN` commit 不 cascade CI workflow** — 这是 GitHub 默认安全行为（防止 bot commit 触发无限 CI 循环）。`ci.yml` 必加 `workflow_dispatch` trigger 才能在 bot commit 后手动重跑 CI；类似 `deploy-staging.yml` / `deploy-prod.yml` / `update-visual-baselines.yml` 也应检查并加 `workflow_dispatch`。
+
+**建议写入：** `framework/harness/deploy-patterns.md` 新段 §"github-actions[bot] commit 不 cascade CI — workflow_dispatch 通解"
+
+**状态：** 用户 2026-05-25 已 ack — 待 framework sediment batch 正式写入
+
+---
+
+## [2026-05-25] Claude CLI — 来源：BL-070 Planner Kimi 反思 / Planner Kimi
+
+**类型：** 新规律（v0.9.23 候选 #25）
+
+**内容：** **对外上线 ready checklist 中 Lighthouse perf 类硬门槛，必须在 spec 起草阶段就列入 acceptance**。本批次 F008 §10 #8 在 batch end-stage（F001-F007 全 done 后）才发现 perf 75-78 < 80 触发 fix-round 2 perf 攻关（+3 features F009/F010/F011 + 2 fix-rounds CI 自修），延期 ~2 day。**应用：** 后续 IA refactor / 重客户端组件类 batch 在 features.json 起草时即把 perf score / TBT / LCP / CLS 量化门槛列为 acceptance，Generator 实装时同步用 `next/dynamic` + `next/image` + Suspense 模式；不要 batch 末尾才 retrofit perf。
+
+**建议写入：** `framework/harness/planner.md` 新段 §"perf 量化门槛入 acceptance — 反 retrofit 模式"（含 BL-070 反面案例 + 起草模板）
+
+**状态：** 用户 2026-05-25 已 ack — 待 framework sediment batch 正式写入
+
+---
+
+## [2026-05-25] Claude CLI — 来源：BL-070 fix-round 2 #26 / Generator Kimi
+
+**类型：** 新规律（v0.9.23 候选 #26）
+
+**内容：** **spec perf optimization 类 acceptance 必须分类 client component (chunk-split 靶) vs server async (Suspense 靶)，不该混在一条 `ssr:false` acceptance line 里**。BL-070 F009 spec acceptance 列出 reach 5 组件 `ssr:false` 懒载，但其中 4 个（SendingPerformanceChart/RecentRepliesCard/RecentlySentTable/TopTemplatesCard）为 server 组件 — 零 client JS 贡献，不该走 `ssr:false`（违 spec §5 不变量 #5）。实际只 OutreachComposer 走 `ssr:false`，其余 4 个 server 组件的 SSR 延迟由 F011 Suspense 治理。
+
+**建议写入：** `framework/harness/planner.md` 新段 §"perf acceptance 必须区分 client/server 组件"（含 chunk-split vs Suspense 分类决策树）
+
+**状态：** 用户 2026-05-25 已 ack — 待 framework sediment batch 正式写入
+
+---
+
+## [2026-05-25] Claude CLI — 来源：BL-070 fix-round 2 #27 / Generator Kimi
+
+**类型：** 新规律（v0.9.23 候选 #27）
+
+**内容：** **异构 CDN avatar/logo 场景，`unoptimized={true}` + explicit dims 是最稳的 next/image 落地姿势**，优于强上 `images.remotePatterns` 累积白名单导致 build error / 运行时 403。多平台 KOL avatar CDN（YT 现；TikTok/Twitch/Bilibili later）远多于 next.config.ts whitelist 能覆盖，`unoptimized` 跳 AVIF/WebP 转换通路但保留 explicit width/height 的 CLS reservation 收益。小尺寸 avatar (32-64px) 优化收益微；大图 (banner 1200×240) 也 unoptimized — 在低流量 detail page 不致命。
+
+**建议写入：** `framework/harness/generator.md` 新段 §"next/image 异构 CDN 落地：unoptimized + explicit dims"
+
+**状态：** 用户 2026-05-25 已 ack — 待 framework sediment batch 正式写入
+
+---
+
+## [2026-05-25] Claude CLI — 来源：BL-070 fix-round 2 #28 / Generator Kimi
+
+**类型：** 新坑（v0.9.23 候选 #28）
+
+**内容：** **引入 lazy boundary 时必须检查并同步老 fidelity test importer 名**。BL-070 F009 把 `MatchRefineBar` 改为 `MatchRefineBarLazy` 后，老 `f004-bl068-refine-fidelity` 测试断言 `import { MatchRefineBar } from "./MatchRefineBar"` 失败，必须同步改 2 case，否则 fidelity grep 报误警。
+
+**建议写入：** `framework/harness/generator.md` 新段 §"lazy boundary 引入时的 fidelity test 同步清单"
+
+**状态：** 用户 2026-05-25 已 ack — 待 framework sediment batch 正式写入
+
+---
+
+## [2026-05-25] Claude CLI — 来源：BL-070 fix-round 3 #29 / Generator Kimi
+
+**类型：** 新规律（v0.9.23 候选 #29）
+
+**内容：** **Suspense fallback skeleton 必须像素级镜像实际 outer 结构**，不仅 `glass-panel + animate-pulse` 视觉。skeleton 高度差异会按下游 shifted 内容总高度（本批 1039px 高的主网格）放大 CLS 评分。本次 88px → 150px 的 62px 反差直接造成 `/match` 0.348 CLS 评分。修复 = skeleton 重写为同 grid + 4×150px 卡槽，CLS 跌至 0.008。**关联反思：** F011 Suspense PR push 前未做 Lighthouse 本地 dry-run → Reviewer fix-round 2 才捕 CLS → 沉淀：Suspense 落地必配 Lighthouse Desktop logged-in 自测。
+
+**建议写入：** `framework/harness/generator.md` 新段 §"Suspense fallback skeleton 像素级镜像规范 + Lighthouse 落地自测"
+
+**状态：** 用户 2026-05-25 已 ack — 待 framework sediment batch 正式写入
+
+---
+
+## [2026-05-25] Claude CLI — 来源：BL-070 fix-round 3 #30 / Generator Kimi
+
+**类型：** 新规律（v0.9.23 候选 #30）
+
+**内容：** **Suspense fallback 宽度在 `flex-wrap` 父容器下必须与实际等宽**（或更宽），否则 swap 时横向 reflow 触发换行 → 横向 reflow 间接放大垂直 CLS 评分。本次 `SaveSearchControlsSkeleton` 从 `w-44`（~176px）改为 ~460px 等宽 SaveSearchControls 实际渲染宽度，消除 flex-wrap header 横向 reflow。**Lighthouse 13.x audit 定位工具：** `cls-culprits-insight` 在 JSON 输出 path = `details.items[].node.selector + snippet + boundingRect` — 比 `layout-shift-elements` 更准确直指 shift target，后续优化 perf 优先 grep 此键。
+
+**建议写入：** `framework/harness/generator.md` 新段 §"Suspense fallback 宽度等宽规范（flex-wrap 父容器）+ Lighthouse cls-culprits-insight 定位法"
+
+**状态：** 用户 2026-05-25 已 ack — 待 framework sediment batch 正式写入

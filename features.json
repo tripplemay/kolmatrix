@@ -128,7 +128,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 8.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "staging deploy via `deploy-staging.yml`（含 BL-070 全部 commit + F002 customize.ts 迁移后 AIGCGATEWAY_EMAIL_CUSTOMIZE_ACTION_ID 复用现 BL-067 SDK 同 env var）",
       "**prod deploy 触发条件**（用户 ack 时间窗 — 项目近期对外上线）：(1) BL-067 + BL-068 + BL-069 + BL-070 累积 prod deploy（Phase 3 + Phase 4 一次性 prod 上）/ (2) `scripts/deploy-prod.sh` 已含 v0.9.22 #4 `--webpack` 防御（per §5 不变量 #9）/ (3) 用户 ack 时间窗",
@@ -136,7 +136,8 @@
       "**对外上线 ready checklist（per §10 12 项，Reviewer signoff doc 逐项验证）**：(1) 4 路由全 active / (2) 7 老路由全 404 / (3) 5 locale UI 全 PASS / (4) cost cap < $5/day/tenant / (5) 4 路由 e2e suite 全 PASS / (6) 视觉 baseline 全 PASS / (7) a11y ≥90 / (8) Lighthouse 性能 ≥80 / (9) ≥5 marketer dogfood spot check / (10) 24h 监控数据正常 / (11) prod /api/health git_sha 验 / (12) i18n-locale-coverage parity 8/8 PASS",
       "`docs/test-reports/BL-070-signoff-2026-05-XX.md` Reviewer 写最终结论：所有 8 features + cleanup + e2e 全 PASS + checklist 全 12 项通过",
       "Reviewer 复验全部 acceptance + signoff，progress.json `status: verifying → done`（首轮 PASS, fix_rounds=0, per harness-rules + evaluator.md §12 — 直接 verifying→done, 不必经 fixing→reverifying）；若验收发现 BL-070 引入新 blocker → status: verifying → fixing → reverifying → done 走 fix-round",
-      "**本批次 done = Phase 4 完整 done = 4 路由 IA 完整闭环 = 对外上线 ready**"
+      "**本批次 done = Phase 4 完整 done = 4 路由 IA 完整闭环 = 对外上线 ready**",
+      "DEFERRED to post-launch ops backlog (per 用户 2026-05-25 ack 方案 A)：#9 ≥5 marketer dogfood + #10 24h audit 复跑 + signoff doc 终签"
     ]
   },
   {

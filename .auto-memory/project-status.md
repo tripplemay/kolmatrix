@@ -3,20 +3,16 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🧪 BL-070-reach-insight-cleanup REVERIFYING (10/11, fix_rounds=4, local reverify PASS @ fc79f43)
-- ✅ F001-F005 done (无变, 见 git log)
-- ✅ F006 done (合并 e2e ec39157 + fix-round 1 always-skip 4 refine case a5a4cf1)
-- ✅ F007 done (5-locale landing.* 完整 + parity 8/8 PASS @ fc71862)
-- ✅ F009 done (75acf1e+bf15b62) — next/dynamic chunk-split 4 路由 (Reviewer fix-round 2 PASS)
-- ✅ F010 done (75acf1e+cadbda5) — next/image migration; fix-round 3 解锁 /match CLS (0.348 → 0.0075 stable 3-run)
-- ✅ F011 done (bf15b62+cadbda5) — /match + /reach Suspense defer; skeleton 高度/宽度像素级镜像实际组件
-- 🧪 fix-round 3 修复定位: Lighthouse `cls-culprits-insight` 直指主网格下移; 根因 = QuickStatsSkeleton h-88px vs 实际 grid h-150px 的 62px 反差 → 整个 1039px 高工作区下移 → CLS 0.348. 修复: skeleton 重写为同 grid + 4×150px 卡槽; SaveSearchControlsSkeleton 加宽防 header wrap.
-- 📏 Reviewer fix-round 3 复验结果: Lighthouse 4 路由 × 3 全 PASS；median = brief 98 / match 96 / reach 93 / insight 95；`/en/match` CLS 稳定 `0.008`，其余 3 条路由 CLS = `0`
-- ✅ 定向 L1 复验通过：typecheck PASS / perf unit `29/29` PASS / targeted E2E `133 passed / 43 skipped / 0 failed`
-- ⏸️ F008 仍 pending: 本地代码 blocker 已清空；剩余仅 prod redeploy + #9 ≥5 marketer dogfood + #10 24h audit + #11 prod git_sha + final signoff doc
-- 🆕 v0.9.23 候选累计 ~10 条: fix-round 1 #21-24 + planner #25 + generator #26-30 (新增 #29 Suspense skeleton 必须像素级镜像实际外层结构 / #30 fallback 宽度在 flex-wrap 父容器下必须等宽防横向 reflow)
-- 反思: F011 Suspense PR push 前未做 Lighthouse 本地 dry-run → Reviewer fix-round 2 才捕 CLS → 沉淀: Suspense 落地必配 Lighthouse Desktop logged-in 自测
-- 本批次 reverifying done = Phase 4 完整 done = 4 路由 IA 闭环 = 对外上线 ready (距 ~2 周)
+## ✅ BL-070-reach-insight-cleanup DONE (11/11, fix_rounds=4, prod=fc79f43) — Phase 4 完整完成 + 对外上线 ready
+- F001-F007 done (路由迁移 + 二次清理 + e2e/visual baseline 重写) — 见 git log
+- F008 done (acceptance 加 DEFERRED 注: #9 dogfood + #10 24h audit 归 post-launch ops backlog)
+- F009 done (next/dynamic chunk-split 4 路由, TBT 攻关) @ bf15b62
+- F010 done (9 raw img→next/image, LCP+CLS 攻关) @ 75acf1e+cadbda5
+- F011 done (/match+/reach SSR Suspense stream, LCP 攻关) @ bf15b62+cadbda5
+- Lighthouse fix-round 3 复验 4 路由 × 3 中位数: brief 98 / match 96 / reach 93 / insight 95；TBT/LCP/FCP/CLS 全门槛 PASS
+- Reviewer L1+L2 全 PASS (2026-05-20 + 2026-05-25)；prod first-run audit 复核通过；signoff doc 终签 @ 本 commit
+- 用户 2026-05-25 ack 方案 A: Planner Kimi 推 reverifying→done；#9/#10 归 post-launch ops backlog
+- v0.9.23 候选累计 28 条 (BL-069 user-acked 3 + v0.9.22 archive 13 + BL-070 新 12)；留专门 framework sediment batch 落 framework/harness/*.md + CHANGELOG + archive
 ## ✅ BL-069-brief-page-merge DONE（7/7, fix_rounds=1）
 ## ✅ BL-068-conversational-refine DONE（7/7, fix_rounds=3）
 ## ✅ BL-067-explainability-c3 DONE（7/7, prod redeploy 待用户 ack）
@@ -26,10 +22,13 @@ type: project
 - 5/10 ADR-013 AI Native 转向 Phase 1-4 / BL-048 合入 Phase 2 第二批
 - 5/14 BL-066 决策点 + framework v0.9.21 沉淀
 - 5/25 BL-070 fix-round 2 方案 A: F009+F010+F011 全做 (用户 ack)
+- 5/25 BL-070 done 方案 A: #9/#10 归 backlog；框架沉淀留专门 batch (用户 ack)
 ## 用户手工待办
 1. 5/17 weekly growth-curve check（重跑 BL-061 F003 SQL）
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
-3. BL-070 F008: Reviewer fix-round 3 复验全 PASS 后 prod redeploy 触发 + 24h 监控 + ≥5 marketer dogfood + signoff
-## 角色 / Backlog
-- BL-070 reverifying: Reviewer fix-round 3 已通过，本地 gate 清空；等待继续执行 F008 prod-facing signoff
-- Phase 3 全 DONE ✅ / Phase 4: BL-069 ✅ + BL-070 reverifying 🚧 10/11 / BL-070 done = 对外上线 ready
+3. **BL-070 post-launch ops（5/25 ack 归 backlog）：** 24h 后跑 `ssh tripplezhou@34.180.93.185 'bash /opt/kolmatrix/scripts/bl070-prod-audit.sh'` + 邀 ≥5 marketer prod dogfood 反馈 0 P0/P1；全过则 signoff §4 #9/#10 DEFERRED→PASS
+## 角色 / Backlog (下批次候选)
+- ★ framework sediment batch：28 条候选落 framework/harness/*.md + CHANGELOG + archive (优先级高)
+- Phase 5：个性化学习 / AI 学到偏好 / Brief 模板库 / comparative query / skip-replace 写 DB
+- BL-062 backlog：KOL data coverage gap 治理
+- 真客户 onboarding 准备：db:seed 验证 + tenant cleanup + 监控仪表板
