@@ -1,3 +1,9 @@
+---
+scope: mixed
+project-specific-sections: ["§2"]
+last-updated: 2026-05-25
+---
+
 # Database Patterns（框架沉淀）
 
 > 跨批次通用的数据库设计 / schema 写作坑。Planner 在写涉及 DB schema、migration、RLS 的 spec 时必读本文件核对。

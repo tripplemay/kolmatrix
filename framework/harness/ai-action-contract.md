@@ -1,3 +1,8 @@
+---
+scope: framework-generic
+last-updated: 2026-05-25
+---
+
 # AI Action Contract（aigcgateway / 类似 LLM 网关 集成规范）
 
 > 来源：KOLMatrix B5 fixing-5/6 + MVP-internal-demo-prep fixing-3 累积经验。

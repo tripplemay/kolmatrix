@@ -1,3 +1,8 @@
+---
+scope: framework-generic
+last-updated: 2026-05-25
+---
+
 # UI Fidelity Guardrail
 
 > **沉淀来源：** KOLMatrix BM1 批次签收后 UI fidelity 审计（2026-04-24）

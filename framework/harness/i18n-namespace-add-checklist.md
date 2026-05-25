@@ -1,3 +1,8 @@
+---
+scope: project-specific
+last-updated: 2026-05-25
+---
+
 # i18n 命名空间新增 Spec Checklist
 
 > **Source:** v0.9.10 — KOLMatrix BL-033-F004 首推 CI 25321942649 红，i18n 双门同时触发（locale-coverage 行业词字面一致 + placeholders ICU plural shape parity）。BL-014/BL-025 因都已预处理过未触发，BL-033 首次踩双门。Generator session_notes 提案，Reviewer signoff §Framework Learnings 入框架。

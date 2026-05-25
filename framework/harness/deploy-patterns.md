@@ -1,3 +1,9 @@
+---
+scope: mixed
+project-specific-sections: ["§1.6", "§1.7", "§3.2", "§5.1"]
+last-updated: 2026-05-25
+---
+
 # Deploy Patterns（框架沉淀）
 
 > 跨批次通用的生产部署 / 运行时进程管理 / 反向代理模式。Planner 在写涉及 deploy / PM2 / process management / nginx 的 spec 时必读。

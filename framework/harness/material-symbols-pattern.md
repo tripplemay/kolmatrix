@@ -1,3 +1,8 @@
+---
+scope: project-specific
+last-updated: 2026-05-25
+---
+
 # Material Symbols Subset — Maintenance Pattern
 
 **Source:** BL-025-F009 (sweep done 2026-05-02 → 2026-05-03 after

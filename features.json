@@ -69,7 +69,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "F003+F004 后的 11 framework 文件全部加 YAML frontmatter scope tag",
       "framework-generic 类（harness-rules / planner-workflow / planner-arbitration / planner-checklists / generator / evaluator / pre-impl-adjudication / ai-action-contract / ui-fidelity-guardrail）标 `scope: framework-generic`",

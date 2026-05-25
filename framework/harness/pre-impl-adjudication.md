@@ -1,3 +1,8 @@
+---
+scope: framework-generic
+last-updated: 2026-05-25
+---
+
 # Pre-Implementation Audit → Planner Adjudication Pattern
 
 > **沉淀来源：** KOLMatrix 项目 B0 sprint（2026-04-18 ~ 2026-04-19）

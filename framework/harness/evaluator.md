@@ -1,3 +1,8 @@
+---
+scope: framework-generic
+last-updated: 2026-05-25
+---
+
 # Evaluator 角色指令
 
 ## 你的任务

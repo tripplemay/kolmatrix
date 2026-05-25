@@ -1,3 +1,8 @@
+---
+scope: framework-generic
+last-updated: 2026-05-25
+---
+
 # Planner 铁律与 Spec 起草 Checklist 集合
 
 > 本文件是 `framework/harness/planner.md` 拆分的 3 部分之一，专责**铁律矩阵 + spec 起草 checklist**。

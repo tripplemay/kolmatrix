@@ -1,3 +1,8 @@
+---
+scope: framework-generic
+last-updated: 2026-05-25
+---
+
 # Planner 工作流（启动 / 阶段流转 / done 收尾）
 
 > 本文件是 `framework/harness/planner.md` 拆分的 3 部分之一，专责**流程性指令**。

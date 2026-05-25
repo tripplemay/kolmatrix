@@ -1,3 +1,8 @@
+---
+scope: framework-generic
+last-updated: 2026-05-25
+---
+
 # Planner 角色指令（索引页）
 
 > **本文件是入口索引**。v0.9.23 起 Planner 角色规则已拆分为 3 个 topic 文件，本页保留 `planner.md` 文件名仅为向后兼容（CHANGELOG / archive / harness-rules.md 状态映射继续指向本文件）。

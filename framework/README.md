@@ -365,6 +365,35 @@ framework 是 template，项目根是 instance。两者必然漂移：项目实�
 
 ---
 
+## scope tag 用法说明（D6 lock，BL-071 F005）
+
+`framework/harness/*.md` 顶部 YAML frontmatter 含 `scope:` 字段，三档语义：
+
+| scope | 含义 | 复用方式 |
+|---|---|---|
+| `framework-generic` | 完全通用规则 / 模式，与项目无关 | bootstrap 新项目时整文件 cp，无需修改 |
+| `project-specific` | 当前项目特定（如 RLS 角色名、i18n locale 列表、品牌色 token） | bootstrap 新项目时跳过 cp，或 cp 后人工改造 |
+| `mixed` | 通用骨架 + 项目特定细节（如 deploy-patterns 含 PM2 reload 通用流程 + KOLMatrix 路径） | bootstrap 后人工读 `project-specific-sections` 字段列出的段编号，逐段评估改造 |
+
+**mixed 类必含 `project-specific-sections: [§X, §Y]` 字段**列出哪些段是项目特定的，让复用者按图索骥。
+
+**筛选示例：**
+```bash
+# 找所有 framework-generic 文件（可整文件复用）
+grep -rln "scope: framework-generic" framework/harness/
+# 找所有需人工改造的 mixed 文件
+grep -rln "scope: mixed" framework/harness/
+# 找所有 project-specific 文件（含 checklists/ subdir）
+grep -rln "scope: project-specific" framework/harness/
+```
+
+**当前 framework/harness/ 分布（v0.9.23）：**
+- framework-generic（9 个）：harness-rules / planner / planner-workflow / planner-arbitration / planner-checklists / generator / evaluator / pre-impl-adjudication / ai-action-contract / ui-fidelity-guardrail
+- mixed（2 个）：deploy-patterns（§1.6 §1.7 §3.2 §5.1 项目特定）/ database-patterns（§2 项目特定）
+- project-specific（2 个，D10 lock 后位置在 checklists/ subdir）：material-symbols-pattern / i18n-namespace-add-checklist
+
+---
+
 ## 经验教训（来自 AIGC Gateway 项目）
 
 ### Harness 纪律

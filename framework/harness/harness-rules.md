@@ -1,3 +1,8 @@
+---
+scope: framework-generic
+last-updated: 2026-05-25
+---
+
 <!--
 TEMPLATE FILE — 本文件是 harness-rules.md 的 framework template 副本。
 - 项目运行时 agent 只读项目根 `harness-rules.md`，**不读**本文件。

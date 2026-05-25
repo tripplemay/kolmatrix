@@ -1,3 +1,8 @@
+---
+scope: framework-generic
+last-updated: 2026-05-25
+---
+
 # Planner 裁决与越界界定
 
 > 本文件是 `framework/harness/planner.md` 拆分的 3 部分之一，专责**裁决规则**。
