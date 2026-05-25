@@ -145,7 +145,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 12.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "/reach page.tsx：OutreachComposer (38.9KB) + SendingPerformanceChart (recharts) + RecentRepliesCard + RecentlySentTable + TopTemplatesCard 改 next/dynamic ssr:false 懒载（保留 OutreachQuickStats 同步以保 LCP）；composer 加 loading 占位高度匹配最终高度防 CLS",
       "/match page.tsx：按 ?view= 分支懒载 MatchKolTable vs MatchKolCard；AddToCampaignDialog + ConfirmDeleteDialog + MatchRefineBar + AiSuggestionsSidebar 按需 next/dynamic",
@@ -162,7 +162,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 6.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "替换 9 处 raw <img> → next/image（清单见 spec §2 F010）：MatchKolCard / MatchKolTable / CrmRecentChanges / reach RecentRepliesCard + RecentlySentTable / weekly-report WeeklyReportBrandHeader / kols/[id] / AiRecommendationPanel / shared weekly-report/[token]",
       "每处加 explicit width/height 或 fill + sizes（KOL avatar 推荐 width=40 height=40 或 fill + sizes=\"40px\"）",
@@ -179,7 +179,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 8.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "/match page.tsx：runMatchSearch 保顶层 await；loadDatabaseStats 与 savedSearches 改 Suspense + skeleton；campaign lookup 保顶层（影响 sidebar mount 判断）",
       "/reach page.tsx：loadOutreachComposerData + runEmailQuickStats 保顶层；runSendingPerformance30d / runTopTemplates / runRecentReplies / runRecentlySent 改 Suspense + skeleton",

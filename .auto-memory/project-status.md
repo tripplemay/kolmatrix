@@ -3,19 +3,17 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🧪 BL-070-reach-insight-cleanup FIXING (7/11, fix_rounds=2, perf 攻关 in-flight)
+## 🧪 BL-070-reach-insight-cleanup REVERIFYING (10/11, fix_rounds=3, staging deploy in_flight @ bf15b62)
 - ✅ F001-F005 done (无变, 见 git log)
-- ✅ F006 done (合并 e2e ec39157 + fix-round 1 always-skip 4 refine case)
-- ✅ F007 done (5-locale landing.* 完整 namespace + i18n parity 8/8 PASS @ fc71862)
-- ✅ Reviewer 2026-05-20 L1 reverifying PASS (docs/test-reports/BL-070-reverifying-2026-05-20.md)
-- 🧪 F008 partial: 4 自动化 §1-§4 PASS, 5 手动 §5-§9 + signoff PENDING; §10 #8 Lighthouse perf 75-78 < 80 (brief78/match75/reach75/insight75) 唯一硬阻塞
-- 🆕 fix-round 2 启动 (Planner Kimi 2026-05-25, 用户 ack 方案 A): 新增 F009/F010/F011 perf 攻关 3 features, addendum spec @ docs/specs/BL-070-perf-optimization-addendum-spec.md
-  - F009 high 12h: next/dynamic 拆 4 路由 client bundle (TBT 攻关, 单点最大杠杆)
-  - F010 high 6h: 9 处 raw <img> → next/image (LCP + CLS 攻关)
-  - F011 medium 8h: /match + /reach SSR Suspense stream defer 非主表 DB call (LCP 攻关)
-- F009-F011 完成后 Generator 切 fixing→reverifying → Reviewer L2 跑 Lighthouse 复测 (4 路由 × 3 跑) + 续 F008 §9 dogfood + §10 24h audit
-- 当前 staging healthy @ 05e5c1f, CI 全绿 run 26121789868
-- v0.9.23 候选累计 7+1=8 条 (BL-070 sediment +1 from Kimi: perf 量化门槛应入 spec acceptance 而非 batch 末 retrofit); 合 Planner done 阶段集中沉淀
+- ✅ F006 done (合并 e2e ec39157 + fix-round 1 always-skip 4 refine case a5a4cf1)
+- ✅ F007 done (5-locale landing.* 完整 + parity 8/8 PASS @ fc71862)
+- ✅ F009 done (75acf1e + bf15b62) — next/dynamic chunk-split: 3 client lazy 薄壳 (OutreachComposer/MatchKolTable/MatchRefineBar ssr:false) + server-side `await import()` (AiSuggestionsSidebar/BriefPageClient/ProductListPanel/DashboardContent) — 已验证 .next/static/chunks/ 独立 chunk artifacts
+- ✅ F010 done (75acf1e) — 9 处 raw img → next/image (explicit dims + unoptimized 容忍异构平台 CDN); 9 处 eslint-disable 全删
+- ✅ F011 done (bf15b62) — /match Suspense defer loadDatabaseStats + savedSearches; /reach Suspense defer 4 analytics calls; skeleton 共用 glass-panel animate-pulse 防 CLS
+- 🧪 Reviewer L2 待跑: Lighthouse 4 路由 × 3 取中位数 (perf ≥80 / TBT <200ms / LCP <2.5s / CLS <0.05 / FCP <1.5s / a11y ≥90 不回归); e2e 全套 (Suspense loading state 可能需 waitFor); 视觉 baseline 验
+- ⏸️ F008 仍 pending: Reviewer L2 全 PASS 后, prod redeploy + 24h audit + ≥5 marketer dogfood + §10 12 项 checklist 收尾
+- 🆕 fix-round 2 新沉淀 3 候选 (v0.9.23 集中处理): #26 perf spec acceptance 起草必须分类 client vs server async / #27 异构 CDN avatar 用 next/image unoptimized + explicit dims 优于 remotePatterns 累积白名单 / #28 引入 lazy boundary 必须同步老 fidelity test importer+JSX 断言
+- v0.9.23 候选累计 ~8 条 (fix-round 1 #21-24 + planner #25 + generator #26-28)
 - 本批次 reverifying done = Phase 4 完整 done = 4 路由 IA 闭环 = 对外上线 ready (距 ~2 周)
 ## ✅ BL-069-brief-page-merge DONE（7/7, fix_rounds=1）
 ## ✅ BL-068-conversational-refine DONE（7/7, fix_rounds=3）
@@ -25,11 +23,11 @@ type: project
 ## 关键决议（已 lock）
 - 5/10 ADR-013 AI Native 转向 Phase 1-4 / BL-048 合入 Phase 2 第二批
 - 5/14 BL-066 决策点 + framework v0.9.21 沉淀
-- 5/25 BL-070 fix-round 2 入场: F008 §10 #8 Lighthouse perf 75-78 < 80 触发 perf 攻关 3 features (方案 A 全做)
+- 5/25 BL-070 fix-round 2 方案 A: F009+F010+F011 全做 (用户 ack)
 ## 用户手工待办
 1. 5/17 weekly growth-curve check（重跑 BL-061 F003 SQL）
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
-3. BL-070 F008: F009-F011 done 后用户 ack prod deploy + 24h 监控 + ≥5 marketer dogfood
+3. BL-070 F008: Reviewer L2 全 PASS 后 prod redeploy 触发 + 24h 监控 + ≥5 marketer dogfood + signoff
 ## 角色 / Backlog
-- BL-070 fixing: F009/F010/F011 待 Generator 接手 (按 F009→F010→F011 顺序, F009 单点最大杠杆优先)
-- Phase 3 全 DONE ✅ / Phase 4: BL-069 ✅ + BL-070 fixing 🚧 7/11 / BL-070 done = 对外上线 ready
+- BL-070 reverifying: F009-F011 generator 域完成 @ bf15b62, 等 Reviewer L2 Lighthouse 复测 + e2e + 视觉 baseline 验
+- Phase 3 全 DONE ✅ / Phase 4: BL-069 ✅ + BL-070 reverifying 🚧 10/11 / BL-070 done = 对外上线 ready
