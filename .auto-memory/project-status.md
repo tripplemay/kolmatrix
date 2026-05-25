@@ -4,13 +4,13 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔍 BL-072-prod-hotfix VERIFYING (7/7 Generator done, fix_rounds=0) — F008 codex pending
-- ✅ F001-F007 全 landed @ main HEAD da90891, CI 26408129120 success ✓
-- ✅ Staging deployed @ da90891 @ 2026-05-26T00:34+0800 (git_sha 验证 match local HEAD)
-- 🔍 F008 Codex Reviewer signoff (L1 6 项 + L2 staging 抽样 6 项 + signoff doc)
-- Baseline regen × 2 (run 26406110567 / 26406781056) — 4 prod issues 全修
-- 5 commits: 7278af0 F001+F002 / 915ffcb F004+F005 / 2727104 F006 / 2dddc99 F003 / f4f1a68 F007
-- A1 lock 全部 ack 实施 (顺序 C / 范围 A / i18n A brand kept-en / link 目标 A)
+## ⚠️ BL-072-prod-hotfix VERIFYING-FAIL (6/8, fix_rounds=0, awaiting Generator fix) — 功能面通过，lint warning 阈值阻断 signoff
+- Codex Reviewer 5/26 首轮 F008 验收结论 FAIL：L2 staging 6 项抽样全 PASS；L1 除 lint 外均 PASS；F002 退回 pending；F008 待复验
+- blocker：`npm run lint` = 0 errors / 4 warnings，超出 evaluator §10.3 放行阈值；其中 `src/app/[locale]/(app)/insight/page.tsx:120:41` `_locale` unused 为本批次 commit `7278af0` 引入
+- 其余通过：`npx tsc --noEmit` PASS / `npm test` 185 files 1322 tests PASS / stale path grep 0 / brief≈insight 1136px / subset regen 含 `table_rows` / zh insight keys 完整 / staging 6 项全 PASS
+- 关联报告：`docs/test-reports/BL-072-verifying-2026-05-26.md`
+- 最小修复路径：清掉 `/insight/page.tsx` unused warning 后重跑 lint；若总 warning 回到 ≤3，可按当前规则 soft-watch 放行
+- staging @ `da90891` 保持 healthy，用户可继续看已修复的 4 个 prod-facing 问题，当前阻塞是发布门槛不是功能回归
 ## ✅ BL-071 DONE (10/10, fix_rounds=1, tag bl071-done @ 99c43fc) — framework v0.9.23 闭环
 - 12 决策点 D1-D12 全 lock 实施; 11 项结构变更 + 31 条 sediment inline-merge + 0 chronological-append
 - 关联: framework/CHANGELOG.md v0.9.23 + framework/archive/proposed-learnings-archive-v0.9.23.md
