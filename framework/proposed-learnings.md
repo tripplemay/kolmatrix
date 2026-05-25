@@ -111,3 +111,53 @@ sediment（沉淀）从 proposed-learnings.md 走向 `framework/harness/*.md` �
 
 <!-- 新条目从这里开始追加 -->
 
+## [2026-05-26] Claude CLI — 来源：BL-072 prod hotfix done / Planner Kimi
+
+**类型：** 新规律（v0.9.24 候选 #1）
+
+**内容：** **IA refactor / 大范围结构改动后必须做 outbound 一致性扫描清单**（4 维度合并 — visual 宽度 / i18n 消费侧 t() wiring / Material Symbols 子集 manifest / 路由 outbound 链接）。BL-072 4 prod issue 共性根因 = BL-070-F003/F004/F005 IA refactor 大改后 outbound 一致性扫描缺失：
+- Issue #1 /brief 宽度 (768 vs 1600) → visual 宽度跨 4 路由一致性漏检
+- Issue #2 /insight i18n hardcoded → page.tsx 创建后 i18n 消费侧 t() wiring 漏检
+- Issue #3 /match TABLE_ROWS 字面文字 → 新加 ligature 时 Material Symbols manifest 漏更新
+- Issue #4 10 处 outbound 404 → 删老路由时 outbound 链接漏 grep
+
+**建议写入：** `framework/harness/planner-checklists.md` 新段 §"IA refactor / 路由删除批次 outbound 一致性扫描清单"（4 维度 spec acceptance 模板 + 触发 batch 类型）
+
+**状态：** 待用户 ack — v0.9.24 framework sediment batch 落地
+
+---
+
+## [2026-05-26] Claude CLI — 来源：BL-072-F005 / Generator Kimi
+
+**类型：** 模板修订（v0.9.24 候选 #2）
+
+**内容：** **subset script grep Pattern 6 JSX 三元 模板 + manifest 维护惯例**。BL-072-F005 已实物落 `scripts/regenerate-material-symbols-subset.sh` Pattern 6（匹配 `material-symbols-outlined` 上下文 ±5 行内 quoted string + false-positive 词排除清单）+ `framework/harness/checklists/material-symbols-pattern.md` §"manifest 增量维护" 段（何时手工追 manifest / path label 含 file:line + JSX 三元/return 类型 / IA refactor 改名时同步 path label）。本沉淀把"实物模式"提到 framework 层方便其他项目复用（false-positive 排除清单 reusable / pattern grep 通用）。
+
+**建议写入：** `framework/harness/checklists/material-symbols-pattern.md` （已落 BL-072-F005） + 抽象 false-positive 排除规则模板到 `framework/harness/generator.md` §15 类似位置（subset script 通用模式）
+
+**状态：** 待用户 ack — v0.9.24 framework sediment batch 落地
+
+---
+
+## [2026-05-26] Claude CLI — 来源：BL-072-F007 / Generator Kimi
+
+**类型：** 新规律（v0.9.24 候选 #3）
+
+**内容：** **i18n 消费侧 test 探针 + 三件套模式（page-side hardcoded English sweep + link-target audit + Material Symbols glyph 三向断言）**。BL-072-F007 已实物落 3 个 advisory test (`tests/unit/{link-target-audit,material-symbols-coverage,i18n-page-side-consumption}.test.ts`)。共同模式 = "测试基建对 outbound/消费侧/三向闭环的 advisory 防御"。第一版 warning 不 fail 避免 false-positive 拦截合法 PR，稳定 1-2 周后转 strict。**沉淀价值：** 把 "advisory test → strict test" 升级路径 + 三件套覆盖维度（routing 链接 / icon font glyph / i18n 消费侧）作为通用模板，未来类似批次可复用。
+
+**建议写入：** `framework/harness/evaluator.md` 新段 §"advisory test 三件套模式 — outbound/消费侧/三向闭环防御"（含 BL-072-F007 三测试模板 + advisory→strict 升级路径）
+
+**状态：** 待用户 ack — v0.9.24 framework sediment batch 落地
+
+---
+
+## [2026-05-26] Claude CLI — 来源：BL-072-F006 / Generator Kimi
+
+**类型：** 新规律（v0.9.24 候选 #4，扩展 v0.9.23 #19）
+
+**内容：** **删路由前必须 grep 全仓 outbound 链接 — 扩展 BL-070 #19 "删 i18n deprecated ns 前必须 grep callers" 同主题合并到通用 "删 X 前 grep callers" 矩阵**。BL-072-F006 修 10 处 outbound 404 链接根因 = BL-070-F004 删 5 老路由 + middleware 即停 redirect 时没 grep 全仓更新 outbound `href` 字面字符串。模式扩展：删任何"被引用资源"（路由 / i18n namespace / enum value / API endpoint / DB table）前必须先 grep 全仓 callers + 同 commit 修。BL-072 同步加 `tests/unit/link-target-audit.test.ts` advisory 防御未来同类。
+
+**建议写入：** `framework/harness/generator.md` §"删 X 前 grep callers" 矩阵扩展（v0.9.23 #19 i18n callers + v0.9.24 #4 路由 outbound 同主题合并；矩阵纵向 = X 类型，横向 = grep 模式 + 自动化防御 test）
+
+**状态：** 待用户 ack — v0.9.24 framework sediment batch 落地
+
