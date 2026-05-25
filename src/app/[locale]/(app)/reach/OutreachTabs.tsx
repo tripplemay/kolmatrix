@@ -56,7 +56,7 @@ export async function OutreachTabs({
   ];
   return (
     <nav
-      aria-label="Outreach sections"
+      aria-label={t("ariaNav")}
       data-testid="outreach-tabs"
       className="glass-panel flex w-full items-center gap-1 rounded-xl border border-on-surface/5 p-1"
     >

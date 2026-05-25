@@ -194,6 +194,12 @@
       "campaignsDescription": "Inicia contacto y rastrea ROI.",
       "comingSoon": "BM2",
       "comingSoonTooltip": "Campañas, contacto + ROI se lanzarán en BM2."
+    },
+    "operatorFallback": "Operador",
+    "emailPerformanceChart": {
+      "sent": "Enviados",
+      "opened": "Abiertos",
+      "replied": "Respondidos"
     }
   },
   "common": {
@@ -272,7 +278,17 @@
       "submitWithoutAi": "Guardar producto",
       "submitting": "Guardando…",
       "cancel": "Cancelar",
-      "requiredNote": "Los campos obligatorios están marcados con *"
+      "requiredNote": "Los campos obligatorios están marcados con *",
+      "assetSection": {
+        "title": "Recursos generados por IA",
+        "summaryTemplate": "{emailCount} correos · {videoCount} vídeos",
+        "viewLink": "Ver en /assets",
+        "regenerate": "Regenerar",
+        "regeneratePending": "Regenerando…",
+        "regenerateFailed": "Error al regenerar",
+        "loading": "Cargando recursos…",
+        "loadFailed": "Error al cargar recursos"
+      }
     },
     "errors": {
       "nameRequired": "El nombre del producto es obligatorio.",
@@ -287,7 +303,8 @@
     "delete": {
       "confirm": "¿Eliminar \"{name}\"?",
       "cascade": "Este producto está referenciado por {campaign} campaña(s), {asset} recurso(s) y {kolCampaign} asignación(es) de KOL. La eliminación lógica lo oculta de las listas nuevas y conserva el registro de auditoría. ¿Continuar?",
-      "failed": "No se pudo eliminar el producto. Por favor, inténtelo de nuevo."
+      "failed": "No se pudo eliminar el producto. Por favor, inténtelo de nuevo.",
+      "deleting": "Eliminando"
     },
     "productDeleted": "(Producto eliminado)",
     "productDeletedTooltip": "El producto asociado a esta campaña fue eliminado. Se conserva el registro de auditoría; gestione el ciclo de vida del producto desde la Base de Conocimiento."
@@ -631,7 +648,8 @@
         "submitting": "Eliminando…",
         "errorRateLimit": "Demasiadas acciones masivas. Espera un momento e inténtalo de nuevo.",
         "errorGeneric": "Error al eliminar. Inténtalo de nuevo o contacta con soporte si persiste."
-      }
+      },
+      "ariaRegion": "Acciones en lote"
     },
     "adminEntry": {
       "csvImport": "Importar KOL CSV",
@@ -752,7 +770,8 @@
       "aiChipsHeading": "Búsquedas sugeridas",
       "chip1": "🎮 Creadores de FPS para el lanzamiento de Honor of Kings",
       "chip2": "📈 Streamers de Twitch de alto crecimiento en la UE",
-      "chip3": "🎯 Revisores de juegos móviles RPG"
+      "chip3": "🎯 Revisores de juegos móviles RPG",
+      "ariaSection": "Buscar KOLs"
     },
     "activeFilters": {
       "heading": "Filtros activos",
@@ -1221,7 +1240,8 @@
       "send_queue": "Cola de envío",
       "tracking": "Seguimiento",
       "suppression": "Supresión",
-      "comingB4": "Próximo en B4"
+      "comingB4": "Próximo en B4",
+      "ariaNav": "Secciones de outreach"
     },
     "tracking": {
       "title": "Seguimiento de correos",
@@ -1376,7 +1396,16 @@
       "resultSentCount": "{count} enviados",
       "resultMockedCount": "{count} simulados",
       "resultFailedCount": "{count} fallidos",
-      "resultDismiss": "Descartar"
+      "resultDismiss": "Descartar",
+      "templatePicker": {
+        "filterPlaceholder": "Todos los productos",
+        "filterAria": "Filtrar plantillas por producto",
+        "searchPlaceholder": "Buscar plantillas…",
+        "searchAria": "Buscar plantillas",
+        "listAria": "Plantillas de correo",
+        "noTemplates": "Aún no hay plantillas disponibles.",
+        "noMatches": "Sin coincidencias — prueba a limpiar los filtros."
+      }
     },
     "templateLibrary": {
       "title": "Editor de plantillas de correo",
@@ -1572,7 +1601,8 @@
       "localeOptionEn": "EN",
       "localeOptionZh": "ZH",
       "history": "Historial",
-      "historyEmpty": "Aún no hay informes"
+      "historyEmpty": "Aún no hay informes",
+      "breadcrumbAria": "Ruta de navegación"
     },
     "brand": {
       "aiBadge": "Generado por AI"

@@ -194,6 +194,12 @@
       "campaignsDescription": "启动触达并追踪 ROI。",
       "comingSoon": "BM2",
       "comingSoonTooltip": "活动 / 触达 / ROI 将在 BM2 开放。"
+    },
+    "operatorFallback": "操作员",
+    "emailPerformanceChart": {
+      "sent": "已发送",
+      "opened": "已打开",
+      "replied": "已回复"
     }
   },
   "common": {
@@ -272,7 +278,17 @@
       "submitWithoutAi": "仅保存产品",
       "submitting": "保存中…",
       "cancel": "取消",
-      "requiredNote": "带 * 的为必填项"
+      "requiredNote": "带 * 的为必填项",
+      "assetSection": {
+        "title": "AI 生成素材",
+        "summaryTemplate": "{emailCount} 封邮件 · {videoCount} 个视频",
+        "viewLink": "在 /assets 查看",
+        "regenerate": "重新生成",
+        "regeneratePending": "重新生成中…",
+        "regenerateFailed": "重新生成失败",
+        "loading": "加载素材中…",
+        "loadFailed": "加载素材失败"
+      }
     },
     "errors": {
       "nameRequired": "产品名为必填项。",
@@ -287,7 +303,8 @@
     "delete": {
       "confirm": "删除 \"{name}\"？",
       "cascade": "该产品被 {campaign} 个活动、{asset} 个素材、{kolCampaign} 条 KOL 关联引用。软删除会从新列表中隐藏，同时保留审计记录，是否继续？",
-      "failed": "删除失败，请重试。"
+      "failed": "删除失败，请重试。",
+      "deleting": "删除中"
     },
     "productDeleted": "（产品已删除）",
     "productDeletedTooltip": "本活动关联的产品已被删除。审计记录已保留，可在知识库中管理产品生命周期。"
@@ -631,7 +648,8 @@
         "submitting": "删除中…",
         "errorRateLimit": "批量操作过于频繁,请稍后再试。",
         "errorGeneric": "删除失败。请重试,如持续请联系支持。"
-      }
+      },
+      "ariaRegion": "批量操作"
     },
     "adminEntry": {
       "csvImport": "导入 KOL CSV",
@@ -752,7 +770,8 @@
       "aiChipsHeading": "推荐搜索",
       "chip1": "🎮 王者荣耀上线适配的 FPS 创作者",
       "chip2": "📈 欧洲高增长 Twitch 主播",
-      "chip3": "🎯 RPG 手游测评创作者"
+      "chip3": "🎯 RPG 手游测评创作者",
+      "ariaSection": "搜索 KOL"
     },
     "activeFilters": {
       "heading": "已选筛选",
@@ -1137,7 +1156,8 @@
       "send_queue": "发送队列",
       "tracking": "追踪",
       "suppression": "黑名单",
-      "comingB4": "B4 版本交付"
+      "comingB4": "B4 版本交付",
+      "ariaNav": "触达页签导航"
     },
     "tracking": {
       "title": "邮件追踪",
@@ -1292,7 +1312,16 @@
       "resultSentCount": "发送 {count} 封",
       "resultMockedCount": "模拟 {count} 封",
       "resultFailedCount": "失败 {count} 封",
-      "resultDismiss": "关闭"
+      "resultDismiss": "关闭",
+      "templatePicker": {
+        "filterPlaceholder": "全部产品",
+        "filterAria": "按产品筛选模板",
+        "searchPlaceholder": "搜索模板…",
+        "searchAria": "搜索模板",
+        "listAria": "邮件模板",
+        "noTemplates": "暂无可用模板。",
+        "noMatches": "没有匹配项 — 试着清除筛选条件。"
+      }
     },
     "templateLibrary": {
       "title": "邮件模板编辑器",
@@ -1503,7 +1532,8 @@
       "localeOptionEn": "英文",
       "localeOptionZh": "中文",
       "history": "历史",
-      "historyEmpty": "暂无周报"
+      "historyEmpty": "暂无周报",
+      "breadcrumbAria": "面包屑导航"
     },
     "brand": {
       "aiBadge": "AI 生成"

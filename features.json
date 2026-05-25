@@ -36,7 +36,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 5.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "/reach/page.tsx 全 grep raw English literal ≥4 char (排除 data-testid/className/icon/metadata)，凡用户可见硬编码改 t() (t() 调用从 10 → ≥18 预估)",
       "/insight 嵌入组件 sweep (src/features/dashboard/ DashboardContent.tsx + KpiRow.tsx + WorkflowSteps.tsx + QuickActions.tsx + GreetingBar.tsx + RecentActivityCard.tsx + ActiveCampaignsSection.tsx 等)，硬编码改 t()",

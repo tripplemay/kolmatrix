@@ -194,6 +194,12 @@
       "campaignsDescription": "아웃리치를 시작하고 ROI를 추적하세요.",
       "comingSoon": "BM2",
       "comingSoonTooltip": "캠페인, 아웃리치 + ROI는 BM2에서 제공됩니다."
+    },
+    "operatorFallback": "운영자",
+    "emailPerformanceChart": {
+      "sent": "발송됨",
+      "opened": "열림",
+      "replied": "회신됨"
     }
   },
   "common": {
@@ -272,7 +278,17 @@
       "submitWithoutAi": "제품 저장",
       "submitting": "저장 중…",
       "cancel": "취소",
-      "requiredNote": "필수 필드는 *로 표시됩니다."
+      "requiredNote": "필수 필드는 *로 표시됩니다.",
+      "assetSection": {
+        "title": "AI 생성 자료",
+        "summaryTemplate": "이메일 {emailCount}개 · 동영상 {videoCount}개",
+        "viewLink": "/assets 에서 보기",
+        "regenerate": "재생성",
+        "regeneratePending": "재생성 중…",
+        "regenerateFailed": "재생성 실패",
+        "loading": "자료 로드 중…",
+        "loadFailed": "자료 로드 실패"
+      }
     },
     "errors": {
       "nameRequired": "제품 이름은 필수입니다.",
@@ -287,7 +303,8 @@
     "delete": {
       "confirm": "\"{name}\" 을(를) 삭제하시겠습니까?",
       "cascade": "이 제품은 {campaign}개 캠페인, {asset}개 자산, {kolCampaign}건 KOL 할당에서 참조되고 있습니다. 소프트 삭제 시 새 목록에서는 숨겨지지만 감사 로그는 보존됩니다. 계속하시겠습니까?",
-      "failed": "제품을 삭제할 수 없습니다. 다시 시도해 주세요."
+      "failed": "제품을 삭제할 수 없습니다. 다시 시도해 주세요.",
+      "deleting": "삭제 중"
     },
     "productDeleted": "(제품이 삭제됨)",
     "productDeletedTooltip": "이 캠페인의 제품이 삭제되었습니다. 감사 로그는 보존되며, 제품 라이프사이클은 지식 베이스에서 관리할 수 있습니다."
@@ -631,7 +648,8 @@
         "submitting": "삭제 중…",
         "errorRateLimit": "일괄 작업이 너무 잦습니다. 잠시 후 다시 시도하세요.",
         "errorGeneric": "삭제 실패. 다시 시도하거나 문제가 계속되면 지원팀에 문의하세요."
-      }
+      },
+      "ariaRegion": "일괄 작업"
     },
     "adminEntry": {
       "csvImport": "KOL CSV 가져오기",
@@ -752,7 +770,8 @@
       "aiChipsHeading": "제안된 검색어",
       "chip1": "🎮 천하제일가 launch를 위한 FPS 크리에이터",
       "chip2": "📈 EU 지역의 급성장 트위치 스트리머",
-      "chip3": "🎯 RPG 모바일 게임 리뷰어"
+      "chip3": "🎯 RPG 모바일 게임 리뷰어",
+      "ariaSection": "KOL 검색"
     },
     "activeFilters": {
       "heading": "활성 필터",
@@ -1221,7 +1240,8 @@
       "send_queue": "전송 대기열",
       "tracking": "추적",
       "suppression": "차단",
-      "comingB4": "B4에 추가 예정"
+      "comingB4": "B4에 추가 예정",
+      "ariaNav": "아웃리치 탭"
     },
     "tracking": {
       "title": "이메일 추적",
@@ -1376,7 +1396,16 @@
       "resultSentCount": "{count} 발송됨",
       "resultMockedCount": "{count} 모의 발송됨",
       "resultFailedCount": "{count} 실패함",
-      "resultDismiss": "닫기"
+      "resultDismiss": "닫기",
+      "templatePicker": {
+        "filterPlaceholder": "모든 제품",
+        "filterAria": "제품으로 템플릿 필터링",
+        "searchPlaceholder": "템플릿 검색…",
+        "searchAria": "템플릿 검색",
+        "listAria": "이메일 템플릿",
+        "noTemplates": "사용 가능한 템플릿이 아직 없습니다.",
+        "noMatches": "일치하는 항목이 없습니다 — 필터를 지워보세요."
+      }
     },
     "templateLibrary": {
       "title": "이메일 템플릿 편집기",
@@ -1572,7 +1601,8 @@
       "localeOptionEn": "EN",
       "localeOptionZh": "ZH",
       "history": "히스토리",
-      "historyEmpty": "아직 보고서가 없습니다"
+      "historyEmpty": "아직 보고서가 없습니다",
+      "breadcrumbAria": "이동 경로"
     },
     "brand": {
       "aiBadge": "AI 생성"

@@ -280,17 +280,19 @@ export function ProductModal({ onClose, onCreated, product }: Props) {
                   auto_awesome
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-on-surface text-[13px] font-semibold">AI Assets Generated</p>
+                  <p className="text-on-surface text-[13px] font-semibold">{t("modal.assetSection.title")}</p>
                   <p className="text-on-surface-variant text-[11px]">
-                    {product.assetCounts.emailCount} emails · {product.assetCounts.videoCount}{" "}
-                    videos
+                    {t("modal.assetSection.summaryTemplate", {
+                      emailCount: product.assetCounts.emailCount,
+                      videoCount: product.assetCounts.videoCount,
+                    })}
                   </p>
                 </div>
                 <Link
                   href={`/${locale}/assets?productId=${product.id}`}
                   className="border-cyan/40 text-cyan hover:bg-cyan/10 rounded-lg border px-3 py-1.5 text-[12px] font-semibold transition-colors"
                 >
-                  View in /assets
+                  {t("modal.assetSection.viewLink")}
                 </Link>
                 <button
                   type="button"
@@ -304,16 +306,16 @@ export function ProductModal({ onClose, onCreated, product }: Props) {
                   }}
                   className="border-outline-variant text-on-surface-variant hover:text-on-surface rounded-lg border px-3 py-1.5 text-[12px] font-semibold transition-colors disabled:opacity-60"
                 >
-                  {regeneratePending ? "Regenerating…" : "Regenerate"}
+                  {regeneratePending ? t("modal.assetSection.regeneratePending") : t("modal.assetSection.regenerate")}
                 </button>
                 {regenerateError ? (
-                  <p className="text-[11px] text-rose-300">Failed to regenerate</p>
+                  <p className="text-[11px] text-rose-300">{t("modal.assetSection.regenerateFailed")}</p>
                 ) : null}
               </div>
               {assetList === null && !assetLoadError ? (
-                <p className="text-on-surface-variant/70 text-[11px]">Loading assets…</p>
+                <p className="text-on-surface-variant/70 text-[11px]">{t("modal.assetSection.loading")}</p>
               ) : assetLoadError ? (
-                <p className="text-[11px] text-rose-300">Failed to load assets</p>
+                <p className="text-[11px] text-rose-300">{t("modal.assetSection.loadFailed")}</p>
               ) : assetList && assetList.length > 0 ? (
                 <ul
                   className="divide-outline-variant/40 divide-y rounded-md border border-white/5 bg-black/20"

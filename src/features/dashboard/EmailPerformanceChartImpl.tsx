@@ -7,6 +7,7 @@
  */
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   CartesianGrid,
   Legend,
@@ -27,6 +28,7 @@ interface Props {
 const LINE_PROPS = { strokeWidth: 2, dot: false, type: "monotone" as const };
 
 export default function EmailPerformanceChartImpl({ data }: Props) {
+  const t = useTranslations("dashboard.emailPerformanceChart");
   return (
     <ResponsiveContainer width="100%" height={220}>
       <LineChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
@@ -43,9 +45,9 @@ export default function EmailPerformanceChartImpl({ data }: Props) {
           }}
         />
         <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Line {...LINE_PROPS} dataKey="sent" name="Sent" stroke="var(--color-cyan)" />
-        <Line {...LINE_PROPS} dataKey="opened" name="Opened" stroke="var(--color-purple)" />
-        <Line {...LINE_PROPS} dataKey="replied" name="Replied" stroke="var(--color-cyan-soft)" />
+        <Line {...LINE_PROPS} dataKey="sent" name={t("sent")} stroke="var(--color-cyan)" />
+        <Line {...LINE_PROPS} dataKey="opened" name={t("opened")} stroke="var(--color-purple)" />
+        <Line {...LINE_PROPS} dataKey="replied" name={t("replied")} stroke="var(--color-cyan-soft)" />
       </LineChart>
     </ResponsiveContainer>
   );

@@ -40,7 +40,7 @@ export async function MatchSearchBar({
     <section
       data-testid="match-search-bar"
       className="space-y-3"
-      aria-label="Search KOLs"
+      aria-label={t("ariaSection")}
     >
       <form
         action={basePath}

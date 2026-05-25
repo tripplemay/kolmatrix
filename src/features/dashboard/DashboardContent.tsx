@@ -71,7 +71,7 @@ export async function DashboardContent({ locale: rawLocale }: Props) {
     day: "numeric",
     year: "numeric",
   });
-  const name = session.user.name ?? "Operator";
+  const name = session.user.name ?? t("operatorFallback");
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-8">

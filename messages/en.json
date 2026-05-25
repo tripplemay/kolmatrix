@@ -194,6 +194,12 @@
       "campaignsDescription": "Spin up outreach & track ROI.",
       "comingSoon": "BM2",
       "comingSoonTooltip": "Campaigns, outreach + ROI ship in BM2."
+    },
+    "operatorFallback": "Operator",
+    "emailPerformanceChart": {
+      "sent": "Sent",
+      "opened": "Opened",
+      "replied": "Replied"
     }
   },
   "common": {
@@ -272,7 +278,17 @@
       "submitWithoutAi": "Save product",
       "submitting": "Saving…",
       "cancel": "Cancel",
-      "requiredNote": "Required fields are marked with *"
+      "requiredNote": "Required fields are marked with *",
+      "assetSection": {
+        "title": "AI Assets Generated",
+        "summaryTemplate": "{emailCount} emails · {videoCount} videos",
+        "viewLink": "View in /assets",
+        "regenerate": "Regenerate",
+        "regeneratePending": "Regenerating…",
+        "regenerateFailed": "Failed to regenerate",
+        "loading": "Loading assets…",
+        "loadFailed": "Failed to load assets"
+      }
     },
     "errors": {
       "nameRequired": "Product name is required.",
@@ -287,7 +303,8 @@
     "delete": {
       "confirm": "Delete \"{name}\"?",
       "cascade": "This product is referenced by {campaign} campaign(s), {asset} asset(s), and {kolCampaign} KOL allocation(s). Soft-deleting hides it from new lists while keeping the audit trail. Continue?",
-      "failed": "Could not delete the product. Please retry."
+      "failed": "Could not delete the product. Please retry.",
+      "deleting": "Deleting"
     },
     "productDeleted": "(Product deleted)",
     "productDeletedTooltip": "This campaign's product was deleted. The audit trail is preserved; manage product lifecycle from the Knowledge Base."
@@ -631,7 +648,8 @@
         "submitting": "Deleting…",
         "errorRateLimit": "Too many bulk actions. Wait a moment and retry.",
         "errorGeneric": "Delete failed. Please retry or contact support if the issue persists."
-      }
+      },
+      "ariaRegion": "Bulk actions"
     },
     "adminEntry": {
       "csvImport": "Import KOL CSV",
@@ -752,7 +770,8 @@
       "aiChipsHeading": "Suggested searches",
       "chip1": "🎮 FPS creators for Honor of Kings launch",
       "chip2": "📈 High-growth Twitch streamers EU",
-      "chip3": "🎯 RPG mobile game reviewers"
+      "chip3": "🎯 RPG mobile game reviewers",
+      "ariaSection": "Search KOLs"
     },
     "activeFilters": {
       "heading": "Active filters",
@@ -1137,7 +1156,8 @@
       "send_queue": "Send Queue",
       "tracking": "Tracking",
       "suppression": "Suppression",
-      "comingB4": "Coming in B4"
+      "comingB4": "Coming in B4",
+      "ariaNav": "Outreach sections"
     },
     "tracking": {
       "title": "Email Tracking",
@@ -1292,7 +1312,16 @@
       "resultSentCount": "{count} sent",
       "resultMockedCount": "{count} mocked",
       "resultFailedCount": "{count} failed",
-      "resultDismiss": "Dismiss"
+      "resultDismiss": "Dismiss",
+      "templatePicker": {
+        "filterPlaceholder": "All products",
+        "filterAria": "Filter templates by product",
+        "searchPlaceholder": "Search templates…",
+        "searchAria": "Search templates",
+        "listAria": "Email templates",
+        "noTemplates": "No templates available yet.",
+        "noMatches": "No matches — try clearing the filters."
+      }
     },
     "templateLibrary": {
       "title": "Email Template Editor",
@@ -1503,7 +1532,8 @@
       "localeOptionEn": "EN",
       "localeOptionZh": "ZH",
       "history": "History",
-      "historyEmpty": "No reports yet"
+      "historyEmpty": "No reports yet",
+      "breadcrumbAria": "Breadcrumb"
     },
     "brand": {
       "aiBadge": "AI-Generated"

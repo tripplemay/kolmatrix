@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-072-prod-hotfix — 4 prod issues (3 P1 + 1 P2) + CI 防御三件套. /brief 宽度 + /insight i18n wiring 补 + Material Symbols table_rows + 10 处 IA outbound stale links. 8 features F001-F008 (~22h ≈ 3 day Generator + 0.5 day Reviewer). A1 用户 5/25 lock 4 项: 顺序 C (BL-071 先完 ✓) / 范围 A 完整版 / i18n A brand kept-en (Insight/Dashboard/Reports/Analytics 全保英文 + KEEP_AS_EN_PATHS allowlist) / stale link 目标 A (CrmPipelineBars → /crm?status=, kols/[id] → /kols). 5 commit 分批策略: F001+F002 user-visible P1+P2 快修 / F004+F005+F006 基建+outbound / F003 i18n 全 audit / F007 CI 防御 / F008 Reviewer signoff. 关联 docs/specs/BL-072-prod-hotfix-spec.md @ 本 commit / docs/test-reports/BL-072-prod-hotfix-audit-2026-05-25.md @ 6fb7609 Phase A0 audit. 4 条沉淀候选 (IA refactor outbound 一致性扫描 / subset script Pattern 6 / i18n 消费侧探针 / 删路由前 grep callers) done 阶段或后续 sediment batch 处理.",
   "total_features": 8,
-  "completed_features": 5,
+  "completed_features": 6,
   "fix_rounds": 0,
   "current_sprint": "BL-072-prod-hotfix",
-  "last_updated": "2026-05-26T03:05+0800",
+  "last_updated": "2026-05-26T03:30+0800",
   "reference_docs": [
     "docs/specs/BL-072-prod-hotfix-spec.md",
     "docs/test-reports/BL-072-prod-hotfix-audit-2026-05-25.md",

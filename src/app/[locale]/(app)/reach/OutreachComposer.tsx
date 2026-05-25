@@ -15,6 +15,7 @@
  *   7. Result summary (sent / mocked / failed, with per-KOL reasons)
  */
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/Button";
@@ -1003,6 +1004,12 @@ function TemplatePicker({
   templateSystemGroup,
   templateUserGroup,
 }: TemplatePickerProps) {
+  // BL-072-F003 — the picker is a deep client-only sub-component; the
+  // surrounding composer threads ~40 label props from the server, but
+  // calling `useTranslations` directly here keeps the picker's i18n
+  // local rather than ballooning the parent contract for the 5 new
+  // strings (filter / search / empty states).
+  const tPicker = useTranslations("outreach.composer.templatePicker");
   const [productFilter, onProductFilterChange] = useProductFilter(selectedCampaignProductId);
   const [searchDraft, setSearchDraft] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -1048,30 +1055,30 @@ function TemplatePicker({
           items={productOptions}
           value={productFilter}
           onChange={onProductFilterChange}
-          placeholder="All products"
-          ariaLabel="Filter templates by product"
+          placeholder={tPicker("filterPlaceholder")}
+          ariaLabel={tPicker("filterAria")}
         />
         <Input
           value={searchDraft}
           onChange={(e) => setSearchDraft(e.currentTarget.value)}
-          placeholder="Search templates…"
-          aria-label="Search templates"
+          placeholder={tPicker("searchPlaceholder")}
+          aria-label={tPicker("searchAria")}
           data-testid="outreach-template-search"
         />
       </div>
       <ul
         role="listbox"
-        aria-label="Email templates"
+        aria-label={tPicker("listAria")}
         data-testid="outreach-template-list"
         className={cn(
           "border-outline-variant bg-surface/30 max-h-[280px] overflow-y-auto rounded-xl border"
         )}
       >
         {templates.length === 0 ? (
-          <li className="text-on-surface-variant p-3 text-xs">No templates available yet.</li>
+          <li className="text-on-surface-variant p-3 text-xs">{tPicker("noTemplates")}</li>
         ) : filteredTemplates.length === 0 ? (
           <li className="text-on-surface-variant p-3 text-xs">
-            No matches — try clearing the filters.
+            {tPicker("noMatches")}
           </li>
         ) : (
           filteredTemplates.map((t) => {

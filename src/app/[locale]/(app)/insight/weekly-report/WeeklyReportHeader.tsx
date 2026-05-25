@@ -56,7 +56,7 @@ export async function WeeklyReportHeader({
       className="flex flex-col gap-4"
     >
       <nav
-        aria-label="Breadcrumb"
+        aria-label={t("breadcrumbAria")}
         className="flex items-center gap-2 text-xs text-on-surface-variant"
       >
         <Link

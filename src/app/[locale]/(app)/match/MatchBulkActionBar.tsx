@@ -63,7 +63,7 @@ export function MatchBulkActionBar({
     <div
       className="fixed bottom-8 left-1/2 z-40 -translate-x-1/2"
       role="region"
-      aria-label="Bulk actions"
+      aria-label={t("ariaRegion")}
       data-testid="match-bulk-bar"
     >
       <div className="glass-panel bg-navy-base/70 flex min-w-[560px] items-center gap-6 rounded-2xl border border-white/10 px-6 py-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-2xl">

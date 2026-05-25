@@ -194,6 +194,12 @@
       "campaignsDescription": "アウトリーチを開始し、ROI を追跡します。",
       "comingSoon": "BM2",
       "comingSoonTooltip": "キャンペーン、アウトリーチ + ROI は BM2 で提供されます。"
+    },
+    "operatorFallback": "オペレーター",
+    "emailPerformanceChart": {
+      "sent": "送信済み",
+      "opened": "開封済み",
+      "replied": "返信済み"
     }
   },
   "common": {
@@ -272,7 +278,17 @@
       "submitWithoutAi": "製品を保存",
       "submitting": "保存中…",
       "cancel": "キャンセル",
-      "requiredNote": "必須項目には * が付いています"
+      "requiredNote": "必須項目には * が付いています",
+      "assetSection": {
+        "title": "AI 生成アセット",
+        "summaryTemplate": "メール {emailCount} 件 · 動画 {videoCount} 件",
+        "viewLink": "/assets で表示",
+        "regenerate": "再生成",
+        "regeneratePending": "再生成中…",
+        "regenerateFailed": "再生成に失敗しました",
+        "loading": "アセットを読み込み中…",
+        "loadFailed": "アセットの読み込みに失敗しました"
+      }
     },
     "errors": {
       "nameRequired": "製品名は必須です。",
@@ -287,7 +303,8 @@
     "delete": {
       "confirm": "\"{name}\" を削除しますか？",
       "cascade": "この製品は {campaign} 件のキャンペーン、{asset} 件のアセット、{kolCampaign} 件の KOL 割り当てから参照されています。ソフト削除すると新規リストから非表示になりますが、監査ログは保持されます。続行しますか？",
-      "failed": "削除できませんでした。もう一度お試しください。"
+      "failed": "削除できませんでした。もう一度お試しください。",
+      "deleting": "削除中"
     },
     "productDeleted": "（製品は削除されました）",
     "productDeletedTooltip": "このキャンペーンに紐づく製品は削除されました。監査ログは保持されており、製品ライフサイクルはナレッジベースから管理できます。"
@@ -631,7 +648,8 @@
         "submitting": "削除中…",
         "errorRateLimit": "一括操作の回数が多すぎます。少し時間を置いて再試行してください。",
         "errorGeneric": "削除に失敗しました。再試行するか、問題が続く場合はサポートにご連絡ください。"
-      }
+      },
+      "ariaRegion": "一括操作"
     },
     "adminEntry": {
       "csvImport": "KOL CSV をインポート",
@@ -752,7 +770,8 @@
       "aiChipsHeading": "おすすめの検索",
       "chip1": "🎮 王者栄耀のローンチに向けたFPSクリエイター",
       "chip2": "📈 欧州の高成長Twitch配信者",
-      "chip3": "🎯 RPGモバイルゲームのレビュアー"
+      "chip3": "🎯 RPGモバイルゲームのレビュアー",
+      "ariaSection": "KOL を検索"
     },
     "activeFilters": {
       "heading": "アクティブなフィルター",
@@ -1221,7 +1240,8 @@
       "send_queue": "送信キュー",
       "tracking": "追跡",
       "suppression": "抑制",
-      "comingB4": "B4で登場予定"
+      "comingB4": "B4で登場予定",
+      "ariaNav": "アウトリーチタブ"
     },
     "tracking": {
       "title": "メール追跡",
@@ -1376,7 +1396,16 @@
       "resultSentCount": "{count} 件送信済み",
       "resultMockedCount": "{count} 件モック済み",
       "resultFailedCount": "{count} 件失敗",
-      "resultDismiss": "閉じる"
+      "resultDismiss": "閉じる",
+      "templatePicker": {
+        "filterPlaceholder": "すべての商品",
+        "filterAria": "商品でテンプレートを絞り込み",
+        "searchPlaceholder": "テンプレートを検索…",
+        "searchAria": "テンプレートを検索",
+        "listAria": "メールテンプレート",
+        "noTemplates": "利用可能なテンプレートはまだありません。",
+        "noMatches": "一致する項目がありません — フィルターをクリアしてみてください。"
+      }
     },
     "templateLibrary": {
       "title": "メールテンプレートエディタ",
@@ -1572,7 +1601,8 @@
       "localeOptionEn": "EN",
       "localeOptionZh": "ZH",
       "history": "履歴",
-      "historyEmpty": "まだレポートはありません"
+      "historyEmpty": "まだレポートはありません",
+      "breadcrumbAria": "パンくずリスト"
     },
     "brand": {
       "aiBadge": "AI生成"

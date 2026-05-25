@@ -190,7 +190,7 @@ export function ProductsClient({
           product={editing ?? undefined}
         />
       ) : null}
-      {isDeleting ? <span className="sr-only">Deleting</span> : null}
+      {isDeleting ? <span className="sr-only">{t("delete.deleting")}</span> : null}
     </>
   );
 }
