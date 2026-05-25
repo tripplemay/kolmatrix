@@ -126,7 +126,7 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "L1 自动化 6 项 PASS: (1) npm run lint (2) npx tsc --noEmit (3) npm test 含 F007 新增 3 test (4) grep 全仓 active code 老路径返 0 命中 (5) 4 路由 page.tsx max-w-[1600px] 一致 (6) Material Symbols subset 含 table_rows + messages/zh.json insight.reports.{title,body}/insight.analytics.{title,body}",
       "L2 staging 抽样实测 6 项 PASS: (1) /insight 中文模式 heading=Insight brand + tabs=仪表盘/报告/分析 + body 中文 (2) /match view-toggle icon 两态都正确 (3) /brief 宽度对齐 (4) /insight QuickActions 4 按钮不 404 (5) /crm CrmPipelineBars click 到 /crm?status (6) /kols/<id> Back 到 /kols",

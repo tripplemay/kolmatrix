@@ -4,13 +4,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔁 BL-072-prod-hotfix REVERIFYING (7/7, fix_rounds=1, awaiting Codex re-signoff)
-- fix-round 1 commit 6fa1897: 删 AnalyticsPanel locale 入参 + 调用点 prop (next-intl getTranslations 自动取 server context locale, 不需 prop)
-- lint: 0 errors / 3 warnings (从 4 降, 低于 evaluator §10.3 阈值)
-- 其余 L1 全 PASS: tsc 0 / vitest 185×1322 / 首轮 staging 6 项已全 PASS
-- staging redeployed @ 6fa1897 @ 2026-05-26T00:55+0800 (git_sha match ✓ healthy)
-- 关联首轮 fail 报告: docs/test-reports/BL-072-verifying-2026-05-26.md
-- F002 pending → completed, evaluator_feedback cleared, Codex Reviewer 复验 F008
+## ✅ BL-072-prod-hotfix DONE (8/8, fix_rounds=1) — 4 prod hotfix + CI 防御三件套完成并终签
+- Codex Reviewer 5/26 复验 PASS：唯一 blocker（/insight unused warning）已修；`npm run lint` 回到 0 errors / 3 warnings；signoff 已落 `docs/test-reports/BL-072-signoff-2026-05-26.md`
+- L1 通过：lint 3 warnings soft-watch / `npx tsc --noEmit` PASS；上轮已验证 `npm test` 185 files 1322 tests PASS、stale path grep 0、subset regen 含 `table_rows`、zh insight keys 完整
+- L2 复验通过：staging healthy；/zh/insight heading=Insight + 中文 subtitle/tabs、/match 两态 icon、/brief≈/insight 宽度均 1136px，无回归
+- 4 个 prod-facing 问题已在 staging 验证通过；当前仅余 3 个历史 unused-style warning 记为 soft-watch，不阻断 done
 ## ✅ BL-071 DONE (10/10, fix_rounds=1, tag bl071-done @ 99c43fc) — framework v0.9.23 闭环
 - 12 决策点 D1-D12 全 lock 实施; 11 项结构变更 + 31 条 sediment inline-merge + 0 chronological-append
 - 关联: framework/CHANGELOG.md v0.9.23 + framework/archive/proposed-learnings-archive-v0.9.23.md
