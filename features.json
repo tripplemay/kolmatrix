@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "scripts/material-symbols-icons-manifest.txt 追加 8 行: forward_to_inbox / refresh / article / attach_money / error_outline / hourglass_empty / mark_email_unread / verified_user (含 file:line + 'bare multi-line span' label)",
       "运行 bash scripts/regenerate-material-symbols-subset.sh 重生 src/app/fonts/material-symbols-outlined.woff2",
@@ -20,7 +20,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "scripts/regenerate-material-symbols-subset.sh 加 Pattern 7: 匹配 material-symbols-outlined -A 5 上下文内独立成行的 bare ligature (排除关键字 / prop name / closing tag / 注释)",
       "Pattern 7 false-positive 排除清单与 Pattern 6 同步增量 (单一清单 not 分叉)",
@@ -36,7 +36,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/app/[locale]/(app)/brief/BriefPageClient.tsx:120 改 <div className='mx-auto max-w-3xl space-y-6'> → <div className='space-y-6'>",
       "staging 实测 /brief?tab=campaign 和 /brief?tab=products 在宽屏 (1600+) 渲染时 form 区域与 tab nav 同宽对齐 4 路由",

@@ -85,3 +85,18 @@ admin_panel_settings        # layout/UserAvatarMenu.tsx admin tools section | JS
 # `table_rows` was missed when the /match consolidation landed, causing
 # the table-mode toggle to render the literal text "table_rows" on prod.
 table_rows                  # match/MatchSummaryBar.tsx:98          | JSX ternary (BL-072-F004)
+
+# BL-073-F001 — 8 漏 ligature, prod /campaigns/[id] 字面文字暴露根因:
+# Pattern 1 多行 span 仅匹配 ligature 在 'material-symbols-outlined' 紧邻
+# 下一行 (-A 1), 但实际 codebase 中 className 跨 2-3 行后 ligature 才出现
+# (中间 JSX prop / style 等)。Pattern 1 漏，Pattern 6 ±5 行只扫 quoted
+# string 也漏，所以 8 个 ligature 全部静默缺 glyph。BL-073-F002 Pattern 7
+# 升级 grep 兜底；本 commit 显式登记 manifest 作 belt-and-suspenders。
+forward_to_inbox            # campaigns/[id]/BriefSummaryPanel.tsx:239         | bare multi-line span (BL-073-F001)
+refresh                     # campaigns/[id]/AiRecommendationPanel.tsx:618,693 | bare multi-line span (BL-073-F001)
+article                     # insight/weekly-report/WeeklyReportEmptyState.tsx:60 | bare multi-line span (BL-073-F001)
+attach_money                # campaigns/[id]/BriefSummaryPanel.tsx:211         | bare multi-line span (BL-073-F001)
+error_outline               # campaigns/[id]/RefineInputBar.tsx:363            | bare multi-line span (BL-073-F001)
+hourglass_empty             # campaigns/[id]/RefineInputBar.tsx:329            | bare multi-line span (BL-073-F001)
+mark_email_unread           # campaigns/[id]/AiRecommendationPanel.tsx:635     | bare multi-line span (BL-073-F001)
+verified_user               # reach/DomainHealthCard.tsx:43                    | bare multi-line span (BL-073-F001)

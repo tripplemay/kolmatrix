@@ -146,3 +146,24 @@ Material Symbols 字体子集是"沉默 fail"的高危区：grep 漏一个 icon 
 - icon name 与排除词同名 → 优先 keep icon（移出 exclusion）+ 同 commit 加 manifest 显式登记，避免反向漂移
 
 判断依据：跑 script 前后 `ICON_COUNT` 应"持平或略增"。若 +3 以上 = 误纳入噪音；若 -1 = 漏排真实 icon（如 BL-072-F005 实测把 `delete|error|info|warning` 误排，需移出 exclusion）。
+
+### Pattern 7 (BL-073-F002) — bare ligature in multi-line span 兜底
+
+**触发场景：** BL-073 prod hotfix Issue #1 — `/campaigns/[id]` 8 个 icon 字面文字暴露（forward_to_inbox / refresh / article / attach_money / error_outline / hourglass_empty / mark_email_unread / verified_user）。Pattern 1 多行 span 仅匹配 `-A 1`（ligature 紧邻 `material-symbols-outlined` 下一行）；实际 codebase 中 className 跨 2-3 行后 ligature 才出现，Pattern 1 漏。Pattern 6 只扫 quoted lowercase 标识符，bare identifier 在自己一行的形态也漏。
+
+**实现：** `regenerate-material-symbols-subset.sh` Pattern 7 在 `material-symbols-outlined` 字面**之后 12 行内**扫"整行只有一个 lowercase_underscore token"的行（缩进 + 单标识符 + 缩进结束）。然后走与 Pattern 6 共享的最终 false-positive exclusion regex（单一清单不分叉，per BL-073 spec §2.3 invariant #3）。
+
+**Pattern 6 → 7 进化路径：**
+
+| 版本 | 形态 | 覆盖范围 | 局限 |
+|---|---|---|---|
+| Pattern 1 | `<span class="material-symbols-outlined">icon</span>` 同行 | 单行 inline | 多行 className 漏 |
+| Pattern 2 | `material-symbols-outlined` 下一行 (-A 1) bare 标识符 | 紧邻 1 行 | className 跨 2-3 行后 ligature 漏 |
+| Pattern 3-4 | `icon: "..."` / `icon="..."` 显式 prop | JSX 标准 prop 形态 | 动态形态漏 |
+| Pattern 5 | manifest 显式登记 | 上述全漏的 5a-5e 动态形态 | 维护人工 |
+| Pattern 6 (BL-072-F005) | `material-symbols-outlined` ±5 行 quoted lowercase | JSX 三元 / 对象 value / fallback | bare on own line 漏 |
+| Pattern 7 (BL-073-F002) | `material-symbols-outlined` -A 12 整行单 token | multi-line span 内 bare ligature | （当前已覆盖全部已知形态）|
+
+**维护惯例（与 Pattern 6 共享）：** false-positive exclusion regex 是单源（不分叉），新增 JSX prop / Tailwind token / HTML element 命名空间词时同步加入；ICON_COUNT 增量应在 +1 ~ +3 范围（远超 = exclusion 太宽松；变负 = 漏排真实 icon 需重新评估）。
+
+**当下覆盖核查：** BL-073 实测 Pattern 7 在 manifest 临时去掉 8 行后仍命中全部 8 ligature；Pattern 6+7 + manifest 共同提供 belt-and-suspenders 三层兜底。

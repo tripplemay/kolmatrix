@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-073-prod-hotfix — Material Symbols bare ligature + /brief 嵌套宽度 + i18n missing key + 防御升级 + filter UX 防御. 8 features ~12h ≈ 1.5 day Generator + 0.5 day Reviewer.",
   "total_features": 8,
-  "completed_features": 0,
+  "completed_features": 3,
   "fix_rounds": 0,
   "current_sprint": "BL-073-prod-hotfix",
-  "last_updated": "2026-05-26T03:00+0800",
+  "last_updated": "2026-05-26T04:30+0800",
   "reference_docs": [
     "docs/specs/BL-073-prod-hotfix-spec.md",
     "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",
