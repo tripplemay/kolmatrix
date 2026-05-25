@@ -728,7 +728,8 @@
       "tierHigh": "Alto",
       "tierMedium": "Medio",
       "tierLow": "Bajo",
-      "tierUnrated": "Sin calificar"
+      "tierUnrated": "Sin calificar",
+      "noData": "(sin datos)"
     },
     "regions": {
       "US": "Estados Unidos",
@@ -781,8 +782,8 @@
     },
     "emptyState": {
       "title": "Ningún KOL coincide con sus filtros",
-      "tipHeading": "Sugerencia",
-      "tipBody": "La tasa de Engagement, la monetización y métricas similares se poblarán después de la integración de la API de YouTube (planificada para después del lote B6 del MVP)."
+      "body": "No se encontraron KOLs que coincidan con los filtros actuales — prueba a ajustarlos o limpiar algunos.",
+      "bodyDefault": "El pool de KOLs se está sincronizando — vuelve pronto, llegarán más candidatos."
     },
     "pagination": {
       "previous": "Anterior",
@@ -1659,7 +1660,8 @@
       "reportId": "ID del Informe: {id}",
       "cost": "Coste de generación: ${amount}",
       "poweredBy": "Impulsado por KOLMatrix · Insights y datos de Discovery"
-    }
+    },
+    "title": "Informe Semanal"
   },
   "assets": {
     "_machineTranslated": "BL-033-F004 machine-translated, awaiting BL-014 human review",

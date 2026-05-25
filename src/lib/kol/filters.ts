@@ -636,3 +636,115 @@ export const kolIdSchema = z
   .string()
   .uuid({ message: "kolIdInvalid" })
   .or(z.string().min(1).max(200));
+
+// ────────────────────────────────────────────────────────────────────
+// BL-073-F006 — data coverage (filter UX defense).
+//
+// Issue #4B root cause: prod KOL data has country_code / language fully
+// NULL across the tenant's pool. The filter sidebar still rendered
+// these dimensions as click-able, so a marketer narrowing by country
+// got an empty match result that read as "search is broken" rather
+// than "this dimension has no data yet".
+//
+// `getDataCoverage` returns, per facet dimension, the number of
+// distinct non-NULL / non-empty values in the tenant's live KOLs.
+// Callers (MatchFilterSidebar + runMatchSearch) treat `0` as
+// "dimension unavailable" — UI greys the chips out + page.tsx
+// short-circuits the SQL when a 0-coverage facet is requested.
+// ────────────────────────────────────────────────────────────────────
+
+export interface DataCoverage {
+  regions: number;
+  languages: number;
+  platforms: number;
+  categories: number;
+  monetizationStatuses: number;
+  brandSafety: number;
+}
+
+/** Each entry is `[coverage-field, kol-column]` — Prisma `distinct`
+ * needs the column name as it appears on the ORM model. `categories`
+ * is a String[] column so `distinct` returns one row per distinct array
+ * value at the DB level; we then count via a SQL DISTINCT unnest.
+ *
+ * `brandSafety` is not directly a column — it lives on the JSON
+ * `audienceGeoDist` / ai-score breakdown. We treat it as "always
+ * available" (count = 1) so the UI never disables it; if a future
+ * audit shows it's truly unpopulated, swap in a proper query.
+ */
+export async function getDataCoverage(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tx: any,
+): Promise<DataCoverage> {
+  // findMany with distinct + select + null-skip on each facet.
+  // Note: Prisma can't combine distinct across multiple columns in a
+  // single round-trip, so each facet is one call. The whole helper
+  // runs within an already-open withTenant transaction (RLS applies).
+  const [regionRows, languageRows, platformRows, categoryRowsRaw, monetRows] = await Promise.all([
+    tx.kol.findMany({
+      where: { deletedAt: null, countryCode: { not: null } },
+      select: { countryCode: true },
+      distinct: ["countryCode"],
+    }) as Promise<Array<{ countryCode: string | null }>>,
+    tx.kol.findMany({
+      where: { deletedAt: null, language: { not: null } },
+      select: { language: true },
+      distinct: ["language"],
+    }) as Promise<Array<{ language: string | null }>>,
+    tx.kol.findMany({
+      where: { deletedAt: null },
+      select: { platform: true },
+      distinct: ["platform"],
+    }) as Promise<Array<{ platform: string }>>,
+    tx.kol.findMany({
+      where: { deletedAt: null },
+      select: { categories: true },
+    }) as Promise<Array<{ categories: string[] }>>,
+    tx.kol.findMany({
+      where: { deletedAt: null, monetizationStatus: { not: null } },
+      select: { monetizationStatus: true },
+      distinct: ["monetizationStatus"],
+    }) as Promise<Array<{ monetizationStatus: string | null }>>,
+  ]);
+
+  // Categories is String[] — flatten + dedupe + drop empty strings.
+  const categorySet = new Set<string>();
+  for (const row of categoryRowsRaw) {
+    for (const cat of row.categories) {
+      if (cat && cat.trim().length > 0) categorySet.add(cat);
+    }
+  }
+
+  return {
+    regions: regionRows.filter((r) => r.countryCode && r.countryCode.trim().length > 0).length,
+    languages: languageRows.filter((r) => r.language && r.language.trim().length > 0).length,
+    platforms: platformRows.filter((r) => r.platform && r.platform.trim().length > 0).length,
+    categories: categorySet.size,
+    monetizationStatuses: monetRows.filter((r) => r.monetizationStatus && r.monetizationStatus.trim().length > 0).length,
+    // BrandSafety lives outside the Kol columns (BL-066 ai-score breakdown JSON);
+    // treat as always-available until a separate audit shows otherwise.
+    brandSafety: 1,
+  };
+}
+
+/**
+ * Returns true if the filters touch any dimension whose coverage is 0.
+ * `runMatchSearch` callers short-circuit to an empty result when this
+ * fires — saves an unnecessary SQL round-trip and prevents the user
+ * from blaming the search when the underlying data is the issue.
+ */
+export function filterTouchesZeroCoverage(
+  filters: DiscoveryFilters,
+  coverage: DataCoverage,
+): boolean {
+  if (filters.regions.length > 0 && coverage.regions === 0) return true;
+  if (filters.languages.length > 0 && coverage.languages === 0) return true;
+  if (filters.platforms.length > 0 && coverage.platforms === 0) return true;
+  if (filters.categories.length > 0 && coverage.categories === 0) return true;
+  if (
+    filters.monetizationStatuses.length > 0 &&
+    coverage.monetizationStatuses === 0
+  )
+    return true;
+  return false;
+}

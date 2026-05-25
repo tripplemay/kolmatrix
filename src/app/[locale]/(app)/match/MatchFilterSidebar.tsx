@@ -41,6 +41,7 @@ import {
   REGION_GROUPS,
   RELATIONSHIP_STATUSES,
   UPLOAD_FREQUENCY_TIERS,
+  type DataCoverage,
   type DiscoveryFilters,
 } from "@/lib/kol/filters";
 import { cn } from "@/lib/utils";
@@ -54,15 +55,31 @@ const TIER_OPTIONS = ["high", "medium", "low", "unrated"] as const;
 interface Props {
   filters: DiscoveryFilters;
   basePath: string;
+  /** BL-073-F006 — per-dimension non-NULL distinct values in the
+   * tenant's live KOL pool. A facet with `coverage[dim] === 0` is
+   * rendered with reduced affordance + a "no data" hint so the user
+   * never gets blamed for selecting a filter the pool can't satisfy.
+   * Optional for backward-compat with legacy callers (defaults to
+   * all-positive coverage = nothing is greyed). */
+  coverage?: DataCoverage;
 }
 
-export async function MatchFilterSidebar({ filters, basePath }: Props) {
+export async function MatchFilterSidebar({ filters, basePath, coverage }: Props) {
   const t = await getTranslations("match.filters");
   const tRegions = await getTranslations("match.regions");
   const tCategories = await getTranslations("match.categories");
   const tPlatforms = await getTranslations("match.platforms");
   const tStatus = await getTranslations("relationshipStatus");
   const tDbFilters = await getTranslations("match.filters");
+  // BL-073-F006 — disabled-facet copy. Single short label rendered
+  // next to a greyed-out chip group when the underlying column has
+  // zero coverage in the tenant's live pool.
+  const noDataLabel = t.has("noData") ? t("noData") : "(no data)";
+  const regionsDisabled = coverage ? coverage.regions === 0 : false;
+  const languagesDisabled = coverage ? coverage.languages === 0 : false;
+  const platformsDisabled = coverage ? coverage.platforms === 0 : false;
+  const categoriesDisabled = coverage ? coverage.categories === 0 : false;
+  const monetizationDisabled = coverage ? coverage.monetizationStatuses === 0 : false;
 
   const cookieJar = await cookies();
   const advancedCookie = cookieJar.get(ADVANCED_COOKIE_NAME)?.value;
@@ -151,7 +168,7 @@ export async function MatchFilterSidebar({ filters, basePath }: Props) {
         </div>
       </Field>
 
-      <ChipGroup label={t("region")}>
+      <ChipGroup label={t("region")} disabledLabel={regionsDisabled ? noDataLabel : undefined}>
         {DISCOVERY_REGIONS.map((code) => (
           <ChipCheckbox
             key={code}
@@ -160,11 +177,12 @@ export async function MatchFilterSidebar({ filters, basePath }: Props) {
             label={tRegions(code)}
             checked={filters.regions.includes(code)}
             dataTestid={`match-filter-region-${code}`}
+            disabled={regionsDisabled}
           />
         ))}
       </ChipGroup>
 
-      <ChipGroup label={t("category")}>
+      <ChipGroup label={t("category")} disabledLabel={categoriesDisabled ? noDataLabel : undefined}>
         {DISCOVERY_CATEGORIES.map((c) => (
           <ChipCheckbox
             key={c}
@@ -173,6 +191,7 @@ export async function MatchFilterSidebar({ filters, basePath }: Props) {
             label={tCategories(c)}
             checked={filters.categories.includes(c)}
             dataTestid={`match-filter-category-${c}`}
+            disabled={categoriesDisabled}
           />
         ))}
       </ChipGroup>
@@ -204,7 +223,7 @@ export async function MatchFilterSidebar({ filters, basePath }: Props) {
             </Select>
           </Field>
 
-          <ChipGroup label={t("platform")}>
+          <ChipGroup label={t("platform")} disabledLabel={platformsDisabled ? noDataLabel : undefined}>
             {DISCOVERY_PLATFORMS.map((p) => (
               <ChipCheckbox
                 key={p}
@@ -212,6 +231,7 @@ export async function MatchFilterSidebar({ filters, basePath }: Props) {
                 value={p}
                 label={tPlatforms(p)}
                 checked={filters.platforms.includes(p)}
+                disabled={platformsDisabled}
               />
             ))}
           </ChipGroup>
@@ -222,7 +242,18 @@ export async function MatchFilterSidebar({ filters, basePath }: Props) {
               name="languages"
               defaultValue={filters.languages.join(",")}
               placeholder="en, zh, ja"
+              disabled={languagesDisabled}
+              aria-disabled={languagesDisabled}
+              data-testid="match-filter-languages"
             />
+            {languagesDisabled ? (
+              <span
+                className="text-on-surface-variant/60 mt-1 block text-[10px]"
+                data-testid="match-filter-languages-no-data"
+              >
+                {noDataLabel}
+              </span>
+            ) : null}
           </Field>
 
           <div className="grid grid-cols-2 gap-3">
@@ -268,7 +299,7 @@ export async function MatchFilterSidebar({ filters, basePath }: Props) {
             </Field>
           </div>
 
-          <ChipGroup label={t("monetization")}>
+          <ChipGroup label={t("monetization")} disabledLabel={monetizationDisabled ? noDataLabel : undefined}>
             {MONETIZATION_STATUSES.map((m) => (
               <ChipCheckbox
                 key={m}
@@ -281,6 +312,7 @@ export async function MatchFilterSidebar({ filters, basePath }: Props) {
                     | "monetizationNone",
                 )}
                 checked={filters.monetizationStatuses.includes(m)}
+                disabled={monetizationDisabled}
               />
             ))}
           </ChipGroup>
@@ -486,12 +518,24 @@ function Field({
 function ChipGroup({
   label,
   children,
+  disabledLabel,
 }: {
   label: string;
   children: React.ReactNode;
+  /** BL-073-F006 — when the underlying dimension has zero coverage in
+   *  the live tenant pool, the caller passes a short "no data" hint
+   *  rendered next to the label so the user can tell the chips are
+   *  greyed because the data layer is empty, not because they
+   *  mis-clicked. */
+  disabledLabel?: string;
 }) {
   return (
     <Field label={label}>
+      {disabledLabel ? (
+        <span className="text-on-surface-variant/60 -mt-1 mb-1 block text-[10px]" data-testid={`chip-group-no-data-${label}`}>
+          {disabledLabel}
+        </span>
+      ) : null}
       <div className="flex flex-wrap gap-2">{children}</div>
     </Field>
   );
@@ -503,6 +547,11 @@ interface ChipCheckboxProps {
   label: string;
   checked: boolean;
   dataTestid?: string;
+  /** BL-073-F006 — render the chip as non-interactive (greyed,
+   *  pointer-events-none) when its dimension is empty in the live
+   *  pool. The hidden `<input>` is also disabled so a stray form
+   *  submit can't smuggle the value back in. */
+  disabled?: boolean;
 }
 
 function ChipCheckbox({
@@ -511,14 +560,17 @@ function ChipCheckbox({
   label,
   checked,
   dataTestid,
+  disabled,
 }: ChipCheckboxProps) {
   return (
-    <label className="inline-flex">
+    <label className={cn("inline-flex", disabled && "pointer-events-none opacity-50")}>
       <input
         type="checkbox"
         name={name}
         value={value}
         defaultChecked={checked}
+        disabled={disabled}
+        aria-disabled={disabled || undefined}
         className="peer sr-only"
         data-testid={dataTestid}
       />
@@ -528,6 +580,7 @@ function ChipCheckbox({
           "border-outline-variant bg-surface/40 text-on-surface-variant hover:border-cyan/40 hover:text-cyan",
           "peer-checked:border-cyan/60 peer-checked:bg-cyan/20 peer-checked:text-cyan",
           "peer-focus-visible:ring-cyan/50 peer-focus-visible:ring-2",
+          disabled && "cursor-not-allowed",
         )}
       >
         {label}

@@ -728,7 +728,8 @@
       "tierHigh": "高",
       "tierMedium": "中",
       "tierLow": "低",
-      "tierUnrated": "未评级"
+      "tierUnrated": "未评级",
+      "noData": "(暂无数据)"
     },
     "regions": {
       "US": "美国",
@@ -781,8 +782,8 @@
     },
     "emptyState": {
       "title": "未找到符合的 KOL",
-      "tipHeading": "提示",
-      "tipBody": "互动率、变现状态等维度数据将在 YouTube API 集成（计划 MVP 后批次 B6）后填充。"
+      "body": "未找到符合当前筛选的 KOL — 请尝试调整或清除部分筛选条件。",
+      "bodyDefault": "KOL 库正在同步中 — 稍后再来看看，更多候选人即将到位。"
     },
     "pagination": {
       "previous": "上一页",
@@ -1590,7 +1591,8 @@
       "reportId": "报告编号：{id}",
       "cost": "生成成本：${amount}",
       "poweredBy": "由 KOLMatrix Neural Discovery Engine 驱动"
-    }
+    },
+    "title": "AI 周报"
   },
   "roi": {
     "header": {

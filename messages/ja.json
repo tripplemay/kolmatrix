@@ -728,7 +728,8 @@
       "tierHigh": "高",
       "tierMedium": "中",
       "tierLow": "低",
-      "tierUnrated": "未評価"
+      "tierUnrated": "未評価",
+      "noData": "(データなし)"
     },
     "regions": {
       "US": "アメリカ合衆国",
@@ -781,8 +782,8 @@
     },
     "emptyState": {
       "title": "フィルターに一致するKOLはありません",
-      "tipHeading": "ヒント",
-      "tipBody": "エンゲージメント率、収益化、および同様の指標は、YouTube API統合後（MVP後のB6バッチを予定）に表示されます。"
+      "body": "現在のフィルター条件に一致する KOL は見つかりませんでした — 条件を調整するか一部のフィルターをクリアしてください。",
+      "bodyDefault": "KOL データベースは同期中です — 候補者が追加されますので、しばらくしてからご確認ください。"
     },
     "pagination": {
       "previous": "前へ",
@@ -1659,7 +1660,8 @@
       "reportId": "レポートID: {id}",
       "cost": "生成コスト: ${amount}",
       "poweredBy": "AIはKOLMatrixニューラルディスカバリーエンジンによって提供されています"
-    }
+    },
+    "title": "週次レポート"
   },
   "assets": {
     "_machineTranslated": "BL-033-F004 machine-translated, awaiting BL-014 human review",

@@ -26,10 +26,16 @@ describe("BL-070-F011 SSR Suspense stream", () => {
     const match = read("src/app/[locale]/(app)/match/page.tsx");
 
     it("runMatchSearch + campaign lookup remain on the critical path", () => {
-      // Promise.all retains exactly these two awaited members.
+      // Promise.all retains the awaited members. BL-073-F006 added the
+      // data-coverage snapshot to the tuple (parallel with the search
+      // so it does not extend LCP); searchResult became `searchResultRaw`
+      // because the page post-processes it (zero-coverage facet =>
+      // empty result).
       expect(match).toMatch(
-        /const \[searchResult, campaign\] = await Promise\.all\(\[\s*runMatchSearch/,
+        /const \[searchResultRaw, campaign, coverage\] = await Promise\.all\(\[\s*runMatchSearch/,
       );
+      // Coverage snapshot must enter the tuple via loadMatchDataCoverage.
+      expect(match).toMatch(/loadMatchDataCoverage\(tenantId\)/);
     });
 
     it("loadDatabaseStats has been moved off the page-level await chain", () => {

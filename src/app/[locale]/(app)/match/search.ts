@@ -22,7 +22,14 @@
 import type { Prisma } from "@prisma/client";
 
 import { withTenant } from "@/lib/db";
-import { buildKolWhere, sortToOrderBy, type DiscoveryFilters } from "@/lib/kol/filters";
+import {
+  buildKolWhere,
+  filterTouchesZeroCoverage,
+  getDataCoverage,
+  sortToOrderBy,
+  type DataCoverage,
+  type DiscoveryFilters,
+} from "@/lib/kol/filters";
 import { createCursorPaginator, type OrderBySpec } from "@/lib/pagination/cursor";
 
 export interface MatchKolRow {
@@ -73,7 +80,18 @@ type KolRowShape = {
 export async function runMatchSearch(
   tenantId: string,
   filters: DiscoveryFilters,
+  coverage?: DataCoverage,
 ): Promise<MatchSearchResult> {
+  // BL-073-F006 early-return: if the caller passed a coverage snapshot
+  // and the active filters touch a zero-coverage dimension, skip the
+  // SQL round-trip entirely. Saves the marketer from a "search broken"
+  // experience when the underlying data isn't there yet. Caller is
+  // free to omit `coverage` (legacy callers stay unchanged), in which
+  // case we behave exactly like before this change.
+  if (coverage && filterTouchesZeroCoverage(filters, coverage)) {
+    return { items: [], total: 0, hasMore: false, nextCursor: null };
+  }
+
   const baseWhere = buildKolWhere({ ...filters, includeNonGaming: true });
   const andClauses = Array.isArray(baseWhere.AND)
     ? (baseWhere.AND as Prisma.KolWhereInput[])
@@ -129,4 +147,15 @@ export async function runMatchSearch(
       total,
     };
   });
+}
+
+/**
+ * BL-073-F006 — server-side data coverage snapshot for the filter
+ * sidebar UX defense. Thin wrapper around `getDataCoverage` so the
+ * page only imports from `./search` (match-route locality), and the
+ * RLS-aware `withTenant` boundary stays consistent with the rest of
+ * the page's DB calls.
+ */
+export async function loadMatchDataCoverage(tenantId: string) {
+  return withTenant(tenantId, (tx) => getDataCoverage(tx));
 }

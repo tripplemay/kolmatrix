@@ -27,8 +27,14 @@
  *   + the third leg in a follow-up batch if missing-glyph regressions
  *   show up despite this guard.
  *
- * **Advisory mode** — flip `STRICT_MODE` to `true` once the warning
- * rate is zero for two consecutive weeks.
+ * **BL-073-F007 v2 — strict-mode split:** the three STRICT_MODE knobs
+ * are now separated by domain so we can graduate Material Symbols to
+ * strict (catching the BL-073 8-bare-ligature class of bug at PR time)
+ * without forcing the noisier i18n + link-target audits to fail-on-
+ * warning at the same time. The three live in three test files; this
+ * one owns `STRICT_MS_ICONS` (default **true** as of BL-073 — Pattern 7
+ * added in F002 closed the bare-ligature blind spot, so unknown icons
+ * are now an actual error).
  */
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -40,7 +46,22 @@ const REPO_ROOT = resolve(__dirname, "../..");
 const MANIFEST = resolve(REPO_ROOT, "scripts/material-symbols-icons-manifest.txt");
 const SCRIPT = resolve(REPO_ROOT, "scripts/regenerate-material-symbols-subset.sh");
 
-const STRICT_MODE = false;
+/**
+ * BL-073-F007 — strict-mode knob (Material Symbols domain only).
+ *
+ * Was `false` (advisory) under BL-072-F007 v1. Flipped to `true` here
+ * because Pattern 7 (BL-073-F002) closed the bare-ligature blind spot:
+ * any icon name mentioned near `material-symbols-outlined` that
+ * neither the manifest nor the regen script's Pattern 1-7 covers is
+ * almost certainly the next prod 字面文字 incident.
+ *
+ * The companion `STRICT_I18N` (i18n-page-side-consumption) and
+ * `STRICT_LINK_TARGET` (link-target-audit) stay `false` for now —
+ * those tests still surface known false positives that the consumer-
+ * side audit hasn't fully shaken out (BL-074 + BL-075 are queued for
+ * that work).
+ */
+const STRICT_MS_ICONS = true;
 
 function manifestEntries(): Set<string> {
   const lines = readFileSync(MANIFEST, "utf8").split("\n");
@@ -86,6 +107,12 @@ function discoveredIcons(): Set<string> {
  * filter known false positives. Mirrors the regex set in the
  * regenerate script so an icon that the script catches automatically
  * registers here as "expected".
+ *
+ * BL-073-F007 v2 — also captures **bare ligatures** on their own line
+ * inside a multi-line `material-symbols-outlined` span (Pattern 7
+ * shape; the BL-073 prod incident's 8 漏 ligature shape). The +12
+ * forward-looking window matches the regen script's Pattern 7 `-A 12`,
+ * keeping the two scans in lock-step.
  */
 const FALSE_POSITIVE = new Set([
   // F005 exclusion list mirror (kept in sync with
@@ -110,6 +137,15 @@ const FALSE_POSITIVE = new Set([
   "tiny", "huge", "wide", "narrow", "tall", "short", "thick", "thin",
   "img", "submit", "invalid", "select", "input", "form", "reset",
   "readonly", "required", "placeholder", "label",
+  // Audit-log action verb tokens (Pattern 3 emits these via `icon:`
+  // shape — script exclusion strips them downstream; the unit-side
+  // test should mirror that filter so STRICT mode doesn't tag them as
+  // missing icons.).
+  "ai_generated",
+  "campaign_created", "campaign_kol_added", "campaign_kol_removed",
+  "campaign_kol_fee_updated", "campaign_kol_status_changed",
+  "campaign_status_changed", "campaign_revenue_recorded",
+  "kol_bulk_added_to_campaign", "campaigns",
 ]);
 
 function srcMentionedIcons(): Set<string> {
@@ -127,12 +163,27 @@ function srcMentionedIcons(): Set<string> {
     const lines = text.split("\n");
     lines.forEach((line, idx) => {
       if (!/material-symbols-outlined/.test(line)) return;
+
+      // Pattern 6 mirror — quoted lowercase identifiers in ±5 lines.
       const lo = Math.max(0, idx - 5);
       const hi = Math.min(lines.length, idx + 6);
-      const window = lines.slice(lo, hi).join("\n");
-      const tokens = window.match(/['"`]([a-z][a-z_0-9]{2,40})['"`]/g) ?? [];
-      for (const tok of tokens) {
+      const window6 = lines.slice(lo, hi).join("\n");
+      const quoted = window6.match(/['"`]([a-z][a-z_0-9]{2,40})['"`]/g) ?? [];
+      for (const tok of quoted) {
         const name = tok.slice(1, -1);
+        if (FALSE_POSITIVE.has(name)) continue;
+        out.add(name);
+      }
+
+      // BL-073-F007 v2 — Pattern 7 mirror: bare ligature on own line
+      // inside the +12 forward window (multi-line span shape from the
+      // BL-073 prod incident).
+      const hi7 = Math.min(lines.length, idx + 13);
+      for (let i = idx; i < hi7; i++) {
+        const ln = lines[i] ?? "";
+        const bareMatch = ln.match(/^\s+([a-z][a-z_0-9]+)\s*$/);
+        if (!bareMatch) continue;
+        const name = bareMatch[1]!;
         if (FALSE_POSITIVE.has(name)) continue;
         out.add(name);
       }
@@ -158,13 +209,13 @@ describe("BL-072-F007 · Material Symbols coverage (unit, advisory)", () => {
       }
     }
     if (missing.length > 0) {
-      const summary = `[material-symbols-coverage-unit advisory] ${missing.length} icon name(s) mentioned in src/ near a material-symbols-outlined host are neither in manifest nor discoverable by the regen script:\n  ${missing.join(", ")}`;
-      if (STRICT_MODE) {
+      const summary = `[material-symbols-coverage-unit ${STRICT_MS_ICONS ? "STRICT" : "advisory"}] ${missing.length} icon name(s) mentioned in src/ near a material-symbols-outlined host are neither in manifest nor discoverable by the regen script:\n  ${missing.join(", ")}`;
+      if (STRICT_MS_ICONS) {
         expect(missing, summary).toEqual([]);
       } else {
         console.warn(summary);
       }
     }
-    expect(STRICT_MODE || missing.length >= 0).toBe(true);
+    expect(STRICT_MS_ICONS || missing.length >= 0).toBe(true);
   });
 });

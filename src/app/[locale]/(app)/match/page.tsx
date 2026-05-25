@@ -69,7 +69,7 @@ import { MatchRefineBarLazy } from "./MatchRefineBarLazy";
 import { MatchSearchBar } from "./MatchSearchBar";
 import { MatchSummaryBar } from "./MatchSummaryBar";
 import { MatchTableSearch } from "./MatchTableSearch";
-import { runMatchSearch } from "./search";
+import { loadMatchDataCoverage, runMatchSearch } from "./search";
 import { parseView } from "./view-mode";
 
 export const metadata = { title: "Match — KOLMatrix" };
@@ -125,7 +125,13 @@ export default async function MatchPage({ params, searchParams }: Props) {
   // (KPI strip) and savedSearches (header dropdown) move into Suspense-
   // streamed sub-trees below so the page can flush the main table without
   // waiting on the auxiliary queries.
-  const [searchResult, campaign] = await Promise.all([
+  // BL-073-F006 — fetch the data-coverage snapshot in parallel with
+  // the main search. Coverage feeds the filter sidebar (UI disable for
+  // empty dims) + lets us short-circuit the search response when the
+  // filter touches a zero-coverage dim (search.ts early-return only
+  // fires when the caller passes coverage; we keep them parallel to
+  // avoid sequencing two DB round-trips on the LCP critical path).
+  const [searchResultRaw, campaign, coverage] = await Promise.all([
     runMatchSearch(tenantId, filters),
     // BL-065-F005 — tenant-scoped campaign lookup for the AI sidebar.
     // Returns null when the URL's campaignId is stale, malformed, or
@@ -144,7 +150,25 @@ export default async function MatchPage({ params, searchParams }: Props) {
           }),
         )
       : Promise.resolve(null),
+    loadMatchDataCoverage(tenantId),
   ]);
+
+  // BL-073-F006 — if any active filter dimension has zero coverage in
+  // the live tenant pool, collapse the result to an empty set so the
+  // emptyState copy + sidebar greyout tell the user "this dimension
+  // has no data yet" rather than "search is broken". runMatchSearch
+  // already returns rows that ignore coverage; the override here is
+  // cheap and keeps the SQL audit clean (we still ran the search,
+  // just discard its rows on the way out).
+  const filterTouchesEmptyDim =
+    (filters.regions.length > 0 && coverage.regions === 0) ||
+    (filters.languages.length > 0 && coverage.languages === 0) ||
+    (filters.platforms.length > 0 && coverage.platforms === 0) ||
+    (filters.categories.length > 0 && coverage.categories === 0) ||
+    (filters.monetizationStatuses.length > 0 && coverage.monetizationStatuses === 0);
+  const searchResult = filterTouchesEmptyDim
+    ? { items: [], total: 0, hasMore: false, nextCursor: null }
+    : searchResultRaw;
 
   const t = await getTranslations("match.header");
   const tEmpty = await getTranslations("match.emptyState");
@@ -284,7 +308,7 @@ export default async function MatchPage({ params, searchParams }: Props) {
 
       <div className={cn("grid gap-6", mainColumns)}>
         <aside className="lg:sticky lg:top-20 lg:self-start">
-          <MatchFilterSidebar filters={filters} basePath={basePath} />
+          <MatchFilterSidebar filters={filters} basePath={basePath} coverage={coverage} />
         </aside>
 
         <section className="flex min-w-0 flex-col gap-4">
@@ -302,19 +326,50 @@ export default async function MatchPage({ params, searchParams }: Props) {
             <MatchTableSearch basePath={basePath} search={filters.search ?? ""} />
           ) : null}
 
-          {searchResult.items.length === 0 ? (
-            <div
-              className="glass-panel rounded-2xl border border-on-surface/5 p-10 text-center"
-              data-testid="match-empty"
-            >
-              <h2 className="text-lg font-semibold text-white">
-                {tEmpty("title")}
-              </h2>
-              <p className="mt-2 text-sm text-on-surface-variant">
-                {tEmpty("body")}
-              </p>
-            </div>
-          ) : view === "table" ? (
+          {searchResult.items.length === 0 ? (() => {
+            // BL-073-F004 — discriminate "filter hit zero" vs "library
+            // still empty" so the empty-state copy points the user at
+            // the right next action. hasActiveFilters mirrors the
+            // surface filters that actually narrow the candidate pool
+            // (free-text + facets); pagination cursor + sort dimension
+            // don't count because they can't shrink the result set
+            // below the filter-applied set.
+            const hasActiveFilters = Boolean(
+              filters.search ||
+                filters.aiQuery ||
+                filters.regions.length ||
+                filters.platforms.length ||
+                filters.languages.length ||
+                filters.categories.length ||
+                filters.tags.length ||
+                filters.knownCollabs.length ||
+                filters.monetizationStatuses.length ||
+                filters.brandSafety.length ||
+                filters.tiers?.length ||
+                filters.channelAge.length ||
+                filters.uploadFrequency.length ||
+                filters.followersMin !== undefined ||
+                filters.followersMax !== undefined ||
+                filters.engagementMin !== undefined ||
+                filters.avgViewsMin !== undefined ||
+                filters.uploadsPerMonthMin !== undefined ||
+                filters.lastUploadWithinDays !== undefined,
+            );
+            return (
+              <div
+                className="glass-panel rounded-2xl border border-on-surface/5 p-10 text-center"
+                data-testid="match-empty"
+                data-active-filters={hasActiveFilters ? "true" : "false"}
+              >
+                <h2 className="text-lg font-semibold text-white">
+                  {tEmpty("title")}
+                </h2>
+                <p className="mt-2 text-sm text-on-surface-variant">
+                  {hasActiveFilters ? tEmpty("body") : tEmpty("bodyDefault")}
+                </p>
+              </div>
+            );
+          })() : view === "table" ? (
             <MatchKolTableLazy
               rows={searchResult.items}
               locale={locale}

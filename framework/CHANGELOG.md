@@ -5,6 +5,25 @@
 
 ---
 
+## v0.9.24 候选段 — 待 BL-074 / BL-075 done 后一并 sediment
+
+**来源批次（待沉淀）：**
+- BL-072 4 条候选（IA refactor outbound 扫描 / subset Pattern 6 / i18n 消费侧探针 / 删路由前 grep）
+- BL-073 5 条候选（Pattern 7 bare in multi-line / STRICT_MODE 维度拆分 / i18n key existence v2 / filter UX coverage / 3 独立批次切片决策）
+
+**预计触发原因：**
+- BL-073 prod-hotfix Issue #1 暴露 Pattern 1-6 共同盲区（multi-line span 内 bare ligature），落 Pattern 7 + STRICT_MS_ICONS=true → 后续 PR 加新 icon 必须 manifest 或 Pattern 1-7 命中，否则 CI fail
+- BL-073-F005 v2 i18n key existence 检测 + BL-073-F006 filter UX coverage 防御 — 两条共同提示「数据完整性 + UI 假设」必须配对，单独沉淀语义会失真
+
+**当前 STRICT_MODE 状态（BL-073-F007）：**
+- `STRICT_MS_ICONS` = `true`（Material Symbols 维度首翻 strict — 见 framework/harness/checklists/material-symbols-pattern.md §「STRICT_MS_ICONS 启用记录」）
+- `STRICT_I18N` = `false`（仍 advisory，待 BL-074 / BL-075 false-positive 消化）
+- `STRICT_LINK_TARGET` = `false`（仍 advisory，IA refactor 漏网 URL 扫描缓冲期）
+
+**升级原则记录：** STRICT 是一次性硬转，不退回 advisory；下次升级候选 = i18n 消费侧 v2 key existence 稳定一两轮 PR 后。
+
+---
+
 ## v0.9.23 — 2026-05-25（BL-071 harness-cleanup + v0.9.23 framework sediment + 12 决策点 lock + 31 条 sediment inline-merge）
 
 **来源批次：**

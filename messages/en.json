@@ -728,7 +728,8 @@
       "tierHigh": "High",
       "tierMedium": "Medium",
       "tierLow": "Low",
-      "tierUnrated": "Unrated"
+      "tierUnrated": "Unrated",
+      "noData": "(no data)"
     },
     "regions": {
       "US": "United States",
@@ -781,8 +782,8 @@
     },
     "emptyState": {
       "title": "No KOLs matched your filters",
-      "tipHeading": "Tip",
-      "tipBody": "Engagement rate, monetization, and similar metrics will be populated after YouTube API integration (planned for post-MVP batch B6)."
+      "body": "No KOLs matched the filters you set — try adjusting or clearing some filters.",
+      "bodyDefault": "The KOL pool is still syncing — check back soon, more candidates are on the way."
     },
     "pagination": {
       "previous": "Previous",
@@ -1590,7 +1591,8 @@
       "reportId": "Report ID: {id}",
       "cost": "Gen cost: ${amount}",
       "poweredBy": "AI powered by KOLMatrix Neural Discovery Engine"
-    }
+    },
+    "title": "Weekly Report"
   },
   "roi": {
     "header": {

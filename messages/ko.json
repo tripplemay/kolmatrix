@@ -728,7 +728,8 @@
       "tierHigh": "높음",
       "tierMedium": "중간",
       "tierLow": "낮음",
-      "tierUnrated": "미평가"
+      "tierUnrated": "미평가",
+      "noData": "(데이터 없음)"
     },
     "regions": {
       "US": "미국",
@@ -781,8 +782,8 @@
     },
     "emptyState": {
       "title": "필터에 일치하는 KOL이 없습니다.",
-      "tipHeading": "팁",
-      "tipBody": "YouTube API 통합 후(예정: MVP 이후 B6 배치) 참여율, 수익화 및 유사한 지표가 채워집니다."
+      "body": "현재 필터 조건에 일치하는 KOL이 없습니다 — 필터를 조정하거나 일부 필터를 해제해 보세요.",
+      "bodyDefault": "KOL 풀이 동기화 중입니다 — 추가 후보가 곧 들어오니 잠시 후 다시 확인해 주세요."
     },
     "pagination": {
       "previous": "이전",
@@ -1659,7 +1660,8 @@
       "reportId": "보고서 ID: {id}",
       "cost": "생성 비용: ${amount}",
       "poweredBy": "KOLMatrix Neural Discovery Engine으로 구동되는 AI"
-    }
+    },
+    "title": "주간 보고서"
   },
   "assets": {
     "_machineTranslated": "BL-033-F004 machine-translated, awaiting BL-014 human review",

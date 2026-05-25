@@ -52,7 +52,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "messages/{zh,en,ja,ko,es}.json match.emptyState 加 body + bodyDefault 两 key (5 locale 完整翻译; body = 'filter 命中空 - 请尝试调整筛选条件', bodyDefault = '默认空 - KOL 库正在同步中')",
       "src/app/[locale]/(app)/match/page.tsx 区分 hasActiveFilters (filters.search || filters.regions.length || filters.platforms.length || filters.languages.length || filters.categories.length 等) → 选 t('body') 或 t('bodyDefault')",
@@ -68,7 +68,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "tests/unit/i18n-page-side-consumption.test.ts 扩展: 现有 raw English literal scan 保留 (advisory); 新加 key existence check",
       "扫所有 page.tsx + *Client.tsx + *Panel.tsx + *Bar.tsx 的 t('<key>') / t(\"<key>\") 调用",
@@ -85,7 +85,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/lib/kol/filters.ts 加 getDataCoverage(tx, tenantId): Promise<{ regions: number, languages: number, platforms: number, categories: number, etc. }> — 返每维度有数据的 distinct values count (非 null + 非空字符串)",
       "src/app/[locale]/(app)/match/page.tsx server-side 调用 getDataCoverage + 传 coverage prop 给 MatchFilterSidebar",
@@ -101,7 +101,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "tests/unit/material-symbols-coverage-unit.test.ts 加 Pattern 7 bare ligature detection (与 F002 同步规则)",
       "STRICT_MODE 拆分: STRICT_MS_ICONS (新, 默认 true) + STRICT_I18N (false, 不动) + STRICT_LINK_TARGET (false, 不动)",

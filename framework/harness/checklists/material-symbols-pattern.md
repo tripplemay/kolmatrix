@@ -167,3 +167,17 @@ Material Symbols 字体子集是"沉默 fail"的高危区：grep 漏一个 icon 
 **维护惯例（与 Pattern 6 共享）：** false-positive exclusion regex 是单源（不分叉），新增 JSX prop / Tailwind token / HTML element 命名空间词时同步加入；ICON_COUNT 增量应在 +1 ~ +3 范围（远超 = exclusion 太宽松；变负 = 漏排真实 icon 需重新评估）。
 
 **当下覆盖核查：** BL-073 实测 Pattern 7 在 manifest 临时去掉 8 行后仍命中全部 8 ligature；Pattern 6+7 + manifest 共同提供 belt-and-suspenders 三层兜底。
+
+### STRICT_MS_ICONS 启用记录（BL-073-F007）
+
+`tests/unit/material-symbols-coverage-unit.test.ts` `STRICT_MS_ICONS` 由 BL-072-F007 的 advisory（`false`）翻为 strict（`true`）。
+
+**触发条件：** Pattern 7 落地（BL-073-F002）后已覆盖 Pattern 1-7 全部已知 ligature 引用形态；任何 src/ 提及但 manifest + Pattern 1-7 都漏的 icon = 下一个 prod 字面文字事件候选。
+
+**结果：** 未来 PR 加新 icon 必须同步 manifest（5a-5e 动态形态）或保 Pattern 1-7 能命中（标准形态），否则 CI fail 拦截在 PR 阶段。
+
+**未一并 flip 的另两个 STRICT_MODE：**
+- `STRICT_I18N`（`tests/unit/i18n-page-side-consumption.test.ts`）仍 `false` — 消费侧 raw English 扫描尚有已知 false positive 待消化（BL-074 / BL-075 待）。
+- `STRICT_LINK_TARGET`（`tests/unit/link-target-audit.test.ts`）仍 `false` — IA refactor 漏网 URL 扫描，仍在缓冲期。
+
+**升级原则：** 单一维度 STRICT 翻转前，对应防御层 grep + 排除清单都已稳定；Strict 是一次性硬转，不再退回 advisory。下次升级候选 = i18n 消费侧（在 BL-073-F005 v2 key existence 检测稳定一两轮 PR 后）。
