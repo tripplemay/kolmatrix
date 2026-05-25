@@ -25,6 +25,7 @@ type: project
 1. 5/17 weekly growth-curve check（重跑 BL-061 F003 SQL）
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 3. **BL-070 post-launch ops:** 24h 后跑 `ssh tripplezhou@34.180.93.185 'bash /opt/kolmatrix/scripts/bl070-prod-audit.sh'` + 邀 ≥5 marketer dogfood; 全过则 signoff §4 #9/#10 DEFERRED→PASS
+4. **🚨 5/26 触发 prod deploy 至 main HEAD 1a3fdcf (含 BL-071 + BL-072 fix 共 36 commits)：** 用户 5/26 报"很多核心链路无法使用", Planner Kimi smoke audit 发现 prod 仍在 BL-070 era (fc79f43, 5/25 17:05 UTC deploy); typecheck/test 全绿 + 无 stale path 残留, 推断用户看到的是 BL-072 已修但未 deploy 的 4 user-visible bug。GitHub Actions → Deploy to Production → workflow_dispatch (main HEAD)。Deploy 后 curl health + 浏览器实测 4 issue + 4-step main flow。若 deploy 后仍有 issue → 起 BL-073 prod hotfix audit。
 ## 角色 / Backlog (BL-072 done 后)
 - Phase 5：个性化学习 / AI 学到偏好 / Brief 模板库 / comparative query / skip-replace 写 DB
 - BL-062 backlog：KOL data coverage gap 治理
