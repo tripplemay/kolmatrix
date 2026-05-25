@@ -12,6 +12,7 @@
  */
 import type { Prisma } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -160,14 +161,21 @@ export default async function KolProfilePage({ params, searchParams }: Props) {
 
       {kol.bannerUrl ? (
         <section
-          className="overflow-hidden rounded-2xl border border-white/5"
+          className="relative overflow-hidden rounded-2xl border border-white/5"
           data-testid="kol-banner"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          {/* BL-070-F010 — banner is hero-aspect (~1200×240); explicit dims
+              reserve the layout slot. `sizes` matches the full-width parent
+              so next/image can pick the right responsive bucket. unoptimized
+              tolerates per-platform banner CDNs not in remotePatterns. */}
+          <Image
             src={kol.bannerUrl}
             alt={t("hero.bannerAlt")}
+            width={1200}
+            height={240}
+            sizes="(max-width: 1024px) 100vw, 1024px"
             className="h-auto max-h-[240px] w-full object-cover"
+            unoptimized
           />
         </section>
       ) : null}

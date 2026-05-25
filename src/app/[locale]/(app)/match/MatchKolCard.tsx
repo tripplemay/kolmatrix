@@ -6,6 +6,7 @@
  * no longer cross-import from /discovery. F006 deletes the /discovery
  * folder; this copy is intentional so /match stands alone.
  */
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 
 import type { MatchKolRow } from "./search";
@@ -52,11 +53,17 @@ export function MatchKolCard({ kol }: Props) {
       <div className="flex items-start gap-3">
         <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-cyan-fixed-dim to-cyan-soft text-sm font-bold text-on-primary">
           {kol.avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            // BL-070-F010 — KOL avatar URLs come from heterogeneous platform
+            // CDNs (YT now; TikTok/Twitch when adapters ship), so `unoptimized`
+            // bypasses the next.config.ts remotePatterns gate without
+            // sacrificing the explicit-dimension CLS reservation.
+            <Image
               src={kol.avatarUrl}
               alt=""
+              width={56}
+              height={56}
               className="h-full w-full object-cover"
+              unoptimized
             />
           ) : (
             <span aria-hidden>{initialsOf(kol.displayName)}</span>

@@ -24,6 +24,7 @@
  * F002 skeleton (empty / loading visuals) is preserved verbatim — F003
  * just wires the fetch + state + interactions on top.
  */
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -769,11 +770,15 @@ function KolCard({
       </button>
       <div className="flex gap-4">
         {kol.avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          // BL-070-F010 — 56×56 explicit dims (rounded-xl avatar in AI rec
+          // panel). unoptimized for heterogeneous platform CDNs.
+          <Image
             src={kol.avatarUrl}
             alt={kol.displayName}
+            width={56}
+            height={56}
             className="h-14 w-14 rounded-xl border border-outline-variant/30 object-cover group-hover:border-cyan/50"
+            unoptimized
           />
         ) : (
           <div

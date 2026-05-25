@@ -5,6 +5,8 @@
  * badge + Download PDF + Share + Regenerate. Three action buttons are
  * client-side; the rest is server-rendered.
  */
+import Image from "next/image";
+
 import { WeeklyReportClientActions } from "./WeeklyReportClientActions";
 import type {
   RevokeLabels,
@@ -69,11 +71,16 @@ export function WeeklyReportBrandHeader({
     >
       <div className="relative">
         {tenant.logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          // BL-070-F010 — 64×64 explicit dims for the tenant logo + unoptimized
+          // to tolerate user-uploaded / Stitch-hosted logo URLs without a
+          // remotePatterns mapping per CDN.
+          <Image
             src={tenant.logoUrl}
             alt={`${tenant.name} logo`}
+            width={64}
+            height={64}
             className="border-cyan h-16 w-16 rounded-full border-2 object-cover"
+            unoptimized
           />
         ) : (
           <div className="border-cyan bg-surface-container flex h-16 w-16 items-center justify-center rounded-full border-2 shadow-[0_0_15px_rgba(0,229,255,0.15)]">

@@ -6,6 +6,7 @@
  * (sent / mock_sent / bounced / failed), not a queue state.
  */
 import { getTranslations, getFormatter } from "next-intl/server";
+import Image from "next/image";
 
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { TBody, THead, TRow, Table, TCell } from "@/components/ui/Table";
@@ -91,11 +92,15 @@ export async function RecentlySentTable({ rows }: Props) {
                       className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-cyan-fixed-dim to-cyan-soft text-[10px] font-bold text-on-primary"
                     >
                       {r.avatarUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        // BL-070-F010 — 32×32 explicit dims + unoptimized for
+                        // heterogeneous recipient avatar CDNs.
+                        <Image
                           src={r.avatarUrl}
                           alt=""
+                          width={32}
+                          height={32}
                           className="h-full w-full object-cover"
+                          unoptimized
                         />
                       ) : (
                         initialsOf(r.displayName)

@@ -13,6 +13,7 @@
  * report row (`locale` column) so a JA-authored report still shows
  * Japanese chrome after expiry, not the default EN.
  */
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
@@ -144,11 +145,16 @@ export default async function SharedWeeklyReportPage({ params }: Props) {
       <section className="flex flex-wrap items-center gap-6 rounded-2xl border border-white/5 bg-surface-low/60 p-6">
         <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-cyan bg-surface-container">
           {tenantSnapshot.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            // BL-070-F010 — 64×64 explicit dims; container is h-16 w-16 already.
+            // `unoptimized` tolerates user-uploaded logo CDNs without per-domain
+            // remotePatterns entries.
+            <Image
               src={tenantSnapshot.logoUrl}
               alt={`${tenantSnapshot.name} logo`}
+              width={64}
+              height={64}
               className="h-full w-full rounded-full object-cover"
+              unoptimized
             />
           ) : (
             <span className="text-2xl font-black text-cyan">

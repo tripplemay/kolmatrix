@@ -13,6 +13,7 @@
  * `rowFormatted` from the server parent (BM2 F011 RSC lesson — no Intl
  * formatter crosses the boundary).
  */
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -161,11 +162,16 @@ export function MatchKolTable({ rows, locale, rowFormatted }: Props) {
                     >
                       <span className="from-cyan-fixed-dim to-cyan-soft text-on-primary flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br text-xs font-bold">
                         {kol.avatarUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
+                          // BL-070-F010 — next/image with explicit 36×36 to
+                          // reserve avatar space (CLS) + unoptimized to tolerate
+                          // platform CDNs not yet in remotePatterns.
+                          <Image
                             src={kol.avatarUrl}
                             alt=""
+                            width={36}
+                            height={36}
                             className="h-full w-full object-cover"
+                            unoptimized
                           />
                         ) : (
                           initialsOf(kol.displayName)

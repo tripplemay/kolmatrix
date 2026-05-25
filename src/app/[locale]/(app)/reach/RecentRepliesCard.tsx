@@ -6,6 +6,7 @@
  * so the card shows the subject line as a stand-in until then.
  */
 import { getTranslations, getFormatter } from "next-intl/server";
+import Image from "next/image";
 
 import type { RecentReplyRow } from "@/lib/email/analytics";
 
@@ -61,11 +62,15 @@ export async function RecentRepliesCard({ rows }: Props) {
                 className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-cyan-fixed-dim to-cyan-soft text-xs font-bold text-on-primary"
               >
                 {r.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  // BL-070-F010 — 36×36 explicit dims + unoptimized for
+                  // heterogeneous sender avatar CDNs.
+                  <Image
                     src={r.avatarUrl}
                     alt=""
+                    width={36}
+                    height={36}
                     className="h-full w-full object-cover"
+                    unoptimized
                   />
                 ) : (
                   initialsOf(r.displayName)

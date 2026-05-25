@@ -7,6 +7,7 @@
  * CRM page's unique value (who/when/before→after).
  */
 import { getTranslations, getFormatter } from "next-intl/server";
+import Image from "next/image";
 import Link from "next/link";
 
 import { StatusBadge } from "@/components/common/StatusBadge";
@@ -88,11 +89,15 @@ export async function CrmRecentChanges({ rows, locale }: Props) {
                         className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-cyan-fixed-dim to-cyan-soft text-xs font-bold text-on-primary"
                       >
                         {r.kolAvatarUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
+                          // BL-070-F010 — 36×36 explicit dims + unoptimized for
+                          // heterogeneous platform avatar CDNs.
+                          <Image
                             src={r.kolAvatarUrl}
                             alt=""
+                            width={36}
+                            height={36}
                             className="h-full w-full object-cover"
+                            unoptimized
                           />
                         ) : (
                           initialsOf(r.kolName)
