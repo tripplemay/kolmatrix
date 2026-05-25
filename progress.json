@@ -1,11 +1,11 @@
 {
-  "status": "reverifying",
+  "status": "fixing",
   "user_goal": "BL-070-reach-insight-cleanup — ADR-013 AI Native Phase 4 第二批 / 本项目近期最后一批: 实装 /reach (Outreach 迁移 + Match→Reach 衔接 + customize.ts/topic-cloud.ts 迁移 runAigcAction) + /insight (Dashboard + Reports 合并 + 4 条 301) + 二次清理 (5 老路由目录 git rm + 6 unmount 组件 + i18n deprecated keys 全删 + middleware redirect 即停老路由 404) + 4 路由 IA 全量 e2e suite 重写 + 视觉 baseline 全量 regen + 对外上线 12 项 checklist signoff。8 features F001-F008，~8-10 day Generator + 2 day Reviewer (最大批次, 项目近期最后一批)。8 决策点用户 5/18-19 brainstorming 全 lock：#1 ready-to-build / #2 Reach 路径迁移 + Match衔接 + customize 迁移 / #3 Insight 仅合并 (AI 学到偏好留 Phase 5) / #4 二次清理全清 / #5 BL-070 同批即停 redirect (老路由 404, 项目近期未 prod 上线 SEO 风险可控) / #6 e2e 完整重写 + 老 e2e 清理 / #7 嵌入 spec §10 12 项 checklist + signoff doc 验证 / #8 基础设施全 ack 复用 v0.9.22。本批次 done = Phase 4 完整 done = 4 路由 IA 完整闭环 = 对外上线 ready (距 ~2 周)。关联 docs/specs/BL-070-reach-insight-cleanup-spec.md @ 0947d58 / ADR-013 §Decision #1 / vision §2 Reach+Insight 路由 + §3 场景 4-5 + §6 客户画像 / roadmap §6 BL-070 + §11 Phase 4 verifying gate.",
   "total_features": 11,
-  "completed_features": 10,
+  "completed_features": 9,
   "fix_rounds": 3,
   "current_sprint": "BL-070-reach-insight-cleanup",
-  "last_updated": "2026-05-25T13:48+0800",
+  "last_updated": "2026-05-25T14:08+0800",
   "reference_docs": [
     "docs/specs/BL-070-reach-insight-cleanup-spec.md",
     "docs/adr/ADR-013-ai-native-product-pivot.md",
@@ -27,22 +27,28 @@
   ],
   "docs": {
     "spec": "docs/specs/BL-070-reach-insight-cleanup-spec.md",
-    "test_cases": "docs/test-reports/BL-070-reverifying-2026-05-20.md",
+    "test_cases": "docs/test-reports/BL-070-reverifying-2026-05-25.md",
     "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "BL-070 fix-round 1 已通过 L1 复验，prod 首轮 audit 也已完成；当前真正阻塞集中在 F008：Lighthouse performance 未达 ≥80，以及 24h 复跑和 5 marketer dogfood 尚未完成。",
-    "pass_count": 7,
+    "summary": "BL-070 fix-round 2 的功能复验已通过，Lighthouse performance score 也已拉过线；但 /match 在 3 次登录态 Lighthouse 中 CLS 稳定为 0.348，未满足 addendum 规定的 <0.05，因此 F010/F008 仍不能签收，批次需回到 fixing。",
+    "pass_count": 9,
     "partial_count": 1,
-    "fail_count": 0,
+    "fail_count": 1,
     "issues": [
+      {
+        "feature_id": "F010",
+        "result": "FAIL",
+        "description": "本地登录态 Lighthouse 3 轮复测中，/en/match 的 performance score 已提升到 81/80/80，但 CLS 3 次均为 0.348，持续高于 F010 acceptance 要求的 < 0.05。其余 3 条 IA 路由的 CLS 均为 0。",
+        "steps_to_reproduce": "1. 复用 `playwright/.auth/marketer.json` 登录态 cookie 2. 在当前干净 `3099` 实例上对 `http://localhost:3099/en/match` 运行 Lighthouse Desktop preset 3 次 3. 观察 performance score 为 81/80/80，但 CLS 每次均为 0.348。"
+      },
       {
         "feature_id": "F008",
         "result": "PARTIAL",
-        "description": "prod deploy 已完成，首轮 prod audit 已完成，但 signoff 仍未满足：本地登录态 Lighthouse performance 为 brief 78 / match 75 / reach 75 / insight 75，低于 checklist 要求的 ≥80；此外 24h audit 复跑与 ≥5 marketer dogfood 仍待完成。",
-        "steps_to_reproduce": "1. 复用 `playwright/.auth/marketer.json` 登录态在 `http://localhost:3099/en/{brief,match,reach,insight}` 运行 Lighthouse 2. 观察 performance 分别为 78/75/75/75 3. 等待 deploy 后 24h 重跑 `ssh tripplezhou@34.180.93.185 'bash /opt/kolmatrix/scripts/bl070-prod-audit.sh'` 4. 组织 5 位 marketer 完成 dogfood。"
+        "description": "F008 仍未完成。虽然这轮本地复验已将 4 条 IA 路由的 Lighthouse performance score 中位数提升到 brief 97 / match 80 / reach 92 / insight 95，但 /match 的 CLS 仍高于 addendum 阈值；此外 visual diff 本地仅能验证 baseline contract，prod redeploy / 24h audit / dogfood / final signoff 仍待后续流程完成。",
+        "steps_to_reproduce": "1. 在干净 `3099` 实例上运行 `bash scripts/test/codex-e2e.sh tests/e2e/brief-flow.spec.ts tests/e2e/match-flow.spec.ts tests/e2e/reach-flow.spec.ts tests/e2e/insight-flow.spec.ts tests/e2e/ia-refactor-cleanup-2026-05-19.spec.ts tests/e2e/locale-detection.spec.ts tests/e2e/request-access.spec.ts`，确认 `133 passed / 43 skipped / 0 failed` 2. 对 `http://localhost:3099/en/{brief,match,reach,insight}` 各运行 Lighthouse Desktop preset 3 次并取中位数 3. 观察 /match 的 CLS 恒为 0.348，未满足 addendum 4. 该项修复后再继续 prod signoff 流程。"
       }
     ]
   },
