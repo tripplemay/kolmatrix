@@ -84,7 +84,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "`mkdir -p framework/harness/checklists/`",
       "`git mv framework/harness/material-symbols-pattern.md framework/harness/checklists/material-symbols-pattern.md`",

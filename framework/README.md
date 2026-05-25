@@ -388,9 +388,29 @@ grep -rln "scope: project-specific" framework/harness/
 ```
 
 **当前 framework/harness/ 分布（v0.9.23）：**
-- framework-generic（9 个）：harness-rules / planner / planner-workflow / planner-arbitration / planner-checklists / generator / evaluator / pre-impl-adjudication / ai-action-contract / ui-fidelity-guardrail
+- framework-generic（10 个）：harness-rules / planner / planner-workflow / planner-arbitration / planner-checklists / generator / evaluator / pre-impl-adjudication / ai-action-contract / ui-fidelity-guardrail
 - mixed（2 个）：deploy-patterns（§1.6 §1.7 §3.2 §5.1 项目特定）/ database-patterns（§2 项目特定）
-- project-specific（2 个，D10 lock 后位置在 checklists/ subdir）：material-symbols-pattern / i18n-namespace-add-checklist
+- project-specific（2 个，位于 checklists/ subdir）：material-symbols-pattern / i18n-namespace-add-checklist
+
+---
+
+## checklists subdir 用法（D10 lock，BL-071 F006）
+
+`framework/harness/checklists/` 子目录存放项目特定的 case checklist（如 `material-symbols-pattern.md` 处理 Material Symbols 字体子集化的 KOLMatrix 实战；`i18n-namespace-add-checklist.md` 处理 next-intl 5 locale 命名空间增删）。
+
+**分层逻辑：**
+- `framework/harness/` 顶层：放角色定义 + 状态机规则 + 通用模式（planner / generator / evaluator / ai-action-contract / pre-impl-adjudication / deploy-patterns / database-patterns / ui-fidelity-guardrail / harness-rules）
+- `framework/harness/checklists/` 子目录：放具体 case 的操作 checklist（项目特定 scope 居多，模式可借鉴但具体步骤需新项目重新校准）
+
+**新增 checklist 决策：**
+- 是「调用某 API 时的步骤清单」或「修改某资源时的注意事项」 → 入 `checklists/`
+- 是「角色定义 / 状态机规则 / 设计原则」 → 入 `framework/harness/` 顶层
+
+**bootstrap.sh 同步：** 当前 bootstrap.sh 不 cp `framework/harness/checklists/` 到项目根（agent 运行时通过 framework/harness/ 内引用，不需要 root cp）。新项目 degit 后子目录与文件一起到位，相对引用继续 work。
+
+**当前内容（BL-071 F006 移动后）：**
+- `checklists/material-symbols-pattern.md`：Material Symbols woff2 子集化 5 漏范式 + manifest + CI 守门（项目特定，KOLMatrix BL-025-F009 沉淀）
+- `checklists/i18n-namespace-add-checklist.md`：next-intl 5 locale (CN/EN/JA/KO/ES) 命名空间扩展双门 CI（项目特定，KOLMatrix BL-033 沉淀）
 
 ---
 
