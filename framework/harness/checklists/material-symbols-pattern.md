@@ -1,6 +1,6 @@
 ---
 scope: project-specific
-last-updated: 2026-05-25
+last-updated: 2026-05-26
 ---
 
 # Material Symbols Subset — Maintenance Pattern
@@ -101,3 +101,48 @@ Material Symbols 字体子集是"沉默 fail"的高危区：grep 漏一个 icon 
 **为什么四层都需要：** 任意单层都可能因人/机器/环境失效（grep 漏型 / hook 没装 / CI flaky / PR 模板被忽略）。多层叠加 = 任意一层 catch 都不会 leak 到 prod。
 
 **新增 icon 操作回顾：** 仍走 §"When you add a new icon" 三步，4 层只是"漏做"时的捕网。
+
+## manifest 增量维护（v0.9.24 — BL-072-F005 沉淀）
+
+**触发场景：** BL-072 prod hotfix Issue #3 — `/match` view-toggle 渲染字面 `"table_rows"` 文字 / 不出现 icon glyph。根因：MatchSummaryBar.tsx:98 `{v === "card" ? "grid_view" : "table_rows"}` 是 Pattern 5a JSX 三元，但 `table_rows` 未在 manifest 注册，woff2 子集不含其 glyph。`grid_view` 因被 discovery/SummaryBar.tsx:83 早期注册，意外捷径 share；表格态没补，prod 暴露。
+
+### 何时必须手工追 manifest（Pattern 5a-5e 形态）
+
+下面这五类 grep 抓不到，**必须**在新增/重命名/迁移时同步 manifest（即便 Pattern 6 ±5 行兜底也建议保 manifest 入口 belt-and-suspenders）：
+
+| 形态 | 例子 | 触发动作 |
+|---|---|---|
+| 5a. JSX 三元 | `{cond ? "icon_a" : "icon_b"}` | 追两行 manifest，path 含 `file.tsx:LINE | JSX ternary` |
+| 5b. 对象 value（key ≠ `icon`） | `{ up: "trending_up", down: "trending_down" }` | 追每个 value 一行，path 含 `file:LINE | object value` |
+| 5c. 数组元素（多行） | `["icon_a",\n "icon_b",\n "icon_c"]` | 追每行一条，path 含 `file:LINE | array element` |
+| 5d. 函数 return | `return "warning";` | 追 manifest 一行，path 含 `file:LINE | function return` |
+| 5e. `??` fallback | `meta?.icon ?? "fallback"` | 追 fallback 字面，path 含 `file:LINE | ?? fallback` |
+
+### manifest 行格式（强制）
+
+```
+<icon_name>                 # <path/to/file.tsx:LINE>          | <pattern_label>
+```
+
+- icon_name：snake_case，与 Material Symbols Outlined 官方 ligature 完全一致
+- path：包含 file path + `:LINE`，**必填**（review 时验真 + 后续 IA refactor 改名能找到）
+- pattern_label：5a-5e 中之一（`JSX ternary` / `object value` / `array element` / `function return` / `?? fallback`），便于 reviewer 一眼分类
+- 多余字段（`# (BL-XXX-FXXX)` 等标签）可选
+
+### IA refactor 改名时同步 manifest path label
+
+当 `git mv` / 路径迁移导致 manifest path label 失效，**同 commit** 修正 manifest path label，否则下一轮 reviewer 找不到 callsite。例：
+- BL-070 `git mv /dashboard /insight` → manifest 多条 `# dashboard/...` path 需改 `# insight/...`
+- BL-065 `/discovery + /database → /match` → 多条 `# discovery/...` / `# database/...` path 需改 `# match/...`
+
+回归守门：CI 跑 manifest path label 是否指向真实文件（暂未自动化，靠 reviewer L1 抽样 + Pattern 6 ±5 行 grep 作为 fallback 兜底）。
+
+### Pattern 6 (BL-072-F005) 兜底 + 排除清单维护
+
+`regenerate-material-symbols-subset.sh` Pattern 6 在 `material-symbols-outlined` 字面周围 ±5 行扫描 quoted lowercase 标识符，作为 Pattern 5a-5e 的兜底。**false-positive 排除清单**需随 codebase 演进维护：
+
+- 增 JSX `role="..."` / `tone="..."` / `type="..."` value → 加入 exclusion regex
+- 增 Tailwind palette token（`emerald` / `slate` / 等）→ 加入 exclusion regex
+- icon name 与排除词同名 → 优先 keep icon（移出 exclusion）+ 同 commit 加 manifest 显式登记，避免反向漂移
+
+判断依据：跑 script 前后 `ICON_COUNT` 应"持平或略增"。若 +3 以上 = 误纳入噪音；若 -1 = 漏排真实 icon（如 BL-072-F005 实测把 `delete|error|info|warning` 误排，需移出 exclusion）。

@@ -71,7 +71,39 @@ MANIFEST_FILE="scripts/material-symbols-icons-manifest.txt"
     sed -E 's/[[:space:]]*#.*$//' "$MANIFEST_FILE" \
       | grep -E '^[a-z_][a-z_0-9]+$' || true
   fi
-} | sort -u | grep -vE '^(cyan|purple|neutral|campaign_created|campaign_kol_added|campaign_kol_removed|campaign_kol_fee_updated|campaign_kol_status_changed|campaign_status_changed|campaign_revenue_recorded|kol_bulk_added_to_campaign|campaigns)$' > "$TMP_LIST"
+
+  # Pattern 6 (BL-072-F005): bounded-context grep — scan ±5 lines around
+  # each `material-symbols-outlined` reference for quoted lowercase
+  # identifiers. Catches Pattern 5a (JSX ternary), 5b (object value),
+  # 5e (?? fallback) without the noise of the F009 whole-file scan.
+  # The cluster heuristic works because real icon literals live near
+  # their host span (`<span class="material-symbols-outlined">` or
+  # `className={\`material-symbols-outlined …\`}`). Catches `table_rows`
+  # in match/MatchSummaryBar.tsx:98 `{v === "card" ? "grid_view" : "table_rows"}`
+  # naturally — manifest entry for table_rows would be redundant once
+  # Pattern 6 is in place, but is kept as belt-and-suspenders.
+  #
+  # False-positive exclusion runs in the final sort -u stage below.
+  grep -rln --include='*.tsx' --include='*.ts' 'material-symbols-outlined' src/ \
+    | while IFS= read -r p6_file; do
+        for p6_ln in $(grep -n 'material-symbols-outlined' "$p6_file" | cut -d: -f1); do
+          p6_start=$(( p6_ln > 5 ? p6_ln - 5 : 1 ))
+          p6_end=$(( p6_ln + 5 ))
+          sed -n "${p6_start},${p6_end}p" "$p6_file"
+        done
+      done \
+    | grep -oE "['\"][a-z][a-z_0-9]{2,40}['\"]" \
+    | tr -d "'\""
+# False-positive exclusion list — extended for BL-072-F005 Pattern 6.
+# Original BL-025 list was just `cyan|purple|neutral|campaign_*` (audit-log
+# action verbs Pattern 3 grabs). Pattern 6's ±5-line context grep adds
+# JSX attribute values (`role="status"`, `type="email"`), Tailwind tone
+# names (`tone="danger"`), and HTML element identifiers near icon spans.
+# Words removed from the original spec list because they ARE real Material
+# Symbols icons in this codebase: delete (AssetCard menu item), error
+# (ChipRow icon prop), info (recent-activity audit entry), warning
+# (RoiInsightsPanel tone return), table (no — kept-en for `table_rows`).
+} | sort -u | grep -vE '^(cyan|purple|neutral|blue|red|green|amber|pink|yellow|black|white|gray|grey|inherit|currentColor|transparent|true|false|undefined|null|sm|md|lg|xl|xs|left|right|top|bottom|center|start|end|grid|swap|email|body|cta|h2|h3|h4|title|truncate|invisible|normal|platforms|card|table|duplicate|offline|on|off|outline|filled|sharp|rounded|active|inactive|disabled|enabled|hidden|visible|alert|status|danger|ghost|secondary|primary|menuitem|menubar|button|listbox|dialog|tab|tabpanel|role|item|assets|get|lazy|round|square|none|auto|both|all|hover|focus|stroke|fast|slow|new|old|nav|aside|footer|article|loading|dashboard|reports|analytics|en|zh|ja|ko|es|prod|dev|staging|local|test|api|web|small|medium|large|tiny|huge|wide|narrow|tall|short|thick|thin|ai_generated|campaign_created|campaign_kol_added|campaign_kol_removed|campaign_kol_fee_updated|campaign_kol_status_changed|campaign_status_changed|campaign_revenue_recorded|kol_bulk_added_to_campaign|campaigns|img|submit|invalid|select|input|form|reset|readonly|required|placeholder|label)$' > "$TMP_LIST"
 
 ICON_COUNT=$(wc -l < "$TMP_LIST" | tr -d ' ')
 echo "[regenerate-material-symbols-subset] discovered $ICON_COUNT unique icons"

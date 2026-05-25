@@ -54,7 +54,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "scripts/material-symbols-icons-manifest.txt 追加 1 行: `table_rows  # match/MatchSummaryBar.tsx:98  | JSX ternary (BL-072-F004)`",
       "运行 `bash scripts/regenerate-material-symbols-subset.sh` 重生 src/app/fonts/material-symbols-outlined.woff2",
@@ -69,7 +69,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "scripts/regenerate-material-symbols-subset.sh 加 Pattern 6: 匹配 `material-symbols-outlined` 上下文 ±5 行内 quoted string，经 false-positive 词排除清单 (来自本批 F005 实测 audit: true/false/undefined/null/inherit/currentColor/cyan/purple/neutral/sm/md/lg/xl/left/right/top/bottom/center/start/end/grid/swap/email/body/cta/h2/title/truncate/invisible/normal/platforms/card/table/ai_generated/duplicate/offline 等)",
       "Pattern 6 跑后 ICON_COUNT 与原值持平或略增 (验证无 regression)",

@@ -77,3 +77,11 @@ wifi_off                    # common/NetworkStatusBanner.tsx:74 | JSX ternary of
 # Pattern 2 already picks it up, but pinning it here keeps the subset
 # stable across future refactors (e.g. switching to `icon="..."` prop).
 admin_panel_settings        # layout/UserAvatarMenu.tsx admin tools section | JSX nested span
+
+# BL-072-F004 — /match view-toggle button switches between `grid_view`
+# (card mode) and `table_rows` (table mode) via JSX ternary at
+# MatchSummaryBar.tsx:98 `{v === "card" ? "grid_view" : "table_rows"}`.
+# `grid_view` was already in the manifest from discovery/SummaryBar.tsx;
+# `table_rows` was missed when the /match consolidation landed, causing
+# the table-mode toggle to render the literal text "table_rows" on prod.
+table_rows                  # match/MatchSummaryBar.tsx:98          | JSX ternary (BL-072-F004)
