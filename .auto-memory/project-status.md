@@ -4,12 +4,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-072-prod-hotfix BUILDING (0/8, fix_rounds=0) — 4 prod issues 修复 + CI 防御三件套
-- Issues: /brief 宽度 [P2] + /insight i18n wiring [P1] + Material Symbols table_rows [P1] + 10 处 IA outbound stale links [P1]
-- A0+A1 完成 5/25 (audit doc docs/test-reports/BL-072-prod-hotfix-audit-2026-05-25.md 273 LOC + 4 项 lock)
-- F001-F008 pending (~22h = 19h Generator + 3h Codex Reviewer)
-- A1 lock: 顺序 C ✓ (BL-071 done) / 范围 A 完整版 / i18n A brand kept-en / link 目标 A
-- 5 commit 分批: F001+F002 quick win / F004+F005 Material Symbols / F006 outbound link / F003 i18n 全 audit / F007 CI 防御 / F008 Reviewer
+## 🚧 BL-072-prod-hotfix BUILDING (5/8, fix_rounds=0) — Generator 5/8 完成
+- ✅ F001 /brief 宽度 (7278af0) ✅ F002 /insight i18n wiring (7278af0) ✅ F004 table_rows (915ffcb) ✅ F005 Pattern 6 + checklist (915ffcb) ✅ F006 10 处 outbound link + i18n IA rename (2727104)
+- 🚧 F003 i18n 全 audit (5h, next session) / F007 CI 防御三件套 (5h) / F008 Reviewer signoff (codex 3h)
+- Baseline regen × 2 (run 26406110567 + 26406781056) — current HEAD 37a1d02 含全部 F001-F006 + 新 baselines
+- CI manual workflow_dispatch 26407006431 in_progress @ 37a1d02 验证 baseline regen 后 green
+- A1 lock 全部 ack 实施 (顺序 C / 范围 A / i18n A brand kept-en / link 目标 A)
 ## ✅ BL-071 DONE (10/10, fix_rounds=1, tag bl071-done @ 99c43fc) — framework v0.9.23 闭环
 - 12 决策点 D1-D12 全 lock 实施; 11 项结构变更 + 31 条 sediment inline-merge + 0 chronological-append
 - 关联: framework/CHANGELOG.md v0.9.23 + framework/archive/proposed-learnings-archive-v0.9.23.md
