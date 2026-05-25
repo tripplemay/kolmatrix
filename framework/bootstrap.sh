@@ -97,7 +97,6 @@ if [ "$LAYOUT" = "flat" ]; then
   mv "$TARGET_DIR/memory"        "$TARGET_DIR/framework/"
   mv "$TARGET_DIR/templates"     "$TARGET_DIR/framework/"
   [ -d "$TARGET_DIR/archive" ] && mv "$TARGET_DIR/archive" "$TARGET_DIR/framework/"
-  [ -f "$TARGET_DIR/cowork-constraint-design.md" ] && mv "$TARGET_DIR/cowork-constraint-design.md" "$TARGET_DIR/framework/"
   [ -f "$TARGET_DIR/proposed-learnings.md" ] && mv "$TARGET_DIR/proposed-learnings.md" "$TARGET_DIR/framework/"
   [ -f "$TARGET_DIR/CHANGELOG.md" ] && mv "$TARGET_DIR/CHANGELOG.md" "$TARGET_DIR/framework/CHANGELOG.md"
   # 根目录 README.md 原是 template landing（=framework/README.md），移走留出干净根目录

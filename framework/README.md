@@ -92,10 +92,6 @@ cd my-new-project && bash bootstrap.sh
 
 ---
 
-> **历史说明：** 早期版本曾命名为 "Cowork + Harness"（Cowork = Claude Desktop 作为 Planner），v0.7.0 改名为 Triad Workflow 以更准确反映三角色协作的本质。部分文件名（`harness-rules.md` 等）保留历史名以维持向后兼容。
-
----
-
 ## 框架由什么组成
 
 ```

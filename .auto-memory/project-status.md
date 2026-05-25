@@ -5,7 +5,7 @@ type: project
 ---
 ## 🚧 BL-071-harness-cleanup BUILDING (0/10, fix_rounds=0) — v0.9.23 framework sediment + 12 决策 lock 全面重组
 - A0 audit ✓ (docs/test-reports/BL-071-harness-audit-2026-05-25.md @ 8aa4ccd, 426 LOC 深读 + 12 决策点)
-- A1 lock ✓ (5/25 3 批 12 决策 D1-D12 全 ack: D1/D2 保原名 banner + 同步 / D3 cowork 全清 / D4 planner.md 拆 3 文件 / D5 evaluator.md topic 重组 / D6 scope tag / D7 inline-merge / D8 sediment workflow header / D9 3 层入口 banner / D10 case 子目录 / D11 全做 5-day / D12 fix_rounds 计数 入 workflow)
+- A1 lock ✓ (5/25 3 批 12 决策 D1-D12 全 ack: D1/D2 保原名 banner + 同步 / D3 死文档全清 / D4 planner.md 拆 3 文件 / D5 evaluator.md topic 重组 / D6 scope tag / D7 inline-merge / D8 sediment workflow header / D9 3 层入口 banner / D10 case 子目录 / D11 全做 5-day / D12 fix_rounds 计数 入 workflow)
 - F001-F010 pending (F001-F002 cleanup / F003-F004 重组 / F005-F007 scope+subdir+规则正式化 / F008 31 条 sediment 写入 14h 核心 / F009 收尾 / F010 Reviewer Codex)
 - 31 条 sediment: v0.9.22 archive 13 + BL-069 user-acked 3 + BL-070 user-acked 12 + audit §5 缺失 3
 - 0 行业务代码改动 (framework + .auto-memory + harness-rules + docs/CHANGELOG only)

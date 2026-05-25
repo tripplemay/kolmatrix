@@ -21,7 +21,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "`git rm framework/cowork-constraint-design.md`（整文件 90 LOC 删除）",
       "改 `framework/bootstrap.sh` line 100：删除 cowork-constraint-design.md 防御性 mv 整行",
