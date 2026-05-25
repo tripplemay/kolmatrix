@@ -46,9 +46,15 @@ L1 全绿（lint / typecheck / vitest / playwright fidelity / audit script）不
 
 ## 新结构索引（BL-071 F004 D5 lock，2026-05-25）
 
-evaluator.md 432 LOC 按 topic 重组为：
+evaluator.md 按 topic 重组为：
 - §1-§9 核心 workflow（编号撞车修复）
 - §10 L1 验收前置：prisma generate / .nvmrc / lint warnings 矩阵
-- §11 L2 验收手段：fire-and-forget audit / E2E suite / SQL RLS / 手动角色探针 / 字体子集 spot check
+- §11 L2 验收手段：fire-and-forget audit / E2E suite / SQL RLS / 手动角色探针 / 字体子集 spot check / **§11 含 staging chaos test flag + runbook（BL-069 #15）**
 - §12 验收口径：SHA 对齐 chore-only 容许 / Smoke checklist 文本陈旧处理 / 首轮 PASS 硬条件
-- §13 测试设计（占位 — F008 sediment 写入 v0.9.22 #2 量化 + #12 mock infeasible + BL-070 #21 server-action mock 不可用）
+- §13 测试设计（v0.9.22 + v0.9.23 inline-merge 后实际内容）：
+  - §13.1 量化 criterion（v0.9.22 #2）
+  - §13.2 mock 不可用三件套（always-skip + unit + staging dogfood）— v0.9.22 #12 + BL-070 #21 合并段
+  - §13.3 staging chaos flag runbook（BL-069 #15）
+
+**何时跳长版：** verifying / fixing 用例设计时，凡涉及 staging chaos / mock 不可用 / 量化 criterion → 必须 `Read framework/harness/evaluator.md §11+§13`；短摘要不替代。
+**T2 入口同步：** `.auto-memory/MEMORY.md` T2 已加 `framework/harness/evaluator.md` 长版条目（BL-071 retroactive memory-layer 闭环 5/26）。

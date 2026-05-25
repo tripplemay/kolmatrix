@@ -63,3 +63,21 @@ next-intl `{x}` 占位符两套约定不可混：
 - 上游路由保留 stale ids（如 BL-064 `/campaigns/abc-123` 用于 redirect E2E），下游 page Prisma findFirst 前必须 UUID guard
 
 CI 多轮自修属预期（BL-065-F006 3 轮才全绿）；single atomic commit 优于多 sub-commit。完整：`framework/harness/generator.md §11`（BL-071 F007 编号修复后位置）。
+
+## v0.9.22 + v0.9.23 长版索引（BL-071 F008 inline-merge 后 13 段新沉淀）
+
+短摘要不展开，按触发条件跳读 `framework/harness/generator.md` 长版对应 §：
+
+| 长版 § | 主题 | 触发条件 | 来源 |
+|---|---|---|---|
+| §11-F | UUID guard before 删显式子路由 | 删 page.tsx 显式子路由 + 上游有 [id] 动态路由 | BL-070 #17 |
+| §11-G | notFound() + next-intl HTTP status 不可靠 | 写"路由废弃后 404"类 e2e assertion | BL-070 #18 |
+| §11-H | i18n ns 删前 caller-grep | 删 messages/*.json deprecated namespace | BL-070 #19 |
+| §11-I | lazy boundary fidelity test 同步 | 引入 next/dynamic lazy boundary | BL-070 #28 |
+| §12（3 段）| audit 起草 + LLM fix-round 工具链（MCP trace / webpack typecheck）| 起草 audit script / 排查 LLM 输出 | v0.9.22 #3 #8 #9 |
+| §13 | InMemoryJobQueue + fire-and-forget + mount self-heal | 写后台任务 / MVP 阶段队列基础设施 | v0.9.22 #5 |
+| §14（2 段）| 编译时约束 / migration 工程化（`'use server'` + ROLLBACK skeleton）| 加 `'use server'` 文件 / `prisma migrate` 时 | BL-070 #22 #23 |
+| §15（2 段）| Perf / image / Suspense 落地（next/image unoptimized + Suspense skeleton 像素镜像）| 用 next/image / Suspense fallback / chunk-split | v0.9.23 #27 #29+#30 合并 |
+
+**何时跳长版：** 任务命中上表任一"触发条件"列必须 `Read framework/harness/generator.md` 对应 § 全文；短摘要不替代。
+**T2 入口同步：** `.auto-memory/MEMORY.md` T2 已加 `framework/harness/generator.md` 长版条目（BL-071 retroactive memory-layer 闭环 5/26）。

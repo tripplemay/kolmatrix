@@ -153,7 +153,16 @@ git push origin main
 | `verifying` / `reverifying` | evaluator |
 
 ### 第三步：读取对应角色文件
-根据第二步的判断结果加载 planner.md / generator.md / evaluator.md 并严格执行。
+
+**两层加载（T1 短摘要必读 + T2 长版按触发条件）：**
+
+1. **T1 短摘要（必读起点）：** `.auto-memory/role-context/{当前角色}.md`（≤50 行精炼，含"长版索引"指引）
+2. **T2 长版规范（任务命中触发条件时跳读）：** `framework/harness/` 下对应角色文件：
+   - Planner → `planner-workflow.md`（启动/流转/done 收尾）+ `planner-arbitration.md`（P1-P5 裁决/越界界定）+ `planner-checklists.md`（铁律矩阵/spec 起草 checklist）三个文件，按当前任务类型选择（BL-071 F003 D4 拆分后入口结构）
+   - Generator → `framework/harness/generator.md`（586 行含 v0.9.22 + v0.9.23 inline-merge 13 段新沉淀 §10-§15）
+   - Evaluator → `framework/harness/evaluator.md`（按 topic 重组后 §10 L1 前置 / §11 L2 手段 / §12 验收口径 / §13 测试设计）
+
+并严格执行。**T1 短摘要末尾「长版索引」段 + `.auto-memory/MEMORY.md` T2 入口** 列出"任务命中哪些触发条件时必须跳长版"，不得仅凭短摘要开工。
 
 ### 第四步：完成后更新 progress.json
 每个阶段结束后必须更新 progress.json 中的 status 字段，再结束会话。
