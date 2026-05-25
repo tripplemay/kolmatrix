@@ -4,9 +4,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ✅ BL-071-harness-cleanup BUILDING-DONE (9/10, fix_rounds=0, awaiting Reviewer F010) — v0.9.23 framework sediment + 12 决策 lock 全面重组
-- F001-F009 全部 completed by Generator Kimi（5/25 single session）— A0+A1+B+C+D 完成；F010 待 Codex Reviewer L1+L2 抽样验证 + signoff
-- 11 项结构变更全落地（D1-D12）+ 编号修 4 处 + cowork 清理 3 处 + 31 条 sediment inline-merge ~693 LOC 新内容 + 0 chronological-append
+## ⚠️ BL-071-harness-cleanup VERIFYING-FAIL (7/10, fix_rounds=0, awaiting Generator fix) — 首轮 Reviewer 验收打回
+- Codex Reviewer 5/25 首轮 F010 验收结论 FAIL：F001/F004-F009 PASS；F002/F003 退回 pending；F010 待复验
+- blocker #1：`.auto-memory/project-status.md` 仍含 `cowork` 活引用，未满足 F002 严格 grep 口径
+- blocker #2：`.auto-memory/role-context/planner.md` 与 `framework/harness/planner-{workflow,arbitration,checklists}.md` 仍含旧 `framework/harness/planner.md` 字面路径，未满足 F003 活规则 cross-ref 迁移口径
+- 关联报告：`docs/test-reports/BL-071-verifying-2026-05-25.md`
+- 其余已通过：bootstrap.sh temp bootstrap / JSON valid / checklists subdir / evaluator §13 / generator Suspense 合并段 / proposed-learnings header / CHANGELOG↔archive
 - 关联：framework/CHANGELOG.md v0.9.23 段 + framework/archive/proposed-learnings-archive-v0.9.23.md（31 条全文 + 11 结构变更 detailed before/after）
 - 0 行业务代码改动（framework + .auto-memory + harness-rules + docs/CHANGELOG only）
 - git tag bl071-before-{planner,evaluator}-restructure 留 rollback 锚点
