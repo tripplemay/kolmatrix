@@ -26,7 +26,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { DashboardContent } from "@/features/dashboard/DashboardContent";
+
+// BL-070-F009 — DashboardContent (KPI cards / workflow / activity / ROI
+// charts) is the heaviest client transitive on /insight; loading it via
+// `await import()` inside the dashboard tab branch keeps the chunk out of
+// /insight?tab=reports / ?tab=analytics initial JS. Default-tab visits
+// (dashboard) still SSR the content but the chunk is now per-route.
 
 import { InsightTabs, pickInsightTab } from "./InsightTabs";
 
@@ -62,15 +67,20 @@ export default async function InsightPage({ params, searchParams }: Props) {
 
       <InsightTabs locale={locale} activeTab={tab} />
 
-      {tab === "dashboard" ? (
-        <DashboardContent locale={locale} />
-      ) : tab === "reports" ? (
-        <ReportsPanel locale={locale} />
-      ) : (
-        <AnalyticsPanel />
-      )}
+      {tab === "dashboard"
+        ? await renderDashboardTab(locale)
+        : tab === "reports"
+          ? <ReportsPanel locale={locale} />
+          : <AnalyticsPanel />}
     </div>
   );
+}
+
+async function renderDashboardTab(locale: string) {
+  const { DashboardContent } = await import(
+    "@/features/dashboard/DashboardContent"
+  );
+  return <DashboardContent locale={locale} />;
 }
 
 async function ReportsPanel({ locale }: { locale: string }) {

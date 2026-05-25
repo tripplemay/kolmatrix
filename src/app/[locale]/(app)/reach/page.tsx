@@ -9,6 +9,7 @@
  */
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 import { auth } from "@/auth";
 import {
@@ -18,10 +19,14 @@ import {
   runSendingPerformance30d,
   runTopTemplates,
 } from "@/lib/email/analytics";
+import type { OutreachTemplateOption } from "@/lib/email/composer-data";
 import { loadOutreachComposerData } from "@/lib/email/composer-data";
 
 import { DomainHealthCard } from "./DomainHealthCard";
-import { OutreachComposer } from "./OutreachComposer";
+// BL-070-F009 — OutreachComposer (38.9KB client bundle) gated behind
+// next/dynamic({ssr:false}) so /reach initial JS doesn't ship the
+// composer chunk on first paint. Skeleton matches resting height for CLS.
+import { OutreachComposerLazy } from "./OutreachComposerLazy";
 import { OutreachFooter } from "./OutreachFooter";
 import { OutreachQuickStats } from "./OutreachQuickStats";
 import { OutreachTabs } from "./OutreachTabs";
@@ -62,16 +67,14 @@ export default async function OutreachPage({ params, searchParams }: Props) {
 
   const composerLocale: "en" | "zh" = locale === "zh" ? "zh" : "en";
 
-  const [stats, daily, topTemplates, recentReplies, recentlySent, composerData] = await Promise.all(
-    [
-      runEmailQuickStats(tenantId),
-      runSendingPerformance30d(tenantId),
-      runTopTemplates(tenantId, 3),
-      runRecentReplies(tenantId, 3),
-      runRecentlySent(tenantId, 10),
-      loadOutreachComposerData(tenantId, campaignId, composerLocale),
-    ]
-  );
+  // BL-070-F011 — runEmailQuickStats + loadOutreachComposerData stay on the
+  // LCP critical path (KPI strip + composer body sit above the fold).
+  // SendingPerformanceChart / TopTemplatesCard / RecentRepliesCard /
+  // RecentlySentTable move into Suspense-streamed sub-trees below.
+  const [stats, composerData] = await Promise.all([
+    runEmailQuickStats(tenantId),
+    loadOutreachComposerData(tenantId, campaignId, composerLocale),
+  ]);
 
   const t = await getTranslations("outreach");
   const tComposer = await getTranslations("outreach.composer");
@@ -165,7 +168,7 @@ export default async function OutreachPage({ params, searchParams }: Props) {
 
       <OutreachQuickStats stats={stats} />
 
-      <OutreachComposer
+      <OutreachComposerLazy
         key={campaignId ?? "no-campaign"}
         data={composerData}
         activeCampaignId={campaignId}
@@ -174,17 +177,93 @@ export default async function OutreachPage({ params, searchParams }: Props) {
         labels={composerLabels}
       />
 
-      <SendingPerformanceChart daily={daily} />
+      <Suspense fallback={<SendingPerformanceSkeleton />}>
+        <SendingPerformanceAsync tenantId={tenantId} />
+      </Suspense>
 
       <section className="grid grid-cols-1 gap-6 md:grid-cols-3" data-testid="outreach-bottom-row">
-        <TopTemplatesCard rows={topTemplates} fallbackTemplates={composerData.templates} />
-        <RecentRepliesCard rows={recentReplies} />
+        <Suspense fallback={<BottomCardSkeleton testid="top-templates-skeleton" />}>
+          <TopTemplatesAsync
+            tenantId={tenantId}
+            fallbackTemplates={composerData.templates}
+          />
+        </Suspense>
+        <Suspense fallback={<BottomCardSkeleton testid="recent-replies-skeleton" />}>
+          <RecentRepliesAsync tenantId={tenantId} />
+        </Suspense>
         <DomainHealthCard />
       </section>
 
-      <RecentlySentTable rows={recentlySent} />
+      <Suspense fallback={<RecentlySentSkeleton />}>
+        <RecentlySentAsync tenantId={tenantId} />
+      </Suspense>
 
       <OutreachFooter dailyLimit={5000} sentToday={stats.sentToday} />
     </div>
+  );
+}
+
+/**
+ * BL-070-F011 — Suspense-streamed sub-surfaces.
+ *
+ * runSendingPerformance30d / runTopTemplates / runRecentReplies /
+ * runRecentlySent are deferred — none of them sit above the fold or
+ * influence the LCP element. Resolving them inside async children lets
+ * the composer body flush first while skeletons hold the layout slots.
+ */
+
+async function SendingPerformanceAsync({ tenantId }: { tenantId: string }) {
+  const daily = await runSendingPerformance30d(tenantId);
+  return <SendingPerformanceChart daily={daily} />;
+}
+
+function SendingPerformanceSkeleton() {
+  return (
+    <div
+      className="glass-panel min-h-[260px] w-full animate-pulse rounded-2xl border border-on-surface/5"
+      data-testid="outreach-sending-performance-skeleton"
+      aria-hidden
+    />
+  );
+}
+
+async function TopTemplatesAsync({
+  tenantId,
+  fallbackTemplates,
+}: {
+  tenantId: string;
+  fallbackTemplates: OutreachTemplateOption[];
+}) {
+  const rows = await runTopTemplates(tenantId, 3);
+  return <TopTemplatesCard rows={rows} fallbackTemplates={fallbackTemplates} />;
+}
+
+async function RecentRepliesAsync({ tenantId }: { tenantId: string }) {
+  const rows = await runRecentReplies(tenantId, 3);
+  return <RecentRepliesCard rows={rows} />;
+}
+
+function BottomCardSkeleton({ testid }: { testid: string }) {
+  return (
+    <div
+      className="glass-panel min-h-[200px] animate-pulse rounded-2xl border border-on-surface/5"
+      data-testid={`outreach-${testid}`}
+      aria-hidden
+    />
+  );
+}
+
+async function RecentlySentAsync({ tenantId }: { tenantId: string }) {
+  const rows = await runRecentlySent(tenantId, 10);
+  return <RecentlySentTable rows={rows} />;
+}
+
+function RecentlySentSkeleton() {
+  return (
+    <div
+      className="glass-panel min-h-[320px] w-full animate-pulse rounded-2xl border border-on-surface/5"
+      data-testid="outreach-recently-sent-skeleton"
+      aria-hidden
+    />
   );
 }

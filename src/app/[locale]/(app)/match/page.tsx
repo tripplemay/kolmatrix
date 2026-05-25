@@ -41,6 +41,7 @@
  */
 import { getFormatter, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 import Link from "next/link";
 
@@ -53,12 +54,18 @@ import { withTenant } from "@/lib/db";
 import { parseFilters, serializeFilters } from "@/lib/kol/filters";
 import { cn } from "@/lib/utils";
 
-import { AiSuggestionsSidebar } from "./AiSuggestionsSidebar";
 import { MatchActiveFilters } from "./MatchActiveFilters";
 import { MatchFilterSidebar } from "./MatchFilterSidebar";
 import { MatchKolCard } from "./MatchKolCard";
-import { MatchKolTable } from "./MatchKolTable";
-import { MatchRefineBar } from "./MatchRefineBar";
+// BL-070-F009 — MatchKolTable + MatchRefineBar are client components; gating
+// them behind next/dynamic({ssr:false}) chunks the table-view bundle (+
+// transitive AddToCampaignDialog/ConfirmDeleteDialog) and the refine bar so
+// /match initial JS doesn't ship either on first paint. AiSuggestionsSidebar
+// is server but its transitive AiSuggestionsClient is heavy — gating with a
+// server-side dynamic import() splits the AI sidebar chunk so the no-
+// campaign /match path never fetches it.
+import { MatchKolTableLazy } from "./MatchKolTableLazy";
+import { MatchRefineBarLazy } from "./MatchRefineBarLazy";
 import { MatchSearchBar } from "./MatchSearchBar";
 import { MatchSummaryBar } from "./MatchSummaryBar";
 import { MatchTableSearch } from "./MatchTableSearch";
@@ -113,17 +120,13 @@ export default async function MatchPage({ params, searchParams }: Props) {
   if (!tenantId) redirect("/login");
   const userId = session.user.id;
 
-  const [searchResult, stats, savedSearches, campaign] = await Promise.all([
+  // BL-070-F011 — runMatchSearch (main table) + the campaign lookup
+  // (sidebar mount judgment) stay on the LCP critical path. loadDatabaseStats
+  // (KPI strip) and savedSearches (header dropdown) move into Suspense-
+  // streamed sub-trees below so the page can flush the main table without
+  // waiting on the auxiliary queries.
+  const [searchResult, campaign] = await Promise.all([
     runMatchSearch(tenantId, filters),
-    loadDatabaseStats(tenantId),
-    withTenant(tenantId, (tx) =>
-      tx.savedSearch.findMany({
-        where: { userId },
-        orderBy: { createdAt: "desc" },
-        take: 20,
-        select: { id: true, name: true, filters: true, createdAt: true },
-      }),
-    ),
     // BL-065-F005 — tenant-scoped campaign lookup for the AI sidebar.
     // Returns null when the URL's campaignId is stale, malformed, or
     // belongs to another tenant (RLS strips it). In that case the
@@ -147,7 +150,6 @@ export default async function MatchPage({ params, searchParams }: Props) {
   const tEmpty = await getTranslations("match.emptyState");
   const tPager = await getTranslations("match.pagination");
   const tStatus = await getTranslations("relationshipStatus");
-  const tSavedSearch = await getTranslations("match.savedSearch");
   const tAdminEntry = await getTranslations("match.adminEntry");
   // BL-068-F004 — reuse the campaigns.detail.refine.* bundle that F003
   // added; no new /match-scoped i18n keys per spec §F004 (RefineInputBar
@@ -257,31 +259,21 @@ export default async function MatchPage({ params, searchParams }: Props) {
               {tAdminEntry("csvImport")}
             </Link>
           ) : null}
-          <SaveSearchControls
-            basePath={basePath}
-            currentFilters={filters}
-            initialItems={savedSearches.map((r) => ({
-              id: r.id,
-              name: r.name,
-              filters: r.filters as Record<string, unknown>,
-              createdAt: r.createdAt.toISOString(),
-            }))}
-            labels={{
-              saveSearch: tSavedSearch("saveSearch"),
-              savePrompt: tSavedSearch("saveSearchPrompt"),
-              saveConfirm: tSavedSearch("saveSearchSaved"),
-              mySearches: tSavedSearch("mySearches", {
-                count: savedSearches.length,
-              }),
-              loadPlaceholder: tSavedSearch("loadSearchPlaceholder"),
-              saveFailed: tSavedSearch("saveSearchFailed"),
-            }}
-          />
+          <Suspense fallback={<SaveSearchControlsSkeleton />}>
+            <SavedSearchAsync
+              tenantId={tenantId}
+              userId={userId}
+              basePath={basePath}
+              filters={filters}
+            />
+          </Suspense>
           {/* BL-066-F005: AddKolDialog removed (manual add path retired). */}
         </div>
       </header>
 
-      <QuickStats stats={stats} />
+      <Suspense fallback={<QuickStatsSkeleton />}>
+        <QuickStatsAsync tenantId={tenantId} />
+      </Suspense>
 
       <MatchSearchBar
         basePath={basePath}
@@ -323,7 +315,7 @@ export default async function MatchPage({ params, searchParams }: Props) {
               </p>
             </div>
           ) : view === "table" ? (
-            <MatchKolTable
+            <MatchKolTableLazy
               rows={searchResult.items}
               locale={locale}
               rowFormatted={rowFormatted}
@@ -365,33 +357,169 @@ export default async function MatchPage({ params, searchParams }: Props) {
         </section>
 
         {showAiSidebar && campaign ? (
-          <div className="flex flex-col gap-4">
-            <MatchRefineBar
-              campaignId={campaign.id}
-              productId={campaign.productId ?? null}
-              tenantId={tenantId}
-              locale={locale}
-              labels={{
-                inputPlaceholder: tRefine("inputPlaceholder"),
-                applyButton: tRefine("applyButton"),
-                resetButton: tRefine("resetButton"),
-                loading: tRefine("loading"),
-                feedbackPrefix: tRefine("feedbackPrefix"),
-                unparsableToast: tRefine("unparsableToast"),
-                capExhaustedToast: tRefine("capExhaustedToast"),
-                networkError: tRefine("networkError"),
-                permutationInvalid: tRefine("permutationInvalid"),
-              }}
-            />
-            <AiSuggestionsSidebar
-              campaignId={campaign.id}
-              tenantId={tenantId}
-              locale={locale}
-              campaignName={campaign.name}
-            />
-          </div>
+          // BL-070-F009 — AiSuggestionsSidebar is a server component but its
+          // AiSuggestionsClient transitive is a heavy client bundle; the
+          // server-side dynamic import() below code-splits it so non-
+          // campaign /match never fetches the chunk.
+          <AiSidebarColumn
+            campaignId={campaign.id}
+            productId={campaign.productId ?? null}
+            campaignName={campaign.name}
+            tenantId={tenantId}
+            locale={locale}
+            refineLabels={{
+              inputPlaceholder: tRefine("inputPlaceholder"),
+              applyButton: tRefine("applyButton"),
+              resetButton: tRefine("resetButton"),
+              loading: tRefine("loading"),
+              feedbackPrefix: tRefine("feedbackPrefix"),
+              unparsableToast: tRefine("unparsableToast"),
+              capExhaustedToast: tRefine("capExhaustedToast"),
+              networkError: tRefine("networkError"),
+              permutationInvalid: tRefine("permutationInvalid"),
+            }}
+          />
         ) : null}
       </div>
     </div>
+  );
+}
+
+interface AiSidebarColumnProps {
+  campaignId: string;
+  productId: string | null;
+  campaignName: string;
+  tenantId: string;
+  locale: string;
+  refineLabels: {
+    inputPlaceholder: string;
+    applyButton: string;
+    resetButton: string;
+    loading: string;
+    feedbackPrefix: string;
+    unparsableToast: string;
+    capExhaustedToast: string;
+    networkError: string;
+    permutationInvalid: string;
+  };
+}
+
+/**
+ * BL-070-F009 — server-side dynamic import() boundary for the AI sidebar.
+ *
+ * MatchRefineBar is a 'use client' bundle; gating it through the
+ * MatchRefineBarLazy wrapper keeps the refine code out of /match initial
+ * JS. AiSuggestionsSidebar itself is a server component but pulls in
+ * AiSuggestionsClient transitively — the server `await import()` here
+ * tells webpack to split it into a per-route chunk loaded only when
+ * `?campaignId=` resolves.
+ */
+async function AiSidebarColumn({
+  campaignId,
+  productId,
+  campaignName,
+  tenantId,
+  locale,
+  refineLabels,
+}: AiSidebarColumnProps) {
+  const { AiSuggestionsSidebar } = await import("./AiSuggestionsSidebar");
+  return (
+    <div className="flex flex-col gap-4">
+      <MatchRefineBarLazy
+        campaignId={campaignId}
+        productId={productId}
+        tenantId={tenantId}
+        locale={locale}
+        labels={refineLabels}
+      />
+      <AiSuggestionsSidebar
+        campaignId={campaignId}
+        tenantId={tenantId}
+        locale={locale}
+        campaignName={campaignName}
+      />
+    </div>
+  );
+}
+
+/**
+ * BL-070-F011 — Suspense-streamed auxiliary surfaces.
+ *
+ * loadDatabaseStats (KPI strip) and the savedSearch lookup (header
+ * dropdown) sit off the LCP critical path; resolving them inside async
+ * children lets the main table flush first while the fallback skeletons
+ * hold the layout slot.
+ */
+
+async function QuickStatsAsync({ tenantId }: { tenantId: string }) {
+  const stats = await loadDatabaseStats(tenantId);
+  return <QuickStats stats={stats} />;
+}
+
+function QuickStatsSkeleton() {
+  return (
+    <div
+      className="glass-panel flex h-[88px] w-full animate-pulse items-center justify-between gap-4 rounded-2xl border border-on-surface/5 px-6"
+      data-testid="match-quick-stats-skeleton"
+      aria-hidden
+    />
+  );
+}
+
+interface SavedSearchAsyncProps {
+  tenantId: string;
+  userId: string;
+  basePath: string;
+  filters: Parameters<typeof serializeFilters>[0];
+}
+
+async function SavedSearchAsync({
+  tenantId,
+  userId,
+  basePath,
+  filters,
+}: SavedSearchAsyncProps) {
+  const [savedSearches, tSavedSearch] = await Promise.all([
+    withTenant(tenantId, (tx) =>
+      tx.savedSearch.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+        select: { id: true, name: true, filters: true, createdAt: true },
+      }),
+    ),
+    getTranslations("match.savedSearch"),
+  ]);
+  return (
+    <SaveSearchControls
+      basePath={basePath}
+      currentFilters={filters}
+      initialItems={savedSearches.map((r) => ({
+        id: r.id,
+        name: r.name,
+        filters: r.filters as Record<string, unknown>,
+        createdAt: r.createdAt.toISOString(),
+      }))}
+      labels={{
+        saveSearch: tSavedSearch("saveSearch"),
+        savePrompt: tSavedSearch("saveSearchPrompt"),
+        saveConfirm: tSavedSearch("saveSearchSaved"),
+        mySearches: tSavedSearch("mySearches", {
+          count: savedSearches.length,
+        }),
+        loadPlaceholder: tSavedSearch("loadSearchPlaceholder"),
+        saveFailed: tSavedSearch("saveSearchFailed"),
+      }}
+    />
+  );
+}
+
+function SaveSearchControlsSkeleton() {
+  return (
+    <div
+      className="glass-panel h-9 w-44 animate-pulse rounded-lg border border-on-surface/5"
+      data-testid="match-saved-search-skeleton"
+      aria-hidden
+    />
   );
 }

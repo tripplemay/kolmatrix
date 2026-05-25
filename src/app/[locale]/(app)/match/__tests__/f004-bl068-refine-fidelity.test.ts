@@ -20,23 +20,30 @@ function read(relative: string): string {
 }
 
 describe("/match RefineInputBar — F004 BL-068 wiring", () => {
-  it("page.tsx imports MatchRefineBar from the local module", () => {
+  it("page.tsx imports MatchRefineBar via the F009 lazy wrapper", () => {
     const page = read("page.tsx");
-    expect(page).toMatch(/import \{ MatchRefineBar \} from "\.\/MatchRefineBar";/);
+    // BL-070-F009 — MatchRefineBar is now lazy-loaded via
+    // MatchRefineBarLazy.tsx (client wrapper + next/dynamic ssr:false).
+    // The wrapper file itself still imports the real component.
+    expect(page).toMatch(
+      /import \{ MatchRefineBarLazy \} from "\.\/MatchRefineBarLazy";/,
+    );
+    const wrapper = read("MatchRefineBarLazy.tsx");
+    expect(wrapper).toMatch(/import\(.*\/MatchRefineBar.*\)/);
+    expect(wrapper).toMatch(/m\.MatchRefineBar/);
   });
 
-  it("page.tsx mounts MatchRefineBar inside the showAiSidebar branch (so non-?campaignId mode does not render it)", () => {
+  it("page.tsx mounts MatchRefineBar(Lazy) inside the showAiSidebar branch (so non-?campaignId mode does not render it)", () => {
     const page = read("page.tsx");
     // Mount is gated by `showAiSidebar && campaign` — the same gate the
-    // AiSuggestionsSidebar uses. The renderer below appears once and
-    // includes both components inside a single conditional block.
-    expect(page).toMatch(/<MatchRefineBar\b/);
+    // AiSuggestionsSidebar uses. F009 routed the two through the
+    // AiSidebarColumn helper but the gate + relative order are preserved.
+    expect(page).toMatch(/<MatchRefineBarLazy\b/);
     expect(page).toMatch(/showAiSidebar && campaign \?/);
-    // The mount must precede AiSuggestionsSidebar within the conditional
-    // block (refine bar on top per spec §F004).
-    const conditionalBlock = page.split(/showAiSidebar && campaign \?/)[1] ?? "";
-    const refineIdx = conditionalBlock.indexOf("<MatchRefineBar");
-    const sidebarIdx = conditionalBlock.indexOf("<AiSuggestionsSidebar");
+    // The mount must precede AiSuggestionsSidebar in the AiSidebarColumn
+    // helper (refine bar on top per spec §F004).
+    const refineIdx = page.indexOf("<MatchRefineBarLazy");
+    const sidebarIdx = page.indexOf("<AiSuggestionsSidebar");
     expect(refineIdx).toBeGreaterThanOrEqual(0);
     expect(sidebarIdx).toBeGreaterThan(refineIdx);
   });

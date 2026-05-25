@@ -24,8 +24,12 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { withTenant } from "@/lib/db";
 
-import { BriefPageClient } from "./BriefPageClient";
-import { ProductListPanel } from "./ProductListPanel";
+// BL-070-F009 — BriefPageClient (campaign form bundle) and ProductListPanel
+// (products CRUD bundle, transitive ProductsClient/ProductCard/ProductModal
+// client chunks) are loaded via tab-conditional `await import()` so a
+// /brief?tab=campaign visit never fetches the products chunk and vice
+// versa. Webpack splits each branch into its own chunk; the default tab
+// (campaign) still ships only its required JS.
 
 export const metadata = { title: "Brief — KOLMatrix" };
 
@@ -115,62 +119,99 @@ export default async function BriefPage({ params, searchParams }: Props) {
       </nav>
 
       {tab === "products" ? (
-        <ProductListPanel initialEditingProductId={deepLinkProductId} />
+        await renderProductsTab(deepLinkProductId)
       ) : (
-        <BriefPageClient
-          locale={locale}
-          products={products}
-          aiLabels={{
-            inputPlaceholder: tAi("placeholder"),
-            generateButton: tAi("generateButton"),
-            loading: tAi("loading"),
-            feedbackPrefix: tAi("feedbackPrefix"),
-            unparsableToast: tAi("unparsableToast"),
-            malformedToast: tAi("malformedToast"),
-            productCrossTenantToast: tAi("productCrossTenantToast"),
-            capExhaustedToast: tAi("capExhaustedToast"),
-            networkError: tAi("networkError"),
-          }}
-          formLabels={{
-            name: tForm("name"),
-            nameHint: tForm("nameHint"),
-            product: tForm("productSelectorLabel"),
-            productSelectorLabel: tForm("productSelectorLabel"),
-            manageProductsLink: tForm("manageProductsLink"),
-            noProducts: tForm("noProducts"),
-            budgetAmount: tForm("budgetAmount"),
-            budgetCurrency: tForm("budgetCurrency"),
-            budgetHint: tForm("budgetHint"),
-            startDate: tForm("startDate"),
-            endDate: tForm("endDate"),
-            markets: tForm("markets"),
-            targetAudience: tForm("targetAudience"),
-            targetAudienceHint: tForm("targetAudienceHint"),
-            categories: tForm("categories"),
-            categoriesHint: tForm("categoriesHint"),
-            submit: tForm("submit"),
-            submitting: tForm("submitting"),
-            aiDiffHintPrefix: tForm("aiDiffHintPrefix"),
-          }}
-          marketLabels={{
-            global: tMarkets("global"),
-            us: tMarkets("us"),
-            eu: tMarkets("eu"),
-            jp: tMarkets("jp"),
-            kr: tMarkets("kr"),
-            sea: tMarkets("sea"),
-            cn: tMarkets("cn"),
-            latam: tMarkets("latam"),
-          }}
-          submitErrorLabels={{
-            unauthorized: tSubmit("unauthorized"),
-            validationFailed: tSubmit("validationFailed"),
-            productNotFound: tSubmit("productNotFound"),
-            internalError: tSubmit("internalError"),
-          }}
-        />
+        await renderCampaignTab({
+          locale,
+          products,
+          tAi,
+          tForm,
+          tMarkets,
+          tSubmit,
+        })
       )}
     </div>
+  );
+}
+
+type Translator = Awaited<ReturnType<typeof getTranslations>>;
+
+async function renderProductsTab(deepLinkProductId: string | undefined) {
+  const { ProductListPanel } = await import("./ProductListPanel");
+  return <ProductListPanel initialEditingProductId={deepLinkProductId} />;
+}
+
+interface CampaignTabArgs {
+  locale: string;
+  products: { id: string; name: string; category: string }[];
+  tAi: Translator;
+  tForm: Translator;
+  tMarkets: Translator;
+  tSubmit: Translator;
+}
+
+async function renderCampaignTab({
+  locale,
+  products,
+  tAi,
+  tForm,
+  tMarkets,
+  tSubmit,
+}: CampaignTabArgs) {
+  const { BriefPageClient } = await import("./BriefPageClient");
+  return (
+    <BriefPageClient
+      locale={locale}
+      products={products}
+      aiLabels={{
+        inputPlaceholder: tAi("placeholder"),
+        generateButton: tAi("generateButton"),
+        loading: tAi("loading"),
+        feedbackPrefix: tAi("feedbackPrefix"),
+        unparsableToast: tAi("unparsableToast"),
+        malformedToast: tAi("malformedToast"),
+        productCrossTenantToast: tAi("productCrossTenantToast"),
+        capExhaustedToast: tAi("capExhaustedToast"),
+        networkError: tAi("networkError"),
+      }}
+      formLabels={{
+        name: tForm("name"),
+        nameHint: tForm("nameHint"),
+        product: tForm("productSelectorLabel"),
+        productSelectorLabel: tForm("productSelectorLabel"),
+        manageProductsLink: tForm("manageProductsLink"),
+        noProducts: tForm("noProducts"),
+        budgetAmount: tForm("budgetAmount"),
+        budgetCurrency: tForm("budgetCurrency"),
+        budgetHint: tForm("budgetHint"),
+        startDate: tForm("startDate"),
+        endDate: tForm("endDate"),
+        markets: tForm("markets"),
+        targetAudience: tForm("targetAudience"),
+        targetAudienceHint: tForm("targetAudienceHint"),
+        categories: tForm("categories"),
+        categoriesHint: tForm("categoriesHint"),
+        submit: tForm("submit"),
+        submitting: tForm("submitting"),
+        aiDiffHintPrefix: tForm("aiDiffHintPrefix"),
+      }}
+      marketLabels={{
+        global: tMarkets("global"),
+        us: tMarkets("us"),
+        eu: tMarkets("eu"),
+        jp: tMarkets("jp"),
+        kr: tMarkets("kr"),
+        sea: tMarkets("sea"),
+        cn: tMarkets("cn"),
+        latam: tMarkets("latam"),
+      }}
+      submitErrorLabels={{
+        unauthorized: tSubmit("unauthorized"),
+        validationFailed: tSubmit("validationFailed"),
+        productNotFound: tSubmit("productNotFound"),
+        internalError: tSubmit("internalError"),
+      }}
+    />
   );
 }
 
