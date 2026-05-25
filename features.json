@@ -107,7 +107,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 5.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "tests/unit/link-target-audit.test.ts 创建: 扫 src/ 所有 .tsx/.ts 文件 href 字面 (含模板 ${locale}/...) → 抽 path prefix → 比对实际路由树 + IA_REDIRECT_RULES → 不在两者命中 fail 列 file:line; 第一版 advisory (warning)",
       "tests/unit/material-symbols-coverage.test.ts 创建: 三向断言 (1) src/ 提及 ligature ⊆ manifest (含 Pattern 6 检测) (2) manifest ⊆ woff2 glyph 表 (3) src/ ⊆ woff2 glyph 表; 用 fontkit npm pkg 读 woff2 glyph 表; 含 false-positive 排除清单与 F005 Pattern 6 同步",
