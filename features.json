@@ -85,7 +85,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/lib/kol/filters.ts 加 getDataCoverage(tx, tenantId): Promise<{ regions: number, languages: number, platforms: number, categories: number, etc. }> — 返每维度有数据的 distinct values count (非 null + 非空字符串)",
       "src/app/[locale]/(app)/match/page.tsx server-side 调用 getDataCoverage + 传 coverage prop 给 MatchFilterSidebar",
@@ -117,7 +117,7 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "L1 自动化 6 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 F005/F007 v2 (4) grep manifest 8 漏 ligature 全命中 (5) woff2 size 增 ~800B (6) messages/zh.json match.emptyState.body 存在",
       "L2 staging 抽样实测 6 项 PASS: (1) /zh/campaigns/[id] 8 icon 正确渲染 (2) /zh/brief form 与 tab nav 同宽 1600px (3) /zh/match emptyState 中文文案非字面 key (4) /zh/match filter sidebar country/language 灰显 (5) /zh/match 默认进入显示 20 KOL 卡片 (6) CI Material Symbols strict 验证拦截能力 (临时 PR 加一个 unknown icon 验 CI 红)",

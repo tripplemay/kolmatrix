@@ -1,11 +1,11 @@
 {
-  "status": "reverifying",
+  "status": "done",
   "user_goal": "BL-073-prod-hotfix — Material Symbols bare ligature + /brief 嵌套宽度 + i18n missing key + 防御升级 + filter UX 防御. 8 features ~12h ≈ 1.5 day Generator + 0.5 day Reviewer.",
   "total_features": 8,
-  "completed_features": 6,
+  "completed_features": 8,
   "fix_rounds": 2,
   "current_sprint": "BL-073-prod-hotfix",
-  "last_updated": "2026-05-26T09:50+0800",
+  "last_updated": "2026-05-26T09:58+0800",
   "reference_docs": [
     "docs/specs/BL-073-prod-hotfix-spec.md",
     "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",
@@ -33,8 +33,8 @@
     "spec": "docs/specs/BL-073-prod-hotfix-spec.md",
     "audit": "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",
     "test_cases": "docs/test-reports/BL-073-reverifying-2026-05-26.md",
-    "signoff": null,
-    "framework_reviewed": false
+    "signoff": "docs/test-reports/BL-073-signoff-2026-05-26.md",
+    "framework_reviewed": true
   },
   "role_assignments": null,
   "evaluator_feedback": null,
@@ -42,7 +42,7 @@
   "session_notes": {
     "Kimi_planner": "[2026-05-26 03:00 BJT Planner Kimi BL-073 planning done. A1 lock 3 独立批次 + 防御升级 + filter UX 防御. 8 features F001-F008 ~12h. BL-074 + BL-075 已入 backlog 排队 (depends_on BL-073 done). 5 沉淀候选并 BL-072 4 条 = 9 条入 v0.9.24 batch.]",
     "Kimi_generator": "[2026-05-26 09:50 BJT Generator Kimi — BL-073 fix-round 2 完成, 切 reverifying]\n\n## fix-round 2 处理 (Reviewer fix-round 1 复验 F007 PASS, F006 仍 FAIL)\n\nReviewer 复验观察 (docs/test-reports/BL-073-reverifying-2026-05-26.md):\n- F007 PASS ✓ (STRICT_MS_ICONS 真实拦 unknown_icon)\n- F006 FAIL: '页面上仍出现 (暂无数据) hint, 来自 region 相关 hint, 而不是 language'\n\n## 事实核查 (curl-based probe with marketer.json auth on staging)\n\n- staging marketer tenant psql 直查: 26 regions / 10 languages / 4 platforms / 35 categories / 0 monetization_statuses\n- $queryRaw 单测验证 + chunks/5963.js 反编译都确认 SQL 输出正确\n- 实际 HTML 渲染 (curl /zh/match with auth):\n  - chip-group-no-data-* 仅一处: 'chip-group-no-data-变现状态' (monetization 维度, coverage=0 触发, 正确)\n  - regions/languages/categories/platforms 都不灰显 (coverage>0 正确)\n- Reviewer 把 monetization 维度的 '(暂无数据)' 误读为 region 维度\n\n## 根因\n- testid 后缀使用了 i18n 翻译后的 label (`chip-group-no-data-${label}`)\n- label 在 zh 模式下渲染 '变现状态'/'区域' 中文 → Reviewer 无法直接 testid 区分维度, 不得不靠视觉关联猜测\n\n## 修复 commit 96c0838\n\n- ChipGroup 加 `dimensionId` prop (locale-independent stable key)\n- testid 改 `chip-group-no-data-${dimensionId ?? label}`\n- 4 个调用点都传 dimensionId: region/category/platform/monetization\n- 现 testid 列表 (staging d22d14f → 96c0838 验证): 仅 `chip-group-no-data-monetization` (正确)\n\n## L1 PASS\n- npm run lint: 0 errors / 3 warnings\n- npx tsc --noEmit: 0 error\n- npx vitest run: 186 files × 1331 tests all PASS\n\n## [staging redeployed @ 96c0838 @ 2026-05-26T09:50+0800]\n- ssh tripplezhou@34.180.93.185 完整 deploy\n- curl health git_sha=96c0838 match ✓ healthy\n- curl /zh/match HTML 验证: chip-group-no-data-monetization 唯一存在, region/language 无灰显 ✓\n\n## status fixing → reverifying + fix_rounds 1→2\n- evaluator_feedback cleared\n- Codex Reviewer 复验重点 (复用 testid 探针):\n  - chip-group-no-data-region: 应不存在 (coverage.regions=26 > 0)\n  - chip-group-no-data-monetization: 应存在 (coverage.monetization_statuses=0)\n  - match-filter-languages-no-data: 应不存在 (coverage.languages=10 > 0)\n\n## 关于 F006 acceptance 口径再确认\n- F006 是 conditional UX defense: coverage=0 时才触发灰显\n- staging marketer tenant 数据健康, regions+languages 有数据 → 不灰显是正确行为\n- monetization=0 → 灰显 + 暂无数据 hint, 是 F006 防御机制真实工作的证据\n- 单测 src/lib/kol/__tests__/data-coverage.test.ts 6 case 覆盖 coverage=0 时的逻辑\n- 真实 prod NULL 数据治理归 BL-075 (depends_on BL-073 done)\n",
-    "Reviewer": "[2026-05-26 09:36 BJT Reviewer codex — BL-073 reverifying FAIL. L1 sanity passed: lint 0 errors / 3 warnings, tsc PASS, targeted vitest 10/10 PASS. F007 confirmed fixed: temp-copy MatchSummaryBar grid_view→unknown_icon now makes tests/unit/material-symbols-coverage-unit.test.ts fail with explicit unknown_icon assertion, so STRICT_MS_ICONS interception is real. F006 still fails on staging: /zh/match default page shows 20 cards, language filter remains enabled with no '(暂无数据)' hint, while region still shows '(暂无数据)' hint. This contradicts generator handoff claim that staging marketer tenant has healthy 26 regions + 10 languages and neither dimension should grey out. Returned status reverifying→fixing, kept F006 pending, restored F007 completed, report docs/test-reports/BL-073-reverifying-2026-05-26.md.]",
+    "Reviewer": "[2026-05-26 09:58 BJT Reviewer codex — BL-073 reverifying PASS and signoff. L1 sanity passed: lint 0 errors / 3 warnings, tsc PASS, targeted vitest 10/10 PASS. F006 clarified with stable dimensionId testids: staging /zh/match shows only chip-group-no-data-monetization, while region/category/platform/language no-data hooks are absent; 20 cards render and language input stays enabled, which matches coverage>0 behavior. F007 remains PASS: unknown_icon temp-copy probe still fails strict coverage test. Wrote docs/test-reports/BL-073-signoff-2026-05-26.md, set status done, completed_features 8/8.]",
     "johnsong_planner": null,
     "johnsong_generator": null
   }
