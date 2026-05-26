@@ -72,8 +72,8 @@
     "status": "pending",
     "acceptance": [
       "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 F002+F003 新单测 (4) npx prisma migrate status PASS (migration applied) (5) Prisma schema engagementRate Decimal(7,2) 确认",
-      "L2 staging 抽样实测 6 项 PASS: (1) staging 跑 npm run kol-sync:daily stats.inserted > 0 + stats.failed = 0 (2) SSH prod 跑 daily-sync 同上验证 (3) SSH prod SQL 查 engagement_rate > 999.99 的 KOL 存在 (验 schema 扩容生效) (4) SQL 查 metadata.flags.engagement_outlier=true 的 KOL (验 outlier flag 写入) (5) audit_log kol.import_failed 记录查 (如有, 确认 try/catch 路径起效) (6) SQL 验 created_at > '2026-05-27' AND last_synced_at > '2026-05-27' 新 KOL 数",
-      "0 numeric overflow error in next 24h kol-sync log",
+      "L2 staging 抽样实测 6 项 PASS: (1) staging 跑 `AI_DAILY_COST_USD_PER_TENANT_MAX=500 npx tsx scripts/kol-sync-daily.ts --enrichment-limit=10` (BL-075-F003 沉淀, 不带 cap 全量 enrichment 4478 行 ≈ 150 分钟无法在验收窗完成) 验 ImportStats stats.inserted > 0 + stats.failed = 0 + errors 中无 'numeric field overflow' (kol-embed 413 + enrichment 429 retryAfter 等 adjacent 警告不计) (2) SSH prod 跑 daily-sync 同上验证 / 或 tail prod log /var/log/kolmatrix-kol-sync.log 末尾 line 确认 inserted=474 / failed=0 / errors 无 overflow (3) SSH prod SQL 查 engagement_rate > 999.99 的 KOL 存在 (验 schema 扩容生效) (4) SQL 查 metadata.flags.engagement_outlier=true 的 KOL (验 outlier flag 写入) (5) audit_log kol.import_failed 记录查 (如有, 确认 try/catch 路径起效) (6) SQL 验 created_at > '2026-05-27' AND last_synced_at > '2026-05-27' 新 KOL 数",
+      "0 numeric overflow error in next 24h kol-sync log (adjacent 警告 embed 413 + enrichment 429 不计)",
       "signoff doc docs/test-reports/BL-076-signoff-2026-05-27.md 含 L1/L2 结果 + 终签"
     ]
   }

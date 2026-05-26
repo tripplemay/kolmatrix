@@ -306,16 +306,28 @@ ssh tripplezhou@34.180.93.185 'cd /opt/kolmatrix && npm run kol-sync:daily 2>&1 
 5. Prisma schema engagementRate Decimal(7,2) 确认
 
 **L2 staging 抽样实测：**
-1. staging 跑 `npm run kol-sync:daily`，验 stats.inserted > 0 + stats.failed = 0
-2. SSH prod 跑 daily-sync 同上验证
-3. prod KOL 表查 engagement_rate > 999.99 的存在（验 schema 扩容生效）
-4. prod 查 metadata.flags.engagement_outlier = true 的 KOL（验 outlier flag 写入）
-5. prod audit_log 查 kol.import_failed 记录（如有，确认 try/catch 路径起效）
-6. SQL 验：`SELECT count(*) FROM kol WHERE created_at > '2026-05-27' AND last_synced_at > '2026-05-27'` 看新 KOL 数
+
+> **Fix-round 1 lock (2026-05-27): staging 跑必须带 `--enrichment-limit=10` (BL-075-F003 沉淀)**. 不带 cap 时全量 enrichment-stage 处理 staging ~4478 NULL 行 × 2.1s LLM gap ≈ 150 分钟,且会被 aigcgateway 30 RPM 全局限速反复触发 429,无法在 reviewer 验收时间窗内完成。同时若 prod daily-sync 仍在 enrichment-stage tail 跑(本批次 F004 后 prod 一次性全量 backfill 1859 行 ≈ 65 分钟),两侧抢同一 API key 配额会让 429 更严重。**正确的标准 staging 调用 (与 BL-075 signoff §"fix-round 1 blocker 已关闭" 一致):**
+>
+> ```bash
+> ssh tripplezhou@34.180.93.185 \
+>   'cd /opt/kolmatrix-staging && set -a; source .env.staging; set +a;
+>    AI_DAILY_COST_USD_PER_TENANT_MAX=500 \
+>      npx tsx scripts/kol-sync-daily.ts --enrichment-limit=10'
+> ```
+>
+> 备注: kol-embed 偶发 batch=100 → 413 (Provider returned 413) 是 pre-existing 软警告,`src/lib/embedding/kol-embed.ts` 已有 progressive halving (100→50→20→1) 自带兜底,不阻断 ImportStats acceptance。出现 413 时观察 embed-hook 是否最终 `embedded > 0` 即可;若批次最小 size=1 仍 413,记 audit doc 但不阻断 BL-076。
+
+1. staging 跑 `npx tsx scripts/kol-sync-daily.ts --enrichment-limit=10`,验 ImportStats `stats.inserted > 0` + `stats.failed = 0`(即 daily-sync 结构化日志 line 末尾 `"inserted":>0, "errors":` 中**无** `"numeric field overflow"` 字串;`kol-embed 413` / `enrichment 429 retryAfter` 等 adjacent 警告不计 fail)
+2. SSH prod 跑 daily-sync 同上验证(F004 已完成,本项可改为 tail prod log `/var/log/kolmatrix-kol-sync.log` 末尾 line 确认 `"inserted":474, "failed":0, errors` 中无 overflow 字串)
+3. prod KOL 表查 engagement_rate > 999.99 的存在(验 schema 扩容生效)
+4. prod 查 metadata.flags.engagement_outlier = true 的 KOL(验 outlier flag 写入)
+5. prod audit_log 查 kol.import_failed 记录(如有,确认 try/catch 路径起效)
+6. SQL 验:`SELECT count(*) FROM kol WHERE created_at > '2026-05-27' AND last_synced_at > '2026-05-27'` 看新 KOL 数
 
 **Acceptance（signoff doc）：**
 - [ ] L1 5 项 / L2 6 项全 PASS
-- [ ] 0 numeric overflow error in next 24h kol-sync log
+- [ ] 0 numeric overflow error in next 24h kol-sync log（adjacent 警告 embed 413 + enrichment 429 不计，已在 §F005 头注释中说明）
 - [ ] signoff doc `docs/test-reports/BL-076-signoff-2026-05-27.md`
 
 ---

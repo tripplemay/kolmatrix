@@ -4,17 +4,19 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-076-apify-numeric-overflow FIXING (4/5, fix_rounds=0) — prod hotfix 证据成立，但 staging F005 验收失败
-- 三件套 commit f718704 + state 3449ead 已在 prod 生效；Codex Reviewer 首轮 verifying FAIL，报告 `docs/test-reports/BL-076-verifying-2026-05-27.md`
-- F001 prisma migration 20260526160800 Decimal(5,2)→Decimal(7,2) + ROLLBACK clamp warning, prod prisma migrate status 应用成功
-- F002 apify-kol.ts Math.min(99999.99) clamp + outlier>100 flag, metadata.flags.engagement_outlier 写入闭环
-- F003 import.ts upsert try/catch + audit_log kol.import_failed + recursive failure guard, kol-sync-daily.ts aggregate.failed + alerts
-- L1 PASS: lint 0 errors / 3 warnings, tsc clean, npm test 188 files / 1368 tests, prisma migrate status up to date
-- Prod 只读 SQL 复核通过: `engagement_rate>999.99=15` / `outlier=true=157` / `audit_log.kol.import_failed=0` / `created_at > 2026-05-26T16:37Z = 474` / `max(engagement_rate)=9137.06`
-- F005 blocker: staging 真跑 `npm run kol-sync:daily` 时不再报 numeric overflow，但出现 repeated `kol-embed 413` + `kol_country_enrichment 429 rate_limit_exceeded`; 因此 staging acceptance `stats.inserted > 0 + stats.failed = 0` 未满足
-- F004 报告 docs/test-reports/BL-076-backfill-2026-05-27.md 含: SQL 直证 + 12 新 KOL 抽样 (IGN/Fortnite/penguinz0 等) + 15 上溢区间 KOL 抽样 + 14 天遗漏估算 + 三层防御协同分析
-- 下一步由 Generator 修 staging `kol-sync:daily` 链路稳定性，再切 `reverifying`
-- 关联: docs/specs/BL-076-apify-numeric-overflow-spec.md + BL-075 signoff §6 residual warning
+## 🚧 BL-076-apify-numeric-overflow REVERIFYING (4/5, fix_rounds=1) — Reviewer round 1 FAIL 已分析+处理, 0 行业务代码改动, 等 Reviewer 按修订 spec 重跑
+- 三件套 commit f718704 + state 3449ead 已在 prod 生效, prod fix 证据成立
+- Reviewer FAIL 报告 docs/test-reports/BL-076-verifying-2026-05-27.md (staging kol-sync:daily 413 + 429)
+- Generator fix-round 1 根因解析 (写 evaluator_feedback.generator_response): 2 个 staging issue 均为方法论 / pre-existing infra 警告, 非 BL-076 回归
+  - 429 enrichment: Reviewer 漏用 BL-075-F003 沉淀的 --enrichment-limit=10 flag (无 cap 全量 4478 行 ≈ 150 分钟) + prod daily-sync 当时还在 enrichment tail 抢同 API key 配额
+  - 413 kol-embed: kol-embed.ts 已含 progressive batch 减半兜底 (100→50→20→1), 自带 self-recover, 非阻断项
+- 用户 ack 选 Option A (重跑 staging + clarify spec, 不扩 scope)
+- 修订: docs/specs/BL-076-apify-numeric-overflow-spec.md §F005 L2 第 1 项 + 头注释明确 'staging 跑 --enrichment-limit=10' (与 BL-075 done 时一致); features.json F005 acceptance 同步; 0 行业务代码
+- Reviewer reverifying: 等 prod daily-sync enrichment tail 结束 (~17:42 UTC 落结构化日志 line) 再按修订 spec 跑 staging --enrichment-limit=10 验 inserted>0 / failed=0 / errors 无 numeric overflow 字串
+- L1: lint 0 errors / 3 warnings, tsc clean, npm test 189 files / 1375 tests
+- Prod 实测 (F004): engagement_rate>999.99=15 / outlier=true=157 / audit_log.kol.import_failed=0 / inserted=474 / max(engagement_rate)=9137.06
+- F004 报告: docs/test-reports/BL-076-backfill-2026-05-27.md
+- 关联: docs/specs/BL-076-apify-numeric-overflow-spec.md + BL-075 signoff §6 residual warning + BL-075-fix-round-1-2026-05-26.md §3
 ## ✅ BL-075-kol-data-coverage DONE (7/7, fix_rounds=1) — signoff 完成
 - Codex Reviewer 终签 PASS：L1 通过 `npm run lint` = 0 errors / 3 warnings、`npx tsc --noEmit` PASS、`npm test` = 188 files / 1368 tests PASS、backfill dry-run 输出格式正常、environment action 清单仍含 `kol-country-enrichment`
 - prod `/api/health` 已返回 `kol_coverage` 真数字：`total_active_kols=1397`、`country_fill_rate=20.4%`、`language_fill_rate=45.5%`
