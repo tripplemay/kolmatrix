@@ -24,7 +24,11 @@
  */
 import type { PrismaClient } from "@prisma/client";
 
-import { enrichKol, type EnrichKolDeps } from "@/lib/kol/enrichment";
+import {
+  enrichKol,
+  pickTopAudienceCountry,
+  type EnrichKolDeps,
+} from "@/lib/kol/enrichment";
 
 export interface EnrichStageOpts {
   prisma: PrismaClient;
@@ -41,6 +45,19 @@ export interface EnrichStageOpts {
   onProgress?: (done: number, total: number) => void;
   /** Hard cap on rows processed (mostly for tests / smoke runs). */
   limit?: number;
+  /**
+   * BL-075-F004 prod dry-run finding (2026-05-26): aigcgateway enforces
+   * a 30 RPM cap per API key (HTTP 429 + `retryAfterSeconds: 60`). With
+   * the default concurrency=5 the backfill burst-trips the cap on the
+   * very first wave, every retry waits 1.5s while another concurrent
+   * worker fires, so most calls just fail. We serialise the dispatch
+   * point so at most one LLM call fires every `minLlmIntervalMs`,
+   * regardless of `concurrency`. Default 2100ms ≈ 28.5 RPM, comfortably
+   * under the 30 RPM cap. The local franc + audience-geo paths are not
+   * gated — they run at full concurrency. Pass 0 to disable the gate
+   * (only safe in unit tests with a stub LLM).
+   */
+  minLlmIntervalMs?: number;
 }
 
 export interface EnrichStageStats {
@@ -66,6 +83,27 @@ export interface EnrichStageStats {
 
 const DEFAULT_CONCURRENCY = 5;
 const COST_PER_LLM_CALL_USD = 0.0009;
+const DEFAULT_MIN_LLM_INTERVAL_MS = 2100;
+
+/**
+ * Minimal in-process dispatcher gate so concurrent workers can ask
+ * "is it my turn to call the LLM yet?" without rolling their own
+ * timestamps. Returns a sleep promise that resolves at the next
+ * permitted dispatch time and advances the cursor by `intervalMs`.
+ */
+function makeLlmRateGate(intervalMs: number): () => Promise<void> {
+  let nextReadyAt = 0;
+  return async function acquire(): Promise<void> {
+    if (intervalMs <= 0) return;
+    const now = Date.now();
+    const target = nextReadyAt > now ? nextReadyAt : now;
+    nextReadyAt = target + intervalMs;
+    const waitMs = target - now;
+    if (waitMs > 0) {
+      await new Promise((r) => setTimeout(r, waitMs));
+    }
+  };
+}
 
 interface KolRow {
   id: string;
@@ -94,13 +132,26 @@ async function processOne(
   row: KolRow,
   opts: EnrichStageOpts,
   stats: EnrichStageStats,
+  acquireLlmSlot: () => Promise<void>,
 ): Promise<void> {
+  const audienceGeo = normaliseAudienceGeo(row.audienceGeoDist);
+  // Predict whether enrichKol would invoke the LLM: it does NOT when
+  // either (a) the column is already populated (caller filtered NULL
+  // so this is rare but possible mid-run), or (b) the audience-geo
+  // top-1 path returns a country at ≥40%. Anything else falls through
+  // to the LLM and must wait for a token from the dispatcher gate.
+  const wouldHitLlm =
+    !row.countryCode && pickTopAudienceCountry(audienceGeo) === null;
+  if (wouldHitLlm) {
+    await acquireLlmSlot();
+  }
+
   const result = await enrichKol(
     {
       bio: row.bio,
       displayName: row.displayName,
       handle: row.handle,
-      audienceGeoDist: normaliseAudienceGeo(row.audienceGeoDist),
+      audienceGeoDist: audienceGeo,
       platform: row.platform,
       categories: row.categories,
     },
@@ -261,14 +312,18 @@ export async function enrichKolsForTenant(
     return stats;
   }
 
+  const minLlmIntervalMs =
+    opts.minLlmIntervalMs ?? DEFAULT_MIN_LLM_INTERVAL_MS;
+  const acquireLlmSlot = makeLlmRateGate(minLlmIntervalMs);
+
   log(
-    `[enrichment-stage] tenant=${opts.tenantId} scanning ${rows.length} KOL${rows.length === 1 ? "" : "s"} (concurrency=${concurrency}, dryRun=${opts.dryRun ?? false})`,
+    `[enrichment-stage] tenant=${opts.tenantId} scanning ${rows.length} KOL${rows.length === 1 ? "" : "s"} (concurrency=${concurrency}, llm_gap_ms=${minLlmIntervalMs}, dryRun=${opts.dryRun ?? false})`,
   );
 
   await runWithConcurrency(
     rows,
     concurrency,
-    (row) => processOne(row, opts, stats),
+    (row) => processOne(row, opts, stats, acquireLlmSlot),
     opts.onProgress,
   );
 
@@ -281,5 +336,7 @@ export async function enrichKolsForTenant(
 
 export const __TEST_ONLY__ = {
   normaliseAudienceGeo,
+  makeLlmRateGate,
   COST_PER_LLM_CALL_USD,
+  DEFAULT_MIN_LLM_INTERVAL_MS,
 };

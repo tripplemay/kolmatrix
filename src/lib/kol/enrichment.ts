@@ -160,7 +160,7 @@ function detectLanguage(text: string): { language: string | null; confidence: nu
   return { language: iso6391, confidence: top[1] };
 }
 
-function pickTopAudienceCountry(
+export function pickTopAudienceCountry(
   dist: Record<string, number> | null | undefined,
 ): { country: string; confidence: number } | null {
   if (!dist || Object.keys(dist).length === 0) return null;

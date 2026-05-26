@@ -76,6 +76,7 @@ describe("enrichKolsForTenant", () => {
       prisma: fakePrisma as never,
       tenantId: TENANT_ID,
       logger: () => {},
+      minLlmIntervalMs: 0,
     });
     expect(stats.scanned).toBe(0);
     expect(stats.enrichedLanguage).toBe(0);
@@ -100,6 +101,7 @@ describe("enrichKolsForTenant", () => {
       prisma: fakePrisma as never,
       tenantId: TENANT_ID,
       logger: () => {},
+      minLlmIntervalMs: 0,
     });
 
     expect(stats.scanned).toBe(1);
@@ -144,6 +146,7 @@ describe("enrichKolsForTenant", () => {
       prisma: fakePrisma as never,
       tenantId: TENANT_ID,
       logger: () => {},
+      minLlmIntervalMs: 0,
       llm,
     });
 
@@ -176,6 +179,7 @@ describe("enrichKolsForTenant", () => {
       prisma: fakePrisma as never,
       tenantId: TENANT_ID,
       logger: () => {},
+      minLlmIntervalMs: 0,
       dryRun: true,
     });
     expect(stats.scanned).toBe(1);
@@ -201,6 +205,7 @@ describe("enrichKolsForTenant", () => {
       prisma: fakePrisma as never,
       tenantId: TENANT_ID,
       logger: () => {},
+      minLlmIntervalMs: 0,
     });
     expect(stats.enrichedCountry).toBe(0);
     expect(stats.enrichedLanguage).toBe(1);
@@ -250,6 +255,7 @@ describe("enrichKolsForTenant", () => {
       prisma: fakePrisma as never,
       tenantId: TENANT_ID,
       logger: () => {},
+      minLlmIntervalMs: 0,
       concurrency: 1,
     });
     expect(stats.failedCount).toBe(1);
@@ -277,11 +283,33 @@ describe("enrichKolsForTenant", () => {
       prisma: fakePrisma as never,
       tenantId: TENANT_ID,
       logger: () => {},
+      minLlmIntervalMs: 0,
       concurrency: 3,
     });
     expect(stats.scanned).toBe(8);
     expect(updates).toHaveLength(8);
     expect(new Set(updates.map((u) => u.id)).size).toBe(8);
+  });
+});
+
+describe("LLM rate gate (BL-075-F004 prod 429 defense)", () => {
+  it("spaces out acquires by at least intervalMs", async () => {
+    const gate = __TEST_ONLY__.makeLlmRateGate(50);
+    const t0 = Date.now();
+    await gate();
+    await gate();
+    await gate();
+    const elapsed = Date.now() - t0;
+    // 3 acquires at 50ms gap → at minimum ~100ms of waits between
+    // the 1st and 3rd. Generous floor accounts for timer jitter.
+    expect(elapsed).toBeGreaterThanOrEqual(90);
+  });
+
+  it("returns immediately when intervalMs is 0 (test-only bypass)", async () => {
+    const gate = __TEST_ONLY__.makeLlmRateGate(0);
+    const t0 = Date.now();
+    for (let i = 0; i < 5; i += 1) await gate();
+    expect(Date.now() - t0).toBeLessThan(20);
   });
 });
 
