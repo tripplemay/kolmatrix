@@ -1,11 +1,11 @@
 {
-  "status": "verifying",
+  "status": "fixing",
   "user_goal": "BL-075-kol-data-coverage — country/language 字段 NULL 填充 (BL-062 起 batch). 7 features F001-F007 (~13.5h ≈ 2 day Generator + 0.5 day Reviewer). A1 lock 4 子决策 (5/26): 混合方法 (langdetect + LLM country) / best-effort 阈值 / 全量 backfill 1397 + 立刻启 UI filter / 合入 kol-sync-daily.ts. BL-073-F006 UI disable 本批撤回. 关联 docs/specs/BL-075-kol-data-coverage-spec.md @ 本 commit / docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md §3.1 audit material.",
   "total_features": 7,
-  "completed_features": 6,
+  "completed_features": 5,
   "fix_rounds": 0,
   "current_sprint": "BL-075-kol-data-coverage",
-  "last_updated": "2026-05-26T23:05+0800",
+  "last_updated": "2026-05-26T23:22+0800",
   "reference_docs": [
     "docs/specs/BL-075-kol-data-coverage-spec.md",
     "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",
@@ -28,17 +28,27 @@
   "docs": {
     "spec": "docs/specs/BL-075-kol-data-coverage-spec.md",
     "audit": "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",
-    "test_cases": null,
+    "test_cases": "docs/test-reports/BL-075-verifying-2026-05-26.md",
     "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
+  "evaluator_feedback": {
+    "outcome": "fail",
+    "by": "codex: Reviewer",
+    "at": "2026-05-26T23:22+0800",
+    "summary": [
+      "L1 passed: lint 0 errors / 3 warnings, tsc PASS, npm test 188 files / 1365 tests PASS, backfill dry-run output format OK, environment action list includes kol-country-enrichment.",
+      "L2 partial pass: prod /api/health exposes kol_coverage with total_active_kols=1397, country_fill_rate=20.40%, language_fill_rate=45.45%; staging /zh/match shows country/language coverage hints and regions=US returns 1,594 results with visible US KOL cards; backfill report records 30-row accuracy sample with 0 obvious false-positive country tags.",
+      "Blocking failure: staging `npx tsx scripts/kol-sync-daily.ts --dry-run` bails before enrichment stage because apify-kol upstream is unhealthy (`response was not valid JSON: Unexpected token '<', '<!DOCTYPE ...'`). This prevents the required F003/F007 chain verification for enrichment-stage trigger + audit_log write on staging."
+    ],
+    "report": "docs/test-reports/BL-075-verifying-2026-05-26.md"
+  },
   "generator_handoff": null,
   "session_notes": {
     "Kimi_planner": null,
     "Kimi_generator": "[2026-05-26 23:05 BJT Generator Kimi 全部交接完成 (含 F006 hotfix)。Prod redeploy 后实测 /api/health kol_coverage: total=1397, country=20.40%, language=45.45% — 数字完全对齐 backfill 报告 (285+635 fills)。/zh/match HTTP 200。4 个 framework 沉淀 candidates 已入 proposed-learnings.md (v0.9.24 batch): #10 pm2 reload 不重读 env_file / #11 cost-cap 过保守 / #12 aigcgateway 30 RPM key 级 aggregate / #13 withPlatformAdmin 仅在 policy 含 platform_admin 旁路时有效 (kol 表无)。**Reviewer 接 F007:** L1 (lint/tsc/vitest/dry-run script) + L2 (prod /api/health 数字/staging /zh/match Coverage 提示渲染/选 filter 返回 KOL) + signoff doc。本次提交链: faed327 (Generator done) → fcb442c (F006 hotfix) → 81aca9d (state) → 当前 prod。]",
-    "Reviewer": null,
+    "Reviewer": "[2026-05-26 23:22 BJT Reviewer codex — BL-075 verifying FAIL. L1 passed: lint 0 errors / 3 warnings, tsc PASS, npm test 188 files / 1365 tests PASS, `npx tsx scripts/kol-enrichment-backfill.ts --dry-run` output format OK, `.auto-memory/environment.md` includes kol-country-enrichment action. L2 partial pass: prod `/api/health` now returns `kol_coverage={total_active_kols:1397,country_fill_rate:0.2040,language_fill_rate:0.4545}`; staging `/zh/match` shows coverage hints (`地区 已覆盖 68%`, `语言 已覆盖 1%`) and `?regions=US` returns 1,594 results with visible US KOL cards; backfill report `docs/test-reports/BL-075-backfill-2026-05-26.md` records 30-row accuracy sample with 0 obvious false-positive country tags. Blocker: staging `npx tsx scripts/kol-sync-daily.ts --dry-run` aborts before enrichment stage because apify-kol upstream returns HTML instead of JSON, so I cannot complete the required F003/F007 verification for enrichment-stage trigger + audit_log write. Returned status verifying→fixing, F003 back to pending, report docs/test-reports/BL-075-verifying-2026-05-26.md.]",
     "johnsong_planner": null,
     "johnsong_generator": null
   }

@@ -4,14 +4,13 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-075-kol-data-coverage VERIFYING (6/6 generator features done, fix_rounds=0) — Generator handoff 完成，待 Codex F007 L1+L2+signoff
-- F001-F006 全 done @ commit 9073af6→f05fa6b 区间，6 commits (含 sediment + state)
-- F004 backfill 实跑 final: country 0.9% → 20.4% (+273)，language 0.9% → 45.5% (+623)；30-row 抽样 0 false-positive 国家 mis-tag；total cost ~$0.30
-- 关键决议：langdetect → franc@^6.2.0（MIT 活跃维护，34-lang ISO-639-1 allowlist）；aigcgateway Action kol-country-enrichment (cmpm3pr2e0011bno3f1vd4v9r) + LLM rate gate 3500ms（30 RPM aggregate key 防御）
-- 3 condit框架沉淀 candidates 入 framework/proposed-learnings.md：#10 pm2 reload 不重读 env_file / #11 cost-cap 0.01/call 估算过保守 / #12 aigcgateway 30 RPM key-level aggregate
-- staging deployed @ a04c6a5；prod deploy 待用户手动触发（GitHub Actions Deploy to Production → workflow_dispatch）；deploy 后 prod /api/health kol_coverage 含真数字 + /zh/match 显示 Coverage 20%/46% 提示
-- F005 撤 BL-073-F006 country/language disable；改 "Coverage: N%" 5 locale 提示；其他 dims (platform/category/monetization) 仍保留 zero-coverage 灰显
-- 关联: docs/specs/BL-075-kol-data-coverage-spec.md + docs/test-reports/BL-075-backfill-2026-05-26.md + BL-073 audit §3.1
+## 🔧 BL-075-kol-data-coverage FIXING (5/7 complete, fix_rounds=0) — staging daily sync blocker
+- ✅ L1 全过：`npm run lint` = 0 errors / 3 warnings；`npx tsc --noEmit` PASS；`npm test` = 188 files / 1365 tests PASS；`npx tsx scripts/kol-enrichment-backfill.ts --dry-run` 输出格式正常；environment action 清单含 `kol-country-enrichment`
+- ✅ L2 部分证据成立：prod `/api/health` 已返回 `kol_coverage`（1397 / country 20.4% / language 45.5%）；staging `/zh/match` 显示 `地区 已覆盖 68%` + `语言 已覆盖 1%`；`?regions=US` 返回 1,594 结果且卡片可见 `US`
+- ✅ accuracy 证据已在 `docs/test-reports/BL-075-backfill-2026-05-26.md`：30-row 抽样 0 obvious false-positive 国家误标
+- ❌ blocker：staging `npx tsx scripts/kol-sync-daily.ts --dry-run` 在 discover 前直接 bail；`apify-kol` upstream 返回 HTML 非 JSON，导致无法验证 F003 要求的 enrichment-stage 触发 + `kol.enriched` audit_log 写入
+- 📄 Reviewer 报告：`docs/test-reports/BL-075-verifying-2026-05-26.md`
+- 🎯 下一步：Generator / ops 恢复 staging `apify-kol` upstream 后切 `reverifying`
 ## ✅ BL-074-ia-v2 DONE (6/6, fix_rounds=0, tag bl074-done @ 6bc881d) — 5 路由 IA 加 Campaigns nav + ADR-015 完成并终签
 - Codex Reviewer 终签 PASS：L1 通过 `npm run lint` = 0 errors / 3 warnings、`npx tsc --noEmit` PASS、本地 Playwright `sidebar-nav-5-routes` = 5 passed / 29 skipped
 - 静态验收通过：`NAV_ITEMS` 为 5 条且顺序 `brief → campaigns → match → reach → insight`；`messages/zh.json` 含 `nav.campaigns=活动`；ADR-015 存在且 167 LOC；ADR-013 superseded marker 与 ADR README 索引同步
