@@ -4,13 +4,16 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔧 BL-075-kol-data-coverage FIXING (5/7 complete, fix_rounds=0) — staging daily sync blocker
-- ✅ L1 全过：`npm run lint` = 0 errors / 3 warnings；`npx tsc --noEmit` PASS；`npm test` = 188 files / 1365 tests PASS；`npx tsx scripts/kol-enrichment-backfill.ts --dry-run` 输出格式正常；environment action 清单含 `kol-country-enrichment`
-- ✅ L2 部分证据成立：prod `/api/health` 已返回 `kol_coverage`（1397 / country 20.4% / language 45.5%）；staging `/zh/match` 显示 `地区 已覆盖 68%` + `语言 已覆盖 1%`；`?regions=US` 返回 1,594 结果且卡片可见 `US`
-- ✅ accuracy 证据已在 `docs/test-reports/BL-075-backfill-2026-05-26.md`：30-row 抽样 0 obvious false-positive 国家误标
-- ❌ blocker：staging `npx tsx scripts/kol-sync-daily.ts --dry-run` 在 discover 前直接 bail；`apify-kol` upstream 返回 HTML 非 JSON，导致无法验证 F003 要求的 enrichment-stage 触发 + `kol.enriched` audit_log 写入
-- 📄 Reviewer 报告：`docs/test-reports/BL-075-verifying-2026-05-26.md`
-- 🎯 下一步：Generator / ops 恢复 staging `apify-kol` upstream 后切 `reverifying`
+## 🔄 BL-075-kol-data-coverage REVERIFYING (6/7 complete, fix_rounds=1) — F003 fix-round 1 e2e PASS, awaiting Reviewer reverify
+- ✅ 上轮 L1 + 4/5 L2 已 PASS (prod /api/health 数字 + /zh/match Coverage hint + ?regions=US + accuracy sample)
+- ✅ F003 blocker 修复 (fix-round 1):
+  - 根因: 5/16 起 apify-kol-service docker stack bind-fail (host 3003 被 /srv/workbench next-server 占用)，非 BL-075 代码 bug
+  - 选项 A 落地: apify-kol-service 移到 host 3004，KOLMatrix .env.{prod,staging} APIFY_KOL_BASE_URL=:3004，pm2 reload all 3 processes，/proc verified
+  - Generator 加 daily-sync `--enrichment-limit=N` CLI flag (commit 07acad6, 1368 unit tests PASS)
+  - L2.5 staging e2e: daily-sync 实跑 enrichment-stage scanned=10 lang+=5 + 5 audit_log rows action=kol.enriched
+- ⚠️ pre-existing 无关 issue: discover-import 抛 numeric field overflow on 1 upstream row (无关 BL-075，独立 hotfix 候选)
+- 📄 fix-round 1 报告: `docs/test-reports/BL-075-fix-round-1-2026-05-26.md`；上轮 verifying 报告: `docs/test-reports/BL-075-verifying-2026-05-26.md`
+- 🎯 下一步: Reviewer reverify staging daily-sync --enrichment-limit=10 audit_log evidence → F007 signoff doc
 ## ✅ BL-074-ia-v2 DONE (6/6, fix_rounds=0, tag bl074-done @ 6bc881d) — 5 路由 IA 加 Campaigns nav + ADR-015 完成并终签
 - Codex Reviewer 终签 PASS：L1 通过 `npm run lint` = 0 errors / 3 warnings、`npx tsc --noEmit` PASS、本地 Playwright `sidebar-nav-5-routes` = 5 passed / 29 skipped
 - 静态验收通过：`NAV_ITEMS` 为 5 条且顺序 `brief → campaigns → match → reach → insight`；`messages/zh.json` 含 `nav.campaigns=活动`；ADR-015 存在且 167 LOC；ADR-013 superseded marker 与 ADR README 索引同步

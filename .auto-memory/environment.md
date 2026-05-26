@@ -109,7 +109,7 @@ NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) n
 
 - **项目位置：** `/opt/apify-kol-service`（fork 自 `guang-tech/apify`）
 - **入口：** docker compose（同 VM 容器）
-- **Host port：** `3003`（容器内 `3000`，sed workaround 将 docker-compose.yml `3000:3000` 改为 `3003:3000`，详 `docs/dev/kol-sync-runbook.md` §"apify-kol-service fork 同步流程"）
+- **Host port：** `3004`（容器内 `3003`，2026-05-26 BL-075 fix-round 1 由 `3003:3003` 改为 `3004:3003`：3003 被 `/srv/workbench` next-server 占用导致 docker stack 自 5/16 起 bind-fail 退出 10 天；KOLMatrix `.env.{production,staging}` 同步改为 `APIFY_KOL_BASE_URL=http://localhost:3004`。backup `/opt/apify-kol-service/docker-compose.yml.bl075-bak`。详 `docs/dev/kol-sync-runbook.md` §"apify-kol-service fork 同步流程" + `docs/test-reports/BL-075-fix-round-1-2026-05-26.md`）
 - **Postgres port：** `15432`（容器化 PG 独立实例，与 KOLMatrix 共用 VM 的 PG 隔离；fork 端自带 schema 与 KOLMatrix Prisma schema 完全独立）
 - **TIKHUB_TOKEN：** 由爬虫团队提供，存 `/opt/apify-kol-service/.env`，KOLMatrix 不读
 - **BUSINESS_API_KEY：** read-only 业务侧 key，KOLMatrix `x-api-key` header 用此值（同步到 KOLMatrix `.env.{production,staging}` 的 `APIFY_KOL_BUSINESS_API_KEY`）
