@@ -257,3 +257,15 @@ sediment（沉淀）从 proposed-learnings.md 走向 `framework/harness/*.md` �
 
 **状态：** 待用户 ack — done 阶段提出，落 v0.9.24 framework sediment batch
 
+---
+
+## [2026-05-26] Claude CLI — 来源：BL-075-F006 post-handoff hotfix / Generator Kimi
+
+**类型：** 新坑（v0.9.24 候选 #13）
+
+**内容：** **withPlatformAdmin 仅在 RLS policy 有 platform_admin 旁路时有效 — kol 等核心业务表无此旁路**。BL-075-F006 prod deploy 后 /api/health kol_coverage 显示 0 行（应 1397）。根因：`kol` RLS policy = `tenant_id = NULLIF(current_setting('app.tenant_id'), '')::uuid`，**只检查 app.tenant_id 一个 session var**，对 app.is_platform_admin 视而不见。withPlatformAdmin 设的 `is_platform_admin=true` 这里无效 → app.tenant_id 仍 NULL → 0 行。验证方式：deploy 后 curl prod /api/health 实测 vs `sudo psql` 直查 count(*)，差异即暴露。修复 pattern：循环 tenant 表（tenant 表无 RLS）+ per-tenant `set_config('app.tenant_id', $1, true)` 聚合。
+
+**建议写入：** `framework/harness/database-patterns.md` §"跨 tenant 平台级聚合"段：(1) RLS policy 是否含 platform_admin 旁路要 grep 确认 (`pg_policies` 表查 `qual`)，不能默认信 withPlatformAdmin 通吃；(2) 模板：单 query withPlatformAdmin（仅当 policy 含 `is_platform_admin=true` 旁路）vs 循环 tenant set_config（policy 仅 tenant_id 比较时）；(3) Generator self-check：写 withPlatformAdmin 调用前必须先确认目标表 policy 的 `qual`
+
+**状态：** 待用户 ack — done 阶段提出，落 v0.9.24 framework sediment batch
+

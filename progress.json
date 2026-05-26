@@ -5,7 +5,7 @@
   "completed_features": 6,
   "fix_rounds": 0,
   "current_sprint": "BL-075-kol-data-coverage",
-  "last_updated": "2026-05-26T21:55+0800",
+  "last_updated": "2026-05-26T23:05+0800",
   "reference_docs": [
     "docs/specs/BL-075-kol-data-coverage-spec.md",
     "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",
@@ -37,7 +37,7 @@
   "generator_handoff": null,
   "session_notes": {
     "Kimi_planner": null,
-    "Kimi_generator": "[2026-05-26 21:55 BJT Generator Kimi post-handoff hotfix。用户 prod deploy 后发现 /api/health kol_coverage 显示 total=0 (应为 1397)。根因：kol RLS policy 是严格 tenant_id 比较，无 platform_admin 旁路；withPlatformAdmin 设的 app.is_platform_admin 此 policy 不读 → 0 行 → COUNT=0。修复 @ commit fcb442c：改用 prisma.$transaction 循环 tenant 表（无 RLS）+ per-tenant set_config('app.tenant_id', ...) 聚合。staging 实测验证 OK (kol_coverage.total_active_kols=3891 staging数据集，country 68% / lang 1%)。13/13 unit tests PASS。**待用户再次触发 prod deploy** 才能看到 prod /api/health kol_coverage 真数字 (target: total=1397 country=20.4% language=45.5%)。status 维持 verifying — Reviewer 待接 F007 L1+L2+signoff。]",
+    "Kimi_generator": "[2026-05-26 23:05 BJT Generator Kimi 全部交接完成 (含 F006 hotfix)。Prod redeploy 后实测 /api/health kol_coverage: total=1397, country=20.40%, language=45.45% — 数字完全对齐 backfill 报告 (285+635 fills)。/zh/match HTTP 200。4 个 framework 沉淀 candidates 已入 proposed-learnings.md (v0.9.24 batch): #10 pm2 reload 不重读 env_file / #11 cost-cap 过保守 / #12 aigcgateway 30 RPM key 级 aggregate / #13 withPlatformAdmin 仅在 policy 含 platform_admin 旁路时有效 (kol 表无)。**Reviewer 接 F007:** L1 (lint/tsc/vitest/dry-run script) + L2 (prod /api/health 数字/staging /zh/match Coverage 提示渲染/选 filter 返回 KOL) + signoff doc。本次提交链: faed327 (Generator done) → fcb442c (F006 hotfix) → 81aca9d (state) → 当前 prod。]",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
