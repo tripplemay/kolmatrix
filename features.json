@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/components/layout/nav-config.ts NAV_ITEMS 5 条, 顺序: brief / campaigns / match / reach / insight (campaigns 在 brief 后 match 前, lock B)",
       "新加 campaigns nav 配置: { id: 'campaigns', href: '/campaigns', i18nKey: 'nav.campaigns', descriptionKey: 'nav.campaignsDescription', icon: 'campaign' }",
@@ -23,7 +23,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/app/[locale]/(app)/campaigns/CampaignsTable.tsx 每行右侧加新 TCell 含 Link → /${locale}/match?campaignId=${row.id}",
       "Match 按钮含 auto_awesome icon + i18n label (用 t('matchKolAction.label')) + aria-label 含活动名 (无障碍)",
@@ -40,7 +40,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/features/dashboard/QuickActions.tsx ACTIONS 数组从 4 → 3: 删 'campaigns' entry (现 nav 已有 campaigns 一级)",
       "QuickAction TypeScript type 同步缩窄: key: 'knowledgeBase' | 'discovery' | 'database' (删 'campaigns')",
@@ -56,7 +56,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "新建 docs/adr/ADR-015-5-route-ia-add-campaigns-nav.md ≥80 LOC, 含 6 段标准 ADR 格式 (Context / Decision / Rationale / Alternatives Considered (A B C) / Consequences / Implementation / References)",
       "标 'Supersedes: ADR-013' + 'Status: Accepted' + 'Date: 2026-05-26'",

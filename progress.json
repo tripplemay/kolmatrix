@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-074-ia-v2 — 加第 5 一级 nav '活动' (campaigns) + ADR-015 修订. 6 features F001-F006 (~11h ≈ 2 day Generator + 0.5 day Reviewer). A1 用户 5/26 lock 4 子决策: 顺序 B (brief/campaigns/match/reach/insight) / icon `campaign` / i18n zh='活动' en='Campaigns' / ADR-015 新建 supersedes ADR-013 + /campaigns 每行 Match KOL CTA. 不冲突 BL-075 (KOL data coverage) 可并行. 0 业务逻辑改动 (仅 nav + i18n + UI CTA + ADR docs). 关联 docs/specs/BL-074-ia-v2-spec.md @ 本 commit / docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md §1 #3 + §7 audit material.",
   "total_features": 6,
-  "completed_features": 0,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "BL-074-ia-v2",
-  "last_updated": "2026-05-26T11:00+0800",
+  "last_updated": "2026-05-26T10:35+0800",
   "reference_docs": [
     "docs/specs/BL-074-ia-v2-spec.md",
     "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",

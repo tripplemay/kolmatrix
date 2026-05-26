@@ -44,12 +44,12 @@ describe("AppShellLayout", () => {
         <p>page content</p>
       </AppShellLayout>
     );
-    // BL-064-F003 — /en/campaigns list page maps to the Match nav item
-    // (adjudication #4); the legacy "Campaigns" top-level nav is gone.
+    // BL-074-F001 — /en/campaigns is now its own first-class nav (was
+    // BL-064-F003 mapped to match; promoted under ADR-015).
     const active = document.querySelector("a[aria-current='page']");
-    expect(active?.textContent).toContain("Match");
+    expect(active?.textContent).toContain("Campaigns");
     // Page title mirrors the active nav label
-    expect(screen.getByRole("heading", { name: "Match" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Campaigns" })).toBeInTheDocument();
     // children render inside main
     expect(screen.getByText("page content").closest("main")).not.toBeNull();
   });

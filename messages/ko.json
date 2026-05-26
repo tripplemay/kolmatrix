@@ -12,7 +12,9 @@
     "reachDescription": "이메일 아웃리치 및 답신 관리",
     "insight": "인사이트",
     "insightDescription": "결과, ROI, 회고",
-    "settings": "설정"
+    "settings": "설정",
+    "campaigns": "캠페인",
+    "campaignsDescription": "진행 중인 아웃리치 캠페인과 파이프라인"
   },
   "topbar": {
     "searchPlaceholder": "KOL, 캠페인, 이메일 등 검색",
@@ -1146,6 +1148,11 @@
         "networkError": "정제 시간이 초과되었습니다. 다시 시도해 주세요.",
         "permutationInvalid": "재정렬 결과가 유효하지 않습니다. 현재 후보는 유지됩니다."
       }
+    },
+    "matchKolAction": {
+      "label": "KOL 매칭",
+      "actionColumn": "작업",
+      "ariaLabel": "캠페인 \"{name}\" KOL 매칭"
     }
   },
   "relationshipStatus": {

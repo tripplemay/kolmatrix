@@ -12,7 +12,9 @@
     "reachDescription": "Email outreach and replies",
     "insight": "Insight",
     "insightDescription": "Results, ROI, and retrospectives",
-    "settings": "Settings"
+    "settings": "Settings",
+    "campaigns": "Campaigns",
+    "campaignsDescription": "Active outreach campaigns and pipeline"
   },
   "topbar": {
     "searchPlaceholder": "Search KOLs, campaigns, emails...",
@@ -1146,6 +1148,11 @@
         "networkError": "Refine timed out. Please try again.",
         "permutationInvalid": "Rerank result was invalid. Current pool unchanged."
       }
+    },
+    "matchKolAction": {
+      "label": "Match KOL",
+      "actionColumn": "Action",
+      "ariaLabel": "Match KOLs for campaign \"{name}\""
     }
   },
   "outreach": {

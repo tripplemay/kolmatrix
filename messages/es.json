@@ -12,7 +12,9 @@
     "reachDescription": "Difusión por correo y respuestas",
     "insight": "Análisis",
     "insightDescription": "Resultados, ROI y retrospectivas",
-    "settings": "Configuración"
+    "settings": "Configuración",
+    "campaigns": "Campañas",
+    "campaignsDescription": "Campañas de outreach activas y pipeline"
   },
   "topbar": {
     "searchPlaceholder": "Buscar KOLs, campañas, correos electrónicos...",
@@ -1146,6 +1148,11 @@
         "networkError": "Tiempo de espera agotado. Inténtalo de nuevo.",
         "permutationInvalid": "El resultado del reordenamiento no es válido. El grupo actual no cambia."
       }
+    },
+    "matchKolAction": {
+      "label": "Match de KOL",
+      "actionColumn": "Acción",
+      "ariaLabel": "Match de KOLs para campaña \"{name}\""
     }
   },
   "relationshipStatus": {

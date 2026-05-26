@@ -31,17 +31,23 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-describe("SidebarNav — BL-064-F003 4-item IA", () => {
-  it("renders exactly 4 nav items, each with locale-prefixed href", () => {
+describe("SidebarNav — BL-074-F001 5-item IA (was BL-064-F003 4-item, ADR-015)", () => {
+  it("renders exactly 5 nav items, each with locale-prefixed href", () => {
     pathnameRef.value = "/en/insight";
     const { container } = renderIntl(<SidebarNav />);
     const links = container.querySelectorAll("a[href]");
-    expect(links.length).toBe(4);
+    expect(links.length).toBe(5);
     const hrefs = Array.from(links).map((l) => l.getAttribute("href"));
-    expect(hrefs).toEqual(["/en/brief", "/en/match", "/en/reach", "/en/insight"]);
+    expect(hrefs).toEqual([
+      "/en/brief",
+      "/en/campaigns",
+      "/en/match",
+      "/en/reach",
+      "/en/insight",
+    ]);
   });
 
-  it("renders all 4 new IA labels in spec order (Brief → Match → Reach → Insight)", () => {
+  it("renders all 5 new IA labels in spec order (Brief → Campaigns → Match → Reach → Insight)", () => {
     pathnameRef.value = "/en/brief";
     const { container } = renderIntl(<SidebarNav />);
     const labels = Array.from(container.querySelectorAll("a")).map((l) =>
@@ -49,9 +55,10 @@ describe("SidebarNav — BL-064-F003 4-item IA", () => {
     );
     // textContent includes icon name + label; assert each label is present
     expect(labels[0]).toContain("Brief");
-    expect(labels[1]).toContain("Match");
-    expect(labels[2]).toContain("Reach");
-    expect(labels[3]).toContain("Insight");
+    expect(labels[1]).toContain("Campaigns");
+    expect(labels[2]).toContain("Match");
+    expect(labels[3]).toContain("Reach");
+    expect(labels[4]).toContain("Insight");
   });
 
   it("attaches the description tooltip via the title attribute", () => {
@@ -84,11 +91,13 @@ describe("SidebarNav — BL-064-F003 4-item IA", () => {
       first.container.querySelector("a[aria-current='page']")?.textContent
     ).toContain("Insight");
     first.unmount();
-    // /campaigns list → match
+    // BL-074-F001 — /campaigns list is now its own first-class nav (was
+    // /campaigns → match under BL-070-F004; promoted to campaigns nav
+    // under ADR-015).
     pathnameRef.value = "/en/campaigns";
     const second = renderIntl(<SidebarNav />);
     expect(
       second.container.querySelector("a[aria-current='page']")?.textContent
-    ).toContain("Match");
+    ).toContain("Campaigns");
   });
 });

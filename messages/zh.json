@@ -12,7 +12,9 @@
     "reachDescription": "邮件外联与回复管理",
     "insight": "洞察",
     "insightDescription": "结果复盘、ROI 与周报",
-    "settings": "设置"
+    "settings": "设置",
+    "campaigns": "活动",
+    "campaignsDescription": "进行中的触达活动与管线"
   },
   "topbar": {
     "searchPlaceholder": "搜索KOL、活动、邮件...",
@@ -1146,6 +1148,11 @@
         "networkError": "重排超时，请重试。",
         "permutationInvalid": "重排结果无效，候选池保持不变。"
       }
+    },
+    "matchKolAction": {
+      "label": "匹配 KOL",
+      "actionColumn": "操作",
+      "ariaLabel": "为活动「{name}」匹配 KOL"
     }
   },
   "outreach": {

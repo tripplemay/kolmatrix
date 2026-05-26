@@ -1,8 +1,10 @@
 # ADR-013: AI Native 产品转向 — 顶层 IA 重做 + 删除 KOL "saved pool" 概念
 
+> ⚠️ **§"顶层 IA 重做" 部分已被 [ADR-015](./ADR-015-5-route-ia-add-campaigns-nav.md) supersede (2026-05-26)**：4 路由 IA（Brief / Match / Reach / Insight）改为 5 路由（Brief / **Campaigns** / Match / Reach / Insight）。本 ADR 其它两大决议（AI Native 转向 + 删 KOL "saved pool"）仍然有效，body 内容保留供历史参考。
+
 ## Status
 
-**Accepted**
+**Accepted (§IA 部分 Superseded by ADR-015, 2026-05-26)**
 
 - 日期：2026-05-10
 - 作者：用户 + Planner johnsong（联合决策）

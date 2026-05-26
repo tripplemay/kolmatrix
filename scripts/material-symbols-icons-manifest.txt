@@ -100,3 +100,9 @@ error_outline               # campaigns/[id]/RefineInputBar.tsx:363            |
 hourglass_empty             # campaigns/[id]/RefineInputBar.tsx:329            | bare multi-line span (BL-073-F001)
 mark_email_unread           # campaigns/[id]/AiRecommendationPanel.tsx:635     | bare multi-line span (BL-073-F001)
 verified_user               # reach/DomainHealthCard.tsx:43                    | bare multi-line span (BL-073-F001)
+
+# BL-074-F001 — `campaigns` first-class sidebar nav. SidebarNav renders
+# the icon as a bare ligature in a multi-line span (Pattern 7 catches
+# it), but pinning it here keeps the subset stable if the rendering
+# pattern changes.
+campaign                    # layout/SidebarNav.tsx:46 (via NAV_ITEMS[]) | bare multi-line span (BL-074-F001)

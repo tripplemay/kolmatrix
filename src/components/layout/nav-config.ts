@@ -1,10 +1,13 @@
 /**
- * BL-064-F003 · Top-level sidebar nav config — 4-route IA.
+ * BL-064-F003 · Top-level sidebar nav config — initially 4-route IA.
+ * BL-074-F001 · Promoted to 5-route IA — add `campaigns` between brief
+ * and match (Order B lock). See ADR-015.
  *
- * 路由顺序：Brief → Match → Reach → Insight（spec §4 #D — 教学性强，
- * 新用户一眼明白产品逻辑）。
+ * 路由顺序：Brief → Campaigns → Match → Reach → Insight（spec §4 #D
+ * 改良 — 加 campaigns 一级 nav 让用户直接看活动列表, BL-073 issue #3
+ * 用户反馈推动）。
  *
- * Adjudication 2026-05-11 #1：Settings 移入 UserAvatarMenu dropdown，
+ * Adjudication 2026-05-11 #1：Settings 移入 UserAvatarMenu dropdown,
  * 不再作为侧栏 nav 项。
  * Adjudication 2026-05-11 #3：sub-route /assets /crm /kols/[id] 保留
  * 路由但 deriveActiveNav 把它们映射到内容对应的新 nav id（assets→brief
@@ -18,11 +21,11 @@
  * UserAvatarMenu dropdown (adjudication §1).
  *
  * **BL-014 review pending markers (ja/ko/es):** The new
- * `nav.brief/match/reach/insight` (+ description) translations in
- * `messages/ja.json`, `ko.json`, `es.json` are LLM-generated loanwords
- * pending native-speaker review per BL-014 (see backlog.json).
+ * `nav.brief/campaigns/match/reach/insight` (+ description) translations
+ * in `messages/ja.json`, `ko.json`, `es.json` are LLM-generated
+ * loanwords pending native-speaker review per BL-014 (see backlog.json).
  */
-export type NavItemId = "brief" | "match" | "reach" | "insight";
+export type NavItemId = "brief" | "campaigns" | "match" | "reach" | "insight";
 
 export interface NavItem {
   id: NavItemId;
@@ -42,6 +45,16 @@ export const NAV_ITEMS: NavItem[] = [
     i18nKey: "nav.brief",
     descriptionKey: "nav.briefDescription",
     icon: "edit_note",
+  },
+  {
+    // BL-074-F001 — campaigns 一级 nav, 在 brief 和 match 之间 (Order B
+    // lock). Materialises the "用户先想做什么活动, 再去匹配 KOL" 心智
+    // 流。详 ADR-015.
+    id: "campaigns",
+    href: "/campaigns",
+    i18nKey: "nav.campaigns",
+    descriptionKey: "nav.campaignsDescription",
+    icon: "campaign",
   },
   {
     id: "match",
@@ -87,6 +100,10 @@ export function deriveActiveNav(pathname: string): NavItemId {
 
   // 1. New IA top-level routes
   if (path.startsWith("/brief")) return "brief";
+  // BL-074-F001 — campaigns is now its own first-class nav (was folded
+  // into match under BL-064/070 IA v1). Order matters: check campaigns
+  // before match so /campaigns/[id] resolves to campaigns nav.
+  if (path.startsWith("/campaigns")) return "campaigns";
   if (path.startsWith("/match")) return "match";
   if (path.startsWith("/reach")) return "reach";
   if (path.startsWith("/insight")) return "insight";
@@ -96,7 +113,6 @@ export function deriveActiveNav(pathname: string): NavItemId {
   if (path.startsWith("/crm")) return "reach"; // CRM under Reach (email surface)
   if (path.startsWith("/kols")) return "match"; // KOL detail page belongs to Match
   if (path.startsWith("/roi")) return "insight"; // ROI deep-link folds into the Insight surface
-  if (path.startsWith("/campaigns")) return "match"; // campaigns list + [id] live in match
 
   // Fallback: insight (canonical landing per adjudication §1 / vision §2)
   return "insight";

@@ -68,7 +68,9 @@ Proposed ──► Accepted ──► [Deprecated | Superseded by ADR-YYY]
 | [010](./ADR-010-domain-strategy-kolquest-com.md) | Domain Strategy — kolquest.com | 注册 kolquest.com 作品牌+发件域；主站暂不迁移；根域直发 | Accepted | 2026-04-19 |
 | [011](./ADR-011-unified-asset-table-vs-typed-tables.md) | Unified Asset Table | 单 Asset 表 + type enum + content JSONB；EmailTemplate dual-write 兼容期 | Accepted | 2026-05-02 |
 | [012](./ADR-012-assets-ux-redesign-outreach-first.md) | Assets UX Redesign — Outreach-First | 推翻 §F004.B 部分（sidebar / 4 tabs / Create blank）；drawer + top filter dropdown + composer 增强 | Accepted | 2026-05-03 |
-| [013](./ADR-013-ai-native-product-pivot.md) | **AI Native 产品转向** | 顶层 IA 7→4 路由（Brief/Match/Reach/Insight）；删 KOL saved pool；AI 主导取代工具+辅助；6-10 周重构；5/13 上线 deadline 取消 | Accepted | 2026-05-10 |
+| [013](./ADR-013-ai-native-product-pivot.md) | **AI Native 产品转向** | 顶层 IA 7→4 路由（Brief/Match/Reach/Insight）；删 KOL saved pool；AI 主导取代工具+辅助；6-10 周重构；5/13 上线 deadline 取消 | Accepted (§IA 部分 Superseded by ADR-015) | 2026-05-10 |
+| [014](./ADR-014-value-score-formula-v2.md) | Value Score Formula v2 | BL-049/050 价值评分公式调整 | Accepted | 2026-05-?? |
+| [015](./ADR-015-5-route-ia-add-campaigns-nav.md) | **5 路由 IA — 加 Campaigns 一级 nav** | 加 `campaigns` 作第 2 一级 nav（Brief/Campaigns/Match/Reach/Insight）；/campaigns 列表行加 Match KOL CTA；/insight QuickActions 4→3 | Accepted (supersedes ADR-013 §IA) | 2026-05-26 |
 
 ## 按主题索引
 
@@ -95,7 +97,8 @@ Proposed ──► Accepted ──► [Deprecated | Superseded by ADR-YYY]
 - [ADR-010](./ADR-010-domain-strategy-kolquest-com.md) 品牌域 kolquest.com 策略（BI3 / B4 前置）
 
 ### 产品方向
-- [ADR-013](./ADR-013-ai-native-product-pivot.md) **AI Native 产品转向**（5/10 起 6-10 周重构 / 4 路由 IA / 删 isSaved 概念 / BL-063+ 系列依赖源）
+- [ADR-013](./ADR-013-ai-native-product-pivot.md) **AI Native 产品转向**（5/10 起 6-10 周重构 / 4 路由 IA / 删 isSaved 概念 / BL-063+ 系列依赖源）— §IA 部分被 ADR-015 supersede
+- [ADR-015](./ADR-015-5-route-ia-add-campaigns-nav.md) **5 路由 IA — 加 Campaigns 一级 nav**（5/26 BL-074 / 4→5 路由 / supersedes ADR-013 §IA / 用户反馈"找不到活动列表"触发）
 
 ---
 

@@ -2,9 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import { NAV_ITEMS, deriveActiveNav } from "../nav-config";
 
-describe("NAV_ITEMS — BL-064-F003 4-item IA", () => {
-  it("contains exactly 4 nav items in Brief → Match → Reach → Insight order (spec §4 #D)", () => {
-    expect(NAV_ITEMS.map((n) => n.id)).toEqual(["brief", "match", "reach", "insight"]);
+describe("NAV_ITEMS — BL-074-F001 5-item IA (was BL-064-F003 4-item, ADR-015)", () => {
+  it("contains exactly 5 nav items in Brief → Campaigns → Match → Reach → Insight order (spec §4 #D, BL-074 lock B)", () => {
+    expect(NAV_ITEMS.map((n) => n.id)).toEqual([
+      "brief",
+      "campaigns",
+      "match",
+      "reach",
+      "insight",
+    ]);
   });
 
   it("each item declares href / i18nKey / descriptionKey / icon", () => {
@@ -21,10 +27,11 @@ describe("NAV_ITEMS — BL-064-F003 4-item IA", () => {
   });
 });
 
-describe("deriveActiveNav — BL-064-F003 4-route IA + sub-route mapping (Adjudication #3)", () => {
+describe("deriveActiveNav — BL-074-F001 5-route IA + sub-route mapping (Adjudication #3, ADR-015)", () => {
   it("resolves new top-level IA routes to themselves", () => {
     expect(deriveActiveNav("/en/brief")).toBe("brief");
     expect(deriveActiveNav("/zh/brief")).toBe("brief");
+    expect(deriveActiveNav("/en/campaigns")).toBe("campaigns");
     expect(deriveActiveNav("/en/match")).toBe("match");
     expect(deriveActiveNav("/en/reach")).toBe("reach");
     expect(deriveActiveNav("/en/insight")).toBe("insight");
@@ -64,14 +71,14 @@ describe("deriveActiveNav — BL-064-F003 4-route IA + sub-route mapping (Adjudi
     expect(deriveActiveNav("/en/roi")).toBe("insight");
   });
 
-  it("BL-070-F004 — /campaigns list + [id] route to match (campaigns/new was deleted in this batch)", () => {
-    expect(deriveActiveNav("/en/campaigns")).toBe("match");
-    expect(deriveActiveNav("/en/campaigns/abc-123")).toBe("match");
-    // /campaigns/new used to be a real creation page that nav split to
-    // brief; the page was retired in F004 (brief is the canonical AI
-    // creation surface now), so the deep link 404s and the helper just
-    // routes to the campaigns family default.
-    expect(deriveActiveNav("/en/campaigns/new")).toBe("match");
+  it("BL-074-F001 — /campaigns list + [id] resolve to campaigns nav (promoted from match sub-route to first-class nav, supersedes BL-070-F004 mapping)", () => {
+    expect(deriveActiveNav("/en/campaigns")).toBe("campaigns");
+    expect(deriveActiveNav("/en/campaigns/abc-123")).toBe("campaigns");
+    // /campaigns/new used to be a real creation page; BL-070-F004
+    // retired it (brief is the canonical AI creation surface now).
+    // The deep link 404s and the helper just routes to the campaigns
+    // family default (now its own nav, per ADR-015).
+    expect(deriveActiveNav("/en/campaigns/new")).toBe("campaigns");
   });
 
   it("strips leading locale prefix for every supported locale", () => {
@@ -81,8 +88,8 @@ describe("deriveActiveNav — BL-064-F003 4-route IA + sub-route mapping (Adjudi
     expect(deriveActiveNav("/es/insight")).toBe("insight");
   });
 
-  it("nav-config hrefs target new IA paths only (regression — no legacy /dashboard etc.)", () => {
+  it("nav-config hrefs target new IA paths only (regression — no legacy /dashboard etc., BL-074-F001 adds /campaigns)", () => {
     const hrefs = NAV_ITEMS.map((n) => n.href).sort();
-    expect(hrefs).toEqual(["/brief", "/insight", "/match", "/reach"]);
+    expect(hrefs).toEqual(["/brief", "/campaigns", "/insight", "/match", "/reach"]);
   });
 });

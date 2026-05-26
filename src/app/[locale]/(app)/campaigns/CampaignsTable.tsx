@@ -32,6 +32,7 @@ function formatCurrency(n: number | null, currency = "USD"): string {
 export async function CampaignsTable({ rows, locale }: Props) {
   const t = await getTranslations("campaigns.table");
   const tStatus = await getTranslations("campaigns.status");
+  const tMatchAction = await getTranslations("campaigns.matchKolAction");
   const format = await getFormatter();
 
   return (
@@ -52,6 +53,9 @@ export async function CampaignsTable({ rows, locale }: Props) {
               {t("roi")}
             </TCell>
             <TCell as="th">{t("dates")}</TCell>
+            <TCell as="th" align="right">
+              {tMatchAction("actionColumn")}
+            </TCell>
           </TRow>
         </THead>
         <TBody>
@@ -121,6 +125,29 @@ export async function CampaignsTable({ rows, locale }: Props) {
                     {dateLabel}
                     {endLabel ? ` → ${endLabel}` : ""}
                   </span>
+                </TCell>
+                {/* BL-074-F002 — per-row Match KOL CTA. Targets the
+                    /match workbench with the campaign's id pre-pinned
+                    so the AiSuggestionsSidebar mounts in
+                    campaign-context mode. Keeps the navigation flow
+                    "pick a campaign → match KOLs" one click away
+                    (ADR-015 rationale §3). */}
+                <TCell align="right">
+                  <Link
+                    href={`/${locale}/match?campaignId=${row.id}`}
+                    data-testid="campaign-row-match-cta"
+                    data-campaign-id={row.id}
+                    aria-label={tMatchAction("ariaLabel", { name: row.name })}
+                    className="inline-flex items-center gap-1 rounded-lg border border-cyan/40 bg-cyan/10 px-3 py-1.5 text-[12px] font-semibold text-cyan-fixed transition-colors hover:bg-cyan/20"
+                  >
+                    <span
+                      className="material-symbols-outlined text-[16px]"
+                      aria-hidden
+                    >
+                      auto_awesome
+                    </span>
+                    <span>{tMatchAction("label")}</span>
+                  </Link>
                 </TCell>
               </TRow>
             );
