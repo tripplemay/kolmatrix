@@ -101,7 +101,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "tests/unit/material-symbols-coverage-unit.test.ts 加 Pattern 7 bare ligature detection (与 F002 同步规则)",
       "STRICT_MODE 拆分: STRICT_MS_ICONS (新, 默认 true) + STRICT_I18N (false, 不动) + STRICT_LINK_TARGET (false, 不动)",
