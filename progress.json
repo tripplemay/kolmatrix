@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-075-kol-data-coverage — country/language 字段 NULL 填充 (BL-062 起 batch). 7 features F001-F007 (~13.5h ≈ 2 day Generator + 0.5 day Reviewer). A1 lock 4 子决策 (5/26): 混合方法 (langdetect + LLM country) / best-effort 阈值 / 全量 backfill 1397 + 立刻启 UI filter / 合入 kol-sync-daily.ts. BL-073-F006 UI disable 本批撤回. 关联 docs/specs/BL-075-kol-data-coverage-spec.md @ 本 commit / docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md §3.1 audit material.",
   "total_features": 7,
-  "completed_features": 3,
+  "completed_features": 5,
   "fix_rounds": 0,
   "current_sprint": "BL-075-kol-data-coverage",
-  "last_updated": "2026-05-26T12:10+0800",
+  "last_updated": "2026-05-26T16:48+0800",
   "reference_docs": [
     "docs/specs/BL-075-kol-data-coverage-spec.md",
     "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",
@@ -37,7 +37,7 @@
   "generator_handoff": null,
   "session_notes": {
     "Kimi_planner": null,
-    "Kimi_generator": "[2026-05-26 12:10 BJT Generator Kimi BL-075 F003 done. enrichment-stage.ts shared helper + integrate into kol-sync-daily.ts (after embed-hook). 9 enrichment-stage tests PASS. action=kol.enriched audit_log per row with before/after/source/confidence payload. concurrency=5 default. NEXT: F004 backfill script + run prod 1397.]",
+    "Kimi_generator": "[2026-05-26 16:48 BJT Generator Kimi BL-075 F005+F006 done. F005: filter sidebar 撤 country/language disable, 改 coverageHint 显示 Coverage: N% 5 locale; runMatchSearch 撤 early-return. F006: /api/health 加 kol_coverage 子结构 (cross-tenant via withPlatformAdmin), 5min in-memory cache (kol-coverage-cache.ts 独立模块, Next route validator 拒非-HTTP-method export). F004 backfill: 第一次 cap hit 约500 LLM call (cost-cap 估算 0.01 per call 过保守, 实际 0.0009), kill 重启用 AI_DAILY_COST_USD_PER_TENANT_MAX=500 override, 当前进度: 总1397 已 country=94 language=239 (重启前) 继续填充中。NEXT: 等 backfill 完成 → 抽样审 → 写 BL-075-backfill-2026-05-26.md → staging deploy → 翻 verifying。]",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null

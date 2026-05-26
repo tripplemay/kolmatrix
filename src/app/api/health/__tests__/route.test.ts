@@ -18,15 +18,17 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 const queryRaw = vi.fn<(strings: TemplateStringsArray) => Promise<unknown>>();
+const queryRawUnsafe = vi.fn<(sql: string) => Promise<unknown>>();
 const execSyncMock = vi.fn<(cmd: string) => string>();
 const pingRedisMock = vi.fn<() => Promise<{ ok: boolean; latencyMs?: number; error?: string }>>();
 const transactionRun = vi.fn(async (fn: (tx: unknown) => unknown) =>
-  fn({ $executeRaw: vi.fn() })
+  fn({ $executeRaw: vi.fn(), $queryRawUnsafe: queryRawUnsafe })
 );
 
 vi.mock("@prisma/client", () => {
   class PrismaClient {
     $queryRaw = queryRaw;
+    $queryRawUnsafe = queryRawUnsafe;
     $transaction = transactionRun;
   }
   return { Prisma: {}, PrismaClient };
@@ -49,6 +51,7 @@ process.env.DATABASE_URL ??= "postgresql://unit:unit@localhost:5432/unit_test";
 execSyncMock.mockReturnValue("unithead\n");
 
 const { GET } = await import("@/app/api/health/route");
+const { resetKolCoverageCache } = await import("@/app/api/health/kol-coverage-cache");
 
 const HEALTH_TOKEN = "unit-test-token";
 
@@ -62,9 +65,17 @@ afterAll(() => {
 
 beforeEach(() => {
   queryRaw.mockReset();
+  queryRawUnsafe.mockReset();
   transactionRun.mockClear();
   pingRedisMock.mockReset();
   pingRedisMock.mockResolvedValue({ ok: true, latencyMs: 2 });
+  // BL-075-F006 default: every test starts with a fresh kol_coverage
+  // cache + stub stats that satisfy the snapshot shape. Tests that
+  // care about the actual numbers override via mockResolvedValueOnce.
+  resetKolCoverageCache();
+  queryRawUnsafe.mockResolvedValue([
+    { total: 100, country_filled: 0, language_filled: 0 },
+  ]);
 });
 
 function authedRequest(): Request {
@@ -173,5 +184,60 @@ describe("GET /api/health", () => {
     queryRaw.mockResolvedValueOnce([{ "?column?": 1 }]);
     const res = await GET(plainRequest());
     expect(res.headers.get("cache-control")).toContain("no-store");
+  });
+
+  it("BL-075-F006: includes kol_coverage with country/language fill rates + total + last_updated", async () => {
+    queryRaw.mockResolvedValueOnce([{ "?column?": 1 }]);
+    queryRawUnsafe.mockResolvedValueOnce([
+      { total: 1397, country_filled: 700, language_filled: 945 },
+    ]);
+    const res = await GET(plainRequest());
+    const body = (await res.json()) as {
+      kol_coverage?: {
+        country_fill_rate: number;
+        language_fill_rate: number;
+        total_active_kols: number;
+        last_updated: string;
+      };
+    };
+    expect(body.kol_coverage).toBeDefined();
+    expect(body.kol_coverage!.total_active_kols).toBe(1397);
+    expect(body.kol_coverage!.country_fill_rate).toBeCloseTo(700 / 1397, 4);
+    expect(body.kol_coverage!.language_fill_rate).toBeCloseTo(945 / 1397, 4);
+    expect(() => new Date(body.kol_coverage!.last_updated).toISOString()).not.toThrow();
+  });
+
+  it("BL-075-F006: cache reuse — second request within TTL does not re-query the DB", async () => {
+    queryRaw.mockResolvedValue([{ "?column?": 1 }]);
+    queryRawUnsafe.mockResolvedValueOnce([
+      { total: 100, country_filled: 50, language_filled: 80 },
+    ]);
+    await GET(plainRequest());
+    const firstCallCount = queryRawUnsafe.mock.calls.length;
+    await GET(plainRequest());
+    expect(queryRawUnsafe.mock.calls.length).toBe(firstCallCount);
+  });
+
+  it("BL-075-F006: snapshot query failure does not flip health to unhealthy", async () => {
+    queryRaw.mockResolvedValueOnce([{ "?column?": 1 }]);
+    queryRawUnsafe.mockRejectedValueOnce(new Error("relation \"kol\" does not exist"));
+    const res = await GET(plainRequest());
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.status).toBe("healthy");
+    expect(body).not.toHaveProperty("kol_coverage");
+  });
+
+  it("BL-075-F006: zero KOLs returns fill_rate=0 cleanly (no divide-by-zero)", async () => {
+    queryRaw.mockResolvedValueOnce([{ "?column?": 1 }]);
+    queryRawUnsafe.mockResolvedValueOnce([
+      { total: 0, country_filled: 0, language_filled: 0 },
+    ]);
+    const res = await GET(plainRequest());
+    const body = (await res.json()) as {
+      kol_coverage: { total_active_kols: number; country_fill_rate: number };
+    };
+    expect(body.kol_coverage.total_active_kols).toBe(0);
+    expect(body.kol_coverage.country_fill_rate).toBe(0);
   });
 });

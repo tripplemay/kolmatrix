@@ -743,11 +743,102 @@ export async function getDataCoverage(
   };
 }
 
+// ────────────────────────────────────────────────────────────────────
+// BL-075-F005 — data fill-rate snapshot.
+//
+// Companion to `getDataCoverage` (which counts distinct values per
+// dimension). `getDataFillRates` returns the share of active gaming
+// rows that have a non-NULL / non-blank value per dimension — the
+// number the filter sidebar now surfaces as "Coverage: N%" to
+// replace the BL-073-F006 hard disable. Threshold semantics intentionally
+// match `getDataCoverage` (deleted_at IS NULL filter; brand-safety is
+// outside the kol column set so we omit it).
+// ────────────────────────────────────────────────────────────────────
+
+export interface DataFillRates {
+  /** Share of active KOLs with a non-blank country_code (0-1). */
+  country: number;
+  /** Share of active KOLs with a non-blank language (0-1). */
+  language: number;
+  /** Share of active KOLs with a non-blank platform (0-1). */
+  platform: number;
+  /** Share of active KOLs with at least one non-blank category (0-1). */
+  category: number;
+  /** Share of active KOLs with a non-blank monetization_status (0-1). */
+  monetization: number;
+  /** Total active KOLs counted (handy when total === 0 means we
+   *  should hide the hint entirely rather than render "0%"). */
+  total: number;
+}
+
+export async function getDataFillRates(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tx: any,
+): Promise<DataFillRates> {
+  const rows = (await tx.$queryRawUnsafe(
+    `
+    SELECT
+      COUNT(*)::int AS total,
+      COUNT(*) FILTER (
+        WHERE country_code IS NOT NULL AND length(btrim(country_code)) > 0
+      )::int AS country_filled,
+      COUNT(*) FILTER (
+        WHERE language IS NOT NULL AND length(btrim(language)) > 0
+      )::int AS language_filled,
+      COUNT(*) FILTER (
+        WHERE platform IS NOT NULL AND length(btrim(platform)) > 0
+      )::int AS platform_filled,
+      COUNT(*) FILTER (
+        WHERE categories IS NOT NULL
+          AND array_length(categories, 1) IS NOT NULL
+          AND array_length(categories, 1) > 0
+      )::int AS category_filled,
+      COUNT(*) FILTER (
+        WHERE monetization_status IS NOT NULL
+          AND length(btrim(monetization_status)) > 0
+      )::int AS monetization_filled
+    FROM kol
+    WHERE deleted_at IS NULL AND is_suspicious = false
+    `,
+  )) as Array<{
+    total: number;
+    country_filled: number;
+    language_filled: number;
+    platform_filled: number;
+    category_filled: number;
+    monetization_filled: number;
+  }>;
+
+  const r = rows[0] ?? {
+    total: 0,
+    country_filled: 0,
+    language_filled: 0,
+    platform_filled: 0,
+    category_filled: 0,
+    monetization_filled: 0,
+  };
+  const total = Number(r.total ?? 0);
+  const ratio = (n: number): number => (total > 0 ? Number(n) / total : 0);
+  return {
+    total,
+    country: ratio(r.country_filled),
+    language: ratio(r.language_filled),
+    platform: ratio(r.platform_filled),
+    category: ratio(r.category_filled),
+    monetization: ratio(r.monetization_filled),
+  };
+}
+
 /**
  * Returns true if the filters touch any dimension whose coverage is 0.
  * `runMatchSearch` callers short-circuit to an empty result when this
  * fires — saves an unnecessary SQL round-trip and prevents the user
  * from blaming the search when the underlying data is the issue.
+ *
+ * BL-075-F005: no longer called by `runMatchSearch` (we always run
+ * the SQL now that the sidebar shows a "Coverage: N%" hint). Kept as
+ * a public helper for any future caller that still wants the cheap
+ * skip — and so the unit test contract stays valid.
  */
 export function filterTouchesZeroCoverage(
   filters: DiscoveryFilters,

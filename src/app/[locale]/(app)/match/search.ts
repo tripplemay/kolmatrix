@@ -24,10 +24,11 @@ import type { Prisma } from "@prisma/client";
 import { withTenant } from "@/lib/db";
 import {
   buildKolWhere,
-  filterTouchesZeroCoverage,
   getDataCoverage,
+  getDataFillRates,
   sortToOrderBy,
   type DataCoverage,
+  type DataFillRates,
   type DiscoveryFilters,
 } from "@/lib/kol/filters";
 import { createCursorPaginator, type OrderBySpec } from "@/lib/pagination/cursor";
@@ -80,17 +81,16 @@ type KolRowShape = {
 export async function runMatchSearch(
   tenantId: string,
   filters: DiscoveryFilters,
-  coverage?: DataCoverage,
+  _coverage?: DataCoverage,
 ): Promise<MatchSearchResult> {
-  // BL-073-F006 early-return: if the caller passed a coverage snapshot
-  // and the active filters touch a zero-coverage dimension, skip the
-  // SQL round-trip entirely. Saves the marketer from a "search broken"
-  // experience when the underlying data isn't there yet. Caller is
-  // free to omit `coverage` (legacy callers stay unchanged), in which
-  // case we behave exactly like before this change.
-  if (coverage && filterTouchesZeroCoverage(filters, coverage)) {
-    return { items: [], total: 0, hasMore: false, nextCursor: null };
-  }
+  // BL-075-F005: the BL-073-F006 early-return (skip SQL when filter
+  // touches zero-coverage dim) is withdrawn now that the sidebar
+  // surfaces a "Coverage: N%" hint instead of greying the chips out.
+  // The marketer reads the hint, understands the partial coverage, and
+  // selects the filter on purpose — running the SQL and returning a
+  // possibly-small result is the correct UX. `_coverage` kept on the
+  // signature so existing call sites stay typed; ignored at runtime.
+  void _coverage;
 
   const baseWhere = buildKolWhere({ ...filters, includeNonGaming: true });
   const andClauses = Array.isArray(baseWhere.AND)
@@ -158,4 +158,14 @@ export async function runMatchSearch(
  */
 export async function loadMatchDataCoverage(tenantId: string) {
   return withTenant(tenantId, (tx) => getDataCoverage(tx));
+}
+
+/**
+ * BL-075-F005 — per-dimension fill-rate snapshot used by the filter
+ * sidebar to render "Coverage: N%" hints. Returned alongside the
+ * existing coverage struct so the page can keep the both in one
+ * Promise.all without two extra round-trips.
+ */
+export async function loadMatchDataFillRates(tenantId: string): Promise<DataFillRates> {
+  return withTenant(tenantId, (tx) => getDataFillRates(tx));
 }

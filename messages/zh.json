@@ -731,7 +731,8 @@
       "tierMedium": "中",
       "tierLow": "低",
       "tierUnrated": "未评级",
-      "noData": "(暂无数据)"
+      "noData": "(暂无数据)",
+      "coverageHint": "已覆盖 {pct}%"
     },
     "regions": {
       "US": "美国",

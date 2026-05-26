@@ -75,7 +75,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "src/app/[locale]/(app)/match/MatchFilterSidebar.tsx country/language 维度撤 aria-disabled + pointer-events-none + opacity-50",
       "getDataCoverage 函数保留 (backend 仍计算 coverage), UI 不再 disable",
@@ -91,7 +91,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "src/app/api/health/route.ts response 加 kol_coverage 子结构: { country_fill_rate, language_fill_rate, total_active_kols, last_updated }",
       "查询 kol.count + count where country_code IS NOT NULL AND != '' (similarly for language); active gaming 限定 deleted_at IS NULL AND is_suspicious=false",

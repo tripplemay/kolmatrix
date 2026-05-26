@@ -731,7 +731,8 @@
       "tierMedium": "Medio",
       "tierLow": "Bajo",
       "tierUnrated": "Sin calificar",
-      "noData": "(sin datos)"
+      "noData": "(sin datos)",
+      "coverageHint": "Cobertura: {pct}%"
     },
     "regions": {
       "US": "Estados Unidos",

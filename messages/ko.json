@@ -731,7 +731,8 @@
       "tierMedium": "중간",
       "tierLow": "낮음",
       "tierUnrated": "미평가",
-      "noData": "(데이터 없음)"
+      "noData": "(데이터 없음)",
+      "coverageHint": "커버리지 {pct}%"
     },
     "regions": {
       "US": "미국",

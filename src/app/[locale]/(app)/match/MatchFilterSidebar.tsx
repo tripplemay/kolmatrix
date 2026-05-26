@@ -42,6 +42,7 @@ import {
   RELATIONSHIP_STATUSES,
   UPLOAD_FREQUENCY_TIERS,
   type DataCoverage,
+  type DataFillRates,
   type DiscoveryFilters,
 } from "@/lib/kol/filters";
 import { cn } from "@/lib/utils";
@@ -60,11 +61,27 @@ interface Props {
    * rendered with reduced affordance + a "no data" hint so the user
    * never gets blamed for selecting a filter the pool can't satisfy.
    * Optional for backward-compat with legacy callers (defaults to
-   * all-positive coverage = nothing is greyed). */
+   * all-positive coverage = nothing is greyed).
+   *
+   * BL-075-F005 scope narrowing: the country (regions) + language dims
+   * are no longer hard-disabled when coverage>0; they show a
+   * "Coverage: N%" hint instead via `fillRates`. Coverage is still
+   * consulted for the other dims (platform / category / monetization)
+   * because BL-075 does not backfill those columns. */
   coverage?: DataCoverage;
+  /** BL-075-F005 — per-dimension fill rate (0-1) used to surface the
+   *  "Coverage: N%" hint on country + language so the marketer can
+   *  see that BL-075 enriched a fraction of the pool, not all of it.
+   *  Optional so older callers can omit it without breaking. */
+  fillRates?: DataFillRates;
 }
 
-export async function MatchFilterSidebar({ filters, basePath, coverage }: Props) {
+export async function MatchFilterSidebar({
+  filters,
+  basePath,
+  coverage,
+  fillRates,
+}: Props) {
   const t = await getTranslations("match.filters");
   const tRegions = await getTranslations("match.regions");
   const tCategories = await getTranslations("match.categories");
@@ -75,11 +92,30 @@ export async function MatchFilterSidebar({ filters, basePath, coverage }: Props)
   // next to a greyed-out chip group when the underlying column has
   // zero coverage in the tenant's live pool.
   const noDataLabel = t.has("noData") ? t("noData") : "(no data)";
-  const regionsDisabled = coverage ? coverage.regions === 0 : false;
-  const languagesDisabled = coverage ? coverage.languages === 0 : false;
+  // BL-075-F005 — the country (regions) + language dims drop their
+  // hard-disable now that backfill populates a fractional share of the
+  // pool. Other dims (platform / category / monetization) still
+  // disable on zero coverage because BL-075 does not touch those
+  // columns; their "(no data)" branch from BL-073-F006 stays exactly
+  // as it was.
   const platformsDisabled = coverage ? coverage.platforms === 0 : false;
   const categoriesDisabled = coverage ? coverage.categories === 0 : false;
   const monetizationDisabled = coverage ? coverage.monetizationStatuses === 0 : false;
+
+  // BL-075-F005 — "Coverage: N%" hint copy. Translated via next-intl
+  // ICU placeholder so the percent renders inline in 5 locales. The
+  // fillRates struct may be omitted (legacy callers); in that case we
+  // render no hint and the chip group looks identical to pre-BL-075.
+  function coverageHintFor(
+    dim: keyof Pick<DataFillRates, "country" | "language">,
+  ): string | undefined {
+    if (!fillRates) return undefined;
+    if (fillRates.total === 0) return undefined;
+    const pct = Math.round(fillRates[dim] * 100);
+    return t("coverageHint", { pct });
+  }
+  const regionsCoverageHint = coverageHintFor("country");
+  const languagesCoverageHint = coverageHintFor("language");
 
   const cookieJar = await cookies();
   const advancedCookie = cookieJar.get(ADVANCED_COOKIE_NAME)?.value;
@@ -171,7 +207,7 @@ export async function MatchFilterSidebar({ filters, basePath, coverage }: Props)
       <ChipGroup
         label={t("region")}
         dimensionId="region"
-        disabledLabel={regionsDisabled ? noDataLabel : undefined}
+        coverageHint={regionsCoverageHint}
       >
         {DISCOVERY_REGIONS.map((code) => (
           <ChipCheckbox
@@ -181,7 +217,6 @@ export async function MatchFilterSidebar({ filters, basePath, coverage }: Props)
             label={tRegions(code)}
             checked={filters.regions.includes(code)}
             dataTestid={`match-filter-region-${code}`}
-            disabled={regionsDisabled}
           />
         ))}
       </ChipGroup>
@@ -254,16 +289,14 @@ export async function MatchFilterSidebar({ filters, basePath, coverage }: Props)
               name="languages"
               defaultValue={filters.languages.join(",")}
               placeholder="en, zh, ja"
-              disabled={languagesDisabled}
-              aria-disabled={languagesDisabled}
               data-testid="match-filter-languages"
             />
-            {languagesDisabled ? (
+            {languagesCoverageHint ? (
               <span
                 className="text-on-surface-variant/60 mt-1 block text-[10px]"
-                data-testid="match-filter-languages-no-data"
+                data-testid="match-filter-languages-coverage-hint"
               >
-                {noDataLabel}
+                {languagesCoverageHint}
               </span>
             ) : null}
           </Field>
@@ -535,6 +568,7 @@ function ChipGroup({
   label,
   children,
   disabledLabel,
+  coverageHint,
   dimensionId,
 }: {
   label: string;
@@ -543,8 +577,14 @@ function ChipGroup({
    *  the live tenant pool, the caller passes a short "no data" hint
    *  rendered next to the label so the user can tell the chips are
    *  greyed because the data layer is empty, not because they
-   *  mis-clicked. */
+   *  mis-clicked. Mutually exclusive with `coverageHint` (if both are
+   *  set, `disabledLabel` wins because zero-coverage is strictly
+   *  worse than partial coverage). */
   disabledLabel?: string;
+  /** BL-075-F005 — positive-coverage hint ("Coverage: 67%") rendered
+   *  when the dim is enabled but partially backfilled. Shown only when
+   *  `disabledLabel` is absent so the two states never duplicate. */
+  coverageHint?: string;
   /** BL-073 fix-round 2 — stable, locale-independent dimension key
    *  embedded in the no-data hint's data-testid so probes can target
    *  e.g. `chip-group-no-data-region` instead of the localised
@@ -562,6 +602,13 @@ function ChipGroup({
           data-testid={`chip-group-no-data-${testidSuffix}`}
         >
           {disabledLabel}
+        </span>
+      ) : coverageHint ? (
+        <span
+          className="text-on-surface-variant/60 -mt-1 mb-1 block text-[10px]"
+          data-testid={`chip-group-coverage-${testidSuffix}`}
+        >
+          {coverageHint}
         </span>
       ) : null}
       <div className="flex flex-wrap gap-2">{children}</div>

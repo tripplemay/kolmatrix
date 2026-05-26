@@ -69,7 +69,11 @@ import { MatchRefineBarLazy } from "./MatchRefineBarLazy";
 import { MatchSearchBar } from "./MatchSearchBar";
 import { MatchSummaryBar } from "./MatchSummaryBar";
 import { MatchTableSearch } from "./MatchTableSearch";
-import { loadMatchDataCoverage, runMatchSearch } from "./search";
+import {
+  loadMatchDataCoverage,
+  loadMatchDataFillRates,
+  runMatchSearch,
+} from "./search";
 import { parseView } from "./view-mode";
 
 export const metadata = { title: "Match — KOLMatrix" };
@@ -125,13 +129,12 @@ export default async function MatchPage({ params, searchParams }: Props) {
   // (KPI strip) and savedSearches (header dropdown) move into Suspense-
   // streamed sub-trees below so the page can flush the main table without
   // waiting on the auxiliary queries.
-  // BL-073-F006 — fetch the data-coverage snapshot in parallel with
-  // the main search. Coverage feeds the filter sidebar (UI disable for
-  // empty dims) + lets us short-circuit the search response when the
-  // filter touches a zero-coverage dim (search.ts early-return only
-  // fires when the caller passes coverage; we keep them parallel to
-  // avoid sequencing two DB round-trips on the LCP critical path).
-  const [searchResultRaw, campaign, coverage] = await Promise.all([
+  // BL-073-F006 — coverage snapshot in parallel for the sidebar greyout.
+  // BL-075-F005 — fillRates snapshot in parallel for the "Coverage: N%"
+  // hint that supersedes the BL-073-F006 hard disable for the country +
+  // language dims (those are now backfilled to fractional coverage; the
+  // hint communicates the partial state instead of locking the chips).
+  const [searchResult, campaign, coverage, fillRates] = await Promise.all([
     runMatchSearch(tenantId, filters),
     // BL-065-F005 — tenant-scoped campaign lookup for the AI sidebar.
     // Returns null when the URL's campaignId is stale, malformed, or
@@ -151,24 +154,8 @@ export default async function MatchPage({ params, searchParams }: Props) {
         )
       : Promise.resolve(null),
     loadMatchDataCoverage(tenantId),
+    loadMatchDataFillRates(tenantId),
   ]);
-
-  // BL-073-F006 — if any active filter dimension has zero coverage in
-  // the live tenant pool, collapse the result to an empty set so the
-  // emptyState copy + sidebar greyout tell the user "this dimension
-  // has no data yet" rather than "search is broken". runMatchSearch
-  // already returns rows that ignore coverage; the override here is
-  // cheap and keeps the SQL audit clean (we still ran the search,
-  // just discard its rows on the way out).
-  const filterTouchesEmptyDim =
-    (filters.regions.length > 0 && coverage.regions === 0) ||
-    (filters.languages.length > 0 && coverage.languages === 0) ||
-    (filters.platforms.length > 0 && coverage.platforms === 0) ||
-    (filters.categories.length > 0 && coverage.categories === 0) ||
-    (filters.monetizationStatuses.length > 0 && coverage.monetizationStatuses === 0);
-  const searchResult = filterTouchesEmptyDim
-    ? { items: [], total: 0, hasMore: false, nextCursor: null }
-    : searchResultRaw;
 
   const t = await getTranslations("match.header");
   const tEmpty = await getTranslations("match.emptyState");
@@ -308,7 +295,12 @@ export default async function MatchPage({ params, searchParams }: Props) {
 
       <div className={cn("grid gap-6", mainColumns)}>
         <aside className="lg:sticky lg:top-20 lg:self-start">
-          <MatchFilterSidebar filters={filters} basePath={basePath} coverage={coverage} />
+          <MatchFilterSidebar
+            filters={filters}
+            basePath={basePath}
+            coverage={coverage}
+            fillRates={fillRates}
+          />
         </aside>
 
         <section className="flex min-w-0 flex-col gap-4">

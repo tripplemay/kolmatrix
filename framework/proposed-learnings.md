@@ -233,3 +233,27 @@ sediment（沉淀）从 proposed-learnings.md 走向 `framework/harness/*.md` �
 
 **状态：** 待用户 ack — done 阶段提出，落 v0.9.24 framework sediment batch
 
+---
+
+## [2026-05-26] Claude CLI — 来源：BL-075-F004 / Generator Kimi
+
+**类型：** 新坑（v0.9.24 候选 #11）
+
+**内容：** **AI_DAILY_COST_USD_PER_TENANT_MAX 用 DEFAULT_COST_PER_CALL_USD=$0.01 估算 → 一次性 backfill 被 5x 高估**。BL-075-F004 prod backfill 跑 1383 KOL × 实际 cost ~$0.0009/call ≈ $1.25 总成本，但 cost-cap 用 `event_log count × $0.01` 估算（src/lib/ai/cost-cap.ts:43 DEFAULT_COST_PER_CALL_USD），$5/天 cap 在 ~500 call 时触发，剩余 880 call LLM 全部 skip。两个坑：(a) 估算 5-10x 高估实际成本（生产环境每次 LLM call 含 token 计费走 recordAiUsage 真实 costUsd，但 cap pre-check 只 count 不 sum），(b) 一次性 backfill 类操作没有 bypass 通道，被 normal-usage 同一 tenant 的 cap 拦截。Workaround: `AI_DAILY_COST_USD_PER_TENANT_MAX=500 nohup npx tsx scripts/...` 单次提升 cap。
+
+**建议写入：** `framework/harness/ai-action-contract.md` 加 §"cost-cap 估算 vs 实际"段：(1) 修 cost-cap 改用 sum(payload.costUsd) 而非 count × default；(2) backfill 类 script 默认带 cap bypass flag 或环境覆盖文档；(3) 建议 cost-cap 拆 `interactive` (default $5/day) vs `batch` (default unlimited) 两档
+
+**状态：** 待用户 ack — done 阶段提出，落 v0.9.24 framework sediment batch
+
+---
+
+## [2026-05-26] Claude CLI — 来源：BL-075-F004 / Generator Kimi
+
+**类型：** 新坑（v0.9.24 候选 #12）
+
+**内容：** **aigcgateway 30 RPM 默认硬限 — concurrency=5 backfill 必死 + retry 1.5s 救不了**。BL-075-F004 dry-run 实测：concurrency=5 时几乎每个 LLM call 都返 429 `RPM limit exceeded on key (limit=30). Please retry after 60 seconds`，fetchWithRetry 单轮 1.5s jitter retry 远不够（30 RPM = 2s gap minimum）。修复：enrichment-stage 加 makeLlmRateGate(intervalMs=2100) 单进程内 timestamp serialize 所有 LLM dispatch，concurrency=5 的 worker 在 LLM 前排队，franc/audience-geo path 不 gate（CPU 本地）。验证后 0 个 429。
+
+**建议写入：** `framework/harness/ai-action-contract.md` §"批量调用 LLM 限速"段：(1) 默认 default RPM 假设 30，超 5 concurrency 必须自带 rate gate；(2) 推荐 pattern: `makeLlmRateGate(intervalMs)` + 预测 LLM 调用路径（仅 LLM-bound 才等待）；(3) fetch-with-retry 的 1.5s retry 不替代 rate gate（only 救偶发 spike）
+
+**状态：** 待用户 ack — done 阶段提出，落 v0.9.24 framework sediment batch
+

@@ -35,8 +35,14 @@
 import packageJson from "../../../../package.json";
 import { execSync } from "node:child_process";
 
-import { prisma } from "@/lib/db";
+import { prisma, withPlatformAdmin } from "@/lib/db";
 import { pingRedis } from "@/lib/redis";
+
+import {
+  readKolCoverageCache,
+  writeKolCoverageCache,
+  type KolCoverageSnapshot,
+} from "./kol-coverage-cache";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic"; // never cache
@@ -116,6 +122,64 @@ function isHealthy(checks: Record<string, Check>): boolean {
   return Object.values(checks).every((c) => c.status === "ok");
 }
 
+// BL-075-F006 — KOL coverage snapshot for the health response.
+//
+// scripts/healthcheck.sh polls `/api/health` every 3s during deploy and
+// (separately) a Cloud Monitoring uptime probe every 60s, so a per-call
+// COUNT(*) on `kol` would be wasteful: cache for 5 minutes, refresh
+// lazily on the next call after expiry. The values are observational
+// (operator dashboards, KPI alerting); they never feed business logic
+// so a stale read on the first request post-expiry is fine. Cache
+// state lives in `./kol-coverage-cache` (Next.js's route validator
+// rejects non-method exports, so the reset helper cannot live here).
+//
+// RLS: the snapshot is cross-tenant; we run it under
+// `withPlatformAdmin` to bypass the tenant scope without joining one
+// at a time. Read-only count; no rows leak across tenants in the
+// returned numbers.
+async function loadKolCoverageSnapshot(): Promise<KolCoverageSnapshot | null> {
+  const now = Date.now();
+  const cached = readKolCoverageCache(now);
+  if (cached) return cached;
+  try {
+    const rows = (await withPlatformAdmin((tx) =>
+      tx.$queryRawUnsafe(
+        `
+        SELECT
+          COUNT(*)::int AS total,
+          COUNT(*) FILTER (
+            WHERE country_code IS NOT NULL AND length(btrim(country_code)) > 0
+          )::int AS country_filled,
+          COUNT(*) FILTER (
+            WHERE language IS NOT NULL AND length(btrim(language)) > 0
+          )::int AS language_filled
+        FROM kol
+        WHERE deleted_at IS NULL AND is_suspicious = false
+        `,
+      ),
+    )) as Array<{ total: number; country_filled: number; language_filled: number }>;
+    const r = rows[0] ?? { total: 0, country_filled: 0, language_filled: 0 };
+    const total = Number(r.total ?? 0);
+    const snapshot: KolCoverageSnapshot = {
+      total_active_kols: total,
+      country_fill_rate: total === 0 ? 0 : Number(r.country_filled) / total,
+      language_fill_rate: total === 0 ? 0 : Number(r.language_filled) / total,
+      last_updated: new Date(now).toISOString(),
+    };
+    writeKolCoverageCache(snapshot, now);
+    return snapshot;
+  } catch (err) {
+    console.warn(
+      "[health] kol_coverage snapshot failed: %s",
+      err instanceof Error ? err.message : String(err),
+    );
+    // Don't fail the whole health check on a coverage query glitch —
+    // omit the field instead. The cache stays whatever it was so the
+    // next call still tries.
+    return null;
+  }
+}
+
 /**
  * BL-034 F007: detail-fields are visible only when the configured
  * HEALTH_DETAIL_TOKEN matches the inbound `?token=` / `X-Health-Token`.
@@ -132,7 +196,11 @@ function isDetailAuthorized(req: Request): boolean {
 }
 
 export async function GET(req: Request): Promise<Response> {
-  const [database, redis] = await Promise.all([checkDatabase(), checkRedis()]);
+  const [database, redis, kolCoverage] = await Promise.all([
+    checkDatabase(),
+    checkRedis(),
+    loadKolCoverageSnapshot(),
+  ]);
 
   const checks: Record<string, Check> = { database, redis };
   const healthy = isHealthy(checks);
@@ -144,6 +212,9 @@ export async function GET(req: Request): Promise<Response> {
     checks,
     timestamp: new Date().toISOString(),
   };
+  if (kolCoverage) {
+    body.kol_coverage = kolCoverage;
+  }
   if (showDetail) {
     body.version = packageJson.version;
     body.git_sha = GIT_SHA;
