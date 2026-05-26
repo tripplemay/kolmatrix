@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-075-kol-data-coverage — country/language 字段 NULL 填充 (BL-062 起 batch). 7 features F001-F007 (~13.5h ≈ 2 day Generator + 0.5 day Reviewer). A1 lock 4 子决策 (5/26): 混合方法 (langdetect + LLM country) / best-effort 阈值 / 全量 backfill 1397 + 立刻启 UI filter / 合入 kol-sync-daily.ts. BL-073-F006 UI disable 本批撤回. 关联 docs/specs/BL-075-kol-data-coverage-spec.md @ 本 commit / docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md §3.1 audit material.",
   "total_features": 7,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
   "current_sprint": "BL-075-kol-data-coverage",
-  "last_updated": "2026-05-26T12:05+0800",
+  "last_updated": "2026-05-26T12:10+0800",
   "reference_docs": [
     "docs/specs/BL-075-kol-data-coverage-spec.md",
     "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",
@@ -37,7 +37,7 @@
   "generator_handoff": null,
   "session_notes": {
     "Kimi_planner": null,
-    "Kimi_generator": "[2026-05-26 12:05 BJT Generator Kimi BL-075 F001+F002 done. F002 action_id cmpm3pr2e0011bno3f1vd4v9r created via MCP, manual run_action 实测返 {country:US,confidence:0.9}+JP案例。env落 prod+staging /opt/kolmatrix*/env.{production,staging}，backup .env.{production,staging}.bl075-f002.20260526-035529。**ops经验**: pm2 reload --update-env 不重读 env_file，必须 source .env 后 reload，/proc/PID/environ 验证 env 实际加载。environment.md Actions 清单 + proposed-learnings.md #10 更新。NEXT: F003 daily sync 集成。]",
+    "Kimi_generator": "[2026-05-26 12:10 BJT Generator Kimi BL-075 F003 done. enrichment-stage.ts shared helper + integrate into kol-sync-daily.ts (after embed-hook). 9 enrichment-stage tests PASS. action=kol.enriched audit_log per row with before/after/source/confidence payload. concurrency=5 default. NEXT: F004 backfill script + run prod 1397.]",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null

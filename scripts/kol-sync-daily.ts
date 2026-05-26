@@ -37,6 +37,10 @@ import { PrismaClient } from "@prisma/client";
 import { embedKolsForIds, type EmbedRunStats } from "../src/lib/embedding/kol-embed";
 import { ApifyKolSyncAdapter } from "../src/lib/kol-sync/adapters/apify-kol";
 import { KolSyncDispatcher } from "../src/lib/kol-sync/dispatcher";
+import {
+  enrichKolsForTenant,
+  type EnrichStageStats,
+} from "../src/lib/kol-sync/enrichment-stage";
 import { importRawKolData, type ImportStats } from "../src/lib/kol-sync/import";
 import type { QualityFlags, QualitySkipReason } from "../src/lib/kol-sync/quality";
 import {
@@ -90,6 +94,8 @@ interface DailyRunReport {
   importStats: ImportStats | null;
   /** B7a-F001 — embedding hook results (audit lock #8:B, soft phase). */
   embedStats: EmbedRunStats | null;
+  /** BL-075-F003 — enrichment stage stats (country/language fill). */
+  enrichStats: EnrichStageStats | null;
   errors: string[];
   /** Best-effort estimate; apify-kol charges 1u per healthCheck and
    *  ~1u per /kol page request. */
@@ -105,6 +111,22 @@ function formatEmbedSection(report: DailyRunReport, lines: string[]): void {
   );
   lines.push(
     `- Batches: ${e.batches} | Tokens: ${e.promptTokens} | Estimated cost: $${e.estimatedCostUsd.toFixed(6)}`
+  );
+  lines.push("");
+}
+
+function formatEnrichmentSection(report: DailyRunReport, lines: string[]): void {
+  if (!report.enrichStats) return;
+  const e = report.enrichStats;
+  lines.push("## Enrichment stage (BL-075-F003)");
+  lines.push(
+    `- Scanned: ${e.scanned} | language+=${e.enrichedLanguage} | country+=${e.enrichedCountry} | both+=${e.enrichedBoth} | failed=${e.failedCount}`
+  );
+  lines.push(
+    `- Country source: audience-geo-top1=${e.sources.audienceGeoTop1} | llm=${e.sources.llm} | fallback-null=${e.sources.fallbackNull}`
+  );
+  lines.push(
+    `- LLM calls: ${e.llmCallCount} | Estimated cost: $${e.estimatedLlmCostUsd.toFixed(4)}`
   );
   lines.push("");
 }
@@ -136,6 +158,7 @@ function formatMarkdownReport(report: DailyRunReport): string {
     lines.push("");
   }
   formatEmbedSection(report, lines);
+  formatEnrichmentSection(report, lines);
   if (report.errors.length > 0) {
     lines.push("## Errors");
     for (const e of report.errors) lines.push(`- ${e}`);
@@ -206,6 +229,7 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
       discover: null,
       importStats: null,
       embedStats: null,
+      enrichStats: null,
       errors,
       estimatedQuotaConsumed,
     };
@@ -327,6 +351,37 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
     }
   }
 
+  // ---- ENRICHMENT (BL-075-F003) ----
+  // After import + embed, fill NULL country_code / language on every
+  // active gaming KOL in the tenant. Newly-inserted rows from this
+  // run are scanned together with any historical rows the backfill
+  // (F004) could not reach earlier. Failures degrade to "fill_rate
+  // does not advance" but never abort the sync.
+  let enrichStats: EnrichStageStats | null = null;
+  if (deps.prisma && !deps.dryRun) {
+    try {
+      const tenant = await deps.prisma.tenant.findUnique({
+        where: { slug: deps.tenantSlug },
+      });
+      if (tenant) {
+        enrichStats = await enrichKolsForTenant({
+          prisma: deps.prisma,
+          tenantId: tenant.id,
+          logger: (m) => console.log(m),
+        });
+        if (enrichStats.failedCount > 0) {
+          errors.push(
+            `enrichment-stage: ${enrichStats.failedCount}/${enrichStats.scanned} failed`,
+          );
+        }
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`[kol-sync-daily] enrichment-stage failed: ${msg.slice(0, 200)}`);
+      errors.push(`enrichment-stage: ${msg.slice(0, 200)}`);
+    }
+  }
+
   return {
     date: todayUtc(),
     startedAt,
@@ -335,6 +390,7 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
     discover: discover ? { outcomes: discover.outcomes, totals: discover.totals } : null,
     importStats,
     embedStats,
+    enrichStats,
     errors,
     estimatedQuotaConsumed,
   };
