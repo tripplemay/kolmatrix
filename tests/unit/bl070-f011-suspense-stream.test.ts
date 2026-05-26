@@ -28,14 +28,20 @@ describe("BL-070-F011 SSR Suspense stream", () => {
     it("runMatchSearch + campaign lookup remain on the critical path", () => {
       // Promise.all retains the awaited members. BL-073-F006 added the
       // data-coverage snapshot to the tuple (parallel with the search
-      // so it does not extend LCP); searchResult became `searchResultRaw`
-      // because the page post-processes it (zero-coverage facet =>
-      // empty result).
+      // so it does not extend LCP). BL-075-F005 added the fill-rate
+      // snapshot for the new "Coverage: N%" sidebar hint and dropped
+      // the `searchResultRaw` post-filter wrapper (the page now just
+      // uses `searchResult` directly because the hint communicates the
+      // partial coverage instead of empty-out the result).
       expect(match).toMatch(
-        /const \[searchResultRaw, campaign, coverage\] = await Promise\.all\(\[\s*runMatchSearch/,
+        /const \[searchResult, campaign, coverage, fillRates\] = await Promise\.all\(\[\s*runMatchSearch/,
       );
       // Coverage snapshot must enter the tuple via loadMatchDataCoverage.
       expect(match).toMatch(/loadMatchDataCoverage\(tenantId\)/);
+      // BL-075-F005: fill-rate snapshot must enter the tuple via
+      // loadMatchDataFillRates so the sidebar hint stays in sync with
+      // the actual pool fill rate.
+      expect(match).toMatch(/loadMatchDataFillRates\(tenantId\)/);
     });
 
     it("loadDatabaseStats has been moved off the page-level await chain", () => {
