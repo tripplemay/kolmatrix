@@ -4,7 +4,13 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ✅ BL-074-ia-v2 DONE (6/6, fix_rounds=0) — signoff 完成
+## 🚧 BL-075-kol-data-coverage BUILDING (0/7, fix_rounds=0) — country/language 字段 NULL 填充 (BL-062 起 batch)
+- A0+A1 完成 5/26: 4 子决策 lock — 混合方法 (langdetect+LLM country) / best-effort 阈值 / 全量 backfill 1397+立启 UI filter / 合入 kol-sync-daily.ts
+- F001 enrichment lib (3h) / F002 aigcgateway Action + env (1.5h) / F003 daily sync 集成 (2h) / F004 backfill 1397 (3h) / F005 UI filter 启用 (1h) / F006 health metric (1h) / F007 Reviewer (2h) — 总 ~13.5h ≈ 2 day Generator + 0.5 day Reviewer
+- 撤 BL-073-F006 UI disable (本批 F005); BL-062 closed-merged-into-BL-075 (backlog 同步删 BL-062 entry)
+- prod audit: 1397 active gaming KOL 含 568 bio (40.6%) + 12 audience_geo_dist nonempty (0.9%); LLM Claude Haiku 成本 ~$0.5-1 一次 backfill
+- 关联: docs/specs/BL-075-kol-data-coverage-spec.md + BL-073 audit §3.1
+## ✅ BL-074-ia-v2 DONE (6/6, fix_rounds=0, tag bl074-done @ 6bc881d) — 5 路由 IA 加 Campaigns nav + ADR-015 完成并终签
 - Codex Reviewer 终签 PASS：L1 通过 `npm run lint` = 0 errors / 3 warnings、`npx tsc --noEmit` PASS、本地 Playwright `sidebar-nav-5-routes` = 5 passed / 29 skipped
 - 静态验收通过：`NAV_ITEMS` 为 5 条且顺序 `brief → campaigns → match → reach → insight`；`messages/zh.json` 含 `nav.campaigns=活动`；ADR-015 存在且 167 LOC；ADR-013 superseded marker 与 ADR README 索引同步
 - staging 抽样通过：zh 5-nav 顺序正确；`/en/campaigns` 与 `/en/campaigns/[id]` 都高亮 Campaigns；campaign row Match CTA 存在且跳 `/en/match?campaignId=...`

@@ -1,101 +1,118 @@
 [
   {
     "id": "F001",
-    "title": "NAV_ITEMS 4→5 加 campaigns 顺序 B + icon campaign + i18n 5 locale + nav-config path-rewrite",
+    "title": "enrichment lib (langdetect npm + LLM country helper) + 单测",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.5,
-    "status": "completed",
+    "estimated_hours": 3.0,
+    "status": "pending",
     "acceptance": [
-      "src/components/layout/nav-config.ts NAV_ITEMS 5 条, 顺序: brief / campaigns / match / reach / insight (campaigns 在 brief 后 match 前, lock B)",
-      "新加 campaigns nav 配置: { id: 'campaigns', href: '/campaigns', i18nKey: 'nav.campaigns', descriptionKey: 'nav.campaignsDescription', icon: 'campaign' }",
-      "nav-config.ts:99 path-rewrite 改: `if (path.startsWith('/campaigns')) return 'campaigns';` (原 return 'match' 删)",
-      "messages/{zh,en,ja,ko,es}.json sidebar namespace 加 nav.campaigns + nav.campaignsDescription 5 locale 完整翻译 (zh='活动' / en='Campaigns' / ja='キャンペーン' / ko='캠페인' / es='Campañas'; desc 同理同步翻)",
-      "scripts/material-symbols-icons-manifest.txt 含 'campaign' icon (验证已在, 如缺补 1 行 + 重生 woff2)",
-      "tests/unit/i18n-locale-coverage.test.ts 8/8 PASS",
-      "staging /zh + /en + /ja + /ko + /es sidebar 5 nav 顺序 + label 实测正确",
-      "进入 /campaigns 或 /campaigns/[id], sidebar 高亮 campaigns nav (不再假装 match)"
+      "src/lib/kol/enrichment.ts 实现 enrichKol(input): Promise<KolEnrichmentResult> 函数",
+      "language 推断: langdetect (或 franc) npm pkg + bio + displayName + handle 拼接输入; 置信度 >=0.5 才采纳, 否则返 null (不 fallback English 写错值)",
+      "country 推断: 优先 audience_geo_dist top-1 (>=40% 才采纳, source=audience-geo-top1); fallback LLM via runAigcAction (action_id from env AIGCGATEWAY_KOL_COUNTRY_ACTION_ID); LLM 置信度 >=0.5 才采纳",
+      "LLM 失败 (action_id missing / API error / 非 JSON 返回) → try/catch 内吞, country 返 null, 不向外 throw",
+      "package.json 加 dependency langdetect (或 franc, 同时纳入 lock file)",
+      "单元测试 src/lib/kol/__tests__/enrichment.test.ts >=6 case: 纯英文 bio → en / 日文 bio → ja / audience_geo_dist top-1=JP 60% → country=JP source=audience-geo-top1 / audience_geo_dist 空 + LLM mock 返 US 0.7 → country=US source=llm / 无任何材料 → country=null source=fallback-null / LLM mock throw → country=null (不 throw)",
+      "返回 { language, country, languageConfidence, countryConfidence, source: { language, country } } 结构"
     ]
   },
   {
     "id": "F002",
-    "title": "/campaigns CampaignsTable 每行加 'Match KOL' 快捷 CTA 按钮",
+    "title": "aigcgateway 创 kol-country-enrichment Action + env var 落 prod/staging",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "completed",
+    "status": "pending",
     "acceptance": [
-      "src/app/[locale]/(app)/campaigns/CampaignsTable.tsx 每行右侧加新 TCell 含 Link → /${locale}/match?campaignId=${row.id}",
-      "Match 按钮含 auto_awesome icon + i18n label (用 t('matchKolAction.label')) + aria-label 含活动名 (无障碍)",
-      "表头加对应 TH '操作' 列, 5 locale 翻译 (zh='操作' / en='Action')",
-      "messages/{zh,en,ja,ko,es}.json campaigns namespace 加 matchKolAction.{label,aria,actionColumn} 5 locale (zh='匹配 KOL' / en='Match KOL' / ja='KOLマッチ' / ko='KOL 매칭' / es='Match KOL')",
-      "auto_awesome 已在 manifest (match nav 同 icon 复用)",
-      "L1 PASS (lint + tsc + vitest)",
-      "staging 实测 /zh/campaigns 列表行点 Match 按钮 → 跳 /zh/match?campaignId={uuid} 工作台 + 触发 AiSuggestionsSidebar mount"
+      "aigcgateway 创 Action: name='kol-country-enrichment', model='claude-haiku-4.5', variables=[bio, display_name, platform, audience_geo], response_format JSON object",
+      "Prompt 模板: KOL audience analyst 推断 country (ISO 3166-1 alpha-2) from bio + audience_geo + platform; 输出 { country: <code> or null, confidence: 0-1 }; confidence <0.5 返 null",
+      "拿到 action_id (如 cmXXXXXXX) — 通过 mcp__aigc-gateway__create_action 或 KOLMatrix 控制台",
+      "SSH prod + staging 落 env var AIGCGATEWAY_KOL_COUNTRY_ACTION_ID=<cmXXXXXXX>; 备份 .env.{production,staging}.bl075-f002.YYYYMMDD-HHMMSS; pm2 reload --update-env",
+      "prod + staging /api/health 200 healthy 验证 reload 成功",
+      ".auto-memory/environment.md aigcgateway Actions 清单加 kol-country-enrichment entry (含 action_id, env var name, 单次成本估算 ~$0.0005, 用途说明)",
+      "手动 mcp__aigc-gateway__run_action 实测 1 次, 返回 valid JSON { country: 'US' or null, confidence: 0-1 }"
     ]
   },
   {
     "id": "F003",
-    "title": "/insight QuickActions 去冗余 campaigns 按钮（4 → 3 按钮）",
+    "title": "kol-sync-daily.ts 加 enrichment 阶段 + audit_log",
     "executor": "generator",
-    "priority": "medium",
-    "estimated_hours": 0.5,
-    "status": "completed",
+    "priority": "high",
+    "estimated_hours": 2.0,
+    "status": "pending",
     "acceptance": [
-      "src/features/dashboard/QuickActions.tsx ACTIONS 数组从 4 → 3: 删 'campaigns' entry (现 nav 已有 campaigns 一级)",
-      "QuickAction TypeScript type 同步缩窄: key: 'knowledgeBase' | 'discovery' | 'database' (删 'campaigns')",
-      "grid 自适应: grid-cols-2 sm:grid-cols-4 → grid-cols-1 sm:grid-cols-3 (避免 4 列空一格)",
-      "messages 文件 dashboard.quickActions.campaigns + campaignsDescription 保留不删 (避免 i18n test 报漂移; 标 deprecated 注释)",
-      "visual baseline regen /insight 默认 tab 3 QuickActions",
-      "staging 中文模式实测 /zh/insight 默认 tab 显 3 QuickActions"
+      "scripts/kol-sync-daily.ts 在 sync stage 后加 enrichment stage",
+      "仅处理 NULL country_code OR NULL language OR 空字符串 的 KOL (避免重复)",
+      "调 enrichKol() lib, 拿 result 后 withTenant 内 prisma.kol.update + auditLog.create 同 transaction",
+      "audit_log: tenantId / action='kol.enriched' / resourceType='kol' / resourceId=kol.id / payload={before, after, source, confidence}",
+      "并发限制 5 个 LLM 调用 (p-limit 或类似), 避免 LLM rate limit",
+      "日志 (console.log) 记 enrichment count + LLM call count + 估算成本 (LLM count × $0.0005)",
+      "单元测试 mock LLM + Prisma >=3 case: 新 KOL enrichment / 老 NULL KOL 复跑 / LLM 失败 skip",
+      "staging 跑一次 daily sync 实测有 enrichment 发生 (audit_log 写入验证)"
     ]
   },
   {
     "id": "F004",
-    "title": "ADR-015 起草 — 5 路由 IA supersedes ADR-013 + ADR-013 顶部加 marker",
+    "title": "scripts/kol-enrichment-backfill.ts + 跑 1397 KOL 全量",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.5,
-    "status": "completed",
+    "estimated_hours": 3.0,
+    "status": "pending",
     "acceptance": [
-      "新建 docs/adr/ADR-015-5-route-ia-add-campaigns-nav.md ≥80 LOC, 含 6 段标准 ADR 格式 (Context / Decision / Rationale / Alternatives Considered (A B C) / Consequences / Implementation / References)",
-      "标 'Supersedes: ADR-013' + 'Status: Accepted' + 'Date: 2026-05-26'",
-      "Context 段引 BL-073 issue #3 用户反馈原文",
-      "Rationale 段含 4 动词路由 + 1 名词实体 IA 设计取舍",
-      "References 段含 BL-073 audit doc / BL-074 spec / ADR-013 链接",
-      "docs/adr/ADR-013-ai-native-product-pivot.md 顶部加 1 行 marker '⚠️ Superseded by ADR-015 (2026-05-26): 加 campaigns 顶级 nav 形成 5 路由 IA' (body 内容不改, 历史保留完整)",
-      "docs/adr/README.md 索引加 ADR-015 entry + 标 supersedes ADR-013 关系",
-      "grep 'ADR-013' 全仓 review 确认无现行规则与 ADR-015 冲突"
+      "scripts/kol-enrichment-backfill.ts 实现支持 --dry-run + 实跑 + --tenant=<uuid> 限定",
+      "--dry-run 仅 print 不写 DB, 可重复跑确认逻辑",
+      "实跑: 用 withPlatformAdmin 拉跨 tenant NULL country_code OR language KOL, 调 enrichKol, withTenant 内 update + audit_log",
+      "并发 5, 进度 print (每 100 KOL)",
+      "最终报告: total / enriched language count / enriched country count / failed count / language_fill_rate / country_fill_rate / LLM call count / cost estimate",
+      "SSH prod 跑 (set -a; source .env.production; set +a; tsx scripts/kol-enrichment-backfill.ts) 实跑 1397 KOL 全量",
+      "抽样 20-30 KOL 人工 review accuracy (随机抽样, language / country 各 10-15) — best-effort 不设硬阈仅记实际数值",
+      "新建 docs/test-reports/BL-075-backfill-2026-05-XX.md 报告 (含 fill_rate / accuracy / LLM cost / 错误案例)"
     ]
   },
   {
     "id": "F005",
-    "title": "e2e nav-bar 测试更新 + visual baseline regen (4→5 nav 同步)",
+    "title": "UI filter 启用 — 撤 BL-073-F006 disable + 覆盖率提示",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "completed",
+    "estimated_hours": 1.0,
+    "status": "pending",
     "acceptance": [
-      "tests/e2e/sidebar-nav.spec.ts (或类似) 加 5 nav 顺序测试: brief / campaigns / match / reach / insight + 5 locale label 验证",
-      "加 e2e test: 点击 campaigns nav → 跳 /campaigns; 进 /campaigns/[id] → sidebar 高亮 campaigns (验 path-rewrite)",
-      "加 e2e test: /campaigns 行 Match button click → /match?campaignId 跳转 (F002 验证)",
-      "GitHub Actions update-visual-baselines.yml workflow 触发 visual baseline regen — 4 viewport (Desktop 1920 / Tablet 768 / Mobile 375 / Wide 2560) × 5 locale spot check sidebar",
-      "e2e suite 跑通无 regression (existing IA refactor redirects + nav tests 不破坏)",
-      "tests/visual-baseline-tracking PNG 同步入 git"
+      "src/app/[locale]/(app)/match/MatchFilterSidebar.tsx country/language 维度撤 aria-disabled + pointer-events-none + opacity-50",
+      "getDataCoverage 函数保留 (backend 仍计算 coverage), UI 不再 disable",
+      "新加 '已覆盖 N%' 提示文案在 country/language filter section header",
+      "src/app/[locale]/(app)/match/search.ts runMatchSearch 撤 BL-073-F006 加的 early-return (filter coverage=0 不再特殊处理, 正常发 SQL)",
+      "messages/{zh,en,ja,ko,es}.json 加 match.filterSidebar.coverageHint (zh='覆盖 {pct}%' / en='Coverage: {pct}%' / 5 locale 完整)",
+      "staging 实测 /zh/match filter country/language 可点 + 显示覆盖率提示 + 选 filter 返回相应 KOL (验真有数据)"
     ]
   },
   {
     "id": "F006",
+    "title": "/api/health KOL coverage fill_rate 指标 + kpi_daily_snapshot 写入",
+    "executor": "generator",
+    "priority": "medium",
+    "estimated_hours": 1.0,
+    "status": "pending",
+    "acceptance": [
+      "src/app/api/health/route.ts response 加 kol_coverage 子结构: { country_fill_rate, language_fill_rate, total_active_kols, last_updated }",
+      "查询 kol.count + count where country_code IS NOT NULL AND != '' (similarly for language); active gaming 限定 deleted_at IS NULL AND is_suspicious=false",
+      "结果 cache (Redis 或 in-memory, TTL 5 min) 避免每次 health check 都跑 count",
+      "scripts/kol-sync-daily.ts 在 enrichment stage 后写 kpi_daily_snapshot (如表存在 — 否则 skip 不阻塞)",
+      "tests/unit health-route.test.ts 加 case 验 response 含 kol_coverage",
+      "curl prod /api/health 返 valid JSON 含 kol_coverage; staging 同"
+    ]
+  },
+  {
+    "id": "F007",
     "title": "Reviewer L1+L2 抽样验证 + signoff doc 终签（executor:codex）",
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "completed",
+    "status": "pending",
     "acceptance": [
-      "L1 自动化 7 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 F005 新增 (4) NAV_ITEMS 长度=5 (5) nav-config.ts:99 含 return 'campaigns' (6) messages/zh.json nav.campaigns 存在 (7) docs/adr/ADR-015 文件 exist + body≥80 LOC",
-      "L2 staging 抽样实测 8 项 PASS: (1) /zh sidebar 5 nav 顺序 (2) /en+ja+ko+es i18n 正确 (3) /campaigns 进入 sidebar 高亮 campaigns (4) /campaigns/[id] sidebar 高亮 campaigns (5) /campaigns 行 Match button click → /match?campaignId (6) /insight QuickActions 3 按钮 (7) ADR-015 markdown 渲染 + ADR-013 superseded marker (8) visual baseline 同步无回归",
-      "0 broken cross-reference / 0 visual regression / 0 stale path 残留",
-      "signoff doc docs/test-reports/BL-074-signoff-2026-05-XX.md 含 L1/L2 结果 + sample 引用 + 终签"
+      "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 F001+F003+F006 新单测 (4) scripts/kol-enrichment-backfill.ts --dry-run 跑通且输出预期格式 (5) .auto-memory/environment.md Actions 清单含 kol-country-enrichment",
+      "L2 staging 抽样实测 6 项 PASS: (1) /api/health prod 返 kol_coverage fill_rate >0 (2) SSH staging 跑 daily sync 验 enrichment stage 触发 + audit_log 写入 (3) staging /zh/match filter sidebar country/language 不 disable + 覆盖率提示 (4) staging /zh/match 选 country=US filter 返回 country=US KOL (验数据真有) (5) backfill 抽样 20-30 KOL 人工 review accuracy 记录 (6) prod backfill 跑后 fill_rate language ≥60% / country ≥30% 记录 (best-effort 不卡硬阈)",
+      "0 broken cross-reference / 0 LLM cost runaway / 0 audit_log 写入失败",
+      "signoff doc docs/test-reports/BL-075-signoff-2026-05-XX.md 含 L1/L2 结果 + fill_rate + accuracy 报告 + 终签"
     ]
   }
 ]
