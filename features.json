@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "新建 prisma/migrations/<timestamp>_kol_engagement_rate_decimal_7_2/migration.sql 含 ALTER TABLE kol ALTER COLUMN engagement_rate TYPE NUMERIC(7, 2)",
       "migration.sql 含 -- ROLLBACK: 注释 (per v0.9.22 #22 BL-070 沉淀) + warning '先 UPDATE clamp 再 ALTER' (因为 rollback 到 5,2 会触发 overflow 如有 > 999.99 值)",
@@ -21,7 +21,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "src/lib/kol-sync/adapters/apify-kol.ts:409 改为先算 rawEngagementRate, 然后 Math.min(rawRate, 99999.99) clamp 到 Decimal(7,2) 上限",
       "engagementOutlier 变量 = rawEngagementRate != null && rawEngagementRate > 100 (业务语义: >100% engagement 在 percentage 上不合理)",
@@ -37,7 +37,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "src/lib/kol-sync/import.ts upsert 调用包 try/catch: 单 KOL fail 不抛, stats.failed++, audit_log kol.import_failed 写入 (含 platform/externalId/displayName/followerCount/engagementRate/error_msg truncated 500 chars)",
       "import.ts ImportStats interface 加 failed: number 字段 (初始 0)",

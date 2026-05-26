@@ -4,11 +4,15 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-076-apify-numeric-overflow BUILDING (0/5, fix_rounds=0) — P1 升级（5/12 起 14 天 prod sync 全 fail）
-- A0+A1 完成 5/27 01:00: SSH prod 实测 /var/log/kolmatrix-kol-sync.log 5/12 起每天 daily-sync discoverCount=2107-2567 但 inserted=0 updated=0 (numeric overflow)
-- 根因: apify-kol.ts:409 engagementRate=(totalLikes/postsCount)/followers*100 可超 Decimal(5,2) 上限 999.99; import.ts loop 无 try/catch → first overflow 整 batch fail
-- A1 lock: 策略 A 三件套 (Schema Decimal(7,2) + adapter clamp 99999.99 + import.ts per-KOL try/catch) / Defense A 均包 (engagement_outlier flag + audit_log kol.import_failed) / Backfill B 追 14 天遗漏
-- F001 Schema migration (1h) / F002 adapter clamp + outlier flag (1.5h) / F003 import.ts try/catch + audit_log (1.5h) / F004 SSH prod backfill (1h) / F005 Reviewer (1.5h) — 总 ~6.5h ≈ 1 day Generator + 0.5 day Reviewer
+## 🚧 BL-076-apify-numeric-overflow BUILDING (3/5, fix_rounds=0) — F001+F002+F003 done, F004 BLOCKED on prod deploy
+- F001+F002+F003 单 commit f718704 完成 + push main 26460638073 CI 8/8 jobs success
+- F001 prisma/migrations/20260526160800 ALTER engagement_rate Decimal(5,2)→Decimal(7,2) + ROLLBACK clamp warning, schema.prisma 同步
+- F002 apify-kol.ts rawEngagementRate Math.min(99999.99) clamp + outlier>100 flag, RawKolData + QualityFlags 字段扩展, import.ts mapToUpsertPayload 写 metadata.flags.engagement_outlier
+- F003 import.ts upsert try/catch + audit_log kol.import_failed (含 platform/externalId/displayName/followerCount/engagementRate/error) + recursive failure guard, scripts/kol-sync-daily.ts aggregate.failed + alerts when failed>0
+- L1 PASS: lint 0 errors / 3 pre-existing warnings, tsc clean, vitest 189 files / 1375 tests (+1 file / +7 cases)
+- Staging deployed f718704 (curl /api/health git_sha=f718704), prisma migrate deploy 应用 BL-076-F001 migration 成功
+- **F004 BLOCKED**: prod 当前 HEAD c428797 没有 fix, 用户必须先手动触发 GitHub Actions Deploy to Production workflow_dispatch, 部署后 Generator 才能 SSH prod 跑 daily-sync 验证 + 写 BL-076-backfill-2026-05-27.md
+- 完成 F004 后切 verifying 交 Reviewer (F005)
 - 关联: docs/specs/BL-076-apify-numeric-overflow-spec.md + BL-075 signoff §6 residual warning
 ## ✅ BL-075-kol-data-coverage DONE (7/7, fix_rounds=1) — signoff 完成
 - Codex Reviewer 终签 PASS：L1 通过 `npm run lint` = 0 errors / 3 warnings、`npx tsc --noEmit` PASS、`npm test` = 188 files / 1368 tests PASS、backfill dry-run 输出格式正常、environment action 清单仍含 `kol-country-enrichment`

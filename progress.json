@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-076-apify-numeric-overflow — apify-kol discover-import numeric field overflow hotfix. 5 features F001-F005 (~6.5h ≈ 1 day Generator + 0.5 day Reviewer). 严重度从 medium 升 P1 — prod log 实测 5/12 起 14+ 天 daily-sync 全 fail (discoverCount 2107-2567 但 inserted=0 updated=0). 根因: engagementRate = (totalLikes/postsCount)/followers*100 可超 999.99 = Decimal(5,2) 上限 = first overflow throw 整 batch fail. A1 lock 3 子决策 (5/27): 策略 A 三件套 (Schema Decimal(7,2) + adapter clamp + per-KOL try/catch) / Defense A 均包 (outlier flag + audit_log) / Backfill B 追 14 天遗漏 KOL. 关联 docs/specs/BL-076-apify-numeric-overflow-spec.md @ 本 commit + BL-075 signoff §6 residual warning.",
   "total_features": 5,
-  "completed_features": 0,
+  "completed_features": 3,
   "fix_rounds": 0,
   "current_sprint": "BL-076-apify-numeric-overflow",
-  "last_updated": "2026-05-27T01:00+0800",
+  "last_updated": "2026-05-27T00:24+0800",
   "reference_docs": [
     "docs/specs/BL-076-apify-numeric-overflow-spec.md",
     "docs/test-reports/BL-075-signoff-2026-05-27.md",
@@ -25,10 +25,10 @@
   },
   "role_assignments": null,
   "evaluator_feedback": null,
-  "generator_handoff": null,
+  "generator_handoff": "F001+F002+F003 完成并 push f718704. Staging deployed (health.git_sha=f718704). F004 (SSH prod backfill) 需要用户先手动触发 GitHub Actions 'Deploy to Production' workflow_dispatch, 部署到 prod 之后 Generator 才能 SSH prod 跑 npm run kol-sync:daily 验证修复 + 写 backfill report. 部署前 prod 仍 14 天 fail.",
   "session_notes": {
     "Kimi_planner": "[2026-05-27 01:00 BJT Planner Kimi BL-076 planning done. SSH prod 实测发现 5/12 起 14 天 daily-sync 全 fail (discoverCount 2107-2567 但 inserted=0 updated=0), 严重度从 medium 升 P1. 根因: apify-kol.ts:409 engagementRate 计算可超 Decimal(5,2) 上限 999.99. A1 lock: 策略 A 三件套 (Schema migration Decimal(7,2) + clamp + per-KOL try/catch) / Defense A 均包 / Backfill B 追 14 天. 5 features F001-F005 ~6.5h.]",
-    "Kimi_generator": null,
+    "Kimi_generator": "[2026-05-27 00:24 BJT Generator Kimi F001+F002+F003 完成单 commit f718704 (9 files +369 -18). F001 prisma/migrations/20260526160800 engagement_rate Decimal(7,2) + ROLLBACK 含 clamp warning; F002 apify-kol.ts rawEngagementRate 先算 Math.min(99999.99) clamp + outlier>100 flag, RawKolData + QualityFlags + import.ts mapToUpsertPayload 3 处 type 扩展; F003 import.ts upsert try/catch + audit_log kol.import_failed + recursive failure guard, scripts/kol-sync-daily.ts aggregate.failed + alerts. L1 PASS (lint 0 errors / 3 pre-existing warnings, tsc clean, vitest 189 files / 1375 tests). Staging deployed f718704 (health.git_sha 一致), prisma migrate deploy 应用成功. CI 8/8 jobs success. **F004 SSH prod backfill BLOCKED on prod deploy**: prod 当前 HEAD c428797 没有 fix, 必须用户手动触发 GitHub Actions Deploy to Production 后才能跑 F004. F004 跑完写 docs/test-reports/BL-076-backfill-2026-05-27.md 后切 verifying.]",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
