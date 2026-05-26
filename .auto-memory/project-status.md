@@ -4,13 +4,14 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔧 BL-073-prod-hotfix FIXING (5/8 complete, fix_rounds=0) — Reviewer FAIL 回退 F006/F007
-- ✅ L1 passed: `npm run lint` = 0 errors / 3 warnings, `npx tsc --noEmit` PASS, `npm test` = 185 files / 1322 tests PASS
-- ✅ L2 partial passes: `/zh/brief` form 与页内 tab nav 同宽；`/zh/match` 默认 20 张 KOL 卡片；强制空结果 URL 显示中文 emptyState 文案
-- ❌ Blocker 1 (F006): staging `/zh/match` 只有 `region` 灰显并显示 `"(暂无数据)"`，`language` filter 仍可用且无提示，不满足 F006/F008 “country/language 灰显” 验收口径
-- ❌ Blocker 2 (F007): STRICT_MS_ICONS 拦截能力失效；temp copy 把 `grid_view` 改成 `unknown_icon` 后，`tests/unit/material-symbols-coverage-unit.test.ts` 仍 PASS，因为 `scripts/regenerate-material-symbols-subset.sh` 会把 `unknown_icon` 自行 discover 进列表
-- 📄 Reviewer report: `docs/test-reports/BL-073-verifying-2026-05-26.md`
-- 🎯 下一步：Generator 修 F006/F007 后切 `reverifying`
+## 🔁 BL-073-prod-hotfix REVERIFYING (7/7, fix_rounds=1, awaiting Codex re-signoff)
+- fix-round 1 commit d22d14f: F006 getDataCoverage 改 $queryRaw / F007 STRICT_MS_ICONS gate 改 manifest+snapshot 双源
+- F006 根因: 原 Prisma findMany+distinct 在 staging 返 0 (psql 直查 26), 改 $queryRaw 后正确; staging marketer tenant 数据健康两维度都不灰显 (UX 仅 coverage=0 触发, 单测覆盖)
+- F007 根因: regen script 自证合法; 现 src ⊆ (manifest ∪ approved-snapshot 109 ligature); 实测 unknown_icon → test FAIL ✓
+- staging redeployed @ d22d14f @ 2026-05-26T09:15+0800 (git_sha match ✓ healthy)
+- L1 PASS: lint 3 warnings / tsc 0 / vitest 186×1331 (+2 cases)
+- 关联首轮 fail 报告: docs/test-reports/BL-073-verifying-2026-05-26.md
+- Codex Reviewer 复验 F008 (重点: ms-coverage STRICT + filter sidebar 行为)
 ## ✅ BL-072-prod-hotfix DONE (8/8, fix_rounds=1, tag bl072-done @ bc24e09) — 4 prod hotfix + CI 防御三件套完成并终签
 - Codex Reviewer 5/26 复验 PASS：唯一 blocker（/insight unused warning）已修；`npm run lint` 回到 0 errors / 3 warnings；signoff 已落 `docs/test-reports/BL-072-signoff-2026-05-26.md`
 - L1 通过：lint 3 warnings soft-watch / `npx tsc --noEmit` PASS；上轮已验证 `npm test` 185 files 1322 tests PASS、stale path grep 0、subset regen 含 `table_rows`、zh insight keys 完整
