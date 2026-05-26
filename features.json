@@ -90,7 +90,7 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "L1 自动化 7 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 F005 新增 (4) NAV_ITEMS 长度=5 (5) nav-config.ts:99 含 return 'campaigns' (6) messages/zh.json nav.campaigns 存在 (7) docs/adr/ADR-015 文件 exist + body≥80 LOC",
       "L2 staging 抽样实测 8 项 PASS: (1) /zh sidebar 5 nav 顺序 (2) /en+ja+ko+es i18n 正确 (3) /campaigns 进入 sidebar 高亮 campaigns (4) /campaigns/[id] sidebar 高亮 campaigns (5) /campaigns 行 Match button click → /match?campaignId (6) /insight QuickActions 3 按钮 (7) ADR-015 markdown 渲染 + ADR-013 superseded marker (8) visual baseline 同步无回归",
