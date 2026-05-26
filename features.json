@@ -39,7 +39,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "scripts/kol-sync-daily.ts 在 sync stage 后加 enrichment stage",
       "仅处理 NULL country_code OR NULL language OR 空字符串 的 KOL (避免重复)",
@@ -107,7 +107,7 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 F001+F003+F006 新单测 (4) scripts/kol-enrichment-backfill.ts --dry-run 跑通且输出预期格式 (5) .auto-memory/environment.md Actions 清单含 kol-country-enrichment",
       "L2 staging 抽样实测 6 项 PASS: (1) /api/health prod 返 kol_coverage fill_rate >0 (2) SSH staging 跑 daily sync 验 enrichment stage 触发 + audit_log 写入 (3) staging /zh/match filter sidebar country/language 不 disable + 覆盖率提示 (4) staging /zh/match 选 country=US filter 返回 country=US KOL (验数据真有) (5) backfill 抽样 20-30 KOL 人工 review accuracy 记录 (6) prod backfill 跑后 fill_rate language ≥60% / country ≥30% 记录 (best-effort 不卡硬阈)",

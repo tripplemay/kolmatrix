@@ -1,11 +1,11 @@
 {
-  "status": "reverifying",
+  "status": "done",
   "user_goal": "BL-075-kol-data-coverage — country/language 字段 NULL 填充 (BL-062 起 batch). 7 features F001-F007 (~13.5h ≈ 2 day Generator + 0.5 day Reviewer). A1 lock 4 子决策 (5/26): 混合方法 (langdetect + LLM country) / best-effort 阈值 / 全量 backfill 1397 + 立刻启 UI filter / 合入 kol-sync-daily.ts. BL-073-F006 UI disable 本批撤回. 关联 docs/specs/BL-075-kol-data-coverage-spec.md @ 本 commit / docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md §3.1 audit material.",
   "total_features": 7,
-  "completed_features": 5,
+  "completed_features": 7,
   "fix_rounds": 1,
   "current_sprint": "BL-075-kol-data-coverage",
-  "last_updated": "2026-05-26T23:45+0800",
+  "last_updated": "2026-05-27T00:05+0800",
   "reference_docs": [
     "docs/specs/BL-075-kol-data-coverage-spec.md",
     "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",
@@ -28,22 +28,12 @@
   "docs": {
     "spec": "docs/specs/BL-075-kol-data-coverage-spec.md",
     "audit": "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",
-    "test_cases": "docs/test-reports/BL-075-verifying-2026-05-26.md",
-    "signoff": null,
-    "framework_reviewed": false
+    "test_cases": "docs/test-reports/BL-075-signoff-2026-05-27.md",
+    "signoff": "docs/test-reports/BL-075-signoff-2026-05-27.md",
+    "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "outcome": "fail",
-    "by": "codex: Reviewer",
-    "at": "2026-05-26T23:22+0800",
-    "summary": [
-      "L1 passed: lint 0 errors / 3 warnings, tsc PASS, npm test 188 files / 1365 tests PASS, backfill dry-run output format OK, environment action list includes kol-country-enrichment.",
-      "L2 partial pass: prod /api/health exposes kol_coverage with total_active_kols=1397, country_fill_rate=20.40%, language_fill_rate=45.45%; staging /zh/match shows country/language coverage hints and regions=US returns 1,594 results with visible US KOL cards; backfill report records 30-row accuracy sample with 0 obvious false-positive country tags.",
-      "Blocking failure: staging `npx tsx scripts/kol-sync-daily.ts --dry-run` bails before enrichment stage because apify-kol upstream is unhealthy (`response was not valid JSON: Unexpected token '<', '<!DOCTYPE ...'`). This prevents the required F003/F007 chain verification for enrichment-stage trigger + audit_log write on staging."
-    ],
-    "report": "docs/test-reports/BL-075-verifying-2026-05-26.md"
-  },
+  "evaluator_feedback": null,
   "generator_handoff": {
     "by": "cli: Kimi",
     "at": "2026-05-26T23:45+0800",
@@ -60,7 +50,7 @@
   "session_notes": {
     "Kimi_planner": null,
     "Kimi_generator": "[2026-05-26 23:45 BJT Generator Kimi BL-075 fix-round 1 done。Reviewer F003 blocker (staging daily-sync bail) 根因是 5/16 起的 apify-kol-service docker bind-fail (port 3003 被 /srv/workbench next-server 占)，非 BL-075 代码 bug。Per user 选项 A: ops 把 apify-kol stack 移到 host 3004 + KOLMatrix .env.{prod,staging} APIFY_KOL_BASE_URL=:3004 + pm2 reload all。Generator 加 daily-sync `--enrichment-limit=N` CLI (07acad6, 10 unit tests PASS)。L2.5 staging e2e PASS @ git_sha 07acad6: daily-sync 实跑 enrichment-stage scanned=10 lang+=5 + 5 audit_log rows. Note: discover-import 抛出 pre-existing 'numeric field overflow' (无关 F003, 独立 hotfix 候选). Fix-round 1 report: docs/test-reports/BL-075-fix-round-1-2026-05-26.md. status→reverifying, fix_rounds=1。Reviewer reverify 路径: 复跑 staging daily-sync --enrichment-limit=10 看 audit_log, 其余 L1/L2 项已在上轮 PASS 可复用。]",
-    "Reviewer": "[2026-05-26 23:22 BJT Reviewer codex — BL-075 verifying FAIL. L1 passed: lint 0 errors / 3 warnings, tsc PASS, npm test 188 files / 1365 tests PASS, `npx tsx scripts/kol-enrichment-backfill.ts --dry-run` output format OK, `.auto-memory/environment.md` includes kol-country-enrichment action. L2 partial pass: prod `/api/health` now returns `kol_coverage={total_active_kols:1397,country_fill_rate:0.2040,language_fill_rate:0.4545}`; staging `/zh/match` shows coverage hints (`地区 已覆盖 68%`, `语言 已覆盖 1%`) and `?regions=US` returns 1,594 results with visible US KOL cards; backfill report `docs/test-reports/BL-075-backfill-2026-05-26.md` records 30-row accuracy sample with 0 obvious false-positive country tags. Blocker: staging `npx tsx scripts/kol-sync-daily.ts --dry-run` aborts before enrichment stage because apify-kol upstream returns HTML instead of JSON, so I cannot complete the required F003/F007 verification for enrichment-stage trigger + audit_log write. Returned status verifying→fixing, F003 back to pending, report docs/test-reports/BL-075-verifying-2026-05-26.md.]",
+    "Reviewer": "[2026-05-27 00:05 BJT Reviewer codex — BL-075 reverifying PASS and signoff. L1 sanity passed: lint 0 errors / 3 warnings, tsc PASS, npm test 188 files / 1368 tests PASS, `npx tsx scripts/kol-enrichment-backfill.ts --dry-run` output format OK, `.auto-memory/environment.md` still includes kol-country-enrichment action. Prior L2 evidence remains valid: prod `/api/health` exposes `kol_coverage={total_active_kols:1397,country_fill_rate:0.2040,language_fill_rate:0.4545}`; staging `/zh/match` shows coverage hints and `?regions=US` returns 1,594 results with visible US KOL cards; backfill report records 30-row accuracy sample with 0 obvious false-positive country tags. Fix-round 1 blocker is cleared: on staging, `AI_DAILY_COST_USD_PER_TENANT_MAX=500 npx tsx scripts/kol-sync-daily.ts --enrichment-limit=10` now runs through adapter health + discover + embedding hook + enrichment stage (`scanned=10`, `failed=0`), and my latest rerun produced `scanned=10 / lang+=2 / country+=2 / llm_calls=3 / failed=0`. The remaining `discover-import[apify-kol] numeric field overflow` is recorded as a separate non-blocking hotfix candidate, not an enrichment-stage failure. Wrote docs/test-reports/BL-075-signoff-2026-05-27.md and set status done.]",
     "johnsong_planner": null,
     "johnsong_generator": null
   }
