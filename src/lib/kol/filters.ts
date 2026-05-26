@@ -662,10 +662,19 @@ export interface DataCoverage {
   brandSafety: number;
 }
 
-/** Each entry is `[coverage-field, kol-column]` — Prisma `distinct`
- * needs the column name as it appears on the ORM model. `categories`
- * is a String[] column so `distinct` returns one row per distinct array
- * value at the DB level; we then count via a SQL DISTINCT unnest.
+/**
+ * BL-073 fix-round 1 — Reviewer caught the original `tx.kol.findMany +
+ * distinct + select` pipeline returning wrong counts on staging (region
+ * showed `(暂无数据)` despite 26 distinct country codes in the tenant
+ * pool). Rewriting on top of `$queryRawUnsafe` is the safer path:
+ *   - The SQL is plainly auditable and identical to the psql probes we
+ *     ran during the F006 root-cause hunt.
+ *   - It bypasses any Prisma `distinct`-with-nullable-column edge case.
+ *   - It still runs inside the open `withTenant` transaction so RLS
+ *     applies the same way.
+ *
+ * `categories` is a `text[]` column — `unnest` flattens then `COUNT
+ * DISTINCT` dedupes; empty / whitespace-only strings are dropped.
  *
  * `brandSafety` is not directly a column — it lives on the JSON
  * `audienceGeoDist` / ai-score breakdown. We treat it as "always
@@ -676,51 +685,58 @@ export async function getDataCoverage(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tx: any,
 ): Promise<DataCoverage> {
-  // findMany with distinct + select + null-skip on each facet.
-  // Note: Prisma can't combine distinct across multiple columns in a
-  // single round-trip, so each facet is one call. The whole helper
-  // runs within an already-open withTenant transaction (RLS applies).
-  const [regionRows, languageRows, platformRows, categoryRowsRaw, monetRows] = await Promise.all([
-    tx.kol.findMany({
-      where: { deletedAt: null, countryCode: { not: null } },
-      select: { countryCode: true },
-      distinct: ["countryCode"],
-    }) as Promise<Array<{ countryCode: string | null }>>,
-    tx.kol.findMany({
-      where: { deletedAt: null, language: { not: null } },
-      select: { language: true },
-      distinct: ["language"],
-    }) as Promise<Array<{ language: string | null }>>,
-    tx.kol.findMany({
-      where: { deletedAt: null },
-      select: { platform: true },
-      distinct: ["platform"],
-    }) as Promise<Array<{ platform: string }>>,
-    tx.kol.findMany({
-      where: { deletedAt: null },
-      select: { categories: true },
-    }) as Promise<Array<{ categories: string[] }>>,
-    tx.kol.findMany({
-      where: { deletedAt: null, monetizationStatus: { not: null } },
-      select: { monetizationStatus: true },
-      distinct: ["monetizationStatus"],
-    }) as Promise<Array<{ monetizationStatus: string | null }>>,
-  ]);
+  // One round-trip, six COUNT(DISTINCT) buckets. Inline because the
+  // values are aggregate counts (not row data), so cursor-paginate /
+  // typed Prisma client adds no value here. RLS is in effect via the
+  // surrounding withTenant `SET LOCAL app.tenant_id`.
+  const rows = (await tx.$queryRawUnsafe(
+    `
+    SELECT
+      COUNT(DISTINCT country_code) FILTER (
+        WHERE country_code IS NOT NULL AND length(btrim(country_code)) > 0
+      )::int                                                              AS regions,
+      COUNT(DISTINCT language) FILTER (
+        WHERE language IS NOT NULL AND length(btrim(language)) > 0
+      )::int                                                              AS languages,
+      COUNT(DISTINCT platform) FILTER (
+        WHERE platform IS NOT NULL AND length(btrim(platform)) > 0
+      )::int                                                              AS platforms,
+      (
+        SELECT COUNT(DISTINCT cat)::int
+        FROM kol k2, unnest(k2.categories) AS cat
+        WHERE k2.deleted_at IS NULL
+          AND cat IS NOT NULL
+          AND length(btrim(cat)) > 0
+      )                                                                   AS categories,
+      COUNT(DISTINCT monetization_status) FILTER (
+        WHERE monetization_status IS NOT NULL
+          AND length(btrim(monetization_status)) > 0
+      )::int                                                              AS monetization_statuses
+    FROM kol
+    WHERE deleted_at IS NULL
+    `,
+  )) as Array<{
+    regions: number;
+    languages: number;
+    platforms: number;
+    categories: number;
+    monetization_statuses: number;
+  }>;
 
-  // Categories is String[] — flatten + dedupe + drop empty strings.
-  const categorySet = new Set<string>();
-  for (const row of categoryRowsRaw) {
-    for (const cat of row.categories) {
-      if (cat && cat.trim().length > 0) categorySet.add(cat);
-    }
-  }
+  const r = rows[0] ?? {
+    regions: 0,
+    languages: 0,
+    platforms: 0,
+    categories: 0,
+    monetization_statuses: 0,
+  };
 
   return {
-    regions: regionRows.filter((r) => r.countryCode && r.countryCode.trim().length > 0).length,
-    languages: languageRows.filter((r) => r.language && r.language.trim().length > 0).length,
-    platforms: platformRows.filter((r) => r.platform && r.platform.trim().length > 0).length,
-    categories: categorySet.size,
-    monetizationStatuses: monetRows.filter((r) => r.monetizationStatus && r.monetizationStatus.trim().length > 0).length,
+    regions: Number(r.regions ?? 0),
+    languages: Number(r.languages ?? 0),
+    platforms: Number(r.platforms ?? 0),
+    categories: Number(r.categories ?? 0),
+    monetizationStatuses: Number(r.monetization_statuses ?? 0),
     // BrandSafety lives outside the Kol columns (BL-066 ai-score breakdown JSON);
     // treat as always-available until a separate audit shows otherwise.
     brandSafety: 1,

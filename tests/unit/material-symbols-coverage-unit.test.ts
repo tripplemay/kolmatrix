@@ -35,6 +35,23 @@
  * one owns `STRICT_MS_ICONS` (default **true** as of BL-073 — Pattern 7
  * added in F002 closed the bare-ligature blind spot, so unknown icons
  * are now an actual error).
+ *
+ * **BL-073-F007 fix-round 1 — Reviewer caught self-authorising loop:**
+ * the original v2 strict check delegated "is X a real Material Symbol"
+ * to `regenerate-material-symbols-subset.sh`'s own discovery pipeline.
+ * That script greedily picks up bare ligatures via Pattern 7, so an
+ * unknown ligature like `unknown_icon` lands in the discovered set
+ * and the test sees it as approved. The Reviewer's temp-copy probe
+ * showed `unknown_icon` shipping straight through the gate (it wasn't
+ * a real Google Fonts ligature → woff2 missed the glyph → would have
+ * rendered as literal text in prod again).
+ *
+ * Fix: replace the "discovered" half of the gate with a curated
+ * snapshot at `tests/unit/__fixtures__/material-symbols-approved-icons.json`.
+ * The strict check is now src/ ⊆ (manifest ∪ approved-snapshot).
+ * Adding a new icon name = add it to the manifest (Pattern 5a-5e
+ * shape) OR add it to the approved snapshot. Either way it's a
+ * deliberate human edit, not an auto-discovery side-channel.
  */
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -45,6 +62,10 @@ import { describe, expect, it } from "vitest";
 const REPO_ROOT = resolve(__dirname, "../..");
 const MANIFEST = resolve(REPO_ROOT, "scripts/material-symbols-icons-manifest.txt");
 const SCRIPT = resolve(REPO_ROOT, "scripts/regenerate-material-symbols-subset.sh");
+const APPROVED_SNAPSHOT = resolve(
+  REPO_ROOT,
+  "tests/unit/__fixtures__/material-symbols-approved-icons.json",
+);
 
 /**
  * BL-073-F007 — strict-mode knob (Material Symbols domain only).
@@ -74,19 +95,33 @@ function manifestEntries(): Set<string> {
 }
 
 /**
- * Run the regenerate script's discovery half and capture the unique
- * icon list it prints to stdout. The script's `[regenerate-material-
- * symbols-subset] icons:` block enumerates every name; capturing them
- * is the cheapest way to get "what the pipeline considers covered".
+ * Curated whitelist of Material Symbol ligature names previously
+ * approved into the project. The snapshot is generated from the
+ * regenerate script's discovered set on a known-good commit (BL-073
+ * 7/7 main HEAD 853992a), captured at
+ * `tests/unit/__fixtures__/material-symbols-approved-icons.json`.
  *
- * NOTE: the script does fetch from Google Fonts at the end of its
- * pipeline (network!), but the discovery + `echo` happens before. The
- * easy fallback for offline CI runners is to grep the script source for
- * the patterns + cross-reference manifest manually; we accept the
- * online fetch here because (a) the integration test already does the
- * same and (b) the discovered icon list is the precise input we need.
+ * The original v2 design used the script's *live* discovered set as
+ * the source of truth, which let Pattern 7 self-authorise unknown
+ * ligatures (Reviewer's `unknown_icon` probe). Reading from the
+ * snapshot file instead means adding a new icon requires a deliberate
+ * human edit: either append to the manifest (preferred — Pattern 5a-5e
+ * shapes get this for free) or extend the snapshot. Either way the
+ * change is visible in a PR diff and the Reviewer's "PR adds unknown
+ * icon → CI red" acceptance condition holds.
  */
-function discoveredIcons(): Set<string> {
+function approvedIcons(): Set<string> {
+  const raw = readFileSync(APPROVED_SNAPSHOT, "utf8");
+  const data = JSON.parse(raw) as { approved: string[] };
+  return new Set(data.approved);
+}
+
+/**
+ * Kept for the smoke test: confirms the regenerate script still runs +
+ * still produces a non-empty discovered set. Not used in the strict
+ * gate any more (see `approvedIcons` for why).
+ */
+function discoveredIconsSmoke(): Set<string> {
   const stdout = execSync(`bash ${SCRIPT} 2>&1 || true`, {
     cwd: REPO_ROOT,
     encoding: "utf8",
@@ -194,22 +229,41 @@ function srcMentionedIcons(): Set<string> {
 
 describe("BL-072-F007 · Material Symbols coverage (unit, advisory)", () => {
   const manifest = manifestEntries();
+  const approved = approvedIcons();
 
   it("manifest is non-empty", () => {
     expect(manifest.size, "manifest should carry at least the BL-025-F009.1 5 dynamic-form icons").toBeGreaterThan(5);
   });
 
-  it("every icon mentioned in src/ near a material-symbols-outlined host is either in manifest OR discoverable by the regen script (advisory)", () => {
+  it("approved-icons snapshot is non-empty", () => {
+    expect(
+      approved.size,
+      "tests/unit/__fixtures__/material-symbols-approved-icons.json should have at least ~50 known-good ligatures",
+    ).toBeGreaterThan(50);
+  });
+
+  it("regenerate script still runs + still produces a non-empty discovered set (smoke test only)", () => {
+    // BL-073-F007 fix-round 1 — discovered set is no longer the strict
+    // gate (it self-authorises unknown ligatures). But the script must
+    // still be callable; this case keeps a green light on the build
+    // pipeline rather than blocking the unrelated strict gate below.
+    const discovered = discoveredIconsSmoke();
+    expect(
+      discovered.size,
+      "regenerate script discovery pipeline should still produce icons",
+    ).toBeGreaterThan(50);
+  });
+
+  it("every icon mentioned in src/ near a material-symbols-outlined host is either in manifest OR in the approved-icons snapshot (STRICT)", () => {
     const srcIcons = srcMentionedIcons();
-    const discovered = discoveredIcons();
     const missing: string[] = [];
     for (const icon of srcIcons) {
-      if (!discovered.has(icon) && !manifest.has(icon)) {
+      if (!approved.has(icon) && !manifest.has(icon)) {
         missing.push(icon);
       }
     }
     if (missing.length > 0) {
-      const summary = `[material-symbols-coverage-unit ${STRICT_MS_ICONS ? "STRICT" : "advisory"}] ${missing.length} icon name(s) mentioned in src/ near a material-symbols-outlined host are neither in manifest nor discoverable by the regen script:\n  ${missing.join(", ")}`;
+      const summary = `[material-symbols-coverage-unit ${STRICT_MS_ICONS ? "STRICT" : "advisory"}] ${missing.length} icon name(s) mentioned in src/ are neither in scripts/material-symbols-icons-manifest.txt nor in tests/unit/__fixtures__/material-symbols-approved-icons.json:\n  ${missing.join(", ")}\n\nFix path:\n  - If it's a real Google Fonts ligature, append to the approved-icons snapshot OR the manifest (preferred when the shape is a Pattern 5a-5e dynamic form).\n  - If it's a typo or non-icon string, rename it in src/ to avoid the false alarm.`;
       if (STRICT_MS_ICONS) {
         expect(missing, summary).toEqual([]);
       } else {
