@@ -221,3 +221,15 @@ sediment（沉淀）从 proposed-learnings.md 走向 `framework/harness/*.md` �
 
 **状态：** 用户 5/26 ack — 待 v0.9.24 framework sediment batch 落地
 
+---
+
+## [2026-05-26] Claude CLI — 来源：BL-075-F002 / Generator Kimi
+
+**类型：** 新坑（v0.9.24 候选 #10）
+
+**内容：** **pm2 reload --update-env 不会重读 env_file — 单加 .env 行无效**。BL-075-F002 落 `AIGCGATEWAY_KOL_COUNTRY_ACTION_ID` 到 prod + staging .env 后 `pm2 reload kolmatrix --update-env` 出现新 var 不生效（/proc/$PID/environ 仍只有旧 vars）。根因：pm2 的 `--update-env` 只刷新当前 shell env 到进程，**不重读 ecosystem.config.js 中 `env_file` 路径**。`pm2 startOrReload ecosystem.config.js --update-env` 同样不会重读 env_file（pm2 dump 缓存先前 env 块）。修复模式：`set -a; source /opt/kolmatrix/.env.production; set +a; pm2 reload kolmatrix --update-env`（先注入到 shell env，再 reload 自动 carry over）。验证：`tr "\0" "\n" < /proc/$PID/environ | grep <NEW_VAR>` 确认实际进程 env 含新 var。
+
+**建议写入：** `framework/harness/deploy-patterns.md` §3.x SSH 加 env var 模板段 — 含完整 4 步：(1) 备份 .env + 加新行 (2) `set -a; source .env; set +a` (3) `pm2 reload ... --update-env` (4) `/proc/PID/environ` 验证
+
+**状态：** 待用户 ack — done 阶段提出，落 v0.9.24 framework sediment batch
+

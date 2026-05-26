@@ -22,7 +22,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "aigcgateway 创 Action: name='kol-country-enrichment', model='claude-haiku-4.5', variables=[bio, display_name, platform, audience_geo], response_format JSON object",
       "Prompt 模板: KOL audience analyst 推断 country (ISO 3166-1 alpha-2) from bio + audience_geo + platform; 输出 { country: <code> or null, confidence: 0-1 }; confidence <0.5 返 null",
