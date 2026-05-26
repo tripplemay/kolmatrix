@@ -4,6 +4,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
+## 🚧 BL-076-apify-numeric-overflow BUILDING (0/5, fix_rounds=0) — P1 升级（5/12 起 14 天 prod sync 全 fail）
+- A0+A1 完成 5/27 01:00: SSH prod 实测 /var/log/kolmatrix-kol-sync.log 5/12 起每天 daily-sync discoverCount=2107-2567 但 inserted=0 updated=0 (numeric overflow)
+- 根因: apify-kol.ts:409 engagementRate=(totalLikes/postsCount)/followers*100 可超 Decimal(5,2) 上限 999.99; import.ts loop 无 try/catch → first overflow 整 batch fail
+- A1 lock: 策略 A 三件套 (Schema Decimal(7,2) + adapter clamp 99999.99 + import.ts per-KOL try/catch) / Defense A 均包 (engagement_outlier flag + audit_log kol.import_failed) / Backfill B 追 14 天遗漏
+- F001 Schema migration (1h) / F002 adapter clamp + outlier flag (1.5h) / F003 import.ts try/catch + audit_log (1.5h) / F004 SSH prod backfill (1h) / F005 Reviewer (1.5h) — 总 ~6.5h ≈ 1 day Generator + 0.5 day Reviewer
+- 关联: docs/specs/BL-076-apify-numeric-overflow-spec.md + BL-075 signoff §6 residual warning
 ## ✅ BL-075-kol-data-coverage DONE (7/7, fix_rounds=1) — signoff 完成
 - Codex Reviewer 终签 PASS：L1 通过 `npm run lint` = 0 errors / 3 warnings、`npx tsc --noEmit` PASS、`npm test` = 188 files / 1368 tests PASS、backfill dry-run 输出格式正常、environment action 清单仍含 `kol-country-enrichment`
 - prod `/api/health` 已返回 `kol_coverage` 真数字：`total_active_kols=1397`、`country_fill_rate=20.4%`、`language_fill_rate=45.5%`
