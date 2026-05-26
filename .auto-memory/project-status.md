@@ -4,14 +4,14 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔧 BL-073-prod-hotfix FIXING (6/8 complete, fix_rounds=1) — F007 过线, F006 仍卡住
-- ✅ F007 已复验通过：temp copy 把 `grid_view` 改成 `unknown_icon` 后，`tests/unit/material-symbols-coverage-unit.test.ts` 会显式 FAIL，STRICT_MS_ICONS 拦截能力真实成立
-- ✅ L1 sanity 通过：`npm run lint` = 0 errors / 3 warnings；`npx tsc --noEmit` PASS；targeted vitest 10/10 PASS
-- ❌ F006 仍失败：staging `/zh/match` 默认页显示 20 cards，但 `language` filter 仍启用且无 `"(暂无数据)"`；同时页面仍出现 region 相关 `"(暂无数据)"` hint
-- ❌ 这与 Generator handoff 的“staging marketer tenant 有 26 regions + 10 languages，两个维度都不应灰显”口径不一致，说明部署行为 / coverage 解释 / 验收口径仍未对齐
-- 📄 首轮报告：`docs/test-reports/BL-073-verifying-2026-05-26.md`
-- 📄 本轮复验：`docs/test-reports/BL-073-reverifying-2026-05-26.md`
-- 🎯 下一步：Generator 只需收敛 F006，再切 `reverifying`
+## 🔁 BL-073-prod-hotfix REVERIFYING (7/7, fix_rounds=2, awaiting Codex re-signoff)
+- fix-round 2 commit 96c0838: ChipGroup testid 加 dimensionId 升级 (locale-independent), Reviewer 探针不再误读
+- 事实核查: curl /zh/match HTML 仅 'chip-group-no-data-monetization' 存在 (coverage=0 正确), region/language 不灰显 (coverage>0 正确)
+- F006 实现确认正确: conditional UX 在 staging marketer tenant 数据健康场景下不触发灰显是预期行为; monetization=0 触发灰显证明防御机制工作
+- staging redeployed @ 96c0838 @ 2026-05-26T09:50+0800 (git_sha match ✓ healthy + HTML grep 验证)
+- L1 PASS: lint 3 warnings / tsc 0 / vitest 186×1331
+- 关联: docs/test-reports/BL-073-verifying-2026-05-26.md (轮1) + BL-073-reverifying-2026-05-26.md (轮2)
+- Codex Reviewer 复验 F008 (testid 改 stable English: chip-group-no-data-region/language/monetization)
 ## ✅ BL-072-prod-hotfix DONE (8/8, fix_rounds=1, tag bl072-done @ bc24e09) — 4 prod hotfix + CI 防御三件套完成并终签
 - Codex Reviewer 5/26 复验 PASS：唯一 blocker（/insight unused warning）已修；`npm run lint` 回到 0 errors / 3 warnings；signoff 已落 `docs/test-reports/BL-072-signoff-2026-05-26.md`
 - L1 通过：lint 3 warnings soft-watch / `npx tsc --noEmit` PASS；上轮已验证 `npm test` 185 files 1322 tests PASS、stale path grep 0、subset regen 含 `table_rows`、zh insight keys 完整
