@@ -1,11 +1,11 @@
 {
-  "status": "verifying",
+  "status": "fixing",
   "user_goal": "BL-073-prod-hotfix — Material Symbols bare ligature + /brief 嵌套宽度 + i18n missing key + 防御升级 + filter UX 防御. 8 features ~12h ≈ 1.5 day Generator + 0.5 day Reviewer.",
   "total_features": 8,
-  "completed_features": 7,
+  "completed_features": 5,
   "fix_rounds": 0,
   "current_sprint": "BL-073-prod-hotfix",
-  "last_updated": "2026-05-26T05:10+0800",
+  "last_updated": "2026-05-26T09:05+0800",
   "reference_docs": [
     "docs/specs/BL-073-prod-hotfix-spec.md",
     "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",
@@ -32,17 +32,26 @@
   "docs": {
     "spec": "docs/specs/BL-073-prod-hotfix-spec.md",
     "audit": "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",
-    "test_cases": null,
+    "test_cases": "docs/test-reports/BL-073-verifying-2026-05-26.md",
     "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
+  "evaluator_feedback": {
+    "outcome": "fail",
+    "by": "codex: Reviewer",
+    "at": "2026-05-26T09:05+0800",
+    "summary": [
+      "L2 blocker: /zh/match staging default view shows 20 KOL cards, but language filter is not greyed out and has no '(暂无数据)' hint; current implementation only greys region, not both country/language as F006/F008 acceptance requires.",
+      "L2 blocker: Material Symbols strict interception failed. In a temp copy, changing MatchSummaryBar ligature from grid_view to unknown_icon still lets STRICT_MS_ICONS test pass because regenerate-material-symbols-subset.sh discovers unknown_icon and self-authorizes it."
+    ],
+    "report": "docs/test-reports/BL-073-verifying-2026-05-26.md"
+  },
   "generator_handoff": null,
   "session_notes": {
     "Kimi_planner": "[2026-05-26 03:00 BJT Planner Kimi BL-073 planning done. A1 lock 3 独立批次 + 防御升级 + filter UX 防御. 8 features F001-F008 ~12h. BL-074 + BL-075 已入 backlog 排队 (depends_on BL-073 done). 5 沉淀候选并 BL-072 4 条 = 9 条入 v0.9.24 batch.]",
     "Kimi_generator": "[2026-05-26 05:10 BJT Generator Kimi — BL-073 7/7 generator features 全完成, 切 verifying]\n\n## 已完成 Generator 工作 (7/7, 2 feature 批 commit, status building→verifying)\n\n### Commits @ main HEAD 853992a\n1. 10fbb79 F001+F002+F003 — Material Symbols 8 漏 ligature + Pattern 7 + /brief 嵌套修复\n2. 99b7244 F004+F005+F006+F007 — i18n MISSING fix + filter UX defense + STRICT_MS_ICONS\n3. 853992a chore(visual): regenerate baselines (auto bot commit from run 26419495834)\n\n### 关键改动\n- F001: manifest 加 8 行 (forward_to_inbox/refresh/article/attach_money/error_outline/hourglass_empty/mark_email_unread/verified_user) + woff2 11008→11628B (ICON_COUNT 100→109)\n- F002: Pattern 7 bare ligature in multi-line span + Pattern 6/7 共享 exclusion 单源 (移 article 出 exclusion)\n- F003: BriefPageClient.tsx:120 删 mx-auto max-w-3xl + 4 路由 max-w 全仓 review 无意外嵌套\n- F004: messages 5 locale 加 match.emptyState.body + bodyDefault + weeklyReport.title + 删孤儿 tipHeading/tipBody; match/page.tsx 加 hasActiveFilters 15-dim 检测\n- F005: i18n-page-side-consumption v2 加 key existence check (scan t() call + 拼 namespace + 验 en.json exist)\n- F006: getDataCoverage/filterTouchesZeroCoverage/loadMatchDataCoverage 全套; MatchFilterSidebar 5 维度 disabled UI + match.filters.noData 5 locale; runMatchSearch early-return\n- F007: STRICT_MODE→STRICT_MS_ICONS=true (Material Symbols 维度首翻 strict), STRICT_I18N/LINK_TARGET 仍 false; framework checklist + CHANGELOG v0.9.24 候选段记录\n\n### Baseline regen\n- run 26419495834 → 853992a 仅 en-brief.png 漂移 (F003 max-w-3xl 删 预期)\n- main HEAD CI 26419651586 success ✓\n\n## [staging deployed @ 853992a @ 2026-05-26T05:10+0800]\n- ssh tripplezhou@34.180.93.185 完整 deploy (git pull/npm ci/migrate deploy/build/pm2 reload --update-env)\n- curl -H x-health-token https://staging.kol.guangai.ai/api/health → git_sha=853992a + status=healthy + DB/Redis ok\n- prisma migrate: No pending migrations\n\n## status building → verifying 翻转\n- 7/7 executor:generator 全 completed (F001-F007)\n- F008 (executor:codex Reviewer signoff) 接手 acceptance:\n  - L1 自动化 6 项: lint 0 error warning ≤3 / tsc / vitest 含 F005/F007 v2 / grep manifest 8 漏 ligature / woff2 size 增 ~600B / messages match.emptyState.body 5 locale 平齐\n  - L2 staging 抽样 6 项: /zh/campaigns/[id] 8 icon 渲染 / /zh/brief form 与 tab nav 同宽 1600px / /zh/match emptyState 中文 / filter sidebar country/language 灰显 / /zh/match 默认 20 卡片 / CI Material Symbols strict 验拦截\n  - signoff doc docs/test-reports/BL-073-signoff-2026-05-XX.md\n\n## L1 PASS 实测 (推前)\n- npx tsc --noEmit: 0 error\n- npm run lint: 0 errors / 3 warnings (≤ threshold)\n- npx vitest run: 186 files × 1329 tests all PASS\n",
-    "Reviewer": null,
+    "Reviewer": "[2026-05-26 09:05 BJT Reviewer codex — BL-073 verifying FAIL. L1 passed: lint 0/3, tsc PASS, npm test 185 files 1322 tests PASS, manifest 8 ligatures all present, zh match.emptyState.body present. L2 passed: /zh/brief form/tab width aligned, /zh/match default shows 20 cards, forced empty-state URL shows Chinese copy. Blockers: (1) /zh/match language filter is not greyed / no '(暂无数据)' hint; staging only region group is disabled. (2) STRICT_MS_ICONS interception not effective: temp-copy unknown_icon still passes tests because regenerate-material-symbols-subset.sh discovers unknown_icon, so CI would not go red. Returned status verifying→fixing, F006/F007 back to pending, report docs/test-reports/BL-073-verifying-2026-05-26.md.]",
     "johnsong_planner": null,
     "johnsong_generator": null
   }
