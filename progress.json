@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-075-kol-data-coverage — country/language 字段 NULL 填充 (BL-062 起 batch). 7 features F001-F007 (~13.5h ≈ 2 day Generator + 0.5 day Reviewer). A1 lock 4 子决策 (5/26): 混合方法 (langdetect + LLM country) / best-effort 阈值 / 全量 backfill 1397 + 立刻启 UI filter / 合入 kol-sync-daily.ts. BL-073-F006 UI disable 本批撤回. 关联 docs/specs/BL-075-kol-data-coverage-spec.md @ 本 commit / docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md §3.1 audit material.",
   "total_features": 7,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
   "current_sprint": "BL-075-kol-data-coverage",
-  "last_updated": "2026-05-26T12:00+0800",
+  "last_updated": "2026-05-26T12:30+0800",
   "reference_docs": [
     "docs/specs/BL-075-kol-data-coverage-spec.md",
     "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",
@@ -36,8 +36,8 @@
   "evaluator_feedback": null,
   "generator_handoff": null,
   "session_notes": {
-    "Kimi_planner": "[2026-05-26 12:00 BJT Planner Kimi BL-075 planning done. A1 4 子决策 lock (5/26): 混合 langdetect+LLM country / best-effort 阈值 / 全量 backfill 1397+立启 UI filter / 合入 kol-sync-daily.ts. 7 features F001-F007 ~13.5h. F002 需 aigcgateway 创 Action + env var. F004 一次性 SSH prod 跑 backfill. F005 撤 BL-073-F006 UI disable. BL-062 closed-merged. 不冲突 BL-074 已 done.]",
-    "Kimi_generator": null,
+    "Kimi_planner": null,
+    "Kimi_generator": "[2026-05-26 12:30 BJT Generator Kimi BL-075 F001 done. enrichment.ts (franc+LLM hybrid) + 18 unit tests PASS. franc@6.2.0 added; ISO-639-3→639-1 map covers top 34 langs. NEXT: F002 aigcgateway Action create + env落 prod/staging.]",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null

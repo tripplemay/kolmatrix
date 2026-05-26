@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "src/lib/kol/enrichment.ts 实现 enrichKol(input): Promise<KolEnrichmentResult> 函数",
       "language 推断: langdetect (或 franc) npm pkg + bio + displayName + handle 拼接输入; 置信度 >=0.5 才采纳, 否则返 null (不 fallback English 写错值)",
