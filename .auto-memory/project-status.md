@@ -38,17 +38,18 @@ type: project
 ## ✅ BL-069 DONE（7/7）/ BL-068 DONE（7/7）/ BL-067 DONE（7/7）/ BL-066 DONE（9/9, prod=f2a8210）
 ## ✅ BL-065 / BL-064 / BL-063 / BL-061-060-059 / BL-012 / BL-055-052-051a-049 / BL-021+023 / BL-043+044 全 DONE
 ## 关键决议（已 lock）
-- 5/10 ADR-013 AI Native 转向 Phase 1-4
+- 5/10 ADR-013 AI Native 转向 Phase 1-4 / 5/26 ADR-015 supersedes ADR-013 (5 路由 IA)
 - 5/25 BL-071 12 决策点 D1-D12 全 lock (D7 inline-merge 强制规则首次大规模应用)
-- 5/25 BL-072 4 项 lock (顺序 C / 范围 A 完整版 / i18n A brand kept-en / link 目标 A)
-- 5/26 BL-071 done → BL-072 building (用户 ack)
+- 5/26 BL-072/073/074/075 全 done (4 P1 prod hotfix 批次连续 + 5 路由 IA + KOL data coverage)
+- 5/26 prod deploy 至 c428797 完成 (含 BL-071/072/073/074/075 全部 fix)
 ## 用户手工待办
 1. 5/17 weekly growth-curve check（重跑 BL-061 F003 SQL）
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 3. **BL-070 post-launch ops:** 24h 后跑 `ssh tripplezhou@34.180.93.185 'bash /opt/kolmatrix/scripts/bl070-prod-audit.sh'` + 邀 ≥5 marketer dogfood; 全过则 signoff §4 #9/#10 DEFERRED→PASS
-4. **🚨 5/26 触发 prod deploy 至 main HEAD 1a3fdcf (含 BL-071 + BL-072 fix 共 36 commits)：** 用户 5/26 报"很多核心链路无法使用", Planner Kimi smoke audit 发现 prod 仍在 BL-070 era (fc79f43, 5/25 17:05 UTC deploy); typecheck/test 全绿 + 无 stale path 残留, 推断用户看到的是 BL-072 已修但未 deploy 的 4 user-visible bug。GitHub Actions → Deploy to Production → workflow_dispatch (main HEAD)。Deploy 后 curl health + 浏览器实测 4 issue + 4-step main flow。若 deploy 后仍有 issue → 起 BL-073 prod hotfix audit。
-## 角色 / Backlog (BL-072 done 后)
+4. prod 实测验证 5/27 BL-073/074/075 fix 用户体验是否符合预期 (5 路由 IA / Material Symbols / i18n / filter UX / kol_coverage)
+## 角色 / Backlog (BL-075 done 后)
+- ★ **v0.9.24 framework sediment batch (13 条积压: BL-072 4 + BL-073 5 + BL-075 4)** — 类似 BL-071 模式起 batch 落 framework/harness/*.md inline-merge
+- BL-076 apify-kol discover-import numeric field overflow hotfix (medium, BL-075 residual risk)
 - Phase 5：个性化学习 / AI 学到偏好 / Brief 模板库 / comparative query / skip-replace 写 DB
-- BL-062 backlog：KOL data coverage gap 治理
 - 真客户 onboarding 准备：db:seed 验证 + tenant cleanup + 监控仪表板
-- 框架沉淀 v0.9.24：BL-072 4 条候选 (IA refactor outbound 扫描 / subset Pattern 6 / i18n 消费侧探针 / 删路由前 grep)
+- BL-054 (medium) flaky network test isolate / BL-048 (low) valueScore 公式区分度优化
