@@ -12,7 +12,8 @@ type: project
   - 413 kol-embed: kol-embed.ts 已含 progressive batch 减半兜底 (100→50→20→1), 自带 self-recover, 非阻断项
 - 用户 ack 选 Option A (重跑 staging + clarify spec, 不扩 scope)
 - 修订: docs/specs/BL-076-apify-numeric-overflow-spec.md §F005 L2 第 1 项 + 头注释明确 'staging 跑 --enrichment-limit=10' (与 BL-075 done 时一致); features.json F005 acceptance 同步; 0 行业务代码
-- Reviewer reverifying: 等 prod daily-sync enrichment tail 结束 (~17:42 UTC 落结构化日志 line) 再按修订 spec 跑 staging --enrichment-limit=10 验 inserted>0 / failed=0 / errors 无 numeric overflow 字串
+- **Prod daily-sync 已收尾 17:43 UTC**, /var/log/kolmatrix-kol-sync.log 末尾 line: discoverCount=2567 / inserted=474 / updated=1385 / errors=[] / level=WARN (仅 duration_ms 阈值) — 完全无 numeric overflow, 修复彻底生效
+- API key 现空闲, Reviewer 可立即按修订后 spec 跑 staging --enrichment-limit=10 完成 L2 验签
 - L1: lint 0 errors / 3 warnings, tsc clean, npm test 189 files / 1375 tests
 - Prod 实测 (F004): engagement_rate>999.99=15 / outlier=true=157 / audit_log.kol.import_failed=0 / inserted=474 / max(engagement_rate)=9137.06
 - F004 报告: docs/test-reports/BL-076-backfill-2026-05-27.md
