@@ -4,17 +4,16 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-076-apify-numeric-overflow VERIFYING (4/5, fix_rounds=0) — F001+F002+F003+F004 done, Reviewer F005 接手
-- 三件套 commit f718704 + state 3449ead + F004 backfill report 7e?? push main, CI 8/8 jobs success
+## 🚧 BL-076-apify-numeric-overflow FIXING (4/5, fix_rounds=0) — prod hotfix 证据成立，但 staging F005 验收失败
+- 三件套 commit f718704 + state 3449ead 已在 prod 生效；Codex Reviewer 首轮 verifying FAIL，报告 `docs/test-reports/BL-076-verifying-2026-05-27.md`
 - F001 prisma migration 20260526160800 Decimal(5,2)→Decimal(7,2) + ROLLBACK clamp warning, prod prisma migrate status 应用成功
 - F002 apify-kol.ts Math.min(99999.99) clamp + outlier>100 flag, metadata.flags.engagement_outlier 写入闭环
 - F003 import.ts upsert try/catch + audit_log kol.import_failed + recursive failure guard, kol-sync-daily.ts aggregate.failed + alerts
-- L1 PASS: lint 0 errors / 3 warnings, tsc clean, vitest 189 files / 1375 tests
-- Staging + Prod deployed (prod HEAD 3449ead, prisma migration applied)
-- F004 SSH prod backfill DB SQL 实证 (16:55 UTC): inserted=474 / synced=1859 / engagement_rate>999.99=15 行 / outlier=true=157 行 / audit_log.kol.import_failed=0 / max(engagement_rate)=9137.06 (旧 schema 必 overflow) — 14 天 prod fail 终结
+- L1 PASS: lint 0 errors / 3 warnings, tsc clean, npm test 188 files / 1368 tests, prisma migrate status up to date
+- Prod 只读 SQL 复核通过: `engagement_rate>999.99=15` / `outlier=true=157` / `audit_log.kol.import_failed=0` / `created_at > 2026-05-26T16:37Z = 474` / `max(engagement_rate)=9137.06`
+- F005 blocker: staging 真跑 `npm run kol-sync:daily` 时不再报 numeric overflow，但出现 repeated `kol-embed 413` + `kol_country_enrichment 429 rate_limit_exceeded`; 因此 staging acceptance `stats.inserted > 0 + stats.failed = 0` 未满足
 - F004 报告 docs/test-reports/BL-076-backfill-2026-05-27.md 含: SQL 直证 + 12 新 KOL 抽样 (IGN/Fortnite/penguinz0 等) + 15 上溢区间 KOL 抽样 + 14 天遗漏估算 + 三层防御协同分析
-- Reviewer F005 (executor:codex) L1+L2: 5 项 L1 自动化 + 6 项 staging+prod 抽样 + signoff doc 终签
-- 注: enrichment-stage tail (BL-075-F003 LLM 1859 行 catch-up) 还在 prod 跑, 完整 structured log line 会在 17:00-17:15 UTC 落, Reviewer L2 时 tail -1 复核
+- 下一步由 Generator 修 staging `kol-sync:daily` 链路稳定性，再切 `reverifying`
 - 关联: docs/specs/BL-076-apify-numeric-overflow-spec.md + BL-075 signoff §6 residual warning
 ## ✅ BL-075-kol-data-coverage DONE (7/7, fix_rounds=1) — signoff 完成
 - Codex Reviewer 终签 PASS：L1 通过 `npm run lint` = 0 errors / 3 warnings、`npx tsc --noEmit` PASS、`npm test` = 188 files / 1368 tests PASS、backfill dry-run 输出格式正常、environment action 清单仍含 `kol-country-enrichment`
