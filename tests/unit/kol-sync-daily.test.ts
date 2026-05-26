@@ -40,17 +40,42 @@ function fakeChannel(overrides: Partial<RawKolData>): RawKolData {
 }
 
 describe("parseArgs", () => {
-  it("defaults to live (no dry-run)", () => {
-    expect(parseArgs([])).toEqual({ dryRun: false });
+  it("defaults to live (no dry-run, no enrichment cap)", () => {
+    expect(parseArgs([])).toEqual({ dryRun: false, enrichmentLimit: null });
   });
 
   it("accepts --dry-run", () => {
-    expect(parseArgs(["--dry-run"])).toEqual({ dryRun: true });
+    expect(parseArgs(["--dry-run"])).toEqual({ dryRun: true, enrichmentLimit: null });
   });
 
   it("silently ignores legacy --no-refresh / --refresh-batch (BL-059 cron compat)", () => {
-    expect(parseArgs(["--no-refresh", "--refresh-batch", "50"])).toEqual({ dryRun: false });
-    expect(parseArgs(["--dry-run", "--no-refresh"])).toEqual({ dryRun: true });
+    expect(parseArgs(["--no-refresh", "--refresh-batch", "50"])).toEqual({
+      dryRun: false,
+      enrichmentLimit: null,
+    });
+    expect(parseArgs(["--dry-run", "--no-refresh"])).toEqual({
+      dryRun: true,
+      enrichmentLimit: null,
+    });
+  });
+
+  it("BL-075-F003 fix-round 1: --enrichment-limit=N caps the enrichment scan", () => {
+    expect(parseArgs(["--enrichment-limit=10"])).toEqual({
+      dryRun: false,
+      enrichmentLimit: 10,
+    });
+  });
+
+  it("BL-075-F003 fix-round 1: --enrichment-limit=0 means no cap (cron-safe)", () => {
+    expect(parseArgs(["--enrichment-limit=0"])).toEqual({
+      dryRun: false,
+      enrichmentLimit: null,
+    });
+  });
+
+  it("BL-075-F003 fix-round 1: rejects negative / non-numeric enrichment-limit", () => {
+    expect(() => parseArgs(["--enrichment-limit=-5"])).toThrow();
+    expect(() => parseArgs(["--enrichment-limit=foo"])).toThrow();
   });
 });
 

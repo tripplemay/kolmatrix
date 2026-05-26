@@ -58,14 +58,30 @@ import type {
 
 interface CliArgs {
   dryRun: boolean;
+  /**
+   * BL-075-F003 fix-round 1: optional row cap on the enrichment stage.
+   * Cron leaves it unset (no cap) so the daily run processes every
+   * NULL row; staging / signoff verification passes a small value
+   * (e.g. 10) to demonstrate the daily-sync → enrichment-stage
+   * → kol.enriched audit_log wiring in a finite-time window without
+   * waiting on the full 3000+ row catch-up. `0` is treated as
+   * "no cap" so legacy cron lines stay safe.
+   */
+  enrichmentLimit: number | null;
 }
 
 export function parseArgs(argv: readonly string[]): CliArgs {
-  const args: CliArgs = { dryRun: false };
+  const args: CliArgs = { dryRun: false, enrichmentLimit: null };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i]!;
     if (a === "--dry-run") {
       args.dryRun = true;
+    } else if (a.startsWith("--enrichment-limit=")) {
+      const n = Number(a.slice("--enrichment-limit=".length));
+      if (!Number.isFinite(n) || n < 0) {
+        throw new Error(`--enrichment-limit must be >=0, got "${a}"`);
+      }
+      args.enrichmentLimit = n > 0 ? n : null;
     }
     // BL-059: --no-refresh / --refresh-batch silently ignored —
     // refresh phase removed with the YouTube path. Old cron lines
@@ -206,6 +222,10 @@ export interface DailyRunDeps {
    *  a synchronous sleep). When undefined the orchestrator uses the
    *  spec-mandated schedule. */
   retry?: import("../src/lib/kol-sync/retry").RetryOpts;
+  /** BL-075-F003 fix-round 1: optional cap on the per-tenant
+   *  enrichment scan. Tests + signoff verification pass a small
+   *  value; cron leaves it undefined for unbounded daily catch-up. */
+  enrichmentLimit?: number;
 }
 
 export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
@@ -367,6 +387,7 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
         enrichStats = await enrichKolsForTenant({
           prisma: deps.prisma,
           tenantId: tenant.id,
+          limit: deps.enrichmentLimit,
           logger: (m) => console.log(m),
         });
         if (enrichStats.failedCount > 0) {
@@ -446,6 +467,7 @@ async function main(): Promise<void> {
       prisma,
       tenantSlug,
       dryRun: args.dryRun,
+      enrichmentLimit: args.enrichmentLimit ?? undefined,
     });
   } catch (err) {
     console.error(`[kol-sync-daily] fatal: ${err instanceof Error ? err.message : err}`);
