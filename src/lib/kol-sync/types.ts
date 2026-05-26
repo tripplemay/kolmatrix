@@ -54,8 +54,19 @@ export interface RawKolData {
    *  fork's accumulated counters; YouTube's BL-023 path used a true
    *  per-video rate but is being deprecated. Adapters that don't
    *  expose engagement leave this undefined and `engagement_rate`
-   *  stays NULL on the Kol row. */
+   *  stays NULL on the Kol row.
+   *
+   *  BL-076-F002: apify-kol clamps this to ≤99999.99 (Decimal(7,2)
+   *  max). Raw values exceeding the clamp set `engagement_outlier=true`
+   *  on the same row. */
   engagement_rate?: number | null;
+  /** BL-076-F002 — set by adapters whose engagement_rate calculation
+   *  can produce noise (e.g. view-based proxy KOL on YT/X with low
+   *  followers per BL-061 fork §3.3). True when the raw value exceeds
+   *  100% (before clamping); the import path promotes this into
+   *  `metadata.flags.engagement_outlier` for UI / analysis filtering.
+   *  Adapters that don't compute outlier signals leave this undefined. */
+  engagement_outlier?: boolean;
   /** Wall-clock at scrape time — used for `last_synced_at` and to
    *  distinguish stale rows. */
   scrapedAt: string;

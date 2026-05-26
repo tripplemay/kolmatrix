@@ -406,12 +406,28 @@ export function mapApifyKolItemToRawKolData(
   const followers = item.followers;
   const postsCount = item.postsCount;
   const totalLikes = item.totalLikes;
-  const engagementRate =
+  const rawEngagementRate =
     typeof followers === "number" && followers > 0 &&
     typeof postsCount === "number" && postsCount > 0 &&
     typeof totalLikes === "number" && Number.isFinite(totalLikes)
       ? (totalLikes / postsCount) / followers * 100
       : null;
+
+  // BL-076-F002: clamp engagementRate to Decimal(7,2) max (99999.99) so
+  // the kol upsert never throws "numeric field overflow" on view-based
+  // proxy KOL (YT/X) with low followers + high totalLikes per BL-061
+  // fork §3.3. Values > 100 set engagement_outlier=true for downstream
+  // UI filtering and noise analysis. 5/12-5/26 prod log shows 14
+  // consecutive days of daily-sync inserted=0 traced to a single bad
+  // row tripping this overflow before F003's per-KOL try/catch lands.
+  const ENGAGEMENT_RATE_MAX = 99999.99;
+  const ENGAGEMENT_OUTLIER_THRESHOLD = 100;
+  const engagementRate =
+    rawEngagementRate == null
+      ? null
+      : Math.min(rawEngagementRate, ENGAGEMENT_RATE_MAX);
+  const engagementOutlier =
+    rawEngagementRate != null && rawEngagementRate > ENGAGEMENT_OUTLIER_THRESHOLD;
 
   return {
     externalId,
@@ -430,6 +446,7 @@ export function mapApifyKolItemToRawKolData(
     brandSafetyRating: null,
     raw: { ...(item as Record<string, unknown>) },
     engagement_rate: engagementRate,
+    engagement_outlier: engagementOutlier,
     scrapedAt: now(),
   };
 }

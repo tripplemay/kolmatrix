@@ -168,7 +168,7 @@ function formatMarkdownReport(report: DailyRunReport): string {
     lines.push(`- Failed adapters: ${report.discover.totals.failedAdapters}`);
     if (report.importStats) {
       lines.push(
-        `- Imported: inserted=${report.importStats.inserted} updated=${report.importStats.updated} skipped=${report.importStats.skipped}`
+        `- Imported: inserted=${report.importStats.inserted} updated=${report.importStats.updated} skipped=${report.importStats.skipped} failed=${report.importStats.failed}`
       );
     }
     lines.push("");
@@ -291,6 +291,7 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
         inserted: 0,
         updated: 0,
         skipped: 0,
+        failed: 0,
         skippedByReason: {},
         flaggedByKind: {},
         categoriesHistogram: {},
@@ -309,6 +310,7 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
           aggregate.inserted += stats.inserted;
           aggregate.updated += stats.updated;
           aggregate.skipped += stats.skipped;
+          aggregate.failed += stats.failed;
           for (const [reason, count] of Object.entries(stats.skippedByReason)) {
             const key = reason as QualitySkipReason;
             aggregate.skippedByReason[key] =
@@ -331,6 +333,16 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
       }
       if (aggregate.total > 0) {
         importStats = aggregate;
+      }
+      // BL-076-F003: surface per-row upsert failures so the daily log
+      // line's `errors=N` alert fires (and the next-day on-call sees
+      // failed-row context in audit_log.kol.import_failed). Without
+      // this push the per-row try/catch would silently swallow the
+      // very thing F003 set out to expose.
+      if (aggregate.failed > 0) {
+        errors.push(
+          `import-row-failed[apify-kol]: ${aggregate.failed} row(s) — see audit_log.kol.import_failed`
+        );
       }
     }
   }
@@ -506,7 +518,7 @@ async function main(): Promise<void> {
 
   console.log(`[kol-sync-daily] DONE — report: ${reportPath}`);
   console.log(
-    `[kol-sync-daily] level=${logLine.level} summary: discover=${logLine.discoverCount} inserted=${logLine.inserted} updated=${logLine.updated} errors=${logLine.errors.length} quota_est=${logLine.estimatedQuotaConsumed}`
+    `[kol-sync-daily] level=${logLine.level} summary: discover=${logLine.discoverCount} inserted=${logLine.inserted} updated=${logLine.updated} failed=${report.importStats?.failed ?? 0} errors=${logLine.errors.length} quota_est=${logLine.estimatedQuotaConsumed}`
   );
   if (logLine.alerts.length > 0) {
     console.log(`[kol-sync-daily] alerts: ${logLine.alerts.join(" | ")}`);

@@ -51,6 +51,14 @@ export type QualitySkipReason =
 export interface QualityFlags {
   suspicious_growth?: true;
   declining?: true;
+  /** BL-076-F002 — set on apify-kol rows when the adapter's raw
+   *  engagement_rate calculation exceeds 100% (a noise signal for
+   *  view-based proxy KOL with low followers per BL-061 fork §3.3).
+   *  Stored as a true/false boolean — `false` is meaningful ("we
+   *  evaluated this row and it isn't an outlier") whereas an absent
+   *  key means the upstream adapter doesn't compute outlier signals
+   *  (e.g. the deprecated YouTube path). */
+  engagement_outlier?: boolean;
 }
 
 export interface QualityCheckExisting {

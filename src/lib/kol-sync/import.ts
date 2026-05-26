@@ -162,6 +162,16 @@ export function mapToUpsertPayload(
       ? BigInt(raw.viewCount)
       : null;
   const bannerUrl = raw.platform === "youtube" ? (raw.bannerUrl ?? null) : null;
+  // BL-076-F002: promote raw.engagement_outlier (set by apify-kol when
+  // the raw engagement_rate exceeds 100%) into metadata.flags so the
+  // discovery UI / analytics can filter view-based-proxy noise. Only
+  // emit the key when the adapter computes it — adapters that leave
+  // raw.engagement_outlier undefined (e.g. deprecated YouTube path)
+  // keep the historical metadata.flags shape untouched.
+  const mergedFlags: QualityFlags | undefined =
+    raw.engagement_outlier !== undefined
+      ? { ...(opts.flags ?? {}), engagement_outlier: raw.engagement_outlier }
+      : opts.flags;
   return {
     platform: raw.platform,
     handle,
@@ -186,7 +196,7 @@ export function mapToUpsertPayload(
       seeded_at: opts.nowIso,
       matrix_region: matrixRegion,
       matrix_keyword: matrixKeyword,
-      ...(opts.flags && Object.keys(opts.flags).length > 0 ? { flags: opts.flags } : {}),
+      ...(mergedFlags && Object.keys(mergedFlags).length > 0 ? { flags: mergedFlags } : {}),
       youtube:
         raw.platform === "youtube"
           ? {
@@ -214,6 +224,16 @@ export interface ImportStats {
   inserted: number;
   updated: number;
   skipped: number;
+  /** BL-076-F003 — rows that survived quality.checkQuality + passed
+   *  mapToUpsertPayload but threw inside `prisma.kol.upsert(...)`
+   *  (e.g. numeric overflow, unique-constraint race, downstream
+   *  trigger failure). Each failure is also surfaced into
+   *  `audit_log.kol.import_failed` with the offending payload so
+   *  forensic search by externalId / displayName works without
+   *  re-scraping. Started life as the response to the 5/12-5/26 prod
+   *  outage where one bad engagement_rate row aborted the entire
+   *  batch via the missing try/catch. */
+  failed: number;
   /** Per-skip-reason counter so the daily report shows what the
    *  quality module rejected. */
   skippedByReason: Partial<Record<QualitySkipReason, number>>;
@@ -235,6 +255,7 @@ export async function importRawKolData(
     inserted: 0,
     updated: 0,
     skipped: 0,
+    failed: 0,
     skippedByReason: {},
     flaggedByKind: {},
     categoriesHistogram: {},
@@ -329,19 +350,62 @@ export async function importRawKolData(
       valueScore: payload.valueScore,
       lastSyncedAt: now(),
     };
-    await prisma.kol.upsert({
-      where: {
-        tenantId_platform_externalId: {
-          tenantId: opts.tenantId,
-          platform: payload.platform,
-          externalId: payload.externalId,
+    try {
+      await prisma.kol.upsert({
+        where: {
+          tenantId_platform_externalId: {
+            tenantId: opts.tenantId,
+            platform: payload.platform,
+            externalId: payload.externalId,
+          },
         },
-      },
-      create: { tenantId: opts.tenantId, platform: payload.platform, ...data },
-      update: data,
-    });
-    if (existing) stats.updated += 1;
-    else stats.inserted += 1;
+        create: { tenantId: opts.tenantId, platform: payload.platform, ...data },
+        update: data,
+      });
+      if (existing) stats.updated += 1;
+      else stats.inserted += 1;
+    } catch (err) {
+      // BL-076-F003: per-row try/catch so a single bad upsert (e.g.
+      // numeric field overflow, unique-key race) can't abort the whole
+      // batch. The 5/12-5/26 prod outage was a single engagement_rate
+      // overflow tripping this exact code path with no catch — 14
+      // consecutive daily-sync runs returned inserted=0.
+      stats.failed += 1;
+      const errMessage = err instanceof Error ? err.message : String(err);
+      console.error(
+        `[kol-sync/import] upsert failed for ${payload.platform}/${payload.externalId}: ${errMessage.slice(0, 300)}`,
+      );
+      try {
+        await prisma.auditLog.create({
+          data: {
+            tenantId: opts.tenantId,
+            action: "kol.import_failed",
+            resourceType: "kol",
+            resourceId: null,
+            payload: {
+              platform: payload.platform,
+              externalId: payload.externalId,
+              displayName: payload.displayName,
+              followerCount: payload.followerCount,
+              engagementRate:
+                payload.engagementRate === undefined
+                  ? null
+                  : payload.engagementRate,
+              error: errMessage.slice(0, 500),
+            } as Prisma.InputJsonValue,
+          },
+        });
+      } catch (auditErr) {
+        // Recursive failure guard — if audit_log itself can't accept
+        // the insert, swallow + log so we don't escalate one upsert
+        // failure into the dispatcher-level catch in kol-sync-daily.
+        const auditMsg =
+          auditErr instanceof Error ? auditErr.message : String(auditErr);
+        console.error(
+          `[kol-sync/import] audit_log write also failed (${payload.platform}/${payload.externalId}): ${auditMsg.slice(0, 300)}`,
+        );
+      }
+    }
   }
   return stats;
 }

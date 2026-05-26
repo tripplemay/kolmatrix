@@ -233,6 +233,56 @@ describe("BL-059-F001 mapApifyKolItemToRawKolData engagement_rate derive", () =>
 });
 
 // ---------------------------------------------------------------------
+// BL-076-F002 — engagement_rate clamp + outlier flag
+// ---------------------------------------------------------------------
+
+describe("BL-076-F002 mapApifyKolItemToRawKolData clamp + outlier flag", () => {
+  it("(a) normal rate ≤100 passes through unclamped with outlier=false", () => {
+    // 100K followers · 50 posts · 27.5K total likes
+    // → avg likes per post = 550
+    // → engagement_rate = 550 / 100,000 * 100 = 0.55 (well below outlier threshold)
+    const out = mapApifyKolItemToRawKolData(
+      igProfile({ followers: 100_000, postsCount: 50, totalLikes: 27_500 }),
+      STUB_NOW
+    );
+    expect(out?.engagement_rate).toBeCloseTo(0.55, 6);
+    expect(out?.engagement_outlier).toBe(false);
+  });
+
+  it("(b) rate >100 keeps value (≤ Decimal(7,2) max) and sets outlier=true", () => {
+    // 1K followers · 1 post · 1,500 total likes
+    // → engagement_rate = 1,500 / 1,000 * 100 = 150 (outlier, but ≤ 99999.99)
+    const out = mapApifyKolItemToRawKolData(
+      igProfile({ followers: 1_000, postsCount: 1, totalLikes: 1_500 }),
+      STUB_NOW
+    );
+    expect(out?.engagement_rate).toBeCloseTo(150, 6);
+    expect(out?.engagement_outlier).toBe(true);
+  });
+
+  it("(c) rate > 99999.99 clamps to Decimal(7,2) max and sets outlier=true", () => {
+    // 100 followers · 1 post · 1,000,000 total likes
+    // → raw engagement_rate = 1,000,000 / 100 * 100 = 1,000,000
+    // → clamped to 99999.99 (Decimal(7,2) max)
+    const out = mapApifyKolItemToRawKolData(
+      igProfile({ followers: 100, postsCount: 1, totalLikes: 1_000_000 }),
+      STUB_NOW
+    );
+    expect(out?.engagement_rate).toBeCloseTo(99999.99, 2);
+    expect(out?.engagement_outlier).toBe(true);
+  });
+
+  it("(d) null engagement_rate keeps outlier=false (no value, no signal)", () => {
+    const out = mapApifyKolItemToRawKolData(
+      igProfile({ followers: 0, postsCount: 50, totalLikes: 500_000 }),
+      STUB_NOW
+    );
+    expect(out?.engagement_rate).toBeNull();
+    expect(out?.engagement_outlier).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------
 // Adapter-level — error classification.
 // ---------------------------------------------------------------------
 

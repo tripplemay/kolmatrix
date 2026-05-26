@@ -143,7 +143,7 @@ model Kol {
   countryCode        String?                  @map("country_code")
   language           String?
   followerCount      Int                      @default(0) @map("follower_count")
-  engagementRate     Decimal?                 @map("engagement_rate") @db.Decimal(5, 2)
+  engagementRate     Decimal?                 @map("engagement_rate") @db.Decimal(7, 2)
   avgViews           Int?                     @map("avg_views")
   categories         String[]
   audienceAgeDist    Json?                    @map("audience_age_dist") @db.JsonB

@@ -1,0 +1,26 @@
+-- BL-076-F001: extend engagement_rate from NUMERIC(5,2) (range ±999.99) to
+-- NUMERIC(7,2) (range ±99999.99) so view-based proxy KOL (YT/X) with
+-- low followers + high totalLikes don't overflow the column.
+--
+-- Root cause: src/lib/kol-sync/adapters/apify-kol.ts computes
+--   engagementRate = (totalLikes / postsCount) / followers * 100
+-- For YT/X (totalLikes is a view-based proxy per BL-061 fork §3.3),
+-- a KOL with low followers + high views can exceed 999.99 and trigger
+-- "numeric field overflow" inside the kol upsert, which (until F003)
+-- aborts the entire daily-sync batch (inserted=0). 5/12-5/26 prod log
+-- shows 14+ consecutive days of discoverCount=2107-2567 / inserted=0.
+--
+-- ALTER COLUMN TYPE between two NUMERIC precisions is a metadata-only
+-- change in PostgreSQL (no table rewrite, no row scan), so this should
+-- complete in milliseconds even on the prod kol table (~1397 rows).
+--
+-- ROLLBACK:
+--   -- WARNING: rollback will fail if any row already has |engagement_rate| > 999.99
+--   -- after this migration ships. Clamp first, then ALTER:
+--   --   UPDATE "kol" SET "engagement_rate" = 999.99
+--   --   WHERE "engagement_rate" > 999.99;
+--   --   UPDATE "kol" SET "engagement_rate" = -999.99
+--   --   WHERE "engagement_rate" < -999.99;
+--   ALTER TABLE "kol" ALTER COLUMN "engagement_rate" TYPE NUMERIC(5, 2);
+
+ALTER TABLE "kol" ALTER COLUMN "engagement_rate" TYPE NUMERIC(7, 2);
