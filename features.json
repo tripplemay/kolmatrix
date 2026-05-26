@@ -53,7 +53,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "SSH prod 'cd /opt/kolmatrix && npm run kol-sync:daily 2>&1 | tail -40' 跑成功 (report level != WARN/ERROR for numeric overflow)",
       "stats.inserted >= 1 (有新 KOL 进入)",

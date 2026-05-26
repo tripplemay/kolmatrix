@@ -4,15 +4,17 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-076-apify-numeric-overflow BUILDING (3/5, fix_rounds=0) — F001+F002+F003 done, F004 BLOCKED on prod deploy
-- F001+F002+F003 单 commit f718704 完成 + push main 26460638073 CI 8/8 jobs success
-- F001 prisma/migrations/20260526160800 ALTER engagement_rate Decimal(5,2)→Decimal(7,2) + ROLLBACK clamp warning, schema.prisma 同步
-- F002 apify-kol.ts rawEngagementRate Math.min(99999.99) clamp + outlier>100 flag, RawKolData + QualityFlags 字段扩展, import.ts mapToUpsertPayload 写 metadata.flags.engagement_outlier
-- F003 import.ts upsert try/catch + audit_log kol.import_failed (含 platform/externalId/displayName/followerCount/engagementRate/error) + recursive failure guard, scripts/kol-sync-daily.ts aggregate.failed + alerts when failed>0
-- L1 PASS: lint 0 errors / 3 pre-existing warnings, tsc clean, vitest 189 files / 1375 tests (+1 file / +7 cases)
-- Staging deployed f718704 (curl /api/health git_sha=f718704), prisma migrate deploy 应用 BL-076-F001 migration 成功
-- **F004 BLOCKED**: prod 当前 HEAD c428797 没有 fix, 用户必须先手动触发 GitHub Actions Deploy to Production workflow_dispatch, 部署后 Generator 才能 SSH prod 跑 daily-sync 验证 + 写 BL-076-backfill-2026-05-27.md
-- 完成 F004 后切 verifying 交 Reviewer (F005)
+## 🚧 BL-076-apify-numeric-overflow VERIFYING (4/5, fix_rounds=0) — F001+F002+F003+F004 done, Reviewer F005 接手
+- 三件套 commit f718704 + state 3449ead + F004 backfill report 7e?? push main, CI 8/8 jobs success
+- F001 prisma migration 20260526160800 Decimal(5,2)→Decimal(7,2) + ROLLBACK clamp warning, prod prisma migrate status 应用成功
+- F002 apify-kol.ts Math.min(99999.99) clamp + outlier>100 flag, metadata.flags.engagement_outlier 写入闭环
+- F003 import.ts upsert try/catch + audit_log kol.import_failed + recursive failure guard, kol-sync-daily.ts aggregate.failed + alerts
+- L1 PASS: lint 0 errors / 3 warnings, tsc clean, vitest 189 files / 1375 tests
+- Staging + Prod deployed (prod HEAD 3449ead, prisma migration applied)
+- F004 SSH prod backfill DB SQL 实证 (16:55 UTC): inserted=474 / synced=1859 / engagement_rate>999.99=15 行 / outlier=true=157 行 / audit_log.kol.import_failed=0 / max(engagement_rate)=9137.06 (旧 schema 必 overflow) — 14 天 prod fail 终结
+- F004 报告 docs/test-reports/BL-076-backfill-2026-05-27.md 含: SQL 直证 + 12 新 KOL 抽样 (IGN/Fortnite/penguinz0 等) + 15 上溢区间 KOL 抽样 + 14 天遗漏估算 + 三层防御协同分析
+- Reviewer F005 (executor:codex) L1+L2: 5 项 L1 自动化 + 6 项 staging+prod 抽样 + signoff doc 终签
+- 注: enrichment-stage tail (BL-075-F003 LLM 1859 行 catch-up) 还在 prod 跑, 完整 structured log line 会在 17:00-17:15 UTC 落, Reviewer L2 时 tail -1 复核
 - 关联: docs/specs/BL-076-apify-numeric-overflow-spec.md + BL-075 signoff §6 residual warning
 ## ✅ BL-075-kol-data-coverage DONE (7/7, fix_rounds=1) — signoff 完成
 - Codex Reviewer 终签 PASS：L1 通过 `npm run lint` = 0 errors / 3 warnings、`npx tsc --noEmit` PASS、`npm test` = 188 files / 1368 tests PASS、backfill dry-run 输出格式正常、environment action 清单仍含 `kol-country-enrichment`
