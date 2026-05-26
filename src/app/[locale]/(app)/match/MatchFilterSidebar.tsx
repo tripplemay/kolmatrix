@@ -168,7 +168,11 @@ export async function MatchFilterSidebar({ filters, basePath, coverage }: Props)
         </div>
       </Field>
 
-      <ChipGroup label={t("region")} disabledLabel={regionsDisabled ? noDataLabel : undefined}>
+      <ChipGroup
+        label={t("region")}
+        dimensionId="region"
+        disabledLabel={regionsDisabled ? noDataLabel : undefined}
+      >
         {DISCOVERY_REGIONS.map((code) => (
           <ChipCheckbox
             key={code}
@@ -182,7 +186,11 @@ export async function MatchFilterSidebar({ filters, basePath, coverage }: Props)
         ))}
       </ChipGroup>
 
-      <ChipGroup label={t("category")} disabledLabel={categoriesDisabled ? noDataLabel : undefined}>
+      <ChipGroup
+        label={t("category")}
+        dimensionId="category"
+        disabledLabel={categoriesDisabled ? noDataLabel : undefined}
+      >
         {DISCOVERY_CATEGORIES.map((c) => (
           <ChipCheckbox
             key={c}
@@ -223,7 +231,11 @@ export async function MatchFilterSidebar({ filters, basePath, coverage }: Props)
             </Select>
           </Field>
 
-          <ChipGroup label={t("platform")} disabledLabel={platformsDisabled ? noDataLabel : undefined}>
+          <ChipGroup
+            label={t("platform")}
+            dimensionId="platform"
+            disabledLabel={platformsDisabled ? noDataLabel : undefined}
+          >
             {DISCOVERY_PLATFORMS.map((p) => (
               <ChipCheckbox
                 key={p}
@@ -299,7 +311,11 @@ export async function MatchFilterSidebar({ filters, basePath, coverage }: Props)
             </Field>
           </div>
 
-          <ChipGroup label={t("monetization")} disabledLabel={monetizationDisabled ? noDataLabel : undefined}>
+          <ChipGroup
+            label={t("monetization")}
+            dimensionId="monetization"
+            disabledLabel={monetizationDisabled ? noDataLabel : undefined}
+          >
             {MONETIZATION_STATUSES.map((m) => (
               <ChipCheckbox
                 key={m}
@@ -519,6 +535,7 @@ function ChipGroup({
   label,
   children,
   disabledLabel,
+  dimensionId,
 }: {
   label: string;
   children: React.ReactNode;
@@ -528,11 +545,22 @@ function ChipGroup({
    *  greyed because the data layer is empty, not because they
    *  mis-clicked. */
   disabledLabel?: string;
+  /** BL-073 fix-round 2 — stable, locale-independent dimension key
+   *  embedded in the no-data hint's data-testid so probes can target
+   *  e.g. `chip-group-no-data-region` instead of the localised
+   *  `chip-group-no-data-区域`. The Reviewer's previous probe attributed
+   *  the monetisation hint to "region" because the testid suffix was
+   *  the translated label; the stable id eliminates that confusion. */
+  dimensionId?: string;
 }) {
+  const testidSuffix = dimensionId ?? label;
   return (
     <Field label={label}>
       {disabledLabel ? (
-        <span className="text-on-surface-variant/60 -mt-1 mb-1 block text-[10px]" data-testid={`chip-group-no-data-${label}`}>
+        <span
+          className="text-on-surface-variant/60 -mt-1 mb-1 block text-[10px]"
+          data-testid={`chip-group-no-data-${testidSuffix}`}
+        >
           {disabledLabel}
         </span>
       ) : null}
