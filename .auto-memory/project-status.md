@@ -4,11 +4,14 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-074-ia-v2 BUILDING (0/6, fix_rounds=0) — 加第 5 一级 nav '活动' + ADR-015
-- A0+A1 完成 5/26: 4 子决策 lock — 顺序 B (brief/campaigns/match/reach/insight) / icon `campaign` / i18n zh='活动' en='Campaigns' / ADR-015 新建 supersedes ADR-013 + /campaigns 每行 Match CTA
-- F001 NAV_ITEMS 4→5 + path-rewrite + i18n 5 locale (2.5h) / F002 列表行 Match CTA (1.5h) / F003 QuickActions 去冗余 (0.5h) / F004 ADR-015 起草 (2.5h) / F005 e2e nav + visual regen (1.5h) / F006 Reviewer (2h) — 总 ~10.5h ≈ 2 day Generator + 0.5 day Reviewer
-- 0 业务逻辑改动 (仅 nav + i18n + UI CTA + ADR docs); 不冲突 BL-075 可并行
-- 关联: docs/specs/BL-074-ia-v2-spec.md + BL-073-prod-hotfix-audit §1 #3 + §7 audit material
+## 🔍 BL-074-ia-v2 VERIFYING (5/5 Generator done, fix_rounds=0) — F006 codex pending
+- ✅ F001-F005 全 landed @ main HEAD ec38c74; 4 commits + baseline regen × 1
+- ✅ Staging deployed @ ec38c74 @ 2026-05-26T10:55+0800 (git_sha match ✓ healthy)
+- 🔍 F006 Codex Reviewer signoff (L1 7 项 + L2 staging 抽样 8 项)
+- 关键改动: NAV_ITEMS 4→5 / Match CTA / QuickActions 3 button / ADR-015 (167 LOC) / e2e 5-route spec
+- 4 个 layout regression test 同步从 4-item → 5-item 断言
+- A1 lock 全部 ack 实施 (Order B / icon=campaign / zh=活动 / ADR-015 supersedes ADR-013 §IA)
+- BL-075 (data coverage) backlog 排队 depends_on BL-074 done
 ## ✅ BL-073-prod-hotfix DONE (8/8, fix_rounds=2, tag bl073-done @ 433047d) — 3 prod hotfix + 防御升级 + filter UX 完成并终签
 - Codex Reviewer 终签 PASS：stable `dimensionId` testid 复验确认 staging `/zh/match` 只有 `chip-group-no-data-monetization` 存在；`region/category/platform/language` 的 no-data hooks 都不存在，language 输入保持启用，符合 coverage>0 行为
 - F007 保持通过：temp copy 把 `grid_view` 改成 `unknown_icon` 后，`tests/unit/material-symbols-coverage-unit.test.ts` 明确 FAIL，STRICT_MS_ICONS 拦截能力真实成立
