@@ -28,11 +28,14 @@ const LOCALE_LABELS: Record<string, Record<(typeof NAV_ORDER)[number], string>> 
     insight: "Insight",
   },
   zh: {
-    brief: "Brief",
+    // Actual zh translations from messages/zh.json — not brand kept-en.
+    // (The original commit assumed brief/match/reach/insight were
+    // kept-en in zh; messages have them fully translated.)
+    brief: "概要",
     campaigns: "活动",
-    match: "Match",
-    reach: "Reach",
-    insight: "Insight",
+    match: "匹配",
+    reach: "触达",
+    insight: "洞察",
   },
 };
 
