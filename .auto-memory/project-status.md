@@ -4,14 +4,13 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔍 BL-074-ia-v2 VERIFYING (5/5 Generator done, fix_rounds=0) — F006 codex pending
-- ✅ F001-F005 全 landed @ main HEAD ec38c74; 4 commits + baseline regen × 1
-- ✅ Staging deployed @ ec38c74 @ 2026-05-26T10:55+0800 (git_sha match ✓ healthy)
-- 🔍 F006 Codex Reviewer signoff (L1 7 项 + L2 staging 抽样 8 项)
-- 关键改动: NAV_ITEMS 4→5 / Match CTA / QuickActions 3 button / ADR-015 (167 LOC) / e2e 5-route spec
-- 4 个 layout regression test 同步从 4-item → 5-item 断言
-- A1 lock 全部 ack 实施 (Order B / icon=campaign / zh=活动 / ADR-015 supersedes ADR-013 §IA)
-- BL-075 (data coverage) backlog 排队 depends_on BL-074 done
+## ✅ BL-074-ia-v2 DONE (6/6, fix_rounds=0) — signoff 完成
+- Codex Reviewer 终签 PASS：L1 通过 `npm run lint` = 0 errors / 3 warnings、`npx tsc --noEmit` PASS、本地 Playwright `sidebar-nav-5-routes` = 5 passed / 29 skipped
+- 静态验收通过：`NAV_ITEMS` 为 5 条且顺序 `brief → campaigns → match → reach → insight`；`messages/zh.json` 含 `nav.campaigns=活动`；ADR-015 存在且 167 LOC；ADR-013 superseded marker 与 ADR README 索引同步
+- staging 抽样通过：zh 5-nav 顺序正确；`/en/campaigns` 与 `/en/campaigns/[id]` 都高亮 Campaigns；campaign row Match CTA 存在且跳 `/en/match?campaignId=...`
+- `/en/insight` QuickActions 已收敛为 3 个按钮，链接分别为 `/brief?tab=products`、`/match`、`/match?view=table`
+- signoff: `docs/test-reports/BL-074-signoff-2026-05-26.md`
+- BL-075 (data coverage) backlog 可继续，不再依赖 BL-074
 ## ✅ BL-073-prod-hotfix DONE (8/8, fix_rounds=2, tag bl073-done @ 433047d) — 3 prod hotfix + 防御升级 + filter UX 完成并终签
 - Codex Reviewer 终签 PASS：stable `dimensionId` testid 复验确认 staging `/zh/match` 只有 `chip-group-no-data-monetization` 存在；`region/category/platform/language` 的 no-data hooks 都不存在，language 输入保持启用，符合 coverage>0 行为
 - F007 保持通过：temp copy 把 `grid_view` 改成 `unknown_icon` 后，`tests/unit/material-symbols-coverage-unit.test.ts` 明确 FAIL，STRICT_MS_ICONS 拦截能力真实成立

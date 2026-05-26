@@ -1,11 +1,11 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "BL-074-ia-v2 — 加第 5 一级 nav '活动' (campaigns) + ADR-015 修订. 6 features F001-F006 (~11h ≈ 2 day Generator + 0.5 day Reviewer). A1 用户 5/26 lock 4 子决策: 顺序 B (brief/campaigns/match/reach/insight) / icon `campaign` / i18n zh='活动' en='Campaigns' / ADR-015 新建 supersedes ADR-013 + /campaigns 每行 Match KOL CTA. 不冲突 BL-075 (KOL data coverage) 可并行. 0 业务逻辑改动 (仅 nav + i18n + UI CTA + ADR docs). 关联 docs/specs/BL-074-ia-v2-spec.md @ 本 commit / docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md §1 #3 + §7 audit material.",
   "total_features": 6,
-  "completed_features": 5,
+  "completed_features": 6,
   "fix_rounds": 0,
   "current_sprint": "BL-074-ia-v2",
-  "last_updated": "2026-05-26T10:55+0800",
+  "last_updated": "2026-05-26T11:18+0800",
   "reference_docs": [
     "docs/specs/BL-074-ia-v2-spec.md",
     "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",
@@ -26,9 +26,9 @@
   "docs": {
     "spec": "docs/specs/BL-074-ia-v2-spec.md",
     "audit": "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",
-    "test_cases": null,
-    "signoff": null,
-    "framework_reviewed": false
+    "test_cases": "docs/test-reports/BL-074-signoff-2026-05-26.md",
+    "signoff": "docs/test-reports/BL-074-signoff-2026-05-26.md",
+    "framework_reviewed": true
   },
   "role_assignments": null,
   "evaluator_feedback": null,
@@ -36,7 +36,7 @@
   "session_notes": {
     "Kimi_planner": "[2026-05-26 11:00 BJT Planner Kimi BL-074 planning done. A1 4 子决策 lock: 顺序 B (brief/campaigns/match/reach/insight) / icon campaign / i18n zh=活动 en=Campaigns / ADR-015 新建 supersedes ADR-013 + 列表行 Match CTA. 6 features F001-F006 ~11h. ADR-015 新建是核心改动 (不原地改 ADR-013 仅顶部加 marker). BL-074 不冲突 BL-075 可并行. 5 沉淀候选 v0.9.24 batch 仍 9 条积压 (BL-072 4 + BL-073 5).]",
     "Kimi_generator": "[2026-05-26 10:55 BJT Generator Kimi — BL-074 5/5 generator features 完成, 切 verifying]\n\n## 已完成 (5/5, 3 commits + baseline regen, status building→verifying)\n\n### Commits @ main HEAD ec38c74\n1. 14bc72e F001+F002+F003+F004 — 5 路由 IA core 改动 (NAV_ITEMS / CTA / QuickActions / ADR-015)\n2. 1db329f F005 — e2e sidebar-nav-5-routes.spec.ts\n3. 91391a4 chore(visual): baseline regen (14 PNG drift from F001 5-nav 改)\n4. ec38c74 test fix — zh sidebar nav labels (e2e fixture 误用 brand kept-en, messages 是真翻)\n\n### 关键改动\n- F001: NAV_ITEMS 4→5 加 campaigns (Order B: brief→campaigns→match→reach→insight), icon=campaign, i18n 5 locale (zh=活动 / en=Campaigns / etc), deriveActiveNav /campaigns→campaigns (was match), 4 layout regression test 同步\n- F002: CampaignsTable 每行加 Match KOL CTA (Link → /match?campaignId=<id>, auto_awesome icon, i18n matchKolAction.{label/ariaLabel/actionColumn} 5 locale)\n- F003: QuickActions ACTIONS 4→3 (删 campaigns, sidebar 已有一级 nav), grid sm:grid-cols-3\n- F004: ADR-015 (167 LOC) + ADR-013 supersede §IA marker + README index 加 ADR-014/015\n- F005: e2e sidebar-nav-5-routes.spec.ts (~110 LOC) 验 5-nav 顺序/locale labels/Match CTA 行为\n\n### Baseline regen\n- run 26429026669 → 91391a4 (14 PNG: en-brief/match/reach/insight/campaigns/.../sidebar-logo 等)\n- manual CI 26429334355 @ 91391a4 expose zh nav label 误读 → fix ec38c74\n\n## [staging deployed @ ec38c74 @ 2026-05-26T10:55+0800]\n- ssh tripplezhou@34.180.93.185 完整 deploy 跑完\n- curl -H x-health-token https://staging.kol.guangai.ai/api/health → git_sha=ec38c74 match ✓ healthy\n- prisma migrate: No pending migrations\n\n## L1 PASS 实测 (推前)\n- npx tsc --noEmit: 0 error\n- npm run lint: 0 errors / 3 warnings\n- npx vitest run: 186 files × 1331 tests all PASS\n\n## status building → verifying\n- 5/5 executor:generator 全 completed (F001-F005)\n- F006 (executor:codex Reviewer signoff) 接手 acceptance:\n  - L1 自动化 7 项: lint / tsc / vitest 含 F005 e2e / NAV_ITEMS 长度=5 / nav-config:99 含 'campaigns' / messages/zh.json nav.campaigns 存在 / ADR-015 文件 exist + body≥80 LOC\n  - L2 staging 抽样 8 项: 5 locale sidebar 5 nav 顺序 + 5 locale label / /campaigns 高亮 campaigns / /campaigns/[id] 同 / /campaigns 行 Match button → /match?campaignId / /insight QuickActions 3 button / ADR-015 markdown 渲染 / visual baseline 同步\n  - signoff doc docs/test-reports/BL-074-signoff-2026-05-XX.md\n\n## 关键文件参考\n- docs/specs/BL-074-ia-v2-spec.md\n- docs/adr/ADR-015-5-route-ia-add-campaigns-nav.md (新 167 LOC)\n- docs/adr/ADR-013-* (§IA supersede marker @ top)\n- tests/e2e/sidebar-nav-5-routes.spec.ts (新)\n- src/components/layout/nav-config.ts (4→5 NAV_ITEMS)\n- src/components/layout/__tests__/*.test.tsx (4 regression test 同步)\n",
-    "Reviewer": null,
+    "Reviewer": "[2026-05-26 11:18 BJT Reviewer codex — BL-074 verifying PASS and signoff. L1 passed: lint 0 errors / 3 warnings, tsc PASS, local Playwright sidebar-nav-5-routes = 5 passed / 29 skipped, NAV_ITEMS order brief→campaigns→match→reach→insight, zh nav.campaigns present, ADR-015 exists with 167 LOC, ADR-013 superseded marker + ADR README index present. L2 passed on staging after fresh login (stored marketer auth had expired and was refreshed during verification): zh global nav shows 5-route order, /en/campaigns and /en/campaigns/[id] both highlight Campaigns, campaign-row-match-cta count=4 and href points to /en/match?campaignId=..., /en/insight QuickActions reduced to 3 buttons linking to /brief?tab=products, /match, /match?view=table. Wrote docs/test-reports/BL-074-signoff-2026-05-26.md and set status done.]",
     "johnsong_planner": null,
     "johnsong_generator": null
   }

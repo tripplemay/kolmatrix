@@ -74,7 +74,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "tests/e2e/sidebar-nav.spec.ts (或类似) 加 5 nav 顺序测试: brief / campaigns / match / reach / insight + 5 locale label 验证",
       "加 e2e test: 点击 campaigns nav → 跳 /campaigns; 进 /campaigns/[id] → sidebar 高亮 campaigns (验 path-rewrite)",
