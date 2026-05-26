@@ -57,7 +57,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "scripts/kol-enrichment-backfill.ts 实现支持 --dry-run + 实跑 + --tenant=<uuid> 限定",
       "--dry-run 仅 print 不写 DB, 可重复跑确认逻辑",

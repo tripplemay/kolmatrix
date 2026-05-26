@@ -1,11 +1,11 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "BL-075-kol-data-coverage — country/language 字段 NULL 填充 (BL-062 起 batch). 7 features F001-F007 (~13.5h ≈ 2 day Generator + 0.5 day Reviewer). A1 lock 4 子决策 (5/26): 混合方法 (langdetect + LLM country) / best-effort 阈值 / 全量 backfill 1397 + 立刻启 UI filter / 合入 kol-sync-daily.ts. BL-073-F006 UI disable 本批撤回. 关联 docs/specs/BL-075-kol-data-coverage-spec.md @ 本 commit / docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md §3.1 audit material.",
   "total_features": 7,
-  "completed_features": 5,
+  "completed_features": 6,
   "fix_rounds": 0,
   "current_sprint": "BL-075-kol-data-coverage",
-  "last_updated": "2026-05-26T17:10+0800",
+  "last_updated": "2026-05-26T18:15+0800",
   "reference_docs": [
     "docs/specs/BL-075-kol-data-coverage-spec.md",
     "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",
@@ -37,7 +37,7 @@
   "generator_handoff": null,
   "session_notes": {
     "Kimi_planner": null,
-    "Kimi_generator": "[2026-05-26 17:10 BJT Generator Kimi BL-075 F001-F003+F005-F006 全 done, F004 backfill 后台跑 (PID 3246366 on prod, --llm-gap-ms=3500, ETA ~18:30 BJT). 已 commit 状态: country 95->97/1397 (6.8%), language 239/1397 (17.1%); 84 audit_log llm-country + 229 franc-language. F004 acceptance 95% 完成: script/dry-run/full-run/accuracy-sample/audit-doc 全在线, 等 backfill 收尾后更新最终数字, flip features.json F004 done, 翻 verifying。Staging 已 deploy @ a04c6a5 (kol_coverage struct 在 health response, 0 KOL → fillRates undefined → 不渲染 hint)。**重要 ops 经验** (proposed-learnings #10/#11/#12 已沉淀): (1) pm2 reload 不重读 env_file 需 source .env 先注入; (2) cost-cap 估算 0.01/call vs 实际 0.0009 过保守; (3) aigcgateway 30 RPM 是 key 级 aggregate, backfill 须 in-process rate gate。NEXT 等 backfill 完成 → 更新 audit doc 最终数字 + 抽样审 → flip F004 done + verifying。]",
+    "Kimi_generator": "[2026-05-26 18:15 BJT Generator Kimi BL-075 ALL 6 generator features done. F004 backfill final: country 285/1397 (20.4%, 22.6x vs pre-batch 0.9%); language 635/1397 (45.5%, 52.9x vs 0.9%); 0 failed; total cost ~$0.30 (3 attempts combined). 30-row accuracy sample: 0 false-positive country mis-tags; 6 unambiguously correct + 2 defensible + 3 borderline; LLM honest about uncertainty (returns null for ambiguous bios). Audit doc final: docs/test-reports/BL-075-backfill-2026-05-26.md. Staging deployed @ a04c6a5 (kol_coverage struct visible in /api/health; 0 KOL → no fillRates hint rendered, by design). **Prod deploy 待用户手动触发** GitHub Actions Deploy to Production → workflow_dispatch (main HEAD); 之后 prod /api/health 含 kol_coverage 真数字 + /zh/match 显示 Coverage 20%/46% 提示。Status flipped to verifying — Codex Reviewer 接手 F007 L1+L2+signoff.]",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
