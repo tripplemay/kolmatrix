@@ -35,7 +35,7 @@
 import packageJson from "../../../../package.json";
 import { execSync } from "node:child_process";
 
-import { prisma, withPlatformAdmin } from "@/lib/db";
+import { prisma } from "@/lib/db";
 import { pingRedis } from "@/lib/redis";
 
 import {
@@ -133,37 +133,60 @@ function isHealthy(checks: Record<string, Check>): boolean {
 // state lives in `./kol-coverage-cache` (Next.js's route validator
 // rejects non-method exports, so the reset helper cannot live here).
 //
-// RLS: the snapshot is cross-tenant; we run it under
-// `withPlatformAdmin` to bypass the tenant scope without joining one
-// at a time. Read-only count; no rows leak across tenants in the
-// returned numbers.
+// RLS: the snapshot is cross-tenant, but the `kol` RLS policy is
+// strict `tenant_id = current_setting('app.tenant_id')` with NO
+// platform_admin bypass branch (verified prod 2026-05-26). So we have
+// to iterate the tenant list (tenant table has RLS disabled — safe
+// to read) and aggregate per-tenant inside `set_config(app.tenant_id)`
+// scopes. KOL data lives in a single tenant in prod today, so the loop
+// is cheap; even at N=100 tenants it stays under a few ms total.
 async function loadKolCoverageSnapshot(): Promise<KolCoverageSnapshot | null> {
   const now = Date.now();
   const cached = readKolCoverageCache(now);
   if (cached) return cached;
   try {
-    const rows = (await withPlatformAdmin((tx) =>
-      tx.$queryRawUnsafe(
-        `
-        SELECT
-          COUNT(*)::int AS total,
-          COUNT(*) FILTER (
-            WHERE country_code IS NOT NULL AND length(btrim(country_code)) > 0
-          )::int AS country_filled,
-          COUNT(*) FILTER (
-            WHERE language IS NOT NULL AND length(btrim(language)) > 0
-          )::int AS language_filled
-        FROM kol
-        WHERE deleted_at IS NULL AND is_suspicious = false
-        `,
-      ),
-    )) as Array<{ total: number; country_filled: number; language_filled: number }>;
-    const r = rows[0] ?? { total: 0, country_filled: 0, language_filled: 0 };
-    const total = Number(r.total ?? 0);
+    const totals = await prisma.$transaction(async (tx) => {
+      const tenants = (await tx.$queryRawUnsafe(
+        `SELECT id::text AS id FROM tenant`,
+      )) as Array<{ id: string }>;
+      let total = 0;
+      let countryFilled = 0;
+      let languageFilled = 0;
+      for (const t of tenants) {
+        // Re-scope the RLS session var to this tenant within the open
+        // transaction. `true` flag makes it transaction-local; the next
+        // tenant overwrites it without bleed.
+        await tx.$queryRawUnsafe(
+          `SELECT set_config('app.tenant_id', $1, true)`,
+          t.id,
+        );
+        const rows = (await tx.$queryRawUnsafe(
+          `
+          SELECT
+            COUNT(*)::int AS total,
+            COUNT(*) FILTER (
+              WHERE country_code IS NOT NULL AND length(btrim(country_code)) > 0
+            )::int AS country_filled,
+            COUNT(*) FILTER (
+              WHERE language IS NOT NULL AND length(btrim(language)) > 0
+            )::int AS language_filled
+          FROM kol
+          WHERE deleted_at IS NULL AND is_suspicious = false
+          `,
+        )) as Array<{ total: number; country_filled: number; language_filled: number }>;
+        const r = rows[0] ?? { total: 0, country_filled: 0, language_filled: 0 };
+        total += Number(r.total ?? 0);
+        countryFilled += Number(r.country_filled ?? 0);
+        languageFilled += Number(r.language_filled ?? 0);
+      }
+      return { total, countryFilled, languageFilled };
+    });
     const snapshot: KolCoverageSnapshot = {
-      total_active_kols: total,
-      country_fill_rate: total === 0 ? 0 : Number(r.country_filled) / total,
-      language_fill_rate: total === 0 ? 0 : Number(r.language_filled) / total,
+      total_active_kols: totals.total,
+      country_fill_rate:
+        totals.total === 0 ? 0 : totals.countryFilled / totals.total,
+      language_fill_rate:
+        totals.total === 0 ? 0 : totals.languageFilled / totals.total,
       last_updated: new Date(now).toISOString(),
     };
     writeKolCoverageCache(snapshot, now);

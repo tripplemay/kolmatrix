@@ -73,9 +73,15 @@ beforeEach(() => {
   // cache + stub stats that satisfy the snapshot shape. Tests that
   // care about the actual numbers override via mockResolvedValueOnce.
   resetKolCoverageCache();
-  queryRawUnsafe.mockResolvedValue([
-    { total: 100, country_filled: 0, language_filled: 0 },
-  ]);
+  // BL-075-F006 default: queryRawUnsafe is the workhorse for the
+  // coverage snapshot. It's called per-tenant in 2 steps:
+  //   1. SELECT id FROM tenant
+  //   2. SELECT set_config('app.tenant_id', $1, true)
+  //   3. SELECT COUNT(*) ... FROM kol WHERE ...
+  // Default stub returns 0 tenants so the loop short-circuits and we
+  // get total=0. Tests that exercise the snapshot override per-call
+  // via mockResolvedValueOnce in the same order.
+  queryRawUnsafe.mockResolvedValue([]);
 });
 
 function authedRequest(): Request {
@@ -188,9 +194,14 @@ describe("GET /api/health", () => {
 
   it("BL-075-F006: includes kol_coverage with country/language fill rates + total + last_updated", async () => {
     queryRaw.mockResolvedValueOnce([{ "?column?": 1 }]);
-    queryRawUnsafe.mockResolvedValueOnce([
-      { total: 1397, country_filled: 700, language_filled: 945 },
-    ]);
+    // Sequence: (1) list tenants → 1 row, (2) set_config → empty,
+    // (3) per-tenant aggregate counts → 1397 / 700 / 945.
+    queryRawUnsafe
+      .mockResolvedValueOnce([{ id: "tenant-a" }])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        { total: 1397, country_filled: 700, language_filled: 945 },
+      ]);
     const res = await GET(plainRequest());
     const body = (await res.json()) as {
       kol_coverage?: {
@@ -207,11 +218,34 @@ describe("GET /api/health", () => {
     expect(() => new Date(body.kol_coverage!.last_updated).toISOString()).not.toThrow();
   });
 
+  it("BL-075-F006: aggregates across multiple tenants", async () => {
+    queryRaw.mockResolvedValueOnce([{ "?column?": 1 }]);
+    queryRawUnsafe
+      .mockResolvedValueOnce([{ id: "tenant-a" }, { id: "tenant-b" }])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        { total: 1000, country_filled: 200, language_filled: 500 },
+      ])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        { total: 400, country_filled: 100, language_filled: 200 },
+      ]);
+    const res = await GET(plainRequest());
+    const body = (await res.json()) as {
+      kol_coverage: { total_active_kols: number; country_fill_rate: number };
+    };
+    expect(body.kol_coverage.total_active_kols).toBe(1400);
+    expect(body.kol_coverage.country_fill_rate).toBeCloseTo(300 / 1400, 4);
+  });
+
   it("BL-075-F006: cache reuse — second request within TTL does not re-query the DB", async () => {
     queryRaw.mockResolvedValue([{ "?column?": 1 }]);
-    queryRawUnsafe.mockResolvedValueOnce([
-      { total: 100, country_filled: 50, language_filled: 80 },
-    ]);
+    queryRawUnsafe
+      .mockResolvedValueOnce([{ id: "tenant-a" }])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        { total: 100, country_filled: 50, language_filled: 80 },
+      ]);
     await GET(plainRequest());
     const firstCallCount = queryRawUnsafe.mock.calls.length;
     await GET(plainRequest());
@@ -228,11 +262,10 @@ describe("GET /api/health", () => {
     expect(body).not.toHaveProperty("kol_coverage");
   });
 
-  it("BL-075-F006: zero KOLs returns fill_rate=0 cleanly (no divide-by-zero)", async () => {
+  it("BL-075-F006: zero tenants returns fill_rate=0 cleanly (no divide-by-zero)", async () => {
     queryRaw.mockResolvedValueOnce([{ "?column?": 1 }]);
-    queryRawUnsafe.mockResolvedValueOnce([
-      { total: 0, country_filled: 0, language_filled: 0 },
-    ]);
+    // The default mock returns [] for the tenant list — loop exits
+    // immediately, total=0, fill_rates=0.
     const res = await GET(plainRequest());
     const body = (await res.json()) as {
       kol_coverage: { total_active_kols: number; country_fill_rate: number };
