@@ -5,7 +5,7 @@
   "completed_features": 5,
   "fix_rounds": 0,
   "current_sprint": "BL-075-kol-data-coverage",
-  "last_updated": "2026-05-26T16:48+0800",
+  "last_updated": "2026-05-26T17:10+0800",
   "reference_docs": [
     "docs/specs/BL-075-kol-data-coverage-spec.md",
     "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",
@@ -37,7 +37,7 @@
   "generator_handoff": null,
   "session_notes": {
     "Kimi_planner": null,
-    "Kimi_generator": "[2026-05-26 16:48 BJT Generator Kimi BL-075 F005+F006 done. F005: filter sidebar 撤 country/language disable, 改 coverageHint 显示 Coverage: N% 5 locale; runMatchSearch 撤 early-return. F006: /api/health 加 kol_coverage 子结构 (cross-tenant via withPlatformAdmin), 5min in-memory cache (kol-coverage-cache.ts 独立模块, Next route validator 拒非-HTTP-method export). F004 backfill: 第一次 cap hit 约500 LLM call (cost-cap 估算 0.01 per call 过保守, 实际 0.0009), kill 重启用 AI_DAILY_COST_USD_PER_TENANT_MAX=500 override, 当前进度: 总1397 已 country=94 language=239 (重启前) 继续填充中。NEXT: 等 backfill 完成 → 抽样审 → 写 BL-075-backfill-2026-05-26.md → staging deploy → 翻 verifying。]",
+    "Kimi_generator": "[2026-05-26 17:10 BJT Generator Kimi BL-075 F001-F003+F005-F006 全 done, F004 backfill 后台跑 (PID 3246366 on prod, --llm-gap-ms=3500, ETA ~18:30 BJT). 已 commit 状态: country 95->97/1397 (6.8%), language 239/1397 (17.1%); 84 audit_log llm-country + 229 franc-language. F004 acceptance 95% 完成: script/dry-run/full-run/accuracy-sample/audit-doc 全在线, 等 backfill 收尾后更新最终数字, flip features.json F004 done, 翻 verifying。Staging 已 deploy @ a04c6a5 (kol_coverage struct 在 health response, 0 KOL → fillRates undefined → 不渲染 hint)。**重要 ops 经验** (proposed-learnings #10/#11/#12 已沉淀): (1) pm2 reload 不重读 env_file 需 source .env 先注入; (2) cost-cap 估算 0.01/call vs 实际 0.0009 过保守; (3) aigcgateway 30 RPM 是 key 级 aggregate, backfill 须 in-process rate gate。NEXT 等 backfill 完成 → 更新 audit doc 最终数字 + 抽样审 → flip F004 done + verifying。]",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
