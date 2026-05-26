@@ -1,28 +1,5 @@
 [
   {
-    "id": "BL-074",
-    "title": "IA v2 — 加第 5 一级 nav '活动' (campaigns) + ADR-015 修订",
-    "description": "**触发：** BL-073 issue #3 用户报 '为活动匹配 KOL 在一级菜单上没有入口'。详 docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md §1/§7。\n\n**Scope:**\n- NAV_ITEMS 从 4 → 5: brief / match / reach / insight / campaigns\n- nav-config.ts:99 path-rewrite: '/campaigns' 自然高亮 'campaigns'\n- i18n nav.campaigns + Description 5 locale\n- Material Symbols icon 选 (campaign / rocket_launch / folder 待 lock)\n- /campaigns 列表行 'Match KOL' 快捷按钮\n- /insight QuickActions 去冗余\n- ADR-015 修订: 5 路由 IA\n\n**估时:** ~2-3 day\n**依赖:** BL-073 done\n\n**A1 lock 5/26:** 方案 B 5 一级 nav; 子决策 (nav 顺序 / icon / ADR 起草) 留 BL-074 spec phase。",
-    "decisions": [
-      "用户 5/26 lock 方案 B: 加第 5 一级 nav '活动' (campaigns)",
-      "BL-073 done 后启 BL-074",
-      "ADR-015 起草需要修订 ADR-013 4 路由 IA → 5 路由 IA",
-      "子决策 (nav 顺序 / icon / i18n 标签) 留 BL-074 spec phase"
-    ],
-    "confirmed_at": "2026-05-26T03:00+0800",
-    "priority": "high",
-    "tags": [
-      "ia-refactor",
-      "adr",
-      "5-route-ia",
-      "nav-config"
-    ],
-    "discovered_in": "BL-073 issue #3 by 用户 5/26",
-    "audit_doc": "docs/test-reports/BL-073-prod-hotfix-audit-2026-05-26.md",
-    "depends_on": "BL-073 done",
-    "estimated_total_hours": 12
-  },
-  {
     "id": "BL-075",
     "title": "KOL data coverage gap — country/language 字段 NULL 填充 (BL-062 起 batch)",
     "description": "**触发：** BL-073 issue #4B SSH prod audit 暴露 prod 1385 active KOL 的 country_code + language 全 NULL/空。实际是 BL-062 backlog 起 batch。\n\n**Scope 方向候选:**\n- A: apify-kol fork 源头同步 (跨团队协作)\n- B: 本地 enrichment job (LLM 推断, 推荐)\n- C: 混合\n\n**估时:** ~1.5-2 day (方向 B)\n**依赖:** BL-074 done (或与 BL-074 并行不冲突)\n\n**关联:** BL-062 closed-merged-into-BL-075",

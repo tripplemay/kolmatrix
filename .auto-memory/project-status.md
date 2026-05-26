@@ -4,7 +4,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ✅ BL-073-prod-hotfix DONE (8/8, fix_rounds=2) — signoff 完成
+## 🚧 BL-074-ia-v2 BUILDING (0/6, fix_rounds=0) — 加第 5 一级 nav '活动' + ADR-015
+- A0+A1 完成 5/26: 4 子决策 lock — 顺序 B (brief/campaigns/match/reach/insight) / icon `campaign` / i18n zh='活动' en='Campaigns' / ADR-015 新建 supersedes ADR-013 + /campaigns 每行 Match CTA
+- F001 NAV_ITEMS 4→5 + path-rewrite + i18n 5 locale (2.5h) / F002 列表行 Match CTA (1.5h) / F003 QuickActions 去冗余 (0.5h) / F004 ADR-015 起草 (2.5h) / F005 e2e nav + visual regen (1.5h) / F006 Reviewer (2h) — 总 ~10.5h ≈ 2 day Generator + 0.5 day Reviewer
+- 0 业务逻辑改动 (仅 nav + i18n + UI CTA + ADR docs); 不冲突 BL-075 可并行
+- 关联: docs/specs/BL-074-ia-v2-spec.md + BL-073-prod-hotfix-audit §1 #3 + §7 audit material
+## ✅ BL-073-prod-hotfix DONE (8/8, fix_rounds=2, tag bl073-done @ 433047d) — 3 prod hotfix + 防御升级 + filter UX 完成并终签
 - Codex Reviewer 终签 PASS：stable `dimensionId` testid 复验确认 staging `/zh/match` 只有 `chip-group-no-data-monetization` 存在；`region/category/platform/language` 的 no-data hooks 都不存在，language 输入保持启用，符合 coverage>0 行为
 - F007 保持通过：temp copy 把 `grid_view` 改成 `unknown_icon` 后，`tests/unit/material-symbols-coverage-unit.test.ts` 明确 FAIL，STRICT_MS_ICONS 拦截能力真实成立
 - L1 通过：`npm run lint` = 0 errors / 3 warnings；`npx tsc --noEmit` PASS；targeted vitest 10/10 PASS
