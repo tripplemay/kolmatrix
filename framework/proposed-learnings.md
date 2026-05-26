@@ -161,3 +161,63 @@ sediment（沉淀）从 proposed-learnings.md 走向 `framework/harness/*.md` �
 
 **状态：** 待用户 ack — v0.9.24 framework sediment batch 落地
 
+---
+
+## [2026-05-26] Claude CLI — 来源：BL-073 prod hotfix done / Planner Kimi
+
+**类型：** 模板修订（v0.9.24 候选 #5，扩展 BL-072-F005）
+
+**内容：** **subset script grep Pattern 进化路径** — v1 (Pattern 1-5 只覆盖同行 `>icon<` / 多行 `-A 1` 裸 / `icon: "name"` / `icon="name"` / manifest 手工) → v2 (BL-072-F005 加 Pattern 6 覆盖 `"quoted"` JSX 三元) → **v3 (BL-073-F002 加 Pattern 7 覆盖 multi-line span 内 bare ligature on own line)**。穷举 JSX pattern 模板：JSX 内 ligature 可能出现位置 = 同行 quoted / 多行 bare / 三元 quoted / 对象 value / return statement / `??` fallback。本次 BL-073 issue #1 暴露 v2 漏 bare 模式（forward_to_inbox / refresh / article 等 8 个）。
+
+**建议写入：** `framework/harness/checklists/material-symbols-pattern.md` §"Pattern 进化路径 v1 → v2 → v3" + 穷举 JSX pattern 模板（每种 pattern 含 1 例 + grep 实现 + false-positive 排除）
+
+**状态：** 用户 5/26 ack（lock A 完整版含防御升级）— 待 v0.9.24 framework sediment batch 落地
+
+---
+
+## [2026-05-26] Claude CLI — 来源：BL-073 prod hotfix done / Planner Kimi
+
+**类型：** 新规律（v0.9.24 候选 #6）
+
+**内容：** **spec acceptance "嵌套二级约束 grep 全仓"模板** — 视觉宽度 / i18n / CSS variant 类 acceptance 凡涉及"外层约束改变"必须加 acceptance 行 `grep -rn "<约束类>" <相关路由>/ --include='*.tsx'` 全 review，确认无嵌套二级约束破坏外层意图。BL-072-F001 修 `/brief/page.tsx:75` max-w-3xl → max-w-[1600px] 但漏检 `BriefPageClient.tsx:120` 嵌套 max-w-3xl → BL-073 同问题复现。Acceptance 模板：`grep -rn "max-w-" src/app/[locale]/(app)/<route>/ --include='*.tsx'` 输出 review，0 个意外二级约束。
+
+**建议写入：** `framework/harness/planner-checklists.md` §"spec 起草 checklist 集合" 新加段 "嵌套二级约束 grep 防御"（含视觉/i18n/CSS variant 三类 grep 模板）
+
+**状态：** 用户 5/26 ack — 待 v0.9.24 framework sediment batch 落地
+
+---
+
+## [2026-05-26] Claude CLI — 来源：BL-073-F005 / Generator + Planner Kimi
+
+**类型：** 新规律（v0.9.24 候选 #7，扩展 BL-072-F007 i18n-page-side-consumption v1）
+
+**内容：** **i18n page-side test v2 — key existence 检测**。BL-072-F007 v1 仅 grep raw English literal 在 JSX text/attr，**不验 page.tsx 调用 `t(key)` 时该 key 在 messages JSON 实际 exist**。BL-073 issue #4A 反例：`match.emptyState.body` 5 locale 全 MISSING 但 page.tsx 调 `t("body")`，next-intl prod fallback 返字面 key 字符串。BL-073-F005 实物落 i18n-page-side-consumption.test.ts v2：扫所有 page.tsx + *Client/*Panel/*Bar 的 `t("<key>")` 调用 → 拼 namespace → 验 messages/en.json exist → 不 exist fail。第一版 advisory（STRICT_I18N=false），稳定后转 strict。
+
+**建议写入：** `framework/harness/evaluator.md` §"advisory test 三件套"（BL-072-F007 沉淀的） 加 v2 升级路径：i18n page-side test v1 raw English → v2 + key existence；同步 STRICT_MODE 渐进 flip 模式（仅 strict Material Symbols 维度，i18n + link-target 仍 advisory）
+
+**状态：** 用户 5/26 ack（lock A 完整版）— 待 v0.9.24 framework sediment batch 落地
+
+---
+
+## [2026-05-26] Claude CLI — 来源：BL-073 prod log audit / Planner Kimi
+
+**类型：** 新规律（v0.9.24 候选 #8）
+
+**内容：** **prod error log 接告警链 — MISSING_MESSAGE 应触发告警**。BL-073 SSH prod log 实测 `match.emptyState.body` + `weeklyReport.title` MISSING_MESSAGE 已多次出现于 prod log（5/25 17:18 ~ 18:02 UTC 至少 6 次），但**未触发任何告警** → next-intl 默认 production fallback 返 key 字面 + log 但不 throw，CI 跑不到 prod log，prod log 也无监控钩子。Sediment：MISSING_MESSAGE / Prisma error / 5xx response 等关键 error pattern 应入 log-based alert（如 grep tail with Slack webhook 或 GCP Cloud Monitoring）。
+
+**建议写入：** `framework/harness/deploy-patterns.md` 新段 §"prod error log alerting" — 含 MISSING_MESSAGE / Prisma error / 5xx grep pattern + Slack webhook / GCP alerting 模板
+
+**状态：** 用户 5/26 ack（间接, A1 lock 含此防御）— 待 v0.9.24 framework sediment batch 落地
+
+---
+
+## [2026-05-26] Claude CLI — 来源：BL-073-F007 / Generator + Planner Kimi
+
+**类型：** 新规律（v0.9.24 候选 #9）
+
+**内容：** **STRICT_MODE 渐进升级路径 — advisory → strict 渐进 flip 模板**。BL-072-F007 三件套 test (link-target-audit / material-symbols-coverage / i18n-page-side-consumption) 首版全 advisory（STRICT_MODE=false，warning 不 fail），避免 false-positive 拦截合法 PR。BL-073-F007 实物落渐进升级：拆 STRICT_MODE 为 `STRICT_MS_ICONS=true`（Material Symbols 维度 flip strict，CI fail 拦未追 manifest 的 icon）+ `STRICT_I18N=false`（仍 advisory）+ `STRICT_LINK_TARGET=false`（仍 advisory）。模式：稳定 1-2 周后逐维度 flip，每 flip 都需 CHANGELOG 标记 + planner-checklists.md 加"未来 X 必更 Y" 强制要求。
+
+**建议写入：** `framework/harness/evaluator.md` §"advisory test 三件套" 段加 §"STRICT_MODE 渐进升级路径"（含 flip 模式 + CHANGELOG marker + 维度独立 flag 模板）
+
+**状态：** 用户 5/26 ack — 待 v0.9.24 framework sediment batch 落地
+
