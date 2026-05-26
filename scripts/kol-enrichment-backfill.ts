@@ -38,6 +38,7 @@ interface CliArgs {
   tenantId: string | null;
   concurrency: number;
   limitPerTenant: number | null;
+  llmGapMs: number | null;
 }
 
 export function parseArgs(argv: readonly string[]): CliArgs {
@@ -46,6 +47,7 @@ export function parseArgs(argv: readonly string[]): CliArgs {
     tenantId: null,
     concurrency: 5,
     limitPerTenant: null,
+    llmGapMs: null,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i]!;
@@ -67,6 +69,12 @@ export function parseArgs(argv: readonly string[]): CliArgs {
         throw new Error(`--limit-per-tenant must be >=1, got "${a}"`);
       }
       args.limitPerTenant = n;
+    } else if (a.startsWith("--llm-gap-ms=")) {
+      const n = Number(a.slice("--llm-gap-ms=".length));
+      if (!Number.isFinite(n) || n < 0) {
+        throw new Error(`--llm-gap-ms must be >=0, got "${a}"`);
+      }
+      args.llmGapMs = n;
     }
   }
   return args;
@@ -189,7 +197,8 @@ async function main(): Promise<void> {
   console.log(
     `[kol-enrichment-backfill] starting (dryRun=${args.dryRun}` +
       ` tenant=${args.tenantId ?? "ALL"} concurrency=${args.concurrency}` +
-      ` limitPerTenant=${args.limitPerTenant ?? "ALL"})`,
+      ` limitPerTenant=${args.limitPerTenant ?? "ALL"}` +
+      ` llmGapMs=${args.llmGapMs ?? "default"})`,
   );
 
   const conn = process.env.DATABASE_ADMIN_URL ?? process.env.DATABASE_URL;
@@ -241,6 +250,7 @@ async function main(): Promise<void> {
         concurrency: args.concurrency,
         dryRun: args.dryRun,
         limit: args.limitPerTenant ?? undefined,
+        minLlmIntervalMs: args.llmGapMs ?? undefined,
         logger: (m) => console.log(m),
         onProgress: (done, total) => {
           console.log(
