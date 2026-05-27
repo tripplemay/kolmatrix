@@ -4,14 +4,14 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔎 BL-078-landing-visual-polish VERIFYING (5/6, fix_rounds=0) — Generator F001-F005 完成，Reviewer L1+L2 + signoff 待
-- 6 commits 推 main: b24b736 F001 token + design-draft / fc30524 F002 Hero+TopNav + view transitions + mesh gradient + landing-cta-primary/secondary / 7f291e2 F003a PainPoints+Features + landing-card-light + icon-halo / 6493d29 F003b BeforeAfter+EmailCenterDemo / 1c8cdd0 F004 Trust+FAQ+FooterCTA+SectionTransition + FAQ smooth-height (interpolate-size 渐进增强) / 384531e F005-a11y-fix (ink-muted 70→78%, ink-subtle 52→60%)
-- update-visual-baselines.yml 跑 2 次 (df5585b + 55c5180 fix-round)；staging deploy 3 次 → 当前 staging git_sha = 384531e (re-deploy 后)
-- **Lighthouse Desktop logged-out staging /zh (384531e):** perf 0.94 ✓ / a11y 0.96 ✓ / LCP 1077ms ✓ / CLS 0 ✓ / TBT 0ms ✓ / SEO 0.58 ✗ (staging noindex+robots disallow+canonical 缺失, 全 staging-only intentional)
-- a11y 0.96 ≥ 0.90 spec ✓；color-contrast=0 单项 13 elements: 主因 StickyParallax opacity-40 inactive callouts + BeforeAfter opacity-50 inactive rows (pre-existing 视觉机制 decorative parallax, out-of-scope per BL-078 仅视觉精修)；Reviewer 评估是否新批次跟进
-- L1 PASS: lint 0 errors / 3 baseline warnings (不变) / tsc clean / npm test 189 files 1375 tests PASS
-- 0 业务代码改动 / 11 components 数量/文件名/data-testid 全保留 / CTA href + i18n key 0 改 / E2E landing.spec.ts 链路覆盖 unchanged
-- **Reviewer L2 待执行 (per F006):** Lighthouse 复跑 (5 locale spot check) / a11y 手动 verify (Tab keyboard nav + contrast 抽样 + aria) / 5 locale text overflow ja+ko 验关键 sections / Browser matrix Chrome 115+ + Safari 18+ + Firefox latest (view-transition + scroll-driven fallback 实测) / prefers-reduced-motion / 设计参照 Linear+Plausible 精神落地主观评判 / signoff doc docs/test-reports/BL-078-signoff-2026-05-XX.md
+## 🚧 BL-078-landing-visual-polish FIXING (4/6, fix_rounds=0) — perf/链路健康，但 contrast 真 fail
+- Codex Reviewer 首轮 verifying FAIL，报告 `docs/test-reports/BL-078-verifying-2026-05-27.md`
+- 匿名 landing staging Playwright 通过：root/locale/hero/video/CTA 链路 `7 passed`
+- Chromium + WebKit + Firefox reduced-motion/5-locale matrix 通过：zh/en/ja/ko/es hero 可见、CTA href 正确、无横向溢出、reduced-motion 下 video paused
+- Lighthouse `/zh` perf 通过：performance `0.98` / LCP `617ms` / CLS `0` / TBT `0ms`
+- 真 blocker 是 contrast：Lighthouse accessibility 虽 `0.96`，但 `color-contrast` score=`0` 且命中 `13` 个元素，不止 decorative parallax；命中包括 BeforeAfter 文案、Features eyebrow `六大模块`、Demo 正文等非装饰文本
+- 这直接违反 F005 `contrast: WCAG AA` 和 F006 `a11y keyboard nav + contrast 抽样`
+- F005 已退回 pending；下一步由 Generator 提升文本对比度后再切 `reverifying`
 ## ✅ BL-077-v0.9.24-framework-sediment DONE (9/9, fix_rounds=0, tag bl077-done @ 0fc8abf) — v0.9.24 framework sediment batch 终签完成
 - Codex Reviewer 终签 PASS：L1 通过 `npm run lint` = 0 errors / 3 baseline warnings、`npx tsc --noEmit` PASS、17 source IDs 全部 grep 到 framework/harness/*.md、`framework/proposed-learnings.md` 保留 v0.9.24 marker、archive v0.9.24 = 817 LOC、CHANGELOG v0.9.24 段存在
 - signoff: `docs/test-reports/BL-077-signoff-2026-05-27.md`
