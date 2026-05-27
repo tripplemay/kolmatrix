@@ -4,13 +4,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔁 BL-078-landing-visual-polish REVERIFYING (5/6, fix_rounds=1) — F005 contrast 修复完成，等 Reviewer L2 复验
-- fix-round 1 = 2 commits: 7dfb5b9 (新 token --color-landing-cyan-deep oklch(45% 0.10 215) for light-bg eyebrow; BeforeAfter 删 inactive row opacity-50; StickyParallax inactive opacity-40 → opacity-70) + b85d34a (StickyParallax 数字 index text-cyan/80 → text-cyan)
-- update-visual-baselines.yml 跑 2 次, staging deploy 2 次 → staging git_sha = b85d34a
-- **Lighthouse Desktop logged-out staging /zh @ b85d34a:** perf 0.98 ✓ / **a11y 1.0** ✓✓ (0.96 → 1.0) / LCP 630ms ✓ / CLS 0 ✓ / TBT 0ms ✓ / **color-contrast score 1** ✓ / **contrast_fail_count 0** ✓ (从 13 → 0, 全部 8 非装饰 + 5 装饰 都修了)
-- L1 PASS: lint 0 errors / 3 baseline warnings 不变 / tsc clean / npm test 189 files 1375 tests PASS
-- 0 业务代码改动 / 11 components 数量/文件名/data-testid 全保 / CTA href + i18n key 0 改
-- **Reviewer L2 待复验 (per F006):** re-Lighthouse 5 locale spot check / a11y 手动 + browser matrix 复跑 / Linear+Plausible 精神主观 / signoff doc docs/test-reports/BL-078-signoff-2026-05-27.md (终签)
+## ✅ BL-078-landing-visual-polish DONE (6/6, fix_rounds=1, signoff @ fb34b09) — landing 视觉精修终签完成
+- Reviewer reverifying PASS: `docs/test-reports/BL-078-signoff-2026-05-27.md`
+- staging `/zh` Lighthouse Desktop logged-out 复核通过: perf `0.99` / a11y `1.0` / LCP `530ms` / CLS `0` / TBT `0ms` / `contrastCount=0`
+- staging landing Playwright 通过: 匿名根路由/locale/hero/CTA/request-access 链路 `7 passed`
+- Chromium/WebKit/Firefox + `prefers-reduced-motion=reduce` 下 `zh/en/ja/ko/es` spot check 通过, 无横向溢出, CTA href 保持正确
+- keyboard nav / focus visible spot check 通过; fix-round 1 清掉上轮唯一 contrast blocker
 ## ✅ BL-077-v0.9.24-framework-sediment DONE (9/9, fix_rounds=0, tag bl077-done @ 0fc8abf) — v0.9.24 framework sediment batch 终签完成
 - signoff: `docs/test-reports/BL-077-signoff-2026-05-27.md`
 ## ✅ BL-076-apify-numeric-overflow DONE (5/5, fix_rounds=2) — numeric overflow hotfix 终签完成

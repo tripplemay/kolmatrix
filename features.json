@@ -91,7 +91,7 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 visual baseline + i18n-locale-coverage (4) 11 components 文件存在 + export 不变 (grep verify) (5) messages/*.json 5 locale 无新加 key (仅可能微调)",
       "L2 staging 抽样实测 6 项 PASS: (1) /zh + /en + /ja + /ko + /es Hero 区域视觉 OK (主参考 Linear 精神落地) (2) CTA → /request-access 跳转链路不破 + view transition 效果实测 (Chrome) (3) Lighthouse Desktop logged-out perf ≥85 (per BL-070 standard) (4) a11y keyboard nav + contrast 抽样 (5) Firefox / 旧 Safari fallback 实测 navigation 不破 (6) 设计参照 Linear / Plausible 精神 (极简 / white space / 微妙 motion) 在 landing 落地",
