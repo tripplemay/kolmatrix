@@ -32,7 +32,7 @@ export async function Features({ locale }: Props) {
       textClassName="text-on-surface-light"
       leftContent={
         <>
-          <div className="font-geist-mono text-landing-eyebrow tracking-landing-eyebrow text-cyan uppercase">
+          <div className="font-geist-mono text-landing-eyebrow tracking-landing-eyebrow text-landing-cyan-deep uppercase">
             {t("intro.label")}
           </div>
           <h2 className="mt-4 font-geist text-landing-h2 font-bold leading-landing-tight tracking-landing-tight whitespace-pre-line">

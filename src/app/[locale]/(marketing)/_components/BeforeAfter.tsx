@@ -70,7 +70,10 @@ export function BeforeAfter() {
             <div className="text-cyan">{t("colAfter")}</div>
           </div>
 
-          {/* Rows */}
+          {/* Rows — F005 fix-round 1: dropped parent opacity-50 dimming
+              (was killing text contrast below WCAG AA). Active/inactive
+              visual distinction now via icon color + scale + "after" cell
+              color + progress bar fill — no opacity-based dimming. */}
           {ROWS.map(({ key, icon }, idx) => {
             const isActive = idx <= activeIdx;
             return (
@@ -80,12 +83,7 @@ export function BeforeAfter() {
                 data-active={isActive}
                 className={`grid grid-cols-1 gap-3 px-7 py-6 md:grid-cols-[1.4fr_1fr_1fr] md:gap-4 ${
                   idx < ROWS.length - 1 ? "border-b border-cyan/10" : ""
-                } ${idx % 2 === 0 ? "bg-surface" : "bg-surface-low"} ${
-                  isActive ? "opacity-100" : "opacity-50"
-                }`}
-                style={{
-                  transition: "opacity var(--duration-landing-medium) var(--ease-landing-out)",
-                }}
+                } ${idx % 2 === 0 ? "bg-surface" : "bg-surface-low"}`}
               >
                 <div className="flex items-center gap-3 font-geist text-landing-body font-semibold text-landing-ink">
                   <span

@@ -124,6 +124,14 @@
   --color-landing-ink-muted: oklch(78% 0.018 240);
   --color-landing-ink-subtle: oklch(60% 0.020 240);
 
+  /* Light-theme accent — deep cyan/teal for use on bg-surface-light
+     (#f7f5f0, luminance ~0.91). Plain --color-cyan (#00E5FF, luminance ~0.73)
+     fails 1.23:1 on light bg; this token gives ~5.5:1 WCAG AA for small text.
+     Use in: Features/Trust eyebrow labels, light-section accents.
+     F005 fix-round 1 (Codex Reviewer verifying FAIL — 8 non-decorative
+     contrast violations including "六大模块" eyebrow at 1.41:1). */
+  --color-landing-cyan-deep: oklch(45% 0.10 215);
+
   /* Spacing rhythm — vertical / horizontal section + sub-element levels */
   --spacing-landing-section-y: clamp(5rem, 9vw, 9rem);
   --spacing-landing-container-x: clamp(1.5rem, 5vw, 6rem);

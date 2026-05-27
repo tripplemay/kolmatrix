@@ -57,7 +57,7 @@ export function StickyParallax({
               data-testid={`landing-parallax-callout-${idx}`}
               data-active={idx === activeIdx}
               className={`transition-opacity duration-500 ${
-                idx === activeIdx ? "opacity-100" : "opacity-40"
+                idx === activeIdx ? "opacity-100" : "opacity-70"
               }`}
             >
               <span className="font-geist-mono text-[11px] tracking-[0.25em] text-cyan/80 uppercase">
