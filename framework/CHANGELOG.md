@@ -5,6 +5,54 @@
 
 ---
 
+## v0.9.25 — 2026-05-27（BL-079 sediment batch，5 条 sediment inline-merge，1 同主题合并段）
+
+**来源批次：**
+- BL-078 done 5 条（5/27 ack）：opacity-dimming a11y trap / landing visual token layer 规范 / view transitions + scroll-driven 渐进增强 / Reference URL 提炼方法论 / prefers-reduced-motion 守门
+
+**触发原因：**
+- BL-078 landing 视觉精修 done 后 proposed-learnings.md 累积 5 条用户 5/27 ack sediment 候选
+- 按 BL-071 D7 lock（强制 inline-merge）+ BL-077 v0.9.24 模式复用，独立 framework sediment batch 一并落地
+- Scope 比 BL-077 17 条小约 3x，但同含 1 个同主题合并段（#1 + #5 a11y → evaluator.md §11.6）
+- A1 用户 5/27 lock 1 决策：范围 A 全做（5 inline-merge + 1 同主题合并 + CHANGELOG + archive + 清 proposed-learnings 5 entries）
+
+**5 条 1-line summary（详见 `framework/archive/proposed-learnings-archive-v0.9.25.md`）：**
+
+| # | 1-line summary | 类型 | 来源 | 写入位置 |
+|---|---|---|---|---|
+| #1 | opacity-based dimming 在 WCAG AA contrast 上 fragile — parent opacity × text alpha 双重 dimming kills contrast + 4 重 distinction 替代模板 | 新坑 | BL-078-F005 fix-round 1 | evaluator.md §11.6（与 #5 合并）|
+| #2 | landing visual token layer 规范模板 — typography / color / spacing / motion 4 类 token 分层 + light-theme accent 必有 deep variant | 新规律 | BL-078-F001 | ui-fidelity-guardrail.md §3.4 |
+| #3 | @view-transition + animation-timeline + interpolate-size 渐进增强模式 — Native API + Fallback + reduced-motion 三层守门 | 新规律 | BL-078-F002+F003 | generator.md §18 |
+| #4 | Landing / marketing 视觉重做项目: Reference URL 提炼方法论 — 解构 → 筛选 → 抽象 3 步法 + "精神参考"非"像素复刻" | 模板修订 | BL-078 plan v2 D2 lock | planner-checklists.md §"Visual polish reference URL 提炼方法论" |
+| #5 | prefers-reduced-motion 守门是 motion 类 batch 的 a11y 必修课 — 全局 default + component 级精细兜底双层模板 | 新规律 | BL-078-F005 | evaluator.md §11.6（与 #1 合并）|
+
+**同主题合并段 1 组（D7 强制 inline-merge 示范）：**
+
+| 合并段 | 合并 source | 写入位置 |
+|---|---|---|
+| motion a11y 三件套（contrast WCAG AA + opacity-dimming trap + prefers-reduced-motion 守门）| #1 opacity-dimming + #5 reduced-motion（与现有 contrast WCAG AA 配套）| evaluator.md §11.6（统一段含 3 件套 + 4 重 distinction 模板 + grep 防御 + 实测 checklist）|
+
+**4 实际段（按文件）：**
+
+| 文件 | 段 | 含 sediment |
+|---|---|---|
+| `framework/harness/evaluator.md` | §11.6 motion a11y 三件套 | #1 + #5（合并段）|
+| `framework/harness/ui-fidelity-guardrail.md` | §3.4 Landing / marketing 视觉 token layer 规范 | #2 |
+| `framework/harness/generator.md` | §18 现代 CSS 渐进增强 — Native + Fallback + reduced-motion 三层守门 | #3 |
+| `framework/harness/planner-checklists.md` | §"Visual polish reference URL 提炼方法论" | #4 |
+
+**配套：4 段相互 cross-ref**
+
+- evaluator.md §11.6 ↔ generator.md §18.3 reduced-motion 守门模板配套
+- ui-fidelity-guardrail.md §3.4 token layer ↔ generator.md §18 duration/ease token 配套
+- planner-checklists.md §reference 提炼 ↔ ui-fidelity-guardrail.md §3.4（落 token 而非 copy css）
+
+**0 chronological-append §N：** 全 inline-merge 落入现有 topic（evaluator §11 / ui-fidelity §3 / generator §15-17 之后顺序 §18 / planner-checklists §spec 起草 checklist 末尾）。`generator.md §18` 顺位续接 §17（v0.9.24 末段），不是 chronological dump。
+
+**proposed-learnings.md 清理：** 5 entries 全清，header 加 `<!-- 2026-05-27: v0.9.25 沉淀完成 (5 条 sediment 来源 BL-078 done), 全部已写入 framework/harness/*.md (1 同主题合并 + 4 实际段). 归档 framework/archive/proposed-learnings-archive-v0.9.25.md -->` marker。
+
+---
+
 ## v0.9.24 — 2026-05-27（BL-077 sediment batch，17 条 sediment inline-merge，5 同主题合并段）
 
 **来源批次：**

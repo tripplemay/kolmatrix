@@ -123,6 +123,48 @@ Generator 在 audit 里列 5-8 条"本页将用哪些 `@/components/*` 组件"�
 
 **不得保留 active 但无反应的幽灵控件**。
 
+### 3.4 Landing / marketing 视觉 token layer 规范（BL-078 #2）
+
+**触发场景：** landing / marketing 视觉精修类批次（非 CRUD app 页），如 BL-078。
+
+**核心原则：** 视觉精修不应"散乱直接改 component CSS" — 必先建 token 层（single source of truth），components 引用 token，未来调 token 即批量调全 landing。Tailwind v4 `@theme` 自动从 `--color-*` / `--text-*` / `--leading-*` / `--tracking-*` / `--spacing-*` / `--ease-*` 等命名生成对应 utility class。
+
+**4 类 token 分层（必含）：**
+
+| 类 | token 类别 | 命名示例 | 用途 |
+|---|---|---|---|
+| **Typography** | font scale + line-height + tracking | `--text-landing-hero: clamp(2.75rem, 6vw, 5.5rem)` / `--leading-landing-display: 0.95` / `--tracking-landing-display: -0.035em` | Hero h1 / section h2/h3 / body lg/base / eyebrow 等 6 类 size + 4 类 leading + 3 类 tracking |
+| **Color** | bg layer + text layer + accent layer | `--color-landing-canvas` / `--color-landing-ink` / `--color-landing-ink-muted` / `--color-landing-cyan-deep`（light-theme accent）| dark canvas + 现 brand cyan/purple/navy 复用 + 必含 deep variant for light-theme contrast |
+| **Spacing** | section-y + container-x + element-y | `--spacing-landing-section-y: clamp(5rem, 9vw, 9rem)` / `--spacing-landing-container-x: clamp(1.5rem, 5vw, 6rem)` / `--spacing-landing-element-{tight,normal,loose}` | 3 级 element + section padding + container padding |
+| **Motion** | duration + ease curves | `--duration-landing-short: 200ms` (medium 400 / long 800) + `--ease-landing-out: cubic-bezier(0.16, 1, 0.3, 1)` (Linear-style) | 3 级 duration + 2 ease 曲线（out / in-out）配套 #3 渐进增强 |
+
+**复用规则（不破坏现有 brand）：**
+
+1. **保留：** 现有 brand cyan / purple / navy / surface 调色板**不动**（避免业务页 cascade 影响）
+2. **新加 layer：** landing-* token 仅在 landing / marketing 路由下使用；app 端（CRUD pages）不引用
+3. **不强制 migration：** 现有 11 landing components 通过 `globals.css @theme` 自动获得 utility class，可逐 component 渐进迁移；不开 mega-refactor commit
+4. **light-theme accent 必有 deep variant：** 任何 brand accent color（如 `--color-cyan` #00E5FF luminance ~0.73）在 light bg（`bg-surface-light` luminance ~0.91）下 contrast ~1.23:1 直接 fail WCAG AA。必须配套 `--color-landing-{color}-deep` token（如 `oklch(45% 0.10 215)` ≈ ~5.5:1 PASS）
+
+**实物锚定（BL-078-F001 落地）：**
+
+| 文件 | 内容 |
+|---|---|
+| `src/styles/globals.css` | `@theme` 扩展 25 个 `--*-landing-*` token + `landing-canvas` / `landing-ink` / `landing-cyan-deep` 等 |
+| `design-draft/landing-v2-tokens.md` | 110 LOC token 规范文档：Linear / Plausible 风格对照表 + 4 类 token 完整清单 + 复用规则 + a11y contrast 复核（ink vs canvas ≈ 16:1） |
+| `framework/harness/evaluator.md §11.6` | a11y 三件套验收（与 token color layer 配套）|
+
+**避免反模式：**
+- ❌ 在 component 内 inline 写 `style={{ color: "#7d8593" }}` / `text-[14px]` 等硬编码
+- ❌ 仅靠 Tailwind preset utility（`text-gray-500`）— 与现有 brand 调色板不一致
+- ❌ 直接 copy reference URL（如 Linear）的 css 值 — 应按 §"reference URL 提炼方法论"（planner-checklists.md，BL-078 #4）抽象成本项目 token
+
+**配套：**
+- `framework/harness/generator.md` §"现代 CSS 渐进增强 — Native + Fallback + reduced-motion 三层守门"（BL-078 #3）
+- `framework/harness/planner-checklists.md` §"Visual polish reference URL 提炼方法论"（BL-078 #4）
+- `framework/harness/evaluator.md §11.6` motion a11y 三件套（BL-078 #1 + #5）
+
+来源：BL-078-F001 实物落 `src/styles/globals.css @theme` + `design-draft/landing-v2-tokens.md` + 用户 2026-05-27 ack。
+
 ---
 
 ## 4. Evaluator 签收硬要求

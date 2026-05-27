@@ -459,3 +459,80 @@ spec acceptance 必含「rate-limit 条款」，明示 (a) 限速维度 (b) 阈�
 **与 §"IA refactor outbound 一致性扫描"关系：** 本段是 IA refactor 维度 1（visual 宽度）的细化 grep 防御，配合 §IA refactor outbound 一致性扫描 维度 1 列出的入口使用。
 
 **来源：** BL-072-F001 漏检 + BL-073 同 issue 复现 + v0.9.24 #6 用户 2026-05-26 ack。
+
+---
+
+## Visual polish 类 spec 起草：Reference URL 提炼方法论（BL-078 #4 / BL-078 plan v2）
+
+**触发场景：** Visual polish / landing 视觉重做 / brand identity 类批次 spec 起草，需要参考外部产品（如 Linear / Vercel / Stripe / Plausible / Notion）作为视觉 reference。**仅 visual polish 类必走；非视觉 batch（feature / hotfix / sediment）不强制。**
+
+**核心原则：** Reference URL 是"**精神参考**"而非"**像素复刻**"。源产品定位（B2B SaaS / consumer / dev tools）与本项目可能不同，1:1 复刻 css 可能破坏本项目 brand identity（如 KOLMatrix cyan/purple/navy 调色板）。Planner spec 必须把 reference 落到 **token layer 抽象**（与 `framework/harness/ui-fidelity-guardrail.md §3.4 landing visual token layer 规范` 配套，BL-078 #2）而非 reference css 直 copy。
+
+### 3 步法：解构 → 筛选 → 抽象
+
+**步 1：解构 — 列 5-10 个视觉信号**
+
+每个 reference URL 必拆成可枚举的视觉信号清单（不是"看起来很 nice"的主观描述）。BL-078 实战：
+
+| Reference | 拆出的视觉信号（5-8 个）|
+|---|---|
+| Linear (linear.app) — 主 reference | dark theme + sans-serif clean grotesk + scroll-driven entrance + 极简 hero（大字 + 大量 white space）+ subtle mesh gradient + Linear-style ease-out cubic-bezier + button glow effect + view transitions opt-in |
+| Plausible (plausible.io) — 辅 reference | B2B SaaS short landing（≤ 6 sections）+ conversion-focused CTA 双 button（primary + outline）+ KPI 大字 typography + 暖灰黑 vs 纯黑 调色 + 折叠 FAQ smooth-height |
+
+**步 2：筛选 — 哪些信号契合本项目 brand + 哪些冲突**
+
+3 列分类清单：
+
+| 信号 | 契合本项目 | 冲突 / 改造 | 直接弃 |
+|---|---|---|---|
+| **Linear: dark theme** | ✓（KOLMatrix 已 dark navy）| — | — |
+| **Linear: scroll-driven motion** | ✓（D3 lock 全栈现代化）| — | — |
+| **Plausible: 暖灰黑 (#1a1a1a)** | — | 改造为本项目 `--color-landing-canvas: oklch(14.5% 0.022 265)` 略冷 deeper navy | — |
+| **Linear: 顶部巨大 hero h1 (~96-128px)** | — | 改造为 `--text-landing-hero: clamp(2.75rem, 6vw, 5.5rem)` 保留巨字精神 + 适配本项目 viewport | — |
+| **Plausible: B2B short landing** | — | — | 本项目 11 components 已 lock 不动结构 |
+
+**步 3：抽象 — 落 token layer 而非直接 copy css**
+
+筛选后的信号落到 `framework/harness/ui-fidelity-guardrail.md §3.4` 描述的 4 类 token（typography / color / spacing / motion），不直接 inline reference 网站的 CSS 值。
+
+```diff
+- // ❌ 反面：直接 copy Linear 的 css 值，scattered hardcoded
+- <h1 style={{ fontSize: 96, fontWeight: 800, letterSpacing: -0.04 }}>...</h1>
+
++ // ✓ 正面：抽象为 token，components 引用
++ // globals.css @theme:
++ //   --text-landing-hero: clamp(2.75rem, 6vw, 5.5rem);
++ //   --tracking-landing-display: -0.035em;
++ //   --leading-landing-display: 0.95;
++ <h1 className="text-landing-hero tracking-landing-display leading-landing-display">...</h1>
+```
+
+### Acceptance / Reviewer 验收口径
+
+Visual polish spec 必把 reference 落到 acceptance 文字时**避免"像素一致"措辞**，改为"精神落地"主观评判：
+
+| 反面 acceptance 文字 | 正面 acceptance 文字 |
+|---|---|
+| "Hero 视觉与 Linear linear.app 像素一致" | "Hero 视觉参照 Linear 精神（极简 / 大量 white space / 微妙 motion）在 landing 落地，由 Reviewer L2 主观评判" |
+| "FAQ smooth height 与 Plausible 完全相同" | "FAQ 折叠交互 motion 升级（smooth height transition），无需对齐 Plausible 像素" |
+
+### 适用边界 vs 不适用
+
+| 适用（必走）| 不适用（跳过本段）|
+|---|---|
+| Visual polish / landing 视觉重做 / brand identity 类 batch | Feature 实现 / Bug hotfix / framework sediment / DB migration / a11y 修复 |
+| 引入外部 reference URL（Linear / Vercel / Stripe / Plausible / Notion 等）| 0 reference URL 的内部 spec（如 BL-066 / BL-068 等 AI 流程批次）|
+| Planner spec lock 阶段（A1）| Spec 已 lock 后的 fixing / reverifying 阶段（不再讨论 reference 提炼）|
+
+### BL-078 D2 lock 实战示例
+
+- **D2 lock 文字：** "Linear 主 (https://linear.app) + Plausible 辅 (https://plausible.io)"
+- **Reviewer L2 acceptance 文字：** "设计参照 Linear / Plausible 精神（极简 / white space / 微妙 motion）在 landing 落地" — 主观评判 PASS
+- **Generator 实施：** `src/styles/globals.css @theme` 25 个 landing-* token + `design-draft/landing-v2-tokens.md` 110 LOC 对照表（Linear/Plausible 信号矩阵 → 本项目 token 映射）
+
+**配套：**
+- `framework/harness/ui-fidelity-guardrail.md §3.4` landing visual token layer 规范（BL-078 #2 — 落地 4 类 token 类别）
+- `framework/harness/generator.md §18` 现代 CSS 渐进增强（BL-078 #3 — Native API + Fallback + reduced-motion 三层守门）
+- `framework/harness/evaluator.md §11.6` motion a11y 三件套（BL-078 #1 + #5 — 视觉精修 a11y 验收）
+
+来源：BL-078 plan v2 D2 lock + 用户 2026-05-27 ack（"Linear 主 + Plausible 辅" 实战印证 reference 精神落地非像素复刻范式）。

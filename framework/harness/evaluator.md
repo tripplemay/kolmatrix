@@ -302,6 +302,78 @@ L1 自动化全绿 ≠ verifying PASS。L2 是真正的"功能验收"层，对�
 
 来源：BIx hotfix bb637a1（19 漏 icon prod 暴露）+ BL-025-F009 守门加固。
 
+### §11.6 motion a11y 三件套验收（BL-078 #1 + BL-078 #5 合并段，两 source）
+
+**背景：** BL-078 landing 视觉精修引入 motion-heavy 视觉效果（view transitions / scroll-driven animations / sticky-parallax 焦点切换 / opacity-based dimming）。BL-078-F005 fix-round 1 实战暴露：单跑 Lighthouse `accessibility ≥ 0.90` 数字 PASS（0.96）不足以兜底 — `color-contrast` 子项 score = 0 / 13 elements fail 仍直接违反 F005 WCAG AA acceptance（Codex `verifying` 退回 fixing，详 `docs/test-reports/BL-078-verifying-2026-05-27.md`）。
+
+motion 类 batch 必须把 a11y 拆三件套独立验收，而不是看顶层 `a11y ≥ X` 一个数字。
+
+**三件套验收口径（任一 fail → FAIL）：**
+
+| 件 | 验收维度 | 工具 / 验法 | 通过门槛 |
+|---|---|---|---|
+| 1️⃣ **contrast WCAG AA** | text fg vs bg 对比 ≥ 4.5:1 (normal) / 3:1 (large ≥ 18px) | Lighthouse `color-contrast` audit `score: 1` + `details.items: []` (axe-core)；任何非 0 items 即 fail | `color-contrast.score = 1` 且 `details.items.length = 0` |
+| 2️⃣ **opacity-dimming trap**（BL-078 #1） | parent opacity × text alpha 双重 dimming 不杀 contrast | grep `opacity-[0-9]+` in landing/marketing components；命中 → 算 effective contrast = (parent_opacity × text_alpha × fg_luminance + (1-effective_alpha) × bg_luminance) 验 ≥ 4.5:1 | 任何 inactive 状态 grep 命中处必显式提供 contrast 计算或测一次 axe-core 实测 |
+| 3️⃣ **prefers-reduced-motion 守门**（BL-078 #5） | 启用系统选项 (macOS: System Settings → Accessibility → Display → Reduce motion ON) 后 motion 退化静态/瞬时 | DevTools Rendering panel 模拟 `prefers-reduced-motion: reduce` + 抽 3-5 个 motion 路径（hero entrance / sticky-parallax / scroll-driven）实测无 motion 或 ≤ 0.01ms `animation-duration` | 启用 reduce 后全 motion 不再触发 |
+
+**opacity-dimming trap 反例（BL-078-F005 实战）：**
+
+```jsx
+// ❌ 反面：parent opacity-50 × text alpha /70 双重 dimming
+<div className={`${isActive ? "opacity-100" : "opacity-50"}`}>
+  <span className="text-landing-ink-muted/70 line-through">凭经验拍脑袋 50%</span>
+</div>
+```
+- text-landing-ink-muted luminance ~ 0.55, /70 alpha effective ~ 0.39
+- parent opacity-50 二次叠加: 0.5 × 0.39 + 0.5 × bg ≈ 0.21
+- contrast on bg-surface（lum 0.024）: (0.21+0.05)/(0.024+0.05) ≈ **3.5:1 FAIL**（4.5:1 阈值）
+
+**修复 pattern — 4 重 distinction 替代 opacity-X 状态切换：**
+
+| # | 维度 | active 状态 | inactive 状态 | a11y 影响 |
+|---|---|---|---|---|
+| 1 | **Icon scale** | `scale-1.12` (放大) | `scale-1.0` (默认) | 0（视觉 size, 不影响 alpha）|
+| 2 | **Icon color** | `text-cyan` 高 contrast | `text-landing-ink-muted` 中 contrast | 0（color value 不带 alpha）|
+| 3 | **Cell text color** | active 用 accent / inactive 用 ink-muted (full alpha) | full alpha 双状态都 ≥ 4.5:1 contrast |
+| 4 | **Progress fill 同步** | scroll-bound 渐进填充 visual cue | 不动 inactive cell 文本 alpha |
+
+**grep 防御：**
+```bash
+# landing / marketing 组件不允许 inactive 状态用 opacity-X dim
+git grep -nE 'opacity-[0-9]+' src/app/[locale]/\(marketing\)/_components/ src/components/landing/
+# 命中 → 必须验 effective contrast 或重构为 color hierarchy 模式
+```
+
+**prefers-reduced-motion 守门模板（与 BL-078 #3 generator.md 渐进增强段配套）：**
+
+```css
+/* 全局 default：尊重用户系统偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* component 级精细兜底（重要 motion 路径需显式覆盖）*/
+.landing-hero-fade-in {
+  animation: hero-fade-in 800ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-hero-fade-in { animation: none; opacity: 1; }
+}
+```
+
+**与 §11.5 字体子集 spot check 关系：** §11.5 验"视觉资源"是否正确加载；§11.6 验"视觉资源呈现后"是否满足 a11y 阈值。两者正交、互补。
+
+**source ID 追溯：**
+- **BL-078 #1** opacity-dimming trap：BL-078-F005 fix-round 1 修复 `commit 7dfb5b9`（删 BeforeAfter `opacity-50` + StickyParallax `opacity-40 → opacity-70` + Features/Trust eyebrow `text-cyan` → `text-landing-cyan-deep`）+ `commit b85d34a`（StickyParallax index `text-cyan/80 → text-cyan` 去 80% alpha）。Lighthouse `color-contrast.score: 0 → 1`，violations `13 → 0`。
+- **BL-078 #5** prefers-reduced-motion 守门：BL-078-F002 实物 `src/styles/globals.css` `[data-landing-cinematic]` reduced-motion 段 + `.landing-cta-primary` / `.landing-cta-secondary` component 级 `@media (prefers-reduced-motion: reduce)` 覆盖 + F005 acceptance 含 "启用系统选项后全 motion 退化静态/瞬时切换"。
+
+来源：BL-078-F005 verifying FAIL（Codex Reviewer 2026-05-27 `docs/test-reports/BL-078-verifying-2026-05-27.md`）+ BL-078 #1 + BL-078 #5 ack（用户 2026-05-27）。
+
 ---
 
 ## §12. 验收口径（首轮 PASS 硬条件 / SHA 对齐 / checklist 文本管理）
