@@ -1,104 +1,101 @@
 [
   {
     "id": "F001",
-    "title": "视觉 token 规范定义 — typography / color / spacing / motion tokens",
+    "title": "evaluator.md a11y 合并段 — opacity-dimming trap (#1) + prefers-reduced-motion 守门 (#5)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.0,
-    "status": "completed",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "src/app/globals.css (或 tailwind.config.ts) @theme 扩展含 landing-specific token: typography scale (hero h1 clamp 2.5-4.5rem / section h2 / h3 / body 含 line-height + tracking) + color tokens (landing-bg-base/section + text-primary/muted + accent-cyan/purple + gradient-hero) + spacing rhythm (section-y / container-x / element-y 3 级) + motion tokens (duration 3 级 + ease-out / ease-in-out)",
-      "≥20 token 落地, 全部含语义化命名 (--font-size-hero-h1 / --landing-bg-base 等)",
-      "新建 design-draft/landing-v2-tokens.md ≥30 LOC: 含 reference Linear / Plausible 风格对照表 + 复用规则 (现有 brand cyan/purple/navy 保留 + landing 新加 layer)",
-      "现有 11 landing components 通过 globals.css 引入 token (不强制全替换, 但 F002-F004 新加视觉效果优先用 token)",
-      "L1 lint + tsc PASS (CSS 变更不破 build)"
+      "framework/harness/evaluator.md 新加 §'motion a11y 三件套' (或融入现有 §a11y 验收 checklist topic) 含 3 sub-section",
+      "§X.1 opacity-dimming a11y trap (BL-078 #1): 含 BL-078-F005 反例 (parent opacity × text alpha 双重 dimming kills WCAG AA contrast) + 4 重 distinction 模板 (icon scale + color + cell bg + progress fill) + grep 防御 `opacity-[0-9]+` in landing/marketing components",
+      "§X.2 prefers-reduced-motion 守门 (BL-078 #5): 含 @media (prefers-reduced-motion: reduce) 模板 + 启用系统选项实测要求 + 与 contrast WCAG AA 配套",
+      "§X.3 与现有 contrast WCAG AA 4.5:1 verify 引用配套",
+      "D7 inline-merge: 融入现有 evaluator.md §a11y 段 (BL-071 F004 重组后位置), 不开新顶级 §N",
+      "grep 'BL-078 #1' + 'BL-078 #5' in evaluator.md 各 ≥1 命中",
+      "L1 PASS"
     ]
   },
   {
     "id": "F002",
-    "title": "Hero + TopNav 视觉精修 + view transitions setup (LCP 关键路径)",
+    "title": "ui-fidelity-guardrail.md landing visual token layer 规范段 (#2)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 4.0,
-    "status": "completed",
+    "estimated_hours": 1.0,
+    "status": "pending",
     "acceptance": [
-      "HeroVideo.tsx 应用 F001 tokens (hero h1 typography + spacing + gradient)",
-      "Hero gradient 升级 mesh gradient (Linear 风, 微妙 multi-color blob, 非生硬 linear)",
-      "Hero scroll-driven animation: 内容 fade-in on enter (animation-timeline: view()) + video 微妙 scale on scroll; 保 BL-070 #29+#30 LCP skeleton 像素镜像 (skeleton 高度 = 实际高度, CLS 不 regress)",
-      "CTA 按钮: glow effect (box-shadow 多层 cyan/purple) + hover 微动 (scale 1.02 + glow 增强) + view transition trigger; CTA href /request-access 不变",
-      "TopNav.tsx 应用 F001 tokens; sticky + backdrop-blur (saturate-150 backdrop-blur-xl) 优化; locale switcher + login CTA 视觉精修",
-      "view transitions opt-in: layout.tsx 或 globals.css 加 @view-transition navigation auto CSS rule + meta tag (如需); Firefox / 旧 Safari fallback 走普通 navigation 无效果 OK",
-      "prefers-reduced-motion fallback: 所有 animation 包 @media (prefers-reduced-motion: no-preference) 守门, reduced 用户走静态版",
-      "Lighthouse Desktop logged-out (无 session cookie) 实测: perf ≥85 + LCP <2.5s + CLS <0.05 + TBT <200ms (per BL-070 标准, 不 regress)",
-      "staging /zh + /en 实测 Hero + TopNav 视觉 OK, CTA click → /zh/request-access 跳转链路不破 (含 view transition 效果实测)",
+      "framework/harness/ui-fidelity-guardrail.md 新加 §'landing / marketing 视觉 token layer 规范' (融入现 §视觉一致性 topic)",
+      "4 类 token 分类清单: typography (font scale / line-height / tracking) + color (bg layer / text layer / accent) + spacing (section-y / container-x / element-y) + motion (duration / ease curves)",
+      "复用规则: 现有 brand cyan/purple/navy 保留 + landing 新 layer + 不强制全 components migration",
+      "引用 BL-078-F001 实物 (design-draft/landing-v2-tokens.md + src/app/globals.css @theme 扩展)",
+      "D7 inline-merge: 融入 ui-fidelity-guardrail.md 现有 topic, 不开新顶级 §N",
+      "grep 'BL-078 #2' in ui-fidelity-guardrail.md ≥1 命中",
       "L1 PASS"
     ]
   },
   {
     "id": "F003",
-    "title": "Body 4 sections 精修 — PainPoints / Features / BeforeAfter / EmailCenterDemo",
+    "title": "generator.md §现代 CSS 渐进增强 — Native API + Fallback + reduced-motion 三层守门 (#3)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 5.0,
-    "status": "completed",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "PainPoints.tsx 应用 F001 tokens; 现 sticky stack 升级 scroll-driven progress (animation-timeline scroll + 数字 / icon entrance stagger via @keyframes)",
-      "Features.tsx 应用 F001 tokens; 6 module cards 视觉精修 (Linear 风 card with subtle border + hover lift); 每 card 滚到视窗微妙 reveal + hover micro-interaction (scale 1.02 + shadow 增强)",
-      "BeforeAfter.tsx 应用 F001 tokens; sticky row-highlight 升级 horizontal scroll-snap (优先) 或更精致 reveal motion",
-      "EmailCenterDemo.tsx 应用 F001 tokens; sticky-parallax callouts 视觉精修; 产品截图 / 数据可视化 容器精修 (rounded + shadow + border 细节)",
-      "scroll-driven animations native CSS (Chrome/Safari) + IntersectionObserver/framer-motion fallback for Firefox / 旧 Safari",
-      "每 section single commit + visual baseline regen (避免 mega commit 难 review)",
-      "5 locale × 4 viewport 视觉验证 (baseline diff < 5% noise)",
-      "CLS < 0.05 (per BL-070 #29+#30 skeleton 像素镜像沉淀守门)",
+      "framework/harness/generator.md 新加 §'现代 CSS 渐进增强 — Native + Fallback + reduced-motion 三层守门' (融入现 §性能 / motion topic)",
+      "Native API 优先模板: @supports (animation-timeline: view()) + animation-timeline / scroll() 用法",
+      "Fallback 模板: @supports not (animation-timeline: view()) → IntersectionObserver / framer-motion 兜底",
+      "reduced-motion 守门模板: @media (prefers-reduced-motion: reduce) → animation: none / 瞬时切换",
+      "引用 BL-078-F002/F003 实物 (Hero scroll-driven fade-in + Body 4 sections sticky stack)",
+      "适用边界: motion / animation / transform 类视觉效果都需走三层守门; 静态 CSS (color / spacing) 不需",
+      "D7 inline-merge: 融入 generator.md 现有 §10+ topic 段或新加子段不冲击 v0.9.24 沉淀",
+      "grep 'BL-078 #3' in generator.md ≥1 命中",
       "L1 PASS"
     ]
   },
   {
     "id": "F004",
-    "title": "Trust / FAQ / FooterCTA / SectionTransition 精修",
+    "title": "planner-checklists.md §Visual polish reference URL 提炼方法论 (#4)",
     "executor": "generator",
     "priority": "medium",
-    "estimated_hours": 2.0,
-    "status": "completed",
+    "estimated_hours": 1.0,
+    "status": "pending",
     "acceptance": [
-      "TrustPlaceholder.tsx 应用 F001 tokens; logo wall 视觉精修 (如有 logo) / KPI 数字 typography 升级 (现代极简大字 + tabular nums)",
-      "FAQ.tsx 应用 F001 tokens; 折叠交互 motion 升级 (smooth height transition via grid-template-rows trick 或 CSS @keyframes); typography 升级",
-      "FooterCTA.tsx 应用 F001 tokens; 二次 CTA 视觉与 Hero CTA 统一 (同 glow effect + hover 微动); access waitlist link 视觉强化 (CTA 一致风格)",
-      "SectionTransition.tsx 应用 F001 tokens; gradient strip 精修 (微妙 mesh gradient or noise overlay + 微妙 motion)",
-      "visual baseline regen 4 viewport × 5 locale",
+      "framework/harness/planner-checklists.md 新加 §'Visual polish reference URL 提炼方法论' (融入 §spec 起草 checklist 集合)",
+      "3 步法: (1) 解构 - 列 reference URL 5-10 个视觉信号 (2) 筛选 - 哪些信号契合本产品 brand + 哪些冲突 (3) 抽象 - 落 token layer 而非直接 copy css",
+      "适用边界: visual polish 类批次 (如 BL-078) 必走; 非视觉 batch (如 BL-077 sediment) 不强制",
+      "引用 BL-078 D2 lock 实战 (Linear 主 + Plausible 辅 + Reviewer 验收 '精神落地' 非 '像素一致')",
+      "D7 inline-merge: 融入现 §spec 起草 checklist topic",
+      "grep 'BL-078 #4' in planner-checklists.md ≥1 命中",
       "L1 PASS"
     ]
   },
   {
     "id": "F005",
-    "title": "visual baseline regen + 5 locale + Lighthouse + a11y verify",
+    "title": "CHANGELOG v0.9.25 + archive v0.9.25.md + 清 proposed-learnings 5 entries",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.0,
-    "status": "completed",
+    "estimated_hours": 1.0,
+    "status": "pending",
     "acceptance": [
-      "触发 GitHub Actions update-visual-baselines.yml workflow: 4 viewport (Desktop 1920 / Tablet 768 / Mobile 375 / Wide 2560) × 5 locale spot check × 11 components ≈ 220 visual snap 入 git",
-      "Lighthouse Desktop logged-out 实测 6 项门槛全 PASS: perf ≥85 / LCP <2.5s / CLS <0.05 / TBT <200ms / SEO ≥90 / a11y ≥90",
-      "a11y 手动 verify 4 项: (1) keyboard nav Tab through 所有 CTA / 链接 / form (2) focus visible outline 清晰 (3) contrast WCAG AA (text vs bg ≥4.5:1, large ≥3:1, 用 axe-core 或类似工具) (4) aria-label / aria-hidden 关键交互",
-      "5 locale text overflow spot check: 抽 ja / ko (通常比 en 长 20-30%) + es 验关键 sections (hero / cards / FAQ) 不溢出 / 不换行错乱",
-      "Browser matrix check: Chrome 115+ native view transitions + scroll-driven (OK) / Safari 18+ same / Firefox latest fallback (IntersectionObserver/framer-motion 退化无 motion 但 navigation 不破) / 旧 Safari (< 18) fallback OK",
-      "prefers-reduced-motion 测: 启用系统选项后, 所有 motion 退化为静态/瞬时切换"
+      "framework/CHANGELOG.md 顶部新增 v0.9.25 段 ≥20 LOC: 含 5 候选 1-line summary (BL-078 #1-#5) + 4 实际段映射 (按文件) + 1 同主题合并标注 (#1+#5 a11y 三件套)",
+      "framework/archive/proposed-learnings-archive-v0.9.25.md 新建 ≥200 LOC: 5 条全文 (不省略) + 同主题合并 before/after 标注",
+      "framework/proposed-learnings.md 5 entries 全清 (从 v0.9.24 marker 后清空; 保留 header + §写入流程 + 历史 vX.Y 沉淀完成 markers)",
+      "framework/proposed-learnings.md 新加 1 行 marker: '<!-- 2026-05-XX: v0.9.25 沉淀完成 (5 条 sediment 来源 BL-078 done), 全部已写入 framework/harness/*.md (1 同主题合并 + 4 实际段). 归档 framework/archive/proposed-learnings-archive-v0.9.25.md -->'",
+      "git diff 验证: proposed-learnings.md 删 5 entries (~130 行) + 加 1 marker; CHANGELOG.md 加 v0.9.25 段; archive v0.9.25.md 新建"
     ]
   },
   {
     "id": "F006",
-    "title": "Codex Reviewer L1+L2 抽样验证 + signoff doc 终签（executor:codex）",
+    "title": "Reviewer L1 grep + L2 抽样 3 段阅读 + signoff（executor:codex）",
     "executor": "codex",
     "priority": "high",
-    "estimated_hours": 2.0,
-    "status": "completed",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 visual baseline + i18n-locale-coverage (4) 11 components 文件存在 + export 不变 (grep verify) (5) messages/*.json 5 locale 无新加 key (仅可能微调)",
-      "L2 staging 抽样实测 6 项 PASS: (1) /zh + /en + /ja + /ko + /es Hero 区域视觉 OK (主参考 Linear 精神落地) (2) CTA → /request-access 跳转链路不破 + view transition 效果实测 (Chrome) (3) Lighthouse Desktop logged-out perf ≥85 (per BL-070 standard) (4) a11y keyboard nav + contrast 抽样 (5) Firefox / 旧 Safari fallback 实测 navigation 不破 (6) 设计参照 Linear / Plausible 精神 (极简 / white space / 微妙 motion) 在 landing 落地",
-      "0 visual regression (visual baseline diff < 5% noise per section)",
-      "0 perf regression (Lighthouse 6 项门槛)",
-      "0 业务路径破坏 (CTA / Auth redirect / sitemap / canonical 全 OK)",
-      "signoff doc docs/test-reports/BL-078-signoff-2026-05-27.md 含 L1/L2 结果 + 终签"
+      "L1 自动化 6 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) 5 source ID grep (BL-078 #1-#5 各命中 framework/harness/*.md ≥1 次) (4) proposed-learnings.md 含 v0.9.25 marker (5) framework/archive/proposed-learnings-archive-v0.9.25.md exist + ≥200 LOC (6) framework/CHANGELOG.md v0.9.25 段顶部位置 + ≥20 LOC",
+      "L2 抽样阅读 3 段 PASS: (1) evaluator.md a11y 合并段 #1+#5 — 验 4 重 distinction 模板 + reduced-motion 实测可执行 (2) generator.md 现代 CSS 渐进增强段 — 验三层守门模板清晰 (3) CHANGELOG v0.9.25 ↔ archive v0.9.25.md 对应关系 (5 候选 1:1 全文)",
+      "0 chronological-append §N (per BL-071 D7 lock + BL-077 BL-079 同模式一致)",
+      "signoff doc docs/test-reports/BL-079-signoff-2026-05-XX.md 含 L1/L2 结果 + 终签"
     ]
   }
 ]
