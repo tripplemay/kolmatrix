@@ -4,6 +4,13 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
+## 🚧 BL-077-v0.9.24-framework-sediment BUILDING (0/9, fix_rounds=0) — 17 候选 inline-merge framework
+- A0+A1 完成 5/27: A 全做 + Reviewer L1+L2 抽样阅读
+- 17 候选来源: BL-072 done 4 + BL-073 done 5 + BL-075 done 4 + BL-076 done 4 (全 user-acked)
+- 5 同主题合并段: #8+#14 alerting / #3+#7+#9 advisory test v1→v2→STRICT / #11+#12 AI cost+rate / #2+#5 Pattern v1→v2→v3 / #16 Schema rollback 双归属 (database 主 + generator 引用)
+- 9 features F001-F009 ≈ 16h ≈ 2 day Generator + 0.5 day Reviewer
+- F001-F007 inline-merge 7 files (ai-action-contract / generator / evaluator / deploy-patterns / planner-checklists / database-patterns / checklists/material-symbols-pattern) / F008 CHANGELOG+archive / F009 Reviewer
+- 类 BL-071 模式 (v0.9.23 batch) 但仅 inline-merge 无结构变更; 0 业务代码改动
 ## ✅ BL-076-apify-numeric-overflow DONE (5/5, fix_rounds=2) — numeric overflow hotfix 终签完成
 - Codex Reviewer 终签 PASS：fix-round 2 口径下，staging `AI_DAILY_COST_USD_PER_TENANT_MAX=500 npx tsx scripts/kol-sync-daily.ts --enrichment-limit=10` 结果 `discover=2567 inserted=0 updated=1859 failed=0 errors=0 level=INFO`
 - 该结果满足锁定后的 F005：`(inserted + updated) > 0`、`failed=0`、无 `numeric field overflow`
