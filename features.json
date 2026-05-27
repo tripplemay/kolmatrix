@@ -1,101 +1,100 @@
 [
   {
     "id": "F001",
-    "title": "evaluator.md a11y 合并段 — opacity-dimming trap (#1) + prefers-reduced-motion 守门 (#5)",
+    "title": "Generator 产出 8 detailed AI prompt templates (含 brand spec)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "completed",
+    "estimated_hours": 2.0,
+    "status": "pending",
     "acceptance": [
-      "framework/harness/evaluator.md 新加 §'motion a11y 三件套' (或融入现有 §a11y 验收 checklist topic) 含 3 sub-section",
-      "§X.1 opacity-dimming a11y trap (BL-078 #1): 含 BL-078-F005 反例 (parent opacity × text alpha 双重 dimming kills WCAG AA contrast) + 4 重 distinction 模板 (icon scale + color + cell bg + progress fill) + grep 防御 `opacity-[0-9]+` in landing/marketing components",
-      "§X.2 prefers-reduced-motion 守门 (BL-078 #5): 含 @media (prefers-reduced-motion: reduce) 模板 + 启用系统选项实测要求 + 与 contrast WCAG AA 配套",
-      "§X.3 与现有 contrast WCAG AA 4.5:1 verify 引用配套",
-      "D7 inline-merge: 融入现有 evaluator.md §a11y 段 (BL-071 F004 重组后位置), 不开新顶级 §N",
-      "grep 'BL-078 #1' + 'BL-078 #5' in evaluator.md 各 ≥1 命中",
-      "L1 PASS"
+      "新建 docs/specs/BL-080-illustration-prompts.md ≥150 LOC, 含 8 个 illustration prompts 完整模板",
+      "8 prompts: Hero illustration / Features 6 modules (Brief AI / Match / Reach / Insight / CRM) / EmailCenterDemo / BeforeAfter pair",
+      "每个 prompt 包 7 sections: Subject (主题) / Style (modern minimal SaaS UI flat illustration with subtle gradients) / Brand colors (navy bg + cyan accent + purple accent + dark theme, 精确 hex 从 src/app/globals.css @theme 提取 BL-078 token) / Composition (centered breathing room, sharp clean lines, dashboard cards, data viz) / Mood (professional futuristic AI-powered B2B SaaS) / Avoid (no photorealistic, no text labels, no logos) / Output spec (1920x1200 hero or 1200x800 features, PNG with transparent or solid bg, ~500KB-1MB target)",
+      "brand color codes 精确 hex (Generator 从 src/app/globals.css @theme 提取 BL-078-F001 token 实际值)",
+      "Prompts 给用户直接复制粘贴 → DALL-E 3 / Midjourney / SD 即可跑",
+      "通知用户 F001 prompts 就绪 + 提供 critical path 时间预估 (用户 AI gen 0.5-1 day)",
+      "L1 PASS (docs only)"
     ]
   },
   {
     "id": "F002",
-    "title": "ui-fidelity-guardrail.md landing visual token layer 规范段 (#2)",
+    "title": "用户 AI 生成 PNG 并提供 (critical path 外部, Generator 等待 + 验收)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.0,
-    "status": "completed",
+    "estimated_hours": 0.5,
+    "status": "pending",
     "acceptance": [
-      "framework/harness/ui-fidelity-guardrail.md 新加 §'landing / marketing 视觉 token layer 规范' (融入现 §视觉一致性 topic)",
-      "4 类 token 分类清单: typography (font scale / line-height / tracking) + color (bg layer / text layer / accent) + spacing (section-y / container-x / element-y) + motion (duration / ease curves)",
-      "复用规则: 现有 brand cyan/purple/navy 保留 + landing 新 layer + 不强制全 components migration",
-      "引用 BL-078-F001 实物 (design-draft/landing-v2-tokens.md + src/app/globals.css @theme 扩展)",
-      "D7 inline-merge: 融入 ui-fidelity-guardrail.md 现有 topic, 不开新顶级 §N",
-      "grep 'BL-078 #2' in ui-fidelity-guardrail.md ≥1 命中",
-      "L1 PASS"
+      "用户跑 AI image gen (DALL-E 3 / Midjourney / SD) 按 F001 prompts, iterate 直到 brand consistency 达标",
+      "PNG 命名规范: hero-illustration.png / feature-brief.png / feature-match.png / feature-reach.png / feature-insight.png / feature-crm.png / email-center-illustration.png / before-after-illustration.png",
+      "PNG 放 public/landing/illustrations/ 目录",
+      "用户通知 Generator 'illustrations 已就绪 N/8' 后 Generator 启 F003",
+      "Generator 验收: ≥6/8 PNG 就绪 (允许部分缺, 缺的 fallback 真截图); 每 PNG ≤1MB; brand color 抽样 (navy bg + cyan/purple accent 视觉一致); 无 photorealistic / 无大量 text labels",
+      "本 feature Generator 工时 0.5h (验收 + 通知触发 F003) — 用户工时 0.5-1 day 不计入"
     ]
   },
   {
     "id": "F003",
-    "title": "generator.md §现代 CSS 渐进增强 — Native API + Fallback + reduced-motion 三层守门 (#3)",
+    "title": "Generator 集成 PNG + 替换 4 components Image 引用 + fallback 守门",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "completed",
+    "estimated_hours": 3.0,
+    "status": "pending",
     "acceptance": [
-      "framework/harness/generator.md 新加 §'现代 CSS 渐进增强 — Native + Fallback + reduced-motion 三层守门' (融入现 §性能 / motion topic)",
-      "Native API 优先模板: @supports (animation-timeline: view()) + animation-timeline / scroll() 用法",
-      "Fallback 模板: @supports not (animation-timeline: view()) → IntersectionObserver / framer-motion 兜底",
-      "reduced-motion 守门模板: @media (prefers-reduced-motion: reduce) → animation: none / 瞬时切换",
-      "引用 BL-078-F002/F003 实物 (Hero scroll-driven fade-in + Body 4 sections sticky stack)",
-      "适用边界: motion / animation / transform 类视觉效果都需走三层守门; 静态 CSS (color / spacing) 不需",
-      "D7 inline-merge: 融入 generator.md 现有 §10+ topic 段或新加子段不冲击 v0.9.24 沉淀",
-      "grep 'BL-078 #3' in generator.md ≥1 命中",
-      "L1 PASS"
+      "HeroVideo.tsx 加 illustration overlay 或 HeroIllustration.tsx 独立 (保 video 优先 + illustration fallback 或共存)",
+      "Features.tsx 6 module cards Image src 替换为 feature-{module}.png (保 BL-078 Linear 风 card + hover lift)",
+      "EmailCenterDemo.tsx 替换 match-full.png → email-center-illustration.png (保 sticky-parallax callouts)",
+      "BeforeAfter.tsx 替换为 before-after-illustration.png (保 sticky row-highlight motion + BL-078 token)",
+      "Fallback 守门: components 加 conditional 检测 illustration PNG 是否存在 (如 fs / 静态 import 或 Image onError 回退), 缺则保现 public/landing/screenshots/ 真截图",
+      "i18n alt text 复用现有 screenshotAlt 或加新 illustrationAlt keys (5 locale 同步)",
+      "L1 PASS (lint + tsc + vitest)"
     ]
   },
   {
     "id": "F004",
-    "title": "planner-checklists.md §Visual polish reference URL 提炼方法论 (#4)",
+    "title": "next/image 优化 + LCP 验证 + fallback handling",
     "executor": "generator",
-    "priority": "medium",
-    "estimated_hours": 1.0,
-    "status": "completed",
+    "priority": "high",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "framework/harness/planner-checklists.md 新加 §'Visual polish reference URL 提炼方法论' (融入 §spec 起草 checklist 集合)",
-      "3 步法: (1) 解构 - 列 reference URL 5-10 个视觉信号 (2) 筛选 - 哪些信号契合本产品 brand + 哪些冲突 (3) 抽象 - 落 token layer 而非直接 copy css",
-      "适用边界: visual polish 类批次 (如 BL-078) 必走; 非视觉 batch (如 BL-077 sediment) 不强制",
-      "引用 BL-078 D2 lock 实战 (Linear 主 + Plausible 辅 + Reviewer 验收 '精神落地' 非 '像素一致')",
-      "D7 inline-merge: 融入现 §spec 起草 checklist topic",
-      "grep 'BL-078 #4' in planner-checklists.md ≥1 命中",
-      "L1 PASS"
+      "Hero illustration next/image priority + quality={85} + 适配 sizes prop + AVIF/WebP 转换 (Next.js 自动)",
+      "Features cards illustrations lazy load + quality={80} (非 above-fold)",
+      "EmailCenterDemo / BeforeAfter lazy load",
+      "所有 illustrations 总 bundle size < 5MB (不计 video poster)",
+      "Lighthouse Desktop logged-out 实测: perf ≥85 + LCP <2.5s + CLS <0.05 + TBT <200ms (per BL-078 baseline 不 regress)",
+      "实际期望: LCP 与 BL-078 530ms 接近 (illustration 可能比 video 重, 但 CSS skeleton 守门 CLS=0)"
     ]
   },
   {
     "id": "F005",
-    "title": "CHANGELOG v0.9.25 + archive v0.9.25.md + 清 proposed-learnings 5 entries",
+    "title": "visual baseline regen + 5 locale + Lighthouse + a11y verify",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.0,
-    "status": "completed",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "framework/CHANGELOG.md 顶部新增 v0.9.25 段 ≥20 LOC: 含 5 候选 1-line summary (BL-078 #1-#5) + 4 实际段映射 (按文件) + 1 同主题合并标注 (#1+#5 a11y 三件套)",
-      "framework/archive/proposed-learnings-archive-v0.9.25.md 新建 ≥200 LOC: 5 条全文 (不省略) + 同主题合并 before/after 标注",
-      "framework/proposed-learnings.md 5 entries 全清 (从 v0.9.24 marker 后清空; 保留 header + §写入流程 + 历史 vX.Y 沉淀完成 markers)",
-      "framework/proposed-learnings.md 新加 1 行 marker: '<!-- 2026-05-XX: v0.9.25 沉淀完成 (5 条 sediment 来源 BL-078 done), 全部已写入 framework/harness/*.md (1 同主题合并 + 4 实际段). 归档 framework/archive/proposed-learnings-archive-v0.9.25.md -->'",
-      "git diff 验证: proposed-learnings.md 删 5 entries (~130 行) + 加 1 marker; CHANGELOG.md 加 v0.9.25 段; archive v0.9.25.md 新建"
+      "GitHub Actions update-visual-baselines.yml workflow 跑: 4 viewport (Desktop 1920 / Tablet 768 / Mobile 375 / Wide 2560) × 5 locale spot check × 4 affected components ≈ 80 visual snap 入 git",
+      "Lighthouse Desktop logged-out 实测 6 项门槛全 PASS: perf ≥85 / LCP <2.5s / CLS <0.05 / TBT <200ms / SEO ≥90 / a11y ≥90",
+      "a11y verify 4 项: keyboard nav / focus visible / alt text 5 locale / contrast (illustration 视为图像不直接 contrast 验, 但 overlay 文本如有需验)",
+      "5 locale spot check (ja / ko / es 长字符 + illustration aspect ratio 适配 各 viewport)",
+      "Browser matrix: Chrome / Safari / Firefox + prefers-reduced-motion=reduce 抽样 (per BL-078 fallback 模式延续)"
     ]
   },
   {
     "id": "F006",
-    "title": "Reviewer L1 grep + L2 抽样 3 段阅读 + signoff（executor:codex）",
+    "title": "Codex Reviewer L1+L2 抽样 + signoff doc 终签 (executor:codex)",
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "completed",
+    "status": "pending",
     "acceptance": [
-      "L1 自动化 6 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) 5 source ID grep (BL-078 #1-#5 各命中 framework/harness/*.md ≥1 次) (4) proposed-learnings.md 含 v0.9.25 marker (5) framework/archive/proposed-learnings-archive-v0.9.25.md exist + ≥200 LOC (6) framework/CHANGELOG.md v0.9.25 段顶部位置 + ≥20 LOC",
-      "L2 抽样阅读 3 段 PASS: (1) evaluator.md a11y 合并段 #1+#5 — 验 4 重 distinction 模板 + reduced-motion 实测可执行 (2) generator.md 现代 CSS 渐进增强段 — 验三层守门模板清晰 (3) CHANGELOG v0.9.25 ↔ archive v0.9.25.md 对应关系 (5 候选 1:1 全文)",
-      "0 chronological-append §N (per BL-071 D7 lock + BL-077 BL-079 同模式一致)",
-      "signoff doc docs/test-reports/BL-079-signoff-2026-05-XX.md 含 L1/L2 结果 + 终签"
+      "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 visual baseline + i18n-locale-coverage (4) public/landing/illustrations/ 含 ≥6/8 PNG (5) messages/*.json 5 locale alt text 完整 (如新加 illustrationAlt keys)",
+      "L2 staging 抽样实测 5 项 PASS: (1) /zh + /en Hero 区视觉冲击力升级 (主观评估, illustration 替代真截图后冲击力 acceptable) (2) Features 6 cards illustration 视觉一致 (brand color + Linear 风) (3) EmailCenterDemo + BeforeAfter illustration 视觉一致 (4) CTA → /request-access 跳转链路不破 (5) Lighthouse Desktop logged-out perf ≥85 + LCP <2.5s (BL-078 baseline 不 regress)",
+      "0 perf regression (Lighthouse 6 项门槛)",
+      "0 业务路径破坏 (CTA / Auth redirect / sitemap / canonical 全 OK)",
+      "0 visual baseline diff 异常 (~80 PNG 入 git, diff <5% noise)",
+      "用户主观确认视觉冲击力升级 (BL-078 同维度, 主观签收, 非纯客观指标)",
+      "signoff doc docs/test-reports/BL-080-signoff-2026-05-XX.md 含 L1/L2 结果 + 终签"
     ]
   }
 ]

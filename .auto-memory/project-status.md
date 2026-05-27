@@ -4,7 +4,13 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ✅ BL-079-v0.9.25-framework-sediment DONE (6/6, fix_rounds=0, signoff @ be75998) — v0.9.25 framework sediment batch 终签完成
+## 🚧 BL-080-landing-illustration-mockups BUILDING (0/6, fix_rounds=0) — BL-078 视觉精修 v2 AI illustration 替代真截图
+- A0+A1 完成 5/27: 4 子决策全 lock (极重度 / AI gen / 全量 8 张 / Generator prompt template)
+- F001 Generator 出 8 detailed AI prompts (2h) → F002 用户跑 DALL-E/MJ/SD 生成 PNG (0.5-1 day critical path 外部) → F003 Generator 集成 4 components + fallback 守门 (3h) → F004 next/image 优化 (1.5h) → F005 baseline + Lighthouse + a11y (1.5h) → F006 Codex Reviewer (1.5h)
+- 总 ~10h Generator + 0.5 day Reviewer + 用户 AI gen 0.5-1 day = 全闭环 1.5-2 day
+- BL-078 不变量延续: 不动结构/文案/业务路径 + LCP/CLS perf 守门 + brand consistency (navy + cyan/purple)
+- 关联: docs/specs/BL-080-landing-illustration-mockups-spec.md + BL-078 baseline (perf 0.99 a11y 1.0) 不 regress
+## ✅ BL-079-v0.9.25-framework-sediment DONE (6/6, fix_rounds=0, tag bl079-done @ a964b70) — v0.9.25 framework sediment batch 终签完成 (第 4 个 one-shot pass)
 - Reviewer verifying PASS: `docs/test-reports/BL-079-signoff-2026-05-28.md`
 - L1 通过: lint `0 errors / 3 warnings`, tsc PASS, source ID grep `#1-#5` 全命中, archive `233 LOC`, CHANGELOG v0.9.25 `47 LOC`
 - L2 抽样通过: evaluator §11.6 motion a11y 三件套 / generator §18 现代 CSS 渐进增强 / CHANGELOG↔archive 5 候选 1:1 对应 + `#1+#5` 合并标注一致
