@@ -1,47 +1,5 @@
 [
   {
-    "id": "BL-078",
-    "title": "Landing page 视觉精修 (不动结构 / 文案 / 业务路径) — typography + color + spacing + motion + 精致度",
-    "description": "**触发：** 5/27 用户 /plan 命令 + 反馈 '目前页面的内容、顺序、板块没有问题，但是不够美观'。Planner Kimi 5/27 出 v2 plan (落地页视觉精修不动结构), 用户 yes 确认.\n\n**Scope (Phase 1 D1-D3 待用户 lock):**\n- 保留: 11 components 全保 / sections 顺序不动 / 文案不动 / 业务路径不动 / 5 locale 不动 / Auth redirect 不动\n- 可改: typography (font / size / weight / line-height) / color tokens (饱和度/对比/层级/gradient) / spacing rhythm / motion (hover/scroll/stagger/micro-interactions) / 视觉精致度 (glass / 光效 / shadow / animated gradients)\n\n**5 Phase 实施 (~1.5-2 day Generator + 0.5 day Reviewer):**\n- Phase 1 视觉方向 + token 规范 (0.5 day Planner + 用户 lock D1-D3)\n- Phase 2 Hero + TopNav 精修 (3-4h Generator, LCP 关键路径 BL-070 #29+#30 沉淀守门)\n- Phase 3 Body 4 sections 精修 (5-6h Generator + 4 visual baseline regen)\n- Phase 4 Trust/FAQ/Footer/Transition 精修 (2-3h Generator)\n- Phase 5 baseline + perf + Reviewer L1+L2 + signoff (3-4h Generator + 2h Codex)\n\n**Phase 1 lock 待用户 ack 3 决策:**\n- D1 美感参考方向: 现代极简 (Linear/Vercel/Stripe) / AI 科技感 (Anthropic/OpenAI) / 数据丰富 (Mixpanel/Segment) / 游戏化 (Discord/Riot) / 其他\n- D2 参考案例 URL 来源: 用户提供 3-5 URL / Planner 推荐 + 用户挑 / Stitch 项目设计稿 / 用户已有 Figma\n- D3 视觉技术栈: 仅现有 (tailwind v4 @theme) / +framer-motion / +Lottie / 全栈现代化 (view transitions / scroll-driven)\n\n**性能 不变量:** 保 BL-070 标准 perf>=85 / LCP<2.5s / CLS<0.05 / TBT<200ms (logged-out anonymous)\n\n**Risk 已评估:** v1 plan (结构重构) MEDIUM-HIGH risk → v2 plan (仅视觉精修) MEDIUM-LOW risk\n\n**依赖:** BL-077 v0.9.24 framework sediment done. 建议顺序非并行 (Generator 上下文切换 + Reviewer 双线 cost).",
-    "decisions": [
-      "用户 5/27 /plan 命令 + 反馈 '内容/顺序/板块没问题, 但不够美观' → 视觉精修方向 lock",
-      "v2 plan ack: 不动 11 components 结构 / sections 顺序 / 文案 / 业务路径 / 5 locale",
-      "5 Phase 拆分, ~1.5-2 day Generator + 0.5 day Reviewer",
-      "Phase 1 D1-D3 待用户 lock (美感方向 / 参考案例 / 视觉技术栈)",
-      "保 BL-070 perf 标准, 视觉精修不破坏 LCP / CLS / TBT 门槛",
-      "依赖 BL-077 done, 建议顺序非并行",
-      "5/27 用户 lock D1 = 现代极简 (Linear / Vercel / Stripe 风) — B2B SaaS marketer 契合 + dark theme + 大量 white space",
-      "5/27 用户 lock D2 = Planner 推荐参考 — Linear (主, dark theme 极简标杆) + Plausible (辅, B2B SaaS conversion-focused 短 landing)",
-      "5/27 用户 lock D3 = 全栈现代化 — view transitions API (Chrome 111+/Safari 18+) + scroll-driven animations (Chrome 115+/Safari 26+) native CSS; Firefox/旧 Safari fallback 走 IntersectionObserver/framer-motion 兜底, spec acceptance 显式标注"
-    ],
-    "confirmed_at": "2026-05-27T10:30+0800",
-    "priority": "medium",
-    "tags": [
-      "landing-page",
-      "visual-polish",
-      "typography",
-      "motion",
-      "color-tokens"
-    ],
-    "discovered_in": "5/27 用户 /plan 命令",
-    "audit_doc": null,
-    "depends_on": "BL-077 done (D1-D3 已 lock + final ack 已收, 起 spec 直接进入)",
-    "estimated_total_hours": 14,
-    "reference_urls": {
-      "primary": "https://linear.app",
-      "secondary": "https://plausible.io",
-      "rationale": "Linear: dark theme 现代极简标杆 + 顶级 typography + scroll-driven motion 完整范本; Plausible: B2B SaaS + conversion-focused 短 landing + 极简风短 hero 适合 KOLMatrix 类似规模产品"
-    },
-    "tech_stack": {
-      "native_apis": [
-        "view-transitions",
-        "scroll-driven-animations"
-      ],
-      "fallback": "IntersectionObserver + framer-motion (Firefox / Safari <18)",
-      "compatibility_note": "spec acceptance 必含 fallback 验证 + browser matrix check"
-    }
-  },
-  {
     "id": "BL-054",
     "title": "flaky network test isolate — pre-commit-hook.test.ts woff2 拉网络抖动隔离",
     "description": "**触发：** 2026-05-08 BL-052 verifying 阶段 Reviewer 跑默认 `npm run test:integration` 套件 fail，定位 `tests/integration/pre-commit-hook.test.ts` 的 'icon staged + woff2 matches script output → hook PASS' 用例：完整套件并发跑时 `scripts/regenerate-material-symbols-subset.sh` 报 'failed (network? quota? typo in manifest?)'，单文件隔离跑 PASS。\n\n**根因：** 该测试在 hook path 调用 `regenerate-material-symbols-subset.sh`，脚本依赖 Google Fonts 网络拉取 subset woff2。完整 `test:integration` 套件并发跑时网络竞争 / quota 抖动 → flaky；单文件 PASS 证明逻辑正确，仅环境时序敏感。\n\n**实物追溯：**\n- `tests/integration/pre-commit-hook.test.ts` 来自 BL-027-F004（commit 2c8af8a）\n- `scripts/regenerate-material-symbols-subset.sh` 来自 BL-025-F009 / BIx-mvp-polish-pass\n- `framework/templates/pre-commit-hook.sh`（4980B）依赖该脚本\n\n**业务影响评估：**\n- ❌ 阻塞 Reviewer 默认 `npm run test:integration` 全绿门槛\n- ❌ CI 路径如启用 `test:integration` 默认套件会概率性红\n- ✅ 不影响 BL-052 等业务批次实际功能（BL-052 已用 P5 裁决放过：docs/test-reports/BL-052-verifying-2026-05-07.md §Planner 裁决）\n- ✅ 不影响 prod / staging 健康（hook 仅本地 dev 路径）\n\n**3 候选修复方向（Generator 开工时择优 + Pre-impl audit 确认）：**\n\n| 方向 | 方案 | 优劣 |\n|---|---|---|\n| **A 隔离 + serial（推荐）** | 加 `npm run test:integration:network` 单独串行跑该 test；默认 `test:integration` 排除 `pre-commit-hook.test.ts` | 改动小（package.json + vitest config 各 ~5 行），保留网络验证路径，CI 单独跑该 job |\n| B 预生成缓存 | 提前在 git checkout 阶段缓存 Google Fonts subset woff2 到 `node_modules/.cache/material-symbols-subset/`，hook 优先读缓存，缓存缺失才拉网络 | 复杂，需缓存失效策略；省网络但 dev 首次仍需拉 |\n| C 移到 e2e 套件 | 该 test 移到 `tests/e2e/` Playwright network-allowed 跑，CI nightly 跑 | 测试本质属 hook integration 不属 e2e，语义不洁 |\n\n**实装范围（Generator 工时 ~2-4h）：**\n\n- F001 vitest config 改造：vitest.integration.config.ts 加 `testNamePattern` exclude `pre-commit-hook.test.ts` 默认套件 + 新增 vitest.integration-network.config.ts 仅含网络型 test\n- F002 package.json 加 script `test:integration:network` 调用新 config（serial mode + 长 timeout）\n- F003 CI workflow `ci.yml` 改 `npm run test:integration` 跑默认 + `npm run test:integration:network` 跑独立 job（network job 允许 retry 2 次）\n- F004 docs/dev/ 加 testing-strategy.md 段说明 'network-dependent integration tests' 隔离策略\n- F005 grep 全仓还有哪些类似网络型 integration test 一并隔离（v0.9.14 完整模式 grep 防漏）\n\n**依赖：** 无\n\n**ADR-worthy：** 弱 — 测试策略变更但范围窄 / 影响仅 framework templates。如发现还有 ≥3 处类似网络型测试（F005 grep 命中），建议升 ADR-014 'Integration test isolation strategy'。\n\n**预估工时：** 2-4h Generator + 0.5h Reviewer\n\n**触发时机：** BL-052 done 后（5/8 周一晚）任何时段 / 不阻塞 5/13 上线（BL-052 + BL-054 均可在 5/13 前完成，但即使 BL-054 拖到 5/14+ 也无生产影响）。",

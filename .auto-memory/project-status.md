@@ -4,7 +4,13 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ✅ BL-077-v0.9.24-framework-sediment DONE (9/9, fix_rounds=0) — v0.9.24 framework sediment batch 终签完成
+## 🚧 BL-078-landing-visual-polish BUILDING (0/6, fix_rounds=0) — 落地页视觉精修 (不动结构/文案/业务路径)
+- A0+A1 完成 5/27 16:30: plan v2 ack + D1-D3 全 lock (D1 现代极简 Linear 主+Plausible 辅 / D3 全栈现代化 view transitions + scroll-driven + IntersectionObserver fallback)
+- F001 视觉 token 规范 (2h) / F002 Hero + TopNav + view transitions setup (4h LCP 关键) / F003 Body 4 sections (5h) / F004 Trust/FAQ/Footer/SectionTransition (2h) / F005 baseline + Lighthouse + a11y verify (2h) / F006 Reviewer (2h) — 总 ~17h ≈ 2 day Generator + 0.5 day Reviewer
+- 0 业务代码改动 (仅 UI styling / motion / CSS / framer 集成); 保 11 components / sections 顺序 / 文案 / 业务路径 / 5 locale 不动
+- 保 BL-070 #29+#30 LCP skeleton 像素镜像; perf ≥85 / LCP <2.5s / CLS <0.05 / TBT <200ms 守门
+- 关联: docs/specs/BL-078-landing-visual-polish-spec.md + 参考 Linear (主) + Plausible (辅)
+## ✅ BL-077-v0.9.24-framework-sediment DONE (9/9, fix_rounds=0, tag bl077-done @ 0fc8abf) — v0.9.24 framework sediment batch 终签完成
 - Codex Reviewer 终签 PASS：L1 通过 `npm run lint` = 0 errors / 3 baseline warnings、`npx tsc --noEmit` PASS、17 source IDs 全部 grep 到 framework/harness/*.md、`framework/proposed-learnings.md` 保留 v0.9.24 marker、archive v0.9.24 = 817 LOC、CHANGELOG v0.9.24 段存在
 - L2 抽样阅读通过：`ai-action-contract.md` §6 AI cost/rate 合并段可执行；`evaluator.md` §13.4 advisory test v1→v2→STRICT 进化清晰；`generator.md` §11 J delete-X grep-callers 矩阵成功扩展 v0.9.23 #19；`deploy-patterns.md` §8 含 BL-076 14 天 outage 反例；CHANGELOG ↔ archive 17 条 1:1 对应成立
 - 未发现 chronological-append regression；新内容均落在 topic section / 合理子段内，不是历史 dump
