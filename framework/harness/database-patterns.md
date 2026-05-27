@@ -233,6 +233,91 @@ return rows;
 - [ ] 应用代码内出现 `SET LOCAL row_security = off` / `SET ROLE postgres` = 立即换 ops 层路径
 - [ ] backfill / migration 脚本：fixture 必须含 ≥2 tenant，验证扫到所有 tenant 而非首 tenant 或 0
 
+### 4.6 跨 tenant 平台级聚合 — withPlatformAdmin vs 循环 tenant set_config（v0.9.24 #13 / BL-075 #13）
+
+**坑（BL-075-F006 prod regression）：** `/api/health` `kol_coverage` deploy 后显示 0 行（应 1397）。根因：`kol` 表 RLS policy 仅 `tenant_id = NULLIF(current_setting('app.tenant_id'), '')::uuid`（详 §4.2 矩阵），对 `app.is_platform_admin` 视而不见 → withPlatformAdmin 设的 `is_platform_admin=true` 在 kol 表无效 → `app.tenant_id` 仍 NULL → RLS 拒绝返 0 行。**Build / lint / type-check 全过**，prod 部署后才 surface（kol_coverage 数字 = 0 是 UI 显示 bug，没异常 throw）。
+
+#### 4.6.1 Generator self-check（写 withPlatformAdmin 调用前必跑）
+
+**第一步必须先 grep `pg_policies` 查目标表 `qual`**，确认 RLS policy 是否含 `is_platform_admin` 旁路：
+
+```sql
+-- prod 或 staging DB sample
+SELECT polname, qual FROM pg_policy WHERE polrelid = '<table>'::regclass;
+```
+
+| qual 含 `is_platform_admin = true` | withPlatformAdmin 是否生效 | 适用 |
+|---|---|---|
+| ✅ 含 platform_admin 旁路（如 `user` 表 `user_isolation` policy） | ✅ 生效 — 单 query 走 withPlatformAdmin | platform 级查询不需循环 tenant |
+| ❌ 仅 tenant_id 比较（如 `kol` / `campaign` / `product` 等业务表） | ❌ **不生效** — 必须循环 tenant + per-tenant `set_config` | 业务表跨 tenant 聚合的唯一正确路径 |
+
+#### 4.6.2 两模式选用矩阵
+
+| 场景 | 模式 | 代码模板 |
+|---|---|---|
+| **目标表 RLS policy 含 platform_admin 旁路**（如 `user` 表查所有 user） | 单 query withPlatformAdmin | `await withPlatformAdmin((tx) => tx.user.findMany({ select: { id: true } }))` |
+| **目标表 RLS policy 仅 tenant_id 比较**（如 `kol` / `campaign` / `asset` 业务表跨 tenant 聚合） | 循环 tenant + per-tenant `set_config` | 见下方代码块 |
+
+**循环 tenant + per-tenant set_config 模板（业务表跨 tenant 聚合）：**
+
+```typescript
+// ❌ 反例（BL-075-F006 prod 0 行）
+const kolCount = await withPlatformAdmin((tx) =>
+  tx.$queryRaw<{ count: bigint }[]>`SELECT count(*) FROM kol`
+); // app.tenant_id NULL + kol policy 不旁路 → 0 行
+
+// ✅ 正解（循环 tenant + per-tenant set_config）
+const tenants = await prisma.tenant.findMany({ select: { id: true } });
+let totalCount = 0;
+let totalCountryFilled = 0;
+
+for (const { id: tenantId } of tenants) {
+  await prisma.$transaction(async (tx) => {
+    await tx.$executeRawUnsafe(
+      `SELECT set_config('app.tenant_id', $1, true)`, tenantId,
+    );
+    const slice = await tx.$queryRaw<
+      { total: bigint; country_filled: bigint }[]
+    >`
+      SELECT count(*) AS total,
+             count(*) FILTER (WHERE country IS NOT NULL) AS country_filled
+      FROM kol
+      WHERE is_active = true
+    `;
+    totalCount += Number(slice[0].total);
+    totalCountryFilled += Number(slice[0].country_filled);
+  });
+}
+
+return { totalCount, totalCountryFilled };
+```
+
+#### 4.6.3 验证方式（deploy 前必跑）
+
+deploy 后 curl prod `/api/health` 等聚合 endpoint 实测 vs `sudo psql` 直查 count(*) 比对：
+
+```bash
+# prod 实测应用层 (走 RLS)
+curl https://kol.guangai.ai/api/health | jq .kol_coverage.total_active_kols
+
+# DB 直查 (sudo psql 绕 RLS 用 superuser role)
+sudo -u postgres psql -d kolmatrix -c "SELECT count(*) FROM kol WHERE is_active = true"
+
+# 两数差异 → 即暴露 withPlatformAdmin 失效
+```
+
+#### 4.6.4 与 §4 旁路矩阵 + §4.3 决策树关系
+
+本段是 §4 旁路矩阵 + §4.3 cross-tenant ops 决策树在 **「应用层 platform 级聚合」** 场景的细化：
+
+- §4.2 旁路矩阵告诉你「policy 是否含 platform_admin 旁路」
+- §4.3 决策树告诉你「跨 tenant ops 选 withTenant 循环 vs ops 层 sudo postgres」
+- §4.6 本段告诉你**应用层** platform 级聚合（如 /api/health 跨 tenant 统计）的具体两模式选用 + Generator self-check + 验证手段
+
+**为什么不能走 §4.3 第 3 项 ops 层 sudo postgres？** /api/health 等应用 endpoint 必须走 Prisma client（kolmatrix_app role），不能切 superuser；所以唯一可行是「循环 tenant + per-tenant set_config」。
+
+**来源：** BL-075-F006 prod regression (`/api/health` kol_coverage 0 行 应 1397) + v0.9.24 #13 用户 2026-05-26 ack。
+
 ---
 
 ## 5. 跨表 id 类型一致性（v0.9.9 — BL-031 沉淀）
@@ -382,6 +467,86 @@ grep -rn "logAudit\|logEvent\|metrics\.\|analytics\." src/ | wc -l
 **反面：** BL-005 / BL-007 引入 audit_log / event_log 时若 spec 没强求核查 logEvent 33+ 调用方，启用 RLS 后静默丢事件可能数月不被发现（事件丢失不报错，仅是 audit/observability 维度数据缺失）。BL-034 借由 Generator 主动责任心避开了此坑，但下次同模式靠运气不可靠。
 
 **来源：** BL-034 F003 a23d24d Generator 主动同 commit 修复 logEvent → 提案 v0.9.12 沉淀（用户 2026-05-05 全 Accept）。配套同坑 BL-031 silent updateMany 模式（§6）。
+
+---
+
+## 9. Schema migration ROLLBACK 不对称风险 — 扩范围 migration 必带 UPDATE clamp 前置 step（v0.9.24 #16 / BL-076 #16，扩展 BL-070 #22）
+
+**Migration 顺向无损 ≠ ROLLBACK 无损。** 扩范围 migration（NUMERIC(M,N) / VARCHAR(N) 增大）顺向无损（小集合 ⊂ 大集合），但 ROLLBACK（大集合 → 小集合）若 prod 已含越界 row → `value out of range` throw。本段是 generator.md §14.1 `validate-rollback-sql.sh` CI 检查 + ROLLBACK skeleton 注入（BL-070 #22）的 **数据维度补充** — 即使 ROLLBACK SQL 形式正确，运行时仍可能 fail。
+
+### 9.1 反例 — BL-076-F001 engagement_rate NUMERIC(5,2) → (7,2)
+
+**顺向（无损）：**
+
+```sql
+ALTER TABLE "kol" ALTER COLUMN "engagement_rate" TYPE NUMERIC(7, 2);
+-- 5,2 ⊂ 7,2，任意已存在 row 均可 cast
+```
+
+**ROLLBACK（非对称 — fail）：**
+
+```sql
+ALTER TABLE "kol" ALTER COLUMN "engagement_rate" TYPE NUMERIC(5, 2);
+-- ❌ ERROR: numeric field overflow
+-- DETAIL: A field with precision 5, scale 2 must round to an absolute value less than 10^3.
+-- prod 已含 15 行 engagement_rate > 999.99（adapter clamp 上限 99999.99，详 generator.md §17）
+```
+
+### 9.2 模板 — ROLLBACK SQL 含 UPDATE clamp 前置 step
+
+```sql
+-- 顺向 (无损):
+ALTER TABLE "kol" ALTER COLUMN "engagement_rate" TYPE NUMERIC(7, 2);
+
+-- ROLLBACK (非对称, prod 已含 > 999.99 行时必须先 UPDATE clamp):
+-- Step 1: clamp 越界 row 到 ROLLBACK 目标范围
+UPDATE "kol"
+SET "engagement_rate" = LEAST("engagement_rate", 999.99)
+WHERE "engagement_rate" > 999.99;
+
+-- Step 2: ALTER (此时无越界 row)
+ALTER TABLE "kol" ALTER COLUMN "engagement_rate" TYPE NUMERIC(5, 2);
+```
+
+**关键设计：**
+- UPDATE 必须先于 ALTER，否则 ALTER throw 后 UPDATE 没机会执行
+- clamp 用 `LEAST(col, MAX)` 而非业务阈值，确保 ROLLBACK 数据不丢精度（数据损失最小化）
+- `WHERE col > MAX` 限制扫描行 — 大表 ROLLBACK 避免全表 UPDATE
+- ROLLBACK 注释**显式说明**「prod 已含越界 row 时必须先 UPDATE clamp」(避免下次类似 ROLLBACK 时重新踩坑)
+
+### 9.3 适用边界
+
+| Column type | ROLLBACK 不对称风险 | 应对 |
+|---|---|---|
+| **NUMERIC(M,N)** | ✅ 有 — 缩 precision/scale 可越界 | ROLLBACK 必带 UPDATE clamp 前置 |
+| **VARCHAR(N)** | ✅ 有 — 缩长度可截断 | ROLLBACK 必带 UPDATE substring 前置（按业务决定保留前缀 / 抛错） |
+| **DECIMAL(M,N)** | ✅ 同 NUMERIC | 同 NUMERIC |
+| **Int → SmallInt** | ✅ 有 — int 值可能超 smallint 范围 | ROLLBACK 必带 UPDATE clamp 或 fail-fast |
+| **Int / BigInt / Text / Uuid / Boolean / Json** | ❌ 无尺寸约束 | ROLLBACK 安全，不需 UPDATE 前置 |
+
+**ROLLBACK skeleton 默认模板（BL-070 #22 sediment 已实装 `scripts/prisma-migrate-dev-wrap.sh`）当前不自动检测尺寸约束扩缩。**未来 enhancement：wrap script 增量解析 ALTER COLUMN TYPE 是否含尺寸约束类型 + 顺向是否「扩」 → 自动注入「ROLLBACK: 提醒 prod 数据查 max(col)」step。留 BL-078+ follow-up。
+
+### 9.4 Generator self-check 流程
+
+写 ROLLBACK SQL 时按以下三步判断：
+
+1. **顺向 ALTER 是否含尺寸约束类型扩范围？**（NUMERIC / VARCHAR / SmallInt 等扩大）
+2. 若是 → 查 prod 实际 value range 是否已越界 ROLLBACK 目标范围：
+   ```sql
+   SELECT max(engagement_rate), count(*) FILTER (WHERE engagement_rate > 999.99)
+   FROM kol;
+   ```
+3. 越界 → ROLLBACK 必加 `UPDATE ... clamp` 前置 step + 注释说明触发条件
+
+### 9.5 配套上游沉淀（adapter 端 clamp）
+
+`engagement_rate > 999.99` 现象的本质是 adapter 输出未 clamp 业务阈值 + DB 上限留余量。**详 `generator.md §17 adapter output 边界 check 三件套 — clamp + outlier flag + 业务阈值 < DB 上限（v0.9.24 #17）`**：业务阈值 (100%) < DB 上限 (99999.99) — 异常先标 flag 不丢数据，DB 边界仅最后兜底。
+
+### 9.6 与 generator.md §14.3 cross-ref 关系
+
+`generator.md §14.3 Schema migration ROLLBACK 不对称风险` 是 1 行 cross-ref 指回本段（database-patterns.md §9 主写），双归属避免内容重复 + 双角色（Generator 写 SQL / DBA 类 ops review）触发点都能找到。
+
+**来源：** BL-076-F001 prod schema migration 实战（顺向 deploy OK，ROLLBACK 测试时 fail）+ v0.9.24 #16 用户 2026-05-27 ack（扩展 BL-070 #22 generator.md §14.1 ROLLBACK skeleton 注入）。双归属：database-patterns 主写 + generator §14.3 1 行 cross-ref。
 
 ---
 
