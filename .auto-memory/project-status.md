@@ -60,7 +60,7 @@ type: project
 3. **BL-070 post-launch ops:** 24h 后跑 `ssh tripplezhou@34.180.93.185 'bash /opt/kolmatrix/scripts/bl070-prod-audit.sh'` + 邀 ≥5 marketer dogfood; 全过则 signoff §4 #9/#10 DEFERRED→PASS
 4. prod 实测验证 5/27 BL-073/074/075 fix 用户体验是否符合预期 (5 路由 IA / Material Symbols / i18n / filter UX / kol_coverage)
 ## 角色 / Backlog (BL-077 verifying 中, BL-078 排队)
-- ★ **BL-078 landing 视觉精修 (5/27 plan v2 ack)** — 不动结构/文案/业务路径, 仅 typography+color+spacing+motion+精致度. ~1.5-2 day. Phase 1 D1-D3 待 lock (美感方向 / 参考案例 / 视觉技术栈). 依赖 BL-077 done.
+- ★ **BL-078 landing 视觉精修 (5/27 plan v2 ack + D1-D3 全 lock)** — 不动结构/文案/业务路径, 仅 typography+color+spacing+motion+精致度. ~1.5-2 day. D1=现代极简 (Linear 风) / D2=Linear (主) + Plausible (辅) 参考 / D3=全栈现代化 (view transitions + scroll-driven + IntersectionObserver fallback). BL-077 done 后直接起 spec.
 - Phase 5：个性化学习 / AI 学到偏好 / Brief 模板库 / comparative query / skip-replace 写 DB
 - 真客户 onboarding 准备：db:seed 验证 + tenant cleanup + 监控仪表板
 - BL-054 (medium) flaky network test isolate / BL-048 (low) valueScore 公式区分度优化

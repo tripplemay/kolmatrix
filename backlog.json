@@ -9,7 +9,10 @@
       "5 Phase 拆分, ~1.5-2 day Generator + 0.5 day Reviewer",
       "Phase 1 D1-D3 待用户 lock (美感方向 / 参考案例 / 视觉技术栈)",
       "保 BL-070 perf 标准, 视觉精修不破坏 LCP / CLS / TBT 门槛",
-      "依赖 BL-077 done, 建议顺序非并行"
+      "依赖 BL-077 done, 建议顺序非并行",
+      "5/27 用户 lock D1 = 现代极简 (Linear / Vercel / Stripe 风) — B2B SaaS marketer 契合 + dark theme + 大量 white space",
+      "5/27 用户 lock D2 = Planner 推荐参考 — Linear (主, dark theme 极简标杆) + Plausible (辅, B2B SaaS conversion-focused 短 landing)",
+      "5/27 用户 lock D3 = 全栈现代化 — view transitions API (Chrome 111+/Safari 18+) + scroll-driven animations (Chrome 115+/Safari 26+) native CSS; Firefox/旧 Safari fallback 走 IntersectionObserver/framer-motion 兜底, spec acceptance 显式标注"
     ],
     "confirmed_at": "2026-05-27T10:30+0800",
     "priority": "medium",
@@ -22,8 +25,21 @@
     ],
     "discovered_in": "5/27 用户 /plan 命令",
     "audit_doc": null,
-    "depends_on": "BL-077 done + Phase 1 D1-D3 lock + final ack",
-    "estimated_total_hours": 14
+    "depends_on": "BL-077 done (D1-D3 已 lock + final ack 已收, 起 spec 直接进入)",
+    "estimated_total_hours": 14,
+    "reference_urls": {
+      "primary": "https://linear.app",
+      "secondary": "https://plausible.io",
+      "rationale": "Linear: dark theme 现代极简标杆 + 顶级 typography + scroll-driven motion 完整范本; Plausible: B2B SaaS + conversion-focused 短 landing + 极简风短 hero 适合 KOLMatrix 类似规模产品"
+    },
+    "tech_stack": {
+      "native_apis": [
+        "view-transitions",
+        "scroll-driven-animations"
+      ],
+      "fallback": "IntersectionObserver + framer-motion (Firefox / Safari <18)",
+      "compatibility_note": "spec acceptance 必含 fallback 验证 + browser matrix check"
+    }
   },
   {
     "id": "BL-054",
