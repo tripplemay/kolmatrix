@@ -61,8 +61,8 @@ type: project
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 3. **BL-070 post-launch ops:** 24h 后跑 `ssh tripplezhou@34.180.93.185 'bash /opt/kolmatrix/scripts/bl070-prod-audit.sh'` + 邀 ≥5 marketer dogfood; 全过则 signoff §4 #9/#10 DEFERRED→PASS
 4. prod 实测验证 5/27 BL-073/074/075 fix 用户体验是否符合预期 (5 路由 IA / Material Symbols / i18n / filter UX / kol_coverage)
-## 角色 / Backlog (BL-076 done 后)
-- ★ **v0.9.24 framework sediment batch (17 条积压: BL-072 4 + BL-073 5 + BL-075 4 + BL-076 4)** — 类似 BL-071 模式起 batch 落 framework/harness/*.md inline-merge
+## 角色 / Backlog (BL-077 building 中, BL-078 排队)
+- ★ **BL-078 landing 视觉精修 (5/27 plan v2 ack)** — 不动结构/文案/业务路径, 仅 typography+color+spacing+motion+精致度. ~1.5-2 day. Phase 1 D1-D3 待 lock (美感方向 / 参考案例 / 视觉技术栈). 依赖 BL-077 done.
 - Phase 5：个性化学习 / AI 学到偏好 / Brief 模板库 / comparative query / skip-replace 写 DB
 - 真客户 onboarding 准备：db:seed 验证 + tenant cleanup + 监控仪表板
 - BL-054 (medium) flaky network test isolate / BL-048 (low) valueScore 公式区分度优化
