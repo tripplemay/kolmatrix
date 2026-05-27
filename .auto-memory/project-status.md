@@ -4,16 +4,13 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-076-apify-numeric-overflow REVERIFYING (4/5, fix_rounds=2) — fix-round 2 spec amend 完成, Reviewer round 3 可立即 signoff
-- 三件套 commit f718704 + state 3449ead 已在 prod 生效，prod fix 证据继续成立
-- Reviewer round 2 staging 跑 --enrichment-limit=10 结果 `discover=2567 inserted=0 updated=1859 failed=0 errors=0 level=INFO` — 无 overflow / 无 import failure / 无 error entries, 但卡 spec `stats.inserted>0`
-- Fix-round 2 根因 (用户 ack Option 2): apify-kol 服务端每日固定 ~2567 discovery pool, staging cron 长期 sync 已把整池落库, 全部走 update path = `inserted=0` 是 steady-state 健康. Prod F004 `inserted=474` 是 14 天 outage 累积一次性补回的瞬时语义, 修复后下次 prod 也回 `inserted=0`. 原 spec 混淆瞬时和稳态语义
-- 修订 (commit 待 push, 0 行业务代码, 与 fix-round 1 同模式): spec §F005 L2 #1 改为 `(stats.inserted + stats.updated) > 0` + `failed=0` + errors 无 'numeric field overflow' (含 steady-state 健康说明); L2 #2 改为 `tail -1 /var/log/kolmatrix-kol-sync.log` 直接验 prod F004 落盘的瞬时证据 (inserted=474 updated=1385 errors=[])
-- features.json F005 acceptance 同步, Reviewer round 2 staging 数据完全满足修订后 acceptance
-- L1: lint 0 errors / 3 warnings, tsc clean, npm test 189 files / 1375 tests
-- Prod 只读 SQL 复核仍通过: `engagement_rate>999.99=15` / `outlier=true=157` / `audit_log.kol.import_failed=0` / `created_at > 2026-05-26T16:37Z = 474` / `max(engagement_rate)=9137.06`
-- F004 报告: docs/test-reports/BL-076-backfill-2026-05-27.md
-- Reviewer round 3 按修订 spec 即可 signoff
+## ✅ BL-076-apify-numeric-overflow DONE (5/5, fix_rounds=2) — numeric overflow hotfix 终签完成
+- Codex Reviewer 终签 PASS：fix-round 2 口径下，staging `AI_DAILY_COST_USD_PER_TENANT_MAX=500 npx tsx scripts/kol-sync-daily.ts --enrichment-limit=10` 结果 `discover=2567 inserted=0 updated=1859 failed=0 errors=0 level=INFO`
+- 该结果满足锁定后的 F005：`(inserted + updated) > 0`、`failed=0`、无 `numeric field overflow`
+- prod 结构化 log 保留 outage 补回瞬时证据：`inserted=474 updated=1385 failed=0 errors=[]`
+- prod SQL 复核通过：`engagement_rate>999.99=15` / `outlier=true=157` / `audit_log.kol.import_failed=0` / `created_at > 2026-05-26T16:37Z = 474` / `max(engagement_rate)=9137.06`
+- L1 通过：lint 0 errors / 3 warnings、tsc clean、npm test PASS、prisma migrate status up to date、schema `Decimal(7,2)` 确认
+- signoff: `docs/test-reports/BL-076-signoff-2026-05-27.md`
 ## ✅ BL-075-kol-data-coverage DONE (7/7, fix_rounds=1) — signoff 完成
 - Codex Reviewer 终签 PASS：L1 通过 `npm run lint` = 0 errors / 3 warnings、`npx tsc --noEmit` PASS、`npm test` = 188 files / 1368 tests PASS、backfill dry-run 输出格式正常、environment action 清单仍含 `kol-country-enrichment`
 - prod `/api/health` 已返回 `kol_coverage` 真数字：`total_active_kols=1397`、`country_fill_rate=20.4%`、`language_fill_rate=45.5%`

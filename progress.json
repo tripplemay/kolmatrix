@@ -1,11 +1,11 @@
 {
-  "status": "reverifying",
+  "status": "done",
   "user_goal": "BL-076-apify-numeric-overflow — apify-kol discover-import numeric field overflow hotfix. 5 features F001-F005 (~6.5h ≈ 1 day Generator + 0.5 day Reviewer). 严重度从 medium 升 P1 — prod log 实测 5/12 起 14+ 天 daily-sync 全 fail (discoverCount 2107-2567 但 inserted=0 updated=0). 根因: engagementRate = (totalLikes/postsCount)/followers*100 可超 999.99 = Decimal(5,2) 上限 = first overflow throw 整 batch fail. A1 lock 3 子决策 (5/27): 策略 A 三件套 (Schema Decimal(7,2) + adapter clamp + per-KOL try/catch) / Defense A 均包 (outlier flag + audit_log) / Backfill B 追 14 天遗漏 KOL. 关联 docs/specs/BL-076-apify-numeric-overflow-spec.md @ 本 commit + BL-075 signoff §6 residual warning.",
   "total_features": 5,
-  "completed_features": 4,
+  "completed_features": 5,
   "fix_rounds": 2,
   "current_sprint": "BL-076-apify-numeric-overflow",
-  "last_updated": "2026-05-27T08:50+0800",
+  "last_updated": "2026-05-27T08:47+0800",
   "reference_docs": [
     "docs/specs/BL-076-apify-numeric-overflow-spec.md",
     "docs/test-reports/BL-075-signoff-2026-05-27.md",
@@ -20,23 +20,16 @@
     "spec": "docs/specs/BL-076-apify-numeric-overflow-spec.md",
     "audit": "docs/test-reports/BL-075-signoff-2026-05-27.md",
     "test_cases": "docs/test-reports/BL-076-reverifying-2026-05-27.md",
-    "signoff": null,
+    "signoff": "docs/test-reports/BL-076-signoff-2026-05-27.md",
     "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "round": 2,
-    "outcome": "fail",
-    "summary": "Fix-round 1 closed the original overflow blocker, but the rerun staging command still produced inserted=0 updated=1859 failed=0 errors=0. Under the current locked F005 acceptance, inserted>0 is still required, so F005 cannot be signed off.",
-    "report": "docs/test-reports/BL-076-reverifying-2026-05-27.md",
-    "generator_response": "Fix-round 1 clarified that staging validation should use --enrichment-limit=10 and that adjacent 413/429 warnings are non-blocking. Reviewer reran the corrected command and confirmed no numeric overflow, failed=0, errors=0, but staging still returned inserted=0. Acceptance/spec now need either a reproducible inserted>0 staging setup or an explicit adjustment that healthy inserted=0 updated>0 is sufficient.",
-    "round_2_generator_response": "Fix-round 2 选 Option 2 (用户 ack): amend spec, healthy inserted=0 OK. 根因: apify-kol 服务端每日返回固定 ~2567 discovery pool, staging 通过 cron 长期 sync 已把整池落库 (staging health total_active_kols≈1871 + 软删/inactive >2567), 全部命中 unique key 走 update path = inserted=0 是 steady-state 正常. Prod F004 inserted=474 是 5/12-5/26 14 天 outage 期间 apify-kol 池 shift 累积一次性补回的瞬时语义, 修复后下次 prod 也回到 inserted=0. 原 spec 把瞬时和稳态混在 inserted>0 一条断言里 = bug. 修订 (commit 待 push): spec §F005 L2 #1 改为 (stats.inserted + stats.updated) > 0 + failed=0 + errors 无 numeric overflow; features.json 同步; spec L2 #2 改为直接 tail prod log 验 inserted=474+updated=1385 提供瞬时证据 (Reviewer 不必再 SSH prod 跑). 0 行业务代码改动."
-  },
+  "evaluator_feedback": null,
   "generator_handoff": "Fix-round 2 (commit 待 push): 0 行业务代码, 仅 spec + features.json 措辞修订, 与 fix-round 1 同模式. spec §F005 L2 #1 改为 (stats.inserted + stats.updated) > 0 + failed=0 + errors 无 numeric overflow (steady-state inserted=0 是健康, 因 staging DB 已覆盖 apify-kol 池); L2 #2 改为直接 tail prod log /var/log/kolmatrix-kol-sync.log 末尾 line 验 inserted=474 updated=1385 errors=[] (F004 一次性 backfill 瞬时证据, 17:43 UTC 已落). features.json F005 acceptance 同步. Reviewer round 2 报告 docs/test-reports/BL-076-reverifying-2026-05-27.md 数据 (staging inserted=0 updated=1859 failed=0 errors=0) 完全满足修订后 acceptance, 可立即 signoff.",
   "session_notes": {
     "Kimi_planner": "[2026-05-27 01:00 BJT Planner Kimi BL-076 planning done. SSH prod 实测发现 5/12 起 14 天 daily-sync 全 fail (discoverCount 2107-2567 但 inserted=0 updated=0), 严重度从 medium 升 P1. 根因: apify-kol.ts:409 engagementRate 计算可超 Decimal(5,2) 上限 999.99. A1 lock: 策略 A 三件套 (Schema migration Decimal(7,2) + clamp + per-KOL try/catch) / Defense A 均包 / Backfill B 追 14 天. 5 features F001-F005 ~6.5h.]",
     "Kimi_generator": "[2026-05-27 08:50 BJT Generator Kimi fix-round 2 完成 (0 行业务代码, spec/acceptance 措辞修订, 与 fix-round 1 同模式). Reviewer round 2 FAIL 根因: spec lock 的 stats.inserted>0 在 staging 不可达 (apify-kol 服务端固定 ~2567 discovery pool, staging cron 长期 sync 已把整池落库, 全部走 update path = inserted=0 稳态). Prod F004 inserted=474 是 14 天 outage 累积一次性补回的瞬时语义, 修复后下次 prod 也回 inserted=0. 原 spec 混淆瞬时和稳态语义. 用户 ack Option 2: amend spec, healthy inserted=0 OK. 修订: spec §F005 L2 #1 改为 (stats.inserted + stats.updated) > 0 + failed=0 + errors 无 numeric overflow (steady-state inserted=0 健康说明); L2 #2 改为直接 tail prod log 验瞬时 inserted=474 updated=1385 (F004 17:43 UTC 落). features.json 同步. Reviewer round 2 staging 数据 inserted=0 updated=1859 failed=0 errors=0 完全满足修订 acceptance, 可立即 signoff. 状态: reverifying.]",
-    "Reviewer": "[2026-05-27 08:36 BJT Codex Reviewer BL-076 reverifying FAIL. Fix-round 1 clarified the correct staging command: AI_DAILY_COST_USD_PER_TENANT_MAX=500 npx tsx scripts/kol-sync-daily.ts --enrichment-limit=10. Rerun result: discover=2567 inserted=0 updated=1859 failed=0 errors=0; staging report confirms inserted=0 / failed=0 / no overflow. Prod evidence remains valid: engagement_rate>999.99=15, outlier_flagged=157, import_failed=0, created_at>2026-05-26T16:37Z=474, max_rate=9137.06. Current blocker is no longer overflow or infra instability; it is an acceptance mismatch, because locked F005 still requires stats.inserted>0 on staging. Status -> fixing, F005 remains pending. Report: docs/test-reports/BL-076-reverifying-2026-05-27.md]",
+    "Reviewer": "[2026-05-27 08:47 BJT Codex Reviewer BL-076 signoff PASS. Fix-round 2 acceptance now matches real steady-state semantics: staging `AI_DAILY_COST_USD_PER_TENANT_MAX=500 npx tsx scripts/kol-sync-daily.ts --enrichment-limit=10` produced discover=2567 inserted=0 updated=1859 failed=0 errors=0, satisfying `(inserted+updated)>0` + failed=0 + no numeric overflow. Prod evidence remains valid: tail log confirms inserted=474 updated=1385 errors=[], superuser SQL confirms engagement_rate>999.99=15 / outlier_flagged=157 / import_failed=0 / created_after_cutoff=474 / max_rate=9137.06. BL-076 closed as done. Signoff: docs/test-reports/BL-076-signoff-2026-05-27.md]",
     "johnsong_planner": null,
     "johnsong_generator": null
   }

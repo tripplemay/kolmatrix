@@ -69,7 +69,7 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 F002+F003 新单测 (4) npx prisma migrate status PASS (migration applied) (5) Prisma schema engagementRate Decimal(7,2) 确认",
       "L2 staging 抽样实测 6 项 PASS: (1) staging 跑 `AI_DAILY_COST_USD_PER_TENANT_MAX=500 npx tsx scripts/kol-sync-daily.ts --enrichment-limit=10` (BL-075-F003 沉淀) 验 ImportStats `(stats.inserted + stats.updated) > 0` (sync 真在前进, steady-state inserted=0 + updated>0 健康 — staging DB 已覆盖 apify-kol 池) + `stats.failed = 0` + errors 中无 'numeric field overflow' (kol-embed 413 + enrichment 429 retryAfter 等 adjacent 警告不计) (2) tail prod log /var/log/kolmatrix-kol-sync.log 末尾 line 确认 inserted=474 / updated=1385 / failed=0 / errors=[] (F004 一次性 outage 补回提供 inserted > 0 瞬时证据, 与 staging 稳态互补) (3) SSH prod SQL 查 engagement_rate > 999.99 的 KOL 存在 (验 schema 扩容生效) (4) SQL 查 metadata.flags.engagement_outlier=true 的 KOL (验 outlier flag 写入) (5) audit_log kol.import_failed 记录查 (如有, 确认 try/catch 路径起效) (6) SQL 验 created_at > '2026-05-27' AND last_synced_at > '2026-05-27' 新 KOL 数",
