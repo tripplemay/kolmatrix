@@ -32,13 +32,13 @@ export async function Features({ locale }: Props) {
       textClassName="text-on-surface-light"
       leftContent={
         <>
-          <div className="font-geist-mono text-[11px] tracking-[0.3em] text-cyan uppercase">
+          <div className="font-geist-mono text-landing-eyebrow tracking-landing-eyebrow text-cyan uppercase">
             {t("intro.label")}
           </div>
-          <h2 className="mt-4 font-geist text-4xl lg:text-5xl font-bold tracking-tight whitespace-pre-line">
+          <h2 className="mt-4 font-geist text-landing-h2 font-bold leading-landing-tight tracking-landing-tight whitespace-pre-line">
             {t("intro.title")}
           </h2>
-          <p className="mt-5 text-base text-on-surface-light-variant max-w-md leading-relaxed">
+          <p className="mt-5 text-landing-body-lg leading-landing-relaxed text-on-surface-light-variant max-w-md">
             {t("intro.subtitle")}
           </p>
         </>
@@ -49,26 +49,26 @@ export async function Features({ locale }: Props) {
           <a
             href={`/${locale}${href}`}
             data-testid={`landing-feature-${key}`}
-            className="group flex flex-col gap-4 rounded-2xl border border-on-surface-light/10 bg-surface-light-container p-7 transition duration-200 hover:-translate-y-1 hover:border-cyan/60 hover:shadow-[0_12px_32px_rgba(0,229,255,0.18)]"
+            className="landing-card-light group flex flex-col gap-4 p-7"
           >
             <div className="flex items-baseline gap-3">
-              <span className="font-geist-mono text-[11px] tracking-[0.2em] text-on-surface-light-muted">
+              <span className="font-geist-mono text-landing-eyebrow tracking-landing-eyebrow text-on-surface-light-muted">
                 {String(idx + 1).padStart(2, "0")}
               </span>
-              <h3 className="font-geist text-lg font-semibold text-on-surface-light">
+              <h3 className="font-geist text-landing-h3 font-semibold leading-landing-tight tracking-landing-tight text-on-surface-light">
                 {t(`items.${key}.title`)}
               </h3>
             </div>
-            <p className="text-sm text-on-surface-light-variant leading-relaxed">
+            <p className="text-landing-body leading-landing-relaxed text-on-surface-light-variant">
               {t(`items.${key}.body`)}
             </p>
-            <div className="mt-2 overflow-hidden rounded-xl border border-on-surface-light/8 transition group-hover:border-cyan/30">
+            <div className="mt-2 overflow-hidden rounded-xl border border-on-surface-light/8 transition-colors duration-[var(--duration-landing-short)] group-hover:border-cyan/35">
               <Image
                 src={screenshot}
                 alt={t(`items.${key}.title`)}
                 width={640}
                 height={400}
-                className="h-auto w-full opacity-95 transition duration-200 group-hover:scale-[1.02]"
+                className="h-auto w-full opacity-95 transition-transform duration-[var(--duration-landing-medium)] ease-[var(--ease-landing-out)] motion-reduce:transform-none group-hover:scale-[1.02]"
               />
             </div>
           </a>

@@ -19,11 +19,12 @@ export async function PainPoints() {
   return (
     <section
       data-testid="landing-painpoints"
-      className="bg-surface-light text-on-surface-light px-6 py-32 lg:px-12"
+      className="bg-surface-light text-on-surface-light px-6 lg:px-12"
+      style={{ paddingTop: "var(--spacing-landing-section-y)", paddingBottom: "var(--spacing-landing-section-y)" }}
     >
       <div className="mx-auto max-w-6xl">
         <ScrollFadeIn>
-          <h2 className="font-geist text-center text-3xl font-bold tracking-tight text-on-surface-light lg:text-4xl">
+          <h2 className="font-geist text-center text-landing-h2 font-bold leading-landing-tight tracking-landing-tight text-on-surface-light">
             {t("sectionTitle")}
           </h2>
         </ScrollFadeIn>
@@ -33,18 +34,20 @@ export async function PainPoints() {
             <ScrollFadeIn key={key} delayMs={idx * 120}>
               <div
                 data-testid={`landing-painpoint-${key}`}
-                className="rounded-2xl bg-surface-light-container border border-on-surface-light/8 p-7 h-full transition hover:border-cyan/40 hover:shadow-[0_8px_28px_rgba(0,229,255,0.15)]"
+                className="landing-card-light p-7 h-full"
               >
-                <span
-                  className="material-symbols-outlined text-[28px] text-cyan"
-                  aria-hidden="true"
-                >
-                  {icon}
+                <span className="landing-icon-halo">
+                  <span
+                    className="material-symbols-outlined text-[24px]"
+                    aria-hidden="true"
+                  >
+                    {icon}
+                  </span>
                 </span>
-                <h3 className="mt-4 font-geist text-base font-semibold text-on-surface-light">
+                <h3 className="mt-5 font-geist text-landing-h3 font-semibold leading-landing-tight tracking-landing-tight text-on-surface-light">
                   {t(`items.${key}.title`)}
                 </h3>
-                <p className="mt-2 text-sm text-on-surface-light-variant leading-relaxed">
+                <p className="mt-3 text-landing-body leading-landing-relaxed text-on-surface-light-variant">
                   {t(`items.${key}.body`)}
                 </p>
               </div>
@@ -53,7 +56,7 @@ export async function PainPoints() {
         </div>
 
         <ScrollFadeIn delayMs={600}>
-          <p className="mt-16 text-center text-base font-geist text-on-surface-light-variant">
+          <p className="mt-16 text-center text-landing-body-lg leading-landing-relaxed font-geist text-on-surface-light-variant">
             {t("tagline")}
           </p>
         </ScrollFadeIn>

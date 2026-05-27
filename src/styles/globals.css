@@ -525,3 +525,72 @@
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid color-mix(in srgb, var(--color-cyan) 10%, transparent);
 }
+
+/* Landing cards — unified Linear-style surface for body section cards.
+   Light variant for sections with bg-surface-light (PainPoints / Features /
+   Trust); dark variant for sections with bg-surface (BeforeAfter / Email
+   callouts / FAQ items). */
+.landing-card-light {
+  border-radius: var(--radius-landing-card);
+  background: var(--color-surface-light-container);
+  border: 1px solid color-mix(in srgb, var(--color-on-surface-light) 8%, transparent);
+  transition:
+    transform var(--duration-landing-short) var(--ease-landing-out),
+    border-color var(--duration-landing-short) var(--ease-landing-out),
+    box-shadow var(--duration-landing-medium) var(--ease-landing-out);
+}
+.landing-card-light:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--color-cyan) 42%, transparent);
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--color-cyan) 16%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-card-light { transition: none; }
+  .landing-card-light:hover { transform: none; }
+}
+
+.landing-card-dark {
+  border-radius: var(--radius-landing-card);
+  background: var(--color-landing-canvas-elevated);
+  border: 1px solid color-mix(in srgb, var(--color-cyan) 10%, transparent);
+  transition:
+    transform var(--duration-landing-short) var(--ease-landing-out),
+    border-color var(--duration-landing-short) var(--ease-landing-out),
+    box-shadow var(--duration-landing-medium) var(--ease-landing-out);
+}
+.landing-card-dark:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--color-cyan) 45%, transparent);
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--color-cyan) 20%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-card-dark { transition: none; }
+  .landing-card-dark:hover { transform: none; }
+}
+
+/* Icon halo — subtle cyan glow background for section card icons.
+   Used as a wrapper around <span class="material-symbols-outlined"> to lift
+   the icon visually without changing icon weight. */
+.landing-icon-halo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-cyan) 10%, transparent);
+  color: var(--color-cyan);
+  transition:
+    background-color var(--duration-landing-short) var(--ease-landing-out),
+    transform var(--duration-landing-short) var(--ease-landing-out);
+}
+.landing-card-light:hover .landing-icon-halo,
+.landing-card-dark:hover .landing-icon-halo {
+  background: color-mix(in srgb, var(--color-cyan) 22%, transparent);
+  transform: scale(1.06);
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-icon-halo { transition: none; }
+  .landing-card-light:hover .landing-icon-halo,
+  .landing-card-dark:hover .landing-icon-halo { transform: none; }
+}
