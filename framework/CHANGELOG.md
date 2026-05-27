@@ -5,22 +5,76 @@
 
 ---
 
-## v0.9.24 候选段 — 待 BL-074 / BL-075 done 后一并 sediment
+## v0.9.24 — 2026-05-27（BL-077 sediment batch，17 条 sediment inline-merge，5 同主题合并段）
 
-**来源批次（待沉淀）：**
-- BL-072 4 条候选（IA refactor outbound 扫描 / subset Pattern 6 / i18n 消费侧探针 / 删路由前 grep）
-- BL-073 5 条候选（Pattern 7 bare in multi-line / STRICT_MODE 维度拆分 / i18n key existence v2 / filter UX coverage / 3 独立批次切片决策）
+**来源批次：**
+- BL-072 done 4 条（5/26 ack）：IA refactor outbound 扫描 / subset Pattern 6 / advisory test 三件套 / 删 X 前 grep callers
+- BL-073 done 5 条（5/26 ack）：Pattern 7 multi-line span bare / 嵌套 max-w grep / i18n key existence v2 / prod alerting MISSING_MESSAGE / STRICT_MODE 渐进
+- BL-075 done 4 条（5/26-27 ack）：pm2 reload --update-env 必须先 source shell / AI_DAILY_COST 估算 5-10x 高估 / aigcgateway 30 RPM rate gate / withPlatformAdmin RLS 不通用
+- BL-076 done 4 条（5/27 ack）：prod alerting 14 天 outage 实战代价 / batch try/catch 模板 / Schema migration ROLLBACK 不对称 / adapter output 边界 check 三件套
 
-**预计触发原因：**
-- BL-073 prod-hotfix Issue #1 暴露 Pattern 1-6 共同盲区（multi-line span 内 bare ligature），落 Pattern 7 + STRICT_MS_ICONS=true → 后续 PR 加新 icon 必须 manifest 或 Pattern 1-7 命中，否则 CI fail
-- BL-073-F005 v2 i18n key existence 检测 + BL-073-F006 filter UX coverage 防御 — 两条共同提示「数据完整性 + UI 假设」必须配对，单独沉淀语义会失真
+**触发原因：**
+- BL-072 / 073 / 075 / 076 连续 4 批 prod hotfix + IA v2（BL-074）done 后，proposed-learnings.md 累积 17 条用户 ack sediment 候选
+- 按 BL-071 D8 lock（sediment workflow 入 proposed-learnings header）+ D7 lock（强制 inline-merge）模式，独立 framework sediment batch 一并落地
+- 类 BL-071 v0.9.23 batch 模式（31 sediment + 11 结构变更），但 BL-077 **仅 inline-merge 17 条 sediment，无结构变更**（framework 结构已 BL-071 lock 完整）
+- A1 用户 5/27 lock 2 决策：范围 A 全做（17 inline-merge + 5 同主题合并段 + CHANGELOG + archive + 清 proposed-learnings）+ Reviewer A L1 grep + L2 抽样 5 段阅读
 
-**当前 STRICT_MODE 状态（BL-073-F007）：**
-- `STRICT_MS_ICONS` = `true`（Material Symbols 维度首翻 strict — 见 framework/harness/checklists/material-symbols-pattern.md §「STRICT_MS_ICONS 启用记录」）
-- `STRICT_I18N` = `false`（仍 advisory，待 BL-074 / BL-075 false-positive 消化）
-- `STRICT_LINK_TARGET` = `false`（仍 advisory，IA refactor 漏网 URL 扫描缓冲期）
+**17 条 1-line summary（详见 `framework/archive/proposed-learnings-archive-v0.9.24.md`）：**
 
-**升级原则记录：** STRICT 是一次性硬转，不退回 advisory；下次升级候选 = i18n 消费侧 v2 key existence 稳定一两轮 PR 后。
+| # | 1-line summary | 类型 | 来源 | 写入位置 |
+|---|---|---|---|---|
+| #1 | IA refactor / 路由删除批次 outbound 一致性扫描清单（4 维度：visual / i18n / Material Symbols / outbound 链接）| 新规律 | BL-072 prod hotfix | planner-checklists.md §"IA refactor / 路由删除批次 outbound 一致性扫描清单" |
+| #2 | subset script grep Pattern 6 JSX 三元 模板 + manifest 维护惯例 | 模板修订 | BL-072-F005 | checklists/material-symbols-pattern.md §"Pattern 进化路径 v1 → v2 → v3 总览"（与 #5 合并） |
+| #3 | i18n 消费侧 test 探针 + 三件套模式（page-side hardcoded English sweep + link-target audit + Material Symbols 三向断言）| 新规律 | BL-072-F007 | evaluator.md §13.4.1（与 #7 + #9 合并） |
+| #4 | 删 X 前 grep callers 矩阵扩展（i18n ns + 路由 outbound 同主题合并）| 新规律（扩展 v0.9.23 #19）| BL-072-F006 | generator.md §11 J |
+| #5 | subset script Pattern 进化路径 v1→v2→v3（Pattern 7 multi-line span bare）| 模板修订 | BL-073-F002 | checklists/material-symbols-pattern.md §"Pattern 进化路径 v1 → v2 → v3 总览"（与 #2 合并） |
+| #6 | spec acceptance 嵌套二级约束 grep 全仓模板（视觉 / i18n / CSS variant 三类）| 新规律 | BL-073 / BL-072-F001 反例 | planner-checklists.md §"spec acceptance 嵌套二级约束 grep 防御" |
+| #7 | i18n page-side test v2 key existence 检测（扫 t() 调用拼 namespace 验 messages exist）| 新规律（扩展 v0.9.24 #3）| BL-073-F005 | evaluator.md §13.4.2（与 #3 + #9 合并） |
+| #8 | prod error log MISSING_MESSAGE / Prisma / 5xx 应触发告警链 | 新规律 | BL-073 prod log audit | deploy-patterns.md §8（与 #14 合并） |
+| #9 | STRICT_MODE 渐进升级路径 — advisory → strict 渐进 flip 模板 | 新规律 | BL-073-F007 | evaluator.md §13.4.3（与 #3 + #7 合并） |
+| #10 | pm2 reload --update-env 不重读 env_file — 必须先 set -a; source .env; set +a 4 步流程 | 新坑 | BL-075-F002 | deploy-patterns.md §1.6.1 |
+| #11 | AI_DAILY_COST_USD_PER_TENANT_MAX 默认 count×$0.01 是 5-10x 高估 实际 ~$0.0009/call + Workaround 一次性提升 cap | 新坑 | BL-075-F004 | ai-action-contract.md §6.1（与 #12 合并） |
+| #12 | aigcgateway 30 RPM 硬限 + makeLlmRateGate(intervalMs=2100) 模板 + 与 retry 分工 | 新坑 | BL-075-F004 | ai-action-contract.md §6.2（与 #11 合并） |
+| #13 | withPlatformAdmin 仅在 RLS policy 有 platform_admin 旁路时有效 — kol 等业务表必须循环 tenant + per-tenant set_config | 新坑 | BL-075-F006 prod regression | database-patterns.md §4.6 |
+| #14 | prod 关键 error 多日累积未触发任何告警 — log-based alerting 14 天 outage 代价（实战扩展 #8）| 新规律 | BL-076 prod outage | deploy-patterns.md §8（与 #8 合并） |
+| #15 | batch insert / sync loop 必须包 per-element try/catch — 单元素 fail 不阻塞整 batch + audit forensic | 新规律 | BL-076-F003 | generator.md §16 |
+| #16 | Schema migration ROLLBACK 不对称风险 — 扩范围 migration 必带 UPDATE clamp 前置 step（扩展 BL-070 #22）| 模板修订 | BL-076-F001 | database-patterns.md §9 + generator.md §14.3 1 行 cross-ref |
+| #17 | adapter output 边界 check 三件套 — clamp + outlier flag + 业务阈值 < DB 上限 | 新规律 | BL-076-F002 | generator.md §17 |
+
+**同主题合并段 5 组（D7 强制 inline-merge 示范）：**
+
+| 合并段 | 合并 source | 写入位置 |
+|---|---|---|
+| AI 调用经济与速率防御 | #11 cost-cap 5-10x 高估 + #12 makeLlmRateGate(2100) | ai-action-contract.md §6（§6.1 + §6.2） |
+| advisory test 三件套 v1 → v2 → STRICT_MODE | #3 v1 三件套 + #7 v2 key existence + #9 STRICT_MODE 渐进 flip | evaluator.md §13.4（§13.4.1 + §13.4.2 + §13.4.3） |
+| prod 关键流程 log-based alerting | #8 MISSING_MESSAGE 识别 gap + #14 BL-076 14 天 outage 实战代价 | deploy-patterns.md §8（§8.1 反例 + §8.2 三件套 + §8.3 grep pattern + §8.4 实装项） |
+| Pattern v1 → v2 → v3 进化 | #2 Pattern 6 quoted JSX 三元 + #5 Pattern 7 multi-line span bare | checklists/material-symbols-pattern.md §"Pattern 进化路径 v1 → v2 → v3 总览" |
+| Schema migration ROLLBACK 不对称风险（双归属）| #16 主写 database-patterns + generator 1 行 cross-ref | database-patterns.md §9（主写）+ generator.md §14.3（cross-ref） |
+
+**实际写入位置（按文件分组）：**
+
+| 文件 | 段数 | 写入内容 |
+|---|---|---|
+| `ai-action-contract.md` | 1 合并段 | §6 AI 调用经济与速率防御（#11 + #12 双 sub-section） |
+| `generator.md` | 4 段 | §11 J 删 X 前 grep callers 矩阵（#4）+ §14.3 Schema rollback cross-ref（#16）+ §16 batch try/catch（#15）+ §17 adapter output check（#17） |
+| `evaluator.md` | 1 合并段 | §13.4 advisory test 三件套（#3 + #7 + #9 三 sub-section） |
+| `deploy-patterns.md` | 2 段 | §1.6.1 SSH 加 env var pm2 reload 4 步（#10）+ §8 prod log-based alerting 合并段（#8 + #14） |
+| `planner-checklists.md` | 2 段 | §"IA refactor / 路由删除批次 outbound 一致性扫描清单"（#1）+ §"spec acceptance 嵌套二级约束 grep 防御"（#6） |
+| `database-patterns.md` | 2 段 | §4.6 withPlatformAdmin vs 循环 tenant set_config（#13）+ §9 Schema migration ROLLBACK 不对称风险（#16 主写） |
+| `checklists/material-symbols-pattern.md` | 1 合并段 | §"Pattern 进化路径 v1 → v2 → v3 总览"（#2 + #5） |
+| **总：13 framework 段** | — | 17 候选 inline-merge 合并后 13 实际段（5 同主题合并段贡献 12→7 段缩减） |
+
+**统计：**
+- 17 候选 sediment inline-merge 物理 13 段（含 5 组同主题合并段）
+- 0 条 chronological-append §N（per BL-071 D7 强制 lock）
+- 0 行业务代码改动（仅 framework/ + framework/archive/ + framework/CHANGELOG.md + framework/proposed-learnings.md）
+- 框架结构变更：0 项（BL-071 D1-D12 已 lock 完整，本批次仅 sediment 不动结构）
+- 引用关系：generator.md §14.3 → database-patterns.md §9（#16 双归属 cross-ref）+ generator.md §17 ↔ database-patterns.md §9（adapter clamp ↔ ROLLBACK 配套）
+
+**架构影响：**
+- 4 P1 prod hotfix 批次（BL-072/073/075/076）+ 1 IA v2（BL-074）经验 inline-merge 到 framework/harness/*.md 对应 topic 段，未来类似批次起 spec 时可直接 cross-ref 相关 § 防御
+- D7 inline-merge 强制规则在 17 候选 全量场景下首次大规模验证：5 同主题合并段成功落地，无任何 chronological-append §N（vs BL-071 v0.9.23 batch 31 sediment 时已示范 3 组合并）
+- v0.9.24 的 sediment 反映了 KOLMatrix prod 运营进入"实战暴露 → 沉淀防御"循环（不同于早期 v0.9.5-v0.9.20 多是 framework 自身演进）
 
 ---
 
