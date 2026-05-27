@@ -1,6 +1,6 @@
 ---
 scope: project-specific
-last-updated: 2026-05-26
+last-updated: 2026-05-27
 ---
 
 # Material Symbols Subset — Maintenance Pattern
@@ -181,3 +181,38 @@ Material Symbols 字体子集是"沉默 fail"的高危区：grep 漏一个 icon 
 - `STRICT_LINK_TARGET`（`tests/unit/link-target-audit.test.ts`）仍 `false` — IA refactor 漏网 URL 扫描，仍在缓冲期。
 
 **升级原则：** 单一维度 STRICT 翻转前，对应防御层 grep + 排除清单都已稳定；Strict 是一次性硬转，不再退回 advisory。下次升级候选 = i18n 消费侧（在 BL-073-F005 v2 key existence 检测稳定一两轮 PR 后）。
+
+## Pattern 进化路径 v1 → v2 → v3 总览（v0.9.24 BL-077-F007 sediment marker）
+
+本 checklist 文件经 BL-072-F005 (Pattern 6 + manifest 维护惯例) + BL-073-F002 (Pattern 7 multi-line span bare) + BL-073-F007 (STRICT_MS_ICONS flip strict) 三批次 incrementally inline-merge 而成。BL-077-F007 整合 source ID 引用 + 进化路径总览 sediment：
+
+| Pattern 版本 | 来源 | 覆盖范围 | 局限 |
+|---|---|---|---|
+| **v1** (Pattern 1-5) | 原始 script + manifest | 同行 `>icon<` / 多行 -A 1 bare / `icon: "name"` / `icon="name"` / manifest 5a-5e | 动态 JSX 三元 / 多行 bare 形态漏 |
+| **v2** (+ Pattern 6) | **v0.9.24 #2 / BL-072 #2** (BL-072-F005) | + `material-symbols-outlined` ±5 行 quoted lowercase JSX 三元 | multi-line span 内 bare on own line 漏 |
+| **v3** (+ Pattern 7) | **v0.9.24 #5 / BL-073 #5** (BL-073-F002) | + `material-symbols-outlined` -A 12 整行单 token (multi-line span 内 bare) | (当前覆盖全部已知形态) |
+
+**穷举 JSX pattern 模板 7 种位置 + 覆盖状态：**
+
+| # | JSX 位置 | 例 | 覆盖来源 | 状态 |
+|---|---|---|---|---|
+| 1 | ✅ 同行 quoted | `<span ...>icon</span>` | Pattern 1 | grep 自动 |
+| 2 | ✅ 多行 bare on -A 1 | bare ligature 紧邻 `material-symbols-outlined` 下一行 | Pattern 2 | grep 自动 |
+| 3 | ✅ JSX 三元 quoted | `{cond ? "icon-a" : "icon-b"}` | Pattern 6 (v0.9.24 #2 / BL-072 #2) | grep 自动 (±5 行 quoted lowercase) |
+| 4 | ✅ multi-line span 内 bare on own line | className 跨 2-3 行后 bare ligature 单独一行 | Pattern 7 (v0.9.24 #5 / BL-073 #5) | grep 自动 (-A 12 整行单 token) |
+| 5 | ⏸️ 对象 value (key ≠ `icon`) | `{ up: "trending_up" }` | manifest 5b | 手工追 manifest |
+| 6 | ⏸️ Return statement | `return "warning";` | manifest 5d | 手工追 manifest |
+| 7 | ⏸️ `??` fallback | `meta?.icon ?? "fallback"` | manifest 5e | 手工追 manifest |
+
+**false-positive 排除清单（与 Pattern 6 / 7 同源单一规则维护，详 §"Pattern 6 兜底 + 排除清单维护"）：** true/false/null/undefined/inherit/currentColor/cyan/purple/neutral/sm/md/lg/xl/left/right/top/bottom/center/start/end/grid/swap/email/body/cta/h2/title/truncate/invisible/normal/platforms/card/table/ai_generated/duplicate/offline + (aria/className/onClick/href/data/id/role/hidden/ref/defer/async/prefetch/type/name/value/checked/selected/required/readonly/autocomplete/autofocus/min/max/step/pattern/action/method/target/rel/download/div/span/button/a/p/img/ul/li/section/children)
+
+新增 JSX prop / Tailwind token / HTML element 命名空间词时同步加入 exclusion；ICON_COUNT 增量应在 +1 ~ +3 范围（远超 = exclusion 太宽松；变负 = 漏排真实 icon 需重新评估）。
+
+**manifest 维护惯例总结（详上方 §"何时必须手工追 manifest" + §"manifest 行格式" + §"IA refactor 改名时同步 manifest path label"）：**
+- 何时手工追：JSX 三元 / 对象 value / return / `??` fallback / 多行数组元素（Pattern 5a-5e）
+- 行格式：`<icon_name>  # <file:LINE>  | <pattern_label>` 三段强制
+- IA refactor 改名时：同 commit 修正 manifest path label
+
+**scope tag 维持 `project-specific`（BL-071 F005 lock）：** 本 checklist 与 KOLMatrix `scripts/regenerate-material-symbols-subset.sh` + `scripts/material-symbols-icons-manifest.txt` + `tests/integration/material-symbols-coverage.test.ts` 紧耦合，project-specific 不抽 framework-generic（未来其他项目 fork 时按其字体子集生成 pipeline 自定）。
+
+**来源：** BL-072-F005 实物落 Pattern 6 + manifest 增量维护惯例（v0.9.24 #2 用户 2026-05-26 ack）+ BL-073-F002 实物落 Pattern 7 multi-line span bare（v0.9.24 #5 用户 2026-05-26 ack）+ BL-073-F007 STRICT_MS_ICONS flip strict。BL-077-F007 整合进化路径总览 + 穷举 JSX pattern 7 种位置覆盖状态 + scope tag lock 显式 sediment marker。
