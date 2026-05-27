@@ -142,6 +142,63 @@ pm2 delete <app> && set -a && source .env.<env> && set +a && pm2 start ecosystem
 
 **来源：** v0.9.7 §1.6 初版（B5 fixing-4 `env_file` 字段）+ v0.9.14 BL-043 实战扩范围（不限 env_file 字段用法，用户 2026-05-06 全 Accept）+ BL-071 F007 D7 inline-merge 合并到本段（原 §1.7 chronological-append 历史已合并入此 §1.6 同主题）。
 
+### §1.6.1 SSH 加 env var pm2 reload --update-env 的成功条件 — 必须先 source shell（v0.9.24 #10 / BL-075 #10）
+
+§1.6 强调"`pm2 reload --update-env` 不重读 `.env` 文件"，但 `--update-env` 标志的真实语义是"从**当前 shell** 重新继承 env"。BL-075-F002 实战补充：**先 `set -a; source .env; set +a` 显式注入到当前 shell，再 `pm2 reload --update-env` 会成功 carry over 新 vars**，比 §1.6 的"pm2 delete + sourced start"更轻量（零 downtime）。
+
+#### 反例（无 source 直接 reload — §1.6 BL-043 模式）
+
+```bash
+# ❌ 失败模式：未 source shell，依赖 daemon 缓存
+vi /opt/kolmatrix/.env.production    # 加新行 AIGCGATEWAY_KOL_COUNTRY_ACTION_ID
+pm2 reload kolmatrix --update-env    # ← 仍只有 daemon 缓存的旧 env
+sudo cat /proc/$(pgrep -f kolmatrix)/environ | tr '\0' '\n' | grep AIGCGATEWAY_KOL_COUNTRY
+# (空，新 var 未生效)
+```
+
+**深层原因**：`--update-env` 从启动 PM2 daemon 的 shell 继承 env；改 `.env` 文件不自动注入到该 shell。
+
+#### 4 步标准流程（BL-075-F002 实战 zero-downtime 模式）
+
+```bash
+# 1. 备份 .env（必须带 batch + feature + timestamp 标识，方便回滚）
+cp /opt/kolmatrix/.env.production \
+   /opt/kolmatrix/.env.production.bl075-f002.$(date +%Y%m%d-%H%M%S)
+
+# 2. 加新行到 .env
+echo "AIGCGATEWAY_KOL_COUNTRY_ACTION_ID=cmpm3pr2e0011bno3f1vd4v9r" \
+  | sudo tee -a /opt/kolmatrix/.env.production
+
+# 3. 关键：显式 source 到当前 shell（set -a 让 source 的所有 var 自动 export）
+set -a; source /opt/kolmatrix/.env.production; set +a
+
+# 4. pm2 reload --update-env 从当前 shell carry over 新 var
+pm2 reload kolmatrix --update-env
+
+# 5. 验证：读 /proc/PID/environ 确认实际进程含新 var
+sudo cat /proc/$(pgrep -f "PM2.*kolmatrix" | head -1)/environ \
+  | tr '\0' '\n' | grep AIGCGATEWAY_KOL_COUNTRY
+# AIGCGATEWAY_KOL_COUNTRY_ACTION_ID=cmpm3pr2e0011bno3f1vd4v9r ✅
+```
+
+#### 与 §1.6 pm2 delete + sourced start 的选用
+
+| 场景 | 推荐 | 理由 |
+|---|---|---|
+| 新增 env var（不改值）| **§1.6.1 reload --update-env 4 步** | 零 downtime，PM2 cluster 滚动重启 |
+| 改 env var 值（如密码轮换） | **§1.6.1 reload --update-env 4 步** | 同上 |
+| 删除 env var | §1.6 pm2 delete + sourced start | 确保 daemon snapshot 完全清空，避免残留 |
+| PM2 daemon 自身行为异常 / pm2 jlist 出错 | §1.6 pm2 delete + sourced start | nuclear option 重建 daemon state |
+| 复杂多 env 文件 / ecosystem.config.js 改动 | §1.6 pm2 delete + sourced start | 显式重新读 ecosystem.config.js |
+
+**默认场景（增 env var）选 §1.6.1 4 步**，零 downtime + 简单 + 验证清晰；**异常 / nuclear 场景**回退 §1.6 pm2 delete + sourced start。
+
+#### 同 protocol 适用
+
+BL-075-F002 (`AIGCGATEWAY_KOL_COUNTRY_ACTION_ID` prod + staging) + BL-068-F001 (`AIGCGATEWAY_REFINE_ACTION_ID`) + BL-069-F001 (`AIGCGATEWAY_BRIEF_PARSE_ACTION_ID`) 都按此流程落地 (详 `.auto-memory/environment.md` aigcgateway Actions 清单)。
+
+**来源：** BL-075-F002 prod + staging deploy 实战（2026-05-26 03:55 UTC，backup `.env.{production,staging}.bl075-f002.20260526-035529`）+ v0.9.24 #10 用户 2026-05-26 ack（done 阶段提出，落 v0.9.24 framework sediment batch）。
+
 ---
 
 ## 2. VPS working tree 卫生 + artifact in-git 强制
@@ -483,6 +540,85 @@ NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) n
 
 ---
 
+## 8. prod 关键流程 log-based alerting（v0.9.24 合并段 — BL-073 #8 + BL-076 #14）
+
+prod 关键 batch / sync / external API call 持续失败时**必须**触发 alerting，否则会复现 BL-076 14 天沉默 outage 模式。本段合并 BL-073 #8（识别 gap）+ BL-076 #14（实战代价证实）两候选，提供 grep pattern + 三件套防御模板。
+
+### 8.1 反例 — BL-076 14 天 prod outage 未告警代价（v0.9.24 #14 / BL-076 #14）
+
+**实战：** BL-076 SSH prod `/var/log/kolmatrix-kol-sync.log` 实测：`discover-import[apify-kol]: numeric field overflow` 自 5/12 起每天 daily-sync fail，**inserted=0 updated=0 持续 14+ 天**，prod 数据同步管道彻底断；全程未触发任何告警 → 1397 KOL 库 stale → 影响所有 `/match` 用户。
+
+**关联识别 gap（v0.9.24 #8 / BL-073 #8）：** BL-073 SSH prod log 实测 `match.emptyState.body` + `weeklyReport.title` MISSING_MESSAGE 已多次出现于 prod log（5/25 17:18 ~ 18:02 UTC 至少 6 次），但**未触发任何告警** → next-intl 默认 production fallback 返 key 字面 + log 但不 throw，CI 跑不到 prod log，prod log 也无监控钩子。BL-072 #4 已识别 gap 未实装，BL-076 实战代价证实。
+
+### 8.2 三件套防御模板（log-based alerting 三层防御）
+
+**(a) Slack webhook on level=WARN/ERROR：**
+
+```typescript
+// scripts/kol-sync-daily.ts 等关键脚本结尾
+const stats = await runSync();
+const slackUrl = process.env.AI_DAILY_REPORT_SLACK_WEBHOOK_URL;
+const level = stats.failed > 0 || stats.errors.length > 0 ? "ERROR" : "INFO";
+
+if (slackUrl && level !== "INFO") {
+  await fetch(slackUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      text: `[${level}] kol-sync-daily: inserted=${stats.inserted} failed=${stats.failed}`,
+      attachments: [{ color: "danger", text: JSON.stringify(stats, null, 2) }],
+    }),
+  });
+}
+console.log(JSON.stringify({ level, stats }));
+```
+
+**(b) GCP Cloud Monitoring log-based alert：** Cloud Logging 配 log-based metric `inserted=0 AND errors>0` 连续 3 天 → 触发 PagerDuty / Slack。
+
+```yaml
+# log-based metric filter
+resource.type="gce_instance"
+logName="projects/<project>/logs/kolmatrix-kol-sync"
+jsonPayload.stats.inserted=0
+jsonPayload.stats.failed>0
+```
+
+**(c) /api/health degraded 信号：** 加 `last_successful_sync` 字段（反查 kpi_daily_snapshot 或 redis 缓存），>48h 视为 degraded。
+
+```typescript
+// src/app/api/health/route.ts
+const lastSync = await getLastSuccessfulSyncFromDB();
+const ageHours = (Date.now() - lastSync.getTime()) / 3_600_000;
+return Response.json({
+  status: ageHours > 48 ? "degraded" : "healthy",
+  git_sha: GIT_SHA,
+  last_successful_sync: lastSync.toISOString(),
+  sync_age_hours: ageHours,
+});
+```
+
+### 8.3 grep pattern（log alerting 抓什么）
+
+| 错误 pattern | 含义 | grep 正则 | 告警等级 |
+|---|---|---|---|
+| `MISSING_MESSAGE` | next-intl i18n key 缺失 → prod 返字面 key 给用户 | `MISSING_MESSAGE` | WARN |
+| `Prisma error` / `numeric field overflow` | DB 写入边界 / schema mismatch | `Prisma\|numeric field overflow\|invalid input syntax` | ERROR |
+| `5xx response` | API endpoint 内部错误 | `status":5\|HTTP/[\d.]+ 5\d\d` | ERROR |
+| `inserted=0 updated=0` | sync 全 fail（per BL-076） | `inserted=0.*updated=0` | ERROR（连续 3 天 PagerDuty） |
+| `429 RPM limit exceeded` | aigcgateway 限速 → LLM call skip | `RPM limit exceeded\|429` | WARN（连续 1 天 → ERROR） |
+
+### 8.4 配套实装项 (建议 BL-078+ follow-up)
+
+本段是 framework 沉淀**模板与原则**，实物落地（prod Slack webhook URL + GCP Cloud Monitoring 配置 + /api/health 加 last_successful_sync 字段 + 关键脚本配 level/stats 落 log）留 BL-078+ 独立 batch 评估。优先级 = (a) Slack webhook 最低 → 1 day；(b) /api/health degraded 信号 → 0.5 day；(c) GCP Cloud Monitoring → 0.5 day。
+
+### 8.5 配套上游沉淀 (caller side)
+
+batch loop 内 per-element try/catch + stats.failed 累加是本节 alerting 的**数据源前提**，详 `framework/harness/generator.md` §16 DB / 外部 API batch 健壮性（v0.9.24 #15 / BL-076 #15）。
+
+来源：BL-073 SSH prod log 实测 MISSING_MESSAGE 多发未告警（v0.9.24 #8）+ BL-076 14 天 prod outage 实战代价（v0.9.24 #14）+ 用户 2026-05-26 / 2026-05-27 ack。同主题合并 §8 单段（识别 gap → 实战代价 → 三件套防御），不开两独立段。
+
+---
+
 ## 来源
 
 - KOLMatrix BI2-F002 两轮重裁决 + Round 2 实测证伪（2026-04-20）
@@ -504,3 +640,4 @@ NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) n
 | 2026-05-01 | §1 扩展 PM2 6.0.14 env_file anti-pattern；§3 完整链 checklist（schema + enrich + SHA 对齐边界）；§4 Visual baseline regen 注意事项 | KOLMatrix B5 7 轮 fixing + MVP-internal-demo-prep 3 轮 fixing 累积 |
 | 2026-05-05 | §5 新 auth-gated endpoint 配套 deploy script（v0.9.12，含 graceful-degrade 模板 + bash 旧 bytecode 重启 deploy run）| KOLMatrix BL-034 F007 deploy-staging.sh 死循环 + bash bytecode 双坑 |
 | 2026-05-06 | §5.1 spec acceptance 改 deploy-script 时同 commit 必须改对应 yml workflow（v0.9.13，含 Planner spec lock checklist + Generator 实装 checklist + Reviewer L2 deploy log warning 抓取强制）| KOLMatrix BL-024-F006 retroactive hotfix（BL-034 F001 root cause 1+ 周后实地核查发现）|
+| 2026-05-27 | §1.6.1 SSH 加 env var pm2 reload --update-env 的成功条件 — 必须先 source shell (v0.9.24 #10 / BL-075 #10)：4 步标准流程 + 与 §1.6 pm2 delete + sourced start 选用矩阵；§8 prod 关键流程 log-based alerting 合并段 (v0.9.24 #8 + #14): BL-076 14 天 outage 反例 + 三件套防御 (Slack webhook + GCP Cloud Monitoring + /api/health degraded) + grep pattern 表 | BL-075-F002 prod deploy + BL-076 14 天 prod outage 实战；用户 2026-05-26 / 27 ack |
