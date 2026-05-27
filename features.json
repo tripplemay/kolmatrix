@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "framework/harness/evaluator.md 新加 §'motion a11y 三件套' (或融入现有 §a11y 验收 checklist topic) 含 3 sub-section",
       "§X.1 opacity-dimming a11y trap (BL-078 #1): 含 BL-078-F005 反例 (parent opacity × text alpha 双重 dimming kills WCAG AA contrast) + 4 重 distinction 模板 (icon scale + color + cell bg + progress fill) + grep 防御 `opacity-[0-9]+` in landing/marketing components",
@@ -22,7 +22,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "framework/harness/ui-fidelity-guardrail.md 新加 §'landing / marketing 视觉 token layer 规范' (融入现 §视觉一致性 topic)",
       "4 类 token 分类清单: typography (font scale / line-height / tracking) + color (bg layer / text layer / accent) + spacing (section-y / container-x / element-y) + motion (duration / ease curves)",
@@ -39,7 +39,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "framework/harness/generator.md 新加 §'现代 CSS 渐进增强 — Native + Fallback + reduced-motion 三层守门' (融入现 §性能 / motion topic)",
       "Native API 优先模板: @supports (animation-timeline: view()) + animation-timeline / scroll() 用法",
@@ -58,7 +58,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "framework/harness/planner-checklists.md 新加 §'Visual polish reference URL 提炼方法论' (融入 §spec 起草 checklist 集合)",
       "3 步法: (1) 解构 - 列 reference URL 5-10 个视觉信号 (2) 筛选 - 哪些信号契合本产品 brand + 哪些冲突 (3) 抽象 - 落 token layer 而非直接 copy css",
@@ -75,7 +75,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "framework/CHANGELOG.md 顶部新增 v0.9.25 段 ≥20 LOC: 含 5 候选 1-line summary (BL-078 #1-#5) + 4 实际段映射 (按文件) + 1 同主题合并标注 (#1+#5 a11y 三件套)",
       "framework/archive/proposed-learnings-archive-v0.9.25.md 新建 ≥200 LOC: 5 条全文 (不省略) + 同主题合并 before/after 标注",
