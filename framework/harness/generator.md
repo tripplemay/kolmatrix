@@ -349,7 +349,22 @@ grep -rln 'import.*"\./<old-component-name>"' tests/integration/*-fidelity.test.
 ```
 来源：BL-070 fix-round 2 #28 把 MatchRefineBar 改 Lazy 后 `f004-bl068-refine-fidelity` 测试断言失败，必须同步改 2 case。
 
-来源：KOLMatrix BL-065-F006 atomic delete commit 实战（3 轮 CI 自修后全绿，CI run 25782189342）+ BL-070-F004/F005/F009 v0.9.23 候选 #17/#18/#19/#28（用户 2026-05-25 ack）扩展子段 F-I inline-merge。
+J. **删 X 前 grep callers 矩阵（v0.9.24 #4 / BL-072 #4 扩展 H）：** §H i18n ns 删除 grep callers 经 BL-072-F006 修 10 处 outbound 404 实战暴露，模式可一般化为「删任何被引用资源前必先 grep 全仓 callers + 同 commit 修」。矩阵收纳已知 X 类型 + grep 模板 + 自动化防御 test，未来 TBD 行待补：
+
+| X 类型 | grep 模板 | 自动化防御 test | 反例 / 实战 |
+|---|---|---|---|
+| **i18n namespace**（删 `messages/*.json` ns 块） | `grep -rln 'useTranslations\|getTranslations' src/ \| xargs grep -l '"<ns>"'` | `tests/unit/i18n-page-side-consumption.test.ts` v2（v0.9.24 #7）扫 t("<key>") 验 messages exist | BL-070-F005 #1 git mv 后老组件仍引用 deprecated `knowledgeBase` ns（v0.9.23 #19 沉淀，§11 H 段） |
+| **路由 outbound**（删 `page.tsx` / route segment） | `grep -rEn "['\"]/(<deleted-route>)" src/ --include='*.tsx' --include='*.ts'` + `grep -rEn 'router\.(push\|replace)\("/(<deleted-route>)'` | `tests/unit/link-target-audit.test.ts`（BL-072-F007）扫 href 字面 → 比对路由树 + IA_REDIRECT_RULES | BL-072-F006 修 10 处 outbound 404（BL-070-F004 删 5 老路由 + middleware 即停 redirect 时漏 grep） |
+| **enum value / API endpoint / DB table** | TBD（按场景定 grep + 类型搜索） | TBD（如 DB column 引用 ts-prune / `grep prisma.<table>` 扫） | 暂无实战，留待未来沉淀 |
+
+**Generator self-check 流程：**
+1. 删前 grep 当前矩阵覆盖类型对应 caller，0 命中才删
+2. 有命中 → 同 commit 修 caller（不允许跨 commit 拆）
+3. 同 commit 补 advisory test 防御未来同类 regression（per BL-072-F007 模式，详 evaluator.md §13.X advisory test 三件套）
+
+来源：BL-072-F006 修 10 处 outbound 404 + v0.9.24 #4 用户 2026-05-26 ack。同主题合并 §11 H（v0.9.23 #19 i18n ns 单维度）+ J（v0.9.24 #4 路由 outbound + 矩阵化）。
+
+来源：KOLMatrix BL-065-F006 atomic delete commit 实战（3 轮 CI 自修后全绿，CI run 25782189342）+ BL-070-F004/F005/F009 v0.9.23 候选 #17/#18/#19/#28（用户 2026-05-25 ack）扩展子段 F-I inline-merge + BL-072-F006 v0.9.24 #4（用户 2026-05-26 ack）矩阵化 J 段。
 
 ---
 
@@ -499,6 +514,133 @@ export async function requestAccess(input: unknown) {
 ```
 
 来源：BL-070 fix-round 1 #23 — landing batch 加 `AccessRequestSchema` 到 actions.ts 触发 Next.js 16 build error，抽到独立 `schema.ts` 解。
+
+### 14.3 Schema migration ROLLBACK 不对称风险 — cross-ref database-patterns（v0.9.24 #16 / BL-076 #16）
+
+扩范围 migration（NUMERIC(M,N) / VARCHAR(N) 增大）顺向无损但 ROLLBACK 可能因 prod 已含越界 row → throw `value out of range`，必须在 ROLLBACK SQL 前置 `UPDATE clamp` step。
+
+**详见 `framework/harness/database-patterns.md` §"Schema migration ROLLBACK 不对称风险"** — 主写含 BL-076-F001 `engagement_rate NUMERIC(5,2)→(7,2)` 反例 + 模板 + 适用边界（NUMERIC/VARCHAR 有尺寸约束 vs Int/Text/Uuid 无）。
+
+Generator 写 ROLLBACK SQL 时 self-check 流程：(1) 顺向是否含尺寸约束类型扩范围；(2) 若是 → 查 prod 实际 value range 是否已越界 ROLLBACK 目标范围；(3) 越界 → ROLLBACK 必加 `UPDATE clamp` 前置 step。
+
+来源：BL-076-F001 实战 + v0.9.24 #16 用户 2026-05-27 ack（双归属：database-patterns 主写 + generator 1 行 cross-ref）。
+
+---
+
+<!-- §16 §17 是 v0.9.24 BL-077-F002 新加段，紧接 §14.3 后；后续 §15 保留原编号以匹配 CHANGELOG v0.9.23 + archive proposed-learnings-archive-v0.9.23.md 6 处跨文件 §15.1 §15.2 引用稳定性 — 段号 ascending 顺序非严格，主题分组优先 -->
+
+## 16. DB / 外部 API batch 健壮性 — per-element try/catch（v0.9.24 #15 / BL-076 #15）
+
+**坑：** `for ... of` 内 `prisma.upsert` / 外部 API call / 文件 IO 默认假设全部成功 → 单元素异常 throw 阻塞整 batch。BL-076-F003 根因：`scripts/kol-sync-daily.ts` import.ts `for raw of raws` loop 无 per-KOL try/catch → 第一个 numeric overflow throw → 整 2567 KOL batch fail（`inserted=0 updated=0 errors=1`），prod 数据同步管道在沉默中断 14 天。
+
+**模板：**
+
+```typescript
+const stats = { success: 0, failed: 0 };
+
+for (const item of items) {
+  try {
+    await prisma.X.upsert({ where: { ... }, create: { ... }, update: { ... } });
+    stats.success += 1;
+  } catch (err) {
+    stats.failed += 1;
+    console.error("[batch] item failed:", item.id, err);
+
+    // forensic：失败明细落 audit_log（嵌 try/catch 防 audit 再 throw recurse）
+    try {
+      await prisma.auditLog.create({
+        data: {
+          action: "X.failed",
+          tenantId: item.tenantId ?? null,
+          payload: {
+            itemId: item.id,
+            itemSummary: { /* 最小可识别字段，避免敏感数据 */ },
+            error: String(err).slice(0, 500),
+          },
+        },
+      });
+    } catch (auditErr) {
+      // swallow — audit 失败不能阻塞主 batch；上层 log monitoring 兜底
+      console.error("[batch] audit failed:", auditErr);
+    }
+  }
+}
+
+return stats; // 上层 caller 据 stats.failed / stats.success 决定 alerting
+```
+
+**关键设计：**
+- `stats.failed` 累加而非 throw — caller 据 stats 决策是否 alert，不是单元素 fail 即全停
+- audit_log 落 forensic 明细 — 后置追溯单条失败原因（v0.9.24 #14 prod alerting 抓 stats.failed > 0 配套）
+- audit 嵌 try/catch — audit 自身失败不能 recurse 阻塞主 batch
+- 错误 message slice(0, 500) — 防超长 stack trace 撑爆 payload column
+
+**适用边界：**
+- ✅ DB write loop（`prisma.upsert` / `prisma.create` 批量）
+- ✅ 外部 API call loop（aigcgateway / Resend / 第三方平台 fetch 批量）
+- ✅ 文件 IO 批量（CSV 行解析 + 落 DB / 图片处理 batch）
+- ❌ 业务 critical 单 transaction（payment / 唯一性 reservation 等 — fail-fast 更安全）
+- ❌ ACID 跨表多 step 操作（事务原子性优先于个体隔离）
+
+**配套 alerting（详 deploy-patterns.md §"prod 关键流程 log-based alerting"）：** stats.failed > 0 时 caller log `level=WARN/ERROR + stats`，触发 Slack webhook + GCP Cloud Monitoring，避免 BL-076 同款 14 天沉默 outage。
+
+来源：BL-076-F003 实战（import.ts 加 per-KOL try/catch + stats.failed + audit forensic）+ v0.9.24 #15 用户 2026-05-27 ack。
+
+---
+
+## 17. adapter output 边界 check 三件套 — clamp + outlier flag + 业务阈值 < DB 上限（v0.9.24 #17 / BL-076 #17）
+
+**坑：** adapter (external API → DB) 数据流默认信任 upstream 数值 → 超出 DB column type 范围即 `numeric field overflow` throw。BL-076-F002 实战：apify-kol adapter 计算 `engagementRate = totalLikes / postsCount / followers * 100`，少量 KOL 因 followers 异常小或 totalLikes 异常大 → rawRate > 99999.99 → `Decimal(7,2)` overflow → 整 batch fail（配合 §16 缺失同时暴露）。
+
+**三件套模板：**
+
+```typescript
+// 三件套：clamp + outlier flag + 业务阈值 < DB 上限
+const BUSINESS_THRESHOLD = 100;     // 业务阈值（百分比合理上限）
+const DB_MAX = 99999.99;            // DB Decimal(7,2) 上限
+// 业务阈值 < DB 上限 — 异常先标 flag 不丢数据，DB 边界仅最后兜底
+
+const rawValue = computeFromExternalAPI(input); // 可能 null / NaN / 超大
+const clampedValue = rawValue == null
+  ? null
+  : Math.min(Math.max(rawValue, 0), DB_MAX);
+
+const isOutlier = rawValue != null && rawValue > BUSINESS_THRESHOLD;
+
+return {
+  field: clampedValue,
+  metadata: {
+    flags: {
+      ...existingFlags,
+      field_outlier: isOutlier,        // 业务异常 flag — 后置 dashboard / audit 关注
+      field_raw_overflow: rawValue != null && rawValue > DB_MAX, // DB 兜底触发 flag
+    },
+  },
+};
+```
+
+**三层关系：**
+
+| 层 | 触发条件 | 用途 |
+|---|---|---|
+| **业务阈值 BUSINESS_THRESHOLD** | rawValue > 业务合理范围（如 100% engagement rate） | 标 `outlier=true` flag，下游 dashboard 过滤 / 人工 audit |
+| **DB 上限 DB_MAX**（必须 >> 业务阈值） | rawValue > DB column type 上限 | clamp 到 DB_MAX 防 overflow throw + 标 `raw_overflow` flag |
+| **null 兜底** | rawValue == null / NaN | 写 null（DB column 允许 null）+ 上游 stats 计 `metadata_missing` |
+
+**关键设计：**
+- **业务阈值 < DB 上限是设计原则** — 异常值先标 flag 不丢数据，DB 边界仅最后兜底（不是业务阈值即 reject）
+- **outlier flag 落 metadata.flags 而非独立 column** — JSON 字段灵活扩展，避免 schema migration 抖动
+- **不 throw / 不 skip 异常 row** — 上游 batch loop（§16）依赖每条都返回 stats.success，flag 后置审查
+
+**适用边界：**
+- ✅ Decimal(M,N) / SmallInt / VARCHAR(N) 有尺寸约束的 DB 列上游 adapter
+- ✅ LLM 返回数值字段（如 `score / weight`）— 模型可能输出超范围或非数字
+- ✅ 用户 input 数值字段（age / count 等）— 业务阈值过滤 + DB 兜底
+- ⚠️ Int / Float / Text 无尺寸约束 type 不需 clamp，但仍建议加 `outlier` flag（业务阈值过滤）
+
+**配套 schema 设计（详 database-patterns.md §"Schema migration ROLLBACK 不对称风险"）：** DB 列尺寸定义时留余量（如 BL-076 把 `engagement_rate` 从 NUMERIC(5,2) 扩到 NUMERIC(7,2)），余量比业务阈值至少大 100x，避免频繁 ALTER。
+
+来源：BL-076-F002 实战（apify-kol adapter Math.min(rawRate, 99999.99) + outlier=rawRate>100 + metadata.flags 落地）+ v0.9.24 #17 用户 2026-05-27 ack。
 
 ---
 
