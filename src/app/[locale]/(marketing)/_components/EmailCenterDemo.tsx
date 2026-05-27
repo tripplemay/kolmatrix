@@ -12,7 +12,7 @@ export async function EmailCenterDemo() {
       bgClassName="bg-surface"
       textClassName="text-on-surface"
       stickyAsset={
-        <div className="overflow-hidden rounded-2xl border border-cyan/20 shadow-[0_12px_48px_rgba(0,229,255,0.15)]">
+        <div className="overflow-hidden rounded-[var(--radius-landing-card)] border border-cyan/22 shadow-[0_18px_56px_color-mix(in_srgb,var(--color-cyan)_22%,transparent)]">
           <Image
             src="/landing/screenshots/match-full.png"
             alt={t("screenshotAlt")}
@@ -24,10 +24,10 @@ export async function EmailCenterDemo() {
       }
       callouts={callouts.map((c, idx) => (
         <div key={idx} data-testid={`landing-demo-callout-${idx}`}>
-          <h3 className="font-geist text-2xl lg:text-3xl font-bold tracking-tight text-white">
+          <h3 className="font-geist text-landing-h2 font-bold leading-landing-tight tracking-landing-tight text-landing-ink">
             {c.title}
           </h3>
-          <p className="mt-4 text-base text-on-surface-variant leading-relaxed max-w-md">
+          <p className="mt-4 text-landing-body-lg leading-landing-relaxed text-landing-ink-muted max-w-md">
             {c.body}
           </p>
         </div>
