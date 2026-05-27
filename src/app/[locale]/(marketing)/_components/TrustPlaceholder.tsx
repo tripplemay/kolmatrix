@@ -23,13 +23,13 @@ export async function TrustPlaceholder() {
       textClassName="text-on-surface-light"
       leftContent={
         <>
-          <div className="font-geist-mono text-[11px] tracking-[0.3em] text-cyan uppercase">
+          <div className="font-geist-mono text-landing-eyebrow tracking-landing-eyebrow text-cyan uppercase">
             {t("intro.label")}
           </div>
-          <h2 className="mt-4 font-geist text-4xl lg:text-5xl font-bold tracking-tight whitespace-pre-line">
+          <h2 className="mt-4 font-geist text-landing-h2 font-bold leading-landing-tight tracking-landing-tight whitespace-pre-line">
             {t("intro.title")}
           </h2>
-          <p className="mt-5 text-base text-on-surface-light-variant max-w-md leading-relaxed">
+          <p className="mt-5 text-landing-body-lg leading-landing-relaxed text-on-surface-light-variant max-w-md">
             {t("intro.subtitle")}
           </p>
         </>
@@ -39,18 +39,20 @@ export async function TrustPlaceholder() {
         <ScrollFadeIn key={key} delayMs={idx * 150}>
           <div
             data-testid={`landing-trust-${key}`}
-            className="rounded-2xl border border-on-surface-light/10 bg-surface-light-container p-8 transition hover:border-cyan/40 hover:shadow-[0_8px_28px_rgba(0,229,255,0.15)]"
+            className="landing-card-light p-8"
           >
-            <span
-              className="material-symbols-outlined text-[32px] text-cyan"
-              aria-hidden="true"
-            >
-              {icon}
+            <span className="landing-icon-halo" style={{ width: "56px", height: "56px" }}>
+              <span
+                className="material-symbols-outlined text-[28px]"
+                aria-hidden="true"
+              >
+                {icon}
+              </span>
             </span>
-            <h3 className="mt-5 font-geist text-lg font-semibold text-on-surface-light">
+            <h3 className="mt-5 font-geist text-landing-h3 font-semibold leading-landing-tight tracking-landing-tight text-on-surface-light">
               {t(`items.${key}.title`)}
             </h3>
-            <p className="mt-3 text-sm text-on-surface-light-variant leading-relaxed">
+            <p className="mt-3 text-landing-body leading-landing-relaxed text-on-surface-light-variant">
               {t(`items.${key}.body`)}
             </p>
           </div>

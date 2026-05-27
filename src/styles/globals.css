@@ -568,6 +568,53 @@
   .landing-card-dark:hover { transform: none; }
 }
 
+/* FAQ smooth-height — progressive enhancement using ::details-content +
+   interpolate-size (Chrome 129+ / Safari TP). Browsers without support
+   fall back to native instant open/close (no break). Reduced-motion
+   users skip the animation via global rule above. */
+@supports (interpolate-size: allow-keywords) {
+  :root {
+    interpolate-size: allow-keywords;
+  }
+  details.landing-faq-item::details-content {
+    height: 0;
+    overflow: hidden;
+    transition:
+      height var(--duration-landing-medium) var(--ease-landing-out),
+      content-visibility var(--duration-landing-medium) allow-discrete;
+  }
+  details.landing-faq-item[open]::details-content {
+    height: auto;
+  }
+}
+
+/* FAQ summary chevron animation (works in all browsers via [open] attr) */
+.landing-faq-item summary .landing-faq-chevron {
+  display: inline-block;
+  transition: transform var(--duration-landing-short) var(--ease-landing-out);
+}
+.landing-faq-item[open] summary .landing-faq-chevron {
+  transform: rotate(45deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-faq-item summary .landing-faq-chevron { transition: none; }
+}
+
+/* SectionTransition — refined gradient seam with subtle mesh blur */
+.landing-section-seam {
+  position: relative;
+  isolation: isolate;
+}
+.landing-section-seam::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 100% at 50% 50%, color-mix(in srgb, var(--color-cyan) 4%, transparent), transparent 60%);
+  pointer-events: none;
+  z-index: -1;
+}
+
 /* Icon halo — subtle cyan glow background for section card icons.
    Used as a wrapper around <span class="material-symbols-outlined"> to lift
    the icon visually without changing icon weight. */
