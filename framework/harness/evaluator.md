@@ -462,3 +462,98 @@ test.describe("Feature X", () => {
 **应用：** spec 起草凡列 "chaos test / edge case 实测" 类 acceptance，必含 staging-only flag + runbook + 单测三组件，避免 Reviewer L2 时发现无入口卡壳。
 
 来源：BL-069 fix-round 1 B2 + v0.9.23 #15（用户 2026-05-18 ack）。
+
+### §13.4 advisory test 三件套模式 — outbound / 消费侧 / 三向闭环（v0.9.24 合并段 #3 + #7 + #9）
+
+测试基建对 outbound / 消费侧 / 三向闭环的 advisory 防御 — IA refactor / 路由删除 / i18n ns 改动 / Material Symbols 加 icon 类批次回归守门标配。三 sub-section 按时间序展示 v1 → v2 → STRICT_MODE 渐进升级路径。
+
+#### §13.4.1 v1 三件套基础（v0.9.24 #3 / BL-072 #3，BL-072-F007 落实物）
+
+3 个 advisory unit test 覆盖 outbound 一致性 / 消费侧 wiring / 三向闭环：
+
+| Test 文件 | 覆盖维度 | 探测 pattern |
+|---|---|---|
+| `tests/unit/link-target-audit.test.ts` | 路由 outbound 链接命中实际路由树 | 扫 `src/` 中 `href="/<path>"` + `router.push("/<path>")` 字面 → 抽 path prefix → 比对路由树 + `IA_REDIRECT_RULES` |
+| `tests/unit/material-symbols-coverage-unit.test.ts` | Material Symbols 三向断言 | src JSX 中 `material-symbols-outlined` ligature ⊆ manifest（git-tracked）⊆ woff2 实际 glyph |
+| `tests/unit/i18n-page-side-consumption.test.ts` v1 | i18n page-side raw English literal sweep | 扫 `page.tsx` + `*Client/*Panel/*Bar` 主组件 JSX text/attr，命中 raw English 即 advisory warning |
+
+**第一版全 advisory（warning 不 fail）**：避免 false-positive 拦截合法 PR（如 brand 词、unicode 模糊匹配 false-hit）。三测试落地后稳定 1-2 周观察 noise rate，再逐维度 flip 见 §13.4.3。
+
+来源：BL-072-F007 实物落 3 advisory test 文件 + v0.9.24 #3 用户 2026-05-26 ack。
+
+#### §13.4.2 v2 升级：key existence 检测（v0.9.24 #7 / BL-073 #7，BL-073-F005 实战）
+
+v1 `i18n-page-side-consumption.test.ts` **仅** grep raw English literal 在 JSX text/attr，**不验** page.tsx 调用 `t("<key>")` 时该 key 在 messages JSON 实际 exist。
+
+**反例（BL-073 issue #4A）：** `match.emptyState.body` 5 locale 全 MISSING 但 page.tsx 调 `t("body")` → next-intl prod fallback 返字面 key 字符串显示给用户，CI/lint/v1 advisory 全过。
+
+**v2 增量探测：**
+
+```typescript
+// tests/unit/i18n-page-side-consumption.test.ts v2 增量
+function extractNamespaceFromFile(filePath: string): string | null {
+  const src = readFileSync(filePath, "utf-8");
+  // useTranslations("<ns>") / getTranslations({ namespace: "<ns>" })
+  const m = src.match(/useTranslations\("([^"]+)"\)|getTranslations\(\s*\{\s*namespace:\s*"([^"]+)"/);
+  return m ? (m[1] ?? m[2]) : null;
+}
+
+function extractTCalls(filePath: string): string[] {
+  const src = readFileSync(filePath, "utf-8");
+  // t("<key>") - greedy 抓所有 t("...") 调用
+  const matches = [...src.matchAll(/\bt\("([^"]+)"\)/g)];
+  return matches.map((m) => m[1]);
+}
+
+// 主循环：每个 page.tsx + 主组件
+for (const file of glob.sync("src/app/**/page.tsx")) {
+  const ns = extractNamespaceFromFile(file);
+  if (!ns) continue;
+  const keys = extractTCalls(file);
+  for (const key of keys) {
+    const fullKey = `${ns}.${key}`;
+    if (!hasKeyInMessages(enJson, fullKey)) {
+      results.push({ file, fullKey, severity: STRICT_I18N ? "fail" : "warn" });
+    }
+  }
+}
+```
+
+**关键设计：**
+- 扫 `page.tsx` + `*Client/*Panel/*Bar` 主组件（其他低风险组件可豁免）
+- namespace 解析支持 `useTranslations` 和 `getTranslations({ namespace })` 两种形态
+- 拼 `${ns}.${key}` 后查 `messages/en.json` 是否 exist
+- 第一版 advisory（`STRICT_I18N=false`），稳定后 flip strict（详 §13.4.3）
+
+来源：BL-073-F005 实物落 i18n-page-side-consumption.test.ts v2 + v0.9.24 #7 用户 2026-05-26 ack。
+
+#### §13.4.3 STRICT_MODE 渐进升级路径 — advisory → strict 渐进 flip（v0.9.24 #9 / BL-073 #9，BL-073-F007 实战）
+
+**模式核心：** 三件套首版全 advisory（`STRICT_MODE=false`，warning 不 fail）避免 false-positive 拦合法 PR。**渐进 flip 路径**：稳定 1-2 周 + 0 false-positive 漂移后逐维度 flip strict。
+
+**当前维度状态（BL-073-F007 实战）：**
+
+| Strict 维度 flag | 当前状态 | 触发 flip 条件 | 拦未追例 |
+|---|---|---|---|
+| `STRICT_MS_ICONS=true` | ✅ 已 strict | Material Symbols subset script + manifest 防御稳定 1 周（BL-072-F005 后） | CI fail 拦未追 manifest 的 icon ligature |
+| `STRICT_I18N=false` | ⏸️ 仍 advisory | v2 key existence 实战稳定 1-2 周 + i18n ns refactor 批次频次降低 | 未来 flip 拦未拼齐 5 locale 的 key |
+| `STRICT_LINK_TARGET=false` | ⏸️ 仍 advisory | IA refactor / 路由删除批次频次降低 + IA_REDIRECT_RULES 稳定 | 未来 flip 拦 href 指向不存在路由 |
+
+**Flip 标准模板（每次 flip 1 个维度）：**
+
+1. **CHANGELOG marker：** `vX.Y.Z (YYYY-MM-DD): STRICT_<DIM>=true 启用 — 拦未追 <X> 类问题`
+2. **planner-checklists.md 强制要求：** 加"未来 X 类 feature 必须 Y"行（如"加新 ligature 必更 manifest + 重跑 subset"）
+3. **spec acceptance 模板更新：** 相关 feature 起草自动列 `STRICT_<DIM>=true → CI 必绿`
+4. **观察 1 周 noise rate：** flip 后 CI 红率 > 5% → 暂退回 advisory，先修 false-positive
+
+**flag 拆分原因：** 避免单 `STRICT_MODE=true` 一刀切（不同维度成熟度不同），按维度独立 flag 允许"Material Symbols 已 strict + i18n + link-target 仍 advisory"混合状态。
+
+来源：BL-073-F007 实物落 STRICT_MS_ICONS flip + v0.9.24 #9 用户 2026-05-26 ack。
+
+#### 配套 (advisory test 三件套外延)：
+
+- spec acceptance 起草端：详 `framework/harness/planner-checklists.md` §"IA refactor / 路由删除批次 outbound 一致性扫描清单"（v0.9.24 #1）
+- 路由删除 self-check：详 `framework/harness/generator.md` §11 J「删 X 前 grep callers 矩阵」（v0.9.24 #4 扩展 H i18n ns）
+
+**合并段来源（per D7 强制合并 3 同主题候选）：** BL-072-F007 v1 三件套 + BL-073-F005 v2 key existence + BL-073-F007 STRICT_MODE 渐进 = v0.9.24 #3 + #7 + #9 三 sub-section 合并入 §13.4，避免开 §14/§15/§16 三独立段。
+
