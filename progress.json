@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-080-landing-illustration-mockups — BL-078 视觉精修 v2: AI 生成 ~8 张 illustration 替代真截图. 6 features F001-F006 (~10h Generator + 0.5 day Reviewer + 用户 AI gen 0.5-1 day critical path). 5/27 用户反馈 BL-078 done 后 '产品截图视觉冲击力不够' → 极重度方案 AI illustration 替代真截图. A1 4 子决策已 lock (极重度 / AI gen / 全量 8 张 / Generator prompt template). 不变量 BL-078 lock 延续: 不动结构/文案/业务路径 + LCP/CLS perf 守门 + brand consistency. 关联 docs/specs/BL-080-landing-illustration-mockups-spec.md + BL-078 baseline + Linear/Plausible 风延续.",
   "total_features": 6,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
   "current_sprint": "BL-080-landing-illustration-mockups",
-  "last_updated": "2026-05-28T00:45+0800",
+  "last_updated": "2026-05-28T00:50+0800",
   "reference_docs": [
     "docs/specs/BL-080-landing-illustration-mockups-spec.md",
     "docs/specs/BL-080-illustration-prompts.md",
@@ -47,7 +47,7 @@
   ],
   "generator_handoff": null,
   "session_notes": {
-    "Kimi_planner": "[2026-05-28 00:45 BJT Planner Kimi BL-080 planning done. 用户 5/27 lock A 立即起. BL-078 视觉精修 v2: 极重度方案 AI illustration 替代真截图. 6 features ~10h Generator + 用户 AI gen 0.5-1 day critical path. F001 Generator 出 8 detailed AI prompts (2h) → F002 用户跑 DALL-E/MJ/SD 生成 PNG → F003 Generator 集成 4 components + fallback 守门 (3h) → F004 next/image 优化 (1.5h) → F005 baseline + Lighthouse + a11y (1.5h) → F006 Codex Reviewer (1.5h). BL-078 不变量延续: 不动结构/文案/业务路径 + LCP/CLS perf 守门 + brand consistency (navy + cyan/purple).]",
+    "Kimi_planner": "[2026-05-28 00:50 BJT Planner Kimi BL-080 F001 PLANNER PREEMPT done. 用户 5/28 主动询问 'prompts 在哪里' + 'continue', Planner 越界产出 docs/specs/BL-080-illustration-prompts.md (8 prompts × 7 sections, ≥250 LOC). 抽 globals.css 实际 brand hex (cyan #00E5FF / cyan-fixed #9cf0ff / purple #9D50FF / purple-fixed #c8a3ff / canvas #080f1c / canvas-elevated #141d31 / surface-low #131b2e / surface-bright #31394d / ink #ebeef5 / ink-muted #b9c1ce). 8 prompts: Hero (1920x1200 16:10) / Features Brief AI / Match / Reach / Insight / CRM (各 1200x900 4:3) / EmailCenterDemo (1600x900 16:9) / BeforeAfter pair (1600x900 16:9). 每 prompt 含 Subject / Style / Brand colors / Composition / Mood / Avoid / Output spec 7 sections. 全局 Style Guard + Production Checklist + Iteration Tips (MJ/SD/DALL-E 各 tool 调优). 工时估 ~2-2.5h AI gen + 0.5h 挑选 + 命名 + 压缩 + 上传 = 半天 critical path. F002 用户启动等待 illustrations 就绪通知 → F003 Generator 集成 (3h) → F004 next/image (1.5h) → F005 baseline (1.5h) → F006 Codex (1.5h). 边界破例已在 features.json F001 preempt_reason 字段留 audit trail.]",
     "Kimi_generator": null,
     "Reviewer": null,
     "johnsong_planner": null,
