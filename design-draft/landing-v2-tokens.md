@@ -42,8 +42,8 @@
 | `--color-landing-canvas` | oklch(14.5% 0.022 265) | ~#080f1c | 主背景（比 navy-base 略 deeper + cooler） |
 | `--color-landing-canvas-elevated` | oklch(18.5% 0.025 264) | ~#141d31 | section sectional 背景 |
 | `--color-landing-ink` | oklch(94% 0.012 240) | ~#ebeef5 | 主文字（略冷 off-white，Linear 风） |
-| `--color-landing-ink-muted` | oklch(70% 0.018 240) | ~#a4adbb | 正文 muted |
-| `--color-landing-ink-subtle` | oklch(52% 0.020 240) | ~#6e7891 | eyebrow / footer / 微 meta |
+| `--color-landing-ink-muted` | oklch(78% 0.018 240) | ~#b9c1ce | 正文 muted（F005 a11y fix：70%→78% 守 /70 opacity 路径 4.5:1）|
+| `--color-landing-ink-subtle` | oklch(60% 0.020 240) | ~#7d8898 | eyebrow / footer / 微 meta（F005 a11y fix：52%→60%）|
 
 **复用规则：** brand cyan (`--color-cyan`) / purple (`--color-purple`) / 中性 navy 全保留；landing-canvas 仅在 hero / FAQ / FooterCTA 等 dark sections 优先用，light sections 继续用 `--color-surface-light`。
 

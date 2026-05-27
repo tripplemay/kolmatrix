@@ -111,13 +111,18 @@
      - canvas: deeper, cooler than --color-navy-base (Linear's near-black bg)
      - canvas-elevated: subtle sectional contrast above canvas
      - ink: slightly cool off-white for sophistication (vs pure white)
-     - ink-muted: 70% L for paragraph body
-     - ink-subtle: 52% L for eyebrows / footers / micro-meta */
+     - ink-muted: 78% L for paragraph body — bumped from 70% after F005
+       Lighthouse a11y audit flagged WCAG AA contrast failures in opacity-
+       blended spots (BeforeAfter `/70` strikethrough; StickyParallax
+       inactive callout `opacity-40`). 78% L beats the prior on-surface-
+       variant ~75% L baseline, restoring ≥4.5:1 contrast in /70 paths.
+     - ink-subtle: 60% L (bumped from 52%) for eyebrows / footers — keeps
+       hierarchy while satisfying contrast on dark surfaces. */
   --color-landing-canvas: oklch(14.5% 0.022 265);
   --color-landing-canvas-elevated: oklch(18.5% 0.025 264);
   --color-landing-ink: oklch(94% 0.012 240);
-  --color-landing-ink-muted: oklch(70% 0.018 240);
-  --color-landing-ink-subtle: oklch(52% 0.020 240);
+  --color-landing-ink-muted: oklch(78% 0.018 240);
+  --color-landing-ink-subtle: oklch(60% 0.020 240);
 
   /* Spacing rhythm — vertical / horizontal section + sub-element levels */
   --spacing-landing-section-y: clamp(5rem, 9vw, 9rem);
