@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "framework/harness/ai-action-contract.md 新加 §X AI 调用经济与速率防御 (v0.9.24) 合并段, 含 §X.1 cost-cap 估算 vs 实际 (BL-075 #11) + §X.2 makeLlmRateGate (BL-075 #12) 双 sub-section",
       "X.1 含: AI_DAILY_COST_USD_PER_TENANT_MAX 默认 count×$0.01 5-10x 高估 + Workaround `AI_DAILY_COST_USD_PER_TENANT_MAX=500 nohup` + 实装方向 (sum payload.costUsd)",
@@ -21,7 +21,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "F002a §'删 X 前 grep callers' 矩阵扩展 (BL-072 #4): 含 i18n ns (v0.9.23 #19) + 路由 outbound (v0.9.24 #4) 至少 2 行 + link-target-audit.test.ts 自动化防御 column",
       "F002b §'DB / 外部 API batch 健壮性 — per-element try/catch' 模板 (BL-076 #15): 含完整 ts code block (try upsert / catch stats.failed++ / audit_log + 适用边界 (DB write / 外部 API / 文件 IO) + 反面 (业务 critical transaction fail-fast)",
@@ -38,7 +38,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "framework/harness/evaluator.md §13.X (融入现 §13 测试设计 topic) 合并段含 3 sub-section: v1 三件套基础 (BL-072 #3) + v2 key existence 升级 (BL-073 #7) + STRICT_MODE 渐进 flip (BL-073 #9)",
       "v1 sub: link-target-audit.test.ts + material-symbols-coverage-unit.test.ts + i18n-page-side-consumption.test.ts v1 (raw English grep)",
@@ -55,7 +55,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "F004a §'prod 关键流程 log-based alerting' 合并段 (BL-073 #8 + BL-076 #14): 含 BL-076 14 天 outage 反例 + 三件套防御 (Slack webhook on WARN/ERROR + GCP Cloud Monitoring + /api/health last_successful_sync) + grep pattern (MISSING_MESSAGE / Prisma / 5xx / inserted=0)",
       "F004b §'SSH 加 env var pm2 reload 4 步流程' 独立段 (BL-075 #10): 含 BL-075-F002 反例 (pm2 reload --update-env 不重读 env_file) + 4 步流程 (备份 / 加 .env / set -a source / pm2 reload --update-env) + 验证命令 (tr 0 n < /proc/$PID/environ | grep)",
@@ -70,7 +70,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "F005a §'IA refactor / 路由删除批次 outbound 一致性扫描清单' (BL-072 #1): 含 4 触发 batch 类型 (IA refactor / 路由删除 / 视觉宽度 / i18n namespace) + 4 维度 spec acceptance 模板 (visual / i18n 消费侧 / Material Symbols / outbound 链接) + BL-070 反例",
       "F005b §'spec acceptance 嵌套二级约束 grep 防御' (BL-073 #6): 含 BL-072-F001 漏检反例 + 三类 grep 模板 (max-w / 嵌套 useTranslations / CSS variant 嵌套) + Acceptance 行模板",
@@ -85,7 +85,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "F006a §'跨 tenant 平台级聚合 — withPlatformAdmin vs 循环 tenant set_config' (BL-075 #13): 含 BL-075-F006 反例 (kol_coverage 0 行) + 两模式 (单 query withPlatformAdmin 限 policy 含 platform_admin 旁路 + 循环 tenant set_config) + Generator self-check (grep pg_policies qual)",
       "F006b §'Schema migration ROLLBACK 不对称风险' (BL-076 #16, 主写, 扩展 BL-070 #22): 含 BL-076-F001 反例 (Decimal(7,2)→(5,2) rollback 因 prod 15 行 > 999.99 fail) + 模板 (UPDATE clamp + ALTER) + 适用边界 (NUMERIC(M,N) / VARCHAR(N) 有尺寸约束; Int/Text 无)",
@@ -101,7 +101,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "framework/harness/checklists/material-symbols-pattern.md 合并段含 Pattern v1→v2 (BL-072 #2, +Pattern 6 quoted JSX 三元) →v3 (BL-073 #5, +Pattern 7 multi-line span bare) 进化表",
       "穷举 JSX pattern 模板 7 种位置 + 覆盖状态 (1-4 已覆盖, 5-7 留 manifest)",
@@ -119,7 +119,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "framework/CHANGELOG.md 顶部新增 v0.9.24 段 ≥40 LOC: 含 17 条 1-line summary (按来源 BL-072/073/075/076 分组) + 实际写入位置 (按文件分组, 5 同主题合并段标注) + 实际段数统计 (17 候选 → 13 实际段) + '0 chronological-append §N' 验证",
       "framework/archive/proposed-learnings-archive-v0.9.24.md 新建 ≥800 LOC: 17 条全文 (不省略) + 5 合并段 'before/after 合并表述' 标注",

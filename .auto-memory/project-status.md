@@ -4,13 +4,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-077-v0.9.24-framework-sediment BUILDING (0/9, fix_rounds=0) — 17 候选 inline-merge framework
-- A0+A1 完成 5/27: A 全做 + Reviewer L1+L2 抽样阅读
-- 17 候选来源: BL-072 done 4 + BL-073 done 5 + BL-075 done 4 + BL-076 done 4 (全 user-acked)
-- 5 同主题合并段: #8+#14 alerting / #3+#7+#9 advisory test v1→v2→STRICT / #11+#12 AI cost+rate / #2+#5 Pattern v1→v2→v3 / #16 Schema rollback 双归属 (database 主 + generator 引用)
-- 9 features F001-F009 ≈ 16h ≈ 2 day Generator + 0.5 day Reviewer
-- F001-F007 inline-merge 7 files (ai-action-contract / generator / evaluator / deploy-patterns / planner-checklists / database-patterns / checklists/material-symbols-pattern) / F008 CHANGELOG+archive / F009 Reviewer
-- 类 BL-071 模式 (v0.9.23 batch) 但仅 inline-merge 无结构变更; 0 业务代码改动
+## 🚧 BL-077-v0.9.24-framework-sediment VERIFYING (8/9, fix_rounds=0) — 17 候选 inline-merge framework Generator done
+- Generator Kimi 5/27 ~5h 单 sit 完成 F001-F008 (vs spec 估 2 day, 因 17 候选目标 + 5 合并段 spec 锁完 + framework 段熟悉)
+- F001 7adad20 ai-action-contract §6 / F002 2646c09 generator §11 J §14.3 §16 §17 / F003 342b4e9 evaluator §13.4 / F004 029de6d deploy-patterns §1.6.1 §8 / F005 1ee5146 planner-checklists 2 段 / F006 215955c database-patterns §4.6 §9 / F007 8e70f8e material-symbols / F008 55ecc31 CHANGELOG + archive 817 LOC + 清 17 entries
+- L1 lint 0 error / 3 warning baseline 一致, tsc PASS, 17 source ID grep 全 ≥1 命中 framework/harness/*.md
+- 0 业务代码改动, framework 文档批次无 staging deploy 需求 (per generator.md §豁免条款)
+- F009 留 Reviewer codex L1 自动化 6 项 + L2 抽样 5 段阅读 + signoff doc
 ## ✅ BL-076-apify-numeric-overflow DONE (5/5, fix_rounds=2) — numeric overflow hotfix 终签完成
 - Codex Reviewer 终签 PASS：fix-round 2 口径下，staging `AI_DAILY_COST_USD_PER_TENANT_MAX=500 npx tsx scripts/kol-sync-daily.ts --enrichment-limit=10` 结果 `discover=2567 inserted=0 updated=1859 failed=0 errors=0 level=INFO`
 - 该结果满足锁定后的 F005：`(inserted + updated) > 0`、`failed=0`、无 `numeric field overflow`
@@ -61,7 +60,7 @@ type: project
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 3. **BL-070 post-launch ops:** 24h 后跑 `ssh tripplezhou@34.180.93.185 'bash /opt/kolmatrix/scripts/bl070-prod-audit.sh'` + 邀 ≥5 marketer dogfood; 全过则 signoff §4 #9/#10 DEFERRED→PASS
 4. prod 实测验证 5/27 BL-073/074/075 fix 用户体验是否符合预期 (5 路由 IA / Material Symbols / i18n / filter UX / kol_coverage)
-## 角色 / Backlog (BL-077 building 中, BL-078 排队)
+## 角色 / Backlog (BL-077 verifying 中, BL-078 排队)
 - ★ **BL-078 landing 视觉精修 (5/27 plan v2 ack)** — 不动结构/文案/业务路径, 仅 typography+color+spacing+motion+精致度. ~1.5-2 day. Phase 1 D1-D3 待 lock (美感方向 / 参考案例 / 视觉技术栈). 依赖 BL-077 done.
 - Phase 5：个性化学习 / AI 学到偏好 / Brief 模板库 / comparative query / skip-replace 写 DB
 - 真客户 onboarding 准备：db:seed 验证 + tenant cleanup + 监控仪表板
