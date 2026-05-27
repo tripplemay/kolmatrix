@@ -391,3 +391,137 @@
 @media (prefers-reduced-motion: reduce) {
   .cta-glow-pulse { animation: none; box-shadow: 0 0 24px var(--glow-cyan); }
 }
+
+/* ============================================================
+   BL-078-F002 — Landing v2 view transitions + Hero motion + CTA refinement
+   (Linear-style refinement; Native CSS @view-transition + animation-timeline;
+   IntersectionObserver fallback for Firefox via ScrollFadeIn component.)
+   ============================================================ */
+
+/* Cross-document view transitions opt-in (Chrome 126+ / Safari 18+).
+   Firefox + 旧 Safari (< 18): rule ignored → standard navigation, no break. */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--duration-landing-medium);
+  animation-timing-function: var(--ease-landing-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* Hero mesh gradient — multi-blob radial stack on landing canvas base */
+.landing-mesh-hero {
+  background:
+    radial-gradient(ellipse 90% 65% at 18% 8%, oklch(62% 0.20 220 / 0.30), transparent 55%),
+    radial-gradient(ellipse 55% 45% at 82% 78%, oklch(58% 0.22 295 / 0.28), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 50% 100%, oklch(55% 0.16 240 / 0.18), transparent 70%),
+    radial-gradient(ellipse 110% 70% at 50% 50%, oklch(50% 0.10 235 / 0.10), transparent 75%),
+    linear-gradient(
+      180deg,
+      var(--color-landing-canvas) 0%,
+      var(--color-navy-deep) 50%,
+      var(--color-landing-canvas) 100%
+    );
+}
+
+/* Hero entrance + scroll-driven motion. Wrapped in @supports so Firefox / 旧
+   Safari simply render the static end-state (visible) — fallback graceful. */
+@keyframes landing-hero-fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes landing-hero-video-scale {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .landing-hero-fade-in {
+      animation: landing-hero-fade-in linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 35%;
+    }
+    .landing-hero-video-scale {
+      animation: landing-hero-video-scale linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 80%;
+    }
+  }
+}
+
+/* CTA — Linear-style refined: static glow + rich hover lift. Replaces the
+   continuous pulse in Hero (FooterCTA still uses cta-glow-pulse until F004). */
+.landing-cta-primary {
+  position: relative;
+  background: linear-gradient(135deg, var(--color-cyan) 0%, var(--color-cyan-fixed-dim) 100%);
+  color: var(--color-on-primary);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-cyan) 40%, transparent),
+    0 8px 28px color-mix(in srgb, var(--color-cyan) 32%, transparent),
+    0 0 22px color-mix(in srgb, var(--color-cyan) 48%, transparent);
+  transition:
+    transform var(--duration-landing-short) var(--ease-landing-out),
+    box-shadow var(--duration-landing-medium) var(--ease-landing-out);
+}
+.landing-cta-primary:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow:
+    0 0 0 1px var(--color-cyan),
+    0 12px 36px color-mix(in srgb, var(--color-cyan) 48%, transparent),
+    0 0 34px color-mix(in srgb, var(--color-cyan) 68%, transparent);
+}
+.landing-cta-primary:focus-visible {
+  outline: 2px solid var(--color-cyan);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-cta-primary { transition: none; }
+  .landing-cta-primary:hover { transform: none; }
+}
+
+/* Secondary outline CTA — visually paired with primary; subtle hover */
+.landing-cta-secondary {
+  background: color-mix(in srgb, var(--color-landing-canvas) 50%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--color-cyan) 38%, transparent);
+  color: var(--color-cyan);
+  transition:
+    transform var(--duration-landing-short) var(--ease-landing-out),
+    background-color var(--duration-landing-short) var(--ease-landing-out),
+    border-color var(--duration-landing-short) var(--ease-landing-out);
+}
+.landing-cta-secondary:hover {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--color-cyan) 12%, transparent);
+  border-color: var(--color-cyan);
+}
+.landing-cta-secondary:focus-visible {
+  outline: 2px solid var(--color-cyan);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-cta-secondary { transition: none; }
+  .landing-cta-secondary:hover { transform: none; }
+}
+
+/* TopNav glass — Linear-style refined backdrop (blur + saturate + subtle
+   hairline border via color-mix). */
+.landing-topnav-glass {
+  background: color-mix(in srgb, var(--color-landing-canvas) 65%, transparent);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-cyan) 10%, transparent);
+}
