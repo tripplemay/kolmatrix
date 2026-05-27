@@ -75,7 +75,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "触发 GitHub Actions update-visual-baselines.yml workflow: 4 viewport (Desktop 1920 / Tablet 768 / Mobile 375 / Wide 2560) × 5 locale spot check × 11 components ≈ 220 visual snap 入 git",
       "Lighthouse Desktop logged-out 实测 6 项门槛全 PASS: perf ≥85 / LCP <2.5s / CLS <0.05 / TBT <200ms / SEO ≥90 / a11y ≥90",

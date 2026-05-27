@@ -1,11 +1,11 @@
 {
-  "status": "fixing",
+  "status": "reverifying",
   "user_goal": "BL-078-landing-visual-polish — 落地页视觉精修 (不动结构/文案/业务路径). 6 features F001-F006 (~17h ≈ 2 day Generator + 0.5 day Reviewer). 用户 5/27 plan v2 ack + D1-D3 全 lock: D1 现代极简 (Linear 主 + Plausible 辅) / D2 Planner 推荐参考 / D3 全栈现代化 (view transitions + scroll-driven + IntersectionObserver fallback). 11 components 文件保留, sections 顺序不动, 文案不动, 业务路径不动. 保 BL-070 #29+#30 LCP skeleton 像素镜像 + perf ≥85 / LCP <2.5s / CLS <0.05 / TBT <200ms. 关联 docs/specs/BL-078-landing-visual-polish-spec.md @ 本 commit.",
   "total_features": 6,
-  "completed_features": 4,
-  "fix_rounds": 0,
+  "completed_features": 5,
+  "fix_rounds": 1,
   "current_sprint": "BL-078-landing-visual-polish",
-  "last_updated": "2026-05-27T23:05+0800",
+  "last_updated": "2026-05-27T23:15+0800",
   "reference_docs": [
     "docs/specs/BL-078-landing-visual-polish-spec.md",
     "src/app/[locale]/page.tsx",
@@ -37,17 +37,23 @@
     "framework_reviewed": true
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "round": 1,
-    "outcome": "fail",
-    "summary": "BL-078 passes perf, CTA path, reduced-motion, locale overflow, and browser fallback checks, but fails the locked contrast acceptance. Lighthouse `/zh` shows accessibility 0.96 overall yet `color-contrast` score 0 with 13 flagged elements, including non-decorative landing copy in BeforeAfter, Features, and Demo sections.",
-    "report": "docs/test-reports/BL-078-verifying-2026-05-27.md"
-  },
+  "evaluator_feedback": null,
+  "fix_rounds_history": [
+    {
+      "round": 1,
+      "outcome": "fail",
+      "summary": "BL-078 passes perf, CTA path, reduced-motion, locale overflow, and browser fallback checks, but fails the locked contrast acceptance. Lighthouse `/zh` shows accessibility 0.96 overall yet `color-contrast` score 0 with 13 flagged elements, including non-decorative landing copy in BeforeAfter, Features, and Demo sections.",
+      "report": "docs/test-reports/BL-078-verifying-2026-05-27.md",
+      "generator_fix_commits": ["7dfb5b9", "b85d34a"],
+      "generator_fix_result": "color-contrast 0 → 1, 13 elements → 0, a11y 0.96 → 1.0 verified on staging /zh @ b85d34a Lighthouse Desktop logged-out"
+    }
+  ],
   "generator_handoff": null,
   "session_notes": {
     "Kimi_planner": "[2026-05-27 16:30 BJT Planner Kimi BL-078 planning done. 用户 5/27 plan v2 ack (yes) + D1-D3 全 lock: D1 现代极简 / D2 Linear 主 + Plausible 辅 / D3 全栈现代化 view transitions + scroll-driven + IntersectionObserver fallback. 6 features F001-F006 ~17h. 不动 11 components 结构 / sections 顺序 / 文案 / 业务路径. 保 BL-070 LCP skeleton 像素镜像 + perf 标准. BL-077 done 后 (tag bl077-done @ 0fc8abf) 立即 spec phase 进入. 类 BL-074 IA v2 模式 (无结构变更, 仅 nav nav-config 改 → 现仅 visual styling 改).]",
     "Kimi_generator": "[2026-05-27 22:35 BJT Generator Kimi BL-078 F001-F005 完成. 6 commits 推 main: b24b736 F001 (token + design-draft 110 LOC) / fc30524 F002 (Hero+TopNav + view transitions + mesh gradient + landing-cta-primary/secondary) / 7f291e2 F003a (PainPoints+Features + landing-card-light + icon-halo) / 6493d29 F003b (BeforeAfter+EmailCenterDemo) / 1c8cdd0 F004 (Trust+FAQ+FooterCTA+SectionTransition + FAQ smooth-height via interpolate-size) / 384531e F005-fix (a11y ink-muted 70→78% L). update-visual-baselines.yml 跑 2 次 (df5585b + 待 fix-round). staging deploy 2 次. **Lighthouse Desktop logged-out staging /zh (df5585b 实测):** perf 0.98 ✓ / a11y 0.96 ✓ / LCP 550ms ✓ / CLS 0 ✓ / TBT 0ms ✓ / SEO 0.54 ✗ (staging noindex+robots disallow+canonical 缺失, 全部 staging-only intentional, prod 不受影响). a11y 0.96 仍含 color-contrast=0 (14 elements flagged) — 主因 StickyParallax opacity-40 inactive callouts 视觉机制 (pre-existing, decorative) + BeforeAfter '/70 line-through' (我提的 ink-muted 70→78% bump 应 fix /70 路径). **Reviewer L2 待执行:** Lighthouse 复跑 (验 a11y >0.96+其它 locale) / a11y keyboard nav + contrast 手动 / 5 locale text overflow ja+ko / Browser matrix Chrome/Safari/Firefox (含 view-transition fallback) / prefers-reduced-motion / Linear+Plausible 精神落地主观. **重要 caveat:** StickyParallax opacity-40 inactive callouts contrast 失败属 pre-existing 视觉机制 (decorative parallax focus), 不在 BL-078 scope; Reviewer 评估是否新批次跟进. 0 业务代码改动. 11 components 数量/文件名/data-testid 全保留 (E2E 链路不破). CTA href /request-access + /request-access?demo=1 不动. i18n key 0 改. L1 PASS: lint 0 errors / 3 baseline warnings 不变 / tsc clean / npm test 189 files 1375 tests PASS.]",
     "Reviewer": "[2026-05-27 23:05 BJT Codex Reviewer BL-078 verifying FAIL. L1: lint 0 errors / 3 warnings, tsc PASS, 11 landing component files still present, no new i18n keys. Staging landing Playwright passed anonymous root/locale/CTA checks (7 passed). Reduced-motion/browser matrix passed in Chromium, WebKit, Firefox for zh/en/ja/ko/es with no horizontal overflow and CTA hrefs intact. Lighthouse `/zh` perf also passed (performance 0.98, LCP 617ms, CLS 0, TBT 0), but accessibility contrast fails: color-contrast score 0 with 13 flagged elements, including non-decorative copy such as '凭经验拍脑袋，准度 50%' / 'AI 多模态推荐，附契合度分' / '六大模块' / demo body text. This violates F005 WCAG AA contrast and F006 a11y contrast sampling. Status -> fixing; F005 reverted to pending. Report: docs/test-reports/BL-078-verifying-2026-05-27.md]",
+    "Kimi_generator_fix_round_1": "[2026-05-27 23:15 BJT Generator Kimi BL-078 F005 fix-round 1 完成 → reverifying. 2 commits: 7dfb5b9 (新 token --color-landing-cyan-deep oklch(45% 0.10 215) for light-theme accent; Features/Trust eyebrow text-cyan → text-landing-cyan-deep; BeforeAfter inactive row opacity-50 删除, 改 icon scale+color+\"after\" cell color 4 重 distinction; StickyParallax inactive callouts opacity-40 → opacity-70) + b85d34a (StickyParallax 数字 index text-cyan/80 → text-cyan drop 80% alpha). update-visual-baselines.yml + deploy-staging.yml 各跑 2 次 → staging @ b85d34a. **Lighthouse Desktop logged-out staging /zh 实测:** perf 0.98 ✓ / a11y 1.0 ✓ (perfect, 0.96 → 1.0) / LCP 630ms ✓ / CLS 0 ✓ / TBT 0ms ✓ / color-contrast score 1 ✓ / contrast_fail_count 0 ✓ (从 13 → 0). 0 业务代码改动. 11 components/data-testid/CTA href/i18n key 全保留. L1 PASS: lint 0 errors/3 baseline warnings 不变 / tsc clean / npm test 189 files 1375 tests PASS. Reviewer L2 待复验: re-Lighthouse /zh + 4 locale spot check + signoff. Report: 等 Reviewer 写 reverifying.]",
     "johnsong_planner": null,
     "johnsong_generator": null
   }
