@@ -4,20 +4,17 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-076-apify-numeric-overflow REVERIFYING (4/5, fix_rounds=1) — Reviewer round 1 FAIL 已分析+处理, 0 行业务代码改动, 等 Reviewer 按修订 spec 重跑
-- 三件套 commit f718704 + state 3449ead 已在 prod 生效, prod fix 证据成立
-- Reviewer FAIL 报告 docs/test-reports/BL-076-verifying-2026-05-27.md (staging kol-sync:daily 413 + 429)
-- Generator fix-round 1 根因解析 (写 evaluator_feedback.generator_response): 2 个 staging issue 均为方法论 / pre-existing infra 警告, 非 BL-076 回归
-  - 429 enrichment: Reviewer 漏用 BL-075-F003 沉淀的 --enrichment-limit=10 flag (无 cap 全量 4478 行 ≈ 150 分钟) + prod daily-sync 当时还在 enrichment tail 抢同 API key 配额
-  - 413 kol-embed: kol-embed.ts 已含 progressive batch 减半兜底 (100→50→20→1), 自带 self-recover, 非阻断项
-- 用户 ack 选 Option A (重跑 staging + clarify spec, 不扩 scope)
-- 修订: docs/specs/BL-076-apify-numeric-overflow-spec.md §F005 L2 第 1 项 + 头注释明确 'staging 跑 --enrichment-limit=10' (与 BL-075 done 时一致); features.json F005 acceptance 同步; 0 行业务代码
-- **Prod daily-sync 已收尾 17:43 UTC**, /var/log/kolmatrix-kol-sync.log 末尾 line: discoverCount=2567 / inserted=474 / updated=1385 / errors=[] / level=WARN (仅 duration_ms 阈值) — 完全无 numeric overflow, 修复彻底生效
-- API key 现空闲, Reviewer 可立即按修订后 spec 跑 staging --enrichment-limit=10 完成 L2 验签
-- L1: lint 0 errors / 3 warnings, tsc clean, npm test 189 files / 1375 tests
-- Prod 实测 (F004): engagement_rate>999.99=15 / outlier=true=157 / audit_log.kol.import_failed=0 / inserted=474 / max(engagement_rate)=9137.06
+## 🚧 BL-076-apify-numeric-overflow FIXING (4/5, fix_rounds=1) — fix-round 1 后仍卡在 F005 acceptance mismatch
+- 三件套 commit f718704 + state 3449ead 已在 prod 生效，prod fix 证据继续成立
+- Reviewer round 2 FAIL 报告: docs/test-reports/BL-076-reverifying-2026-05-27.md
+- 按修订后 spec 真跑 staging `AI_DAILY_COST_USD_PER_TENANT_MAX=500 npx tsx scripts/kol-sync-daily.ts --enrichment-limit=10`
+- staging 结果: `discover=2567 inserted=0 updated=1859 failed=0 errors=0`
+- staging report 同步确认: imported `inserted=0 updated=1859 skipped=708 failed=0`；enrichment `scanned=10 lang+=2 country+=0 failed=0`
+- 原始 blocker 已关闭: 无 numeric overflow、无 import failure、无 error entries
+- 当前唯一 blocker 变成验收口径冲突: 锁定的 F005 仍要求 `stats.inserted > 0`，但 staging 实跑是健康的 `inserted=0 updated>0 failed=0 errors=0`
+- Prod 只读 SQL 复核仍通过: `engagement_rate>999.99=15` / `outlier=true=157` / `audit_log.kol.import_failed=0` / `created_at > 2026-05-26T16:37Z = 474` / `max(engagement_rate)=9137.06`
 - F004 报告: docs/test-reports/BL-076-backfill-2026-05-27.md
-- 关联: docs/specs/BL-076-apify-numeric-overflow-spec.md + BL-075 signoff §6 residual warning + BL-075-fix-round-1-2026-05-26.md §3
+- 下一步由 Generator 收敛 acceptance: 要么给出可复现 `inserted>0` 的 staging 方案，要么显式改为 `inserted=0 updated>0 failed=0 errors=0` 也可签收
 ## ✅ BL-075-kol-data-coverage DONE (7/7, fix_rounds=1) — signoff 完成
 - Codex Reviewer 终签 PASS：L1 通过 `npm run lint` = 0 errors / 3 warnings、`npx tsc --noEmit` PASS、`npm test` = 188 files / 1368 tests PASS、backfill dry-run 输出格式正常、environment action 清单仍含 `kol-country-enrichment`
 - prod `/api/health` 已返回 `kol_coverage` 真数字：`total_active_kols=1397`、`country_fill_rate=20.4%`、`language_fill_rate=45.5%`

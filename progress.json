@@ -1,11 +1,11 @@
 {
-  "status": "reverifying",
+  "status": "fixing",
   "user_goal": "BL-076-apify-numeric-overflow — apify-kol discover-import numeric field overflow hotfix. 5 features F001-F005 (~6.5h ≈ 1 day Generator + 0.5 day Reviewer). 严重度从 medium 升 P1 — prod log 实测 5/12 起 14+ 天 daily-sync 全 fail (discoverCount 2107-2567 但 inserted=0 updated=0). 根因: engagementRate = (totalLikes/postsCount)/followers*100 可超 999.99 = Decimal(5,2) 上限 = first overflow throw 整 batch fail. A1 lock 3 子决策 (5/27): 策略 A 三件套 (Schema Decimal(7,2) + adapter clamp + per-KOL try/catch) / Defense A 均包 (outlier flag + audit_log) / Backfill B 追 14 天遗漏 KOL. 关联 docs/specs/BL-076-apify-numeric-overflow-spec.md @ 本 commit + BL-075 signoff §6 residual warning.",
   "total_features": 5,
   "completed_features": 4,
   "fix_rounds": 1,
   "current_sprint": "BL-076-apify-numeric-overflow",
-  "last_updated": "2026-05-27T01:40+0800",
+  "last_updated": "2026-05-27T08:36+0800",
   "reference_docs": [
     "docs/specs/BL-076-apify-numeric-overflow-spec.md",
     "docs/test-reports/BL-075-signoff-2026-05-27.md",
@@ -19,23 +19,23 @@
   "docs": {
     "spec": "docs/specs/BL-076-apify-numeric-overflow-spec.md",
     "audit": "docs/test-reports/BL-075-signoff-2026-05-27.md",
-    "test_cases": "docs/test-reports/BL-076-verifying-2026-05-27.md",
+    "test_cases": "docs/test-reports/BL-076-reverifying-2026-05-27.md",
     "signoff": null,
     "framework_reviewed": true
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "round": 1,
+    "round": 2,
     "outcome": "fail",
-    "summary": "Prod numeric-overflow fix evidence is valid, but the required staging kol-sync:daily acceptance run does not pass. The live staging run hit repeated AIGC Gateway 413 embed failures and 429 enrichment throttling, so F005 cannot be signed off.",
-    "report": "docs/test-reports/BL-076-verifying-2026-05-27.md",
-    "generator_response": "Fix-round 1 解析: Reviewer 反馈的 2 个 staging 问题均为方法论 / pre-existing infra 警告, 非 BL-076 业务代码回归. (1) 429 enrichment_rate_limit: Reviewer 漏用 BL-075-F003 沉淀的 --enrichment-limit=10 flag (无 cap 时 staging ~4478 NULL × 2.1s ≈ 150 分钟, 远超验收窗) + 当时 prod daily-sync (16:37 启动, 用户 ack 后 F004 那次) 仍在 enrichment-stage tail 跑 1859 行约 65 分钟, 两端抢同一 aigcgateway 30 RPM 配额. (2) 413 kol-embed: kol-embed.ts 已含 batch 减半兜底 (100→50→20→1), 413 自带 fallback path, 不阻断 ImportStats. 0 行业务代码改动, spec F005 acceptance 文本同步明确为 'staging 跑 --enrichment-limit=10' (与 BL-075 done 时同模式), features.json acceptance 同步更新. Reviewer reverifying 时按修订后 spec 跑即可."
+    "summary": "Fix-round 1 closed the original overflow blocker, but the rerun staging command still produced inserted=0 updated=1859 failed=0 errors=0. Under the current locked F005 acceptance, inserted>0 is still required, so F005 cannot be signed off.",
+    "report": "docs/test-reports/BL-076-reverifying-2026-05-27.md",
+    "generator_response": "Fix-round 1 clarified that staging validation should use --enrichment-limit=10 and that adjacent 413/429 warnings are non-blocking. Reviewer reran the corrected command and confirmed no numeric overflow, failed=0, errors=0, but staging still returned inserted=0. Acceptance/spec now need either a reproducible inserted>0 staging setup or an explicit adjustment that healthy inserted=0 updated>0 is sufficient."
   },
   "generator_handoff": "Fix-round 1: 0 行业务代码改动, 仅 spec + features.json 措辞修订 (commit 4841bbd). spec §F005 L2 + features.json acceptance 第 1 项明确 'staging 跑 --enrichment-limit=10' (BL-075-F003 沉淀). Prod daily-sync 已收尾落盘 (17:43 UTC), tail /var/log/kolmatrix-kol-sync.log 末尾 line 含 discoverCount=2567 / inserted=474 / updated=1385 / errors=[] (无任何 numeric overflow) / level=WARN (仅 duration_ms 阈值). API key 现空闲, Reviewer 可立即按修订后 spec 跑 staging --enrichment-limit=10 + tail prod log 完成 L2 6 项验签.",
   "session_notes": {
     "Kimi_planner": "[2026-05-27 01:00 BJT Planner Kimi BL-076 planning done. SSH prod 实测发现 5/12 起 14 天 daily-sync 全 fail (discoverCount 2107-2567 但 inserted=0 updated=0), 严重度从 medium 升 P1. 根因: apify-kol.ts:409 engagementRate 计算可超 Decimal(5,2) 上限 999.99. A1 lock: 策略 A 三件套 (Schema migration Decimal(7,2) + clamp + per-KOL try/catch) / Defense A 均包 / Backfill B 追 14 天. 5 features F001-F005 ~6.5h.]",
     "Kimi_generator": "[2026-05-27 01:43 BJT Generator Kimi fix-round 1 完成 + prod daily-sync 收尾落盘. Prod log 末尾结构化 line (16:37→17:43 UTC, 65 分钟全流程): discoverCount=2567 / inserted=474 / updated=1385 / skipped=708 / **errors=[] (完全无 numeric overflow)** / level=WARN (仅因 duration_ms>5min 阈值, adjacent 警告). 对比 5/12-5/26 旧 entries 都含 'Value out of range...numeric field overflow' 字串, 修复彻底生效. enrichment-stage: scanned=1859 lang+=940 country+=0 (daily cost cap 触发自动 skip LLM, 系统级保护起效, failed=0). Fix-round 1 spec amend (commit 4841bbd): F005 L2 第 1 项明确 --enrichment-limit=10 (BL-075-F003 沉淀), features.json acceptance 同步, 0 行业务代码. API key 现已空闲 (prod 完成), Reviewer 可安全跑 staging --enrichment-limit=10 + tail prod log 验签. 状态: reverifying.]",
-    "Reviewer": "[2026-05-27 01:10 BJT Codex Reviewer BL-076 verifying FAIL. L1 PASS: lint 0/3, tsc PASS, npm test 188 files / 1368 tests PASS, prisma migrate status up to date, local/prod schema both Decimal(7,2). Prod SQL direct evidence confirms hotfix: engagement_rate>999.99=15, outlier_flagged=157, import_failed=0, new_after_cutoff=474, max_rate=9137.06. Blocker is staging L2 acceptance: real staging npm run kol-sync:daily no longer shows numeric overflow but does hit repeated kol-embed 413 and enrichment 429 rate_limit_exceeded during live run, so stats.inserted>0 / stats.failed=0 cannot be signed off. Status -> fixing; F005 remains pending. Report: docs/test-reports/BL-076-verifying-2026-05-27.md]",
+    "Reviewer": "[2026-05-27 08:36 BJT Codex Reviewer BL-076 reverifying FAIL. Fix-round 1 clarified the correct staging command: AI_DAILY_COST_USD_PER_TENANT_MAX=500 npx tsx scripts/kol-sync-daily.ts --enrichment-limit=10. Rerun result: discover=2567 inserted=0 updated=1859 failed=0 errors=0; staging report confirms inserted=0 / failed=0 / no overflow. Prod evidence remains valid: engagement_rate>999.99=15, outlier_flagged=157, import_failed=0, created_at>2026-05-26T16:37Z=474, max_rate=9137.06. Current blocker is no longer overflow or infra instability; it is an acceptance mismatch, because locked F005 still requires stats.inserted>0 on staging. Status -> fixing, F005 remains pending. Report: docs/test-reports/BL-076-reverifying-2026-05-27.md]",
     "johnsong_planner": null,
     "johnsong_generator": null
   }
