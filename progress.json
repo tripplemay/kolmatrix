@@ -1,11 +1,11 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "BL-077-v0.9.24-framework-sediment — 17 候选 inline-merge framework/harness/*.md (5 同主题合并段) + CHANGELOG v0.9.24 + archive v0.9.24.md. 9 features F001-F009 (~16h ≈ 2 day Generator + 0.5 day Reviewer). A1 lock 5/27: 方案 A 全做 + Reviewer L1+L2 抽样阅读. 17 候选来源: BL-072 done 4 + BL-073 done 5 + BL-075 done 4 + BL-076 done 4. 类 BL-071 模式 (v0.9.23 batch) 但 scope 小 (无结构变更, 仅 inline-merge). 0 业务代码改动. 关联 docs/specs/BL-077-v0.9.24-framework-sediment-spec.md @ 本 commit + framework/proposed-learnings.md (17 entries 全 user-acked).",
   "total_features": 9,
-  "completed_features": 8,
+  "completed_features": 9,
   "fix_rounds": 0,
   "current_sprint": "BL-077-v0.9.24-framework-sediment",
-  "last_updated": "2026-05-27T15:30+0800",
+  "last_updated": "2026-05-27T15:47+0800",
   "reference_docs": [
     "docs/specs/BL-077-v0.9.24-framework-sediment-spec.md",
     "framework/proposed-learnings.md",
@@ -22,9 +22,9 @@
   "docs": {
     "spec": "docs/specs/BL-077-v0.9.24-framework-sediment-spec.md",
     "audit": null,
-    "test_cases": null,
-    "signoff": null,
-    "framework_reviewed": false
+    "test_cases": "docs/test-reports/BL-077-signoff-2026-05-27.md",
+    "signoff": "docs/test-reports/BL-077-signoff-2026-05-27.md",
+    "framework_reviewed": true
   },
   "role_assignments": null,
   "evaluator_feedback": null,
@@ -32,7 +32,7 @@
   "session_notes": {
     "Kimi_planner": "[2026-05-27 10:00 BJT Planner Kimi BL-077 planning done. v0.9.24 framework sediment batch 17 候选 inline-merge. A1 lock 2 决策: 范围 A 全做 (含 CHANGELOG + archive) + Reviewer L1+L2 抽样阅读. 5 同主题合并段: #8+#14 alerting / #3+#7+#9 advisory test 三件套进化 / #11+#12 AI cost+rate / #2+#5 Pattern v1→v2→v3 / #16 Schema rollback 双归属. 9 features F001-F009 ~16h. 0 业务代码改动. 类 BL-071 模式但无结构变更.]",
     "Kimi_generator": "[2026-05-27 15:30 BJT Generator Kimi BL-077 building 完成 F001-F008 (8/9), F009 留 Reviewer codex. 单 sit ~5h 集中执行 (vs spec 估 2 day = 16h, 因 17 候选目标位置 + 5 合并段已 spec 锁完 + framework 段熟悉). Commits: F001 7adad20 ai-action-contract §6 / F002 2646c09 generator §11 J §14.3 §16 §17 / F003 342b4e9 evaluator §13.4 / F004 029de6d deploy-patterns §1.6.1 §8 / F005 1ee5146 planner-checklists 2 段 / F006 215955c database-patterns §4.6 §9 / F007 8e70f8e material-symbols Pattern v1→v2→v3 / F008 55ecc31 CHANGELOG+archive 817 LOC+清 proposed-learnings. L1 grep 验证: 17 source ID 全部命中 framework/harness/*.md ≥1 次. lint 0 error / 3 warning baseline 一致, tsc PASS. 关键权衡: generator.md §15 (Perf) 编号保留, 新 §16/§17 加在 §14.3 后 (非文末), 避免破坏 CHANGELOG v0.9.23 + archive 6 处 §15.1/§15.2 跨文件引用 (HTML 注释说明). 切 verifying: framework 文档批次, 无运行时影响, 不需 staging deploy (per generator.md staging 硬要求 §豁免条款). Codex Reviewer F009 验收 L1 自动化 6 项 + L2 抽样 5 段.]",
-    "Reviewer": null,
+    "Reviewer": "[2026-05-27 15:47 BJT Codex Reviewer BL-077 signoff PASS. L1 passed: lint 0 errors / 3 baseline warnings, tsc PASS, 17 source IDs all grep to framework/harness/*.md, proposed-learnings v0.9.24 marker present, archive v0.9.24 exists at 817 LOC, CHANGELOG v0.9.24 section present. L2 sampled 5 targets and found coherent inline-merges: ai-action-contract §6 cost/rate split, evaluator §13.4 advisory test evolution, generator §11 J delete-X grep-callers matrix, deploy-patterns §8 BL-076 outage alerting, CHANGELOG↔archive 17-entry 1:1 relationship. No chronological-append regression found. Status -> done. Signoff: docs/test-reports/BL-077-signoff-2026-05-27.md]",
     "johnsong_planner": null,
     "johnsong_generator": null
   }

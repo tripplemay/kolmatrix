@@ -134,7 +134,7 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "L1 自动化 6 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (仅 framework docs 变更但跑) (3) 17 source ID grep 验证 (BL-072 #1 #2 #3 #4 / BL-073 #5 #6 #7 #8 #9 / BL-075 #10 #11 #12 #13 / BL-076 #14 #15 #16 #17 各命中 framework/harness/*.md ≥1 次) (4) proposed-learnings.md 含 '<!-- v0.9.24 沉淀完成' marker (5) framework/archive/proposed-learnings-archive-v0.9.24.md exist + ≥800 LOC (6) framework/CHANGELOG.md v0.9.24 段顶部位置 + ≥40 LOC",
       "L2 抽样阅读 5 段 PASS: (1) ai-action-contract.md AI cost-cap + rate gate 合并段 — 验 inline-merge 不是 dump, 模板可执行 (2) evaluator.md advisory test 三件套 (v1+v2+STRICT) 合并段 — 验 3 sub-section 进化路径清晰 (3) generator.md '删 X 前 grep callers 矩阵' — 验扩展自 v0.9.23 #19 不破现有 i18n 行 (4) deploy-patterns.md prod log-based alerting 合并段 — 验含 BL-076 14 天反例 (5) CHANGELOG v0.9.24 ↔ archive v0.9.24.md 对应关系 (17 条 summary ↔ 17 条全文 1-to-1)",

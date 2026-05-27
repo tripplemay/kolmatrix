@@ -4,12 +4,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-077-v0.9.24-framework-sediment VERIFYING (8/9, fix_rounds=0) — 17 候选 inline-merge framework Generator done
-- Generator Kimi 5/27 ~5h 单 sit 完成 F001-F008 (vs spec 估 2 day, 因 17 候选目标 + 5 合并段 spec 锁完 + framework 段熟悉)
-- F001 7adad20 ai-action-contract §6 / F002 2646c09 generator §11 J §14.3 §16 §17 / F003 342b4e9 evaluator §13.4 / F004 029de6d deploy-patterns §1.6.1 §8 / F005 1ee5146 planner-checklists 2 段 / F006 215955c database-patterns §4.6 §9 / F007 8e70f8e material-symbols / F008 55ecc31 CHANGELOG + archive 817 LOC + 清 17 entries
-- L1 lint 0 error / 3 warning baseline 一致, tsc PASS, 17 source ID grep 全 ≥1 命中 framework/harness/*.md
-- 0 业务代码改动, framework 文档批次无 staging deploy 需求 (per generator.md §豁免条款)
-- F009 留 Reviewer codex L1 自动化 6 项 + L2 抽样 5 段阅读 + signoff doc
+## ✅ BL-077-v0.9.24-framework-sediment DONE (9/9, fix_rounds=0) — v0.9.24 framework sediment batch 终签完成
+- Codex Reviewer 终签 PASS：L1 通过 `npm run lint` = 0 errors / 3 baseline warnings、`npx tsc --noEmit` PASS、17 source IDs 全部 grep 到 framework/harness/*.md、`framework/proposed-learnings.md` 保留 v0.9.24 marker、archive v0.9.24 = 817 LOC、CHANGELOG v0.9.24 段存在
+- L2 抽样阅读通过：`ai-action-contract.md` §6 AI cost/rate 合并段可执行；`evaluator.md` §13.4 advisory test v1→v2→STRICT 进化清晰；`generator.md` §11 J delete-X grep-callers 矩阵成功扩展 v0.9.23 #19；`deploy-patterns.md` §8 含 BL-076 14 天 outage 反例；CHANGELOG ↔ archive 17 条 1:1 对应成立
+- 未发现 chronological-append regression；新内容均落在 topic section / 合理子段内，不是历史 dump
+- signoff: `docs/test-reports/BL-077-signoff-2026-05-27.md`
 ## ✅ BL-076-apify-numeric-overflow DONE (5/5, fix_rounds=2) — numeric overflow hotfix 终签完成
 - Codex Reviewer 终签 PASS：fix-round 2 口径下，staging `AI_DAILY_COST_USD_PER_TENANT_MAX=500 npx tsx scripts/kol-sync-daily.ts --enrichment-limit=10` 结果 `discover=2567 inserted=0 updated=1859 failed=0 errors=0 level=INFO`
 - 该结果满足锁定后的 F005：`(inserted + updated) > 0`、`failed=0`、无 `numeric field overflow`
