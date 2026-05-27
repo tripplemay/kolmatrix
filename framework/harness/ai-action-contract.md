@@ -1,6 +1,6 @@
 ---
 scope: framework-generic
-last-updated: 2026-05-25
+last-updated: 2026-05-27
 ---
 
 # AI Action Contract（aigcgateway / 类似 LLM 网关 集成规范）
@@ -419,6 +419,80 @@ export async function runAigcAction<T>(opts: {
 
 ---
 
+## 6. AI 调用经济与速率防御（v0.9.24 — BL-075 沉淀）
+
+§2.4 月预算监控只关心「单 action 月增量预估」是否合理（spec 起草侧），本节补足**生产运行侧**两类常见坑：cost-cap 估算偏差（BL-075 #11）+ 批量 LLM RPM 限速缺失（BL-075 #12）。两者在 BL-075-F004 一次性 backfill 1383 KOL 时同时暴露。
+
+### 6.1 cost-cap 估算 vs 实际 — 5-10x 高估（v0.9.24 #11 / BL-075 #11，来源 BL-075-F004）
+
+**坑：** `AI_DAILY_COST_USD_PER_TENANT_MAX` 默认 cap 预检用 `event_log count × DEFAULT_COST_PER_CALL_USD ($0.01)` 估算，但 Claude Haiku 单次实际 cost ≈ $0.0009 → **5-10x 高估**。后果：一次性 backfill 类操作易被普通 tenant cap 拦截。
+
+**BL-075-F004 实战数据：** 1397 KOL × 实际 $0.0009/call ≈ **$1.25 总成本**，但 `$5/day cap` 在 ~500 call 时触发预检阈值，剩余 880 LLM call 全部 skip。
+
+**修复方向（实装项，留 BL-078+ follow-up）：** cost-cap 改用 `sum(payload.costUsd)`（真实账单值）而非 `count × default`；可选拆 `interactive`（default $5/day）vs `batch`（default unlimited）两档。
+
+**当前 Workaround（backfill / 一次性 ops 类）：** 单次提升 cap：
+
+```bash
+AI_DAILY_COST_USD_PER_TENANT_MAX=500 nohup npx tsx scripts/<batch>.ts ...
+```
+
+注意此 workaround 同时绕开 5-10x 高估，对真实成本 $1-2 的 backfill 任务无风险；常规 prod 流量仍走默认 $5。
+
+### 6.2 批量调用 LLM 限速 — makeLlmRateGate(intervalMs=2100)（v0.9.24 #12 / BL-075 #12，来源 BL-075-F004）
+
+**坑：** aigcgateway 默认 RPM=30 硬限（429 `RPM limit exceeded on key (limit=30). Please retry after 60 seconds`），`concurrency=5` worker 几乎每个 LLM call 都被 429 拒绝。`fetchWithRetry` 的 1.5s jitter retry **远不够**（30 RPM 意味着 ≥2s gap minimum，1.5s 单轮 retry 会立即再次撞 429）。
+
+**修复模式：** 单进程 timestamp serializer + 仅在 LLM-bound path 排队：
+
+```typescript
+// 模板：单进程内 timestamp serialize 所有 LLM dispatch
+const makeLlmRateGate = (intervalMs: number) => {
+  let lastDispatch = 0;
+  return async () => {
+    const now = Date.now();
+    const gap = lastDispatch + intervalMs - now;
+    if (gap > 0) await new Promise((r) => setTimeout(r, gap));
+    lastDispatch = Date.now();
+  };
+};
+
+const llmGate = makeLlmRateGate(2100); // 2.1s gap = 28.5 RPM 留余量
+
+for (const kol of kols) {
+  // 本地 CPU path（franc / audience-geo top-1）不需 gate
+  const localResult = computeLocally(kol);
+  if (localResult) { stats.local += 1; continue; }
+
+  // 仅 LLM-bound path 等待 gate
+  await llmGate();
+  const llmResult = await runAigcAction({ actionId, variables: { kol } });
+  stats.llm += 1;
+}
+```
+
+**关键设计：**
+- `intervalMs=2100` 留 5% 余量防 burst（2000ms 临界 → 偶发并发漂移踩 30 RPM）
+- 本地 path（langdetect / 字符匹配类）不进 gate，避免无意义等待
+- `concurrency=5` worker 可保留，所有 LLM dispatch 单点 serialize，CPU-bound 工作仍并行
+
+**适用边界：**
+- ✅ 所有 batch LLM call > 30 RPM 场景：backfill / daily-sync enrichment / pre-warm cache
+- ✅ aigcgateway 默认 30 RPM key（升级 plan 后阈值上调，gate intervalMs 同步下调即可）
+- ⚠️ 多进程 / 多 PM2 instance 场景：本 gate 仅单进程内有效；多进程需 Redis 集中式 token bucket（留独立 batch 评估）
+- ❌ 单次 LLM call / 用户交互式触发（如 /match refine）不需 gate（流量自然 < 30 RPM）
+
+**fetch-with-retry 与 rate gate 分工：**
+- rate gate 防 baseline 流量持续超 RPM
+- fetch-with-retry 救偶发 spike / network jitter / 上游瞬时 5xx
+- 两者**不可互替**：单靠 retry 在 30 RPM 限制下会无限循环 429
+
+**实战数据：** BL-075-F004 加 `makeLlmRateGate(2100)` 后 dry-run 0 个 429（前 concurrency=5 几乎全 429）。
+
+**来源：** BL-075-F004 backfill 实战（cost-cap 拦截 + 30 RPM 429 双坑同时暴露）+ v0.9.24 #11 #12 用户 2026-05-26 ack。
+
+---
+
 ## 来源
 
 - KOLMatrix B5-F006 fixing-5（output shape 漂移；commit 4d1057c）
@@ -439,3 +513,5 @@ export async function runAigcAction<T>(opts: {
 | 2026-05-05 | §4 AI 调用必含 max_tokens + 用户输入必用 XML tag 包裹 | KOLMatrix backend-full-scan-2026-05-04 audit AI-CRIT-5 + AI-H5 |
 | 2026-05-06 | §4.7 mcp 自动化可达性（v0.9.13，max_tokens 字段 mcp 不可达 → 短期 spec 注解 + 长期跨项目 issue）| KOLMatrix BL-035 F013 + BL-024 Q2 ops 共 12 次 max_tokens 推延 Soft-watch |
 | 2026-05-06 | §4.7 修订（v0.9.13 fix-up）：实测后改为 「Action 抽象层根本不绑定 max_tokens」（mcp + UI 都不支持）+ P1/P2/P3/P4 4 种长期修复方向 + KOLMatrix 短期 spec 起草约束修订 | 用户 2026-05-06 实地确认 Dashboard UI 无 max_tokens 字段 |
+| 2026-05-27 | §6 AI 调用经济与速率防御（v0.9.24 合并段）：§6.1 cost-cap 5-10x 高估 + Workaround / §6.2 makeLlmRateGate(intervalMs=2100) 模板 + 适用边界 | BL-075-F004 一次性 backfill 1383 KOL 双坑实战；v0.9.24 #11 #12 用户 2026-05-26 ack |
+| 2026-05-27 | last-updated bump 2026-05-25 → 2026-05-27（v0.9.24 framework sediment batch BL-077-F001）| — |
