@@ -364,3 +364,98 @@ spec acceptance 必含「rate-limit 条款」，明示 (a) 限速维度 (b) 阈�
 **反面：** prod-mvp audit 之前批次（B5 / BM2 / BL-025 等）创建 server action 时全无 rate-limit 检查，到 BL-020 prod readiness 阶段才用专项批次扫尾，工时 ~5h；本可在原批次 spec 多 5min 写一个段落避免。
 
 **来源：** KOLMatrix `docs/reviews/backend-full-scan-2026-05-04.md` AUTH-H1 + API-H1（6 endpoint 全裸列表）+ BL-020-F005 (login 5/min) + BL-035-F003 (AI 6 endpoint rate-limit) 同源问题归并。
+
+---
+
+## IA refactor / 路由删除批次 outbound 一致性扫描清单（v0.9.24 #1 / BL-072 #1）
+
+**背景：** BL-072 4 prod hotfix 共性根因 = BL-070-F003/F004/F005 IA refactor 大改后 outbound 一致性扫描缺失：
+
+| Issue | 维度 | 根因 |
+|---|---|---|
+| #1 `/brief` 宽度 (768 vs 1600) | visual 宽度 | 跨 4 路由 max-width 一致性漏检 |
+| #2 `/insight` i18n hardcoded | i18n 消费侧 | 新建 page.tsx 后 t() wiring 漏检 |
+| #3 `/match` TABLE_ROWS 字面文字 | Material Symbols | 新加 ligature manifest 漏更新 |
+| #4 10 处 outbound 404 | 路由 outbound | 删老路由 + middleware 即停 redirect 时 outbound 漏 grep |
+
+四类问题独立批次单修都容易，跨多个 IA refactor / 路由删除批次系统性发生 = framework 欠 "outbound 一致性扫描" spec 起草清单。
+
+**触发 batch 类型（spec 起草端 self-check 必跑）：**
+
+1. **IA refactor / 路由迁移**（如 BL-070 brief/insight/match 5 路由重构）
+2. **路由删除 / 重命名**（如 BL-070 删 KB 5 老路由）
+3. **视觉宽度对齐 / 容器层重构**（如 BL-070 brief 宽度从 max-w-3xl 升 max-w-[1600px]）
+4. **i18n namespace 重构**（git mv 组件 + 改 ns / 拆 ns / 合 ns）
+
+任一命中 → spec acceptance 必含以下 **4 维度扫描** 段。
+
+**4 维度 spec acceptance 模板（任一命中即起 spec 必含）：**
+
+```markdown
+**Outbound 一致性扫描（v0.9.24 BL-077 framework 硬要求 / 来源 BL-072 #1）：**
+
+#### 维度 1：visual 宽度跨路由一致性
+- [ ] grep `max-w-` 全相关路由 → 验 4-5 路由 max-width 一致
+- [ ] 二级容器嵌套 grep（详 §"spec acceptance 嵌套二级约束 grep 防御"段）— 0 个意外二级约束
+- 工具：`grep -rn "max-w-" src/app/[locale]/(app)/<route>/ --include='*.tsx'`
+
+#### 维度 2：i18n 消费侧 t() wiring
+- [ ] grep `getTranslations|useTranslations` 全 page.tsx + 主组件 — 验 t(key) 调用 key 在 messages exist
+- [ ] tests/unit/i18n-page-side-consumption.test.ts v2（v0.9.24 #7）advisory test 全绿 — 详 `evaluator.md §13.4.2`
+- 工具：`grep -rln 'useTranslations\|getTranslations' src/app/[locale]/(app)/<route>/`
+
+#### 维度 3：Material Symbols 子集 manifest 同步
+- [ ] grep `material-symbols-outlined` 全 src — 验所有 ligature in manifest + woff2 含 glyph
+- [ ] tests/unit/material-symbols-coverage-unit.test.ts strict（STRICT_MS_ICONS=true）CI 必绿
+- 工具：`bash scripts/regenerate-material-symbols-subset.sh` 后 manifest 增量 diff
+
+#### 维度 4：outbound 链接命中实际路由树
+- [ ] grep 所有 `href="/<path>"` + `router.push("/<path>")` — 验 path-prefix in 路由树 + IA_REDIRECT_RULES
+- [ ] tests/unit/link-target-audit.test.ts advisory test 全绿（详 `evaluator.md §13.4.1`）
+- 工具：`grep -rEn "['\"]/(<deleted-route>)" src/ --include='*.tsx' --include='*.ts'` + `router.push` 同源 grep
+- 配套：`framework/harness/generator.md §11 J「删 X 前 grep callers 矩阵」`
+```
+
+**反例（BL-070 IA refactor 漏 4 维度 → BL-072/073 4 批 prod hotfix 修复）：** BL-070 IA refactor 大改时 4 维度扫描在 spec acceptance 不存在，4 prod hotfix 单点修费 ~16h 工时；本可在 BL-070 spec lock 前列 4 维度 + 起跑前 5min 扫一次避免。
+
+**与 §"嵌套二级约束 grep 防御"关系：** 本段是 IA refactor / 路由删除批次的**触发条件** + **4 维度入口**，嵌套二级约束 grep 是维度 1（visual 宽度）的具体 grep 模板；两段配套使用。
+
+**来源：** BL-072 done 4 prod hotfix 共性根因分析 + v0.9.24 #1 用户 2026-05-26 ack。
+
+---
+
+## spec acceptance 嵌套二级约束 grep 防御（v0.9.24 #6 / BL-073 #6）
+
+**背景：** spec acceptance 凡涉及"外层约束改变"（视觉宽度 / i18n namespace / CSS variant）必加 grep 全仓 review 二级约束，否则嵌套二级约束破坏外层意图，prod 复现同问题。
+
+**反例（BL-072-F001 → BL-073 同 issue 复现）：** BL-072-F001 修 `/brief/page.tsx:75` `max-w-3xl → max-w-[1600px]` 但 acceptance 未含嵌套 grep，漏检 `BriefPageClient.tsx:120` 嵌套 `max-w-3xl` 二级约束 → 视觉上 `/brief` 仍 768px（外层 1600px 被嵌套 768px 缩回去）→ BL-073 prod 同问题复现 + 二次 hotfix。
+
+**模板（视觉 / i18n / CSS variant 类 acceptance 必加 grep 行）：**
+
+```markdown
+**嵌套二级约束 grep 防御（v0.9.24 BL-077 framework 硬要求 / 来源 BL-073 #6）：**
+
+凡涉及"外层约束改变"必加 acceptance 行：
+- [ ] grep `<约束类>` 全相关路由 / 组件 — 0 个意外二级约束
+- 工具：`grep -rn "<约束类>" src/app/[locale]/(app)/<route>/ --include='*.tsx'`
+- 输出：grep 输出 review，所有命中行确认是"故意嵌套"（如 modal 内 max-w-md）而非"外层意图被二级约束破坏"
+```
+
+**三类 grep 模板（按维度）：**
+
+| 约束类型 | grep 模板 | 反例 / 实战 |
+|---|---|---|
+| **视觉宽度 max-w-** | `grep -rn "max-w-" src/app/[locale]/(app)/<route>/ --include='*.tsx' --include='*.module.css'` | BL-072-F001 外层改 max-w-[1600px] 漏 BriefPageClient 嵌套 max-w-3xl → BL-073 复现 |
+| **i18n namespace 嵌套** | `grep -rn "useTranslations\|getTranslations" src/app/[locale]/(app)/<route>/` | 嵌套 sub-component 用不同 ns（混淆 namespace） → t(key) lookup 失败 |
+| **CSS variant 嵌套**（padding / margin / typography） | `grep -rn "p-[0-9]\|m-[0-9]\|text-(xs\|sm\|base\|lg\|xl)" <route>/ --include='*.tsx'` | 外层改 p-8 但嵌套 p-2 → 视觉不一致 |
+
+**关键设计：**
+- grep 输出 review 必须**显式记录在 spec acceptance 验证笔记**（不是"跑一下看看"，是 grep 结果落 `docs/test-reports/<batch>-acceptance-grep-YYYY-MM-DD.txt`）
+- 0 命中 → PASS；有命中 → 逐条人工 review 是否"故意嵌套" or "意外破坏"
+- 故意嵌套的二级约束（如 modal / overlay 局部约束）在 spec / commit message 注明，避免下次 grep 时误判
+
+**Generator 配套（self-check 前置）：** 改外层约束 commit 前必跑同 grep；改前 grep 抓 baseline，改后 grep 验差异。
+
+**与 §"IA refactor outbound 一致性扫描"关系：** 本段是 IA refactor 维度 1（visual 宽度）的细化 grep 防御，配合 §IA refactor outbound 一致性扫描 维度 1 列出的入口使用。
+
+**来源：** BL-072-F001 漏检 + BL-073 同 issue 复现 + v0.9.24 #6 用户 2026-05-26 ack。
