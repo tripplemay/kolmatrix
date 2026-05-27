@@ -60,7 +60,7 @@ export function StickyParallax({
                 idx === activeIdx ? "opacity-100" : "opacity-70"
               }`}
             >
-              <span className="font-geist-mono text-[11px] tracking-[0.25em] text-cyan/80 uppercase">
+              <span className="font-geist-mono text-[11px] tracking-[0.25em] text-cyan uppercase">
                 {String(idx + 1).padStart(2, "0")}
               </span>
               <div className="mt-3">{node}</div>
