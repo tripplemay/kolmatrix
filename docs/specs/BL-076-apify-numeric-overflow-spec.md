@@ -317,9 +317,11 @@ ssh tripplezhou@34.180.93.185 'cd /opt/kolmatrix && npm run kol-sync:daily 2>&1 
 > ```
 >
 > 备注: kol-embed 偶发 batch=100 → 413 (Provider returned 413) 是 pre-existing 软警告,`src/lib/embedding/kol-embed.ts` 已有 progressive halving (100→50→20→1) 自带兜底,不阻断 ImportStats acceptance。出现 413 时观察 embed-hook 是否最终 `embedded > 0` 即可;若批次最小 size=1 仍 413,记 audit doc 但不阻断 BL-076。
+>
+> **Fix-round 2 lock (2026-05-27): steady-state `inserted=0` 在 staging 是健康的,不计 fail**. apify-kol 服务端每日返回固定 ~2567 KOL discovery pool;staging 通过 cron 长期 sync 已经把整 pool 落库(`/api/health` 显示 staging `total_active_kols ≈ 1871` + 软删/inactive 加起来 >2567),所有 discover 命中 `tenantId_platform_externalId` unique key → 全走 update path,不产生新 insert。Prod 之所以 F004 实测 `inserted=474` 是因为 5/12-5/26 14 天 outage 期间 apify-kol 池子 shift 累积,fix 后一次性补回;**修复落地后下次 prod 也会回到 `inserted=0` 稳态**。因此「sync 真在前进」的正确断言是 `(stats.inserted + stats.updated) > 0` 而非 `stats.inserted > 0`。原始 spec 草稿时把"首次 backfill 瞬时语义"和"稳态 daily-sync 语义"混在一处 = bug,本 lock 显式区分。
 
-1. staging 跑 `npx tsx scripts/kol-sync-daily.ts --enrichment-limit=10`,验 ImportStats `stats.inserted > 0` + `stats.failed = 0`(即 daily-sync 结构化日志 line 末尾 `"inserted":>0, "errors":` 中**无** `"numeric field overflow"` 字串;`kol-embed 413` / `enrichment 429 retryAfter` 等 adjacent 警告不计 fail)
-2. SSH prod 跑 daily-sync 同上验证(F004 已完成,本项可改为 tail prod log `/var/log/kolmatrix-kol-sync.log` 末尾 line 确认 `"inserted":474, "failed":0, errors` 中无 overflow 字串)
+1. staging 跑 `npx tsx scripts/kol-sync-daily.ts --enrichment-limit=10`,验 ImportStats **`(stats.inserted + stats.updated) > 0`**(sync 真在前进,inserted=0 + updated>0 健康)+ `stats.failed = 0`(即 daily-sync 结构化日志 line 末尾 `errors` 中**无** `"numeric field overflow"` 字串;`kol-embed 413` / `enrichment 429 retryAfter` 等 adjacent 警告不计 fail)
+2. SSH prod 跑 daily-sync 同上验证(F004 已完成 + 17:43 UTC 结构化 log line 落盘,本项可改为 `tail -1 /var/log/kolmatrix-kol-sync.log` 确认 `"inserted":474, "updated":1385, "errors":[]`;Prod F004 backfill 是一次性 outage 补回,提供 `inserted > 0` 的瞬时证据,与 staging 稳态语义互补)
 3. prod KOL 表查 engagement_rate > 999.99 的存在(验 schema 扩容生效)
 4. prod 查 metadata.flags.engagement_outlier = true 的 KOL(验 outlier flag 写入)
 5. prod audit_log 查 kol.import_failed 记录(如有,确认 try/catch 路径起效)

@@ -4,17 +4,16 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-076-apify-numeric-overflow FIXING (4/5, fix_rounds=1) — fix-round 1 后仍卡在 F005 acceptance mismatch
+## 🚧 BL-076-apify-numeric-overflow REVERIFYING (4/5, fix_rounds=2) — fix-round 2 spec amend 完成, Reviewer round 3 可立即 signoff
 - 三件套 commit f718704 + state 3449ead 已在 prod 生效，prod fix 证据继续成立
-- Reviewer round 2 FAIL 报告: docs/test-reports/BL-076-reverifying-2026-05-27.md
-- 按修订后 spec 真跑 staging `AI_DAILY_COST_USD_PER_TENANT_MAX=500 npx tsx scripts/kol-sync-daily.ts --enrichment-limit=10`
-- staging 结果: `discover=2567 inserted=0 updated=1859 failed=0 errors=0`
-- staging report 同步确认: imported `inserted=0 updated=1859 skipped=708 failed=0`；enrichment `scanned=10 lang+=2 country+=0 failed=0`
-- 原始 blocker 已关闭: 无 numeric overflow、无 import failure、无 error entries
-- 当前唯一 blocker 变成验收口径冲突: 锁定的 F005 仍要求 `stats.inserted > 0`，但 staging 实跑是健康的 `inserted=0 updated>0 failed=0 errors=0`
+- Reviewer round 2 staging 跑 --enrichment-limit=10 结果 `discover=2567 inserted=0 updated=1859 failed=0 errors=0 level=INFO` — 无 overflow / 无 import failure / 无 error entries, 但卡 spec `stats.inserted>0`
+- Fix-round 2 根因 (用户 ack Option 2): apify-kol 服务端每日固定 ~2567 discovery pool, staging cron 长期 sync 已把整池落库, 全部走 update path = `inserted=0` 是 steady-state 健康. Prod F004 `inserted=474` 是 14 天 outage 累积一次性补回的瞬时语义, 修复后下次 prod 也回 `inserted=0`. 原 spec 混淆瞬时和稳态语义
+- 修订 (commit 待 push, 0 行业务代码, 与 fix-round 1 同模式): spec §F005 L2 #1 改为 `(stats.inserted + stats.updated) > 0` + `failed=0` + errors 无 'numeric field overflow' (含 steady-state 健康说明); L2 #2 改为 `tail -1 /var/log/kolmatrix-kol-sync.log` 直接验 prod F004 落盘的瞬时证据 (inserted=474 updated=1385 errors=[])
+- features.json F005 acceptance 同步, Reviewer round 2 staging 数据完全满足修订后 acceptance
+- L1: lint 0 errors / 3 warnings, tsc clean, npm test 189 files / 1375 tests
 - Prod 只读 SQL 复核仍通过: `engagement_rate>999.99=15` / `outlier=true=157` / `audit_log.kol.import_failed=0` / `created_at > 2026-05-26T16:37Z = 474` / `max(engagement_rate)=9137.06`
 - F004 报告: docs/test-reports/BL-076-backfill-2026-05-27.md
-- 下一步由 Generator 收敛 acceptance: 要么给出可复现 `inserted>0` 的 staging 方案，要么显式改为 `inserted=0 updated>0 failed=0 errors=0` 也可签收
+- Reviewer round 3 按修订 spec 即可 signoff
 ## ✅ BL-075-kol-data-coverage DONE (7/7, fix_rounds=1) — signoff 完成
 - Codex Reviewer 终签 PASS：L1 通过 `npm run lint` = 0 errors / 3 warnings、`npx tsc --noEmit` PASS、`npm test` = 188 files / 1368 tests PASS、backfill dry-run 输出格式正常、environment action 清单仍含 `kol-country-enrichment`
 - prod `/api/health` 已返回 `kol_coverage` 真数字：`total_active_kols=1397`、`country_fill_rate=20.4%`、`language_fill_rate=45.5%`
