@@ -4,7 +4,7 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-079-v0.9.25-framework-sediment BUILDING (0/6, fix_rounds=0) — 5 候选 inline-merge framework
+## 🚧 BL-079-v0.9.25-framework-sediment VERIFYING (5/6, fix_rounds=0) — F006 Reviewer pending
 - A0+A1 完成 5/27: A 全做 (5 inline-merge + 1 同主题合并 + CHANGELOG + archive)
 - 5 候选源 BL-078: #1 opacity-dimming a11y trap / #2 landing token layer / #3 view transitions 渐进增强 / #4 reference 提炼方法论 / #5 reduced-motion 守门
 - 1 同主题合并: #1+#5 a11y → evaluator.md "motion a11y 三件套" 单段
@@ -35,9 +35,8 @@ type: project
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
 3. **BL-070 post-launch ops:** 24h 后跑 ssh tripplezhou@34.180.93.185 'bash /opt/kolmatrix/scripts/bl070-prod-audit.sh' + 邀 ≥5 marketer dogfood
 4. prod 实测 5/27 BL-073/074/075 fix 用户体验
-## 角色 / Backlog (BL-078 reverifying 中)
-- BL-078 done 后 prod deploy 让用户实测视觉精修效果
-- v0.9.25 framework sediment batch (BL-078 4-5 沉淀候选: opacity-dimming a11y trap / landing token layer / @view-transition + interpolate-size 渐进增强 / Linear+Plausible reference matrix)
+## 角色 / Backlog (BL-079 verifying 中, BL-080 排队)
+- ★ **BL-080 landing illustration mockups (5/27 plan + 4 子决策全 lock)** — AI 生成 ~8 张 illustration 替代真截图, 用户跑 DALL-E/MJ/SD + Generator 提供 8 detailed prompt templates + 集成. ~10h Generator + 用户 0.5-1 day AI gen. 依赖 BL-079 done.
 - Phase 5：个性化学习 / AI 偏好学到 / Brief 模板库 / comparative query / skip-replace 写 DB
 - 真客户 onboarding：db:seed 验证 + tenant cleanup + 监控仪表板
 - BL-054 (medium) flaky network test isolate / BL-048 (low) valueScore 公式区分度优化
