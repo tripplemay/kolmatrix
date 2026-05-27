@@ -78,6 +78,64 @@
   /* Cinematic v2 landing — Geist family. App side stays on Inter (--font-sans). */
   --font-geist: var(--font-geist-sans-raw), ui-sans-serif, -apple-system, "PingFang SC", "Source Han Sans", sans-serif;
   --font-geist-mono: var(--font-geist-mono-raw), "SF Mono", Menlo, "Source Han Mono", monospace;
+
+  /* ============================================================
+     BL-078 — Landing v2 visual tokens (D1 现代极简 / D2 Linear+Plausible)
+     ------------------------------------------------------------
+     Layered ON TOP of Neural Velocity palette. Existing app/landing
+     classes (text-cyan, bg-surface, font-geist) stay valid; F002-F004
+     prefer the landing-* tokens for new visual rules.
+     Doc: design-draft/landing-v2-tokens.md
+     ============================================================ */
+
+  /* Typography scale — fluid clamp, Linear-style display + grotesk body */
+  --text-landing-hero: clamp(2.75rem, 6vw, 5.5rem);     /* 44-88px */
+  --text-landing-h2: clamp(2rem, 4vw, 3.25rem);         /* 32-52px */
+  --text-landing-h3: clamp(1.25rem, 2vw, 1.75rem);      /* 20-28px */
+  --text-landing-body-lg: 1.125rem;                     /* 18px */
+  --text-landing-body: 1rem;                            /* 16px */
+  --text-landing-eyebrow: 0.6875rem;                    /* 11px */
+
+  /* Leading (line-height) */
+  --leading-landing-display: 0.95;
+  --leading-landing-tight: 1.1;
+  --leading-landing-normal: 1.5;
+  --leading-landing-relaxed: 1.7;
+
+  /* Tracking (letter-spacing) */
+  --tracking-landing-display: -0.035em;
+  --tracking-landing-tight: -0.02em;
+  --tracking-landing-eyebrow: 0.3em;
+
+  /* Landing color layer — Linear-style refinement on Navy palette.
+     - canvas: deeper, cooler than --color-navy-base (Linear's near-black bg)
+     - canvas-elevated: subtle sectional contrast above canvas
+     - ink: slightly cool off-white for sophistication (vs pure white)
+     - ink-muted: 70% L for paragraph body
+     - ink-subtle: 52% L for eyebrows / footers / micro-meta */
+  --color-landing-canvas: oklch(14.5% 0.022 265);
+  --color-landing-canvas-elevated: oklch(18.5% 0.025 264);
+  --color-landing-ink: oklch(94% 0.012 240);
+  --color-landing-ink-muted: oklch(70% 0.018 240);
+  --color-landing-ink-subtle: oklch(52% 0.020 240);
+
+  /* Spacing rhythm — vertical / horizontal section + sub-element levels */
+  --spacing-landing-section-y: clamp(5rem, 9vw, 9rem);
+  --spacing-landing-container-x: clamp(1.5rem, 5vw, 6rem);
+  --spacing-landing-element-tight: 0.5rem;
+  --spacing-landing-element-normal: 1.5rem;
+  --spacing-landing-element-loose: 3rem;
+
+  /* Motion — durations + Linear-style ease-out + smooth ease-in-out */
+  --duration-landing-short: 200ms;
+  --duration-landing-medium: 400ms;
+  --duration-landing-long: 800ms;
+  --ease-landing-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-landing-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Radii — landing surfaces lean larger than app surfaces for softness */
+  --radius-landing-card: 18px;
+  --radius-landing-pill: 9999px;
 }
 
 /* ============================================================
