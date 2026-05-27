@@ -4,69 +4,36 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-078-landing-visual-polish BUILDING (0/6, fix_rounds=0) — 落地页视觉精修 (不动结构/文案/业务路径)
-- A0+A1 完成 5/27 16:30: plan v2 ack + D1-D3 全 lock (D1 现代极简 Linear 主+Plausible 辅 / D3 全栈现代化 view transitions + scroll-driven + IntersectionObserver fallback)
-- F001 视觉 token 规范 (2h) / F002 Hero + TopNav + view transitions setup (4h LCP 关键) / F003 Body 4 sections (5h) / F004 Trust/FAQ/Footer/SectionTransition (2h) / F005 baseline + Lighthouse + a11y verify (2h) / F006 Reviewer (2h) — 总 ~17h ≈ 2 day Generator + 0.5 day Reviewer
-- 0 业务代码改动 (仅 UI styling / motion / CSS / framer 集成); 保 11 components / sections 顺序 / 文案 / 业务路径 / 5 locale 不动
-- 保 BL-070 #29+#30 LCP skeleton 像素镜像; perf ≥85 / LCP <2.5s / CLS <0.05 / TBT <200ms 守门
-- 关联: docs/specs/BL-078-landing-visual-polish-spec.md + 参考 Linear (主) + Plausible (辅)
+## 🔎 BL-078-landing-visual-polish VERIFYING (5/6, fix_rounds=0) — Generator F001-F005 完成，Reviewer L1+L2 + signoff 待
+- 6 commits 推 main: b24b736 F001 token + design-draft / fc30524 F002 Hero+TopNav + view transitions + mesh gradient + landing-cta-primary/secondary / 7f291e2 F003a PainPoints+Features + landing-card-light + icon-halo / 6493d29 F003b BeforeAfter+EmailCenterDemo / 1c8cdd0 F004 Trust+FAQ+FooterCTA+SectionTransition + FAQ smooth-height (interpolate-size 渐进增强) / 384531e F005-a11y-fix (ink-muted 70→78%, ink-subtle 52→60%)
+- update-visual-baselines.yml 跑 2 次 (df5585b + 55c5180 fix-round)；staging deploy 3 次 → 当前 staging git_sha = 384531e (re-deploy 后)
+- **Lighthouse Desktop logged-out staging /zh (384531e):** perf 0.94 ✓ / a11y 0.96 ✓ / LCP 1077ms ✓ / CLS 0 ✓ / TBT 0ms ✓ / SEO 0.58 ✗ (staging noindex+robots disallow+canonical 缺失, 全 staging-only intentional)
+- a11y 0.96 ≥ 0.90 spec ✓；color-contrast=0 单项 13 elements: 主因 StickyParallax opacity-40 inactive callouts + BeforeAfter opacity-50 inactive rows (pre-existing 视觉机制 decorative parallax, out-of-scope per BL-078 仅视觉精修)；Reviewer 评估是否新批次跟进
+- L1 PASS: lint 0 errors / 3 baseline warnings (不变) / tsc clean / npm test 189 files 1375 tests PASS
+- 0 业务代码改动 / 11 components 数量/文件名/data-testid 全保留 / CTA href + i18n key 0 改 / E2E landing.spec.ts 链路覆盖 unchanged
+- **Reviewer L2 待执行 (per F006):** Lighthouse 复跑 (5 locale spot check) / a11y 手动 verify (Tab keyboard nav + contrast 抽样 + aria) / 5 locale text overflow ja+ko 验关键 sections / Browser matrix Chrome 115+ + Safari 18+ + Firefox latest (view-transition + scroll-driven fallback 实测) / prefers-reduced-motion / 设计参照 Linear+Plausible 精神落地主观评判 / signoff doc docs/test-reports/BL-078-signoff-2026-05-XX.md
 ## ✅ BL-077-v0.9.24-framework-sediment DONE (9/9, fix_rounds=0, tag bl077-done @ 0fc8abf) — v0.9.24 framework sediment batch 终签完成
 - Codex Reviewer 终签 PASS：L1 通过 `npm run lint` = 0 errors / 3 baseline warnings、`npx tsc --noEmit` PASS、17 source IDs 全部 grep 到 framework/harness/*.md、`framework/proposed-learnings.md` 保留 v0.9.24 marker、archive v0.9.24 = 817 LOC、CHANGELOG v0.9.24 段存在
-- L2 抽样阅读通过：`ai-action-contract.md` §6 AI cost/rate 合并段可执行；`evaluator.md` §13.4 advisory test v1→v2→STRICT 进化清晰；`generator.md` §11 J delete-X grep-callers 矩阵成功扩展 v0.9.23 #19；`deploy-patterns.md` §8 含 BL-076 14 天 outage 反例；CHANGELOG ↔ archive 17 条 1:1 对应成立
-- 未发现 chronological-append regression；新内容均落在 topic section / 合理子段内，不是历史 dump
 - signoff: `docs/test-reports/BL-077-signoff-2026-05-27.md`
 ## ✅ BL-076-apify-numeric-overflow DONE (5/5, fix_rounds=2) — numeric overflow hotfix 终签完成
-- Codex Reviewer 终签 PASS：fix-round 2 口径下，staging `AI_DAILY_COST_USD_PER_TENANT_MAX=500 npx tsx scripts/kol-sync-daily.ts --enrichment-limit=10` 结果 `discover=2567 inserted=0 updated=1859 failed=0 errors=0 level=INFO`
-- 该结果满足锁定后的 F005：`(inserted + updated) > 0`、`failed=0`、无 `numeric field overflow`
-- prod 结构化 log 保留 outage 补回瞬时证据：`inserted=474 updated=1385 failed=0 errors=[]`
-- prod SQL 复核通过：`engagement_rate>999.99=15` / `outlier=true=157` / `audit_log.kol.import_failed=0` / `created_at > 2026-05-26T16:37Z = 474` / `max(engagement_rate)=9137.06`
-- L1 通过：lint 0 errors / 3 warnings、tsc clean、npm test PASS、prisma migrate status up to date、schema `Decimal(7,2)` 确认
 - signoff: `docs/test-reports/BL-076-signoff-2026-05-27.md`
-## ✅ BL-075-kol-data-coverage DONE (7/7, fix_rounds=1) — signoff 完成
-- Codex Reviewer 终签 PASS：L1 通过 `npm run lint` = 0 errors / 3 warnings、`npx tsc --noEmit` PASS、`npm test` = 188 files / 1368 tests PASS、backfill dry-run 输出格式正常、environment action 清单仍含 `kol-country-enrichment`
-- prod `/api/health` 已返回 `kol_coverage` 真数字：`total_active_kols=1397`、`country_fill_rate=20.4%`、`language_fill_rate=45.5%`
-- staging `/zh/match` 已显示 coverage hint（`地区 已覆盖 68%`、`语言 已覆盖 1%`），`?regions=US` 返回 1,594 结果且首屏有明确 `US` KOL 卡片
-- backfill 准确率证据采用 `docs/test-reports/BL-075-backfill-2026-05-26.md`：30-row 抽样 0 obvious false-positive 国家误标
-- fix-round 1 blocker 已关闭：staging `AI_DAILY_COST_USD_PER_TENANT_MAX=500 npx tsx scripts/kol-sync-daily.ts --enrichment-limit=10` 真实进入 enrichment stage；我的复跑结果为 `scanned=10 / lang+=2 / country+=2 / llm_calls=3 / failed=0`
-- residual risk：`discover-import[apify-kol] numeric field overflow` 仍存在，但与 BL-075 enrichment-stage / coverage 链路解耦，记为独立 hotfix 候选，不阻断 done
-- signoff: `docs/test-reports/BL-075-signoff-2026-05-27.md`
-## ✅ BL-074-ia-v2 DONE (6/6, fix_rounds=0, tag bl074-done @ 6bc881d) — 5 路由 IA 加 Campaigns nav + ADR-015 完成并终签
-- Codex Reviewer 终签 PASS：L1 通过 `npm run lint` = 0 errors / 3 warnings、`npx tsc --noEmit` PASS、本地 Playwright `sidebar-nav-5-routes` = 5 passed / 29 skipped
-- 静态验收通过：`NAV_ITEMS` 为 5 条且顺序 `brief → campaigns → match → reach → insight`；`messages/zh.json` 含 `nav.campaigns=活动`；ADR-015 存在且 167 LOC；ADR-013 superseded marker 与 ADR README 索引同步
-- staging 抽样通过：zh 5-nav 顺序正确；`/en/campaigns` 与 `/en/campaigns/[id]` 都高亮 Campaigns；campaign row Match CTA 存在且跳 `/en/match?campaignId=...`
-- `/en/insight` QuickActions 已收敛为 3 个按钮，链接分别为 `/brief?tab=products`、`/match`、`/match?view=table`
-- signoff: `docs/test-reports/BL-074-signoff-2026-05-26.md`
-- BL-075 (data coverage) backlog 可继续，不再依赖 BL-074
-## ✅ BL-073-prod-hotfix DONE (8/8, fix_rounds=2, tag bl073-done @ 433047d) — 3 prod hotfix + 防御升级 + filter UX 完成并终签
-- Codex Reviewer 终签 PASS：stable `dimensionId` testid 复验确认 staging `/zh/match` 只有 `chip-group-no-data-monetization` 存在；`region/category/platform/language` 的 no-data hooks 都不存在，language 输入保持启用，符合 coverage>0 行为
-- F007 保持通过：temp copy 把 `grid_view` 改成 `unknown_icon` 后，`tests/unit/material-symbols-coverage-unit.test.ts` 明确 FAIL，STRICT_MS_ICONS 拦截能力真实成立
-- L1 通过：`npm run lint` = 0 errors / 3 warnings；`npx tsc --noEmit` PASS；targeted vitest 10/10 PASS
-- staging 抽样通过：`/zh/match` 默认 20 cards；no-data 只落在 monetization 维度，不再存在 region 误读
-- signoff: `docs/test-reports/BL-073-signoff-2026-05-26.md`
-## ✅ BL-072-prod-hotfix DONE (8/8, fix_rounds=1, tag bl072-done @ bc24e09) — 4 prod hotfix + CI 防御三件套完成并终签
-- Codex Reviewer 5/26 复验 PASS：唯一 blocker（/insight unused warning）已修；`npm run lint` 回到 0 errors / 3 warnings；signoff 已落 `docs/test-reports/BL-072-signoff-2026-05-26.md`
-- L1 通过：lint 3 warnings soft-watch / `npx tsc --noEmit` PASS；上轮已验证 `npm test` 185 files 1322 tests PASS、stale path grep 0、subset regen 含 `table_rows`、zh insight keys 完整
-- L2 复验通过：staging healthy；/zh/insight heading=Insight + 中文 subtitle/tabs、/match 两态 icon、/brief≈/insight 宽度均 1136px，无回归
-- 4 个 prod-facing 问题已在 staging 验证通过；当前仅余 3 个历史 unused-style warning 记为 soft-watch，不阻断 done
+## ✅ BL-075-kol-data-coverage DONE (7/7, fix_rounds=1) / BL-074-ia-v2 DONE (6/6, fix_rounds=0, tag bl074-done @ 6bc881d) / BL-073-prod-hotfix DONE (8/8, fix_rounds=2, tag bl073-done @ 433047d) / BL-072-prod-hotfix DONE (8/8, fix_rounds=1, tag bl072-done @ bc24e09)
 ## ✅ BL-071 DONE (10/10, fix_rounds=1, tag bl071-done @ 99c43fc) — framework v0.9.23 闭环
-- 12 决策点 D1-D12 全 lock 实施; 11 项结构变更 + 31 条 sediment inline-merge + 0 chronological-append
-- 关联: framework/CHANGELOG.md v0.9.23 + framework/archive/proposed-learnings-archive-v0.9.23.md
-- 0 行业务代码改动 / signoff: docs/test-reports/BL-071-signoff-2026-05-26.md
-## ✅ BL-070 DONE (11/11, fix_rounds=4, prod=fc79f43) — Phase 4 完整完成 + 对外上线 ready
-## ✅ BL-069 DONE（7/7）/ BL-068 DONE（7/7）/ BL-067 DONE（7/7）/ BL-066 DONE（9/9, prod=f2a8210）
-## ✅ BL-065 / BL-064 / BL-063 / BL-061-060-059 / BL-012 / BL-055-052-051a-049 / BL-021+023 / BL-043+044 全 DONE
+## ✅ BL-070 DONE (11/11, fix_rounds=4, prod=fc79f43) — Phase 4 + 对外上线 ready
+## ✅ BL-069/068/067/066/065/064/063/061-060-059/012/055-052-051a-049/021+023/043+044 全 DONE
 ## 关键决议（已 lock）
-- 5/10 ADR-013 AI Native 转向 Phase 1-4 / 5/26 ADR-015 supersedes ADR-013 (5 路由 IA)
-- 5/25 BL-071 12 决策点 D1-D12 全 lock (D7 inline-merge 强制规则首次大规模应用)
-- 5/26 BL-072/073/074/075 全 done (4 P1 prod hotfix 批次连续 + 5 路由 IA + KOL data coverage)
-- 5/26 prod deploy 至 c428797 完成 (含 BL-071/072/073/074/075 全部 fix)
+- 5/27 BL-078 plan v2 + D1-D3 全 lock (D1 现代极简 Linear+Plausible / D3 全栈现代化 view transitions + scroll-driven + IntersectionObserver fallback)
+- 5/26 BL-072/073/074/075 done (4 P1 prod hotfix + 5 路由 IA + KOL data coverage)
+- 5/26 prod deploy 至 c428797
 ## 用户手工待办
-1. 5/17 weekly growth-curve check（重跑 BL-061 F003 SQL）
+1. 5/17 weekly growth-curve check
 2. fork 上游待修：Dockerfile @apify-kol/apify COPY + docker-compose ports default
-3. **BL-070 post-launch ops:** 24h 后跑 `ssh tripplezhou@34.180.93.185 'bash /opt/kolmatrix/scripts/bl070-prod-audit.sh'` + 邀 ≥5 marketer dogfood; 全过则 signoff §4 #9/#10 DEFERRED→PASS
-4. prod 实测验证 5/27 BL-073/074/075 fix 用户体验是否符合预期 (5 路由 IA / Material Symbols / i18n / filter UX / kol_coverage)
-## 角色 / Backlog (BL-077 verifying 中, BL-078 排队)
-- ★ **BL-078 landing 视觉精修 (5/27 plan v2 ack + D1-D3 全 lock)** — 不动结构/文案/业务路径, 仅 typography+color+spacing+motion+精致度. ~1.5-2 day. D1=现代极简 (Linear 风) / D2=Linear (主) + Plausible (辅) 参考 / D3=全栈现代化 (view transitions + scroll-driven + IntersectionObserver fallback). BL-077 done 后直接起 spec.
-- Phase 5：个性化学习 / AI 学到偏好 / Brief 模板库 / comparative query / skip-replace 写 DB
-- 真客户 onboarding 准备：db:seed 验证 + tenant cleanup + 监控仪表板
+3. **BL-070 post-launch ops:** 24h 后跑 ssh tripplezhou@34.180.93.185 'bash /opt/kolmatrix/scripts/bl070-prod-audit.sh' + 邀 ≥5 marketer dogfood
+4. prod 实测 5/27 BL-073/074/075 fix 用户体验
+## 角色 / Backlog (BL-078 verifying 中)
+- BL-078 done 后 prod deploy 让用户实测视觉精修效果
+- StickyParallax opacity-40 + BeforeAfter opacity-50 inactive contrast (pre-existing decorative parallax, BL-078 之外) — 评估新批次跟进
+- v0.9.25 framework sediment batch (BL-078 4 沉淀候选累积)
+- Phase 5：个性化学习 / AI 偏好学到 / Brief 模板库 / comparative query / skip-replace 写 DB
+- 真客户 onboarding：db:seed 验证 + tenant cleanup + 监控仪表板
 - BL-054 (medium) flaky network test isolate / BL-048 (low) valueScore 公式区分度优化

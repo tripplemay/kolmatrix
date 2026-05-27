@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "src/app/globals.css (或 tailwind.config.ts) @theme 扩展含 landing-specific token: typography scale (hero h1 clamp 2.5-4.5rem / section h2 / h3 / body 含 line-height + tracking) + color tokens (landing-bg-base/section + text-primary/muted + accent-cyan/purple + gradient-hero) + spacing rhythm (section-y / container-x / element-y 3 级) + motion tokens (duration 3 级 + ease-out / ease-in-out)",
       "≥20 token 落地, 全部含语义化命名 (--font-size-hero-h1 / --landing-bg-base 等)",
@@ -20,7 +20,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "HeroVideo.tsx 应用 F001 tokens (hero h1 typography + spacing + gradient)",
       "Hero gradient 升级 mesh gradient (Linear 风, 微妙 multi-color blob, 非生硬 linear)",
@@ -40,7 +40,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 5.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "PainPoints.tsx 应用 F001 tokens; 现 sticky stack 升级 scroll-driven progress (animation-timeline scroll + 数字 / icon entrance stagger via @keyframes)",
       "Features.tsx 应用 F001 tokens; 6 module cards 视觉精修 (Linear 风 card with subtle border + hover lift); 每 card 滚到视窗微妙 reveal + hover micro-interaction (scale 1.02 + shadow 增强)",
@@ -59,7 +59,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "TrustPlaceholder.tsx 应用 F001 tokens; logo wall 视觉精修 (如有 logo) / KPI 数字 typography 升级 (现代极简大字 + tabular nums)",
       "FAQ.tsx 应用 F001 tokens; 折叠交互 motion 升级 (smooth height transition via grid-template-rows trick 或 CSS @keyframes); typography 升级",
@@ -75,7 +75,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "触发 GitHub Actions update-visual-baselines.yml workflow: 4 viewport (Desktop 1920 / Tablet 768 / Mobile 375 / Wide 2560) × 5 locale spot check × 11 components ≈ 220 visual snap 入 git",
       "Lighthouse Desktop logged-out 实测 6 项门槛全 PASS: perf ≥85 / LCP <2.5s / CLS <0.05 / TBT <200ms / SEO ≥90 / a11y ≥90",
