@@ -1,11 +1,11 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "BL-079-v0.9.25-framework-sediment — 5 候选 (BL-078 全部 ack) inline-merge framework/harness/*.md (1 同主题合并 #1+#5 a11y) + CHANGELOG v0.9.25 + archive v0.9.25.md. 6 features F001-F006 (~7.5h ≈ 1 day Generator + 0.5 day Reviewer). A1 lock 5/27: A 全做 (scope 比 BL-077 17 候选小约 3x). 类 BL-077 模式但仅 inline-merge 无结构变更; 0 业务代码改动. 关联 docs/specs/BL-079-v0.9.25-framework-sediment-spec.md + framework/proposed-learnings.md (5 entries 全 user-acked).",
   "total_features": 6,
-  "completed_features": 5,
+  "completed_features": 6,
   "fix_rounds": 0,
   "current_sprint": "BL-079-v0.9.25-framework-sediment",
-  "last_updated": "2026-05-28T00:05+0800",
+  "last_updated": "2026-05-28T00:14+0800",
   "reference_docs": [
     "docs/specs/BL-079-v0.9.25-framework-sediment-spec.md",
     "framework/proposed-learnings.md",
@@ -19,9 +19,9 @@
   "docs": {
     "spec": "docs/specs/BL-079-v0.9.25-framework-sediment-spec.md",
     "audit": null,
-    "test_cases": null,
-    "signoff": null,
-    "framework_reviewed": false
+    "test_cases": "docs/test-reports/BL-079-signoff-2026-05-28.md",
+    "signoff": "docs/test-reports/BL-079-signoff-2026-05-28.md",
+    "framework_reviewed": true
   },
   "role_assignments": null,
   "evaluator_feedback": null,
@@ -42,7 +42,7 @@
   "session_notes": {
     "Kimi_planner": "[2026-05-27 23:50 BJT Planner Kimi BL-079 planning done. v0.9.25 sediment 5 候选 inline-merge (BL-078 全部). 1 同主题合并 #1+#5 a11y → evaluator.md \"motion a11y 三件套\". 4 实际段: evaluator a11y / ui-fidelity-guardrail token / generator 渐进增强 / planner-checklists reference 提炼. 6 features F001-F006 ~7.5h. 类 BL-077 模式但 scope 更小 (5 vs 17 候选). 0 业务代码改动.]",
     "Kimi_generator": "[2026-05-28 00:05 BJT Generator Kimi BL-079 F001-F005 完成 → verifying. 1 commit f8304b1 (7 files +617/-108): evaluator.md §11.6 motion a11y 三件套 (#1 opacity-dimming + #5 reduced-motion 合并; 含 4 重 distinction 模板 + grep 防御 + DevTools 实测 checklist) / ui-fidelity-guardrail.md §3.4 landing token layer (#2; 4 类 token + 复用规则 + light-theme deep variant 必有 + 反模式) / generator.md §18 现代 CSS 渐进增强 (#3; Native API + Fallback + reduced-motion 三层守门 + @view-transition/animation-timeline/interpolate-size 3 API 实物 + ScrollFadeIn helper 代码) / planner-checklists.md §reference 提炼方法论 (#4; 3 步法解构-筛选-抽象 + BL-078 D2 lock 实战) / CHANGELOG v0.9.25 49 LOC 顶部 + archive v0.9.25.md 233 LOC + proposed-learnings 5 entries 全清 + marker. L1 PASS: tsc clean / lint 0 errors 3 baseline warnings 不变. Source ID grep verification: #1=4 / #2=1 / #3=2 / #4=1 / #5=4 全 ≥1 命中. 0 chronological-append §N (evaluator §11.6 入 §11 L2 验收手段; ui-fidelity §3.4 入 §3 Generator 开工; generator §18 顺位续 §17; planner-checklists §reference 入 §spec 起草 checklist 末尾). 0 业务代码改动. Reviewer F006 L1+L2 待执行 (L1 6 项自动 + L2 抽样 3 段阅读 evaluator §11.6 / generator §18 / CHANGELOG↔archive 对应). signoff doc docs/test-reports/BL-079-signoff-2026-05-XX.md 待 Reviewer 写.]",
-    "Reviewer": null,
+    "Reviewer": "[2026-05-28 00:14 BJT Codex Reviewer BL-079 verifying PASS. L1 passed: lint 0 errors / 3 baseline warnings, tsc PASS, BL-078 #1-#5 source ID grep all hit intended framework/harness targets, proposed-learnings carries exactly one v0.9.25 completion marker with no residual BL-078 entries, archive v0.9.25 = 233 LOC, CHANGELOG v0.9.25 top section = 47 LOC. L2 sampled reads passed: evaluator.md §11.6 preserves both opacity-dimming and reduced-motion sources as a coherent motion-a11y triplet; generator.md §18 expresses a reusable Native+Fallback+reduced-motion pattern with concrete templates; CHANGELOG↔archive mapping is 5 candidates 1:1 with the #1+#5 thematic merge explicitly tracked in both places. No chronological-append dump found. Status -> done. Signoff: docs/test-reports/BL-079-signoff-2026-05-28.md]",
     "johnsong_planner": null,
     "johnsong_generator": null
   }

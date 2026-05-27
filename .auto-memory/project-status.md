@@ -4,13 +4,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-079-v0.9.25-framework-sediment VERIFYING (5/6, fix_rounds=0) — F006 Reviewer pending
-- A0+A1 完成 5/27: A 全做 (5 inline-merge + 1 同主题合并 + CHANGELOG + archive)
-- 5 候选源 BL-078: #1 opacity-dimming a11y trap / #2 landing token layer / #3 view transitions 渐进增强 / #4 reference 提炼方法论 / #5 reduced-motion 守门
-- 1 同主题合并: #1+#5 a11y → evaluator.md "motion a11y 三件套" 单段
-- 4 实际段: evaluator (a11y 合并) / ui-fidelity-guardrail (token) / generator (渐进增强) / planner-checklists (reference 提炼)
-- F001-F006 ~7.5h ≈ 1 day Generator + 0.5 day Reviewer
-- 类 BL-077 v0.9.24 模式但 scope 小 (5 vs 17 候选); 0 业务代码改动
+## ✅ BL-079-v0.9.25-framework-sediment DONE (6/6, fix_rounds=0, signoff @ be75998) — v0.9.25 framework sediment batch 终签完成
+- Reviewer verifying PASS: `docs/test-reports/BL-079-signoff-2026-05-28.md`
+- L1 通过: lint `0 errors / 3 warnings`, tsc PASS, source ID grep `#1-#5` 全命中, archive `233 LOC`, CHANGELOG v0.9.25 `47 LOC`
+- L2 抽样通过: evaluator §11.6 motion a11y 三件套 / generator §18 现代 CSS 渐进增强 / CHANGELOG↔archive 5 候选 1:1 对应 + `#1+#5` 合并标注一致
+- `framework/proposed-learnings.md` 已清 5 条 BL-078 候选并保留 `v0.9.25` completion marker
+- 0 chronological-append §N / 0 业务代码改动, 延续 BL-077 sediment 模式
 ## ✅ BL-078-landing-visual-polish DONE (6/6, fix_rounds=1, signoff @ fb34b09) — landing 视觉精修终签完成
 - Reviewer reverifying PASS: `docs/test-reports/BL-078-signoff-2026-05-27.md`
 - staging `/zh` Lighthouse Desktop logged-out 复核通过: perf `0.99` / a11y `1.0` / LCP `530ms` / CLS `0` / TBT `0ms` / `contrastCount=0`

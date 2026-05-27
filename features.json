@@ -90,7 +90,7 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "L1 自动化 6 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) 5 source ID grep (BL-078 #1-#5 各命中 framework/harness/*.md ≥1 次) (4) proposed-learnings.md 含 v0.9.25 marker (5) framework/archive/proposed-learnings-archive-v0.9.25.md exist + ≥200 LOC (6) framework/CHANGELOG.md v0.9.25 段顶部位置 + ≥20 LOC",
       "L2 抽样阅读 3 段 PASS: (1) evaluator.md a11y 合并段 #1+#5 — 验 4 重 distinction 模板 + reduced-motion 实测可执行 (2) generator.md 现代 CSS 渐进增强段 — 验三层守门模板清晰 (3) CHANGELOG v0.9.25 ↔ archive v0.9.25.md 对应关系 (5 候选 1:1 全文)",
