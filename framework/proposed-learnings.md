@@ -269,3 +269,97 @@ sediment（沉淀）从 proposed-learnings.md 走向 `framework/harness/*.md` �
 
 **状态：** 待用户 ack — done 阶段提出，落 v0.9.24 framework sediment batch
 
+---
+
+## [2026-05-27] Claude CLI — 来源：BL-076 audit / Planner Kimi
+
+**类型：** 新规律（v0.9.24 候选 #14，扩展 BL-072 #4 prod error log alerting）
+
+**内容：** **prod 关键 error 多日累积未触发任何告警 — log-based alerting 缺失代价**。BL-076 SSH prod /var/log/kolmatrix-kol-sync.log 实测：`discover-import[apify-kol]: numeric field overflow` 自 5/12 起每天 daily-sync fail，**inserted=0 updated=0 持续 14+ 天 prod 数据同步管道彻底断**，全程未触发任何告警。BL-072 沉淀 #4 已识别 gap 未落实，BL-076 实战代价证实：14 天 prod 数据黑洞 + 1397 KOL 库 stale，影响所有 /match 用户。
+
+**修复 pattern：** (a) `scripts/kol-sync-daily.ts` 出 `level=WARN/ERROR` 时自动调 Slack webhook 含 stats+alerts (b) GCP Cloud Monitoring log-based alert: `inserted=0 errors>0` 连续 3 天触发 PagerDuty (c) `/api/health` 加 `last_successful_sync` 字段, >48h 视为 degraded
+
+**建议写入：** `framework/harness/deploy-patterns.md` §"prod 关键流程 log-based alerting"段（含 BL-076 14 天 outage 反面案例 + 三件套模板）
+
+**状态：** 用户 5/27 ack（间接，BL-076 done 收尾）— 待 v0.9.24 framework sediment batch 落地
+
+---
+
+## [2026-05-27] Claude CLI — 来源：BL-076-F003 / Generator + Planner Kimi
+
+**类型：** 新规律（v0.9.24 候选 #15）
+
+**内容：** **batch insert / sync loop 必须包 per-element try/catch — 单元素 fail 不阻塞整 batch**。BL-076 根因之一: `import.ts` `for raw of raws` loop 无 per-KOL try/catch → first numeric overflow throw → 整 2567 KOL batch fail（inserted=0）。Generator 写 `forEach(prisma.upsert)` 类 pattern 默认假设全部成功，未考虑单元素异常隔离。BL-076-F003 实物落 try/catch + stats.failed 累加 + audit_log forensic.
+
+**模板：**
+```ts
+for (const item of items) {
+  try {
+    await prisma.X.upsert({ ... });
+    stats.success += 1;
+  } catch (err) {
+    stats.failed = (stats.failed ?? 0) + 1;
+    console.error("[batch] item failed:", item.id, err);
+    try {
+      await prisma.auditLog.create({ data: { action: "X.failed", payload: { error: String(err).slice(0, 500), itemSummary: {...} } } });
+    } catch (auditErr) { /* swallow, no recurse */ }
+  }
+}
+```
+
+**适用边界：** 所有 for...of 内 prisma upsert/create 类 DB write + 外部 API call + 文件 IO. **反面：** 业务 critical 单 transaction（如 payment）不应用此模板（fail-fast 更安全）.
+
+**建议写入：** `framework/harness/generator.md` §"DB / 外部 API batch 健壮性"段
+
+**状态：** 用户 5/27 ack — 待 v0.9.24 framework sediment batch 落地
+
+---
+
+## [2026-05-27] Claude CLI — 来源：BL-076-F001 / Generator + Planner Kimi
+
+**类型：** 模板修订（v0.9.24 候选 #16，扩展 BL-070 #22）
+
+**内容：** **Schema migration ROLLBACK SQL 含先 clamp 后 ALTER 警告 — 数据范围扩容场景的 rollback 不对称风险**。BL-076-F001 `ALTER COLUMN engagement_rate TYPE NUMERIC(5,2)→(7,2)` 顺向无损（5,2 ⊂ 7,2），但 ROLLBACK `(7,2)→(5,2)` 因 prod 已含 15 行 > 999.99 → throw "value out of range". 通用模式：**任何扩范围 migration 的 ROLLBACK 必带 UPDATE clamp 前置 step**.
+
+**模板：**
+```sql
+-- 顺向 (无损):
+ALTER TABLE "kol" ALTER COLUMN "engagement_rate" TYPE NUMERIC(7, 2);
+
+-- ROLLBACK (非对称, prod 已含 > 999.99 行时必须先 UPDATE clamp):
+-- 1. UPDATE "kol" SET "engagement_rate" = LEAST("engagement_rate", 999.99) WHERE "engagement_rate" > 999.99;
+-- 2. ALTER TABLE "kol" ALTER COLUMN "engagement_rate" TYPE NUMERIC(5, 2);
+```
+
+**适用边界：** NUMERIC(M,N) / VARCHAR(N) 等带尺寸约束的 column type 改动. Int/Text 无尺寸约束 rollback 安全.
+
+**建议写入：** `framework/harness/database-patterns.md` 或 `generator.md` §"Schema migration ROLLBACK 不对称风险"段
+
+**状态：** 用户 5/27 ack — 待 v0.9.24 framework sediment batch 落地
+
+---
+
+## [2026-05-27] Claude CLI — 来源：BL-076-F002 / Generator + Planner Kimi
+
+**类型：** 新规律（v0.9.24 候选 #17）
+
+**内容：** **adapter output schema 与 DB column type 边界 check 模板 — clamp + outlier flag 三件套**。BL-076-F002 实物落: apify-kol adapter 计算 engagementRate 后 Math.min(rawRate, 99999.99) clamp + outlier=rawRate>100 flag 标 metadata.flags。**通用模式：** 任何 adapter (external API → DB) 数据流, DB write 前必加 per-字段边界 check, 超出 column type 范围的 value 必须 clamp 或 null 或 flag.
+
+**模板：**
+```ts
+const rawValue = computeFromExternalAPI(input);
+const clampedValue = rawValue == null ? null : Math.min(Math.max(rawValue, MIN), MAX);
+const isOutlier = rawValue != null && (rawValue > BUSINESS_THRESHOLD || rawValue < BUSINESS_THRESHOLD_LOW);
+return {
+  field: clampedValue,
+  metadata: { flags: { ...existingFlags, field_outlier: isOutlier } },
+};
+```
+
+**关联：** BL-076 业务阈值 BUSINESS_THRESHOLD=100% (百分比) < DB 上限 99999.99 (Decimal(7,2)). 业务阈值 < DB 上限 合理: 异常先标 flag 不丢数据, DB 边界仅最后兜底.
+
+**适用边界：** 所有 Decimal(M,N) / SmallInt / VARCHAR(N) DB 列上游 adapter; LLM 返回非结构化数值同样需边界 check.
+
+**建议写入：** `framework/harness/generator.md` §"adapter output 边界 check 三件套"段
+
+**状态：** 用户 5/27 ack — 待 v0.9.24 framework sediment batch 落地
