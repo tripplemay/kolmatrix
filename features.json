@@ -1,103 +1,101 @@
 [
   {
     "id": "F001",
-    "title": "Generator 产出 8 detailed AI prompt templates (含 brand spec) [Planner preempt 5/28]",
+    "title": "mapper 接 fork location 字段 + i18n-iso-countries normalize + 单测",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.0,
-    "status": "done",
-    "done_by": "planner-preempt",
-    "done_at": "2026-05-28T00:50+0800",
-    "preempt_reason": "用户 5/28 主动询问 'prompts 在哪里' 并 'continue', Planner 越界产出节省 critical path 时间 (F001 docs only 非产品代码, 不违反铁律 #9; 接受 generator/planner 域边界一次性破例, F006 Reviewer L2 抽样验内容质量)",
+    "estimated_hours": 2.5,
+    "status": "pending",
     "acceptance": [
-      "新建 docs/specs/BL-080-illustration-prompts.md ≥150 LOC, 含 8 个 illustration prompts 完整模板",
-      "8 prompts: Hero illustration / Features 6 modules (Brief AI / Match / Reach / Insight / CRM) / EmailCenterDemo / BeforeAfter pair",
-      "每个 prompt 包 7 sections: Subject (主题) / Style (modern minimal SaaS UI flat illustration with subtle gradients) / Brand colors (navy bg + cyan accent + purple accent + dark theme, 精确 hex 从 src/app/globals.css @theme 提取 BL-078 token) / Composition (centered breathing room, sharp clean lines, dashboard cards, data viz) / Mood (professional futuristic AI-powered B2B SaaS) / Avoid (no photorealistic, no text labels, no logos) / Output spec (1920x1200 hero or 1200x800 features, PNG with transparent or solid bg, ~500KB-1MB target)",
-      "brand color codes 精确 hex (Generator 从 src/app/globals.css @theme 提取 BL-078-F001 token 实际值)",
-      "Prompts 给用户直接复制粘贴 → DALL-E 3 / Midjourney / SD 即可跑",
-      "通知用户 F001 prompts 就绪 + 提供 critical path 时间预估 (用户 AI gen 0.5-1 day)",
-      "L1 PASS (docs only)"
+      "npm install i18n-iso-countries (350+ countries, ISO 3166-1, multi-locale aliases)",
+      "src/lib/kol-sync/adapters/apify-kol.ts:438 country: null → country: normalizeCountryName(item.location)",
+      "新建 src/lib/kol-sync/normalize-country.ts: input=fork location string (英文国名如 'United States' / 'Türkiye'), output=ISO 3166-1 alpha-2 (US / TR) or null",
+      "normalize 实现: i18n-iso-countries.getAlpha2Code(name, 'en') 主路径; 遇 unknown name (Mars / 空字符串 / null) fallback null 不报错",
+      "src/lib/kol-sync/adapters/apify-kol.ts:361 注释 'fork doesn\\'t expose these' 删除/修正为 'country derived from item.location (fork field) when present; null for TT/IG which fork does not scrape'",
+      "单测 ≥6 case 覆盖: (1) 'United States' → 'US' (2) 'Türkiye' → 'TR' (3) 'India' → 'IN' (4) 'Mars' → null (5) item.location undefined → null (6) item.location '' → null",
+      "L1 PASS: npm run lint 0 error warning≤3 / npx tsc --noEmit / npm test (新增 normalize-country.test.ts + apify-kol mapper test 扩充)"
     ]
   },
   {
     "id": "F002",
-    "title": "用户 AI 生成 PNG 并提供 (critical path 外部, Generator 等待 + 验收)",
+    "title": "Schema migration: kol 表加 country_enrichment_attempted_at + index",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.5,
+    "estimated_hours": 1.0,
     "status": "pending",
     "acceptance": [
-      "用户跑 AI image gen (DALL-E 3 / Midjourney / SD) 按 F001 prompts, iterate 直到 brand consistency 达标",
-      "PNG 命名规范: hero-illustration.png / feature-brief.png / feature-match.png / feature-reach.png / feature-insight.png / feature-crm.png / email-center-illustration.png / before-after-illustration.png",
-      "PNG 放 public/landing/illustrations/ 目录",
-      "用户通知 Generator 'illustrations 已就绪 N/8' 后 Generator 启 F003",
-      "Generator 验收: ≥6/8 PNG 就绪 (允许部分缺, 缺的 fallback 真截图); 每 PNG ≤1MB; brand color 抽样 (navy bg + cyan/purple accent 视觉一致); 无 photorealistic / 无大量 text labels",
-      "本 feature Generator 工时 0.5h (验收 + 通知触发 F003) — 用户工时 0.5-1 day 不计入"
+      "prisma/schema.prisma Kol model 加 countryEnrichmentAttemptedAt DateTime? @map('country_enrichment_attempted_at') @db.Timestamptz",
+      "复合 index @@index([tenantId, countryEnrichmentAttemptedAt], name: 'kol_tenant_country_attempted_idx')",
+      "npx prisma migrate dev --name bl_081_add_country_enrichment_attempted_at",
+      "Migration 文件含 ROLLBACK SQL: DROP INDEX kol_tenant_country_attempted_idx; ALTER TABLE kol DROP COLUMN country_enrichment_attempted_at;",
+      "Migration BACKFILL: 不需要 (新字段允许 NULL, 现有 2146 KOL 全 NULL 即 'never attempted')",
+      "RLS policy 不变 (新字段在已有 kol 表上, 沿用 tenant_id 隔离)",
+      "L1 PASS: npx prisma validate / npx prisma migrate status / npx tsc --noEmit"
     ]
   },
   {
     "id": "F003",
-    "title": "Generator 集成 PNG + 替换 4 components Image 引用 + fallback 守门",
+    "title": "enrichment-stage WHERE 改造 + attempted_at 更新逻辑",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 3.0,
+    "estimated_hours": 2.5,
     "status": "pending",
     "acceptance": [
-      "HeroVideo.tsx 加 illustration overlay 或 HeroIllustration.tsx 独立 (保 video 优先 + illustration fallback 或共存)",
-      "Features.tsx 6 module cards Image src 替换为 feature-{module}.png (保 BL-078 Linear 风 card + hover lift)",
-      "EmailCenterDemo.tsx 替换 match-full.png → email-center-illustration.png (保 sticky-parallax callouts)",
-      "BeforeAfter.tsx 替换为 before-after-illustration.png (保 sticky row-highlight motion + BL-078 token)",
-      "Fallback 守门: components 加 conditional 检测 illustration PNG 是否存在 (如 fs / 静态 import 或 Image onError 回退), 缺则保现 public/landing/screenshots/ 真截图",
-      "i18n alt text 复用现有 screenshotAlt 或加新 illustrationAlt keys (5 locale 同步)",
-      "L1 PASS (lint + tsc + vitest)"
+      "src/lib/kol-sync/enrichment-stage.ts:283-307 WHERE 改造: 在原 OR clause 外加 AND (countryEnrichmentAttemptedAt IS NULL OR last_synced_at > countryEnrichmentAttemptedAt) — 已 attempted 但 last_synced 后有新数据则重试",
+      "enrichKol 写入路径: 无论 LLM 返 null 还是真值, 都更新 countryEnrichmentAttemptedAt = NOW() (写在与 country_code 同一事务)",
+      "事务原子性: 任一字段写入失败整体 rollback (避免 attempted_at 写了但 country 没写, 下次跳过反而错失)",
+      "audit_log payload 加 enrichment_attempted_at: 记录 attempt 历史供后续排查",
+      "fork mapper 提供 country 的 KOL 在 sync 时同步设置 countryEnrichmentAttemptedAt = NOW() (避免 daily cron 再扫已知 country 的 KOL)",
+      "单测扩充 ≥4 case: (1) 已 attempted 且 last_synced=attempted 跳过 (2) 已 attempted 但 last_synced 新 重试 (3) LLM 返 null 仍写 attempted_at (4) 事务 rollback 测试",
+      "L1 PASS"
     ]
   },
   {
     "id": "F004",
-    "title": "next/image 优化 + LCP 验证 + fallback handling",
+    "title": "refresh-selector=0 audit report (仅查不修)",
     "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 1.5,
+    "priority": "medium",
+    "estimated_hours": 2.0,
     "status": "pending",
     "acceptance": [
-      "Hero illustration next/image priority + quality={85} + 适配 sizes prop + AVIF/WebP 转换 (Next.js 自动)",
-      "Features cards illustrations lazy load + quality={80} (非 above-fold)",
-      "EmailCenterDemo / BeforeAfter lazy load",
-      "所有 illustrations 总 bundle size < 5MB (不计 video poster)",
-      "Lighthouse Desktop logged-out 实测: perf ≥85 + LCP <2.5s + CLS <0.05 + TBT <200ms (per BL-078 baseline 不 regress)",
-      "实际期望: LCP 与 BL-078 530ms 接近 (illustration 可能比 video 重, 但 CSS skeleton 守门 CLS=0)"
+      "SSH prod 跑 grep '\"refreshCount\"' /var/log/kolmatrix-kol-sync.log 7-30 天历史确认 refresh=0 是否一直为 0 / 是否曾有 N>0 时期",
+      "看 src/lib/kol-sync/refresh-selector.ts 实现 + 调用点 (scripts/kol-sync-daily.ts 或 dispatcher.ts), 定位 cursor 逻辑 / 选择规则",
+      "看 fork apify-kol-service 端是否支持 refresh endpoint (GET /kol 是否有 cursor / since 参数 / refresh path)",
+      "产 docs/audits/BL-081-refresh-selector-audit.md 含: (1) 现状 (refresh=0 持续期 + 影响 KOL 数据 stale 程度) (2) 根因 (selector bug / cursor bug / fork 不支持 / 配置漏) (3) 影响评估 (老 KOL follower / engagement_rate 多久没更新 + 商业影响) (4) 修复建议 (3 候选方向)",
+      "Report 入 git, 不实装 fix (留独立批次)",
+      "L1 PASS: 文档 lint 无 (docs only)"
     ]
   },
   {
     "id": "F005",
-    "title": "visual baseline regen + 5 locale + Lighthouse + a11y verify",
+    "title": "Staging 量化 + prod backfill 写 attempted_at",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.5,
+    "estimated_hours": 2.0,
     "status": "pending",
     "acceptance": [
-      "GitHub Actions update-visual-baselines.yml workflow 跑: 4 viewport (Desktop 1920 / Tablet 768 / Mobile 375 / Wide 2560) × 5 locale spot check × 4 affected components ≈ 80 visual snap 入 git",
-      "Lighthouse Desktop logged-out 实测 6 项门槛全 PASS: perf ≥85 / LCP <2.5s / CLS <0.05 / TBT <200ms / SEO ≥90 / a11y ≥90",
-      "a11y verify 4 项: keyboard nav / focus visible / alt text 5 locale / contrast (illustration 视为图像不直接 contrast 验, 但 overlay 文本如有需验)",
-      "5 locale spot check (ja / ko / es 长字符 + illustration aspect ratio 适配 各 viewport)",
-      "Browser matrix: Chrome / Safari / Firefox + prefers-reduced-motion=reduce 抽样 (per BL-078 fallback 模式延续)"
+      "新建 scripts/kol-country-attempted-backfill.ts: 一次性给所有 country_code IS NULL 的 KOL 写 countryEnrichmentAttemptedAt = NOW() (不调 LLM, 仅 DB UPDATE)",
+      "Staging 验证: 部署 F001-F003 + F005 backfill 跑一次, next 24h 监控 daily-sync log + aigcgateway calls 量化降幅",
+      "Staging acceptance: daily LLM call <200/天 (从 ~500/天 降低 60%+)",
+      "Prod backfill: SSH 跑 backfill script, 写所有 2081 attempted=NULL KOL 的 attempted_at = NOW()",
+      "Prod 验证 24h: aigcgateway daily call <200/天 (mapper YT 直填 + attempted_at 阻止 silent retry)",
+      "Backfill script idempotent (重复跑只更新 NULL attempted_at, 不动已有值)",
+      "L1 PASS (script 单测 ≥2 case dry-run + apply)"
     ]
   },
   {
     "id": "F006",
-    "title": "Codex Reviewer L1+L2 抽样 + signoff doc 终签 (executor:codex)",
+    "title": "Codex Reviewer L1+L2 + signoff (executor:codex)",
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
     "status": "pending",
     "acceptance": [
-      "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 visual baseline + i18n-locale-coverage (4) public/landing/illustrations/ 含 ≥6/8 PNG (5) messages/*.json 5 locale alt text 完整 (如新加 illustrationAlt keys)",
-      "L2 staging 抽样实测 5 项 PASS: (1) /zh + /en Hero 区视觉冲击力升级 (主观评估, illustration 替代真截图后冲击力 acceptable) (2) Features 6 cards illustration 视觉一致 (brand color + Linear 风) (3) EmailCenterDemo + BeforeAfter illustration 视觉一致 (4) CTA → /request-access 跳转链路不破 (5) Lighthouse Desktop logged-out perf ≥85 + LCP <2.5s (BL-078 baseline 不 regress)",
-      "0 perf regression (Lighthouse 6 项门槛)",
-      "0 业务路径破坏 (CTA / Auth redirect / sitemap / canonical 全 OK)",
-      "0 visual baseline diff 异常 (~80 PNG 入 git, diff <5% noise)",
-      "用户主观确认视觉冲击力升级 (BL-078 同维度, 主观签收, 非纯客观指标)",
-      "signoff doc docs/test-reports/BL-080-signoff-2026-05-XX.md 含 L1/L2 结果 + 终签"
+      "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 normalize-country + enrichment-stage 单测 (4) npx prisma validate (5) migration ROLLBACK SQL 文法 valid",
+      "L2 staging+prod 实测 6 项 PASS: (1) mapper YT 抽样 ≥5 KOL location → country_code 正确 normalize (2) attempted_at 写入抽样 ≥5 KOL 验事务原子性 (3) daily cron 跑后 LLM call 真降到 <200/天 (4) 90 个现有 country_code 0 影响 (抽样查现有 country 仍正确) (5) 下游 discovery/match country filter 不破 (6) refresh-selector audit report 可读且 actionable",
+      "成本量化: 5/27-6/01 baseline daily $0.44 vs F005 后 24h daily LLM cost 对比, 期望降幅 >60%",
+      "signoff doc docs/test-reports/BL-081-signoff-2026-06-XX.md 含 L1/L2 结果 + 量化降幅表 + 终签",
+      "F004 audit report 抽样审 ≥1 候选方向技术可行性 (Reviewer 不写代码, 仅判断 report 质量)"
     ]
   }
 ]

@@ -1,30 +1,23 @@
 {
-  "status": "building",
-  "user_goal": "BL-080-landing-illustration-mockups — BL-078 视觉精修 v2: AI 生成 ~8 张 illustration 替代真截图. 6 features F001-F006 (~10h Generator + 0.5 day Reviewer + 用户 AI gen 0.5-1 day critical path). 5/27 用户反馈 BL-078 done 后 '产品截图视觉冲击力不够' → 极重度方案 AI illustration 替代真截图. A1 4 子决策已 lock (极重度 / AI gen / 全量 8 张 / Generator prompt template). 不变量 BL-078 lock 延续: 不动结构/文案/业务路径 + LCP/CLS perf 守门 + brand consistency. 关联 docs/specs/BL-080-landing-illustration-mockups-spec.md + BL-078 baseline + Linear/Plausible 风延续.",
+  "status": "planning",
+  "user_goal": "BL-081-kol-country-data-fix — KOL country mapper bug + silent retry storm 修复. 6 features F001-F006 (~10h Generator + 1.5h Reviewer). 6/01 Planner Kimi 5 维 audit 发现 aigcgateway 500/天 95% 为无效 LLM 重试 + mapper 硬编码 country=null 丢弃 fork location 字段 (YT 596/716=83% 有真值). 3 子决策 lock (范围 P0+refresh-selector audit / normalize 用 i18n-iso-countries lib / TT+IG 继续 LLM 但 attempted_at 一次性). 预期 LLM call 500/天 → <200/天, 省 $109/年, 治本 KOL 池子上 10K 不成本爆炸. 关联 docs/specs/BL-081-kol-country-data-fix-spec.md. BL-080 paused 归档到 docs/archive/paused-batches/.",
   "total_features": 6,
-  "completed_features": 1,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "BL-080-landing-illustration-mockups",
-  "last_updated": "2026-05-28T00:50+0800",
+  "current_sprint": "BL-081-kol-country-data-fix",
+  "last_updated": "2026-06-01T09:50+0800",
   "reference_docs": [
-    "docs/specs/BL-080-landing-illustration-mockups-spec.md",
-    "docs/specs/BL-080-illustration-prompts.md",
-    "src/app/[locale]/(marketing)/_components/HeroVideo.tsx",
-    "src/app/[locale]/(marketing)/_components/Features.tsx",
-    "src/app/[locale]/(marketing)/_components/EmailCenterDemo.tsx",
-    "src/app/[locale]/(marketing)/_components/BeforeAfter.tsx",
-    "public/landing/illustrations/",
-    "public/landing/screenshots/",
-    "src/app/globals.css",
-    "design-draft/landing-v2-tokens.md",
-    "messages/zh.json",
-    "messages/en.json",
-    "messages/ja.json",
-    "messages/ko.json",
-    "messages/es.json"
+    "docs/specs/BL-081-kol-country-data-fix-spec.md",
+    "src/lib/kol-sync/adapters/apify-kol.ts",
+    "src/lib/kol-sync/enrichment-stage.ts",
+    "src/lib/kol-sync/refresh-selector.ts",
+    "scripts/kol-sync-daily.ts",
+    "scripts/kol-enrichment-backfill.ts",
+    "prisma/schema.prisma",
+    "docs/archive/paused-batches/BL-080-RESUME.md"
   ],
   "docs": {
-    "spec": "docs/specs/BL-080-landing-illustration-mockups-spec.md",
+    "spec": "docs/specs/BL-081-kol-country-data-fix-spec.md",
     "audit": null,
     "test_cases": null,
     "signoff": null,
@@ -32,25 +25,25 @@
   },
   "role_assignments": null,
   "evaluator_feedback": null,
-  "fix_rounds_history": [
-    {
-      "round": 1,
-      "outcome": "fail",
-      "summary": "BL-078 passes perf, CTA path, reduced-motion, locale overflow, and browser fallback checks, but fails the locked contrast acceptance. Lighthouse `/zh` shows accessibility 0.96 overall yet `color-contrast` score 0 with 13 flagged elements, including non-decorative landing copy in BeforeAfter, Features, and Demo sections.",
-      "report": "docs/test-reports/BL-078-verifying-2026-05-27.md",
-      "generator_fix_commits": [
-        "7dfb5b9",
-        "b85d34a"
-      ],
-      "generator_fix_result": "color-contrast 0 → 1, 13 elements → 0, a11y 0.96 → 1.0 verified on staging /zh @ b85d34a Lighthouse Desktop logged-out"
-    }
-  ],
+  "fix_rounds_history": [],
   "generator_handoff": null,
   "session_notes": {
-    "Kimi_planner": "[2026-05-28 00:50 BJT Planner Kimi BL-080 F001 PLANNER PREEMPT done. 用户 5/28 主动询问 'prompts 在哪里' + 'continue', Planner 越界产出 docs/specs/BL-080-illustration-prompts.md (8 prompts × 7 sections, ≥250 LOC). 抽 globals.css 实际 brand hex (cyan #00E5FF / cyan-fixed #9cf0ff / purple #9D50FF / purple-fixed #c8a3ff / canvas #080f1c / canvas-elevated #141d31 / surface-low #131b2e / surface-bright #31394d / ink #ebeef5 / ink-muted #b9c1ce). 8 prompts: Hero (1920x1200 16:10) / Features Brief AI / Match / Reach / Insight / CRM (各 1200x900 4:3) / EmailCenterDemo (1600x900 16:9) / BeforeAfter pair (1600x900 16:9). 每 prompt 含 Subject / Style / Brand colors / Composition / Mood / Avoid / Output spec 7 sections. 全局 Style Guard + Production Checklist + Iteration Tips (MJ/SD/DALL-E 各 tool 调优). 工时估 ~2-2.5h AI gen + 0.5h 挑选 + 命名 + 压缩 + 上传 = 半天 critical path. F002 用户启动等待 illustrations 就绪通知 → F003 Generator 集成 (3h) → F004 next/image (1.5h) → F005 baseline (1.5h) → F006 Codex (1.5h). 边界破例已在 features.json F001 preempt_reason 字段留 audit trail.]",
-    "Kimi_generator": "[2026-06-01 09:06 BJT Generator Kimi /loop autonomous] BL-080 building, F001 done, F002 是 critical-path blocker (需 8 张 AI illustration PNG, public/landing/illustrations/ 原本不存在). 用户 6/1 经 AskUserQuestion 授权破 A1 lock 改为 'Generator 用 aigc-gateway 生成' (本来锁定用户手动跑 DALL-E/MJ/SD). 但实测 aigc-gateway 图像后端故障: generate_image 报 status=success 并返回 proxy URL, 但 URL 全部 HTTP 404 'image not found' (gpt-image-mini + gemini-3-pro-image 都 404), 且 4 次生成 balance 纹丝不动 ($42.49301640 前后一致)、transactions 无对应扣费记录、cost 全 $0.00 → 后端降级未真正出图. seedream-3 model_not_found. 结论: aigc-gateway image proxy outage, 当前无法走此路. 已清理 junk 占位文件 (15B 'image not found' 误存的 .png), illustrations/ 目录保持空. F002 仍 pending, 无代码改动. 已 ScheduleWakeup ~30min 重试 gateway; 若持续 down 则建议回退用户手动生成 (F002 status-quo) 或换其他图像服务. 重试时直接 generate_image(gpt-image-mini, 1536x1024) + curl 验证 proxy URL 非 404 再批量跑 8 张.",
+    "Kimi_planner": "[2026-06-01 09:50 BJT Planner Kimi BL-081 planning done] 用户 6/01 问 '5/27 起 aigcgateway 500/天 在做什么' → 5 维 audit (gateway log + prod DB SQL + mapper code + daily-sync log + fork sample) 发现 4 处根因: (R1) apify-kol.ts:438 mapper 硬编码 country=null 丢弃 fork location 字段 (YT 596/716=83% 真值, TT/IG 0). (R2) apify-kol.ts:361 注释过时. (R3) enrichment-stage.ts:283 WHERE 无 attempted_at 标记位 → LLM 返 null → 不写 DB → silent retry storm (97% KOL 每日重扫, cost cap 截到 500/天). (R4) refresh=0 7 天稳定 (refresh-selector 完全不工作, 独立 P1 调查). 用户决策: P0+refresh audit / i18n-iso-countries lib normalize / TT+IG 继续 LLM 但 attempted_at 一次性. 6 features 写 spec + features.json. BL-080 paused 归档到 docs/archive/paused-batches/ (含 RESUME.md 描述恢复路径). 下一步: 用户审 spec 后 Planner commit + push, status planning → building, Generator 启 F001.",
+    "Kimi_generator": null,
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
-  }
+  },
+  "paused_batches": [
+    {
+      "sprint": "BL-080-landing-illustration-mockups",
+      "paused_at": "2026-06-01T09:46+0800",
+      "paused_at_status": "building",
+      "completed_at_pause": "1/6 (F001 Planner preempt 5/28)",
+      "last_commit": "ad14bdd",
+      "snapshot": "docs/archive/paused-batches/BL-080-progress.json + BL-080-features.json + BL-080-RESUME.md",
+      "resume_trigger": "用户通知 F002 AI gen PNG ≥6/8 就绪 (public/landing/illustrations/)",
+      "reason": "用户决定插入 BL-081 KOL country mapper bug + retry storm 修复批次, BL-080 critical path 在用户侧 AI gen 不阻塞"
+    }
+  ]
 }
