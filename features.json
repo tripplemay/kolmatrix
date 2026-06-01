@@ -83,7 +83,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-01T12:06+0800",
+    "done_note": "代码交付完成: scripts/kol-country-attempted-backfill.ts (纯 DB UPDATE 无 LLM, idempotent — WHERE country_enrichment_attempted_at IS NULL 保证重复跑 0 行; 匹配 enrichment scan population: deleted_at NULL + is_suspicious false + country NULL/blank). runCountryAttemptedBackfill 抽为可测函数 + tests/unit/kol-country-attempted-backfill.test.ts 8 case (dry-run 不写 / apply 写 / idempotent 0 行 / SQL-shape 验 NOW()+IS NULL 守护 / tenant scoping). 本地 --dry-run smoke 跑通 (SQL 对真 schema 有效). L1: tsc=0 / lint clean / npm test 1405 passed. **待 ops (需用户 SSH, 非 autonomous)**: staging 部署 F001-F003+F005 → 跑 backfill → 24h 监控 daily LLM call <200; prod 跑 backfill (写操作) → 24h 验 <200. 这些 staging/prod 实测降幅是 F006 Codex L2 验收 + 用户 ops 范畴 (prod backfill 是写 prod 操作需用户授权)。",
     "acceptance": [
       "新建 scripts/kol-country-attempted-backfill.ts: 一次性给所有 country_code IS NULL 的 KOL 写 countryEnrichmentAttemptedAt = NOW() (不调 LLM, 仅 DB UPDATE)",
       "Staging 验证: 部署 F001-F003 + F005 backfill 跑一次, next 24h 监控 daily-sync log + aigcgateway calls 量化降幅",
