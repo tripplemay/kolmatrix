@@ -44,7 +44,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-01T11:13+0800",
+    "done_note": "enrichment-stage.ts WHERE 加 attempted_at gate (field-ref lastSyncedAt>attemptedAt, ?. 容错 unit fake 无 kol.fields); processOne 删 updateData-空-早退 bug, country 候选行无条件写 countryEnrichmentAttemptedAt=new Date() (与 kol.update+auditLog 同 $transaction 原子); audit payload after 加 enrichment_attempted_at; import.ts upsert 当 payload.countryCode 真值时设 countryEnrichmentAttemptedAt=nowDate (与 lastSyncedAt 共享 nowDate 确保 gate 排除). 单测扩充 4 new (gate-skip/gate-retry/null-still-stamps/atomic-rollback) + 修 2 existing after 断言. L1: tsc=0 / lint 0err3warn(pre-existing) / npm test 1397 passed.",
     "acceptance": [
       "src/lib/kol-sync/enrichment-stage.ts:283-307 WHERE 改造: 在原 OR clause 外加 AND (countryEnrichmentAttemptedAt IS NULL OR last_synced_at > countryEnrichmentAttemptedAt) — 已 attempted 但 last_synced 后有新数据则重试",
       "enrichKol 写入路径: 无论 LLM 返 null 还是真值, 都更新 countryEnrichmentAttemptedAt = NOW() (写在与 country_code 同一事务)",

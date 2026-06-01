@@ -167,6 +167,15 @@ async function processOne(
     stats.sources.fallbackNull += 1;
   }
 
+  // BL-081-F003 — country enrichment was attempted this pass whenever the
+  // row arrived without a country (the audience-geo / LLM / fallback path
+  // all ran). Stamp country_enrichment_attempted_at = NOW() regardless of
+  // whether a country was resolved, so a null LLM result stops
+  // re-triggering the daily scan (root cause R3). Rows pulled in solely
+  // for language enrichment (country already populated) don't touch it.
+  const countryAttempted = !row.countryCode;
+  const attemptedAt = countryAttempted ? new Date() : null;
+
   const before = {
     language: row.language,
     country_code: row.countryCode,
@@ -177,14 +186,25 @@ async function processOne(
   const after = {
     language: result.language ?? row.language,
     country_code: result.country ?? row.countryCode,
+    enrichment_attempted_at: attemptedAt ? attemptedAt.toISOString() : null,
   };
 
-  const updateData: { language?: string; countryCode?: string } = {};
+  const updateData: {
+    language?: string;
+    countryCode?: string;
+    countryEnrichmentAttemptedAt?: Date;
+  } = {};
   if (result.language && !row.language) updateData.language = result.language;
   if (result.country && !row.countryCode) updateData.countryCode = result.country;
+  // The marker IS the fix: write it on every country attempt (success or
+  // null) so the F003 gate excludes this row on the next run instead of
+  // re-attempting the LLM daily.
+  if (attemptedAt) updateData.countryEnrichmentAttemptedAt = attemptedAt;
 
-  // No fillable column changed — skip the write entirely so we do not
-  // pollute audit_log with no-op events.
+  // Skip only when nothing at all would be written — e.g. a row pulled in
+  // purely for language enrichment (country already populated) whose franc
+  // pass yielded nothing. Country-candidate rows always carry at least the
+  // attempted marker, so they always write.
   if (Object.keys(updateData).length === 0) return;
 
   if (result.language && !row.language) stats.enrichedLanguage += 1;
@@ -290,6 +310,29 @@ export async function enrichKolsForTenant(
         { countryCode: "" },
         { language: null },
         { language: "" },
+      ],
+      // BL-081-F003 — silent-retry-storm gate (root cause R3). Skip KOLs
+      // already attempted for country enrichment, UNLESS fresher source
+      // data has arrived since the attempt (last_synced_at >
+      // country_enrichment_attempted_at — e.g. a re-sync that may have
+      // updated bio / audience_geo). processOne now stamps the marker on
+      // EVERY attempt (including null LLM results), so a KOL the LLM
+      // can't resolve drops out of this scan next run instead of being
+      // re-attempted daily. Field-reference comparison (Prisma 5+).
+      AND: [
+        {
+          OR: [
+            { countryEnrichmentAttemptedAt: null },
+            {
+              // `?.` so unit fakes that don't expose `kol.fields` (they
+              // ignore the where and return canned rows anyway) don't
+              // throw building this; the real PrismaClient always has it.
+              lastSyncedAt: {
+                gt: opts.prisma.kol.fields?.countryEnrichmentAttemptedAt,
+              },
+            },
+          ],
+        },
       ],
     },
     select: {

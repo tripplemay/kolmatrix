@@ -348,7 +348,20 @@ export async function importRawKolData(
       // buildKolWhere reads.
       isSuspicious: verdict.flags.suspicious_growth === true,
       valueScore: payload.valueScore,
-      lastSyncedAt: now(),
+      lastSyncedAt: nowDate,
+      // BL-081-F003 — when the fork mapper supplied a country (YouTube
+      // `location` → ISO alpha-2 via normalizeCountryName, F001), stamp
+      // the country-enrichment-attempted marker at sync time so the daily
+      // LLM enrichment scan skips this KOL: it already has a country, no
+      // LLM call needed. KOLs without a mapper country (TikTok /
+      // Instagram leave `location` absent) keep the marker untouched and
+      // stay eligible for the enrichment stage's one-shot LLM attempt.
+      // Shares `nowDate` with lastSyncedAt so the enrichment-stage gate
+      // (`last_synced_at > country_enrichment_attempted_at`) stays false
+      // and the row is reliably excluded.
+      ...(payload.countryCode
+        ? { countryEnrichmentAttemptedAt: nowDate }
+        : {}),
     };
     try {
       await prisma.kol.upsert({

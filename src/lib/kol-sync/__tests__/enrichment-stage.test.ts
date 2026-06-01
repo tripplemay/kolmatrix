@@ -23,6 +23,10 @@ interface FakeKolRow {
   categories: string[];
   countryCode: string | null;
   language: string | null;
+  // BL-081-F003 — drive the fake findMany's gate simulation (the real
+  // query filters on these via a field-reference comparison).
+  countryEnrichmentAttemptedAt?: Date | null;
+  lastSyncedAt?: Date | null;
 }
 
 function makeFakePrisma(rows: FakeKolRow[]) {
@@ -46,7 +50,33 @@ function makeFakePrisma(rows: FakeKolRow[]) {
 
   const fakePrisma = {
     kol: {
-      findMany: vi.fn(async () => rows),
+      // Simulate the real BL-081-F003 WHERE: rows with a NULL/blank
+      // country or language, gated to those not-yet-attempted OR
+      // re-synced since the last attempt. Lets the gate test cases
+      // assert which rows reach the enrichment loop.
+      findMany: vi.fn(async () =>
+        rows.filter((r) => {
+          const orMatch =
+            !r.countryCode ||
+            r.countryCode === "" ||
+            !r.language ||
+            r.language === "";
+          const attempted = r.countryEnrichmentAttemptedAt ?? null;
+          const lastSynced = r.lastSyncedAt ?? null;
+          const gate =
+            attempted == null ||
+            (lastSynced != null &&
+              lastSynced.getTime() > attempted.getTime());
+          return orMatch && gate;
+        }),
+      ),
+      // Field-reference sentinel so building the where (which reads
+      // `prisma.kol.fields.countryEnrichmentAttemptedAt`) doesn't throw.
+      fields: {
+        countryEnrichmentAttemptedAt: {
+          name: "country_enrichment_attempted_at",
+        },
+      },
     },
     $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(tx)),
   };
@@ -117,14 +147,23 @@ describe("enrichKolsForTenant", () => {
     expect(audits).toHaveLength(1);
     const auditPayload = audits[0]!.payload as {
       before: { language: string | null; country_code: string | null };
-      after: { language: string | null; country_code: string | null };
+      after: {
+        language: string | null;
+        country_code: string | null;
+        enrichment_attempted_at: string | null;
+      };
       source: { language: string; country: string };
     };
     expect(audits[0]!.action).toBe("kol.enriched");
     expect(audits[0]!.resourceType).toBe("kol");
     expect(audits[0]!.tenantId).toBe(TENANT_ID);
     expect(auditPayload.before).toEqual({ language: null, country_code: null });
-    expect(auditPayload.after).toEqual({ language: "en", country_code: "JP" });
+    expect(auditPayload.after).toEqual({
+      language: "en",
+      country_code: "JP",
+      // country was NULL → enrichment attempted → marker stamped.
+      enrichment_attempted_at: expect.any(String),
+    });
     expect(auditPayload.source.country).toBe("audience-geo-top1");
   });
 
@@ -213,7 +252,12 @@ describe("enrichKolsForTenant", () => {
     // is preserved untouched.
     expect(updates[0]!.data).toEqual({ language: "en" });
     const after = (audits[0]!.payload as { after: Record<string, unknown> }).after;
-    expect(after).toEqual({ language: "en", country_code: "GB" });
+    // country already populated → enrichment not attempted → marker null.
+    expect(after).toEqual({
+      language: "en",
+      country_code: "GB",
+      enrichment_attempted_at: null,
+    });
   });
 
   it("counts a row as failed and continues the loop on $transaction throw", async () => {
@@ -289,6 +333,131 @@ describe("enrichKolsForTenant", () => {
     expect(stats.scanned).toBe(8);
     expect(updates).toHaveLength(8);
     expect(new Set(updates.map((u) => u.id)).size).toBe(8);
+  });
+
+  // ---- BL-081-F003 retry-storm gate + attempted-marker --------------
+
+  it("F003 gate: skips a KOL already attempted whose data has not re-synced", async () => {
+    const attemptedAt = new Date("2026-05-30T00:00:00.000Z");
+    const row: FakeKolRow = {
+      id: "00000000-0000-0000-0000-0000000000a1",
+      bio: "",
+      displayName: "AlreadyTried",
+      handle: "@tried",
+      audienceGeoDist: null,
+      platform: "tiktok",
+      categories: ["Mobile"],
+      countryCode: null,
+      language: null,
+      countryEnrichmentAttemptedAt: attemptedAt,
+      lastSyncedAt: attemptedAt, // no fresh sync since the attempt
+    };
+    const llm = vi.fn();
+    const { fakePrisma, updates } = makeFakePrisma([row]);
+    const stats = await enrichKolsForTenant({
+      prisma: fakePrisma as never,
+      tenantId: TENANT_ID,
+      logger: () => {},
+      minLlmIntervalMs: 0,
+      llm,
+    });
+    expect(stats.scanned).toBe(0);
+    expect(llm).not.toHaveBeenCalled();
+    expect(updates).toEqual([]);
+  });
+
+  it("F003 gate: re-attempts a KOL re-synced after its last attempt", async () => {
+    const row: FakeKolRow = {
+      id: "00000000-0000-0000-0000-0000000000a2",
+      bio: "Streaming from Seoul, Korea every weekend with friends here.",
+      displayName: "ReSynced",
+      handle: "@resynced",
+      audienceGeoDist: { KR: 80, Other: 20 },
+      platform: "youtube",
+      categories: ["FPS"],
+      countryCode: null,
+      language: null,
+      countryEnrichmentAttemptedAt: new Date("2026-05-25T00:00:00.000Z"),
+      lastSyncedAt: new Date("2026-05-31T00:00:00.000Z"), // fresher than attempt
+    };
+    const { fakePrisma, updates } = makeFakePrisma([row]);
+    const stats = await enrichKolsForTenant({
+      prisma: fakePrisma as never,
+      tenantId: TENANT_ID,
+      logger: () => {},
+      minLlmIntervalMs: 0,
+    });
+    expect(stats.scanned).toBe(1);
+    expect(updates).toHaveLength(1);
+    expect(updates[0]!.data.countryCode).toBe("KR");
+    expect(updates[0]!.data.countryEnrichmentAttemptedAt).toBeInstanceOf(Date);
+  });
+
+  it("F003 fix: stamps attempted_at even when nothing is resolved (stops the storm)", async () => {
+    const llm = vi.fn().mockResolvedValue({ country: null, confidence: 0 });
+    const row: FakeKolRow = {
+      id: "00000000-0000-0000-0000-0000000000a3",
+      bio: "", // unanalyzable → franc yields no language
+      displayName: "Unresolvable",
+      handle: "@unresolvable",
+      audienceGeoDist: null, // forces the LLM path
+      platform: "instagram",
+      categories: ["Mobile"],
+      countryCode: null,
+      language: null,
+    };
+    const { fakePrisma, updates, audits } = makeFakePrisma([row]);
+    const stats = await enrichKolsForTenant({
+      prisma: fakePrisma as never,
+      tenantId: TENANT_ID,
+      logger: () => {},
+      minLlmIntervalMs: 0,
+      llm,
+    });
+    expect(stats.scanned).toBe(1);
+    expect(stats.enrichedCountry).toBe(0);
+    expect(stats.enrichedLanguage).toBe(0);
+    // Pre-F003 this produced an EMPTY updateData → no write → re-scanned +
+    // re-LLM'd daily. Now the marker is written so the gate drops it next run.
+    expect(updates).toHaveLength(1);
+    expect(updates[0]!.data).toEqual({
+      countryEnrichmentAttemptedAt: expect.any(Date),
+    });
+    expect(audits).toHaveLength(1);
+    const after = (
+      audits[0]!.payload as { after: { enrichment_attempted_at: string | null } }
+    ).after;
+    expect(after.enrichment_attempted_at).toEqual(expect.any(String));
+  });
+
+  it("F003 atomicity: a failed marker write rolls back via $transaction and is counted", async () => {
+    const llm = vi.fn().mockResolvedValue({ country: null, confidence: 0 });
+    const row: FakeKolRow = {
+      id: "00000000-0000-0000-0000-0000000000a4",
+      bio: "",
+      displayName: "WriteFails",
+      handle: "@writefails",
+      audienceGeoDist: null,
+      platform: "instagram",
+      categories: ["Mobile"],
+      countryCode: null,
+      language: null,
+    };
+    const { fakePrisma, updates } = makeFakePrisma([row]);
+    fakePrisma.$transaction.mockImplementationOnce(async () => {
+      throw new Error("marker write blip");
+    });
+    const stats = await enrichKolsForTenant({
+      prisma: fakePrisma as never,
+      tenantId: TENANT_ID,
+      logger: () => {},
+      minLlmIntervalMs: 0,
+      llm,
+    });
+    expect(stats.failedCount).toBe(1);
+    expect(stats.scanned).toBe(1);
+    // tx threw atomically before any row/audit write was recorded.
+    expect(updates).toEqual([]);
   });
 });
 
