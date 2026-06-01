@@ -64,7 +64,10 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-01T11:20+0800",
+    "done_note": "产 docs/audits/BL-081-refresh-selector-audit.md (6 节). 代码侧根因已确定: refresh=0 非 selector/cursor/fork bug, 而是 BL-059 单源重构删了 refresh phase — scripts/kol-sync-daily.ts:199 refreshCount:0 硬编码, runDaily 无 refresh 调用, fetchTieredRefreshIds 0 production caller (孤儿死代码, 无 test). 能力仍在 (dispatcher.runRefresh + adapter.refresh GET /kol/:platform/:userId 都在). 3 候选修复 (A 重接 selector 推荐 / B 轻量 lastSyncedAt-asc / C 仅扩 discover). SSH 验证 O1-O3 (日志确认 / prod DB staleness 量化 / fork endpoint live-check) 已给精确命令但未执行 (read-only prod 诊断需用户授权/runbook). docs only L1 无需 lint.",
     "acceptance": [
       "SSH prod 跑 grep '\"refreshCount\"' /var/log/kolmatrix-kol-sync.log 7-30 天历史确认 refresh=0 是否一直为 0 / 是否曾有 N>0 时期",
       "看 src/lib/kol-sync/refresh-selector.ts 实现 + 调用点 (scripts/kol-sync-daily.ts 或 dispatcher.ts), 定位 cursor 逻辑 / 选择规则",
