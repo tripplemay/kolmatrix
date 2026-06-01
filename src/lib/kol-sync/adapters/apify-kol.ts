@@ -32,6 +32,7 @@
  * adapter → admin shared schemas ✓).
  */
 import { ApifyKolItemSchema, ApifyKolPageSchema } from "../../apify-kol/schemas";
+import { normalizeCountryName } from "../normalize-country";
 import type {
   HealthCheckResult,
   KolSyncAdapter,
@@ -358,7 +359,13 @@ function parseRetryAfter(header: string | null): number | undefined {
  *                    when followers can't be scraped; treat as 0 so the
  *                    row still upserts and quality.ts can spam-skip)
  *   - topicCategories = item.matchedTags ?? []
- *   - country / language / lastUploadAt / brandSafetyRating = null
+ *   - country      = normalizeCountryName(item.location) — the fork
+ *                    exposes a free-text `location` (YouTube ~83% have a
+ *                    real value; TikTok / Instagram do not scrape it),
+ *                    normalised to ISO alpha-2 here (BL-081-F001). Falls
+ *                    back to null for absent / unrecognised values, in
+ *                    which case the daily LLM enrichment stage fills it.
+ *   - language / lastUploadAt / brandSafetyRating = null
  *     (fork doesn't expose these; reserved for future enrichment)
  *   - raw = the fork item verbatim (preserves all 4 dimension scores +
  *           tier + emails + phones + aggregator data + handles for the
@@ -435,7 +442,7 @@ export function mapApifyKolItemToRawKolData(
     handle,
     displayName,
     description,
-    country: null,
+    country: normalizeCountryName(item.location),
     language: null,
     thumbnailUrl,
     bannerUrl: null,

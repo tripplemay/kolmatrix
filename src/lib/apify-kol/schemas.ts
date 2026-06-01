@@ -30,6 +30,13 @@ export const ApifyKolItemSchema = z
     bio: z.string().nullable().optional(),
     avatarUrl: z.string().nullable().optional(),
     profileUrl: z.string().nullable().optional(),
+    // Free-text profile location as scraped by the fork. YouTube
+    // populates it for ~83% of rows ("United States", "Türkiye", …);
+    // TikTok / Instagram leave it absent. BL-081-F001 promotes it into
+    // `kol.country_code` via `normalizeCountryName()` in the Stage 2
+    // mapper instead of discarding it. Was previously only retained via
+    // `.passthrough()` (untyped); now explicit so the mapper can read it.
+    location: z.string().nullable().optional(),
     followers: z.number().nullable().optional(),
     following: z.number().nullable().optional(),
     postsCount: z.number().nullable().optional(),

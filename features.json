@@ -5,7 +5,9 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-01T10:00+0800",
     "acceptance": [
       "npm install i18n-iso-countries (350+ countries, ISO 3166-1, multi-locale aliases)",
       "src/lib/kol-sync/adapters/apify-kol.ts:438 country: null → country: normalizeCountryName(item.location)",
