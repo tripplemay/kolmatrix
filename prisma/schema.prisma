@@ -155,6 +155,14 @@ model Kol {
   status             String                   @default("active")
   externalId         String?                  @map("external_id")
   lastSyncedAt       DateTime?                @map("last_synced_at") @db.Timestamptz
+  // BL-081-F002 — one-shot "country enrichment attempted" marker. The
+  // daily LLM country-enrichment stage sets this to NOW() whenever it
+  // runs against a KOL (success OR null result), so the silent retry
+  // storm (root cause R3) stops: a KOL is only re-attempted when fresher
+  // source data arrives (last_synced_at > this). Nullable = "never
+  // attempted" — the 2081 existing country_code-NULL rows stay NULL until
+  // F005's one-shot backfill stamps them.
+  countryEnrichmentAttemptedAt DateTime?      @map("country_enrichment_attempted_at") @db.Timestamptz
   createdAt          DateTime                 @default(now()) @map("created_at") @db.Timestamptz
   updatedAt          DateTime                 @updatedAt @map("updated_at") @db.Timestamptz
   deletedAt          DateTime?                @map("deleted_at") @db.Timestamptz
@@ -233,6 +241,9 @@ model Kol {
   @@index([tenantId, aiScore(sort: Desc)])
   @@index([tenantId, platform, followerCount])
   @@index([tenantId, isGaming, valueScore(sort: Desc)], map: "kol_tenant_gaming_value_idx")
+  // BL-081-F002 — drives the daily enrichment-stage WHERE that skips
+  // already-attempted KOLs (tenant-scoped scan on the attempted marker).
+  @@index([tenantId, countryEnrichmentAttemptedAt], map: "kol_tenant_country_attempted_idx")
   @@map("kol")
 }
 

@@ -24,7 +24,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-01T10:46+0800",
+    "done_note": "migrate dev 因 4 个旧 migration checksum 漂移 (pre-existing, 非本批) 要求 destructive reset，改为手写 migration.sql (Prisma 风格 + ROLLBACK header) + migrate deploy 非破坏性 apply。L1 全绿: validate / migrate status up-to-date / tsc=0 / npm test 1393 passed。",
     "acceptance": [
       "prisma/schema.prisma Kol model 加 countryEnrichmentAttemptedAt DateTime? @map('country_enrichment_attempted_at') @db.Timestamptz",
       "复合 index @@index([tenantId, countryEnrichmentAttemptedAt], name: 'kol_tenant_country_attempted_idx')",
