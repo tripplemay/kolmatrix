@@ -3,7 +3,7 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-081-kol-country-data-fix PLANNING→building (0/6, fix_rounds=0) — KOL country mapper bug + silent retry storm 修复
+## 🚧 BL-081-kol-country-data-fix BUILDING (0/6, fix_rounds=0) — KOL country mapper bug + silent retry storm 修复
 - 6/01 Planner Kimi 5 维 audit 发现根因: (R1) `apify-kol.ts:438` mapper 硬编码 country=null 丢 fork location (YT 596/716=83% 真值) (R2) 注释过时 (R3) `enrichment-stage.ts:283` WHERE 无 attempted_at → LLM 返 null 不写 DB → silent retry storm (97% KOL 每日重扫, cap 截 500/天) (R4) refresh=0 7 天独立调查
 - A1 lock: P0+refresh audit / i18n-iso-countries lib / TT+IG 继续 LLM + attempted_at 一次性
 - 6 features: F001 mapper+normalize / F002 migration / F003 enrichment-stage / F004 refresh audit / F005 staging+prod backfill / F006 Codex

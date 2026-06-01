@@ -1,11 +1,11 @@
 {
-  "status": "planning",
+  "status": "building",
   "user_goal": "BL-081-kol-country-data-fix — KOL country mapper bug + silent retry storm 修复. 6 features F001-F006 (~10h Generator + 1.5h Reviewer). 6/01 Planner Kimi 5 维 audit 发现 aigcgateway 500/天 95% 为无效 LLM 重试 + mapper 硬编码 country=null 丢弃 fork location 字段 (YT 596/716=83% 有真值). 3 子决策 lock (范围 P0+refresh-selector audit / normalize 用 i18n-iso-countries lib / TT+IG 继续 LLM 但 attempted_at 一次性). 预期 LLM call 500/天 → <200/天, 省 $109/年, 治本 KOL 池子上 10K 不成本爆炸. 关联 docs/specs/BL-081-kol-country-data-fix-spec.md. BL-080 paused 归档到 docs/archive/paused-batches/.",
   "total_features": 6,
   "completed_features": 0,
   "fix_rounds": 0,
   "current_sprint": "BL-081-kol-country-data-fix",
-  "last_updated": "2026-06-01T09:50+0800",
+  "last_updated": "2026-06-01T09:55+0800",
   "reference_docs": [
     "docs/specs/BL-081-kol-country-data-fix-spec.md",
     "src/lib/kol-sync/adapters/apify-kol.ts",
