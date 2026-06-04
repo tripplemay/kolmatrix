@@ -102,7 +102,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "deploy-staging.yml 触发部署 BL-082 代码到 staging + migrate deploy (platform_user_id 列)",
       "Staging 跑 platformUserId 回填脚本 (F002) 填存量行",
@@ -112,7 +112,10 @@
       "Staging audit_log query: 'kol.refresh_404_skip' 抽样 + 404 比例 ≤5% (验全平台 platformUserId 正确)",
       "report 入 docs/test-reports/BL-082-staging-monitor.md 或 progress.json session_notes",
       "L1 PASS"
-    ]
+    ],
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-04T18:35+0800",
+    "done_note": "staging deploy 9ffee8d (deploy-staging.yml) + platform_user_id 列 applied; F002 backfill 跑 stamped 1859 (YT516/TT1165/IG178), post 2371 行有 platform_user_id; daily-sync refresh phase 实测 totalRefreshed=253 (YT91/TT127/IG35) failedAdapters=0; 404率0% (refreshed==requested 全平台, refresh_404_skip audit=0, ≤5% 达标); refresh→import lastSyncedAt 更新. report docs/test-reports/BL-082-staging-monitor.md. 注: 全量 run 因 enrichment(BL-075) LLM 429 慢, refresh phase 在 enrichment 前已干净完成 (--enrichment-limit=1 取得净测). 24h cron 观察留 F007/cron. prod deploy+backfill 用户手动触发."
   },
   {
     "id": "F007",

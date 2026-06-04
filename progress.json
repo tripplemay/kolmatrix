@@ -1,11 +1,11 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "BL-082-refresh-selector-rewire — 重接 daily-sync 的 refresh phase, 恢复 BIx-F004-P3 tiered refresh. 6 features F001-F006 (~10h Generator + 1.5h Reviewer). 6/04 用户决定 — 跟进 BL-081 F004 audit (refresh=0 根因=BL-059 删 refresh phase 遗留, 非 bug, Dir A 重接是 ~30-50 LOC 接线). 4 子决策 lock: tiered selector 保留 / MAX_TOTAL_REFRESH 200→500 / sequential discover→import→refresh→import / 404 skip+log (沿用 adapter 现有). O3 fork endpoint 已验 (real handle UC22GlzN_jFaGLhiO-8ZM7Gw → 200). 预期 KOL pool staleness 长期保持 <7d + data-quality 治本. 关联 docs/specs/BL-082-refresh-selector-rewire-spec.md.",
   "total_features": 7,
-  "completed_features": 5,
+  "completed_features": 6,
   "fix_rounds": 0,
   "current_sprint": "BL-082-refresh-selector-rewire",
-  "last_updated": "2026-06-04T18:00+0800",
+  "last_updated": "2026-06-04T18:35+0800",
   "reference_docs": [
     "docs/specs/BL-082-refresh-selector-rewire-spec.md",
     "docs/audits/BL-081-refresh-selector-audit.md",
@@ -25,7 +25,7 @@
   "role_assignments": null,
   "evaluator_feedback": null,
   "fix_rounds_history": [],
-  "generator_handoff": null,
+  "generator_handoff": "[2026-06-04 Kimi_generator → Codex F007] BL-082 building→verifying, F001-F006 generator 代码全交付, main CI 全绿 @ 9ffee8d. 全平台 re-scope (用户 6/04 决定 B): F001 platformUserId 列+mapper+import / F002 回填脚本 / F003 runDaily refresh phase (<platform>:<platformUserId>, MAX 500) / F004 refresh-selector+daily-sync 测试 / F005 audit kol.refresh_404_skip / F006 staging 部署+回填+实测. **Staging 已部署 9ffee8d + platform_user_id 回填 1859 + refresh phase 实测 totalRefreshed=253 (YT91/TT127/IG35) 404率0% failedAdapters=0** (deploy-gate 满足). L1 可跑: lint 0err3warn / tsc=0 / npm test 1423 unit / integration apify-kol-adapter 6 (含 onSkip Case6) / refresh-selector 8 / daily-sync refresh e2e 2. Codex L2 可验: staging 抽样 platform_user_id (YT=UC../TT·IG=数字) / refreshCount>0 全平台 / lastSyncedAt 更新 / refresh_404_skip 工作+404率≤5% / discover 行为不变. Prod PENDING (非 generator 域): prod deploy + 回填 + 24h 监控需用户手动触发 deploy-prod.yml (签收后) 然后 SSH 跑 kol-platform-user-id-backfill. report: docs/test-reports/BL-082-staging-monitor.md. 注 enrichment(BL-075) LLM 429 慢与 refresh 无关.",
   "session_notes": {
     "Kimi_planner": "[2026-06-04 16:50 BJT Planner Kimi BL-082 planning done] BL-081 done 收尾 + 用户选 Dir A refresh-selector 重接为下一批次. O3 pre-flight 已跑 (real channel handle UC22GlzN_jFaGLhiO-8ZM7Gw → HTTP 200 完整 KOL object, 2848 bytes), 确认 fork endpoint 可用. 4 子决策 lock (tiered selector 保留 / MAX 500/天 / sequential / 404 skip+log). 6 features spec done. 下一步: 用户审 spec 后 planning → building, Generator 启 F001.",
     "Kimi_generator": "[2026-06-04 17:20 BJT Generator Kimi BL-082 全平台 re-scope] F001 开工前实测 prod fork endpoint 发现 A1 '只接线' 前提对 TT/IG 不成立: fork /kol/<platform>/<platformUserId> 三平台均 200, 但 platformUserId 仅 YT 凑巧=handle, TT/IG 是数字 id 且 mapper 丢弃; fetchTieredRefreshIds 原返 external_id (数字, 0/2383 含 ':') → parseRefreshId 全 null → refresh 全 404. 用户决定 B: 扩全平台 + 授权 Generator 改 spec/features. features 6→7 (新增 F001 platformUserId 存储 schema/mapper/import + F002 回填; 原接线挪 F003). spec 加 §1.5 re-scope. 依赖序 F001→F002→F003→...→F007. 下一步: 实现 F001 (platform_user_id 列 + migration ROLLBACK + mapper 持久化 item.platformUserId + import upsert + mapper 单测).",
