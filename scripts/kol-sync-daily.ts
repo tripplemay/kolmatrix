@@ -3,10 +3,12 @@
  *
  * Runs once per day at 08:30 BJ (= 00:30 UTC) on prod via
  * /etc/cron.d/kolmatrix-kol-sync. After BL-059 (5/9 deprecate) the
- * YouTube Data API path + engagement-batch enrichment + tiered refresh
- * have been removed; the daily sync now drives a single adapter
- * (`apify-kol-service`) through healthCheck → discover → import →
- * embed-hook. apify-kol's discover() walks the fork's GET /kol with
+ * YouTube Data API path + engagement-batch enrichment were removed; the
+ * daily sync drives a single adapter (`apify-kol-service`) through
+ * healthCheck → discover → import → refresh → import → embed-hook.
+ * (BL-082-F003 re-wired the tiered refresh phase that BL-059 had dropped:
+ * `fetchTieredRefreshIds` → `dispatcher.runRefresh` → import.)
+ * apify-kol's discover() walks the fork's GET /kol with
  * its own 4-dim score filter; Kol rows are tagged
  * `metadata.source = 'apify-kol'`, and `engagementRate` is derived by
  * the mapper (BL-059-F001 simplified `(totalLikes / postsCount) /
@@ -42,6 +44,10 @@ import {
   type EnrichStageStats,
 } from "../src/lib/kol-sync/enrichment-stage";
 import { importRawKolData, type ImportStats } from "../src/lib/kol-sync/import";
+import { fetchTieredRefreshIds } from "../src/lib/kol-sync/refresh-selector";
+
+// BL-082-F003 — apify-kol platforms put on the daily refresh rota.
+const REFRESH_PLATFORMS = ["youtube", "tiktok", "instagram"] as const;
 import type { QualityFlags, QualitySkipReason } from "../src/lib/kol-sync/quality";
 import {
   classifyDailyRun,
@@ -83,9 +89,10 @@ export function parseArgs(argv: readonly string[]): CliArgs {
       }
       args.enrichmentLimit = n > 0 ? n : null;
     }
-    // BL-059: --no-refresh / --refresh-batch silently ignored —
-    // refresh phase removed with the YouTube path. Old cron lines
-    // passing them keep working.
+    // Legacy --no-refresh / --refresh-batch flags are accepted-and-ignored
+    // (the refresh phase, re-wired in BL-082-F003, always runs on the
+    // tiered selector's daily slice; old cron lines passing them keep
+    // working without toggling it off).
   }
   return args;
 }
@@ -108,6 +115,9 @@ interface DailyRunReport {
     totals: SyncReport["totals"];
   } | null;
   importStats: ImportStats | null;
+  /** BL-082-F003 — total rows re-fetched + re-imported by the refresh
+   *  phase (tiered selector → adapter.refresh → import). */
+  refreshCount: number;
   /** B7a-F001 — embedding hook results (audit lock #8:B, soft phase). */
   embedStats: EmbedRunStats | null;
   /** BL-075-F003 — enrichment stage stats (country/language fill). */
@@ -173,6 +183,9 @@ function formatMarkdownReport(report: DailyRunReport): string {
     }
     lines.push("");
   }
+  lines.push("## Refresh");
+  lines.push(`- Rows refreshed: ${report.refreshCount}`);
+  lines.push("");
   formatEmbedSection(report, lines);
   formatEnrichmentSection(report, lines);
   if (report.errors.length > 0) {
@@ -196,7 +209,7 @@ export function buildLogLineFromReport(
     endedAt: report.endedAt,
     adapters,
     discoverCount: report.discover?.totals.discoverCount ?? 0,
-    refreshCount: 0,
+    refreshCount: report.refreshCount,
     inserted: report.importStats?.inserted ?? 0,
     updated: report.importStats?.updated ?? 0,
     skipped: report.importStats?.skipped ?? 0,
@@ -248,6 +261,7 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
       health,
       discover: null,
       importStats: null,
+      refreshCount: 0,
       embedStats: null,
       enrichStats: null,
       errors,
@@ -347,6 +361,72 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
     }
   }
 
+  // ---- REFRESH (BL-082-F003) ----
+  // Sequential after discover→import: re-fetch a tiered slice of existing
+  // KOLs per platform via `fetchTieredRefreshIds` → `dispatcher.runRefresh`
+  // → import the refreshed rows back through the same upsert path. Keeps
+  // the long-tail's follower/engagement metrics fresh (BL-059 removed this
+  // phase; BL-081 F004 audit flagged the resulting refresh=0). Soft phase:
+  // failures (incl. fork 404s, which adapter.refresh skips) degrade to
+  // "fewer rows refreshed" but never abort the sync.
+  let refreshCount = 0;
+  if (deps.prisma && !deps.dryRun && discover) {
+    try {
+      const tenant = await deps.prisma.tenant.findUnique({
+        where: { slug: deps.tenantSlug },
+      });
+      if (tenant) {
+        const sourceByAdapter = new Map(deps.adapters.map((a) => [a.name, a.source]));
+        console.log(`[kol-sync-daily] refresh phase start ${new Date().toISOString()}`);
+        for (const platform of REFRESH_PLATFORMS) {
+          const ids = await fetchTieredRefreshIds(deps.prisma, {
+            tenantId: tenant.id,
+            platform,
+          });
+          if (ids.length === 0) {
+            console.log(`[kol-sync-daily] refresh ${platform}: 0 ids on rota`);
+            continue;
+          }
+          const refreshReport = await dispatcher.runRefresh({
+            perAdapterIds: { "apify-kol": ids },
+            retry: deps.retry ?? { backoffsMs: DEFAULT_BACKOFFS_MS },
+          });
+          for (const outcome of refreshReport.outcomes) {
+            if (!outcome.ok) {
+              errors.push(`refresh[${outcome.adapter}/${platform}]: ${outcome.error}`);
+              continue;
+            }
+            if (outcome.data.length === 0) continue;
+            const source = sourceByAdapter.get(outcome.adapter) ?? outcome.adapter;
+            try {
+              await importRawKolData(deps.prisma, outcome.data, {
+                tenantId: tenant.id,
+                source,
+                isDemo: false,
+                now: deps.now,
+              });
+            } catch (err) {
+              errors.push(
+                `refresh-import[${platform}]: ${err instanceof Error ? err.message : String(err)}`,
+              );
+            }
+          }
+          refreshCount += refreshReport.totals.refreshCount;
+          console.log(
+            `[kol-sync-daily] refresh ${platform}: requested=${ids.length} refreshed=${refreshReport.totals.refreshCount} failedAdapters=${refreshReport.totals.failedAdapters}`,
+          );
+        }
+        console.log(
+          `[kol-sync-daily] refresh phase end ${new Date().toISOString()} totalRefreshed=${refreshCount}`,
+        );
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`[kol-sync-daily] refresh phase failed: ${msg.slice(0, 200)}`);
+      errors.push(`refresh-phase: ${msg.slice(0, 200)}`);
+    }
+  }
+
   // ---- EMBED HOOK (B7a-F001 audit lock #8:B) ----
   // Soft phase: embedding failures degrade to "vectors stale by one
   // day" but never abort the sync. Pull every kol id touched in this
@@ -422,6 +502,7 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
     health,
     discover: discover ? { outcomes: discover.outcomes, totals: discover.totals } : null,
     importStats,
+    refreshCount,
     embedStats,
     enrichStats,
     errors,

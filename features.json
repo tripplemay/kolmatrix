@@ -45,7 +45,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-04T17:40+0800",
+    "done_note": "refresh-selector.ts: MAX_TOTAL_REFRESH 200→500 (单一定义); fetchTieredRefreshIds where externalId→platformUserId{not:null}, select platformUserId, onlyIds 返 '<platform>:<platformUserId>' (跳过 NULL). kol-sync-daily runDaily: discover→import 后加 refresh phase (loop REFRESH_PLATFORMS → fetchTieredRefreshIds → dispatcher.runRefresh({perAdapterIds:{'apify-kol':ids}}) → importRawKolData refreshed, sequential, soft-fail 不阻塞); DailyRunReport 加 refreshCount; 结构化 log line refreshCount:0 硬编码→report.refreshCount; human report 加 Refresh 段; refresh phase start/end + per-platform log; 删/更正 BL-059 'refresh removed' 注释. L1: tsc=0 / npm test 1413 passed (现有 daily-sync 测 fake findMany 返 [] → refresh no-op 不破). 专项 refresh 测试 (selector 格式 + daily-sync e2e) 在 F004.",
     "acceptance": [
       "src/lib/kol-sync/refresh-selector.ts fetchTieredRefreshIds select platform_user_id (非 external_id), 返 '<platform>:<platform_user_id>' 格式; 跳过 platform_user_id NULL 的行 (回填未覆盖的)",
       "scripts/kol-sync-daily.ts runDaily() 在 discover→import 之后 embed-hook 之前加 refresh phase: loop apify-kol platforms (youtube/tiktok/instagram) → fetchTieredRefreshIds(prisma,{tenantId,platform,maxTotal}) → dispatcher.runRefresh({perAdapterIds:{'apify-kol':ids}}) → importRawKolData(refreshed) (sequential)",

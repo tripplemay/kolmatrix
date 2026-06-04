@@ -14,9 +14,10 @@
  * tier's cycle. Picking is deterministic on a given date so a cron
  * miss only delays a bucket by one day.
  *
- * Cost: with `MAX_TOTAL_REFRESH=200` the batch hits ⌈200/50⌉=4
- * channels.list calls per day — same quota envelope as the old FIFO
- * but the *valuable* channels stay fresh while the long-tail backs
+ * Cost: with `MAX_TOTAL_REFRESH=500` (BL-082-F003; was 200) the batch
+ * hits up to 500 fork single-profile calls per day — a full rotation of
+ * prod's ~2371 active KOLs in ~5 days, while the *valuable* channels
+ * stay fresh and the long-tail backs
  * off to 3-week cadence.
  *
  * Pure tier-pick logic lives in `pickTieredRefreshIds` so unit tests
@@ -32,7 +33,10 @@ export const TIER2_TOP_N = 500;
 export const TIER2_CYCLE_DAYS = 7;
 export const TIER3_CYCLE_DAYS = 21;
 export const FLAGGED_CAP = 100;
-export const DEFAULT_MAX_TOTAL_REFRESH = 200;
+// BL-082-F003: raised 200 → 500/day. prod has ~2371 active KOLs → a full
+// tiered rotation now completes in ~5 days; quota cost ≈ +500 fork
+// units/day (≈ +$5/mo), well under budget (spec §4.3).
+export const DEFAULT_MAX_TOTAL_REFRESH = 500;
 
 export interface TieredRefreshInput {
   /** External ids of the top 50 by valueScore (Tier 1). Order matters
@@ -140,10 +144,17 @@ export async function fetchTieredRefreshIds(
   prisma: PrismaClient,
   opts: FetchTieredRefreshOpts
 ): Promise<string[]> {
+  // BL-082-F003: the fork refresh endpoint keys on the platform-native
+  // `platformUserId` (`GET /kol/:platform/:platformUserId`), NOT the
+  // fork row id stored in `external_id` (which 404s). So we select
+  // `platform_user_id` and emit `<platform>:<platformUserId>` ids that
+  // `ApifyKolSyncAdapter.refresh()` → `parseRefreshId` resolves. Rows
+  // without a `platform_user_id` (F002 backfill hasn't reached them, or
+  // the fork never surfaced one) are excluded — they aren't refreshable.
   const where = {
     tenantId: opts.tenantId,
     platform: opts.platform,
-    externalId: { not: null },
+    platformUserId: { not: null },
   } as const;
 
   // Step 1: pull the top 500 by valueScore in one query — slices
@@ -152,7 +163,7 @@ export async function fetchTieredRefreshIds(
     where,
     orderBy: [{ valueScore: { sort: "desc", nulls: "last" } }, { id: "asc" }],
     take: TIER2_TOP_N,
-    select: { id: true, externalId: true },
+    select: { id: true, platformUserId: true },
   });
   const top500Ids = top500.map((r) => r.id);
 
@@ -165,17 +176,24 @@ export async function fetchTieredRefreshIds(
       // 21× daily target keeps the in-memory bucket pick cheap while
       // still covering the cycle.
       take: 21 * maxTotal,
-      select: { externalId: true },
+      select: { platformUserId: true },
     }),
     prisma.kol.findMany({
       where: { ...where, isSuspicious: true },
       take: FLAGGED_CAP,
-      select: { externalId: true },
+      select: { platformUserId: true },
     }),
   ]);
 
-  const onlyIds = (rows: ReadonlyArray<{ externalId: string | null }>): readonly string[] =>
-    rows.map((r) => r.externalId).filter((id): id is string => Boolean(id));
+  // Emit `<platform>:<platformUserId>` so adapter.refresh() can resolve
+  // the fork's single-profile endpoint.
+  const onlyIds = (
+    rows: ReadonlyArray<{ platformUserId: string | null }>,
+  ): readonly string[] =>
+    rows
+      .map((r) => r.platformUserId)
+      .filter((id): id is string => Boolean(id))
+      .map((puid) => `${opts.platform}:${puid}`);
 
   const tier1 = onlyIds(top500.slice(0, TIER1_TOP_N));
   const tier2 = onlyIds(top500.slice(TIER1_TOP_N, TIER2_TOP_N));
