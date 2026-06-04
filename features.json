@@ -26,7 +26,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-04T17:30+0800",
+    "done_note": "scripts/kol-platform-user-id-backfill.ts: 复用 ApifyKolSyncAdapter.discover (per platform, 现 map platformUserId) → 按 external_id=String(item.id) 匹配 UPDATE kol SET platform_user_id WHERE platform_user_id IS NULL (幂等, 不覆盖). runPlatformUserIdBackfill 抽为可测函数 + 5 单测 (dry-run 不写 / apply per-platform 计数 / null-puid 跳过 / 未匹配 id 返 0). dry-run+apply 模式, 纯 fork-read+DB UPDATE 无 LLM. L1: tsc=0 / lint clean / npm test 1413 passed. staging/prod 实跑在 F006.",
     "acceptance": [
       "新建 scripts/kol-platform-user-id-backfill.ts: 遍历 fork GET /kol 各页 (per platform), 按 external_id = String(item.id) 匹配 KOL 行, 写 platform_user_id = item.platformUserId",
       "idempotent: WHERE platform_user_id IS NULL — 重复跑只补未填行, 不覆盖已有",

@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-082-refresh-selector-rewire — 重接 daily-sync 的 refresh phase, 恢复 BIx-F004-P3 tiered refresh. 6 features F001-F006 (~10h Generator + 1.5h Reviewer). 6/04 用户决定 — 跟进 BL-081 F004 audit (refresh=0 根因=BL-059 删 refresh phase 遗留, 非 bug, Dir A 重接是 ~30-50 LOC 接线). 4 子决策 lock: tiered selector 保留 / MAX_TOTAL_REFRESH 200→500 / sequential discover→import→refresh→import / 404 skip+log (沿用 adapter 现有). O3 fork endpoint 已验 (real handle UC22GlzN_jFaGLhiO-8ZM7Gw → 200). 预期 KOL pool staleness 长期保持 <7d + data-quality 治本. 关联 docs/specs/BL-082-refresh-selector-rewire-spec.md.",
   "total_features": 7,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
   "current_sprint": "BL-082-refresh-selector-rewire",
-  "last_updated": "2026-06-04T17:30+0800",
+  "last_updated": "2026-06-04T17:31+0800",
   "reference_docs": [
     "docs/specs/BL-082-refresh-selector-rewire-spec.md",
     "docs/audits/BL-081-refresh-selector-audit.md",
