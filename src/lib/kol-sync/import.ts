@@ -67,6 +67,8 @@ export interface KolUpsertPayload {
   platform: string;
   handle: string;
   externalId: string;
+  /** BL-082-F001 — platform-native user id for the refresh endpoint. */
+  platformUserId: string | null;
   displayName: string;
   bio: string;
   avatarUrl: string | null;
@@ -176,6 +178,7 @@ export function mapToUpsertPayload(
     platform: raw.platform,
     handle,
     externalId: raw.externalId,
+    platformUserId: raw.platformUserId ?? null,
     displayName: raw.displayName,
     bio: raw.description ?? "",
     avatarUrl: raw.thumbnailUrl ?? null,
@@ -331,6 +334,8 @@ export async function importRawKolData(
       isGaming: payload.isGaming,
       handle: payload.handle,
       externalId: payload.externalId,
+      // BL-082-F001 — persist platform-native id for the refresh phase.
+      platformUserId: payload.platformUserId,
       // B5-F001 / F002 — promoted from metadata.youtube.*. Existing
       // rows from before this batch keep NULL here until the
       // enrich-kol-from-youtube one-shot script (or the next daily

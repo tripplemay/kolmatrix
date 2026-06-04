@@ -77,3 +77,29 @@ describe("mapApifyKolItemToRawKolData — country from fork location", () => {
     ).toBeNull();
   });
 });
+
+describe("mapApifyKolItemToRawKolData — platformUserId persistence (BL-082-F001)", () => {
+  it("persists a YouTube UC channel id", () => {
+    const mapped = mapApifyKolItemToRawKolData(
+      makeItem({ platform: "youtube", platformUserId: "UCnQ4TDbESxZ47uBH6cB_Nrg" }),
+      FROZEN_NOW
+    );
+    expect(mapped?.platformUserId).toBe("UCnQ4TDbESxZ47uBH6cB_Nrg");
+  });
+
+  it("persists a TikTok / Instagram numeric platformUserId", () => {
+    const mapped = mapApifyKolItemToRawKolData(
+      makeItem({ platform: "tiktok", platformUserId: "6766325527592272902" }),
+      FROZEN_NOW
+    );
+    expect(mapped?.platformUserId).toBe("6766325527592272902");
+  });
+
+  it("falls back to null when platformUserId is empty", () => {
+    const mapped = mapApifyKolItemToRawKolData(
+      makeItem({ platformUserId: "" }),
+      FROZEN_NOW
+    );
+    expect(mapped?.platformUserId).toBeNull();
+  });
+});

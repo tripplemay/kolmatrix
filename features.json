@@ -5,7 +5,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-04T17:30+0800",
+    "done_note": "schema Kol 加 platformUserId String? @map('platform_user_id') + migration 20260604000000 (含 ROLLBACK); types.ts RawKolData 加 platformUserId; apify-kol mapper 持久化 item.platformUserId (空 fallback null); import.ts KolUpsertPayload + mapToUpsertPayload + upsert data 带 platformUserId. 手写 migration + migrate deploy (规避 migrate dev 旧 drift reset). mapper 单测 +3 (YT UC / TT 数字 / 空→null). L1: lint 0err3warn / tsc=0 / migrate up-to-date / npm test 1408 passed.",
     "rescope_note": "6/04 用户决定全平台 refresh — fork /kol/<platform>/<platformUserId> 三平台均 200, 但 platformUserId 仅 YT 凑巧=KOL.handle, TT/IG 是数字 id 且 mapper 丢弃. 新增本 feature 持久化 platformUserId 作为全平台 refresh 前置.",
     "acceptance": [
       "prisma/schema.prisma Kol 加 platformUserId String? @map('platform_user_id') (nullable, 现有行先 NULL)",

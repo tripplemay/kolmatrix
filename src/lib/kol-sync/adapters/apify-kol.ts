@@ -438,6 +438,14 @@ export function mapApifyKolItemToRawKolData(
 
   return {
     externalId,
+    // BL-082-F001 — persist the fork's platformUserId (was discarded).
+    // It's what the fork's refresh endpoint keys on; the daily refresh
+    // phase builds `<platform>:<platformUserId>` ids from it. Empty /
+    // missing → null (TT/IG always emit it; guard defensively anyway).
+    platformUserId:
+      typeof item.platformUserId === "string" && item.platformUserId.length > 0
+        ? item.platformUserId
+        : null,
     platform: item.platform,
     handle,
     displayName,

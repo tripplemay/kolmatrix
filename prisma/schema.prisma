@@ -154,6 +154,15 @@ model Kol {
   aiEvaluatedAt      DateTime?                @map("ai_evaluated_at") @db.Timestamptz
   status             String                   @default("active")
   externalId         String?                  @map("external_id")
+  // BL-082-F001 — platform-native user id (YouTube channel id "UC…",
+  // TikTok/Instagram numeric ids), as emitted by the fork's
+  // `platformUserId`. Distinct from `external_id` (the fork's own row id)
+  // and `handle` (username; happens to equal the UC id for YouTube only).
+  // The fork's single-profile refresh endpoint `GET /kol/:platform/:id`
+  // keys on THIS value, so the daily refresh phase (F003) builds
+  // `<platform>:<platformUserId>` ids from it. Nullable — older rows stay
+  // NULL until F002's backfill populates them from the fork.
+  platformUserId     String?                  @map("platform_user_id")
   lastSyncedAt       DateTime?                @map("last_synced_at") @db.Timestamptz
   // BL-081-F002 — one-shot "country enrichment attempted" marker. The
   // daily LLM country-enrichment stage sets this to NOW() whenever it

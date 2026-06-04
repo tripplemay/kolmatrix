@@ -20,6 +20,12 @@
 export interface RawKolData {
   /** Permanent platform-side identifier (e.g. YouTube `channel.id`). */
   externalId: string;
+  /** BL-082-F001 — platform-native user id (`platformUserId` from the
+   *  fork): YouTube channel id "UC…", TikTok/Instagram numeric ids. The
+   *  fork's single-profile refresh endpoint keys on this (distinct from
+   *  `externalId`, the fork's own row id). Undefined/null when the source
+   *  doesn't surface it. */
+  platformUserId?: string | null;
   /** 'youtube' | 'tiktok' | 'bilibili' | 'crawler-team' | etc. */
   platform: string;
   /** @handle when the platform exposes one. */
