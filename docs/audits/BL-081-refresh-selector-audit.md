@@ -90,6 +90,20 @@ F004 is code-side audit only; these confirm/quantify §1 and §3 on the live sys
 
 ---
 
+## §5.5 Ops verification results (run 2026-06-04, read-only)
+
+O1–O3 were executed on prod (user-authorized, read-only). Results refine §1/§3:
+
+- **O1 — `refreshCount` log values:** the log history shows `refreshCount:0` (40× — recent steady state) **plus historical non-zero values 136–200** (clustered near `MAX_TOTAL_REFRESH=200`). The non-zero entries live in rotated/older logs (the current `kolmatrix-out.log` last written 2026-05-27 has no `refreshCount` lines). **Interpretation:** refresh genuinely *ran* (136–200/day) before BL-059 removed it, then dropped to 0 — this **confirms** the §2 root cause (a transition from working → off), it does not contradict it. (My earlier "any non-zero contradicts this audit" note in §5/O1 was wrong: historical non-zero is the expected before-state.)
+
+- **O2 — staleness:** `<7d: 2371`, `never: 12`, **nothing in the 7–30d or >30d buckets**. So despite the refresh phase being off, **`discover()` is incidentally keeping virtually the whole pool fresh (<7 days)** — the daily `sort=recent` walk re-writes most rows. **This materially softens §3's impact**: the practical staleness risk today is low, which *lowers the urgency* of re-wiring refresh (Dir A). It also confirms the daily sync is actively running (rows synced within the last week), so the 5/27 pm2-log mtime is log rotation/redirection, not a stopped cron.
+
+- **O3 — fork refresh endpoint:** `GET /kol/youtube/test123` (a deliberately fake id) returned **HTTP 404**. This is ambiguous-but-encouraging: a 404 for an unknown id is consistent with "endpoint exists, id not found" (matches `adapter.refresh`'s own 404-means-deleted handling). Confirm with a **real** userId (expect 200) before committing to Dir A wiring.
+
+**Net:** root cause stands (refresh removed by BL-059); but O2 shows the real-world staleness cost is currently low, so re-wiring refresh (Dir A) is **lower priority** than first assumed — schedule it on data-quality grounds, not as an urgent freshness fix.
+
+---
+
 ## §6 结论 (Conclusion)
 
 `refresh=0` is **expected behaviour** introduced by BL-059's single-source refactor — the refresh phase was removed and `refreshCount` hard-coded to 0, leaving the tiered refresh selector as orphaned dead code. It is **not** a bug in the selector and is **independent of the BL-081 country/retry-storm fix**. The remediation (re-wiring refresh, recommended Dir A) is real work with cost/coverage trade-offs and should be scheduled as its own batch after the ops checks (O1–O3) confirm the staleness impact and the fork endpoint. **No fix is implemented in BL-081 (F004 is audit-only).**
