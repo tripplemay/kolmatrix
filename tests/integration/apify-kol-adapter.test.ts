@@ -245,4 +245,31 @@ describe("BL-012-F009 ApifyKolSyncAdapter integration", () => {
     expect(out).toHaveLength(1);
     expect(out[0]?.handle).toBe("found_user");
   });
+
+  it("Case 6 (BL-082-F005) — refresh invokes onSkip for a 404 then continues", async () => {
+    server.use(
+      http.get(`${FORK_BASE}/kol/instagram/missing`, () =>
+        HttpResponse.json({ error: "not found" }, { status: 404 })
+      ),
+      http.get(`${FORK_BASE}/kol/instagram/found`, () =>
+        HttpResponse.json(makeItem(7, { id: "ig_7", platform: "instagram", platformUserId: "found", username: "found_user" }))
+      )
+    );
+    const adapter = makeAdapter();
+    const skipped: Array<{ externalId: string; platform: string; reason: string }> = [];
+    const out = await adapter.refresh(["instagram:missing", "instagram:found"], {
+      onSkip: (info) => {
+        skipped.push(info);
+      },
+    });
+    // 404 row surfaced via onSkip; the next id still resolves (continue).
+    expect(out).toHaveLength(1);
+    expect(out[0]?.handle).toBe("found_user");
+    expect(skipped).toHaveLength(1);
+    expect(skipped[0]).toMatchObject({
+      externalId: "instagram:missing",
+      platform: "instagram",
+      reason: "fork returned 404 — KOL possibly deleted",
+    });
+  });
 });

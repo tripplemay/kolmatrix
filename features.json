@@ -83,7 +83,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "ApifyKolSyncAdapter.refresh() 检测到 404 时 (apify-kol.ts:213 已有 catch) 不仅 continue, 也调 audit_log.create",
       "audit_log action='kol.refresh_404_skip', resource_type='kol', resource_id=null, payload={externalId, platform, reason: 'fork returned 404 — KOL possibly deleted'}",
@@ -91,7 +91,10 @@
       "404 不阻塞 batch (沿用现有 continue 行为)",
       "单测扩充 apify-kol-adapter test: ≥1 case 验 404 → audit_log 写入 + continue",
       "L1 PASS"
-    ]
+    ],
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-04T18:00+0800",
+    "done_note": "threaded Prisma-free onSkip callback: types.ts RefreshSkipInfo + RefreshAdapterOpts + RefreshOpts.onSkip + refresh(externalIds,opts?) 签名; apify-kol refresh 404 catch 调 opts?.onSkip({externalId,platform,reason}) 再 continue; dispatcher.runRefresh 透传 onSkip 给 adapter.refresh; runDaily refresh phase 传 onSkip 写 audit_log action='kol.refresh_404_skip' resourceType=kol resourceId=null payload={externalId,platform,reason} (audit 写失败软 warn 不阻塞). 测试: apify-kol-adapter integration Case 6 验 404→onSkip 调用+continue (6 passed). L1: tsc=0 / lint 0err3warn / npm test 1423 / integration adapter 6 passed."
   },
   {
     "id": "F006",

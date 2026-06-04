@@ -390,6 +390,31 @@ export async function runDaily(deps: DailyRunDeps): Promise<DailyRunReport> {
           const refreshReport = await dispatcher.runRefresh({
             perAdapterIds: { "apify-kol": ids },
             retry: deps.retry ?? { backoffsMs: DEFAULT_BACKOFFS_MS },
+            // BL-082-F005: audit each fork 404 (KOL possibly deleted) for
+            // later tombstone triage. resource_id=null because the row may
+            // be gone upstream; the payload carries externalId + platform.
+            onSkip: async (info) => {
+              try {
+                await deps.prisma!.auditLog.create({
+                  data: {
+                    tenantId: tenant.id,
+                    actorUserId: null,
+                    action: "kol.refresh_404_skip",
+                    resourceType: "kol",
+                    resourceId: null,
+                    payload: {
+                      externalId: info.externalId,
+                      platform: info.platform,
+                      reason: info.reason,
+                    },
+                  },
+                });
+              } catch (err) {
+                console.warn(
+                  `[kol-sync-daily] refresh_404_skip audit write failed: ${err instanceof Error ? err.message : String(err)}`,
+                );
+              }
+            },
           });
           for (const outcome of refreshReport.outcomes) {
             if (!outcome.ok) {

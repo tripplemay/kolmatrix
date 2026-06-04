@@ -37,6 +37,7 @@ import type {
   HealthCheckResult,
   KolSyncAdapter,
   RawKolData,
+  RefreshAdapterOpts,
   SyncParams,
 } from "../types";
 
@@ -196,7 +197,10 @@ export class ApifyKolSyncAdapter implements KolSyncAdapter {
     return collected;
   }
 
-  async refresh(externalIds: readonly string[]): Promise<RawKolData[]> {
+  async refresh(
+    externalIds: readonly string[],
+    opts?: RefreshAdapterOpts,
+  ): Promise<RawKolData[]> {
     if (externalIds.length === 0) return [];
     const out: RawKolData[] = [];
     for (const externalId of externalIds) {
@@ -208,9 +212,15 @@ export class ApifyKolSyncAdapter implements KolSyncAdapter {
         raw = await this.fetchJson(url);
       } catch (err) {
         // 404 → row was deleted upstream; skip and let other ids in the
-        // batch continue. We surface a 404 by tagging it on the
-        // transient error and short-circuiting before the throw.
+        // batch continue. BL-082-F005: surface it via onSkip so the
+        // caller can audit-log `kol.refresh_404_skip` for tombstone
+        // triage (the adapter itself stays Prisma-free).
         if (err instanceof AdapterTransientError && err.status === 404) {
+          await opts?.onSkip?.({
+            externalId,
+            platform: ref.platform,
+            reason: "fork returned 404 — KOL possibly deleted",
+          });
           continue;
         }
         throw err;

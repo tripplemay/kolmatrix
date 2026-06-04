@@ -105,8 +105,12 @@ export interface KolSyncAdapter {
 
   /** Re-fetch existing KOLs by externalId so subscribers / view counts
    *  stay current. The dispatcher decides which IDs to refresh on a
-   *  given day. */
-  refresh(externalIds: readonly string[]): Promise<RawKolData[]>;
+   *  given day. `opts.onSkip` (BL-082-F005) is invoked when an id is
+   *  skipped (e.g. fork 404) so the caller can audit-log it. */
+  refresh(
+    externalIds: readonly string[],
+    opts?: RefreshAdapterOpts,
+  ): Promise<RawKolData[]>;
 
   /** Cheap "is the upstream reachable + key valid + quota left" probe.
    *  Surfaces in /api/health and the daily structured log. */
@@ -137,12 +141,28 @@ export interface DailySyncOpts {
   retry?: import("./retry").RetryOpts;
 }
 
+/** BL-082-F005 — context for a single skipped refresh id (e.g. fork 404). */
+export interface RefreshSkipInfo {
+  externalId: string;
+  platform: string;
+  reason: string;
+}
+
+/** BL-082-F005 — per-call options threaded into an adapter's refresh(). */
+export interface RefreshAdapterOpts {
+  /** Called once per skipped id so the caller can audit-log it. Kept as a
+   *  callback so adapters stay Prisma-free (no DB import in the HTTP layer). */
+  onSkip?: (info: RefreshSkipInfo) => void | Promise<void>;
+}
+
 export interface RefreshOpts {
   /** Per-adapter `externalIds` to refresh. Empty / missing arrays are
    *  no-ops for that adapter. */
   perAdapterIds: Readonly<Record<string, readonly string[]>>;
   failFast?: boolean;
   retry?: import("./retry").RetryOpts;
+  /** Forwarded to each adapter's refresh() — see RefreshAdapterOpts. */
+  onSkip?: (info: RefreshSkipInfo) => void | Promise<void>;
 }
 
 export type AdapterOutcome<T> =

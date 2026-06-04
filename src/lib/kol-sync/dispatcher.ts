@@ -112,8 +112,8 @@ export class KolSyncDispatcher {
       if (ids.length === 0) continue;
       try {
         const data = opts.retry
-          ? await withRetry(() => adapter.refresh(ids), opts.retry)
-          : await adapter.refresh(ids);
+          ? await withRetry(() => adapter.refresh(ids, { onSkip: opts.onSkip }), opts.retry)
+          : await adapter.refresh(ids, { onSkip: opts.onSkip });
         outcomes.push({ adapter: name, ok: true, data });
       } catch (err) {
         outcomes.push({
