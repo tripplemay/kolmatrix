@@ -41,6 +41,34 @@ BL-081 F004 audit 确认 `refresh=0` 是 BL-059 单源重构时移除 refresh ph
 
 `role_assignments = null` (默认映射: Generator + Codex Reviewer)
 
+### 1.5 全平台 re-scope (6/04 — Generator pre-impl 发现 + 用户决定 B)
+
+**触发：** F001 开工前 Generator 实测 prod fork endpoint，发现 A1 「只接线」前提对 TT/IG 不成立：
+
+| 平台 | KOL 数 | `/kol/<platform>/<platformUserId>` | platformUserId 在 KOLMatrix？ |
+|---|---|---|---|
+| YouTube | 722 | `UC...` → **200** | ✅ 凑巧 = `KOL.handle` |
+| TikTok | 1479 | 数字 `6766325527592272902` → **200** | ❌ handle=username; mapper 丢弃 platformUserId |
+| Instagram | 179 | 数字 `80506142364` → **200** | ❌ 同上 |
+
+- `fetchTieredRefreshIds` 原返 `external_id`（数字 fork 行 id，0/2383 含 `:`）→ `parseRefreshId` 全 null → refresh 全 404。必须改用 `<platform>:<platformUserId>`。
+- fork **三平台都支持** refresh，但 KOLMatrix 只对 YT 存了 platformUserId（=handle）。TT/IG（70% 池子）的 platformUserId 被 mapper 丢弃。
+- O3 原 pre-flight 只测了 1 个 YT handle，没暴露此 gap。
+
+**用户决定（B）：** 扩 BL-082 到全平台 + 授权 Generator 直接改 spec/features。新增 platformUserId 存储前置块（schema + mapper + 回填），features 由 6 条扩为 **7 条**：
+
+| F | 范围 |
+|---|---|
+| **F001** | platformUserId 存储: `platform_user_id` 列 + migration + mapper 持久化 + import upsert |
+| **F002** | 存量回填 `platform_user_id`（遍历 fork discover 按 external_id 匹配） |
+| **F003** | runDaily 接 refresh phase（`<platform>:<platformUserId>` ids）+ refreshCount 真实计数 + MAX 500 |
+| **F004** | 单测扩充 + daily-sync e2e mock |
+| **F005** | audit_log `kol.refresh_404_skip` |
+| **F006** | Staging 部署 + 回填 + 24h 监控 |
+| **F007** | Codex Reviewer L1+L2 + signoff |
+
+依赖顺序：F001(schema/mapper) → F002(回填) → F003(接线) → F004(测试) → F005(404log) → F006(staging) → F007(codex)。§2.1 IN-SCOPE + §3 phase 表以本 §1.5 为准（原文保留作历史）。
+
 ---
 
 ## §2 整体范围 / 边界

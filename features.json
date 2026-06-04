@@ -1,51 +1,72 @@
 [
   {
     "id": "F001",
-    "title": "runDaily() 接入 refresh phase (sequential discover→import→refresh→import)",
+    "title": "platformUserId 存储: schema 列 + mapper 持久化 + import upsert (同 commit)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.5,
+    "estimated_hours": 2.0,
     "status": "pending",
+    "rescope_note": "6/04 用户决定全平台 refresh — fork /kol/<platform>/<platformUserId> 三平台均 200, 但 platformUserId 仅 YT 凑巧=KOL.handle, TT/IG 是数字 id 且 mapper 丢弃. 新增本 feature 持久化 platformUserId 作为全平台 refresh 前置.",
     "acceptance": [
-      "scripts/kol-sync-daily.ts runDaily() 在 discover→import 之后, 在 embed-hook 之前, 加 refresh phase",
-      "实现: loop apify-kol platforms (youtube/tiktok/instagram), 每 platform 调 fetchTieredRefreshIds(prisma, {tenantId, platform, maxTotal: MAX_TOTAL_REFRESH}) 获取 ids, 调 dispatcher.runRefresh(ids) 拿 refreshed RawKolData[], 喂回 import() upsert",
-      "refresh phase log 显式输出: start/end timestamps + 每 platform refreshCount + total refreshCount",
-      "BL-059 删的 '--no-refresh / --refresh-batch silently ignored' 注释删除/更正",
-      "L1 PASS: lint 0err warn≤3 / tsc=0 / npm test 1405+ pass (新增 daily-sync refresh phase mock case)"
+      "prisma/schema.prisma Kol 加 platformUserId String? @map('platform_user_id') (nullable, 现有行先 NULL)",
+      "migration + ROLLBACK SQL (DROP COLUMN); additive 无 backfill at apply time",
+      "src/lib/kol-sync/types.ts RawKolData 加 platformUserId?: string | null",
+      "src/lib/kol-sync/adapters/apify-kol.ts mapper 持久化 item.platformUserId → RawKolData.platformUserId (原被丢弃)",
+      "src/lib/kol-sync/import.ts KolUpsertPayload + upsert data 带 platformUserId (create+update 路径)",
+      "单测: apify-kol-mapper.test 验 platformUserId 持久化 (YT UC.. / TT 数字 / 缺失 fallback null)",
+      "L1 PASS: lint 0err warn≤3 / tsc=0 / npm test (含新 case) + prisma validate / migrate status"
     ]
   },
   {
     "id": "F002",
-    "title": "refreshCount 真实计数 + MAX_TOTAL_REFRESH 200→500",
+    "title": "存量回填 platform_user_id (从 fork discover 匹配 external_id)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.0,
+    "estimated_hours": 2.0,
     "status": "pending",
     "acceptance": [
-      "scripts/kol-sync-daily.ts:199 hard-coded 'refreshCount: 0' 删除, 改为实际累加值 (per platform refresh count 总和)",
-      "src/lib/kol-sync/refresh-selector.ts MAX_TOTAL_REFRESH 200 → 500",
-      "refresh-selector.ts 现有 unit test 验跑得通 (BL-059 之后该 module 0 caller, test 可能已 stale)",
-      "log 输出验证: refreshCount 不再是固定 0, 而是 0-500 之间真实数",
+      "新建 scripts/kol-platform-user-id-backfill.ts: 遍历 fork GET /kol 各页 (per platform), 按 external_id = String(item.id) 匹配 KOL 行, 写 platform_user_id = item.platformUserId",
+      "idempotent: WHERE platform_user_id IS NULL — 重复跑只补未填行, 不覆盖已有",
+      "dry-run (统计可回填行数) + apply 模式; 纯 DB UPDATE 经 fork read (无 LLM)",
+      "runBackfill 抽为可测函数; 单测 ≥3 (dry-run 不写 / apply 写 / 匹配不到的 id 跳过)",
+      "YT 行 platform_user_id 应 = handle (UC..); TT/IG = 数字 platformUserId",
       "L1 PASS"
     ]
   },
   {
     "id": "F003",
+    "title": "runDaily() 接入 refresh phase (全平台 <platform>:<platformUserId>) + refreshCount 真实计数 + MAX 500",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 3.0,
+    "status": "pending",
+    "acceptance": [
+      "src/lib/kol-sync/refresh-selector.ts fetchTieredRefreshIds select platform_user_id (非 external_id), 返 '<platform>:<platform_user_id>' 格式; 跳过 platform_user_id NULL 的行 (回填未覆盖的)",
+      "scripts/kol-sync-daily.ts runDaily() 在 discover→import 之后 embed-hook 之前加 refresh phase: loop apify-kol platforms (youtube/tiktok/instagram) → fetchTieredRefreshIds(prisma,{tenantId,platform,maxTotal}) → dispatcher.runRefresh({perAdapterIds:{'apify-kol':ids}}) → importRawKolData(refreshed) (sequential)",
+      "refresh phase log 显式: start/end + 每 platform + total refreshCount",
+      "scripts/kol-sync-daily.ts:199 hard-coded 'refreshCount: 0' 删除, 改真实累加 (refresh report totals.refreshCount)",
+      "src/lib/kol-sync/refresh-selector.ts MAX_TOTAL_REFRESH 200 → 500",
+      "BL-059 删的 '--no-refresh / --refresh-batch silently ignored' 注释删除/更正",
+      "L1 PASS: lint/tsc/npm test (新增 daily-sync refresh phase mock case)"
+    ]
+  },
+  {
+    "id": "F004",
     "title": "单测扩充 + daily-sync e2e mock 覆盖 refresh phase",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
     "status": "pending",
     "acceptance": [
-      "refresh-selector.test.ts 修复/扩充 ≥3 case: (1) tier sort 排序正确 (2) MAX_TOTAL_REFRESH=500 cap 生效 (3) 空 KOL pool 返 []",
-      "daily-sync e2e test (vitest mock fetch / dispatcher) 加 ≥2 case: (1) refresh phase 被调用且 import 收到 refreshed data (2) refresh 404 路径不阻塞主流程",
-      "若 refresh-selector.test.ts 已存在且 stale (BL-059 后) → 修复 import path + mock 接口签名",
-      "若不存在 → 新建覆盖 fetchTieredRefreshIds + pickTieredRefreshIds 各 path",
+      "refresh-selector.test.ts 修复/扩充 ≥3 case: (1) tier sort 排序正确 (2) MAX_TOTAL_REFRESH=500 cap 生效 (3) 空 KOL pool / platform_user_id 全 NULL 返 []",
+      "fetchTieredRefreshIds 测: 返回 '<platform>:<platform_user_id>' 格式 + 跳过 NULL platform_user_id",
+      "daily-sync e2e test (vitest mock dispatcher) 加 ≥2 case: (1) refresh phase 被调用且 import 收到 refreshed data (2) refresh 404/部分失败不阻塞主流程",
+      "若 refresh-selector.test.ts stale (BL-059 后) → 修 import path + mock 签名",
       "L1 PASS: npm test 含新增 case 全过"
     ]
   },
   {
-    "id": "F004",
+    "id": "F005",
     "title": "audit_log kol.refresh_404_skip event",
     "executor": "generator",
     "priority": "medium",
@@ -53,42 +74,43 @@
     "status": "pending",
     "acceptance": [
       "ApifyKolSyncAdapter.refresh() 检测到 404 时 (apify-kol.ts:213 已有 catch) 不仅 continue, 也调 audit_log.create",
-      "audit_log action='kol.refresh_404_skip', resource_type='kol', resource_id=null (因 KOL 可能已删), payload={externalId, platform, reason: 'fork returned 404 — KOL possibly deleted'}",
-      "audit_log 行写入需 tenantId — 从 dispatcher.runRefresh 调用栈往下传 tenantId 给 adapter.refresh (新增 opts.tenantId 参数)",
+      "audit_log action='kol.refresh_404_skip', resource_type='kol', resource_id=null, payload={externalId, platform, reason: 'fork returned 404 — KOL possibly deleted'}",
+      "audit_log 行写入需 tenantId + prisma — 从 dispatcher.runRefresh 调用栈往下传 (新增 opts.tenantId + opts.prisma 或 callback hook 给 adapter.refresh)",
       "404 不阻塞 batch (沿用现有 continue 行为)",
       "单测扩充 apify-kol-adapter test: ≥1 case 验 404 → audit_log 写入 + continue",
       "L1 PASS"
     ]
   },
   {
-    "id": "F005",
-    "title": "Staging deploy + 24h 监控 refresh count + staleness",
+    "id": "F006",
+    "title": "Staging deploy + platformUserId 回填 + 24h 监控 refresh count + staleness",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
     "status": "pending",
     "acceptance": [
-      "deploy-staging.yml workflow 触发部署 BL-082 代码到 staging",
-      "Staging next-daily-cron 跑后实测: refreshCount ≥100 (staging KOL pool 较小, 可能远 <500)",
-      "Staging 24h log 监控: 0 daily-sync errors (refresh phase 引入不应破坏现有 discover/import)",
-      "Staging SQL 抽样: 部分 KOL.lastSyncedAt 在 refresh phase 时段被更新 (验 refresh→import 写入 真实生效)",
-      "Staging audit_log query: 'kol.refresh_404_skip' 抽样验证 (有 404 即 OK, 无 404 也 OK 因 staging KOL 数据相对干净)",
-      "report 入 progress.json session_notes 或独立 docs/test-reports/BL-082-staging-monitor.md",
+      "deploy-staging.yml 触发部署 BL-082 代码到 staging + migrate deploy (platform_user_id 列)",
+      "Staging 跑 platformUserId 回填脚本 (F002) 填存量行",
+      "Staging next-daily-cron 跑后实测: refreshCount > 0 (全平台, staging KOL pool 决定具体值)",
+      "Staging 24h log 监控: 0 daily-sync errors (refresh phase 不破坏 discover/import)",
+      "Staging SQL 抽样: 部分 KOL.lastSyncedAt 在 refresh phase 时段被更新 (验 refresh→import 写入)",
+      "Staging audit_log query: 'kol.refresh_404_skip' 抽样 + 404 比例 ≤5% (验全平台 platformUserId 正确)",
+      "report 入 docs/test-reports/BL-082-staging-monitor.md 或 progress.json session_notes",
       "L1 PASS"
     ]
   },
   {
-    "id": "F006",
+    "id": "F007",
     "title": "Codex Reviewer L1+L2 + signoff (executor:codex)",
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
     "status": "pending",
     "acceptance": [
-      "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 refresh-selector + daily-sync 单测 (4) npx prisma validate (5) MAX_TOTAL_REFRESH=500 grep 确认仅一处定义",
-      "L2 staging 实测 5 项 PASS: (1) daily cron 跑后 refreshCount 非 0 (2) refresh 后 KOL.lastSyncedAt 抽样 ≥3 KOL 被更新 (3) audit_log 'kol.refresh_404_skip' 工作正常 (4) 0 daily-sync errors (5) discover phase 行为不变 (discoverCount/inserted/updated 与 BL-081 baseline 量级一致)",
-      "Prod 只读核验: 部署到 prod 后 next-24h 监控 refreshCount 非 0 + 404 比例 ≤5%",
-      "signoff doc docs/test-reports/BL-082-signoff-2026-06-XX.md 含 L1/L2 结果 + 量化数据 + 终签"
+      "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 mapper/backfill/refresh-selector/daily-sync 单测 (4) npx prisma validate + migration ROLLBACK SQL valid (5) MAX_TOTAL_REFRESH=500 grep 确认仅一处定义",
+      "L2 staging 实测 6 项 PASS: (1) platform_user_id 回填抽样 ≥5 KOL (YT=UC.. / TT·IG=数字) (2) daily cron 跑后 refreshCount 非 0 + 全平台均有 (3) refresh 后 KOL.lastSyncedAt 抽样 ≥3 被更新 (4) audit_log 'kol.refresh_404_skip' 工作 + 404 比例 ≤5% (5) 0 daily-sync errors (6) discover phase 行为不变 (discoverCount/inserted/updated 量级一致)",
+      "Prod 只读核验: 部署+回填后 next-24h 监控 refreshCount 非 0 + 404 比例 ≤5%",
+      "signoff doc docs/test-reports/BL-082-signoff-2026-06-XX.md 含 L1/L2 + 量化数据 + 终签"
     ]
   }
 ]
