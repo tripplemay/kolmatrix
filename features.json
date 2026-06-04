@@ -1,100 +1,80 @@
 [
   {
     "id": "F001",
-    "title": "mapper 接 fork location 字段 + i18n-iso-countries normalize + 单测",
+    "title": "runDaily() 接入 refresh phase (sequential discover→import→refresh→import)",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "done",
-    "done_by": "Kimi_generator",
-    "done_at": "2026-06-01T10:00+0800",
+    "status": "pending",
     "acceptance": [
-      "npm install i18n-iso-countries (350+ countries, ISO 3166-1, multi-locale aliases)",
-      "src/lib/kol-sync/adapters/apify-kol.ts:438 country: null → country: normalizeCountryName(item.location)",
-      "新建 src/lib/kol-sync/normalize-country.ts: input=fork location string (英文国名如 'United States' / 'Türkiye'), output=ISO 3166-1 alpha-2 (US / TR) or null",
-      "normalize 实现: i18n-iso-countries.getAlpha2Code(name, 'en') 主路径; 遇 unknown name (Mars / 空字符串 / null) fallback null 不报错",
-      "src/lib/kol-sync/adapters/apify-kol.ts:361 注释 'fork doesn\\'t expose these' 删除/修正为 'country derived from item.location (fork field) when present; null for TT/IG which fork does not scrape'",
-      "单测 ≥6 case 覆盖: (1) 'United States' → 'US' (2) 'Türkiye' → 'TR' (3) 'India' → 'IN' (4) 'Mars' → null (5) item.location undefined → null (6) item.location '' → null",
-      "L1 PASS: npm run lint 0 error warning≤3 / npx tsc --noEmit / npm test (新增 normalize-country.test.ts + apify-kol mapper test 扩充)"
+      "scripts/kol-sync-daily.ts runDaily() 在 discover→import 之后, 在 embed-hook 之前, 加 refresh phase",
+      "实现: loop apify-kol platforms (youtube/tiktok/instagram), 每 platform 调 fetchTieredRefreshIds(prisma, {tenantId, platform, maxTotal: MAX_TOTAL_REFRESH}) 获取 ids, 调 dispatcher.runRefresh(ids) 拿 refreshed RawKolData[], 喂回 import() upsert",
+      "refresh phase log 显式输出: start/end timestamps + 每 platform refreshCount + total refreshCount",
+      "BL-059 删的 '--no-refresh / --refresh-batch silently ignored' 注释删除/更正",
+      "L1 PASS: lint 0err warn≤3 / tsc=0 / npm test 1405+ pass (新增 daily-sync refresh phase mock case)"
     ]
   },
   {
     "id": "F002",
-    "title": "Schema migration: kol 表加 country_enrichment_attempted_at + index",
+    "title": "refreshCount 真实计数 + MAX_TOTAL_REFRESH 200→500",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "done",
-    "done_by": "Kimi_generator",
-    "done_at": "2026-06-01T10:46+0800",
-    "done_note": "migrate dev 因 4 个旧 migration checksum 漂移 (pre-existing, 非本批) 要求 destructive reset，改为手写 migration.sql (Prisma 风格 + ROLLBACK header) + migrate deploy 非破坏性 apply。L1 全绿: validate / migrate status up-to-date / tsc=0 / npm test 1393 passed。",
+    "status": "pending",
     "acceptance": [
-      "prisma/schema.prisma Kol model 加 countryEnrichmentAttemptedAt DateTime? @map('country_enrichment_attempted_at') @db.Timestamptz",
-      "复合 index @@index([tenantId, countryEnrichmentAttemptedAt], name: 'kol_tenant_country_attempted_idx')",
-      "npx prisma migrate dev --name bl_081_add_country_enrichment_attempted_at",
-      "Migration 文件含 ROLLBACK SQL: DROP INDEX kol_tenant_country_attempted_idx; ALTER TABLE kol DROP COLUMN country_enrichment_attempted_at;",
-      "Migration BACKFILL: 不需要 (新字段允许 NULL, 现有 2146 KOL 全 NULL 即 'never attempted')",
-      "RLS policy 不变 (新字段在已有 kol 表上, 沿用 tenant_id 隔离)",
-      "L1 PASS: npx prisma validate / npx prisma migrate status / npx tsc --noEmit"
-    ]
-  },
-  {
-    "id": "F003",
-    "title": "enrichment-stage WHERE 改造 + attempted_at 更新逻辑",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 2.5,
-    "status": "done",
-    "done_by": "Kimi_generator",
-    "done_at": "2026-06-01T11:13+0800",
-    "done_note": "enrichment-stage.ts WHERE 加 attempted_at gate (field-ref lastSyncedAt>attemptedAt, ?. 容错 unit fake 无 kol.fields); processOne 删 updateData-空-早退 bug, country 候选行无条件写 countryEnrichmentAttemptedAt=new Date() (与 kol.update+auditLog 同 $transaction 原子); audit payload after 加 enrichment_attempted_at; import.ts upsert 当 payload.countryCode 真值时设 countryEnrichmentAttemptedAt=nowDate (与 lastSyncedAt 共享 nowDate 确保 gate 排除). 单测扩充 4 new (gate-skip/gate-retry/null-still-stamps/atomic-rollback) + 修 2 existing after 断言. L1: tsc=0 / lint 0err3warn(pre-existing) / npm test 1397 passed.",
-    "acceptance": [
-      "src/lib/kol-sync/enrichment-stage.ts:283-307 WHERE 改造: 在原 OR clause 外加 AND (countryEnrichmentAttemptedAt IS NULL OR last_synced_at > countryEnrichmentAttemptedAt) — 已 attempted 但 last_synced 后有新数据则重试",
-      "enrichKol 写入路径: 无论 LLM 返 null 还是真值, 都更新 countryEnrichmentAttemptedAt = NOW() (写在与 country_code 同一事务)",
-      "事务原子性: 任一字段写入失败整体 rollback (避免 attempted_at 写了但 country 没写, 下次跳过反而错失)",
-      "audit_log payload 加 enrichment_attempted_at: 记录 attempt 历史供后续排查",
-      "fork mapper 提供 country 的 KOL 在 sync 时同步设置 countryEnrichmentAttemptedAt = NOW() (避免 daily cron 再扫已知 country 的 KOL)",
-      "单测扩充 ≥4 case: (1) 已 attempted 且 last_synced=attempted 跳过 (2) 已 attempted 但 last_synced 新 重试 (3) LLM 返 null 仍写 attempted_at (4) 事务 rollback 测试",
+      "scripts/kol-sync-daily.ts:199 hard-coded 'refreshCount: 0' 删除, 改为实际累加值 (per platform refresh count 总和)",
+      "src/lib/kol-sync/refresh-selector.ts MAX_TOTAL_REFRESH 200 → 500",
+      "refresh-selector.ts 现有 unit test 验跑得通 (BL-059 之后该 module 0 caller, test 可能已 stale)",
+      "log 输出验证: refreshCount 不再是固定 0, 而是 0-500 之间真实数",
       "L1 PASS"
     ]
   },
   {
+    "id": "F003",
+    "title": "单测扩充 + daily-sync e2e mock 覆盖 refresh phase",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 2.0,
+    "status": "pending",
+    "acceptance": [
+      "refresh-selector.test.ts 修复/扩充 ≥3 case: (1) tier sort 排序正确 (2) MAX_TOTAL_REFRESH=500 cap 生效 (3) 空 KOL pool 返 []",
+      "daily-sync e2e test (vitest mock fetch / dispatcher) 加 ≥2 case: (1) refresh phase 被调用且 import 收到 refreshed data (2) refresh 404 路径不阻塞主流程",
+      "若 refresh-selector.test.ts 已存在且 stale (BL-059 后) → 修复 import path + mock 接口签名",
+      "若不存在 → 新建覆盖 fetchTieredRefreshIds + pickTieredRefreshIds 各 path",
+      "L1 PASS: npm test 含新增 case 全过"
+    ]
+  },
+  {
     "id": "F004",
-    "title": "refresh-selector=0 audit report (仅查不修)",
+    "title": "audit_log kol.refresh_404_skip event",
     "executor": "generator",
     "priority": "medium",
-    "estimated_hours": 2.0,
-    "status": "done",
-    "done_by": "Kimi_generator",
-    "done_at": "2026-06-01T11:20+0800",
-    "done_note": "产 docs/audits/BL-081-refresh-selector-audit.md (6 节). 代码侧根因已确定: refresh=0 非 selector/cursor/fork bug, 而是 BL-059 单源重构删了 refresh phase — scripts/kol-sync-daily.ts:199 refreshCount:0 硬编码, runDaily 无 refresh 调用, fetchTieredRefreshIds 0 production caller (孤儿死代码, 无 test). 能力仍在 (dispatcher.runRefresh + adapter.refresh GET /kol/:platform/:userId 都在). 3 候选修复 (A 重接 selector 推荐 / B 轻量 lastSyncedAt-asc / C 仅扩 discover). SSH 验证 O1-O3 (日志确认 / prod DB staleness 量化 / fork endpoint live-check) 已给精确命令但未执行 (read-only prod 诊断需用户授权/runbook). docs only L1 无需 lint.",
+    "estimated_hours": 1.0,
+    "status": "pending",
     "acceptance": [
-      "SSH prod 跑 grep '\"refreshCount\"' /var/log/kolmatrix-kol-sync.log 7-30 天历史确认 refresh=0 是否一直为 0 / 是否曾有 N>0 时期",
-      "看 src/lib/kol-sync/refresh-selector.ts 实现 + 调用点 (scripts/kol-sync-daily.ts 或 dispatcher.ts), 定位 cursor 逻辑 / 选择规则",
-      "看 fork apify-kol-service 端是否支持 refresh endpoint (GET /kol 是否有 cursor / since 参数 / refresh path)",
-      "产 docs/audits/BL-081-refresh-selector-audit.md 含: (1) 现状 (refresh=0 持续期 + 影响 KOL 数据 stale 程度) (2) 根因 (selector bug / cursor bug / fork 不支持 / 配置漏) (3) 影响评估 (老 KOL follower / engagement_rate 多久没更新 + 商业影响) (4) 修复建议 (3 候选方向)",
-      "Report 入 git, 不实装 fix (留独立批次)",
-      "L1 PASS: 文档 lint 无 (docs only)"
+      "ApifyKolSyncAdapter.refresh() 检测到 404 时 (apify-kol.ts:213 已有 catch) 不仅 continue, 也调 audit_log.create",
+      "audit_log action='kol.refresh_404_skip', resource_type='kol', resource_id=null (因 KOL 可能已删), payload={externalId, platform, reason: 'fork returned 404 — KOL possibly deleted'}",
+      "audit_log 行写入需 tenantId — 从 dispatcher.runRefresh 调用栈往下传 tenantId 给 adapter.refresh (新增 opts.tenantId 参数)",
+      "404 不阻塞 batch (沿用现有 continue 行为)",
+      "单测扩充 apify-kol-adapter test: ≥1 case 验 404 → audit_log 写入 + continue",
+      "L1 PASS"
     ]
   },
   {
     "id": "F005",
-    "title": "Staging 量化 + prod backfill 写 attempted_at",
+    "title": "Staging deploy + 24h 监控 refresh count + staleness",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "done",
-    "done_by": "Kimi_generator",
-    "done_at": "2026-06-01T12:06+0800",
-    "done_note": "代码交付完成: scripts/kol-country-attempted-backfill.ts (纯 DB UPDATE 无 LLM, idempotent — WHERE country_enrichment_attempted_at IS NULL 保证重复跑 0 行; 匹配 enrichment scan population: deleted_at NULL + is_suspicious false + country NULL/blank). runCountryAttemptedBackfill 抽为可测函数 + tests/unit/kol-country-attempted-backfill.test.ts 8 case (dry-run 不写 / apply 写 / idempotent 0 行 / SQL-shape 验 NOW()+IS NULL 守护 / tenant scoping). 本地 --dry-run smoke 跑通 (SQL 对真 schema 有效). L1: tsc=0 / lint clean / npm test 1405 passed. **待 ops (需用户 SSH, 非 autonomous)**: staging 部署 F001-F003+F005 → 跑 backfill → 24h 监控 daily LLM call <200; prod 跑 backfill (写操作) → 24h 验 <200. 这些 staging/prod 实测降幅是 F006 Codex L2 验收 + 用户 ops 范畴 (prod backfill 是写 prod 操作需用户授权)。",
+    "status": "pending",
     "acceptance": [
-      "新建 scripts/kol-country-attempted-backfill.ts: 一次性给所有 country_code IS NULL 的 KOL 写 countryEnrichmentAttemptedAt = NOW() (不调 LLM, 仅 DB UPDATE)",
-      "Staging 验证: 部署 F001-F003 + F005 backfill 跑一次, next 24h 监控 daily-sync log + aigcgateway calls 量化降幅",
-      "Staging acceptance: daily LLM call <200/天 (从 ~500/天 降低 60%+)",
-      "Prod backfill: SSH 跑 backfill script, 写所有 2081 attempted=NULL KOL 的 attempted_at = NOW()",
-      "Prod 验证 24h: aigcgateway daily call <200/天 (mapper YT 直填 + attempted_at 阻止 silent retry)",
-      "Backfill script idempotent (重复跑只更新 NULL attempted_at, 不动已有值)",
-      "L1 PASS (script 单测 ≥2 case dry-run + apply)"
+      "deploy-staging.yml workflow 触发部署 BL-082 代码到 staging",
+      "Staging next-daily-cron 跑后实测: refreshCount ≥100 (staging KOL pool 较小, 可能远 <500)",
+      "Staging 24h log 监控: 0 daily-sync errors (refresh phase 引入不应破坏现有 discover/import)",
+      "Staging SQL 抽样: 部分 KOL.lastSyncedAt 在 refresh phase 时段被更新 (验 refresh→import 写入 真实生效)",
+      "Staging audit_log query: 'kol.refresh_404_skip' 抽样验证 (有 404 即 OK, 无 404 也 OK 因 staging KOL 数据相对干净)",
+      "report 入 progress.json session_notes 或独立 docs/test-reports/BL-082-staging-monitor.md",
+      "L1 PASS"
     ]
   },
   {
@@ -105,11 +85,10 @@
     "estimated_hours": 1.5,
     "status": "pending",
     "acceptance": [
-      "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 normalize-country + enrichment-stage 单测 (4) npx prisma validate (5) migration ROLLBACK SQL 文法 valid",
-      "L2 staging+prod 实测 6 项 PASS: (1) mapper YT 抽样 ≥5 KOL location → country_code 正确 normalize (2) attempted_at 写入抽样 ≥5 KOL 验事务原子性 (3) daily cron 跑后 LLM call 真降到 <200/天 (4) 90 个现有 country_code 0 影响 (抽样查现有 country 仍正确) (5) 下游 discovery/match country filter 不破 (6) refresh-selector audit report 可读且 actionable",
-      "成本量化: 5/27-6/01 baseline daily $0.44 vs F005 后 24h daily LLM cost 对比, 期望降幅 >60%",
-      "signoff doc docs/test-reports/BL-081-signoff-2026-06-XX.md 含 L1/L2 结果 + 量化降幅表 + 终签",
-      "F004 audit report 抽样审 ≥1 候选方向技术可行性 (Reviewer 不写代码, 仅判断 report 质量)"
+      "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 refresh-selector + daily-sync 单测 (4) npx prisma validate (5) MAX_TOTAL_REFRESH=500 grep 确认仅一处定义",
+      "L2 staging 实测 5 项 PASS: (1) daily cron 跑后 refreshCount 非 0 (2) refresh 后 KOL.lastSyncedAt 抽样 ≥3 KOL 被更新 (3) audit_log 'kol.refresh_404_skip' 工作正常 (4) 0 daily-sync errors (5) discover phase 行为不变 (discoverCount/inserted/updated 与 BL-081 baseline 量级一致)",
+      "Prod 只读核验: 部署到 prod 后 next-24h 监控 refreshCount 非 0 + 404 比例 ≤5%",
+      "signoff doc docs/test-reports/BL-082-signoff-2026-06-XX.md 含 L1/L2 结果 + 量化数据 + 终签"
     ]
   }
 ]
