@@ -3,7 +3,7 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-082-refresh-selector-rewire PLANNING→building (0/6, fix_rounds=0) — 重接 daily-sync refresh phase (Dir A)
+## 🚧 BL-082-refresh-selector-rewire BUILDING (0/6, fix_rounds=0) — 重接 daily-sync refresh phase (Dir A)
 - A0 (BL-081 F004 audit + O1-O3) done, A1 4 子决策 lock: tiered selector 保留 / MAX 200→500/天 / sequential discover→import→refresh→import / 404 skip+log
 - O3 pre-flight: real channel handle UC22GlzN_jFaGLhiO-8ZM7Gw → HTTP 200 完整 KOL object (fork endpoint 可用)
 - 6 features: F001 runDaily 接 refresh / F002 refreshCount 真实 + MAX=500 / F003 单测 / F004 audit_log 404_skip / F005 staging 24h 监控 / F006 Codex
