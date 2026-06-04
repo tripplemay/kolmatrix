@@ -206,3 +206,87 @@ describe("runDaily · failure isolation", () => {
     expect(report.errors.some((e) => e.includes("dead"))).toBe(true);
   });
 });
+
+describe("runDaily · refresh phase (BL-082-F003)", () => {
+  // Fake prisma whose kol.findMany returns a tiered-refresh candidate only
+  // for the refresh-selector's top500 query (the one selecting both id +
+  // platformUserId); every other findMany (embed-hook touched lookup,
+  // enrichment scan, tier3/flagged) returns [] so those phases no-op.
+  function makeRefreshPrisma(upserts: string[]) {
+    return {
+      tenant: { findUnique: vi.fn(async () => ({ id: "tenant-1" })) },
+      kol: {
+        findMany: vi.fn(
+          async (args: { select?: { id?: boolean; platformUserId?: boolean } }) =>
+            args?.select?.id && args?.select?.platformUserId
+              ? [{ id: "k1", platformUserId: "UCabc" }]
+              : [],
+        ),
+        findUnique: vi.fn(async () => null),
+        upsert: vi.fn(
+          async ({
+            where,
+          }: {
+            where: { tenantId_platform_externalId: { externalId: string } };
+          }) => {
+            upserts.push(where.tenantId_platform_externalId.externalId);
+            return null;
+          },
+        ),
+      },
+      $queryRaw: vi.fn(async () => []),
+      $queryRawUnsafe: vi.fn(async () => []),
+      $executeRaw: vi.fn(async () => 0),
+    };
+  }
+
+  it("fetches tiered ids, refreshes them, and imports the refreshed rows", async () => {
+    // The refresh target's externalId equals the `<platform>:<puid>` id the
+    // selector emits, so the mock adapter's refresh() (matches by
+    // externalId) returns it. Proves discover→import→REFRESH→import wiring.
+    const refreshTarget = fakeChannel({
+      externalId: "youtube:UCabc",
+      platform: "youtube",
+      displayName: "RefreshedKOL",
+    });
+    const adapter = new MockKolSyncAdapter({
+      name: "apify-kol",
+      source: "apify-kol",
+      channels: [refreshTarget],
+    });
+    const upserts: string[] = [];
+    const report = await runDaily({
+      adapters: [adapter],
+      prisma: makeRefreshPrisma(upserts) as unknown as Parameters<typeof runDaily>[0]["prisma"],
+      tenantSlug: "demo",
+      dryRun: false,
+      retry: { sleep: async () => {}, backoffsMs: [1, 1, 1] },
+    });
+    expect(report.refreshCount).toBeGreaterThan(0);
+    expect(upserts).toContain("youtube:UCabc"); // refreshed row imported
+  });
+
+  it("captures a refresh failure in errors without aborting the run", async () => {
+    // Adapter discovers fine but throws on refresh → soft phase: error is
+    // recorded, refreshCount stays 0, the run still completes.
+    const adapter = {
+      name: "apify-kol",
+      source: "apify-kol",
+      healthCheck: async () => ({ healthy: true, details: {} }),
+      discover: async () => [],
+      refresh: async () => {
+        throw new Error("fork 503 on refresh");
+      },
+    };
+    const report = await runDaily({
+      adapters: [adapter as unknown as Parameters<typeof runDaily>[0]["adapters"][number]],
+      prisma: makeRefreshPrisma([]) as unknown as Parameters<typeof runDaily>[0]["prisma"],
+      tenantSlug: "demo",
+      dryRun: false,
+      retry: { sleep: async () => {}, backoffsMs: [1] },
+    });
+    expect(report.refreshCount).toBe(0);
+    expect(report.errors.some((e) => e.includes("refresh"))).toBe(true);
+    expect(report.endedAt).toBeTruthy(); // run completed, did not throw
+  });
+});

@@ -65,14 +65,17 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "refresh-selector.test.ts 修复/扩充 ≥3 case: (1) tier sort 排序正确 (2) MAX_TOTAL_REFRESH=500 cap 生效 (3) 空 KOL pool / platform_user_id 全 NULL 返 []",
       "fetchTieredRefreshIds 测: 返回 '<platform>:<platform_user_id>' 格式 + 跳过 NULL platform_user_id",
       "daily-sync e2e test (vitest mock dispatcher) 加 ≥2 case: (1) refresh phase 被调用且 import 收到 refreshed data (2) refresh 404/部分失败不阻塞主流程",
       "若 refresh-selector.test.ts stale (BL-059 后) → 修 import path + mock 签名",
       "L1 PASS: npm test 含新增 case 全过"
-    ]
+    ],
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-04T17:50+0800",
+    "done_note": "新建 refresh-selector.test.ts 8 case (DEFAULT_MAX=500 / pickTieredRefreshIds 排序+dedup+maxTotal cap / 空池 / pickBucketSlice 全覆盖 / fetchTieredRefreshIds 返 '<platform>:<platformUserId>' + 跳过 NULL puid). kol-sync-daily.test.ts +2 e2e (refresh phase 接线 discover→import→refresh→import 真跑 refreshCount>0 + import 收到 refreshed row / refresh 抛错软失败不阻塞 run + errors 记录). L1: tsc=0 / lint 0err3warn / npm test 1423 passed."
   },
   {
     "id": "F005",
