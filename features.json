@@ -38,7 +38,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "src/lib/kol-sync/import.ts KolUpsertPayload 加 emails?: string[] + emailSource?: string",
       "upsert data (create + update path) 带这两字段; emails 来自 mapper 的 RawKolData.emails, emailSource='business-unlock' 当 mapper.emails 非空时",

@@ -36,6 +36,12 @@ export const TOPIC_CATEGORY_MAP: Record<string, readonly string[]> = {
 
 const DEFAULT_CATEGORIES: readonly string[] = ["Gaming"];
 
+/** BL-083-F003 — email_source value for emails the fork unlocked via its
+ *  YouTube business-email Apify actor. The only source the mapper emits
+ *  today (bio-regex provenance lives on the 6 legacy `kol.email` rows and
+ *  is stamped by F006's backfill, not the live sync path). */
+export const EMAIL_SOURCE_BUSINESS_UNLOCK = "business-unlock";
+
 export function deriveCategories(topicCategories: readonly string[] | undefined): string[] {
   const acc = new Set<string>();
   for (const url of topicCategories ?? []) {
@@ -92,6 +98,18 @@ export interface KolUpsertPayload {
   videoCount: number | null;
   totalViewCount: bigint | null;
   bannerUrl: string | null;
+  /** BL-083-F003 — business emails surfaced by the F001 mapper from the
+   *  fork's `emails: string[]`. Null when the mapper didn't fill it. The
+   *  import path writes this onto `kol.emails` (JSONB, F002) ONLY when
+   *  non-empty, so a daily refresh where the fork omits emails never
+   *  clobbers a previously-unlocked value (same write-only-when-present
+   *  discipline as engagementRate). The legacy single `kol.email` column
+   *  is never written here — BL-031's 6 bio-regex rows stay put. */
+  emails: string[] | null;
+  /** BL-083-F003 — provenance for `emails`. 'business-unlock' when the
+   *  fork unlocked them via its YT Apify actor (the only source the
+   *  mapper produces today). Null when `emails` is null. */
+  emailSource: string | null;
   metadata: {
     is_demo: boolean;
     source: string;
@@ -164,6 +182,11 @@ export function mapToUpsertPayload(
       ? BigInt(raw.viewCount)
       : null;
   const bannerUrl = raw.platform === "youtube" ? (raw.bannerUrl ?? null) : null;
+  // BL-083-F003 — promote the mapper's sanitised business emails. Treat a
+  // null OR empty array the same ("mapper didn't fill it"): no write, so
+  // the update path can't wipe a previously-unlocked value.
+  const emails = raw.emails && raw.emails.length > 0 ? raw.emails : null;
+  const emailSource = emails ? EMAIL_SOURCE_BUSINESS_UNLOCK : null;
   // BL-076-F002: promote raw.engagement_outlier (set by apify-kol when
   // the raw engagement_rate exceeds 100%) into metadata.flags so the
   // discovery UI / analytics can filter view-based-proxy noise. Only
@@ -193,6 +216,8 @@ export function mapToUpsertPayload(
     videoCount,
     totalViewCount,
     bannerUrl,
+    emails,
+    emailSource,
     metadata: {
       is_demo: opts.isDemo,
       source: opts.source,
@@ -344,6 +369,17 @@ export async function importRawKolData(
       videoCount: payload.videoCount,
       totalViewCount: payload.totalViewCount,
       bannerUrl: payload.bannerUrl,
+      // BL-083-F003 — write the fork-unlocked business emails + provenance
+      // ONLY when the mapper surfaced a non-empty array. Omitting the keys
+      // on an empty result means a daily refresh that returns no emails
+      // leaves an already-unlocked `kol.emails` untouched (and never writes
+      // the legacy `kol.email` scalar — the 6 bio-regex rows stay put).
+      ...(payload.emails && payload.emails.length > 0
+        ? {
+            emails: payload.emails as unknown as Prisma.InputJsonValue,
+            emailSource: payload.emailSource,
+          }
+        : {}),
       // Prisma's InputJsonObject requires an index signature; the
       // narrowly-typed QualityFlags doesn't satisfy that purely
       // structurally, so widen at the boundary.
