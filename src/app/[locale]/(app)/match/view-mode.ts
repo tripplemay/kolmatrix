@@ -18,3 +18,27 @@ export function parseView(
   const value = Array.isArray(v) ? v[0] : v;
   return value === "table" ? "table" : "card";
 }
+
+/**
+ * BL-084-F007 · AI Match Panel vs full-pool resolution.
+ *
+ * Orthogonal to {@link parseView} (table/card layout of the full pool):
+ *   - `?view=ai`        → AI recommendation panel
+ *   - `?view=full-pool` → full KOL pool (legacy BM1 workbench)
+ *   - no `view` + a campaignId → AI panel (default for the campaign deep-link)
+ *   - no `view` + no campaignId → full pool
+ *
+ * `view=table` / `view=card` are full-pool layout signals → "full-pool".
+ */
+export type AiView = "ai" | "full-pool";
+
+export function parseAiView(
+  raw: Record<string, string | string[] | undefined>,
+  campaignId: string | null,
+): AiView {
+  const v = raw.view;
+  const value = Array.isArray(v) ? v[0] : v;
+  if (value === "ai") return "ai";
+  if (value === undefined && campaignId) return "ai";
+  return "full-pool";
+}

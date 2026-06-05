@@ -19,8 +19,12 @@ import { DISCOVERY_PLATFORMS, type DiscoveryFilters } from "@/lib/kol/filters";
 interface Props {
   basePath: string;
   filters: DiscoveryFilters;
-  /** Stay-in-view-mode signal: when "table", carries `?view=table`. */
-  view?: "card" | "table";
+  /**
+   * Stay-in-view-mode signal: "table" carries `?view=table`; BL-084-F007
+   * "full-pool" carries `?view=full-pool` so a search inside a campaign
+   * context does not bounce back to the AI panel default.
+   */
+  view?: "card" | "table" | "full-pool";
   /** Stay-in-campaign-context signal: carries `?campaignId=xxx`. */
   campaignId?: string | null;
 }
@@ -93,7 +97,10 @@ export async function MatchSearchBar({
 
 function buildCarryoverFields(
   f: DiscoveryFilters,
-  extras: { view?: "card" | "table"; campaignId?: string | null },
+  extras: {
+    view?: "card" | "table" | "full-pool";
+    campaignId?: string | null;
+  },
 ): React.ReactNode[] {
   const fields: React.ReactNode[] = [];
   let i = 0;
@@ -130,6 +137,7 @@ function buildCarryoverFields(
   if (f.includeNonGaming) add("includeNonGaming", "on");
   add("sort", f.sort);
   if (extras.view === "table") add("view", "table");
+  else if (extras.view === "full-pool") add("view", "full-pool");
   if (extras.campaignId) add("campaignId", extras.campaignId);
 
   return fields;

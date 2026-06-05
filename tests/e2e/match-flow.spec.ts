@@ -962,3 +962,39 @@ test.describe("BL-068-F006 · /campaigns/[id] + /match conversational refine flo
     );
   });
 });
+
+// ============================================================
+// 5. BL-084-F007 · AI Match Panel toggle routing
+// ============================================================
+test.describe("BL-084-F007 · /match AI panel toggle", () => {
+  test("?campaignId= defaults to the AI panel; toggle switches to full pool", async ({
+    page,
+  }) => {
+    const found = await firstCampaignDetailUrl(page);
+    test.skip(!found, "tenant has no seeded campaigns");
+
+    // Deep-link into /match with a real campaign → defaults to AI view.
+    await page.goto(`/en/match?campaignId=${found!.campaignId}`);
+    await page.waitForURL(/\/en\/match\?campaignId=/);
+
+    const toggle = page.getByTestId("match-view-toggle");
+    await expect(toggle).toBeVisible({ timeout: 20_000 });
+    await expect(toggle).toHaveAttribute("data-active", "ai");
+    // The 3-column AI workbench shell renders (data independent).
+    await expect(page.getByTestId("match-ai-panel")).toBeVisible();
+    await expect(page.getByTestId("column-suggested")).toBeVisible();
+    await expect(page.getByTestId("column-accepted")).toBeVisible();
+    await expect(page.getByTestId("column-swap")).toBeVisible();
+
+    // Toggle to the full KOL pool (runMatchSearch workbench).
+    await page.getByTestId("toggle-full-pool").click();
+    await page.waitForURL(/view=full-pool/);
+    await expect(page.getByTestId("match-ai-panel")).toHaveCount(0);
+    await expect(page.getByTestId("match-view-toggle")).toHaveAttribute(
+      "data-active",
+      "full-pool",
+    );
+    // URL preserves the campaign context.
+    expect(page.url()).toContain(`campaignId=${found!.campaignId}`);
+  });
+});

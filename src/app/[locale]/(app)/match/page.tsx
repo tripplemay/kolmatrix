@@ -55,8 +55,10 @@ import { parseFilters, serializeFilters } from "@/lib/kol/filters";
 import { cn } from "@/lib/utils";
 
 import { MatchActiveFilters } from "./MatchActiveFilters";
+import { MatchAiPanel } from "./MatchAiPanel";
 import { MatchFilterSidebar } from "./MatchFilterSidebar";
 import { MatchKolCard } from "./MatchKolCard";
+import { MatchViewToggle } from "./MatchViewToggle";
 // BL-070-F009 — MatchKolTable + MatchRefineBar are client components; gating
 // them behind next/dynamic({ssr:false}) chunks the table-view bundle (+
 // transitive AddToCampaignDialog/ConfirmDeleteDialog) and the refine bar so
@@ -74,7 +76,7 @@ import {
   loadMatchDataFillRates,
   runMatchSearch,
 } from "./search";
-import { parseView } from "./view-mode";
+import { parseAiView, parseView } from "./view-mode";
 
 export const metadata = { title: "Match — KOLMatrix" };
 
@@ -123,6 +125,48 @@ export default async function MatchPage({ params, searchParams }: Props) {
   const tenantId = session?.user?.tenantId;
   if (!tenantId) redirect("/login");
   const userId = session.user.id;
+
+  // BL-084-F007 — AI Match Panel gate. When the URL resolves to the AI
+  // view (explicit ?view=ai, or a campaignId with no view) AND the
+  // campaign exists tenant-scoped, render the 3-column AI workbench and
+  // skip the full-pool data loading entirely. A malformed / RLS-invisible
+  // campaignId falls through to the full-pool layout (spec §F007 redirect).
+  const aiView = parseAiView(raw, campaignId);
+  if (aiView === "ai" && campaignId) {
+    const aiCampaign = await withTenant(tenantId, (tx) =>
+      tx.campaign.findFirst({
+        where: { id: campaignId, deletedAt: null },
+        select: { id: true },
+      }),
+    );
+    if (aiCampaign) {
+      const tToggleHeader = await getTranslations("match.aiPanel");
+      return (
+        <div
+          className="flex flex-col gap-6 p-6"
+          data-testid="match-page"
+          data-ai-view="ai"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h1 className="text-xl font-semibold text-white">
+              {tToggleHeader("title")}
+            </h1>
+            <MatchViewToggle
+              campaignId={campaignId}
+              locale={locale}
+              active="ai"
+            />
+          </div>
+          <MatchAiPanel
+            campaignId={campaignId}
+            tenantId={tenantId}
+            locale={locale}
+          />
+        </div>
+      );
+    }
+    // else: campaign not resolvable → fall through to full-pool below.
+  }
 
   // BL-070-F011 — runMatchSearch (main table) + the campaign lookup
   // (sidebar mount judgment) stay on the LCP critical path. loadDatabaseStats
@@ -175,9 +219,16 @@ export default async function MatchPage({ params, searchParams }: Props) {
 
   const basePath = `/${locale}/match`;
 
+  // BL-084-F007 — the `view` param to carry on every full-pool link.
+  // `table` keeps the dense layout; otherwise, when a campaign context is
+  // present we MUST pin `full-pool` so a filter change does not bounce
+  // back to the AI panel default (campaignId + no view → AI).
+  const carriedView: "table" | "full-pool" | null =
+    view === "table" ? "table" : campaignId ? "full-pool" : null;
+
   function withFilter(overrides: Parameters<typeof serializeFilters>[1]) {
     const merged = serializeFilters(filters, overrides);
-    if (view === "table") merged.set("view", "table");
+    if (carriedView) merged.set("view", carriedView);
     if (campaignId) merged.set("campaignId", campaignId);
     const q = merged.toString();
     return q ? `${basePath}?${q}` : basePath;
@@ -185,7 +236,7 @@ export default async function MatchPage({ params, searchParams }: Props) {
 
   function withParams(extra: Record<string, string | undefined>) {
     const merged = serializeFilters(filters);
-    if (view === "table" && !("view" in extra)) merged.set("view", "table");
+    if (carriedView && !("view" in extra)) merged.set("view", carriedView);
     if (campaignId && !("campaignId" in extra)) {
       merged.set("campaignId", campaignId);
     }
@@ -254,6 +305,13 @@ export default async function MatchPage({ params, searchParams }: Props) {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {campaignId && campaign ? (
+            <MatchViewToggle
+              campaignId={campaignId}
+              locale={locale}
+              active="full-pool"
+            />
+          ) : null}
           {isAdmin ? (
             <Link
               href={`/${locale}/admin/kol-csv-import`}
@@ -289,7 +347,7 @@ export default async function MatchPage({ params, searchParams }: Props) {
       <MatchSearchBar
         basePath={basePath}
         filters={filters}
-        view={view}
+        view={carriedView ?? view}
         campaignId={campaignId}
       />
 

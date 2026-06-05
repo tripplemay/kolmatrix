@@ -114,7 +114,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "src/app/[locale]/(app)/match/page.tsx 顶部加 toggle [AI 推荐|全KOL池] (URL param view=ai|full-pool)",
       "默认逻辑: campaignId 有 AND view 未设 → 默认 view=ai 渲染 <MatchAiPanel campaignId={X} />; campaignId 无 OR view=full-pool → 现有 runMatchSearch 全池子",
