@@ -6,8 +6,9 @@ type: project
 ## 🔍 BL-083-yt-business-email-mapper VERIFYING (6/7 generator done, fix_rounds=0) — 交 Codex F007 L1+L2+signoff
 - F001 mapper 接 emails / F002 schema (emails JSONB + 复用 email_source) / F003 import upsert / F004 UI detail+/match filter / F005 outreach 优先级 / F006 backfill ✅ 全 done
 - staging deployed @ eb584dd (=main HEAD); CI green (E2E baseline en-kols-detail.png 经 update-visual-baselines workflow regen 修复)
-- staging F006 backfill apply 219 行 (idempotent, business-unlock + JSONB array 正确, legacy email 12 行未动)
-- L1: tsc=0 / lint 0err / 1463 tests; Codex 待 L2 staging UI 实测 + prod 核验 + signoff
+- staging + **PROD 均已部署 @ 96ca150** (用户 6/05 授权 prod deploy run 26995519849); backfill apply staging 219 + **prod 219 行** (幂等)
+- **prod 量化达标**: active YT 722, emails fill 0.8%→**30.3%** (219 行 business-unlock), legacy email 18 行未动
+- L1: tsc=0 / lint 0err / 1463 tests; Codex 待 L2 staging UI 实测 + prod 只读核验 + signoff
 - 关联 docs/specs/BL-083-yt-business-email-mapper-spec.md, generator_handoff 详见 progress.json
 ## ✅ BL-082-refresh-selector-rewire DONE (7/7, fix_rounds=1, tag bl082-done @ 133bbe0)
 - prod refreshCount=251 (YT90/TT127/IG34) failedAdapters=0 404率=0% / staging refreshCount=253/0%404
