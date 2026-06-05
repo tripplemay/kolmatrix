@@ -1,113 +1,161 @@
 [
   {
     "id": "F001",
-    "title": "mapper 接 fork emails 字段 + types.ts + 单测",
+    "title": "runSmartMatch 升级 (topK 默认 30 + campaignId 参数 log + cache key)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "done",
+    "estimated_hours": 0.5,
+    "status": "pending",
     "acceptance": [
-      "src/lib/kol-sync/types.ts RawKolData 加 emails?: string[] | null",
-      "src/lib/kol-sync/adapters/apify-kol.ts mapper 持久化 item.emails → RawKolData.emails (zod schema 已 passthrough, 显式加 emails: z.array(z.string()).nullable().optional())",
-      "mapper try/catch + zod validation: fork 返非 array 或含 non-string → fallback null + console.warn log (不阻塞 batch)",
-      "现有 6 个 kol.email 不动 (mapper 不覆盖 single-email 字段, 只填新加的 emails array)",
-      "单测 ≥4 case: (1) fork emails=['a@b.com'] → kol.emails=['a@b.com'] (2) 多 email → array 完整 (3) emails undefined → null (4) emails 含非 string → fallback null + warn",
-      "L1 PASS: lint 0err warn≤3 / tsc=0 / npm test 1423+ pass (新增 apify-kol-mapper emails case)"
+      "src/lib/discovery/smart-match.ts DEFAULT_TOP_K 10 → 30 (改默认值, 不破坏现有 caller 的显式 topK 传入)",
+      "SmartMatchInput 加可选 campaignId?: string (仅用于 logEvent + cache key, runSmartMatch 内部不读它做过滤)",
+      "logEvent 'smart_match.invoked' payload 加 campaignId 字段 (现已有 productId/topK/latency/jit-embed flag, 加一项)",
+      "现有 caller (POST /api/kols/smart-match) 保持向后兼容: bodySchema topK 上限保留 50 + 不强制 campaignId",
+      "单测 ≥2 case: (1) campaignId 传入时 log 含此字段 (2) campaignId 不传时 log 不含此字段",
+      "L1 PASS: lint 0err warn≤3 / tsc=0 / npm test (新增 smart-match campaignId log case)"
     ]
   },
   {
     "id": "F002",
-    "title": "Schema migration: kol 表加 emails JSONB + email_source 复用/新增",
+    "title": "LLM 重排服务 src/lib/match/llm-rerank.ts + aigcgateway action 注册",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.0,
-    "status": "done",
+    "estimated_hours": 3.0,
+    "status": "pending",
     "acceptance": [
-      "prisma/schema.prisma Kol model 加 emails Json? @map('emails') @db.JsonB",
-      "现 kol 表已有 email_source 字段 (VARCHAR(20) default 'manual') - 复用 vs 新加 由 Generator 实地决定, 若复用确保 'business-unlock' 'bio-regex' 值与现有 'manual' 并存",
-      "migration 手写 SQL (BL-082 同 ops 模式避免 prisma migrate dev checksum 漂移) 放 20260605XXXXXX_bl_083_add_emails_jsonb/",
-      "ROLLBACK SQL header: DROP COLUMN emails;",
-      "BACKFILL: 不需 (新字段允许 NULL, 现有 2371 KOL 全 NULL 即 'mapper 未填')",
-      "RLS policy 不变",
-      "L1 PASS: prisma validate / migrate deploy / tsc=0"
-    ]
-  },
-  {
-    "id": "F003",
-    "title": "import.ts upsert: 写 emails array + email_source = 'business-unlock'",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "done",
-    "acceptance": [
-      "src/lib/kol-sync/import.ts KolUpsertPayload 加 emails?: string[] + emailSource?: string",
-      "upsert data (create + update path) 带这两字段; emails 来自 mapper 的 RawKolData.emails, emailSource='business-unlock' 当 mapper.emails 非空时",
-      "primary email 兼容: 现 kol.email 字段不覆盖 (BL-031 bio-regex 残留 6 行保留); 新写入的 KOL 如 mapper.emails=['a@b.com'] 仅写 emails=['a@b.com'], kol.email 留 NULL (下游 outreach 改读 emails 而非 email — 在 F005 outreach 调整)",
-      "单测扩充 ≥3 case: (1) mapper.emails 非空 → emails 写入 + email_source='business-unlock' (2) mapper.emails null → 不写 (3) update existing KOL 时新增 emails 不破坏 kol.email",
+      "新建 src/lib/match/llm-rerank.ts: rerankWithReason(candidates: SmartMatchKolHit[], campaignMeta: {name, markets, target_audience, budget}) → Promise<{rank: SmartMatchKolHit[], matchReasons: Map<kolId, string>}>",
+      "调 aigcgateway action (新注册 action: claude-haiku-4.5, prompt 沿用 BL-068 refine 模式), input candidates JSON + campaign meta, output 30 行 {kolId, rank, reason ≤15 词}",
+      "ResponseSchema zod 验: rerank.length === input.length, 每 reason 字符串非空 ≤120 chars",
+      "降级路径: LLM 失败 (timeout/parse error/quota) → 返回 input cosine order + matchReasons={} + log 'llm-rerank.fallback'",
+      "在 .auto-memory/environment.md 'AIGCGATEWAY' 段加新 action 元数据 (action_id 待 Generator 创建后填入)",
+      "单测 ≥4 case: (1) 30 候选成功重排 + reason 齐 (2) LLM timeout → cosine fallback (3) LLM 返非法 JSON → fallback + log (4) candidates 空数组 → 直接返空",
       "L1 PASS"
     ]
   },
   {
-    "id": "F004",
-    "title": "UI /kol/[id] + /discovery + /database: emails 显示 + source chip + has-business-email filter",
+    "id": "F003",
+    "title": "Schema migration: kol_campaign 加 suggestion_status enum + 3 字段 + index",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 3.0,
-    "status": "done",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "src/app/[locale]/(app)/kols/[id]/page.tsx detail 页加 'Contact emails' 段: 列出 emails array, 每个 email 旁边 chip 标 source ('已通过 YouTube 商务邮箱解锁' 绿色 / 'Bio 文本提取' 灰色)",
-      "/discovery + /database 列表加 filter chip 'has business email' (筛 emails 数组非空)",
-      "i18n 5 locale (zh/en/ja/ko/es) 加 keys: emailSource.businessUnlock / emailSource.bioRegex / filter.hasBusinessEmail",
-      "兼容现有 KOL 无 emails 字段: detail 页 fallback 'Email 未公开' placeholder",
-      "Vitest UI 组件单测 ≥2 case (display + filter)",
+      "prisma/schema.prisma KolCampaign model 加: suggestionStatus String? @map('suggestion_status') @db.VarChar(20), suggestedAt DateTime? @map('suggested_at') @db.Timestamptz, decidedAt DateTime? @map('decided_at') @db.Timestamptz, matchScore Int? @map('match_score')",
+      "复合 index @@index([campaignId, suggestionStatus]) 加速三列查询",
+      "BACKFILL migration: legacy 行 (suggestion_status IS NULL) UPDATE 设 suggestion_status='accepted', decided_at=created_at (per §2.3 不变量 #3, 保留 BM1 行为)",
+      "手写 SQL migration (BL-082/083 同 ops 模式) 放 20260605XXXXXX_bl_084_add_kol_campaign_suggestion_status/",
+      "ROLLBACK SQL header: DROP INDEX + DROP COLUMN suggestion_status, suggested_at, decided_at, match_score",
+      "audit_log 写一条 'migration.kol_campaign_suggestion_status_backfill' 记 backfill 影响行数",
+      "RLS policy 不变 (新字段在已有表上)",
+      "L1 PASS: prisma validate / migrate deploy / tsc=0"
+    ]
+  },
+  {
+    "id": "F004",
+    "title": "Server action getCampaignSuggestions(campaignId) 编排 + 24h cache",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 2.0,
+    "status": "pending",
+    "acceptance": [
+      "新建 src/app/[locale]/(app)/match/server-actions/get-campaign-suggestions.ts (server action 'use server'): input=campaignId, output={suggestions: SmartMatchKolHit[] & {matchReason: string|null}}",
+      "编排: campaign.findUnique → 取 productId → runSmartMatch({tenantId, productId, topK:30, campaignId}) → rerankWithReason(candidates, campaignMeta) → merge matchReason 到 hits",
+      "24h cache (Redis key 'campaign-ai-suggestions-{tenantId}-{campaignId}-{product.embeddingTextHash}'): hit → 返 cached 不调 LLM; miss → 计算 + cache 24h",
+      "manual refresh 按钮 (F006) 传 force=true 强制重生成 + 新 cache",
+      "rate limit: rateLimitAi 沿用 BL-068 同 quota (per tenant ≤10/min)",
+      "结构化错误: SmartMatchError / LlmRerankError / CampaignNotFoundError",
+      "单测 ≥4 case: (1) cache miss 完整路径 (mock smart-match + rerank) (2) cache hit 返 cached 不调 LLM (3) campaign 不存在 → 错 (4) productId 缺失 (campaign.productId IS NULL) → 错",
       "L1 PASS"
     ]
   },
   {
     "id": "F005",
-    "title": "Outreach composer 优先级: business-unlock 高亮 + bio-regex tooltip 警告",
+    "title": "Server actions acceptKol/skipKol/swapKol + audit_log + 5s Undo state",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "done",
+    "status": "pending",
     "acceptance": [
-      "src/app/[locale]/(app)/outreach/composer 等路径 (Generator grep 实定位): KOL 选择 dropdown 显示 emails 时, business-unlock 绿色高亮 + 默认选中, bio-regex 灰显 + tooltip '此 email 来自 bio 文本提取, 请二次确认'",
-      "如 KOL 只有 bio-regex email, composer 入口加警告 banner '该 KOL 仅有 bio 提取 email, 投递准确率较低'",
-      "outreach send 路径如 KOL.emails 多个, 默认用 emails[0] (优先 business-unlock 排序后的 primary)",
-      "i18n 5 locale 加 outreach.tooltip.bioRegexWarning / outreach.banner.bioOnlyWarning",
-      "单测 ≥2 case (composer KOL 选择 + send default email)",
+      "src/app/[locale]/(app)/match/server-actions/suggestion-actions.ts: acceptKolToCampaign(kolId, campaignId), skipKolFromCampaign(kolId, campaignId), swapKolToSwapPool(kolId, campaignId), undoLastDecision(decisionId)",
+      "acceptKol: UPSERT kol_campaign (kolId, campaignId, suggestionStatus='accepted', decidedAt=now, source='ai_smart_match'); audit_log 'kol.campaign_suggestion_decided' payload={action:'accept', kolId, campaignId, actorUserId, undoExpiresAt}",
+      "skipKol: UPSERT kol_campaign (kolId, campaignId, suggestionStatus='skipped', decidedAt=now); 下次 getCampaignSuggestions 自动排除 skipped (per F004 WHERE)",
+      "swapKol: UPSERT kol_campaign (kolId, campaignId, suggestionStatus='swap_pool', decidedAt=now); 候补列 query 抓 swap_pool 状态行",
+      "undoLastDecision: 接 decisionId (audit_log row id), 5s 内可撤; 撤销 = DELETE kol_campaign 行 + audit_log 'kol.campaign_suggestion_undone'; 超 5s → 错 'undo expired'",
+      "事务原子性: kol_campaign 写 + audit_log 写同 $transaction; 失败 rollback 整体",
+      "F004 cache 失效: 任一 server action 跑 → 删 cache key (强制下次 refresh)",
+      "单测 ≥6 case (3 actions × accept+undo / skip / swap)",
       "L1 PASS"
     ]
   },
   {
     "id": "F006",
-    "title": "prod backfill script: 219 个 metadata.raw.emails → kol.emails + email_source='business-unlock'",
+    "title": "UI MatchAiPanel.tsx 三列 + KolCard 升级 (match badge + reason chip + 3 按钮)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "done",
+    "estimated_hours": 4.0,
+    "status": "pending",
     "acceptance": [
-      "新建 scripts/kol-emails-backfill.ts: 遍历 prod KOL platform='youtube', WHERE metadata->'raw'->'emails' IS NOT NULL AND jsonb_array_length(metadata->'raw'->'emails')>0 AND kol.emails IS NULL → UPDATE kol.emails = metadata.raw.emails, email_source='business-unlock'",
-      "idempotent: 已填的 kol.emails 不动 (WHERE kol.emails IS NULL)",
-      "dry-run (统计可回填行数) + apply 模式; 纯 DB UPDATE 无 LLM 无 fork 调用",
-      "runBackfill 抽为可测函数; 单测 ≥3 (dry-run 不写 / apply 写 / 已填行跳过)",
-      "Staging 验证: dry-run 预期 N>0, apply 后抽样 ≥3 KOL 验 emails 写入",
-      "Prod 验证 (用户授权后跑): dry-run eligible ≥200 (期望 219+), apply 后 SQL 抽样 ≥5 KOL emails 填充 + email_source='business-unlock'",
+      "新建 src/app/[locale]/(app)/match/MatchAiPanel.tsx (server component): 三列布局 推荐池(suggested) / 已接受(accepted) / 候补池(swap_pool); 各列从 kol_campaign WHERE suggestion_status=X + getCampaignSuggestions 数据合并",
+      "MatchKolCard 升级 (复用现有, 加 Mode='suggested'|'accepted'|'swap'): match badge (0-100, 渐变色 highScore=green/mid=cyan/low=gray), matchReason chip (≤15 词 truncate), 3 按钮 Accept/Skip/Swap (suggested 列) / Remove (accepted 列) / Re-add (swap 列)",
+      "Accept 按钮: 调 acceptKolToCampaign → optimistic update (KOL 从 suggested 移到 accepted) + 5s Undo toast (右下角)",
+      "Skip 按钮: 调 skipKolFromCampaign → KOL 从 suggested 列移除 + audit silently",
+      "Swap drag: 推荐/候补两列之间 drag move (可选用 @dnd-kit), drop 时调 swapKolToSwapPool 或 reAddToSuggested",
+      "Why 链接: 点开 → BL-067 DetailedExplanationDialog (传 kolId+campaignId, 已存在)",
+      "Refresh 按钮: 顶部 + 'last generated XXh ago' 提示, 点击 → force=true 调 getCampaignSuggestions 重生成",
+      "空状态: suggested 列空 → 'AI 推荐生成中...' loading skeleton; accepted 空 → '尚未接受任何 KOL'; swap 空 → '候补池空'",
+      "i18n 数字 5 locale (F008 落地)",
+      "单测 ≥3 case (display + Accept optimistic + Undo)",
       "L1 PASS"
     ]
   },
   {
     "id": "F007",
+    "title": "/match/page.tsx toggle 路由 + campaignId 默认 AI 逻辑",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 1.5,
+    "status": "pending",
+    "acceptance": [
+      "src/app/[locale]/(app)/match/page.tsx 顶部加 toggle [AI 推荐|全KOL池] (URL param view=ai|full-pool)",
+      "默认逻辑: campaignId 有 AND view 未设 → 默认 view=ai 渲染 <MatchAiPanel campaignId={X} />; campaignId 无 OR view=full-pool → 现有 runMatchSearch 全池子",
+      "Toggle 切换更新 URL (router.push) 保持 campaignId + 其他 filter 持久化",
+      "AI 模式时: FilterSidebar + SearchBar + SaveSearchControls 隐藏 (空间留给三列); AiSuggestionsSidebar (3 条 workflow 建议) 保留 (与 AI Panel 并存)",
+      "view 字段加入 buildCarryoverFields (MatchSearchBar.tsx 已有此函数)",
+      "redirect: campaignId malformed (非 UUID 或 RLS 检不到) → fallback view=full-pool (现有 pickCampaignId 行为延续)",
+      "Playwright e2e ≥1 case: 进 /match?campaignId=X 验默认 AI panel 渲染 + toggle 切回全池验 runMatchSearch 渲染",
+      "L1 PASS"
+    ]
+  },
+  {
+    "id": "F008",
+    "title": "i18n 5 locale 新 key (matchPanel/suggestionStatus 等)",
+    "executor": "generator",
+    "priority": "medium",
+    "estimated_hours": 1.0,
+    "status": "pending",
+    "acceptance": [
+      "messages/{zh,en,ja,ko,es}.json 加 keys: match.aiPanel.title / suggestedColumn / acceptedColumn / swapColumn / matchScoreBadge / acceptButton / skipButton / swapButton / removeButton / reAddButton / undoToast / refreshButton / cacheStaleHint / emptyStateSuggested / emptyStateAccepted / emptyStateSwap",
+      "match.toggle.aiMode / match.toggle.fullPoolMode 切换 chip 文字",
+      "outreach 等下游若引用 suggestionStatus 文案: campaign.detail.suggestionStatus.suggested|accepted|skipped|swap_pool 5 状态显示文字",
+      "ja/ko 长字符串验 UI 不破坏 layout (类似 BL-077 i18n overflow 测试)",
+      "i18n-locale-coverage.test.ts 自动跑确认 5 locale key 数量一致 (无 missing)",
+      "L1 PASS"
+    ]
+  },
+  {
+    "id": "F009",
     "title": "Codex Reviewer L1+L2 + signoff (executor:codex)",
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "done",
+    "status": "pending",
     "acceptance": [
-      "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 mapper/import/backfill/UI/outreach 单测 (4) npx prisma validate + migration ROLLBACK SQL valid (5) i18n 5 locale 新 key grep 一致 (无 missing)",
-      "L2 staging 实测 6 项 PASS: (1) emails backfill 抽样 ≥5 KOL kol.emails 非空 + email_source='business-unlock' (2) /kol/[id] UI 显示 emails 列表 + source chip 正确 (3) /discovery + /database has-business-email filter 工作 (4) outreach composer business-unlock 高亮 + bio-regex tooltip (5) 0 daily-sync errors (mapper 接 emails 不破 BL-082 refresh) (6) 现有 6 个 kol.email 字段值不变",
-      "Prod 只读核验: backfill 后 SQL 抽样 ≥5 KOL emails 填充率合理 + outreach send 试发 (用户授权下) business-unlock email",
-      "signoff doc docs/test-reports/BL-083-signoff-2026-06-XX.md 含 L1/L2 结果 + 量化数据 (kol.emails 填充率 0.8% → 30%+) + 终签"
+      "L1 自动化 6 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 runSmartMatch/rerank/server-actions/migration/MatchAiPanel/page UI 单测 (4) npx prisma validate + migration ROLLBACK SQL valid (5) i18n 5 locale 新 key grep 一致 (6) Playwright e2e match-ai toggle 通过",
+      "L2 staging 实测 7 项 PASS: (1) /match?campaignId=X 默认进 AI panel 抽样 ≥2 campaign (2) 三列数据正确 (suggested 30, accepted ≥0, swap ≥0) (3) Accept→accepted 列 + 5s Undo toast 可点击撤回 (4) Skip→KOL 从 suggested 移除 + 下次 getCampaignSuggestions 不再推 (5) Swap drag 推荐→候补 数据流闭环 (6) Why dialog (BL-067 detailed explain) 正常 (7) Toggle 切全池→runMatchSearch BM1 行为不变",
+      "L2 prod 只读核验: 部署后 next-24h refreshCount 不破坏 BL-082 (mapper 不动) + kol_campaign 表 legacy 行 status='accepted' backfill 正确",
+      "成本量化: staging 抽样 5 campaign x refresh 各 2 次 ≤10 LLM call, 24h cache 后 ≥80% hit rate",
+      "ADR-016 docs/adr/ADR-016-kol-campaign-suggestion-lifecycle.md 起草完整 (Reviewer 抽样审 ≥1 决策理由 actionable)",
+      "signoff doc docs/test-reports/BL-084-signoff-2026-06-XX.md 含 L1/L2 + 量化数据 + ADR 状态 + 终签"
     ]
   }
 ]
