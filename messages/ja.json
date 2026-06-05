@@ -1423,7 +1423,11 @@
         "listAria": "メールテンプレート",
         "noTemplates": "利用可能なテンプレートはまだありません。",
         "noMatches": "一致する項目がありません — フィルターをクリアしてみてください。"
-      }
+      },
+      "businessUnlockBadge": "ビジネスメール",
+      "bioRegexBadge": "プロフィール抽出",
+      "bioRegexTooltip": "このメールはプロフィール文から抽出されたものです。送信前にご確認ください。",
+      "bioOnlyBanner": "一部のKOLはプロフィール抽出メールのみです。配信精度が低いため、送信前にご確認ください。"
     },
     "templateLibrary": {
       "title": "メールテンプレートエディタ",

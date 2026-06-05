@@ -1423,7 +1423,11 @@
         "listAria": "Plantillas de correo",
         "noTemplates": "Aún no hay plantillas disponibles.",
         "noMatches": "Sin coincidencias — prueba a limpiar los filtros."
-      }
+      },
+      "businessUnlockBadge": "Correo comercial",
+      "bioRegexBadge": "Extraído de bio",
+      "bioRegexTooltip": "Este correo se extrajo del texto de la biografía; verifícalo antes de enviar.",
+      "bioOnlyBanner": "Algunos KOLs seleccionados solo tienen un correo extraído de la biografía; la precisión de entrega es menor. Verifica antes de enviar."
     },
     "templateLibrary": {
       "title": "Editor de plantillas de correo",

@@ -1423,7 +1423,11 @@
         "listAria": "이메일 템플릿",
         "noTemplates": "사용 가능한 템플릿이 아직 없습니다.",
         "noMatches": "일치하는 항목이 없습니다 — 필터를 지워보세요."
-      }
+      },
+      "businessUnlockBadge": "비즈니스 이메일",
+      "bioRegexBadge": "프로필 추출",
+      "bioRegexTooltip": "이 이메일은 프로필 텍스트에서 추출되었습니다. 발송 전 다시 확인하세요.",
+      "bioOnlyBanner": "일부 KOL은 프로필 추출 이메일만 있습니다. 전달 정확도가 낮으니 발송 전 확인하세요."
     },
     "templateLibrary": {
       "title": "이메일 템플릿 편집기",

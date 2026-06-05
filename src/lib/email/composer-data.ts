@@ -9,6 +9,11 @@
  */
 import { auth } from "@/auth";
 import { withTenant } from "@/lib/db";
+import {
+  coerceComposerEmails,
+  isBioRegexOnly,
+  pickPrimaryEmail,
+} from "@/lib/email/composer-email-utils";
 import { loadOutreachTemplates } from "@/lib/email/templates";
 
 export interface OutreachCampaignOption {
@@ -26,9 +31,29 @@ export interface OutreachKolRow {
   handle: string;
   avatarUrl: string | null;
   platform: string;
+  /** BL-083-F005 — effective primary send address. Prefers the first
+   *  fork-unlocked business email (`emails[0]`) over the legacy single
+   *  `kol.email`, so a send defaults to the higher-accuracy address. Null
+   *  only when the KOL has neither. */
   email: string | null;
+  /** BL-083-F005 — the full fork-unlocked business email list (`kol.emails`
+   *  JSONB). Empty for KOLs the fork hasn't unlocked an email for. */
+  emails: string[];
+  /** BL-083-F005 — provenance of the address(es): 'business-unlock'
+   *  (YT Apify actor) / 'bio-regex' (BL-031 bio extraction) / 'manual' /
+   *  null. Drives the composer's green-highlight vs grey+tooltip UX. */
+  emailSource: string | null;
   contactStatus: string;
 }
+
+// BL-083-F005 — pure provenance helpers live in a server-free module so
+// the client composer can import them too; re-exported here for callers
+// that already depend on composer-data.
+export {
+  coerceComposerEmails,
+  pickPrimaryEmail,
+  isBioRegexOnly,
+};
 
 export interface OutreachTemplateOption {
   id: string;
@@ -115,6 +140,8 @@ export async function loadOutreachComposerData(
                   avatarUrl: true,
                   platform: true,
                   email: true,
+                  emails: true,
+                  emailSource: true,
                 },
               },
             },
@@ -137,7 +164,15 @@ export async function loadOutreachComposerData(
             handle: kc.kol.handle,
             avatarUrl: kc.kol.avatarUrl,
             platform: kc.kol.platform,
-            email: kc.kol.email,
+            // BL-083-F005 — promote the fork-unlocked business emails and
+            // default the send address to emails[0] over the legacy single
+            // email; carry the full list + source for the composer UX.
+            email: pickPrimaryEmail(
+              coerceComposerEmails(kc.kol.emails),
+              kc.kol.email,
+            ),
+            emails: coerceComposerEmails(kc.kol.emails),
+            emailSource: kc.kol.emailSource,
             contactStatus: kc.status,
           })),
         };

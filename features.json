@@ -69,7 +69,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "src/app/[locale]/(app)/outreach/composer 等路径 (Generator grep 实定位): KOL 选择 dropdown 显示 emails 时, business-unlock 绿色高亮 + 默认选中, bio-regex 灰显 + tooltip '此 email 来自 bio 文本提取, 请二次确认'",
       "如 KOL 只有 bio-regex email, composer 入口加警告 banner '该 KOL 仅有 bio 提取 email, 投递准确率较低'",

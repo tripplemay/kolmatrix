@@ -1332,7 +1332,11 @@
         "listAria": "邮件模板",
         "noTemplates": "暂无可用模板。",
         "noMatches": "没有匹配项 — 试着清除筛选条件。"
-      }
+      },
+      "businessUnlockBadge": "商务邮箱",
+      "bioRegexBadge": "Bio 提取",
+      "bioRegexTooltip": "此 email 来自 bio 文本提取，请二次确认后再投递。",
+      "bioOnlyBanner": "部分所选 KOL 仅有 bio 提取的 email，投递准确率较低，请发送前确认。"
     },
     "templateLibrary": {
       "title": "邮件模板编辑器",

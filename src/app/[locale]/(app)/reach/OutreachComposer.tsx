@@ -45,6 +45,7 @@ import {
   type ComposerActionState,
 } from "./actions";
 import { useProductFilter } from "./useProductFilter";
+import { isBioRegexOnly } from "@/lib/email/composer-email-utils";
 import type {
   OutreachCampaignOption,
   OutreachComposerData,
@@ -69,6 +70,11 @@ interface Labels {
   kolHeadStatus: string;
   noEmail: string;
   noEmailTooltip: string;
+  // BL-083-F005 — business-email provenance UX.
+  businessUnlockBadge: string;
+  bioRegexBadge: string;
+  bioRegexTooltip: string;
+  bioOnlyBanner: string;
   addEmailButton: string;
   addEmailSave: string;
   addEmailCancel: string;
@@ -152,6 +158,15 @@ export function OutreachComposer({
   const selectableKols = useMemo(
     () => (selectedCampaign?.kols ?? []).filter((k) => !!k.email),
     [selectedCampaign]
+  );
+
+  // BL-083-F005 — surface a warning when the campaign has selectable KOLs
+  // whose only address is bio-regex extracted (lower deliverability than a
+  // fork business-email unlock). The composer-entry banner nudges the
+  // marketer to verify before sending.
+  const hasBioRegexOnlyKols = useMemo(
+    () => selectableKols.some(isBioRegexOnly),
+    [selectableKols]
   );
 
   // BL-025-F008: when /assets sends an email asset over via the
@@ -388,6 +403,17 @@ export function OutreachComposer({
           }
         >
           {prefilledBanner.text}
+        </div>
+      ) : null}
+
+      {hasBioRegexOnlyKols ? (
+        <div
+          role="status"
+          aria-live="polite"
+          data-testid="outreach-bio-only-banner"
+          className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100"
+        >
+          {labels.bioOnlyBanner}
         </div>
       ) : null}
 
@@ -799,7 +825,10 @@ function KolRow({
             </FieldError>
           </div>
         ) : hasEmail ? (
-          <span className="text-on-surface text-xs">{currentEmail}</span>
+          <span className="flex flex-wrap items-center gap-2">
+            <span className="text-on-surface text-xs">{currentEmail}</span>
+            <EmailSourceChip emailSource={kol.emailSource} labels={labels} />
+          </span>
         ) : (
           <div className="flex flex-col gap-1">
             <span className="text-on-surface-variant/70 text-xs italic">{labels.noEmail}</span>
@@ -826,6 +855,45 @@ function KolRow({
       </td>
     </tr>
   );
+}
+
+// ---- BL-083-F005 · email-source provenance chip ---------------------
+
+/**
+ * Renders the provenance chip next to a KOL's address: a green badge for
+ * fork business-unlock emails (high deliverability, default-preferred) and
+ * a grey badge + verify-tooltip for bio-regex extracted ones. Manual /
+ * unknown sources render nothing so the row stays clean.
+ */
+function EmailSourceChip({
+  emailSource,
+  labels,
+}: {
+  emailSource: string | null;
+  labels: Labels;
+}) {
+  if (emailSource === "business-unlock") {
+    return (
+      <span
+        data-testid="outreach-email-source-business-unlock"
+        className="rounded border border-emerald-400/30 bg-emerald-400/10 px-1.5 py-0.5 text-[10px] font-medium text-emerald-300"
+      >
+        {labels.businessUnlockBadge}
+      </span>
+    );
+  }
+  if (emailSource === "bio-regex") {
+    return (
+      <span
+        data-testid="outreach-email-source-bio-regex"
+        title={labels.bioRegexTooltip}
+        className="border-on-surface/15 bg-on-surface/5 text-on-surface-variant cursor-help rounded border px-1.5 py-0.5 text-[10px] font-medium"
+      >
+        {labels.bioRegexBadge}
+      </span>
+    );
+  }
+  return null;
 }
 
 // ---- AI customize dialog --------------------------------------------

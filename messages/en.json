@@ -1332,7 +1332,11 @@
         "listAria": "Email templates",
         "noTemplates": "No templates available yet.",
         "noMatches": "No matches — try clearing the filters."
-      }
+      },
+      "businessUnlockBadge": "Business email",
+      "bioRegexBadge": "Bio-extracted",
+      "bioRegexTooltip": "This email was extracted from the bio text — please double-check before sending.",
+      "bioOnlyBanner": "Some selected KOLs only have a bio-extracted email — delivery accuracy is lower. Verify before sending."
     },
     "templateLibrary": {
       "title": "Email Template Editor",
