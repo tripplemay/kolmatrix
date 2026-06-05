@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "done",
+    "status": "pending",
     "acceptance": [
       "src/lib/kol-sync/types.ts RawKolData 加 emails?: string[] | null",
       "src/lib/kol-sync/adapters/apify-kol.ts mapper 持久化 item.emails → RawKolData.emails (zod schema 已 passthrough, 显式加 emails: z.array(z.string()).nullable().optional())",
