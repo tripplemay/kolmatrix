@@ -102,7 +102,7 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 mapper/import/backfill/UI/outreach 单测 (4) npx prisma validate + migration ROLLBACK SQL valid (5) i18n 5 locale 新 key grep 一致 (无 missing)",
       "L2 staging 实测 6 项 PASS: (1) emails backfill 抽样 ≥5 KOL kol.emails 非空 + email_source='business-unlock' (2) /kol/[id] UI 显示 emails 列表 + source chip 正确 (3) /discovery + /database has-business-email filter 工作 (4) outreach composer business-unlock 高亮 + bio-regex tooltip (5) 0 daily-sync errors (mapper 接 emails 不破 BL-082 refresh) (6) 现有 6 个 kol.email 字段值不变",
