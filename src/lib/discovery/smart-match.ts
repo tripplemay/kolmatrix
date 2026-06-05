@@ -16,6 +16,7 @@
 import type { PrismaClient } from "@prisma/client";
 
 import { embedProductIfStale } from "@/lib/embedding/kol-embed";
+import type { EventData } from "@/lib/events/log";
 import {
   vectorLiteral,
 } from "@/lib/embedding/sql";
@@ -36,16 +37,65 @@ async function dbAdminModule(): Promise<typeof import("@/lib/db-admin")> {
 export const MIN_SCORE = 0;
 export const MAX_SCORE = 100;
 
-/** Default top-K (spec §F002 = 10). */
-export const DEFAULT_TOP_K = 10;
+/**
+ * Default top-K.
+ *
+ * BL-084-F001: bumped 10 → 30. The AI Match Panel recalls a wider pool
+ * so the LLM rerank (F002) has 30 candidates to reorder + annotate. The
+ * legacy B7a `/api/kols/smart-match` caller passes an explicit `topK`,
+ * so this default change does not alter its behaviour.
+ */
+export const DEFAULT_TOP_K = 30;
 
 export interface SmartMatchInput {
   tenantId: string;
   productId: string;
   /** Override top-K for tests / future Discover-style "show more". */
   topK?: number;
+  /**
+   * BL-084-F001: the campaign this match was invoked for. Purely
+   * telemetry + downstream cache-key material (F004) — runSmartMatch
+   * itself does NOT read it for filtering. Omitted from the
+   * `smart_match.invoked` payload when not provided.
+   */
+  campaignId?: string;
+  /**
+   * BL-084-F001: the user that triggered the match, threaded through to
+   * the `smart_match.invoked` telemetry actor. Optional so non-request
+   * callers (cron / tests) can omit it.
+   */
+  actorId?: string;
   /** Inject a PrismaClient (tests), otherwise the lazy singleton is used. */
   prismaOverride?: PrismaClient;
+}
+
+/**
+ * BL-084-F001: pure builder for the `smart_match.invoked` telemetry
+ * event. Extracted so the campaignId-presence contract is unit-testable
+ * without standing up a DB (runSmartMatch emits this via fire-and-forget
+ * logEvent). campaignId is included in the payload only when provided.
+ */
+export function buildSmartMatchEvent(args: {
+  tenantId: string;
+  actorId?: string;
+  productId: string;
+  campaignId?: string;
+  resultCount: number;
+  durationMs: number;
+  embeddedJustInTime: boolean;
+}): EventData {
+  return {
+    type: "smart_match.invoked",
+    tenantId: args.tenantId,
+    actorId: args.actorId,
+    resourceId: args.productId,
+    payload: {
+      topK: args.resultCount,
+      durationMs: args.durationMs,
+      embeddedJustInTime: args.embeddedJustInTime,
+      ...(args.campaignId ? { campaignId: args.campaignId } : {}),
+    },
+  };
 }
 
 export interface SmartMatchKolHit {
@@ -270,6 +320,25 @@ export async function runSmartMatch(
     };
   });
 
+  const durationMs = Date.now() - startedAt;
+
+  // BL-084-F001: emit `smart_match.invoked` from here (single emitter)
+  // so every caller — the legacy /api/kols/smart-match route and the new
+  // getCampaignSuggestions orchestrator — produces the same telemetry,
+  // including campaignId when present. Fire-and-forget; logEvent already
+  // swallows its own failures. Lazy-import keeps db.ts off the module
+  // load path (see dbModule note above).
+  const event = buildSmartMatchEvent({
+    tenantId: input.tenantId,
+    actorId: input.actorId,
+    productId: input.productId,
+    campaignId: input.campaignId,
+    resultCount: results.length,
+    durationMs,
+    embeddedJustInTime,
+  });
+  void import("@/lib/events/log").then((m) => m.logEvent(event));
+
   return {
     product: {
       id: product.id,
@@ -278,6 +347,6 @@ export async function runSmartMatch(
       embeddedJustInTime,
     },
     results,
-    durationMs: Date.now() - startedAt,
+    durationMs,
   };
 }

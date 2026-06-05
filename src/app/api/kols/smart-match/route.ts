@@ -20,7 +20,6 @@ import {
   runSmartMatch,
   SmartMatchError,
 } from "@/lib/discovery/smart-match";
-import { logEvent } from "@/lib/events/log";
 import { rateLimitAi } from "@/lib/rate-limit-ai";
 
 export const dynamic = "force-dynamic";
@@ -73,23 +72,14 @@ export async function POST(req: Request): Promise<NextResponse> {
   }
 
   try {
+    // BL-084-F001: `smart_match.invoked` telemetry now fires inside
+    // runSmartMatch (single emitter, carries campaignId when present), so
+    // we just thread the actor through and no longer log here.
     const result = await runSmartMatch({
       tenantId,
       productId: parsed.data.productId,
       topK: parsed.data.topK,
-    });
-
-    // Fire-and-forget telemetry — never block the user response on it.
-    void logEvent({
-      type: "smart_match.invoked",
-      tenantId,
       actorId: userId,
-      resourceId: parsed.data.productId,
-      payload: {
-        topK: result.results.length,
-        durationMs: result.durationMs,
-        embeddedJustInTime: result.product.embeddedJustInTime,
-      },
     });
 
     return NextResponse.json(result, {

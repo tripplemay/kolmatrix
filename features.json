@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "src/lib/discovery/smart-match.ts DEFAULT_TOP_K 10 → 30 (改默认值, 不破坏现有 caller 的显式 topK 传入)",
       "SmartMatchInput 加可选 campaignId?: string (仅用于 logEvent + cache key, runSmartMatch 内部不读它做过滤)",
