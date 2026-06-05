@@ -85,7 +85,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "新建 scripts/kol-emails-backfill.ts: 遍历 prod KOL platform='youtube', WHERE metadata->'raw'->'emails' IS NOT NULL AND jsonb_array_length(metadata->'raw'->'emails')>0 AND kol.emails IS NULL → UPDATE kol.emails = metadata.raw.emails, email_source='business-unlock'",
       "idempotent: 已填的 kol.emails 不动 (WHERE kol.emails IS NULL)",
