@@ -3,7 +3,7 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-083-yt-business-email-mapper PLANNING→building (0/7, fix_rounds=0) — KOL data 治理: YT business email mapper 接 + UI + outreach 优先
+## 🚧 BL-083-yt-business-email-mapper BUILDING (0/7, fix_rounds=0) — KOL data 治理: YT business email mapper 接 + UI + outreach 优先
 - A0 audit (6/04): fork 已自动解锁 219/722 YT KOL business email (Apify actor + 5/8 ship), KOLMatrix mapper 完全漏接 (kol.email 仅 6=0.8% vs 实际可拾 30%+)
 - A1 lock (6/04): A 轻量 KOLMatrix-only (mapper+UI+outreach+backfill), 不做 B 主动 trigger (fork 已 auto-unlock, 剩 278 个未解锁多半 NO_EMAIL 非排队)
 - 7 features: F001 mapper / F002 schema (emails JSONB + email_source) / F003 import upsert / F004 UI 3 页+filter / F005 outreach 优先级 / F006 prod backfill 219 / F007 Codex
