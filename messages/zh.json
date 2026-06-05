@@ -732,7 +732,9 @@
       "tierLow": "低",
       "tierUnrated": "未评级",
       "noData": "(暂无数据)",
-      "coverageHint": "已覆盖 {pct}%"
+      "coverageHint": "已覆盖 {pct}%",
+      "hasBusinessEmail": "有商务邮箱",
+      "hasBusinessEmailHelper": "仅显示已解锁 YouTube 商务邮箱的 KOL。"
     },
     "regions": {
       "US": "美国",
@@ -1525,6 +1527,13 @@
       "unauthorized": "未登录。",
       "not_found": "该创作者已不存在。",
       "generic": "更新失败，请稍后重试。"
+    },
+    "contactEmails": {
+      "title": "联系邮箱",
+      "empty": "邮箱未公开",
+      "sourceBusinessUnlock": "已通过 YouTube 商务邮箱解锁",
+      "sourceBioRegex": "Bio 文本提取",
+      "sourceManual": "手动添加"
     }
   },
   "weeklyReport": {

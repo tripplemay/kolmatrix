@@ -732,7 +732,9 @@
       "tierLow": "低",
       "tierUnrated": "未評価",
       "noData": "(データなし)",
-      "coverageHint": "カバー率 {pct}%"
+      "coverageHint": "カバー率 {pct}%",
+      "hasBusinessEmail": "ビジネスメールあり",
+      "hasBusinessEmailHelper": "YouTubeビジネスメールを取得済みのKOLのみ表示。"
     },
     "regions": {
       "US": "アメリカ合衆国",
@@ -1238,6 +1240,13 @@
       "unauthorized": "サインインしていません。",
       "not_found": "クリエイターが存在しなくなりました。",
       "generic": "更新できませんでした。再試行してください。"
+    },
+    "contactEmails": {
+      "title": "連絡先メール",
+      "empty": "メール未公開",
+      "sourceBusinessUnlock": "YouTubeビジネスメールで取得",
+      "sourceBioRegex": "プロフィールから抽出",
+      "sourceManual": "手動追加"
     }
   },
   "outreach": {

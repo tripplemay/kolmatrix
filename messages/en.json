@@ -732,7 +732,9 @@
       "tierLow": "Low",
       "tierUnrated": "Unrated",
       "noData": "(no data)",
-      "coverageHint": "Coverage: {pct}%"
+      "coverageHint": "Coverage: {pct}%",
+      "hasBusinessEmail": "Has business email",
+      "hasBusinessEmailHelper": "Only show KOLs with an unlocked YouTube business email."
     },
     "regions": {
       "US": "United States",
@@ -1525,6 +1527,13 @@
       "unauthorized": "You are not signed in.",
       "not_found": "Creator no longer exists.",
       "generic": "Could not update. Please retry."
+    },
+    "contactEmails": {
+      "title": "Contact emails",
+      "empty": "Email not public",
+      "sourceBusinessUnlock": "Unlocked via YouTube business email",
+      "sourceBioRegex": "Extracted from bio text",
+      "sourceManual": "Manually added"
     }
   },
   "weeklyReport": {

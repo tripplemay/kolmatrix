@@ -22,6 +22,7 @@ import { loadRecentVideos } from "@/lib/kol-detail/recent-videos";
 
 import { EmptyTabState } from "./EmptyTabState";
 import { KolActionsCard } from "./KolActionsCard";
+import { KolContactEmails } from "./KolContactEmails";
 import { KolHero } from "./KolHero";
 import { KolOverviewInfo } from "./KolOverviewInfo";
 import { KolTabsNav, type KolTabKey } from "./KolTabsNav";
@@ -76,6 +77,8 @@ type KolDetailShape = Prisma.KolGetPayload<{
     videoCount: true;
     externalId: true;
     metadata: true;
+    emails: true;
+    emailSource: true;
   };
 }>;
 
@@ -109,6 +112,8 @@ async function loadKol(tenantId: string, kolId: string): Promise<KolDetailShape 
         videoCount: true,
         externalId: true,
         metadata: true,
+        emails: true,
+        emailSource: true,
       },
     });
   });
@@ -216,6 +221,7 @@ export default async function KolProfilePage({ params, searchParams }: Props) {
               channelCreatedAt={kol.channelCreatedAt}
               videoCount={kol.videoCount}
             />
+            <KolContactEmails emails={kol.emails} emailSource={kol.emailSource} />
             <RecentVideosGrid items={recentVideos} platform={kol.platform} />
             <TopicCloud
               tenantId={tenantId}

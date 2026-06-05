@@ -732,7 +732,9 @@
       "tierLow": "Bajo",
       "tierUnrated": "Sin calificar",
       "noData": "(sin datos)",
-      "coverageHint": "Cobertura: {pct}%"
+      "coverageHint": "Cobertura: {pct}%",
+      "hasBusinessEmail": "Con correo comercial",
+      "hasBusinessEmailHelper": "Mostrar solo KOLs con correo comercial de YouTube desbloqueado."
     },
     "regions": {
       "US": "Estados Unidos",
@@ -1238,6 +1240,13 @@
       "unauthorized": "No ha iniciado sesión.",
       "not_found": "El Creador ya no existe.",
       "generic": "No se pudo actualizar. Por favor, inténtelo de nuevo."
+    },
+    "contactEmails": {
+      "title": "Correos de contacto",
+      "empty": "Correo no público",
+      "sourceBusinessUnlock": "Desbloqueado vía correo comercial de YouTube",
+      "sourceBioRegex": "Extraído de la biografía",
+      "sourceManual": "Añadido manualmente"
     }
   },
   "outreach": {

@@ -53,7 +53,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "src/app/[locale]/(app)/kols/[id]/page.tsx detail 页加 'Contact emails' 段: 列出 emails array, 每个 email 旁边 chip 标 source ('已通过 YouTube 商务邮箱解锁' 绿色 / 'Bio 文本提取' 灰色)",
       "/discovery + /database 列表加 filter chip 'has business email' (筛 emails 数组非空)",

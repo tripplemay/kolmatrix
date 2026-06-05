@@ -220,6 +220,12 @@ export interface DiscoveryFilters {
    */
   relationshipStatuses: RelationshipStatus[];
   includeNonGaming: boolean;
+  /** BL-083-F004 — when true, restrict to KOLs the fork unlocked a
+   *  business email for (`kol.emails` JSONB present). The write path
+   *  (F003) + backfill (F006) only ever store a non-empty array, so a
+   *  present `emails` column always means ≥1 business email — the
+   *  buildKolWhere clause filters on `emails IS NOT NULL`. */
+  hasBusinessEmail: boolean;
   sort: SortOption;
   cursor?: string;
 }
@@ -344,6 +350,8 @@ export function parseFilters(
       (REGION_GROUPS as readonly string[]).includes(v)
     ),
     includeNonGaming: get("includeNonGaming") === "on" || get("includeNonGaming") === "true",
+    hasBusinessEmail:
+      get("hasBusinessEmail") === "on" || get("hasBusinessEmail") === "true",
     sort,
     cursor: get("cursor") || undefined,
   };
@@ -390,6 +398,7 @@ export function serializeFilters(
   for (const v of merged.uploadFrequency) params.append("uploadFrequency", v);
   for (const v of merged.regionGroup) params.append("regionGroup", v);
   if (merged.includeNonGaming) params.set("includeNonGaming", "on");
+  if (merged.hasBusinessEmail) params.set("hasBusinessEmail", "on");
   if (merged.sort !== "value") params.set("sort", merged.sort);
   if (merged.cursor) params.set("cursor", merged.cursor);
   return params;
@@ -428,6 +437,16 @@ export function buildKolWhere(filters: DiscoveryFilters): Prisma.KolWhereInput {
   }
   if (!filters.includeNonGaming) {
     and.push({ isGaming: true });
+  }
+
+  // BL-083-F004 — "has business email" facet. The fork-unlocked emails
+  // live in the nullable `kol.emails` JSONB column; the write path (F003)
+  // + backfill (F006) only ever store a non-empty array, so "column is
+  // not null" is equivalent to "≥1 business email". `Prisma.AnyNull`
+  // matches both SQL NULL and a JSON `null` literal, so `not: AnyNull`
+  // selects rows carrying a real array value.
+  if (filters.hasBusinessEmail) {
+    and.push({ emails: { not: Prisma.AnyNull } });
   }
 
   if (filters.search) {

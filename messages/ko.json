@@ -732,7 +732,9 @@
       "tierLow": "낮음",
       "tierUnrated": "미평가",
       "noData": "(데이터 없음)",
-      "coverageHint": "커버리지 {pct}%"
+      "coverageHint": "커버리지 {pct}%",
+      "hasBusinessEmail": "비즈니스 이메일 있음",
+      "hasBusinessEmailHelper": "YouTube 비즈니스 이메일이 확보된 KOL만 표시."
     },
     "regions": {
       "US": "미국",
@@ -1238,6 +1240,13 @@
       "unauthorized": "로그인하지 않았습니다.",
       "not_found": "크리에이터가 더 이상 존재하지 않습니다.",
       "generic": "업데이트할 수 없습니다. 다시 시도하세요."
+    },
+    "contactEmails": {
+      "title": "연락처 이메일",
+      "empty": "이메일 비공개",
+      "sourceBusinessUnlock": "YouTube 비즈니스 이메일로 확보",
+      "sourceBioRegex": "프로필에서 추출",
+      "sourceManual": "수동 추가"
     }
   },
   "outreach": {

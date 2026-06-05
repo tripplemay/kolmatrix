@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
@@ -30,6 +31,7 @@ const empty: DiscoveryFilters = {
   uploadFrequency: [],
   regionGroup: [],
   includeNonGaming: false,
+  hasBusinessEmail: false,
   sort: "value",
 };
 
@@ -163,6 +165,7 @@ describe("serializeFilters()", () => {
       uploadFrequency: ["active", "semi-active"],
       regionGroup: ["asia", "americas"],
       includeNonGaming: true,
+      hasBusinessEmail: true,
       sort: "followers",
       cursor: "abc",
     };
@@ -205,6 +208,28 @@ describe("buildKolWhere()", () => {
     expect(clauses[0]).toEqual({ deletedAt: null });
     // F005 guard still applies regardless of the gaming toggle.
     expect(clauses[1]).toEqual({ isSuspicious: false });
+  });
+
+  it("adds an emails-present clause when hasBusinessEmail=true (BL-083-F004)", () => {
+    const where = buildKolWhere({ ...empty, hasBusinessEmail: true });
+    const clauses = where.AND as Record<string, unknown>[];
+    expect(clauses.some((c) => "emails" in c)).toBe(true);
+    const emailClause = clauses.find((c) => "emails" in c) as {
+      emails: { not: unknown };
+    };
+    expect(emailClause.emails).toEqual({ not: Prisma.AnyNull });
+  });
+
+  it("omits the emails clause when hasBusinessEmail=false", () => {
+    const where = buildKolWhere({ ...empty, hasBusinessEmail: false });
+    const clauses = where.AND as Record<string, unknown>[];
+    expect(clauses.some((c) => "emails" in c)).toBe(false);
+  });
+
+  it("round-trips hasBusinessEmail through serialize + parse", () => {
+    const params = serializeFilters({ ...empty, hasBusinessEmail: true });
+    expect(params.get("hasBusinessEmail")).toBe("on");
+    expect(parseFilters(params).hasBusinessEmail).toBe(true);
   });
 
   it("adds an OR on displayName + handle for search", () => {

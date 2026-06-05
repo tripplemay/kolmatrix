@@ -474,6 +474,26 @@ export async function MatchFilterSidebar({
               </span>
             </span>
           </label>
+
+          {/* BL-083-F004 — "has business email" facet. Restricts the list
+              to KOLs the fork unlocked a YT business email for. */}
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              name="hasBusinessEmail"
+              defaultChecked={filters.hasBusinessEmail}
+              data-testid="match-filter-has-business-email"
+              className="border-outline-variant bg-surface-high text-cyan mt-1 h-4 w-4 rounded"
+            />
+            <span>
+              <span className="text-on-surface block text-sm">
+                {t("hasBusinessEmail")}
+              </span>
+              <span className="text-on-surface-variant/70 block text-[11px]">
+                {t("hasBusinessEmailHelper")}
+              </span>
+            </span>
+          </label>
         </div>
       </details>
 
@@ -504,7 +524,8 @@ function hasAnyAdvanced(f: DiscoveryFilters): boolean {
     f.brandSafety.length > 0 ||
     f.knownCollabs.length > 0 ||
     f.tags.length > 0 ||
-    f.includeNonGaming
+    f.includeNonGaming ||
+    f.hasBusinessEmail
   );
 }
 
@@ -543,6 +564,7 @@ function serializeFiltersInline(
   for (const v of merged.uploadFrequency) params.append("uploadFrequency", v);
   for (const v of merged.regionGroup) params.append("regionGroup", v);
   if (merged.includeNonGaming) params.set("includeNonGaming", "on");
+  if (merged.hasBusinessEmail) params.set("hasBusinessEmail", "on");
   if (merged.sort !== "value") params.set("sort", merged.sort);
   return params.toString();
 }
