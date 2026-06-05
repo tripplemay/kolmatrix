@@ -21,7 +21,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "新建 src/lib/match/llm-rerank.ts: rerankWithReason(candidates: SmartMatchKolHit[], campaignMeta: {name, markets, target_audience, budget}) → Promise<{rank: SmartMatchKolHit[], matchReasons: Map<kolId, string>}>",
       "调 aigcgateway action (新注册 action: claude-haiku-4.5, prompt 沿用 BL-068 refine 模式), input candidates JSON + campaign meta, output 30 行 {kolId, rank, reason ≤15 词}",
