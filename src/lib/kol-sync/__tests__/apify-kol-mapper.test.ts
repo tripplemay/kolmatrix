@@ -7,7 +7,7 @@
  * when the fork supplies a recognisable location, null otherwise) while
  * confirming the rest of the projection is unchanged.
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { mapApifyKolItemToRawKolData } from "../adapters/apify-kol";
 import type { ApifyKolItem } from "../../apify-kol/schemas";
@@ -101,5 +101,70 @@ describe("mapApifyKolItemToRawKolData — platformUserId persistence (BL-082-F00
       FROZEN_NOW
     );
     expect(mapped?.platformUserId).toBeNull();
+  });
+});
+
+describe("mapApifyKolItemToRawKolData — fork business emails (BL-083-F001)", () => {
+  it("surfaces a single fork email onto emails[]", () => {
+    const mapped = mapApifyKolItemToRawKolData(
+      makeItem({ emails: ["gamertechtoronto@gmail.com"] }),
+      FROZEN_NOW
+    );
+    expect(mapped?.emails).toEqual(["gamertechtoronto@gmail.com"]);
+  });
+
+  it("preserves every email + order when the fork returns multiple", () => {
+    const mapped = mapApifyKolItemToRawKolData(
+      makeItem({ emails: ["a@b.com", "Chandler@badmoontalent.com"] }),
+      FROZEN_NOW
+    );
+    expect(mapped?.emails).toEqual(["a@b.com", "Chandler@badmoontalent.com"]);
+  });
+
+  it("yields null emails when the fork omits the field", () => {
+    const mapped = mapApifyKolItemToRawKolData(makeItem(), FROZEN_NOW);
+    expect(mapped?.emails).toBeNull();
+  });
+
+  it("falls back to null + warns when emails contains a non-string element", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const mapped = mapApifyKolItemToRawKolData(
+      // simulate a fork contract drift that bypasses the page schema
+      makeItem({ emails: ["a@b.com", 42] as unknown as string[] }),
+      FROZEN_NOW
+    );
+    expect(mapped?.emails).toBeNull();
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
+  });
+
+  it("falls back to null + warns when emails is not an array", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const mapped = mapApifyKolItemToRawKolData(
+      makeItem({ emails: "a@b.com" as unknown as string[] }),
+      FROZEN_NOW
+    );
+    expect(mapped?.emails).toBeNull();
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
+  });
+
+  it("drops whitespace-only entries and yields null for an all-empty array", () => {
+    const mapped = mapApifyKolItemToRawKolData(
+      makeItem({ emails: ["  ", ""] }),
+      FROZEN_NOW
+    );
+    expect(mapped?.emails).toBeNull();
+  });
+
+  it("never overwrites the legacy single email field (mapper leaves it untouched)", () => {
+    const mapped = mapApifyKolItemToRawKolData(
+      makeItem({ emails: ["a@b.com"] }),
+      FROZEN_NOW
+    );
+    // RawKolData carries no `email` scalar — F003 owns the kol.email column;
+    // the mapper only ever fills the new emails[] array.
+    expect(mapped).not.toHaveProperty("email");
+    expect(mapped?.emails).toEqual(["a@b.com"]);
   });
 });

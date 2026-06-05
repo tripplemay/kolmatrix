@@ -73,6 +73,18 @@ export interface RawKolData {
    *  `metadata.flags.engagement_outlier` for UI / analysis filtering.
    *  Adapters that don't compute outlier signals leave this undefined. */
   engagement_outlier?: boolean;
+  /** BL-083-F001 — YouTube business emails the fork unlocked via its
+   *  Apify actor (`emails: string[]` on the fork item). The fork's
+   *  yt-business-email worker auto-unlocks these post-discovery; the
+   *  KOLMatrix mapper previously discarded them (only `metadata.raw.emails`
+   *  retained them, unreachable by business logic). The import path
+   *  projects this onto the `kol.emails` JSONB column with
+   *  `email_source='business-unlock'`. Sanitised by the adapter: an array
+   *  of non-empty strings, or null when the fork omits it / ships a
+   *  malformed value (non-array or containing a non-string element).
+   *  Distinct from the legacy single `kol.email` column, which the mapper
+   *  never touches (BL-031 bio-regex rows stay put). */
+  emails?: string[] | null;
   /** Wall-clock at scrape time — used for `last_synced_at` and to
    *  distinguish stale rows. */
   scrapedAt: string;

@@ -352,6 +352,34 @@ function parseRetryAfter(header: string | null): number | undefined {
 // ---------------------------------------------------------------------
 
 /**
+ * BL-083-F001 — defensively project the fork's `emails` field onto
+ * `RawKolData.emails`. The page/item schema already types `emails` as
+ * `string[] | null`, but the fork is a separate codebase shipping
+ * independently, so the mapper double-checks rather than trusting the
+ * type: a non-array or any non-string element collapses the whole field
+ * to null + a `console.warn` (never throws — a single malformed row must
+ * not take down the daily batch). Empty / whitespace-only entries are
+ * dropped; an all-empty array yields null ("mapper didn't fill it").
+ */
+export function sanitizeForkEmails(raw: unknown, externalId: string): string[] | null {
+  if (raw == null) return null; // undefined / null → not surfaced, no warn
+  if (!Array.isArray(raw)) {
+    console.warn(
+      `apify-kol mapper: emails for ${externalId} is not an array (got ${typeof raw}) — dropping`,
+    );
+    return null;
+  }
+  if (!raw.every((e) => typeof e === "string")) {
+    console.warn(
+      `apify-kol mapper: emails for ${externalId} contains a non-string element — dropping`,
+    );
+    return null;
+  }
+  const cleaned = raw.map((e) => e.trim()).filter((e) => e.length > 0);
+  return cleaned.length > 0 ? cleaned : null;
+}
+
+/**
  * Project a single `ApifyKolItem` onto the platform-agnostic
  * `RawKolData` shape consumed by `import.ts`. Pure / fully unit-tested.
  *
@@ -469,6 +497,13 @@ export function mapApifyKolItemToRawKolData(
     publishedAt: null,
     lastUploadAt: null,
     brandSafetyRating: null,
+    // BL-083-F001 — surface the fork's unlocked business emails (was only
+    // retained verbatim in `raw`, unreachable by the import/outreach path).
+    // Defensively sanitised; never throws on a malformed fork value.
+    emails: sanitizeForkEmails(
+      (item as Record<string, unknown>).emails,
+      externalId,
+    ),
     raw: { ...(item as Record<string, unknown>) },
     engagement_rate: engagementRate,
     engagement_outlier: engagementOutlier,

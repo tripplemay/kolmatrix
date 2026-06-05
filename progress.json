@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-083-yt-business-email-mapper — KOL data 治理: KOLMatrix mapper 接 fork emails 字段 + UI 显示 + outreach 优先级 + email_source 字段区分. 7 features F001-F007 (~12h Generator + 1.5h Reviewer). 6/04 用户分享 fork 端 5/8 yt-business-email design doc 触发 Planner audit 发现 prod 219/722 YT KOL business email 已通过 fork Apify actor 解锁但 KOLMatrix mapper 完全漏接 (kol.email 字段仅 6 个 = 0.8% vs 实际可拾 30%+). 1 子决策 lock: A 轻量 KOLMatrix-only (mapper+UI+outreach+backfill), 不做 B 主动 trigger (fork 端已自动入队解锁, 剩 278 个未解锁多半是 actor NO_EMAIL 非排队中). fork 端 APIFY_API_TOKEN 6/05 已配 dry-run 200 验证. 关联 docs/specs/BL-083-yt-business-email-mapper-spec.md.",
   "total_features": 7,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
   "current_sprint": "BL-083-yt-business-email-mapper",
-  "last_updated": "2026-06-05T11:30+0800",
+  "last_updated": "2026-06-05T11:34+0800",
   "reference_docs": [
     "docs/specs/BL-083-yt-business-email-mapper-spec.md",
     "src/lib/kol-sync/adapters/apify-kol.ts",
@@ -33,7 +33,7 @@
   "generator_handoff": null,
   "session_notes": {
     "Kimi_planner": "[2026-06-05 11:25 BJT Planner Kimi BL-083 planning done] BL-082 done 收尾 + 切 BL-083 (用户 6/05 ack 启). spec 7 features 完整起草 (从 backlog 雏形扩展). A1 1 子决策 lock: A 路径 KOLMatrix-only (mapper+UI+outreach+backfill), 不做 B (fork 已自动入队解锁, 手动 trigger 对剩 278 NO_EMAIL KOL 无价值). 依赖: BL-082 done ✅ (bl082-done tag @ 133bbe0) + fork APIFY_API_TOKEN 6/05 已配 ✅ + fork 已 ship 219 个 business email 解锁 ✅. 下一步: 用户审 spec 后 planning → building, Generator 启 F001 mapper.",
-    "Kimi_generator": null,
+    "Kimi_generator": "[2026-06-05 11:34 BJT Generator Kimi BL-083 F001 done] mapper 接 fork emails 字段完成. types.ts RawKolData +emails?: string[]|null; apify-kol.ts 加 sanitizeForkEmails(raw, externalId) 防御性净化 (非array/含non-string → null+console.warn 不阻塞 batch; trim + 丢空; all-empty → null) 并入 mapper 投影. zod schema 早已含 emails (schemas.ts:47 无需改). mapper 不碰 legacy kol.email scalar (RawKolData 无 email 字段). 单测 +6 case (apify-kol-mapper.test.ts). L1 PASS: tsc=0 / lint 0err 3warn(pre-existing) / 1430 tests pass (was 1424). 下一步 F002 schema migration emails JSONB + email_source.",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
