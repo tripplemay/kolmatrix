@@ -9,6 +9,7 @@ type: project
 - L2 入口: staging.kol.guangai.ai/match?campaignId=<真实> 默认 AI 三列; toggle 切全池. Accept/Skip/Swap/Undo/Why/drag
 - 数据模型 ADR-016 (kol_campaign suggestion_status 4 态, suggested 不落库) 已起草. docs/dev/match-runbook.md 已建. 月 cost <$1
 - ⚠️ staging build 需 NODE_OPTIONS=--max-old-space-size=4096 防 SIGABRT OOM (已记 environment.md)
+- 🟡 CI 41a47db code gates 全绿; 遗留 2 visual-regression(测试域,待 Evaluator): match-with-campaignId(F007 故意改默认 AI→测试 URL 加 view=full-pool) + campaign-detail(疑 flake). visual project 硬 gate 致 functional e2e did-not-run
 - 关联 docs/specs/BL-084-ai-match-panel-spec.md
 ## ✅ BL-083-yt-business-email-mapper DONE (7/7, fix_rounds=1, tag bl083-done @ b735aad)
 - prod kol_emails 0.8%→30.3% (219 business-unlock), legacy 18 不变
