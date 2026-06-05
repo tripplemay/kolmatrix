@@ -132,7 +132,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "messages/{zh,en,ja,ko,es}.json 加 keys: match.aiPanel.title / suggestedColumn / acceptedColumn / swapColumn / matchScoreBadge / acceptButton / skipButton / swapButton / removeButton / reAddButton / undoToast / refreshButton / cacheStaleHint / emptyStateSuggested / emptyStateAccepted / emptyStateSwap",
       "match.toggle.aiMode / match.toggle.fullPoolMode 切换 chip 文字",

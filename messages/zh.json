@@ -847,6 +847,34 @@
       "activeCollabs": "活跃合作",
       "avgScore": "平均 AI 评分",
       "followerReach": "粉丝总触达"
+    },
+    "aiPanel": {
+      "title": "AI 推荐",
+      "suggestedColumn": "推荐池",
+      "acceptedColumn": "已接受",
+      "swapColumn": "候补池",
+      "matchScoreBadge": "匹配度 {score}",
+      "acceptButton": "接受",
+      "skipButton": "跳过",
+      "swapButton": "候补",
+      "removeButton": "移除",
+      "reAddButton": "重新加入",
+      "whyButton": "推荐理由",
+      "undoToast": "{name} 已加入已接受",
+      "undoCta": "撤回",
+      "refreshButton": "刷新",
+      "refreshing": "刷新中…",
+      "cacheStaleHint": "{hours} 小时前生成",
+      "rerankFallbackWarning": "AI 重排暂不可用 — 按相似度排序显示。",
+      "emptyStateSuggested": "AI 推荐生成中…",
+      "emptyStateAccepted": "尚未接受任何 KOL",
+      "emptyStateSwap": "候补池为空",
+      "errorProductMissing": "请为此活动关联产品以获取 AI 推荐。",
+      "errorCampaignNotFound": "未找到活动。"
+    },
+    "toggle": {
+      "aiMode": "AI 推荐",
+      "fullPoolMode": "全部 KOL"
     }
   },
   "brief": {
@@ -1150,6 +1178,12 @@
         "capExhaustedToast": "今日 AI 额度已用完，候选池保持不变。",
         "networkError": "重排超时，请重试。",
         "permutationInvalid": "重排结果无效，候选池保持不变。"
+      },
+      "suggestionStatus": {
+        "suggested": "推荐",
+        "accepted": "已接受",
+        "skipped": "已跳过",
+        "swap_pool": "候补"
       }
     },
     "matchKolAction": {

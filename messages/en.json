@@ -847,6 +847,34 @@
       "activeCollabs": "Active Collabs",
       "avgScore": "Avg AI Score",
       "followerReach": "Follower Reach"
+    },
+    "aiPanel": {
+      "title": "AI Recommendations",
+      "suggestedColumn": "Suggested",
+      "acceptedColumn": "Accepted",
+      "swapColumn": "Bench",
+      "matchScoreBadge": "Match score {score}",
+      "acceptButton": "Accept",
+      "skipButton": "Skip",
+      "swapButton": "Bench",
+      "removeButton": "Remove",
+      "reAddButton": "Re-add",
+      "whyButton": "Why this KOL",
+      "undoToast": "{name} added to Accepted",
+      "undoCta": "Undo",
+      "refreshButton": "Refresh",
+      "refreshing": "Refreshing…",
+      "cacheStaleHint": "Generated {hours}h ago",
+      "rerankFallbackWarning": "AI re-ranking is temporarily unavailable — showing similarity order.",
+      "emptyStateSuggested": "Generating AI recommendations…",
+      "emptyStateAccepted": "No KOLs accepted yet",
+      "emptyStateSwap": "Bench is empty",
+      "errorProductMissing": "Link a product to this campaign to get AI recommendations.",
+      "errorCampaignNotFound": "Campaign not found."
+    },
+    "toggle": {
+      "aiMode": "AI recommendations",
+      "fullPoolMode": "All KOLs"
     }
   },
   "brief": {
@@ -1150,6 +1178,12 @@
         "capExhaustedToast": "Daily AI quota reached. Current pool unchanged.",
         "networkError": "Refine timed out. Please try again.",
         "permutationInvalid": "Rerank result was invalid. Current pool unchanged."
+      },
+      "suggestionStatus": {
+        "suggested": "Suggested",
+        "accepted": "Accepted",
+        "skipped": "Skipped",
+        "swap_pool": "Bench"
       }
     },
     "matchKolAction": {

@@ -847,6 +847,34 @@
       "activeCollabs": "アクティブなコラボ数",
       "avgScore": "平均AIスコア",
       "followerReach": "フォロワーのリーチ"
+    },
+    "aiPanel": {
+      "title": "AI レコメンド",
+      "suggestedColumn": "提案",
+      "acceptedColumn": "承認済み",
+      "swapColumn": "控え",
+      "matchScoreBadge": "マッチ度 {score}",
+      "acceptButton": "承認",
+      "skipButton": "スキップ",
+      "swapButton": "控えへ",
+      "removeButton": "削除",
+      "reAddButton": "再追加",
+      "whyButton": "おすすめ理由",
+      "undoToast": "{name} を承認済みに追加しました",
+      "undoCta": "元に戻す",
+      "refreshButton": "更新",
+      "refreshing": "更新中…",
+      "cacheStaleHint": "{hours}時間前に生成",
+      "rerankFallbackWarning": "AI 再ランクは一時的に利用できません — 類似度順で表示しています。",
+      "emptyStateSuggested": "AI レコメンドを生成中…",
+      "emptyStateAccepted": "まだ承認された KOL はありません",
+      "emptyStateSwap": "控えは空です",
+      "errorProductMissing": "AI レコメンドを取得するには、このキャンペーンに商品をリンクしてください。",
+      "errorCampaignNotFound": "キャンペーンが見つかりません。"
+    },
+    "toggle": {
+      "aiMode": "AI レコメンド",
+      "fullPoolMode": "すべての KOL"
     }
   },
   "brief": {
@@ -1150,6 +1178,12 @@
         "capExhaustedToast": "本日の AI 利用上限に達しました。現在の候補は変更されません。",
         "networkError": "絞り込みがタイムアウトしました。再試行してください。",
         "permutationInvalid": "並び替え結果が無効でした。現在の候補は変更されません。"
+      },
+      "suggestionStatus": {
+        "suggested": "提案",
+        "accepted": "承認済み",
+        "skipped": "スキップ",
+        "swap_pool": "控え"
       }
     },
     "matchKolAction": {

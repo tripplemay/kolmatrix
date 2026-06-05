@@ -847,6 +847,34 @@
       "activeCollabs": "Colaboraciones activas",
       "avgScore": "Puntuación media AI",
       "followerReach": "Alcance de seguidores"
+    },
+    "aiPanel": {
+      "title": "Recomendaciones IA",
+      "suggestedColumn": "Sugeridos",
+      "acceptedColumn": "Aceptados",
+      "swapColumn": "Reserva",
+      "matchScoreBadge": "Coincidencia {score}",
+      "acceptButton": "Aceptar",
+      "skipButton": "Omitir",
+      "swapButton": "Reserva",
+      "removeButton": "Quitar",
+      "reAddButton": "Volver a añadir",
+      "whyButton": "Por qué este KOL",
+      "undoToast": "{name} añadido a Aceptados",
+      "undoCta": "Deshacer",
+      "refreshButton": "Actualizar",
+      "refreshing": "Actualizando…",
+      "cacheStaleHint": "Generado hace {hours} h",
+      "rerankFallbackWarning": "La reordenación con IA no está disponible temporalmente — mostrando por similitud.",
+      "emptyStateSuggested": "Generando recomendaciones IA…",
+      "emptyStateAccepted": "Aún no hay KOL aceptados",
+      "emptyStateSwap": "La reserva está vacía",
+      "errorProductMissing": "Vincula un producto a esta campaña para obtener recomendaciones IA.",
+      "errorCampaignNotFound": "Campaña no encontrada."
+    },
+    "toggle": {
+      "aiMode": "Recomendaciones IA",
+      "fullPoolMode": "Todos los KOL"
     }
   },
   "brief": {
@@ -1150,6 +1178,12 @@
         "capExhaustedToast": "Se alcanzó la cuota diaria de IA. El grupo actual no cambia.",
         "networkError": "Tiempo de espera agotado. Inténtalo de nuevo.",
         "permutationInvalid": "El resultado del reordenamiento no es válido. El grupo actual no cambia."
+      },
+      "suggestionStatus": {
+        "suggested": "Sugerido",
+        "accepted": "Aceptado",
+        "skipped": "Omitido",
+        "swap_pool": "Reserva"
       }
     },
     "matchKolAction": {
