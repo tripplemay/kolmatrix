@@ -74,7 +74,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "src/app/[locale]/(app)/match/server-actions/suggestion-actions.ts: acceptKolToCampaign(kolId, campaignId), skipKolFromCampaign(kolId, campaignId), swapKolToSwapPool(kolId, campaignId), undoLastDecision(decisionId)",
       "acceptKol: UPSERT kol_campaign (kolId, campaignId, suggestionStatus='accepted', decidedAt=now, source='ai_smart_match'); audit_log 'kol.campaign_suggestion_decided' payload={action:'accept', kolId, campaignId, actorUserId, undoExpiresAt}",
