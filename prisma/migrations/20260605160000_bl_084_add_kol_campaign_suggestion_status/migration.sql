@@ -48,6 +48,11 @@ CREATE INDEX IF NOT EXISTS "kol_campaign_suggestion_status_idx"
 
 -- Backfill legacy rows → 'accepted' + decided_at = created_at, and write
 -- a single platform-level audit_log entry with the affected row count.
+--
+-- The audit row is written ONLY when at least one row was backfilled —
+-- on a fresh DB with no kol_campaign rows the backfill is a no-op and we
+-- must not leave a platform-level audit row behind (it would pollute an
+-- otherwise-empty audit_log, e.g. dashboard "recent activity" assertions).
 WITH updated AS (
   UPDATE "kol_campaign"
   SET "suggestion_status" = 'accepted',
@@ -67,4 +72,5 @@ SELECT
     'backfilled_rows', (SELECT count(*) FROM updated),
     'set_suggestion_status', 'accepted',
     'migration', '20260605160000_bl_084_add_kol_campaign_suggestion_status'
-  );
+  )
+WHERE (SELECT count(*) FROM updated) > 0;
