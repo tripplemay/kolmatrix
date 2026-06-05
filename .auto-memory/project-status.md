@@ -3,14 +3,13 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔁 BL-082-refresh-selector-rewire REVERIFYING (6/7, fix_rounds=1)
-- Generator F001-F006 完成；staging 旁证强（deploy 9ffee8d + platform_user_id 回填 1859 + refreshCount 253，全平台 requested==refreshed，404=0%）
-- fix-round 1 已被 Reviewer 复验通过：`kol-sync-daily.test.ts` 上轮红掉的 2 个 refresh-phase case 已转绿；Node20 全量 L1 也已恢复全绿（npm test 1423/1423）
-- staging 复验通过：health healthy + Playwright `/match` 两条 smoke PASS
-- prod 已部署 0d353bd（= main）+ platform_user_id 回填完成（Generator 6/05 跑 backfill：stamped 2371，YT=UC% 716/716 / TT·IG 数字全对，filled 2371/2383）
-- prod refresh 实测达标（6/05 手动 daily-sync）：refreshCount=251（YT90/TT127/IG34）、全平台、404率=0%（refresh_404_skip audit=0）、近15min 2371 行 last_synced 更新
-- 剩余：Codex 复验 prod 证据 + 写 signoff 终签（generator 工作已全部完成）
-- Reviewer 报告：`docs/test-reports/BL-082-verifying-2026-06-05.md` + `docs/test-reports/BL-082-reverifying-2026-06-05.md`
+## ✅ BL-082-refresh-selector-rewire DONE (signoff @ 2026-06-05 11:12 CST)
+- signoff: `docs/test-reports/BL-082-signoff-2026-06-05.md`
+- Reviewer 终签：Node20 下 L1 全绿（`npm test` 1423/1423，`kol-sync-daily` refresh-phase 12/12，`tsc`/`prisma`/rollback validate PASS；`lint` 仅 3 个既有 unused warnings）
+- staging 证据成立：deploy `9ffee8d` + platform_user_id 回填 1859 + refreshCount `253`（YT91/TT127/IG35）+ requested==refreshed 全平台 + `404=0%`
+- prod 证据成立：deploy `0d353bd` (= main) + platform_user_id 非空 YT716 / TT1477 / IG178 + 手动 daily-sync refreshCount `251`（YT90/TT127/IG34）+ `failedAdapters=0` + `refresh_404_skip=0` + `import_failed=0`
+- 旁证：近 15min `last_synced_at` 更新 2371 行，refresh→import 链路在 prod 已生效
+- 经验记录：refresh-selector 测试夹具必须避免 date-dependent 单样本分桶，否则会出现 1/3 天复现的 flaky
 ## ✅ BL-081-kol-country-data-fix DONE (signoff @ 2026-06-04)
 - signoff: `docs/test-reports/BL-081-signoff-2026-06-04.md`
 - prod country LLM 已降到 `83/day`, retry-storm backlog = `0`

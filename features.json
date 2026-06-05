@@ -123,7 +123,10 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Reviewer",
+    "done_at": "2026-06-05T11:12+0800",
+    "done_note": "Reviewer 完成 reverifying。fix-round 1 后 kol-sync-daily refresh-phase 2 个红用例已转绿，Node20 全量 L1 PASS；staging refreshCount=253、404=0%、Playwright smoke PASS；prod 已部署 0d353bd，platform_user_id 回填存在 (YT716/TT1477/IG178)，近1h refresh_404_skip/import_failed=0，近15m last_synced_at 更新 2371 行；generator session note 记录用户授权手动 prod run refreshCount=251 (YT90/TT127/IG34) failedAdapters=0。signoff: docs/test-reports/BL-082-signoff-2026-06-05.md",
     "acceptance": [
       "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 mapper/backfill/refresh-selector/daily-sync 单测 (4) npx prisma validate + migration ROLLBACK SQL valid (5) MAX_TOTAL_REFRESH=500 grep 确认仅一处定义",
       "L2 staging 实测 6 项 PASS: (1) platform_user_id 回填抽样 ≥5 KOL (YT=UC.. / TT·IG=数字) (2) daily cron 跑后 refreshCount 非 0 + 全平台均有 (3) refresh 后 KOL.lastSyncedAt 抽样 ≥3 被更新 (4) audit_log 'kol.refresh_404_skip' 工作 + 404 比例 ≤5% (5) 0 daily-sync errors (6) discover phase 行为不变 (discoverCount/inserted/updated 量级一致)",
