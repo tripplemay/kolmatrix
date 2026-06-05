@@ -21,7 +21,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "prisma/schema.prisma Kol model 加 emails Json? @map('emails') @db.JsonB",
       "现 kol 表已有 email_source 字段 (VARCHAR(20) default 'manual') - 复用 vs 新加 由 Generator 实地决定, 若复用确保 'business-unlock' 'bio-regex' 值与现有 'manual' 并存",

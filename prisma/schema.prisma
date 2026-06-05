@@ -200,7 +200,19 @@ model Kol {
 
   // BM2-F001 extensions per audit #D/#E context (email outreach).
   email       String? @db.VarChar(320)
+  // BL-083-F002 — email_source REUSED (not re-added): the existing
+  // VARCHAR(20) already holds 'manual'; BL-083 adds the values
+  // 'business-unlock' (fork Apify YT business email) and 'bio-regex'
+  // (BL-031 bio extraction) alongside it. All three fit VARCHAR(20).
   emailSource String? @default("manual") @map("email_source") @db.VarChar(20)
+  // BL-083-F002 — multi-email JSONB array unlocked by the fork's
+  // yt-business-email Apify actor (`emails: string[]`). The legacy single
+  // `email` column (above) only ever held 6 bio-regex values (0.8% of YT
+  // KOLs); the fork has unlocked ~219 real business emails that the mapper
+  // (F001) now surfaces here. Nullable additive column — no backfill at
+  // apply time; F006's one-shot script promotes metadata.raw.emails into
+  // it for existing rows, new/refreshed rows get it via the F003 upsert.
+  emails Json? @map("emails") @db.JsonB
 
   // MVP-kol-seed-redo F003 — provenance JSONB. Holds is_demo flag for
   // the YouTube seed so a single DELETE WHERE metadata->>'is_demo'='true'

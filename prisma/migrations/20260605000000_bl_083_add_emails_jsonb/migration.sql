@@ -1,0 +1,34 @@
+-- BL-083-F002 · kol.emails JSONB — multi-email array from the fork's
+-- yt-business-email Apify actor.
+--
+-- The fork unlocks YouTube business emails post-discovery and ships them
+-- on the item's `emails: string[]` field. KOLMatrix's mapper (F001) now
+-- surfaces them; the import path (F003) writes them here. The legacy
+-- single `email VARCHAR(320)` column only ever held 6 bio-regex values
+-- (0.8% of 722 YT KOLs) — a JSONB array stores 1..N emails per KOL
+-- without an association table (single KOL rarely has >2 emails).
+--
+-- email_source is NOT re-added: the existing `email_source VARCHAR(20)`
+-- (BM2-F001, default 'manual') already accommodates BL-083's new values
+-- 'business-unlock' and 'bio-regex' — both fit inside VARCHAR(20).
+--
+-- Type choice:
+--   emails JSONB — array of strings, ordered as the fork returns them.
+--     JSONB (not JSON) so future queries can use jsonb operators
+--     (jsonb_array_length, @>) for the "has business email" UI filter
+--     (F004) without a re-cast.
+--
+-- Additive + safe:
+--   - Nullable, no DEFAULT, no backfill at apply time. Existing 2371 rows
+--     stay NULL ("mapper didn't fill it") until F006's one-shot backfill
+--     promotes metadata.raw.emails into the column. New/refreshed rows get
+--     it via the F003 upsert path.
+--   - Does not touch any existing column or data; the legacy `email` /
+--     `email_source` columns are untouched (the 6 bio-regex emails stay).
+--   - RLS unchanged (column lives on the already-tenant-isolated kol table).
+--
+-- ROLLBACK:
+--   ALTER TABLE "kol" DROP COLUMN IF EXISTS "emails";
+
+ALTER TABLE "kol"
+  ADD COLUMN "emails" JSONB;
