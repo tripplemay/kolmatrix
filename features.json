@@ -38,7 +38,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "prisma/schema.prisma KolCampaign model 加: suggestionStatus String? @map('suggestion_status') @db.VarChar(20), suggestedAt DateTime? @map('suggested_at') @db.Timestamptz, decidedAt DateTime? @map('decided_at') @db.Timestamptz, matchScore Int? @map('match_score')",
       "复合 index @@index([campaignId, suggestionStatus]) 加速三列查询",

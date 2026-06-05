@@ -333,6 +333,19 @@ model KolCampaign {
   // intact; AcceptedKolsPanel (F006) groups by this column for the
   // source chip.
   source         String    @default("manual") @db.VarChar(20)
+  // BL-084-F003: AI Match Panel suggestion lifecycle (ADR-016). 4 states:
+  //   suggested  — AI recalled + reranked this KOL for the campaign
+  //   accepted   — marketer accepted (also the backfilled state for all
+  //                pre-BL-084 rows, preserving BM1 "in this campaign")
+  //   skipped    — marketer skipped (excluded from future suggestions)
+  //   swap_pool  — moved to the candidate/bench column
+  // Nullable: a NULL row predates the lifecycle (migration backfills it to
+  // 'accepted'). match_score (above) is reused as the cosine score snapshot.
+  suggestionStatus String?  @map("suggestion_status") @db.VarChar(20)
+  // When the AI surfaced this row (NULL for legacy / manual rows).
+  suggestedAt    DateTime? @map("suggested_at") @db.Timestamptz
+  // When the marketer accepted/skipped/swapped (backfill = created_at).
+  decidedAt      DateTime? @map("decided_at") @db.Timestamptz
 
   kol      Kol      @relation(fields: [kolId], references: [id])
   campaign Campaign @relation(fields: [campaignId], references: [id])
@@ -343,6 +356,10 @@ model KolCampaign {
   // featuring KOL X" lookup and the tenant_id RLS join key.
   @@index([kolId])
   @@index([tenantId])
+  // BL-084-F003: three-column AI Match Panel query (WHERE campaign_id=X
+  // AND suggestion_status=Y). Explicit map name so it matches the
+  // evaluator's grep contract (kol_campaign_suggestion_status_idx).
+  @@index([campaignId, suggestionStatus], map: "kol_campaign_suggestion_status_idx")
   @@map("kol_campaign")
 }
 
