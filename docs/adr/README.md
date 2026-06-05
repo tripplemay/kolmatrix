@@ -71,6 +71,7 @@ Proposed ──► Accepted ──► [Deprecated | Superseded by ADR-YYY]
 | [013](./ADR-013-ai-native-product-pivot.md) | **AI Native 产品转向** | 顶层 IA 7→4 路由（Brief/Match/Reach/Insight）；删 KOL saved pool；AI 主导取代工具+辅助；6-10 周重构；5/13 上线 deadline 取消 | Accepted (§IA 部分 Superseded by ADR-015) | 2026-05-10 |
 | [014](./ADR-014-value-score-formula-v2.md) | Value Score Formula v2 | BL-049/050 价值评分公式调整 | Accepted | 2026-05-?? |
 | [015](./ADR-015-5-route-ia-add-campaigns-nav.md) | **5 路由 IA — 加 Campaigns 一级 nav** | 加 `campaigns` 作第 2 一级 nav（Brief/Campaigns/Match/Reach/Insight）；/campaigns 列表行加 Match KOL CTA；/insight QuickActions 4→3 | Accepted (supersedes ADR-013 §IA) | 2026-05-26 |
+| [016](./ADR-016-kol-campaign-suggestion-lifecycle.md) | **kol_campaign 推荐生命周期** | 复用 kol_campaign 加 `suggestion_status` 4 态（suggested 不落库 / accepted / skipped / swap_pool）；legacy backfill→accepted；驱动 AI Match Panel 三列 | Accepted | 2026-06-05 |
 
 ## 按主题索引
 
@@ -91,6 +92,7 @@ Proposed ──► Accepted ──► [Deprecated | Superseded by ADR-YYY]
 ### 数据与安全
 - [ADR-007](./ADR-007-multi-tenant-rls-strategy.md) 多租户隔离
 - [ADR-011](./ADR-011-unified-asset-table-vs-typed-tables.md) 统一 Asset 表 schema（BL-025 前置）
+- [ADR-016](./ADR-016-kol-campaign-suggestion-lifecycle.md) kol_campaign 推荐生命周期 suggestion_status 4 态（BL-084 AI Match Panel 数据模型）
 
 ### 外部服务集成
 - [ADR-009](./ADR-009-aigcgateway-integration.md) AI 网关集成（B2 前置）
