@@ -56,7 +56,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "新建 src/app/[locale]/(app)/match/server-actions/get-campaign-suggestions.ts (server action 'use server'): input=campaignId, output={suggestions: SmartMatchKolHit[] & {matchReason: string|null}}",
       "编排: campaign.findUnique → 取 productId → runSmartMatch({tenantId, productId, topK:30, campaignId}) → rerankWithReason(candidates, campaignMeta) → merge matchReason 到 hits",
