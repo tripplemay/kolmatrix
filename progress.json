@@ -1,11 +1,11 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "BL-084-ai-match-panel — /match?campaignId=X 重塑为 AI 推荐三列工作台 (推荐/已接受/候补). 9 features F001-F009 (~17h Generator + 1.5h Reviewer ≈ 2.5 day). 6/05 用户问活动页 '匹配 KOL' 按钮实现+gap, Planner audit 揭示主面板完全不读 campaignId (装饰参数), 用户选 C 重型方案 + 8 子决策 lock: 推荐源 B (embedding 召回 200 + LLM 重排 30, 沿用 BL-068) / Toggle 切换 (campaign 默认 AI) / 数据模型 A (复用 kol_campaign + suggestion_status enum 4 态) / embedding 无需独立批次 (B7a-F002 runSmartMatch 已 ship + KOL 99.5% + Product JIT) / LLM 含 matchReason 短文本 / Accept 一键+5s Undo / Swap drag 候补列 / Toggle 默认 campaignId 有→AI 无→全池. 月 cost <$1. 关联 docs/specs/BL-084-ai-match-panel-spec.md.",
   "total_features": 9,
   "completed_features": 8,
   "fix_rounds": 0,
   "current_sprint": "BL-084-ai-match-panel",
-  "last_updated": "2026-06-05T17:20+0800",
+  "last_updated": "2026-06-05T14:20+0800",
   "reference_docs": [
     "docs/specs/BL-084-ai-match-panel-spec.md",
     "src/lib/discovery/smart-match.ts",
@@ -33,10 +33,10 @@
   "role_assignments": null,
   "evaluator_feedback": null,
   "fix_rounds_history": [],
-  "generator_handoff": null,
+  "generator_handoff": "BL-084 8 generator features (F001-F008) 全 done + 推送 main @ a2fd5ba. L1 全绿: lint 0err/3warn(pre-existing) / tsc=0 / vitest 203 files 1505 pass / npm run build 96/96 pages. Staging 已 deploy @ a2fd5ba (health 200, AIGCGATEWAY_MATCH_RERANK_ACTION_ID 已注入 /proc 实测, BL-084 migration 已 apply). ADR-016 + docs/dev/match-runbook.md 已起草. F009 Codex Reviewer 接 L1+L2+signoff. L2 入口: https://staging.kol.guangai.ai/match?campaignId=<真实campaign> 默认进 AI 三列 panel; toggle 切全池. 测试要点: Accept→5s Undo / Skip→下次不推 / Swap drag / Why dialog(BL-067) / rerank fallback warning. 成本: rerank ~$0.011/call, 24h cache. 注意 staging build 需 NODE_OPTIONS=--max-old-space-size=4096 防 OOM(已记 environment.md).",
   "session_notes": {
     "Kimi_planner": "[2026-06-05 14:55 BJT Planner Kimi BL-084 planning done] BL-083 done 收尾 (tag bl083-done @ b735aad) + 切 BL-084 (用户 6/05 ack 启). spec 已在 backlog 启动前完整起草 (docs/specs/BL-084-ai-match-panel-spec.md §1-§6 已存 + features.json 9 features 详细 acceptance 已写). A1 8 子决策 lock (推荐源 B / Toggle 切换 / 数据模型 A kol_campaign+suggestion_status / embedding 无需 prep / matchReason 短文本 / Accept 一键+5s Undo / Swap drag / Toggle 默认 campaignId 有→AI). audit 关键洞察: B7a-F002 runSmartMatch 已 ship 完整 embedding cosine + Product JIT, BL-084 只新增 LLM 重排 + 三列 UI + Accept/Skip/Swap 数据模型, 实际工时比初估少. ADR-016 (kol_campaign suggestion_status 4 态生命周期) 待 F009 起草. 下一步: 用户审 spec 后 planning → building, Generator 启 F001 runSmartMatch 升级 (最小改动, 0.5h).",
-    "Kimi_generator": null,
+    "Kimi_generator": "[2026-06-05 14:20 BJT Generator Kimi BL-084 building→verifying] 8 features 全实现+单测: F001 runSmartMatch topK30+campaignId遥测(buildSmartMatchEvent纯函数) / F002 llm-rerank.ts(rerankWithReason+aigcgateway action cmq0hrq25016kbnpe2oru2qb0+8降级case) / F003 migration(suggestion_status 3列+复合index, match_score复用, legacy backfill→accepted, 本地migrate实测) / F004 getCampaignSuggestions(cosine+排除已决策+rerank+24h Redis cache, use-server拆.shared §14) / F005 accept/skip/swap/reAdd/remove/undo(withTenant单事务原子+audit+5s窗口+SCAN-prefix cache失效) / F006 三列UI(MatchAiPanel server+Client optimistic+原生drag+undo toast+badge渐变+reason chip) / F007 parseAiView toggle(campaignId默认AI, carriedView防弹回, e2e) / F008 i18n 5locale. [staging deployed @ a2fd5ba @ 2026-06-05T06:14 UTC, health 200, git_sha验证通过]. 坑: (1) use-server只能导出async fn→constants/errors/types入.shared.ts (2) staging build SIGABRT OOM→NODE_OPTIONS=--max-old-space-size=4096 (3) match_score列已存复用不重加 (4) targetAudience在product非campaign. ADR-016+match-runbook已起草.",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null

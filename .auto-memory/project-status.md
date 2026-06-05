@@ -3,11 +3,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-084-ai-match-panel BUILDING (0/9, fix_rounds=0) — /match?campaignId=X 重塑 AI 推荐三列工作台
-- A0 audit (6/05): 主面板 runMatchSearch 完全不读 campaignId (装饰参数), AI Sidebar 输出 3 条 workflow 建议非 KOL 推荐, 严重 UX 错位; B7a-F002 runSmartMatch 已 ship 完整 embedding cosine + KOL 99.5% + Product JIT 可复用
-- A1 8 子决策 lock: 推荐源 B (embedding 召回 200 + LLM 重排 30) / Toggle 切换 / 数据模型 A (kol_campaign + suggestion_status enum 4 态) / embedding 无需 prep / matchReason 短文本 / Accept 一键+5s Undo / Swap drag / Toggle 默认 campaignId 有→AI
-- 9 features: F001 runSmartMatch 升级 / F002 LLM 重排 / F003 schema 4 字段 / F004 server action 编排+24h cache / F005 accept/skip/swap actions / F006 UI 三列 / F007 toggle 路由 / F008 i18n / F009 Codex
-- 月 cost <$1. ADR-016 (kol_campaign 推荐生命周期 4 态) 待 F009 起草
+## 🚧 BL-084-ai-match-panel VERIFYING (8/9 gen done, fix_rounds=0) — /match?campaignId=X AI 推荐三列工作台
+- F001-F008 全实现+单测 done @ a2fd5ba. L1 全绿: lint 0err/tsc=0/vitest 1505 pass/build 96/96. F009 Codex L1+L2+signoff 待接
+- staging deployed @ a2fd5ba (health 200, rerank action cmq0hrq25016kbnpe2oru2qb0 env 已注入, BL-084 migration 已 apply)
+- L2 入口: staging.kol.guangai.ai/match?campaignId=<真实> 默认 AI 三列; toggle 切全池. Accept/Skip/Swap/Undo/Why/drag
+- 数据模型 ADR-016 (kol_campaign suggestion_status 4 态, suggested 不落库) 已起草. docs/dev/match-runbook.md 已建. 月 cost <$1
+- ⚠️ staging build 需 NODE_OPTIONS=--max-old-space-size=4096 防 SIGABRT OOM (已记 environment.md)
 - 关联 docs/specs/BL-084-ai-match-panel-spec.md
 ## ✅ BL-083-yt-business-email-mapper DONE (7/7, fix_rounds=1, tag bl083-done @ b735aad)
 - prod kol_emails 0.8%→30.3% (219 business-unlock), legacy 18 不变
