@@ -114,3 +114,22 @@ sediment（沉淀）从 proposed-learnings.md 走向 `framework/harness/*.md` �
 ---
 
 <!-- 新条目从这里开始追加 -->
+
+## [2026-06-05] Claude CLI — 来源:Planner Kimi BL-083 fork .env ops + 误并入 BL-082 在制 staged 文件
+
+**类型：** 新坑（铁律 #12 实战反例）+ 模板修订（dry-run 验证 token 模式）
+
+**内容：**
+
+**子条目 A — 多角色并行 + Planner ops 后 git commit 误并入别人 staged 文件（铁律 #12 BIx 同款重演）：**
+6/05 Planner 在 BL-082 building 期间执行 fork .env ops 后做 `git add .auto-memory/environment.md && git commit -m "docs(env): ..."`。**git status 显示左列 5 个 staged 文件（M/A 标记）来自 Generator/Reviewer 在制 BL-082 工作**（features.json + progress.json + docs/test-reports/BL-082-verifying-2026-06-05.md + tests/unit/kol-sync-daily.test.ts + project-status.md），但 Planner 只看自己 `git add` 的那一个就 commit，导致 5 个文件被 Planner 的 docs(env) commit 标签一并打包推 main（commit 97339c6）。**根因：** Planner 启动新 session 时未 `git status --short` 看左列 staged 索引，假设 staged 池=自己 add 的；铁律 #12 已警告但 Planner workflow 未把"开 session 先 grep staged"列为强制 checklist。**修复（commit 97339c6 不 revert，已 push + 内容合理）：** sediment 入 framework + 加 Planner-workflow checklist "session 开始 + git commit 前必 grep `git status --short` 看左列 staged"。
+
+**子条目 B — fork .env token 配置必先 dry-run 验证（避免重蹈 invalid token 覆辙）：**
+6/05 用户给 fork 端新 TIKHUB_TOKEN 让 Planner 配置。Planner 直接写 fork .env + restart 后才发现 TikHub API 返 "Invalid API token"，service restart 后 4-32s 内 99 次 TikTok scrape fail。Rollback 旧 token 恢复正常。后续 APIFY_API_TOKEN 配置前用 `curl -H "Authorization: Bearer <token>" https://api.apify.com/v2/users/me → HTTP 200` 先 dry-run 验证，成功避免二次踩坑。**沉淀：** 任何外部 API token 配置前应有 dry-run path —— Apify 用 `/v2/users/me`；其他 SaaS 有类似的 me/identity endpoint。fork .env 改前 ops 模板 = 备份 → dry-run 验 token → 改 → restart → 15s 窗口 grep 错误日志对比基线。
+
+**建议写入：**
+- `framework/harness/planner-workflow.md` §"会话启动" 加 step "git status --short 看左列 staged 池"
+- `framework/harness/planner-checklists.md` §铁律 1 矩阵 加新行：v0.9.26 #1 "多角色并行 + Planner ops commit 前必 grep staged 索引"（铁律 #12 强化）
+- `framework/harness/deploy-patterns.md` §ops template 加新段：external API token 配置前的 dry-run 验证模板（Apify /v2/users/me / TikHub TBD / 其他 SaaS me-endpoint）
+
+**状态：** 待用户 ack — 待 done 阶段 / 专门 framework sediment batch 正式写入
