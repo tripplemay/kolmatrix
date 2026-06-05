@@ -1,121 +1,100 @@
 [
   {
     "id": "F001",
-    "title": "platformUserId 存储: schema 列 + mapper 持久化 + import upsert (同 commit)",
+    "title": "mapper 接 fork emails 字段 + types.ts + 单测",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.0,
-    "status": "done",
-    "done_by": "Kimi_generator",
-    "done_at": "2026-06-04T17:30+0800",
-    "done_note": "schema Kol 加 platformUserId String? @map('platform_user_id') + migration 20260604000000 (含 ROLLBACK); types.ts RawKolData 加 platformUserId; apify-kol mapper 持久化 item.platformUserId (空 fallback null); import.ts KolUpsertPayload + mapToUpsertPayload + upsert data 带 platformUserId. 手写 migration + migrate deploy (规避 migrate dev 旧 drift reset). mapper 单测 +3 (YT UC / TT 数字 / 空→null). L1: lint 0err3warn / tsc=0 / migrate up-to-date / npm test 1408 passed.",
-    "rescope_note": "6/04 用户决定全平台 refresh — fork /kol/<platform>/<platformUserId> 三平台均 200, 但 platformUserId 仅 YT 凑巧=KOL.handle, TT/IG 是数字 id 且 mapper 丢弃. 新增本 feature 持久化 platformUserId 作为全平台 refresh 前置.",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "prisma/schema.prisma Kol 加 platformUserId String? @map('platform_user_id') (nullable, 现有行先 NULL)",
-      "migration + ROLLBACK SQL (DROP COLUMN); additive 无 backfill at apply time",
-      "src/lib/kol-sync/types.ts RawKolData 加 platformUserId?: string | null",
-      "src/lib/kol-sync/adapters/apify-kol.ts mapper 持久化 item.platformUserId → RawKolData.platformUserId (原被丢弃)",
-      "src/lib/kol-sync/import.ts KolUpsertPayload + upsert data 带 platformUserId (create+update 路径)",
-      "单测: apify-kol-mapper.test 验 platformUserId 持久化 (YT UC.. / TT 数字 / 缺失 fallback null)",
-      "L1 PASS: lint 0err warn≤3 / tsc=0 / npm test (含新 case) + prisma validate / migrate status"
+      "src/lib/kol-sync/types.ts RawKolData 加 emails?: string[] | null",
+      "src/lib/kol-sync/adapters/apify-kol.ts mapper 持久化 item.emails → RawKolData.emails (zod schema 已 passthrough, 显式加 emails: z.array(z.string()).nullable().optional())",
+      "mapper try/catch + zod validation: fork 返非 array 或含 non-string → fallback null + console.warn log (不阻塞 batch)",
+      "现有 6 个 kol.email 不动 (mapper 不覆盖 single-email 字段, 只填新加的 emails array)",
+      "单测 ≥4 case: (1) fork emails=['a@b.com'] → kol.emails=['a@b.com'] (2) 多 email → array 完整 (3) emails undefined → null (4) emails 含非 string → fallback null + warn",
+      "L1 PASS: lint 0err warn≤3 / tsc=0 / npm test 1423+ pass (新增 apify-kol-mapper emails case)"
     ]
   },
   {
     "id": "F002",
-    "title": "存量回填 platform_user_id (从 fork discover 匹配 external_id)",
+    "title": "Schema migration: kol 表加 emails JSONB + email_source 复用/新增",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.0,
-    "status": "done",
-    "done_by": "Kimi_generator",
-    "done_at": "2026-06-04T17:30+0800",
-    "done_note": "scripts/kol-platform-user-id-backfill.ts: 复用 ApifyKolSyncAdapter.discover (per platform, 现 map platformUserId) → 按 external_id=String(item.id) 匹配 UPDATE kol SET platform_user_id WHERE platform_user_id IS NULL (幂等, 不覆盖). runPlatformUserIdBackfill 抽为可测函数 + 5 单测 (dry-run 不写 / apply per-platform 计数 / null-puid 跳过 / 未匹配 id 返 0). dry-run+apply 模式, 纯 fork-read+DB UPDATE 无 LLM. L1: tsc=0 / lint clean / npm test 1413 passed. staging/prod 实跑在 F006.",
+    "estimated_hours": 1.0,
+    "status": "pending",
     "acceptance": [
-      "新建 scripts/kol-platform-user-id-backfill.ts: 遍历 fork GET /kol 各页 (per platform), 按 external_id = String(item.id) 匹配 KOL 行, 写 platform_user_id = item.platformUserId",
-      "idempotent: WHERE platform_user_id IS NULL — 重复跑只补未填行, 不覆盖已有",
-      "dry-run (统计可回填行数) + apply 模式; 纯 DB UPDATE 经 fork read (无 LLM)",
-      "runBackfill 抽为可测函数; 单测 ≥3 (dry-run 不写 / apply 写 / 匹配不到的 id 跳过)",
-      "YT 行 platform_user_id 应 = handle (UC..); TT/IG = 数字 platformUserId",
-      "L1 PASS"
+      "prisma/schema.prisma Kol model 加 emails Json? @map('emails') @db.JsonB",
+      "现 kol 表已有 email_source 字段 (VARCHAR(20) default 'manual') - 复用 vs 新加 由 Generator 实地决定, 若复用确保 'business-unlock' 'bio-regex' 值与现有 'manual' 并存",
+      "migration 手写 SQL (BL-082 同 ops 模式避免 prisma migrate dev checksum 漂移) 放 20260605XXXXXX_bl_083_add_emails_jsonb/",
+      "ROLLBACK SQL header: DROP COLUMN emails;",
+      "BACKFILL: 不需 (新字段允许 NULL, 现有 2371 KOL 全 NULL 即 'mapper 未填')",
+      "RLS policy 不变",
+      "L1 PASS: prisma validate / migrate deploy / tsc=0"
     ]
   },
   {
     "id": "F003",
-    "title": "runDaily() 接入 refresh phase (全平台 <platform>:<platformUserId>) + refreshCount 真实计数 + MAX 500",
+    "title": "import.ts upsert: 写 emails array + email_source = 'business-unlock'",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 3.0,
-    "status": "done",
-    "done_by": "Kimi_generator",
-    "done_at": "2026-06-04T17:40+0800",
-    "done_note": "refresh-selector.ts: MAX_TOTAL_REFRESH 200→500 (单一定义); fetchTieredRefreshIds where externalId→platformUserId{not:null}, select platformUserId, onlyIds 返 '<platform>:<platformUserId>' (跳过 NULL). kol-sync-daily runDaily: discover→import 后加 refresh phase (loop REFRESH_PLATFORMS → fetchTieredRefreshIds → dispatcher.runRefresh({perAdapterIds:{'apify-kol':ids}}) → importRawKolData refreshed, sequential, soft-fail 不阻塞); DailyRunReport 加 refreshCount; 结构化 log line refreshCount:0 硬编码→report.refreshCount; human report 加 Refresh 段; refresh phase start/end + per-platform log; 删/更正 BL-059 'refresh removed' 注释. L1: tsc=0 / npm test 1413 passed (现有 daily-sync 测 fake findMany 返 [] → refresh no-op 不破). 专项 refresh 测试 (selector 格式 + daily-sync e2e) 在 F004.",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "src/lib/kol-sync/refresh-selector.ts fetchTieredRefreshIds select platform_user_id (非 external_id), 返 '<platform>:<platform_user_id>' 格式; 跳过 platform_user_id NULL 的行 (回填未覆盖的)",
-      "scripts/kol-sync-daily.ts runDaily() 在 discover→import 之后 embed-hook 之前加 refresh phase: loop apify-kol platforms (youtube/tiktok/instagram) → fetchTieredRefreshIds(prisma,{tenantId,platform,maxTotal}) → dispatcher.runRefresh({perAdapterIds:{'apify-kol':ids}}) → importRawKolData(refreshed) (sequential)",
-      "refresh phase log 显式: start/end + 每 platform + total refreshCount",
-      "scripts/kol-sync-daily.ts:199 hard-coded 'refreshCount: 0' 删除, 改真实累加 (refresh report totals.refreshCount)",
-      "src/lib/kol-sync/refresh-selector.ts MAX_TOTAL_REFRESH 200 → 500",
-      "BL-059 删的 '--no-refresh / --refresh-batch silently ignored' 注释删除/更正",
-      "L1 PASS: lint/tsc/npm test (新增 daily-sync refresh phase mock case)"
+      "src/lib/kol-sync/import.ts KolUpsertPayload 加 emails?: string[] + emailSource?: string",
+      "upsert data (create + update path) 带这两字段; emails 来自 mapper 的 RawKolData.emails, emailSource='business-unlock' 当 mapper.emails 非空时",
+      "primary email 兼容: 现 kol.email 字段不覆盖 (BL-031 bio-regex 残留 6 行保留); 新写入的 KOL 如 mapper.emails=['a@b.com'] 仅写 emails=['a@b.com'], kol.email 留 NULL (下游 outreach 改读 emails 而非 email — 在 F005 outreach 调整)",
+      "单测扩充 ≥3 case: (1) mapper.emails 非空 → emails 写入 + email_source='business-unlock' (2) mapper.emails null → 不写 (3) update existing KOL 时新增 emails 不破坏 kol.email",
+      "L1 PASS"
     ]
   },
   {
     "id": "F004",
-    "title": "单测扩充 + daily-sync e2e mock 覆盖 refresh phase",
+    "title": "UI /kol/[id] + /discovery + /database: emails 显示 + source chip + has-business-email filter",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.0,
-    "status": "done",
+    "estimated_hours": 3.0,
+    "status": "pending",
     "acceptance": [
-      "refresh-selector.test.ts 修复/扩充 ≥3 case: (1) tier sort 排序正确 (2) MAX_TOTAL_REFRESH=500 cap 生效 (3) 空 KOL pool / platform_user_id 全 NULL 返 []",
-      "fetchTieredRefreshIds 测: 返回 '<platform>:<platform_user_id>' 格式 + 跳过 NULL platform_user_id",
-      "daily-sync e2e test (vitest mock dispatcher) 加 ≥2 case: (1) refresh phase 被调用且 import 收到 refreshed data (2) refresh 404/部分失败不阻塞主流程",
-      "若 refresh-selector.test.ts stale (BL-059 后) → 修 import path + mock 签名",
-      "L1 PASS: npm test 含新增 case 全过"
-    ],
-    "done_by": "Kimi_generator",
-    "done_at": "2026-06-04T17:50+0800",
-    "done_note": "新建 refresh-selector.test.ts 8 case (DEFAULT_MAX=500 / pickTieredRefreshIds 排序+dedup+maxTotal cap / 空池 / pickBucketSlice 全覆盖 / fetchTieredRefreshIds 返 '<platform>:<platformUserId>' + 跳过 NULL puid). kol-sync-daily.test.ts +2 e2e (refresh phase 接线 discover→import→refresh→import 真跑 refreshCount>0 + import 收到 refreshed row / refresh 抛错软失败不阻塞 run + errors 记录). L1: tsc=0 / lint 0err3warn / npm test 1423 passed."
+      "src/app/[locale]/(app)/kols/[id]/page.tsx detail 页加 'Contact emails' 段: 列出 emails array, 每个 email 旁边 chip 标 source ('已通过 YouTube 商务邮箱解锁' 绿色 / 'Bio 文本提取' 灰色)",
+      "/discovery + /database 列表加 filter chip 'has business email' (筛 emails 数组非空)",
+      "i18n 5 locale (zh/en/ja/ko/es) 加 keys: emailSource.businessUnlock / emailSource.bioRegex / filter.hasBusinessEmail",
+      "兼容现有 KOL 无 emails 字段: detail 页 fallback 'Email 未公开' placeholder",
+      "Vitest UI 组件单测 ≥2 case (display + filter)",
+      "L1 PASS"
+    ]
   },
   {
     "id": "F005",
-    "title": "audit_log kol.refresh_404_skip event",
-    "executor": "generator",
-    "priority": "medium",
-    "estimated_hours": 1.0,
-    "status": "done",
-    "acceptance": [
-      "ApifyKolSyncAdapter.refresh() 检测到 404 时 (apify-kol.ts:213 已有 catch) 不仅 continue, 也调 audit_log.create",
-      "audit_log action='kol.refresh_404_skip', resource_type='kol', resource_id=null, payload={externalId, platform, reason: 'fork returned 404 — KOL possibly deleted'}",
-      "audit_log 行写入需 tenantId + prisma — 从 dispatcher.runRefresh 调用栈往下传 (新增 opts.tenantId + opts.prisma 或 callback hook 给 adapter.refresh)",
-      "404 不阻塞 batch (沿用现有 continue 行为)",
-      "单测扩充 apify-kol-adapter test: ≥1 case 验 404 → audit_log 写入 + continue",
-      "L1 PASS"
-    ],
-    "done_by": "Kimi_generator",
-    "done_at": "2026-06-04T18:00+0800",
-    "done_note": "threaded Prisma-free onSkip callback: types.ts RefreshSkipInfo + RefreshAdapterOpts + RefreshOpts.onSkip + refresh(externalIds,opts?) 签名; apify-kol refresh 404 catch 调 opts?.onSkip({externalId,platform,reason}) 再 continue; dispatcher.runRefresh 透传 onSkip 给 adapter.refresh; runDaily refresh phase 传 onSkip 写 audit_log action='kol.refresh_404_skip' resourceType=kol resourceId=null payload={externalId,platform,reason} (audit 写失败软 warn 不阻塞). 测试: apify-kol-adapter integration Case 6 验 404→onSkip 调用+continue (6 passed). L1: tsc=0 / lint 0err3warn / npm test 1423 / integration adapter 6 passed."
-  },
-  {
-    "id": "F006",
-    "title": "Staging deploy + platformUserId 回填 + 24h 监控 refresh count + staleness",
+    "title": "Outreach composer 优先级: business-unlock 高亮 + bio-regex tooltip 警告",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "done",
+    "status": "pending",
     "acceptance": [
-      "deploy-staging.yml 触发部署 BL-082 代码到 staging + migrate deploy (platform_user_id 列)",
-      "Staging 跑 platformUserId 回填脚本 (F002) 填存量行",
-      "Staging next-daily-cron 跑后实测: refreshCount > 0 (全平台, staging KOL pool 决定具体值)",
-      "Staging 24h log 监控: 0 daily-sync errors (refresh phase 不破坏 discover/import)",
-      "Staging SQL 抽样: 部分 KOL.lastSyncedAt 在 refresh phase 时段被更新 (验 refresh→import 写入)",
-      "Staging audit_log query: 'kol.refresh_404_skip' 抽样 + 404 比例 ≤5% (验全平台 platformUserId 正确)",
-      "report 入 docs/test-reports/BL-082-staging-monitor.md 或 progress.json session_notes",
+      "src/app/[locale]/(app)/outreach/composer 等路径 (Generator grep 实定位): KOL 选择 dropdown 显示 emails 时, business-unlock 绿色高亮 + 默认选中, bio-regex 灰显 + tooltip '此 email 来自 bio 文本提取, 请二次确认'",
+      "如 KOL 只有 bio-regex email, composer 入口加警告 banner '该 KOL 仅有 bio 提取 email, 投递准确率较低'",
+      "outreach send 路径如 KOL.emails 多个, 默认用 emails[0] (优先 business-unlock 排序后的 primary)",
+      "i18n 5 locale 加 outreach.tooltip.bioRegexWarning / outreach.banner.bioOnlyWarning",
+      "单测 ≥2 case (composer KOL 选择 + send default email)",
       "L1 PASS"
-    ],
-    "done_by": "Kimi_generator",
-    "done_at": "2026-06-04T18:35+0800",
-    "done_note": "staging deploy 9ffee8d (deploy-staging.yml) + platform_user_id 列 applied; F002 backfill 跑 stamped 1859 (YT516/TT1165/IG178), post 2371 行有 platform_user_id; daily-sync refresh phase 实测 totalRefreshed=253 (YT91/TT127/IG35) failedAdapters=0; 404率0% (refreshed==requested 全平台, refresh_404_skip audit=0, ≤5% 达标); refresh→import lastSyncedAt 更新. report docs/test-reports/BL-082-staging-monitor.md. 注: 全量 run 因 enrichment(BL-075) LLM 429 慢, refresh phase 在 enrichment 前已干净完成 (--enrichment-limit=1 取得净测). 24h cron 观察留 F007/cron. prod deploy+backfill 用户手动触发."
+    ]
+  },
+  {
+    "id": "F006",
+    "title": "prod backfill script: 219 个 metadata.raw.emails → kol.emails + email_source='business-unlock'",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 1.5,
+    "status": "pending",
+    "acceptance": [
+      "新建 scripts/kol-emails-backfill.ts: 遍历 prod KOL platform='youtube', WHERE metadata->'raw'->'emails' IS NOT NULL AND jsonb_array_length(metadata->'raw'->'emails')>0 AND kol.emails IS NULL → UPDATE kol.emails = metadata.raw.emails, email_source='business-unlock'",
+      "idempotent: 已填的 kol.emails 不动 (WHERE kol.emails IS NULL)",
+      "dry-run (统计可回填行数) + apply 模式; 纯 DB UPDATE 无 LLM 无 fork 调用",
+      "runBackfill 抽为可测函数; 单测 ≥3 (dry-run 不写 / apply 写 / 已填行跳过)",
+      "Staging 验证: dry-run 预期 N>0, apply 后抽样 ≥3 KOL 验 emails 写入",
+      "Prod 验证 (用户授权后跑): dry-run eligible ≥200 (期望 219+), apply 后 SQL 抽样 ≥5 KOL emails 填充 + email_source='business-unlock'",
+      "L1 PASS"
+    ]
   },
   {
     "id": "F007",
@@ -123,16 +102,12 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "done",
-    "done_by": "Reviewer",
-    "done_at": "2026-06-05T11:12+0800",
-    "done_note": "Reviewer 完成 reverifying。fix-round 1 后 kol-sync-daily refresh-phase 2 个红用例已转绿，Node20 全量 L1 PASS；staging refreshCount=253、404=0%、Playwright smoke PASS；prod 已部署 0d353bd，platform_user_id 回填存在 (YT716/TT1477/IG178)，近1h refresh_404_skip/import_failed=0，近15m last_synced_at 更新 2371 行；generator session note 记录用户授权手动 prod run refreshCount=251 (YT90/TT127/IG34) failedAdapters=0。signoff: docs/test-reports/BL-082-signoff-2026-06-05.md",
+    "status": "pending",
     "acceptance": [
-      "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 mapper/backfill/refresh-selector/daily-sync 单测 (4) npx prisma validate + migration ROLLBACK SQL valid (5) MAX_TOTAL_REFRESH=500 grep 确认仅一处定义",
-      "L2 staging 实测 6 项 PASS: (1) platform_user_id 回填抽样 ≥5 KOL (YT=UC.. / TT·IG=数字) (2) daily cron 跑后 refreshCount 非 0 + 全平台均有 (3) refresh 后 KOL.lastSyncedAt 抽样 ≥3 被更新 (4) audit_log 'kol.refresh_404_skip' 工作 + 404 比例 ≤5% (5) 0 daily-sync errors (6) discover phase 行为不变 (discoverCount/inserted/updated 量级一致)",
-      "Prod 只读核验: 部署+回填后 next-24h 监控 refreshCount 非 0 + 404 比例 ≤5%",
-      "signoff doc docs/test-reports/BL-082-signoff-2026-06-XX.md 含 L1/L2 + 量化数据 + 终签"
-    ],
-    "reviewer_note": "2026-06-05 Reviewer 首轮验收 FAIL。L1 中 tests/unit/kol-sync-daily.test.ts 两个 BL-082 refresh-phase case 红：report.refreshCount 仍为 0、refresh error 未进入 report.errors。定位为测试桩失真：makeRefreshPrisma().tenant.findUnique 返回 null，导致 runDaily() 的 refresh 分支整段被跳过。详见 docs/test-reports/BL-082-verifying-2026-06-05.md"
+      "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 mapper/import/backfill/UI/outreach 单测 (4) npx prisma validate + migration ROLLBACK SQL valid (5) i18n 5 locale 新 key grep 一致 (无 missing)",
+      "L2 staging 实测 6 项 PASS: (1) emails backfill 抽样 ≥5 KOL kol.emails 非空 + email_source='business-unlock' (2) /kol/[id] UI 显示 emails 列表 + source chip 正确 (3) /discovery + /database has-business-email filter 工作 (4) outreach composer business-unlock 高亮 + bio-regex tooltip (5) 0 daily-sync errors (mapper 接 emails 不破 BL-082 refresh) (6) 现有 6 个 kol.email 字段值不变",
+      "Prod 只读核验: backfill 后 SQL 抽样 ≥5 KOL emails 填充率合理 + outreach send 试发 (用户授权下) business-unlock email",
+      "signoff doc docs/test-reports/BL-083-signoff-2026-06-XX.md 含 L1/L2 结果 + 量化数据 (kol.emails 填充率 0.8% → 30%+) + 终签"
+    ]
   }
 ]

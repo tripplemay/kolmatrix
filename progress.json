@@ -1,43 +1,40 @@
 {
-  "status": "done",
-  "user_goal": "BL-082-refresh-selector-rewire — 重接 daily-sync 的 refresh phase, 恢复 BIx-F004-P3 tiered refresh. 6 features F001-F006 (~10h Generator + 1.5h Reviewer). 6/04 用户决定 — 跟进 BL-081 F004 audit (refresh=0 根因=BL-059 删 refresh phase 遗留, 非 bug, Dir A 重接是 ~30-50 LOC 接线). 4 子决策 lock: tiered selector 保留 / MAX_TOTAL_REFRESH 200→500 / sequential discover→import→refresh→import / 404 skip+log (沿用 adapter 现有). O3 fork endpoint 已验 (real handle UC22GlzN_jFaGLhiO-8ZM7Gw → 200). 预期 KOL pool staleness 长期保持 <7d + data-quality 治本. 关联 docs/specs/BL-082-refresh-selector-rewire-spec.md.",
+  "status": "planning",
+  "user_goal": "BL-083-yt-business-email-mapper — KOL data 治理: KOLMatrix mapper 接 fork emails 字段 + UI 显示 + outreach 优先级 + email_source 字段区分. 7 features F001-F007 (~12h Generator + 1.5h Reviewer). 6/04 用户分享 fork 端 5/8 yt-business-email design doc 触发 Planner audit 发现 prod 219/722 YT KOL business email 已通过 fork Apify actor 解锁但 KOLMatrix mapper 完全漏接 (kol.email 字段仅 6 个 = 0.8% vs 实际可拾 30%+). 1 子决策 lock: A 轻量 KOLMatrix-only (mapper+UI+outreach+backfill), 不做 B 主动 trigger (fork 端已自动入队解锁, 剩 278 个未解锁多半是 actor NO_EMAIL 非排队中). fork 端 APIFY_API_TOKEN 6/05 已配 dry-run 200 验证. 关联 docs/specs/BL-083-yt-business-email-mapper-spec.md.",
   "total_features": 7,
-  "completed_features": 7,
-  "fix_rounds": 1,
-  "current_sprint": "BL-082-refresh-selector-rewire",
-  "last_updated": "2026-06-05T11:20+0800",
+  "completed_features": 0,
+  "fix_rounds": 0,
+  "current_sprint": "BL-083-yt-business-email-mapper",
+  "last_updated": "2026-06-05T11:25+0800",
   "reference_docs": [
-    "docs/specs/BL-082-refresh-selector-rewire-spec.md",
-    "docs/audits/BL-081-refresh-selector-audit.md",
-    "scripts/kol-sync-daily.ts",
-    "src/lib/kol-sync/refresh-selector.ts",
-    "src/lib/kol-sync/dispatcher.ts",
+    "docs/specs/BL-083-yt-business-email-mapper-spec.md",
     "src/lib/kol-sync/adapters/apify-kol.ts",
-    "docs/dev/kol-sync-runbook.md"
+    "src/lib/kol-sync/types.ts",
+    "src/lib/kol-sync/import.ts",
+    "prisma/schema.prisma",
+    "src/app/[locale]/(app)/kols/[id]/page.tsx",
+    "src/app/[locale]/(app)/outreach",
+    "messages/zh.json",
+    "messages/en.json",
+    "messages/ja.json",
+    "messages/ko.json",
+    "messages/es.json"
   ],
   "docs": {
-    "spec": "docs/specs/BL-082-refresh-selector-rewire-spec.md",
-    "audit": "docs/audits/BL-081-refresh-selector-audit.md",
+    "spec": "docs/specs/BL-083-yt-business-email-mapper-spec.md",
+    "audit": null,
     "test_cases": null,
-    "signoff": "docs/test-reports/BL-082-signoff-2026-06-05.md",
-    "framework_reviewed": true
+    "signoff": null,
+    "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": null,
-  "fix_rounds_history": [
-    {
-      "round": 1,
-      "outcome": "fail",
-      "summary": "F007 首轮 L1: tests/unit/kol-sync-daily.test.ts 2 个 BL-082 refresh-phase case 红 (report.refreshCount=0, refresh error 未进 report.errors).",
-      "report": "docs/test-reports/BL-082-verifying-2026-06-05.md",
-      "generator_fix_result": "根因实为测试夹具 date-dependent flaky (非 tenant null — tenant.findUnique 实返 {id}): pickTieredRefreshIds 按 dayOfYear%3 分桶, makeRefreshPrisma 只塞 1 个候选行 → 该行仅 1/3 天落入当日桶, 6/04 我跑时桶命中(过) 6/05 Reviewer 跑时桶空(红, 日志 '0 ids on rota'). 修复: makeRefreshPrisma 改返 6 行同 platformUserId=UCabc → 当日 tier1 桶恒非空 + dedup 成单 id 'youtube:UCabc', date-independent. Node20 实测: npx vitest kol-sync-daily 12 passed (确定性), npm test 1423 passed, tsc=0, lint 0err3warn. 纯测试夹具修复, 0 产品代码改动 (runDaily refresh phase 逻辑正确, staging 旁证 refreshCount=253/0%404 已证)."
-    }
-  ],
-  "generator_handoff": "[2026-06-04 Kimi_generator → Codex F007] BL-082 building→verifying, F001-F006 generator 代码全交付, main CI 全绿 @ 9ffee8d. 全平台 re-scope (用户 6/04 决定 B): F001 platformUserId 列+mapper+import / F002 回填脚本 / F003 runDaily refresh phase (<platform>:<platformUserId>, MAX 500) / F004 refresh-selector+daily-sync 测试 / F005 audit kol.refresh_404_skip / F006 staging 部署+回填+实测. **Staging 已部署 9ffee8d + platform_user_id 回填 1859 + refresh phase 实测 totalRefreshed=253 (YT91/TT127/IG35) 404率0% failedAdapters=0** (deploy-gate 满足). L1 可跑: lint 0err3warn / tsc=0 / npm test 1423 unit / integration apify-kol-adapter 6 (含 onSkip Case6) / refresh-selector 8 / daily-sync refresh e2e 2. Codex L2 可验: staging 抽样 platform_user_id (YT=UC../TT·IG=数字) / refreshCount>0 全平台 / lastSyncedAt 更新 / refresh_404_skip 工作+404率≤5% / discover 行为不变. Prod PENDING (非 generator 域): prod deploy + 回填 + 24h 监控需用户手动触发 deploy-prod.yml (签收后) 然后 SSH 跑 kol-platform-user-id-backfill. report: docs/test-reports/BL-082-staging-monitor.md. 注 enrichment(BL-075) LLM 429 慢与 refresh 无关.",
+  "fix_rounds_history": [],
+  "generator_handoff": null,
   "session_notes": {
-    "Kimi_planner": "[2026-06-05 11:20 BJT Planner Kimi BL-082 done 收尾] BL-082 完整闭环 7/7 features (re-scoped 6→7 全平台 platformUserId 后), fix_rounds=1 (F007 verifying FAIL → Generator F003 实根因诊断 (测试夹具 date-dependent flaky, 非 product bug, pickTieredRefreshIds dayOfYear%3 桶 + 单候选行 1/3 概率落空) → 修 makeRefreshPrisma 返 6 行同 puid → 桶恒非空 date-independent → reverifying PASS). 实测达标: staging refreshCount=253/0%404, prod refreshCount=251 (YT90/TT127/IG34) failedAdapters=0 404率=0%. 收尾 5 项: (1) Reviewer signoff @ 11:12 CST 写 BL-082-signoff-2026-06-05.md (本 commit 代 push, Reviewer 本地工作树写完未 push); (2) framework_reviewed=true (proposed-learnings.md 末有 [2026-06-05] 1 条新 sediment 待用户 ack 留独立 framework batch); (3) project-status.md Reviewer 已覆盖到 BL-082 done; (4) Planner session_notes wrap-up 本条覆盖; (5) tag bl082-done 已打. fix_rounds=1 的事件价值: 沉淀 'date-dependent test 夹具坑'+'pickTieredRefreshIds dayOfYear%3 分桶语义' 适合下批次 framework sediment. 下一批次切 BL-083 (YT business email mapper 接, 用户已 ack, backlog top).",
-    "Kimi_generator": "[2026-06-05 11:00 CST Generator Kimi BL-082 fix-round 1] Codex F007 verifying FAIL: kol-sync-daily.test.ts 2 refresh-phase case 红. 实根因=测试夹具 date-dependent flaky (Reviewer 诊断 'tenant null' 略偏, 实际 tenant.findUnique 返 {id}; 真因是 pickTieredRefreshIds 按 dayOfYear%3 分桶, 单候选行仅 1/3 天入当日桶). 修复 makeRefreshPrisma 返 6 行同 puid=UCabc → 桶恒非空 date-independent. 0 产品代码改动. L1 Node20 全绿 (npm test 1423 / tsc=0 / lint 0err). status→reverifying 交 Codex 复验. (refresh-selector.test.ts 已用 12 行+格式不变式, 无此 flaky.) [2026-06-05 prod backfill done] prod 已部署 0d353bd (= main, platform_user_id 列在) — Reviewer 上轮 note 说 prod 6788225 已过时, 之后 prod 被部署. 我跑 prod kol-platform-user-id-backfill: stamped 2371 (YT716/TT1477/IG178), filled 2371/2383 (12 未填=从未 sync 行), 抽样 YT=UC% 716/716 / TT 数字 1477/1477 / IG 数字 178/178 全对, 幂等(WHERE platform_user_id IS NULL). prod refresh phase 现有输入. 下一步 (用户计划): 等下次 daily cron (08:30 BJ) 跑 refresh phase → Codex 复验 prod refreshCount>0/全平台/404率≤5% → signoff. 可选: 手动跑 prod daily-sync 取即时 refresh 证据 (待用户定). status 仍 reverifying (prod refresh 验收+signoff 属 Codex). [2026-06-05 用户选 B prod 即时复验] 手动跑 prod daily-sync --enrichment-limit=1, refresh phase 实测: totalRefreshed=251 (YT requested90/refreshed90, TT 127/127, IG 34/34), failedAdapters=0. **prod-side acceptance 全达标: refreshCount=251>0 ✓ / 全平台均有 ✓ / 404率=0% (refreshed==requested 全平台 + refresh_404_skip audit=0) ≤5% ✓**. 旁证: 近 15min 2371 KOL last_synced 更新 (refresh→import). prod 证据已就绪交 Codex 写 signoff 终签 (我 generator 不写 signoff). enrichment(BL-075) LLM 429 慢与 refresh 无关 (refresh 在 enrichment 前 3s 内干净完成).",
-    "Reviewer": "[2026-06-05 11:12 CST Reviewer BL-082 F007 signoff] BL-082 复验已完成并终签。L1：Node v20.20.2 下 prisma generate/validate、tsc、lint(0 errors, 3 既有 unused warnings)、npm test(194 files / 1423 tests)、validate-rollback-sql 全 PASS；专项 kol-sync-daily refresh-phase 用例 12/12 PASS，确认 fix-round 1 已消除 date-dependent flaky。L2 staging：/api/health healthy；Playwright marketer.setup、/match card grid、filter sidebar PASS；staging monitor 证据成立：refreshCount=253，YT91/TT127/IG35，全平台 requested==refreshed，404率=0%，lastSyncedAt 更新。L2 prod 只读：/opt/kolmatrix HEAD=0d353bd (= main)；health healthy；platform_user_id 非空 YT716/TT1477/IG178；近1h refresh_404_skip=0、import_failed=0；近15m last_synced_at 更新 2371 行。结合 generator 会话记录的用户授权手动 prod daily-sync 结果，可确认 refreshCount=251 (YT90/TT127/IG34)、failedAdapters=0、404率=0%，prod acceptance 达标。signoff 已写 docs/test-reports/BL-082-signoff-2026-06-05.md，状态收口 done。",
+    "Kimi_planner": "[2026-06-05 11:25 BJT Planner Kimi BL-083 planning done] BL-082 done 收尾 + 切 BL-083 (用户 6/05 ack 启). spec 7 features 完整起草 (从 backlog 雏形扩展). A1 1 子决策 lock: A 路径 KOLMatrix-only (mapper+UI+outreach+backfill), 不做 B (fork 已自动入队解锁, 手动 trigger 对剩 278 NO_EMAIL KOL 无价值). 依赖: BL-082 done ✅ (bl082-done tag @ 133bbe0) + fork APIFY_API_TOKEN 6/05 已配 ✅ + fork 已 ship 219 个 business email 解锁 ✅. 下一步: 用户审 spec 后 planning → building, Generator 启 F001 mapper.",
+    "Kimi_generator": null,
+    "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
   },
