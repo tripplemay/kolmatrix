@@ -3,7 +3,7 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-084-ai-match-panel PLANNING→building (0/9, fix_rounds=0) — /match?campaignId=X 重塑 AI 推荐三列工作台
+## 🚧 BL-084-ai-match-panel BUILDING (0/9, fix_rounds=0) — /match?campaignId=X 重塑 AI 推荐三列工作台
 - A0 audit (6/05): 主面板 runMatchSearch 完全不读 campaignId (装饰参数), AI Sidebar 输出 3 条 workflow 建议非 KOL 推荐, 严重 UX 错位; B7a-F002 runSmartMatch 已 ship 完整 embedding cosine + KOL 99.5% + Product JIT 可复用
 - A1 8 子决策 lock: 推荐源 B (embedding 召回 200 + LLM 重排 30) / Toggle 切换 / 数据模型 A (kol_campaign + suggestion_status enum 4 态) / embedding 无需 prep / matchReason 短文本 / Accept 一键+5s Undo / Swap drag / Toggle 默认 campaignId 有→AI
 - 9 features: F001 runSmartMatch 升级 / F002 LLM 重排 / F003 schema 4 字段 / F004 server action 编排+24h cache / F005 accept/skip/swap actions / F006 UI 三列 / F007 toggle 路由 / F008 i18n / F009 Codex
