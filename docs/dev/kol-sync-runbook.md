@@ -194,6 +194,47 @@ apify-kol-service（`source: 'apify-kol'`，guang-tech/apify fork 部署
 
 ---
 
+## YT business email mapper（BL-083，2026-06-05）
+
+fork 端 `dataovercoffee/Youtube-Channel-Business-Email-Scraper` Apify actor
+（5/8 ship）自动解锁 YouTube KOL 的商务邮箱，写入 fork item 的
+`emails: string[]` 字段。BL-083 前 KOLMatrix mapper 完全漏接 —— 219/722
+YT KOL 已解锁的 business email 全部只躺在 `metadata.raw.emails`（业务逻辑
+读不到），`kol.email` 主字段仅 6 行（0.8%）。
+
+**数据流（mapper 接 emails）：**
+
+| 层 | 文件 | 行为 |
+|---|---|---|
+| mapper | `src/lib/kol-sync/adapters/apify-kol.ts` `sanitizeForkEmails()` | fork `item.emails` → `RawKolData.emails`（非 array / 含 non-string → null + `console.warn`，不阻塞 batch）|
+| schema | `kol.emails JSONB` + 复用 `kol.email_source VARCHAR(20)` | migration `20260605000000_bl_083_add_emails_jsonb`（ROLLBACK: `DROP COLUMN emails`）|
+| import | `src/lib/kol-sync/import.ts` | upsert 写 `emails` + `email_source='business-unlock'`，仅当非空（refresh 无 email 不 clobber）；永不写 legacy `kol.email` |
+| UI | `/kols/[id]` `KolContactEmails` + `/match` filter `hasBusinessEmail` | 显示 emails + source chip（green=business-unlock / grey=bio-regex）|
+| outreach | `/reach` `OutreachComposer` | send 默认 `emails[0]`；business-unlock 高亮，bio-regex tooltip 警告 |
+
+**一次性回填脚本（F006，纯 DB-only，无 fork/LLM 调用）：**
+
+```bash
+# dry-run（统计可回填行数，不写库）
+ssh tripplezhou@34.180.93.185 'cd /opt/kolmatrix && npx tsx scripts/kol-emails-backfill.ts --dry-run'
+
+# apply（把 metadata.raw.emails 拍到 kol.emails + email_source='business-unlock'）
+ssh tripplezhou@34.180.93.185 'cd /opt/kolmatrix && npx tsx scripts/kol-emails-backfill.ts'
+```
+
+- 谓词 `EMAILS_BACKFILL_WHERE`：`platform='youtube'` + `metadata->'raw'->'emails'`
+  为非空 JSON array + `emails IS NULL`（幂等 —— 重跑只补未填行，不覆盖已填值，
+  不碰 6 行 legacy `kol.email`）
+- 默认 tenant slug `demo`（`--tenant=<uuid>` 覆盖）；预期 prod eligible ≥200（实际 ~219）
+- 持续增量：新/refresh 的 KOL 由 F001 mapper 自动接收，无需再回填
+
+**A1 决策（6/04 lock）：** 走 A 路径（KOLMatrix-only，mapper+UI+outreach+backfill），
+**不做** B 主动 trigger —— fork post-processing 已自动入队解锁，剩 ~278 未解锁
+多半是 actor `NO_EMAIL`（YT 后台没配），手动按钮无效。TT/IG business email
+out-of-scope（fork 端无对应 actor）。
+
+---
+
 ## apify-kol-service fork 同步流程（5/7 fork @ guang-tech/apify，2026-05-09 lock）
 
 apify-kol-service 是独立部署的 Node 服务，KOLMatrix 通过 HTTP 集成。
