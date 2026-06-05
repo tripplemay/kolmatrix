@@ -3,12 +3,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-083-yt-business-email-mapper BUILDING (0/7, fix_rounds=0) — KOL data 治理: YT business email mapper 接 + UI + outreach 优先
-- A0 audit (6/04): fork 已自动解锁 219/722 YT KOL business email (Apify actor + 5/8 ship), KOLMatrix mapper 完全漏接 (kol.email 仅 6=0.8% vs 实际可拾 30%+)
-- A1 lock (6/04): A 轻量 KOLMatrix-only (mapper+UI+outreach+backfill), 不做 B 主动 trigger (fork 已 auto-unlock, 剩 278 个未解锁多半 NO_EMAIL 非排队)
-- 7 features: F001 mapper / F002 schema (emails JSONB + email_source) / F003 import upsert / F004 UI 3 页+filter / F005 outreach 优先级 / F006 prod backfill 219 / F007 Codex
-- 依赖: BL-082 done ✅ + fork APIFY_API_TOKEN 已配 ✅ (dry-run 200 验证)
-- 关联 docs/specs/BL-083-yt-business-email-mapper-spec.md
+## 🔍 BL-083-yt-business-email-mapper VERIFYING (6/7 generator done, fix_rounds=0) — 交 Codex F007 L1+L2+signoff
+- F001 mapper 接 emails / F002 schema (emails JSONB + 复用 email_source) / F003 import upsert / F004 UI detail+/match filter / F005 outreach 优先级 / F006 backfill ✅ 全 done
+- staging deployed @ eb584dd (=main HEAD); CI green (E2E baseline en-kols-detail.png 经 update-visual-baselines workflow regen 修复)
+- staging F006 backfill apply 219 行 (idempotent, business-unlock + JSONB array 正确, legacy email 12 行未动)
+- L1: tsc=0 / lint 0err / 1463 tests; Codex 待 L2 staging UI 实测 + prod 核验 + signoff
+- 关联 docs/specs/BL-083-yt-business-email-mapper-spec.md, generator_handoff 详见 progress.json
 ## ✅ BL-082-refresh-selector-rewire DONE (7/7, fix_rounds=1, tag bl082-done @ 133bbe0)
 - prod refreshCount=251 (YT90/TT127/IG34) failedAdapters=0 404率=0% / staging refreshCount=253/0%404
 - signoff: `docs/test-reports/BL-082-signoff-2026-06-05.md` (Reviewer 11:12 CST)
