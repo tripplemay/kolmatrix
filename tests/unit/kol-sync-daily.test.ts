@@ -208,19 +208,27 @@ describe("runDaily · failure isolation", () => {
 });
 
 describe("runDaily · refresh phase (BL-082-F003)", () => {
-  // Fake prisma whose kol.findMany returns a tiered-refresh candidate only
+  // Fake prisma whose kol.findMany returns tiered-refresh candidates only
   // for the refresh-selector's top500 query (the one selecting both id +
   // platformUserId); every other findMany (embed-hook touched lookup,
   // enrichment scan, tier3/flagged) returns [] so those phases no-op.
+  //
+  // NOTE: pickTieredRefreshIds slices tier1 into `dayOfYear % 3` buckets,
+  // so a single candidate only lands in today's bucket 1 day in 3 (the
+  // flake the first cut of this test had). We return several rows that all
+  // share platformUserId="UCabc" → today's bucket is always non-empty and
+  // dedupes to the single id "youtube:UCabc" regardless of the date.
   function makeRefreshPrisma(upserts: string[]) {
+    const top500 = Array.from({ length: 6 }, (_, i) => ({
+      id: `k${i}`,
+      platformUserId: "UCabc",
+    }));
     return {
       tenant: { findUnique: vi.fn(async () => ({ id: "tenant-1" })) },
       kol: {
         findMany: vi.fn(
           async (args: { select?: { id?: boolean; platformUserId?: boolean } }) =>
-            args?.select?.id && args?.select?.platformUserId
-              ? [{ id: "k1", platformUserId: "UCabc" }]
-              : [],
+            args?.select?.id && args?.select?.platformUserId ? top500 : [],
         ),
         findUnique: vi.fn(async () => null),
         upsert: vi.fn(

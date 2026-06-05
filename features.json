@@ -129,6 +129,7 @@
       "L2 staging 实测 6 项 PASS: (1) platform_user_id 回填抽样 ≥5 KOL (YT=UC.. / TT·IG=数字) (2) daily cron 跑后 refreshCount 非 0 + 全平台均有 (3) refresh 后 KOL.lastSyncedAt 抽样 ≥3 被更新 (4) audit_log 'kol.refresh_404_skip' 工作 + 404 比例 ≤5% (5) 0 daily-sync errors (6) discover phase 行为不变 (discoverCount/inserted/updated 量级一致)",
       "Prod 只读核验: 部署+回填后 next-24h 监控 refreshCount 非 0 + 404 比例 ≤5%",
       "signoff doc docs/test-reports/BL-082-signoff-2026-06-XX.md 含 L1/L2 + 量化数据 + 终签"
-    ]
+    ],
+    "reviewer_note": "2026-06-05 Reviewer 首轮验收 FAIL。L1 中 tests/unit/kol-sync-daily.test.ts 两个 BL-082 refresh-phase case 红：report.refreshCount 仍为 0、refresh error 未进入 report.errors。定位为测试桩失真：makeRefreshPrisma().tenant.findUnique 返回 null，导致 runDaily() 的 refresh 分支整段被跳过。详见 docs/test-reports/BL-082-verifying-2026-06-05.md"
   }
 ]

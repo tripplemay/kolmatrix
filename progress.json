@@ -1,11 +1,11 @@
 {
-  "status": "verifying",
+  "status": "reverifying",
   "user_goal": "BL-082-refresh-selector-rewire — 重接 daily-sync 的 refresh phase, 恢复 BIx-F004-P3 tiered refresh. 6 features F001-F006 (~10h Generator + 1.5h Reviewer). 6/04 用户决定 — 跟进 BL-081 F004 audit (refresh=0 根因=BL-059 删 refresh phase 遗留, 非 bug, Dir A 重接是 ~30-50 LOC 接线). 4 子决策 lock: tiered selector 保留 / MAX_TOTAL_REFRESH 200→500 / sequential discover→import→refresh→import / 404 skip+log (沿用 adapter 现有). O3 fork endpoint 已验 (real handle UC22GlzN_jFaGLhiO-8ZM7Gw → 200). 预期 KOL pool staleness 长期保持 <7d + data-quality 治本. 关联 docs/specs/BL-082-refresh-selector-rewire-spec.md.",
   "total_features": 7,
   "completed_features": 6,
-  "fix_rounds": 0,
+  "fix_rounds": 1,
   "current_sprint": "BL-082-refresh-selector-rewire",
-  "last_updated": "2026-06-04T18:35+0800",
+  "last_updated": "2026-06-05T11:00+0800",
   "reference_docs": [
     "docs/specs/BL-082-refresh-selector-rewire-spec.md",
     "docs/audits/BL-081-refresh-selector-audit.md",
@@ -23,13 +23,34 @@
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
-  "fix_rounds_history": [],
+  "evaluator_feedback": {
+    "summary": "BL-082 首轮验收失败。不是环境噪音，而是 BL-082 新增的 daily-sync refresh-phase 自动化用例为红，当前不能签收。",
+    "pass_count": 4,
+    "partial_count": 0,
+    "fail_count": 1,
+    "issues": [
+      {
+        "feature_id": "F007",
+        "result": "FAIL",
+        "description": "L1 的 tests/unit/kol-sync-daily.test.ts 中 2 个 BL-082 refresh-phase case 失败：happy-path case 断言 report.refreshCount > 0 实际为 0；failure case 断言 report.errors 含 refresh 实际为 false。根因是测试桩失真：makeRefreshPrisma().tenant.findUnique 返回 null，导致 runDaily() 中 refresh 分支整段跳过，三平台日志均为 '0 ids on rota'。",
+        "steps_to_reproduce": "1. source ~/.nvm/nvm.sh && nvm use\n2. npm test\n3. 观察 tests/unit/kol-sync-daily.test.ts 两个 runDaily · refresh phase case 失败；日志显示 refresh youtube/tiktok/instagram 均 0 ids on rota。"
+      }
+    ]
+  },
+  "fix_rounds_history": [
+    {
+      "round": 1,
+      "outcome": "fail",
+      "summary": "F007 首轮 L1: tests/unit/kol-sync-daily.test.ts 2 个 BL-082 refresh-phase case 红 (report.refreshCount=0, refresh error 未进 report.errors).",
+      "report": "docs/test-reports/BL-082-verifying-2026-06-05.md",
+      "generator_fix_result": "根因实为测试夹具 date-dependent flaky (非 tenant null — tenant.findUnique 实返 {id}): pickTieredRefreshIds 按 dayOfYear%3 分桶, makeRefreshPrisma 只塞 1 个候选行 → 该行仅 1/3 天落入当日桶, 6/04 我跑时桶命中(过) 6/05 Reviewer 跑时桶空(红, 日志 '0 ids on rota'). 修复: makeRefreshPrisma 改返 6 行同 platformUserId=UCabc → 当日 tier1 桶恒非空 + dedup 成单 id 'youtube:UCabc', date-independent. Node20 实测: npx vitest kol-sync-daily 12 passed (确定性), npm test 1423 passed, tsc=0, lint 0err3warn. 纯测试夹具修复, 0 产品代码改动 (runDaily refresh phase 逻辑正确, staging 旁证 refreshCount=253/0%404 已证)."
+    }
+  ],
   "generator_handoff": "[2026-06-04 Kimi_generator → Codex F007] BL-082 building→verifying, F001-F006 generator 代码全交付, main CI 全绿 @ 9ffee8d. 全平台 re-scope (用户 6/04 决定 B): F001 platformUserId 列+mapper+import / F002 回填脚本 / F003 runDaily refresh phase (<platform>:<platformUserId>, MAX 500) / F004 refresh-selector+daily-sync 测试 / F005 audit kol.refresh_404_skip / F006 staging 部署+回填+实测. **Staging 已部署 9ffee8d + platform_user_id 回填 1859 + refresh phase 实测 totalRefreshed=253 (YT91/TT127/IG35) 404率0% failedAdapters=0** (deploy-gate 满足). L1 可跑: lint 0err3warn / tsc=0 / npm test 1423 unit / integration apify-kol-adapter 6 (含 onSkip Case6) / refresh-selector 8 / daily-sync refresh e2e 2. Codex L2 可验: staging 抽样 platform_user_id (YT=UC../TT·IG=数字) / refreshCount>0 全平台 / lastSyncedAt 更新 / refresh_404_skip 工作+404率≤5% / discover 行为不变. Prod PENDING (非 generator 域): prod deploy + 回填 + 24h 监控需用户手动触发 deploy-prod.yml (签收后) 然后 SSH 跑 kol-platform-user-id-backfill. report: docs/test-reports/BL-082-staging-monitor.md. 注 enrichment(BL-075) LLM 429 慢与 refresh 无关.",
   "session_notes": {
     "Kimi_planner": "[2026-06-04 16:50 BJT Planner Kimi BL-082 planning done] BL-081 done 收尾 + 用户选 Dir A refresh-selector 重接为下一批次. O3 pre-flight 已跑 (real channel handle UC22GlzN_jFaGLhiO-8ZM7Gw → HTTP 200 完整 KOL object, 2848 bytes), 确认 fork endpoint 可用. 4 子决策 lock (tiered selector 保留 / MAX 500/天 / sequential / 404 skip+log). 6 features spec done. 下一步: 用户审 spec 后 planning → building, Generator 启 F001.",
-    "Kimi_generator": "[2026-06-04 17:20 BJT Generator Kimi BL-082 全平台 re-scope] F001 开工前实测 prod fork endpoint 发现 A1 '只接线' 前提对 TT/IG 不成立: fork /kol/<platform>/<platformUserId> 三平台均 200, 但 platformUserId 仅 YT 凑巧=handle, TT/IG 是数字 id 且 mapper 丢弃; fetchTieredRefreshIds 原返 external_id (数字, 0/2383 含 ':') → parseRefreshId 全 null → refresh 全 404. 用户决定 B: 扩全平台 + 授权 Generator 改 spec/features. features 6→7 (新增 F001 platformUserId 存储 schema/mapper/import + F002 回填; 原接线挪 F003). spec 加 §1.5 re-scope. 依赖序 F001→F002→F003→...→F007. 下一步: 实现 F001 (platform_user_id 列 + migration ROLLBACK + mapper 持久化 item.platformUserId + import upsert + mapper 单测).",
-    "Reviewer": null,
+    "Kimi_generator": "[2026-06-05 11:00 CST Generator Kimi BL-082 fix-round 1] Codex F007 verifying FAIL: kol-sync-daily.test.ts 2 refresh-phase case 红. 实根因=测试夹具 date-dependent flaky (Reviewer 诊断 'tenant null' 略偏, 实际 tenant.findUnique 返 {id}; 真因是 pickTieredRefreshIds 按 dayOfYear%3 分桶, 单候选行仅 1/3 天入当日桶). 修复 makeRefreshPrisma 返 6 行同 puid=UCabc → 桶恒非空 date-independent. 0 产品代码改动. L1 Node20 全绿 (npm test 1423 / tsc=0 / lint 0err). status→reverifying 交 Codex 复验. (refresh-selector.test.ts 已用 12 行+格式不变式, 无此 flaky.)",
+    "Reviewer": "[2026-06-05 10:33 CST Reviewer BL-082 F007 verifying failed] 已完成首轮 L1。按 evaluator 规则先从本机 node v25.7.0 切到 .nvmrc=20 (v20.20.2)。结果：npx prisma generate / validate / tsc 全 PASS；npm run lint PASS (0 errors, 3 既有 unused warnings, soft-watch)。但 npm test FAIL：194 files 中 193 pass，1423 tests 中 1421 pass，唯一失败文件 tests/unit/kol-sync-daily.test.ts，恰好是 BL-082 新增的 2 个 refresh-phase case。失败表现：report.refreshCount 仍为 0、report.errors 不含 refresh。读码定位到测试桩失真而非环境问题：scripts/kol-sync-daily.ts refresh phase 先查 deps.prisma.tenant.findUnique({slug})，而 tests/unit/kol-sync-daily.test.ts 的 makeRefreshPrisma() 把 tenant.findUnique 固定返回 null，导致 if (tenant) {...refresh...} 整段被跳过，所以三平台日志均为 '0 ids on rota'。这意味着 F004/F007 的 L1 acceptance 当前不成立，不能签收。已写 docs/test-reports/BL-082-verifying-2026-06-05.md，并将 progress.status 切到 fixing，等待 Generator 修测试夹具/桩后再进入 reverifying。",
     "johnsong_planner": null,
     "johnsong_generator": null
   },
