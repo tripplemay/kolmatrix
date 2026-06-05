@@ -9,7 +9,10 @@
  */
 import { describe, expect, it, vi } from "vitest";
 
-import { mapApifyKolItemToRawKolData } from "../adapters/apify-kol";
+import {
+  mapApifyKolItemToRawKolData,
+  sanitizeForkEmails,
+} from "../adapters/apify-kol";
 import type { ApifyKolItem } from "../../apify-kol/schemas";
 
 const FROZEN_NOW = () => "2026-06-01T00:00:00.000Z";
@@ -166,5 +169,51 @@ describe("mapApifyKolItemToRawKolData — fork business emails (BL-083-F001)", (
     // the mapper only ever fills the new emails[] array.
     expect(mapped).not.toHaveProperty("email");
     expect(mapped?.emails).toEqual(["a@b.com"]);
+  });
+});
+
+// BL-083-F001 fix-round 1 — direct unit coverage of the exported
+// `sanitizeForkEmails()` helper. The mapper-level cases above exercise it
+// transitively, but the Reviewer's verifying round flagged the absence of
+// tests naming the function itself; these pin its contract in isolation
+// (per features.json F001 acceptance "单测 ≥4 case").
+describe("sanitizeForkEmails (BL-083-F001)", () => {
+  const EXT = "youtube:UC_test";
+
+  it("(1) keeps a single valid fork email verbatim", () => {
+    expect(sanitizeForkEmails(["a@b.com"], EXT)).toEqual(["a@b.com"]);
+  });
+
+  it("(2) preserves a multi-email array in order", () => {
+    expect(
+      sanitizeForkEmails(["a@b.com", "Chandler@badmoontalent.com"], EXT)
+    ).toEqual(["a@b.com", "Chandler@badmoontalent.com"]);
+  });
+
+  it("(3) returns null (no warn) for undefined / null", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    expect(sanitizeForkEmails(undefined, EXT)).toBeNull();
+    expect(sanitizeForkEmails(null, EXT)).toBeNull();
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it("(4) returns null + warns when the array contains a non-string element", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    expect(sanitizeForkEmails(["a@b.com", 42], EXT)).toBeNull();
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
+  });
+
+  it("(5) returns null + warns when the value is not an array", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    expect(sanitizeForkEmails("a@b.com", EXT)).toBeNull();
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
+  });
+
+  it("(6) trims entries and drops blanks; an all-blank array yields null", () => {
+    expect(sanitizeForkEmails(["  a@b.com  ", ""], EXT)).toEqual(["a@b.com"]);
+    expect(sanitizeForkEmails(["  ", ""], EXT)).toBeNull();
   });
 });

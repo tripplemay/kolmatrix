@@ -3,7 +3,8 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔍 BL-083-yt-business-email-mapper VERIFYING (6/7 generator done, fix_rounds=0) — 交 Codex F007 L1+L2+signoff
+## 🔁 BL-083-yt-business-email-mapper REVERIFYING (6/7 generator done, fix_rounds=1) — F001 PARTIAL 已修, 交 Codex 复验+signoff
+- fix-round 1: F001 PARTIAL (sanitizeForkEmails 缺直测, Reviewer grep tests/ 未命中 colocated __tests__) → 补 6 直测 case + 显式 import, 1469 tests
 - F001 mapper 接 emails / F002 schema (emails JSONB + 复用 email_source) / F003 import upsert / F004 UI detail+/match filter / F005 outreach 优先级 / F006 backfill ✅ 全 done
 - staging deployed @ eb584dd (=main HEAD); CI green (E2E baseline en-kols-detail.png 经 update-visual-baselines workflow regen 修复)
 - staging + **PROD 均已部署 @ 96ca150** (用户 6/05 授权 prod deploy run 26995519849); backfill apply staging 219 + **prod 219 行** (幂等)
