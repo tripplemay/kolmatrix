@@ -205,6 +205,59 @@ export async function reAddToSuggested(
 }
 
 /**
+ * Remove an accepted (or swap_pool) KOL from the campaign entirely:
+ * delete its kol_campaign row so it leaves the column and becomes
+ * eligible for future suggestions again. Drives the F006 accepted-column
+ * "Remove" button.
+ */
+export async function removeKolFromCampaign(
+  kolId: string,
+  campaignId: string,
+): Promise<ReAddActionResult> {
+  const actor = await authActor();
+  if (!actor) return { ok: false, error: "unauthorized" };
+  if (!UUID_RE.test(kolId) || !UUID_RE.test(campaignId)) {
+    return { ok: false, error: "validation_failed" };
+  }
+
+  try {
+    const removed = await withTenant(actor.tenantId, async (tx) => {
+      const res = await tx.kolCampaign.deleteMany({
+        where: {
+          tenantId: actor.tenantId,
+          kolId,
+          campaignId,
+          suggestionStatus: { in: ["accepted", "swap_pool"] },
+        },
+      });
+      if (res.count === 0) return false;
+      await tx.auditLog.create({
+        data: {
+          tenantId: actor.tenantId,
+          actorUserId: actor.userId,
+          action: UNDONE_ACTION,
+          resourceType: "kol_campaign",
+          resourceId: null,
+          payload: {
+            removed: true,
+            kolId,
+            campaignId,
+            actorUserId: actor.userId,
+          },
+        },
+      });
+      return true;
+    });
+    if (!removed) return { ok: false, error: "not_found" };
+    await invalidateCampaignSuggestionsCache(actor.tenantId, campaignId);
+    return { ok: true };
+  } catch (err) {
+    console.error("[suggestion-actions] remove failed:", err);
+    return { ok: false, error: "internal_error" };
+  }
+}
+
+/**
  * Revert a decision within the 5s undo window: delete the kol_campaign
  * row created by the decision and write an undo audit row. Past the
  * window → `undo_expired`.

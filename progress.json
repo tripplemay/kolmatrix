@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-084-ai-match-panel — /match?campaignId=X 重塑为 AI 推荐三列工作台 (推荐/已接受/候补). 9 features F001-F009 (~17h Generator + 1.5h Reviewer ≈ 2.5 day). 6/05 用户问活动页 '匹配 KOL' 按钮实现+gap, Planner audit 揭示主面板完全不读 campaignId (装饰参数), 用户选 C 重型方案 + 8 子决策 lock: 推荐源 B (embedding 召回 200 + LLM 重排 30, 沿用 BL-068) / Toggle 切换 (campaign 默认 AI) / 数据模型 A (复用 kol_campaign + suggestion_status enum 4 态) / embedding 无需独立批次 (B7a-F002 runSmartMatch 已 ship + KOL 99.5% + Product JIT) / LLM 含 matchReason 短文本 / Accept 一键+5s Undo / Swap drag 候补列 / Toggle 默认 campaignId 有→AI 无→全池. 月 cost <$1. 关联 docs/specs/BL-084-ai-match-panel-spec.md.",
   "total_features": 9,
-  "completed_features": 5,
+  "completed_features": 7,
   "fix_rounds": 0,
   "current_sprint": "BL-084-ai-match-panel",
-  "last_updated": "2026-06-05T16:35+0800",
+  "last_updated": "2026-06-05T17:05+0800",
   "reference_docs": [
     "docs/specs/BL-084-ai-match-panel-spec.md",
     "src/lib/discovery/smart-match.ts",

@@ -93,7 +93,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "新建 src/app/[locale]/(app)/match/MatchAiPanel.tsx (server component): 三列布局 推荐池(suggested) / 已接受(accepted) / 候补池(swap_pool); 各列从 kol_campaign WHERE suggestion_status=X + getCampaignSuggestions 数据合并",
       "MatchKolCard 升级 (复用现有, 加 Mode='suggested'|'accepted'|'swap'): match badge (0-100, 渐变色 highScore=green/mid=cyan/low=gray), matchReason chip (≤15 词 truncate), 3 按钮 Accept/Skip/Swap (suggested 列) / Remove (accepted 列) / Re-add (swap 列)",
