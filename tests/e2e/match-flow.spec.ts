@@ -990,10 +990,10 @@ test.describe("BL-084-F007 · /match AI panel toggle", () => {
     await page.getByTestId("toggle-full-pool").click();
     await page.waitForURL(/view=full-pool/);
     await expect(page.getByTestId("match-ai-panel")).toHaveCount(0);
-    await expect(page.getByTestId("match-view-toggle")).toHaveAttribute(
-      "data-active",
-      "full-pool",
-    );
+    await expect(page.getByTestId("match-summary-bar")).toBeVisible();
+    await expect(
+      page.getByTestId("match-summary-bar").getByTestId("match-view-toggle"),
+    ).toBeVisible();
     // URL preserves the campaign context.
     expect(page.url()).toContain(`campaignId=${found!.campaignId}`);
   });

@@ -338,10 +338,12 @@ test.describe("Authenticated BM1 visual regression", () => {
     });
   });
 
-  // BL-068-F004 + F007 — /match `?campaignId` mode mounts MatchRefineBar
-  // above the AiSuggestionsSidebar in the right column. The new
-  // `en-match-with-campaign.png` baseline captures the bar + sidebar
-  // chrome so a regression in either surface trips the gate.
+  // BL-068-F004 + F007 — keep this baseline pinned to the legacy
+  // full-pool chrome (`MatchRefineBar` + `AiSuggestionsSidebar`) even
+  // though BL-084 changed bare `?campaignId=` to default into the AI
+  // panel. Appending `view=full-pool` preserves the historic baseline
+  // contract without forcing a baseline regen for the new AI workbench
+  // shell (that behavior is covered by match-flow.spec.ts instead).
   test("match with ?campaignId full-page screenshot diffs < 2% vs baseline", async ({
     page,
   }) => {
@@ -364,7 +366,7 @@ test.describe("Authenticated BM1 visual regression", () => {
     const cid = await firstRow.getAttribute("data-campaign-id");
     if (!cid) test.skip(true, "First campaign-row has no data-campaign-id");
 
-    await page.goto(`/en/match?campaignId=${cid}`);
+    await page.goto(`/en/match?campaignId=${cid}&view=full-pool`);
     await page.waitForSelector(
       '[data-testid="match-grid"], [data-testid="match-empty"]',
       { timeout: 60_000 }

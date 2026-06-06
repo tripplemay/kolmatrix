@@ -3,14 +3,14 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-084-ai-match-panel VERIFYING (8/9 gen done, fix_rounds=0) — /match?campaignId=X AI 推荐三列工作台
-- F001-F008 全实现+单测 done @ a2fd5ba. L1 全绿: lint 0err/tsc=0/vitest 1505 pass/build 96/96. F009 Codex L1+L2+signoff 待接
-- staging deployed @ a2fd5ba (health 200, rerank action cmq0hrq25016kbnpe2oru2qb0 env 已注入, BL-084 migration 已 apply)
-- L2 入口: staging.kol.guangai.ai/match?campaignId=<真实> 默认 AI 三列; toggle 切全池. Accept/Skip/Swap/Undo/Why/drag
-- 数据模型 ADR-016 (kol_campaign suggestion_status 4 态, suggested 不落库) 已起草. docs/dev/match-runbook.md 已建. 月 cost <$1
-- ⚠️ staging build 需 NODE_OPTIONS=--max-old-space-size=4096 防 SIGABRT OOM (已记 environment.md)
-- 🟡 CI 41a47db code gates 全绿; 遗留 2 visual-regression(测试域,待 Evaluator): match-with-campaignId(F007 故意改默认 AI→测试 URL 加 view=full-pool) + campaign-detail(疑 flake). visual project 硬 gate 致 functional e2e did-not-run
-- 关联 docs/specs/BL-084-ai-match-panel-spec.md
+## 🚧 BL-084-ai-match-panel FIXING (8/9 gen done, fix_rounds=0) — /match?campaignId=X AI 推荐三列工作台
+- F001-F008 全实现；Reviewer L1 PASS：prisma validate / tsc / vitest 1505 / BL-084 toggle e2e / local migration+index checks
+- Reviewer 已修测试域 2 项：`tests/e2e/match-flow.spec.ts` duplicate-testid strict-mode 误报；`tests/e2e/visual-regression.spec.ts` `?campaignId` baseline 固定到 `view=full-pool`
+- staging L2 PASS：2 个真实 campaign 默认 AI 入口；Accept+Undo；Skip 持久排除；Swap+Re-add；Toggle 切全池
+- staging L2 FAIL：Why dialog 仅显示“详细解释暂时不可用，请稍后重试”；refresh 后出现“AI 重排暂不可用 — 按相似度排序显示。”
+- prod readonly FAIL：`/opt/kolmatrix` HEAD=`96ca150`，但 `DATABASE_URL=kolmatrix` 上未应用 `20260605160000_bl_084_add_kol_campaign_suggestion_status`；`kol_campaign` 缺 `suggestion_status/suggested_at/decided_at`
+- ADR-016 已起草；signoff 未写；当前等待 Generator 修复 explainability/staging env 与 prod migration 落地
+- 关联 `docs/specs/BL-084-ai-match-panel-spec.md` + `docs/test-reports/BL-084-verifying-2026-06-06.md`
 ## ✅ BL-083-yt-business-email-mapper DONE (7/7, fix_rounds=1, tag bl083-done @ b735aad)
 - prod kol_emails 0.8%→30.3% (219 business-unlock), legacy 18 不变
 - signoff: `docs/test-reports/BL-083-signoff-2026-06-05.md`

@@ -1,5 +1,5 @@
 {
-  "status": "verifying",
+  "status": "fixing",
   "user_goal": "BL-084-ai-match-panel — /match?campaignId=X 重塑为 AI 推荐三列工作台 (推荐/已接受/候补). 9 features F001-F009 (~17h Generator + 1.5h Reviewer ≈ 2.5 day). 6/05 用户问活动页 '匹配 KOL' 按钮实现+gap, Planner audit 揭示主面板完全不读 campaignId (装饰参数), 用户选 C 重型方案 + 8 子决策 lock: 推荐源 B (embedding 召回 200 + LLM 重排 30, 沿用 BL-068) / Toggle 切换 (campaign 默认 AI) / 数据模型 A (复用 kol_campaign + suggestion_status enum 4 态) / embedding 无需独立批次 (B7a-F002 runSmartMatch 已 ship + KOL 99.5% + Product JIT) / LLM 含 matchReason 短文本 / Accept 一键+5s Undo / Swap drag 候补列 / Toggle 默认 campaignId 有→AI 无→全池. 月 cost <$1. 关联 docs/specs/BL-084-ai-match-panel-spec.md.",
   "total_features": 9,
   "completed_features": 8,
@@ -31,13 +31,32 @@
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
+  "evaluator_feedback": {
+    "summary": "L1 自动化通过，但 staging Why explainability 失败且 prod 数据库未应用 BL-084 migration，本轮需回 fixing。",
+    "pass_count": 6,
+    "partial_count": 0,
+    "fail_count": 2,
+    "issues": [
+      {
+        "feature_id": "F009",
+        "result": "FAIL",
+        "description": "staging /match?campaignId=<真实> 点击“推荐理由”仅弹出错误态：\"详细解释暂时不可用，请稍后重试。\"，未返回 BL-067 详细 explanation 内容。",
+        "steps_to_reproduce": "1. 登录 staging.kol.guangai.ai 2. 进入 /zh/match?campaignId=2d11dd71-1a98-4ee0-b15d-314dae9fcd3c 3. 在 AI 推荐列点击任一卡片的“推荐理由” 4. 观察弹窗只显示错误提示，无详细解释内容。"
+      },
+      {
+        "feature_id": "F009",
+        "result": "FAIL",
+        "description": "prod 数据库 kolmatrix 未应用 BL-084 migration；kol_campaign 缺少 suggestion_status/suggested_at/decided_at，prod 只读 acceptance 不成立。",
+        "steps_to_reproduce": "1. SSH 到 prod 主机 /opt/kolmatrix（HEAD=96ca150） 2. 读取 .env.production 确认 DATABASE_URL 指向 localhost/kolmatrix 3. 查询 _prisma_migrations 最近记录与 information_schema.columns 4. 观察 20260605160000_bl_084_add_kol_campaign_suggestion_status 不存在，且 kol_campaign 仅有旧的 match_score 列。"
+      }
+    ]
+  },
   "fix_rounds_history": [],
   "generator_handoff": "BL-084 8 gen features (F001-F008) done @ 41a47db. CODE gates 全绿: lint 0err/3warn(pre-existing) / tsc=0 / unit 1505 pass / integration 373 pass / build 96 pages / migration ROLLBACK valid. Staging deployed @ 41a47db (health 200 git_sha 验证, rerank env 注入, BL-084 migration applied). 修了一个 CI 回归: F003 migration 在空 DB 仍写 NULL-tenant audit 行污染 dashboard-real-data 断言 → 改 INSERT WHERE count>0 (41a47db, integration 全绿验证). 【遗留 2 个 visual-regression E2E 失败 — 属测试域(Codex), 需 Evaluator 处理】: (1) visual-regression.spec.ts:345 en-match-with-campaign — F007 故意改 /match?campaignId 默认→AI panel, 该测试导航后等 full-pool [data-testid=match-grid]/[match-ai-sidebar] (AI 模式已无) → 60s timeout. 测试域修法: 导航改 ?campaignId=X&view=full-pool 保持测全池 chrome (现 baseline 仍有效), 或重拍 AI-panel baseline (新 testid: match-ai-panel/column-suggested/column-accepted/column-swap/match-view-toggle). (2) visual-regression.spec.ts:440 en-campaign-detail — pixel diff; /campaigns/[id] BL-084 未改 (AiRecommendationPanel 显式传 topK 不受 F001 DEFAULT_TOP_K 影响), 疑似该测试自身注释记录的 AI-card state-drift flake, Evaluator 重拍 baseline / 重跑确认. visual project 是 E2E 硬 gate, 失败导致 193 functional e2e (含我的 BL-084-F007 match-flow test) did-not-run. L2 入口: staging.kol.guangai.ai/match?campaignId=<真实> 默认 AI 三列. ADR-016 + match-runbook 已起草.",
   "session_notes": {
     "Kimi_planner": "[2026-06-05 14:55 BJT Planner Kimi BL-084 planning done] BL-083 done 收尾 (tag bl083-done @ b735aad) + 切 BL-084 (用户 6/05 ack 启). spec 已在 backlog 启动前完整起草 (docs/specs/BL-084-ai-match-panel-spec.md §1-§6 已存 + features.json 9 features 详细 acceptance 已写). A1 8 子决策 lock (推荐源 B / Toggle 切换 / 数据模型 A kol_campaign+suggestion_status / embedding 无需 prep / matchReason 短文本 / Accept 一键+5s Undo / Swap drag / Toggle 默认 campaignId 有→AI). audit 关键洞察: B7a-F002 runSmartMatch 已 ship 完整 embedding cosine + Product JIT, BL-084 只新增 LLM 重排 + 三列 UI + Accept/Skip/Swap 数据模型, 实际工时比初估少. ADR-016 (kol_campaign suggestion_status 4 态生命周期) 待 F009 起草. 下一步: 用户审 spec 后 planning → building, Generator 启 F001 runSmartMatch 升级 (最小改动, 0.5h).",
     "Kimi_generator": "[2026-06-05 14:20 BJT Generator Kimi BL-084 building→verifying] 8 features 全实现+单测: F001 runSmartMatch topK30+campaignId遥测(buildSmartMatchEvent纯函数) / F002 llm-rerank.ts(rerankWithReason+aigcgateway action cmq0hrq25016kbnpe2oru2qb0+8降级case) / F003 migration(suggestion_status 3列+复合index, match_score复用, legacy backfill→accepted, 本地migrate实测) / F004 getCampaignSuggestions(cosine+排除已决策+rerank+24h Redis cache, use-server拆.shared §14) / F005 accept/skip/swap/reAdd/remove/undo(withTenant单事务原子+audit+5s窗口+SCAN-prefix cache失效) / F006 三列UI(MatchAiPanel server+Client optimistic+原生drag+undo toast+badge渐变+reason chip) / F007 parseAiView toggle(campaignId默认AI, carriedView防弹回, e2e) / F008 i18n 5locale. [staging deployed @ a2fd5ba @ 2026-06-05T06:14 UTC, health 200, git_sha验证通过]. 坑: (1) use-server只能导出async fn→constants/errors/types入.shared.ts (2) staging build SIGABRT OOM→NODE_OPTIONS=--max-old-space-size=4096 (3) match_score列已存复用不重加 (4) targetAudience在product非campaign. ADR-016+match-runbook已起草. [UPDATE 14:40] CI 41a47db: code gates 全绿, 仅 2 visual-regression(测试域)失败待 Evaluator: match-with-campaignId(F007 故意改默认 AI, 测试 URL 需加 view=full-pool) + campaign-detail(疑 flake, /campaigns/[id] 未改). 不越界改 e2e 测试(铁律#4/#6).",
-    "Reviewer": null,
+    "Reviewer": "[2026-06-06 01:48 BJT Evaluator Reviewer BL-084 verifying→fixing] L1 PASS: prisma validate / tsc / vitest 1505 / BL-084 toggle e2e / local migration+index checks. 测试域修补：match-flow.spec.ts 收窄 duplicate testid 断言；visual-regression.spec.ts 将 ?campaignId baseline 固定到 &view=full-pool。L2 staging: 2 campaigns 默认 AI 入口 PASS；Accept+Undo、Skip persistence、Swap+Re-add、Toggle full-pool PASS。FAIL 1: Why dialog 仅显示“详细解释暂时不可用，请稍后重试”。FAIL 2: prod /opt/kolmatrix HEAD=96ca150 但 DATABASE_URL=kolmatrix 上未见 BL-084 migration，kol_campaign 缺 suggestion_status/suggested_at/decided_at；prod readonly acceptance fail。",
     "johnsong_planner": null,
     "johnsong_generator": null
   },
