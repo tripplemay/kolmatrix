@@ -155,3 +155,27 @@ BL-084 verifying staging FAIL 1「Why 详细解释暂时不可用」根因不是
 - ADR 候选：多 locale write-through vs 单 locale 懒加载的延迟/成本权衡
 
 **状态：** 待用户 ack
+
+---
+
+## [2026-06-06] Claude CLI — 来源:Generator Kimi BL-086-F003 (manual_seed 充值前投喂会被 worker 即时消耗)
+
+**类型：** 新坑（spec/诊断假设缺陷）+ 上游行为洞察
+
+**内容：**
+
+BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → 排队等充值 → 充值后真抓"。**实际不成立。** 读 apify fork SDK 源码确认：
+
+1. fork scrape-worker `boss.work('scrape',…)` **持续运行**(非 daily cron 触发)，enqueue 的 manual_seed job **立即被处理**。
+2. `youtube.getChannels()` 对每个 URL 的错误是 **per-url swallow**(`catch{ console.warn; }` 后 continue)，余额耗尽时 `get_channel_info` 抛错被吞 → 返回**空数组**。
+3. manual-seed-scrape 拿到空数组 → `{inserted:0}` 不 throw → worker 判 job **`succeeded` inserted=0**(非 failed，pg-boss retryLimit=0 不重试)。
+
+**净效果：充值前投喂 = job 全部 succeeded-0，id 被消耗，充值后不会重抓**(job 已 succeeded)，且投喂脚本 checkpoint 已标记 fed → 充值后须先清 checkpoint 才能重喂。**正解：manual_seed 全量投喂放到充值之后**；充值前验收用 dry-run(只读 count 2535/26 批) + 脚本就绪即可，不要真投。
+
+**根本教训：** 凡"任务入队等外部资源就绪"的设计，必须先确认 **worker 是否会在资源未就绪时即时消耗任务**(消耗成 succeeded-0 / failed-no-retry)。诊断/spec 写"充值前入队"前应核 worker 生命周期 + 错误吞没行为(per-item swallow vs throw)。
+
+**建议写入：**
+- `docs/reviews/kol-acquisition-diagnostic-2026-06-06.md` 或 BL-086 spec §F003：修正"充值前入队"假设
+- `framework/harness/generator.md`：新增"入队-等外部资源就绪 类设计须先验 worker 是否即时消耗"checklist 项
+
+**状态：** 待用户 ack（F003 投喂时机用户决策中）
