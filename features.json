@@ -37,7 +37,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "脚本从 kolmatrix prod DB 只读取 metadata->>'source'='youtube-api-daily' 的 external_id (=UC id), 排除已在 apify-kol platform_user_id 的 49 个 → ~2535 个 UC id",
       "分批投喂 POST /admin/seeds (ADMIN_API_KEY): 幂等 + 限速 + 可重入 (中断可续); log 投喂量 + 失败重试",
