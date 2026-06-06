@@ -423,8 +423,8 @@
     "title": "apify-kol-service 抓取配比治本(我方代码,落地路径待定) — refresh 间隔积累档 + Instagram 发现修复",
     "description": "**触发：** 2026-06-06 Planner prod 诊断揭示比'余额耗尽'更深的结构问题。**归属修正(用户 2026-06-06 指出):代码在 /opt/apify-kol-service(仓库 guang-tech/apify),我方有完全修改+部署能力**,'走爬虫团队'只是落地路径选项之一,非能力边界。\n\n**问题 1 — refresh 吃 90% 预算产 0 新增(已定位到代码常量):**\nscrape_jobs.kind 全期:refresh 14768 任务/237,980 抓取/**0 新增**(占 ~89%);hashtag 518 任务/29,051 抓取/3140 新增(~11% 率,只分到 ~10% 预算)。根因 = `scoring/tier.ts:18` 的 `TIER_INTERVAL_MS` 硬编码:hot 1d/warm 3d/cold 7d。当前分布 hot 460/warm 502/cold 2215 → 隐含 ~944 KOL-刷新/天 ≈ 观测的 ~20k 抓取/天。hot 460 每天全量重刷占 49%。\n→ **积累期决策(用户确认方向:hot 周或半月可接受)**:`TIER_INTERVAL_MS` 改 **hot 14d / warm 30d / cold 30d**(refresh 日负载 944→~123,−87%),省出 ~820 KOL-刷新/天(~1.6-2万 TikHub 调用)转 discovery,新增速率有望 ~87→180-220/天。代价:头部数据日更→半月更(积累期无感)。配套 BL-086(种子)才能吃满。成熟期再收紧(ADR-017 §3 阶段化)。\n→ 可选配套 env 旋钮(纯配置,无代码):`REFRESH_SCHEDULER_INTERVAL_MS` / `SCRAPE_CONCURRENCY`(`config.ts`)。\n\n**问题 2 — Instagram hashtag 发现 0 产出:**\ninstagram 的 valorant/esports/dota2/fortnite/pcgaming/streamer 等全期 0 新增(tiktok 同词高产),疑似 IG actor / hashtag 搜索逻辑失效,需排查为何拿不到新 profile。\n\n**落地路径待定(用户拍 A/B/C):** A 本地直接改 /opt/apify-kol-service 并 rebuild(快,加深与上游分叉——BL-061 已有 4 处本地 hot-fix);B 走上游 PR 到 guang-tech/apify 再 sync(不积累分叉,推荐);C 交爬虫团队改。\n\n**前置:** P0 TikHub 充值(否则改了也空转)。代码改动须走 Generator 实装(铁律#9 Planner 不直接改产品代码)。\n\n**关联:** ADR-017 §3 · BL-086(配置侧配套)· 诊断报告 §3.4",
     "decisions": [
-      "ADR-017 §3 锁定:发现优先 + 阶段化 refresh;积累期 hot 14d/warm 30d/cold 30d(用户 2026-06-06 确认方向 hot 周/半月可接受,具体值实装确认)",
-      "归属修正:此为我方代码(guang-tech/apify),我方有改+部署能力;落地路径 A 本地改 / B 上游 PR(推荐) / C 交爬虫团队 待用户拍",
+      "ADR-017 §3 锁定:发现优先 + 阶段化 refresh;积累期 TIER_INTERVAL_MS = hot 14d/warm 30d/cold 30d(用户 2026-06-06 确认)",
+      "落地路径已定(用户 2026-06-06):B 走上游 PR 到 guang-tech/apify 再 sync 下来,不积累本地分叉;Generator 在批次内作者 PR,爬虫团队 merge,我方 ops sync",
       "代码改动走 Generator 实装(铁律#9);Planner 仅出方案",
       "证据:refresh 占 ~89% 抓取量产 0 新增(TIER_INTERVAL_MS hot 1d);IG hashtag 全平台 0 产出 vs tiktok 同词高产"
     ],
