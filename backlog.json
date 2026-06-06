@@ -384,5 +384,16 @@
       "i18n-cleanup"
     ],
     "discovered_in": "BL-065-F006 + BL-066-F002 + BL-066-F005 + BL-066-F006 spec lock 阶段刻意留的 deprecated marker / 兼容路径"
+  },
+  {
+    "id": "BL-085-obs",
+    "title": "观察: MATCH_RERANK refresh 偶发 cosine 降级 (LLM 非完美30-排列)",
+    "description": "BL-084 verifying staging force-refresh 偶发 'AI 重排暂不可用 — 按相似度排序显示'. 根因: MATCH_RERANK action(cmq0hrq25016kbnpe2oru2qb0) 返回 200+合法JSON 但 F002 strict permutation 校验(length/permutation)偶发不过(haiku 30候选偶尔漏/重1项) → 回退cosine. gateway 日志确认调用 success(~20s). 当前=F002 spec 规定的优雅降级,功能安全(只用已知candidate id). 初始面板加载显示真实reason正常,仅 refresh 偶发. 用户 2026-06-06 决定保持现状监控. 若高频可选: (A)partial-merge 用LLM有效子集+cosine补尾(改F002 spec契约需Planner ratify) (B)prompt 增强 permutation 可靠性. 关联 proposed-learnings 2026-06-06 衍生待评估#2.",
+    "decisions": [
+      "保持 F002 现状(优雅降级正确)",
+      "记入 backlog 仅监控,不本轮修"
+    ],
+    "confirmed_at": "2026-06-06T10:24+0800",
+    "priority": "low"
   }
 ]

@@ -3,13 +3,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-084-ai-match-panel FIXING (8/9 gen done, fix_rounds=0) — /match?campaignId=X AI 推荐三列工作台
-- F001-F008 全实现；Reviewer L1 PASS：prisma validate / tsc / vitest 1505 / BL-084 toggle e2e / local migration+index checks
-- Reviewer 已修测试域 2 项：`tests/e2e/match-flow.spec.ts` duplicate-testid strict-mode 误报；`tests/e2e/visual-regression.spec.ts` `?campaignId` baseline 固定到 `view=full-pool`
-- staging L2 PASS：2 个真实 campaign 默认 AI 入口；Accept+Undo；Skip 持久排除；Swap+Re-add；Toggle 切全池
-- staging L2 FAIL：Why dialog 仅显示“详细解释暂时不可用，请稍后重试”；refresh 后出现“AI 重排暂不可用 — 按相似度排序显示。”
-- prod readonly FAIL：`/opt/kolmatrix` HEAD=`96ca150`，但 `DATABASE_URL=kolmatrix` 上未应用 `20260605160000_bl_084_add_kol_campaign_suggestion_status`；`kol_campaign` 缺 `suggestion_status/suggested_at/decided_at`
-- ADR-016 已起草；signoff 未写；当前等待 Generator 修复 explainability/staging env 与 prod migration 落地
+## 🚧 BL-084-ai-match-panel REVERIFYING (fix_rounds=1 @ 7d9cb9f) — /match?campaignId=X AI 推荐三列工作台
+- fix-round 1 唯一代码修复：`DetailedExplanationDialog` 客户端超时 5s→32s（commit 7d9cb9f）。根因 gateway 日志实证：EXPLAIN_DETAILED 5locale×5段~4500token 实测 15-21s，客户端 5s 先于服务端响应触发"详细解释暂时不可用"错误态；match 面板无预热→缓存未命中 100% 必现。同修 BL-067 campaigns 页潜伏 bug。L1 全绿 tsc=0/lint=0/25 单测
+- FAIL2 prod migration = 纯部署动作（deploy-prod.sh 第 6 步自动 `prisma migrate deploy`）；FAIL1b refresh rerank cosine 降级 = F002 spec 优雅降级（LLM 偶发非完美 30-排列），用户选保持现状 → backlog BL-085-obs
+- ⚠️ **复验前提（两端部署均用户手动）**：(1) staging 重部署取 `de74828`（dialog 修复）(2) prod 部署 = deploy-prod.yml 自动 migrate + SSH 注入 `AIGCGATEWAY_MATCH_RERANK_ACTION_ID=cmq0hrq25016kbnpe2oru2qb0` 到 `.env.production`。两端落地后再启 Reviewer，否则复验 un-deployed 仍 FAIL
+- 洞察：environment.md "EXPLAIN_DETAILED 待 SSH 落入 staging" 是过时备注——日志证明 staging 已配且成功调用（Planner 应更正）
+- ADR-016 已起草；signoff 未写；proposed-learnings 已记客户端超时 vs LLM 实测延迟教训
 - 关联 `docs/specs/BL-084-ai-match-panel-spec.md` + `docs/test-reports/BL-084-verifying-2026-06-06.md`
 ## ✅ BL-083-yt-business-email-mapper DONE (7/7, fix_rounds=1, tag bl083-done @ b735aad)
 - prod kol_emails 0.8%→30.3% (219 business-unlock), legacy 18 不变
