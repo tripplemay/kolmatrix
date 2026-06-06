@@ -1,93 +1,61 @@
 [
   {
     "id": "F001",
-    "title": "refresh 配比积累档: TIER_INTERVAL_MS → hot 14d/warm 30d/cold 30d (apify-kol, 路径 B)",
+    "title": "Bug A 修复: YT 邮箱触发器接入正确路径 (hasBusinessEmail false→true 触发, 爬虫/路径B)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.0,
-    "status": "done",
+    "estimated_hours": 2.5,
+    "status": "pending",
     "acceptance": [
-      "改 guang-tech/apify packages/service/src/scoring/tier.ts 的 TIER_INTERVAL_MS: hot 24h→14d / warm 3d→30d / cold 7d→30d",
-      "落地路径 B: PR 到 guang-tech/apify → 爬虫团队 merge → 按 docs/dev/kol-sync-runbook.md fork-sync 流程 sync 到 /opt/apify-kol-service → rebuild (不加本地 patch, 不积累分叉)",
-      "可选配套 env (.env.production, 纯配置): REFRESH_SCHEDULER_INTERVAL_MS / SCRAPE_CONCURRENCY 评估是否同步调整",
-      "效果验证 (充值前可见): 部署后 worker 下次 upsert 按新间隔重算 next_refresh_at; refresh 日负载理论 944→~123 (hot 460/14 + warm 502/30 + cold 2215/30)",
-      "PR 含单测/构建绿 (爬虫仓 CI 或本地 build+test); 不破坏 refresh-scheduler / scoring 既有行为",
-      "记录: sync 后在 .auto-memory/project-status.md 或 runbook 注明本次 fork-sync 的 HEAD + 是否新增本地 patch (期望 0)"
+      "根因: applyPostProcessing(含 enqueueYtEmail 触发) 只在 discovery 路径(hashtag/manual-seed)调; hasBusinessEmail=true 由 refresh-scrape 写入(明写不抽联系方式不调 applyPostProcessing) → 触发器与信号永不相交 → 从没触发",
+      "修法(需与爬虫团队对齐设计): 在 hasBusinessEmail false→true(或首次 true 且当前无邮箱)时触发一次 enqueueYtEmail, 配合 F002 去重; 不得改成 refresh 每次都触发(Apify 成本风险)",
+      "落地路径 B: PR 到 guang-tech/apify → 爬虫团队 review/merge → fork-sync /opt rebuild(谨慎, BL-086 OOM 遗留)",
+      "含单测; 不破坏 refresh 既有行为(刷新仍不无谓抽联系方式)",
+      "验证: 改后新 refresh 命中 hasBusinessEmail=true 且无邮箱频道 → 入队 yt-email(yt_email_check_records 出现 queued/running)"
     ]
   },
   {
     "id": "F002",
-    "title": "discovery 种子扩充 + 砍空转 IG 种子 + 调高产 TT limit (schedules 表 config)",
+    "title": "Bug B 修复: yt_email_check_records 双写失效 (爬虫/路径B)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.0,
-    "status": "done",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "schedules 表加 SEA/手游关键词 (free fire / mobile legends / pubg mobile / garena / minecraft / roblox + 印地/葡/印尼语变体), 覆盖诊断 §2 印度/东南亚手游盲区",
-      "砍/停用空转种子: instagram valorant/esports/dota2/fortnite/pcgaming/streamer (全期 0 产出) + youtube mobile gaming/dota2 (0)",
-      "调高高产 tiktok 种子 limit (leagueoflegends/valorant/gaming/fortnite, 当前 limit=100)",
-      "配置级落地 (schedules 表 / 爬虫 admin), 与爬虫团队对齐改法 (走 admin API 还是直接改表); 记录变更前后种子清单",
-      "幂等/可回滚: 保留旧种子配置快照, 便于回退",
-      "验证 (充值前): 新种子 enabled=true + cron 正确; 充值后 F006 验真实产出"
+      "现象: 小批验证 3 任务 completed + 2 邮箱写进 kols.emails, 但 yt_email_check_records 仍 0 行 → markRunning/attachRun/markSucceeded/markNoEmail 没落库",
+      "排查为何不落库(事务回滚/连接/异常被吞), 修复使其可靠写入: 每个 yt-email 任务留记录 queued→running→succeeded|no_email",
+      "修后去重生效: enqueueYtEmail 闭包靠该表判断已查过, 已查的不重复跑 Apify(当前 !record 永真→每次重跑烧钱)",
+      "落地路径 B: PR 到 guang-tech/apify → merge → sync; 含单测",
+      "验证: backfill/触发后 yt_email_check_records 行数 > 0 且状态正确"
     ]
   },
   {
     "id": "F003",
-    "title": "manual_seed 收割 2535 旧源 youtube id (脚本 + POST /admin/seeds)",
+    "title": "344 backfill: 对积压 youtube 频道入队 yt-email 解锁邮箱 (我方 ops, 不依赖充值)",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "done",
+    "status": "pending",
     "acceptance": [
-      "脚本从 kolmatrix prod DB 只读取 metadata->>'source'='youtube-api-daily' 的 external_id (=UC id), 排除已在 apify-kol platform_user_id 的 49 个 → ~2535 个 UC id",
-      "分批投喂 POST /admin/seeds (ADMIN_API_KEY): 幂等 + 限速 + 可重入 (中断可续); log 投喂量 + 失败重试",
-      "manual_seed kind 历史命中率 96% (诊断 §3.4); 投喂后验证 id 进入 scrape_jobs 队列 (kind=manual_seed)",
-      "真实抓取充值后才发生; 充值前验收 = id 已正确入队 + 脚本可重跑",
-      "脚本归档 (scripts/ 或 ops 文档), 标注为一次性收割 + 数据来源 (旧源退役名单, ADR-017 §决策1)"
+      "脚本对 344 个 youtube(has_business_email=true 且 emails 无 @)入队 yt-email(pg-boss schema=pgboss, batchSize=1 运行中 worker 自然消费)",
+      "自带幂等: 本地记录已处理 kolId(规避 Bug B 期间去重失效导致中断重跑重复); 限速 + 分批",
+      "走 Apify(SCALE 已付费, 不依赖 TikHub 充值); 成本 ~$0.12/次 × 344 ≈ $41",
+      "已小批验证机制可用(kol 6/9 解锁); 可在 F001/F002 merge 前先跑(立即价值)",
+      "跑后抽样确认 kols.emails 新增真邮箱 + 统计 解锁数/NO_EMAIL/失败数; 脚本归档 scripts/"
     ]
   },
   {
     "id": "F004",
-    "title": "余额 + inserted=0 静默空转告警 + apify_cost_usd 成本记账 (路径 B + 监控)",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 2.0,
-    "status": "done",
-    "acceptance": [
-      "告警: scrape_jobs 连续 N 天 inserted_count=0 或检测到 'Insufficient balance' → 告警 (渠道: kol-sync-daily 报告段 / webhook / 其它, 实装择优); 杜绝再次静默空转 (本次 6/04 + 5/14 两次均人工发现)",
-      "apify_cost_usd 回填: 每次 apify run 记成本 (当前列全 0), 供预算→KOL 换算; 爬虫代码部分走路径 B",
-      "余额监控: TikHub 余额低于阈值预警 (若 TikHub 有余额查询 API; 无则以 inserted=0 + Insufficient balance 日志为代理信号)",
-      "告警/监控侧可放 kolmatrix 或爬虫服务, 实装择优; 爬虫代码改动走路径 B PR",
-      "dry-run 验证告警链路可触发 (mock 连续 0 inserted 场景)"
-    ]
-  },
-  {
-    "id": "F005",
-    "title": "Instagram hashtag 发现 0 产出 排查修复 (apify-kol, 路径 B, 含排查)",
-    "executor": "generator",
-    "priority": "medium",
-    "estimated_hours": 3.0,
-    "status": "done",
-    "acceptance": [
-      "排查 IG hashtag schedules 为何全期 0 新增 (IG actor 调用 / hashtag 搜索逻辑 / 解析), 对比 tiktok 同关键词高产",
-      "根因定位 + 修复走路径 B PR 到 guang-tech/apify",
-      "充值后验证: IG hashtag 发现能产出新 profile (>0 inserted)",
-      "若根因超出本批次范围 (需大改 IG actor / TikHub IG 端点限制) → 文档化根因 + 拆出独立 backlog 条目, 不阻塞 F001-F004 收尾",
-      "记录排查结论到 docs/ (即使最终是 won't-fix 也要留证据链)"
-    ]
-  },
-  {
-    "id": "F006",
-    "title": "Codex L1+L2 + signoff (executor:codex, 本批止于部署就绪; 真实速率/投喂 deferred BL-092)",
+    "title": "Codex L1+L2 + signoff (executor:codex)",
     "executor": "codex",
     "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "completed",
+    "estimated_hours": 1.0,
+    "status": "pending",
     "acceptance": [
-      "✅ L1: kolmatrix lint 0err/3w(Soft-watch) + tsc PASS + 1526 tests PASS. 上游 PR #3/#4/#5 已 merge + /opt 部署 8f9320a (Generator state commit 证据).",
-      "✅ L2 部署就绪: tier.ts TIER_INTERVAL_MS=hot14d/warm30d/cold30d; schedules 30→48; manual_seed dry-run 2535 PASS; 告警 classifyDailyRun 代码就绪; /admin/stats tikhubBalanceUsd:0.0005 (Generator 证实).",
-      "✅ 解耦充值: 本批止于部署就绪 done. 真实速率验证 + F003 真实投喂 + IG 产出验证 → deferred BL-092.",
-      "✅ signoff: docs/test-reports/BL-086-signoff-2026-06-07.md"
+      "L1: F001/F002 PR 已 merge+sync; 脚本单测绿; kolmatrix 侧若有改动 lint 0err warn≤3 / tsc=0 / npm test 绿",
+      "L2: Bug A 触发链路实测(新触发→yt_email_check_records 出现记录); Bug B 记录可靠落库 + 去重生效(已查不重跑); F003 backfill 后 kols.emails 真实新增 + 量化(解锁数/成功率)",
+      "before/after: yt_email_check_records 0→N; youtube 真邮箱覆盖率提升量化",
+      "signoff doc docs/test-reports/BL-091-signoff-2026-06-XX.md"
     ]
   }
 ]

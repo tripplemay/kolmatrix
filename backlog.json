@@ -448,26 +448,6 @@
     "priority": "low"
   },
   {
-    "id": "BL-091",
-    "title": "YT 商务邮箱链路两 bug 修复 + 344 backfill (Apify, 路径 B)",
-    "description": "**触发:** 2026-06-06 Planner 查证 yt_email_check_records=0 矛盾, 实测定位 + 小批 backfill 验证(kol 6/9 真实解锁邮箱)。\n\n**Bug A — 触发器放错路径:** YT 邮箱解锁触发器只在 discovery 路径(hashtag/manual-seed 的 applyPostProcessing)里; 但 hasBusinessEmail=true 由 refresh 路径写入(refresh '不抽联系方式'不调 applyPostProcessing)。两者永不相交 → enqueueYtEmail 从没被调用 → Apify YT 邮箱 actor 从没跑。526 个 youtube hasBusinessEmail=true 中 344 个无邮箱积压。修法: hasBusinessEmail false→true 时触发(配合修好的去重)。\n\n**Bug B — 追踪表双写失效:** 小批验证发现 3 任务 completed、2 邮箱写进 kols.emails, 但 yt_email_check_records 仍 0 行 → markRunning/markSucceeded 没落库 → 去重失效(每次重复跑 Apify 烧钱)+ 无审计。\n\n**344 backfill:** 修好后(或脚本自带幂等规避 Bug B)对 344 个 youtube(hasBusinessEmail=true 且无邮箱)入队 yt-email。Apify ~$0.12/次×344≈$41, 走 Apify(SCALE 已付费)不依赖 TikHub 充值。微样本成功率 2/3。\n\n落地路径 B(爬虫代码 guang-tech/apify)。",
-    "decisions": [
-      "2026-06-06 小批 backfill 验证机制可用(kol 6/9 解锁), 证实 worker+Apify 链路本身好的, 只是触发器从没调用",
-      "两 bug 都需爬虫团队修(路径 B); backfill 可我方 ops 但需规避 Bug B 去重失效",
-      "emails 其实大头来自 TikHub 内联; Apify 这条链一直是死的(诊断报告 §2/§3.4)"
-    ],
-    "confirmed_at": "2026-06-06T23:50+0800",
-    "priority": "medium",
-    "tags": [
-      "apify-kol",
-      "yt-email",
-      "crawler-team",
-      "our-code",
-      "data-quality"
-    ],
-    "discovered_in": "2026-06-06 Planner 查证 yt_email_check_records=0 + 小批 backfill 验证"
-  },
-  {
     "id": "BL-092",
     "title": "BL-086 充值后执行 + 真实速率验证 (F003 投喂 2535 + verified-live)",
     "description": "**触发:** BL-086 验收解耦充值(用户 2026-06-06 决定: 充值明天才完成, 本批不等)。本条收口所有'充值后才能做'的部分。\n\n**前置:** TikHub 71@qq.com 充值到账(Planner get_user_info 验 balance>0)。\n\n**内容:**\n1. 重启爬虫容器清积压 ~900 条过期 refresh 欠账;\n2. F003 真实投喂 2535 旧源 youtube id(scripts/bl086-manual-seed-harvest, 非 dry-run);\n3. verified-live 验证(原 F006 充值后半段): refresh 日负载实测 944→~123 / 新 KOL 入库速率较 ~87/天提升 / IG 发现恢复(F005 节流后)/ 告警 inserted=0 正确触发 / before-after 量化;\n4. 按真实数据调优 F005 节流(350ms)+ F004 余额告警阈值;\n5. 补 BL-086 signoff 的 verified-live 部分。\n\n注: 充值前投喂会被 worker 消费成 succeeded-0(白做), 必须充值后(framework proposed-learning 已记)。",
