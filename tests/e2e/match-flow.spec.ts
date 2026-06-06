@@ -745,7 +745,10 @@ test.describe("BL-068-F006 · /campaigns/[id] + /match conversational refine flo
     await expect(page.getByTestId("campaign-refine-input-bar")).toBeVisible();
     await expect(page.getByTestId("campaign-refine-reset")).toHaveCount(0);
 
-    await page.goto(`/en/match?campaignId=${campaignId}`);
+    // BL-084-F007 made /match?campaignId default to the AI panel (which has no
+    // RefineInputBar); the conversational refine bar now lives on the full-pool
+    // workbench. Assert it there via the explicit view=full-pool toggle target.
+    await page.goto(`/en/match?campaignId=${campaignId}&view=full-pool`);
     await expect(page.getByTestId("match-refine-bar")).toBeVisible({
       timeout: 15_000,
     });
