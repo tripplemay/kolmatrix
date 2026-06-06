@@ -6,8 +6,10 @@ type: project
 ## 🚧 BL-084-ai-match-panel REVERIFYING (fix_rounds=1 @ 7d9cb9f) — /match?campaignId=X AI 推荐三列工作台
 - fix-round 1 唯一代码修复：`DetailedExplanationDialog` 客户端超时 5s→32s（commit 7d9cb9f）。根因 gateway 日志实证：EXPLAIN_DETAILED 5locale×5段~4500token 实测 15-21s，客户端 5s 先于服务端响应触发"详细解释暂时不可用"错误态；match 面板无预热→缓存未命中 100% 必现。同修 BL-067 campaigns 页潜伏 bug。L1 全绿 tsc=0/lint=0/25 单测
 - FAIL2 prod migration = 纯部署动作（deploy-prod.sh 第 6 步自动 `prisma migrate deploy`）；FAIL1b refresh rerank cosine 降级 = F002 spec 优雅降级（LLM 偶发非完美 30-排列），用户选保持现状 → backlog BL-085-obs
-- ⚠️ **复验前提（两端部署均用户手动）**：(1) staging 重部署取 `de74828`（dialog 修复）(2) prod 部署 = deploy-prod.yml 自动 migrate + SSH 注入 `AIGCGATEWAY_MATCH_RERANK_ACTION_ID=cmq0hrq25016kbnpe2oru2qb0` 到 `.env.production`。两端落地后再启 Reviewer，否则复验 un-deployed 仍 FAIL
-- 洞察：environment.md "EXPLAIN_DETAILED 待 SSH 落入 staging" 是过时备注——日志证明 staging 已配且成功调用（Planner 应更正）
+- ✅ **两端部署已落地（Generator 代部署 2026-06-06 ~10:40 BJT）**：staging deploy-staging run 27050108647 success+health200；prod deploy-prod run 27050228802 success+health200 HEAD=`1343ad9`。prod env 注入 rerank（已备份），prod 已有 EXPLAIN_DETAILED+SHORT env
+- ✅ **prod migration 核验全 PASS（Generator 超级用户只读预核验）**：`_prisma_migrations` bl_084 finished=t / 4 列齐 / `kol_campaign_suggestion_status_idx` 存在 / legacy backfill 30 行全 accepted + decided_at 回填 0 残留 NULL / audit `backfilled_rows=30`。**FAIL2 解决**
+- 复验前提已满足，Reviewer 可启：复验重点 = staging Why 弹窗显 5 段（首开 skeleton ~20s，再开 <200ms 缓存）+ Accept/Skip/Swap 闭环回归
+- 洞察：environment.md "EXPLAIN_DETAILED/MATCH_RERANK 待 SSH 落入" 多为过时备注——日志/prod grep 证明已配（Planner 应更正 §AIGCGATEWAY 段）
 - ADR-016 已起草；signoff 未写；proposed-learnings 已记客户端超时 vs LLM 实测延迟教训
 - 关联 `docs/specs/BL-084-ai-match-panel-spec.md` + `docs/test-reports/BL-084-verifying-2026-06-06.md`
 ## ✅ BL-083-yt-business-email-mapper DONE (7/7, fix_rounds=1, tag bl083-done @ b735aad)
