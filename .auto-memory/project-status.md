@@ -8,6 +8,7 @@ type: project
   - F001 tier 积累档(hot14d/warm30d/cold30d, #3) / F002 schedules 30→48(applied) / F003 manual-seed 收割脚本(dry-run 2535) / F004 余额暴露+kolmatrix 静默空转告警(#5) / F005 IG 429 节流 350ms(#4, 根因=per-author 突发触发账户级限流)
 - 🟢 **F006 验收口径已解耦充值(用户 2026-06-06)**: 本批止于"部署就绪"即可 done(Codex 现在可验); 真实速率验证 + F003 真实投喂 → deferred **BL-092**(充值后明天). Codex 起 F006 部署就绪半段
 - 🔴 **TikHub 充值未到账**(71@qq.com balance=$0.0005, 用户明天完成). 充值前投喂会被 worker 消费成 succeeded-0=白做, 必须充值后
+- 🟢 **prod outage 已恢复(2026-06-07)**: 6/06 两次 deploy-prod build OOM 拖垮整机(VM 仅7.8Gi跑 kolmatrix+pg+aigcgateway+apify-docker)→主机 thrash 不可达。用户 reset VM 后 Generator 逐服务重建 .next(prod kol.guangai.ai 200✅ / staging 200✅ / apify 3004 ok✅, docker compose up -d 修 postgres 网络竞态)。**⚠️ 内存超额未根治前勿重试 prod 部署(会再 OOM)**; 防复发选项(swap/部署时停apify-docker/扩VM/CI出artifact)待定。详见 proposed-learnings
 - ops 缺口(已沉淀 learning): /opt 无凭据 pull guang-tech/apify → 本次 git bundle scp 绕开; 长期应配 deploy key
 - 文档: spec `docs/specs/BL-086-...spec.md` + 诊断 `docs/reviews/kol-acquisition-diagnostic-2026-06-06.md` + ADR-017
 ## ✅ BL-084 DONE (9/9, signoff @ d10351c) / BL-083(@b735aad) / BL-082 / BL-081 / BL-080⏸️(1/6 等AI gen) / BL-079-043 全 DONE
