@@ -48,7 +48,10 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
-const DEFAULT_BASE_URL = "http://localhost:3003";
+// Fork service is published on host port 3004 (container 3003); kolmatrix
+// .env.production sets APIFY_KOL_BASE_URL=http://localhost:3004 which overrides
+// this default. Kept in sync so a no-env local run still targets the right port.
+const DEFAULT_BASE_URL = "http://localhost:3004";
 const DEFAULT_BATCH_SIZE = 100;
 const DEFAULT_SLEEP_MS = 1_500;
 const DEFAULT_CHECKPOINT = ".bl086-manual-seed-checkpoint.json";
