@@ -1,10 +1,11 @@
-# BL-086-F001 · Upstream patch — refresh tier interval 积累期配比
+# BL-086-F001 · Upstream PR — refresh tier interval 积累期配比
 
-> **状态：** 待爬虫团队 apply/merge 到 `guang-tech/apify` master。
-> **为何是 patch 而非 PR：** `guang-tech/apify` 禁用了 fork（HTTP 403），且本账号
-> （tripplemay）对该仓仅 **READ** 权限，无法 push 分支或开 PR。改动以可直接
-> `git apply` 的 patch 形式交付（路径 B：团队 apply → merge → sync `/opt/apify-kol-service` → rebuild）。
-> 若后续给本账号 write 权限，可改为标准 PR。
+> **状态：** ✅ **PR 已开 → https://github.com/guang-tech/apify/pull/3**（2026-06-06，
+> 用户授予 tripplemay write 权限后从同仓分支 `bl086-f001-tier-accumulation-cadence` 开出）。
+> **待爬虫团队 review + merge → sync `/opt/apify-kol-service` + `docker compose up -d --build`。**
+>
+> （patch 文件 `.patch` 保留作离线备份/审计；先前因 `guang-tech/apify` 禁 fork + 本账号
+> 仅 READ 无法开 PR，故先以 git-apply patch 交付，write 权限到位后已转为标准 PR。）
 
 ## 改动
 

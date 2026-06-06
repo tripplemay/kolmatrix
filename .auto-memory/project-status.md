@@ -5,8 +5,8 @@ type: project
 ---
 ## 🚧 BL-086-kol-acquisition-accel BUILDING (2/6) — 提升新 KOL 入库速率（积累模式）
 - ✅ F003 done: `scripts/bl086-manual-seed-harvest.ts` (读 prod 取 2535 UC id 排除 overlap → 包 `/channel/` URL → 分批 POST `/admin/seeds` manual_seed; 幂等+限速+checkpoint 可重入+dry-run). **坑**: youtube manual_seed 对非 URL 拼 `@handle`, 裸 UC id 必失败→必包 `https://www.youtube.com/channel/{UC}`. L1 tsc/lint/11单测绿 + prod dry-run total=2535/26批. 真实 feed 待充值/协调
-- 🔶 F001 patch 交付 (`docs/upstream-patches/BL-086-F001-tier-accumulation-cadence.{patch,md}`): guang-tech/apify **禁 fork** + 本账号仅 **READ** → 无法开 PR, 改 git-apply patch. 本地 apify service 套件 14文件/100测试全绿. **待爬虫团队 apply/merge + sync /opt rebuild**
-- ⚠️ **CI 红 = 预存 BL-084-F007 视觉 baseline 失配** (`visual-regression.spec.ts:347 match ?campaignId`, F007 改默认 AI 面板致 baseline stale); BL-084-F006 那次 CI 同样失败 = 非 BL-086 引入; 我所有代码门全绿. 测试域归 Evaluator(铁律#4/#6) → 建议 regenerate baseline (update-visual-baselines workflow)
+- 🔶 F001 **PR 已开 https://github.com/guang-tech/apify/pull/3** (用户授 write 权限后从同仓分支开). 本地 apify service 套件 14文件/100测试全绿. **待爬虫团队 review+merge → sync /opt rebuild**. patch 备份留 `docs/upstream-patches/`
+- ✅ **CI 视觉 baseline 已修** (BL-084-F007 遗留): update-visual-baselines workflow 重生成 commit `8ff396f` 只改 `en-match-with-campaign.png` 一张; bot commit 不自触发 CI, 下次代码 commit 触发即转绿(高置信). 代码门一直全绿
 - 剩余: F002(schedules config) / F004(告警+成本,路径B) / F005(IG排查,路径B) — 多依赖爬虫团队 merge 节奏
 - 背景: 抓取慢 = refresh:discovery 配比失衡 + **TikHub 凭据问题(2026-06-06 重查修正)**. 双段验收(充值前=部署就绪/负载降; 充值后=真实速率). 文档 spec + 诊断 `docs/reviews/kol-acquisition-diagnostic-2026-06-06.md`(§3.2 已修正) + ADR-017
 - ✅ **根因确认(2026-06-06, 用户+爬虫团队核实)**: 就是**没充值**. 爬虫 `.env` token **有效**, 账户 `71***@qq.com` **正确**(实测当时 balance=$0.0005 空), 用户正往该账户充值. (注: 用户先前手贴的 `yi5kiE/…` 多开头一个 `y` 系记忆笔误=401, 与部署值无关). 充值后 Planner 复查余额>0 → 爬虫自动/重启恢复. 安全: token 曾在 402 响应片段泄露, 建议事后 TikHub 后台轮换
