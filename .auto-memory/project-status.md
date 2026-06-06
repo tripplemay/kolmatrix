@@ -9,7 +9,7 @@ type: project
 - ✅ F003 done(脚本): manual-seed-harvest, prod dry-run 2535/26批. **真实feed待充值**(SDK证实充值前投喂被worker消耗成succeeded-0=白做)
 - 🔶 F004 部分: kolmatrix告警done(classifyDailyRun加 Insufficient-balance即时ALERT + inserted=0 effort-without-yield WARN, 中6/04盲区). **剩余path B PR**: apify_cost_usd记账+/admin/stats暴露余额+主动余额ALERT
 - ⏳ F005 未启: IG hashtag 0产出排查(3h, path B)
-- ⚠️ **CI**: 代码门全绿. E2E=BL-084-F007测试域债: 视觉baseline已修(update-visual-baselines); 暴露 `match-flow.spec.ts:733`(AI面板CI无Redis/embedding渲染hydration失败, 一直被visual失败掩盖, **非BL-086**, 归Evaluator/Planner)
+- ✅ **CI 全绿(run 27065137715)**: 代码门 + E2E 全 success. BL-084-F007 测试债彻底清: 视觉baseline重生成(8ff396f) + `match-flow:733` refine bar 断言移到 view=full-pool(046cbfa, 用户授权直接修). 此前 visual 失败掩盖 chromium 未跑
 - ✅ F003 done: `scripts/bl086-manual-seed-harvest.ts` (读 prod 取 2535 UC id 排除 overlap → 包 `/channel/` URL → 分批 POST `/admin/seeds` manual_seed; 幂等+限速+checkpoint 可重入+dry-run). **坑**: youtube manual_seed 对非 URL 拼 `@handle`, 裸 UC id 必失败→必包 `https://www.youtube.com/channel/{UC}`. L1 tsc/lint/11单测绿 + prod dry-run total=2535/26批. 真实 feed 待充值/协调
 - 🔶 F001 **PR 已开 https://github.com/guang-tech/apify/pull/3** (用户授 write 权限后从同仓分支开). 本地 apify service 套件 14文件/100测试全绿. **待爬虫团队 review+merge → sync /opt rebuild**. patch 备份留 `docs/upstream-patches/`
 - ✅ **CI 视觉 baseline 已修** (BL-084-F007 遗留): update-visual-baselines workflow 重生成 commit `8ff396f` 只改 `en-match-with-campaign.png` 一张; bot commit 不自触发 CI, 下次代码 commit 触发即转绿(高置信). 代码门一直全绿
