@@ -436,5 +436,15 @@
       "cross-service"
     ],
     "discovered_in": "2026-06-06 用户产品策略讨论(配置页) — Planner 建议 deferred"
+  },
+  {
+    "id": "BL-090-cost",
+    "title": "apify_cost_usd 成本记账 (TikHub usage-delta 或价格表)",
+    "description": "BL-086-F004 余额暴露已做(guang-tech/apify#5), 但 apify_cost_usd 成本记账未做: TikHub 响应不带每请求成本。需价格表(per-endpoint price × 调用数估算)或 TikHub usage-delta API(快照 balance 前后差). 供预算→KOL 换算. 充值后可用真实 balance 变化校准. 路径 B fork PR.",
+    "decisions": [
+      "余额暴露优先(防静默空转主价值), 成本记账拆出"
+    ],
+    "confirmed_at": "2026-06-06T23:25+0800",
+    "priority": "low"
   }
 ]

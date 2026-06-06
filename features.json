@@ -52,7 +52,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "告警: scrape_jobs 连续 N 天 inserted_count=0 或检测到 'Insufficient balance' → 告警 (渠道: kol-sync-daily 报告段 / webhook / 其它, 实装择优); 杜绝再次静默空转 (本次 6/04 + 5/14 两次均人工发现)",
       "apify_cost_usd 回填: 每次 apify run 记成本 (当前列全 0), 供预算→KOL 换算; 爬虫代码部分走路径 B",
@@ -67,7 +67,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "排查 IG hashtag schedules 为何全期 0 新增 (IG actor 调用 / hashtag 搜索逻辑 / 解析), 对比 tiktok 同关键词高产",
       "根因定位 + 修复走路径 B PR 到 guang-tech/apify",

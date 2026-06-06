@@ -3,12 +3,13 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-086-kol-acquisition-accel BUILDING (~3.5/6) — 提升新 KOL 入库速率（积累模式）
+## 🚧 BL-086-kol-acquisition-accel BUILDING (5/6 gen done, F006=codex) — 提升新 KOL 入库速率（积累模式）
+- 全部 5 个 generator feature 完成. 3 个 apify PR 待 team merge: #3(F001 tier) #4(F005 节流) #5(F004 余额). #4/#5 同改 tikhub-client.ts get() 后 merge 者需 trivial rebase. 充值后 F006 双段验收(部署就绪 + 真实速率)
 - ✅ F002 done(applied): `scripts/bl086-f002-discovery-seeds.ts` via /admin/schedules, prod schedules 30→48 (砍8空转+4高产TT limit→300+18手游种子 free fire/mobile legends/pubg mobile/garena/minecraft/roblox×TT+YT). 快照 `docs/upstream-patches/BL-086-F002-schedules-snapshot-pre.json` 可回滚
 - 🔶 F001 done(PR): guang-tech/apify#3 (用户授write权限后开), 本地apify套件14文件/100测试绿, **待team merge+sync /opt rebuild**
 - ✅ F003 done(脚本): manual-seed-harvest, prod dry-run 2535/26批. **真实feed待充值**(SDK证实充值前投喂被worker消耗成succeeded-0=白做)
-- 🔶 F004 部分: kolmatrix告警done(classifyDailyRun加 Insufficient-balance即时ALERT + inserted=0 effort-without-yield WARN, 中6/04盲区). **剩余path B PR**: apify_cost_usd记账+/admin/stats暴露余额+主动余额ALERT
-- ⏳ F005 未启: IG hashtag 0产出排查(3h, path B)
+- ✅ F004 done: kolmatrix告警(classifyDailyRun balance-ALERT + inserted=0 WARN) + **PR guang-tech/apify#5**(余额暴露 getAccountInfo→/admin/stats tikhubBalanceUsd, SDK getEnvelope 取非标准 user_data envelope, SDK46+service100测试). 成本记账→backlog BL-090(TikHub 无每请求成本)
+- ✅ F005 done: **PR guang-tech/apify#4**(IG hashtag 429 根因=per-author 密集突发触发账户级限流, fork DB 实证 68 jobs; 修=TikHubClient minIntervalMs 全局节流 default 350ms, SDK44+service100测试)
 - ✅ **CI 全绿(run 27065137715)**: 代码门 + E2E 全 success. BL-084-F007 测试债彻底清: 视觉baseline重生成(8ff396f) + `match-flow:733` refine bar 断言移到 view=full-pool(046cbfa, 用户授权直接修). 此前 visual 失败掩盖 chromium 未跑
 - ✅ F003 done: `scripts/bl086-manual-seed-harvest.ts` (读 prod 取 2535 UC id 排除 overlap → 包 `/channel/` URL → 分批 POST `/admin/seeds` manual_seed; 幂等+限速+checkpoint 可重入+dry-run). **坑**: youtube manual_seed 对非 URL 拼 `@handle`, 裸 UC id 必失败→必包 `https://www.youtube.com/channel/{UC}`. L1 tsc/lint/11单测绿 + prod dry-run total=2535/26批. 真实 feed 待充值/协调
 - 🔶 F001 **PR 已开 https://github.com/guang-tech/apify/pull/3** (用户授 write 权限后从同仓分支开). 本地 apify service 套件 14文件/100测试全绿. **待爬虫团队 review+merge → sync /opt rebuild**. patch 备份留 `docs/upstream-patches/`
