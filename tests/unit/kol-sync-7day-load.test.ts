@@ -262,3 +262,53 @@ describe("B6 F006 · 7-day mock scheduler", () => {
     }
   });
 });
+
+// BL-086-F004 — silent-idle alerting: balance exhaustion + effort-without-yield.
+describe("classifyDailyRun — BL-086-F004 silent-idle alerts", () => {
+  function baseInput(over: Partial<Parameters<typeof classifyDailyRun>[0]> = {}) {
+    return classifyDailyRun({
+      timestamp: "2026-06-06T00:30:00Z",
+      endedAt: "2026-06-06T00:30:30Z",
+      adapters: [{ name: "apify-kol", healthy: true }],
+      discoverCount: 50,
+      refreshCount: 10,
+      inserted: 12,
+      updated: 3,
+      skipped: 0,
+      dedupeSkipped: 0,
+      estimatedQuotaConsumed: 100,
+      estimatedQuotaRemaining: 9_900,
+      errors: [],
+      zeroDiscoverStreakBefore: 0,
+      ...over,
+    });
+  }
+
+  it("pages ALERT immediately on Insufficient balance (no 3-day wait)", () => {
+    const line = baseInput({ errors: ["apify-kol GET /kol failed: Insufficient balance"] });
+    expect(line.level).toBe("ALERT");
+    expect(line.alerts.some((a) => a.includes("insufficient_balance"))).toBe(true);
+  });
+
+  it("matches case/space variants of the balance error", () => {
+    expect(baseInput({ errors: ["INSUFFICIENT BALANCE"] }).level).toBe("ALERT");
+    expect(baseInput({ errors: ["insufficient  balance (code 402)"] }).level).toBe("ALERT");
+  });
+
+  it("WARNs on inserted=0 despite discover/refresh effort (silent idle)", () => {
+    const line = baseInput({ discoverCount: 80, refreshCount: 5, inserted: 0 });
+    expect(line.level).toBe("WARN");
+    expect(line.alerts.some((a) => a.includes("inserted=0"))).toBe(true);
+  });
+
+  it("does not flag inserted=0 when there was no effort (discover=0 & refresh=0)", () => {
+    // discover=0 path is owned by the zero-discover streak rule, not the
+    // effort-without-yield rule — avoid double-counting an idle no-op day.
+    const line = baseInput({ discoverCount: 0, refreshCount: 0, inserted: 0, zeroDiscoverStreakBefore: 0 });
+    expect(line.alerts.some((a) => a.includes("inserted=0 with"))).toBe(false);
+  });
+
+  it("stays INFO on a healthy run with imports", () => {
+    expect(baseInput().level).toBe("INFO");
+  });
+});

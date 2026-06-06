@@ -13,6 +13,12 @@
  *                              count from prior log lines)
  *   errors.length > 0      →  WARN
  *   duration_ms > 300,000  →  WARN
+ *   insufficient_balance   →  ALERT immediately (BL-086-F004 — scrape
+ *                              credits exhausted; root cause of the 6/04 +
+ *                              5/14 silent-idle outages, both caught only
+ *                              manually. Escalates without a 3-day wait.)
+ *   inserted = 0 with effort →  WARN (BL-086-F004 — discovered/refreshed
+ *                              rows but imported nothing: effort-without-yield)
  */
 
 export type LogLevel = "INFO" | "WARN" | "ALERT";
@@ -80,6 +86,9 @@ export interface DailyLogLine extends DailyLogLineInput {
 const QUOTA_WARN_THRESHOLD = 9_500;
 const ZERO_DISCOVER_ALERT_STREAK = 3; // 3 days in a row → ALERT
 const DURATION_WARN_MS = 300_000; // 5 min
+// BL-086-F004: matches the fork's scrape error when TikHub credits run out
+// ("Insufficient balance"). Case-insensitive so log/HTTP variants both hit.
+const INSUFFICIENT_BALANCE_RE = /insufficient\s+balance/i;
 
 export function classifyDailyRun(input: DailyLogLineInput): DailyLogLine {
   const durationMs = new Date(input.endedAt).getTime() - new Date(input.timestamp).getTime();
@@ -99,6 +108,22 @@ export function classifyDailyRun(input: DailyLogLineInput): DailyLogLine {
   if (durationMs > DURATION_WARN_MS) {
     alerts.push(`duration_ms=${durationMs} > ${DURATION_WARN_MS}`);
   }
+  // BL-086-F004: balance exhaustion is the recurring silent-idle root cause
+  // (6/04 + 5/14 outages, both caught only manually). Detect the fork's
+  // "Insufficient balance" error and page immediately — don't wait out the
+  // 3-day discover streak.
+  const balanceExhausted = input.errors.some((e) => INSUFFICIENT_BALANCE_RE.test(e));
+  if (balanceExhausted) {
+    alerts.push("insufficient_balance (scrape credits exhausted — top up TikHub)");
+  }
+  // BL-086-F004: effort-without-yield. Rows were discovered or refreshed but
+  // nothing was imported — a silent-idle signal even when discover_count > 0
+  // (e.g. every candidate failed the quality gate or the import errored out).
+  if (input.inserted === 0 && (input.discoverCount > 0 || input.refreshCount > 0)) {
+    alerts.push(
+      `inserted=0 with discover=${input.discoverCount}/refresh=${input.refreshCount} (silent idle?)`
+    );
+  }
 
   let level: LogLevel = "INFO";
   if (alerts.length > 0) level = "WARN";
@@ -110,6 +135,9 @@ export function classifyDailyRun(input: DailyLogLineInput): DailyLogLine {
   ) {
     level = "ALERT";
   }
+  // BL-086-F004: balance exhaustion is unambiguous + was twice missed →
+  // page on the first occurrence, no streak wait.
+  if (balanceExhausted) level = "ALERT";
   return { ...input, durationMs, level, alerts };
 }
 
