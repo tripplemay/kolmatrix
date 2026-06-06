@@ -7,8 +7,15 @@
  * first open, calls `requestDetailedExplanationAction` (server) which
  * looks up cache → cost-cap → LLM in that order. UI states:
  *
- *   1. Loading — 5 skeleton sections while the server action races a 5s
- *      AbortController timeout (per spec §F004 acceptance).
+ *   1. Loading — 5 skeleton sections while the server action runs. The
+ *      client safety timeout (REQUEST_TIMEOUT_MS) sits just above the
+ *      server-side aigcgateway timeout (runAigcAction timeoutMs: 30s) so
+ *      the skeleton stays until the server resolves. BL-067's original 5s
+ *      assumed a <5s P99 LLM latency; the 5-locale × 5-segment payload
+ *      actually takes ~15-21s (gateway-confirmed), so a 5s client cut-off
+ *      fired before every cache-miss call could land — surfacing the
+ *      unavailable state even though the server succeeded and write-through
+ *      cached. Aligning to the server timeout fixes that (BL-084-F006).
  *   2. Success — segments rendered with i18n titles + LLM content.
  *   3. Cap exhausted — `capExhaustedToast` displayed once; dialog still
  *      shows the i18n unavailable message + close button.
@@ -66,7 +73,13 @@ interface Props {
   labels: DetailedExplanationLabels;
 }
 
-const REQUEST_TIMEOUT_MS = 5_000;
+// BL-084-F006: must exceed the server-side aigcgateway timeout (30s, see
+// runAigcAction timeoutMs in explainability-actions.ts) plus network margin.
+// The detailed payload (5 locales × 5 segments) measures ~15-21s end-to-end,
+// so a sub-30s client cut-off would abort a healthy in-flight call. The
+// loading skeleton covers the wait; on success the action write-through
+// caches all 5 locales, so any subsequent open resolves in <200ms.
+const REQUEST_TIMEOUT_MS = 32_000;
 const SEGMENT_ORDER: Array<keyof DetailedExplanationSegments> = [
   "matchScore",
   "categoryFit",
