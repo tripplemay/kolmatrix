@@ -1,0 +1,72 @@
+From 3c833680bd5c94ac9a2a10c24504a59858beb619 Mon Sep 17 00:00:00 2001
+From: tripplemay <becky.cervantes1992@aol.com>
+Date: Sat, 6 Jun 2026 13:48:24 +0800
+Subject: [PATCH] =?UTF-8?q?feat(scoring):=20=E7=A7=AF=E7=B4=AF=E6=9C=9F=20?=
+ =?UTF-8?q?refresh=20=E9=85=8D=E6=AF=94=20tier=20interval=20hot=2014d=20/?=
+ =?UTF-8?q?=20warm=2030d=20/=20cold=2030d?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+旧值 hot 1d/warm 3d/cold 7d 让 refresh 占 ~90% 抓取量却 0 新增。当前分布
+hot 460/warm 502/cold 2215 → refresh 日负载 ~944 → ~123 (460/14+502/30+2215/30),
+−87%,省出 ~820 KOL-刷新/天给 discovery。computeTier 分层不变,仅 TIER_INTERVAL_MS。
+scoring-tier.test.ts nextRefreshAt 断言同步更新 (+14d/+30d/+30d)。
+service 套件 14 文件/100 测试全绿。
+
+来源: KOLMatrix BL-086-F001 (诊断 2026-06-06 §3.2 refresh:discovery 配比失衡)。
+---
+ packages/service/src/scoring/tier.ts             | 10 +++++++---
+ packages/service/tests/unit/scoring-tier.test.ts | 15 +++++++++------
+ 2 files changed, 16 insertions(+), 9 deletions(-)
+
+diff --git a/packages/service/src/scoring/tier.ts b/packages/service/src/scoring/tier.ts
+index cf34f81..67b30da 100644
+--- a/packages/service/src/scoring/tier.ts
++++ b/packages/service/src/scoring/tier.ts
+@@ -15,10 +15,14 @@ const WARM_THRESHOLD: Record<string, number> = {
+   x: 50_000,
+ };
+ 
++// BL-086 积累期配比:拉长 refresh 间隔,把抓取预算让给 discovery。
++// 旧值 hot 1d / warm 3d / cold 7d 让 refresh 占 ~90% 抓取量却 0 新增;
++// 当前分布 hot 460 / warm 502 / cold 2215 → refresh 日负载 ~944 → ~123
++// (460/14 + 502/30 + 2215/30 ≈ 123),−87%,省出 ~820 KOL-刷新/天给 discovery。
+ const TIER_INTERVAL_MS: Record<Tier, number> = {
+-  hot: 24 * 60 * 60 * 1000,
+-  warm: 3 * 24 * 60 * 60 * 1000,
+-  cold: 7 * 24 * 60 * 60 * 1000,
++  hot: 14 * 24 * 60 * 60 * 1000,
++  warm: 30 * 24 * 60 * 60 * 1000,
++  cold: 30 * 24 * 60 * 60 * 1000,
+ };
+ 
+ export function computeTier(input: {
+diff --git a/packages/service/tests/unit/scoring-tier.test.ts b/packages/service/tests/unit/scoring-tier.test.ts
+index 8be214e..c077eb4 100644
+--- a/packages/service/tests/unit/scoring-tier.test.ts
++++ b/packages/service/tests/unit/scoring-tier.test.ts
+@@ -34,11 +34,14 @@ describe('computeTier', () => {
+ });
+ 
+ describe('nextRefreshAt', () => {
++  // BL-086-F001 — accumulation cadence: hot +14d / warm +30d / cold +30d
++  // (was +1d / +3d / +7d). Lengthened so refresh stops crowding out discovery
++  // (~944→~123 refresh/day). Only the interval moved; computeTier unchanged.
+   const base = new Date('2026-05-06T00:00:00Z');
+-  it('hot → +1d', () =>
+-    expect(nextRefreshAt('hot', base).toISOString()).toBe('2026-05-07T00:00:00.000Z'));
+-  it('warm → +3d', () =>
+-    expect(nextRefreshAt('warm', base).toISOString()).toBe('2026-05-09T00:00:00.000Z'));
+-  it('cold → +7d', () =>
+-    expect(nextRefreshAt('cold', base).toISOString()).toBe('2026-05-13T00:00:00.000Z'));
++  it('hot → +14d', () =>
++    expect(nextRefreshAt('hot', base).toISOString()).toBe('2026-05-20T00:00:00.000Z'));
++  it('warm → +30d', () =>
++    expect(nextRefreshAt('warm', base).toISOString()).toBe('2026-06-05T00:00:00.000Z'));
++  it('cold → +30d', () =>
++    expect(nextRefreshAt('cold', base).toISOString()).toBe('2026-06-05T00:00:00.000Z'));
+ });
+-- 
+2.50.1 (Apple Git-155)
+
