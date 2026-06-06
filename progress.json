@@ -1,61 +1,37 @@
 {
-  "status": "done",
-  "user_goal": "BL-084-ai-match-panel — /match?campaignId=X 重塑为 AI 推荐三列工作台 (推荐/已接受/候补). 9 features F001-F009 (~17h Generator + 1.5h Reviewer ≈ 2.5 day). 6/05 用户问活动页 '匹配 KOL' 按钮实现+gap, Planner audit 揭示主面板完全不读 campaignId (装饰参数), 用户选 C 重型方案 + 8 子决策 lock: 推荐源 B (embedding 召回 200 + LLM 重排 30, 沿用 BL-068) / Toggle 切换 (campaign 默认 AI) / 数据模型 A (复用 kol_campaign + suggestion_status enum 4 态) / embedding 无需独立批次 (B7a-F002 runSmartMatch 已 ship + KOL 99.5% + Product JIT) / LLM 含 matchReason 短文本 / Accept 一键+5s Undo / Swap drag 候补列 / Toggle 默认 campaignId 有→AI 无→全池. 月 cost <$1. 关联 docs/specs/BL-084-ai-match-panel-spec.md.",
-  "total_features": 9,
-  "completed_features": 9,
-  "fix_rounds": 1,
-  "current_sprint": "BL-084-ai-match-panel",
-  "last_updated": "2026-06-06T11:25+0800",
+  "status": "building",
+  "user_goal": "BL-086-kol-acquisition-accel — 提升新 KOL 入库速率(积累模式). 6 features F001-F006 (~9h Generator + 1.5h Reviewer). 来源: 2026-06-06 Planner prod 只读诊断 — apify 贡献慢根因 = TikHub 余额耗尽(~6/04 静默空转) + refresh:discovery 配比失衡(TIER_INTERVAL_MS hot 1d 使 refresh 占~90%抓取量产0新增). 用户决策: refresh 积累档 hot 14d/warm 30d/cold 30d(−87%负载) + discovery 拉满(扩种子+收割2535旧源id) + 余额可观测. 落地路径 B(上游 PR guang-tech/apify→merge→sync, 不积累分叉). 目标: 部署到位确保 TikHub 充值后立即生效. 关联 ADR-017 + docs/reviews/kol-acquisition-diagnostic-2026-06-06.md + docs/specs/BL-086-kol-acquisition-accel-spec.md.",
+  "total_features": 6,
+  "completed_features": 0,
+  "fix_rounds": 0,
+  "current_sprint": "BL-086-kol-acquisition-accel",
+  "last_updated": "2026-06-06T11:45+0800",
   "reference_docs": [
-    "docs/specs/BL-084-ai-match-panel-spec.md",
-    "src/lib/discovery/smart-match.ts",
-    "src/app/api/kols/smart-match/route.ts",
-    "src/app/[locale]/(app)/match/page.tsx",
-    "src/app/[locale]/(app)/match/AiSuggestionsSidebar.tsx",
-    "src/app/[locale]/(app)/match/MatchRefineBar.tsx",
-    "src/app/[locale]/(app)/campaigns/CampaignsTable.tsx",
-    "src/app/[locale]/(app)/campaigns/[id]/DetailedExplanationDialog.tsx",
-    "prisma/schema.prisma",
-    "src/lib/embedding/kol-embed.ts",
-    "messages/zh.json",
-    "messages/en.json",
-    "messages/ja.json",
-    "messages/ko.json",
-    "messages/es.json"
+    "docs/specs/BL-086-kol-acquisition-accel-spec.md",
+    "docs/reviews/kol-acquisition-diagnostic-2026-06-06.md",
+    "docs/adr/ADR-017-kol-source-strategy-and-upstream-acquisition-governance.md",
+    "docs/dev/kol-sync-runbook.md",
+    "guang-tech/apify: packages/service/src/scoring/tier.ts (TIER_INTERVAL_MS)",
+    "guang-tech/apify: packages/service/src/jobs/refresh-scheduler.ts",
+    "guang-tech/apify: schedules 表 (hashtag 种子)",
+    "apify-kol-service: POST /admin/seeds (manual_seed 通道, ADMIN_API_KEY)",
+    "apify_kol DB: scrape_jobs (kind/inserted_count/apify_cost_usd) + kols (tier/next_refresh_at)"
   ],
   "docs": {
-    "spec": "docs/specs/BL-084-ai-match-panel-spec.md",
-    "audit": null,
+    "spec": "docs/specs/BL-086-kol-acquisition-accel-spec.md",
+    "audit": "docs/reviews/kol-acquisition-diagnostic-2026-06-06.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/BL-084-signoff-2026-06-06.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "BL-084 reverifying 全 PASS：staging Why dialog 已恢复详细解释，Accept/Swap/Toggle 回归通过，prod migration/columns/index/backfill 只读核验通过。",
-    "pass_count": 9,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": []
-  },
-  "fix_rounds_history": [
-    {
-      "round": 1,
-      "at": "2026-06-06T10:24+0800",
-      "by": "Kimi(generator)",
-      "addressed": [
-        "FAIL1 Why dialog '详细解释暂时不可用': 根因=DetailedExplanationDialog 客户端超时 5s << EXPLAIN_DETAILED action 真实延迟 15-21s (gateway 日志 trc 21.1s success 但客户端 5s 放弃). 修复 REQUEST_TIMEOUT_MS 5s→32s 对齐服务端 30s. commit 7d9cb9f. L1: tsc=0/lint=0/25单测PASS",
-        "FAIL2 prod migration: 非代码问题=纯部署动作. migration 文件存在+本地/staging 已验. deploy-prod.yml 第6/9步自动 prisma migrate deploy 即应用. 待用户触发 prod 部署",
-        "FAIL1b refresh rerank cosine 降级: F002 spec 规定的优雅降级(LLM 偶发非完美30-排列). 用户决定保持现状, 记入 backlog 观察"
-      ],
-      "deploy_dependency": "复验前提: staging 重部署取 de74828(dialog修复) + prod 部署(migrate deploy + 注入 AIGCGATEWAY_MATCH_RERANK_ACTION_ID=cmq0hrq25016kbnpe2oru2qb0 到 .env.production). 两端部署均为用户手动动作"
-    }
-  ],
-  "generator_handoff": "BL-084 fix-round 1 done + 两端部署落地 @ 1343ad9 (2026-06-06 ~10:40 BJT). 代码修复: DetailedExplanationDialog 客户端超时 5s→32s (commit 7d9cb9f). 部署: staging deploy-staging run 27050108647 success+health200; prod deploy-prod run 27050228802 success+health200, HEAD=1343ad9. prod migration 核验全 PASS(超级用户只读): _prisma_migrations bl_084 finished=t / 4列齐 / kol_campaign_suggestion_status_idx 存在 / legacy backfill 30行全accepted+decided_at回填0残留NULL / audit backfilled_rows=30 @02:36:57. prod env: rerank已注入(备份), EXPLAIN_DETAILED+SHORT 早已在prod. ✅复验前提已满足. Reviewer 可启: staging Why弹窗应显5段(首开skeleton~20s,再开<200ms缓存) + prod migration只读已由Generator预核验PASS.",
+  "evaluator_feedback": null,
+  "fix_rounds_history": [],
+  "generator_handoff": "[2026-06-06 11:45 BJT Planner Kimi BL-086 planning done → building] 批次性质: 跨仓库(kolmatrix + guang-tech/apify) + 部分 ops/config, 多数代码走路径 B(上游 PR→merge→sync, 用户拍板, 不加本地 patch). ⚠️ 关键约束: (1) 多数加速逻辑在上游 apify-kol-service(我方自有 docker, repo guang-tech/apify), F001/F004/F005 走 PR 到上游再 fork-sync; F002/F003 是 config/ops. 预计极少或无 kolmatrix 产品代码. (2) 整批部署不依赖 TikHub 余额(余额$0时部署无害), 但'生效'依赖充值 — 所以验收双段(F006): 充值前=部署就绪/配置已应用/refresh负载下降可见于next_refresh_at重算; 充值后=真实入库速率. (3) manual_seed 通道=POST /admin/seeds(ADMIN_API_KEY, BL-061 F001 已实证). (4) 2535 旧源 id 取数=kolmatrix prod DB metadata->>'source'='youtube-api-daily' 的 external_id 排除已在新源 platform_user_id 的49个. (5) fork-sync 按 docs/dev/kol-sync-runbook.md, BL-061 已有4处本地hot-fix, 本批不得再加. Generator 起步建议: F001(tier.ts 改 TIER_INTERVAL_MS, 最小改动) 或 F003(manual_seed 收割脚本, 命中96%最高即时增量). prod 访问: ssh tripplezhou@kol.guangai.ai(IP直连, host key 绑 IP), /opt/apify-kol-service docker. P0 提醒: TikHub 充值是用户/账户侧动作, 不在本批 — 但建议尽早催, 否则部署完仍空转.",
   "session_notes": {
-    "Kimi_planner": "[2026-06-05 14:55 BJT Planner Kimi BL-084 planning done] BL-083 done 收尾 (tag bl083-done @ b735aad) + 切 BL-084 (用户 6/05 ack 启). spec 已在 backlog 启动前完整起草 (docs/specs/BL-084-ai-match-panel-spec.md §1-§6 已存 + features.json 9 features 详细 acceptance 已写). A1 8 子决策 lock (推荐源 B / Toggle 切换 / 数据模型 A kol_campaign+suggestion_status / embedding 无需 prep / matchReason 短文本 / Accept 一键+5s Undo / Swap drag / Toggle 默认 campaignId 有→AI). audit 关键洞察: B7a-F002 runSmartMatch 已 ship 完整 embedding cosine + Product JIT, BL-084 只新增 LLM 重排 + 三列 UI + Accept/Skip/Swap 数据模型, 实际工时比初估少. ADR-016 (kol_campaign suggestion_status 4 态生命周期) 待 F009 起草. 下一步: 用户审 spec 后 planning → building, Generator 启 F001 runSmartMatch 升级 (最小改动, 0.5h).",
-    "Kimi_generator": "[2026-06-06 10:40 BJT Generator Kimi BL-084 fix-round1 + 部署落地] 用户授权代为部署. staging(run 27050108647)+prod(run 27050228802) 均 deploy success+health200. prod migration 核验全PASS: bl_084 migration finished / 4列 / idx / backfill 30行accepted 0残留NULL / audit backfilled_rows=30. prod 已有 EXPLAIN_DETAILED+SHORT env(意外好消息,prod Why也能用), rerank env 本次注入+备份. 唯一代码修复=dialog超时5→32s(根因 gateway日志实证LLM~20s vs 客户端5s). FAIL1b rerank降级保持现状(backlog BL-085-obs). 状态=reverifying fix_rounds=1, 复验前提全满足. ⚠️Reviewer注意: prod migration只读acceptance已由Generator预核验, 复验重点是staging Why弹窗5段+Accept/Skip/Swap闭环回归.",
-    "Reviewer": "[2026-06-06 11:25 BJT Evaluator Reviewer BL-084 reverifying→done] staging/prod HEAD 均为 1343ad9。Why dialog 复验 PASS：campaignId=382f014c-a9f9-4fde-bcad-d5bb10ed2045 下 @@게임통弹窗约 11s 返回 5 段详细解释。回归 PASS：Accept 后可移除恢复；Swap 到候补后可重新加入；toggle 到 full-pool 正常。prod 只读 SQL PASS：_prisma_migrations 含 20260605160000_bl_084_add_kol_campaign_suggestion_status@2026-06-06 02:36:57+00；kol_campaign 4 列齐；kol_campaign_suggestion_status_idx 存在；null_status_rows=0。L1 复核：tsc PASS，lint 0 errors / 3 warnings，BL-084 toggle e2e PASS。signoff=docs/test-reports/BL-084-signoff-2026-06-06.md。",
+    "Kimi_planner": "[2026-06-06 11:45 BJT Planner Kimi BL-086 开批次] BL-084 确认 done(Codex signoff d10351c). 本批源自一长串 prod 只读诊断: 数量差异(3177vs2383→软删+质量门, 无真丢失) → 旧源价值(2535独有但邮箱0.24%, 定位discovery资产不复活, ADR-017) → 抓取慢(TikHub余额6/04耗尽+refresh占90%产0新增) → refresh根因=TIER_INTERVAL_MS hot1d. 诊断报告 docs/reviews/kol-acquisition-diagnostic-2026-06-06.md + ADR-017 已沉淀. 用户拍板: 积累档 hot14d/warm30d/cold30d + 路径B(上游PR). 6 features: F001 tier积累档 / F002 种子扩充砍空转IG / F003 manual_seed收割2535 / F004 余额告警+成本记账 / F005 IG发现0产出排查 / F006 Codex双段验收. BL-088(质量门放宽)+BL-089(配置页)留backlog. ⚠️本批多数在上游apify-kol-service非kolmatrix, kolmatrix CI覆盖不到爬虫改动. 充值前只能部分验收. 下一步: Generator 启 F001/F003.",
+    "Kimi_generator": null,
+    "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
   },

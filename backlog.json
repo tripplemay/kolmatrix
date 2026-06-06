@@ -397,49 +397,6 @@
     "priority": "low"
   },
   {
-    "id": "BL-086",
-    "title": "上游抓取加速 — 我方可控部分(余额告警 + manual_seed 收割旧源 + hashtag 种子调优 + 成本记账)",
-    "description": "**触发：** 2026-06-06 Planner 对 prod 只读诊断(docs/reviews/kol-acquisition-diagnostic-2026-06-06.md)定位 apify 贡献慢根因。归属界定见 ADR-017：apify-kol-service 运维责任在我方,本条聚合**不需爬虫团队改代码**的我方可控动作。\n\n**P0 — 余额/产出可观测性(根治静默空转盲区):**\n- inserted_count 连续 N 天=0 即告警(本次 6/04-6/06 + 5/14-5/26 两次都靠人工感知,完全无监控)\n- TikHub 余额监控(日志全是 Insufficient balance)\n- scrape_jobs.apify_cost_usd 成本记账回填(当前全 0,预算→KOL 换算无依据)\n\n**P1 — 收割旧源(覆盖盲区 + 邮箱):**\n- 把 2535 个仅旧源 youtube 频道 UC id(922 个 ≥10万粉,印度/东南亚手游大号)通过 manual_seed 通道 `POST /admin/seeds` 喂给 apify-kol 新源重抓\n- manual_seed 历史命中率 96%(全期 38 抓→37 新),是现成高效通道但几乎没用过(全期才 41 任务)\n- 旧源 id 取数:`metadata->>'source'='youtube-api-daily'` 的 external_id(=UC id),排除已在新源 platform_user_id 的 49 个\n\n**P1 — hashtag 发现种子调优(schedules 表配置):**\n- 加印度/东南亚手游关键词(free fire / mobile legends / pubg mobile / garena / minecraft / roblox + 印地/葡/印尼语)\n- 砍空转种子:instagram valorant/esports/dota2/fortnite/pcgaming/streamer(全期 0 产出)、youtube mobile gaming/dota2(0)\n- 调高高产 tiktok 种子的 limit(lol 260 / valorant 239 / gaming 233)\n- 改 schedules 表前与爬虫团队对齐改法(走 admin API 还是直接改表)\n\n**前置:** P0 充值(用户/账户管理员,非本工单)否则一切空转。\n\n**预估工时:** ~1-2 day(P0 告警 + 成本记账 0.5d / manual_seed 批量投喂脚本 0.5d / hashtag 配置调整 0.5d)\n\n**关联:** ADR-017 · BL-058(前序 fork 数据跟踪)· BL-087(爬虫团队代码治本)· 旧源价值分析见诊断报告 §2",
-    "decisions": [
-      "用户 2026-06-06 决议:把诊断链派生工单沉淀 backlog,分'我方做'(BL-086/088)与'爬虫团队做'(BL-087)",
-      "ADR-017 锁定:旧源=discovery 资产不复活,2535 id 走 manual_seed 收割;运维归我方",
-      "manual_seed 通道=POST /admin/seeds(BL-061 F001 已实证可触发 TT+IG scrape)",
-      "P0 余额/产出告警优先级最高:两次静默空转(6/04 + 5/14)均无监控,靠人工感知"
-    ],
-    "confirmed_at": "2026-06-06T11:00+0800",
-    "priority": "high",
-    "tags": [
-      "apify-kol",
-      "acquisition-rate",
-      "manual-seed",
-      "observability",
-      "ops",
-      "our-side"
-    ],
-    "discovered_in": "2026-06-06 Planner prod 只读诊断 docs/reviews/kol-acquisition-diagnostic-2026-06-06.md"
-  },
-  {
-    "id": "BL-087",
-    "title": "apify-kol-service 抓取配比治本(我方代码,落地路径待定) — refresh 间隔积累档 + Instagram 发现修复",
-    "description": "**触发：** 2026-06-06 Planner prod 诊断揭示比'余额耗尽'更深的结构问题。**归属修正(用户 2026-06-06 指出):代码在 /opt/apify-kol-service(仓库 guang-tech/apify),我方有完全修改+部署能力**,'走爬虫团队'只是落地路径选项之一,非能力边界。\n\n**问题 1 — refresh 吃 90% 预算产 0 新增(已定位到代码常量):**\nscrape_jobs.kind 全期:refresh 14768 任务/237,980 抓取/**0 新增**(占 ~89%);hashtag 518 任务/29,051 抓取/3140 新增(~11% 率,只分到 ~10% 预算)。根因 = `scoring/tier.ts:18` 的 `TIER_INTERVAL_MS` 硬编码:hot 1d/warm 3d/cold 7d。当前分布 hot 460/warm 502/cold 2215 → 隐含 ~944 KOL-刷新/天 ≈ 观测的 ~20k 抓取/天。hot 460 每天全量重刷占 49%。\n→ **积累期决策(用户确认方向:hot 周或半月可接受)**:`TIER_INTERVAL_MS` 改 **hot 14d / warm 30d / cold 30d**(refresh 日负载 944→~123,−87%),省出 ~820 KOL-刷新/天(~1.6-2万 TikHub 调用)转 discovery,新增速率有望 ~87→180-220/天。代价:头部数据日更→半月更(积累期无感)。配套 BL-086(种子)才能吃满。成熟期再收紧(ADR-017 §3 阶段化)。\n→ 可选配套 env 旋钮(纯配置,无代码):`REFRESH_SCHEDULER_INTERVAL_MS` / `SCRAPE_CONCURRENCY`(`config.ts`)。\n\n**问题 2 — Instagram hashtag 发现 0 产出:**\ninstagram 的 valorant/esports/dota2/fortnite/pcgaming/streamer 等全期 0 新增(tiktok 同词高产),疑似 IG actor / hashtag 搜索逻辑失效,需排查为何拿不到新 profile。\n\n**落地路径待定(用户拍 A/B/C):** A 本地直接改 /opt/apify-kol-service 并 rebuild(快,加深与上游分叉——BL-061 已有 4 处本地 hot-fix);B 走上游 PR 到 guang-tech/apify 再 sync(不积累分叉,推荐);C 交爬虫团队改。\n\n**前置:** P0 TikHub 充值(否则改了也空转)。代码改动须走 Generator 实装(铁律#9 Planner 不直接改产品代码)。\n\n**关联:** ADR-017 §3 · BL-086(配置侧配套)· 诊断报告 §3.4",
-    "decisions": [
-      "ADR-017 §3 锁定:发现优先 + 阶段化 refresh;积累期 TIER_INTERVAL_MS = hot 14d/warm 30d/cold 30d(用户 2026-06-06 确认)",
-      "落地路径已定(用户 2026-06-06):B 走上游 PR 到 guang-tech/apify 再 sync 下来,不积累本地分叉;Generator 在批次内作者 PR,爬虫团队 merge,我方 ops sync",
-      "代码改动走 Generator 实装(铁律#9);Planner 仅出方案",
-      "证据:refresh 占 ~89% 抓取量产 0 新增(TIER_INTERVAL_MS hot 1d);IG hashtag 全平台 0 产出 vs tiktok 同词高产"
-    ],
-    "confirmed_at": "2026-06-06T11:00+0800",
-    "priority": "high",
-    "tags": [
-      "apify-kol",
-      "acquisition-rate",
-      "refresh-cadence",
-      "discovery-strategy",
-      "our-code"
-    ],
-    "discovered_in": "2026-06-06 Planner prod 只读诊断 docs/reviews/kol-acquisition-diagnostic-2026-06-06.md"
-  },
-  {
     "id": "BL-088",
     "title": "KOLMatrix 侧一次性补量与清理 — 质量门选择性放宽(回收 806) + 旧源 2584 软删数据硬删评估",
     "description": "**触发：** 2026-06-06 Planner prod 诊断。本条是 KOLMatrix 端可做、与上游增长无关的一次性动作(量换质 + 数据清理),优先级低于持续增长(BL-086/087)。\n\n**1 — 质量门选择性放宽(回收 806):**\n上游 apify-kol 3177 中有 806 条被导入质量门拦截(spam <1000 粉丝为主 quality.ts:101;双低分 quality.ts:123)。各平台入库率:youtube 88%/tiktok 78%/**instagram 38%**。\n→ 选择性放宽(优先 instagram + 中粉段,**不要 <1000 噪音**)可一次性补回部分。\n→ 代价:这些低粉/低分数据基本无邮箱(诊断 §2 显示旧源同类邮箱率 0.24%),是 quantity↔quality 取舍(ADR-017 §4)。需先量化'放宽到 X 能回收 Y、其中带邮箱 Z'再决定。\n\n**2 — 旧源 2584 软删数据硬删评估:**\nyoutube-api-daily 2584 条(5/8 全量软删)占 DB 物理行数(4967)一半。若确认旧源永久退役(ADR-017:是),可清理回收空间。\n→ 注意:`(tenant,platform,handle)` 与 `(tenant,platform,external_id)` 是**非 partial 唯一索引**,软删行仍占位;硬删前确认无依赖 + 保留 2535 个收割种子 id(已由 BL-086 manual_seed 消费后再删)。\n\n**依赖:** 硬删应在 BL-086 manual_seed 收割完 2535 id 之后(否则丢种子名单)。\n\n**预估工时:** 质量门放宽 ~0.5-1 day + 硬删清理 ~0.5 day(含量化分析 SQL)\n\n**关联:** ADR-017 §4 · BL-086(收割先于硬删)· 诊断报告 §1 §2",
