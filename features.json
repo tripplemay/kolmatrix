@@ -148,7 +148,7 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "L1 自动化 6 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 runSmartMatch/rerank/server-actions/migration/MatchAiPanel/page UI 单测 (4) npx prisma validate + migration ROLLBACK SQL valid (5) i18n 5 locale 新 key grep 一致 (6) Playwright e2e match-ai toggle 通过",
       "L2 staging 实测 7 项 PASS: (1) /match?campaignId=X 默认进 AI panel 抽样 ≥2 campaign (2) 三列数据正确 (suggested 30, accepted ≥0, swap ≥0) (3) Accept→accepted 列 + 5s Undo toast 可点击撤回 (4) Skip→KOL 从 suggested 移除 + 下次 getCampaignSuggestions 不再推 (5) Swap drag 推荐→候补 数据流闭环 (6) Why dialog (BL-067 detailed explain) 正常 (7) Toggle 切全池→runMatchSearch BM1 行为不变",

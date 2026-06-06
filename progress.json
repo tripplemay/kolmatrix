@@ -1,11 +1,11 @@
 {
-  "status": "reverifying",
+  "status": "done",
   "user_goal": "BL-084-ai-match-panel — /match?campaignId=X 重塑为 AI 推荐三列工作台 (推荐/已接受/候补). 9 features F001-F009 (~17h Generator + 1.5h Reviewer ≈ 2.5 day). 6/05 用户问活动页 '匹配 KOL' 按钮实现+gap, Planner audit 揭示主面板完全不读 campaignId (装饰参数), 用户选 C 重型方案 + 8 子决策 lock: 推荐源 B (embedding 召回 200 + LLM 重排 30, 沿用 BL-068) / Toggle 切换 (campaign 默认 AI) / 数据模型 A (复用 kol_campaign + suggestion_status enum 4 态) / embedding 无需独立批次 (B7a-F002 runSmartMatch 已 ship + KOL 99.5% + Product JIT) / LLM 含 matchReason 短文本 / Accept 一键+5s Undo / Swap drag 候补列 / Toggle 默认 campaignId 有→AI 无→全池. 月 cost <$1. 关联 docs/specs/BL-084-ai-match-panel-spec.md.",
   "total_features": 9,
-  "completed_features": 8,
+  "completed_features": 9,
   "fix_rounds": 1,
   "current_sprint": "BL-084-ai-match-panel",
-  "last_updated": "2026-06-06T10:40+0800",
+  "last_updated": "2026-06-06T11:25+0800",
   "reference_docs": [
     "docs/specs/BL-084-ai-match-panel-spec.md",
     "src/lib/discovery/smart-match.ts",
@@ -27,29 +27,16 @@
     "spec": "docs/specs/BL-084-ai-match-panel-spec.md",
     "audit": null,
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/BL-084-signoff-2026-06-06.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": {
-    "summary": "L1 自动化通过，但 staging Why explainability 失败且 prod 数据库未应用 BL-084 migration，本轮需回 fixing。",
-    "pass_count": 6,
+    "summary": "BL-084 reverifying 全 PASS：staging Why dialog 已恢复详细解释，Accept/Swap/Toggle 回归通过，prod migration/columns/index/backfill 只读核验通过。",
+    "pass_count": 9,
     "partial_count": 0,
-    "fail_count": 2,
-    "issues": [
-      {
-        "feature_id": "F009",
-        "result": "FAIL",
-        "description": "staging /match?campaignId=<真实> 点击“推荐理由”仅弹出错误态：\"详细解释暂时不可用，请稍后重试。\"，未返回 BL-067 详细 explanation 内容。",
-        "steps_to_reproduce": "1. 登录 staging.kol.guangai.ai 2. 进入 /zh/match?campaignId=2d11dd71-1a98-4ee0-b15d-314dae9fcd3c 3. 在 AI 推荐列点击任一卡片的“推荐理由” 4. 观察弹窗只显示错误提示，无详细解释内容。"
-      },
-      {
-        "feature_id": "F009",
-        "result": "FAIL",
-        "description": "prod 数据库 kolmatrix 未应用 BL-084 migration；kol_campaign 缺少 suggestion_status/suggested_at/decided_at，prod 只读 acceptance 不成立。",
-        "steps_to_reproduce": "1. SSH 到 prod 主机 /opt/kolmatrix（HEAD=96ca150） 2. 读取 .env.production 确认 DATABASE_URL 指向 localhost/kolmatrix 3. 查询 _prisma_migrations 最近记录与 information_schema.columns 4. 观察 20260605160000_bl_084_add_kol_campaign_suggestion_status 不存在，且 kol_campaign 仅有旧的 match_score 列。"
-      }
-    ]
+    "fail_count": 0,
+    "issues": []
   },
   "fix_rounds_history": [
     {
@@ -68,7 +55,7 @@
   "session_notes": {
     "Kimi_planner": "[2026-06-05 14:55 BJT Planner Kimi BL-084 planning done] BL-083 done 收尾 (tag bl083-done @ b735aad) + 切 BL-084 (用户 6/05 ack 启). spec 已在 backlog 启动前完整起草 (docs/specs/BL-084-ai-match-panel-spec.md §1-§6 已存 + features.json 9 features 详细 acceptance 已写). A1 8 子决策 lock (推荐源 B / Toggle 切换 / 数据模型 A kol_campaign+suggestion_status / embedding 无需 prep / matchReason 短文本 / Accept 一键+5s Undo / Swap drag / Toggle 默认 campaignId 有→AI). audit 关键洞察: B7a-F002 runSmartMatch 已 ship 完整 embedding cosine + Product JIT, BL-084 只新增 LLM 重排 + 三列 UI + Accept/Skip/Swap 数据模型, 实际工时比初估少. ADR-016 (kol_campaign suggestion_status 4 态生命周期) 待 F009 起草. 下一步: 用户审 spec 后 planning → building, Generator 启 F001 runSmartMatch 升级 (最小改动, 0.5h).",
     "Kimi_generator": "[2026-06-06 10:40 BJT Generator Kimi BL-084 fix-round1 + 部署落地] 用户授权代为部署. staging(run 27050108647)+prod(run 27050228802) 均 deploy success+health200. prod migration 核验全PASS: bl_084 migration finished / 4列 / idx / backfill 30行accepted 0残留NULL / audit backfilled_rows=30. prod 已有 EXPLAIN_DETAILED+SHORT env(意外好消息,prod Why也能用), rerank env 本次注入+备份. 唯一代码修复=dialog超时5→32s(根因 gateway日志实证LLM~20s vs 客户端5s). FAIL1b rerank降级保持现状(backlog BL-085-obs). 状态=reverifying fix_rounds=1, 复验前提全满足. ⚠️Reviewer注意: prod migration只读acceptance已由Generator预核验, 复验重点是staging Why弹窗5段+Accept/Skip/Swap闭环回归.",
-    "Reviewer": "[2026-06-06 01:48 BJT Evaluator Reviewer BL-084 verifying→fixing] L1 PASS: prisma validate / tsc / vitest 1505 / BL-084 toggle e2e / local migration+index checks. 测试域修补：match-flow.spec.ts 收窄 duplicate testid 断言；visual-regression.spec.ts 将 ?campaignId baseline 固定到 &view=full-pool。L2 staging: 2 campaigns 默认 AI 入口 PASS；Accept+Undo、Skip persistence、Swap+Re-add、Toggle full-pool PASS。FAIL 1: Why dialog 仅显示“详细解释暂时不可用，请稍后重试”。FAIL 2: prod /opt/kolmatrix HEAD=96ca150 但 DATABASE_URL=kolmatrix 上未见 BL-084 migration，kol_campaign 缺 suggestion_status/suggested_at/decided_at；prod readonly acceptance fail。",
+    "Reviewer": "[2026-06-06 11:25 BJT Evaluator Reviewer BL-084 reverifying→done] staging/prod HEAD 均为 1343ad9。Why dialog 复验 PASS：campaignId=382f014c-a9f9-4fde-bcad-d5bb10ed2045 下 @@게임통弹窗约 11s 返回 5 段详细解释。回归 PASS：Accept 后可移除恢复；Swap 到候补后可重新加入；toggle 到 full-pool 正常。prod 只读 SQL PASS：_prisma_migrations 含 20260605160000_bl_084_add_kol_campaign_suggestion_status@2026-06-06 02:36:57+00；kol_campaign 4 列齐；kol_campaign_suggestion_status_idx 存在；null_status_rows=0。L1 复核：tsc PASS，lint 0 errors / 3 warnings，BL-084 toggle e2e PASS。signoff=docs/test-reports/BL-084-signoff-2026-06-06.md。",
     "johnsong_planner": null,
     "johnsong_generator": null
   },
