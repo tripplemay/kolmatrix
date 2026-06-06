@@ -3,26 +3,18 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-084-ai-match-panel REVERIFYING (fix_rounds=1 @ 7d9cb9f) — /match?campaignId=X AI 推荐三列工作台
-- fix-round 1 唯一代码修复：`DetailedExplanationDialog` 客户端超时 5s→32s（commit 7d9cb9f）。根因 gateway 日志实证：EXPLAIN_DETAILED 5locale×5段~4500token 实测 15-21s，客户端 5s 先于服务端响应触发"详细解释暂时不可用"错误态；match 面板无预热→缓存未命中 100% 必现。同修 BL-067 campaigns 页潜伏 bug。L1 全绿 tsc=0/lint=0/25 单测
-- FAIL2 prod migration = 纯部署动作（deploy-prod.sh 第 6 步自动 `prisma migrate deploy`）；FAIL1b refresh rerank cosine 降级 = F002 spec 优雅降级（LLM 偶发非完美 30-排列），用户选保持现状 → backlog BL-085-obs
-- ✅ **两端部署已落地（Generator 代部署 2026-06-06 ~10:40 BJT）**：staging deploy-staging run 27050108647 success+health200；prod deploy-prod run 27050228802 success+health200 HEAD=`1343ad9`。prod env 注入 rerank（已备份），prod 已有 EXPLAIN_DETAILED+SHORT env
-- ✅ **prod migration 核验全 PASS（Generator 超级用户只读预核验）**：`_prisma_migrations` bl_084 finished=t / 4 列齐 / `kol_campaign_suggestion_status_idx` 存在 / legacy backfill 30 行全 accepted + decided_at 回填 0 残留 NULL / audit `backfilled_rows=30`。**FAIL2 解决**
-- 复验前提已满足，Reviewer 可启：复验重点 = staging Why 弹窗显 5 段（首开 skeleton ~20s，再开 <200ms 缓存）+ Accept/Skip/Swap 闭环回归
-- 洞察：environment.md "EXPLAIN_DETAILED/MATCH_RERANK 待 SSH 落入" 多为过时备注——日志/prod grep 证明已配（Planner 应更正 §AIGCGATEWAY 段）
-- ADR-016 已起草；signoff 未写；proposed-learnings 已记客户端超时 vs LLM 实测延迟教训
-- 关联 `docs/specs/BL-084-ai-match-panel-spec.md` + `docs/test-reports/BL-084-verifying-2026-06-06.md`
-## ✅ BL-083-yt-business-email-mapper DONE (7/7, fix_rounds=1, tag bl083-done @ b735aad)
-- prod kol_emails 0.8%→30.3% (219 business-unlock), legacy 18 不变
-- signoff: `docs/test-reports/BL-083-signoff-2026-06-05.md`
-- fix_rounds=1 教训: Reviewer grep tests/ miss colocated __tests__ (Framework Learnings 已记)
-## ✅ BL-082 DONE (7/7, fix_rounds=1, tag bl082-done @ 133bbe0) — refresh phase 重接 / prod 251 ids 0%404
-## ✅ BL-081 DONE (6/6, tag bl081-done @ 7bfeacb) — country mapper bug + retry storm, prod LLM 83/天
-## ⏸️ BL-080 PAUSED (1/6 @ ad14bdd) — 等用户跑 AI gen PNG
-## ✅ BL-079 / BL-078 / BL-077 / BL-076 / BL-075 / BL-074 / BL-073 / BL-072 / BL-071 / BL-070 / BL-069-059 / BL-055-049 / 043+044 全 DONE
+## 🚧 BL-086-kol-acquisition-accel BUILDING (0/6) — 提升新 KOL 入库速率（积累模式）
+- 源自 2026-06-06 Planner prod 只读诊断链：数量差异(3177vs2383=软删+质量门,无真丢失) → 旧源价值(2535独有但邮箱0.24%,定位 discovery 资产不复活) → 抓取慢根因 = **TikHub 余额~6/04 耗尽静默空转** + **refresh:discovery 配比失衡**(`TIER_INTERVAL_MS` hot1d 使 refresh 占~90%抓取量产0新增)
+- 用户决策: refresh 积累档 **hot14d/warm30d/cold30d**(−87%负载) + discovery 拉满(扩种子+收割2535旧源id) + 余额可观测; 落地**路径B**(上游 PR guang-tech/apify→merge→sync,不积累分叉)
+- 6 features: F001 tier积累档 / F002 种子扩充砍空转IG / F003 manual_seed收割2535 / F004 余额告警+成本记账 / F005 IG发现0产出排查 / F006 Codex双段验收
+- ⚠️ 多数代码在上游 apify-kol-service(`/opt/apify-kol-service` docker, repo guang-tech/apify), kolmatrix CI 覆盖不到; F001/F004/F005 走 PR→sync, F002/F003 config/ops
+- ⚠️ **整批部署不依赖余额, 但生效依赖充值** → 验收双段: 充值前=部署就绪/refresh负载降(next_refresh_at重算); 充值后=真实入库速率. manual_seed 通道=`POST /admin/seeds`
+- 文档: spec `docs/specs/BL-086-kol-acquisition-accel-spec.md` + 诊断 `docs/reviews/kol-acquisition-diagnostic-2026-06-06.md` + **ADR-017**(源策略+上游抓取治理)
+- Generator 起步建议: F001(tier.ts 最小改动) 或 F003(manual_seed 收割, 命中96%最高即时增量)
+## ✅ BL-084-ai-match-panel DONE (9/9, fix_rounds=1, signoff @ d10351c) — /match AI 推荐三列工作台; prod 两端部署+migration核验 PASS
+## ✅ BL-083 DONE (tag bl083-done @ b735aad) / BL-082 / BL-081 / BL-080⏸️PAUSED(1/6 等AI gen PNG) / BL-079-043 全 DONE
 ## 用户手工待办
-1. TikHub 新 token 重发 (旧 token 仍 working)
-2. 找爬虫团队对账 fork `0-discover` (5/27 + 5/31)
+1. **P0: TikHub 充值** — 否则 BL-086 部署完仍空转(余额$0,每call Insufficient balance)
+2. 路径B需爬虫团队 merge 上游 PR — 建议提前知会
 3. BL-080 素材就绪后恢复 landing illustration 批次
-## Backlog
-- BL-080 (paused) / Phase 5 个性化学习 / BL-054 flaky test / BL-048 valueScore 区分度
+## Backlog (BL-088 质量门放宽/软删清理 · BL-089 爬虫策略配置页deferred · BL-058 fork数据 · BL-054 flaky · BL-048 valueScore)
