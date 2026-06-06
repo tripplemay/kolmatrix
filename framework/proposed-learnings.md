@@ -199,3 +199,28 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 **建议写入：** `framework/harness/deploy-patterns.md` 新增「路径 B fork sync 模板：bundle 绕凭据 + stash/ff/pop 保本地 docker 定制 + /admin/stats 验新字段」。**长期修**：给主机配 guang-tech/apify 的 deploy key 或 fork remote 改 SSH, 免每次 bundle。
 
 **状态：** 待用户 ack
+
+---
+
+## [2026-06-07] Claude CLI — 来源:Generator Kimi prod outage 恢复 (deploy build OOM 拖垮整机)
+
+**类型：** 新坑（生产事故）+ 恢复 runbook + 防复发
+
+**内容：**
+
+**事故：** 2026-06-06 用户两次触发 deploy-prod.yml(15:58/17:40)均失败,报 `ssh: handshake failed: EOF`(部署跑 17 分钟后)。kol.guangai.ai 宕机至 6/07(HTTP 000, 端口 22+443 超时, SSH banner 阶段断)。staging 同 VM 一起挂。
+
+**根因：整机系统内存耗尽。** 东京 VM(`instance-20260403-154049`, **仅 7.8Gi RAM**)同时跑 kolmatrix app + postgres + **aigcgateway 姊妹项目(4 cluster)** + **apify-kol-service docker(postgres+service)**。`deploy-prod.sh` 的 `node --max-old-space-size=4096 next build`(已限 V8 堆 4GB, 非 V8 OOM)叠加这些常驻服务把系统 RAM 打满 → 内核 thrash → sshd 握手都完不成 → 部署失败 + rollback 也连不上 → 主机卡死, 只能 GCP console reset。
+
+**恢复 runbook(已验证):**
+1. 用户 GCP reset VM(我无 gcloud, 无法做)。
+2. reboot 后 pm2(systemd enabled)自动拉起, 但 **build OOM 中断留下 .next 残缺** → pm2 online 但 app 502。逐服务重建: `cd /opt/kolmatrix && NODE_ENV=production npx prisma generate && node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build --webpack && pm2 reload kolmatrix`。staging(/opt/kolmatrix-staging)同样。
+3. **apify docker reboot 后崩溃循环** `EAI_AGAIN postgres`(service 容器起在 postgres+网络就绪前): `cd /opt/apify-kol-service && docker compose up -d`(按 depends_on 顺序 + 重建网络; restart policy 单独不够)。
+
+**防复发(待 Planner/ops 定):** VM 7.8Gi 跑 4 套服务 + 4GB build 严重超额。选项: (a)加 swap(OOM-killer 收割而非 thrash, 至少别拖死 SSH) (b)部署 build 时临时停 apify-docker 腾 RAM (c)扩 VM 内存 (d)CI runner 上 build 出 artifact 再传 VM, 不在 VM 上 build。**在此之前不要重试 prod 部署, 会再 OOM。**
+
+**⚠️ 远端 bash heredoc 坑(本次反复踩):** SSH `bash -lc "..."` 里 echo 含括号 `(` 会 `syntax error near unexpected token`。远端 echo 一律不带括号。
+
+**建议写入:** `framework/harness/deploy-patterns.md` §prod-outage-recovery + §VM 内存超额防护。
+
+**状态：** 待用户 ack
