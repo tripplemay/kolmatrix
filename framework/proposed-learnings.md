@@ -179,3 +179,23 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 - `framework/harness/generator.md`：新增"入队-等外部资源就绪 类设计须先验 worker 是否即时消耗"checklist 项
 
 **状态：** 待用户 ack（F003 投喂时机用户决策中）
+
+---
+
+## [2026-06-06] Claude CLI — 来源:Generator Kimi BL-086 路径B sync /opt/apify-kol-service
+
+**类型：** 新坑（fork sync 凭据缺口）+ ops 模板
+
+**内容：**
+
+路径 B "merge 上游 PR → sync /opt/apify-kol-service → rebuild" 的 sync 步骤踩两个坑：
+
+1. **/opt/apify-kol-service 无 git 凭据拉 guang-tech/apify**：remote 是 HTTPS(私有仓)无 credential.helper；主机 deploy key `id_ed25519_github`(tripplemay, 仅 kolmatrix 权限)对 guang-tech/apify 返 "Repository not found"。→ 非交互 SSH 下 `git pull` 直接 fatal。**绕开方案(无 token 泄露)**：本地 `git bundle create x.bundle origin/master` → scp → prod `git fetch x.bundle origin/master`。
+
+2. **/opt 有本地未提交 docker 定制**(`reset --hard` 会抹掉破坏部署)：`docker-compose.yml` 端口 `3000:3000→3004:3003`(nginx 上游)、`packages/service/Dockerfile` 加 `@apify-kol/apify` 包构建(index.ts 依赖, committed Dockerfile 没有)。**安全 sync 序列**：先确认 master 未改这两 committed 文件 → `git stash push -- docker-compose.yml packages/service/Dockerfile` → `git merge --ff-only FETCH_HEAD` → `git stash pop`(干净, 因 committed 版未变) → `docker compose up -d --build`。
+
+验证新代码生效：`curl /admin/stats` 出现新字段(本次 `tikhubBalanceUsd:0.0005`)。
+
+**建议写入：** `framework/harness/deploy-patterns.md` 新增「路径 B fork sync 模板：bundle 绕凭据 + stash/ff/pop 保本地 docker 定制 + /admin/stats 验新字段」。**长期修**：给主机配 guang-tech/apify 的 deploy key 或 fork remote 改 SSH, 免每次 bundle。
+
+**状态：** 待用户 ack
