@@ -420,21 +420,22 @@
   },
   {
     "id": "BL-087",
-    "title": "apify-kol-service 抓取配比治本(爬虫团队代码) — refresh:discovery 预算重构 + Instagram 发现修复",
-    "description": "**触发：** 2026-06-06 Planner prod 诊断揭示比'余额耗尽'更深的结构问题。归属:apify-kol-service 代码维护在爬虫团队(guang-tech/apify),本条是**必须爬虫团队改代码**的部分,需以工单/Issue 形式反馈。\n\n**问题 1 — refresh 吃 90% 预算产 0 新增:**\nscrape_jobs.kind 全期汇总:refresh 14768 任务/237,980 抓取/**0 新增**(占抓取量 ~89%);hashtag(发现)518 任务/29,051 抓取/3140 新增(~11% 新增率,但只分到 ~10% 预算)。即使 TikHub 充满,增长也被这个配比锁死。\n→ 需求:降低 refresh 频次或分级刷新(如存量按粉丝段差异化刷新周期),把省下的 TikHub 调用让给 discovery。确立'发现优先'(ADR-017)。\n\n**问题 2 — Instagram hashtag 发现 0 产出:**\ninstagram 的 valorant/esports/dota2/fortnite/pcgaming/streamer 等 hashtag 全期 0 新增(tiktok 同关键词高产),疑似 IG actor / hashtag 搜索逻辑失效。需爬虫团队排查为何 IG 发现拿不到新 profile。\n\n**沟通:** 起草 GitHub Issue(guang-tech/apify)+ 附 scrape_jobs 按 kind 的证据数据(诊断报告 §3.4)。\n\n**预估工时:** 爬虫团队评估(KOLMatrix 不可控);我方负责提供证据 + 验证修复效果。\n\n**关联:** ADR-017 §3(发现优先原则)· BL-086(我方配置侧)· 诊断报告 §3.4",
+    "title": "apify-kol-service 抓取配比治本(我方代码,落地路径待定) — refresh 间隔积累档 + Instagram 发现修复",
+    "description": "**触发：** 2026-06-06 Planner prod 诊断揭示比'余额耗尽'更深的结构问题。**归属修正(用户 2026-06-06 指出):代码在 /opt/apify-kol-service(仓库 guang-tech/apify),我方有完全修改+部署能力**,'走爬虫团队'只是落地路径选项之一,非能力边界。\n\n**问题 1 — refresh 吃 90% 预算产 0 新增(已定位到代码常量):**\nscrape_jobs.kind 全期:refresh 14768 任务/237,980 抓取/**0 新增**(占 ~89%);hashtag 518 任务/29,051 抓取/3140 新增(~11% 率,只分到 ~10% 预算)。根因 = `scoring/tier.ts:18` 的 `TIER_INTERVAL_MS` 硬编码:hot 1d/warm 3d/cold 7d。当前分布 hot 460/warm 502/cold 2215 → 隐含 ~944 KOL-刷新/天 ≈ 观测的 ~20k 抓取/天。hot 460 每天全量重刷占 49%。\n→ **积累期决策(用户确认方向:hot 周或半月可接受)**:`TIER_INTERVAL_MS` 改 **hot 14d / warm 30d / cold 30d**(refresh 日负载 944→~123,−87%),省出 ~820 KOL-刷新/天(~1.6-2万 TikHub 调用)转 discovery,新增速率有望 ~87→180-220/天。代价:头部数据日更→半月更(积累期无感)。配套 BL-086(种子)才能吃满。成熟期再收紧(ADR-017 §3 阶段化)。\n→ 可选配套 env 旋钮(纯配置,无代码):`REFRESH_SCHEDULER_INTERVAL_MS` / `SCRAPE_CONCURRENCY`(`config.ts`)。\n\n**问题 2 — Instagram hashtag 发现 0 产出:**\ninstagram 的 valorant/esports/dota2/fortnite/pcgaming/streamer 等全期 0 新增(tiktok 同词高产),疑似 IG actor / hashtag 搜索逻辑失效,需排查为何拿不到新 profile。\n\n**落地路径待定(用户拍 A/B/C):** A 本地直接改 /opt/apify-kol-service 并 rebuild(快,加深与上游分叉——BL-061 已有 4 处本地 hot-fix);B 走上游 PR 到 guang-tech/apify 再 sync(不积累分叉,推荐);C 交爬虫团队改。\n\n**前置:** P0 TikHub 充值(否则改了也空转)。代码改动须走 Generator 实装(铁律#9 Planner 不直接改产品代码)。\n\n**关联:** ADR-017 §3 · BL-086(配置侧配套)· 诊断报告 §3.4",
     "decisions": [
-      "ADR-017 锁定:发现优先原则——refresh 不得挤占 discovery 预算",
-      "归属:代码改动走爬虫团队(guang-tech/apify);我方提供证据 + 验证",
-      "证据:refresh 占 ~89% 抓取量产 0 新增;IG hashtag 全平台 0 产出 vs tiktok 同词高产"
+      "ADR-017 §3 锁定:发现优先 + 阶段化 refresh;积累期 hot 14d/warm 30d/cold 30d(用户 2026-06-06 确认方向 hot 周/半月可接受,具体值实装确认)",
+      "归属修正:此为我方代码(guang-tech/apify),我方有改+部署能力;落地路径 A 本地改 / B 上游 PR(推荐) / C 交爬虫团队 待用户拍",
+      "代码改动走 Generator 实装(铁律#9);Planner 仅出方案",
+      "证据:refresh 占 ~89% 抓取量产 0 新增(TIER_INTERVAL_MS hot 1d);IG hashtag 全平台 0 产出 vs tiktok 同词高产"
     ],
     "confirmed_at": "2026-06-06T11:00+0800",
     "priority": "high",
     "tags": [
       "apify-kol",
       "acquisition-rate",
-      "crawler-team",
+      "refresh-cadence",
       "discovery-strategy",
-      "external-dependency"
+      "our-code"
     ],
     "discovered_in": "2026-06-06 Planner prod 只读诊断 docs/reviews/kol-acquisition-diagnostic-2026-06-06.md"
   },
@@ -457,5 +458,26 @@
       "quantity-quality-tradeoff"
     ],
     "discovered_in": "2026-06-06 Planner prod 只读诊断 docs/reviews/kol-acquisition-diagnostic-2026-06-06.md"
+  },
+  {
+    "id": "BL-089",
+    "title": "爬虫策略阶段化配置页(平台级 admin) — 按产品阶段一键切换爬虫策略",
+    "description": "**触发：** 2026-06-06 用户讨论:能否把 refresh 间隔 / tier 阈值 / 调度 / discovery 种子 / 质量门统一成一个 admin 配置页,按产品阶段(积累/成熟)切换。\n\n**Planner 判断:方向对,但当前 ROI 偏低,deferred。** 现状阶段≈2 个、admin≈1 人、切换频率低(几次/年),为此先建跨服务配置 UI 是过早工程。**先手动落地积累期参数(BL-086/087),跑过 1-2 次阶段切换、出现真实调参摩擦后再立项**,届时设计由真实摩擦点反推。\n\n**设计要点(立项时用):**\n1. **抽象 = 阶段预设**,非裸旋钮:'积累模式'(refresh 14/30/30 + discovery 拉满 + 质量门偏宽)/ '成熟模式'(refresh 1/3/7 + discovery 收敛 + 质量门严),admin 选阶段套整组 + 高级覆盖单项。\n2. **配置归属 = 爬虫服务(单一真相源)** + 暴露 GET/PUT /admin/strategy API(已有 ADMIN_API_KEY);KOLMatrix admin 页作瘦客户端,**不跨服务直写对方库**(违反数据流隔离)。KOLMatrix 端可做只读监控(当前阶段/各速率/上次切换)。\n3. **前置重构**:把当前硬编码项迁成 DB 配置——爬虫侧 `TIER_INTERVAL_MS`/`HOT_THRESHOLD`(scoring/tier.ts)+ KOLMatrix 侧质量门(quality.ts)。discovery 种子(schedules 表)已是 DB 配置。\n4. **scope = 平台级**(爬虫 kols 池无 tenant 维度),由 platform admin 控制,非租户 admin,放平台管理区。\n\n**预估工时:** ~3-5 day(两侧硬编码迁 DB + strategy API + admin UI + 阶段预设 + 只读监控),横跨 kolmatrix + guang-tech/apify 两仓。\n\n**触发条件:** 阶段切换变频繁 / 多 admin 协作 / 手动调参摩擦明显。\n\n**关联:** ADR-017 §决策6(配置页作未来载体)· BL-086 / BL-087(先手动落地的旋钮)",
+    "decisions": [
+      "用户 2026-06-06 决议:暂时先不做,先手动改代码+配置提升入库效率;配置页 deferred 等触发条件",
+      "ADR-017 §决策6 记录架构定调:配置归爬虫 + strategy API + KOLMatrix 瘦客户端,不跨服务直写;平台级 scope",
+      "立项前提:跑过 1-2 次阶段切换、调参摩擦明显后,由真实摩擦反推设计"
+    ],
+    "confirmed_at": "2026-06-06T11:30+0800",
+    "priority": "deferred",
+    "tags": [
+      "apify-kol",
+      "admin-config",
+      "phase-strategy",
+      "platform-level",
+      "deferred",
+      "cross-service"
+    ],
+    "discovered_in": "2026-06-06 用户产品策略讨论(配置页) — Planner 建议 deferred"
   }
 ]

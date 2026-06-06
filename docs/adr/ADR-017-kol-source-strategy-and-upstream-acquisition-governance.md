@@ -27,7 +27,9 @@
 
 2. **上游 `apify-kol-service` 责任界定：运维（部署/余额/调度配置）在 KOLMatrix 团队，代码维护在爬虫团队（`guang-tech/apify`）。** 配置层调优（schedules 增删、manual_seed 投喂、limit）我方可直接做（与爬虫团队对齐改法）；发现策略代码改动走爬虫团队。
 
-3. **确立"发现优先"原则**：refresh（刷新存量）不得挤占 discovery 预算。当前 refresh 占 ~90% 抓取量产 0 新增的配比需重构（降频/分级刷新）。
+3. **确立"发现优先"原则 + 阶段化 refresh 策略**：refresh（刷新存量）不得挤占 discovery 预算。当前 refresh 占 ~90% 抓取量产 0 新增（根因：`apify-kol-service` `scoring/tier.ts` 的 `TIER_INTERVAL_MS` = hot 1d / warm 3d / cold 7d，hot 460 个频道每天全量重刷，占日刷新量 49%）。**积累期**采用拉长的刷新间隔（推荐 hot 14d / warm 30d / cold 30d，refresh 日负载 −87%，省出预算转 discovery）；**成熟/外联期**再收紧保新鲜度。具体值由实装时确认。
+
+6. **爬虫策略阶段化配置页缓议**（BL-089，deferred）：将上述所有旋钮（refresh 间隔 / tier 阈值 / 调度 / 种子 / 质量门）统一成"按产品阶段一键切换"的平台级 admin 配置页，是正确方向但当前 ROI 偏低（阶段切换频率低、单 admin）。先手动落地积累期参数，待阶段切换变频繁再立项。架构定调：配置归爬虫（单一真相源）+ 暴露 strategy API，KOLMatrix admin 作瘦客户端，**不跨服务直写对方库**；scope 为平台级（爬虫池无 tenant 维度），非租户级。
 
 4. **KOLMatrix 端 75% 入库率 + 806 质量门拦截属预期设计**，quantity↔quality 取舍由产品按需放宽（选择性），非 bug。
 
