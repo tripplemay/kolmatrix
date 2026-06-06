@@ -4,7 +4,9 @@ description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次
 type: project
 ---
 ## 🚧 BL-086-kol-acquisition-accel BUILDING (5/6 gen done, F006=codex) — 提升新 KOL 入库速率（积累模式）
-- 全部 5 个 generator feature 完成. 3 个 apify PR 待 team merge: #3(F001 tier) #4(F005 节流) #5(F004 余额). #4/#5 同改 tikhub-client.ts get() 后 merge 者需 trivial rebase. 充值后 F006 双段验收(部署就绪 + 真实速率)
+- 全部 5 个 generator feature 完成 + **3 PR 已 merge 到 guang-tech/apify master + /opt 已 sync 部署**: #3 #4 #5 squash-merge @ master 8f9320a; /opt/apify-kol-service `git stash docker定制 + ff + pop + docker compose up -d --build` 部署成功(HEAD 8f9320a, 端口3004/Dockerfile apify包构建 定制保留). 新代码端到端验证: `/admin/stats` 返 `tikhubBalanceUsd:0.0005`(F004 生效, 也证实余额≈0=待充值). F005 节流默认350ms生效. F001 tier 新间隔随 next_refresh_at 重算
+- ⚠️ ops 缺口(已沉淀 proposed-learnings): /opt 无凭据 pull guang-tech/apify(HTTPS无cred+deploy key无权)→ 本次用 git bundle scp 绕开; 长期应配 deploy key
+- 充值后 F006 双段验收(部署就绪✅ + 真实速率待充值): F003 投喂2535 + IG节流/余额按真实数据校准
 - ✅ F002 done(applied): `scripts/bl086-f002-discovery-seeds.ts` via /admin/schedules, prod schedules 30→48 (砍8空转+4高产TT limit→300+18手游种子 free fire/mobile legends/pubg mobile/garena/minecraft/roblox×TT+YT). 快照 `docs/upstream-patches/BL-086-F002-schedules-snapshot-pre.json` 可回滚
 - 🔶 F001 done(PR): guang-tech/apify#3 (用户授write权限后开), 本地apify套件14文件/100测试绿, **待team merge+sync /opt rebuild**
 - ✅ F003 done(脚本): manual-seed-harvest, prod dry-run 2535/26批. **真实feed待充值**(SDK证实充值前投喂被worker消耗成succeeded-0=白做)
