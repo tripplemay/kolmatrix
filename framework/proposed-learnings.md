@@ -133,3 +133,25 @@ sediment（沉淀）从 proposed-learnings.md 走向 `framework/harness/*.md` �
 - `framework/harness/deploy-patterns.md` §ops template 加新段：external API token 配置前的 dry-run 验证模板（Apify /v2/users/me / TikHub TBD / 其他 SaaS me-endpoint）
 
 **状态：** 待用户 ack — 待 done 阶段 / 专门 framework sediment batch 正式写入
+
+---
+
+## [2026-06-06] Claude CLI — 来源:Generator Kimi BL-084 fix-round 1 (Why dialog FAIL 根因)
+
+**类型：** 新坑（客户端超时 vs LLM 真实延迟脱节）
+
+**内容：**
+
+BL-084 verifying staging FAIL 1「Why 详细解释暂时不可用」根因不是 env/代码逻辑缺失，而是 **DetailedExplanationDialog 客户端硬超时 5s（BL-067 设的）远小于 LLM 真实延迟 15-21s**。gateway 日志确认：evaluator 点 Why → EXPLAIN_DETAILED action `trc_rkxiis8qp4uyuvx53ioadsd2` 21.1s 后 status=success 并 write-through 缓存，但客户端 5s 已 setState error 显示错误态。该 bug 在 BL-067（campaigns/[id]）就潜伏，因 F005 short 预热 + 偶发 cache-hit 被掩盖；BL-084 match 面板无 detailed 预热故缓存未命中时 **100% 必现**。
+
+**根本教训：** 任何 AI 调用的**客户端**超时必须 ≥ **服务端** runAigcAction timeoutMs，且应基于**真实延迟实测**（gateway 日志 list_logs 看 latency 分布）而非 roadmap 乐观假设（BL-067 假设 <5s P99，实测 4-20× 偏差）。多 locale × 多段 write-through payload（5×5=25 段 ≈4500 token）天然慢 ~20s，是延迟大头。
+
+**衍生待评估（Planner 决策）：**
+1. EXPLAIN_DETAILED / MATCH_RERANK 当前单次输出 ~4500-5700 token、~20s。detailed 可考虑只生成**当前 locale**（5 段 ≈900 token ~4s）+ 其余 locale 懒加载，换取 UX；但牺牲"一次调用预热 5 locale"。
+2. MATCH_RERANK refresh 偶发 cosine 降级源于 LLM 返回非完美 30-排列（F002 strict permutation 校验）。可选 partial-merge（用 LLM 有效子集 + 缺失项按 cosine 补尾）替代 all-or-nothing 降级 —— 但改 F002 spec 契约，需 Planner ratify。
+
+**建议写入：**
+- `framework/harness/deploy-patterns.md` 或 `generator.md`：新增「AI 调用客户端超时 ≥ 服务端 timeoutMs，且基于 gateway list_logs 实测 latency 校准」铁律
+- ADR 候选：多 locale write-through vs 单 locale 懒加载的延迟/成本权衡
+
+**状态：** 待用户 ack
