@@ -63,7 +63,11 @@ DATABASE_URL=<apify_kol> npx tsx scripts/bl091-yt-email-backfill.ts
 | drain 进度(~12min) | queued 315 / running 1 / succeeded 19 / failed 7 / **no_email 0** → ~2/min |
 | 120s 期阶段结果 | succeeded ~107(覆盖 184→291,**+107 解锁**)/ failed ~69(全 poll-timeout)/ drain 后段降到 ~0.5/min(timeout 阻塞 batchSize=1 worker) |
 | **rebuild + 300s 重跑** | /opt rebuild 上 F005(300s)后,重跑全部剩余 **235** no-email 候选(singletonKey 去重在途);worker 起新日志确认 `poll timeout 300000ms` |
-| 最终统计 | _300s drain 完回填(--report 看 succeeded/no_email/failed + 邮箱覆盖增量)_ |
+| **最终统计(drain 完)** | records 342: **succeeded 339 / failed 1(300s 仍 timeout)/ no_email 1(真无邮箱)/ queued 1(straggler 未消费)**。**成功率 339/342 = 99.1%** |
+| **邮箱覆盖最终** | youtube has_business_email=true 真实邮箱 **184 → 523(+339 解锁)**;仍无邮箱 3(= 1 failed + 1 no_email + 1 queued straggler) |
+| 120s vs 300s | 120s 期成功率 ~62% + ~50% poll-timeout;300s 期 99.1% 成功、0 浪费 → **F005 是 yield 决定性因素** |
+| 实际成本 | ~342 次首轮 + 235 次 300s 重跑(其中 164 被 singletonKey 去重不重发,仅 ~69 timeout 重跑真扣费)≈ **$49**(342×0.12 + 69×0.12) |
+| 残留(可选收尾) | 1 failed(kol 111304)+ 1 queued(kol 70929)可删 progress 文件后再跑回收;1 no_email(kol 90732)真无邮箱无需处理 |
 
 ### ⚠️ Yield 发现 → BL-092 tuning 候选(非本批 scope)
 
