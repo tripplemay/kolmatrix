@@ -43,11 +43,30 @@ DATABASE_URL=<apify_kol> npx tsx scripts/bl091-yt-email-backfill.ts
 - 真实 PG(colima)：候选筛选正确(排除已有邮箱 / 无 flag)、`queued` 行写入、
   pg-boss 入队、progress 增量、**重跑 0 入队幂等**。
 
-## 执行记录（待回填）
+## 执行记录
+
+> 实跑环境约束（侦察发现）：prod host 无 repo node_modules / 无 tsx；service 容器只有
+> dist/ + 运行时依赖(含 pg/pg-boss ^9，**无 tsx**)。故 PR #8 的 `.ts` 无法直接在容器跑 →
+> 用**自包含纯 JS 港** `bl091-backfill-prod.mjs`(仅依赖 pg + pg-boss，逻辑/SQL 与 .ts 1:1，
+> 本地真实 PG 验证一致)，`docker compose cp` 进容器 + `node` 跑(DATABASE_URL 已在容器 env)。
+> mjs 留存 `/tmp/bl091-backfill-prod.mjs`(本机) + 容器 `/app/packages/service/`。
+
+**2026-06-07 实跑：**
 
 | 项 | 值 |
 |---|---|
-| 实跑日期 / 批量 | _待回填_ |
-| 解锁数 / NO_EMAIL / 失败 | _待回填_ |
-| kols.emails 真实新增抽样 | _待回填_ |
-| 实际成本 | _待回填_ |
+| 现状 | youtube has_business_email=true **526**；已有真实邮箱 **184**；积压候选 **342**；yt_email_check_records **空表**(实证 Bug A/B 从没跑过) |
+| 小批 --limit=10 | 5 succeeded / 2 failed(Apify poll timeout >120s) / 1 running / 2 queued → 终态成功率 ~62%(5/8)，邮箱覆盖 184→185+ |
+| 小批解锁样本 | `mobile@brksedu.com.br` `chucky@mrbeastbusiness.com` `mrwhosetheboss@night.co` `jbergenbusiness@gmail.com` `wildgamerskinfo@gmail.com` |
+| **关键验证** | F003 先 upsertQueued 建 'queued' 行 → **当前未打 Bug B 补丁的 worker** 也正确写 queued→running→succeeded + kols.emails 真增 ✅ |
+| 全量入队 | 剩余 **332 入队成功 / 0 失败**(progress 文件累计 342)；worker batchSize=1 异步 drain，预计数小时 |
+| 失败处理 | poll timeout 的 failed 记录可后续重跑(selectPending 允许 failed 重入队；或 F002 部署后更稳) |
+| 实际成本 | ~$0.12 × 342 ≈ **$41 上限**(timeout 仍计费，约 60-67% 出邮箱) |
+| 最终统计 | _queue drain 后回填(--report 看 succeeded/no_email/failed + 邮箱覆盖增量)_ |
+
+**最终统计采集命令（drain 后）：**
+```bash
+cd /opt/apify-kol-service && docker compose exec -T service node bl091-backfill-prod.mjs --report
+docker exec -i apify-kol-service-postgres-1 psql -U postgres -d apify_kol -tA -c \
+  "SELECT status,count(*) FROM yt_email_check_records GROUP BY status ORDER BY status;"
+```

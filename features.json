@@ -37,8 +37,8 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "script_ready",
-    "note": "脚本 packages/service/scripts/bl091-yt-email-backfill.ts 完成 + 单测 7 + 真实 PG 验证(候选筛选/queued 行/pg-boss 入队/重跑幂等)。PR #8。入队前 upsertQueued 先建行 → 即使 Bug B 未部署当前 worker 也留记录。⏳ 实跑约 $41 + 写 prod 待用户确认(建议先 --report/--dry-run/--limit=10)。归档 docs/upstream-patches/BL-091-F003-backfill.md",
+    "status": "executed_draining",
+    "note": "脚本完成(PR #8) + 单测 7 + 真实 PG 验证。2026-06-07 prod 实跑: 现状 342 积压候选/records 空表(实证从没跑过)。小批10: 5 succeeded(真邮箱)/2 poll-timeout failed/3 在途, 成功率~62%, 验证当前未打 Bug B 补丁的 worker 也正确落库(F003 先 upsertQueued 建行)。全量剩余 332 入队成功 0 失败(累计 342)。worker batchSize=1 异步 drain 预计数小时。⏳ drain 后回填最终统计(succeeded/no_email/failed + 邮箱覆盖增量)。容器内用纯JS港 bl091-backfill-prod.mjs(host 无 tsx)。归档 docs/upstream-patches/BL-091-F003-backfill.md",
     "acceptance": [
       "脚本对 344 个 youtube(has_business_email=true 且 emails 无 @)入队 yt-email(pg-boss schema=pgboss, batchSize=1 运行中 worker 自然消费)",
       "自带幂等: 本地记录已处理 kolId(规避 Bug B 期间去重失效导致中断重跑重复); 限速 + 分批",
