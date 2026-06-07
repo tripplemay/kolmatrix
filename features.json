@@ -67,8 +67,8 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "pending",
-    "note": "前置已就绪(5 PR merged + rebuild 部署 + F003 实跑 99.1%)。转 verifying 由 Codex(Reviewer)验收。详细 L1/L2 验收路径见 progress.json generator_handoff。⚠️ F001 runtime 触发链路实测 DEFER(用户同意): TikHub 余额耗尽 refresh 不跑无法制造跃迁, F001 按 'code+单测 PASS, runtime deferred 到 BL-092' 处理, 不阻塞 signoff。其余 F002/F003/F005 prod 有实证可全验。",
+    "status": "completed",
+    "note": "✅ Codex L1+L2 验收完成 (fix_rounds=0). L1: kolmatrix 零代码改动, lint 0e/3w. L2: SSH 独立验证 — records 339s/1f/1n/1q, 邮箱 526flag/523email(+339, 99.4%), SHA=4d102f1, poll timeout 300000ms, health ok. F001 runtime defer→BL-092(用户同意). Signoff: docs/test-reports/BL-091-signoff-2026-06-07.md",
     "acceptance": [
       "L1: F001/F002 PR 已 merge+sync; 脚本单测绿; kolmatrix 侧若有改动 lint 0err warn≤3 / tsc=0 / npm test 绿",
       "L2: Bug A 触发链路实测(新触发→yt_email_check_records 出现记录); Bug B 记录可靠落库 + 去重生效(已查不重跑); F003 backfill 后 kols.emails 真实新增 + 量化(解锁数/成功率)",
