@@ -60,8 +60,10 @@ DATABASE_URL=<apify_kol> npx tsx scripts/bl091-yt-email-backfill.ts
 | 全量入队 | 剩余 **332 入队成功 / 0 失败**(progress 文件累计 342)；worker batchSize=1 异步 drain，预计数小时 |
 | 失败处理 | poll timeout 的 failed 记录可后续重跑(selectPending 允许 failed 重入队；或 F002 部署后更稳) |
 | 实际成本 | ~$0.12 × 342 ≈ **$41 上限**(timeout 仍计费，约 60-67% 出邮箱) |
-| drain 进度(~12min) | queued 315 / running 1 / succeeded 19 / failed 7 / **no_email 0** → ~2/min,ETA ~2.5h |
-| 最终统计 | _queue drain 后回填(--report 看 succeeded/no_email/failed + 邮箱覆盖增量)_ |
+| drain 进度(~12min) | queued 315 / running 1 / succeeded 19 / failed 7 / **no_email 0** → ~2/min |
+| 120s 期阶段结果 | succeeded ~107(覆盖 184→291,**+107 解锁**)/ failed ~69(全 poll-timeout)/ drain 后段降到 ~0.5/min(timeout 阻塞 batchSize=1 worker) |
+| **rebuild + 300s 重跑** | /opt rebuild 上 F005(300s)后,重跑全部剩余 **235** no-email 候选(singletonKey 去重在途);worker 起新日志确认 `poll timeout 300000ms` |
+| 最终统计 | _300s drain 完回填(--report 看 succeeded/no_email/failed + 邮箱覆盖增量)_ |
 
 ### ⚠️ Yield 发现 → BL-092 tuning 候选(非本批 scope)
 
