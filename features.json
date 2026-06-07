@@ -67,8 +67,8 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "blocked",
-    "note": "阻塞于前置: F001/F002 待爬虫团队 merge + /opt rebuild; F003 待用户授权实跑。三者就绪后再转 verifying 由 Codex 验收。",
+    "status": "pending",
+    "note": "前置已就绪(5 PR merged + rebuild 部署 + F003 实跑 99.1%)。转 verifying 由 Codex(Reviewer)验收。详细 L1/L2 验收路径见 progress.json generator_handoff。⚠️ F001 runtime 触发链路实测 DEFER(用户同意): TikHub 余额耗尽 refresh 不跑无法制造跃迁, F001 按 'code+单测 PASS, runtime deferred 到 BL-092' 处理, 不阻塞 signoff。其余 F002/F003/F005 prod 有实证可全验。",
     "acceptance": [
       "L1: F001/F002 PR 已 merge+sync; 脚本单测绿; kolmatrix 侧若有改动 lint 0err warn≤3 / tsc=0 / npm test 绿",
       "L2: Bug A 触发链路实测(新触发→yt_email_check_records 出现记录); Bug B 记录可靠落库 + 去重生效(已查不重跑); F003 backfill 后 kols.emails 真实新增 + 量化(解锁数/成功率)",

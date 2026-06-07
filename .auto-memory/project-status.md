@@ -3,7 +3,7 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-091-yt-email-unlock-fix BUILDING (5 feature 代码全 merge+DEPLOYED) — 修活 Apify YT 邮箱解锁
+## 🔍 BL-091-yt-email-unlock-fix VERIFYING (交 Codex F004) — 修活 Apify YT 邮箱解锁
 - 背景: 链路代码完整但**从没跑过**(records=0); 两 bug + backfill + (实跑追加)F005 poll 超时调优
 - **PR #6(BugA)/#7(BugB)/#8(F003)/#9(F005)全 merge → master 4d102f1**(用户授权)。/opt rebuild 已完成(无 OOM, avail 5.4G), worker 起新日志 "poll timeout 300000ms", /health ok, ports 3004 OK → **Bug A/B + F005 已 prod 生效**
 - **F003 backfill drain 完成(最终)**: records 342 → succeeded 339 / failed 1 / no_email 1 / queued 1, **成功率 99.1%**。**YT 邮箱覆盖 184→523(+339 真实邮箱解锁)**。120s 期 62% vs 300s 期 99% → F005 决定性。成本~$49
