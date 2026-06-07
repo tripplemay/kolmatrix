@@ -1,79 +1,45 @@
 [
   {
     "id": "F001",
-    "title": "Bug A 修复: YT 邮箱触发器接入正确路径 (hasBusinessEmail false→true 触发, 爬虫/路径B)",
+    "title": "调查最省修法: actions/run 是否接受 max_tokens override + 调用点/输出量清单",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.5,
-    "status": "deployed",
-    "note": "代码 + 单测 6。PR #6 merge → master abd7a81。/opt rebuild 已完成(2026-06-07 无 OOM)→ prod 已部署。⚠️ runtime 触发验证 BLOCKED: 需 refresh 命中 hasBusinessEmail false→true 跃迁, 但 TikHub 余额耗尽 refresh 不跑 → 待充值/BL-092 才能端到端验触发链路(单测已覆盖逻辑)。归档 docs/upstream-patches/BL-091-F001-yt-email-trigger.md",
+    "estimated_hours": 1.0,
+    "status": "pending",
     "acceptance": [
-      "根因: applyPostProcessing(含 enqueueYtEmail 触发) 只在 discovery 路径(hashtag/manual-seed)调; hasBusinessEmail=true 由 refresh-scrape 写入(明写不抽联系方式不调 applyPostProcessing) → 触发器与信号永不相交 → 从没触发",
-      "修法(需与爬虫团队对齐设计): 在 hasBusinessEmail false→true(或首次 true 且当前无邮箱)时触发一次 enqueueYtEmail, 配合 F002 去重; 不得改成 refresh 每次都触发(Apify 成本风险)",
-      "落地路径 B: PR 到 guang-tech/apify → 爬虫团队 review/merge → fork-sync /opt rebuild(谨慎, BL-086 OOM 遗留)",
-      "含单测; 不破坏 refresh 既有行为(刷新仍不无谓抽联系方式)",
-      "验证: 改后新 refresh 命中 hasBusinessEmail=true 且无邮箱频道 → 入队 yt-email(yt_email_check_records 出现 queued/running)"
+      "实测 actions/run gateway 端点是否接受 max_tokens override(dev/staging 发一次带 max_tokens 的 runAigcAction, 看是否生效且不被忽略; BL-042 曾测 Action 抽象层无此字段, 但 run-time override 待验)",
+      "核对 runAigcAction(src/lib/aigc/run-action.ts) 全部调用点(~10 处: explainability/refine/brief/llm-rerank/topic-cloud/enrichment/enrichment-stage/explain-worker/customize)",
+      "定各 action 实际最大输出量 → per-action max_tokens 取值表(EXPLAIN_DETAILED 实际~4500→设≥8000; 其余按需; 默认 sane 值如 8000~16000, 均 << 64000)",
+      "产出: 修法决策(A wrapper override / B chat-completions 直调 BL-042 P1)+ per-action max_tokens 表; 写入 spec 或 handoff"
     ]
   },
   {
     "id": "F002",
-    "title": "Bug B 修复: yt_email_check_records 双写失效 (爬虫/路径B)",
+    "title": "实装 max_tokens 上限 (wrapper 默认 + 高输出 action 单独; 全 actions/run 覆盖)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "deployed",
-    "note": "根因: worker markRunning 等裸 UPDATE WHERE kol_id 无行则静默无效。修法: markRunning(kolId, channelId) 改 INSERT ON CONFLICT。单测 4 + 集成测 5(真实 PG 绿)。PR #7 merge → master 4cc9421。/opt rebuild 已部署。runtime 已验证: 实跑中 records 全部正确落库(queued→running→succeeded/failed, 107 succeeded)。归档 docs/upstream-patches/BL-091-F002-yt-email-record-upsert.md",
+    "estimated_hours": 2.5,
+    "status": "pending",
     "acceptance": [
-      "现象: 小批验证 3 任务 completed + 2 邮箱写进 kols.emails, 但 yt_email_check_records 仍 0 行 → markRunning/attachRun/markSucceeded/markNoEmail 没落库",
-      "排查为何不落库(事务回滚/连接/异常被吞), 修复使其可靠写入: 每个 yt-email 任务留记录 queued→running→succeeded|no_email",
-      "修后去重生效: enqueueYtEmail 闭包靠该表判断已查过, 已查的不重复跑 Apify(当前 !record 永真→每次重跑烧钱)",
-      "落地路径 B: PR 到 guang-tech/apify → merge → sync; 含单测",
-      "验证: backfill/触发后 yt_email_check_records 行数 > 0 且状态正确"
+      "据 F001 决策实装: 方案 A=runAigcAction 加 maxTokens 参数 + sane 默认; 方案 B=改 chat/completions 直调带 max_tokens(优先 EXPLAIN_DETAILED + KOL bio enrichment 等 prod-breaking 路径)",
+      "覆盖全部 actions/run 路径(防 whack-a-mole, BL-042 §7 矩阵全覆盖); max_tokens 设值 ≥ 各 action 实际最大输出 + headroom(不截断)",
+      "EXPLAIN_DETAILED(5locale×5段)单独设足够值(如 16000); 默认值覆盖其余短输出 action",
+      "单测: max_tokens 正确传递; 不破坏既有 action 调用契约/prompt 渲染",
+      "L1 PASS: lint 0err warn≤3 / tsc=0 / npm test"
     ]
   },
   {
     "id": "F003",
-    "title": "344 backfill: 对积压 youtube 频道入队 yt-email 解锁邮箱 (我方 ops, 不依赖充值)",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "done",
-    "note": "脚本完成 PR #8 已 merge→master f1d1bb7 + 单测 7 + 真实 PG 验证。2026-06-07 prod 实跑: 现状 342 积压候选/records 空表(实证从没跑过)。小批10: 5 succeeded(真邮箱)/2 poll-timeout failed/3 在途, 成功率~62%, 验证当前未打 Bug B 补丁的 worker 也正确落库(F003 先 upsertQueued 建行)。全量剩余 332 入队。120s 期 ~62% 成功 + ~50% poll-timeout(yield 瓶颈→催生 F005)。rebuild 上 F005 300s 后重跑全部剩余 235。drain 完成最终: records 342 → succeeded 339 / failed 1 / no_email 1 / queued 1(straggler), 成功率 99.1%。YT 邮箱覆盖 184→523(+339 解锁)。120s 期 62% vs 300s 期 99% → F005 决定性。成本~$49。残留 2 个(1 failed+1 queued)可删 progress 再跑回收, 1 no_email 真无邮箱。容器用纯JS港 bl091-backfill-prod.mjs(host 无 tsx)。归档 docs/upstream-patches/BL-091-F003-backfill.md",
-    "acceptance": [
-      "脚本对 344 个 youtube(has_business_email=true 且 emails 无 @)入队 yt-email(pg-boss schema=pgboss, batchSize=1 运行中 worker 自然消费)",
-      "自带幂等: 本地记录已处理 kolId(规避 Bug B 期间去重失效导致中断重跑重复); 限速 + 分批",
-      "走 Apify(SCALE 已付费, 不依赖 TikHub 充值); 成本 ~$0.12/次 × 344 ≈ $41",
-      "已小批验证机制可用(kol 6/9 解锁); 可在 F001/F002 merge 前先跑(立即价值)",
-      "跑后抽样确认 kols.emails 新增真邮箱 + 统计 解锁数/NO_EMAIL/失败数; 脚本归档 scripts/"
-    ]
-  },
-  {
-    "id": "F005",
-    "title": "YT email worker poll 超时调大 + env 可配 (BL-091 scope 扩展, 用户授权)",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "deployed",
-    "note": "来源: F003 实跑发现 worker poll 超时硬编码 120s → ~40-50% Apify run 超时被弃(终态只 succeeded/timeout, no_email≈0)。修法: config 加 YT_EMAIL_POLL_TIMEOUT_MS(min30s 默认300s) + index.ts 透传。附带修 tsc 夹具漂移→tsc 全绿。单测3, unit120绿。PR #9 merge→master 4d102f1。/opt rebuild 已部署, worker 起新日志确认 'poll timeout 300000ms'。已用 300s 重跑全部剩余 235。",
-    "acceptance": [
-      "worker poll 超时不再硬编码 120s, 由 env YT_EMAIL_POLL_TIMEOUT_MS 控制, 默认 300s",
-      "含单测; tsc + unit 套件全绿",
-      "rebuild 生效后重跑 timeout-failed 频道, 验证回收率(succeeded 占比较 120s 提升)"
-    ]
-  },
-  {
-    "id": "F004",
     "title": "Codex L1+L2 + signoff (executor:codex)",
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "completed",
-    "note": "✅ Codex L1+L2 验收完成 (fix_rounds=0). L1: kolmatrix 零代码改动, lint 0e/3w. L2: SSH 独立验证 — records 339s/1f/1n/1q, 邮箱 526flag/523email(+339, 99.4%), SHA=4d102f1, poll timeout 300000ms, health ok. F001 runtime defer→BL-092(用户同意). Signoff: docs/test-reports/BL-091-signoff-2026-06-07.md",
+    "status": "pending",
     "acceptance": [
-      "L1: F001/F002 PR 已 merge+sync; 脚本单测绿; kolmatrix 侧若有改动 lint 0err warn≤3 / tsc=0 / npm test 绿",
-      "L2: Bug A 触发链路实测(新触发→yt_email_check_records 出现记录); Bug B 记录可靠落库 + 去重生效(已查不重跑); F003 backfill 后 kols.emails 真实新增 + 量化(解锁数/成功率)",
-      "before/after: yt_email_check_records 0→N; youtube 真邮箱覆盖率提升量化",
-      "signoff doc docs/test-reports/BL-091-signoff-2026-06-XX.md"
+      "L1: lint 0err warn≤3 / tsc=0 / npm test 绿",
+      "L2 部署后 prod/staging: EXPLAIN_DETAILED 调用不再预检拒(余额未变情况下 success 返回, 输出 5段×5locale 完整不截断); 抽样其他 action(enrichment/rerank)恢复; aigcgateway 日志该 action 新调用 status=success 非 error",
+      "before/after: 故障期 error(0.3s/$0/max_tokens 64000 拒)→ 修后 success(~16-21s/正常 token/max_tokens 受控)",
+      "⚠️ prod deploy OOM 风险(BL-086 遗留)注意; signoff doc docs/test-reports/BL-093-signoff-2026-06-XX.md"
     ]
   }
 ]

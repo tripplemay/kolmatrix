@@ -262,10 +262,11 @@
     "decisions": [
       "用户 2026-05-06 ~08:30 决议方案 P3 接受现状不动；加 backlog 条目 post-MVP 处理",
       "BL-035 F013 + BL-024 Q2 ops 12 次 max_tokens 推延 Soft-watch 正式归档为本条目跟踪",
-      "v0.9.13 §4.7 已沉淀 4 种长期修复方向，本条目 backlog 启动时由 Planner 重新评估"
+      "v0.9.13 §4.7 已沉淀 4 种长期修复方向，本条目 backlog 启动时由 Planner 重新评估",
+      "2026-06-07 prod 故障实证 max_tokens=64000 预检拒, 用户起 BL-093 hotfix 治本, 本条 closed-merged 保留 audit trail"
     ],
     "confirmed_at": "2026-05-06T08:30+0800",
-    "priority": "deferred",
+    "priority": "closed",
     "tags": [
       "post-mvp",
       "aigcgateway",
@@ -279,7 +280,8 @@
       "docs/specs/BL-035-F013-actions-run-inventory.md (7 个 Action 矩阵)",
       "src/lib/email/customize.ts (P1/P4 高风险路径)",
       "src/lib/products/generateAiAssets.ts (chat/completions 已实装范式参考)"
-    ]
+    ],
+    "status": "closed-merged-into-BL-093"
   },
   {
     "id": "BL-047",
