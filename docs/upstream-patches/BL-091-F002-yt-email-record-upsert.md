@@ -1,8 +1,8 @@
 # BL-091-F002 · Upstream PR — yt_email_check_records 双写失效修复(Bug B)
 
-> **状态：** ✅ **PR 已开 → https://github.com/guang-tech/apify/pull/7**（2026-06-07，
-> 分支 `bl091-f002-yt-email-record-upsert` base `master@8f9320a`）。
-> **待爬虫团队 review + merge → sync `/opt/apify-kol-service` + rebuild。**
+> **状态：** ✅ **PR #7 已 merge → master `4cc9421`**（2026-06-07，用户授权直接 merge，squash）。
+> ⏳ **待 `/opt/apify-kol-service` rebuild 才生效（OOM 谨慎）。** 注：F003 backfill 先建 queued 行，
+> 故当前未 rebuild 的 worker 已能正确落库；本修复让所有入队路径（含 Bug A 触发）都健壮。
 
 ## 问题(Bug B)
 
@@ -38,6 +38,6 @@ worker 的 `markRunning/attachRun/markSucceeded/markNoEmail` 全是 `UPDATE ... 
 
 | 项 | 值 |
 |---|---|
-| 上游 merge commit | _待回填_ |
-| sync 后 HEAD | _待回填_ |
-| 生效验证 | backfill/触发后 yt_email_check_records 行数 > 0 且状态正确 |
+| 上游 merge commit | **4cc9421 (#7)** → master HEAD `f1d1bb7` |
+| sync 后 HEAD | _待 rebuild 回填_ |
+| 生效验证 | backfill/触发后 yt_email_check_records 行数 > 0 且状态正确（实跑已见 succeeded/failed 落库）|

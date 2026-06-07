@@ -1,8 +1,7 @@
 # BL-091-F001 · Upstream PR — YT email 触发器接入 refresh 路径(Bug A)
 
-> **状态：** ✅ **PR 已开 → https://github.com/guang-tech/apify/pull/6**（2026-06-07，
-> `tripplemay` write 权限，分支 `bl091-f001-yt-email-trigger` base `master@8f9320a`）。
-> **待爬虫团队 review + merge → sync `/opt/apify-kol-service` + `docker compose up -d --build`。**
+> **状态：** ✅ **PR #6 已 merge → master `abd7a81`**（2026-06-07，用户授权直接 merge，squash）。
+> ⏳ **待 `/opt/apify-kol-service` git pull + `docker compose up -d --build`（OOM 谨慎）才生效。**
 
 ## 问题(Bug A)
 
@@ -31,6 +30,6 @@
 
 | 项 | 值 |
 |---|---|
-| 上游 merge commit | _待爬虫团队回填_ |
-| `/opt/apify-kol-service` sync 后 HEAD | _待回填_ |
+| 上游 merge commit | **abd7a81 (#6)** → master HEAD `f1d1bb7`(含 #6/#7/#8) |
+| `/opt/apify-kol-service` sync 后 HEAD | _待 rebuild 回填_ |
 | 生效验证 | refresh 命中 hasBusinessEmail 跃迁 → yt_email_check_records 出现 queued/running |

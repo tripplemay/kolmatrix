@@ -1,9 +1,7 @@
 # BL-091-F003 · 344 backfill 入队脚本(我方 ops)
 
-> **状态：** ✅ **脚本完成 + PR 已开 → https://github.com/guang-tech/apify/pull/8**
-> （`packages/service/scripts/bl091-yt-email-backfill.ts`，分支 `bl091-f003-backfill`）。
-> ⏳ **执行待用户确认**（实跑约 $41 + 写 prod apify_kol 库 + 触发 Apify actor runs）。
-> 归档性质脚本，**运行不强依赖 PR merge**（可从 VM 检出直接跑）。
+> **状态：** ✅ **PR #8 已 merge → master `f1d1bb7`**（2026-06-07）。✅ **prod 已实跑**（见下「执行记录」），
+> 342 全入队，worker drain 中。脚本 `packages/service/scripts/bl091-yt-email-backfill.ts`。
 
 ## 目的
 
