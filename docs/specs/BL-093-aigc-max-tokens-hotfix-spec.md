@@ -27,6 +27,32 @@
 
 本 hotfix 需 dev+build+deploy,期间 AI 仍失败。**最快即时恢复 = 给 aigcgateway 充值**(+$15-20 → 余额 ~$55 afford >64000)。治标(余额再跌回 ~$46 复发),但能立刻恢复服务,与本 hotfix 并行。⚠️ 与 TikHub 是不同账户/服务。
 
+## §F001 调查结论（2026-06-08 Generator，**反转 spec 假设**）
+
+**源码实证（读 `~/project/aigcgateway` 源码 + MCP）：**
+
+1. **`/actions/run` 路由不接受 max_tokens override。** `src/app/api/v1/actions/run/route.ts` body 只解析 `{action_id, variables, stream}`，`params` 只传 `{actionId, projectId, userId, variables, source}`。runner（`src/lib/action/runner.ts`）构造的上游请求是 `{model, messages, stream}` —— **从不带 max_tokens**。`applyConfigOverlay` 也不注入。→ **wrapper 传 max_tokens 会被静默丢弃**（spec Option A 不可行）。
+2. **64000 来自上游 provider 默认**：gateway 不带 max_tokens 转发，上游 Anthropic 系按模型 max output cap（haiku-4.5 = 64000）预留额度 → 预检拒。
+3. **但 `prepareRequest` 用 `{...request}` spread 透传 `rest`** → **只要请求里带了 max_tokens 就会转发到上游**。`/chat/completions` 路由确实接受并校验 max_tokens（`src/app/api/v1/chat/completions/route.ts`）。
+4. **Action 无 per-action max_tokens 字段**（schema 的 `maxTokens` 只在 `Model`/`ModelAlias` 上，是模型容量元数据，runner 不读）。证实 spec「抽象层不暴露」。
+
+**调用点清单（8 处，全部经单一 wrapper `runAigcAction`）：** explainability(EXPLAIN_DETAILED) / explain-recommendations-worker(EXPLAIN_SHORT) / brief(BRIEF_PARSE) / refine(REFINE) / match/llm-rerank(MATCH_RERANK) / kol-detail/topic-cloud(KOL_TOPIC) / kol/enrichment(KOL_COUNTRY) / email/customize.
+
+**per-action 实际输出量（MCP list_logs 实测）→ max_tokens 取值：**
+
+| action | 实际最大输出 | 建议 max_tokens |
+|---|---|---|
+| EXPLAIN_DETAILED | ~4929（8 次实测 4.4-4.9K） | **16000**（worst-case 5locale×5段 headroom） |
+| 其余 7 个（EXPLAIN_SHORT/BRIEF_PARSE/REFINE/MATCH_RERANK/KOL_TOPIC/KOL_COUNTRY/customize） | ≤ ~800 | **默认 8192** |
+
+均 ≪ 64000。
+
+**修法决策（关键，需用户/Planner 定 scope）：** spec 的 Option A（wrapper override）**不可行**；Option B（chat/completions 直调）可行但重（放弃 Action prompt 抽象，prompt 要搬到 kolmatrix 维护）。**根因在 gateway**（转发时不设 sane max_tokens，放任上游按 64000 cap 预留）→ 最省且治本的修法是 **gateway 侧**：
+- **B2（推荐）：** gateway `/actions/run` 路由 + runner 接受并透传 `max_tokens` → kolmatrix wrapper 加 `maxTokens` 参数按上表传 per-action 值。保留 Action 抽象，kolmatrix 改动最小。
+- **B3（兜底）：** gateway runner 给请求设 sane 默认 max_tokens（如 `min(modelCap, 16000)`）→ 修复所有 gateway 消费方，kolmatrix 零改动。
+- B2+B3 叠加最稳（per-action 精确 + 全局兜底）。
+**⚠️ B2/B3 涉及修改 aigcgateway（独立项目/独立部署），超出 BL-093 当前「kolmatrix 杠杆点 run-action.ts」的 scope** → 报用户裁决。
+
 ## §4 Features
 
 ### F001 — 调查最省修法 + 调用点清单核对
