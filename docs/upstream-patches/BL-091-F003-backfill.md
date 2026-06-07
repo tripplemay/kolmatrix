@@ -62,7 +62,20 @@ DATABASE_URL=<apify_kol> npx tsx scripts/bl091-yt-email-backfill.ts
 | 全量入队 | 剩余 **332 入队成功 / 0 失败**(progress 文件累计 342)；worker batchSize=1 异步 drain，预计数小时 |
 | 失败处理 | poll timeout 的 failed 记录可后续重跑(selectPending 允许 failed 重入队；或 F002 部署后更稳) |
 | 实际成本 | ~$0.12 × 342 ≈ **$41 上限**(timeout 仍计费，约 60-67% 出邮箱) |
+| drain 进度(~12min) | queued 315 / running 1 / succeeded 19 / failed 7 / **no_email 0** → ~2/min,ETA ~2.5h |
 | 最终统计 | _queue drain 后回填(--report 看 succeeded/no_email/failed + 邮箱覆盖增量)_ |
+
+### ⚠️ Yield 发现 → BL-092 tuning 候选(非本批 scope)
+
+drain 早期数据:终态里只有 succeeded / failed(poll timeout),**no_email = 0**。
+说明对 `has_business_email=true` 的频道,actor 只要在 120s 内跑完几乎都能拿到邮箱;
+**真正的 yield 限制是 worker 的 `pollTimeoutMs` 默认 120s**(`yt-email-worker.ts`,
+index.ts 注册时未传 → 用默认;config 无对应 env)。约 27% 的 run 超 120s 被放弃(仍计费、
+无邮箱捕获)。
+
+**杠杆(非 F001/F002 scope,留给 Planner/BL-092 评估):** 把 `pollTimeoutMs` 提到
+~240-300s 或做成 env 可配(`YT_EMAIL_POLL_TIMEOUT_MS`),预计把成功率从 ~62% 拉高。
+failed(timeout)记录 `selectPending` 允许重跑,但同 120s 下大概率再 timeout → 须先调超时。
 
 **最终统计采集命令（drain 后）：**
 ```bash

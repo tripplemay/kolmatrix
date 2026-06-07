@@ -16,5 +16,5 @@ type: project
 2. **催爬虫团队 merge BL-091 PR #6(Bug A)/#7(Bug B)/#8(backfill 脚本)** → 后 /opt rebuild(OOM 谨慎)
 3. ~~授权 F003 backfill 实跑~~ ✅ 已跑(2026-06-07, 342 入队, drain 中)
 ## Backlog
-- **BL-092**(高): 充值后 F003 投喂 + 真实速率验证 + F004/F005 调优(等 TikHub 充值, 与 BL-091 独立)
+- **BL-092**(高): 充值后 F003 投喂 + 真实速率验证 + 调优(等 TikHub 充值)。**+yt-email pollTimeoutMs 调优**: BL-091 实跑发现 worker 默认 120s 超时是 YT 邮箱 yield 主限制(终态只有 succeeded/timeout, no_email≈0), 提到 240-300s 或 env 可配 + 重跑 failed
 - BL-090-cost / BL-089 配置页 / BL-088 质量门 / BL-058 fork / BL-054 / BL-048
