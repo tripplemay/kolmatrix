@@ -11,7 +11,7 @@ type: project
 ## ✅ BL-094 DONE (4/4) — CI flaky 完治 + 成本记账 merged(#10, rebuild→F001)+ BL-088 量化(806 仅~36条值得 / 2584 可硬删)
 ## ✅ BL-093(max_tokens 3/3) / BL-091(YT邮箱 5/5, +339) / BL-086(tier+alert 6/6)
 ## 用户手工待办 / 决策
-1. **BL-088 决策**: 据 F003 报告 — 质量门放宽只值 ~36 条(建议跳过)+ 2584 是否归档CSV硬删(安全)→ 定了才开 follow-up
-2. aigcgateway VM .git remote PAT(gho_*)轮换(安全)
+1. aigcgateway VM .git remote PAT(gho_*)轮换(安全)
+- ✅ BL-088 已决(2026-06-08 用户): 两项都不做 — 质量门不放宽(806 仅~36条值得, 低性价比)+ 2584 不硬删(保持软删)。closed
 ## Backlog
-- BL-088 实装(待决策) / BL-090-cost / BL-089 配置页 / BL-058 fork / BL-048 / BL-054后续 等
+- BL-090-cost / BL-089 配置页 / BL-058 fork / BL-048 valueScore / BL-011 / BL-014 等(详见 backlog.json)

@@ -385,10 +385,11 @@
       "ADR-017 §4:75% 入库率 + 806 拦截属预期设计,放宽是 quantity↔quality 取舍非 bug",
       "放宽优先 instagram + 中粉段,排除 <1000 噪音;先量化再决定",
       "硬删须在 BL-086 收割 2535 id 之后(避免丢种子名单);非 partial 唯一索引注意撞键风险",
-      "2026-06-08: 量化部分并入 BL-094 F003(只读出决策依据); 放宽质量门/硬删 2584 实装待 F003 报告后用户决定。priority 维持 low(806 低质量换质, 价值存疑)"
+      "2026-06-08: 量化部分并入 BL-094 F003(只读出决策依据); 放宽质量门/硬删 2584 实装待 F003 报告后用户决定。priority 维持 low(806 低质量换质, 价值存疑)",
+      "2026-06-08 用户决定: 两项都不做。质量门不放宽(F003 量化: 806 中 92% 真spam, 只~36条值得, 性价比低); 旧源 2584 不硬删(保持软删, 留作种子名单/审计)。BL-094 F003 量化报告已留档。本条 closed 保留 audit trail"
     ],
     "confirmed_at": "2026-06-06T11:00+0800",
-    "priority": "low",
+    "priority": "closed",
     "tags": [
       "apify-kol",
       "quality-gate",
@@ -396,7 +397,8 @@
       "our-side",
       "quantity-quality-tradeoff"
     ],
-    "discovered_in": "2026-06-06 Planner prod 只读诊断 docs/reviews/kol-acquisition-diagnostic-2026-06-06.md"
+    "discovered_in": "2026-06-06 Planner prod 只读诊断 docs/reviews/kol-acquisition-diagnostic-2026-06-06.md",
+    "status": "closed-decided-no-action"
   },
   {
     "id": "BL-089",
