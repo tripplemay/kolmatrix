@@ -82,6 +82,8 @@ export async function Features({ locale }: Props) {
                 alt={t(`items.${key}.title`)}
                 width={width}
                 height={height}
+                quality={80}
+                sizes="(max-width: 1024px) 100vw, 580px"
                 className="h-auto w-full opacity-95 transition-transform duration-[var(--duration-landing-medium)] ease-[var(--ease-landing-out)] motion-reduce:transform-none group-hover:scale-[1.02]"
               />
             </div>

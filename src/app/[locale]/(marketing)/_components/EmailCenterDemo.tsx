@@ -25,6 +25,8 @@ export async function EmailCenterDemo() {
             alt={t("illustrationAlt")}
             width={1376}
             height={768}
+            quality={80}
+            sizes="(max-width: 1024px) 100vw, 600px"
             className="h-auto w-full"
           />
         </div>

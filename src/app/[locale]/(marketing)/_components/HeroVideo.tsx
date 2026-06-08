@@ -31,6 +31,7 @@ export async function HeroVideo({ locale }: Props) {
         alt={t("illustrationAlt")}
         fill
         priority
+        quality={85}
         sizes="100vw"
         className="object-cover opacity-40"
         data-testid="landing-hero-illustration"

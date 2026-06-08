@@ -45,6 +45,8 @@ export async function BeforeAfter() {
               alt={t("illustrationAlt")}
               width={1376}
               height={768}
+              quality={80}
+              sizes="(max-width: 1200px) 100vw, 1056px"
               className="h-auto w-full"
               data-testid="landing-before-after-illustration"
             />

@@ -35,6 +35,10 @@ const nextConfig: NextConfig = {
       // { protocol: "https", hostname: "i0.hdslb.com" },                // Bilibili
     ],
     formats: ["image/avif", "image/webp"],
+    // BL-080-F004 — landing illustrations render at quality 80 (cards /
+    // demo / before-after) and 85 (hero LCP). Next.js 16 requires every
+    // non-default `quality` prop value to be allow-listed here.
+    qualities: [75, 80, 85],
   },
   experimental: {
     optimizePackageImports: ["recharts", "@base-ui/react"],
