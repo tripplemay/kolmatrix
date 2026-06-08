@@ -347,6 +347,9 @@ export async function requestDetailedExplanationAction(
       tenantId,
       actionLabel: "ai_recommendation_explain_detailed",
       timeoutMs: 30_000,
+      // BL-093: 5 locale × 5 段，实测输出 ~4.9K → 16000 留足 headroom 不截断
+      // (仍 ≪ 64000 模型 cap，gateway 预检付得起)。其余 action 用 wrapper 默认 8192。
+      maxTokens: 16_000,
     });
   } catch (err) {
     if (err instanceof AiDailyCostExceededError) {

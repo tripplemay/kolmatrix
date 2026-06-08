@@ -260,3 +260,39 @@ describe("runAigcAction — config error path", () => {
     ).rejects.toBeInstanceOf(AigcActionConfigError);
   });
 });
+
+describe("runAigcAction — BL-093 max_tokens", () => {
+  function bodyOf(fetchStub: typeof fetch): Record<string, unknown> {
+    const calls = (fetchStub as unknown as { mock: { calls: unknown[][] } }).mock.calls;
+    const init = calls[0][1] as { body: string };
+    return JSON.parse(init.body) as Record<string, unknown>;
+  }
+
+  it("defaults max_tokens to DEFAULT_MAX_TOKENS (8192) when not provided", async () => {
+    const fetchStub = makeFetchStub({ status: 200, body: { output: "{}" } });
+    const { runAigcAction, __TEST_ONLY__ } = await import("@/lib/aigc/run-action");
+    await runAigcAction({
+      actionId: "act-1",
+      variables: {},
+      tenantId: TENANT_ID,
+      actionLabel: "t",
+      fetchImpl: fetchStub,
+    });
+    expect(bodyOf(fetchStub).max_tokens).toBe(__TEST_ONLY__.DEFAULT_MAX_TOKENS);
+    expect(bodyOf(fetchStub).max_tokens).toBe(8192);
+  });
+
+  it("forwards explicit maxTokens (e.g. EXPLAIN_DETAILED 16000) in body", async () => {
+    const fetchStub = makeFetchStub({ status: 200, body: { output: "{}" } });
+    const { runAigcAction } = await import("@/lib/aigc/run-action");
+    await runAigcAction({
+      actionId: "act-1",
+      variables: {},
+      tenantId: TENANT_ID,
+      actionLabel: "t",
+      maxTokens: 16_000,
+      fetchImpl: fetchStub,
+    });
+    expect(bodyOf(fetchStub).max_tokens).toBe(16_000);
+  });
+});

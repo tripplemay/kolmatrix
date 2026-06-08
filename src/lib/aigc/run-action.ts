@@ -98,11 +98,28 @@ export interface RunAigcActionOpts {
   actionLabel: string;
   /** Per-call timeout. Default: 30_000ms (matches customize.ts existing). */
   timeoutMs?: number;
+  /**
+   * BL-093: per-call max output tokens, forwarded to aigcgateway `/actions/run`
+   * (which passes it to the upstream `max_tokens`). Without it the upstream
+   * reserves the model's full output cap (haiku-4.5 = 64000) for the affordability
+   * pre-check, so a low gateway balance rejects the whole request (0.3s/$0/error)
+   * across every haiku-4.5 action. Defaults to DEFAULT_MAX_TOKENS; high-output
+   * actions (EXPLAIN_DETAILED) pass a larger value. Must be ≥ the action's real
+   * max output so output isn't truncated.
+   */
+  maxTokens?: number;
   /** Internal: stub fetch for tests. */
   fetchImpl?: typeof fetch;
 }
 
 const DEFAULT_TIMEOUT_MS = 30_000;
+/**
+ * BL-093: sane default max_tokens for every action that doesn't override it.
+ * 8192 ≫ the real output of all short actions (≤~800 tok) yet ≪ the 64000 model
+ * cap, so the gateway affordability pre-check passes even at low balance. The one
+ * high-output action (EXPLAIN_DETAILED, ~4.9K observed) passes 16000 explicitly.
+ */
+const DEFAULT_MAX_TOKENS = 8192;
 
 interface RawActionResponse {
   output?: string;
@@ -163,6 +180,7 @@ export async function runAigcAction<T>(opts: RunAigcActionOpts): Promise<AigcAct
           action_id: opts.actionId,
           variables: opts.variables,
           stream: false,
+          max_tokens: opts.maxTokens ?? DEFAULT_MAX_TOKENS,
         }),
       },
       {
@@ -239,4 +257,5 @@ export { AiDailyCostExceededError };
 
 export const __TEST_ONLY__ = {
   DEFAULT_TIMEOUT_MS,
+  DEFAULT_MAX_TOKENS,
 };
