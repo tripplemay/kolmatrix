@@ -19,11 +19,12 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "L1: lint 0err warn≤3 / tsc=0 / npm test(含 UserAvatarMenu 新断言)+ i18n 5 locale 一致",
       "L2 部署后: admin 用户头像菜单见'爬虫监控'入口 → 点进可达 /admin/crawler-monitor; 非 admin 不显该项",
       "signoff doc docs/test-reports/BL-097-signoff-2026-06-XX.md"
-    ]
+    ],
+    "note": "PASS (fix_rounds=0). L1: lint 0e/3w, tsc PASS, 207f/1542t green, i18n 8/8, glyph 7/7. L2: staging healthy, admin gate 307. Signoff: docs/test-reports/BL-097-signoff-2026-06-08.md"
   }
 ]
