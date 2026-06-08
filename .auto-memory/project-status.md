@@ -13,9 +13,10 @@ type: project
 - BL-086-F006 full: refresh -85% confirmed live + harvest 100% + cost accounting ✅
 - BL-091-F001: BugA runtime trigger confirmed (188 new records) ✅
 
-## 用戶手工待辦
-1. **BL-088 决策**: 据 BL-094-F003 报告选质量门方案 + 是否硬删 2584
-2. aigcgateway PAT 轮换
-
+## 状态: 无进行中批次(BL-086/091/092/093/094 全 DONE)
+- ✅ BL-088 已决(2026-06-08): 两项都不做(质量门不放宽 ~36条低性价比 + 2584 不硬删)。closed
+## 用户手工待办
+1. aigcgateway VM .git remote PAT(gho_*)轮换(安全)
 ## Backlog
-- IG 产出排查(BL-092 S1) / BL-090-cost / BL-089 / BL-088 实装 / BL-058
+- **BL-095**(中): IG hashtag 发现 0 产出深度排查(BL-086 F005 350ms 节流未解决, 288ref+4hash 全 0)
+- BL-090-cost / BL-089 配置页 / BL-058 fork / BL-048 valueScore / BL-011 等(详见 backlog.json)

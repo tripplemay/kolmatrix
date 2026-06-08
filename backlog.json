@@ -420,5 +420,23 @@
       "cross-service"
     ],
     "discovered_in": "2026-06-06 用户产品策略讨论(配置页) — Planner 建议 deferred"
+  },
+  {
+    "id": "BL-095",
+    "title": "IG hashtag 发现 0 产出 深度排查 (BL-086 F005 350ms 节流未解决)",
+    "description": "**触发:** BL-092 verified-live(2026-06-08)实测 IG 仍 0 产出(288 refresh + 4 hashtag 全 0)。BL-086 F005 把 IG 0产出归因为 per-author 429 限流 + 修法 TikHubClient minIntervalMs 350ms 全局节流 → 已部署但**未解决** IG 发现。\n\n**需排查:** IG hashtag actor/搜索逻辑为何拿不到新 profile(429 已节流仍 0?搜索端点变更?IG 数据本身稀疏?解析失败?)。对比 tiktok 同关键词高产。可能根因比 429 更深(IG actor 本身 / TikHub IG 端点限制)。\n\n**落地:** 爬虫代码(guang-tech/apify)路径 B。先只读排查(日志/scrape_jobs/直调 IG 端点)定根因, 再决定修法 / won't-fix。\n\n**关联:** BL-086 F005(429 节流, 未解决根因)· BL-058 fork 数据 · BL-092 F003 signoff Soft-watch S1。",
+    "decisions": [
+      "BL-086 F005 把 IG 0产出当 429 限流修(350ms 节流), BL-092 实测仍 0 → 根因另有",
+      "深度排查走路径 B, 先定根因再决定修/won't-fix"
+    ],
+    "confirmed_at": "2026-06-08T20:00+0800",
+    "priority": "medium",
+    "tags": [
+      "apify-kol",
+      "ig-discovery",
+      "crawler-team",
+      "unresolved"
+    ],
+    "discovered_in": "BL-092 F003 verified-live 2026-06-08 (IG 仍 0 产出, F005 节流未解决)"
   }
 ]
