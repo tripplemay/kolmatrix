@@ -338,6 +338,16 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   // it differently as "CRM de KOL" so the gate stays useful as a
   // drift check for the locales where divergence is expected.
   "landing.features.items.crm.title",
+  // BL-096-F002 crawler-monitor health lights:
+  // - "Instagram" is a brand (same across every locale, like
+  //   discovery.platforms.instagram above).
+  // - es "OK" / "Total" coincide with English — "OK" is standard in
+  //   Spanish UIs and "Total" is the literal Spanish word (same spelling,
+  //   like discovery.filters.regionGroup_asia "Asia"). zh/ja/ko translate
+  //   both, so the gate stays a useful drift check for those locales.
+  "admin.crawlerMonitor.health.instagram",
+  "admin.crawlerMonitor.healthStatus.ok",
+  "admin.crawlerMonitor.total",
 ]);
 
 const en = load("en");
