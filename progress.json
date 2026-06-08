@@ -1,52 +1,35 @@
 {
-  "status": "done",
-  "user_goal": "BL-097-crawler-monitor-nav-entry — 给 BL-096 监控页加网站入口(目前只能手敲URL). 2 features. F001 UserAvatarMenu admin 段加 /admin/crawler-monitor 链接(仿 apify-preview)+i18n 5locale+测试. F002 Codex. 纯 kolmatrix 小UI. 关联 docs/specs/BL-097-crawler-monitor-nav-entry-spec.md.",
-  "total_features": 2,
-  "completed_features": 2,
+  "status": "building",
+  "user_goal": "BL-080-landing-illustration-mockups — landing 视觉精修 v2: 用 AI 插画替代真截图(Hero+6 Features+EmailCenter+BeforeAfter). 6 features. 2026-06-01 挂起(等用户侧 F002 AI gen PNG). 2026-06-08 恢复: 用户认可方向, Planner 代生成 8 PNG(aigc-gateway gemini)放 public/landing/illustrations/, resume 触发(8/8)满足. Generator 接 F002验收→F003集成(替换4组件Image引用+fallback)→F004 next/image+LCP→F005 baseline+a11y→F006 Codex. 不得regress BL-078 baseline(perf0.99/LCP530ms). 关联 docs/specs/BL-080-landing-illustration-mockups-spec.md.",
+  "total_features": 6,
+  "completed_features": 1,
   "fix_rounds": 0,
-  "current_sprint": "BL-097-crawler-monitor-nav-entry",
-  "last_updated": "2026-06-08T22:00+0800",
+  "current_sprint": "BL-080-landing-illustration-mockups",
+  "last_updated": "2026-06-08T22:40+0800",
   "reference_docs": [
-    "docs/specs/BL-097-crawler-monitor-nav-entry-spec.md",
-    "src/components/layout/UserAvatarMenu.tsx (admin 段 line~111-128, 仿 apify-preview 链接)",
-    "src/components/layout/__tests__/UserAvatarMenu.test.tsx",
-    "messages/{zh,en,ja,ko,es}.json (userAvatarMenu namespace, 加 adminCrawlerMonitor)",
-    "src/app/[locale]/admin/crawler-monitor/ (BL-096 监控页本体)"
+    "docs/specs/BL-080-landing-illustration-mockups-spec.md",
+    "docs/specs/BL-080-illustration-prompts.md (F001 8 prompts)",
+    "public/landing/illustrations/ (8 PNG 已就绪, F002)",
+    "src/components/landing/ (HeroVideo/Features/EmailCenterDemo/BeforeAfter — F003 替换 Image 引用)",
+    "BL-078 baseline (signoff fb34b09): perf0.99/a11y1.0/LCP530ms — F004/F005 不得regress"
   ],
   "docs": {
-    "spec": "docs/specs/BL-097-crawler-monitor-nav-entry-spec.md",
+    "spec": "docs/specs/BL-080-landing-illustration-mockups-spec.md",
     "audit": null,
     "test_cases": null,
-    "signoff": "docs/test-reports/BL-097-signoff-2026-06-08.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "BL-097 2/2 PASS (fix_rounds=0). L1: lint 0e/3w, tsc PASS, 207f/1542t green, i18n 8/8, glyph 7/7. L2: staging healthy, admin gate 307.",
-    "pass_count": 2,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": []
-  },
+  "evaluator_feedback": null,
   "fix_rounds_history": [],
-  "generator_handoff": "[2026-06-08 22:00 BJT Planner Kimi BL-097 planning→building] 极小UI批次, 纯 kolmatrix. F001: UserAvatarMenu.tsx admin 段(showAdmin block ~111-128)加 <Link>→/admin/crawler-monitor 仿 apify-preview(line117-127), icon monitoring/monitor_heart, label t('adminCrawlerMonitor'); i18n userAvatarMenu.adminCrawlerMonitor 5locale; 更新 UserAvatarMenu.test.tsx 断言. F002 Codex. 部署 staging+prod(手动, NODE_OPTIONS=4096防OOM). 不依赖任何充值/爬虫merge.",
+  "generator_handoff": "[2026-06-08 22:40 BJT Planner Kimi BL-080 恢复挂起→building] 落地页插画批次 2026-06-01 挂起(等F002 AI gen), 今恢复. ⚠️ F002 已完成(Planner代生成8 PNG放 public/landing/illustrations/, 真PNG规范命名, 文字泄漏已修, 8/8品牌一致). Generator 起步: F002验收(brand抽样+无大量text+≤1MB检查, 单张略超1MB→F004处理或先压)→标done→F003. F003 替换4组件Image引用(HeroVideo/Features 6 cards/EmailCenterDemo/BeforeAfter)+fallback守门(PNG缺回退现screenshots)+i18n alt(5locale). F004 next/image priority+quality+LCP<2.5s不regress BL-078 530ms. F005 visual baseline重拍(4viewport×5locale×4组件~80snap)+Lighthouse+a11y. F006 codex. 挂起快照在 docs/archive/paused-batches/BL-080-*.json(可删, 已还原). 纯kolmatrix. 不依赖任何充值/爬虫.",
   "session_notes": {
-    "Kimi_planner": "[2026-06-08 22:00 BJT Planner Kimi 开 BL-097] BL-096 done(监控页上线/admin/crawler-monitor). 用户要网站入口→开小批次 BL-097: F001 UserAvatarMenu admin段加入口(仿apify-preview)+i18n+测试 / F002 Codex. 纯kolmatrix UI, 0.5h+0.5h. 下一步Generator启F001.",
-    "Kimi_generator": "[2026-06-08 BJT Generator Kimi BL-097-F001 done] UserAvatarMenu admin段加 /admin/crawler-monitor <Link>(仿apify-preview, onClick关菜单+同className)+ i18n userMenu.adminCrawlerMonitor 5locale(注:命名空间是 userMenu 非 userAvatarMenu). ⚠️图标改用 insights(非spec建议的monitoring/monitor_heart)——后两者不在committed woff2 subset里, fontkit验证 monitoring/monitor_heart/dashboard 全❌, insights✅, 复用已覆盖图标避免network woff2 regen(BL-096 visibility教训). L1全绿: UserAvatarMenu 8+i18n coverage 8+glyph 7 pass, tsc0, lint clean, 5 locale JSON有效. building→verifying(F002 codex). 纯test+UI改动未部署, F002 L2需部署staging+prod(手动,NODE_OPTIONS=4096).",
-    "Reviewer": "[2026-06-08 ~22:00 BJT Codex Reviewer BL-097 verifying→done] F001 nav entry PASS. L1: lint 0e/3w + tsc PASS + 207f/1542t green(UAmenu 8/i18n 8/glyph 7). L2: staging healthy, admin gate 307. Signoff: docs/test-reports/BL-097-signoff-2026-06-08.md.",
+    "Kimi_planner": "[2026-06-08 22:40 BJT Planner Kimi 恢复 BL-080] BL-097 done. 用户问起挂起的落地页工作→恢复 BL-080(2026-06-01挂, 卡在F002用户AI gen). 用户认可方向后授权Planner代生成: aigc-gateway gemini-3-pro-image 按F001 8prompts出8张(去hex+强无文字修泄漏, before-after重做1次, gpt-image太慢超时弃用). 真PNG放 public/landing/illustrations/ 规范命名, 自审8/8品牌一致. resume触发(8/8)满足→还原批次building, 清paused_batches. Generator接F002验收→F003-F006. 不regress BL-078. 下一步Generator启F002验收+F003.",
+    "Kimi_generator": null,
+    "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
   },
-  "paused_batches": [
-    {
-      "sprint": "BL-080-landing-illustration-mockups",
-      "paused_at": "2026-06-01T09:46+0800",
-      "paused_at_status": "building",
-      "completed_at_pause": "1/6 (F001 Planner preempt 5/28)",
-      "last_commit": "ad14bdd",
-      "snapshot": "docs/archive/paused-batches/BL-080-progress.json + BL-080-features.json + BL-080-RESUME.md",
-      "resume_trigger": "用户通知 F002 AI gen PNG ≥6/8 就绪 (public/landing/illustrations/)",
-      "reason": "用户决定插入 BL-081 KOL country mapper bug + retry storm 修复批次, BL-080 critical path 在用户侧 AI gen 不阻塞"
-    }
-  ]
+  "paused_batches": []
 }
