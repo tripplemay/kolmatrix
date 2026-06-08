@@ -236,3 +236,15 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 **建议写入：** `framework/harness/deploy-patterns.md` §部署触发 — ref 输入只用 main 或完整 SHA，禁短 SHA。
 
 **状态：** 待用户 ack
+
+---
+
+## [2026-06-08] Claude CLI (Kimi) — 来源：BL-080-F003 落地页视觉改动 push 后 CI 红
+
+**类型：** 新坑（流程/CI 时序）
+
+**内容：** F003 spec 把 L1 acceptance 写成「lint + tsc + vitest」，据此判定本地全绿即可 push。但本仓 `ci.yml` 在每次 push main 时**还跑完整 Playwright e2e + visual-regression**（landing-{en,zh}-{desktop,mobile} 四张 baseline + 功能断言）。任何改落地页视觉的 feature 一 push 即让 CI 红，直到：(1) 视觉 baseline 在 **Linux runner** 经 `update-visual-baselines.yml` workflow_dispatch 重拍（本地 mac/WSL 生成的 PNG 会因字体 hinting 差异在 CI diff，不可本地重拍）；(2) 因视觉改动失效的功能断言（如本次删 hero video → `landing-hero-video` 断言）同步更新。两个连带坑：① bot 用 `GITHUB_TOKEN` push 的 baseline commit **不触发 CI**（GitHub loop 防护），须手动 `gh workflow run ci.yml` 验证 HEAD；② Docker Hub 偶发 `docker pull pgvector 500` 让 service-container init 挂，非代码问题 → `gh run rerun <id> --failed`。另一边界争议：删 video 导致的 e2e 断言更新本属 Evaluator 测试域，但 CI 红阻塞 main 时 Generator 被迫改测试——建议 spec 对「改视觉的 feature」显式把 baseline 重拍 + 连带断言更新纳入**同一 feature 的 acceptance**，而非拆到后续 F005/F006，避免 main 中途红。
+
+**建议写入：** `framework/harness/generator.md` §15（Perf/image 落地段邻近）补「视觉改动 feature 的 CI 时序」；或 `framework/harness/deploy-patterns.md` §CI baseline 重拍时序 + bot commit 不触发 CI + Docker Hub 500 rerun。
+
+**状态：** 待用户 ack
