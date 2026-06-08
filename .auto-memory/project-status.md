@@ -3,9 +3,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-097-crawler-monitor-nav-entry VERIFYING (1/2) — 给监控页加网站入口
-- ✅ F001(generator,Kimi) done: UserAvatarMenu admin段加 /admin/crawler-monitor <Link> + i18n userMenu.adminCrawlerMonitor 5locale. ⚠️图标用 insights(spec建议的monitoring/monitor_heart 不在woff2 subset, fontkit验证后复用已覆盖图标避免network regen). L1全绿(UserAvatarMenu8+i18n8+glyph7, tsc0, lint clean). 纯UI+test未部署
-- ✅ 已部署 staging+prod @04e5414(staging 4m54s/prod 4m23s, 无OOM). prod login 5locale 200, /admin/crawler-monitor 307(admin gate). ⏳ F002 Codex: L1复核 + L2登录后验入口可见可达 + signoff
+## 🚧 BL-080-landing-illustration-mockups BUILDING (1/6) — 落地页 AI 插画替代真截图(挂起6/01→6/08恢复)
+- ✅ F002 插画就绪 8/8: 用户认可方向, **Planner 代生成**(aigc-gateway gemini-3-pro-image, 按 F001 8 prompts; 去hex+强无文字修泄漏, before-after 重做1次; gpt-image 太慢弃用). 真PNG放 `public/landing/illustrations/` 规范命名, 8/8 品牌一致(深navy+青+紫). 单张~0.85-1.36MB(略超1MB→F004处理)
+- Generator 接: F002验收(brand/无大量text)→标done→F003集成(替换 HeroVideo/Features6/EmailCenterDemo/BeforeAfter 的 Image 引用+fallback+i18n alt)→F004 next/image+LCP(不regress BL-078 530ms)→F005 baseline重拍+a11y→F006 Codex. spec docs/specs/BL-080-*.md + prompts docs/specs/BL-080-illustration-prompts.md
+## ✅ BL-097 DONE (2/2) — 监控页导航入口(UserAvatarMenu admin段, 部署@04e5414)
 ## ✅ BL-096 DONE (3/3, fix_rounds=1, signoff @ docs/test-reports/BL-096-signoff-2026-06-08.md) — 监控页 /admin/crawler-monitor 上线
 - F001 /admin/stats 扩展(PR#11→392f154)实测: manual_seed inserted **2534**(BL-092 harvest 全 drain!)/ ytEmail queued1553 / refreshBacklog5711 / cost3.58 / balance240.85. F002 瘦客户端页+健康灯+recharts 部署@ccd80d5
 ## ✅ BL-092 DONE (3/3) — TikHub 充值后收口: refresh -85% + 2535投喂(+420 drain中) + BugA runtime触发(188) + 成本记账 ✅
