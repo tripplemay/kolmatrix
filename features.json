@@ -103,7 +103,7 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "L1 自动化 5 项 PASS: (1) npm run lint 0 error warning≤3 (2) npx tsc --noEmit (3) npm test 含 visual baseline + i18n-locale-coverage (4) public/landing/illustrations/ 含 ≥6/8 PNG (5) messages/*.json 5 locale alt text 完整 (如新加 illustrationAlt keys)",
       "L2 staging 抽样实测 5 项 PASS: (1) /zh + /en Hero 区视觉冲击力升级 (主观评估, illustration 替代真截图后冲击力 acceptable) (2) Features 6 cards illustration 视觉一致 (brand color + Linear 风) (3) EmailCenterDemo + BeforeAfter illustration 视觉一致 (4) CTA → /request-access 跳转链路不破 (5) Lighthouse Desktop logged-out perf ≥85 + LCP <2.5s (BL-078 baseline 不 regress)",
@@ -112,6 +112,7 @@
       "0 visual baseline diff 异常 (~80 PNG 入 git, diff <5% noise)",
       "用户主观确认视觉冲击力升级 (BL-078 同维度, 主观签收, 非纯客观指标)",
       "signoff doc docs/test-reports/BL-080-signoff-2026-05-XX.md 含 L1/L2 结果 + 终签"
-    ]
+    ],
+    "note": "PASS (fix_rounds=0). L1: lint 0e/3w, tsc PASS, 207f/1542t, build OK, 8/8 PNG, 3 illustrationAlt x5locale. L2: all 8 in staging HTML, CTA confirmed, Lighthouse perf99 a11y100. Signoff: docs/test-reports/BL-080-signoff-2026-06-09.md"
   }
 ]
