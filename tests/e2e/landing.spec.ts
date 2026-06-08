@@ -24,24 +24,19 @@ test.describe("Anonymous root path", () => {
     await expect(page.getByTestId("landing-hero")).toBeVisible();
   });
 
-  test("hero video element is present with correct attributes", async ({ page }) => {
+  // BL-080-F003 — the looping product-demo video was replaced by the AI
+  // hero illustration (A1 lock 2026-06-08). The illustration is the LCP
+  // element, loaded via next/image with `priority`.
+  test("hero illustration is present and eagerly loaded (LCP)", async ({ page }) => {
     await page.goto("/zh");
-    const video = page.getByTestId("landing-hero-video");
-    await expect(video).toBeAttached();
-    // Don't assert visible — video may be hidden via motion-reduce: at the
-    // CSS level if the test browser has prefers-reduced-motion enabled.
-    await expect(video).toHaveAttribute("autoplay", "");
-    await expect(video).toHaveAttribute("muted", "");
-    await expect(video).toHaveAttribute("loop", "");
-    await expect(video).toHaveAttribute("playsinline", "");
-    await expect(video).toHaveAttribute("poster", "/landing/hero/hero-poster.jpg");
-  });
-
-  test("hero poster image is fetchable", async ({ request }) => {
-    const res = await request.get("/landing/hero/hero-poster.jpg");
-    expect(res.ok()).toBe(true);
-    const contentType = res.headers()["content-type"];
-    expect(contentType).toMatch(/image\/jpeg/);
+    const illustration = page.getByTestId("landing-hero-illustration");
+    await expect(illustration).toBeAttached();
+    // next/image `priority` opts out of lazy loading so the LCP image
+    // fetches immediately.
+    await expect(illustration).not.toHaveAttribute("loading", "lazy");
+    // src resolves through the next/image optimizer to the illustration
+    // (or the poster fallback if the PNG were ever missing).
+    await expect(illustration).toHaveAttribute("src", /hero-illustration|hero-poster/);
   });
 });
 
