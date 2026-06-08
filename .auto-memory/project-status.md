@@ -5,7 +5,7 @@ type: project
 ---
 ## 🚧 BL-097-crawler-monitor-nav-entry VERIFYING (1/2) — 给监控页加网站入口
 - ✅ F001(generator,Kimi) done: UserAvatarMenu admin段加 /admin/crawler-monitor <Link> + i18n userMenu.adminCrawlerMonitor 5locale. ⚠️图标用 insights(spec建议的monitoring/monitor_heart 不在woff2 subset, fontkit验证后复用已覆盖图标避免network regen). L1全绿(UserAvatarMenu8+i18n8+glyph7, tsc0, lint clean). 纯UI+test未部署
-- ⏳ F002 Codex: L1复核 + L2部署后验(staging+prod手动,NODE_OPTIONS=4096) + signoff
+- ✅ 已部署 staging+prod @04e5414(staging 4m54s/prod 4m23s, 无OOM). prod login 5locale 200, /admin/crawler-monitor 307(admin gate). ⏳ F002 Codex: L1复核 + L2登录后验入口可见可达 + signoff
 ## ✅ BL-096 DONE (3/3, fix_rounds=1, signoff @ docs/test-reports/BL-096-signoff-2026-06-08.md) — 监控页 /admin/crawler-monitor 上线
 - F001 /admin/stats 扩展(PR#11→392f154)实测: manual_seed inserted **2534**(BL-092 harvest 全 drain!)/ ytEmail queued1553 / refreshBacklog5711 / cost3.58 / balance240.85. F002 瘦客户端页+健康灯+recharts 部署@ccd80d5
 ## ✅ BL-092 DONE (3/3) — TikHub 充值后收口: refresh -85% + 2535投喂(+420 drain中) + BugA runtime触发(188) + 成本记账 ✅

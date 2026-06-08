@@ -224,3 +224,15 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 **建议写入:** `framework/harness/deploy-patterns.md` §prod-outage-recovery + §VM 内存超额防护。
 
 **状态：** 待用户 ack
+
+---
+
+## [2026-06-08] Claude CLI (Kimi) — 来源：BL-097 部署 staging 首次失败
+
+**类型：** 新坑（操作）
+
+**内容：** `gh workflow run deploy-staging.yml -f ref=<短SHA>` 会在 `actions/checkout@v4` 步骤直接失败（`The process '/usr/bin/git' failed with exit code 1`），部署根本到不了 VM。根因：checkout@v4 用 `fetch-depth: 1` 浅拉取**指定 ref**，短 SHA（如 `04e5414`）不是可单独 fetch 的 ref，git 报错退出。`ref` 输入只能是**分支名/tag/完整 40 位 SHA**。改 `-f ref=main`（或完整 SHA）即过。误判风险：失败日志在 checkout 阶段，容易被误读成 VM 侧 build/OOM，实际连 VM 都没碰。
+
+**建议写入：** `framework/harness/deploy-patterns.md` §部署触发 — ref 输入只用 main 或完整 SHA，禁短 SHA。
+
+**状态：** 待用户 ack
