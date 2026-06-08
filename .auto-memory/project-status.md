@@ -3,11 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-080-landing-illustration-mockups VERIFYING (5/6) — 落地页 AI 插画替代真截图(挂起6/01→6/08恢复)
-- ✅ F001-F005 全 done(Generator Kimi 2026-06-09). 用户 A1 lock 激进版: Hero 插画替换 video 背景, BeforeAfter 插画替换整个动画表格. 映射 library→feature-match/aiMatch→feature-brief/insight,reach,crm 同名/roi fallback/EmailCenter→email-center. fallback 守门 illustration-asset.ts. +3 illustrationAlt×5locale. woff2 去 outgoing_mail
-- ✅ F004 next/image quality85/80+sizes+lazy+images.qualities. ✅ F005 Lighthouse 6门全过(/en perf99 LCP870 CLS0 TBT0 SEO92 a11y100; /zh /ja 同过)+ a11y 4项. baseline 用户决定保持现有4张(不扩80snap)
-- ✅ CI 全绿. staging deployed(纯前端无schema/env变更). 坑: CI 跑全套 e2e+visual, 视觉改动 push 即红 → baseline 经 update-visual-baselines.yml 重拍(本批拍2次), bot token commit 不触发 CI 须手动 workflow_dispatch
-- ⏭️ Codex F006: L1自动化5项 + L2 staging 视觉冲击力抽样 + signoff + 用户主观确认. ⚠️ e2e hero断言已由generator改(测试域复核); beforeAfter.{colTask/colBefore/colAfter/rows}成 dead i18n key
+## 🚧🔴 BL-098-email-customize-template-asset BUILDING (0/2) — PROD 故障: 邮件 AI 定制'模板不存在'
+- 根因(源码实证): AI定制 `reach/actions.ts:116` 查废弃 `emailTemplate` 表, 但下拉列表(loadOutreachTemplates→Asset 表)给 asset id → 纯Asset模板('Clash Royale — Signing invitation')对不上 → template_not_found. ADR-011 迁移遗留, 范围孤立(仅line116; 发送/CRUD :410/:447 已迁Asset)
+- F001 改 line116 查 Asset 表(type=email, content JSONB 提 subject/body/locale, 复用 loadOutreachTemplates adapt / 抽共享 getEmailTemplateById). F002 Codex prod实测Clash Royale定制通+回归. 纯kolmatrix, 走铁律#9
+## ✅ BL-080 DONE (6/6, signoff @ docs/test-reports/BL-080-signoff-2026-06-09.md) — 落地页 AI 插画(8张)替video+动画; Lighthouse perf99/LCP870/CLS0; staging部署
+- ⚠️ prod 部署待手动触发(让访客见新插画落地页); dead i18n key beforeAfter.{colTask/colBefore/colAfter/rows}(可并 BL-070)
 ## ✅ BL-097 DONE (2/2) — 监控页导航入口(UserAvatarMenu admin段, 部署@04e5414)
 ## ✅ BL-096 DONE (3/3, fix_rounds=1, signoff @ docs/test-reports/BL-096-signoff-2026-06-08.md) — 监控页 /admin/crawler-monitor 上线
 - F001 /admin/stats 扩展(PR#11→392f154)实测: manual_seed inserted **2534**(BL-092 harvest 全 drain!)/ ytEmail queued1553 / refreshBacklog5711 / cost3.58 / balance240.85. F002 瘦客户端页+健康灯+recharts 部署@ccd80d5
