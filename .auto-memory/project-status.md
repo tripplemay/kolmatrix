@@ -3,20 +3,15 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ✅ BL-094-high-value-polish DONE (4/4, signoff @ 4dcebac) — fix_rounds=0
-- F001: CI flaky 完治(网络测试隔离+glyph guard), 集成 62f/372t+网络 1f/2t 全绿
-- F002: apify_cost_usd PR #10 merged, /opt rebuild deferred(BL-092)
-- F003: Codex prod DB 只读量化 → 806(推荐平台差异化+email加权~36条) + 2584(推荐归档CSV硬删)
-- **BL-088 决策待办**: 用户据 F003 报告决定质量门放宽 + 软删清理方案 → follow-up batch
-
-## ✅ BL-093(max_tokens hotfix, 3/3) / BL-091(YT邮箱, 5/5) / BL-086(tier+alert, 6/6)
-- 🔴 TikHub 充值未到账(71@qq.com). Deferred→BL-092
-
-## 用户手工待办
-1. **P0: TikHub 充值 `71@qq.com`** — 充值后→Planner 复查→重启容器+跑 BL-092
-2. **BL-088 决策**: 据 F003 报告选质量门方案(A/B/C)+ 是否硬删 2584
-3. aigcgateway PAT 轮换
-
+## 🚧 BL-092-post-charge-execution BUILDING (0/3) — TikHub 充值后执行 + 真实速率验证
+- ✅ **TikHub 已充值**(2026-06-08, 71@qq.com balance=$244.71, 端点 200, 爬虫 11:01 已恢复 scrape 66)
+- F001 /opt rebuild 4d102f1→master 8d7cff8(部署 BL-094 成本记账; ⚠️ NODE_OPTIONS=4096 防 OOM)
+- F002 投喂 2535 旧源 youtube id(scripts/bl086-manual-seed-harvest non-dry-run, 命中 96%, 充值后真实入库)
+- F003 codex verified-live: BL-086 refresh 负载降(944→~123)+ 新增回升 / BL-091 BugA runtime 触发 / BL-094 apify_cost_usd 非0 / 告警不误报; 部分指标需数日稳定→首轮验趋势即可
+## ✅ BL-094 DONE (4/4) — CI flaky 完治 + 成本记账 merged(#10, rebuild→F001)+ BL-088 量化(806 仅~36条值得 / 2584 可硬删)
+## ✅ BL-093(max_tokens 3/3) / BL-091(YT邮箱 5/5, +339) / BL-086(tier+alert 6/6)
+## 用户手工待办 / 决策
+1. **BL-088 决策**: 据 F003 报告 — 质量门放宽只值 ~36 条(建议跳过)+ 2584 是否归档CSV硬删(安全)→ 定了才开 follow-up
+2. aigcgateway VM .git remote PAT(gho_*)轮换(安全)
 ## Backlog
-- **BL-092**(高): 充值后 F003 投喂 2535 + 真实速率验证 + F001/F002 L2 补验
-- BL-090-cost / BL-089 / BL-088 实装(待决策) / BL-058
+- BL-088 实装(待决策) / BL-090-cost / BL-089 配置页 / BL-058 fork / BL-048 / BL-054后续 等
