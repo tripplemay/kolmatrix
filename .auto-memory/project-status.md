@@ -3,10 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🔍 BL-096-crawler-monitor-page VERIFYING (generator 2/2 done+deployed, 交 Codex F003) — 爬虫只读监控页
+## 🔁 BL-096-crawler-monitor-page REVERIFYING (fix_rounds=1, F002 i18n 修复) — 爬虫只读监控页
 - ✅ **F001 deployed**: PR #11 merge→392f154 + apify fork-sync rebuild(无OOM)。/admin/stats 实测真实数据: manual_seed inserted **2534**(BL-092 harvest 落地!)/ hashtag 0(BL-095)/ ytEmail queued1553 / refreshBacklog 5711 / cost今日3.58 / balance240.85
 - ✅ **F002 deployed**: commit 0bb7e35 + staging+prod 部署@ccd80d5。瘦客户端只读页+健康灯+recharts+i18n 5locale×29keys+单测13。kolmatrix .env 补 APIFY_KOL_ADMIN_API_KEY(pm2_env 确认)。route 307→login(admin gate 生效)
-- ⏳ **F003 codex L2**: admin 登录 /admin/crawler-monitor 验页渲染真实数据+健康灯+gate
+- 🔁 **F002 fix_round1**: Codex 验 F001 PASS / F002 PARTIAL(i18n-locale-coverage 4 失败=英文同值未 allowlist)。修: KEEP_AS_EN_PATHS 补 crawlerMonitor.health.instagram(brand)/healthStatus.ok/total(es 同拼写)。纯测试 allowlist, 无运行时改→无需 redeploy。i18n+page 测试绿, 转 reverifying 交 Codex 复验
+- ⏳ **F003 codex**: L1 i18n 复验 + signoff(L2 页渲染/gate 首轮已 PASS)
 - ⚠️坑沉淀: pm2 env_file 加载的 var 不在 /proc/PID/environ, 查 pm2 jlist 的 pm2_env 才准
 - 归档 docs/upstream-patches/BL-096-F001-admin-stats-observability.md
 ## ✅ BL-092 DONE (3/3) — TikHub 充值后收口: refresh -85% + 2535投喂(+420 drain中) + BugA runtime触发(188) + 成本记账 ✅
