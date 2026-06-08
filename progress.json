@@ -1,8 +1,8 @@
 {
-  "status": "reverifying",
+  "status": "done",
   "user_goal": "BL-096-crawler-monitor-page — 爬虫抓取行为只读监控页(platform-admin). 3 features. 跨仓: F001 爬虫/admin/stats扩展(路径B) + F002 KOLMatrix /admin/crawler-monitor 瘦客户端 + F003 Codex. 动机: 爬虫两次静默故障(TikHub余额/aigcgateway额度)靠人肉发现, 持续可观测>事后告警. 把快照(drain/速率/邮箱/IG/双余额/成本)做成常驻面板. 架构=数据归爬虫(/admin/stats)+KOLMatrix只调API渲染(不直读对方库, ADR-017瘦客户端). 与BL-089(配置页)区分: 本页只读, 将来可合console. 关联 docs/specs/BL-096-crawler-monitor-page-spec.md.",
   "total_features": 3,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 1,
   "current_sprint": "BL-096-crawler-monitor-page",
   "last_updated": "2026-06-08T21:00+0800",
@@ -17,11 +17,17 @@
     "spec": "docs/specs/BL-096-crawler-monitor-page-spec.md",
     "audit": null,
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/BL-096-signoff-2026-06-08.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
+  "evaluator_feedback": {
+    "summary": "BL-096 all 3/3 PASS (reverifying to done, fix_rounds=1). R1 i18n FIX VERIFIED: KEEP_AS_EN_PATHS +3 paths -> i18n 8/8. Full 207f/1541t. F001 /opt 392f154 + F002 deployed. L2: gate 307, staging healthy.",
+    "pass_count": 3,
+    "partial_count": 0,
+    "fail_count": 0,
+    "issues": []
+  },
   "fix_rounds_history": [
     "round1: F002 PARTIAL i18n — KEEP_AS_EN_PATHS 补 admin.crawlerMonitor.health.instagram(brand)/healthStatus.ok(es)/total(es); 纯测试 allowlist 修复(无运行时/i18n值改动, F002 部署不变, 无需 redeploy)。i18n-locale-coverage 8绿 + page-side 11绿 tsc0 lint0"
   ],
@@ -29,7 +35,7 @@
   "session_notes": {
     "Kimi_planner": "[2026-06-08 21:00 BJT Planner Kimi 开 BL-096] BL-092 done(投喂+真实速率验证, refresh-85%/BugA 188/+420 KOLs). 用户要把抓取观测做成页面→开 BL-096 只读监控页. 理由: 两次静默故障(TikHub/aigcgateway)靠人肉发现, 持续可观测高价值(比BL-089配置页更justified). 3 features: F001爬虫/admin/stats扩展(路径B) / F002 KOLMatrix /admin/crawler-monitor 瘦客户端 / F003 Codex. 架构沿用ADR-017瘦客户端(数据归爬虫+KOLMatrix只调API). 与BL-089区分(只读vs写). 下一步Generator启F001/F002. 当前遗留: BL-095 IG 0产出 / aigcgateway PAT轮换.",
     "Kimi_generator": "[2026-06-08 Generator Kimi BL-096 fixing→reverifying round1] Codex F002 PARTIAL: i18n-locale-coverage.test 4 失败(zh/ja/ko/es admin.crawlerMonitor.health.instagram + es healthStatus.ok/total = 英文同值未 allowlist)。修: KEEP_AS_EN_PATHS 补 3 path(instagram=brand 同 discovery.platforms.instagram 先例; es OK/Total = 同拼写, 同 regionGroup_asia 先例; zh/ja/ko 仍真译)。纯测试 allowlist 改动, 无运行时/i18n 值改, F002 部署@ccd80d5 不变→无需 redeploy。i18n-locale-coverage 8绿+page-side 11绿, tsc0/lint0。F001 已 PASS, F002 功能测试(client9+page4)+L2(prod 页渲染/gate)Codex 已验。转 reverifying 交 Codex 复验 i18n。",
-    "Reviewer": "[2026-06-08 21:00 BJT Codex Reviewer BL-096 verifying→fixing] F001 PASS(/opt 392f154, /admin/stats 14 fields). F002 PARTIAL — i18n 4 locale failures: zh/ja/ko/es admin.crawlerMonitor.health.instagram + es healthStatus.ok/total untranslated. 功能全绿(client 9 + page 4). L2: staging healthy, admin gate 307, /admin/stats real data. Fix: add crawlerMonitor paths to KEEP_AS_EN_PATHS or localize. Signoff: docs/test-reports/BL-096-verifying-2026-06-08.md.",
+    "Reviewer": "[2026-06-08 ~21:10 BJT Codex Reviewer BL-096 reverifying to done] R1 i18n FIX VERIFIED: KEEP_AS_EN_PATHS +3 crawlerMonitor paths -> i18n-locale-coverage 8/8 PASS. Full suite 207 files/1541 tests green. F001 /opt 392f154 confirmed, F002 page tests 9+4 PASS. L2 unchanged from R0 (admin gate 307, staging healthy). Fix_rounds=1, signoff: docs/test-reports/BL-096-signoff-2026-06-08.md.",
     "johnsong_planner": null,
     "johnsong_generator": null
   },
