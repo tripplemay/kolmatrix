@@ -23,5 +23,6 @@ type: project
 ## 用户手工待办
 1. aigcgateway VM .git remote PAT(gho_*)轮换(安全)
 ## Backlog
+- **BL-099**(中): 邮件模板 ADR-011 迁移收尾(统一 Asset 真相源, 消 split-brain; BL-098 是 symptom). 审计 docs/reviews/email-template-feature-audit-2026-06-09.md: 10 system_seed Asset 无 email_template 镜像→AI定制全挂; 迁 analytics+孤儿工作区 reach/templates+处理 email_log FK+删双写
 - **BL-095**(中): IG hashtag 发现 0 产出深度排查(BL-086 F005 350ms 节流未解决, 288ref+4hash 全 0)
 - BL-090-cost / BL-089 配置页 / BL-058 fork / BL-048 valueScore / BL-011 等(详见 backlog.json)
