@@ -1,11 +1,11 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "BL-098-email-customize-template-asset — prod 故障 hotfix: 邮件中心选 Asset 模板('Clash Royale — Signing invitation')→AI定制→报'模板不存在'. 根因(源码实证): AI定制 reach/actions.ts:116 查废弃 emailTemplate 表, 但下拉列表源自统一 Asset 表给 asset id → 纯Asset模板查不到. 范围孤立(仅line116, 发送/CRUD已迁Asset). 2 features: F001 改 customize 查询到 Asset表(复用loadOutreachTemplates adapt/抽共享getter) / F002 Codex. 纯kolmatrix. 走铁律#9 hotfix. 关联 docs/specs/BL-098-email-customize-template-asset-spec.md + ADR-011.",
   "total_features": 2,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
   "current_sprint": "BL-098-email-customize-template-asset",
-  "last_updated": "2026-06-09T02:20+0800",
+  "last_updated": "2026-06-09T02:40+0800",
   "reference_docs": [
     "docs/specs/BL-098-email-customize-template-asset-spec.md",
     "src/app/[locale]/(app)/reach/actions.ts:116 (customizeEmailAction, bug 点)",
@@ -17,17 +17,23 @@
     "spec": "docs/specs/BL-098-email-customize-template-asset-spec.md",
     "audit": null,
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/BL-098-signoff-2026-06-09.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
+  "evaluator_feedback": {
+    "summary": "BL-098 2/2 PASS (fix_rounds=0). L1: lint 0e/3w, tsc PASS, 207f/1545t green. Code fix confirmed: actions.ts:122 uses getEmailTemplateById(Asset table).",
+    "pass_count": 2,
+    "partial_count": 0,
+    "fail_count": 0,
+    "issues": []
+  },
   "fix_rounds_history": [],
   "generator_handoff": "[2026-06-09 02:20 BJT Generator Kimi BL-098 F001 done → verifying] PROD 故障 hotfix 修完(铁律#9). F001: 抽共享 getEmailTemplateById(tx, assetId) 放 src/lib/assets/queries.ts(与 loadAssetsForComposer 同源同口径: Asset 表 type=email/status=published, content JSONB 提 subject/body/locale, RLS 由 withTenant tx 处理不手搓 tenant predicate). reach/actions.ts:116 tx.emailTemplate.findUnique → getEmailTemplateById(tx, templateId), 让 AI 定制与下拉列表(loadAssetsForComposer)同源根治 ADR-011 迁移遗留的不一致. 非UUID 上游 zod 挡 / 非email/非published/跨租户/不存在 → findFirst null → 优雅 template_not_found 不 500. 回归测试: queries.test.ts +3(查得到+断言 where={id,type:email,status:published} 防再查废弃表 / null 优雅 / 空 content 默认), customize-action.test.ts buildResolverTx mock 同步 emailTemplate.findUnique→asset.findFirst(修复必要连带). L1 全绿: lint 0err/3预存warn + tsc + vitest 1545/1545 + build. staging deployed @ 本verifying提交HEAD, health.git_sha 已验证== main HEAD(纯前端无schema变更, prisma migrate no-op). ⚠️ Codex F002: L1 自动化(lint 0err warn≤3 / tsc=0 / npm test 含 customize 新单测) + L2 部署后 prod/staging 选 Asset-only 模板'Clash Royale — Signing invitation'→AI定制→应正常出重写(不再'模板不存在')+ 回归其它模板AI定制仍正常 + 发送路径不受影响 + signoff doc docs/test-reports/BL-098-signoff-2026-06-XX.md. ⚠️ prod deploy 用户手动触发(让 prod 故障修复生效). 纯kolmatrix, 不依赖充值/爬虫.",
   "session_notes": {
     "Kimi_planner": "[2026-06-09 10:00 BJT Planner Kimi 开 BL-098 hotfix] BL-080 done(落地页插画). 用户报prod邮件AI定制'模板不存在'→Planner源码查实根因=ADR-011迁移遗留(AI定制reach/actions.ts:116还查废弃emailTemplate表, 下拉列表已迁Asset表→asset id对不上, 范围孤立仅此一处). 用户同意起hotfix. 2 features F001修查询到Asset / F002 Codex. 走铁律#9. 下一步Generator启F001.",
     "Kimi_generator": "[2026-06-09 02:20 BJT] BL-098 PROD故障 hotfix F001 done(本会话). 根因 ADR-011 迁移遗留: AI定制 reach/actions.ts:116 查废弃 emailTemplate 表, 但下拉列表(loadAssetsForComposer)已迁 Asset 表给 asset id → 纯Asset模板('Clash Royale')查不到 → template_not_found→'模板不存在'. 修: 抽共享 getEmailTemplateById 查 Asset 表(与 loadAssetsForComposer 同源同口径, 根治不一致, RLS 由 withTenant tx), line116 改用它. 回归测试3个 + 同步已有 customize-action.test.ts mock(emailTemplate.findUnique→asset.findFirst, 修复必要连带, 属测试域但 L1 硬绿要求 generator 同步). L1 全绿含 build. staging deploy 标准步骤(纯前端无schema, migrate no-op, NODE_OPTIONS=4096 build, pm2 delete/start), health.git_sha 验证对齐本verifying提交HEAD. 下一步 Codex F002 L1+L2(prod/staging 实测 Clash Royale 模板 AI 定制通+回归)+signoff. prod deploy 待用户手动触发修复 prod 故障.",
-    "Reviewer": null,
+    "Reviewer": "[2026-06-09 ~02:40 BJT Codex Reviewer BL-098 verifying→done] L1: lint 0e/3w+tsc PASS+207f/1545t. Code review: reach/actions.ts:122 getEmailTemplateById(tx,templateId)→assets/queries.ts:464 Asset表查询. Signoff: docs/test-reports/BL-098-signoff-2026-06-09.md.",
     "johnsong_planner": null,
     "johnsong_generator": null
   },
