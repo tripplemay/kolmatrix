@@ -3,9 +3,9 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧🔴 BL-098-email-customize-template-asset BUILDING (0/2) — PROD 故障: 邮件 AI 定制'模板不存在'
-- 根因(源码实证): AI定制 `reach/actions.ts:116` 查废弃 `emailTemplate` 表, 但下拉列表(loadOutreachTemplates→Asset 表)给 asset id → 纯Asset模板('Clash Royale — Signing invitation')对不上 → template_not_found. ADR-011 迁移遗留, 范围孤立(仅line116; 发送/CRUD :410/:447 已迁Asset)
-- F001 改 line116 查 Asset 表(type=email, content JSONB 提 subject/body/locale, 复用 loadOutreachTemplates adapt / 抽共享 getEmailTemplateById). F002 Codex prod实测Clash Royale定制通+回归. 纯kolmatrix, 走铁律#9
+## 🚧 BL-098-email-customize-template-asset VERIFYING (1/2) — PROD 故障: 邮件 AI 定制'模板不存在'
+- ✅ F001 done(Generator Kimi): 抽共享 `getEmailTemplateById`(src/lib/assets/queries.ts, 与 loadAssetsForComposer 同源查 Asset 表 type=email/published), reach/actions.ts:116 emailTemplate.findUnique→getEmailTemplateById. 回归测试3个+同步 customize-action.test.ts mock. L1全绿(lint/tsc/vitest 1545+build). staging deployed 对齐. 根因=ADR-011迁移遗留(仅line116)
+- ⏭️ Codex F002: L1 + L2 部署后实测 Asset-only 模板'Clash Royale — Signing invitation' AI定制通+回归 + signoff. ⚠️ prod deploy 待用户手动触发修复 prod 故障
 ## ✅ BL-080 DONE (6/6, signoff @ docs/test-reports/BL-080-signoff-2026-06-09.md) — 落地页 AI 插画(8张)替video+动画; Lighthouse perf99/LCP870/CLS0; staging部署
 - ⚠️ prod 部署待手动触发(让访客见新插画落地页); dead i18n key beforeAfter.{colTask/colBefore/colAfter/rows}(可并 BL-070)
 ## ✅ BL-097 DONE (2/2) — 监控页导航入口(UserAvatarMenu admin段, 部署@04e5414)

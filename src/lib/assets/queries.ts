@@ -432,6 +432,54 @@ export async function loadAssetsForComposer(
   });
 }
 
+export interface ComposerTemplateContent {
+  id: string;
+  subject: string;
+  body: string;
+  locale: string;
+}
+
+/**
+ * BL-098-F001 — read a single email-type Asset by id for the AI
+ * customize path. The composer dropdown (loadAssetsForComposer) hands
+ * out asset ids, so the customize action must resolve those same ids
+ * against the unified Asset table — NOT the deprecated email_template
+ * table (the original bug: a pure-Asset template like "Clash Royale —
+ * Signing invitation" had no email_template row → template_not_found).
+ *
+ * Same content-JSONB extraction口径 as loadAssetsForComposer so the
+ * dropdown and the customize action read identical {subject, body,
+ * locale}. RLS / tenant isolation is enforced by the caller's
+ * withTenant tx (asset_tenant_isolation), so we never hand-roll a
+ * tenant predicate here — consistent with the rest of this module.
+ *
+ * Returns null (caller maps to a graceful template_not_found, never a
+ * 500) when the id isn't a visible published email asset:
+ *   - non-email-type asset id
+ *   - draft / archived (non-published) asset
+ *   - cross-tenant id (filtered by RLS)
+ *   - non-existent id
+ * Non-UUID ids are rejected upstream by the action's zod schema.
+ */
+export async function getEmailTemplateById(
+  tx: Prisma.TransactionClient,
+  assetId: string
+): Promise<ComposerTemplateContent | null> {
+  const row = (await tx.asset.findFirst({
+    where: { id: assetId, type: "email", status: "published" },
+    select: { id: true, content: true },
+  })) as { id: string; content: Prisma.JsonValue } | null;
+  if (!row) return null;
+
+  const c = (row.content ?? {}) as Record<string, unknown>;
+  return {
+    id: row.id,
+    subject: typeof c.subject === "string" ? c.subject : "",
+    body: typeof c.body === "string" ? c.body : "",
+    locale: typeof c.locale === "string" ? c.locale : "en",
+  };
+}
+
 /**
  * Walk parentId up to the root, then collect the entire variant
  * subtree (root + every descendant). MAX_VARIANT_DEPTH applies in

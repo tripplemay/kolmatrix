@@ -5,7 +5,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-09T02:20+0800",
+    "verify_note": "抽共享 getEmailTemplateById(tx, assetId) 放 src/lib/assets/queries.ts(与 loadAssetsForComposer 同源同口径: Asset 表 type=email/status=published, content JSONB 提 subject/body/locale, RLS 由 withTenant tx). reach/actions.ts:116 tx.emailTemplate.findUnique → getEmailTemplateById(tx, templateId). 非UUID 上游 zod 挡; 非email/非published/跨租户/不存在 → findFirst null → template_not_found 优雅不500. 回归测试: queries.test.ts +3(查得到断言 where={id,type:email,status:published} 防再查废弃表 / null 优雅 / 空content默认); customize-action.test.ts buildResolverTx mock 同步 emailTemplate.findUnique→asset.findFirst. L1 全绿: lint 0err/3预存warn + tsc + vitest 1545/1545 + build. 纯前端无schema变更.",
     "acceptance": [
       "根因: reach/actions.ts:116 customizeEmailAction 用 tx.emailTemplate.findUnique({id:templateId}) 查废弃表, 但下拉列表(loadOutreachTemplates→loadAssetsForComposer)源自 Asset 表给 asset id → 纯Asset模板查不到 → template_not_found",
       "修: line 116 改为按 asset id 读 Asset 表(type=email), 从 content JSONB 提 subject/body/locale; 复用 loadOutreachTemplates 的 adapt 提取口径; 建议抽共享 getEmailTemplateById(tx,tenantId,assetId) 让下拉/定制同源根治",

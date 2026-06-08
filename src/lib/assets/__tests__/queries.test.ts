@@ -11,6 +11,7 @@ import type { Prisma } from "@prisma/client";
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  getEmailTemplateById,
   loadAssetDetail,
   loadAssetsForComposer,
   loadAssetsForListing,
@@ -24,6 +25,7 @@ type AssetTx = Prisma.TransactionClient & {
   asset: {
     findMany: ReturnType<typeof vi.fn>;
     findUnique: ReturnType<typeof vi.fn>;
+    findFirst: ReturnType<typeof vi.fn>;
     count: ReturnType<typeof vi.fn>;
     groupBy: ReturnType<typeof vi.fn>;
   };
@@ -38,6 +40,7 @@ function makeTx(): AssetTx {
     asset: {
       findMany: vi.fn(),
       findUnique: vi.fn(),
+      findFirst: vi.fn(),
       count: vi.fn(),
       groupBy: vi.fn(),
     },
@@ -529,5 +532,48 @@ describe("loadProductAssetCounts", () => {
     // Only p1 entry exists; the null-productId row didn't bleed in.
     expect(result.size).toBe(1);
     expect(result.get("p1")).toEqual({ emailCount: 1, videoCount: 0 });
+  });
+});
+
+describe("getEmailTemplateById (BL-098-F001 prod hotfix regression)", () => {
+  const ASSET_ID = "33333333-3333-3333-3333-333333333333";
+
+  it("resolves a published email asset by id from the Asset table (not the deprecated email_template table)", async () => {
+    const tx = makeTx();
+    tx.asset.findFirst.mockResolvedValueOnce({
+      id: ASSET_ID,
+      content: { subject: "Clash Royale — Signing", body: "Hi {{kol.name}}", locale: "zh" },
+    });
+
+    const result = await getEmailTemplateById(tx, ASSET_ID);
+
+    expect(result).toEqual({
+      id: ASSET_ID,
+      subject: "Clash Royale — Signing",
+      body: "Hi {{kol.name}}",
+      locale: "zh",
+    });
+    // Regression guard: must query the unified Asset table scoped to
+    // published email assets — the original bug queried email_template,
+    // which has no row for pure-Asset templates → "模板不存在".
+    expect(tx.asset.findFirst).toHaveBeenCalledTimes(1);
+    const args = tx.asset.findFirst.mock.calls[0]![0];
+    expect(args.where).toEqual({ id: ASSET_ID, type: "email", status: "published" });
+  });
+
+  it("returns null (graceful — caller maps to template_not_found, never 500) when no visible published email asset matches", async () => {
+    const tx = makeTx();
+    tx.asset.findFirst.mockResolvedValueOnce(null);
+
+    await expect(getEmailTemplateById(tx, ASSET_ID)).resolves.toBeNull();
+  });
+
+  it("defaults missing content fields instead of throwing (malformed JSONB content)", async () => {
+    const tx = makeTx();
+    tx.asset.findFirst.mockResolvedValueOnce({ id: ASSET_ID, content: {} });
+
+    const result = await getEmailTemplateById(tx, ASSET_ID);
+
+    expect(result).toEqual({ id: ASSET_ID, subject: "", body: "", locale: "en" });
   });
 });

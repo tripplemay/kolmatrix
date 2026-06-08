@@ -36,6 +36,7 @@ import {
   type BatchSendResult,
 } from "@/lib/email/batch-send";
 import { substituteSubjectAndBody } from "@/lib/email/variable-substitute";
+import { getEmailTemplateById } from "@/lib/assets/queries";
 import { rateLimitBatchSend } from "@/lib/rate-limit-batch";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -113,10 +114,12 @@ export async function customizeAction(
           categories: true,
         },
       }),
-      tx.emailTemplate.findUnique({
-        where: { id: parsed.data.templateId },
-        select: { subject: true, body: true, locale: true },
-      }),
+      // BL-098-F001 — resolve the template against the unified Asset
+      // table (the dropdown hands out asset ids), not the deprecated
+      // email_template table. Pure-Asset templates have no
+      // email_template row → the old findUnique returned null →
+      // "模板不存在" for every Asset-only template.
+      getEmailTemplateById(tx, parsed.data.templateId),
     ]);
     return { campaign, kol, template };
   });

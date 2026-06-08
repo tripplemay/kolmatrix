@@ -54,13 +54,21 @@ function buildResolverTx(opts: {
     product: { name: string; category: string; uniqueSellingPoints: string } | null;
   } | null;
   kol?: unknown;
-  template?: unknown;
+  /** Template content ({subject, body, locale}) or null. BL-098-F001:
+   *  customizeAction now resolves the template via getEmailTemplateById
+   *  against the unified Asset table (tx.asset.findFirst returning
+   *  {id, content}), not the deprecated emailTemplate table. */
+  template?: { subject: string; body: string; locale: string } | Record<string, never> | null;
 }) {
   return {
     campaign: { findUnique: vi.fn().mockResolvedValue(opts.campaign ?? null) },
     kol: { findUnique: vi.fn().mockResolvedValue(opts.kol ?? null) },
-    emailTemplate: {
-      findUnique: vi.fn().mockResolvedValue(opts.template ?? null),
+    asset: {
+      findFirst: vi
+        .fn()
+        .mockResolvedValue(
+          opts.template ? { id: TEMPLATE_ID, content: opts.template } : null
+        ),
     },
   };
 }
