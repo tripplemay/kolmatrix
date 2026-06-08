@@ -33,7 +33,8 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "completed",
+    "note": "✅ Codex verified-live SSH 独立实证: /opt 8d7cff8, apify_cost $0.566, balance $243.80, BugA 188q/12h, harvest 420/100%, refresh -85%, KOLs +420. IG 0产出 Soft-watch. Signoff.",
     "acceptance": [
       "BL-086: refresh 日负载实测降(TIER_INTERVAL_MS 14/30/30 → 944→~123)+ 新 KOL 入库速率较 ~87/天回升 + discovery 占比上升",
       "BL-086 F002: 扩种子(SEA/手游)产出 + 砍空转 IG 后无浪费; BL-091 F001: Bug A runtime 触发(refresh 命中 hasBusinessEmail false→true → 入队 yt-email → 新 record)",
