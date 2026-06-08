@@ -2094,7 +2094,8 @@
       "ctaPrimary": "체험 신청",
       "ctaSecondary": "1:1 데모 예약",
       "videoAlt": "KolMatrix 제품 데모 루프",
-      "videoFallbackHint": "(애니메이션을 사용할 수 없어 정지 이미지를 표시합니다)"
+      "videoFallbackHint": "(애니메이션을 사용할 수 없어 정지 이미지를 표시합니다)",
+      "illustrationAlt": "KolMatrix 통합 워크스페이스 — KOL 발굴, AI 추천, 캠페인 분석"
     },
     "painPoints": {
       "sectionTitle": "게임 스튜디오가 마주하는 4가지 과제",
@@ -2174,7 +2175,8 @@
           "title": "4 개 플랫폼 통합 어트리뷰션",
           "body": "재생, 인게이지먼트, 트래픽, 컨버전, ROI — 모든 지표를 4 개 플랫폼에서 자동 귀속합니다. 엑셀 작업은 더 이상 필요 없습니다."
         }
-      ]
+      ],
+      "illustrationAlt": "KolMatrix 이메일 센터 — 작성, 발송 추적, 도달률 규정 준수 대시보드"
     },
     "trust": {
       "sectionTitle": "엔터프라이즈급 보안과 컴플라이언스",
@@ -2260,7 +2262,8 @@
           "before": "3 개 플랫폼 엑셀 export 결합",
           "after": "실시간 대시보드 · 4 개 플랫폼 자동 어트리뷰션"
         }
-      }
+      },
+      "illustrationAlt": "전후 비교 — 흩어진 수작업 KOL 스프레드시트와 정돈된 KolMatrix 워크스페이스"
     }
   }
 }

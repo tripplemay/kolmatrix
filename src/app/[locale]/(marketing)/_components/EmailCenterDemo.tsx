@@ -1,10 +1,17 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { StickyParallax } from "@/components/landing/StickyParallax";
+import { resolveLandingAsset } from "./illustration-asset";
 
 export async function EmailCenterDemo() {
   const t = await getTranslations("landing.demo");
   const callouts = t.raw("callouts") as ReadonlyArray<{ title: string; body: string }>;
+  // BL-080-F003 — prefer the email-center illustration; fall back to the
+  // BL-078 /match screenshot if the PNG was not delivered.
+  const src = resolveLandingAsset(
+    "/landing/illustrations/email-center-illustration.png",
+    "/landing/screenshots/match-full.png"
+  );
 
   return (
     <StickyParallax
@@ -14,10 +21,10 @@ export async function EmailCenterDemo() {
       stickyAsset={
         <div className="overflow-hidden rounded-[var(--radius-landing-card)] border border-cyan/22 shadow-[0_18px_56px_color-mix(in_srgb,var(--color-cyan)_22%,transparent)]">
           <Image
-            src="/landing/screenshots/match-full.png"
-            alt={t("screenshotAlt")}
-            width={1080}
-            height={720}
+            src={src}
+            alt={t("illustrationAlt")}
+            width={1376}
+            height={768}
             className="h-auto w-full"
           />
         </div>

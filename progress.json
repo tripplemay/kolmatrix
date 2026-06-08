@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-080-landing-illustration-mockups — landing 视觉精修 v2: 用 AI 插画替代真截图(Hero+6 Features+EmailCenter+BeforeAfter). 6 features. 2026-06-01 挂起(等用户侧 F002 AI gen PNG). 2026-06-08 恢复: 用户认可方向, Planner 代生成 8 PNG(aigc-gateway gemini)放 public/landing/illustrations/, resume 触发(8/8)满足. Generator 接 F002验收→F003集成(替换4组件Image引用+fallback)→F004 next/image+LCP→F005 baseline+a11y→F006 Codex. 不得regress BL-078 baseline(perf0.99/LCP530ms). 关联 docs/specs/BL-080-landing-illustration-mockups-spec.md.",
   "total_features": 6,
-  "completed_features": 1,
+  "completed_features": 3,
   "fix_rounds": 0,
   "current_sprint": "BL-080-landing-illustration-mockups",
-  "last_updated": "2026-06-08T22:40+0800",
+  "last_updated": "2026-06-08T22:37+0800",
   "reference_docs": [
     "docs/specs/BL-080-landing-illustration-mockups-spec.md",
     "docs/specs/BL-080-illustration-prompts.md (F001 8 prompts)",
@@ -23,10 +23,10 @@
   "role_assignments": null,
   "evaluator_feedback": null,
   "fix_rounds_history": [],
-  "generator_handoff": "[2026-06-08 22:40 BJT Planner Kimi BL-080 恢复挂起→building] 落地页插画批次 2026-06-01 挂起(等F002 AI gen), 今恢复. ⚠️ F002 已完成(Planner代生成8 PNG放 public/landing/illustrations/, 真PNG规范命名, 文字泄漏已修, 8/8品牌一致). Generator 起步: F002验收(brand抽样+无大量text+≤1MB检查, 单张略超1MB→F004处理或先压)→标done→F003. F003 替换4组件Image引用(HeroVideo/Features 6 cards/EmailCenterDemo/BeforeAfter)+fallback守门(PNG缺回退现screenshots)+i18n alt(5locale). F004 next/image priority+quality+LCP<2.5s不regress BL-078 530ms. F005 visual baseline重拍(4viewport×5locale×4组件~80snap)+Lighthouse+a11y. F006 codex. 挂起快照在 docs/archive/paused-batches/BL-080-*.json(可删, 已还原). 纯kolmatrix. 不依赖任何充值/爬虫.",
+  "generator_handoff": "[2026-06-08 22:37 BJT Generator Kimi F002验收PASS + F003集成done] F002: 8/8 PNG 视觉抽样品牌一致(navy+cyan+purple), 无 photorealistic/大量text, 单张0.85-1.36MB(→F004). F003: 用户本会话 A1 lock 选激进版 — Hero 插画替换 video 背景, BeforeAfter 插画替换整个动画表格. 映射: library→feature-match / aiMatch→feature-brief / insight,reach,crm 同名 / roi 无插画 fallback roi-full.png / EmailCenterDemo→email-center-illustration / Hero→hero-illustration / BeforeAfter→before-after-illustration. fallback 守门 = _components/illustration-asset.ts(server fs existsSync, next start cwd=root 解析 public/ 正确). i18n +3 illustrationAlt(hero/demo/beforeAfter)×5 locale 真译. woff2 重生去 outgoing_mail. L1 全绿(lint 0err+tsc+vitest 1542/1542+build). ⚠️⚠️ Evaluator F006 必看: (1) e2e tests/e2e/landing.spec.ts 'hero video element is present'(L27-38)已失效 — video 已移除, 改断言 testid 'landing-hero-illustration' 存在+priority; 'hero poster image is fetchable'(L40-45)仍绿(文件保留). (2) landing.beforeAfter.{colTask,colBefore,colAfter,rows.*} 成 dead i18n key. 下一步 Generator: F004 next/image priority(hero已加)+quality 调优+sizes+lazy(features/demo/beforeAfter)+LCP 实测不 regress BL-078 530ms; F005 visual baseline 重拍+Lighthouse 6门+a11y. 切 verifying 前须 staging deploy. 纯kolmatrix, 不依赖充值/爬虫.",
   "session_notes": {
     "Kimi_planner": "[2026-06-08 22:40 BJT Planner Kimi 恢复 BL-080] BL-097 done. 用户问起挂起的落地页工作→恢复 BL-080(2026-06-01挂, 卡在F002用户AI gen). 用户认可方向后授权Planner代生成: aigc-gateway gemini-3-pro-image 按F001 8prompts出8张(去hex+强无文字修泄漏, before-after重做1次, gpt-image太慢超时弃用). 真PNG放 public/landing/illustrations/ 规范命名, 自审8/8品牌一致. resume触发(8/8)满足→还原批次building, 清paused_batches. Generator接F002验收→F003-F006. 不regress BL-078. 下一步Generator启F002验收+F003.",
-    "Kimi_generator": null,
+    "Kimi_generator": "[2026-06-08 22:37 BJT] BL-080 F002验收PASS + F003集成done(本会话). 用户对 Hero/BeforeAfter 两处歧义点(spec 措辞自相矛盾)用 AskUserQuestion 确认, 均选激进版: Hero 插画替换 video 背景, BeforeAfter 插画替换整个滚动高亮表格. 其余(Features 5映射+roi fallback / EmailCenterDemo)按 spec 直接做. 新建 illustration-asset.ts 做 server fs existsSync fallback 守门(next start cwd=root, public/ 解析正确, 非 standalone). 踩坑: 移除 BeforeAfter 表格的 4 icon 后 outgoing_mail 成孤儿 glyph, material-symbols woff2 自动缩(11644→11540), 跑 regenerate 脚本确认 canonical + coverage test 绿, 一并提交. L1 全绿含 next build. 下一步 F004(next/image quality/sizes/lazy + LCP 实测)+F005(baseline重拍+Lighthouse+a11y)+F006 codex. 切 verifying 前记得 staging deploy.",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null

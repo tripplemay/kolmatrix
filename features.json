@@ -25,7 +25,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-08T22:36+0800",
+    "verify_note": "Generator 验收 PASS: 8/8 PNG 就绪规范命名, 视觉抽样全 8 张品牌一致(深navy #080f1c + 青cyan #00E5FF + 紫purple #9D50FF, dashboard/kanban/chart/email motif), 无 photorealistic, 无大量 text labels(仅极少 data-viz 数字). 单张 0.85-1.36MB(略超1MB→F004 next/image AVIF/WebP 处理). ≥6/8 门槛满足(8/8)",
     "acceptance": [
       "用户跑 AI image gen (DALL-E 3 / Midjourney / SD) 按 F001 prompts, iterate 直到 brand consistency 达标",
       "PNG 命名规范: hero-illustration.png / feature-brief.png / feature-match.png / feature-reach.png / feature-insight.png / feature-crm.png / email-center-illustration.png / before-after-illustration.png",
@@ -42,7 +45,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-08T22:37+0800",
+    "impl_note": "用户 A1 lock(2026-06-08 本会话): Hero=插画替换 video 背景(去 video+poster fallback Image, hero-illustration 作 fill priority opacity-40 bg); BeforeAfter=插画替换整个动画对比表格(转 server component, 去 useScrollProgress/ROWS/逐行高亮). Features 5 cards 映射 feature-{match→library, brief→aiMatch, insight, reach, crm}, roi 无插画 fallback roi-full.png(≥6/8 守门内置). EmailCenterDemo→email-center-illustration. fallback 守门=新建 _components/illustration-asset.ts (server fs existsSync, 缺则回退真截图). i18n 加 3 illustrationAlt key(hero/demo/beforeAfter)×5 locale 真译. woff2 subset 重生(去 outgoing_mail 孤儿 glyph). L1 全绿: lint 0err/3warn(预存)+tsc+vitest 1542/1542+next build OK. ⚠️ Evaluator 注意: e2e landing.spec.ts 'hero video element is present'(L27-38)已失效(video 移除), 需 F006 改为断言 landing-hero-illustration; beforeAfter.{colTask,colBefore,colAfter,rows.*} 成 dead i18n key(可后续清).",
     "acceptance": [
       "HeroVideo.tsx 加 illustration overlay 或 HeroIllustration.tsx 独立 (保 video 优先 + illustration fallback 或共存)",
       "Features.tsx 6 module cards Image src 替换为 feature-{module}.png (保 BL-078 Linear 风 card + hover lift)",

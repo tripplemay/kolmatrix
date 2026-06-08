@@ -2094,7 +2094,8 @@
       "ctaPrimary": "トライアル申請",
       "ctaSecondary": "1:1 デモ予約",
       "videoAlt": "KolMatrix プロダクトデモループ",
-      "videoFallbackHint": "(アニメーションは利用できません。静止画を表示中)"
+      "videoFallbackHint": "(アニメーションは利用できません。静止画を表示中)",
+      "illustrationAlt": "KolMatrix 統合ワークスペース — KOL 発見、AI レコメンド、キャンペーン分析"
     },
     "painPoints": {
       "sectionTitle": "ゲームスタジオが直面する 4 つの課題",
@@ -2174,7 +2175,8 @@
           "title": "4 プラットフォーム横断アトリビューション",
           "body": "再生数、エンゲージメント、トラフィック、コンバージョン、ROI — 全指標を 4 プラットフォーム自動帰属。Excel での集計は不要です。"
         }
-      ]
+      ],
+      "illustrationAlt": "KolMatrix メールセンター — 作成、送信トラッキング、到達性コンプライアンスダッシュボード"
     },
     "trust": {
       "sectionTitle": "エンタープライズ級のセキュリティとコンプライアンス",
@@ -2260,7 +2262,8 @@
           "before": "3 プラットフォーム CSV を Excel で集計",
           "after": "リアルタイムダッシュボード · 4 プラットフォーム自動アトリビューション"
         }
-      }
+      },
+      "illustrationAlt": "ビフォーアフター比較 — 散在する手作業の KOL スプレッドシートと整理された KolMatrix ワークスペース"
     }
   }
 }

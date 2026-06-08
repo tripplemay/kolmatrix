@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { resolveLandingAsset } from "./illustration-asset";
 
 interface Props {
   locale: string;
@@ -8,6 +9,14 @@ interface Props {
 
 export async function HeroVideo({ locale }: Props) {
   const t = await getTranslations("landing.hero");
+  // BL-080-F003 — the looping product-demo video is replaced by the AI
+  // hero illustration (A1 lock 2026-06-08). Falls back to the BL-078 video
+  // poster if the illustration PNG was not delivered. Static for every
+  // motion preference, so no separate reduced-motion branch is needed.
+  const heroSrc = resolveLandingAsset(
+    "/landing/illustrations/hero-illustration.png",
+    "/landing/hero/hero-poster.jpg"
+  );
 
   return (
     <section
@@ -15,32 +24,16 @@ export async function HeroVideo({ locale }: Props) {
       data-parallax="hero"
       className="landing-mesh-hero relative overflow-hidden min-h-screen flex items-center justify-center px-6 lg:px-12"
     >
-      {/* Looping product-demo video — fills the section as a background layer.
-          Scroll-driven scale via .landing-hero-video-scale (Chrome/Safari);
-          Firefox / 旧 Safari renders static end-state via @supports fallback. */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        poster="/landing/hero/hero-poster.jpg"
-        aria-label={t("videoAlt")}
-        className="landing-hero-video-scale absolute inset-0 w-full h-full object-cover opacity-40 motion-reduce:hidden"
-        data-testid="landing-hero-video"
-      >
-        <source src="/landing/hero/hero-loop.webm" type="video/webm" />
-        <source src="/landing/hero/hero-loop.mp4" type="video/mp4" />
-      </video>
-
-      {/* Reduced-motion fallback — static poster, only rendered when prefers-reduced-motion: reduce */}
+      {/* Hero illustration — fills the section as a dimmed background layer.
+          Priority load: this is the LCP element for the landing route. */}
       <Image
-        src="/landing/hero/hero-poster.jpg"
-        alt={t("videoAlt")}
+        src={heroSrc}
+        alt={t("illustrationAlt")}
         fill
         priority
-        className="object-cover opacity-40 hidden motion-reduce:block"
-        data-testid="landing-hero-poster-fallback"
+        sizes="100vw"
+        className="object-cover opacity-40"
+        data-testid="landing-hero-illustration"
       />
 
       {/* Foreground content — scroll-driven fade-in on entry */}

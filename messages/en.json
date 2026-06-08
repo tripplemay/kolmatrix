@@ -2093,7 +2093,8 @@
       "ctaPrimary": "Request access",
       "ctaSecondary": "Book a demo",
       "videoAlt": "KolMatrix product demo loop",
-      "videoFallbackHint": "(Animation unavailable; showing still image)"
+      "videoFallbackHint": "(Animation unavailable; showing still image)",
+      "illustrationAlt": "KolMatrix unified workspace — KOL discovery, AI recommendations, and campaign analytics"
     },
     "painPoints": {
       "sectionTitle": "Four challenges every game studio faces",
@@ -2173,7 +2174,8 @@
           "title": "Attribution across all 4 platforms",
           "body": "Plays, engagement, traffic, conversion, ROI — every dimension. Four platforms auto-attributed. No more Excel stitching."
         }
-      ]
+      ],
+      "illustrationAlt": "KolMatrix email center — composer, send tracking, and deliverability compliance dashboard"
     },
     "trust": {
       "sectionTitle": "Enterprise-grade security and compliance",
@@ -2259,7 +2261,8 @@
           "before": "Excel-stitch 3 platform exports",
           "after": "Real-time dashboard · 4-platform attribution"
         }
-      }
+      },
+      "illustrationAlt": "Before and after comparison — scattered manual KOL spreadsheets versus the organized KolMatrix workspace"
     }
   }
 }
