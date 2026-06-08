@@ -37,7 +37,8 @@
     "executor": "codex",
     "priority": "medium",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "completed",
+    "note": "✅ Codex SSH prod DB 只读量化完成。806: 92%<500粉真spam, YT 20条500-999含7邮箱最具价值, 推荐平台差异化+email加权~36条恢复。2584: 0唯一键碰撞+FK 11条+BL-091已消费, 推荐归档CSV后硬删。报告: docs/test-reports/BL-094-F003-bl088-quantify-2026-06-08.md。实装放宽/硬删待用户据报告决定。",
     "acceptance": [
       "只读 prod(kolmatrix Kol 表 + 上游)量化 806 质量门拦截的可回收价值: 按 平台 × 粉丝段 × 是否有邮箱 拆; 尤其 ≥1万粉 / 有邮箱占比(判断量换质是否值得)",
       "2584 软删旧源硬删风险评估: (tenant,platform,handle)/(tenant,platform,external_id) 非 partial 唯一索引撞键风险 + 外键/依赖检查 + 是否已被 BL-091 收割消费(避免丢种子)",
@@ -51,7 +52,8 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "completed",
+    "note": "✅ L1: lint 0e/3w+tsc PASS+1528 tests+integration 62f/372t+network 1f/2t 全绿. L2: F001 CI 稳定; F002 /opt rebuild deferred; F003 量化完成. Signoff: docs/test-reports/BL-094-signoff-2026-06-08.md. S4 BL-088 决策待办.",
     "acceptance": [
       "L1: F001 lint/tsc/test 绿(含隔离后默认套件稳定); F002 PR merge+sync + 脚本单测绿",
       "L2: F001 CI 默认套件连跑不再偶红 + 网络型 job 独立; F002 部署后 scrape_jobs.apify_cost_usd 开始写入非 0",
