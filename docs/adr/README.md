@@ -73,6 +73,7 @@ Proposed ──► Accepted ──► [Deprecated | Superseded by ADR-YYY]
 | [015](./ADR-015-5-route-ia-add-campaigns-nav.md) | **5 路由 IA — 加 Campaigns 一级 nav** | 加 `campaigns` 作第 2 一级 nav（Brief/Campaigns/Match/Reach/Insight）；/campaigns 列表行加 Match KOL CTA；/insight QuickActions 4→3 | Accepted (supersedes ADR-013 §IA) | 2026-05-26 |
 | [016](./ADR-016-kol-campaign-suggestion-lifecycle.md) | **kol_campaign 推荐生命周期** | 复用 kol_campaign 加 `suggestion_status` 4 态（suggested 不落库 / accepted / skipped / swap_pool）；legacy backfill→accepted；驱动 AI Match Panel 三列 | Accepted | 2026-06-05 |
 | [017](./ADR-017-kol-source-strategy-and-upstream-acquisition-governance.md) | **KOL 源策略 + 上游抓取治理** | 旧源=discovery 资产不复活(收割 2535 id 喂 manual_seed)；apify-kol-service 运维归我方/代码归爬虫团队；发现优先(refresh 不挤占 discovery)；余额+成本告警；75% 入库率属预期 | Accepted | 2026-06-06 |
+| [018](./ADR-018-email-template-unify-asset-snapshot-decouple.md) | **邮件模板统一 Asset 单一真相源** | ADR-011 收尾：Asset(type=email)=唯一真相源；写路径统一 Asset；email_log 去 FK + 加 `template_name` 快照列(审计语义=发送当时名)；历史 user 模板迁 Asset 防丢失；drop email_template 表+双写。落地 BL-099 | Accepted | 2026-06-09 |
 
 ## 按主题索引
 

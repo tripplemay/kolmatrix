@@ -1,33 +1,86 @@
 [
   {
     "id": "F001",
-    "title": "AI 定制模板查询从 emailTemplate 迁到 Asset 表 (generator, kolmatrix)",
+    "title": "写路径统一到 Asset (建/改/删/复制模板 + countUserTemplates badge)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "done",
-    "done_by": "Kimi_generator",
-    "done_at": "2026-06-09T02:20+0800",
-    "verify_note": "抽共享 getEmailTemplateById(tx, assetId) 放 src/lib/assets/queries.ts(与 loadAssetsForComposer 同源同口径: Asset 表 type=email/status=published, content JSONB 提 subject/body/locale, RLS 由 withTenant tx). reach/actions.ts:116 tx.emailTemplate.findUnique → getEmailTemplateById(tx, templateId). 非UUID 上游 zod 挡; 非email/非published/跨租户/不存在 → findFirst null → template_not_found 优雅不500. 回归测试: queries.test.ts +3(查得到断言 where={id,type:email,status:published} 防再查废弃表 / null 优雅 / 空content默认); customize-action.test.ts buildResolverTx mock 同步 emailTemplate.findUnique→asset.findFirst. L1 全绿: lint 0err/3预存warn + tsc + vitest 1545/1545 + build. 纯前端无schema变更.",
+    "estimated_hours": 2.5,
+    "status": "pending",
     "acceptance": [
-      "根因: reach/actions.ts:116 customizeEmailAction 用 tx.emailTemplate.findUnique({id:templateId}) 查废弃表, 但下拉列表(loadOutreachTemplates→loadAssetsForComposer)源自 Asset 表给 asset id → 纯Asset模板查不到 → template_not_found",
-      "修: line 116 改为按 asset id 读 Asset 表(type=email), 从 content JSONB 提 subject/body/locale; 复用 loadOutreachTemplates 的 adapt 提取口径; 建议抽共享 getEmailTemplateById(tx,tenantId,assetId) 让下拉/定制同源根治",
-      "withTenant 保持 RLS; templateId 非UUID / 非email-type asset / 已软删 → 优雅返回(不 500)",
-      "范围孤立: 仅 line 116 一处查 emailTemplate(发送/CRUD :410/:447 已用 Asset 路径, 不动)",
-      "含单测(asset 模板查得到 + 非法id优雅失败); L1 PASS lint 0err warn≤3 / tsc=0 / npm test"
+      "templates.ts createUserTemplate/updateUserTemplate/deleteUserTemplate/duplicateUserTemplate 改为操作 Asset(走 assets/mutations createAsset/updateAsset/deleteAsset, type=email, source=user_created, content JSONB 存 subject/body/locale/variables 与 loadAssetsForComposer 读口径一致); 函数签名/返回 EmailTemplateOption 不变, saveTemplateAction 等调用方无需改",
+      "countUserTemplates 改 count Asset(type=email, source≠system_seed, 当前 tenant)",
+      "withTenant RLS 保持; 非法/跨租户/不存在 → 优雅返回不 500",
+      "验收: 工作区/Composer 建模板→立即出现在 composer 下拉+工作区列表; badge 数==列表用户模板数(不再打架); 改/删/复制对 Asset 生效。dual-write 仍在(F005才删)email_template 仍被镜像写可接受",
+      "含单测; L1 全绿 lint 0err warn≤3 / tsc=0 / npm test"
     ]
   },
   {
     "id": "F002",
+    "title": "历史 user email_template 行迁移到 Asset (一次性幂等, 防数据丢失)",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 2.0,
+    "status": "pending",
+    "acceptance": [
+      "一次性迁移(脚本或 migration data step, 幂等): email_template WHERE type='user' 行迁成 Asset(type=email, source=user_created, tenant 对位); 去重: 已在 Asset(id 相同或 content 相同)的不重复建",
+      "10 个 legacy type='system' email_template 行不迁(Asset 10 个 system_seed 是规范源, legacy 是过时副本)",
+      "验收: 迁移前后断言 user 模板无丢失(每 tenant user 模板在 Asset 可见数 ≥ 迁移前 email_template user 数); 幂等(重跑不产生重复); 脚本支持只读 dry-run 预览 count",
+      "含单测(迁移逻辑+去重+幂等); L1 全绿"
+    ]
+  },
+  {
+    "id": "F003",
+    "title": "email_log 快照列 template_name + 回填 + 解耦 FK + 发送写快照",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 2.5,
+    "status": "pending",
+    "acceptance": [
+      "prisma migration: EmailLog 加 templateName String? @map(template_name); 回填 UPDATE email_log SET template_name=(SELECT name FROM email_template WHERE id=email_log.template_id) WHERE template_id IS NOT NULL(趁 email_template 还在); 去掉 template EmailTemplate? relation + FK 约束, template_id 保留 plain uuid",
+      "batch-send.ts:104/201 发送创建 email_log 时写 templateName(从发送用的 Asset 模板取名, 快照)",
+      "验收: migration 跑通; 历史行 template_name 回填; 新发送写入快照名; FK 约束已移除(可验 information_schema 无该 constraint)",
+      "含单测; L1 全绿 + prisma migrate dev"
+    ]
+  },
+  {
+    "id": "F004",
+    "title": "analytics getTopTemplates 改读快照名 (去 join email_template)",
+    "executor": "generator",
+    "priority": "medium",
+    "estimated_hours": 1.0,
+    "status": "pending",
+    "acceptance": [
+      "analytics.ts:147-160 getTopTemplates 改用 email_log 自身 template_name(groupBy 带 templateName 或取每组快照名), 删除 tx.emailTemplate.findMany join",
+      "验收: top templates 名称来自 email_log 快照; system_seed 发送不再 null 名(若已回填)",
+      "含单测; L1 全绿"
+    ]
+  },
+  {
+    "id": "F005",
+    "title": "删双写 + DROP email_template 表 + 清 EmailTemplate model/引用 (不可逆, 最后)",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 2.0,
+    "status": "pending",
+    "acceptance": [
+      "移除 assets/mutations.ts 的 email_template 镜像写(create/update/archive/delete 四处)",
+      "prisma migration DROP TABLE email_template; 删 schema EmailTemplate model",
+      "grep 全仓确认零 tx.emailTemplate / prisma.emailTemplate / EmailTemplate model 引用残留(纯 TS 类型 EmailTemplateRecord/Option 可保留)",
+      "前置: F001-F003 须先验收通过(数据已迁/FK 已解耦); 验收: 全仓 0 处引用 email_template 表; migration 跑通; L1 全绿+build",
+      "含单测"
+    ]
+  },
+  {
+    "id": "F006",
     "title": "Codex L1+L2 + signoff (executor:codex)",
     "executor": "codex",
     "priority": "high",
-    "estimated_hours": 1.0,
-    "status": "completed",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "L1: lint 0err warn≤3 / tsc=0 / npm test(含 customize 新单测)",
-      "L2 部署后 prod/staging: 选 Asset-only 模板('Clash Royale — Signing invitation')→ AI 定制 → 正常出重写(不再'模板不存在'); 回归: 其它模板 AI 定制仍正常; 发送路径不受影响",
-      "signoff doc docs/test-reports/BL-098-signoff-2026-06-XX.md"
+      "L1: lint 0err warn≤3 / tsc=0 / npm test(含各 feature 新单测)",
+      "L2 部署后 prod/staging: ① 工作区新建模板→立即出现在 composer 下拉(修活 bug) ② AI 定制全部模板含 system_seed 正常 ③ 邮件分析 top templates 显示快照名 ④ 发送→email_log.template_name 有快照 ⑤ DB 无 email_template 表 + user 模板零丢失(计数对比)",
+      "signoff docs/test-reports/BL-099-signoff-2026-06-XX.md"
     ]
   }
 ]

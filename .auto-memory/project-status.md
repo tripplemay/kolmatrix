@@ -3,9 +3,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ✅ BL-098-email-customize-template-asset DONE (2/2, fix_rounds=0, signoff @ docs/test-reports/BL-098-signoff-2026-06-09.md) — PROD 故障 hotfix 邮件AI定制'模板不存在'
-- F001(Gen Kimi): 抽共享 `getEmailTemplateById`(assets/queries.ts:464, 同源 loadAssetsForComposer 查 Asset 表 email/published), reach/actions.ts:122 改用之. L1全绿(207f/1545t)+staging healthy. 根因=ADR-011迁移遗留(仅line116). Codex 2/2 PASS
-- ⚠️ **prod deploy 待用户手动触发**(prod 故障未修复生效前 10 个 system_seed 模板 AI 定制仍挂). 根治路线=BL-099(迁移收尾)
+## 🚧 BL-099-email-template-asset-unification BUILDING (0/6) — ADR-011 迁移收尾, 统一 Asset 单一真相源
+- 决策 ADR-018(C: email_log 去FK+template_name 快照, drop email_template) + 一次到位(用户 2026-06-09). spec docs/specs/BL-099-*.md
+- 现状: 写路径(createUserTemplate 两入口)只写 email_template→用户建模板存完即从列表消失(prod ~16). 工作区非孤儿是活tab
+- 6 features: F001 写路径统一Asset(止活血) / F002 历史user模板迁Asset防丢 / F003 email_log快照列+回填+解耦FK+发送写快照 / F004 analytics改读快照 / F005 删双写+DROP表(不可逆,最后) / F006 Codex. 下一步 Generator F001
+- ⚠️ 不可逆: F005 drop 须在 F001-F003 验收后; 2 schema migration; F005 建议单独部署窗口
+## ✅ BL-098 DONE (2/2, signoff 2026-06-09) — PROD 邮件AI定制'模板不存在' hotfix(Asset查询). ⚠️ **prod deploy 待手动触发**(BL-099 为其根治)
 ## ✅ BL-080 DONE (6/6, signoff @ docs/test-reports/BL-080-signoff-2026-06-09.md) — 落地页 AI 插画(8张)替video+动画; Lighthouse perf99/LCP870/CLS0; staging部署
 - ⚠️ prod 部署待手动触发(让访客见新插画落地页); dead i18n key beforeAfter.{colTask/colBefore/colAfter/rows}(可并 BL-070)
 ## ✅ BL-097 DONE (2/2) — 监控页导航入口(UserAvatarMenu admin段, 部署@04e5414)
