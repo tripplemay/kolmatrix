@@ -132,7 +132,7 @@ sediment（沉淀）从 proposed-learnings.md 走向 `framework/harness/*.md` �
 - `framework/harness/planner-checklists.md` §铁律 1 矩阵 加新行：v0.9.26 #1 "多角色并行 + Planner ops commit 前必 grep staged 索引"（铁律 #12 强化）
 - `framework/harness/deploy-patterns.md` §ops template 加新段：external API token 配置前的 dry-run 验证模板（Apify /v2/users/me / TikHub TBD / 其他 SaaS me-endpoint）
 
-**状态：** 待用户 ack — 待 done 阶段 / 专门 framework sediment batch 正式写入
+**状态：** ✅ 2026-06-09 用户 ack，已沉淀入 `framework/harness/planner-workflow.md`（§0.0 会话启动 staged 索引）+ `framework/harness/planner-checklists.md`（铁律 1 矩阵 v0.9.26 #1）+ `framework/harness/deploy-patterns.md`（§1.8 external API token dry-run 模板）
 
 ---
 
@@ -154,7 +154,7 @@ BL-084 verifying staging FAIL 1「Why 详细解释暂时不可用」根因不是
 - `framework/harness/deploy-patterns.md` 或 `generator.md`：新增「AI 调用客户端超时 ≥ 服务端 timeoutMs，且基于 gateway list_logs 实测 latency 校准」铁律
 - ADR 候选：多 locale write-through vs 单 locale 懒加载的延迟/成本权衡
 
-**状态：** 待用户 ack
+**状态：** ✅ 2026-06-09 用户 ack，已沉淀入 `framework/harness/generator.md` §19（AI 客户端超时 ≥ 服务端 timeoutMs + list_logs 实测校准；含 ADR 候选）
 
 ---
 
@@ -178,7 +178,7 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 - `docs/reviews/kol-acquisition-diagnostic-2026-06-06.md` 或 BL-086 spec §F003：修正"充值前入队"假设
 - `framework/harness/generator.md`：新增"入队-等外部资源就绪 类设计须先验 worker 是否即时消耗"checklist 项
 
-**状态：** 待用户 ack（F003 投喂时机用户决策中）
+**状态：** ✅ 2026-06-09 用户 ack，已沉淀入 `framework/harness/generator.md` §20（入队等外部资源就绪类设计必先验 worker 是否即时消耗）。docs/reviews 诊断文档修正属项目文档，不在本次 framework sediment 范围
 
 ---
 
@@ -198,7 +198,7 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 
 **建议写入：** `framework/harness/deploy-patterns.md` 新增「路径 B fork sync 模板：bundle 绕凭据 + stash/ff/pop 保本地 docker 定制 + /admin/stats 验新字段」。**长期修**：给主机配 guang-tech/apify 的 deploy key 或 fork remote 改 SSH, 免每次 bundle。
 
-**状态：** 待用户 ack
+**状态：** ✅ 2026-06-09 用户 ack，已沉淀入 `framework/harness/deploy-patterns.md` §3.5（路径 B fork sync 模板）
 
 ---
 
@@ -223,7 +223,7 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 
 **建议写入:** `framework/harness/deploy-patterns.md` §prod-outage-recovery + §VM 内存超额防护。
 
-**状态：** 待用户 ack
+**状态：** ✅ 2026-06-09 用户 ack，已沉淀入 `framework/harness/deploy-patterns.md` §9（prod-outage-recovery + VM 内存超额防护：3 步恢复 runbook + 4 防复发选项 + heredoc 括号坑）
 
 ---
 
@@ -235,7 +235,7 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 
 **建议写入：** `framework/harness/deploy-patterns.md` §部署触发 — ref 输入只用 main 或完整 SHA，禁短 SHA。
 
-**状态：** 待用户 ack
+**状态：** ✅ 2026-06-09 用户 ack，已沉淀入 `framework/harness/deploy-patterns.md` §10（部署触发 ref 只用 main 或完整 SHA）
 
 ---
 
@@ -247,4 +247,4 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 
 **建议写入：** `framework/harness/generator.md` §15（Perf/image 落地段邻近）补「视觉改动 feature 的 CI 时序」；或 `framework/harness/deploy-patterns.md` §CI baseline 重拍时序 + bot commit 不触发 CI + Docker Hub 500 rerun。
 
-**状态：** 待用户 ack
+**状态：** ✅ 2026-06-09 用户 ack，已沉淀入 `framework/harness/generator.md` §21（改落地页视觉 feature 的 CI 时序 — baseline 须 Linux runner 重拍）+ cross-ref `framework/harness/deploy-patterns.md §4.1`（已有 bot commit 不触发下游 workflow 段，未重复新建）

@@ -13,6 +13,12 @@ last-updated: 2026-05-25
 
 ## 执行步骤
 
+### 0.0 会话启动先看 staged 索引（v0.9.26 — BL-083 铁律 #12 重演）
+
+多角色同工作树并行时，开 session 第一动作必跑 `git status --short` 看**左列** staged 池（`M`/`A` 标记），确认哪些文件是别的 agent 已 `git add` 但未 commit 的 WIP，**不是自己的**。后续做任何 Planner ops commit 前再跑一次，确认 `git diff --cached --name-only` 仅含本 commit 应含文件。
+
+> 反例：BL-083 fork .env ops 后 Planner 只看自己 `git add` 的 1 个文件就 commit，把 Generator/Reviewer 在制 BL-082 的 5 个 staged 文件一并打包推 main（commit 97339c6），违反铁律 #10 commit-tag 一致性。详见 `harness-rules.md` 铁律 #12 + `planner-checklists.md` 铁律 1 矩阵 v0.9.26 #1。
+
 ### 0. 读取需求池 + 用户反馈
 启动新批次前，依次读取：
 

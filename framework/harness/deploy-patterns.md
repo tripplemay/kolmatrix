@@ -1,7 +1,7 @@
 ---
 scope: mixed
-project-specific-sections: ["§1.6", "§1.7", "§3.2", "§5.1"]
-last-updated: 2026-05-25
+project-specific-sections: ["§1.6", "§1.7", "§1.8", "§3.2", "§3.5", "§5.1", "§9"]
+last-updated: 2026-06-09
 ---
 
 # Deploy Patterns（框架沉淀）
@@ -199,6 +199,34 @@ BL-075-F002 (`AIGCGATEWAY_KOL_COUNTRY_ACTION_ID` prod + staging) + BL-068-F001 (
 
 **来源：** BL-075-F002 prod + staging deploy 实战（2026-05-26 03:55 UTC，backup `.env.{production,staging}.bl075-f002.20260526-035529`）+ v0.9.24 #10 用户 2026-05-26 ack（done 阶段提出，落 v0.9.24 framework sediment batch）。
 
+### §1.8 外部 API token 配置前必 dry-run 验证（v0.9.26 — BL-083 fork .env ops）
+
+任何外部 API token 写入 `.env` 前必须先 dry-run 验 token 有效，不可"写完 restart 才发现 invalid"。
+
+**反例（BL-083）：** 直接写 fork `.env` 新 `TIKHUB_TOKEN` + restart → 才报 `Invalid API token`，restart 后 4-32s 内 99 次 TikTok scrape fail，rollback 旧 token 才恢复。后续 `APIFY_API_TOKEN` 改用先 dry-run 成功避坑。
+
+**fork .env token 改前 ops 模板（备份 → dry-run → 改 → restart → 对比基线）：**
+
+```bash
+# 1. dry-run 验 token（每个 SaaS 找其 me/identity endpoint，HTTP 200 才算有效）
+curl -so /dev/null -w '%{http_code}' \
+  -H "Authorization: Bearer <token>" https://api.apify.com/v2/users/me   # Apify
+# 期望 200；401/403 = token 无效，禁止写入 .env
+
+# 2. 备份 → 写 → restart
+cp .env .env.bak.$(date +%Y%m%d-%H%M%S) && vi .env && <restart service>
+
+# 3. restart 后 15s 窗口 grep 错误日志，对比基线确认无新增 Invalid token / auth fail
+```
+
+| SaaS | dry-run endpoint |
+|---|---|
+| Apify | `GET /v2/users/me` |
+| TikHub | me/identity endpoint（TBD，按 API 文档定） |
+| 其他 | 找 `/me` / `/account` / `/identity` 类 endpoint |
+
+**来源：** BL-083 fork TIKHUB_TOKEN invalid 踩坑 + APIFY_API_TOKEN dry-run 避坑实战 + 用户 2026-06-09 ack。
+
 ---
 
 ## 2. VPS working tree 卫生 + artifact in-git 强制
@@ -353,6 +381,35 @@ psql ... 'SELECT COUNT(*) FROM <table> WHERE <new_col> IS NOT NULL'
 - **(b) Reviewer 签收规则容许 chore-only 差异**：white-list SHA-1...SHA-2 区间内仅 paths-ignore matched 的差异 = 等价部署（见 `evaluator.md` "SHA 对齐严收紧的边界"）。
 
 **默认推 (a)** —— 简单、无歧义、不需要 Reviewer 自己判 paths-ignore 范围。
+
+### 3.5 路径 B fork sync 模板 — bundle 绕凭据 + stash/ff/pop 保本地 docker 定制（v0.9.26 — BL-086）
+
+路径 B「merge 上游 PR → sync `/opt/apify-kol-service` → rebuild」的 sync 步骤踩两坑，模板如下。
+
+**坑 1 — `/opt` 无 git 凭据拉私有上游：** remote 是 HTTPS 私有仓无 credential.helper；主机 deploy key 仅对 kolmatrix 有权限，对 `guang-tech/apify` 返 `Repository not found` → 非交互 SSH 下 `git pull` 直接 fatal。**绕开（无 token 泄露）：本地打 bundle scp 过去 fetch。**
+
+**坑 2 — `/opt` 有本地未提交 docker 定制**（`reset --hard` 会抹掉破坏部署）：`docker-compose.yml` 端口改写（`3000:3000→3004:3003` 给 nginx 上游）、`packages/service/Dockerfile` 加 `@apify-kol/apify` 包构建（committed Dockerfile 没有）。**安全 sync 序列：stash 这两文件 → ff merge → stash pop。**
+
+```bash
+# 本地：打 bundle（绕私有仓凭据）
+git bundle create /tmp/apify.bundle origin/master
+scp /tmp/apify.bundle prod:/tmp/
+
+# prod /opt/apify-kol-service：
+git fetch /tmp/apify.bundle origin/master
+# 先确认 master 未改这两 committed 文件，再 stash 本地定制
+git stash push -- docker-compose.yml packages/service/Dockerfile
+git merge --ff-only FETCH_HEAD
+git stash pop                       # 干净 pop（因 committed 版未变）
+docker compose up -d --build
+
+# 验证新代码生效：/admin/stats 出现新字段
+curl -s localhost:3004/admin/stats | jq .   # 本次新字段 tikhubBalanceUsd:0.0005
+```
+
+**长期修：** 给主机配 `guang-tech/apify` deploy key 或 fork remote 改 SSH，免每次 bundle。
+
+**来源：** BL-086 路径 B sync /opt/apify-kol-service 实战 + 用户 2026-06-09 ack。
 
 ---
 
@@ -619,6 +676,58 @@ batch loop 内 per-element try/catch + stats.failed 累加是本节 alerting 的
 
 ---
 
+## 9. prod-outage-recovery + VM 内存超额防护（v0.9.26 — BL-080+ deploy build OOM 拖垮整机）
+
+### 9.1 事故与根因
+
+**事故（2026-06-06）：** deploy-prod.yml 两次触发均失败，报 `ssh: handshake failed: EOF`（部署跑 17 分钟后）；`kol.guangai.ai` 宕机（HTTP 000，端口 22+443 超时，SSH banner 阶段断），staging 同 VM 一起挂。
+
+**根因：整机系统内存耗尽。** 东京 VM（`instance-20260403-154049`，**仅 7.8Gi RAM**）同时跑 kolmatrix app + postgres + **aigcgateway 姊妹项目（4 cluster）** + **apify-kol-service docker（postgres+service）**。`deploy-prod.sh` 的 `node --max-old-space-size=4096 next build`（限的是 V8 堆，非系统 RAM）叠加常驻服务把系统 RAM 打满 → 内核 thrash → sshd 握手都完不成 → 部署失败 + rollback 也连不上 → 主机卡死，只能 GCP console reset。
+
+### 9.2 恢复 runbook（已验证 3 步）
+
+1. **GCP console reset VM**（agent 无 gcloud，须用户操作）。
+2. **逐服务重建 .next（build OOM 中断留下残缺 → pm2 online 但 app 502）：**
+   ```bash
+   cd /opt/kolmatrix && NODE_ENV=production npx prisma generate \
+     && node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build --webpack \
+     && pm2 reload kolmatrix
+   # /opt/kolmatrix-staging 同样重跑一遍
+   ```
+3. **apify docker reboot 后崩溃循环 `EAI_AGAIN postgres`（service 容器起在 postgres+网络就绪前）：**
+   ```bash
+   cd /opt/apify-kol-service && docker compose up -d   # 按 depends_on 顺序 + 重建网络；restart policy 单独不够
+   ```
+
+### 9.3 防复发（待 Planner/ops 定，4 选项）
+
+VM 7.8Gi 跑 4 套服务 + 4GB build 严重超额。**在落实其一前不要重试 prod 部署，会再 OOM。**
+
+| 选项 | 做法 | 效果 |
+|---|---|---|
+| (a) 加 swap | 配 swapfile | OOM-killer 收割单进程而非整机 thrash，至少别拖死 SSH |
+| (b) 部署时临时停 apify-docker | build 前 `docker compose stop` 腾 RAM，build 后再起 | 临时腾出 build 内存峰值 |
+| (c) 扩 VM 内存 | GCP 改机型 | 治本但增成本 |
+| (d) CI runner build artifact | 在 CI build 出 artifact 再传 VM | VM 不再承担 build 内存峰值（最优） |
+
+### 9.4 ⚠️ 远端 bash heredoc 坑
+
+SSH `bash -lc "..."` 里 `echo` 含括号 `(` 会 `syntax error near unexpected token`。**远端 echo 一律不带括号。**
+
+**来源：** BL-080+ deploy build OOM 拖垮东京 VM 实战恢复（2026-06-06 ~ 06-07）+ 用户 2026-06-09 ack。
+
+---
+
+## 10. 部署触发 — `gh workflow run -f ref=` 只用 main 或完整 40 位 SHA（v0.9.26 — BL-097）
+
+**坑：** `gh workflow run deploy-staging.yml -f ref=<短SHA>` 会在 `actions/checkout@v4` 步骤直接失败（`The process '/usr/bin/git' failed with exit code 1`），部署根本到不了 VM。**根因：** checkout@v4 用 `fetch-depth: 1` 浅拉取**指定 ref**，短 SHA（如 `04e5414`）不是可单独 fetch 的 ref，git 报错退出。`ref` 输入只能是**分支名 / tag / 完整 40 位 SHA**。改 `-f ref=main`（或完整 SHA）即过。
+
+**误判风险：** 失败日志在 checkout 阶段，容易被误读成 VM 侧 build/OOM（§9），实际连 VM 都没碰。
+
+**来源：** BL-097 staging 首次部署 ref=短SHA 失败 + 用户 2026-06-09 ack。
+
+---
+
 ## 来源
 
 - KOLMatrix BI2-F002 两轮重裁决 + Round 2 实测证伪（2026-04-20）
@@ -641,3 +750,4 @@ batch loop 内 per-element try/catch + stats.failed 累加是本节 alerting 的
 | 2026-05-05 | §5 新 auth-gated endpoint 配套 deploy script（v0.9.12，含 graceful-degrade 模板 + bash 旧 bytecode 重启 deploy run）| KOLMatrix BL-034 F007 deploy-staging.sh 死循环 + bash bytecode 双坑 |
 | 2026-05-06 | §5.1 spec acceptance 改 deploy-script 时同 commit 必须改对应 yml workflow（v0.9.13，含 Planner spec lock checklist + Generator 实装 checklist + Reviewer L2 deploy log warning 抓取强制）| KOLMatrix BL-024-F006 retroactive hotfix（BL-034 F001 root cause 1+ 周后实地核查发现）|
 | 2026-05-27 | §1.6.1 SSH 加 env var pm2 reload --update-env 的成功条件 — 必须先 source shell (v0.9.24 #10 / BL-075 #10)：4 步标准流程 + 与 §1.6 pm2 delete + sourced start 选用矩阵；§8 prod 关键流程 log-based alerting 合并段 (v0.9.24 #8 + #14): BL-076 14 天 outage 反例 + 三件套防御 (Slack webhook + GCP Cloud Monitoring + /api/health degraded) + grep pattern 表 | BL-075-F002 prod deploy + BL-076 14 天 prod outage 实战；用户 2026-05-26 / 27 ack |
+| 2026-06-09 | §1.8 外部 API token 配置前必 dry-run 验证（BL-083，Apify /v2/users/me + ops 模板）；§3.5 路径 B fork sync 模板（BL-086，bundle 绕凭据 + stash/ff/pop + /admin/stats 验新字段）；§9 prod-outage-recovery + VM 内存超额防护（BL-080+，OOM 拖垮整机 + 3 步恢复 runbook + 4 防复发选项 + heredoc 括号坑）；§10 部署触发 ref 只用 main 或完整 SHA（BL-097，短 SHA 在 checkout@v4 必失败）| BL-083 fork .env ops + BL-086 路径 B sync + BL-080+ deploy OOM + BL-097 部署；用户 2026-06-09 ack |

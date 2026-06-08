@@ -1,6 +1,6 @@
 ---
 scope: framework-generic
-last-updated: 2026-05-25
+last-updated: 2026-06-09
 ---
 
 # Generator 角色指令
@@ -869,3 +869,58 @@ export function ScrollFadeIn({ children, delayMs = 0 }: Props) {
 - `framework/harness/planner-checklists.md` §"Visual polish reference URL 提炼方法论"（BL-078 #4 — 决定哪些 motion 信号契合自身 brand）
 
 来源：BL-078-F002 `src/styles/globals.css` `@view-transition` + `landing-hero-fade-in` + `landing-hero-video-scale` 实物 + BL-078-F003/F004 `interpolate-size` FAQ smooth height + BL-078 #3 用户 2026-05-27 ack。
+
+---
+
+## 19. AI 调用客户端超时必须 ≥ 服务端 timeoutMs 且基于实测延迟校准（BL-084 #1 / BL-084 fix-round 1）
+
+**铁律：** 任何 AI 调用的**客户端**超时（dialog / fetch / setState error 计时器）必须 ≥ **服务端** `runAigcAction` 的 `timeoutMs`，且数值基于 **gateway `list_logs` 实测 latency 分布**校准，不可凭 roadmap 乐观假设。
+
+**反例（BL-084 Why dialog）：** `DetailedExplanationDialog` 客户端硬超时 5s（BL-067 设），但 `EXPLAIN_DETAILED` action 真实延迟 15-21s（gateway trace `trc_rkxiis8qp4uyuvx53ioadsd2` 实测 21.1s 才 success + write-through 缓存）→ 客户端 5s 已 setState error 显示「暂时不可用」。该 bug 在 BL-067 就潜伏，被 F005 prewarm + 偶发 cache-hit 掩盖；BL-084 match 面板无 prewarm，缓存未命中时 **100% 必现**。
+
+**根因：多 locale × 多段 write-through payload 天然慢** — `EXPLAIN_DETAILED` / `MATCH_RERANK` 单次 5 locale × 5 段 ≈ 4500 token ≈ 20s。BL-067 假设 <5s P99，实测 4-20× 偏差。
+
+**self-check 流程：**
+1. 调 `list_logs` / `get_log_detail` 看该 action 真实 latency 分布（P50/P95/P99），不看 roadmap 数字
+2. 客户端超时 = max(服务端 timeoutMs, P99 实测) + buffer
+3. 多 locale write-through / 大 payload 类调用尤其要核（延迟大头）
+
+**衍生（Planner ADR 候选）：** 多 locale 一次 write-through vs 仅当前 locale + 其余懒加载的延迟/成本权衡（detailed 仅当前 locale 5 段 ≈900 token ~4s，但牺牲"一次预热 5 locale"）。
+
+来源：BL-084 fix-round 1 Why dialog FAIL 根因 + 用户 2026-06-09 ack。
+
+---
+
+## 20. 「入队等外部资源就绪」类设计必先验 worker 是否即时消耗任务（BL-086-F003 #1）
+
+**checklist：** 凡设计"先把任务入队、排队等外部资源（充值 / 配额 / 上游就绪）后再真执行"，spec/诊断写下假设前必须先核 **worker 生命周期** + **错误吞没行为**，否则任务会在资源未就绪时被即时消耗成 `succeeded-0` 或 `failed-no-retry`。
+
+**反例（BL-086-F003）：** 诊断假设"充值前把 2535 id POST `/admin/seeds` 入队 → 排队等充值 → 充值后真抓"。读 apify fork SDK 源码证伪：
+1. fork scrape-worker `boss.work('scrape',…)` **持续运行**（非 daily cron），enqueue 的 manual_seed job **立即处理**
+2. `youtube.getChannels()` per-url 错误是 **swallow**（`catch{ console.warn }` continue）→ 余额耗尽时返**空数组**而非 throw
+3. manual-seed-scrape 拿空数组 → `{inserted:0}` 不 throw → worker 判 job **`succeeded` inserted=0**（pg-boss retryLimit=0 不重试）
+
+**净效果：充值前投喂 = job 全 succeeded-0，id 被消耗，充值后不会重抓**（job 已 succeeded），且投喂脚本 checkpoint 已标 fed → 充值后须先清 checkpoint 才能重喂。**正解：全量投喂放充值之后**；充值前只 dry-run（只读 count）+ 脚本就绪即可，不真投。
+
+**核查动作：** grep worker 是否 long-running（`boss.work` / 常驻 setInterval）vs cron-triggered；grep per-item 错误是 `catch{ continue }`（swallow）还是 throw。两者组合决定"未就绪时入队"会不会被静默消耗。
+
+来源：BL-086-F003 apify fork SDK 源码核查 + 用户 2026-06-09 ack。
+
+---
+
+## 21. 改落地页视觉的 feature CI 时序 — visual-regression baseline 须 Linux runner 重拍（BL-080-F003 #1）
+
+**坑：** 本仓 `ci.yml` 每次 push main 还跑完整 Playwright e2e + visual-regression（`landing-{en,zh}-{desktop,mobile}` 4 张 baseline + 功能断言）。F003 spec 把 L1 acceptance 只写「lint + tsc + vitest」，据此判本地全绿即 push → 但任何改落地页视觉的 feature 一 push 即 CI 红，直到：
+
+1. **baseline 在 Linux runner 重拍**：跑 `update-visual-baselines.yml` workflow_dispatch 重拍（本地 mac/WSL 生成的 PNG 因字体 hinting 差异在 CI diff，**不可本地重拍**）
+2. **失效的功能断言同步更新**：因视觉改动失效的断言（如删 hero video → `landing-hero-video` 断言）同 commit 改
+
+**两连带坑：**
+- bot 用 `GITHUB_TOKEN` push 的 baseline commit **不触发 CI**（GitHub loop 防护）→ 须手动 `gh workflow run ci.yml` 验 HEAD（同 §4.1 通解）
+- Docker Hub 偶发 `docker pull pgvector 500` 让 service-container init 挂，非代码问题 → `gh run rerun <id> --failed`
+
+**spec 起草建议：** 对「改视觉的 feature」显式把 **baseline 重拍 + 连带断言更新纳入同一 feature 的 acceptance**，而非拆到后续 F005/F006，避免 main 中途红。删 video 导致的 e2e 断言更新本属 Evaluator 测试域，但 CI 红阻塞 main 时 Generator 被迫改测试 = scope 边界争议，提前并入同 feature 可消解。
+
+**配套：** `framework/harness/deploy-patterns.md §4.1`（GITHUB_TOKEN bot commit 不触发下游 workflow + workflow_dispatch 通解）。
+
+来源：BL-080-F003 落地页视觉改动 push 后 CI 红 + 用户 2026-06-09 ack。
