@@ -438,5 +438,26 @@
       "unresolved"
     ],
     "discovered_in": "BL-092 F003 verified-live 2026-06-08 (IG 仍 0 产出, F005 节流未解决)"
+  },
+  {
+    "id": "BL-099",
+    "title": "邮件模板 ADR-011 迁移收尾 — 统一 Asset 真相源, 消除 split-brain",
+    "description": "触发: 2026-06-09 Planner 邮件模板功能审计(docs/reviews/email-template-feature-audit-2026-06-09.md)+ prod 量化。BL-098(AI定制'模板不存在')是 symptom; 根因=ADR-011/BL-025-F006 迁移没做完, Asset 与 email_template split-brain。prod实证: Asset type=email 27条(ai_generated16/system_seed10/user1); email_template 27(user17/system10); 10个 system_seed Asset 无 email_template 镜像(seed 脚本绕过双写)→AI定制对全部10个系统种子模板失效。收尾范围: 1)确立 Asset 唯一真相源; 2)剩余 email_template 读取方迁 Asset(analytics.ts:156; customize 已由 BL-098 迁); 3)退役/重接孤儿工作区 reach/templates(createUserTemplate 只写 email_template 不写 Asset, 无反向镜像→建的模板不进 composer; 无导航入口疑 orphaned): 改写 Asset 路径 或 删除; 4)补齐 10 system_seed 镜像 或 把 email_log.template_id 迁指 Asset 后删 email_template; 5)删双写(assets/mutations.ts)+重复 CRUD 路径。ADR-worthy: 是(真相源决策 + email_log FK 不可逆)。",
+    "decisions": [
+      "BL-098(verifying)只修AI定制(治标); BL-099 根治(迁移收尾)",
+      "Asset 为唯一真相源; email_template 留作 FK shim 或迁 email_log.template_id 后删",
+      "孤儿工作区 reach/templates 改写 Asset 或删除(查清是否还活跃)"
+    ],
+    "confirmed_at": "2026-06-09T11:00+0800",
+    "priority": "medium",
+    "tags": [
+      "email-template",
+      "asset-unification",
+      "adr-011",
+      "tech-debt",
+      "split-brain",
+      "kolmatrix"
+    ],
+    "discovered_in": "2026-06-09 Planner 邮件模板功能审计 docs/reviews/email-template-feature-audit-2026-06-09.md"
   }
 ]
