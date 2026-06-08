@@ -1,39 +1,33 @@
 {
-  "status": "done",
-  "user_goal": "BL-080-landing-illustration-mockups — landing 视觉精修 v2: 用 AI 插画替代真截图(Hero+6 Features+EmailCenter+BeforeAfter). 6 features. 2026-06-01 挂起(等用户侧 F002 AI gen PNG). 2026-06-08 恢复: 用户认可方向, Planner 代生成 8 PNG(aigc-gateway gemini)放 public/landing/illustrations/, resume 触发(8/8)满足. Generator 接 F002验收→F003集成(替换4组件Image引用+fallback)→F004 next/image+LCP→F005 baseline+a11y→F006 Codex. 不得regress BL-078 baseline(perf0.99/LCP530ms). 关联 docs/specs/BL-080-landing-illustration-mockups-spec.md.",
-  "total_features": 6,
-  "completed_features": 6,
+  "status": "building",
+  "user_goal": "BL-098-email-customize-template-asset — prod 故障 hotfix: 邮件中心选 Asset 模板('Clash Royale — Signing invitation')→AI定制→报'模板不存在'. 根因(源码实证): AI定制 reach/actions.ts:116 查废弃 emailTemplate 表, 但下拉列表源自统一 Asset 表给 asset id → 纯Asset模板查不到. 范围孤立(仅line116, 发送/CRUD已迁Asset). 2 features: F001 改 customize 查询到 Asset表(复用loadOutreachTemplates adapt/抽共享getter) / F002 Codex. 纯kolmatrix. 走铁律#9 hotfix. 关联 docs/specs/BL-098-email-customize-template-asset-spec.md + ADR-011.",
+  "total_features": 2,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "BL-080-landing-illustration-mockups",
-  "last_updated": "2026-06-09T02:00+0800",
+  "current_sprint": "BL-098-email-customize-template-asset",
+  "last_updated": "2026-06-09T10:00+0800",
   "reference_docs": [
-    "docs/specs/BL-080-landing-illustration-mockups-spec.md",
-    "docs/specs/BL-080-illustration-prompts.md (F001 8 prompts)",
-    "public/landing/illustrations/ (8 PNG 已就绪, F002)",
-    "src/components/landing/ (HeroVideo/Features/EmailCenterDemo/BeforeAfter — F003 替换 Image 引用)",
-    "BL-078 baseline (signoff fb34b09): perf0.99/a11y1.0/LCP530ms — F004/F005 不得regress"
+    "docs/specs/BL-098-email-customize-template-asset-spec.md",
+    "src/app/[locale]/(app)/reach/actions.ts:116 (customizeEmailAction, bug 点)",
+    "src/lib/email/templates.ts (loadOutreachTemplates + adapt, 提取口径参考)",
+    "src/lib/assets/queries.ts (loadAssetsForComposer, Asset 表查询)",
+    "ADR-011 (统一 Asset 表 + EmailTemplate dual-write)"
   ],
   "docs": {
-    "spec": "docs/specs/BL-080-landing-illustration-mockups-spec.md",
+    "spec": "docs/specs/BL-098-email-customize-template-asset-spec.md",
     "audit": null,
     "test_cases": null,
-    "signoff": "docs/test-reports/BL-080-signoff-2026-06-09.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "BL-080 6/6 PASS (fix_rounds=0). L1: lint 0e/3w, tsc PASS, 207f/1542t green, build OK, 8/8 PNG, 3 illustrationAlt x5locale. L2: staging all 8 illustrations in HTML, CTA links confirmed, Lighthouse perf99 a11y100 (Generator).",
-    "pass_count": 6,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": []
-  },
+  "evaluator_feedback": null,
   "fix_rounds_history": [],
-  "generator_handoff": "[2026-06-09 01:30 BJT Generator Kimi BL-080 F001-F005 全done → verifying] 落地页 AI 插画替代真截图. 5 generator feature 完成: F001 prompts(planner preempt) / F002 8插画验收PASS / F003 集成(Hero 插画替换 video 背景 + BeforeAfter 插画替换动画表格转server component + Features 5映射[library→feature-match/aiMatch→feature-brief/insight,reach,crm同名]+roi fallback roi-full.png + EmailCenter→email-center; fallback守门 _components/illustration-asset.ts[server fs existsSync]; +3 illustrationAlt×5locale真译; woff2去孤儿glyph outgoing_mail) / F004 next/image quality85(hero)/80+sizes+lazy + next.config images.qualities=[75,80,85](Next16硬性) / F005 Lighthouse 6门全过实测(/en perf99 LCP870ms CLS0 TBT0 SEO92 a11y100; /zh perf100 SEO92 a11y100; /ja perf100 a11y100)+ a11y 4项(Lighthouse a11y100含alt/contrast/focus + i18n 5locale alt完整 + 原生链接keyboard)+ baseline 用户2026-06-09决定保持现有4张整页(不扩80snap, 良性范围缩减). CI 全绿(运行时代码经2次 update-visual-baselines.yml 重拍 landing baseline). staging deployed @ 本verifying提交HEAD(纯前端无schema/env变更, prisma migrate no-op), health.git_sha 已验证== main HEAD. ⚠️ Codex F006 必看: (1) e2e tests/e2e/landing.spec.ts hero 断言已由 generator 改(landing-hero-video→landing-hero-illustration, CI红强制改, 本属测试域请复核); (2) landing.beforeAfter.{colTask,colBefore,colAfter,rows.*} 成 dead i18n key(可F006标注或留后续清); (3) browser matrix Safari/Firefox + prefers-reduced-motion 留 F006 staging L2 抽样(静态插画跨浏览器渲染一致, reduced-motion 天然适配因 video 已移除无动效). F006 = L1 自动化5项(lint/tsc/test/插画≥6/8/messages 5locale alt完整) + L2 staging 视觉冲击力抽样(/zh /en Hero+Features+EmailCenter+BeforeAfter 主观升级 + CTA→/request-access 链路 + Lighthouse 不regress) + signoff doc docs/test-reports/BL-080-signoff-*.md + 用户主观确认视觉升级. 纯kolmatrix, 不依赖充值/爬虫.",
+  "generator_handoff": "[2026-06-09 10:00 BJT Planner Kimi BL-098 planning→building] PROD 故障 hotfix, 纯kolmatrix单点. 根因: reach/actions.ts:116 AI定制查废弃 emailTemplate 表(下拉列表源自 Asset 表给 asset id→纯Asset模板'Clash Royale'查不到→template_not_found→'模板不存在'). 范围孤立: 整文件仅line116查emailTemplate(发送/CRUD :410/:447用Asset路径已迁,不动). 修: line116改读Asset(type=email)按asset id, content JSONB提subject/body/locale, 复用loadOutreachTemplates的adapt或抽共享getEmailTemplateById(tx,tenantId,assetId)让下拉/定制同源. withTenant保RLS, 非法id优雅返回不500. F002 Codex prod实测Clash Royale模板AI定制通+回归. 部署staging+prod(手动, NODE_OPTIONS=4096). 不依赖充值/爬虫. 起步F001.",
   "session_notes": {
-    "Kimi_planner": "[2026-06-08 22:40 BJT Planner Kimi 恢复 BL-080] BL-097 done. 用户问起挂起的落地页工作→恢复 BL-080(2026-06-01挂, 卡在F002用户AI gen). 用户认可方向后授权Planner代生成: aigc-gateway gemini-3-pro-image 按F001 8prompts出8张(去hex+强无文字修泄漏, before-after重做1次, gpt-image太慢超时弃用). 真PNG放 public/landing/illustrations/ 规范命名, 自审8/8品牌一致. resume触发(8/8)满足→还原批次building, 清paused_batches. Generator接F002验收→F003-F006. 不regress BL-078. 下一步Generator启F002验收+F003.",
-    "Kimi_generator": "[2026-06-09 01:30 BJT] BL-080 F002验收 + F003集成 + F004优化 + F005验证 全done(本会话, building→verifying). 用户对 Hero/BeforeAfter 两歧义点 AskUserQuestion 确认均选激进版(Hero 插画替换video背景, BeforeAfter 插画替换整个动画表格). F004 Lighthouse 本地 next start 实测 /en/zh/ja 6门全过. F005 baseline 范围用户决定保持现有4张(不扩80snap). 踩坑沉淀: (1) CI 跑全套 e2e+visual-regression 非仅 lint+tsc, 视觉改动(结构 or quality 75→80/85)push 即红 → 本批 landing baseline 经 update-visual-baselines.yml 在 Linux runner 重拍2次(教训: 结构改+quality改应合并后统一重拍, 本次拆开浪费1轮); (2) bot GITHUB_TOKEN commit 不触发 CI(loop防护)须手动 workflow_dispatch 验证 HEAD; (3) Docker Hub 偶发 docker pull 500 → rerun --failed; (4) 移除 BeforeAfter 表格4icon 后 outgoing_mail 成孤儿glyph, material-symbols woff2 自动缩(11644→11540), regenerate脚本确认canonical+coverage绿一并提交. staging deploy: 纯前端无schema/env变更, 标准步骤 git pull+npm ci+prisma generate+migrate deploy(no-op)+NODE_OPTIONS=4096 build+pm2 delete/start, health.git_sha 验证== 本verifying提交HEAD. e2e hero断言 generator改(测试域, CI红强制, 已标 Codex 复核). 下一步 Codex F006 L1+L2+signoff.",
-    "Reviewer": "[2026-06-09 ~02:00 BJT Codex Reviewer BL-080 verifying→done] 首轮全PASS. L1: lint 0e/3w+tsc PASS+207f/1542t+build OK+8/8 PNG+3 illustrationAlt×5locale+e2e updated. L2: staging healthy, all 8 illustrations confirmed in HTML via curl grep(hero18+features10-12+email10+before-after12), CTA /request-access+/login confirmed, data-testids present. Lighthouse: Generator Chrome实测 perf99 LCP870ms CLS0 TBT0 SEO92 a11y100. S2 beforeAfter dead i18n可后续清. Signoff: docs/test-reports/BL-080-signoff-2026-06-09.md.",
+    "Kimi_planner": "[2026-06-09 10:00 BJT Planner Kimi 开 BL-098 hotfix] BL-080 done(落地页插画). 用户报prod邮件AI定制'模板不存在'→Planner源码查实根因=ADR-011迁移遗留(AI定制reach/actions.ts:116还查废弃emailTemplate表, 下拉列表已迁Asset表→asset id对不上, 范围孤立仅此一处). 用户同意起hotfix. 2 features F001修查询到Asset / F002 Codex. 走铁律#9. 下一步Generator启F001.",
+    "Kimi_generator": null,
+    "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
   },
