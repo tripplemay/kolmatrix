@@ -32,7 +32,8 @@
     "settings": "設定",
     "signOut": "サインアウト",
     "adminTools": "管理ツール",
-    "adminApifyPreview": "Apifyプレビュー"
+    "adminApifyPreview": "Apifyプレビュー",
+    "adminCrawlerMonitor": "クローラー監視"
   },
   "login": {
     "title": "KOLMatrixにサインインする",

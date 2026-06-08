@@ -32,7 +32,8 @@
     "settings": "Configuración",
     "signOut": "Cerrar sesión",
     "adminTools": "Herramientas de administración",
-    "adminApifyPreview": "Vista previa de Apify"
+    "adminApifyPreview": "Vista previa de Apify",
+    "adminCrawlerMonitor": "Monitor de rastreo"
   },
   "login": {
     "title": "Iniciar sesión en KOLMatrix",

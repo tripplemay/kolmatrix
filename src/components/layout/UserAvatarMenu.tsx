@@ -125,6 +125,21 @@ export function UserAvatarMenu({ user, role, onSignOut }: UserAvatarMenuProps) {
                 </span>
                 {t("adminApifyPreview")}
               </Link>
+              {/* BL-097-F001 — crawler monitor entry (BL-096 page had no UI link).
+                  `insights` icon is in the committed woff2 subset (verified via
+                  fontkit); `monitoring`/`monitor_heart` are NOT, and adding them
+                  would need a network woff2 regen — see BL-096 visibility lesson. */}
+              <Link
+                href={`/${locale}/admin/crawler-monitor`}
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                className="text-on-surface-variant hover:text-cyan hover:bg-surface-high/60 flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2 text-left text-[13px] transition-colors"
+              >
+                <span className="material-symbols-outlined text-[18px]" aria-hidden>
+                  insights
+                </span>
+                {t("adminCrawlerMonitor")}
+              </Link>
             </div>
           ) : null}
           <div className="bg-outline-variant/40 mx-2 my-1 h-px" />

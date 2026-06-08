@@ -1,11 +1,11 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "BL-097-crawler-monitor-nav-entry — 给 BL-096 监控页加网站入口(目前只能手敲URL). 2 features. F001 UserAvatarMenu admin 段加 /admin/crawler-monitor 链接(仿 apify-preview)+i18n 5locale+测试. F002 Codex. 纯 kolmatrix 小UI. 关联 docs/specs/BL-097-crawler-monitor-nav-entry-spec.md.",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
   "current_sprint": "BL-097-crawler-monitor-nav-entry",
-  "last_updated": "2026-06-08T22:00+0800",
+  "last_updated": "2026-06-08T22:35+0800",
   "reference_docs": [
     "docs/specs/BL-097-crawler-monitor-nav-entry-spec.md",
     "src/components/layout/UserAvatarMenu.tsx (admin 段 line~111-128, 仿 apify-preview 链接)",
@@ -26,7 +26,7 @@
   "generator_handoff": "[2026-06-08 22:00 BJT Planner Kimi BL-097 planning→building] 极小UI批次, 纯 kolmatrix. F001: UserAvatarMenu.tsx admin 段(showAdmin block ~111-128)加 <Link>→/admin/crawler-monitor 仿 apify-preview(line117-127), icon monitoring/monitor_heart, label t('adminCrawlerMonitor'); i18n userAvatarMenu.adminCrawlerMonitor 5locale; 更新 UserAvatarMenu.test.tsx 断言. F002 Codex. 部署 staging+prod(手动, NODE_OPTIONS=4096防OOM). 不依赖任何充值/爬虫merge.",
   "session_notes": {
     "Kimi_planner": "[2026-06-08 22:00 BJT Planner Kimi 开 BL-097] BL-096 done(监控页上线/admin/crawler-monitor). 用户要网站入口→开小批次 BL-097: F001 UserAvatarMenu admin段加入口(仿apify-preview)+i18n+测试 / F002 Codex. 纯kolmatrix UI, 0.5h+0.5h. 下一步Generator启F001.",
-    "Kimi_generator": null,
+    "Kimi_generator": "[2026-06-08 BJT Generator Kimi BL-097-F001 done] UserAvatarMenu admin段加 /admin/crawler-monitor <Link>(仿apify-preview, onClick关菜单+同className)+ i18n userMenu.adminCrawlerMonitor 5locale(注:命名空间是 userMenu 非 userAvatarMenu). ⚠️图标改用 insights(非spec建议的monitoring/monitor_heart)——后两者不在committed woff2 subset里, fontkit验证 monitoring/monitor_heart/dashboard 全❌, insights✅, 复用已覆盖图标避免network woff2 regen(BL-096 visibility教训). L1全绿: UserAvatarMenu 8+i18n coverage 8+glyph 7 pass, tsc0, lint clean, 5 locale JSON有效. building→verifying(F002 codex). 纯test+UI改动未部署, F002 L2需部署staging+prod(手动,NODE_OPTIONS=4096).",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null

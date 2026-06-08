@@ -32,7 +32,8 @@
     "settings": "설정",
     "signOut": "로그아웃",
     "adminTools": "관리자 도구",
-    "adminApifyPreview": "Apify 미리보기"
+    "adminApifyPreview": "Apify 미리보기",
+    "adminCrawlerMonitor": "크롤러 모니터링"
   },
   "login": {
     "title": "KOLMatrix에 로그인하세요",

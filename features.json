@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "src/components/layout/UserAvatarMenu.tsx admin 段(showAdmin block, ~line 111-128)加 <Link> → /{locale}/admin/crawler-monitor, 仿现有 apify-preview 链接(role=menuitem + onClick 关菜单 + 同 className + material icon 如 monitoring/monitor_heart + label t('adminCrawlerMonitor'))",
       "i18n userAvatarMenu.adminCrawlerMonitor 5 locale(zh/en/ja/ko/es); i18n-locale-coverage 一致",

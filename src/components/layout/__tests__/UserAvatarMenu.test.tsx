@@ -64,6 +64,16 @@ describe("UserAvatarMenu", () => {
     expect(screen.getByText("Admin Tools")).toBeInTheDocument();
   });
 
+  it("renders the Crawler Monitor link in the admin section (BL-097-F001)", async () => {
+    const u = userEvent.setup();
+    renderIntl(<UserAvatarMenu user={user} role="tenant_admin" />);
+    await u.click(screen.getByRole("button"));
+
+    const link = screen.getByRole("menuitem", { name: /Crawler Monitor/i });
+    expect(link).toBeInTheDocument();
+    expect(link.getAttribute("href")).toBe("/en/admin/crawler-monitor");
+  });
+
   it("also shows the admin section for platform_admin role", async () => {
     const u = userEvent.setup();
     renderIntl(<UserAvatarMenu user={user} role="platform_admin" />);
@@ -80,6 +90,7 @@ describe("UserAvatarMenu", () => {
 
     expect(screen.queryByTestId("user-avatar-admin-section")).toBeNull();
     expect(screen.queryByRole("menuitem", { name: /Apify Preview/i })).toBeNull();
+    expect(screen.queryByRole("menuitem", { name: /Crawler Monitor/i })).toBeNull();
     expect(screen.queryByText("Admin Tools")).toBeNull();
   });
 

@@ -32,7 +32,8 @@
     "settings": "Settings",
     "signOut": "Sign out",
     "adminTools": "Admin Tools",
-    "adminApifyPreview": "Apify Preview"
+    "adminApifyPreview": "Apify Preview",
+    "adminCrawlerMonitor": "Crawler Monitor"
   },
   "login": {
     "title": "Sign in to KOLMatrix",
