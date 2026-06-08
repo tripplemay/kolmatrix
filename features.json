@@ -20,7 +20,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "deployed",
+    "status": "pending",
     "acceptance": [
       "新页 src/app/[locale]/admin/crawler-monitor — server component, isAdminRole gate(非 admin redirect); fetch 爬虫 /admin/stats(server-only client 仿 src/lib/admin/apify-preview-client.ts, 超时/错误处理)",
       "渲染: 入库速率曲线(recharts) + 抓取构成卡 + YT 邮箱状态卡 + drain 进度条 + refresh 欠账 + 双余额(TikHub/Apify cost)",
@@ -29,7 +29,7 @@
       "不直读爬虫库(只调 API); 平台级(platform-admin)非租户级",
       "L1 PASS: lint 0err warn≤3 / tsc=0 / npm test; F002 可先按 /admin/stats 契约开发 + 缺字段优雅降级, F001 sync 后联调"
     ],
-    "note": "commit 0bb7e35 + 部署 staging+prod(@ccd80d5)。瘦客户端只读页 + 健康灯 + recharts + i18n 5locale×29keys + 单测13。L1 全绿。kolmatrix .env.production/.env.staging 补 APIFY_KOL_ADMIN_API_KEY(=fork ADMIN_API_KEY, pm2 env_file 加载, pm2_env 确认 present)。route 实测 307→login(admin gate 生效)。⚠️ /proc/environ 不反映 pm2 env_file 加载的 var(查 pm2_env 才准)。"
+    "note": "PARTIAL (verifying): client 9/9 + page 4/4 PASS. i18n: zh/ja/ko/es untranslated leaves. Fix: add crawlerMonitor paths to KEEP_AS_EN_PATHS or localize. L2: /opt 392f154, staging healthy, gate 307."
   },
   {
     "id": "F003",
