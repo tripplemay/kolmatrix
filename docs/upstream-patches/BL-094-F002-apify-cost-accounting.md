@@ -1,9 +1,10 @@
 # BL-094-F002 · Upstream PR — apify_cost_usd 每请求成本估算
 
-> **状态：** ✅ **PR 已开 → https://github.com/guang-tech/apify/pull/10**（2026-06-08，
-> 分支 `bl094-f002-apify-cost-accounting` base `master@4d102f1`）。
-> ⏳ **路径 B：待爬虫团队 review/merge → fork-sync `/opt/apify-kol-service` + rebuild（OOM NODE_OPTIONS=4096）。**
-> ⚠️ **价格值是估算，建议爬虫团队用真实 TikHub 账单校准 `ENDPOINT_PRICES` 后再 merge。**
+> **状态：** ✅ **PR #10 已 merge → master `8d7cff8`**（2026-06-08，用户授权直接 merge，squash）。
+> ⏳ **fork-sync `/opt/apify-kol-service` + rebuild 推迟到 TikHub 充值时（BL-092）一并做** ——
+> 当前余额耗尽→无成功 scrape→`apify_cost_usd` 无法非 0,此刻 rebuild 无可观测收益且属 OOM 高危(BL-086);
+> 与 BL-091 fork-sync 同样推迟到充值。
+> ⚠️ **价格值是估算,`ENDPOINT_PRICES` 唯一校准点,建议充值前用真实 TikHub 账单校准。**
 
 ## 问题
 
@@ -36,7 +37,7 @@
 
 | 项 | 值 |
 |---|---|
-| 价格校准（真实 TikHub 单价） | _待爬虫团队/用户回填_ |
-| 上游 merge commit | _待回填_ |
-| sync 后 HEAD + rebuild | _待回填_ |
-| 部署后 apify_cost_usd 抽样非 0 | _待回填_ |
+| 上游 merge commit | **8d7cff8 (#10)** |
+| 价格校准（真实 TikHub 单价） | _待爬虫团队/用户回填（充值前校准 ENDPOINT_PRICES）_ |
+| sync 后 HEAD + rebuild | _待 TikHub 充值时一并 fork-sync + rebuild_ |
+| 部署后 apify_cost_usd 抽样非 0 | _待充值后跑成功 scrape 验证_ |
