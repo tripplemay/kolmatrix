@@ -3,11 +3,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ✅ BL-092-post-charge-execution DONE (3/3, signoff @ eb6e41a) — TikHub 充值后收口
-- F001 /opt rebuild 8d7cff8(无OOM) / F002 2535投喂 420/100% / F003 verified-live
-- **verified-live**: apify_cost $0.566, balance $243.80, BugA 188q/12h, refresh -85%, KOLs +420
-- ⚠️ IG still 0 output (288ref+4hash 全0) — F005 350ms 部署但 IG actor may need further investigation
-- F002 drain 仍在进行(27/26 jobs, 420 inserted so far), full 96% hit rate TBD
+## 🚧 BL-096-crawler-monitor-page BUILDING (0/3) — 爬虫抓取只读监控页(platform-admin)
+- 动机: 两次静默故障(TikHub余额/aigcgateway额度)靠人肉发现 → 持续可观测页面
+- F001 爬虫 /admin/stats 扩展观测指标(drain/速率/邮箱/IG/refresh/成本/余额, 路径 B). F002 KOLMatrix /admin/crawler-monitor 瘦客户端渲染+健康灯. F003 Codex
+- 架构 ADR-017 瘦客户端(数据归爬虫+KOLMatrix只调API). 与 BL-089 配置页区分(只读). F002 依赖 F001 部署→可先按契约开发优雅降级
+## ✅ BL-092 DONE (3/3) — TikHub 充值后收口: refresh -85% + 2535投喂(+420 drain中) + BugA runtime触发(188) + 成本记账 ✅
+- ⚠️ IG 仍 0 产出 → backlog BL-095(F005 节流未解决)
 
 ## ✅ BL-094(4/4) / BL-093(3/3) / BL-091(5/5) / BL-086(6/6) — 全部 DONE
 - BL-086-F006 full: refresh -85% confirmed live + harvest 100% + cost accounting ✅
