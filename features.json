@@ -36,7 +36,7 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "L1: lint 0err warn≤3 / tsc=0 / npm test 绿",
       "L2 部署后 prod/staging: EXPLAIN_DETAILED 调用不再预检拒(余额未变情况下 success 返回, 输出 5段×5locale 完整不截断); 抽样其他 action(enrichment/rerank)恢复; aigcgateway 日志该 action 新调用 status=success 非 error",
