@@ -5,7 +5,7 @@ type: project
 ---
 ## 🚧 BL-096-crawler-monitor-page BUILDING (generator code 完成, 待 merge/deploy gate) — 爬虫只读监控页
 - 动机: 两次静默故障靠人肉发现 → 常驻可观测页
-- ✅ **F001 code done = PR #11**(guang-tech/apify, 路径 B): /admin/stats 扩展观测字段(drain/ingestRate/composition/ytEmail/igToday/refreshBacklog/costToday)。computeAdminStats 抽离, 单测2, service122绿, prod 查询有效
+- ✅ **F001 merged → master 392f154**(PR #11, 用户授权): /admin/stats 扩展观测字段(drain/ingestRate/composition/ytEmail/igToday/refreshBacklog/costToday)。computeAdminStats 抽离, 单测2, service122绿。⏳ 待 fork-sync /opt rebuild 生效
 - ✅ **F002 code done(commit 0bb7e35 已推 CI)**: /[locale]/admin/crawler-monitor 瘦客户端只读页(client+健康灯+recharts入库速率+构成/YT/drain/refresh/双余额卡+优雅降级)+ i18n 5locale×29keys + 单测13。L1 tsc0/lint0/glyph绿
 - ⏳ **gate(待用户指示)**: (1) merge #11 + apify fork-sync rebuild(OOM); (2) **kolmatrix .env 补 APIFY_KOL_ADMIN_API_KEY**(ops, 取 fork ADMIN_API_KEY)+ kolmatrix deploy; (3) F003 codex L2 需上述就绪。F002 对旧 /admin/stats 优雅降级
 - 归档 docs/upstream-patches/BL-096-F001-admin-stats-observability.md

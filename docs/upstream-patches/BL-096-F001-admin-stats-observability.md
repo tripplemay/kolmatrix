@@ -1,8 +1,7 @@
 # BL-096-F001 · Upstream PR — /admin/stats 扩展只读观测指标
 
-> **状态：** ✅ **PR 已开 → https://github.com/guang-tech/apify/pull/11**（2026-06-08，
-> 分支 `bl096-f001-admin-stats-observability` base `master@8d7cff8`）。
-> ⏳ **路径 B：待爬虫团队 review/merge → fork-sync `/opt/apify-kol-service` + rebuild（NODE_OPTIONS=4096 防 OOM）。**
+> **状态：** ✅ **PR #11 已 merge → master `392f154`**（2026-06-08，用户授权直接 merge，squash）。
+> ⏳ **待 fork-sync `/opt/apify-kol-service` + rebuild（NODE_OPTIONS=4096 防 OOM）才在 prod 生效。**
 
 ## 目的
 
@@ -33,7 +32,7 @@
 
 | 项 | 值 |
 |---|---|
-| 上游 merge commit | _待回填_ |
+| 上游 merge commit | **392f154 (#11)** |
 | sync 后 HEAD + rebuild | _待回填_ |
 | KOLMatrix env `APIFY_KOL_ADMIN_API_KEY` 落地（F002 需，调 /admin/stats）| _待回填(ops)_ |
 | 部署后 /admin/crawler-monitor 渲染真实数据 | _待 F001 sync + F002 部署后联调_ |

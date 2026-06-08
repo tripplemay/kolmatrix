@@ -5,14 +5,14 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pr_open",
+    "status": "merged",
     "acceptance": [
       "扩 packages/service/src/routes/admin-stats.ts 返回只读聚合(apify_kol DB): drain(manual_seed pgboss state + 今日 inserted) / 入库速率(kols 按天最近7-14天) / 抓取构成(今日 scrape_jobs by kind: jobs·scraped·inserted·cost) / YT邮箱(yt_email_check_records by status) / IG产出(今日 instagram scraped·inserted) / refresh欠账(kols total·due_now) / 今日 apify_cost_usd 合计 + tikhubBalanceUsd(已有)",
       "只读, 不改写任何表; 聚合查询加索引友好/limit, 不拖垮库",
       "落地路径 B: PR → guang-tech/apify → merge → fork-sync /opt rebuild(NODE_OPTIONS=4096 防 OOM)",
       "含单测; 返回结构稳定(KOLMatrix 端按契约消费)"
     ],
-    "note": "代码完成 + 单测2。/admin/stats 扩展观测字段(drain/ingestRateByDay/scrapeCompositionToday/ytEmailByStatus/igToday/refreshBacklog/costTodayUsd, 既有字段保留)。抽 computeAdminStats 便于单测。service 套件122绿 tsc0, prod 实查 pgboss/scrape_jobs 有效。PR #11 → guang-tech/apify(base 8d7cff8)。⏳ 路径 B 待 merge + fork-sync rebuild。归档 docs/upstream-patches/BL-096-F001-admin-stats-observability.md"
+    "note": "代码完成 + 单测2。/admin/stats 扩展观测字段(drain/ingestRateByDay/scrapeCompositionToday/ytEmailByStatus/igToday/refreshBacklog/costTodayUsd, 既有字段保留)。抽 computeAdminStats 便于单测。service 套件122绿 tsc0, prod 实查 pgboss/scrape_jobs 有效。PR #11 merge → master 392f154(用户授权)。⏳ 路径 B 待 fork-sync /opt rebuild(OOM)。归档 docs/upstream-patches/BL-096-F001-admin-stats-observability.md"
   },
   {
     "id": "F002",
