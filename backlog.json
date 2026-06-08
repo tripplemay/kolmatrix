@@ -1,26 +1,5 @@
 [
   {
-    "id": "BL-054",
-    "title": "flaky network test isolate — pre-commit-hook.test.ts woff2 拉网络抖动隔离",
-    "description": "**触发：** 2026-05-08 BL-052 verifying 阶段 Reviewer 跑默认 `npm run test:integration` 套件 fail，定位 `tests/integration/pre-commit-hook.test.ts` 的 'icon staged + woff2 matches script output → hook PASS' 用例：完整套件并发跑时 `scripts/regenerate-material-symbols-subset.sh` 报 'failed (network? quota? typo in manifest?)'，单文件隔离跑 PASS。\n\n**根因：** 该测试在 hook path 调用 `regenerate-material-symbols-subset.sh`，脚本依赖 Google Fonts 网络拉取 subset woff2。完整 `test:integration` 套件并发跑时网络竞争 / quota 抖动 → flaky；单文件 PASS 证明逻辑正确，仅环境时序敏感。\n\n**实物追溯：**\n- `tests/integration/pre-commit-hook.test.ts` 来自 BL-027-F004（commit 2c8af8a）\n- `scripts/regenerate-material-symbols-subset.sh` 来自 BL-025-F009 / BIx-mvp-polish-pass\n- `framework/templates/pre-commit-hook.sh`（4980B）依赖该脚本\n\n**业务影响评估：**\n- ❌ 阻塞 Reviewer 默认 `npm run test:integration` 全绿门槛\n- ❌ CI 路径如启用 `test:integration` 默认套件会概率性红\n- ✅ 不影响 BL-052 等业务批次实际功能（BL-052 已用 P5 裁决放过：docs/test-reports/BL-052-verifying-2026-05-07.md §Planner 裁决）\n- ✅ 不影响 prod / staging 健康（hook 仅本地 dev 路径）\n\n**3 候选修复方向（Generator 开工时择优 + Pre-impl audit 确认）：**\n\n| 方向 | 方案 | 优劣 |\n|---|---|---|\n| **A 隔离 + serial（推荐）** | 加 `npm run test:integration:network` 单独串行跑该 test；默认 `test:integration` 排除 `pre-commit-hook.test.ts` | 改动小（package.json + vitest config 各 ~5 行），保留网络验证路径，CI 单独跑该 job |\n| B 预生成缓存 | 提前在 git checkout 阶段缓存 Google Fonts subset woff2 到 `node_modules/.cache/material-symbols-subset/`，hook 优先读缓存，缓存缺失才拉网络 | 复杂，需缓存失效策略；省网络但 dev 首次仍需拉 |\n| C 移到 e2e 套件 | 该 test 移到 `tests/e2e/` Playwright network-allowed 跑，CI nightly 跑 | 测试本质属 hook integration 不属 e2e，语义不洁 |\n\n**实装范围（Generator 工时 ~2-4h）：**\n\n- F001 vitest config 改造：vitest.integration.config.ts 加 `testNamePattern` exclude `pre-commit-hook.test.ts` 默认套件 + 新增 vitest.integration-network.config.ts 仅含网络型 test\n- F002 package.json 加 script `test:integration:network` 调用新 config（serial mode + 长 timeout）\n- F003 CI workflow `ci.yml` 改 `npm run test:integration` 跑默认 + `npm run test:integration:network` 跑独立 job（network job 允许 retry 2 次）\n- F004 docs/dev/ 加 testing-strategy.md 段说明 'network-dependent integration tests' 隔离策略\n- F005 grep 全仓还有哪些类似网络型 integration test 一并隔离（v0.9.14 完整模式 grep 防漏）\n\n**依赖：** 无\n\n**ADR-worthy：** 弱 — 测试策略变更但范围窄 / 影响仅 framework templates。如发现还有 ≥3 处类似网络型测试（F005 grep 命中），建议升 ADR-014 'Integration test isolation strategy'。\n\n**预估工时：** 2-4h Generator + 0.5h Reviewer\n\n**触发时机：** BL-052 done 后（5/8 周一晚）任何时段 / 不阻塞 5/13 上线（BL-052 + BL-054 均可在 5/13 前完成，但即使 BL-054 拖到 5/14+ 也无生产影响）。\n\n---\n**[2026-06-01 addendum — Generator Kimi, BL-081-F001 push 触发]** 同子系统第 2 个失败面: `tests/integration/material-symbols-coverage.test.ts:158` 'output-side guard' 对 committed woff2 与 regen 输出做**字节级比对**。本次 CI red (f44b1da) 根因非并发网络抖动，而是 **Google Fonts 上游字体 build 漂移**: 同样 109 icons，committed 11628B，Google 现服务 11632B → 字节级 guard 必红 (自 5/27 b85d34a 起该 integration job 即 red)。用户 6/01 裁决: 临时 commit 刷新版 woff2 (11632B) 转绿，但属 treadmill (下次 Google rebuild 再红)。**新增候选方向 D (治本): 将 guard 从字节相等改为 glyph-coverage 断言 — 验 subset 是否含全部 109 个 icon 字形，而非字节相等**，彻底消除上游漂移脆弱性。建议与方向 A (网络型 test 隔离) 一并纳入本批次实装。",
-    "decisions": [
-      "Planner 5/8 裁决（铁律 P5 复用）：BL-052 acceptance 边界 ≠ 全套 test:integration 普遍绿；外部网络依赖 / 并发抖动属独立 framework reliability 批次",
-      "BL-052 Reviewer 复验范围限其引入代码（KPI snapshot IT × 3 + Part B 单测 + acceptance 表逐项）；该 flaky test 不计入 BL-052 评分",
-      "推荐方向 A（隔离 + serial）— 改动最小，保留网络验证路径，符合既有 vitest config 风格",
-      "F005 grep 全仓类似 pattern 防漏（v0.9.14 完整模式 grep 铁律）"
-    ],
-    "confirmed_at": "2026-05-08T00:00+0800",
-    "priority": "medium",
-    "tags": [
-      "testing",
-      "flaky",
-      "framework-reliability",
-      "network-dependency",
-      "ci-red-active"
-    ],
-    "discovered_in": "BL-052 verifying 2026-05-07 by Reviewer (Codex) + Planner johnsong P5 裁决 2026-05-08"
-  },
-  {
     "id": "BL-048",
     "title": "valueScore 公式区分度优化 — follower cap / category quality / engagement 顶段细分（BL-023 后续发现）",
     "description": "**触发：** 2026-05-07 BL-023 全量 recompute 完成后，用户实地查看 prod top-15 valueScore=100 KOL 发现：12.6M 粉的 @gameseduuu 与 2080 粉的 @morrov8721 同分 100，区分度严重失真。Generator 实地 grep 公式 + prod 数据验证：这是 BL-023 没动的 BM1 原设计副作用，非 BL-023 引入回归。\n\n**Prod top-15 valueScore=100 真实数据（2026-05-07 全量 recompute 后）：**\n```\n@gameseduuu             12.6M  粉 / 13.0% engagement / 5 cats\n@zangadoreview           4.19M 粉 / 10.0% / 5\npixelpao                 1.91M 粉 / 10.9% / 3\nneonhaze                 1.64M 粉 / 11.4% / 3\nkaibytes                 512K  粉 / 14.8% / 3\naisha.streams            264K  粉 / 12.2% / 3\nforgefalcon              196K  粉 / 15.6% / 3\n@brksedumobile           129K  粉 / 11.0% / 7\n@valkiosrpg              128K  粉 / 10.0% / 6\n@faria-mobile            14.5K 粉 / 10.0% / 5\n@jogadorindie            9.7K  粉 / 12.0% / 6\n@golmobilegames          6.85K 粉 / 11.0% / 5\n@luvstarletsplays        4.93K 粉 / 16.0% / 5\n@memoriasyvideojuegos    3.63K 粉 / 15.0% / 5\n@morrov8721              2.08K 粉 / 12.0% / 5\n```\n\n**3 处天花板太低导致 mega vs nano 同分：**\n\n1. **followerScore = min(50, log10(followerCount) × 15)** → log10(2154) × 15 ≈ 50。任何 >2154 粉的 KOL follower 维度满分 50。12.6M 和 2080 在 follower 分量几乎一样。设计意图：log 压缩 + 关注 mid-tier creators；副作用：mega 和 nano 在公式上无差别。\n\n2. **categoryScore = min(20, categories.length × 8)** → ≥3 categories 满分 20。仅看 length 不看质量；7 个泛 cat 与 3 个深耕 cat 同分。spec §1.1 原本就标注是 🟡 弱点。\n\n3. **engagementScoreFromRate(rate >= 10) → 20** 一刀切。10% 和 16% 同 20 分。nano-influencer 基数小，容易刷出 >10% engagement（@morrov8721 2080 粉但 12% engagement）。\n\n**数学验证 @morrov8721：**\n```\nfollowerScore  = log10(2080) × 15 = 49.77\nengagementScore = 20  (12% in >=10 bucket)\ncategoryScore   = 20  (5 cats >= 3 cap)\nraw = 89.77\ntotal = round(89.77 × 100 / 90) = round(99.74) = 100  ← 边界 round-up\n```\n\n**3 候选方向（Planner 评估）：**\n\n| 方向 | 方案 | 影响 |\n|---|---|---|\n| follower 拉开区分度 | log10×15 → log10×10 + cap 80（让 1M+ 才接近满分）；或加 sub-tier 系数（2K-10K nano / 10K-100K micro / 100K-1M mid / 1M+ mega 不同 weight） | mega 重新登顶；marketers 看到分布更接近直觉 |\n| category 加质量信号 | 用 KOL.engagement_rate per category 加权（需 BIx 增量数据：分品类 engagement 跟踪）；或参考 categories[0]（主营）vs 后续（边缘）权重不同 | 复杂，需更多数据源；ADR-worthy |\n| engagement 顶段细分 | >10% / >15% / >20% → 18 / 20 / 22；或纯线性 rate*2 capped 25 | 整体 normalize 调整（RAW_MAX 90 → 95），全网重算 |\n\n**业务影响评估：**\n- 当前 138 KOL 有真 engagement 信号 + 全网 valueScore 用统一 BL-023 公式 — BL-023 核心交付已完成\n- 区分度问题影响：marketers 用 valueScore desc 排序时看到 nano 与 mega 混排，需手动按 followerCount 二次过滤\n- 短期 workaround：UI /discovery + /database 加 followerCount range filter（已有？需查）\n- 长期治本：上述 3 方向之一，建议带真客户使用反馈数据驱动（避免过早优化）\n\n**依赖：** 无硬依赖；建议等 BIx F004 cron 累积 ≥500 KOL 真 engagement 信号后再做（当前 138 样本太少，难以验证算法效果）。\n\n**ADR-worthy：** 是 — valueScore 是 KOL ranking 核心算法，公式调整影响所有下游（discovery / smart match / weekly report / outreach 优先级）。任何方向都需要 ADR 沉淀。\n\n**预估工时：** 1-2 day Generator + 0.5 day Reviewer（含 spec lock + 公式调整 + 全量 recompute SQL ops + 单测扩充 + ADR 起草）。",
@@ -405,7 +384,8 @@
     "decisions": [
       "ADR-017 §4:75% 入库率 + 806 拦截属预期设计,放宽是 quantity↔quality 取舍非 bug",
       "放宽优先 instagram + 中粉段,排除 <1000 噪音;先量化再决定",
-      "硬删须在 BL-086 收割 2535 id 之后(避免丢种子名单);非 partial 唯一索引注意撞键风险"
+      "硬删须在 BL-086 收割 2535 id 之后(避免丢种子名单);非 partial 唯一索引注意撞键风险",
+      "2026-06-08: 量化部分并入 BL-094 F003(只读出决策依据); 放宽质量门/硬删 2584 实装待 F003 报告后用户决定。priority 维持 low(806 低质量换质, 价值存疑)"
     ],
     "confirmed_at": "2026-06-06T11:00+0800",
     "priority": "low",
@@ -438,16 +418,6 @@
       "cross-service"
     ],
     "discovered_in": "2026-06-06 用户产品策略讨论(配置页) — Planner 建议 deferred"
-  },
-  {
-    "id": "BL-090-cost",
-    "title": "apify_cost_usd 成本记账 (TikHub usage-delta 或价格表)",
-    "description": "BL-086-F004 余额暴露已做(guang-tech/apify#5), 但 apify_cost_usd 成本记账未做: TikHub 响应不带每请求成本。需价格表(per-endpoint price × 调用数估算)或 TikHub usage-delta API(快照 balance 前后差). 供预算→KOL 换算. 充值后可用真实 balance 变化校准. 路径 B fork PR.",
-    "decisions": [
-      "余额暴露优先(防静默空转主价值), 成本记账拆出"
-    ],
-    "confirmed_at": "2026-06-06T23:25+0800",
-    "priority": "low"
   },
   {
     "id": "BL-092",

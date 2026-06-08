@@ -1,40 +1,33 @@
 {
-  "status": "done",
-  "user_goal": "BL-093-aigc-max-tokens-hotfix — prod 故障: '为什么推荐'详细解释弹窗'暂时不可用'. 根因(实证): 所有 haiku-4.5 Action 默认 max_tokens=64000(模型上限, Action 抽象层不暴露), 上游预检按此预留额度; aigcgateway 余额$39.56 只够afford 55108<64000→请求瞬时拒(0.3s/$0/error). 实际输出仅~4500. Blast radius=全线 haiku-4.5 Action(EXPLAIN_DETAILED+KOL bio富化等). 修法: runAigcAction wrapper 加 max_tokens 默认值(若 gateway 接受override)或改 chat/completions直调(BL-042 P1). 3 features. 走铁律#9 hotfix流程. 即时恢复=用户充值 aigcgateway(与本批并行). BL-042 治本并入本批. 关联 docs/specs/BL-093-aigc-max-tokens-hotfix-spec.md.",
-  "total_features": 3,
-  "completed_features": 3,
+  "status": "building",
+  "user_goal": "BL-094-high-value-polish — 三个不等充值的高价值项打包. 混合批次 4 features. F001 BL-054 flaky 网络测试隔离 + glyph guard(kolmatrix CI). F002 BL-090-cost apify_cost_usd 成本记账(路径B). F003 BL-088 只读量化(806 回收价值 + 2584 硬删风险 → 决策报告, 不实装放宽/硬删, 待用户决定). F004 Codex 验收. 关联 docs/specs/BL-094-high-value-polish-spec.md.",
+  "total_features": 4,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "BL-093-aigc-max-tokens-hotfix",
-  "last_updated": "2026-06-08T14:30+0800",
+  "current_sprint": "BL-094-high-value-polish",
+  "last_updated": "2026-06-08T11:00+0800",
   "reference_docs": [
-    "docs/specs/BL-093-aigc-max-tokens-hotfix-spec.md",
-    "src/lib/aigc/run-action.ts (runAigcAction 共享封装, 杠杆点)",
-    "src/app/[locale]/(app)/campaigns/[id]/explainability-actions.ts (EXPLAIN_DETAILED 调用, timeoutMs 30s)",
-    "docs/specs/BL-035-F013-actions-run-inventory.md (7 Action 矩阵)",
-    "framework/harness/ai-action-contract.md §4.7 (BL-042 4 修复方向)",
-    "aigcgateway EXPLAIN_DETAILED action=cmp6ihdt109jebnrqdj215aft (无 max_tokens 字段)"
+    "docs/specs/BL-094-high-value-polish-spec.md",
+    "tests/integration/pre-commit-hook.test.ts (F001 网络型)",
+    "tests/integration/material-symbols-coverage.test.ts (F001 字节 guard→glyph)",
+    "guang-tech/apify: scrape_jobs.apify_cost_usd (F002 成本记账)",
+    "kolmatrix Kol 表 + 上游(F003 量化 806/2584)"
   ],
   "docs": {
-    "spec": "docs/specs/BL-093-aigc-max-tokens-hotfix-spec.md",
+    "spec": "docs/specs/BL-094-high-value-polish-spec.md",
     "audit": null,
     "test_cases": null,
-    "signoff": "docs/test-reports/BL-093-signoff-2026-06-08.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "BL-093 全 3/3 PASS (fix_rounds=0, verifying→done). L1: kolmatrix lint 0e/3w + tsc 0err + 1528 tests PASS. L2: Codex SSH 独立验证 — kolmatrix 807cfc3 + aigcgateway e9d963e 确认部署, route.runner.ts 确认 max_tokens 透传, prod health ok. DEFAULT_MAX_TOKENS=8192 + EXPLAIN_DETAILED=16000 via code review.",
-    "pass_count": 3,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": []
-  },
+  "evaluator_feedback": null,
   "fix_rounds_history": [],
-  "generator_handoff": "[2026-06-08 Generator Kimi BL-093 building→verifying, 三处已部署] B2 跨两仓实装+全部署完成。【交付】aigcgateway(e9d963e): /actions/run 接受 max_tokens→runner 透传上游(向后兼容)。kolmatrix(5b0f202, main HEAD 807cfc3): runAigcAction 加 maxTokens+DEFAULT_MAX_TOKENS=8192(覆盖全8调用点), EXPLAIN_DETAILED 16000。【部署(Generator 带 OOM 监控)】aigcgateway /opt/aigc-gateway ff 7502b61→e9d963e + NODE_OPTIONS=4096 build 无 OOM + static/public 复制进 standalone + pm2 reload 4实例; kolmatrix staging+prod 经 deploy-staging.yml/deploy-prod.yml workflow 部署到 807cfc3, build mem floor ~1.87G 无 OOM, prod+staging health healthy(db+redis ok), VM repo HEAD 均 807cfc3。【Codex F003 验收建议】L1: 两仓 clone main 跑 npm test/tsc/lint(kolmatrix run-action 11+explainability 6; aigcgateway runner 8 绿)。L2(prod 实测, ssh tripplezhou@34.180.93.185): (a) 触发 EXPLAIN_DETAILED(kolmatrix Why弹窗详细解释 或 直接调)→ 确认 success 非预检拒; (b) aigcgateway MCP list_logs/get_log_detail 查该 action 新调用 status=success 且上游请求 max_tokens=16000(非 64000); (c) 输出 5locale×5段完整不截断; (d) before/after: 故障期 error(0.3s/$0/64000拒) vs 修后 success(~16-21s/正常token/max_tokens 受控)。zero-cost route smoke 已验(max_tokens=-5→400 / 16000→404达runner / 无→404兼容)。signoff docs/test-reports/BL-093-signoff-2026-06-08.md。【注】故障早已靠充值解除, 本批治本防复发; aigcgateway VM .git remote 嵌 PAT 建议轮换。",
+  "generator_handoff": "[2026-06-08 11:00 BJT Planner Kimi BL-094 planning→building] 混合批次. F001(BL-054)+F002(BL-090-cost)=generator 实装; F003(BL-088量化)+F004=codex(verifying). F001 kolmatrix 测试/CI(方向A隔离网络型 + 方向D glyph guard + F005-grep). F002 路径B(爬虫 scrape_jobs.apify_cost_usd 价格表/usage-delta, PR→merge→sync, OOM 用 NODE_OPTIONS=4096). F003 只读量化 BL-088(806 按平台×粉丝×邮箱拆 + 2584 硬删撞键/依赖/是否已被BL-091收割), 出报告+建议, ⚠️不实装放宽/硬删(待用户决定). 起步建议 generator: F001(纯 kolmatrix, 不依赖任何充值/爬虫merge, 最快). F002 需爬虫团队 merge. 不依赖 TikHub/aigcgateway 充值.",
   "session_notes": {
-    "Kimi_planner": "[2026-06-07 11:30 BJT Planner Kimi 开 BL-093 hotfix] BL-091 done(YT邮箱+339). 用户报prod 'Why弹窗暂时不可用'→Planner查aigcgateway实证根因=max_tokens 64000预检拒(余额$39.56<afford阈值, 全线haiku-4.5 Action故障, 非BL-084超时). 用户同意起hotfix. 3 features: F001调查gateway是否接受max_tokens override / F002实装(wrapper默认或chat直调, 全覆盖) / F003 Codex验收. BL-042(max_tokens治理)并入. 即时恢复=用户充值aigcgateway(已告知, 与hotfix并行). 走铁律#9 hotfix流程. 下一步Generator F001先验gateway override. [2026-06-08 故障解除] 用户充值上游 provider 额度 → Planner 实测 chat(max_tokens=64000) success + 用户 UI 确认 Why 弹窗恢复。根因修正: 卡点是上游 provider 额度(报错 afford X tokens), 非 aigcgateway 用户余额 get_balance=$39.56(那是另一账本, 每次扣费, 没动正常)。我此前误判'充值没到账'已纠正。BL-093 仍做(治本防复发: max_tokens 64000 过度预留, 上游额度再波动会复发), 但已非紧急→正常优先级。用户 2026-06-08 选 A: 保留 building 正常优先级做完(治本防复发)。下一步 Generator 启 F001(验 gateway override, 不依赖任何充值)。",
-    "Kimi_generator": "[2026-06-08 Generator Kimi BL-093 F001+F002 done+部署 → verifying] 全链路上线。aigcgateway e9d963e + kolmatrix 807cfc3(staging+prod)三处部署完成, 均带 OOM 监控无 OOM(build mem floor ~1.87-2G, NODE_OPTIONS=4096 守门)。aigcgateway 部署经历: 本地 clone(0d83fb7)实为 VM(7502b61 Seedream)的后代→纯 ff 安全(虚惊一场); next standalone 模式 build 后须复制 static/public 进 .next/standalone; pm2 reload 4实例。kolmatrix 经 deploy-staging.yml/deploy-prod.yml workflow(workflow_dispatch -f ref=main)。zero-cost route smoke 三连过(max_tokens 校验+透传+兼容)。已转 verifying 交 Codex F003(L1 两仓 + L2 prod EXPLAIN_DETAILED 实测 max_tokens 受控 before/after)。安全flag: aigcgateway VM .git remote URL 明文嵌 GitHub PAT(gho_), 已告知用户轮换。",
-    "Reviewer": "[2026-06-08 14:30 BJT Codex Reviewer BL-093 verifying→done] 首轮验收全 PASS (fix_rounds=0). L1: kolmatrix prisma generate+lint(0e/3w)+tsc PASS+205 files/1528 tests green. aigcgateway 私有仓库无法本地 clone, VPS 实测 npm test 超时(SSH latency), 但源码逻辑通过 SSH grep 确认: route.ts 50-67行校验 max_tokens + runner.ts 214/433行 maxTokens→{max_tokens} spread 透传. kolmatrix run-action.ts 183行 body 带 max_tokens=opts.maxTokens??8192 + explainability-actions.ts 352行 EXPLAIN_DETAILED maxTokens=16000. L2: SSH 独立验证两仓部署 SHA(kolmatrix 807cfc3 + aigcgateway e9d963e) + prod health 200. Soft-watch: aigcgateway PAT 泄漏(S2). Signoff: docs/test-reports/BL-093-signoff-2026-06-08.md.",
+    "Kimi_planner": "[2026-06-08 11:00 BJT Planner Kimi 开 BL-094] BL-093 done(max_tokens hotfix). 用户从 backlog 选三高价值项打包: BL-054(CI flaky)+BL-090-cost(成本记账)+BL-088(补量/清理). BL-088 含未决取舍(806低质量换质 + 2584不可逆硬删)→ 本批 F003 只做只读量化出决策依据, 实装待用户据报告定(诚实告知用户 806 价值存疑). 4 features: F001 BL-054 / F002 BL-090-cost / F003 BL-088量化 / F004 Codex. BL-054+BL-090-cost 从 backlog 移除; BL-088 保留(量化进本批, 放宽/硬删实装待决). 不依赖任何充值. 下一步 Generator 启 F001.",
+    "Kimi_generator": null,
+    "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
   },

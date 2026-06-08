@@ -1,47 +1,60 @@
 [
   {
     "id": "F001",
-    "title": "调查最省修法: actions/run 是否接受 max_tokens override + 调用点/输出量清单",
+    "title": "flaky 网络测试隔离 + glyph 覆盖 guard (BL-054, kolmatrix 测试/CI)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.0,
-    "status": "done",
-    "note": "调查完成(反转 spec 假设)。源码实证: /actions/run 路由+runner 从不带 max_tokens, wrapper 传也被丢弃(Option A 不可行); 64000=上游按模型cap默认预留; 但 prepareRequest spread 透传, 请求带 max_tokens 就会转发。8 调用点全经 runAigcAction。MCP实测 EXPLAIN_DETAILED 输出~4.4-4.9K→16000, 其余≤800→默认8192。决策: 根因在 gateway, 最省治本=gateway侧(B2 路由+runner 透传 max_tokens + wrapper 传 per-action / B3 runner sane 默认)。⚠️ 涉及改 aigcgateway(独立项目)超原 scope → 报用户裁决。详见 spec §F001。",
+    "estimated_hours": 3.0,
+    "status": "pending",
     "acceptance": [
-      "实测 actions/run gateway 端点是否接受 max_tokens override(dev/staging 发一次带 max_tokens 的 runAigcAction, 看是否生效且不被忽略; BL-042 曾测 Action 抽象层无此字段, 但 run-time override 待验)",
-      "核对 runAigcAction(src/lib/aigc/run-action.ts) 全部调用点(~10 处: explainability/refine/brief/llm-rerank/topic-cloud/enrichment/enrichment-stage/explain-worker/customize)",
-      "定各 action 实际最大输出量 → per-action max_tokens 取值表(EXPLAIN_DETAILED 实际~4500→设≥8000; 其余按需; 默认 sane 值如 8000~16000, 均 << 64000)",
-      "产出: 修法决策(A wrapper override / B chat-completions 直调 BL-042 P1)+ per-action max_tokens 表; 写入 spec 或 handoff"
+      "方向 A: tests/integration/pre-commit-hook.test.ts woff2 网络型用例隔离 — 默认 test:integration 排除 + 新增 test:integration:network 串行 config + CI 独立 job(允许 retry 2). 根因=拉 Google Fonts subset 并发抖动",
+      "方向 D: tests/integration/material-symbols-coverage.test.ts 字节级比对 guard 改 glyph-coverage 断言(验 subset 含全部 icon 字形, 而非字节相等), 根治 Google Fonts 上游 build 漂移脆弱",
+      "F005-grep: 全仓搜其他网络依赖型 integration test 一并隔离(v0.9.14 完整模式 grep 防漏)",
+      "docs/dev/ 加 testing-strategy 段说明网络型 integration test 隔离策略",
+      "L1 PASS: lint 0err warn≤3 / tsc=0 / npm test; CI 默认套件连跑不再因网络/上游漂移偶红"
     ]
   },
   {
     "id": "F002",
-    "title": "实装 max_tokens 上限 (wrapper 默认 + 高输出 action 单独; 全 actions/run 覆盖)",
+    "title": "apify_cost_usd 成本记账 (BL-090-cost, 价格表 或 usage-delta, 路径 B)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.5,
-    "status": "done",
-    "note": "B2 方案跨两仓实装。aigcgateway(commit e9d963e, 已推): /actions/run 接受 max_tokens→runner 透传上游 ChatCompletionRequest.max_tokens(向后兼容), 单测2+套件8/8绿。kolmatrix(commit 5b0f202, 已推): run-action.ts 加 maxTokens + DEFAULT_MAX_TOKENS=8192(一处默认覆盖全8调用点防 whack-a-mole), EXPLAIN_DETAILED 显式 16000, 单测2。L1: tsc0/lint0err3warn/run-action11+explainability6绿(全量2failed=vitest worker超时flake非本改动)。⏳ 待部署两仓(gateway先, 再 kolmatrix staging+prod)才生效。",
+    "estimated_hours": 2.0,
+    "status": "pending",
     "acceptance": [
-      "据 F001 决策实装: 方案 A=runAigcAction 加 maxTokens 参数 + sane 默认; 方案 B=改 chat/completions 直调带 max_tokens(优先 EXPLAIN_DETAILED + KOL bio enrichment 等 prod-breaking 路径)",
-      "覆盖全部 actions/run 路径(防 whack-a-mole, BL-042 §7 矩阵全覆盖); max_tokens 设值 ≥ 各 action 实际最大输出 + headroom(不截断)",
-      "EXPLAIN_DETAILED(5locale×5段)单独设足够值(如 16000); 默认值覆盖其余短输出 action",
-      "单测: max_tokens 正确传递; 不破坏既有 action 调用契约/prompt 渲染",
-      "L1 PASS: lint 0err warn≤3 / tsc=0 / npm test"
+      "TikHub 不返回每请求成本(BL-042 实证)→ 用端点价格表(per TikHub 端点单价 × 调用次数)或 usage-delta(定期抓账户用量差额)估算, 回填 scrape_jobs.apify_cost_usd(现全 0)",
+      "配合 BL-086 F004 余额告警, 让'预算→KOL'换算有数据支撑; yt-email 已有 unitCostUsd=0.12 可参考",
+      "爬虫代码改动走路径 B: PR → guang-tech/apify → merge → fork-sync /opt rebuild(谨慎, OOM 用 NODE_OPTIONS=4096)",
+      "含单测; 不破坏既有 scrape 流程",
+      "验证: 新 scrape_jobs 行 apify_cost_usd 写入非 0"
     ]
   },
   {
     "id": "F003",
+    "title": "BL-088 量化 (只读分析: 806 回收价值 + 2584 硬删风险 → 决策报告)",
+    "executor": "codex",
+    "priority": "medium",
+    "estimated_hours": 1.0,
+    "status": "pending",
+    "acceptance": [
+      "只读 prod(kolmatrix Kol 表 + 上游)量化 806 质量门拦截的可回收价值: 按 平台 × 粉丝段 × 是否有邮箱 拆; 尤其 ≥1万粉 / 有邮箱占比(判断量换质是否值得)",
+      "2584 软删旧源硬删风险评估: (tenant,platform,handle)/(tenant,platform,external_id) 非 partial 唯一索引撞键风险 + 外键/依赖检查 + 是否已被 BL-091 收割消费(避免丢种子)",
+      "产出报告 docs/test-reports/BL-094-F003-bl088-quantify-2026-06-XX.md + 建议(是否放宽/放宽到什么档 / 是否硬删)",
+      "⚠️ 只读, 不实装放宽/硬删 — 留 follow-up 待用户据报告决定"
+    ]
+  },
+  {
+    "id": "F004",
     "title": "Codex L1+L2 + signoff (executor:codex)",
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "completed",
+    "status": "pending",
     "acceptance": [
-      "L1: lint 0err warn≤3 / tsc=0 / npm test 绿",
-      "L2 部署后 prod/staging: EXPLAIN_DETAILED 调用不再预检拒(余额未变情况下 success 返回, 输出 5段×5locale 完整不截断); 抽样其他 action(enrichment/rerank)恢复; aigcgateway 日志该 action 新调用 status=success 非 error",
-      "before/after: 故障期 error(0.3s/$0/max_tokens 64000 拒)→ 修后 success(~16-21s/正常 token/max_tokens 受控)",
-      "⚠️ prod deploy OOM 风险(BL-086 遗留)注意; signoff doc docs/test-reports/BL-093-signoff-2026-06-XX.md"
+      "L1: F001 lint/tsc/test 绿(含隔离后默认套件稳定); F002 PR merge+sync + 脚本单测绿",
+      "L2: F001 CI 默认套件连跑不再偶红 + 网络型 job 独立; F002 部署后 scrape_jobs.apify_cost_usd 开始写入非 0",
+      "F003 量化报告结论纳入 signoff(BL-088 放宽/硬删决策待办标注)",
+      "signoff doc docs/test-reports/BL-094-signoff-2026-06-XX.md"
     ]
   }
 ]
