@@ -1,64 +1,43 @@
 [
   {
     "id": "F001",
-    "title": "flaky 网络测试隔离 + glyph 覆盖 guard (BL-054, kolmatrix 测试/CI)",
+    "title": "/opt rebuild 部署成本记账 + 确认爬虫恢复 (generator, ops)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 3.0,
-    "status": "done",
-    "acceptance": [
-      "方向 A: tests/integration/pre-commit-hook.test.ts woff2 网络型用例隔离 — 默认 test:integration 排除 + 新增 test:integration:network 串行 config + CI 独立 job(允许 retry 2). 根因=拉 Google Fonts subset 并发抖动",
-      "方向 D: tests/integration/material-symbols-coverage.test.ts 字节级比对 guard 改 glyph-coverage 断言(验 subset 含全部 icon 字形, 而非字节相等), 根治 Google Fonts 上游 build 漂移脆弱",
-      "F005-grep: 全仓搜其他网络依赖型 integration test 一并隔离(v0.9.14 完整模式 grep 防漏)",
-      "docs/dev/ 加 testing-strategy 段说明网络型 integration test 隔离策略",
-      "L1 PASS: lint 0err warn≤3 / tsc=0 / npm test; CI 默认套件连跑不再因网络/上游漂移偶红"
-    ],
-    "note": "完成。根因: 仅 2 个 integration 用例打不可控外部端点(Google Fonts via 重生脚本)并发抖动。方向D根治: 脚本加 DISCOVER_ONLY + coverage #7 改 fontkit ligature 字形覆盖(网络无关+免疫字节漂移, 顺带抓修 discovery 假阳性 children); coverage 整套件网络无关。方向A隔离: pre-commit-hook 2 真fetch用例拆 *.network.test.ts + 共享 fixture, 默认 config exclude, 新 network config(串行+retry2), test:integration:network script, ci.yml 独立 job(continue-on-error)。F005-grep 全仓确认仅这两类。docs/dev/testing.md §5.4。验证: 默认11用例2s绿/.network 2用例绿/tsc0/lint0。commit d359f8b 已推。fontkit devDep。"
-  },
-  {
-    "id": "F002",
-    "title": "apify_cost_usd 成本记账 (BL-090-cost, 价格表 或 usage-delta, 路径 B)",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 2.0,
-    "status": "merged",
-    "acceptance": [
-      "TikHub 不返回每请求成本(BL-042 实证)→ 用端点价格表(per TikHub 端点单价 × 调用次数)或 usage-delta(定期抓账户用量差额)估算, 回填 scrape_jobs.apify_cost_usd(现全 0)",
-      "配合 BL-086 F004 余额告警, 让'预算→KOL'换算有数据支撑; yt-email 已有 unitCostUsd=0.12 可参考",
-      "爬虫代码改动走路径 B: PR → guang-tech/apify → merge → fork-sync /opt rebuild(谨慎, OOM 用 NODE_OPTIONS=4096)",
-      "含单测; 不破坏既有 scrape 流程",
-      "验证: 新 scrape_jobs 行 apify_cost_usd 写入非 0"
-    ],
-    "note": "PR #10 已 merge → master 8d7cff8(用户授权)。sdk cost.ts 端点估算价格表 + AsyncLocalStorage 按 job 归集 + tikhub-client 成功计费 + scrape-worker 写 apifyCostUsd。sdk54+service120绿 tsc0。⚠️ 价格估算, ENDPOINT_PRICES 唯一校准点(建议充值前真实账单校准)。⏳ fork-sync /opt rebuild 推迟到 TikHub 充值时(余额耗尽→无成功scrape→cost无法非0, 此刻 rebuild 无收益且 OOM 高危; 同 BL-091 推迟)。L2(apify_cost_usd 非0)defer 到充值。归档 docs/upstream-patches/BL-094-F002-apify-cost-accounting.md"
-  },
-  {
-    "id": "F003",
-    "title": "BL-088 量化 (只读分析: 806 回收价值 + 2584 硬删风险 → 决策报告)",
-    "executor": "codex",
-    "priority": "medium",
     "estimated_hours": 1.0,
-    "status": "completed",
-    "note": "✅ Codex SSH prod DB 只读量化完成。806: 92%<500粉真spam, YT 20条500-999含7邮箱最具价值, 推荐平台差异化+email加权~36条恢复。2584: 0唯一键碰撞+FK 11条+BL-091已消费, 推荐归档CSV后硬删。报告: docs/test-reports/BL-094-F003-bl088-quantify-2026-06-08.md。实装放宽/硬删待用户据报告决定。",
+    "status": "pending",
     "acceptance": [
-      "只读 prod(kolmatrix Kol 表 + 上游)量化 806 质量门拦截的可回收价值: 按 平台 × 粉丝段 × 是否有邮箱 拆; 尤其 ≥1万粉 / 有邮箱占比(判断量换质是否值得)",
-      "2584 软删旧源硬删风险评估: (tenant,platform,handle)/(tenant,platform,external_id) 非 partial 唯一索引撞键风险 + 外键/依赖检查 + 是否已被 BL-091 收割消费(避免丢种子)",
-      "产出报告 docs/test-reports/BL-094-F003-bl088-quantify-2026-06-XX.md + 建议(是否放宽/放宽到什么档 / 是否硬删)",
-      "⚠️ 只读, 不实装放宽/硬删 — 留 follow-up 待用户据报告决定"
+      "fork-sync /opt/apify-kol-service 4d102f1 → master 8d7cff8(含 BL-094 F002 apify_cost_usd; tier 积累档 + 邮箱触发已在更早 commit). ⚠️ rebuild 用 NODE_OPTIONS=4096 防 OOM(BL-086 遗留)",
+      "确认爬虫恢复抓取(TikHub $244.71, 端点 200); scrape_jobs 新行 scraped>0",
+      "记录 sync 后 HEAD + 本地 patch 数(期望 0)"
     ]
   },
   {
-    "id": "F004",
-    "title": "Codex L1+L2 + signoff (executor:codex)",
+    "id": "F002",
+    "title": "投喂 2535 旧源 youtube id (generator, ops, non-dry-run)",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 1.5,
+    "status": "pending",
+    "acceptance": [
+      "跑 scripts/bl086-manual-seed-harvest(non-dry-run)投喂 2535 个旧源 youtube UC id(manual_seed, 命中率 96%)",
+      "监控: 入队 scrape_jobs(kind=manual_seed)→ 消费 → 新 KOL 入库(inserted>0); 幂等/可重入",
+      "充值后 worker 真实入库(不再 succeeded-0); 统计入库数 / 失败数"
+    ]
+  },
+  {
+    "id": "F003",
+    "title": "verified-live 验收 + signoff (codex)",
     "executor": "codex",
     "priority": "high",
-    "estimated_hours": 1.0,
-    "status": "completed",
-    "note": "✅ L1: lint 0e/3w+tsc PASS+1528 tests+integration 62f/372t+network 1f/2t 全绿. L2: F001 CI 稳定; F002 /opt rebuild deferred; F003 量化完成. Signoff: docs/test-reports/BL-094-signoff-2026-06-08.md. S4 BL-088 决策待办.",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "L1: F001 lint/tsc/test 绿(含隔离后默认套件稳定); F002 PR merge+sync + 脚本单测绿",
-      "L2: F001 CI 默认套件连跑不再偶红 + 网络型 job 独立; F002 部署后 scrape_jobs.apify_cost_usd 开始写入非 0",
-      "F003 量化报告结论纳入 signoff(BL-088 放宽/硬删决策待办标注)",
-      "signoff doc docs/test-reports/BL-094-signoff-2026-06-XX.md"
+      "BL-086: refresh 日负载实测降(TIER_INTERVAL_MS 14/30/30 → 944→~123)+ 新 KOL 入库速率较 ~87/天回升 + discovery 占比上升",
+      "BL-086 F002: 扩种子(SEA/手游)产出 + 砍空转 IG 后无浪费; BL-091 F001: Bug A runtime 触发(refresh 命中 hasBusinessEmail false→true → 入队 yt-email → 新 record)",
+      "BL-094 F002: scrape_jobs.apify_cost_usd 写入非 0(成本记账生效); BL-086 F004: 正常运转时告警不误报",
+      "before/after 量化(refresh 负载 / 日新增 / discovery 占比 / 成本); 部分指标需数日稳定→首轮验'已生效/趋势对'即可 signoff",
+      "signoff doc docs/test-reports/BL-092-signoff-2026-06-XX.md"
     ]
   }
 ]

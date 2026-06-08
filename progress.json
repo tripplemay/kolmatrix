@@ -1,39 +1,32 @@
 {
-  "status": "done",
-  "user_goal": "BL-094-high-value-polish — 三个不等充值的高价值项打包. 混合批次 4 features. F001 BL-054 flaky 网络测试隔离 + glyph guard(kolmatrix CI). F002 BL-090-cost apify_cost_usd 成本记账(路径B). F003 BL-088 只读量化(806 回收价值 + 2584 硬删风险 → 决策报告, 不实装放宽/硬删, 待用户决定). F004 Codex 验收. 关联 docs/specs/BL-094-high-value-polish-spec.md.",
-  "total_features": 4,
-  "completed_features": 4,
+  "status": "building",
+  "user_goal": "BL-092-post-charge-execution — TikHub 充值后执行 + 真实速率验证, 收口 BL-086/091/094 deferred. 3 features. 2026-06-08 TikHub 71@qq.com 充值$244.71(端点200, 爬虫已恢复). F001 /opt rebuild 4d102f1→8d7cff8(上 BL-094成本记账, NODE_OPTIONS=4096防OOM). F002 投喂2535旧源youtube id(non-dry-run). F003 codex verified-live(refresh负载降/新增回升/IG恢复/BL-091 BugA runtime触发/apify_cost_usd非0/告警)+signoff. 关联 docs/specs/BL-092-post-charge-execution-spec.md.",
+  "total_features": 3,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "BL-094-high-value-polish",
-  "last_updated": "2026-06-08T19:00+0800",
+  "current_sprint": "BL-092-post-charge-execution",
+  "last_updated": "2026-06-08T19:10+0800",
   "reference_docs": [
-    "docs/specs/BL-094-high-value-polish-spec.md",
-    "tests/integration/pre-commit-hook.test.ts (F001 网络型)",
-    "tests/integration/material-symbols-coverage.test.ts (F001 字节 guard→glyph)",
-    "guang-tech/apify: scrape_jobs.apify_cost_usd (F002 成本记账)",
-    "kolmatrix Kol 表 + 上游(F003 量化 806/2584)"
+    "docs/specs/BL-092-post-charge-execution-spec.md",
+    "scripts/bl086-manual-seed-harvest (F002 投喂)",
+    "guang-tech/apify master 8d7cff8 (BL-094 成本记账, F001 rebuild 目标)",
+    "apify_kol DB: scrape_jobs(kind/scraped/inserted/apify_cost_usd) + kols(tier/next_refresh_at) + yt_email_check_records"
   ],
   "docs": {
-    "spec": "docs/specs/BL-094-high-value-polish-spec.md",
+    "spec": "docs/specs/BL-092-post-charge-execution-spec.md",
     "audit": null,
     "test_cases": null,
-    "signoff": "docs/test-reports/BL-094-signoff-2026-06-08.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "BL-094 全 4/4 PASS (fix_rounds=0, verifying→done). F001: lint 0e/3w + tsc PASS + 1528 tests + integration 62files/372tests + network 1file/2tests PASS. F002: PR #10 merged upstream, /opt rebuild deferred(BL-092). F003: Codex SSH prod DB 只读量化 806+2584 → report. 建议: YouTube 不拦 has_email + 阈值800(~36条恢复) / 2584 归档CSV后硬删.",
-    "pass_count": 4,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": []
-  },
+  "evaluator_feedback": null,
   "fix_rounds_history": [],
-  "generator_handoff": "[2026-06-08 Generator Kimi BL-094 building→verifying] generator 2/2 done。F001(d359f8b 已推, CI 绿): flaky 网络测试隔离 + glyph 覆盖 guard, 纯 kolmatrix 测试/CI(无 src 运行时改动→无需 deploy)。F002(PR #10 merge→master 8d7cff8): apify_cost_usd 每请求估算记账(路径 B)。【Codex 验收建议】▶F001 L1+L2(NOW): clone main 跑 npm run test:integration(默认套件 11 网络无关用例稳定, *.network.test.ts 已排除)+ npm run test:integration:network(2 用例, 串行 retry2)+ CI 看 integration-tests-network 独立 job; 验 coverage 改 fontkit 字形覆盖(网络无关)。▶F002 L1(NOW): clone guang-tech/apify @master(含 #10) cd packages/sdk && npm test(54 绿)+ cd packages/service && npm test(120 绿)+ tsc。▶F003 BL-088 只读量化(NOW): prod 只读分析 806 回收价值 + 2584 硬删风险 → 报告。【⚠️ defer 到 TikHub 充值(BL-092)】F002 fork-sync /opt rebuild + F004 L2(部署后 scrape_jobs.apify_cost_usd 非0)—— 余额耗尽无成功 scrape, cost 记账无可观测输出; 同 BL-091 fork-sync 推迟模式。F004 signoff 可先出 F001+F002-L1+F003 结论, F002 L2 标 defer。signoff docs/test-reports/BL-094-signoff-2026-06-XX.md。",
+  "generator_handoff": "[2026-06-08 19:10 BJT Planner Kimi BL-092 planning→building] TikHub 充值已到账$244.71(Planner实测端点200, 爬虫11:01已恢复scrape 66). F001 fork-sync /opt 4d102f1→master 8d7cff8(BL-094成本记账; ⚠️rebuild NODE_OPTIONS=4096防OOM, BL-086遗留). F002 跑 scripts/bl086-manual-seed-harvest non-dry-run 投喂2535(命中96%, 充值后真实入库不再succeeded-0). F003 codex verified-live: BL-086 refresh负载降(tier14/30/30)+新增回升 / BL-091 BugA runtime触发(refresh命中hasBusinessEmail false→true) / BL-094 apify_cost_usd非0 / 告警不误报. 部分指标需数日稳定→首轮验趋势即可. prod访问 ssh tripplezhou@kol.guangai.ai, /opt/apify-kol-service docker, DB apify_kol. 留意TikHub余额消耗(2535+日常refresh).",
   "session_notes": {
-    "Kimi_planner": "[2026-06-08 11:00 BJT Planner Kimi 开 BL-094] BL-093 done(max_tokens hotfix). 用户从 backlog 选三高价值项打包: BL-054(CI flaky)+BL-090-cost(成本记账)+BL-088(补量/清理). BL-088 含未决取舍(806低质量换质 + 2584不可逆硬删)→ 本批 F003 只做只读量化出决策依据, 实装待用户据报告定(诚实告知用户 806 价值存疑). 4 features: F001 BL-054 / F002 BL-090-cost / F003 BL-088量化 / F004 Codex. BL-054+BL-090-cost 从 backlog 移除; BL-088 保留(量化进本批, 放宽/硬删实装待决). 不依赖任何充值. 下一步 Generator 启 F001.",
-    "Kimi_generator": "[2026-06-08 Generator Kimi BL-094 done→verifying] F001(flaky 测试隔离+glyph guard)d359f8b CI绿; F002(apify_cost_usd 记账)PR #10 merge→master 8d7cff8(用户授权)。F002 fork-sync /opt rebuild + L2 验证 defer 到 TikHub 充值(余额耗尽无成功scrape→cost无法非0, 此刻rebuild无收益+OOM高危; 同 BL-091)。价格估算 ENDPOINT_PRICES 唯一校准点建议充值前真实账单校准。转 verifying 交 Codex: F001 L1+L2 / F002 L1 / F003 量化 NOW 可验; F002-L2+F004-L2 defer 充值。",
-    "Reviewer": "[2026-06-08 19:00 BJT Codex Reviewer BL-094 verifying→done] 首轮全 PASS. F001(test isolation+glyph guard): L1 kolmatrix 0e/3w+tsc PASS+1528 tests+integration 62f/372t+network 1f/2t 全绿. F002(cost): PR #10 merged upstream 8d7cff8, /opt rebuild deferred→BL-092. F003(executor:codex): SSH 直连 prod DB 双向分析 — 806 质量门(92%<500粉真spam, YouTube 20条500-999含7邮箱最具价值, 推荐平台差异化+email加权~36条恢复) / 2584 软删(0唯一键碰撞+Fk 11条+BL-091已消费, 推荐归档CSV后硬删). 量化报告: docs/test-reports/BL-094-F003-bl088-quantify-2026-06-08.md. Signoff: docs/test-reports/BL-094-signoff-2026-06-08.md. S4 BL-088 决策待用户据报告定.",
+    "Kimi_planner": "[2026-06-08 19:10 BJT Planner Kimi 开 BL-092] BL-094 done(CI flaky+成本记账+BL-088量化). 用户告知 TikHub 充值→Planner实测71@qq.com余额$244.71+端点200+爬虫恢复. 开 BL-092 收口所有充值后deferred: F001 /opt rebuild(BL-094成本记账) / F002 投喂2535 / F003 codex verified-live(BL-086负载+BL-091 BugA runtime+BL-094成本+告警). BL-092从backlog移除. 注意OOM(NODE_OPTIONS=4096)+TikHub余额消耗可观测(F004告警+成本记账已上). 下一步Generator启F001 rebuild.",
+    "Kimi_generator": null,
+    "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
   },

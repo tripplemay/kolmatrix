@@ -418,25 +418,5 @@
       "cross-service"
     ],
     "discovered_in": "2026-06-06 用户产品策略讨论(配置页) — Planner 建议 deferred"
-  },
-  {
-    "id": "BL-092",
-    "title": "BL-086 充值后执行 + 真实速率验证 (F003 投喂 2535 + verified-live)",
-    "description": "**触发:** BL-086 验收解耦充值(用户 2026-06-06 决定: 充值明天才完成, 本批不等)。本条收口所有'充值后才能做'的部分。\n\n**前置:** TikHub 71@qq.com 充值到账(Planner get_user_info 验 balance>0)。\n\n**内容:**\n1. 重启爬虫容器清积压 ~900 条过期 refresh 欠账;\n2. F003 真实投喂 2535 旧源 youtube id(scripts/bl086-manual-seed-harvest, 非 dry-run);\n3. verified-live 验证(原 F006 充值后半段): refresh 日负载实测 944→~123 / 新 KOL 入库速率较 ~87/天提升 / IG 发现恢复(F005 节流后)/ 告警 inserted=0 正确触发 / before-after 量化;\n4. 按真实数据调优 F005 节流(350ms)+ F004 余额告警阈值;\n5. 补 BL-086 signoff 的 verified-live 部分。\n\n注: 充值前投喂会被 worker 消费成 succeeded-0(白做), 必须充值后(framework proposed-learning 已记)。",
-    "decisions": [
-      "用户 2026-06-06: 本批不等充值, 充值后(明天)再投喂 + 真实验证",
-      "充值前投喂无效(worker 即时消费成 0), 必须充值后",
-      "BL-086 F006 验收止于 deploy-ready; verified-live 移本条"
-    ],
-    "confirmed_at": "2026-06-06T23:50+0800",
-    "priority": "high",
-    "tags": [
-      "apify-kol",
-      "acquisition-rate",
-      "post-charge",
-      "bl-086-followup",
-      "ops"
-    ],
-    "discovered_in": "BL-086 验收解耦充值 — 用户 2026-06-06 决定不等充值推进本批"
   }
 ]
