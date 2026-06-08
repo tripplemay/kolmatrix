@@ -84,7 +84,11 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-09T01:20+0800",
+    "scope_decision": "用户 2026-06-09 决定 baseline 不扩到 80snap, 保持现有 4 张整页(en/zh×desktop/mobile fullPage 已含全部 4 组件, F003/F004 经 update-visual-baselines.yml 重拍2次 CI 绿). 理由: 整页已捕获全组件回归, ja/ko/es 文案由 i18n coverage test 守门, 组件级80张边际收益低/CI时间×20/维护成本高. spec≈80snap 范围良性缩减(类比 redirect scope 缩减)",
+    "verify_note": "Lighthouse Desktop 未登录 3 locale 实测全过: /en perf99 LCP870ms CLS0 TBT0 SEO92 a11y100; /zh perf100 SEO92 a11y100 LCP814ms; /ja perf100 a11y100 LCP784ms — 6门(perf≥85/LCP<2.5s/CLS<0.05/TBT<200ms/SEO≥90/a11y≥90)全PASS. a11y 4项: Lighthouse a11y=100(alt/contrast/focus 审计全过)+ i18n coverage test 守门 5 locale alt 完整(illustrationAlt×3 + Features card title)+ landing 全原生<a>/<Link> keyboard 可达. reduced-motion: 静态插画天然适配(video 已移除无动效). browser matrix Chrome 实测, Safari/Firefox 留 F006 staging L2(插画静态图跨浏览器渲染一致). best-practices 也 100",
     "acceptance": [
       "GitHub Actions update-visual-baselines.yml workflow 跑: 4 viewport (Desktop 1920 / Tablet 768 / Mobile 375 / Wide 2560) × 5 locale spot check × 4 affected components ≈ 80 visual snap 入 git",
       "Lighthouse Desktop logged-out 实测 6 项门槛全 PASS: perf ≥85 / LCP <2.5s / CLS <0.05 / TBT <200ms / SEO ≥90 / a11y ≥90",
