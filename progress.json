@@ -1,8 +1,8 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "BL-096-crawler-monitor-page — 爬虫抓取行为只读监控页(platform-admin). 3 features. 跨仓: F001 爬虫/admin/stats扩展(路径B) + F002 KOLMatrix /admin/crawler-monitor 瘦客户端 + F003 Codex. 动机: 爬虫两次静默故障(TikHub余额/aigcgateway额度)靠人肉发现, 持续可观测>事后告警. 把快照(drain/速率/邮箱/IG/双余额/成本)做成常驻面板. 架构=数据归爬虫(/admin/stats)+KOLMatrix只调API渲染(不直读对方库, ADR-017瘦客户端). 与BL-089(配置页)区分: 本页只读, 将来可合console. 关联 docs/specs/BL-096-crawler-monitor-page-spec.md.",
   "total_features": 3,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
   "current_sprint": "BL-096-crawler-monitor-page",
   "last_updated": "2026-06-08T21:00+0800",
@@ -23,10 +23,10 @@
   "role_assignments": null,
   "evaluator_feedback": null,
   "fix_rounds_history": [],
-  "generator_handoff": "[2026-06-08 21:00 BJT Planner Kimi BL-096 planning→building] 跨仓只读监控页. F001 爬虫/admin/stats扩展(路径B PR→merge→sync, NODE_OPTIONS=4096防OOM)+F002 KOLMatrix admin页(瘦客户端调API渲染, 仿/admin/apify-preview)+F003 Codex. F002依赖F001部署(新字段)→可先按契约开发+缺字段优雅降级, F001 sync后联调. 指标口径见 spec §3(Planner手动快照同款: drain/kols按天/scrape by kind/yt-email status/IG/refresh due/apify cost/tikhub balance). 起步建议: F001(爬虫聚合查询, 我手动快照的SQL可复用)或F002(页面骨架按契约). 健康灯=inserted=0连续/余额低/IG 0→红黄. 平台级 platform-admin gate. prod访问 ssh tripplezhou@kol.guangai.ai.",
+  "generator_handoff": "[2026-06-08 Generator Kimi BL-096 building→verifying, 两侧已部署] generator 2/2 done+deployed。F001 /admin/stats 扩展(PR #11 merge→392f154, apify fork-sync rebuild 无OOM, 实测返回真实数据)。F002 /[locale]/admin/crawler-monitor 瘦客户端只读页(commit 0bb7e35, staging+prod 部署@ccd80d5, kolmatrix .env 补 APIFY_KOL_ADMIN_API_KEY pm2_env 确认 present, route 307→login admin gate 生效)。【Codex F003 验收建议】L1: kolmatrix clone main npm test/tsc/lint(crawler-monitor-client 9 + page 4 + admin-stats 122) + i18n 5locale 一致; apify @master service 122。L2(prod): admin 账号登录 https://kol.guangai.ai/en/admin/crawler-monitor → 验渲染真实数据(入库速率曲线/抓取构成/YT邮箱/drain/refresh/双余额卡)+ 健康灯逻辑(当前 hashtag 0→IG 黄灯 BL-095; 余额$240 绿; 入库非0 绿)+ admin gate(非admin redirect /insight, 实测 307→login 已验)。/admin/stats 实测有真实数据(manual_seed inserted 2534 等)。signoff docs/test-reports/BL-096-signoff-2026-06-XX.md。",
   "session_notes": {
     "Kimi_planner": "[2026-06-08 21:00 BJT Planner Kimi 开 BL-096] BL-092 done(投喂+真实速率验证, refresh-85%/BugA 188/+420 KOLs). 用户要把抓取观测做成页面→开 BL-096 只读监控页. 理由: 两次静默故障(TikHub/aigcgateway)靠人肉发现, 持续可观测高价值(比BL-089配置页更justified). 3 features: F001爬虫/admin/stats扩展(路径B) / F002 KOLMatrix /admin/crawler-monitor 瘦客户端 / F003 Codex. 架构沿用ADR-017瘦客户端(数据归爬虫+KOLMatrix只调API). 与BL-089区分(只读vs写). 下一步Generator启F001/F002. 当前遗留: BL-095 IG 0产出 / aigcgateway PAT轮换.",
-    "Kimi_generator": "[2026-06-08 Generator Kimi BL-096 F001+F002 code done] F001(爬虫 /admin/stats 扩展观测)= PR #11 guang-tech/apify(base 8d7cff8): drain/ingestRate/composition/ytEmail/igToday/refreshBacklog/costToday; computeAdminStats 抽离便于单测(2); service122绿; prod 实查 pgboss/scrape_jobs 有效。F002(kolmatrix /admin/crawler-monitor 瘦客户端只读页)commit 0bb7e35 已推: client(fetch admin key+错误分类+zod 优雅降级)+computeHealthLights(红黄灯)+page(isAdminRole gate+健康灯+recharts入库速率 next/dynamic+构成/YT/drain/refresh/双余额卡+error banner)+i18n 5locale×29keys+单测13; L1 tsc0/lint0/glyph coverage绿。⏳ gate(同往例, 待用户指示): (1)merge PR #11 + apify fork-sync rebuild(OOM); (2)kolmatrix .env 补 APIFY_KOL_ADMIN_API_KEY(ops, 取 fork ADMIN_API_KEY)+ kolmatrix deploy; (3)F003 codex L2(页渲染真实数据+健康灯+admin gate)需上述就绪。F002 对未部署 F001 的旧 /admin/stats 优雅降级(BL-096字段缺→空/0不报错)。归档 docs/upstream-patches/BL-096-F001-*.md",
+    "Kimi_generator": "[2026-06-08 Generator Kimi BL-096 done+deployed→verifying] F001(/admin/stats 扩展)PR #11 merge→392f154 + apify rebuild(无OOM), 实测真实数据(manual_seed inserted 2534=BL-092 harvest 落地/hashtag 0=BL-095/cost3.58/balance240.85)。F002(crawler-monitor 瘦客户端页)commit 0bb7e35 + staging+prod 部署@ccd80d5。kolmatrix .env 补 APIFY_KOL_ADMIN_API_KEY。⚠️坑: pm2 env_file 加载的 var 不在 /proc/PID/environ(那只是pm2 daemon exec env), 要查 pm2 jlist 的 pm2_env 才准(我一度误判 key 缺失)。route 307→login admin gate 生效。转 verifying 交 Codex F003 L2(admin 登录验页渲染+健康灯)。价格估算 ENDPOINT_PRICES 仍待真实账单校准(BL-094 遗留)。",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null

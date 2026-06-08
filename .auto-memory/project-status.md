@@ -3,11 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-096-crawler-monitor-page BUILDING (generator code 完成, 待 merge/deploy gate) — 爬虫只读监控页
-- 动机: 两次静默故障靠人肉发现 → 常驻可观测页
-- ✅ **F001 merged → master 392f154**(PR #11, 用户授权): /admin/stats 扩展观测字段(drain/ingestRate/composition/ytEmail/igToday/refreshBacklog/costToday)。computeAdminStats 抽离, 单测2, service122绿。⏳ 待 fork-sync /opt rebuild 生效
-- ✅ **F002 code done(commit 0bb7e35 已推 CI)**: /[locale]/admin/crawler-monitor 瘦客户端只读页(client+健康灯+recharts入库速率+构成/YT/drain/refresh/双余额卡+优雅降级)+ i18n 5locale×29keys + 单测13。L1 tsc0/lint0/glyph绿
-- ⏳ **gate(待用户指示)**: (1) merge #11 + apify fork-sync rebuild(OOM); (2) **kolmatrix .env 补 APIFY_KOL_ADMIN_API_KEY**(ops, 取 fork ADMIN_API_KEY)+ kolmatrix deploy; (3) F003 codex L2 需上述就绪。F002 对旧 /admin/stats 优雅降级
+## 🔍 BL-096-crawler-monitor-page VERIFYING (generator 2/2 done+deployed, 交 Codex F003) — 爬虫只读监控页
+- ✅ **F001 deployed**: PR #11 merge→392f154 + apify fork-sync rebuild(无OOM)。/admin/stats 实测真实数据: manual_seed inserted **2534**(BL-092 harvest 落地!)/ hashtag 0(BL-095)/ ytEmail queued1553 / refreshBacklog 5711 / cost今日3.58 / balance240.85
+- ✅ **F002 deployed**: commit 0bb7e35 + staging+prod 部署@ccd80d5。瘦客户端只读页+健康灯+recharts+i18n 5locale×29keys+单测13。kolmatrix .env 补 APIFY_KOL_ADMIN_API_KEY(pm2_env 确认)。route 307→login(admin gate 生效)
+- ⏳ **F003 codex L2**: admin 登录 /admin/crawler-monitor 验页渲染真实数据+健康灯+gate
+- ⚠️坑沉淀: pm2 env_file 加载的 var 不在 /proc/PID/environ, 查 pm2 jlist 的 pm2_env 才准
 - 归档 docs/upstream-patches/BL-096-F001-admin-stats-observability.md
 ## ✅ BL-092 DONE (3/3) — TikHub 充值后收口: refresh -85% + 2535投喂(+420 drain中) + BugA runtime触发(188) + 成本记账 ✅
 - ⚠️ IG 仍 0 产出 → backlog BL-095(F005 节流未解决)
