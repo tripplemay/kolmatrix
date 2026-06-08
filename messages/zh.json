@@ -2015,6 +2015,41 @@
       "uploadHeading": "上传 CSV 文件",
       "uploadBody": "点击下方按钮打开文件选择器,选择包含 KOL 行的 .csv 文件。导入对话框会汇报成功数、跳过数和逐行错误。",
       "backToMatch": "返回 Match 工作台"
+    },
+    "crawlerMonitor": {
+      "title": "爬虫监控(只读)",
+      "readOnlyNote": "爬虫只读可观测。此页无控制操作 —— 配置请见设置。",
+      "fetchError": "加载爬虫统计失败({kind}):{message}",
+      "health": {
+        "balance": "余额",
+        "ingest": "入库",
+        "instagram": "Instagram"
+      },
+      "healthStatus": {
+        "ok": "正常",
+        "warn": "告警",
+        "critical": "严重"
+      },
+      "ingestRate": "入库速率(每日新增 KOL,14天)",
+      "newKols": "新增 KOL",
+      "noData": "暂无数据",
+      "balances": "余额与成本",
+      "tikhubBalance": "TikHub 余额",
+      "freeCredit": "免费额度",
+      "costToday": "今日成本",
+      "costMonth": "本月成本",
+      "composition": "抓取构成(今日)",
+      "colKind": "类型",
+      "colJobs": "任务",
+      "colScraped": "抓取",
+      "colInserted": "入库",
+      "colCost": "成本",
+      "ytEmail": "YT 邮箱检查",
+      "drain": "投喂 drain",
+      "manualSeedInsertedToday": "今日入库",
+      "refreshBacklog": "刷新欠账",
+      "total": "总数",
+      "dueNow": "待刷新"
     }
   },
   "kol": {

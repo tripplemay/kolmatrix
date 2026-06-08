@@ -2016,6 +2016,41 @@
       "uploadHeading": "CSV ファイルをアップロード",
       "uploadBody": "下のボタンをクリックしてファイル ピッカーを開き、KOL 行を含む .csv を選択します。インポート ダイアログでは成功数、スキップ数、行ごとのエラーが表示されます。",
       "backToMatch": "Match ワークベンチに戻る"
+    },
+    "crawlerMonitor": {
+      "title": "クローラー監視(読み取り専用)",
+      "readOnlyNote": "クローラーの読み取り専用モニター。操作はありません — 設定は構成ページへ。",
+      "fetchError": "クローラー統計の読み込みに失敗({kind}):{message}",
+      "health": {
+        "balance": "残高",
+        "ingest": "取込",
+        "instagram": "Instagram"
+      },
+      "healthStatus": {
+        "ok": "正常",
+        "warn": "警告",
+        "critical": "重大"
+      },
+      "ingestRate": "取込速度(1日あたり新規KOL、14日)",
+      "newKols": "新規KOL",
+      "noData": "データなし",
+      "balances": "残高とコスト",
+      "tikhubBalance": "TikHub 残高",
+      "freeCredit": "無料クレジット",
+      "costToday": "本日のコスト",
+      "costMonth": "今月のコスト",
+      "composition": "スクレイプ構成(本日)",
+      "colKind": "種別",
+      "colJobs": "ジョブ",
+      "colScraped": "取得",
+      "colInserted": "登録",
+      "colCost": "コスト",
+      "ytEmail": "YTメール確認",
+      "drain": "投入ドレイン",
+      "manualSeedInsertedToday": "本日登録",
+      "refreshBacklog": "更新残",
+      "total": "合計",
+      "dueNow": "更新対象"
     }
   },
   "kol": {

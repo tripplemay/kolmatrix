@@ -2015,6 +2015,41 @@
       "uploadHeading": "Upload CSV file",
       "uploadBody": "Click below to open the file picker and select a .csv with KOL rows. The import dialog reports successes, skips, and any per-row errors.",
       "backToMatch": "Back to Match workbench"
+    },
+    "crawlerMonitor": {
+      "title": "Crawler Monitor (READ-ONLY)",
+      "readOnlyNote": "Read-only observability of the crawler. No controls here — see Settings for configuration.",
+      "fetchError": "Failed to load crawler stats ({kind}): {message}",
+      "health": {
+        "balance": "Balance",
+        "ingest": "Ingest",
+        "instagram": "Instagram"
+      },
+      "healthStatus": {
+        "ok": "OK",
+        "warn": "Warning",
+        "critical": "Critical"
+      },
+      "ingestRate": "Ingest rate (new KOLs / day, 14d)",
+      "newKols": "New KOLs",
+      "noData": "No data",
+      "balances": "Balance & cost",
+      "tikhubBalance": "TikHub balance",
+      "freeCredit": "Free credit",
+      "costToday": "Cost today",
+      "costMonth": "Cost this month",
+      "composition": "Scrape composition (today)",
+      "colKind": "Kind",
+      "colJobs": "Jobs",
+      "colScraped": "Scraped",
+      "colInserted": "Inserted",
+      "colCost": "Cost",
+      "ytEmail": "YT email checks",
+      "drain": "Manual-seed drain",
+      "manualSeedInsertedToday": "Inserted today",
+      "refreshBacklog": "Refresh backlog",
+      "total": "Total",
+      "dueNow": "Due now"
     }
   },
   "kol": {

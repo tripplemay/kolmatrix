@@ -2016,6 +2016,41 @@
       "uploadHeading": "Subir archivo CSV",
       "uploadBody": "Haz clic en el botón para abrir el selector de archivos y elige un .csv con filas de KOL. El diálogo de importación muestra éxitos, omisiones y errores por fila.",
       "backToMatch": "Volver al workbench Match"
+    },
+    "crawlerMonitor": {
+      "title": "Monitor del crawler (SOLO LECTURA)",
+      "readOnlyNote": "Observabilidad de solo lectura del crawler. Sin controles aquí — ver Configuración.",
+      "fetchError": "Error al cargar estadísticas del crawler ({kind}): {message}",
+      "health": {
+        "balance": "Saldo",
+        "ingest": "Ingesta",
+        "instagram": "Instagram"
+      },
+      "healthStatus": {
+        "ok": "OK",
+        "warn": "Aviso",
+        "critical": "Crítico"
+      },
+      "ingestRate": "Ritmo de ingesta (nuevos KOL / día, 14d)",
+      "newKols": "Nuevos KOL",
+      "noData": "Sin datos",
+      "balances": "Saldo y coste",
+      "tikhubBalance": "Saldo TikHub",
+      "freeCredit": "Crédito gratis",
+      "costToday": "Coste hoy",
+      "costMonth": "Coste del mes",
+      "composition": "Composición de scrape (hoy)",
+      "colKind": "Tipo",
+      "colJobs": "Trabajos",
+      "colScraped": "Scrapeado",
+      "colInserted": "Insertado",
+      "colCost": "Coste",
+      "ytEmail": "Verificación email YT",
+      "drain": "Drenaje de manual-seed",
+      "manualSeedInsertedToday": "Insertado hoy",
+      "refreshBacklog": "Pendiente de refresco",
+      "total": "Total",
+      "dueNow": "Pendiente ahora"
     }
   },
   "kol": {

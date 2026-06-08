@@ -1,0 +1,96 @@
+/**
+ * BL-096-F002 · /[locale]/admin/crawler-monitor server-component spec.
+ *
+ * Auth gate (platform_admin renders / marketer + unauth redirect) + fetch
+ * error → graceful degrade banner. Health lights + cards render from mocked
+ * stats; computeHealthLights stays real (importActual).
+ */
+import { renderToStaticMarkup } from "react-dom/server";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const authMock = vi.fn<() => Promise<unknown>>();
+vi.mock("@/auth", () => ({ auth: () => authMock() }));
+
+const redirectMock = vi.fn((url: string) => {
+  throw new Error(`NEXT_REDIRECT:${url}`);
+});
+vi.mock("next/navigation", () => ({ redirect: (url: string) => redirectMock(url) }));
+
+vi.mock("next-intl/server", () => ({
+  getTranslations: async ({ namespace }: { namespace: string }) =>
+    (key: string) => `${namespace}.${key}`,
+}));
+
+const fetchCrawlerStatsMock = vi.fn();
+vi.mock("@/lib/admin/crawler-monitor-client", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/admin/crawler-monitor-client")>(
+    "@/lib/admin/crawler-monitor-client",
+  );
+  return { ...actual, fetchCrawlerStats: (...a: unknown[]) => fetchCrawlerStatsMock(...a) };
+});
+
+vi.mock("../IngestRateChart", () => ({
+  IngestRateChart: (props: { data: unknown[] }) => (
+    <div data-testid="ingest-chart-stub">stub:{props.data.length}</div>
+  ),
+}));
+
+import CrawlerMonitorPage from "../page";
+
+const platformAdmin = { user: { id: "u1", role: "platform_admin", email: "a@x.com" } };
+const marketer = { user: { id: "u2", role: "marketer", email: "m@x.com" } };
+
+const STATS = {
+  tikhubBalanceUsd: 244.71, tikhubFreeCreditUsd: 0, apifyCostThisMonthUsd: 12.5,
+  drain: { scrapeQueueByState: [{ state: "created", count: 30 }], manualSeedByStatus: [], manualSeedInsertedToday: 64 },
+  ingestRateByDay: [{ day: "2026-06-08", count: 93 }],
+  scrapeCompositionToday: [{ kind: "refresh", jobs: 800, scraped: 14000, inserted: 120, costUsd: 2.2 }],
+  ytEmailByStatus: [{ status: "succeeded", count: 339 }],
+  igToday: { scraped: 0, inserted: 0 },
+  refreshBacklog: { total: 3215, dueNow: 142 }, costTodayUsd: 2.7,
+};
+
+const render = async () =>
+  renderToStaticMarkup(await CrawlerMonitorPage({ params: Promise.resolve({ locale: "en" }) }));
+
+beforeEach(() => {
+  authMock.mockReset();
+  redirectMock.mockClear();
+  fetchCrawlerStatsMock.mockReset();
+});
+afterEach(() => vi.clearAllMocks());
+
+describe("BL-096-F002 /admin/crawler-monitor", () => {
+  it("platform_admin: renders banner + health lights + cards", async () => {
+    authMock.mockResolvedValue(platformAdmin);
+    fetchCrawlerStatsMock.mockResolvedValue(STATS);
+    const html = await render();
+    expect(redirectMock).not.toHaveBeenCalled();
+    expect(html).toContain("crawler-monitor-readonly-banner");
+    expect(html).toContain("crawler-monitor-health");
+    expect(html).toContain("card-ingest-rate");
+    expect(html).toContain("card-balances");
+    expect(html).toContain("ingest-chart-stub");
+    expect(html).not.toContain("crawler-monitor-fetch-error");
+  });
+
+  it("marketer → redirect to /insight", async () => {
+    authMock.mockResolvedValue(marketer);
+    await expect(render()).rejects.toThrow(/NEXT_REDIRECT:\/en\/insight/);
+  });
+
+  it("unauthenticated → redirect to /login", async () => {
+    authMock.mockResolvedValue(null);
+    await expect(render()).rejects.toThrow(/NEXT_REDIRECT:\/en\/login/);
+  });
+
+  it("fetch error → graceful degrade banner, no cards", async () => {
+    authMock.mockResolvedValue(platformAdmin);
+    const { CrawlerMonitorError } = await import("@/lib/admin/crawler-monitor-client");
+    fetchCrawlerStatsMock.mockRejectedValue(new CrawlerMonitorError("config", "APIFY_KOL_ADMIN_API_KEY is not set"));
+    const html = await render();
+    expect(redirectMock).not.toHaveBeenCalled();
+    expect(html).toContain("crawler-monitor-fetch-error");
+    expect(html).not.toContain("card-ingest-rate");
+  });
+});

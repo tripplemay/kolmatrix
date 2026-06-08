@@ -2016,6 +2016,41 @@
       "uploadHeading": "CSV 파일 업로드",
       "uploadBody": "아래 버튼을 클릭하여 파일 선택기를 열고 KOL 행이 포함된 .csv 파일을 선택하세요. 가져오기 대화 상자에서 성공 수, 건너뛴 수, 행별 오류가 표시됩니다.",
       "backToMatch": "Match 작업대로 돌아가기"
+    },
+    "crawlerMonitor": {
+      "title": "크롤러 모니터(읽기 전용)",
+      "readOnlyNote": "크롤러 읽기 전용 관측. 제어 없음 — 설정은 구성 페이지 참조.",
+      "fetchError": "크롤러 통계 로드 실패({kind}): {message}",
+      "health": {
+        "balance": "잔액",
+        "ingest": "수집",
+        "instagram": "Instagram"
+      },
+      "healthStatus": {
+        "ok": "정상",
+        "warn": "경고",
+        "critical": "심각"
+      },
+      "ingestRate": "수집 속도(일별 신규 KOL, 14일)",
+      "newKols": "신규 KOL",
+      "noData": "데이터 없음",
+      "balances": "잔액 및 비용",
+      "tikhubBalance": "TikHub 잔액",
+      "freeCredit": "무료 크레딧",
+      "costToday": "오늘 비용",
+      "costMonth": "이번 달 비용",
+      "composition": "스크랩 구성(오늘)",
+      "colKind": "종류",
+      "colJobs": "작업",
+      "colScraped": "수집",
+      "colInserted": "입력",
+      "colCost": "비용",
+      "ytEmail": "YT 이메일 확인",
+      "drain": "수동 시드 드레인",
+      "manualSeedInsertedToday": "오늘 입력",
+      "refreshBacklog": "갱신 대기",
+      "total": "총계",
+      "dueNow": "갱신 예정"
     }
   },
   "kol": {
