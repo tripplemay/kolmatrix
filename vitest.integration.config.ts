@@ -8,7 +8,11 @@ export default defineConfig({
     // Testcontainers. Node env + longer timeouts are mandatory.
     environment: "node",
     include: ["tests/integration/**/*.{test,spec}.ts"],
-    exclude: ["node_modules", "dist", ".next"],
+    // BL-094-F001: external-network-dependent cases live in *.network.test.ts
+    // and run in the separate `test:integration:network` job
+    // (vitest.integration.network.config.ts). Excluding them here keeps the
+    // default integration suite (and CI's main integration job) deterministic.
+    exclude: ["node_modules", "dist", ".next", "tests/integration/**/*.network.test.ts"],
     globals: true,
     testTimeout: 120_000,
     hookTimeout: 180_000, // container boot + migrate deploy can take ~30s.

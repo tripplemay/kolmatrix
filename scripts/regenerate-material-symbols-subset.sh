@@ -137,12 +137,23 @@ MANIFEST_FILE="scripts/material-symbols-icons-manifest.txt"
 # Symbols icons in this codebase: delete (AssetCard menu item), error
 # (ChipRow icon prop), info (recent-activity audit entry), warning
 # (RoiInsightsPanel tone return), table (no — kept-en for `table_rows`).
-} | sort -u | grep -vE '^(cyan|purple|neutral|blue|red|green|amber|pink|yellow|black|white|gray|grey|inherit|currentColor|transparent|true|false|undefined|null|sm|md|lg|xl|xs|left|right|top|bottom|center|start|end|grid|swap|email|body|cta|h2|h3|h4|title|truncate|invisible|normal|platforms|card|table|duplicate|offline|on|off|outline|filled|sharp|rounded|active|inactive|disabled|enabled|hidden|visible|alert|status|danger|ghost|secondary|primary|menuitem|menubar|button|listbox|dialog|tab|tabpanel|role|item|assets|get|lazy|round|square|none|auto|both|all|hover|focus|stroke|fast|slow|new|old|nav|aside|footer|loading|dashboard|reports|analytics|en|zh|ja|ko|es|prod|dev|staging|local|test|api|web|small|medium|large|tiny|huge|wide|narrow|tall|short|thick|thin|ai_generated|campaign_created|campaign_kol_added|campaign_kol_removed|campaign_kol_fee_updated|campaign_kol_status_changed|campaign_status_changed|campaign_revenue_recorded|kol_bulk_added_to_campaign|campaigns|img|submit|invalid|select|input|form|reset|readonly|required|placeholder|label)$' > "$TMP_LIST"
+} | sort -u | grep -vE '^(cyan|purple|neutral|blue|red|green|amber|pink|yellow|black|white|gray|grey|inherit|currentColor|transparent|true|false|undefined|null|sm|md|lg|xl|xs|left|right|top|bottom|center|start|end|grid|swap|email|body|cta|h2|h3|h4|title|truncate|invisible|normal|platforms|card|table|duplicate|offline|on|off|outline|filled|sharp|rounded|active|inactive|disabled|enabled|hidden|visible|alert|status|danger|ghost|secondary|primary|menuitem|menubar|button|listbox|dialog|tab|tabpanel|role|item|assets|get|lazy|round|square|none|auto|both|all|hover|focus|stroke|fast|slow|new|old|nav|aside|footer|loading|dashboard|reports|analytics|en|zh|ja|ko|es|prod|dev|staging|local|test|api|web|small|medium|large|tiny|huge|wide|narrow|tall|short|thick|thin|ai_generated|campaign_created|campaign_kol_added|campaign_kol_removed|campaign_kol_fee_updated|campaign_kol_status_changed|campaign_status_changed|campaign_revenue_recorded|kol_bulk_added_to_campaign|campaigns|img|submit|invalid|select|input|form|reset|readonly|required|placeholder|label|children)$' > "$TMP_LIST"
 
 ICON_COUNT=$(wc -l < "$TMP_LIST" | tr -d ' ')
 echo "[regenerate-material-symbols-subset] discovered $ICON_COUNT unique icons"
 echo "[regenerate-material-symbols-subset] icons:"
 sed 's/^/  - /' "$TMP_LIST"
+
+# BL-094-F001: discovery-only mode. With DISCOVER_ONLY set, print the
+# discovered icon list (above) and exit BEFORE the Google Fonts fetch.
+# Lets the coverage guard (tests/integration/material-symbols-coverage
+# .test.ts) get the referenced-icon set network-free, so that suite no
+# longer flakes on the external fonts.googleapis.com call. The on-disk
+# woff2 is left untouched in this mode.
+if [ -n "${DISCOVER_ONLY:-}" ]; then
+  echo "[regenerate-material-symbols-subset] DISCOVER_ONLY set — skipping Google Fonts fetch"
+  exit 0
+fi
 
 ICONS=$(paste -sd, "$TMP_LIST")
 URL="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=${ICONS}&display=swap"

@@ -207,6 +207,34 @@ vi.mock('resend', () => ({
 
 同 aigcgateway，用 MSW 拦截 HTTP 请求。
 
+### 5.4 网络型 integration test 隔离（BL-094-F001）
+
+绝大多数 integration test 的"外部依赖"要么是本地 Testcontainers PG，要么被 mock
+（§5.1–5.3）。极少数用例**必须**打真实的不可控外部端点，无法 mock —— 否则就不是在测
+那条链路。当前唯一一类是 Material Symbols subset 守门：pre-commit hook 会 `curl`
+`fonts.googleapis.com` 把子集和暂存的 woff2 比对，而那次 fetch 正是用例要断言的对象。
+
+**隔离策略（默认套件保持确定性）：**
+
+| 层 | 做法 |
+|---|---|
+| 命名 | 网络型用例放 `tests/integration/**/*.network.test.ts` |
+| 默认套件 | `vitest.integration.config.ts` 用 `exclude` 排除 `*.network.test.ts` → `npm run test:integration` 不碰网络 |
+| 网络套件 | `vitest.integration.network.config.ts`：`fileParallelism:false` + `maxWorkers:1`（串行，避免并发 fetch 抖动）+ `retry:2`（瞬时失败重试）。`npm run test:integration:network` |
+| CI | `ci.yml` 独立 job `integration-tests-network`，`continue-on-error: true`（上游端点抖动/宕机不 gate 主构建——这是给我们不控制的上游的守门测试） |
+
+**优先消除而非隔离：** 隔离是退路。能把用例改成网络无关的就改——例如
+`material-symbols-coverage.test.ts` 原先重新 `curl` Google Fonts 再做**字节级**比对
+（Google 重建子集字节会变 → 假红 + 依赖网络）。BL-094-F001 改为：
+(1) 给 `regenerate-material-symbols-subset.sh` 加 `DISCOVER_ONLY` 模式（只 grep 出引用
+的 icon 列表、跳过 fetch）；(2) 用 `fontkit` 验证已提交的 woff2 通过 ligature **覆盖**
+全部引用 icon（字形覆盖而非字节相等）。结果：既无网络、又对上游字节漂移免疫，仍能抓
+"加了 icon callsite 没重生 woff2" 的 prod 字符方框回归。故该套件**不再**属于网络型。
+
+**新增网络型用例时：** 用 `v0.9.14 完整模式` grep 全仓确认没有别的用例在打不可控外部端点
+（`googleapis|gstatic|fonts\.google|curl .*http|fetch\(.*https?://(?!localhost)`），
+命中的一并归入 `*.network.test.ts`。
+
 ## 6. 测试数据策略
 
 ### 6.1 `prisma/seed.ts` vs `tests/fixtures/`
