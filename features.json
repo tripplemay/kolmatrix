@@ -20,7 +20,8 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "done",
+    "note": "B2 方案跨两仓实装。aigcgateway(commit e9d963e, 已推): /actions/run 接受 max_tokens→runner 透传上游 ChatCompletionRequest.max_tokens(向后兼容), 单测2+套件8/8绿。kolmatrix(commit 5b0f202, 已推): run-action.ts 加 maxTokens + DEFAULT_MAX_TOKENS=8192(一处默认覆盖全8调用点防 whack-a-mole), EXPLAIN_DETAILED 显式 16000, 单测2。L1: tsc0/lint0err3warn/run-action11+explainability6绿(全量2failed=vitest worker超时flake非本改动)。⏳ 待部署两仓(gateway先, 再 kolmatrix staging+prod)才生效。",
     "acceptance": [
       "据 F001 决策实装: 方案 A=runAigcAction 加 maxTokens 参数 + sane 默认; 方案 B=改 chat/completions 直调带 max_tokens(优先 EXPLAIN_DETAILED + KOL bio enrichment 等 prod-breaking 路径)",
       "覆盖全部 actions/run 路径(防 whack-a-mole, BL-042 §7 矩阵全覆盖); max_tokens 设值 ≥ 各 action 实际最大输出 + headroom(不截断)",

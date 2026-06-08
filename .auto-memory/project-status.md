@@ -3,11 +3,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-093-aigc-max-tokens-hotfix BUILDING (0/3) — ✅ PROD 故障已解除(充值止血), 本批转治本/防复发
-- ✅ **故障已恢复(2026-06-08 用户充值 + Planner 实测 max_tokens=64000 chat 调用 success + 用户 UI 确认 Why 弹窗正常)**。
-- 🔧 **根因修正**: 卡点是**上游 provider 额度**(报错 'requires more credits / afford X tokens'), **不是** aigcgateway 用户余额(get_balance 的 $39.56 是另一账本, 每次扣费用, 一直没动也正常)。用户充上游=充对了。两账本别混
-- 仍做 BL-093 治本(防复发): max_tokens=64000 过度预留(实际输出~4500), 上游额度再波动会复发 → 降到 ~8000 免疫。杠杆点 `src/lib/aigc/run-action.ts` runAigcAction(~10 处). F001 验 gateway override → F002 实装全覆盖 → F003 Codex. BL-042 并入。**已非紧急, 正常优先级**
-- ⚠️ kolmatrix hotfix, 部署 staging+prod(手动触发); prod deploy OOM 风险(BL-086 遗留)谨慎
+## 🚧 BL-093-aigc-max-tokens-hotfix BUILDING (2/3, 治本防复发, 故障已解除非紧急) — F001+F002 done
+- ✅ 故障 2026-06-08 已恢复(用户充上游 provider 额度)。本批做治本: 防 max_tokens 过度预留复发
+- ✅ **F001 调查反转 spec**: /actions/run 不接受 max_tokens override(路由+runner 从不带); 64000=上游按模型cap默认预留; 但 prepareRequest spread 透传→请求带 max_tokens 即转发。根因在 gateway。用户选 **B2**
+- ✅ **F002 B2 跨两仓实装**: **aigcgateway**(e9d963e 已推): /actions/run 接受 max_tokens→runner 透传上游(向后兼容)。**kolmatrix**(5b0f202 已推): runAigcAction 加 maxTokens+默认8192(覆盖全8调用点), EXPLAIN_DETAILED 16000。各单测2; L1 tsc0/lint0err/相关测试绿
+- ⏳ **下一步(用户)**: 部署两仓 → **先 aigcgateway build/deploy**, 再 kolmatrix staging+prod(手动触发, prod OOM 风险 BL-086 遗留谨慎)→ 切 verifying 交 Codex F003 L1+L2
+- ⚠️ **scope 已扩到含 aigcgateway**(原 spec 只设想 kolmatrix)。BL-042 并入。spec §F001 有完整调查
 ## ✅ BL-091 DONE (5/5, signoff @ 0db24be) — YT 邮箱解锁修复, 184→523(+339, 99.4%)
 ## ✅ BL-086 DONE (6/6, signoff @ 8e99b8a) — 抓取加速; 部署 prod/staging@d58dabe + 爬虫@8f9320a
 ## ✅ 历史: BL-084/BL-083/BL-082/BL-081/BL-080⏸️(1/6)/BL-079-043
