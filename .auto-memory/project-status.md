@@ -7,7 +7,8 @@ type: project
 - ✅ 故障 2026-06-08 已恢复(用户充上游 provider 额度)。本批做治本: 防 max_tokens 过度预留复发
 - ✅ **F001 调查反转 spec**: /actions/run 不接受 max_tokens override(路由+runner 从不带); 64000=上游按模型cap默认预留; 但 prepareRequest spread 透传→请求带 max_tokens 即转发。根因在 gateway。用户选 **B2**
 - ✅ **F002 B2 跨两仓实装**: **aigcgateway**(e9d963e 已推): /actions/run 接受 max_tokens→runner 透传上游(向后兼容)。**kolmatrix**(5b0f202 已推): runAigcAction 加 maxTokens+默认8192(覆盖全8调用点), EXPLAIN_DETAILED 16000。各单测2; L1 tsc0/lint0err/相关测试绿
-- ⏳ **下一步(用户)**: 部署两仓 → **先 aigcgateway build/deploy**, 再 kolmatrix staging+prod(手动触发, prod OOM 风险 BL-086 遗留谨慎)→ 切 verifying 交 Codex F003 L1+L2
+- ✅ **aigcgateway 已部署(2026-06-08)**: /opt/aigc-gateway ff 7502b61→e9d963e(Seedream 保留), NODE_OPTIONS=4096 build 无 OOM(mem floor ~2G), 复制 static/public 进 standalone, pm2 reload 4 实例 online, health 200。zero-cost smoke 验证: max_tokens=-5→400 / 16000→404(过校验达 runner) / 无 max_tokens→404 向后兼容
+- ⏳ **下一步(用户)**: 部署 **kolmatrix staging+prod**(手动触发, prod OOM 风险 BL-086 遗留谨慎)才让 wrapper 发 max_tokens 生效 → 切 verifying 交 Codex F003 L1+L2。⚠️ aigcgateway VM .git remote URL 嵌了 GitHub PAT(gho_), 建议轮换+改 SSH
 - ⚠️ **scope 已扩到含 aigcgateway**(原 spec 只设想 kolmatrix)。BL-042 并入。spec §F001 有完整调查
 ## ✅ BL-091 DONE (5/5, signoff @ 0db24be) — YT 邮箱解锁修复, 184→523(+339, 99.4%)
 ## ✅ BL-086 DONE (6/6, signoff @ 8e99b8a) — 抓取加速; 部署 prod/staging@d58dabe + 爬虫@8f9320a
