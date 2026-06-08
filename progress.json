@@ -2,7 +2,7 @@
   "status": "building",
   "user_goal": "BL-096-crawler-monitor-page — 爬虫抓取行为只读监控页(platform-admin). 3 features. 跨仓: F001 爬虫/admin/stats扩展(路径B) + F002 KOLMatrix /admin/crawler-monitor 瘦客户端 + F003 Codex. 动机: 爬虫两次静默故障(TikHub余额/aigcgateway额度)靠人肉发现, 持续可观测>事后告警. 把快照(drain/速率/邮箱/IG/双余额/成本)做成常驻面板. 架构=数据归爬虫(/admin/stats)+KOLMatrix只调API渲染(不直读对方库, ADR-017瘦客户端). 与BL-089(配置页)区分: 本页只读, 将来可合console. 关联 docs/specs/BL-096-crawler-monitor-page-spec.md.",
   "total_features": 3,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
   "current_sprint": "BL-096-crawler-monitor-page",
   "last_updated": "2026-06-08T21:00+0800",
@@ -26,7 +26,7 @@
   "generator_handoff": "[2026-06-08 21:00 BJT Planner Kimi BL-096 planning→building] 跨仓只读监控页. F001 爬虫/admin/stats扩展(路径B PR→merge→sync, NODE_OPTIONS=4096防OOM)+F002 KOLMatrix admin页(瘦客户端调API渲染, 仿/admin/apify-preview)+F003 Codex. F002依赖F001部署(新字段)→可先按契约开发+缺字段优雅降级, F001 sync后联调. 指标口径见 spec §3(Planner手动快照同款: drain/kols按天/scrape by kind/yt-email status/IG/refresh due/apify cost/tikhub balance). 起步建议: F001(爬虫聚合查询, 我手动快照的SQL可复用)或F002(页面骨架按契约). 健康灯=inserted=0连续/余额低/IG 0→红黄. 平台级 platform-admin gate. prod访问 ssh tripplezhou@kol.guangai.ai.",
   "session_notes": {
     "Kimi_planner": "[2026-06-08 21:00 BJT Planner Kimi 开 BL-096] BL-092 done(投喂+真实速率验证, refresh-85%/BugA 188/+420 KOLs). 用户要把抓取观测做成页面→开 BL-096 只读监控页. 理由: 两次静默故障(TikHub/aigcgateway)靠人肉发现, 持续可观测高价值(比BL-089配置页更justified). 3 features: F001爬虫/admin/stats扩展(路径B) / F002 KOLMatrix /admin/crawler-monitor 瘦客户端 / F003 Codex. 架构沿用ADR-017瘦客户端(数据归爬虫+KOLMatrix只调API). 与BL-089区分(只读vs写). 下一步Generator启F001/F002. 当前遗留: BL-095 IG 0产出 / aigcgateway PAT轮换.",
-    "Kimi_generator": null,
+    "Kimi_generator": "[2026-06-08 Generator Kimi BL-096 F001+F002 code done] F001(爬虫 /admin/stats 扩展观测)= PR #11 guang-tech/apify(base 8d7cff8): drain/ingestRate/composition/ytEmail/igToday/refreshBacklog/costToday; computeAdminStats 抽离便于单测(2); service122绿; prod 实查 pgboss/scrape_jobs 有效。F002(kolmatrix /admin/crawler-monitor 瘦客户端只读页)commit 0bb7e35 已推: client(fetch admin key+错误分类+zod 优雅降级)+computeHealthLights(红黄灯)+page(isAdminRole gate+健康灯+recharts入库速率 next/dynamic+构成/YT/drain/refresh/双余额卡+error banner)+i18n 5locale×29keys+单测13; L1 tsc0/lint0/glyph coverage绿。⏳ gate(同往例, 待用户指示): (1)merge PR #11 + apify fork-sync rebuild(OOM); (2)kolmatrix .env 补 APIFY_KOL_ADMIN_API_KEY(ops, 取 fork ADMIN_API_KEY)+ kolmatrix deploy; (3)F003 codex L2(页渲染真实数据+健康灯+admin gate)需上述就绪。F002 对未部署 F001 的旧 /admin/stats 优雅降级(BL-096字段缺→空/0不报错)。归档 docs/upstream-patches/BL-096-F001-*.md",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
