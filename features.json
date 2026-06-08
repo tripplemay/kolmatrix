@@ -1,48 +1,29 @@
 [
   {
     "id": "F001",
-    "title": "爬虫 /admin/stats 扩展观测指标 (generator, 路径 B)",
+    "title": "UserAvatarMenu 加爬虫监控页入口 (generator, kolmatrix)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.0,
-    "status": "deployed",
+    "estimated_hours": 0.5,
+    "status": "pending",
     "acceptance": [
-      "扩 packages/service/src/routes/admin-stats.ts 返回只读聚合(apify_kol DB): drain(manual_seed pgboss state + 今日 inserted) / 入库速率(kols 按天最近7-14天) / 抓取构成(今日 scrape_jobs by kind: jobs·scraped·inserted·cost) / YT邮箱(yt_email_check_records by status) / IG产出(今日 instagram scraped·inserted) / refresh欠账(kols total·due_now) / 今日 apify_cost_usd 合计 + tikhubBalanceUsd(已有)",
-      "只读, 不改写任何表; 聚合查询加索引友好/limit, 不拖垮库",
-      "落地路径 B: PR → guang-tech/apify → merge → fork-sync /opt rebuild(NODE_OPTIONS=4096 防 OOM)",
-      "含单测; 返回结构稳定(KOLMatrix 端按契约消费)"
-    ],
-    "note": "PR #11 merge→master 392f154。/opt/apify-kol-service fork-sync 8d7cff8→392f154 + rebuild(无 OOM)。/admin/stats 实测返回丰富真实数据: drain/ingestRate14d/composition(manual_seed inserted 2534=BL-092 harvest 落地!/hashtag 0=BL-095)/ytEmail(succeeded370/queued1553)/refreshBacklog(5711,due2965)/costToday3.58/balance240.85。归档 docs/upstream-patches/BL-096-F001-*.md"
+      "src/components/layout/UserAvatarMenu.tsx admin 段(showAdmin block, ~line 111-128)加 <Link> → /{locale}/admin/crawler-monitor, 仿现有 apify-preview 链接(role=menuitem + onClick 关菜单 + 同 className + material icon 如 monitoring/monitor_heart + label t('adminCrawlerMonitor'))",
+      "i18n userAvatarMenu.adminCrawlerMonitor 5 locale(zh/en/ja/ko/es); i18n-locale-coverage 一致",
+      "更新 src/components/layout/__tests__/UserAvatarMenu.test.tsx: 断言新链接 href=/{locale}/admin/crawler-monitor + admin-gated(非 admin showAdmin=false 不显)",
+      "L1 PASS: lint 0err warn≤3 / tsc=0 / npm test"
+    ]
   },
   {
     "id": "F002",
-    "title": "KOLMatrix /admin/crawler-monitor 只读监控页 (generator, kolmatrix, 瘦客户端)",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 4.0,
-    "status": "completed",
-    "acceptance": [
-      "新页 src/app/[locale]/admin/crawler-monitor — server component, isAdminRole gate(非 admin redirect); fetch 爬虫 /admin/stats(server-only client 仿 src/lib/admin/apify-preview-client.ts, 超时/错误处理)",
-      "渲染: 入库速率曲线(recharts) + 抓取构成卡 + YT 邮箱状态卡 + drain 进度条 + refresh 欠账 + 双余额(TikHub/Apify cost)",
-      "健康灯: inserted=0 连续 / 余额低 / IG 0 → 红/黄灯(告警可视化)",
-      "i18n admin.crawlerMonitor 5 locale; fetch 失败优雅降级(error banner)",
-      "不直读爬虫库(只调 API); 平台级(platform-admin)非租户级",
-      "L1 PASS: lint 0err warn≤3 / tsc=0 / npm test; F002 可先按 /admin/stats 契约开发 + 缺字段优雅降级, F001 sync 后联调"
-    ],
-    "note": "PARTIAL (verifying): client 9/9 + page 4/4 PASS. i18n: zh/ja/ko/es untranslated leaves. Fix: add crawlerMonitor paths to KEEP_AS_EN_PATHS or localize. L2: /opt 392f154, staging healthy, gate 307."
-  },
-  {
-    "id": "F003",
     "title": "Codex L1+L2 + signoff (executor:codex)",
     "executor": "codex",
     "priority": "high",
-    "estimated_hours": 1.0,
-    "status": "completed",
+    "estimated_hours": 0.5,
+    "status": "pending",
     "acceptance": [
-      "L1: F001 PR merge+sync + 单测; F002 lint 0err warn≤3 / tsc=0 / npm test + i18n 5 locale 一致",
-      "L2 部署后: /admin/crawler-monitor prod 渲染真实数据(drain/速率/邮箱/IG/余额/成本) + 健康灯逻辑正确 + admin gate 生效(非 admin 拒)",
-      "signoff doc docs/test-reports/BL-096-signoff-2026-06-XX.md"
-    ],
-    "note": "PASS (reverifying, fix_rounds=1). R1 i18n FIX VERIFIED: KEEP_AS_EN_PATHS +3 -> i18n 8/8. Full 207f/1541t green. L2: gate 307, staging healthy. Signoff: docs/test-reports/BL-096-signoff-2026-06-08.md"
+      "L1: lint 0err warn≤3 / tsc=0 / npm test(含 UserAvatarMenu 新断言)+ i18n 5 locale 一致",
+      "L2 部署后: admin 用户头像菜单见'爬虫监控'入口 → 点进可达 /admin/crawler-monitor; 非 admin 不显该项",
+      "signoff doc docs/test-reports/BL-097-signoff-2026-06-XX.md"
+    ]
   }
 ]
