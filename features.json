@@ -5,14 +5,15 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "方向 A: tests/integration/pre-commit-hook.test.ts woff2 网络型用例隔离 — 默认 test:integration 排除 + 新增 test:integration:network 串行 config + CI 独立 job(允许 retry 2). 根因=拉 Google Fonts subset 并发抖动",
       "方向 D: tests/integration/material-symbols-coverage.test.ts 字节级比对 guard 改 glyph-coverage 断言(验 subset 含全部 icon 字形, 而非字节相等), 根治 Google Fonts 上游 build 漂移脆弱",
       "F005-grep: 全仓搜其他网络依赖型 integration test 一并隔离(v0.9.14 完整模式 grep 防漏)",
       "docs/dev/ 加 testing-strategy 段说明网络型 integration test 隔离策略",
       "L1 PASS: lint 0err warn≤3 / tsc=0 / npm test; CI 默认套件连跑不再因网络/上游漂移偶红"
-    ]
+    ],
+    "note": "完成。根因: 仅 2 个 integration 用例打不可控外部端点(Google Fonts via 重生脚本)并发抖动。方向D根治: 脚本加 DISCOVER_ONLY + coverage #7 改 fontkit ligature 字形覆盖(网络无关+免疫字节漂移, 顺带抓修 discovery 假阳性 children); coverage 整套件网络无关。方向A隔离: pre-commit-hook 2 真fetch用例拆 *.network.test.ts + 共享 fixture, 默认 config exclude, 新 network config(串行+retry2), test:integration:network script, ci.yml 独立 job(continue-on-error)。F005-grep 全仓确认仅这两类。docs/dev/testing.md §5.4。验证: 默认11用例2s绿/.network 2用例绿/tsc0/lint0。commit d359f8b 已推。fontkit devDep。"
   },
   {
     "id": "F002",
