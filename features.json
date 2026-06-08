@@ -65,7 +65,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-09T00:55+0800",
+    "verify_note": "Hero quality={85}+priority+sizes=100vw; Features/Demo/BeforeAfter quality={80}+sizes+lazy(非priority默认lazy). next.config images.qualities=[75,80,85](Next16硬性). Lighthouse Desktop 未登录 /en(本地prod): perf 99 / LCP 987ms / CLS 0 / TBT 0ms — 4门全PASS. next/image 服务 AVIF(hero 49KB vs 源1.36MB), 整页图片 105.7KB << 5MB. CI 全绿(@5eae17e, quality 75→80/85 改像素→重拍4 landing baseline). LCP 987ms 比 BL-078 530ms 重但远低于2.5s门槛(插画比video重, 符合spec预期).",
     "acceptance": [
       "Hero illustration next/image priority + quality={85} + 适配 sizes prop + AVIF/WebP 转换 (Next.js 自动)",
       "Features cards illustrations lazy load + quality={80} (非 above-fold)",

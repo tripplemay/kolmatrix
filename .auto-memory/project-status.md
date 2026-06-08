@@ -3,10 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-080-landing-illustration-mockups BUILDING (3/6) — 落地页 AI 插画替代真截图(挂起6/01→6/08恢复)
-- ✅ F002 验收PASS + ✅ F003 集成done(2026-06-08 Generator Kimi). 用户 A1 lock 选激进版: Hero 插画替换 video 背景, BeforeAfter 插画替换整个滚动高亮表格. 映射 library→feature-match/aiMatch→feature-brief/insight,reach,crm 同名/roi fallback roi-full.png/EmailCenterDemo→email-center/Hero→hero/BeforeAfter→before-after. fallback 守门 illustration-asset.ts(server fs). +3 illustrationAlt×5locale. woff2 去 outgoing_mail. L1 全绿(lint+tsc+vitest 1542+build)
-- ✅ CI 全绿(@0cd53fd): e2e hero 断言已改(e2611b5)+4 landing baseline 经 update-visual-baselines.yml 重生(bot 0cd53fd). 坑: CI 跑全套 e2e+visual, 视觉改动 push 即红, baseline 须 Linux runner 重拍; bot token commit 不触发 CI 须手动 workflow_dispatch. ⚠️ Evaluator F006: beforeAfter.{colTask/colBefore/colAfter/rows}成 dead i18n key
-- Generator 下一步: F004 next/image quality/sizes/lazy + LCP 实测(不regress BL-078 530ms)→F005 baseline重拍+Lighthouse+a11y→F006 Codex. 切 verifying 前 staging deploy. spec docs/specs/BL-080-*.md
+## 🚧 BL-080-landing-illustration-mockups BUILDING (4/6) — 落地页 AI 插画替代真截图(挂起6/01→6/08恢复)
+- ✅ F002验收 + ✅ F003集成 + ✅ F004优化 done(Generator Kimi). 用户 A1 lock 激进版: Hero 插画替换 video 背景, BeforeAfter 插画替换整个动画表格. 映射 library→feature-match/aiMatch→feature-brief/insight,reach,crm 同名/roi fallback roi-full/EmailCenter→email-center/Hero→hero/BeforeAfter→before-after. fallback 守门 illustration-asset.ts. +3 illustrationAlt×5locale. woff2 去 outgoing_mail
+- ✅ F004: next/image quality85(hero)/80 + sizes + lazy + next.config images.qualities. Lighthouse Desktop 未登录 /en perf99/LCP987ms/CLS0/TBT0 全过; AVIF hero 49KB 整页图105.7KB<<5MB
+- ✅ CI 全绿(@5eae17e). 坑: CI 跑全套 e2e+visual, 视觉改动(结构 or quality)push 即红 → baseline 须 Linux runner 经 update-visual-baselines.yml 重拍(本批已拍2次), bot token commit 不触发 CI 须手动 workflow_dispatch. e2e hero 断言已改(e2611b5). ⚠️ Evaluator F006: beforeAfter.{colTask/colBefore/colAfter/rows}成 dead i18n key
+- Generator 下一步 F005: baseline 扩展(spec≈80snap 范围待确认)+ Lighthouse SEO/a11y + a11y 4项 → F006 Codex. 切 verifying 前 staging deploy. spec docs/specs/BL-080-*.md
 ## ✅ BL-097 DONE (2/2) — 监控页导航入口(UserAvatarMenu admin段, 部署@04e5414)
 ## ✅ BL-096 DONE (3/3, fix_rounds=1, signoff @ docs/test-reports/BL-096-signoff-2026-06-08.md) — 监控页 /admin/crawler-monitor 上线
 - F001 /admin/stats 扩展(PR#11→392f154)实测: manual_seed inserted **2534**(BL-092 harvest 全 drain!)/ ytEmail queued1553 / refreshBacklog5711 / cost3.58 / balance240.85. F002 瘦客户端页+健康灯+recharts 部署@ccd80d5
