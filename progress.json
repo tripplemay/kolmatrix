@@ -2,7 +2,7 @@
   "status": "building",
   "user_goal": "BL-094-high-value-polish — 三个不等充值的高价值项打包. 混合批次 4 features. F001 BL-054 flaky 网络测试隔离 + glyph guard(kolmatrix CI). F002 BL-090-cost apify_cost_usd 成本记账(路径B). F003 BL-088 只读量化(806 回收价值 + 2584 硬删风险 → 决策报告, 不实装放宽/硬删, 待用户决定). F004 Codex 验收. 关联 docs/specs/BL-094-high-value-polish-spec.md.",
   "total_features": 4,
-  "completed_features": 0,
+  "completed_features": 2,
   "fix_rounds": 0,
   "current_sprint": "BL-094-high-value-polish",
   "last_updated": "2026-06-08T11:00+0800",
@@ -26,7 +26,7 @@
   "generator_handoff": "[2026-06-08 11:00 BJT Planner Kimi BL-094 planning→building] 混合批次. F001(BL-054)+F002(BL-090-cost)=generator 实装; F003(BL-088量化)+F004=codex(verifying). F001 kolmatrix 测试/CI(方向A隔离网络型 + 方向D glyph guard + F005-grep). F002 路径B(爬虫 scrape_jobs.apify_cost_usd 价格表/usage-delta, PR→merge→sync, OOM 用 NODE_OPTIONS=4096). F003 只读量化 BL-088(806 按平台×粉丝×邮箱拆 + 2584 硬删撞键/依赖/是否已被BL-091收割), 出报告+建议, ⚠️不实装放宽/硬删(待用户决定). 起步建议 generator: F001(纯 kolmatrix, 不依赖任何充值/爬虫merge, 最快). F002 需爬虫团队 merge. 不依赖 TikHub/aigcgateway 充值.",
   "session_notes": {
     "Kimi_planner": "[2026-06-08 11:00 BJT Planner Kimi 开 BL-094] BL-093 done(max_tokens hotfix). 用户从 backlog 选三高价值项打包: BL-054(CI flaky)+BL-090-cost(成本记账)+BL-088(补量/清理). BL-088 含未决取舍(806低质量换质 + 2584不可逆硬删)→ 本批 F003 只做只读量化出决策依据, 实装待用户据报告定(诚实告知用户 806 价值存疑). 4 features: F001 BL-054 / F002 BL-090-cost / F003 BL-088量化 / F004 Codex. BL-054+BL-090-cost 从 backlog 移除; BL-088 保留(量化进本批, 放宽/硬删实装待决). 不依赖任何充值. 下一步 Generator 启 F001.",
-    "Kimi_generator": null,
+    "Kimi_generator": "[2026-06-08 Generator Kimi BL-094 F001+F002 done] F001(flaky 网络测试隔离+glyph guard, 纯 kolmatrix)done+推 d359f8b: 脚本加 DISCOVER_ONLY + coverage 改 fontkit ligature 字形覆盖(网络无关+免疫字节漂移, 抓修假阳性 children); pre-commit 2 真fetch用例拆 *.network.test.ts + 共享 fixture + 独立 network config(串行retry2) + ci.yml 独立 job(continue-on-error); docs §5.4; fontkit devDep。F002(apify_cost_usd 记账, 路径B)code done = PR #10 guang-tech/apify: sdk core/cost.ts(端点估算价格表 + AsyncLocalStorage 按 job 归集)+ tikhub-client 成功分支 recordRequestCost + scrape-worker 包 runWithCostTracking 写 apifyCostUsd; sdk54+service120绿 tsc0。⚠️ F002 价格是估算(用户已同意'建机制+runbook估算表标注待校准'), ENDPOINT_PRICES 唯一校准点, 建议爬虫团队真实账单校准后 merge。F003(BL-088 只读量化)+F004(signoff)是 codex。F001 纯测试/CI 无 src 运行时改动→无需 staging deploy。",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null

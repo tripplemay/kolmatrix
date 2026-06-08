@@ -3,11 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-094-high-value-polish BUILDING (0/4) — 三高价值项打包(不等充值)
-- F001 BL-054: flaky 网络测试隔离(pre-commit-hook woff2 → 独立串行 job)+ material-symbols 字节 guard 改 glyph 覆盖断言(kolmatrix CI)
-- F002 BL-090-cost: apify_cost_usd 成本记账(端点价格表/usage-delta, 路径 B 爬虫)
-- F003 BL-088: **只读量化**(806 回收价值 按平台×粉丝×邮箱 + 2584 硬删风险)→ 决策报告; ⚠️ 放宽/硬删实装待用户据报告决定(806 低质量换质, 价值存疑)
-- F004 Codex 验收。起步 generator: F001 纯 kolmatrix 最快(不依赖充值/爬虫 merge); F002 路径 B 需爬虫团队 merge
+## 🚧 BL-094-high-value-polish BUILDING (generator 2/2 done, 待 codex F003/F004) — 三高价值项打包
+- ✅ **F001 BL-054 done(推 d359f8b)**: 脚本加 DISCOVER_ONLY + coverage 改 fontkit ligature 字形覆盖(网络无关+免疫字节漂移, 抓修假阳性 children); pre-commit 2 真fetch拆 *.network.test.ts + 独立 network config(串行retry2)+ ci.yml 独立 job; docs §5.4。纯测试/CI 无 src 运行时改动→无需 deploy
+- ✅ **F002 BL-090-cost code done = PR #10**(guang-tech/apify, 路径 B): sdk cost.ts 端点估算价格表 + AsyncLocalStorage 按 job 归集 + tikhub-client 成功计费 + scrape-worker 写 apifyCostUsd。sdk54+service120绿。⚠️ **价格是估算**(runbook 折算非真实单价)→ ENDPOINT_PRICES 唯一校准点, 建议爬虫团队真实账单校准后 merge。⏳ 待 merge+fork-sync rebuild
+- ⏳ **F003 BL-088 只读量化**(codex)+ **F004 signoff**(codex)。F004 L2 需 F002 部署后验 apify_cost_usd 非0
+- 归档 docs/upstream-patches/BL-094-F002-apify-cost-accounting.md
 ## ✅ BL-093 DONE (3/3, signoff @ 4e87231) — aigcgateway max_tokens 治本(余额门槛 ~$46→~$12); 故障已靠上游充值解除
 ## ✅ BL-091 DONE (5/5) — YT 邮箱 184→523(+339, 99.4%); F001 runtime defer→BL-092
 ## ✅ BL-086 DONE (6/6) — 抓取加速; Deferred 真实速率→BL-092

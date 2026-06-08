@@ -21,14 +21,15 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "pr_open",
     "acceptance": [
       "TikHub 不返回每请求成本(BL-042 实证)→ 用端点价格表(per TikHub 端点单价 × 调用次数)或 usage-delta(定期抓账户用量差额)估算, 回填 scrape_jobs.apify_cost_usd(现全 0)",
       "配合 BL-086 F004 余额告警, 让'预算→KOL'换算有数据支撑; yt-email 已有 unitCostUsd=0.12 可参考",
       "爬虫代码改动走路径 B: PR → guang-tech/apify → merge → fork-sync /opt rebuild(谨慎, OOM 用 NODE_OPTIONS=4096)",
       "含单测; 不破坏既有 scrape 流程",
       "验证: 新 scrape_jobs 行 apify_cost_usd 写入非 0"
-    ]
+    ],
+    "note": "代码完成 + 单测(sdk cost.test 5)。B 方案: sdk core/cost.ts(ENDPOINT_PRICES 估算价格表 + AsyncLocalStorage 按 job 归集 + priceForPath/runWithCostTracking/currentCostUsd) + tikhub-client handleResponse 成功分支 recordRequestCost + scrape-worker dispatch 包 runWithCostTracking 写 apifyCostUsd。PR #10 → guang-tech/apify(base 4d102f1)。sdk 54 + service 120 绿, tsc 0。⚠️ 价格是估算(runbook Apify 期折算, 非真实 TikHub 单价)→ ENDPOINT_PRICES 是唯一校准点, 建议爬虫团队用真实账单校准后再 merge。⏳ 路径 B 待 merge + fork-sync /opt rebuild。归档 docs/upstream-patches/BL-094-F002-apify-cost-accounting.md"
   },
   {
     "id": "F003",
