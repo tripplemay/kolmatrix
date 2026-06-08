@@ -1,38 +1,33 @@
 {
-  "status": "done",
-  "user_goal": "BL-092-post-charge-execution — TikHub 充值后执行 + 真实速率验证, 收口 BL-086/091/094 deferred. 3 features. 2026-06-08 TikHub 71@qq.com 充值$244.71(端点200, 爬虫已恢复). F001 /opt rebuild 4d102f1→8d7cff8(上 BL-094成本记账, NODE_OPTIONS=4096防OOM). F002 投喂2535旧源youtube id(non-dry-run). F003 codex verified-live(refresh负载降/新增回升/IG恢复/BL-091 BugA runtime触发/apify_cost_usd非0/告警)+signoff. 关联 docs/specs/BL-092-post-charge-execution-spec.md.",
+  "status": "building",
+  "user_goal": "BL-096-crawler-monitor-page — 爬虫抓取行为只读监控页(platform-admin). 3 features. 跨仓: F001 爬虫/admin/stats扩展(路径B) + F002 KOLMatrix /admin/crawler-monitor 瘦客户端 + F003 Codex. 动机: 爬虫两次静默故障(TikHub余额/aigcgateway额度)靠人肉发现, 持续可观测>事后告警. 把快照(drain/速率/邮箱/IG/双余额/成本)做成常驻面板. 架构=数据归爬虫(/admin/stats)+KOLMatrix只调API渲染(不直读对方库, ADR-017瘦客户端). 与BL-089(配置页)区分: 本页只读, 将来可合console. 关联 docs/specs/BL-096-crawler-monitor-page-spec.md.",
   "total_features": 3,
-  "completed_features": 3,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "BL-092-post-charge-execution",
-  "last_updated": "2026-06-08T19:50+0800",
+  "current_sprint": "BL-096-crawler-monitor-page",
+  "last_updated": "2026-06-08T21:00+0800",
   "reference_docs": [
-    "docs/specs/BL-092-post-charge-execution-spec.md",
-    "scripts/bl086-manual-seed-harvest (F002 投喂)",
-    "guang-tech/apify master 8d7cff8 (BL-094 成本记账, F001 rebuild 目标)",
-    "apify_kol DB: scrape_jobs(kind/scraped/inserted/apify_cost_usd) + kols(tier/next_refresh_at) + yt_email_check_records"
+    "docs/specs/BL-096-crawler-monitor-page-spec.md",
+    "guang-tech/apify: packages/service/src/routes/admin-stats.ts (F001 扩展, 已有 tikhubBalanceUsd)",
+    "src/app/[locale]/admin/apify-preview/ (F002 admin 页参考模式)",
+    "src/lib/admin/apify-preview-client.ts (F002 server-only client 参考)",
+    "apify_kol DB: kols/scrape_jobs/yt_email_check_records/pgboss.job (F001 聚合源)"
   ],
   "docs": {
-    "spec": "docs/specs/BL-092-post-charge-execution-spec.md",
+    "spec": "docs/specs/BL-096-crawler-monitor-page-spec.md",
     "audit": null,
     "test_cases": null,
-    "signoff": "docs/test-reports/BL-092-signoff-2026-06-08.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "BL-092 全 3/3 PASS (fix_rounds=0, verifying→done). 收口 BL-086/091/094 deferred. verified-live: /opt rebuild 8d7cff8 + health ok + apify_cost_usd $0.566 + tikhubBalance $243.80 + BugA runtime 188 queued/12h + harvest 420/100% + refresh ~141/day(-85%). IG still 0 output(Soft-watch).",
-    "pass_count": 3,
-    "partial_count": 0,
-    "fail_count": 0,
-    "issues": []
-  },
+  "evaluator_feedback": null,
   "fix_rounds_history": [],
-  "generator_handoff": "[2026-06-08 Generator Kimi BL-092 building→verifying] generator 2/2 done(ops)。F001: /opt/apify-kol-service fork-sync→master 8d7cff8 + rebuild(无 OOM), 部署 BL-091+BL-094 F002; health ok, apify_cost_usd 写非0(17171=0.022)。F002: 投喂全部 2535 youtube UC id(26 jobIds, 0失败), live 确认 manual_seed 处理中(succeeded cost0.020)。【Codex F003 verified-live 验收建议】(prod, ssh tripplezhou@34.180.93.185, DB apify_kol)首轮验趋势(部分指标需数日稳定): (1) BL-086 refresh 负载降: scrape_jobs kind=refresh 日量趋势(目标 944→~123); (2) 新增回升: kols.created_at 日增恢复; (3) BL-091 BugA runtime: refresh 命中 hasBusinessEmail 跃迁→yt_email_check_records 出现 queued/running(需有跃迁样本); (4) BL-094 apify_cost_usd: scrape_jobs 新行 cost 非0(已见 refresh0.022/manual_seed0.020)— ⚠️价格估算非真实TikHub单价, ENDPOINT_PRICES 唯一校准点; (5) BL-086-F004 余额告警不误报(balance=$244.71); (6) F002 harvest: 2535 manual_seed drain 后 youtube kols 入库量 + 命中率(目标96%)+ ≥1万粉/≥1M 大号回收。signoff docs/test-reports/BL-092-signoff-2026-06-XX.md。drain 异步数小时, 首轮验趋势即可。",
+  "generator_handoff": "[2026-06-08 21:00 BJT Planner Kimi BL-096 planning→building] 跨仓只读监控页. F001 爬虫/admin/stats扩展(路径B PR→merge→sync, NODE_OPTIONS=4096防OOM)+F002 KOLMatrix admin页(瘦客户端调API渲染, 仿/admin/apify-preview)+F003 Codex. F002依赖F001部署(新字段)→可先按契约开发+缺字段优雅降级, F001 sync后联调. 指标口径见 spec §3(Planner手动快照同款: drain/kols按天/scrape by kind/yt-email status/IG/refresh due/apify cost/tikhub balance). 起步建议: F001(爬虫聚合查询, 我手动快照的SQL可复用)或F002(页面骨架按契约). 健康灯=inserted=0连续/余额低/IG 0→红黄. 平台级 platform-admin gate. prod访问 ssh tripplezhou@kol.guangai.ai.",
   "session_notes": {
-    "Kimi_planner": "[2026-06-08 19:10 BJT Planner Kimi 开 BL-092] BL-094 done(CI flaky+成本记账+BL-088量化). 用户告知 TikHub 充值→Planner实测71@qq.com余额$244.71+端点200+爬虫恢复. 开 BL-092 收口所有充值后deferred: F001 /opt rebuild(BL-094成本记账) / F002 投喂2535 / F003 codex verified-live(BL-086负载+BL-091 BugA runtime+BL-094成本+告警). BL-092从backlog移除. 注意OOM(NODE_OPTIONS=4096)+TikHub余额消耗可观测(F004告警+成本记账已上). 下一步Generator启F001 rebuild.",
-    "Kimi_generator": "[2026-06-08 Generator Kimi BL-092 done→verifying] F001 apify fork-sync 4d102f1→8d7cff8+rebuild(stash infra→reset→pop, 无OOM mem floor5G), 部署 BL-091+BL-094F002; health ok, apify_cost_usd 非0(refresh17171=0.022, manual_seed=0.020)→ BL-094 F002 L2 顺带活验。F002 投喂 2535 UC id(dry-run验2535→smoke20→全量2515, 26 jobIds 0失败), live manual_seed 处理中。TikHub 充值$244.71 已恢复(72/72 scrape绿)。转 verifying 交 Codex F003 verified-live(首轮验趋势, 全量drain数小时, 部分指标数日稳定)。价格估算 ENDPOINT_PRICES 待真实账单校准。checkpoint .bl086-manual-seed-checkpoint.json 在 /opt/kolmatrix。",
-    "Reviewer": "[2026-06-08 19:50 BJT Codex Reviewer BL-092 verifying→done] 首轮全 PASS. verified-live SSH 独立实证: /opt SHA 8d7cff8, health ok, apify_cost_usd $0.566(manual_seed$0.420+refresh$0.066), tikhubBalance$243.80(暴露于/admin/stats), BugA 188 new queued/12h(runtime触发恢复), harvest 420/420=100%插入率(27 jobs,$0.420,drain中), refresh tier分布hot566/warm593/cold2438→理论141/day(-85%), total KOLs 3177→3597+(+13%). IG仍0产出(288ref+4hash全0→S1). ENDPOINT_PRICES估算待真实账单校准(S3). Signoff: docs/test-reports/BL-092-signoff-2026-06-08.md.",
+    "Kimi_planner": "[2026-06-08 21:00 BJT Planner Kimi 开 BL-096] BL-092 done(投喂+真实速率验证, refresh-85%/BugA 188/+420 KOLs). 用户要把抓取观测做成页面→开 BL-096 只读监控页. 理由: 两次静默故障(TikHub/aigcgateway)靠人肉发现, 持续可观测高价值(比BL-089配置页更justified). 3 features: F001爬虫/admin/stats扩展(路径B) / F002 KOLMatrix /admin/crawler-monitor 瘦客户端 / F003 Codex. 架构沿用ADR-017瘦客户端(数据归爬虫+KOLMatrix只调API). 与BL-089区分(只读vs写). 下一步Generator启F001/F002. 当前遗留: BL-095 IG 0产出 / aigcgateway PAT轮换.",
+    "Kimi_generator": null,
+    "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
   },

@@ -1,46 +1,45 @@
 [
   {
     "id": "F001",
-    "title": "/opt rebuild 部署成本记账 + 确认爬虫恢复 (generator, ops)",
+    "title": "爬虫 /admin/stats 扩展观测指标 (generator, 路径 B)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.0,
-    "status": "done",
+    "estimated_hours": 2.0,
+    "status": "pending",
     "acceptance": [
-      "fork-sync /opt/apify-kol-service 4d102f1 → master 8d7cff8(含 BL-094 F002 apify_cost_usd; tier 积累档 + 邮箱触发已在更早 commit). ⚠️ rebuild 用 NODE_OPTIONS=4096 防 OOM(BL-086 遗留)",
-      "确认爬虫恢复抓取(TikHub $244.71, 端点 200); scrape_jobs 新行 scraped>0",
-      "记录 sync 后 HEAD + 本地 patch 数(期望 0)"
-    ],
-    "note": "/opt/apify-kol-service fork-sync 4d102f1→master 8d7cff8(stash infra→reset→pop, ports3004+Dockerfile workaround 保留)+ docker compose up -d --build 无 OOM(mem floor ~5G, ~1min)。部署 BL-091(yt-email)+ BL-094 F002(成本记账)。验证: health ok, worker 起 'poll timeout 300000ms' + 40 schedules, scrape_jobs apify_cost_usd 写非0(refresh 17171=0.022)。TikHub 已恢复(72/72 scrape 2h 绿)。"
+      "扩 packages/service/src/routes/admin-stats.ts 返回只读聚合(apify_kol DB): drain(manual_seed pgboss state + 今日 inserted) / 入库速率(kols 按天最近7-14天) / 抓取构成(今日 scrape_jobs by kind: jobs·scraped·inserted·cost) / YT邮箱(yt_email_check_records by status) / IG产出(今日 instagram scraped·inserted) / refresh欠账(kols total·due_now) / 今日 apify_cost_usd 合计 + tikhubBalanceUsd(已有)",
+      "只读, 不改写任何表; 聚合查询加索引友好/limit, 不拖垮库",
+      "落地路径 B: PR → guang-tech/apify → merge → fork-sync /opt rebuild(NODE_OPTIONS=4096 防 OOM)",
+      "含单测; 返回结构稳定(KOLMatrix 端按契约消费)"
+    ]
   },
   {
     "id": "F002",
-    "title": "投喂 2535 旧源 youtube id (generator, ops, non-dry-run)",
+    "title": "KOLMatrix /admin/crawler-monitor 只读监控页 (generator, kolmatrix, 瘦客户端)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "done",
+    "estimated_hours": 4.0,
+    "status": "pending",
     "acceptance": [
-      "跑 scripts/bl086-manual-seed-harvest(non-dry-run)投喂 2535 个旧源 youtube UC id(manual_seed, 命中率 96%)",
-      "监控: 入队 scrape_jobs(kind=manual_seed)→ 消费 → 新 KOL 入库(inserted>0); 幂等/可重入",
-      "充值后 worker 真实入库(不再 succeeded-0); 统计入库数 / 失败数"
-    ],
-    "note": "scripts/bl086-manual-seed-harvest non-dry-run 投喂全部 2535 youtube-api-daily UC id(canonical channel URL)→ fork /admin/seeds manual_seed, 0 失败, 26 jobIds。dry-run 验候选2535; smoke --limit=20 验 POST 返 jobId; 全量 2515 + smoke 20。live 确认: manual_seed job 处理中(1 succeeded cost0.020 + 1 running + 25 queued), apify_cost_usd 记账生效。idempotent checkpoint .bl086-manual-seed-checkpoint.json。⏳ 全量 drain 异步数小时(batchSize2+throttle350ms), 96% 命中率 + 真实入库量 → F003 codex verified-live 量化。"
+      "新页 src/app/[locale]/admin/crawler-monitor — server component, isAdminRole gate(非 admin redirect); fetch 爬虫 /admin/stats(server-only client 仿 src/lib/admin/apify-preview-client.ts, 超时/错误处理)",
+      "渲染: 入库速率曲线(recharts) + 抓取构成卡 + YT 邮箱状态卡 + drain 进度条 + refresh 欠账 + 双余额(TikHub/Apify cost)",
+      "健康灯: inserted=0 连续 / 余额低 / IG 0 → 红/黄灯(告警可视化)",
+      "i18n admin.crawlerMonitor 5 locale; fetch 失败优雅降级(error banner)",
+      "不直读爬虫库(只调 API); 平台级(platform-admin)非租户级",
+      "L1 PASS: lint 0err warn≤3 / tsc=0 / npm test; F002 可先按 /admin/stats 契约开发 + 缺字段优雅降级, F001 sync 后联调"
+    ]
   },
   {
     "id": "F003",
-    "title": "verified-live 验收 + signoff (codex)",
+    "title": "Codex L1+L2 + signoff (executor:codex)",
     "executor": "codex",
     "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "completed",
-    "note": "✅ Codex verified-live SSH 独立实证: /opt 8d7cff8, apify_cost $0.566, balance $243.80, BugA 188q/12h, harvest 420/100%, refresh -85%, KOLs +420. IG 0产出 Soft-watch. Signoff.",
+    "estimated_hours": 1.0,
+    "status": "pending",
     "acceptance": [
-      "BL-086: refresh 日负载实测降(TIER_INTERVAL_MS 14/30/30 → 944→~123)+ 新 KOL 入库速率较 ~87/天回升 + discovery 占比上升",
-      "BL-086 F002: 扩种子(SEA/手游)产出 + 砍空转 IG 后无浪费; BL-091 F001: Bug A runtime 触发(refresh 命中 hasBusinessEmail false→true → 入队 yt-email → 新 record)",
-      "BL-094 F002: scrape_jobs.apify_cost_usd 写入非 0(成本记账生效); BL-086 F004: 正常运转时告警不误报",
-      "before/after 量化(refresh 负载 / 日新增 / discovery 占比 / 成本); 部分指标需数日稳定→首轮验'已生效/趋势对'即可 signoff",
-      "signoff doc docs/test-reports/BL-092-signoff-2026-06-XX.md"
+      "L1: F001 PR merge+sync + 单测; F002 lint 0err warn≤3 / tsc=0 / npm test + i18n 5 locale 一致",
+      "L2 部署后: /admin/crawler-monitor prod 渲染真实数据(drain/速率/邮箱/IG/余额/成本) + 健康灯逻辑正确 + admin gate 生效(非 admin 拒)",
+      "signoff doc docs/test-reports/BL-096-signoff-2026-06-XX.md"
     ]
   }
 ]
