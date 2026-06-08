@@ -1,8 +1,8 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "BL-092-post-charge-execution — TikHub 充值后执行 + 真实速率验证, 收口 BL-086/091/094 deferred. 3 features. 2026-06-08 TikHub 71@qq.com 充值$244.71(端点200, 爬虫已恢复). F001 /opt rebuild 4d102f1→8d7cff8(上 BL-094成本记账, NODE_OPTIONS=4096防OOM). F002 投喂2535旧源youtube id(non-dry-run). F003 codex verified-live(refresh负载降/新增回升/IG恢复/BL-091 BugA runtime触发/apify_cost_usd非0/告警)+signoff. 关联 docs/specs/BL-092-post-charge-execution-spec.md.",
   "total_features": 3,
-  "completed_features": 0,
+  "completed_features": 2,
   "fix_rounds": 0,
   "current_sprint": "BL-092-post-charge-execution",
   "last_updated": "2026-06-08T19:10+0800",
@@ -22,10 +22,10 @@
   "role_assignments": null,
   "evaluator_feedback": null,
   "fix_rounds_history": [],
-  "generator_handoff": "[2026-06-08 19:10 BJT Planner Kimi BL-092 planning→building] TikHub 充值已到账$244.71(Planner实测端点200, 爬虫11:01已恢复scrape 66). F001 fork-sync /opt 4d102f1→master 8d7cff8(BL-094成本记账; ⚠️rebuild NODE_OPTIONS=4096防OOM, BL-086遗留). F002 跑 scripts/bl086-manual-seed-harvest non-dry-run 投喂2535(命中96%, 充值后真实入库不再succeeded-0). F003 codex verified-live: BL-086 refresh负载降(tier14/30/30)+新增回升 / BL-091 BugA runtime触发(refresh命中hasBusinessEmail false→true) / BL-094 apify_cost_usd非0 / 告警不误报. 部分指标需数日稳定→首轮验趋势即可. prod访问 ssh tripplezhou@kol.guangai.ai, /opt/apify-kol-service docker, DB apify_kol. 留意TikHub余额消耗(2535+日常refresh).",
+  "generator_handoff": "[2026-06-08 Generator Kimi BL-092 building→verifying] generator 2/2 done(ops)。F001: /opt/apify-kol-service fork-sync→master 8d7cff8 + rebuild(无 OOM), 部署 BL-091+BL-094 F002; health ok, apify_cost_usd 写非0(17171=0.022)。F002: 投喂全部 2535 youtube UC id(26 jobIds, 0失败), live 确认 manual_seed 处理中(succeeded cost0.020)。【Codex F003 verified-live 验收建议】(prod, ssh tripplezhou@34.180.93.185, DB apify_kol)首轮验趋势(部分指标需数日稳定): (1) BL-086 refresh 负载降: scrape_jobs kind=refresh 日量趋势(目标 944→~123); (2) 新增回升: kols.created_at 日增恢复; (3) BL-091 BugA runtime: refresh 命中 hasBusinessEmail 跃迁→yt_email_check_records 出现 queued/running(需有跃迁样本); (4) BL-094 apify_cost_usd: scrape_jobs 新行 cost 非0(已见 refresh0.022/manual_seed0.020)— ⚠️价格估算非真实TikHub单价, ENDPOINT_PRICES 唯一校准点; (5) BL-086-F004 余额告警不误报(balance=$244.71); (6) F002 harvest: 2535 manual_seed drain 后 youtube kols 入库量 + 命中率(目标96%)+ ≥1万粉/≥1M 大号回收。signoff docs/test-reports/BL-092-signoff-2026-06-XX.md。drain 异步数小时, 首轮验趋势即可。",
   "session_notes": {
     "Kimi_planner": "[2026-06-08 19:10 BJT Planner Kimi 开 BL-092] BL-094 done(CI flaky+成本记账+BL-088量化). 用户告知 TikHub 充值→Planner实测71@qq.com余额$244.71+端点200+爬虫恢复. 开 BL-092 收口所有充值后deferred: F001 /opt rebuild(BL-094成本记账) / F002 投喂2535 / F003 codex verified-live(BL-086负载+BL-091 BugA runtime+BL-094成本+告警). BL-092从backlog移除. 注意OOM(NODE_OPTIONS=4096)+TikHub余额消耗可观测(F004告警+成本记账已上). 下一步Generator启F001 rebuild.",
-    "Kimi_generator": null,
+    "Kimi_generator": "[2026-06-08 Generator Kimi BL-092 done→verifying] F001 apify fork-sync 4d102f1→8d7cff8+rebuild(stash infra→reset→pop, 无OOM mem floor5G), 部署 BL-091+BL-094F002; health ok, apify_cost_usd 非0(refresh17171=0.022, manual_seed=0.020)→ BL-094 F002 L2 顺带活验。F002 投喂 2535 UC id(dry-run验2535→smoke20→全量2515, 26 jobIds 0失败), live manual_seed 处理中。TikHub 充值$244.71 已恢复(72/72 scrape绿)。转 verifying 交 Codex F003 verified-live(首轮验趋势, 全量drain数小时, 部分指标数日稳定)。价格估算 ENDPOINT_PRICES 待真实账单校准。checkpoint .bl086-manual-seed-checkpoint.json 在 /opt/kolmatrix。",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null

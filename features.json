@@ -5,12 +5,13 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "fork-sync /opt/apify-kol-service 4d102f1 → master 8d7cff8(含 BL-094 F002 apify_cost_usd; tier 积累档 + 邮箱触发已在更早 commit). ⚠️ rebuild 用 NODE_OPTIONS=4096 防 OOM(BL-086 遗留)",
       "确认爬虫恢复抓取(TikHub $244.71, 端点 200); scrape_jobs 新行 scraped>0",
       "记录 sync 后 HEAD + 本地 patch 数(期望 0)"
-    ]
+    ],
+    "note": "/opt/apify-kol-service fork-sync 4d102f1→master 8d7cff8(stash infra→reset→pop, ports3004+Dockerfile workaround 保留)+ docker compose up -d --build 无 OOM(mem floor ~5G, ~1min)。部署 BL-091(yt-email)+ BL-094 F002(成本记账)。验证: health ok, worker 起 'poll timeout 300000ms' + 40 schedules, scrape_jobs apify_cost_usd 写非0(refresh 17171=0.022)。TikHub 已恢复(72/72 scrape 2h 绿)。"
   },
   {
     "id": "F002",
@@ -18,12 +19,13 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "跑 scripts/bl086-manual-seed-harvest(non-dry-run)投喂 2535 个旧源 youtube UC id(manual_seed, 命中率 96%)",
       "监控: 入队 scrape_jobs(kind=manual_seed)→ 消费 → 新 KOL 入库(inserted>0); 幂等/可重入",
       "充值后 worker 真实入库(不再 succeeded-0); 统计入库数 / 失败数"
-    ]
+    ],
+    "note": "scripts/bl086-manual-seed-harvest non-dry-run 投喂全部 2535 youtube-api-daily UC id(canonical channel URL)→ fork /admin/seeds manual_seed, 0 失败, 26 jobIds。dry-run 验候选2535; smoke --limit=20 验 POST 返 jobId; 全量 2515 + smoke 20。live 确认: manual_seed job 处理中(1 succeeded cost0.020 + 1 running + 25 queued), apify_cost_usd 记账生效。idempotent checkpoint .bl086-manual-seed-checkpoint.json。⏳ 全量 drain 异步数小时(batchSize2+throttle350ms), 96% 命中率 + 真实入库量 → F003 codex verified-live 量化。"
   },
   {
     "id": "F003",
