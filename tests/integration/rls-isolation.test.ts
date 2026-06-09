@@ -1,6 +1,7 @@
 /**
- * F007 RLS isolation suite — exercises the 6 tenant-scoped tables installed
- * by migration 20260418000000_init and proves:
+ * F007 RLS isolation suite — exercises the tenant-scoped tables installed
+ * by migration 20260418000000_init and proves (email_template was dropped
+ * in BL-099-F005 / ADR-018; Asset RLS is covered in asset-rls.test.ts):
  *   1. Two tenants' data never leak across tenant boundaries when queried
  *      through the `kolmatrix_app` role (which obeys RLS).
  *   2. An unauthenticated query (no `app.tenant_id` SET LOCAL) returns 0
@@ -28,7 +29,6 @@ type SeedResult = {
   kolId: string;
   campaignId: string;
   kolCampaignId: string;
-  emailTemplateId: string;
   emailLogId: string;
 };
 
@@ -48,22 +48,14 @@ async function seedTenant(label: string): Promise<SeedResult> {
       status: "candidate",
     },
   });
-  const emailTemplate = await admin.emailTemplate.create({
-    data: {
-      tenantId: tenant.id,
-      name: `template-${label}`,
-      subject: "Hi",
-      body: "Hi",
-      variables: [],
-      type: "user",
-    },
-  });
   const emailLog = await admin.emailLog.create({
     data: {
       tenantId: tenant.id,
       campaignId: campaign.id,
       kolId: kol.id,
-      templateId: emailTemplate.id,
+      // BL-099-F005 (ADR-018): email_template dropped; template_id is now a
+      // decoupled plain uuid + template_name snapshot, no FK to satisfy.
+      templateName: `template-${label}`,
       toAddress: `kol-${label}@example.test`,
       fromAddress: `outreach-${label}@example.test`,
       subject: "Hi",
@@ -76,12 +68,11 @@ async function seedTenant(label: string): Promise<SeedResult> {
     kolId: kol.id,
     campaignId: campaign.id,
     kolCampaignId: kolCampaign.id,
-    emailTemplateId: emailTemplate.id,
     emailLogId: emailLog.id,
   };
 }
 
-describe("RLS — cross-tenant isolation across all 6 tenant-scoped tables", () => {
+describe("RLS — cross-tenant isolation across the tenant-scoped tables", () => {
   let A: SeedResult;
   let B: SeedResult;
 
@@ -129,11 +120,6 @@ describe("RLS — cross-tenant isolation across all 6 tenant-scoped tables", () 
     expect(aSees.map((kc) => kc.id)).toEqual([A.kolCampaignId]);
   });
 
-  it("email_template table — tenant A cannot read B's template", async () => {
-    const aSees = await asTenant(A.tenantId, (tx) => tx.emailTemplate.findMany());
-    expect(aSees.map((t) => t.id)).toEqual([A.emailTemplateId]);
-  });
-
   it("email_log table — tenant A cannot read B's log", async () => {
     const aSees = await asTenant(A.tenantId, (tx) => tx.emailLog.findMany());
     expect(aSees.map((l) => l.id)).toEqual([A.emailLogId]);
@@ -150,7 +136,6 @@ describe("RLS — cross-tenant isolation across all 6 tenant-scoped tables", () 
     expect(await app.kol.findMany({ select: { id: true } })).toHaveLength(0);
     expect(await app.campaign.findMany({ select: { id: true } })).toHaveLength(0);
     expect(await app.kolCampaign.findMany({ select: { id: true } })).toHaveLength(0);
-    expect(await app.emailTemplate.findMany({ select: { id: true } })).toHaveLength(0);
     expect(await app.emailLog.findMany({ select: { id: true } })).toHaveLength(0);
   });
 });

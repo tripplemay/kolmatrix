@@ -26,9 +26,9 @@ export interface EmailTemplateRecord {
 
 // BL-035-F011 (CQ-H2): legacy `loadUserTemplates` / `loadSystemTemplates`
 // removed — every composer caller now goes through `loadOutreachTemplates`
-// which sources from the unified `asset` table. The dual-write
-// email_template mirror still feeds email_log.template_id but is no
-// longer read by app code.
+// which sources from the unified `asset` table. BL-099-F005: the
+// email_template dual-write/mirror was removed and the table dropped;
+// Asset is the single source of truth.
 
 // BL-099-F001 — adapt an Asset write result (createAsset / updateAsset)
 // back to the EmailTemplateOption shape callers expect, so the write
@@ -65,13 +65,10 @@ export interface EmailTemplateDraftInput {
 }
 
 /**
- * BL-025-F006 — composer reader now sources from the unified
- * `asset` table (loadAssetsForComposer). The legacy email_template
- * path remains for the dual-write window: every createAsset /
- * updateAsset on type=email mirrors into email_template so
- * email_log.template_id keeps pointing at a real row, and any
- * caller that still queries email_template directly still sees
- * fresh content.
+ * BL-025-F006 — composer reader sources from the unified `asset`
+ * table (loadAssetsForComposer). BL-099-F005: the email_template
+ * mirror was removed and the table dropped; Asset is the single
+ * source of truth and email_log snapshots template_name (F003).
  *
  * Adapter shape: AssetSource → EmailTemplateScope mapping. Anything
  * with `tenantId IS NULL` (system_seed) is "system"; everything
@@ -149,12 +146,11 @@ export async function createUserTemplate(
   tenantId: string,
   input: EmailTemplateDraftInput
 ): Promise<EmailTemplateOption> {
-  // BL-099-F001 — write to the unified Asset table (createAsset also
-  // dual-writes the email_template mirror until F005). status=published
+  // BL-099-F001 — write to the unified Asset table. status=published
   // so the template shows up in the composer dropdown + workspace list
   // immediately — the "止活血" fix: pre-BL-099 the write only hit
   // email_template, so user templates vanished from the Asset-sourced
-  // list right after saving.
+  // list right after saving. (F005 dropped email_template entirely.)
   const detail = await createAsset(tx, tenantId, {
     type: "email",
     name: input.name,

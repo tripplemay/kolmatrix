@@ -28,13 +28,6 @@ type AssetTx = Prisma.TransactionClient & {
     update: ReturnType<typeof vi.fn>;
     delete: ReturnType<typeof vi.fn>;
   };
-  // BL-025-F006 dual-write target — every email-typed mutation
-  // mirrors into email_template so the mocks must absorb the call.
-  emailTemplate: {
-    create: ReturnType<typeof vi.fn>;
-    updateMany: ReturnType<typeof vi.fn>;
-    deleteMany: ReturnType<typeof vi.fn>;
-  };
 };
 
 function makeTx(): AssetTx {
@@ -44,11 +37,6 @@ function makeTx(): AssetTx {
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
-    },
-    emailTemplate: {
-      create: vi.fn().mockResolvedValue({}),
-      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
-      deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
   } as unknown as AssetTx;
 }
@@ -280,48 +268,22 @@ describe("archiveAsset", () => {
 });
 
 describe("deleteAsset", () => {
-  it("returns true when the row was deleted (and drops the email_template mirror first)", async () => {
+  it("returns true when the row was deleted", async () => {
     const tx = makeTx();
-    // F006 dual-write: deleteAsset reads metadata before deleting.
-    tx.asset.findUnique.mockResolvedValueOnce({
-      id: "asset-1",
-      type: "email",
-      metadata: {},
-    });
     tx.asset.delete.mockResolvedValueOnce({ id: "asset-1" });
 
     expect(await deleteAsset(tx, "asset-1")).toBe(true);
-    expect(tx.emailTemplate.deleteMany).toHaveBeenCalledWith({
-      where: { id: "asset-1" },
-    });
+    expect(tx.asset.delete).toHaveBeenCalledWith({ where: { id: "asset-1" } });
   });
 
-  it("returns false when the asset is already gone and skips email_template delete", async () => {
+  it("rethrows non-P2025 errors from asset.delete", async () => {
     const tx = makeTx();
-    tx.asset.findUnique.mockResolvedValueOnce(null);
-    expect(await deleteAsset(tx, "missing")).toBe(false);
-    expect(tx.emailTemplate.deleteMany).not.toHaveBeenCalled();
-    expect(tx.asset.delete).not.toHaveBeenCalled();
-  });
-
-  it("rethrows non-P2025 errors from asset.delete (race-condition path)", async () => {
-    const tx = makeTx();
-    tx.asset.findUnique.mockResolvedValueOnce({
-      id: "asset-1",
-      type: "email",
-      metadata: {},
-    });
     tx.asset.delete.mockRejectedValueOnce(new Error("boom"));
     await expect(deleteAsset(tx, "asset-1")).rejects.toThrow("boom");
   });
 
-  it("returns false when asset.delete races on P2025 even though findUnique saw the row", async () => {
+  it("returns false when asset.delete throws P2025 (row already gone)", async () => {
     const tx = makeTx();
-    tx.asset.findUnique.mockResolvedValueOnce({
-      id: "asset-1",
-      type: "video_script",
-      metadata: {},
-    });
     const p2025 = new Prisma.PrismaClientKnownRequestError("not found", {
       code: "P2025",
       clientVersion: "test",
@@ -332,7 +294,7 @@ describe("deleteAsset", () => {
 });
 
 describe("duplicateAsset", () => {
-  it("clones an email asset to a new draft root with a (copy) suffix and mirrors to email_template", async () => {
+  it("clones an email asset to a new draft root with a (copy) suffix", async () => {
     const tx = makeTx();
     tx.asset.findUnique.mockResolvedValueOnce({
       id: "source-1",
@@ -368,10 +330,9 @@ describe("duplicateAsset", () => {
     expect(createCall.data.metadata.duplicatedFromAssetId).toBe("source-1");
     expect(createCall.data.metadata.traceId).toBe("trace-x");
     expect(createCall.data.createdBy).toBe("user-1");
-    expect(tx.emailTemplate.create).toHaveBeenCalledTimes(1);
   });
 
-  it("clones a video_script asset and skips the email_template mirror", async () => {
+  it("clones a video_script asset", async () => {
     const tx = makeTx();
     tx.asset.findUnique.mockResolvedValueOnce({
       id: "source-2",
@@ -394,7 +355,6 @@ describe("duplicateAsset", () => {
     const result = await duplicateAsset(tx, TENANT_A, "source-2");
 
     expect(result.type).toBe("video_script");
-    expect(tx.emailTemplate.create).not.toHaveBeenCalled();
   });
 
   it("collapses repeated (copy) suffixes so a duplicate-of-a-duplicate stays single-suffixed", async () => {

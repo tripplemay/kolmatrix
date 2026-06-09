@@ -1,0 +1,44 @@
+-- BL-099-F005 (ADR-018 D4) — DROP the legacy email_template table.
+--
+-- ⚠️ IRREVERSIBLE. Asset (type=email) is now the single source of truth
+-- for templates: F001 unified the write path, F002 migrated historical
+-- user rows. email_log decoupled its FK and snapshots template_name
+-- (F003); analytics getTopTemplates reads the snapshot (F004). No
+-- remaining code references tx.emailTemplate / prisma.emailTemplate, and
+-- no FK references the table (verified pg_constraint confrelid scan = 0
+-- rows on prod 2026-06-10).
+--
+-- PRECONDITION (enforced procedurally, NOT by SQL): F002 --execute must
+-- have run on the target DB and verified zero user-template loss BEFORE
+-- this migration deploys. On prod (2026-06-10) all 17 user
+-- email_template rows were confirmed already present in Asset (0 to
+-- create), so the drop loses no user content. Deploying this to a DB
+-- where F002 has NOT been verified risks permanent loss of any
+-- email_template row whose content is absent from Asset.
+--
+-- DROP TABLE removes the table, its indexes, its RLS policies, and its
+-- FK to tenant in one statement.
+
+DROP TABLE "email_template";
+
+-- ROLLBACK (structure only — DROPPED ROW DATA IS NOT RECOVERABLE from
+-- this migration; restore rows from the pre-deploy pg_dump under
+-- /opt/kolmatrix-backups/ if ever required). Referential actions below
+-- mirror the original optional-relation FK; re-add RLS policies
+-- separately if rolling back:
+-- CREATE TABLE "email_template" (
+--   "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+--   "tenant_id" UUID,
+--   "name" TEXT NOT NULL,
+--   "subject" TEXT NOT NULL,
+--   "body" TEXT NOT NULL,
+--   "variables" JSONB NOT NULL,
+--   "locale" VARCHAR(5) NOT NULL DEFAULT 'en',
+--   "type" VARCHAR(20) NOT NULL DEFAULT 'system',
+--   "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+--   "updated_at" TIMESTAMPTZ NOT NULL,
+--   CONSTRAINT "email_template_pkey" PRIMARY KEY ("id")
+-- );
+-- CREATE INDEX "email_template_tenant_id_type_idx" ON "email_template"("tenant_id", "type");
+-- CREATE INDEX "email_template_type_locale_idx" ON "email_template"("type", "locale");
+-- ALTER TABLE "email_template" ADD CONSTRAINT "email_template_tenant_id_fkey" FOREIGN KEY ("tenant_id") REFERENCES "tenant"("id") ON DELETE SET NULL ON UPDATE CASCADE;

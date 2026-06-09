@@ -11,9 +11,6 @@ const mockTx = {
     count: vi.fn(),
     findFirst: vi.fn(),
   },
-  emailTemplate: {
-    findMany: vi.fn(),
-  },
 };
 
 vi.mock("@/lib/db", () => ({
@@ -45,8 +42,6 @@ describe("BL-099-F004 runTopTemplates template_name snapshot", () => {
         orderBy: { createdAt: "desc" },
       })
     );
-    // F004 — the email_template join is gone.
-    expect(mockTx.emailTemplate.findMany).not.toHaveBeenCalled();
   });
 
   it("returns [] when there are no template sends", async () => {

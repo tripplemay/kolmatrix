@@ -1,17 +1,25 @@
 /**
  * BM2-F002 · System email-template seed integration spec
  *
- * Asserts the 5-template × en/zh = 10-row contract defined in
- * docs/specs/BM2-campaign-outreach-roi-spec.md §F002:
+ * BL-099-F005 (ADR-018): the legacy `email_template` table was dropped;
+ * `Asset` (type='email', source='system_seed', tenantId=null) is now the
+ * single source of truth for system templates. seedSystemTemplates() plants
+ * 10 system Assets (5 names × en/zh), keyed idempotently on (name,
+ * content.locale). Asserts the 5-template × en/zh = 10-row contract:
  *
- *   - After one seed run, 10 rows with type='system', tenantId=null
- *   - Running twice is idempotent (row count stays 10)
- *   - Every row has a non-empty variables JSON array, each entry
+ *   - After one seed run, 10 system_seed Assets with tenantId=null
+ *   - Running twice is idempotent (row count stays 10, updates only)
+ *   - Every row's content.variables is a non-empty JSON array, each entry
  *     having { token, description } at minimum
  *   - Every template name has exactly one en + one zh row
  *   - Every template references {{kol.name}} + {{product.name}} +
  *     {{product.usp}} + {{marketer.name}} in its body (smoke-check
  *     that the token catalogue is actually exercised)
+ *
+ * System_seed Assets have tenantId=null and are visible to all tenants via
+ * the Asset RLS union policy (tenant_id IS NULL reads are allowed). That
+ * cross-tenant visibility is covered in asset-rls.test.ts; here we assert
+ * the seed contract against the admin (RLS-bypassing) client.
  */
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
@@ -43,38 +51,52 @@ beforeEach(async () => {
   await cleanDb();
 });
 
+const SYSTEM_SEED_WHERE = {
+  type: "email",
+  source: "system_seed",
+  tenantId: null,
+} as const;
+
+type EmailContent = {
+  subject: string;
+  body: string;
+  locale: string;
+  variables: Array<Record<string, unknown>>;
+};
+
 describe("seedSystemTemplates()", () => {
-  it("inserts exactly 10 rows on the first run (5 × en/zh)", async () => {
+  it("inserts exactly 10 system_seed Assets on the first run (5 × en/zh)", async () => {
     const stats = await seedSystemTemplates();
     expect(stats).toEqual({ total: 10, inserted: 10, updated: 0 });
 
-    const count = await getAdminPrisma().emailTemplate.count({
-      where: { type: "system", tenantId: null },
+    const count = await getAdminPrisma().asset.count({
+      where: SYSTEM_SEED_WHERE,
     });
     expect(count).toBe(10);
   });
 
-  it("is idempotent — row count stays 10 after a second run", async () => {
+  it("is idempotent — Asset count stays 10 after a second run", async () => {
     await seedSystemTemplates();
     const stats = await seedSystemTemplates();
     expect(stats).toEqual({ total: 10, inserted: 0, updated: 10 });
 
-    const count = await getAdminPrisma().emailTemplate.count({
-      where: { type: "system", tenantId: null },
+    const count = await getAdminPrisma().asset.count({
+      where: SYSTEM_SEED_WHERE,
     });
     expect(count).toBe(10);
   });
 
   it("covers every template in both en and zh", async () => {
     await seedSystemTemplates();
-    const rows = await getAdminPrisma().emailTemplate.findMany({
-      where: { type: "system", tenantId: null },
-      select: { name: true, locale: true },
+    const rows = await getAdminPrisma().asset.findMany({
+      where: SYSTEM_SEED_WHERE,
+      select: { name: true, content: true },
     });
     const byName = new Map<string, Set<string>>();
     for (const r of rows) {
+      const locale = (r.content as EmailContent).locale;
       if (!byName.has(r.name)) byName.set(r.name, new Set());
-      byName.get(r.name)!.add(r.locale);
+      byName.get(r.name)!.add(locale);
     }
     expect(byName.size).toBe(5);
     for (const [name, locales] of byName) {
@@ -85,21 +107,22 @@ describe("seedSystemTemplates()", () => {
     }
   });
 
-  it("populates non-empty variables with {token, description} shape on every row", async () => {
+  it("populates non-empty content.variables with {token, description} shape on every row", async () => {
     await seedSystemTemplates();
-    const rows = await getAdminPrisma().emailTemplate.findMany({
-      where: { type: "system", tenantId: null },
-      select: { name: true, locale: true, variables: true },
+    const rows = await getAdminPrisma().asset.findMany({
+      where: SYSTEM_SEED_WHERE,
+      select: { name: true, content: true },
     });
     for (const r of rows) {
-      const vars = r.variables as Array<Record<string, unknown>>;
+      const content = r.content as EmailContent;
+      const vars = content.variables;
       expect(
         Array.isArray(vars),
-        `variables must be an array — ${r.name}/${r.locale}`
+        `variables must be an array — ${r.name}/${content.locale}`
       ).toBe(true);
       expect(
         vars.length,
-        `variables must be non-empty — ${r.name}/${r.locale}`
+        `variables must be non-empty — ${r.name}/${content.locale}`
       ).toBeGreaterThan(0);
       for (const v of vars) {
         expect(typeof v.token).toBe("string");
@@ -111,9 +134,9 @@ describe("seedSystemTemplates()", () => {
 
   it("references the 4 core tokens ({{kol.name}} / {{product.name}} / {{product.usp}} / {{marketer.name}}) in every body", async () => {
     await seedSystemTemplates();
-    const rows = await getAdminPrisma().emailTemplate.findMany({
-      where: { type: "system", tenantId: null },
-      select: { name: true, locale: true, body: true },
+    const rows = await getAdminPrisma().asset.findMany({
+      where: SYSTEM_SEED_WHERE,
+      select: { name: true, content: true },
     });
     const coreTokens = [
       "{{kol.name}}",
@@ -122,6 +145,7 @@ describe("seedSystemTemplates()", () => {
       "{{marketer.name}}",
     ];
     for (const r of rows) {
+      const content = r.content as EmailContent;
       for (const token of coreTokens) {
         // Post-collab and decline templates legitimately skip the
         // "product USP" pitch — the copy is a check-in / close, not
@@ -131,8 +155,8 @@ describe("seedSystemTemplates()", () => {
           (r.name === "Polite Decline" || r.name === "Post-Collab Check-in");
         if (skipUsp) continue;
         expect(
-          r.body.includes(token),
-          `template "${r.name}" (${r.locale}) body must reference ${token}`
+          content.body.includes(token),
+          `template "${r.name}" (${content.locale}) body must reference ${token}`
         ).toBe(true);
       }
     }
@@ -144,14 +168,15 @@ describe("seedSystemTemplates()", () => {
     // (180 words ≈ 900 chars) and we still want the floor check to
     // catch a regression where a body gets truncated to a placeholder.
     await seedSystemTemplates();
-    const rows = await getAdminPrisma().emailTemplate.findMany({
-      where: { type: "system", tenantId: null },
-      select: { name: true, locale: true, body: true },
+    const rows = await getAdminPrisma().asset.findMany({
+      where: SYSTEM_SEED_WHERE,
+      select: { name: true, content: true },
     });
     for (const r of rows) {
+      const content = r.content as EmailContent;
       expect(
-        r.body.length,
-        `template "${r.name}" (${r.locale}) body too short`
+        content.body.length,
+        `template "${r.name}" (${content.locale}) body too short`
       ).toBeGreaterThan(100);
     }
   });

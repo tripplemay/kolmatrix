@@ -32,7 +32,6 @@ model Tenant {
   users             User[]
   kols              Kol[]
   campaigns         Campaign[]
-  templates         EmailTemplate[]
   products          Product[]
   campaignMetrics   CampaignMetric[]
   weeklyReports     WeeklyReport[]
@@ -367,30 +366,11 @@ model KolCampaign {
 //  Email
 // ============================================================
 
-// BM2-F001 audit #A+#B: EmailTemplate table rebuilt (B0 shape dropped).
-// Key change: tenantId is now nullable — rows with tenantId=null are
-// "system" templates visible across tenants. App code reads via a union
-// filter (tenantId=:tenant OR tenantId IS NULL).
-model EmailTemplate {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId  String?  @map("tenant_id") @db.Uuid
-  name      String
-  subject   String
-  body      String   @db.Text
-  variables Json     @db.JsonB
-  locale    String   @default("en") @db.VarChar(5)
-  type      String   @default("system") @db.VarChar(20)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
-
-  tenant    Tenant?    @relation(fields: [tenantId], references: [id])
-  // BL-099-F003 (ADR-018 D2) — emailLogs back-relation removed with the
-  // FK; email_log.template_name now snapshots the name instead.
-
-  @@index([tenantId, type])
-  @@index([type, locale])
-  @@map("email_template")
-}
+// BL-099-F005 (ADR-018): the EmailTemplate model was removed. Asset
+// (type=email) is the single source of truth for templates; the
+// email_template table was dropped (migration
+// 20260610*_bl099_f005_drop_email_template). email_log.template_name
+// snapshots the name at send time (F003) so history survives the drop.
 
 model EmailLog {
   id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -645,14 +625,13 @@ model KolSyncCursor {
 //
 // ADR-011 方案 X: single Asset table, type enum + content JSONB
 // multipolymorphism, parentId for variant tree (regenerate without
-// overwriting). EmailTemplate rows migrate in a follow-up
-// migration; both tables coexist during a 1-sprint dual-write
-// window (loadAssetsForComposer reads Asset, mutations.ts writes
-// to both — see F006). The independent EmailTemplate cleanup
-// migration lives outside BL-025.
+// overwriting). BL-099 (ADR-018) completed the migration: legacy
+// email_template rows moved to Asset, the dual-write was removed, and
+// the email_template table was dropped (F005). Asset is the single
+// source of truth for email templates.
 //
 // RLS policy: tenant_id IS NULL means system_seed visible across
-// tenants (same shape as email_template's union policy). The Zod
+// tenants (same shape email_template's union policy used). The Zod
 // schemas in src/lib/assets/schemas.ts (F002) constrain the JSONB
 // content per-type since Postgres can't enforce that shape.
 // ============================================================

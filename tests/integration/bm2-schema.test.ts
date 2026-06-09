@@ -4,14 +4,14 @@
  * Per the 2026-04-24 pre-impl adjudication (docs/specs/BM2-f001-schema-
  * preimpl-audit.md §8), covers:
  *
- *   #A + #B + #C — rebuilt email_template shape
- *     * tenantId nullable (system templates)
- *     * single body column, variables required JSONB, type column
- *     * cross-tenant system template visibility under RLS
+ *   #A + #B + #C — email_template shape (DROPPED in BL-099-F005 /
+ *     ADR-018; Asset is now the single source of truth — coverage moved
+ *     to asset-rls.test.ts / composer-load-templates.test.ts)
  *   #D — campaign.product_id is TEXT (cuid) and FK-set to product
  *   #E — kol_campaign.status defaults to 'pending'; all 6 enum values
  *        round-trip cleanly via the ORM
- *   #F1 + #F2 — email_log.template_id FK to email_template
+ *   #F1 + #F2 — email_log.template_id is a decoupled plain uuid (the FK to
+ *        email_template was removed in BL-099-F003, table dropped in F005)
  *   #F3 — email_log.ai_customized NOT NULL DEFAULT false
  *
  * Plus the new bespoke tables:
@@ -30,7 +30,6 @@ import {
   asTenant,
   cleanDb,
   getAdminPrisma,
-  getAppPrisma,
   setupTestDb,
   teardownTestDb,
 } from "../helpers/db";
@@ -219,94 +218,18 @@ describe("BM2-F001 · KolCampaign.status (audit #E)", () => {
   });
 });
 
-describe("BM2-F001 · EmailTemplate rebuild (audit #A + #B + #C)", () => {
-  it("stores a system template with tenantId=null, visible across tenants under RLS", async () => {
-    await seedTenantWithUser(TENANT_A);
-    await seedTenantWithUser(TENANT_B);
-    const systemTpl = await getAdminPrisma().emailTemplate.create({
-      data: {
-        tenantId: null,
-        name: "Initial Outreach",
-        subject: "Partner with {{product.name}}",
-        body: "Hi {{kol.name}}, we love your channel.",
-        variables: [{ token: "{{kol.name}}", description: "KOL name" }],
-        locale: "en",
-        type: "system",
-      },
-    });
-    expect(systemTpl.tenantId).toBeNull();
-    expect(systemTpl.type).toBe("system");
-
-    const aSees = await asTenant(TENANT_A, (tx) => tx.emailTemplate.findMany());
-    const bSees = await asTenant(TENANT_B, (tx) => tx.emailTemplate.findMany());
-    expect(aSees.map((t) => t.id)).toContain(systemTpl.id);
-    expect(bSees.map((t) => t.id)).toContain(systemTpl.id);
-  });
-
-  it("stores a user template scoped to one tenant only", async () => {
-    await seedTenantWithUser(TENANT_A);
-    await seedTenantWithUser(TENANT_B);
-    const aTpl = await getAdminPrisma().emailTemplate.create({
-      data: {
-        tenantId: TENANT_A,
-        name: "A custom",
-        subject: "Hi",
-        body: "Hi",
-        variables: [],
-        locale: "en",
-        type: "user",
-      },
-    });
-    const aSees = await asTenant(TENANT_A, (tx) => tx.emailTemplate.findMany());
-    const bSees = await asTenant(TENANT_B, (tx) => tx.emailTemplate.findMany());
-    expect(aSees.map((t) => t.id)).toContain(aTpl.id);
-    expect(bSees.map((t) => t.id)).not.toContain(aTpl.id);
-  });
-
-  it("unscoped reader (no app.tenant_id set) still sees only system rows", async () => {
-    await seedTenantWithUser(TENANT_A);
-    const systemTpl = await getAdminPrisma().emailTemplate.create({
-      data: {
-        tenantId: null,
-        name: "sys",
-        subject: "s",
-        body: "b",
-        variables: [],
-        type: "system",
-      },
-    });
-    await getAdminPrisma().emailTemplate.create({
-      data: {
-        tenantId: TENANT_A,
-        name: "user-scoped",
-        subject: "s",
-        body: "b",
-        variables: [],
-        type: "user",
-      },
-    });
-    const appRead = await getAppPrisma().emailTemplate.findMany();
-    expect(appRead.map((t) => t.id)).toEqual([systemTpl.id]);
-  });
-});
-
 describe("BM2-F001 · EmailLog extensions (audit #F)", () => {
   it("defaults ai_customized to false; template_id is a plain uuid (no FK) with a template_name snapshot (BL-099-F003)", async () => {
     const { tenant } = await seedTenantWithUser(TENANT_A);
-    const tpl = await getAdminPrisma().emailTemplate.create({
-      data: {
-        tenantId: null,
-        name: "Outreach",
-        subject: "Hi",
-        body: "Hello {{kol.name}}",
-        variables: [],
-        type: "system",
-      },
-    });
+    // BL-099-F005 (ADR-018) — email_template was dropped; Asset is now the
+    // template source of truth and email_log.template_id is a decoupled
+    // plain uuid (no FK), so we just use a free-standing uuid here. The
+    // template_name snapshot is what carries the human-readable name.
+    const templateId = "dddddddd-0000-0000-0000-000000000099";
     const log = await getAdminPrisma().emailLog.create({
       data: {
         tenantId: tenant.id,
-        templateId: tpl.id,
+        templateId,
         templateName: "Outreach",
         toAddress: "kol@example.test",
         fromAddress: "marketer@kolquest.com",
@@ -315,18 +238,17 @@ describe("BM2-F001 · EmailLog extensions (audit #F)", () => {
       },
     });
     expect(log.aiCustomized).toBe(false);
-    expect(log.templateId).toBe(tpl.id);
+    expect(log.templateId).toBe(templateId);
     expect(log.templateName).toBe("Outreach");
 
-    // BL-099-F003 (ADR-018 D2) — the FK to email_template was removed, so
-    // deleting the template no longer nulls the log's template_id. The
-    // historical correlation id AND the template_name snapshot both
-    // survive (the snapshot is exactly why the FK is no longer needed).
-    await getAdminPrisma().emailTemplate.delete({ where: { id: tpl.id } });
+    // BL-099-F003 (ADR-018 D2) — template_id is a plain uuid with no FK,
+    // so the correlation id is just stored verbatim and the template_name
+    // snapshot survives independently (the snapshot is exactly why the FK
+    // is no longer needed). Reloading round-trips both.
     const reloaded = await getAdminPrisma().emailLog.findUniqueOrThrow({
       where: { id: log.id },
     });
-    expect(reloaded.templateId).toBe(tpl.id);
+    expect(reloaded.templateId).toBe(templateId);
     expect(reloaded.templateName).toBe("Outreach");
   });
 

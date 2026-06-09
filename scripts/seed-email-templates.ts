@@ -1,16 +1,18 @@
 /**
  * BM2-F002 · System email-template seed
  *
- * Plants 10 rows in `email_template` (5 categories × en/zh) with
- * `tenantId = NULL` and `type = "system"` so every tenant can reference
- * them through the union RLS policy added in BM2-F001. F006 (outreach
- * page) and F011 (tests) depend on this seed.
+ * BL-099-F005 (ADR-018): now seeds 10 system templates directly into the
+ * unified `asset` table (type=email, source=system_seed, tenantId=NULL,
+ * status=published) — the legacy `email_template` table was dropped and
+ * Asset is the single source of truth. Composer + AI-customisation read
+ * these via loadAssetsForComposer. F006 (outreach page) and the
+ * integration seed test depend on this.
  *
- * Idempotency: upsert keyed on `(name, locale)` pair — re-running is a
- * no-op in terms of row count. We query an existing row first because
- * Prisma has no composite-unique index on (name, locale); instead of
- * adding an index just for seeding, we guard the create with a manual
- * lookup inside a transaction.
+ * Idempotency: keyed on the (name, content.locale) pair — re-running is
+ * a no-op in row count. Asset has no composite-unique index on those, so
+ * we look up an existing system_seed row first and update it, else
+ * create. en/zh share `name`, so the lookup also filters on
+ * content->>'locale'.
  *
  * Run: `npm run seed:email-templates`
  *
@@ -23,7 +25,7 @@
 import "dotenv/config";
 
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, type Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const connectionString =
   process.env.DATABASE_ADMIN_URL ?? process.env.DATABASE_URL;
@@ -320,74 +322,48 @@ interface SeedStats {
 async function seedSystemTemplates(): Promise<SeedStats> {
   const stats: SeedStats = { inserted: 0, updated: 0, total: 0 };
   for (const tpl of TEMPLATES) {
-    // System templates have tenantId=null, so Prisma's findUnique on a
-    // composite "tenantId_name_locale" index won't work. Use findFirst
-    // filtered on the (name, locale) pair + tenantId IS NULL.
-    const existing = await prisma.emailTemplate.findFirst({
-      where: { tenantId: null, name: tpl.name, locale: tpl.locale },
-      select: { id: true },
-    });
-    const emailTemplateData: Prisma.EmailTemplateUncheckedCreateInput = {
-      tenantId: null,
-      name: tpl.name,
+    const content = {
       subject: tpl.subject,
       body: tpl.body,
-      variables: tpl.variables,
       locale: tpl.locale,
-      type: "system",
+      variables: tpl.variables,
     };
 
-    let templateId: string;
-    if (existing) {
-      await prisma.emailTemplate.update({
-        where: { id: existing.id },
-        data: emailTemplateData,
-      });
-      templateId = existing.id;
-      stats.updated += 1;
-    } else {
-      const created = await prisma.emailTemplate.create({
-        data: emailTemplateData,
-        select: { id: true },
-      });
-      templateId = created.id;
-      stats.inserted += 1;
-    }
-
-    // BL-025-F006 dual-write — keep the unified asset table in sync so
-    // loadOutreachTemplates (which now reads from `asset` rather than
-    // `email_template`) sees these system seeds. id is shared with the
-    // email_template row so future email_log.template_id can refer to
-    // either source consistently.
-    await prisma.asset.upsert({
-      where: { id: templateId },
-      update: {
-        name: tpl.name,
-        content: {
-          subject: tpl.subject,
-          body: tpl.body,
-          locale: tpl.locale,
-          variables: tpl.variables,
-        },
-        status: "published",
-        source: "system_seed",
-      },
-      create: {
-        id: templateId,
+    // System templates are tenantId=NULL Assets (source=system_seed).
+    // (name, locale) identifies one; en/zh share `name`, so match on
+    // content->>'locale' too. No composite-unique index exists, so look
+    // up first then update/create (idempotent re-run).
+    const existing = await prisma.asset.findFirst({
+      where: {
         tenantId: null,
         type: "email",
-        name: tpl.name,
-        content: {
-          subject: tpl.subject,
-          body: tpl.body,
-          locale: tpl.locale,
-          variables: tpl.variables,
-        },
         source: "system_seed",
-        status: "published",
-        metadata: { seeded: true },
+        name: tpl.name,
+        content: { path: ["locale"], equals: tpl.locale },
       },
+      select: { id: true },
     });
+
+    if (existing) {
+      await prisma.asset.update({
+        where: { id: existing.id },
+        data: { name: tpl.name, content, status: "published", source: "system_seed" },
+      });
+      stats.updated += 1;
+    } else {
+      await prisma.asset.create({
+        data: {
+          tenantId: null,
+          type: "email",
+          name: tpl.name,
+          content,
+          source: "system_seed",
+          status: "published",
+          metadata: { seeded: true },
+        },
+      });
+      stats.inserted += 1;
+    }
 
     stats.total += 1;
   }
