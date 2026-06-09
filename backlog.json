@@ -438,5 +438,131 @@
       "unresolved"
     ],
     "discovered_in": "BL-092 F003 verified-live 2026-06-08 (IG 仍 0 产出, F005 节流未解决)"
+  },
+  {
+    "id": "BL-100",
+    "priority": "high",
+    "title": "邮件批量发送异步化 + 真 BullMQ 队列 (H1: 同步阻塞, >10收件人必超时)",
+    "description": "审计 H1[形态C]. 现象: 批量外联收件人>~10 必触发 60s 超时报错, 但部分邮件已真发出, 用户无从得知发了几封, 批量发送实质不可用. 根因: jobQueue(lib/jobs/queue.ts:134)是 InMemoryJobQueue(无持久化/重试/跨进程); 邮件发送根本没接队列——reach/actions.ts:321 直接 await batchSendOutreach, batch-send.ts:213 每封 await sleep(6000)(10封/分节流), 整个发送在 server action 内同步执行与 60s wall-clock 竞速(actions.ts:317 注释自承超时不取消已发). register.ts:5 'BM2 email sending will populate' 从未兑现. 同源: prewarm 队列也是内存 stub(多实例进程隔离). 止血: 分批降单次量+明确回报'已发N封'. 根治: 上真 BullMQ + 发送改异步队列任务(server action 立即返回, 后台续跑, EmailLog 轮询进度).",
+    "tags": [
+      "email",
+      "queue",
+      "bullmq",
+      "split-brain-C",
+      "user-visible"
+    ],
+    "decisions": [],
+    "confirmed_at": "2026-06-09T13:30+0800",
+    "discovered_in": "2026-06-09 全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md"
+  },
+  {
+    "id": "BL-101",
+    "priority": "high",
+    "title": "Reply 追踪链 repliedAt 只读不写 (H2: prod 回复面板靠 seed 假数据撑场)",
+    "description": "审计 H2[形态A 读了没人写]. 现象: Reply Rate KPI/Recent Replies 卡/tracking replied 列/Dashboard 邮件趋势 Replied 线 全读 email_log.repliedAt; dev/staging ~20% seed 行撑场面, prod 恒0/空且 UI 无 seed标注→营销人误读'零回复'. 根因: 全仓无生产代码写 repliedAt(grep 赋值仅测试); Resend webhook handler.ts:43 STATUS_BY_EVENT_TYPE 只有 delivered/bounced/complained/opened/clicked 无 replied(回复是 inbound email 独立机制未实装); spec BM2-f006:97 标 B4 deferred. 止血(优先): prod 三处显式空态+'回复追踪B4上线'标注 或 从图例/KPI 移除 Replied 维度. 根治: inbound-email ingestion 写 repliedAt.",
+    "tags": [
+      "email",
+      "reply-tracking",
+      "split-brain-A",
+      "user-visible",
+      "B4-defer"
+    ],
+    "decisions": [],
+    "confirmed_at": "2026-06-09T13:30+0800",
+    "discovered_in": "2026-06-09 全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md"
+  },
+  {
+    "id": "BL-102",
+    "priority": "high",
+    "title": "kol_campaign 双 accept 读口径统一 (H3: skip/swap 的KOL在详情页显示'已接受')",
+    "description": "审计 H3[形态B 写错口径]. 现象: 用户在/match AI面板跳过/移候补的KOL, 转到/campaigns/[id]显示为'已接受', acceptedCount虚高. 根因: 两条 accept 写路径写不同列——AI面板三键走 suggestion-actions.ts:55 writeDecision 写 suggestionStatus(skip也插一行 source=ai_smart_match); 详情页accept走 recommend-actions.ts:132 只写 status/source 不写 suggestionStatus. 读面 detail.ts:115 select无suggestionStatus, AcceptedKolsPanel.tsx:66 只filter source, page.tsx:72 acceptedCount=kols.length不区分→skip/swap行全落进'已接受'. ADR-016约定的 WHERE suggestion_status=accepted 除/match外无任何读者执行. 止血: detail.ts select加suggestionStatus, AcceptedKolsPanel/acceptedCount过滤 suggestionStatus∈{accepted,NULL}. 根治: 详情页accept也写 suggestionStatus=accepted, 全项目'已接受KOL'读口径统一(accepted OR NULL兼容legacy).",
+    "tags": [
+      "match",
+      "kol_campaign",
+      "adr-016",
+      "split-brain-B",
+      "user-visible"
+    ],
+    "decisions": [],
+    "confirmed_at": "2026-06-09T13:30+0800",
+    "discovered_in": "2026-06-09 全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md"
+  },
+  {
+    "id": "BL-103",
+    "priority": "high",
+    "title": "/assets 列表 type 白名单收口 (H4: 泄漏AI解释缓存行成空白脏卡)",
+    "description": "审计 H4[形态D 读路径过宽]. 现象: /assets网格混入 ai_recommendation_explanation_short/detailed 缓存行, 渲染成空白卡(标签显示cache key名); 且这些 ai_generated 行使 userOwnedCount>0, 让从没建过真实资产的租户错误跳过 welcome 引导直接看空白网格. 根因: loadAssetsForListing 的 buildListWhere(queries.ts:120)仅当filter.types非空才加type谓词, /assets默认无type过滤→返回全部4种type; 解释缓存由 cache.ts:126,208 tx.asset.create 直写asset做缓存分区, 列表读路径未排除; filter-shape.ts:31 ASSET_TYPES 只列email/video_script证明UI契约本只认这俩. 修复(低风险单点): buildListWhere 加 LISTABLE_ASSET_TYPES=[email,video_script] 白名单默认过滤; welcome-count(page.tsx:65)同步按type限定. 可考虑并入小hotfix.",
+    "tags": [
+      "assets",
+      "split-brain-D",
+      "user-visible",
+      "small"
+    ],
+    "decisions": [],
+    "confirmed_at": "2026-06-09T13:30+0800",
+    "discovered_in": "2026-06-09 全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md"
+  },
+  {
+    "id": "BL-104",
+    "priority": "high",
+    "title": "修两个 404 死链 (H5 /kols面包屑 + H6 Edit Brief按钮)",
+    "description": "审计 H5+H6[形态C]. H5: KOL详情面包屑'Back to Database'(page.tsx:162 href=/{locale}/kols)指向不存在路由——(app)/kols/下只有[id]/无 kols/page.tsx, 点击必404; /kols在受保护路径表(middleware-helpers.ts:19)但无page. 修: 面包屑改指/match 或补/kols→/match redirect. H6: BriefSummaryPanel.tsx:224 'Edit Brief'链接/{locale}/campaigns/{id}/edit, 路由不存在点击404(spec原锁占位/{locale}/n, 实现改/edit同样未建). H6 修复与 BL-105(补campaign编辑入口)联动: 若补编辑页则此按钮接真页, 否则退役按钮. 两个都是用户可见死链, 改动极小.",
+    "tags": [
+      "dead-link",
+      "404",
+      "split-brain-C",
+      "user-visible",
+      "small"
+    ],
+    "decisions": [],
+    "confirmed_at": "2026-06-09T13:30+0800",
+    "discovered_in": "2026-06-09 全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md"
+  },
+  {
+    "id": "BL-105",
+    "priority": "medium",
+    "title": "补回 campaign 编辑 UI 入口 (M1: 下层5 action+API已齐, 只缺前端接线)",
+    "description": "审计 M1[形态C]. 用户决策(2026-06-09): 该补回编辑入口(非退役). 现状: campaign 整条编辑/状态流转(draft→active→completed)/营收记录/KOL移除改名单 的5个server action(update.ts/kol-operations.ts)+API route+lib全部实装且有单测, 但前端零调用方——BL-066-F006+BL-070-F005 AI-native重构把详情页改只读3-panel(删6个编辑组件含CampaignRevenueRecorder/CampaignStatusController/AddKolDialog), 下层未同步退役. CampaignHeader.tsx(唯一import编辑action者)无任何render. 范围: 在AI-native只读布局基础上补回编辑入口——编辑活动字段(接updateCampaignFieldsAction)/状态流转(transitionStatusAction)/营收(recordRevenueAction)/KOL移除改fee状态(removeKolAction等)/单条加KOL. 复用现成已测action/API, 主要是前端UI. H6 Edit Brief按钮顺势接真编辑页. 下层能力已齐故估时偏前端.",
+    "tags": [
+      "campaigns",
+      "ui-rewire",
+      "split-brain-C",
+      "feature"
+    ],
+    "decisions": [],
+    "confirmed_at": "2026-06-09T13:30+0800",
+    "discovered_in": "2026-06-09 全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md"
+  },
+  {
+    "id": "BL-106",
+    "priority": "medium",
+    "title": "KPI 快照 cron prod 接线核实 (M2: 趋势可能从未生效)",
+    "description": "审计 M2. kpi_daily_snapshot 写入依赖仓库外手工crontab——scripts/kpi-snapshot-daily.ts注释说挂/etc/cron.d, 但仓库无vercel.json/GH cron/任何调度证据. 若部署环境没挂这条cron, 快照表永空→所有KPI趋势chip永久停'—'降级态(降级诚实不显假趋势, 但'真趋势'功能prod可能从未生效, 代码内无法自证). 动作: 核实prod crontab是否真在跑(可登VPS查 crontab -l / /etc/cron.d); 若依赖Vercel需补vercel.json cron或GH Actions schedule把调度纳入仓库(可证). 关联BL-050(KPI真趋势化).",
+    "tags": [
+      "kpi",
+      "cron",
+      "ops",
+      "dashboard",
+      "needs-verification"
+    ],
+    "decisions": [],
+    "confirmed_at": "2026-06-09T13:30+0800",
+    "discovered_in": "2026-06-09 全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md"
+  },
+  {
+    "id": "BL-107",
+    "priority": "medium",
+    "title": "实装链路收口杂项 (M4软删过滤/M5 tsvector死码/M6孤儿API/M7假AI搜索/M8 ROI硬编码)",
+    "description": "审计中危合集(各自小, 合一批收口). M4[形态D]: KOL详情loadKol(page.tsx:87)findUnique无deletedAt/isSuspicious过滤→软删/可疑KOL经直链仍可渲染与列表口径不一致; 修 where:{id,deletedAt:null}命中走notFound. M5[形态B]: kol.search_vector由DB trigger每写必更, 唯一读者searchKols(tsvector.ts:49)全仓零调用(UI搜索走ILIKE), 且buildKolSearchQuery replace(/ /g)把多词压单token已坏, filters.ts:415注释谎称available→接线或删除. M6[形态C]孤儿API零fetch调用: PATCH /api/kols/[id](邮箱,emailSource enum已过期)/POST campaigns/[id]/kols+[kolId] PATCH/DELETE/relationship-status REST→删或对齐. M7[形态B/C]假AI语义搜索: ?ai= 全套基建(解析filters.ts:317/chip MatchActiveFilters.tsx:46/empty-state)但buildKolWhere从不读aiQuery, runSemanticKolSearch(semantic-search.ts:115)零调用, filters.ts:319还抹掉search→接线runSemanticKolSearch 或整链移除(现网search框name=search暂不产?ai=, 入口未暴露). M8: ROI AI Insights roi/actions.ts:70喂模型startedAt:null/kolCount:0硬编码→loader真取或删payload. 另低优死代码: runSemanticKolSearch/loadCoverageGapSummary零调用/Dashboard进度条硬编码75%/status:queued死筛选项/stats.ts不过滤isSuspicious.",
+    "tags": [
+      "tech-debt",
+      "dead-code",
+      "orphan-api",
+      "split-brain-mixed",
+      "cleanup"
+    ],
+    "decisions": [],
+    "confirmed_at": "2026-06-09T13:30+0800",
+    "discovered_in": "2026-06-09 全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md"
   }
 ]

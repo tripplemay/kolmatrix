@@ -26,6 +26,6 @@ type: project
 ## 用户手工待办
 1. aigcgateway VM .git remote PAT(gho_*)轮换(安全)
 ## Backlog
-- **BL-099**(中): 邮件模板 ADR-011 迁移收尾(统一 Asset 真相源, 消 split-brain; BL-098 是 symptom). 审计 docs/reviews/email-template-feature-audit-2026-06-09.md: 10 system_seed Asset 无 email_template 镜像→AI定制全挂; 迁 analytics+孤儿工作区 reach/templates+处理 email_log FK+删双写
-- **BL-095**(中): IG hashtag 发现 0 产出深度排查(BL-086 F005 350ms 节流未解决, 288ref+4hash 全 0)
-- BL-090-cost / BL-089 配置页 / BL-058 fork / BL-048 valueScore / BL-011 等(详见 backlog.json)
+- 🔍 **全功能链路审计(2026-06-09)** docs/reviews/full-feature-chain-audit-2026-06-09.md: split-brain 病灶家族 6高危+8中危→ backlog BL-100~107(全部入池, 用户决定排期)
+- **BL-100**(高): 邮件发送异步化+真BullMQ(>10收件人必超时) / **BL-101**(高): Reply链 repliedAt 只读不写(prod假数据撑场) / **BL-102**(高): kol_campaign 双accept读口径(skip/swap显示已接受) / **BL-103**(高): /assets泄漏解释缓存脏卡 / **BL-104**(高): 2个404死链(/kols面包屑+Edit Brief) / **BL-105**(中): 补回campaign编辑UI(下层已齐) / **BL-106**(中): KPI快照cron核实 / **BL-107**(中): 链路收口杂项(软删/tsvector/孤儿API/假AI搜索/ROI硬编码)
+- **BL-095**(中): IG hashtag 0 产出深度排查 / BL-089 配置页 / BL-058 fork / BL-048 valueScore / BL-011 等(详见 backlog.json)
