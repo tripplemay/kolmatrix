@@ -384,7 +384,8 @@ model EmailTemplate {
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   tenant    Tenant?    @relation(fields: [tenantId], references: [id])
-  emailLogs EmailLog[]
+  // BL-099-F003 (ADR-018 D2) — emailLogs back-relation removed with the
+  // FK; email_log.template_name now snapshots the name instead.
 
   @@index([tenantId, type])
   @@index([type, locale])
@@ -397,6 +398,11 @@ model EmailLog {
   campaignId        String?   @map("campaign_id") @db.Uuid
   kolId             String?   @map("kol_id") @db.Uuid
   templateId        String?   @map("template_id") @db.Uuid
+  // BL-099-F003 (ADR-018 D2) — snapshot of the template name at send
+  // time. email_log no longer FK-joins email_template; the name is
+  // frozen here so audit history keeps the name as-sent even after the
+  // template is renamed/deleted, and survives the F005 table drop.
+  templateName      String?   @map("template_name")
   toAddress         String    @map("to_address")
   fromAddress       String    @map("from_address")
   subject           String
@@ -413,9 +419,11 @@ model EmailLog {
   aiCustomized      Boolean   @default(false) @map("ai_customized")
   createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
 
-  campaign Campaign?      @relation(fields: [campaignId], references: [id])
-  kol      Kol?           @relation(fields: [kolId], references: [id])
-  template EmailTemplate? @relation(fields: [templateId], references: [id])
+  campaign Campaign? @relation(fields: [campaignId], references: [id])
+  kol      Kol?      @relation(fields: [kolId], references: [id])
+  // BL-099-F003 (ADR-018 D2) — FK to email_template removed; template_id
+  // kept as a plain uuid for historical correlation, name snapshotted
+  // in template_name above.
 
   @@index([tenantId, campaignId, status])
   @@index([tenantId, kolId])

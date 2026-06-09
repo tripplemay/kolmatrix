@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-099 邮件模板 ADR-011 迁移收尾 — 统一 Asset 单一真相源, 消除 split-brain. 现状(审计 docs/reviews/email-template-feature-audit-2026-06-09.md): 读路径(composer)已迁 Asset, 但写路径(createUserTemplate 等, 两个入口)只写 email_template→用户建模板存完即从列表消失(prod ~16个); analytics + email_log FK 仍用 email_template. 决策 ADR-018: Asset 唯一真相源 + email_log 去FK加 template_name 快照列 + drop email_template. 一次到位(用户 2026-06-09 决策). 6 features: F001 写路径统一 Asset / F002 历史 user 模板迁 Asset 防丢失 / F003 email_log 快照列+回填+解耦FK+发送写快照 / F004 analytics 改读快照 / F005 删双写+DROP表(不可逆,最后) / F006 Codex. 纯kolmatrix, 含 2 schema migration.",
   "total_features": 6,
-  "completed_features": 2,
+  "completed_features": 3,
   "fix_rounds": 0,
   "current_sprint": "BL-099-email-template-asset-unification",
-  "last_updated": "2026-06-09T12:50+0800",
+  "last_updated": "2026-06-09T13:30+0800",
   "reference_docs": [
     "docs/specs/BL-099-email-template-asset-unification-spec.md",
     "docs/adr/ADR-018-email-template-unify-asset-snapshot-decouple.md",
@@ -29,7 +29,7 @@
   "generator_handoff": "[✅ F001 done @2026-06-09 12:15 Generator Kimi — 写路径统一 Asset, status=published 止活血, L1全绿(vitest 1549). 下一步 F002.] [2026-06-09 11:30 BJT Planner Kimi 开 BL-099 building] ADR-011 迁移收尾, 一次到位(用户决策). 决策 ADR-018: Asset 唯一真相源 + email_log 快照解耦 FK + drop email_template. 6 features 按依赖顺序, drop 表(F005)必须最后且 Codex 须在 F001-F003 验收通过后放行. ⚠️ 不可逆: F002 历史 user 模板迁 Asset 必须先于 F005 drop, F005 验收断言零用户数据丢失; F003 回填 template_name 须趁 email_template 还在. ⚠️ 2 schema migration(F003 加列+回填+解约束 / F005 drop table), 部署用户手动触发, 建议 F005 drop 单独部署窗口. 下一步 Generator 启 F001(写路径统一到 Asset, 止活血: 用户建模板立即可见). 详见 spec §2 + ADR-018 D1-D4.",
   "session_notes": {
     "Kimi_planner": "[2026-06-09 11:30 BJT Planner Kimi] BL-098 已 DONE(Codex 2/2 PASS, prod deploy 待用户手动触发). 处理完 7 条 proposed-learnings(用户全 ack, 沉淀入 framework c8ca9c8). 开 BL-099 迁移收尾批次: 深挖代码现状纠正审计两处(工作区非孤儿是活tab / 写路径活bug比 backlog 框定大). 决策 ADR-018(C方案: email_log 快照解耦FK) + 一次到位. 6 features. 关键不可逆点已在 spec §3 + handoff 标注. 下一步 Generator F001.",
-    "Kimi_generator": "[2026-06-09 12:50 BJT] BL-099 F001+F002 done(本会话, 用户选自动推到F004). F001 写路径统一Asset(status=published止活血). F002 历史user模板迁移脚本 scripts/bl099-f002-migrate-user-templates.ts(跨tenant withTenant scan, 幂等去重三查, variables sanitize, dry-run默认) + 7单测. ⚠️ F002脚本实际--execute在staging/prod部署后跑(交付脚本+单测, 非本地执行). L1全绿(vitest 1556). resend webhook test 偶发flaky(单跑过,test isolation预存非本批). 下一步 F003 email_log快照列+回填+解耦FK(schema migration). ⚠️ F005前停下确认(用户决策).",
+    "Kimi_generator": "[2026-06-09 13:30 BJT] BL-099 F001+F002+F003 done(本会话, 用户选自动推到F004 F005前停). F001 写路径统一Asset(status=published止活血). F002 历史模板迁移脚本(幂等+dry-run). F003 email_log 快照列+解耦FK: schema +templateName 双边删 template/emailLogs relation; migration 20260609130000_bl099_f003(ADD COLUMN+回填UPDATE趁email_template在+DROP CONSTRAINT email_log_template_id_fkey+ROLLBACK) ⚠️手写(本地DB migration历史漂移migrate dev要reset, migrate diff确认FK名后手写, 本地未apply靠CI Build+migrate smoke验证); batch-send tx内查asset name写templateName快照. 单测batch-send-template-name 3个. L1全绿(vitest 1559). 下一步 F004 analytics getTopTemplates 改读 email_log.template_name(去join email_template). ⚠️F005(DROP表不可逆)前停下向用户展示migration方案(用户决策).",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null

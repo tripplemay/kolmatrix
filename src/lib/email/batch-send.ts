@@ -101,12 +101,27 @@ export async function batchSendOutreach(
     // transaction so a DB hiccup cannot leave an email "sent" with
     // no audit trail.
     const dbOut = await withTenant(tenantId, async (tx) => {
+      // BL-099-F003 (ADR-018 D2) — snapshot the template name as-sent.
+      // email_log no longer FK-joins email_template, so freeze the
+      // current Asset name here; it survives rename/delete + the F005
+      // table drop. null when no template (free-typed send) or the
+      // template asset is gone.
+      let templateName: string | null = null;
+      if (item.templateId) {
+        const tpl = await tx.asset.findUnique({
+          where: { id: item.templateId },
+          select: { name: true },
+        });
+        templateName = tpl?.name ?? null;
+      }
+
       const emailLog = await tx.emailLog.create({
         data: {
           tenantId,
           campaignId,
           kolId: item.kolId,
           templateId: item.templateId ?? null,
+          templateName,
           aiCustomized: item.aiCustomized ?? false,
           toAddress: item.toAddress,
           fromAddress: FROM_ADDRESS,

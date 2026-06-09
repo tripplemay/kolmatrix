@@ -40,7 +40,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-09T13:30+0800",
+    "verify_note": "schema: EmailLog +templateName String?@map(template_name), 双边删 template/emailLogs relation(FK 解耦), templateId 保 plain uuid 供历史关联. migration 20260609130000_bl099_f003_email_log_template_name_snapshot: ADD COLUMN + 回填 UPDATE(from email_template join, 趁表在 F005前) + DROP CONSTRAINT email_log_template_id_fkey + ROLLBACK 注释(inverse ADD CONSTRAINT+DROP COLUMN). ⚠️手写 migration(本地 DB migration 历史漂移 migrate dev 要 reset 清库, 改用 migrate diff --from-config-datasource 确认 FK 名=email_log_template_id_fkey 后手写; 本地未 apply, 靠 CI 'Build+migrate smoke'(干净PG migrate deploy)+'Validate ROLLBACK' 验证). batch-send.ts: withTenant tx 内 emailLog.create 前查 asset.findUnique name 写 templateName 快照(templateId null/asset gone→null), 不改 sendBatchAction(快照在 batch-send 取符合 spec+'发送当时名字'语义). prisma generate 更新 client. 单测 batch-send-template-name.test.ts 3个(快照/null模板/asset缺). L1全绿 tsc+lint 0err/3warn+vitest 1559+build.",
     "acceptance": [
       "prisma migration: EmailLog 加 templateName String? @map(template_name); 回填 UPDATE email_log SET template_name=(SELECT name FROM email_template WHERE id=email_log.template_id) WHERE template_id IS NOT NULL(趁 email_template 还在); 去掉 template EmailTemplate? relation + FK 约束, template_id 保留 plain uuid",
       "batch-send.ts:104/201 发送创建 email_log 时写 templateName(从发送用的 Asset 模板取名, 快照)",
