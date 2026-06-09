@@ -147,7 +147,7 @@ export async function cleanDb(): Promise<void> {
   await admin.$executeRawUnsafe(
     `TRUNCATE TABLE
        "weekly_report", "campaign_metric",
-       "email_log", "email_template",
+       "email_log",
        "kol_campaign", "campaign",
        "product",
        "kol",

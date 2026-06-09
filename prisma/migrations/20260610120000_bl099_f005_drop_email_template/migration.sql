@@ -21,9 +21,10 @@
 
 DROP TABLE "email_template";
 
--- ROLLBACK (structure only — DROPPED ROW DATA IS NOT RECOVERABLE from
--- this migration; restore rows from the pre-deploy pg_dump under
--- /opt/kolmatrix-backups/ if ever required). Referential actions below
+-- ROLLBACK:
+-- Structure only — DROPPED ROW DATA IS NOT RECOVERABLE from this
+-- migration; restore rows from the pre-deploy pg_dump under
+-- /opt/kolmatrix-backups/ if ever required. Referential actions below
 -- mirror the original optional-relation FK; re-add RLS policies
 -- separately if rolling back:
 -- CREATE TABLE "email_template" (
