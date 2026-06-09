@@ -150,27 +150,28 @@ export async function runTopTemplates(
     });
     if (grouped.length === 0) return [];
 
-    const ids = grouped
-      .map((g) => g.templateId)
-      .filter((id): id is string => id != null);
-    const templates = await tx.emailTemplate.findMany({
-      where: { id: { in: ids } },
-      select: { id: true, name: true },
-    });
-    const templateName = new Map(templates.map((t) => [t.id, t.name]));
-
-    // For the open-rate we need another per-template count. Small set
-    // (3 rows) so a short fan-out is fine.
+    // BL-099-F004 (ADR-018 D2) — read the template name from the
+    // email_log.template_name snapshot instead of joining email_template
+    // (which F005 drops). Per group we take the most recent send's
+    // snapshot name. Small set (≤limit rows) so the per-group fan-out is
+    // fine — the open-rate count already fans out the same way.
     const result: TopTemplateRow[] = [];
     for (const g of grouped) {
       if (!g.templateId) continue;
-      const opened = await tx.emailLog.count({
-        where: { templateId: g.templateId, openedAt: { not: null } },
-      });
+      const [opened, latest] = await Promise.all([
+        tx.emailLog.count({
+          where: { templateId: g.templateId, openedAt: { not: null } },
+        }),
+        tx.emailLog.findFirst({
+          where: { templateId: g.templateId, templateName: { not: null } },
+          select: { templateName: true },
+          orderBy: { createdAt: "desc" },
+        }),
+      ]);
       const usage = g._count._all;
       result.push({
         templateId: g.templateId,
-        name: templateName.get(g.templateId) ?? null,
+        name: latest?.templateName ?? null,
         usage,
         openRate:
           usage > 0 ? Math.round((opened / usage) * 1000) / 10 : null,

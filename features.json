@@ -57,7 +57,10 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-09T13:45+0800",
+    "verify_note": "analytics.ts runTopTemplates(spec 称 getTopTemplates): 删 tx.emailTemplate.findMany join + templateName map; 改用每组 tx.emailLog.findFirst({templateId, templateName:{not:null}}, orderBy createdAt desc) 取最近发送的 template_name 快照(与 opened count 同循环 Promise.all). name 来自 email_log.template_name 快照(F003 回填+发送写入), system_seed 发送回填后不再 null 名. 单测 top-templates.test.ts 3个(读快照不join+断言不调 emailTemplate.findMany / 空sends返[] / 无快照name null). L1全绿 tsc+lint 0err/3warn+vitest 1562+build. analytics 无现成 integration/e2e test 受影响(grep 确认).",
     "acceptance": [
       "analytics.ts:147-160 getTopTemplates 改用 email_log 自身 template_name(groupBy 带 templateName 或取每组快照名), 删除 tx.emailTemplate.findMany join",
       "验收: top templates 名称来自 email_log 快照; system_seed 发送不再 null 名(若已回填)",
