@@ -23,7 +23,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-09T12:50+0800",
+    "verify_note": "scripts/bl099-f002-migrate-user-templates.ts(仿 migrate-product-aiassets 模式): 跨tenant scan via prisma.tenant.findMany→withTenant 读 email_template type=user; 迁成 Asset(type=email,source=user_created,status=published,metadata.migrated_from_email_template_id=et.id 经 createAsset/dual-write). dry-run 默认 --execute 写. 去重三查(id相同/migration marker/同tenant content subject+body相同)→幂等重跑不重复. variables sanitize(历史free-form JSON→保留{token,...}符合 AssetVariableSchema 的, 其余drop, 核心 name/subject/body/locale 必保). 10个 legacy system 不迁(Asset system_seed 是规范源). main summary 打印 per-tenant before(et user count)/after(asset user published count) 无丢失检查. 单测 tests/unit/bl099-f002-*.test.ts 7个(sanitizeVariables过滤/findExistingAsset去重/migrate skip幂等+dry-run+execute参数). L1全绿(tsc+lint 0err/3warn+vitest 1556+build). ⚠️ 实际迁移执行(--execute)在 staging/prod 部署后跑(Codex F006 或用户), 此 feature 交付脚本+单测.",
     "acceptance": [
       "一次性迁移(脚本或 migration data step, 幂等): email_template WHERE type='user' 行迁成 Asset(type=email, source=user_created, tenant 对位); 去重: 已在 Asset(id 相同或 content 相同)的不重复建",
       "10 个 legacy type='system' email_template 行不迁(Asset 10 个 system_seed 是规范源, legacy 是过时副本)",
