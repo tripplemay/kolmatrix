@@ -32,7 +32,7 @@ export async function OutreachTabs({
   if (tenantId) {
     try {
       templatesCount = await withTenant(tenantId, (tx) =>
-        countUserTemplates(tx, tenantId)
+        countUserTemplates(tx)
       );
     } catch {
       // Soft-fail: badge defaults to "no number" rather than blocking

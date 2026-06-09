@@ -5,7 +5,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-09T12:15+0800",
+    "verify_note": "templates.ts 5 写函数改走 assets/mutations(createAsset/updateAsset/deleteAsset, type=email source=user_created); createUserTemplate/duplicateUserTemplate 设 status=published(止活血核心: loadAssetsForComposer 只读 published, 否则建完即消失); update/delete guard 限 source≠system_seed 防改系统模板; 加 assetDetailToOption 适配 AssetDetail→EmailTemplateOption(签名/返回不变, saveTemplateAction 无需改). countUserTemplates 改 count Asset(type=email,source≠system_seed,status=published, 与 composer 列表口径一致), 去多余 tenantId 参(RLS 隔离)→同步 OutreachTabs 调用. dual-write 经 mutations 仍镜像 email_template(F005删). variables 来自现有模板content(符合 AssetVariableSchema)或[], createAsset zod 不破. 单测: templates.test.ts 重写为 mock mutations 测委托+guard+published+adapt(7 test), OutreachTabs.test.tsx mock 同步单参. L1全绿 lint 0err/3预存warn + tsc + vitest 1549/1549 + build. 纯前端无schema变更.",
     "acceptance": [
       "templates.ts createUserTemplate/updateUserTemplate/deleteUserTemplate/duplicateUserTemplate 改为操作 Asset(走 assets/mutations createAsset/updateAsset/deleteAsset, type=email, source=user_created, content JSONB 存 subject/body/locale/variables 与 loadAssetsForComposer 读口径一致); 函数签名/返回 EmailTemplateOption 不变, saveTemplateAction 等调用方无需改",
       "countUserTemplates 改 count Asset(type=email, source≠system_seed, 当前 tenant)",

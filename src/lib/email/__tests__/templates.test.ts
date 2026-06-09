@@ -1,7 +1,8 @@
 import type { Prisma } from "@prisma/client";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  countUserTemplates,
   createUserTemplate,
   deleteUserTemplate,
   duplicateUserTemplate,
@@ -9,64 +10,45 @@ import {
   updateUserTemplate,
   type EmailTemplateDraftInput,
 } from "../templates";
+import { createAsset, deleteAsset, updateAsset } from "@/lib/assets/mutations";
+import type { AssetDetail } from "@/lib/assets/types";
 
-type TemplateRow = {
-  id: string;
-  tenantId: string | null;
-  name: string;
-  subject: string;
-  body: string;
-  variables: unknown;
-  locale: "en" | "zh";
-  type: string;
-};
+// BL-099-F001 — the template write path now delegates to the unified
+// Asset write helpers (createAsset / updateAsset / deleteAsset, which
+// dual-write the email_template mirror until F005). Their internals are
+// covered by mutations.test.ts; here we mock them to assert the
+// templates layer's own contract: tenant/source guards, the published
+// status that keeps new templates visible, and the AssetDetail →
+// EmailTemplateOption adapter.
+vi.mock("@/lib/assets/mutations", () => ({
+  createAsset: vi.fn(),
+  updateAsset: vi.fn(),
+  deleteAsset: vi.fn(),
+}));
+
+const createAssetMock = vi.mocked(createAsset);
+const updateAssetMock = vi.mocked(updateAsset);
+const deleteAssetMock = vi.mocked(deleteAsset);
 
 type TemplateTx = Prisma.TransactionClient & {
-  emailTemplate: {
-    findMany: ReturnType<typeof vi.fn>;
-    findFirst: ReturnType<typeof vi.fn>;
-    create: ReturnType<typeof vi.fn>;
-    update: ReturnType<typeof vi.fn>;
-    delete: ReturnType<typeof vi.fn>;
-  };
-  // BL-025-F006: loadOutreachTemplates now delegates to
-  // loadAssetsForComposer which queries the unified asset table.
   asset: {
     findMany: ReturnType<typeof vi.fn>;
+    findFirst: ReturnType<typeof vi.fn>;
+    count: ReturnType<typeof vi.fn>;
   };
 };
 
-function makeRow(overrides: Partial<TemplateRow> = {}): TemplateRow {
+function makeTx(): TemplateTx {
   return {
-    id: "11111111-1111-1111-1111-111111111111",
-    tenantId: null,
-    name: "Base template",
-    subject: "Hi {{kol.name}}",
-    body: "Hello {{kol.handle}}",
-    variables: [],
-    locale: "en",
-    type: "system",
-    ...overrides,
-  };
-}
-
-function makeTx(overrides: Partial<Record<string, ReturnType<typeof vi.fn>>> = {}) {
-  const tx = {
-    emailTemplate: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-    },
     asset: {
       findMany: vi.fn(),
+      findFirst: vi.fn(),
+      count: vi.fn(),
     },
-  };
-  Object.assign(tx.emailTemplate, overrides);
-  return tx as TemplateTx;
+  } as unknown as TemplateTx;
 }
 
+/** Composer row shape returned by loadAssetsForComposer (test 1). */
 function makeAssetRow(opts: {
   id?: string;
   name?: string;
@@ -95,11 +77,56 @@ function makeAssetRow(opts: {
   };
 }
 
+/** AssetDetail shape returned by createAsset / updateAsset (mocked). */
+function makeAssetDetail(opts: {
+  id?: string;
+  tenantId?: string | null;
+  name?: string;
+  source?: "ai_generated" | "user_created" | "imported" | "system_seed";
+  content?: { subject?: string; body?: string; locale?: string; variables?: unknown };
+}): AssetDetail {
+  const at = new Date("2026-06-09T00:00:00Z");
+  return {
+    id: opts.id ?? "asset-1",
+    tenantId: opts.tenantId ?? "tenant-a",
+    productId: null,
+    productName: null,
+    type: "email",
+    name: opts.name ?? "Template",
+    source: opts.source ?? "user_created",
+    status: "published",
+    parentId: null,
+    versionIndex: 1,
+    totalVariants: 1,
+    contentPreview: "",
+    updatedAt: at,
+    createdAt: at,
+    content: {
+      subject: opts.content?.subject ?? "Hello",
+      body: opts.content?.body ?? "Body",
+      locale: opts.content?.locale ?? "en",
+      variables: opts.content?.variables ?? [],
+    } as Prisma.JsonValue,
+    metadata: {},
+    createdBy: null,
+  };
+}
+
+const draft: EmailTemplateDraftInput = {
+  name: "Working draft",
+  subject: "Hello",
+  body: "Body",
+  locale: "en",
+  variables: [],
+};
+
 describe("email templates helpers", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
   it("loads system and user templates with locale fallback for system rows", async () => {
     const tx = makeTx();
-    // First call (locale=zh): only the user row, no system seeds
-    // available in zh.
     tx.asset.findMany
       .mockResolvedValueOnce([
         makeAssetRow({
@@ -109,7 +136,6 @@ describe("email templates helpers", () => {
           content: { subject: "Hi {{kol.name}}", body: "Body", locale: "zh", variables: [] },
         }),
       ])
-      // Second call (locale=en fallback): one system seed in EN.
       .mockResolvedValueOnce([
         makeAssetRow({
           id: "sys-1",
@@ -127,86 +153,117 @@ describe("email templates helpers", () => {
     expect(result[1]?.scope).toBe("user");
   });
 
-  it("creates, updates, deletes and duplicates user templates with tenant guards", async () => {
+  it("createUserTemplate writes a published user_created email Asset (止活血) and adapts the result", async () => {
     const tx = makeTx();
-    const draft: EmailTemplateDraftInput = {
-      name: "Working draft",
-      subject: "Hello",
-      body: "Body",
-      locale: "en",
-      variables: [],
-    };
-
-    tx.emailTemplate.create
-      .mockResolvedValueOnce(
-        makeRow({
-          id: "22222222-2222-2222-2222-222222222222",
-          tenantId: "tenant-a",
-          type: "user",
-          name: draft.name,
-          subject: draft.subject,
-          body: draft.body,
-          locale: draft.locale,
-        })
-      )
-      .mockResolvedValueOnce(
-        makeRow({
-          id: "33333333-3333-3333-3333-333333333333",
-          tenantId: "tenant-a",
-          type: "user",
-          name: "System base Copy",
-          subject: "Hello {{kol.name}}",
-          body: "Body {{product.name}}",
-          locale: "zh",
-        })
-      );
-    tx.emailTemplate.findFirst.mockResolvedValueOnce({ id: "template-1" });
-    tx.emailTemplate.update.mockResolvedValue(makeRow({
-      id: "template-1",
-      tenantId: "tenant-a",
-      type: "user",
-      name: "Updated",
-      subject: "Updated subject",
-      body: "Updated body",
-    }));
-    tx.emailTemplate.delete.mockResolvedValue({ id: "template-1" });
-    tx.emailTemplate.findFirst
-      .mockResolvedValueOnce({ id: "template-1" })
-      .mockResolvedValueOnce({ id: "template-1" })
-      .mockResolvedValueOnce({
-        name: "System base",
-        subject: "Hello {{kol.name}}",
-        body: "Body {{product.name}}",
-        variables: [{ key: "kol.name" }],
-        locale: "zh",
-        type: "system",
-      });
+    createAssetMock.mockResolvedValueOnce(
+      makeAssetDetail({
+        id: "asset-new",
+        source: "user_created",
+        name: "Working draft",
+        content: { subject: "Hello", body: "Body", locale: "en", variables: [] },
+      })
+    );
 
     const created = await createUserTemplate(tx, "tenant-a", draft);
-    const updated = await updateUserTemplate(tx, "tenant-a", "template-1", draft);
-    const deleted = await deleteUserTemplate(tx, "tenant-a", "template-1");
-    const duplicated = await duplicateUserTemplate(tx, "tenant-a", "system-1");
 
+    expect(createAssetMock).toHaveBeenCalledWith(
+      tx,
+      "tenant-a",
+      expect.objectContaining({
+        type: "email",
+        source: "user_created",
+        // published is the fix — without it the new template would be
+        // invisible to the composer (status=published filter).
+        status: "published",
+        name: "Working draft",
+        content: { subject: "Hello", body: "Body", locale: "en", variables: [] },
+      })
+    );
+    expect(created.id).toBe("asset-new");
     expect(created.scope).toBe("user");
-    expect(created.id).toBe("22222222-2222-2222-2222-222222222222");
-    expect(updated?.name).toBe("Updated");
-    expect(deleted).toBe(true);
-    expect(duplicated?.name).toBe("System base Copy");
-    expect(duplicated?.locale).toBe("zh");
+    expect(created.subject).toBe("Hello");
   });
 
-  it("refuses to update or delete templates outside the current tenant", async () => {
+  it("updateUserTemplate guards system_seed / cross-tenant (→ null) and delegates valid edits to updateAsset", async () => {
     const tx = makeTx();
-    tx.emailTemplate.findFirst.mockResolvedValue(null);
+    // guard miss → null, updateAsset never called
+    tx.asset.findFirst.mockResolvedValueOnce(null);
+    await expect(updateUserTemplate(tx, "tenant-a", "tpl-x", draft)).resolves.toBeNull();
+    expect(updateAssetMock).not.toHaveBeenCalled();
 
-    await expect(updateUserTemplate(tx, "tenant-a", "template-x", {
-      name: "x",
-      subject: "x",
-      body: "x",
-      locale: "en",
-      variables: [],
-    })).resolves.toBeNull();
+    // guard hit → delegate
+    tx.asset.findFirst.mockResolvedValueOnce({ id: "tpl-1" });
+    updateAssetMock.mockResolvedValueOnce(
+      makeAssetDetail({
+        id: "tpl-1",
+        source: "user_created",
+        name: "Updated",
+        content: { subject: "Updated subject", body: "Updated body", locale: "en", variables: [] },
+      })
+    );
+    const updated = await updateUserTemplate(tx, "tenant-a", "tpl-1", draft);
+    expect(updated?.name).toBe("Updated");
+    const guardWhere = tx.asset.findFirst.mock.calls[1]![0].where;
+    expect(guardWhere).toEqual({ id: "tpl-1", type: "email", source: { not: "system_seed" } });
+  });
 
-    await expect(deleteUserTemplate(tx, "tenant-a", "template-x")).resolves.toBe(false);
+  it("deleteUserTemplate guards then delegates to deleteAsset", async () => {
+    const tx = makeTx();
+    tx.asset.findFirst.mockResolvedValueOnce(null);
+    await expect(deleteUserTemplate(tx, "tenant-a", "tpl-x")).resolves.toBe(false);
+    expect(deleteAssetMock).not.toHaveBeenCalled();
+
+    tx.asset.findFirst.mockResolvedValueOnce({ id: "tpl-1" });
+    deleteAssetMock.mockResolvedValueOnce(true);
+    await expect(deleteUserTemplate(tx, "tenant-a", "tpl-1")).resolves.toBe(true);
+    expect(deleteAssetMock).toHaveBeenCalledWith(tx, "tpl-1");
+  });
+
+  it("duplicateUserTemplate copies any visible template into a published user_created Asset", async () => {
+    const tx = makeTx();
+    tx.asset.findFirst.mockResolvedValueOnce({
+      name: "System base",
+      content: { subject: "Hello {{kol.name}}", body: "Body {{product.name}}", locale: "zh", variables: [] },
+    });
+    createAssetMock.mockResolvedValueOnce(
+      makeAssetDetail({
+        id: "dup-1",
+        source: "user_created",
+        name: "System base Copy",
+        content: { subject: "Hello {{kol.name}}", body: "Body {{product.name}}", locale: "zh", variables: [] },
+      })
+    );
+
+    const duplicated = await duplicateUserTemplate(tx, "tenant-a", "system-1");
+
+    expect(duplicated?.name).toBe("System base Copy");
+    expect(duplicated?.locale).toBe("zh");
+    expect(createAssetMock).toHaveBeenCalledWith(
+      tx,
+      "tenant-a",
+      expect.objectContaining({
+        type: "email",
+        source: "user_created",
+        status: "published",
+        name: "System base Copy",
+      })
+    );
+  });
+
+  it("duplicateUserTemplate returns null when the source template isn't visible", async () => {
+    const tx = makeTx();
+    tx.asset.findFirst.mockResolvedValueOnce(null);
+    await expect(duplicateUserTemplate(tx, "tenant-a", "missing")).resolves.toBeNull();
+    expect(createAssetMock).not.toHaveBeenCalled();
+  });
+
+  it("countUserTemplates counts published non-system email Assets (matches the composer list)", async () => {
+    const tx = makeTx();
+    tx.asset.count.mockResolvedValueOnce(3);
+    const n = await countUserTemplates(tx);
+    expect(n).toBe(3);
+    expect(tx.asset.count).toHaveBeenCalledWith({
+      where: { type: "email", source: { not: "system_seed" }, status: "published" },
+    });
   });
 });

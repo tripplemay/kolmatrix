@@ -1,6 +1,8 @@
 import type { Prisma } from "@prisma/client";
 
+import { createAsset, deleteAsset, updateAsset } from "@/lib/assets/mutations";
 import { loadAssetsForComposer } from "@/lib/assets/queries";
+import type { AssetDetail } from "@/lib/assets/types";
 
 export type EmailTemplateScope = "system" | "user";
 
@@ -28,10 +30,25 @@ export interface EmailTemplateRecord {
 // email_template mirror still feeds email_log.template_id but is no
 // longer read by app code.
 
-function toOption(row: EmailTemplateRecord): EmailTemplateOption {
+// BL-099-F001 — adapt an Asset write result (createAsset / updateAsset)
+// back to the EmailTemplateOption shape callers expect, so the write
+// path moves to the unified Asset table without changing any public
+// signature. Same content-JSONB extraction口径 as loadAssetsForComposer.
+function assetDetailToOption(detail: AssetDetail, tenantId: string): EmailTemplateOption {
+  const c = (detail.content ?? {}) as Record<string, unknown>;
+  const scope: EmailTemplateScope = detail.source === "system_seed" ? "system" : "user";
   return {
-    ...row,
-    scope: row.tenantId == null ? "system" : "user",
+    id: detail.id,
+    tenantId: scope === "system" ? null : tenantId,
+    name: detail.name,
+    subject: typeof c.subject === "string" ? c.subject : "",
+    body: typeof c.body === "string" ? c.body : "",
+    variables: (c.variables as Prisma.JsonValue) ?? [],
+    locale: typeof c.locale === "string" ? c.locale : "en",
+    type: scope,
+    scope,
+    productId: detail.productId,
+    productName: detail.productName,
   };
 }
 
@@ -113,15 +130,17 @@ export async function loadOutreachTemplates(
   return [...systemRows.map(adapt), ...userRowsSorted.map(adapt)];
 }
 
-// BL-055 F002 — tenant's user-template count for the /outreach
-// templates tab badge. System seeds (tenantId IS NULL) excluded so
-// the number reflects what the marketer actually authored.
+// BL-099-F001 — tenant's user-template count for the /reach templates
+// tab badge, now counting Asset rows so it matches the composer /
+// workspace list (loadOutreachTemplates reads published Assets).
+// source=system_seed excluded (canonical library, not user-authored);
+// status=published only so the badge equals the visible "My templates"
+// list. RLS (withTenant tx) scopes to the tenant.
 export async function countUserTemplates(
-  tx: Prisma.TransactionClient,
-  tenantId: string
+  tx: Prisma.TransactionClient
 ): Promise<number> {
-  return tx.emailTemplate.count({
-    where: { tenantId, type: "user" },
+  return tx.asset.count({
+    where: { type: "email", source: { not: "system_seed" }, status: "published" },
   });
 }
 
@@ -130,28 +149,25 @@ export async function createUserTemplate(
   tenantId: string,
   input: EmailTemplateDraftInput
 ): Promise<EmailTemplateOption> {
-  const row = await tx.emailTemplate.create({
-    data: {
-      tenantId,
-      name: input.name,
+  // BL-099-F001 — write to the unified Asset table (createAsset also
+  // dual-writes the email_template mirror until F005). status=published
+  // so the template shows up in the composer dropdown + workspace list
+  // immediately — the "止活血" fix: pre-BL-099 the write only hit
+  // email_template, so user templates vanished from the Asset-sourced
+  // list right after saving.
+  const detail = await createAsset(tx, tenantId, {
+    type: "email",
+    name: input.name,
+    content: {
       subject: input.subject,
       body: input.body,
-      variables: input.variables,
       locale: input.locale,
-      type: "user",
+      variables: input.variables,
     },
-    select: {
-      id: true,
-      tenantId: true,
-      name: true,
-      subject: true,
-      body: true,
-      variables: true,
-      locale: true,
-      type: true,
-    },
+    source: "user_created",
+    status: "published",
   });
-  return toOption(row as EmailTemplateRecord);
+  return assetDetailToOption(detail, tenantId);
 }
 
 export async function updateUserTemplate(
@@ -160,48 +176,43 @@ export async function updateUserTemplate(
   templateId: string,
   input: EmailTemplateDraftInput
 ): Promise<EmailTemplateOption | null> {
-  const existing = await tx.emailTemplate.findFirst({
-    where: { id: templateId, tenantId, type: "user" },
+  // Only the tenant's own user templates are editable; system_seed rows
+  // are the canonical library and must not be mutated here. RLS already
+  // scopes visibility to the tenant (+ system seeds); the source filter
+  // rejects attempts to edit a seed. Non-existent / cross-tenant /
+  // system → null (caller maps to not_found, never 500).
+  const existing = await tx.asset.findFirst({
+    where: { id: templateId, type: "email", source: { not: "system_seed" } },
     select: { id: true },
   });
   if (!existing) return null;
 
-  const row = await tx.emailTemplate.update({
-    where: { id: templateId },
-    data: {
-      name: input.name,
+  const detail = await updateAsset(tx, templateId, {
+    name: input.name,
+    content: {
       subject: input.subject,
       body: input.body,
-      variables: input.variables,
       locale: input.locale,
-    },
-    select: {
-      id: true,
-      tenantId: true,
-      name: true,
-      subject: true,
-      body: true,
-      variables: true,
-      locale: true,
-      type: true,
+      variables: input.variables,
     },
   });
-  return toOption(row as EmailTemplateRecord);
+  return assetDetailToOption(detail, tenantId);
 }
 
 export async function deleteUserTemplate(
   tx: Prisma.TransactionClient,
-  tenantId: string,
+  _tenantId: string,
   templateId: string
 ): Promise<boolean> {
-  const existing = await tx.emailTemplate.findFirst({
-    where: { id: templateId, tenantId, type: "user" },
+  // Same guard as updateUserTemplate: only delete the tenant's own
+  // user templates, never a system seed. RLS scopes visibility.
+  const existing = await tx.asset.findFirst({
+    where: { id: templateId, type: "email", source: { not: "system_seed" } },
     select: { id: true },
   });
   if (!existing) return false;
 
-  await tx.emailTemplate.delete({ where: { id: templateId } });
-  return true;
+  return deleteAsset(tx, templateId);
 }
 
 export async function duplicateUserTemplate(
@@ -209,24 +220,27 @@ export async function duplicateUserTemplate(
   tenantId: string,
   templateId: string
 ): Promise<EmailTemplateOption | null> {
-  const existing = await tx.emailTemplate.findFirst({
-    where: { id: templateId, OR: [{ tenantId }, { tenantId: null }] },
-    select: {
-      name: true,
-      subject: true,
-      body: true,
-      variables: true,
-      locale: true,
-      type: true,
-    },
-  });
-  if (!existing) return null;
+  // Source can be any visible email template (own user template OR a
+  // system seed) — RLS scopes visibility. The copy is always a fresh
+  // user_created, published Asset owned by the tenant.
+  const source = (await tx.asset.findFirst({
+    where: { id: templateId, type: "email" },
+    select: { name: true, content: true },
+  })) as { name: string; content: Prisma.JsonValue } | null;
+  if (!source) return null;
 
-  return createUserTemplate(tx, tenantId, {
-    name: `${existing.name} Copy`,
-    subject: existing.subject,
-    body: existing.body,
-    variables: existing.variables ?? [],
-    locale: existing.locale as "en" | "zh",
+  const c = (source.content ?? {}) as Record<string, unknown>;
+  const detail = await createAsset(tx, tenantId, {
+    type: "email",
+    name: `${source.name} Copy`,
+    content: {
+      subject: typeof c.subject === "string" ? c.subject : "",
+      body: typeof c.body === "string" ? c.body : "",
+      locale: typeof c.locale === "string" ? c.locale : "en",
+      variables: (c.variables as Prisma.InputJsonValue) ?? [],
+    },
+    source: "user_created",
+    status: "published",
   });
+  return assetDetailToOption(detail, tenantId);
 }

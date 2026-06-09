@@ -23,9 +23,10 @@ vi.mock("@/lib/db", () => ({
   withTenant: (tenantId: string, fn: (tx: unknown) => unknown) =>
     withTenantMock(tenantId, fn),
 }));
+// BL-099-F001 — countUserTemplates now counts Asset rows (RLS-scoped),
+// so the tenantId argument was dropped; it's a single-arg call.
 vi.mock("@/lib/email/templates", () => ({
-  countUserTemplates: (tx: unknown, tenantId: string) =>
-    countUserTemplatesMock(tx, tenantId),
+  countUserTemplates: (tx: unknown) => countUserTemplatesMock(tx),
 }));
 vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => `tabs.${key}`,
@@ -52,10 +53,7 @@ describe("OutreachTabs", () => {
     render(ui);
     const link = screen.getByTestId("outreach-tab-templates");
     expect(link).toHaveTextContent(/7/);
-    expect(countUserTemplatesMock).toHaveBeenCalledWith(
-      expect.anything(),
-      TENANT_ID
-    );
+    expect(countUserTemplatesMock).toHaveBeenCalledWith(expect.anything());
   });
 
   it("omits the templates badge when the user has no templates", async () => {
