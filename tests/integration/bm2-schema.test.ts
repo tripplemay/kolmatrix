@@ -291,7 +291,7 @@ describe("BM2-F001 · EmailTemplate rebuild (audit #A + #B + #C)", () => {
 });
 
 describe("BM2-F001 · EmailLog extensions (audit #F)", () => {
-  it("defaults ai_customized to false and stores template_id as FK", async () => {
+  it("defaults ai_customized to false; template_id is a plain uuid (no FK) with a template_name snapshot (BL-099-F003)", async () => {
     const { tenant } = await seedTenantWithUser(TENANT_A);
     const tpl = await getAdminPrisma().emailTemplate.create({
       data: {
@@ -307,6 +307,7 @@ describe("BM2-F001 · EmailLog extensions (audit #F)", () => {
       data: {
         tenantId: tenant.id,
         templateId: tpl.id,
+        templateName: "Outreach",
         toAddress: "kol@example.test",
         fromAddress: "marketer@kolquest.com",
         subject: "Hi",
@@ -315,14 +316,18 @@ describe("BM2-F001 · EmailLog extensions (audit #F)", () => {
     });
     expect(log.aiCustomized).toBe(false);
     expect(log.templateId).toBe(tpl.id);
+    expect(log.templateName).toBe("Outreach");
 
-    // FK is ON DELETE SET NULL — deleting the template must null out
-    // the log's templateId without cascading the log away.
+    // BL-099-F003 (ADR-018 D2) — the FK to email_template was removed, so
+    // deleting the template no longer nulls the log's template_id. The
+    // historical correlation id AND the template_name snapshot both
+    // survive (the snapshot is exactly why the FK is no longer needed).
     await getAdminPrisma().emailTemplate.delete({ where: { id: tpl.id } });
     const reloaded = await getAdminPrisma().emailLog.findUniqueOrThrow({
       where: { id: log.id },
     });
-    expect(reloaded.templateId).toBeNull();
+    expect(reloaded.templateId).toBe(tpl.id);
+    expect(reloaded.templateName).toBe("Outreach");
   });
 
   it("honours ai_customized=true when explicitly set", async () => {
