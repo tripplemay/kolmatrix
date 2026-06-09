@@ -73,7 +73,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-10T02:45+0800",
+    "verify_note": "前置满足: F001-F004 已部署 prod @5d83f68 (本会话 SSH deploy-prod.sh, healthcheck绿), F002 --execute 已跑+SQL实证 17条 user email_template 全部已在 Asset(16 published+1 draft 匹配, 0新建), DROP 零用户数据丢失. 实现: (1)mutations.ts 删 dualWriteEmailTemplateOnCreate/Update/Delete 3 helper+emailTemplateIdFor/TypeFor/emailContentFromAsset + 3 调用点; deleteAsset 简化为纯 delete+P2025 catch(去 metadata 预读). (2)schema.prisma 删 model EmailTemplate + Tenant.templates 反向关系. (3)migration 20260610120000_bl099_f005_drop_email_template: DROP TABLE(不可逆, ROLLBACK skeleton+pg_dump 注; FK 已在 F003 解耦, pg_constraint scan 确认 0 其它表引用). (4)seed-email-templates.ts seedSystemTemplates 改写 Asset(type=email,source=system_seed,tenantId=null,published)keyed (name,content.locale), 不再碰 email_template; seed.ts import/call 签名不变. (5)删一次性 scripts/bl099-f002-migrate-user-templates.ts+单测(prod 已跑验证). (6)测试: 删 dual-write/mirror 断言(mutations/top-templates/composer-load); email-template-seed+rls-isolation+asset-rls+bm2-schema integration 改 Asset 口径, 删 email_template-only 过时用例(schema/RLS/FK/migration-parity). 全仓 0 处 tx.emailTemplate/prisma.emailTemplate 残留(grep实证). L1全绿 tsc clean+lint 0err/3warn+vitest 1554 pass+build. ⚠️ 待用户单独窗口部署 F005 到 prod(DROP 执行)+staging, 然后切 verifying 给 Codex F006.",
     "acceptance": [
       "移除 assets/mutations.ts 的 email_template 镜像写(create/update/archive/delete 四处)",
       "prisma migration DROP TABLE email_template; 删 schema EmailTemplate model",

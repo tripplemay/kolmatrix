@@ -5,8 +5,9 @@ type: project
 ---
 ## 🚧 BL-099-email-template-asset-unification BUILDING (4/6) — ADR-011 迁移收尾, 统一 Asset 单一真相源
 - 决策 ADR-018(C: email_log 去FK+template_name 快照, drop email_template) + 一次到位(用户 2026-06-09). spec docs/specs/BL-099-*.md
-- ✅ F001-F004 done(Generator Kimi, 全CI绿含migrate smoke+integration): F001 写路径统一Asset(status=published止血) / F002 历史模板迁移脚本 scripts/bl099-f002(幂等dry-run, --execute待prod跑) / F003 email_log快照列+解耦FK(migration 20260609130000, batch-send写templateName) / F004 analytics读快照去join
-- ⏸️ **F005(删双写+DROP email_template表, 不可逆) 用户决定新会话做**. grep摸清删除范围+部署顺序铁律全在 progress.json generator_handoff(新会话generator直接接手). 关键: F002 --execute 必须prod先跑+验证零丢失, 才能部署F005 drop. 然后 F006 Codex
+- ✅ F001-F004 done + **已部署 prod @ 5d83f68**(2026-06-10 Generator Kimi SSH deploy-prod.sh, healthcheck绿): F001写路径统一Asset(published止血) / F002迁移脚本 / F003 email_log快照列+解耦FK(migration 20260609130000已apply prod) / F004 analytics读快照去join
+- ✅ **F002 prod --execute 已跑+验证零丢失**(2026-06-10): 17条user email_template全部已在Asset(16 published+1 draft匹配), 0新建. SQL实证每行has_asset=t. ⚠️LOSS是脚本只数published的误报. **DROP email_template零用户数据丢失确认**
+- 🔨 **F005(删双写+DROP email_template表, 不可逆) 进行中**: F002前置已满足. 写完合main(CI绿)→用户单独窗口部署F005 drop→F006 Codex
 - 坑沉淀: 本地vitest exclude tests/integration(testcontainers只CI跑); 本地DB migration历史漂移→migrate diff确认FK名手写migration; schema改动连带的integration断言失效(bm2-schema旧FK断言)只能CI抓
 ## ✅ BL-098 DONE (2/2, signoff 2026-06-09) — PROD 邮件AI定制'模板不存在' hotfix(Asset查询). ⚠️ **prod deploy 待手动触发**(BL-099 为其根治)
 ## ✅ BL-080 DONE (6/6, signoff @ docs/test-reports/BL-080-signoff-2026-06-09.md) — 落地页 AI 插画(8张)替video+动画; Lighthouse perf99/LCP870/CLS0; staging部署
