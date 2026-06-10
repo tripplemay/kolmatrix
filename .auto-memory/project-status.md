@@ -3,12 +3,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-108-crawler-pause-switches VERIFYING (4/4 generator done, F005 Codex 待验) — 爬虫暂停开关
+## 🚧 BL-108-crawler-pause-switches REVERIFYING (4/4 generator done, fix-round 1 修水合失配) — 爬虫暂停开关
 - 决策 ADR-019(两层开关: 主 scraping_enabled 全停含manual_seed + 子 refresh_enabled 仅refresh, 主⊇子, gate在入队源无尖峰). spec docs/specs/BL-108-*
 - ✅ 爬虫侧 F001+F002: **PR#12 已 merge(squash @15c2ba3) + 已部署 /opt**(2026-06-10 用户授权) — service_settings 表+GET/PATCH /admin/crawler-state + 6 入队点 gate + ops脚本 gate + Dockerfile 部署债修复. 部署实证: clean build EXIT=0(无 awk 补丁), migration 0005 applied(默认行 both true), /admin/crawler-state 200, kolmatrix staging 配置的 key 直连可用, 40 schedules 同步, lastRefreshAt ISO. refreshBacklog total 8832/dueNow 2363
 - ✅ kolmatrix 侧 F003+F004: proxy+装配+两 toggle+确认弹窗+audit+i18n 5 locale. CI 绿, **staging deployed @ 2c86347**
 - 两轮对抗审查(15 agents)1 blocking+7 should-fix 全采纳; runbook 同步精简(awk 热补丁+frozen-lockfile sed 已闭环, 仅剩 3004:3003 端口 sed)
-- ⏭️ **Codex F005 完全解锁**: L1 两仓 + L2 五项(翻主开关→入队停+manual_seed 409 / 子开关仅 refresh 停 / 状态显示 / 恢复无尖峰 / admin-only). 两端都已部署
+- ✅ **fix-round 1 (b5dd191, staging@b5dd191)**: Codex verifying 唯一 blocker(监控页开关点击不生效 React `#418` 水合失配)已修 — CrawlerPauseControls `toLocaleString()` SSR/水合时区不一致 → 改确定性 UTC `formatTimestampUtc` 解全页水合; L1 全绿 + 2 回归(TZ=NY fail-before/pass-after). ⏭️ 待 Codex reverifying 复跑 L2 headless(click→确认→状态变更, console 无 #418)
 ## ✅ BL-099 DONE (6/6, fix_rounds=1, signoff @ docs/test-reports/BL-099-signoff-2026-06-10.md) — ADR-011 收尾, Email Template 统一 Asset 单一真相源
 - 决策 ADR-018(C: email_log 去FK+template_name 快照, drop email_template) 已落地
 - ✅ F001-F005 done+deploy：staging `07e8b09` / prod `62c3114`；两环境 `email_template` 已 drop，旧 FK 已移除，prod user 模板零丢失维持 `16 published`

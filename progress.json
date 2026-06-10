@@ -1,11 +1,11 @@
 {
-  "status": "verifying",
+  "status": "reverifying",
   "user_goal": "BL-108 爬虫暂停开关 — 监控页手动控制(主开关全停所有抓取 + refresh 子开关). 用户监控页观察 refresh 持续消耗成本但0新增(refresh职责刷新存量指标本就不产新KOL), 要手动管控. 决策 ADR-019: 两层开关(主 scraping_enabled 全停所有抓取含 manual_seed + 子 refresh_enabled 仅 refresh, 主⊇子, 主OFF时子置灰) + 状态存爬虫 DB service_settings(非env, ≤5min生效) + gate在入队源(无积压恢复无尖峰) + 已入队自然drain + 读API不受影响 + 全停不保hot. 跨2repo. 5 features: F001 爬虫 service_settings表+admin API / F002 爬虫各入队点gate / F003 kolmatrix proxy+状态装配 / F004 kolmatrix 两toggle UI+确认+audit+i18n / F005 Codex. 插队波0(BL-099后第一优先).",
   "total_features": 5,
   "completed_features": 4,
-  "fix_rounds": 0,
+  "fix_rounds": 1,
   "current_sprint": "BL-108-crawler-pause-switches",
-  "last_updated": "2026-06-10T16:45+0800",
+  "last_updated": "2026-06-10T21:25+0800",
   "reference_docs": [
     "docs/specs/BL-108-crawler-pause-switches-spec.md",
     "docs/adr/ADR-019-crawler-runtime-pause-control-surface.md",
@@ -16,18 +16,30 @@
   "docs": {
     "spec": "docs/specs/BL-108-crawler-pause-switches-spec.md",
     "adr": "docs/adr/ADR-019-crawler-runtime-pause-control-surface.md",
-    "audit": null,
+    "audit": "docs/test-reports/BL-108-verifying-2026-06-10.md",
     "test_cases": null,
     "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
-  "fix_rounds_history": [],
+  "evaluator_feedback": "见 docs/test-reports/BL-108-verifying-2026-06-10.md。L1 两仓全绿; L2 后端 gate/恢复节奏全通过。唯一 blocker: /admin/crawler-monitor 开关点击不触发确认/状态变更, console 报 React #418(水合失配)。fix-round 1 已修(commit b5dd191): 根因 CrawlerPauseControls(use client) lastRefresh 用 new Date(iso).toLocaleString() — SSR 服务器时区 vs 水合浏览器时区文本不一致 → #418 → 客户端子树丢弃重渲 → 开关 onClick 不绑定。改 formatTimestampUtc() 确定性 UTC 渲染解全页水合(页面另两客户端组件已水合安全)。请复跑 L2 headless: 主/子开关点击→确认弹窗→乐观翻转→状态变更, 且 console 无 #418; lastRefresh 单元显示 'YYYY-MM-DD HH:mm UTC'。",
+  "fix_rounds_history": [
+    {
+      "round": 1,
+      "at": "2026-06-10T21:25+0800",
+      "by": "Kimi (generator)",
+      "blocker": "Codex verifying L2 BLOCKED: 监控页暂停开关点击不生效, React minified #418(水合失配)",
+      "root_cause": "CrawlerPauseControls('use client', SSR+水合) lastRefresh 单元 new Date(iso).toLocaleString() 依赖运行时时区/locale, SSR 服务器时区 vs 客户端浏览器时区输出不一致 → 文本节点失配 → React #418 → 整个客户端子树丢弃并客户端重渲 → 两开关 onClick 不再绑定 → 点击无效",
+      "fix": "新增 formatTimestampUtc() 用 getUTC* 输出固定 'YYYY-MM-DD HH:mm UTC', 服务端/客户端逐字符一致; 页面另两客户端组件已水合安全(IngestRateChart ssr:false; Dialog open=false 不渲染), 故单点修复解全页水合",
+      "regression": "CrawlerPauseControls.test.tsx 加 2 用例(确定性 UTC 串断言 + null→never), TZ=America/New_York 实证 fail-before/pass-after",
+      "l1": "tsc=0, eslint 0, crawler-monitor+admin lib 47/47 pass",
+      "commit": "b5dd191"
+    }
+  ],
   "generator_handoff": "[2026-06-10 12:00 BJT Planner Kimi 开 BL-108 building] 爬虫暂停开关, 插队波0(BL-099 done后第一优先, 用户决策). 决策 ADR-019: 两层开关. ⚠️ 跨2repo: F001/F002 是 guang-tech/apify upstream patch(走 BL-086-F001 流程: Generator 写 patch+测试→PR→用户 merge+部署 /opt/apify-kol-service docker compose up -d --build, 注意 3004:3003 端口 + 本地 docker 定制 stash/pop, 不积累本地分叉); F003/F004 是 kolmatrix 推 main+用户部署. ⚠️ 顺序: 爬虫 API(F001/F002)契约先定, F003 可按契约 mock 并行; L2 需爬虫+kolmatrix 都部署后才能实测. 关键设计: gate在入队源非worker(无积压恢复无尖峰); manual_seed 受主开关管(409拒绝); 主开关只停抓取不停读API; 默认 true 纯增量. 下一步 Generator 启 F001(爬虫 service_settings 表+admin crawler-state API). 详见 spec §2 + ADR-019 D1-D6.",
   "session_notes": {
     "Kimi_planner": "[2026-06-10 12:00 BJT Planner Kimi] BL-099 DONE(6/6 fix_round1 signoff prod@62c3114). 开 BL-108 波0 爬虫暂停开关(用户监控页观察 refresh 消耗→要手动开关, 经详细设计讨论定稿 ADR-019 两层开关). 跨2repo. 关键设计抉择已记 ADR: gate入队源/DB service_settings非env/读API不受影响/全停不保hot/manual_seed也管. 下一步 Generator F001 爬虫端 service_settings+admin API. 注: BL-098/BL-080 prod 部署已随 BL-099 main HEAD 部署解决.",
-    "Kimi_generator": "[2026-06-10 16:45 BJT] BL-108 generator 4/4 done → verifying. [staging deployed @ 2c86347 @ 2026-06-10 08:45 UTC] health 绿 SHA 对齐. 爬虫侧: PR guang-tech/apify #12 五 commits(cd6209d F001 表+API / 8cd71d7 F002 六入队点 gate+ops 脚本 gate / 564d9a0 Dockerfile COPY packages/apify 部署债[即 environment.md 'fork 上游需要修(a)', merge 后 runbook awk 热补丁可删] / e6f590c stats +lastRefreshAt / 71763a4 ISO 时间戳契约), 147/147 tests+tsc 0, ⚠️ 该 repo 无 CI 只本地跑. kolmatrix 侧: F003 proxy+装配(bd097ef) F004 toggle UI+i18n(59e5c87) 审查修复(2c86347) 全 CI 绿, vitest 1588. 两轮对抗审查(8+7 agents)共 1 blocking+7 should-fix 全采纳(突变测试实证: 子开关 payload 翻错字段全套照绿→已钉死). ✅ [2026-06-10 17:10 BJT 追加] 用户授权后我完成爬虫端上线: PR#12 squash merge @15c2ba3 → /opt/apify-kol-service 按 runbook B 方案 sync(reset --hard + 仅剩的 3004:3003 端口 sed; awk 热补丁与 --no-frozen-lockfile sed 均已失效闭环, 实测 upstream clean build EXIT=0)→ docker compose down(无-v)+up -d --build → 验证: migration 0005 applied(service_settings 默认行 both true), GET /admin/crawler-state 200 ISO updatedAt, kolmatrix staging 配置的 APIFY_KOL_ADMIN_API_KEY+BASE_URL 直连通, /admin/stats lastRefreshAt ISO, 40 schedules 同步+workers 注册. runbook §2/§4/smoke 端口已同步更新. ⏭️ Codex F005 完全解锁: L1 两仓 + L2 五项(见 features.json), 两端都已部署. 工程事实沉淀: 爬虫 workspace 包须先 pnpm build 出 dist; migration journal when 须严格递增; pg ::text 时间戳非 ISO 老 Safari 拒解.",
+    "Kimi_generator": "[2026-06-10 21:25 BJT fix-round 1 → reverifying] Codex verifying L2 唯一 blocker(监控页开关点击不生效, console React #418 水合失配)已修, 详见 fix_rounds_history[0] + commit b5dd191. 根因: CrawlerPauseControls('use client', SSR+水合) lastRefresh 单元 new Date(iso).toLocaleString() 依赖运行时时区/locale → SSR(服务器时区) vs 水合(浏览器时区)文本不一致 → React #418 → 整个客户端子树(含两开关)丢弃并客户端重渲 → onClick 不再绑定 → 点击无效. 修复: formatTimestampUtc() 用 getUTC* 输出固定 'YYYY-MM-DD HH:mm UTC', 服务端/客户端逐字符一致; 页面另两客户端组件已水合安全(IngestRateChart ssr:false 确定性占位; Dialog open=false 不渲染) → 单点修复解全页水合. L1: tsc=0 / eslint 0 / crawler-monitor+admin lib 47/47 pass + 2 回归(TZ=America/New_York 实证 fail-before/pass-after). [staging deployed @ b5dd191 @ 2026-06-10 13:30 UTC] health healthy(db+redis ok), git_sha=b5dd191 经 X-Health-Token 核对 = main HEAD. ⏭️ Codex reverifying 请复跑 L2 headless: 主/子开关 click → 确认弹窗 → 乐观翻转 → 状态变更, console 全程无 #418, lastRefresh 单元显示 'YYYY-MM-DD HH:mm UTC'. 爬虫侧(F001/F002, PR#12 @15c2ba3)已 merge+部署 /opt, 本轮未触碰.",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
