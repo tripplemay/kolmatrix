@@ -27,6 +27,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { runCampaignDetail } from "@/lib/campaigns/detail";
 
+import { isAcceptedKolRow } from "./accepted-filter";
 import { AcceptedKolsPanel } from "./AcceptedKolsPanel";
 import { AiRecommendationPanel } from "./AiRecommendationPanel";
 import { BriefSummaryPanel } from "./BriefSummaryPanel";
@@ -69,8 +70,13 @@ export default async function CampaignDetailPage({ params }: Props) {
   const t = await getTranslations("campaigns.detail");
   const tKolStatus = await getTranslations("campaigns.detail.kolStatus");
 
-  const acceptedCount = campaign.kols.length;
-  const contactedCount = campaign.kols.filter((k) =>
+  // BL-110-F003 — count only genuinely accepted KOLs (source whitelist +
+  // suggestionStatus ∈ {accepted, NULL}), matching exactly which rows the
+  // AcceptedKolsPanel renders. Previously this was campaign.kols.length,
+  // which counted every join row including AI-panel skip/swap entries.
+  const acceptedKols = campaign.kols.filter(isAcceptedKolRow);
+  const acceptedCount = acceptedKols.length;
+  const contactedCount = acceptedKols.filter((k) =>
     CONTACTED_STATUSES.has(k.contactStatus)
   ).length;
 

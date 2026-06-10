@@ -32,7 +32,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "病灶: AI面板skip/swap走suggestion-actions.ts:55写suggestionStatus(skip也插source=ai_smart_match行); 详情页accept走recommend-actions.ts:132只写status/source不写suggestionStatus; 读面detail.ts:115 select无suggestionStatus, AcceptedKolsPanel.tsx:66只filter source, page.tsx:72 acceptedCount=kols.length→skip/swap错误进'已接受'",
       "止血(读口径): detail.ts kolCampaigns select 加 suggestionStatus; AcceptedKolsPanel+acceptedCount 过滤 suggestionStatus∈{accepted,NULL}(NULL=详情页直accept+legacy backfill)",

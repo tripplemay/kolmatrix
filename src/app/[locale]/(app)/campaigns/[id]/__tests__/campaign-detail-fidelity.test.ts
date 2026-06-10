@@ -68,14 +68,35 @@ describe("/campaigns/:id fidelity guards (BL-066 F002 + F006)", () => {
     expect(lineCount(panel)).toBeLessThanOrEqual(250);
   });
 
-  it("AcceptedKolsPanel filters kol_campaign rows to the source whitelist", () => {
+  it("AcceptedKolsPanel filters kol_campaign rows via the shared accepted predicate", () => {
+    // BL-110-F003: the source whitelist + suggestionStatus gate moved to
+    // accepted-filter.ts so the page's acceptedCount reuses the exact same
+    // predicate. The panel must consume it (not re-implement a local
+    // source-only filter that leaked AI-panel skip/swap rows).
     const panel = read("AcceptedKolsPanel.tsx");
+    expect(panel).toMatch(/isAcceptedKolRow/);
+    expect(panel).toMatch(/from "\.\/accepted-filter"/);
+    expect(panel).not.toMatch(/new Set\(\[/); // no local source whitelist anymore
+  });
+
+  it("accepted-filter locks the source whitelist AND the suggestionStatus gate", () => {
+    const filter = read("accepted-filter.ts");
     // BL-066-F006: spec §F006 #C locks the whitelist; the backfill
-    // migration moves pre-F004 'manual' rows into 'manual_legacy' so
-    // the three values below cover every visible row.
-    expect(panel).toMatch(/ai_smart_match/);
-    expect(panel).toMatch(/csv_import/);
-    expect(panel).toMatch(/manual_legacy/);
+    // migration moves pre-F004 'manual' rows into 'manual_legacy'.
+    expect(filter).toMatch(/ai_smart_match/);
+    expect(filter).toMatch(/csv_import/);
+    expect(filter).toMatch(/manual_legacy/);
+    // BL-110-F003: the suggestionStatus ∈ {accepted, NULL} gate is what
+    // excludes AI-panel skip/swap rows (source=ai_smart_match) from the
+    // accepted list.
+    expect(filter).toMatch(/suggestionStatus/);
+    expect(filter).toMatch(/"accepted"/);
+  });
+
+  it("page acceptedCount reuses the shared accepted predicate (no kols.length)", () => {
+    const page = read("page.tsx");
+    expect(page).toMatch(/isAcceptedKolRow/);
+    expect(page).not.toMatch(/acceptedCount = campaign\.kols\.length/);
   });
 
   it("AcceptedKolRow exposes a source chip and renders the status / fee read-only", () => {

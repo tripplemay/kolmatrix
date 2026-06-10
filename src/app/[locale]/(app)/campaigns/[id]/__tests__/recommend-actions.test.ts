@@ -157,6 +157,11 @@ describe("acceptKolToCampaignAction (BL-066 F004)", () => {
     expect(createArgs.data.status).toBe("pending");
     expect(createArgs.data.source).toBe("ai_smart_match");
     expect(createArgs.data.matchScore).toBe(88);
+    // BL-110-F003 — detail-page accept now also stamps the ADR-016
+    // suggestion lifecycle so the read口径 counts it as accepted via
+    // suggestionStatus (not just source).
+    expect(createArgs.data.suggestionStatus).toBe("accepted");
+    expect(createArgs.data.decidedAt).toBeInstanceOf(Date);
 
     expect(logAuditMock).toHaveBeenCalledTimes(1);
     const auditArgs = logAuditMock.mock.calls[0][0];

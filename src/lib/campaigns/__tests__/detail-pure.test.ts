@@ -5,6 +5,9 @@
  * the DB-touching paths; this spec fills coverage for the pure helpers
  * so the vitest 80% floor stays met after F005's large lib surface.
  */
+import { readFileSync } from "fs";
+import { resolve } from "path";
+
 import { describe, expect, it, vi } from "vitest";
 
 // kol-operations.ts, update.ts, and detail.ts all transitively import
@@ -115,5 +118,24 @@ describe("update · updateCampaignSchema", () => {
   it("accepts ISO date strings and returns Date objects", () => {
     const out = updateCampaignSchema.parse({ startDate: "2026-05-10" });
     expect(out.startDate).toBeInstanceOf(Date);
+  });
+});
+
+// BL-110-F003 — runCampaignDetail MUST select + expose suggestionStatus.
+// The accepted read口径 (isAcceptedKolRow) treats undefined like NULL, so
+// if the select silently dropped the field, every AI-panel skip/swap row
+// would leak back into the accepted list. Source-level guard locks it.
+describe("runCampaignDetail suggestionStatus passthrough (BL-110-F003)", () => {
+  const src = readFileSync(resolve(__dirname, "..", "detail.ts"), "utf8");
+
+  it("selects suggestionStatus from kolCampaigns", () => {
+    const selectBlock = src.match(/kolCampaigns:\s*\{[\s\S]*?select:\s*\{[\s\S]*?\}/);
+    expect(selectBlock).not.toBeNull();
+    expect(selectBlock![0]).toMatch(/suggestionStatus:\s*true/);
+  });
+
+  it("maps suggestionStatus onto the CampaignKolRow and types it on the interface", () => {
+    expect(src).toMatch(/suggestionStatus:\s*kc\.suggestionStatus/);
+    expect(src).toMatch(/suggestionStatus:\s*string\s*\|\s*null/);
   });
 });

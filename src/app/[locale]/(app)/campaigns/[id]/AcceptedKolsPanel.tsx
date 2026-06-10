@@ -15,6 +15,12 @@
  * legacy_backfill) rewrites pre-F004 `'manual'` rows to
  * `'manual_legacy'` so existing campaigns stay visible.
  *
+ * BL-110-F003: the source whitelist alone leaked skip/swap rows — the AI
+ * Match panel (/match) writes source="ai_smart_match" for skip AND swap
+ * (suggestionStatus "skipped"/"swap_pool"). The visibility test now also
+ * requires suggestionStatus ∈ {accepted, NULL}; the shared predicate
+ * lives in accepted-filter.ts (reused by the page's acceptedCount).
+ *
  * Layout per design-draft/bl066-campaign-detail-ai-main-panel/README.md
  * §"Accepted KOLs 区" — 6 columns:
  *   avatar+name / source chip / status pill / fee / addedAt / view-profile
@@ -22,13 +28,8 @@
 import { Table, TBody, TCell, THead, TRow } from "@/components/ui";
 import type { CampaignKolRow as CampaignKolRowData } from "@/lib/campaigns/detail";
 
+import { isAcceptedKolRow } from "./accepted-filter";
 import { AcceptedKolRow } from "./AcceptedKolRow";
-
-const VISIBLE_SOURCES = new Set([
-  "ai_smart_match",
-  "csv_import",
-  "manual_legacy",
-]);
 
 interface Labels {
   title: string;
@@ -63,7 +64,9 @@ export function AcceptedKolsPanel({
   labels,
   statusLabels,
 }: Props) {
-  const visible = kols.filter((k) => VISIBLE_SOURCES.has(k.source));
+  // BL-110-F003 — source whitelist + suggestionStatus ∈ {accepted, NULL}
+  // (shared with the page's acceptedCount so they stay in lockstep).
+  const visible = kols.filter(isAcceptedKolRow);
 
   return (
     <section

@@ -136,6 +136,14 @@ export async function acceptKolToCampaignAction(
           kolId: input.kolId,
           status: "pending",
           source: "ai_smart_match",
+          // BL-110-F003 — also stamp the ADR-016 suggestion lifecycle so
+          // the read口径 (AcceptedKolsPanel + acceptedCount) recognises
+          // this as accepted via suggestionStatus, not just source. Before
+          // this, detail-page accepts left suggestionStatus NULL; the
+          // read口径 keeps `accepted OR NULL` so those legacy rows still
+          // show. decidedAt records when the accept happened.
+          suggestionStatus: "accepted",
+          decidedAt: new Date(),
           matchScore:
             input.matchScore == null ? null : Math.round(input.matchScore),
         },

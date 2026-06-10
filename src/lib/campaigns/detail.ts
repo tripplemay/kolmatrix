@@ -30,6 +30,12 @@ export interface CampaignKolRow {
   // chip and gates which rows render at all (whitelist =
   // ai_smart_match / csv_import / manual_legacy).
   source: string;
+  // BL-110-F003: ADR-016 suggestion lifecycle state. The AI Match panel
+  // writes source="ai_smart_match" for skip/swap too, so the read口径
+  // must also gate on suggestionStatus ∈ {accepted, NULL} (see
+  // accepted-filter.ts) — otherwise skipped/swapped KOLs leak into the
+  // "已接受" list + acceptedCount.
+  suggestionStatus: string | null;
 }
 
 export interface CampaignDetailRow {
@@ -118,6 +124,7 @@ export async function runCampaignDetail(
             status: true,
             kolFee: true,
             source: true,
+            suggestionStatus: true,
             createdAt: true,
             kol: {
               select: {
@@ -159,6 +166,7 @@ export async function runCampaignDetail(
       kolFee: kc.kolFee == null ? null : Number(kc.kolFee.toString()),
       addedAt: kc.createdAt.toISOString(),
       source: kc.source,
+      suggestionStatus: kc.suggestionStatus,
     }));
 
     return {
