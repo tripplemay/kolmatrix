@@ -48,6 +48,9 @@ export const CrawlerStatsSchema = z.object({
   igToday: z.object({ scraped: z.number(), inserted: z.number() }).default({ scraped: 0, inserted: 0 }),
   refreshBacklog: z.object({ total: z.number(), dueNow: z.number() }).default({ total: 0, dueNow: 0 }),
   costTodayUsd: z.number().default(0),
+  // BL-108-F003 — 最近一次 refresh 入队时间(PG timestamptz 文本)。default(null):
+  // 旧 /admin/stats(爬虫 PR#12 部署前)没有此字段 → 优雅降级 null。
+  lastRefreshAt: z.string().nullable().default(null),
 });
 
 export type CrawlerStats = z.infer<typeof CrawlerStatsSchema>;

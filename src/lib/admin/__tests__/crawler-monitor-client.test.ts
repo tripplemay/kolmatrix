@@ -80,7 +80,7 @@ describe("computeHealthLights", () => {
     ingestRateByDay: [],
     scrapeCompositionToday: [{ kind: "refresh", jobs: 800, scraped: 14000, inserted: 120, costUsd: 2 }],
     ytEmailByStatus: [], igToday: { scraped: 10, inserted: 5 },
-    refreshBacklog: { total: 0, dueNow: 0 }, costTodayUsd: 0, ...over,
+    refreshBacklog: { total: 0, dueNow: 0 }, costTodayUsd: 0, lastRefreshAt: null, ...over,
   });
 
   it("balance: ok / warn / critical / null→warn", () => {
