@@ -135,10 +135,11 @@ test.describe("BL-027-F006.C · Outreach composer template picker", () => {
       .locator('[data-testid="outreach-template-option"]')
       .count();
     expect(optionsAfter).toBeGreaterThan(0);
-    // Every visible option should carry the chosen product chip — but
-    // since untied templates would also be excluded, "the count > 0
-    // and at least one row mentions the product" suffices for the
-    // narrowing assertion.
+    // BL-099 fix-round 1: an active product filter keeps the
+    // product's own templates (partitioned first) PLUS untied
+    // (productId=null) templates, so "the count > 0 and at least one
+    // row mentions the product" is the right narrowing assertion —
+    // visible rows are a mix of product-tagged and generic.
     const html = await list.innerHTML();
     expect(html).toContain(product);
   });

@@ -347,7 +347,13 @@ export interface ComposerAssetOption {
  * filtering against the initial 100-row payload (light path); these
  * params land server-side first so the future "incremental search"
  * upgrade (server action calling this with `search`) is a one-line
- * swap.
+ * swap. ⚠️ BL-099 fix-round 1: the `productId` param here is strict
+ * equality, but the composer's client-side filter (reach/
+ * templateFilter.ts) keeps product-agnostic rows (productId IS NULL
+ * — workspace user templates + system seeds) visible under an
+ * active product filter. If product filtering ever moves
+ * server-side, port that OR-NULL semantics or the BL-099 F006 bug
+ * (fresh workspace template hidden behind "No matches") comes back.
  *
  * Returns up to COMPOSER_MAX_RESULTS — enough that the dropdown
  * never truncates real-world tenant content; the /assets page is

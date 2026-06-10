@@ -45,6 +45,7 @@ import {
   type ComposerActionState,
 } from "./actions";
 import { useProductFilter } from "./useProductFilter";
+import { filterComposerTemplates } from "./templateFilter";
 import { isBioRegexOnly } from "@/lib/email/composer-email-utils";
 import type {
   OutreachCampaignOption,
@@ -1100,21 +1101,14 @@ function TemplatePicker({
     );
   }, [templates]);
 
-  const filteredTemplates = useMemo(() => {
-    let items: OutreachTemplateOption[] = [...templates];
-    if (productFilter) {
-      items = items.filter((t) => t.productId === productFilter);
-    }
-    const q = searchQuery.trim().toLowerCase();
-    if (q.length > 0) {
-      items = items.filter(
-        (t) =>
-          t.name.toLowerCase().includes(q) ||
-          (t.subject ?? "").toLowerCase().includes(q)
-      );
-    }
-    return items.slice(0, 20);
-  }, [templates, productFilter, searchQuery]);
+  // BL-099 fix-round 1 — predicate extracted to templateFilter.ts;
+  // an active product filter keeps product-agnostic templates
+  // (productId null) visible so workspace user templates and system
+  // seeds survive the BL-031-F002 campaign-scoped default.
+  const filteredTemplates = useMemo(
+    () => filterComposerTemplates(templates, productFilter, searchQuery),
+    [templates, productFilter, searchQuery]
+  );
 
   return (
     <div className="flex flex-col gap-2">
