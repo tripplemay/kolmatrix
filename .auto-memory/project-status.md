@@ -3,9 +3,17 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-110-splitbrain-quickwins-wave1 VERIFYING (4/5 generator done, 交 Codex F005) — split-brain 快赢止血(波1, 合并 BL-101/102/103/104)
-- F001-F004 全实现+CI全绿+**staging 已部署@b952f7e(SHA对齐实证)**. F001 面包屑死链→/match / F002 /assets LISTABLE_ASSET_TYPES白名单防AI解释缓存脏卡+welcome / F003 accept读口径统一(isAcceptedKolRow: source白名单 AND suggestionStatus∈{accepted,NULL}, skip/swap不再显示已接受) / F004 Reply链4面板诚实空态(replyTrackingPending数据驱动, B4写repliedAt即复活). spec docs/specs/BL-110-*
-- 下一步 Codex F005: L1(lint/tsc/test)+L2 staging走查4点+signoff. ⚠️ git_sha 验证带 ?token=HEALTH_DETAIL_TOKEN(detail-gated). 本批无 migration/env/seed. H6 Edit Brief死链留波3 BL-105
+## 🚧 BL-110-splitbrain-quickwins-wave1 FIXING (3/5 passed, 1 blocker in F004) — split-brain 快赢止血(波1, 合并 BL-101/102/103/104)
+- Codex verifying 结论：F001-F003 PASS，F004 FAIL，已退回 fixing。报告：`docs/test-reports/BL-110-verifying-2026-06-11.md`
+- 已证实 PASS：
+  - F001 面包屑 `/kols/[id] -> /match`：local + staging + prod 登录态点击都不再 404
+  - F002 `/assets` 白名单收口：local/staging/prod explanation cache rows都不再出现在 grid；local explanation-only tenant 正确进入 welcome
+  - F003 accepted 读口径：local 构造数据与 staging 真 campaign `2d11dd71-1a98-4ee0-b15d-314dae9fcd3c` 都证明 skip 不再进入 accepted panel / count
+- 当前 blocker（F004）：
+  - local reply-pending tenant 可正确显示 pending 文案，说明“无 reply 数据”分支已通
+  - 但 staging 同一 tenant 的 `/en/reach` reply KPI=18.5%、`/en/reach/tracking` 50 rows 且无 pending footnote，`/en/insight` 却仍显示 `dashboard-email-perf-reply-note`
+  - 高概率根因：dashboard 仅按 14-day chart `data.every(replied===0)` 判 pending，未按“是否存在任何真实 repliedAt 数据”判定；与 Generator handoff 里的“B4写repliedAt即复活”不符
+- staging 已部署 `b952f7e`；本批无 migration/env 变更。H6 Edit Brief 死链仍留波3 BL-105
 ## ✅ BL-108-crawler-pause-switches DONE (5/5, fix-round 2 complete, signoff @ docs/test-reports/BL-108-signoff-2026-06-10.md) — 爬虫暂停开关
 - ⚠️ **kolmatrix UI 仅 staging@706d806, 待 prod 部署**(让开关上 prod 监控页); 爬虫后端gate+API已上prod/opt(PR#12@15c2ba3). 2条水合proposed-learnings待ack
 - 决策 ADR-019(两层开关: 主 scraping_enabled 全停含manual_seed + 子 refresh_enabled 仅refresh, 主⊇子, gate在入队源无尖峰). spec docs/specs/BL-108-*
