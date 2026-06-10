@@ -1,58 +1,33 @@
 {
-  "status": "reverifying",
-  "user_goal": "BL-108 爬虫暂停开关 — 监控页手动控制(主开关全停所有抓取 + refresh 子开关). 用户监控页观察 refresh 持续消耗成本但0新增(refresh职责刷新存量指标本就不产新KOL), 要手动管控. 决策 ADR-019: 两层开关(主 scraping_enabled 全停所有抓取含 manual_seed + 子 refresh_enabled 仅 refresh, 主⊇子, 主OFF时子置灰) + 状态存爬虫 DB service_settings(非env, ≤5min生效) + gate在入队源(无积压恢复无尖峰) + 已入队自然drain + 读API不受影响 + 全停不保hot. 跨2repo. 5 features: F001 爬虫 service_settings表+admin API / F002 爬虫各入队点gate / F003 kolmatrix proxy+状态装配 / F004 kolmatrix 两toggle UI+确认+audit+i18n / F005 Codex. 插队波0(BL-099后第一优先).",
+  "status": "building",
+  "user_goal": "BL-110 split-brain 快赢止血(波1) — 合并 backlog BL-101/102/103/104. 来源全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md. 4个小改用户可见低风险各自独立: F001 KOL详情面包屑死链→/match(BL-104) / F002 /assets列表type白名单收口防泄漏AI解释缓存脏卡+welcome(BL-103) / F003 kol_campaign accept读口径统一 skip/swap不再显示已接受(BL-102) / F004 Reply链诚实空态止血 repliedAt只读不写prod假数据(BL-101) / F005 Codex. 纯kolmatrix. H6 Edit Brief死链不在本批(留波3 BL-105). 路线图波1.",
   "total_features": 5,
-  "completed_features": 4,
-  "fix_rounds": 2,
-  "current_sprint": "BL-108-crawler-pause-switches",
-  "last_updated": "2026-06-10T22:40+0800",
+  "completed_features": 0,
+  "fix_rounds": 0,
+  "current_sprint": "BL-110-splitbrain-quickwins-wave1",
+  "last_updated": "2026-06-10T23:10+0800",
   "reference_docs": [
-    "docs/specs/BL-108-crawler-pause-switches-spec.md",
-    "docs/adr/ADR-019-crawler-runtime-pause-control-surface.md",
-    "爬虫 guang-tech/apify: refresh-scheduler.ts(:51入队 / index.ts:117无条件启动) / index.ts(:51 yt-email :61 aggregator :84 cron scrape) / admin-seeds.ts:48 / admin-jobs.ts(:45/57/90) / admin-schedules.ts(requireAdmin模式) / db/schema.ts(drizzle pgTable)",
-    "kolmatrix: src/app/[locale]/(app)/admin/crawler-monitor(BL-096监控页本体) / APIFY_KOL_BASE_URL + admin key",
-    "BL-086-F001 upstream-patch 流程(爬虫 patch 交付参照, PR#3)"
+    "docs/specs/BL-110-splitbrain-quickwins-wave1-spec.md",
+    "docs/reviews/full-feature-chain-audit-2026-06-09.md(审计根因 file:line)",
+    "F001 BL-104: kols/[id]/page.tsx:162 面包屑 / middleware-helpers.ts:19",
+    "F002 BL-103: lib/assets/queries.ts:120 buildListWhere / cache.ts:126,208 / filter-shape.ts:31 / assets/page.tsx:65",
+    "F003 BL-102: suggestion-actions.ts:55 / recommend-actions.ts:132 / campaigns/[id] detail.ts:115 / AcceptedKolsPanel.tsx:66 / page.tsx:72",
+    "F004 BL-101: lib/email/analytics.ts:183 / email-performance.ts:47 / webhooks/resend/handler.ts:43(无replied事件)"
   ],
   "docs": {
-    "spec": "docs/specs/BL-108-crawler-pause-switches-spec.md",
-    "adr": "docs/adr/ADR-019-crawler-runtime-pause-control-surface.md",
-    "audit": "docs/test-reports/BL-108-reverify-2026-06-10.md",
+    "spec": "docs/specs/BL-110-splitbrain-quickwins-wave1-spec.md",
+    "audit": "docs/reviews/full-feature-chain-audit-2026-06-09.md",
     "test_cases": null,
     "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": "见 docs/test-reports/BL-108-reverify-2026-06-10.md。fix-round 1(#418 水合失配)已确认修好(不再复现), 但 reverify 发现开关点击仍不生效。fix-round 2 已定位真根因并修(commit 706d806): **水合时序竞态** — 开关 DOM 728ms 出现但 onClick 1253ms 才绑定, 中间 ~525ms 窗口按钮可见可点但事件未绑定; 此窗口内点击被永久丢弃且 React 18+ 事件重放在本 App Router 场景不补触发(staging trusted click 等 3s 实证永不重放)。Codex headless 点击稳定落此窗口故每次复现。修复 = 水合门闸(useSyncExternalStore server=false/client=true): 水合完成前两开关 disabled + data-ready=false + 显示'初始化中', 完成后 enabled + data-ready=true。staging(706d806)实测: 水合前 disabled/data-ready=false/有初始化提示, 水合后 enabled/data-ready=true/提示消失; **标准 Playwright click 在水合前调用会自动等 472ms 到 enabled 再点 → 弹窗成功, console 0 错误**。⚠️ reverify 复验请用**标准 locator.click()**(它自动等 actionability/enabled, 会跨过水合窗口)或显式 await `[data-testid=crawler-pause-controls][data-ready=true]` 再点; **不要用 force:true / dispatchEvent / evaluate(el=>el.click())**(跳过 enabled 检查 → 仍可能点在未水合的 disabled 按钮上)。L2 期望: 主/子开关 click → 确认弹窗 → 乐观翻转 → 状态变更 → 翻回恢复。",
-  "fix_rounds_history": [
-    {
-      "round": 1,
-      "at": "2026-06-10T21:25+0800",
-      "by": "Kimi (generator)",
-      "blocker": "Codex verifying L2 BLOCKED: 监控页暂停开关点击不生效, React minified #418(水合失配)",
-      "root_cause": "CrawlerPauseControls('use client', SSR+水合) lastRefresh 单元 new Date(iso).toLocaleString() 依赖运行时时区/locale, SSR 服务器时区 vs 客户端浏览器时区输出不一致 → 文本节点失配 → React #418 → 整个客户端子树丢弃并客户端重渲 → 两开关 onClick 不再绑定 → 点击无效",
-      "fix": "新增 formatTimestampUtc() 用 getUTC* 输出固定 'YYYY-MM-DD HH:mm UTC', 服务端/客户端逐字符一致; 页面另两客户端组件已水合安全(IngestRateChart ssr:false; Dialog open=false 不渲染), 故单点修复解全页水合",
-      "regression": "CrawlerPauseControls.test.tsx 加 2 用例(确定性 UTC 串断言 + null→never), TZ=America/New_York 实证 fail-before/pass-after",
-      "l1": "tsc=0, eslint 0, crawler-monitor+admin lib 47/47 pass",
-      "commit": "b5dd191"
-    },
-    {
-      "round": 2,
-      "at": "2026-06-10T22:40+0800",
-      "by": "Kimi (generator)",
-      "blocker": "Codex reverify(fix-round 1 后)L2: #418 已消失, 但监控页开关点击仍不弹确认/不变更状态/无报错(docs/test-reports/BL-108-reverify-2026-06-10.md)",
-      "root_cause": "水合时序竞态: 开关按钮 DOM 728ms 出现但 onClick 1253ms 才绑定, 中间 ~525ms 窗口按钮可见可点但事件未绑定; 此窗口内点击被永久丢弃且 React 18+ 事件重放在本 Next.js App Router 场景不补触发(staging headless trusted click 等 3s 实证永不重放)。Codex 自动化点击稳定落此窗口 → 每次复现; 真实用户在页面加载后 ~1s 内点击同样失效(真实 UX bug, 非纯测试问题)",
-      "diagnosis": "三步实证: ①本地 renderToString→hydrateRoot→click 组件级水合干净(排除组件水合) ②staging 真实浏览器 admin 登录标准操作开关正常(已水合/onClick绑定/弹窗/console0错) ③水合计时+过早点击复现: DOM@728ms onClick@1253ms, 窗口内点击丢失且不重放",
-      "fix": "水合门闸: useSyncExternalStore(server=false/client=true)水合安全就绪检测, 水合完成前两开关 disabled + 根节点 data-ready=false + 显示'初始化中'提示, 完成后 enabled + data-ready=true。使'开关可点⟺已水合': 真实用户见诚实未就绪态, Playwright 标准 click 自动等 enabled 跨过窗口。ready 在 SSR/首屏均 false 不引入新失配。i18n 5 locale 加 pause.initializing",
-      "regression": "CrawlerPauseControls.hydration.test.tsx 走真实 renderToString→hydrateRoot 路径(RTL render 测不到水合窗口): SSR 两开关 disabled+data-ready=false(去门闸即 fail 已实证) / 水合后 enabled+data-ready=true+点击弹确认",
-      "staging_verify": "706d806 实测 PASS: 水合前 disabled/data-ready=false/有初始化提示, 水合后 enabled/data-ready=true/提示消失; 标准 click 水合前调用自动等 472ms 到 enabled→弹窗成功, console 0 错误",
-      "l1": "tsc=0, eslint 0, crawler-monitor 21/21, i18n 一致性 23/23",
-      "commit": "706d806"
-    }
-  ],
-  "generator_handoff": "[2026-06-10 12:00 BJT Planner Kimi 开 BL-108 building] 爬虫暂停开关, 插队波0(BL-099 done后第一优先, 用户决策). 决策 ADR-019: 两层开关. ⚠️ 跨2repo: F001/F002 是 guang-tech/apify upstream patch(走 BL-086-F001 流程: Generator 写 patch+测试→PR→用户 merge+部署 /opt/apify-kol-service docker compose up -d --build, 注意 3004:3003 端口 + 本地 docker 定制 stash/pop, 不积累本地分叉); F003/F004 是 kolmatrix 推 main+用户部署. ⚠️ 顺序: 爬虫 API(F001/F002)契约先定, F003 可按契约 mock 并行; L2 需爬虫+kolmatrix 都部署后才能实测. 关键设计: gate在入队源非worker(无积压恢复无尖峰); manual_seed 受主开关管(409拒绝); 主开关只停抓取不停读API; 默认 true 纯增量. 下一步 Generator 启 F001(爬虫 service_settings 表+admin crawler-state API). 详见 spec §2 + ADR-019 D1-D6.",
+  "evaluator_feedback": null,
+  "fix_rounds_history": [],
+  "generator_handoff": "[2026-06-10 23:10 BJT Planner Kimi 开 BL-110 building] split-brain 快赢止血波1, 合并 BL-101/102/103/104. 4个独立小修(纯kolmatrix用户可见低风险), 无强依赖可任意序. F001 面包屑改/match(0.5h最小) / F002 buildListWhere加LISTABLE_ASSET_TYPES白名单+welcome-count(注意未来新增type需更新白名单) / F003 detail.ts select加suggestionStatus+读口径filter accepted|NULL+详情accept写suggestionStatus=accepted(注意legacy NULL兼容勿误伤) / F004 三回复面板+Dashboard Replied诚实空态(Planner决: 标注非删除维度, 保留骨架B4零返工). 各feature含单测. 下一步Generator启F001(最小, 快速见效). 详见 spec §2 各feature file:line根因. ⚠️部署staging+prod手动触发OOM NODE_OPTIONS=4096.",
   "session_notes": {
-    "Kimi_planner": "[2026-06-10 12:00 BJT Planner Kimi] BL-099 DONE(6/6 fix_round1 signoff prod@62c3114). 开 BL-108 波0 爬虫暂停开关(用户监控页观察 refresh 消耗→要手动开关, 经详细设计讨论定稿 ADR-019 两层开关). 跨2repo. 关键设计抉择已记 ADR: gate入队源/DB service_settings非env/读API不受影响/全停不保hot/manual_seed也管. 下一步 Generator F001 爬虫端 service_settings+admin API. 注: BL-098/BL-080 prod 部署已随 BL-099 main HEAD 部署解决.",
-    "Kimi_generator": "[2026-06-10 22:40 BJT fix-round 2 → reverifying] fix-round 1 的 #418 水合失配已确认修好(不复现); 但 Codex reverify 发现开关点击仍不生效。fix-round 2 定位真根因=**水合时序竞态**并修(commit 706d806, 详见 fix_rounds_history[1])。诊断三步实证: ①本地 renderToString→hydrateRoot→click 组件级水合干净 ②staging 真实浏览器标准操作开关正常 ③水合计时: DOM@728ms 但 onClick@1253ms, 中间 ~525ms 窗口按钮可见可点但事件未绑定, 此窗口点击被永久丢弃且 React 18+ 事件重放在本 App Router 不补触发(trusted click 等3s实证不重放)。Codex headless 稳定落此窗口故每次复现; 真实用户加载后~1s 内点击同样失效=真实 UX bug。修复=水合门闸(useSyncExternalStore server=false/client=true): 水合前两开关 disabled+data-ready=false+'初始化中'提示, 水合后 enabled+data-ready=true。使'可点⟺已水合'。i18n 5 locale 加 pause.initializing。回归: hydration.test.tsx 走真实 SSR→hydrate 路径(fail-before 实证)。L1: tsc=0/eslint0/crawler-monitor 21-21/i18n 23-23。[staging deployed @ 706d806 @ 2026-06-10 14:35 UTC] health healthy, git_sha=706d806 经 X-Health-Token 核对=main HEAD; **staging 实测 PASS**: 水合前 disabled/未就绪/有提示, 水合后 enabled/就绪/提示消失, 标准 click 水合前调用自动等472ms到enabled→弹窗成功, console0错。⏭️ Codex reverify **务必用标准 locator.click()**(自动等 enabled, 跨过水合窗口)或先 await `[data-testid=crawler-pause-controls][data-ready=true]` 再点; **勿用 force:true/dispatchEvent/evaluate(el=>el.click())**(跳过 enabled 检查→可能点未水合的 disabled 按钮)。L2: 主/子开关 click→确认弹窗→乐观翻转→状态变更→翻回恢复。爬虫侧本轮未触碰。",
+    "Kimi_planner": "[2026-06-10 23:10 BJT Planner Kimi] BL-108 DONE(爬虫暂停开关5/5 fix_round2水合坑 signoff; 爬虫已上prod /opt, kolmatrix UI仅staging待prod部署). 按路线图开波1 BL-110(用户选B). 合并BL-101~104四个split-brain快赢. 2条BL-108水合proposed-learnings仍队列待ack(用户选B未选A). 下一步Generator F001. 注: BL-108 kolmatrix prod部署仍是遗留手动动作(让开关上prod监控页).",
+    "Kimi_generator": null,
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
