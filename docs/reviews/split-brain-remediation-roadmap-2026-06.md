@@ -8,10 +8,12 @@
 ## 触发与顺序
 
 ```
-BL-099 (building, 当前) ──done──► 波1 ──► 波2 ──► 波3 ──► 波4
+BL-099 (building, 当前) ──done──► 波0(BL-108 插队) ──► 波1 ──► 波2 ──► 波3 ──► 波4
 ```
 
 每波 = 一个批次，启动时（前一波 done）由 Planner 把该波的 BL 项并入 features.json、写 spec。下表是**预排**，非锁定。
+
+> **波0 插队(2026-06-09 用户决策)：** BL-108 爬虫暂停开关 —— 用户监控页观察 refresh 持续消耗成本，要手动管控。独立于 split-brain(爬虫 repo + kolmatrix UI)，排在 BL-099 done 后**第一优先**，先于下面的 split-brain 波次。spec docs/specs/BL-108-crawler-pause-switches-spec.md · ADR-019。爬虫端走 upstream-patch(用户 merge+部署)。
 
 ## 波次安排
 

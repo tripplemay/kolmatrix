@@ -26,8 +26,9 @@ type: project
 - ✅ BL-088 已决(2026-06-08): 两项都不做(质量门不放宽 ~36条低性价比 + 2584 不硬删)。closed
 ## 用户手工待办
 1. aigcgateway VM .git remote PAT(gho_*)轮换(安全)
-## Backlog — split-brain 修复路线图(BL-099 done 后依次推进)
-- 🔍 审计 docs/reviews/full-feature-chain-audit-2026-06-09.md + 路线图 docs/reviews/split-brain-remediation-roadmap-2026-06.md(用户 2026-06-09: 全部排期, 依次推进)
+## Backlog — 修复路线图(BL-099 done 后依次推进)
+- 🔍 审计 docs/reviews/full-feature-chain-audit-2026-06-09.md + 路线图 docs/reviews/split-brain-remediation-roadmap-2026-06.md(用户 2026-06-09)
+- **波0 插队 BL-108**(高): 爬虫暂停开关(监控页两层 toggle: 主全停所有抓取含manual_seed + 子仅refresh; ADR-019; 跨爬虫+kolmatrix两repo; 用户决BL-099后第一优先). spec docs/specs/BL-108-*
 - **波1 快赢止血**: BL-104(/kols死链) + BL-103(/assets脏卡) + BL-102(kol_campaign accept口径) + BL-101止血(Reply空态)
 - **波2 邮件发送异步化**: BL-100(真BullMQ+异步发送, >10收件人必超时) [+BL-101 inbound根治可选]
 - **波3 campaign编辑UI补回**: BL-105(下层已齐, 接前端; 用户决:补回)

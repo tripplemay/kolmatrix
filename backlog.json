@@ -580,5 +580,31 @@
     "discovered_in": "2026-06-09 全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md",
     "wave": 4,
     "roadmap": "docs/reviews/split-brain-remediation-roadmap-2026-06.md"
+  },
+  {
+    "id": "BL-108",
+    "priority": "high",
+    "wave": 0,
+    "title": "爬虫暂停开关 — 监控页手动控制(主开关全停所有抓取 + refresh 子开关)",
+    "description": "用户 2026-06-09: refresh 持续消耗成本但0新增(refresh职责是刷新存量指标本就不产新KOL), 要在/admin/crawler-monitor做手动开关. 决策 ADR-019(两层开关+DB service_settings+gate在入队源). 现状: tiered auto-refresh(index.ts:117无条件启动)无任何开关. 两层: 主开关scraping_enabled(OFF=停所有抓取入队 refresh/cron发现/yt-email/aggregator/manual_seed/手动admin-job, 含manual_seed真全停)+子开关refresh_enabled(仅tiered refresh). gate在入队源(无积压恢复无尖峰)+已入队自然drain+≤5min生效+默认true. 跨2repo: 爬虫patch(F001 service_settings表+admin API / F002各入队点gate, 走BL-086 upstream-patch流程用户merge+部署)+kolmatrix(F003 proxy+状态装配 / F004两toggle UI+确认+audit+i18n)+F006 Codex. 监控页显示暂停时长/积压过期refresh数/最近refresh. 用户选全停不保hot. spec docs/specs/BL-108-crawler-pause-switches-spec.md.",
+    "decisions": [
+      "两层开关: 主scraping_enabled(全停含manual_seed) + 子refresh_enabled(仅refresh); 主⊇子, 主OFF时子置灰",
+      "gate在入队源非worker(无积压恢复无catch-up尖峰); 已入队自然drain; ≤5min生效",
+      "状态存爬虫DB service_settings单行(非env, 因要UI手控不重启); 读API不受影响只停抓取",
+      "全停不保hot(用户选); 陈旧转为监控页可视(暂停时长+积压数)"
+    ],
+    "confirmed_at": "2026-06-09T14:30+0800",
+    "priority_note": "插队: BL-099 done后立即开, 先于split-brain波次",
+    "tags": [
+      "crawler",
+      "apify-kol",
+      "pause-switch",
+      "cross-repo",
+      "adr-019",
+      "ops",
+      "feature"
+    ],
+    "roadmap": "docs/reviews/split-brain-remediation-roadmap-2026-06.md(波0插队)",
+    "discovered_in": "2026-06-09 用户监控页观察 refresh 消耗 + 设计讨论"
   }
 ]
