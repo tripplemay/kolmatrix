@@ -12,12 +12,13 @@
  * worked locally but the CI Playwright run surfaced the boundary
  * violation).
  */
-import type {
-  AssetFilter,
-  AssetListSort,
-  AssetSource,
-  AssetStatus,
-  AssetType,
+import {
+  LISTABLE_ASSET_TYPES,
+  type AssetFilter,
+  type AssetListSort,
+  type AssetSource,
+  type AssetStatus,
+  type AssetType,
 } from "@/lib/assets/types";
 
 // BL-026-F006.C — `used_most` ranks assets by email_log usage count
@@ -28,7 +29,11 @@ export const ASSET_LIST_SORTS = ["recent", "name", "type", "used_most"] as const
 export const ASSET_LIST_VIEWS = ["grid", "list"] as const;
 export type AssetListView = (typeof ASSET_LIST_VIEWS)[number];
 
-const ASSET_TYPES: ReadonlyArray<AssetType> = ["email", "video_script"];
+// BL-110-F002 — single source of truth for listable types (shared with
+// queries.ts buildListWhere + the welcome-count). The URL parser only
+// ever accepts these, so an explanation-cache type can't enter via the
+// `types` query param.
+const ASSET_TYPES: ReadonlyArray<AssetType> = LISTABLE_ASSET_TYPES;
 const ASSET_STATUSES: ReadonlyArray<AssetStatus> = ["draft", "published", "archived"];
 const ASSET_SOURCES: ReadonlyArray<AssetSource> = [
   "ai_generated",

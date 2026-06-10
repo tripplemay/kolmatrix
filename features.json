@@ -18,7 +18,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "buildListWhere(queries.ts:120)仅当 filter.types 非空才加 type 谓词→/assets 默认无过滤返回全部4种type, 混入 ai_recommendation_explanation_short/detailed 缓存行(cache.ts:126,208直写)→空白脏卡",
       "修: buildListWhere 无显式 type filter 时默认 where.type IN LISTABLE_ASSET_TYPES(常量 [email,video_script], 与 filter-shape.ts:31 对齐, 加注释提示未来新增type需更新白名单)",

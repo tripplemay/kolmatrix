@@ -9,6 +9,24 @@ import type { AssetSource, AssetStatus, AssetType, Prisma } from "@prisma/client
 
 export type { AssetSource, AssetStatus, AssetType };
 
+/**
+ * BL-110-F002 — the AssetType values that are user-facing "library"
+ * content and belong in the /assets grid + the welcome-count.
+ *
+ * The other two AssetType values
+ * (ai_recommendation_explanation_short / ai_recommendation_explanation_detailed)
+ * are internal LLM explanation caches that share the same Asset table
+ * via type-based partitioning (src/lib/explainability/cache.ts, written
+ * with source="ai_generated"). They must never leak into the /assets
+ * listing (blank "dirty cards") nor be counted as user-owned assets
+ * (which would wrongly suppress the welcome empty-state).
+ *
+ * ⚠️ Adding a new user-facing AssetType? Add it here too, or it won't
+ * show up in /assets. Keep this aligned with filter-shape.ts (the URL
+ * filter whitelist imports this constant).
+ */
+export const LISTABLE_ASSET_TYPES: readonly AssetType[] = ["email", "video_script"];
+
 export interface AssetCard {
   id: string;
   tenantId: string | null;

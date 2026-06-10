@@ -36,6 +36,7 @@ import type {
   UsedInSummary,
   VariantTreeNode,
 } from "./types";
+import { LISTABLE_ASSET_TYPES } from "./types";
 
 const MAX_VARIANT_DEPTH = 10;
 const DEFAULT_PAGE_SIZE = 24;
@@ -120,7 +121,17 @@ const ASSET_SELECT = {
 function buildListWhere(filter: AssetFilter): Prisma.AssetWhereInput {
   const where: Prisma.AssetWhereInput = {};
   if (filter.productId) where.productId = filter.productId;
-  if (filter.types && filter.types.length > 0) where.type = { in: filter.types };
+  // BL-110-F002 — when the caller gives an explicit type filter, honour
+  // it (the URL parser already constrains it to listable types). With no
+  // type filter, default to the LISTABLE_ASSET_TYPES whitelist instead of
+  // "all types" so the explanation-cache rows
+  // (ai_recommendation_explanation_short/detailed, same table) never leak
+  // into the /assets grid as blank dirty cards.
+  if (filter.types && filter.types.length > 0) {
+    where.type = { in: filter.types };
+  } else {
+    where.type = { in: [...LISTABLE_ASSET_TYPES] };
+  }
   if (filter.status) where.status = filter.status;
   if (filter.sources && filter.sources.length > 0) {
     where.source = { in: filter.sources };

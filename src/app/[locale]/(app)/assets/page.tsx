@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { withTenant } from "@/lib/db";
 import { loadAssetsForListing } from "@/lib/assets/queries";
+import { LISTABLE_ASSET_TYPES } from "@/lib/assets/types";
 import { readAssetFiltersFromQuery, toAssetFilter, type AssetUrlState } from "./filter-shape";
 
 import { AssetsClient } from "./AssetsClient";
@@ -68,6 +69,12 @@ export default async function AssetsPage({ params, searchParams }: Props) {
             where: {
               tenantId,
               source: { in: ["user_created", "ai_generated", "imported"] },
+              // BL-110-F002 — count only listable library assets. Without
+              // this, a tenant that only ever triggered AI recommendation
+              // explanations (cached as ai_generated explanation-type rows)
+              // would have userOwnedCount > 0 and wrongly skip the welcome
+              // empty-state despite never authoring a real asset.
+              type: { in: [...LISTABLE_ASSET_TYPES] },
             },
           })
         )

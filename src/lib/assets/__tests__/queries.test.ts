@@ -479,6 +479,42 @@ describe("__TEST_ONLY__ helpers", () => {
   });
 });
 
+// BL-110-F002 — buildListWhere must default to the LISTABLE_ASSET_TYPES
+// whitelist when the caller gives no explicit `types`. Without it, the
+// /assets grid leaked ai_recommendation_explanation_short/detailed cache
+// rows (same table, written by src/lib/explainability/cache.ts) as blank
+// dirty cards.
+describe("buildListWhere type whitelist (BL-110-F002)", () => {
+  it("defaults to the email/video_script whitelist when no type filter is given", () => {
+    expect(__TEST_ONLY__.buildListWhere({})).toEqual({
+      type: { in: ["email", "video_script"] },
+    });
+  });
+
+  it("never lets explanation-cache types into the default listing", () => {
+    const where = __TEST_ONLY__.buildListWhere({});
+    const typeIn = (where.type as { in: string[] }).in;
+    expect(typeIn).not.toContain("ai_recommendation_explanation_short");
+    expect(typeIn).not.toContain("ai_recommendation_explanation_detailed");
+  });
+
+  it("honours an explicit type filter (URL parser already constrains it)", () => {
+    expect(__TEST_ONLY__.buildListWhere({ types: ["email"] })).toEqual({
+      type: { in: ["email"] },
+    });
+  });
+
+  it("keeps the whitelist alongside other filter predicates", () => {
+    expect(
+      __TEST_ONLY__.buildListWhere({ productId: "prod-1", status: "published" })
+    ).toEqual({
+      productId: "prod-1",
+      type: { in: ["email", "video_script"] },
+      status: "published",
+    });
+  });
+});
+
 // BL-030-F002 — loadProductAssetCounts powers the KB grid chips. The
 // helper runs a single Prisma groupBy and shapes the result into a
 // Map<productId, {emailCount, videoCount}>. Mock the tx so we can
