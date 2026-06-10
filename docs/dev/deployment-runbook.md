@@ -89,16 +89,24 @@ to the commit it was taken against.
 Skip the backup (not recommended) by triggering the deploy workflow
 with `skip_backup: true`.
 
-**Cron retention.** Add this line on first-time VPS bootstrap
-(run `crontab -e` as the deploy user):
+**Cron retention.** Installed as a durable `/etc/cron.d/` file (NOT a
+user/root `crontab -e` entry — that version was never installed and was
+lost on the 2026-06-07 VM reset, letting backups grow to 99 files / 1.6G;
+a `cron.d` file survives reboots and VM rebuilds):
 
 ```cron
-0 4 * * * find /opt/kolmatrix-backups -name 'db-*.sql.gz' -mtime +30 -delete
+# /etc/cron.d/kolmatrix-backup-retention  (mode 0644)
+0 4 * * * root find /opt/kolmatrix-backups -name 'db-*.sql.gz' -mtime +14 -delete
 ```
 
-Files older than 30 days are pruned every night at 04:00 local time.
-`manifest.log` itself is never truncated; tail it when you need history
-past the backup retention window.
+Files older than **14 days** are pruned every night at 04:00 local time
+(tightened from the original 30 days: backups are per-deploy and at peak
+~5/day × 49M, so 30 days could reach ~7G on the 49G disk). `manifest.log`
+is never truncated; tail it for history past the retention window.
+
+> ⚠️ **After any VM rebuild/reset, re-create this `cron.d` file** (verify
+> with `cat /etc/cron.d/kolmatrix-backup-retention`). Without it backups
+> accumulate unbounded — that's how disk hit 90% on 2026-06-10.
 
 Manual restore (from any surviving `db-*.sql.gz`):
 

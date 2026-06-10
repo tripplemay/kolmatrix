@@ -148,6 +148,7 @@ NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) n
 ## 扩容信号
 
 - RAM 接近 14GB、CPU 持续 >70%、或 KOL 采集 worker 影响 aigcgateway 响应时，拆独立 VM。
+- **磁盘 `/` 仅 49G（2026-06-10 曾达 90%）。** 清理杠杆：`npm cache clean --force`(~3G) / `docker builder prune`(~3G) / `journalctl --vacuum-size=200M` / `apt clean`。备份保留 cron 在 `/etc/cron.d/kolmatrix-backup-retention`(db dump >14天每日删，**VM reset 后须重建**——原 root-crontab 版 6/07 reset 丢失致备份堆到 1.6G)。docker volume(pg 数据)/node_modules/active .next 不可删。
 
 ## 测试账号
 

@@ -9,9 +9,11 @@
 # user can set SKIP_BACKUP=true to bypass it (not recommended — the
 # workflow input defaults to false).
 #
-# Retention: a crontab entry (`0 4 * * * find ... -mtime +30 -delete`)
-# prunes files older than 30 days; see docs/dev/deployment-runbook.md
-# §Backups for the exact line.
+# Retention: a durable /etc/cron.d/kolmatrix-backup-retention file
+# (`0 4 * * * root find ... -mtime +14 -delete`) prunes dumps older than
+# 14 days. Installed as cron.d (not crontab -e) because the latter was
+# lost on the 2026-06-07 VM reset; MUST be re-created after any VM
+# rebuild. See docs/dev/deployment-runbook.md §Backups.
 #
 # Connection strategy (2026-04-20 revision, bootstrap round 2):
 #   1. If DATABASE_ADMIN_URL is already in env → use as-is.
