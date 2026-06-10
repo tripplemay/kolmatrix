@@ -74,7 +74,7 @@ tail -1 /var/log/kolmatrix-kol-sync.log | jq .discoverCount
 | Trigger | Level | What it means | First-pass action |
 |---|---|---|---|
 | `estimatedQuotaConsumed > 100` | WARN | apify-kol pagination is iterating much harder than usual. Steady-state is single-digit units (1u healthCheck + ~1u per /kol page); >100 means many short-page rescans or runaway. | Check `errors[]` and inspect the markdown report; if scoreScore filter is letting too few rows through, may need to revisit the apify-kol double-low threshold. |
-| `discoverCount === 0` | WARN | Today's run found 0 new KOL (after dedupe). Could be apify-kol-service down, scrape quota at the fork end, or low-volume hashtag schedules. | Look at `errors`. SSH the prod host and `curl -fsS http://localhost:3003/health` on the fork. Re-run manually with `npm run kol-sync:daily` and observe. |
+| `discoverCount === 0` | WARN | Today's run found 0 new KOL (after dedupe). Could be apify-kol-service down, scrape quota at the fork end, or low-volume hashtag schedules. | Look at `errors`. SSH the prod host and `curl -fsS http://localhost:3004/health` on the fork（BL-075 起 host port 3004）. Re-run manually with `npm run kol-sync:daily` and observe. |
 | `discoverCount === 0` for 3 days running | **ALERT** | Single-source apify-kol likely broken, or fork TikHub balance exhausted. | Page on-call. SSH `/opt/apify-kol-service` and `sudo docker compose ps` + `sudo docker compose logs --tail 200`. Check fork `/admin/stats` for paid balance. 30-day soft-delete window means the youtube-api-daily fallback can be restored via SQL §3.3 in BL-059 spec. |
 | `errors.length > 0` | WARN | At least one adapter call exhausted retries. | Read each error string in `errors[]`. Most are transient — re-run manually if budget allows. |
 | `durationMs > 300000` (5 min) | WARN | Run took longer than the rotation budget. Almost always a sign of network slowness on the VPS or a 429 retry-storm. | Re-run; if it persists, check `free -m` and `iostat 1` on the VPS. |
@@ -278,30 +278,13 @@ git fetch 'https://x-access-token:$TOKEN@github.com/guang-tech/apify.git' master
 git reset --hard FETCH_HEAD
 git log -1 --format='HEAD: %h %s'
 
-# Step 2.2: 4 sed/awk workaround（5/10 起 fork 已 monorepo + 5/9 加 @apify-kol/apify 包但 Dockerfile 不同步 + ports 错配）
-# (1) Dockerfile path: fork 已 monorepo，Dockerfile 在 sub-package
-sed -i 's/pnpm install --frozen-lockfile/pnpm install --no-frozen-lockfile/g' packages/service/Dockerfile
-
-# (2) Ports: service 5/9 监听端口默认 3003，docker-compose 仍 3003:3000 错配
-sed -i 's/\"3003:3000\"/\"3003:3003\"/' docker-compose.yml
-
-# (3) Awk hot-fix Dockerfile: fork master 5/9 加 @apify-kol/apify workspace 包（commit 7e72cc8）
-#     但 packages/service/Dockerfile 没同步 COPY → 5 行 insert（builder 3 + runtime 2）
-awk '
-/^COPY packages\/service\/package\.json packages\/service\/$/ { print; print \"COPY packages/apify/package.json packages/apify/\"; next }
-/^COPY packages\/service packages\/service$/ { print; print \"COPY packages/apify packages/apify\"; next }
-/^RUN pnpm --filter @apify-kol\/sdk build$/ { print; print \"RUN pnpm --filter @apify-kol/apify build\"; next }
-/^COPY --from=builder \/app\/packages\/service\/src\/db\/migrations packages\/service\/dist\/db\/migrations$/ {
-  print
-  print \"COPY --from=builder /app/packages/apify/package.json packages/apify/\"
-  print \"COPY --from=builder /app/packages/apify/dist packages/apify/dist\"
-  next
-}
-{ print }
-' packages/service/Dockerfile > packages/service/Dockerfile.new
-mv packages/service/Dockerfile.new packages/service/Dockerfile
-
-# (4) Pnpm install --no-frozen-lockfile 已经在 (1) 同时 sed（lockfile drift）
+# Step 2.2: 唯一保留的本机定制 — ports（2026-06-10 BL-108 同步后精简：
+# 原 (1) --no-frozen-lockfile sed 与 (3) awk @apify-kol/apify hot-fix 均已失效闭环 —
+# upstream PR#12(564d9a0, merge @15c2ba3) 修了 Dockerfile COPY，lockfile 已一致，
+# 实测 clean build EXIT=0。详见 §4 表。）
+# Ports: upstream default \"3000:3000\"；本机 host 3004(避开 /srv/workbench 占用的
+# 3003) → container 3003(service 监听口)。KOLMatrix .env 指向 localhost:3004。
+sed -i 's/\"3000:3000\"/\"3004:3003\"/' docker-compose.yml
 
 # Step 2.3: down + nohup background up（避免 SSH 长 build 断开）
 sudo docker compose down       # 不带 -v！pg_data volume 保留
@@ -312,8 +295,8 @@ nohup bash -c 'sudo docker compose up -d --build > /tmp/compose-up.log 2>&1; ech
 # 本地等待 build 完成（典型 5-10min）
 ssh tripplezhou@34.180.93.185 "until [ -f /tmp/compose-up.done ]; do sleep 20; done && cat /tmp/compose-up.done"
 
-# Smoke 验证（host port 3003）
-ssh tripplezhou@34.180.93.185 "curl -fsS http://localhost:3003/health"  # 期望 {\"status\":\"ok\"}
+# Smoke 验证（host port 3004，BL-075 起）
+ssh tripplezhou@34.180.93.185 "curl -fsS http://localhost:3004/health"  # 期望 {\"status\":\"ok\"}
 ```
 
 **故障排查：** 如 `EXIT=1`，跑 `tail -50 /tmp/compose-up.log`（注意 SSH 对含 ANSI 的长 log 不稳定，用 `tr -cd '[:print:]\n\t' < /tmp/compose-up.log > /tmp/clean.log` 清理后再 tail）；如 `git fetch` 报 `could not read Username` 说明 token 不对或 repo 权限失效，确认 `gh auth token` 输出且本地 `gh repo view guang-tech/apify` 能访问。
@@ -328,9 +311,9 @@ ssh tripplezhou@34.180.93.185 "curl -fsS http://localhost:3003/health"  # 期望
 
 | 当前 workaround | 失效信号（爬虫团队修复后） |
 |---|---|
-| `packages/service/Dockerfile --no-frozen-lockfile` (5/10 path 已升级到 sub-package) | fork 端 `pnpm-lock.yaml` 与 package.json 一致后可去除 |
-| `docker-compose.yml 3003:3003` (5/10 升级版，原 3003:3000 错配) | fork 端 ports default 改 3003:3003 或 service 端 SERVICE_PORT 默认仍 3000 后可去除（详 docs/inbox/feedback-fork-dockerfile-2026-05-10.md Bug 2） |
-| `awk hot-fix packages/service/Dockerfile` 加 @apify-kol/apify package COPY+build (5/10 新增) | fork 端 `packages/service/Dockerfile` 加 5 行 COPY/build 同步 5/9 引入的 `@apify-kol/apify` workspace 包后可去除（详 docs/inbox/feedback-fork-dockerfile-2026-05-10.md Bug 1） |
+| ~~`packages/service/Dockerfile --no-frozen-lockfile`~~ ✅ 6/10 BL-108 同步实测 upstream `--frozen-lockfile` 直接 build 通过（lockfile 已一致），sed 已去除 | (已闭环 2026-06-10) |
+| `docker-compose.yml` ports 本机定制 `3004:3003`（BL-075 6 月改 3004 避开 /srv/workbench 占用的 3003；upstream default 仍 `3000:3000`） | 仍需每次 sync 后 sed 重应用；KOLMatrix `.env` 指向 `localhost:3004` |
+| ~~`awk hot-fix packages/service/Dockerfile` 加 @apify-kol/apify COPY+build~~ ✅ 6/10 upstream 修复（guang-tech/apify PR#12 564d9a0，随 BL-108 merge @15c2ba3），awk 步骤已去除并实测 clean build EXIT=0 | (已闭环 2026-06-10) |
 | KOLMatrix `apify-kol` adapter zod schema 兼容 union shape | fork 端 docs 明示 `externalUrls` / `aggregatorLinks` shape 后可收紧 |
 | ~~`platform: 'x'` 不入 dispatcher~~ ✅ 5/9 fork commit 83b8861 service 端实装 X 平台 + KOLMatrix `schemas.ts` L97 已含 `'x'` ✅ | (已闭环) |
 
