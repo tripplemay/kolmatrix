@@ -41,7 +41,8 @@ export async function setCrawlerStateAction(patch: {
     return { ok: false, error: "invalid_input" };
   }
 
-  const updatedBy = session.user.email ?? session.user.id ?? "kolmatrix-admin";
+  // `||` 而非 `??`:空串 email 也要落到 fallback;slice 对齐爬虫 zod max(200)
+  const updatedBy = (session.user.email || session.user.id || "kolmatrix-admin").slice(0, 200);
 
   try {
     const state = await patchCrawlerState({ ...flags, updatedBy });

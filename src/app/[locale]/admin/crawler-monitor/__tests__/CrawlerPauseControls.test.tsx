@@ -66,7 +66,8 @@ const BASE: CrawlerControlState = {
   updatedBy: "kimi",
   pausedDurationMs: null,
   refreshBacklogDueNow: 142,
-  lastRefreshAt: "2026-06-10 02:00:00+00",
+  // 爬虫 /admin/stats 经 to_char 输出 ISO UTC(非 pg ::text 空格格式)
+  lastRefreshAt: "2026-06-10T02:00:00Z",
 };
 
 function renderControls(control: Partial<CrawlerControlState> = {}) {
@@ -84,7 +85,7 @@ beforeEach(() => {
     state: {
       scrapingEnabled: false,
       refreshEnabled: true,
-      updatedAt: "2026-06-10 06:00:00+00",
+      updatedAt: "2026-06-10T06:00:00.000Z",
       updatedBy: "admin@kolmatrix.local",
     },
   });
@@ -167,9 +168,38 @@ describe("CrawlerPauseControls", () => {
     expect(routerRefresh).not.toHaveBeenCalled();
   });
 
-  it("子开关确认文案区分 refresh 语义", async () => {
+  it("子开关确认文案区分 refresh 语义, 且 action 收到 refreshEnabled 字段(非主开关)", async () => {
     renderControls();
     fireEvent.click(screen.getByTestId("pause-refresh-switch"));
     expect(await screen.findByText("PAUSE-SUB-WARNING")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("pause-confirm-accept"));
+    // 翻错字段 = 生产暂停控制最糟的混淆 — payload 必须显式钉死
+    await waitFor(() =>
+      expect(setCrawlerStateAction).toHaveBeenCalledWith({ refreshEnabled: false }),
+    );
+    expect(setCrawlerStateAction).not.toHaveBeenCalledWith(
+      expect.objectContaining({ scrapingEnabled: expect.anything() }),
+    );
+  });
+
+  it("乐观翻转在 action resolve 前即生效(deferred promise 钉住乐观属性)", async () => {
+    let resolveAction!: (v: unknown) => void;
+    setCrawlerStateAction.mockImplementationOnce(
+      () => new Promise((resolve) => (resolveAction = resolve)),
+    );
+    renderControls();
+    fireEvent.click(screen.getByTestId("pause-main-switch"));
+    fireEvent.click(await screen.findByTestId("pause-confirm-accept"));
+
+    // action 仍 pending — 开关已乐观翻转
+    await waitFor(() =>
+      expect(screen.getByTestId("pause-main-switch")).toHaveAttribute("aria-checked", "true"),
+    );
+
+    // 失败 resolve → 回滚到原态 + 错误条
+    resolveAction({ ok: false, error: "timeout" });
+    expect(await screen.findByTestId("pause-error")).toBeInTheDocument();
+    expect(screen.getByTestId("pause-main-switch")).toHaveAttribute("aria-checked", "false");
   });
 });

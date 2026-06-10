@@ -42,8 +42,17 @@ vi.mock("@/lib/admin/crawler-state-client", () => ({
   fetchCrawlerState: (...a: unknown[]) => fetchCrawlerStateMock(...a),
 }));
 vi.mock("../CrawlerPauseControls", () => ({
-  CrawlerPauseControls: (props: { control: { availability: string } }) => (
-    <div data-testid="pause-controls-stub">stub:{props.control.availability}</div>
+  CrawlerPauseControls: (props: {
+    control: {
+      availability: string;
+      refreshBacklogDueNow: number | null;
+      lastRefreshAt: string | null;
+    };
+  }) => (
+    <div data-testid="pause-controls-stub">
+      stub:{props.control.availability}:backlog={String(props.control.refreshBacklogDueNow)}
+      :last={String(props.control.lastRefreshAt)}
+    </div>
   ),
 }));
 
@@ -73,7 +82,7 @@ beforeEach(() => {
   fetchCrawlerStateMock.mockResolvedValue({
     scrapingEnabled: true,
     refreshEnabled: true,
-    updatedAt: "2026-06-10 03:00:00+00",
+    updatedAt: "2026-06-10T03:00:00.000Z",
     updatedBy: "kimi",
   });
 });
@@ -91,7 +100,9 @@ describe("BL-096-F002 /admin/crawler-monitor", () => {
     expect(html).toContain("card-balances");
     expect(html).toContain("ingest-chart-stub");
     expect(html).toContain("pause-controls-stub");
-    expect(html).toContain("stub:ok");
+    // 装配复用页面已拉的 stats(dueNow 142), 且只拉一次 /admin/stats
+    expect(html).toContain("stub:ok:backlog=142");
+    expect(fetchCrawlerStatsMock).toHaveBeenCalledTimes(1);
     expect(html).not.toContain("crawler-monitor-fetch-error");
   });
 
@@ -114,7 +125,7 @@ describe("BL-096-F002 /admin/crawler-monitor", () => {
     await expect(render()).rejects.toThrow(/NEXT_REDIRECT:\/en\/login/);
   });
 
-  it("fetch error → graceful degrade banner, no cards", async () => {
+  it("fetch error → graceful degrade banner, no cards; 暂停控制面独立于 stats 仍渲染", async () => {
     authMock.mockResolvedValue(platformAdmin);
     const { CrawlerMonitorError } = await import("@/lib/admin/crawler-monitor-client");
     fetchCrawlerStatsMock.mockRejectedValue(new CrawlerMonitorError("config", "APIFY_KOL_ADMIN_API_KEY is not set"));
@@ -122,5 +133,7 @@ describe("BL-096-F002 /admin/crawler-monitor", () => {
     expect(redirectMock).not.toHaveBeenCalled();
     expect(html).toContain("crawler-monitor-fetch-error");
     expect(html).not.toContain("card-ingest-rate");
+    // BL-108-F004: 开关可用性独立于 stats — stats 挂了控制面也要在(backlog 降级 null)
+    expect(html).toContain("stub:ok:backlog=null");
   });
 });

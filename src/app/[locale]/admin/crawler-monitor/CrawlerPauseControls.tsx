@@ -21,6 +21,7 @@ import {
   Dialog,
   DialogBackdrop,
   DialogFooter,
+  DialogHeader,
   DialogPanel,
   DialogPortal,
   DialogTitle,
@@ -255,8 +256,10 @@ export function CrawlerPauseControls({ control }: { control: CrawlerControlState
         <DialogPortal>
           <DialogBackdrop />
           <DialogPanel size="sm" data-testid="pause-confirm-dialog">
-            <DialogTitle>{t("confirmTitle")}</DialogTitle>
-            <p className="text-sm text-white/70">{confirmBody}</p>
+            <DialogHeader>
+              <DialogTitle>{t("confirmTitle")}</DialogTitle>
+            </DialogHeader>
+            <p className="px-5 py-4 text-sm text-white/70">{confirmBody}</p>
             <DialogFooter>
               <Button
                 variant="ghost"

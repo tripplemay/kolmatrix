@@ -14,7 +14,7 @@ const KEY = "admin-key";
 const STATE = {
   scrapingEnabled: true,
   refreshEnabled: false,
-  updatedAt: "2026-06-10 03:00:00+00",
+  updatedAt: "2026-06-10T03:00:00.000Z",
   updatedBy: "kimi",
 };
 

@@ -27,7 +27,7 @@ const ADMIN_SESSION = {
 const STATE = {
   scrapingEnabled: false,
   refreshEnabled: true,
-  updatedAt: "2026-06-10 03:00:00+00",
+  updatedAt: "2026-06-10T03:00:00.000Z",
   updatedBy: "admin@kolmatrix.local",
 };
 

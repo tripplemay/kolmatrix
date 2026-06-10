@@ -20,7 +20,7 @@ const STATE_ON = {
 
 const STATS = {
   refreshBacklog: { total: 3215, dueNow: 142 },
-  lastRefreshAt: "2026-06-10 02:00:00+00",
+  lastRefreshAt: "2026-06-10T02:00:00Z",
 } as Pick<CrawlerStats, "refreshBacklog" | "lastRefreshAt">;
 
 describe("assembleCrawlerControlState", () => {
@@ -34,7 +34,7 @@ describe("assembleCrawlerControlState", () => {
       updatedBy: "kimi",
       pausedDurationMs: null,
       refreshBacklogDueNow: 142,
-      lastRefreshAt: "2026-06-10 02:00:00+00",
+      lastRefreshAt: "2026-06-10T02:00:00Z",
     });
   });
 
