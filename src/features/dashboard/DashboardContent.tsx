@@ -20,6 +20,7 @@ import { RecentActivityCard } from "@/features/dashboard/RecentActivityCard";
 import { WorkflowSteps } from "@/features/dashboard/WorkflowSteps";
 import { isLocale, routing } from "@/i18n/routing";
 import { fetchEmailPerformance } from "@/lib/dashboard/email-performance";
+import { isReplyTrackingPending } from "@/lib/email/analytics";
 import { loadKpiTrends } from "@/lib/dashboard/kpi-trends";
 import {
   fetchRecentActivity,
@@ -41,17 +42,21 @@ export async function DashboardContent({ locale: rawLocale }: Props) {
   const tenantId = session?.user.tenantId;
   if (!tenantId) redirect("/login");
 
-  const [[d, emailPerf, rawActivity, kpiTrends], roiTrend] = await Promise.all([
-    withTenant(tenantId, (tx) =>
-      Promise.all([
-        fetchDashboardData(tx),
-        fetchEmailPerformance(tx),
-        fetchRecentActivity(tx),
-        loadKpiTrends(tx, tenantId),
-      ])
-    ),
-    loadRoiTrend(tenantId, 30),
-  ]);
+  const [[d, emailPerf, rawActivity, kpiTrends, replyTrackingPending], roiTrend] =
+    await Promise.all([
+      withTenant(tenantId, (tx) =>
+        Promise.all([
+          fetchDashboardData(tx),
+          fetchEmailPerformance(tx),
+          fetchRecentActivity(tx),
+          loadKpiTrends(tx, tenantId),
+          // BL-110-F004 fix-round 1 — all-time reply existence drives the
+          // dashboard pending note, not the 14-day chart (verifying blocker).
+          isReplyTrackingPending(tx),
+        ])
+      ),
+      loadRoiTrend(tenantId, 30),
+    ]);
 
   const t = await getTranslations("dashboard");
   const activityItems = rawActivity.map((row) => {
@@ -135,7 +140,7 @@ export async function DashboardContent({ locale: rawLocale }: Props) {
           </section>
         </div>
         <aside className="space-y-6">
-          <EmailPerformanceCard data={emailPerf} />
+          <EmailPerformanceCard data={emailPerf} replyTrackingPending={replyTrackingPending} />
           <RecentActivityCard items={activityItems} />
         </aside>
       </div>

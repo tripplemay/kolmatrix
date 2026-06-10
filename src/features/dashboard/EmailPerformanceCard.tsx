@@ -15,16 +15,21 @@ import { EmailPerformanceChart } from "./EmailPerformanceChart";
 
 interface Props {
   data: EmailPerfPoint[];
+  // BL-110-F004 fix-round 1 — driven by ALL-TIME reply existence
+  // (isReplyTrackingPending), NOT the 14-day chart. The chart-derived
+  // heuristic false-flagged tenants whose replies predate the 14-day
+  // window (verifying blocker). True ⇒ reply tracking has never produced
+  // data (inbound email = B4); show the honest pending footnote.
+  replyTrackingPending: boolean;
 }
 
-export function EmailPerformanceCard({ data }: Props) {
+export function EmailPerformanceCard({ data, replyTrackingPending }: Props) {
   const t = useTranslations("dashboard");
   const isEmpty = data.every((p) => p.sent === 0 && p.opened === 0 && p.replied === 0);
-  // BL-110-F004 — the Replied line is flat at 0 in prod because reply
-  // tracking isn't wired (inbound email = B4, deferred); nothing writes
-  // repliedAt. Keep the line (B4 revives it) but add an honest footnote so
-  // the flat-0 isn't read as a measured "0 replies every day".
-  const replyTrackingPending = !isEmpty && data.every((p) => p.replied === 0);
+  // Keep the Replied line (B4 revives it). Only annotate when the tenant
+  // has NO real reply data anywhere AND the card is actually showing a
+  // chart (not the fully-empty placeholder).
+  const showReplyNote = !isEmpty && replyTrackingPending;
   return (
     <GlassPanel padding="md" rounded="2xl" tone="neutral" data-testid="dashboard-email-perf">
       <SectionHeader title={t("emailPerformance")} as="h3" className="mb-3" />
@@ -35,7 +40,7 @@ export function EmailPerformanceCard({ data }: Props) {
       ) : (
         <>
           <EmailPerformanceChart data={data} />
-          {replyTrackingPending ? (
+          {showReplyNote ? (
             <p
               data-testid="dashboard-email-perf-reply-note"
               className="text-on-surface-variant/70 mt-2 text-center text-[10px]"

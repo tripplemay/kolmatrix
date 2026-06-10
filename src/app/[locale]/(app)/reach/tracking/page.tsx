@@ -12,6 +12,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { withTenant } from "@/lib/db";
+import { isReplyTrackingPending } from "@/lib/email/analytics";
 import { createCursorPaginator } from "@/lib/pagination/cursor";
 
 import { OutreachTabs } from "../OutreachTabs";
@@ -71,7 +72,7 @@ export default async function TrackingPage({ params, searchParams }: Props) {
   const where: Prisma.EmailLogWhereInput =
     status === "all" ? {} : { status };
 
-  const { items, nextCursor } = await withTenant(tenantId, async (tx) => {
+  const { items, nextCursor, replyTrackingPending } = await withTenant(tenantId, async (tx) => {
     const paginator = createCursorPaginator<EmailLogShape, Prisma.EmailLogWhereInput>({
       model: tx.emailLog as unknown as Parameters<typeof createCursorPaginator>[0]["model"],
       defaultOrderBy: "createdAt",
@@ -88,27 +89,33 @@ export default async function TrackingPage({ params, searchParams }: Props) {
     // Hydrate KOL relation in a single follow-up findMany — keeps the
     // paginator generic.
     const ids = page.items.map((r) => r.id);
-    const rows = await tx.emailLog.findMany({
-      where: { id: { in: ids } },
-      select: {
-        id: true,
-        sentAt: true,
-        createdAt: true,
-        subject: true,
-        status: true,
-        toAddress: true,
-        openedAt: true,
-        repliedAt: true,
-        bounceReason: true,
-        kol: {
-          select: { displayName: true, handle: true, platform: true },
+    const [rows, pending] = await Promise.all([
+      tx.emailLog.findMany({
+        where: { id: { in: ids } },
+        select: {
+          id: true,
+          sentAt: true,
+          createdAt: true,
+          subject: true,
+          status: true,
+          toAddress: true,
+          openedAt: true,
+          repliedAt: true,
+          bounceReason: true,
+          kol: {
+            select: { displayName: true, handle: true, platform: true },
+          },
         },
-      },
-    });
+      }),
+      // BL-110-F004 fix-round 1 — all-time reply existence, NOT
+      // "this page has no repliedAt". A tenant whose replies sit on a
+      // later page would otherwise show a false footnote on page 1.
+      isReplyTrackingPending(tx),
+    ]);
     // Preserve the cursor-paginator's order.
     const byId = new Map(rows.map((r) => [r.id, r]));
     const ordered = ids.map((id) => byId.get(id)).filter(Boolean) as EmailLogShape[];
-    return { items: ordered, nextCursor: page.nextCursor };
+    return { items: ordered, nextCursor: page.nextCursor, replyTrackingPending: pending };
   });
 
   const tableRows: TrackingRow[] = items.map((r) => ({
@@ -125,10 +132,9 @@ export default async function TrackingPage({ params, searchParams }: Props) {
   }));
 
   // BL-110-F004 — reply tracking isn't wired (inbound email = B4), so the
-  // Replied column is all "—". Surface an honest footnote when no visible
-  // row carries a repliedAt instead of leaving the column header implying
-  // replies are being tracked. Revives automatically once B4 writes data.
-  const replyTrackingPending = tableRows.every((r) => r.repliedAt == null);
+  // Replied column is all "—". `replyTrackingPending` (computed above from
+  // ALL-TIME reply existence, not this page's rows) drives an honest
+  // footnote; it disappears the moment any reply lands anywhere.
 
   return (
     <div

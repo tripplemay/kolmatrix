@@ -6,6 +6,7 @@
  * per tenant at dev time) so the dashboard is never empty pre-F006
  * Journey.
  */
+import type { TenantPrisma } from "@/lib/db";
 import { withTenant } from "@/lib/db";
 
 export interface EmailQuickStats {
@@ -22,6 +23,28 @@ export interface EmailQuickStats {
   // "回复追踪待上线(B4)" annotation instead of a misleading 0.0%. It flips
   // to false automatically once inbound email starts writing repliedAt.
   replyTrackingPending: boolean;
+}
+
+/**
+ * BL-110-F004 (fix-round 1) — true when the tenant has NO email_log row
+ * with repliedAt at all, i.e. reply tracking has never produced data
+ * (inbound email = B4, deferred). Every reply-related "honest empty"
+ * surface (KPI strip, recent replies, tracking footnote, dashboard note)
+ * keys off this ALL-TIME existence check — NOT a windowed/paged proxy.
+ *
+ * The fix-round-1 blocker: the dashboard originally inferred "pending"
+ * from its 14-day chart (`data.every(replied===0)`), so a tenant whose
+ * replies were older than 14 days saw a false "B4 pending integration"
+ * note while /reach showed a real reply rate. The tracking footnote and
+ * KPI strip had the same window/page-scoping hazard. A single all-time
+ * signal makes every surface agree and revives the moment any reply
+ * exists.
+ */
+export async function isReplyTrackingPending(tx: TenantPrisma): Promise<boolean> {
+  const repliedCount = await tx.emailLog.count({
+    where: { repliedAt: { not: null } },
+  });
+  return repliedCount === 0;
 }
 
 export interface Daily {
@@ -72,7 +95,7 @@ export async function runEmailQuickStats(
     const today = startOfToday();
     const since = new Date(Date.now() - THIRTY_DAYS);
 
-    const [sentTodayCount, totals30d] = await Promise.all([
+    const [sentTodayCount, totals30d, replyTrackingPending] = await Promise.all([
       tx.emailLog.count({
         where: { sentAt: { gte: today } },
       }),
@@ -85,6 +108,11 @@ export async function runEmailQuickStats(
           status: true,
         },
       }),
+      // BL-110-F004 fix-round 1 — drive the honest "—"/pending hint off
+      // ALL-TIME reply existence, not the 30-day window. A tenant with
+      // replies older than 30 days has real reply tracking and must not
+      // be labelled "待上线(B4)".
+      isReplyTrackingPending(tx),
     ]);
 
     const total = totals30d.length;
@@ -109,9 +137,9 @@ export async function runEmailQuickStats(
       bounceRatePercent,
       deliverabilityPercent,
       totalSent30d: sent,
-      // No replied rows in the window → reply tracking has produced no
-      // real data (B4 inbound email not yet wired). See interface note.
-      replyTrackingPending: replied === 0,
+      // All-time reply existence (see isReplyTrackingPending) — NOT the
+      // 30-day window — so a tenant with older replies isn't mislabelled.
+      replyTrackingPending,
     };
   });
 }
