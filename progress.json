@@ -1,11 +1,11 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "BL-110 split-brain 快赢止血(波1) — 合并 backlog BL-101/102/103/104. 来源全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md. 4个小改用户可见低风险各自独立: F001 KOL详情面包屑死链→/match(BL-104) / F002 /assets列表type白名单收口防泄漏AI解释缓存脏卡+welcome(BL-103) / F003 kol_campaign accept读口径统一 skip/swap不再显示已接受(BL-102) / F004 Reply链诚实空态止血 repliedAt只读不写prod假数据(BL-101) / F005 Codex. 纯kolmatrix. H6 Edit Brief死链不在本批(留波3 BL-105). 路线图波1.",
   "total_features": 5,
   "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "BL-110-splitbrain-quickwins-wave1",
-  "last_updated": "2026-06-10T23:10+0800",
+  "last_updated": "2026-06-11T01:05+0800",
   "reference_docs": [
     "docs/specs/BL-110-splitbrain-quickwins-wave1-spec.md",
     "docs/reviews/full-feature-chain-audit-2026-06-09.md(审计根因 file:line)",
@@ -24,10 +24,10 @@
   "role_assignments": null,
   "evaluator_feedback": null,
   "fix_rounds_history": [],
-  "generator_handoff": "[2026-06-10 23:10 BJT Planner Kimi 开 BL-110 building] split-brain 快赢止血波1, 合并 BL-101/102/103/104. 4个独立小修(纯kolmatrix用户可见低风险), 无强依赖可任意序. F001 面包屑改/match(0.5h最小) / F002 buildListWhere加LISTABLE_ASSET_TYPES白名单+welcome-count(注意未来新增type需更新白名单) / F003 detail.ts select加suggestionStatus+读口径filter accepted|NULL+详情accept写suggestionStatus=accepted(注意legacy NULL兼容勿误伤) / F004 三回复面板+Dashboard Replied诚实空态(Planner决: 标注非删除维度, 保留骨架B4零返工). 各feature含单测. 下一步Generator启F001(最小, 快速见效). 详见 spec §2 各feature file:line根因. ⚠️部署staging+prod手动触发OOM NODE_OPTIONS=4096.",
+  "generator_handoff": "[2026-06-11 01:05 BJT Generator Kimi building→verifying] F001-F004 全部实现完成+CI全绿+staging已部署@b952f7e(SHA对齐实证 HEALTH_SHA=b952f7e==DEPLOY_HEAD). F005 交 Codex(L1+L2+signoff). 各 feature 改动+证据: F001 kols/[id]/page.tsx 面包屑 href /kols→/match(死链, (app)/kols 仅 [id] 无 page.tsx)+源级回归测试. F002 lib/assets/types.ts 新增 LISTABLE_ASSET_TYPES 单一真相源, queries.ts buildListWhere 无 type filter 时默认白名单(防 ai_recommendation_explanation 缓存行混入空白脏卡), filter-shape.ts 对齐, assets/page.tsx welcome-count 加 type 白名单(防仅跑 AI 解释租户误跳 welcome). F003 campaigns/[id]/accepted-filter.ts 新增 isAcceptedKolRow(source 白名单 AND suggestionStatus∈{accepted,NULL}), detail.ts select+透出 suggestionStatus, AcceptedKolsPanel+page.tsx acceptedCount/contactedCount 复用 predicate(原=kols.length 计全部), recommend-actions.ts 详情 accept 写 suggestionStatus=accepted+decidedAt. F004 analytics.ts EmailQuickStats 加 replyTrackingPending(replied===0), 4 处面板(QuickStats em-dash+hint/RecentReplies pending/TrackingTable 脚注/Dashboard 脚注)无真实 repliedAt 时诚实空态, i18n 4key×5locale. ⚠️ git_sha 是 /api/health detail-gated 字段, 验证须带 ?token=$HEALTH_DETAIL_TOKEN(否则 jq .git_sha=null 是 gating 非部署问题). 本批无 migration/env/seed 改动. L2 走查点见 features.json F005 acceptance ①-④.",
   "session_notes": {
     "Kimi_planner": "[2026-06-10 23:10 BJT Planner Kimi] BL-108 DONE(爬虫暂停开关5/5 fix_round2水合坑 signoff; 爬虫已上prod /opt, kolmatrix UI仅staging待prod部署). 按路线图开波1 BL-110(用户选B). 合并BL-101~104四个split-brain快赢. 2条BL-108水合proposed-learnings仍队列待ack(用户选B未选A). 下一步Generator F001. 注: BL-108 kolmatrix prod部署仍是遗留手动动作(让开关上prod监控页).",
-    "Kimi_generator": null,
+    "Kimi_generator": "[2026-06-11 01:05 BJT Generator Kimi] BL-110 F001-F004 全做完, 4 commit 分别推 main(a5d2742 F001 / 6dbea71 F002 / 1014c23 F003 / b952f7e F004), 每条 CI 全绿(F004 run 27291559936 含 E2E ✓). staging deploy 完成: 706d806→b952f7e fast-forward, npm ci+prisma generate+migrate deploy(无 pending)+build(NODE_OPTIONS 4096, 101 页无错)+pm2 reload, HEALTH_SHA=b952f7e 对齐. 顺手补提了 BL-108 orphaned signoff(ab54088, Reviewer 漏推). 注意: 期间 user 推了 chore(ops) b485776(备份策略, CI 因 Docker registry pull timeout flake fail, 非代码问题, F003 在其上 CI 全绿已证). 给 Codex: 4 个 L2 走查点见 features.json F005, 重点 ① KOL 详情面包屑点击→/match 不 404 ② /assets 无空白脏卡+仅解释缓存租户进 welcome ③ /match skip/swap 的 KOL 不在 /campaigns/[id] 已接受列表+acceptedCount 不含 ④ 回复面板/KPI/趋势线诚实空态(无误导 0%/0 条). git_sha 验证带 ?token=HEALTH_DETAIL_TOKEN.",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null

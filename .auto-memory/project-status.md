@@ -3,9 +3,9 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-110-splitbrain-quickwins-wave1 BUILDING (0/5) — split-brain 快赢止血(波1, 合并 BL-101/102/103/104)
-- 4个独立小修(纯kolmatrix用户可见): F001 KOL详情面包屑死链→/match / F002 /assets type白名单防泄漏AI解释缓存脏卡+welcome / F003 kol_campaign accept读口径统一(skip/swap不再显示已接受) / F004 Reply链诚实空态(repliedAt只读不写) / F005 Codex. spec docs/specs/BL-110-*
-- H6 Edit Brief死链不在本批(留波3 BL-105). 下一步 Generator F001(面包屑, 最小快赢)
+## 🚧 BL-110-splitbrain-quickwins-wave1 VERIFYING (4/5 generator done, 交 Codex F005) — split-brain 快赢止血(波1, 合并 BL-101/102/103/104)
+- F001-F004 全实现+CI全绿+**staging 已部署@b952f7e(SHA对齐实证)**. F001 面包屑死链→/match / F002 /assets LISTABLE_ASSET_TYPES白名单防AI解释缓存脏卡+welcome / F003 accept读口径统一(isAcceptedKolRow: source白名单 AND suggestionStatus∈{accepted,NULL}, skip/swap不再显示已接受) / F004 Reply链4面板诚实空态(replyTrackingPending数据驱动, B4写repliedAt即复活). spec docs/specs/BL-110-*
+- 下一步 Codex F005: L1(lint/tsc/test)+L2 staging走查4点+signoff. ⚠️ git_sha 验证带 ?token=HEALTH_DETAIL_TOKEN(detail-gated). 本批无 migration/env/seed. H6 Edit Brief死链留波3 BL-105
 ## ✅ BL-108-crawler-pause-switches DONE (5/5, fix-round 2 complete, signoff @ docs/test-reports/BL-108-signoff-2026-06-10.md) — 爬虫暂停开关
 - ⚠️ **kolmatrix UI 仅 staging@706d806, 待 prod 部署**(让开关上 prod 监控页); 爬虫后端gate+API已上prod/opt(PR#12@15c2ba3). 2条水合proposed-learnings待ack
 - 决策 ADR-019(两层开关: 主 scraping_enabled 全停含manual_seed + 子 refresh_enabled 仅refresh, 主⊇子, gate在入队源无尖峰). spec docs/specs/BL-108-*
