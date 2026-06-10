@@ -2061,6 +2061,7 @@
         "durationHours": "{hours} 小时 {minutes} 分钟",
         "durationMinutes": "{minutes} 分钟",
         "unknownNote": "爬虫服务不可达 — 开关状态未知，控制已禁用。观测卡片也可能过期。",
+        "initializing": "控件初始化中…",
         "mainLabel": "暂停所有爬虫抓取",
         "mainDesc": "约 5 分钟内停止所有抓取入队：refresh、发现、YT 邮箱、聚合页与手动投喂。",
         "subLabel": "仅暂停 refresh",

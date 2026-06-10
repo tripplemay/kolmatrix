@@ -2062,6 +2062,7 @@
         "durationHours": "{hours}時間 {minutes}分",
         "durationMinutes": "{minutes}分",
         "unknownNote": "クローラーサービスに到達できません — スイッチ状態が不明のため操作を無効化しました。観測カードも古い可能性があります。",
+        "initializing": "コントロールを初期化中…",
         "mainLabel": "すべてのクロールを一時停止",
         "mainDesc": "約5分以内にすべてのスクレイプ投入を停止します：refresh、発見、YTメール、アグリゲーター、手動シード。",
         "subLabel": "refresh のみ一時停止",

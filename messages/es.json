@@ -2062,6 +2062,7 @@
         "durationHours": "{hours} h {minutes} min",
         "durationMinutes": "{minutes} min",
         "unknownNote": "Servicio del crawler inaccesible — estado de los interruptores desconocido, controles deshabilitados. Las tarjetas de observación también pueden estar desactualizadas.",
+        "initializing": "Inicializando controles…",
         "mainLabel": "Pausar todo el scraping del crawler",
         "mainDesc": "Detiene cada encolado de scraping en ~5 min: refresh, descubrimiento, email de YT, agregador y siembra manual.",
         "subLabel": "Pausar solo refresh",

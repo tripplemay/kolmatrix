@@ -11,7 +11,7 @@
  * - 乐观 UI:先翻本地态 → setCrawlerStateAction 失败回滚 + 瞬态错误条
  *   (codebase 无全局 toast 设施, 沿用内联 transient alert 惯例)
  */
-import { useState, useTransition } from "react";
+import { useState, useSyncExternalStore, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -28,6 +28,9 @@ import {
 } from "@/components/ui/Dialog";
 
 import { setCrawlerStateAction } from "./actions";
+
+// useSyncExternalStore 的稳定 subscribe(ready 永不变 → 无需真订阅)
+const emptySubscribe = () => () => {};
 
 interface PendingFlip {
   flag: "main" | "sub";
@@ -138,6 +141,18 @@ export function CrawlerPauseControls({ control }: { control: CrawlerControlState
   const [pending, setPending] = useState<PendingFlip | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // 水合门闸(BL-108 reverify fix-round 2)。SSR 与首次客户端渲染 ready=false →
+  // 两开关 disabled;水合提交后 ready=true → 开关可点。
+  // 为何必须:SSR 把开关按钮渲进 HTML 后, 到 React 完成水合、给 onClick 绑事件
+  // 之间有一段窗口(staging 实证 ~0.7–1.25s)。这期间按钮可见可点但 onClick 未
+  // 绑定, 真实点击被静默丢弃且 React 18+ 事件重放在本场景不补触发(reverify
+  // 实证 trusted click 永不重放)→ 用户点"暂停爬虫"无任何反应。门闸把"可点"
+  // 严格对齐"已水合": 真实用户看到诚实的未就绪态, Playwright 标准 click 也会
+  // 自动等到 enabled 才点。用 useSyncExternalStore(server=false / client=true)做
+  // 水合安全的客户端检测: SSR/首屏均 false 不引入失配, 提交后切 true(比
+  // useState+useEffect 更 idiomatic, 且避开 react-hooks/set-state-in-effect)。
+  const ready = useSyncExternalStore(emptySubscribe, () => true, () => false);
+
   if (
     syncedFrom.scrapingEnabled !== control.scrapingEnabled ||
     syncedFrom.refreshEnabled !== control.refreshEnabled
@@ -195,6 +210,7 @@ export function CrawlerPauseControls({ control }: { control: CrawlerControlState
   return (
     <section
       data-testid="crawler-pause-controls"
+      data-ready={ready ? "true" : "false"}
       className="rounded-xl border border-white/10 bg-surface-low p-5 space-y-4"
     >
       <div className="flex flex-wrap items-center gap-3">
@@ -224,6 +240,10 @@ export function CrawlerPauseControls({ control }: { control: CrawlerControlState
         <p role="alert" data-testid="pause-unknown-note" className="text-xs text-warning">
           {t("unknownNote")}
         </p>
+      ) : !ready ? (
+        <p role="status" data-testid="pause-initializing-note" className="text-xs text-white/40">
+          {t("initializing")}
+        </p>
       ) : null}
 
       <div className="space-y-4">
@@ -232,7 +252,7 @@ export function CrawlerPauseControls({ control }: { control: CrawlerControlState
           label={t("mainLabel")}
           description={t("mainDesc")}
           checked={mainPaused}
-          disabled={unknown || isPending}
+          disabled={!ready || unknown || isPending}
           onFlip={(nextChecked) => setPending({ flag: "main", nextPaused: nextChecked })}
         />
         <SwitchRow
@@ -240,7 +260,7 @@ export function CrawlerPauseControls({ control }: { control: CrawlerControlState
           label={t("subLabel")}
           description={t("subDesc")}
           checked={mainPaused ? true : subPaused}
-          disabled={unknown || isPending || mainPaused}
+          disabled={!ready || unknown || isPending || mainPaused}
           disabledNote={mainPaused ? t("subCovered") : undefined}
           onFlip={(nextChecked) => setPending({ flag: "sub", nextPaused: nextChecked })}
         />

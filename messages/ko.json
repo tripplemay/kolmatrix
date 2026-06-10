@@ -2062,6 +2062,7 @@
         "durationHours": "{hours}시간 {minutes}분",
         "durationMinutes": "{minutes}분",
         "unknownNote": "크롤러 서비스에 연결할 수 없습니다 — 스위치 상태를 알 수 없어 컨트롤이 비활성화되었습니다. 관측 카드도 오래되었을 수 있습니다.",
+        "initializing": "컨트롤 초기화 중…",
         "mainLabel": "모든 크롤링 일시중지",
         "mainDesc": "약 5분 이내에 모든 스크레이프 큐잉을 중지합니다: refresh, 발견, YT 이메일, 애그리게이터, 수동 시드.",
         "subLabel": "refresh만 일시중지",

@@ -2061,6 +2061,7 @@
         "durationHours": "{hours}h {minutes}m",
         "durationMinutes": "{minutes}m",
         "unknownNote": "Crawler service unreachable — switch state unknown, controls disabled. Observability cards may also be stale.",
+        "initializing": "Initializing controls…",
         "mainLabel": "Pause all crawler scraping",
         "mainDesc": "Stops every scrape enqueue within ~5 min: refresh, discovery, YT email, aggregator and manual seeding.",
         "subLabel": "Pause refresh only",
