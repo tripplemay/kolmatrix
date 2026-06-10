@@ -35,6 +35,18 @@ vi.mock("../IngestRateChart", () => ({
   ),
 }));
 
+// BL-108-F003/F004 — 开关态拉取 + 控制面客户端组件(组件本体有专属 spec,
+// 页面层只断言装配结果传入)
+const fetchCrawlerStateMock = vi.fn();
+vi.mock("@/lib/admin/crawler-state-client", () => ({
+  fetchCrawlerState: (...a: unknown[]) => fetchCrawlerStateMock(...a),
+}));
+vi.mock("../CrawlerPauseControls", () => ({
+  CrawlerPauseControls: (props: { control: { availability: string } }) => (
+    <div data-testid="pause-controls-stub">stub:{props.control.availability}</div>
+  ),
+}));
+
 import CrawlerMonitorPage from "../page";
 
 const platformAdmin = { user: { id: "u1", role: "platform_admin", email: "a@x.com" } };
@@ -57,6 +69,13 @@ beforeEach(() => {
   authMock.mockReset();
   redirectMock.mockClear();
   fetchCrawlerStatsMock.mockReset();
+  fetchCrawlerStateMock.mockReset();
+  fetchCrawlerStateMock.mockResolvedValue({
+    scrapingEnabled: true,
+    refreshEnabled: true,
+    updatedAt: "2026-06-10 03:00:00+00",
+    updatedBy: "kimi",
+  });
 });
 afterEach(() => vi.clearAllMocks());
 
@@ -71,7 +90,18 @@ describe("BL-096-F002 /admin/crawler-monitor", () => {
     expect(html).toContain("card-ingest-rate");
     expect(html).toContain("card-balances");
     expect(html).toContain("ingest-chart-stub");
+    expect(html).toContain("pause-controls-stub");
+    expect(html).toContain("stub:ok");
     expect(html).not.toContain("crawler-monitor-fetch-error");
+  });
+
+  it("BL-108-F004: 爬虫 state 不可达 → 控制面收到 unknown 态, 页面不挂", async () => {
+    authMock.mockResolvedValue(platformAdmin);
+    fetchCrawlerStatsMock.mockResolvedValue(STATS);
+    fetchCrawlerStateMock.mockRejectedValue(new Error("ECONNREFUSED"));
+    const html = await render();
+    expect(html).toContain("stub:unknown");
+    expect(html).toContain("card-ingest-rate");
   });
 
   it("marketer → redirect to /insight", async () => {

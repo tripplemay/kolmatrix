@@ -2019,8 +2019,8 @@
       "backToMatch": "Match ワークベンチに戻る"
     },
     "crawlerMonitor": {
-      "title": "クローラー監視(読み取り専用)",
-      "readOnlyNote": "クローラーの読み取り専用モニター。操作はありません — 設定は構成ページへ。",
+      "title": "クローラーモニター",
+      "readOnlyNote": "以下の観測エリアは読み取り専用です。一時停止スイッチがこのページ唯一のコントロールで、その他の設定はクローラーサービス側にあります。",
       "fetchError": "クローラー統計の読み込みに失敗({kind}):{message}",
       "health": {
         "balance": "残高",
@@ -2051,7 +2051,35 @@
       "manualSeedInsertedToday": "本日登録",
       "refreshBacklog": "更新残",
       "total": "合計",
-      "dueNow": "更新対象"
+      "dueNow": "更新対象",
+      "pause": {
+        "title": "一時停止コントロール",
+        "statusRunning": "稼働中",
+        "statusPaused": "一時停止中",
+        "statusUnknown": "状態不明",
+        "pausedFor": "停止から {duration}",
+        "durationDays": "{days}日 {hours}時間",
+        "durationHours": "{hours}時間 {minutes}分",
+        "durationMinutes": "{minutes}分",
+        "unknownNote": "クローラーサービスに到達できません — スイッチ状態が不明のため操作を無効化しました。観測カードも古い可能性があります。",
+        "mainLabel": "すべてのクロールを一時停止",
+        "mainDesc": "約5分以内にすべてのスクレイプ投入を停止します：refresh、発見、YTメール、アグリゲーター、手動シード。",
+        "subLabel": "refresh のみ一時停止",
+        "subDesc": "既存 KOL のフォロワー/エンゲージメント/ティア更新を凍結します。発見などの他のクロールは継続します。",
+        "subCovered": "メインの一時停止スイッチでカバー済み",
+        "backlogDueNow": "期限超過 refresh 件数",
+        "lastRefresh": "最終 refresh 投入",
+        "updatedBy": "最終操作者",
+        "never": "なし",
+        "confirmTitle": "スイッチ変更の確認",
+        "confirmPauseMain": "一時停止すると約5分以内にすべてのクロール（手動シード含む）が停止します。既存 KOL の指標は再開まで凍結され、古くなります。",
+        "confirmResumeMain": "再開すると約5分以内にすべてのスクレイプ投入が有効になります。バックログの追い上げスパイクは発生しません。",
+        "confirmPauseSub": "refresh を一時停止すると既存 KOL の指標が凍結されます。発見などの他のクロールは継続します。",
+        "confirmResumeSub": "refresh を再開すると約5分以内に指標更新が再開されます。",
+        "confirm": "確認",
+        "cancel": "キャンセル",
+        "applyFailed": "適用に失敗しました（{error}）— スイッチを元に戻しました。"
+      }
     }
   },
   "kol": {

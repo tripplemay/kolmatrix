@@ -2018,8 +2018,8 @@
       "backToMatch": "返回 Match 工作台"
     },
     "crawlerMonitor": {
-      "title": "爬虫监控(只读)",
-      "readOnlyNote": "爬虫只读可观测。此页无控制操作 —— 配置请见设置。",
+      "title": "爬虫监控",
+      "readOnlyNote": "以下观测区为只读。暂停开关是本页唯一的控制项 — 其余配置在爬虫服务侧。",
       "fetchError": "加载爬虫统计失败({kind}):{message}",
       "health": {
         "balance": "余额",
@@ -2050,7 +2050,35 @@
       "manualSeedInsertedToday": "今日入库",
       "refreshBacklog": "刷新欠账",
       "total": "总数",
-      "dueNow": "待刷新"
+      "dueNow": "待刷新",
+      "pause": {
+        "title": "暂停控制",
+        "statusRunning": "运行中",
+        "statusPaused": "已暂停",
+        "statusUnknown": "状态未知",
+        "pausedFor": "已暂停 {duration}",
+        "durationDays": "{days} 天 {hours} 小时",
+        "durationHours": "{hours} 小时 {minutes} 分钟",
+        "durationMinutes": "{minutes} 分钟",
+        "unknownNote": "爬虫服务不可达 — 开关状态未知，控制已禁用。观测卡片也可能过期。",
+        "mainLabel": "暂停所有爬虫抓取",
+        "mainDesc": "约 5 分钟内停止所有抓取入队：refresh、发现、YT 邮箱、聚合页与手动投喂。",
+        "subLabel": "仅暂停 refresh",
+        "subDesc": "冻结存量 KOL 的粉丝/互动/分层指标更新；发现等其它抓取照常运行。",
+        "subCovered": "已被主暂停开关覆盖",
+        "backlogDueNow": "积压过期 refresh 数",
+        "lastRefresh": "最近一次 refresh 入队",
+        "updatedBy": "最近操作人",
+        "never": "从未",
+        "confirmTitle": "确认开关变更",
+        "confirmPauseMain": "暂停后约 5 分钟内停止所有爬虫抓取（含手动投喂）。存量 KOL 指标将冻结并逐渐过期，直到恢复。",
+        "confirmResumeMain": "恢复后约 5 分钟内重新启用所有抓取入队，不会出现积压补抓尖峰。",
+        "confirmPauseSub": "暂停 refresh 将冻结存量 KOL 的粉丝/互动/分层指标；发现等其它抓取照常运行。",
+        "confirmResumeSub": "恢复 refresh 后约 5 分钟内重新开始指标更新。",
+        "confirm": "确认",
+        "cancel": "取消",
+        "applyFailed": "应用失败（{error}）— 开关已回滚。"
+      }
     }
   },
   "kol": {

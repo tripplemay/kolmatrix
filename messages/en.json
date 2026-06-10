@@ -2018,8 +2018,8 @@
       "backToMatch": "Back to Match workbench"
     },
     "crawlerMonitor": {
-      "title": "Crawler Monitor (READ-ONLY)",
-      "readOnlyNote": "Read-only observability of the crawler. No controls here — see Settings for configuration.",
+      "title": "Crawler Monitor",
+      "readOnlyNote": "Observability below is read-only. The pause switches are the only controls on this page — everything else is configured in the crawler service.",
       "fetchError": "Failed to load crawler stats ({kind}): {message}",
       "health": {
         "balance": "Balance",
@@ -2050,7 +2050,35 @@
       "manualSeedInsertedToday": "Inserted today",
       "refreshBacklog": "Refresh backlog",
       "total": "Total",
-      "dueNow": "Due now"
+      "dueNow": "Due now",
+      "pause": {
+        "title": "Pause controls",
+        "statusRunning": "Running",
+        "statusPaused": "Paused",
+        "statusUnknown": "Unknown",
+        "pausedFor": "paused for {duration}",
+        "durationDays": "{days}d {hours}h",
+        "durationHours": "{hours}h {minutes}m",
+        "durationMinutes": "{minutes}m",
+        "unknownNote": "Crawler service unreachable — switch state unknown, controls disabled. Observability cards may also be stale.",
+        "mainLabel": "Pause all crawler scraping",
+        "mainDesc": "Stops every scrape enqueue within ~5 min: refresh, discovery, YT email, aggregator and manual seeding.",
+        "subLabel": "Pause refresh only",
+        "subDesc": "Freezes follower/engagement/tier updates for existing KOLs; discovery and other scraping keep running.",
+        "subCovered": "Already covered by the main pause switch",
+        "backlogDueNow": "Overdue refresh backlog",
+        "lastRefresh": "Last refresh enqueue",
+        "updatedBy": "Last change by",
+        "never": "never",
+        "confirmTitle": "Confirm switch change",
+        "confirmPauseMain": "Pausing stops ALL crawler scraping (including manual seeding) within ~5 minutes. Existing KOL metrics will freeze and grow stale until you resume.",
+        "confirmResumeMain": "Resuming re-enables all scraping enqueues within ~5 minutes. No backlog catch-up spike will occur.",
+        "confirmPauseSub": "Pausing refresh freezes follower/engagement/tier metrics for existing KOLs. Discovery and other scraping keep running.",
+        "confirmResumeSub": "Resuming refresh re-enables metric updates within ~5 minutes.",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "applyFailed": "Failed to apply ({error}) — switch reverted."
+      }
     }
   },
   "kol": {

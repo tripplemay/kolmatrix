@@ -11,10 +11,17 @@ import {
   type CrawlerStats,
   type HealthStatus,
 } from "@/lib/admin/crawler-monitor-client";
+import { assembleCrawlerControlState } from "@/lib/admin/crawler-control-state";
+import {
+  fetchCrawlerState,
+  type CrawlerState,
+} from "@/lib/admin/crawler-state-client";
 
+import { CrawlerPauseControls } from "./CrawlerPauseControls";
 import { IngestRateChart } from "./IngestRateChart";
 
-export const metadata = { title: "Crawler Monitor (READ-ONLY) — KOLMatrix" };
+// BL-108-F004: 页面不再纯只读 — 暂停开关是唯一控制面, 其余仍只读观测
+export const metadata = { title: "Crawler Monitor — KOLMatrix" };
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -57,6 +64,16 @@ export default async function CrawlerMonitorPage({ params }: Props) {
     else error = { kind: "transient", message: err instanceof Error ? err.message : String(err) };
   }
 
+  // BL-108-F003/F004 — 暂停开关态。复用上面已拉的 stats(避免双请求);
+  // state 拉不到 → assembleCrawlerControlState 给 unknown 态, 页面不 500。
+  let crawlerState: CrawlerState | null = null;
+  try {
+    crawlerState = await fetchCrawlerState();
+  } catch {
+    crawlerState = null;
+  }
+  const control = assembleCrawlerControlState({ state: crawlerState, stats, now: new Date() });
+
   const lights = stats ? computeHealthLights(stats) : [];
 
   return (
@@ -75,6 +92,9 @@ export default async function CrawlerMonitorPage({ params }: Props) {
             <span>{t("readOnlyNote")}</span>
           </div>
         </header>
+
+        {/* BL-108-F004 · 暂停开关控制面(stats 失败也展示 — 开关有独立可用性) */}
+        <CrawlerPauseControls control={control} />
 
         {error ? (
           <div

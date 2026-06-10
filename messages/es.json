@@ -2019,8 +2019,8 @@
       "backToMatch": "Volver al workbench Match"
     },
     "crawlerMonitor": {
-      "title": "Monitor del crawler (SOLO LECTURA)",
-      "readOnlyNote": "Observabilidad de solo lectura del crawler. Sin controles aquí — ver Configuración.",
+      "title": "Monitor del crawler",
+      "readOnlyNote": "La observación de abajo es de solo lectura. Los interruptores de pausa son los únicos controles de esta página; todo lo demás se configura en el servicio del crawler.",
       "fetchError": "Error al cargar estadísticas del crawler ({kind}): {message}",
       "health": {
         "balance": "Saldo",
@@ -2051,7 +2051,35 @@
       "manualSeedInsertedToday": "Insertado hoy",
       "refreshBacklog": "Pendiente de refresco",
       "total": "Total",
-      "dueNow": "Pendiente ahora"
+      "dueNow": "Pendiente ahora",
+      "pause": {
+        "title": "Controles de pausa",
+        "statusRunning": "En ejecución",
+        "statusPaused": "En pausa",
+        "statusUnknown": "Estado desconocido",
+        "pausedFor": "en pausa desde hace {duration}",
+        "durationDays": "{days} d {hours} h",
+        "durationHours": "{hours} h {minutes} min",
+        "durationMinutes": "{minutes} min",
+        "unknownNote": "Servicio del crawler inaccesible — estado de los interruptores desconocido, controles deshabilitados. Las tarjetas de observación también pueden estar desactualizadas.",
+        "mainLabel": "Pausar todo el scraping del crawler",
+        "mainDesc": "Detiene cada encolado de scraping en ~5 min: refresh, descubrimiento, email de YT, agregador y siembra manual.",
+        "subLabel": "Pausar solo refresh",
+        "subDesc": "Congela las métricas de seguidores/engagement/tier de los KOL existentes; el descubrimiento y demás scraping siguen activos.",
+        "subCovered": "Ya cubierto por el interruptor de pausa principal",
+        "backlogDueNow": "Refresh vencidos acumulados",
+        "lastRefresh": "Último encolado de refresh",
+        "updatedBy": "Último cambio por",
+        "never": "nunca",
+        "confirmTitle": "Confirmar cambio de interruptor",
+        "confirmPauseMain": "Pausar detiene TODO el scraping del crawler (incluida la siembra manual) en ~5 minutos. Las métricas de los KOL existentes se congelarán y quedarán desactualizadas hasta reanudar.",
+        "confirmResumeMain": "Reanudar vuelve a habilitar todos los encolados de scraping en ~5 minutos. No habrá pico de recuperación de backlog.",
+        "confirmPauseSub": "Pausar refresh congela las métricas de seguidores/engagement/tier de los KOL existentes. El descubrimiento y demás scraping siguen activos.",
+        "confirmResumeSub": "Reanudar refresh vuelve a habilitar la actualización de métricas en ~5 minutos.",
+        "confirm": "Confirmar",
+        "cancel": "Cancelar",
+        "applyFailed": "Error al aplicar ({error}) — interruptor revertido."
+      }
     }
   },
   "kol": {

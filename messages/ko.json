@@ -2019,8 +2019,8 @@
       "backToMatch": "Match 작업대로 돌아가기"
     },
     "crawlerMonitor": {
-      "title": "크롤러 모니터(읽기 전용)",
-      "readOnlyNote": "크롤러 읽기 전용 관측. 제어 없음 — 설정은 구성 페이지 참조.",
+      "title": "크롤러 모니터",
+      "readOnlyNote": "아래 관측 영역은 읽기 전용입니다. 일시중지 스위치가 이 페이지의 유일한 컨트롤이며, 나머지는 크롤러 서비스에서 구성합니다.",
       "fetchError": "크롤러 통계 로드 실패({kind}): {message}",
       "health": {
         "balance": "잔액",
@@ -2051,7 +2051,35 @@
       "manualSeedInsertedToday": "오늘 입력",
       "refreshBacklog": "갱신 대기",
       "total": "총계",
-      "dueNow": "갱신 예정"
+      "dueNow": "갱신 예정",
+      "pause": {
+        "title": "일시중지 컨트롤",
+        "statusRunning": "실행 중",
+        "statusPaused": "일시중지됨",
+        "statusUnknown": "상태 불명",
+        "pausedFor": "일시중지 {duration} 경과",
+        "durationDays": "{days}일 {hours}시간",
+        "durationHours": "{hours}시간 {minutes}분",
+        "durationMinutes": "{minutes}분",
+        "unknownNote": "크롤러 서비스에 연결할 수 없습니다 — 스위치 상태를 알 수 없어 컨트롤이 비활성화되었습니다. 관측 카드도 오래되었을 수 있습니다.",
+        "mainLabel": "모든 크롤링 일시중지",
+        "mainDesc": "약 5분 이내에 모든 스크레이프 큐잉을 중지합니다: refresh, 발견, YT 이메일, 애그리게이터, 수동 시드.",
+        "subLabel": "refresh만 일시중지",
+        "subDesc": "기존 KOL의 팔로워/참여/티어 지표 갱신을 동결합니다. 발견 등 다른 크롤링은 계속 실행됩니다.",
+        "subCovered": "메인 일시중지 스위치로 이미 적용됨",
+        "backlogDueNow": "기한 초과 refresh 수",
+        "lastRefresh": "최근 refresh 큐잉",
+        "updatedBy": "최근 변경자",
+        "never": "없음",
+        "confirmTitle": "스위치 변경 확인",
+        "confirmPauseMain": "일시중지하면 약 5분 이내에 모든 크롤링(수동 시드 포함)이 중지됩니다. 기존 KOL 지표는 재개할 때까지 동결되어 점차 오래됩니다.",
+        "confirmResumeMain": "재개하면 약 5분 이내에 모든 스크레이프 큐잉이 다시 활성화됩니다. 백로그 추격 스파이크는 발생하지 않습니다.",
+        "confirmPauseSub": "refresh를 일시중지하면 기존 KOL의 지표가 동결됩니다. 발견 등 다른 크롤링은 계속 실행됩니다.",
+        "confirmResumeSub": "refresh를 재개하면 약 5분 이내에 지표 갱신이 다시 시작됩니다.",
+        "confirm": "확인",
+        "cancel": "취소",
+        "applyFailed": "적용 실패({error}) — 스위치를 되돌렸습니다."
+      }
     }
   },
   "kol": {
