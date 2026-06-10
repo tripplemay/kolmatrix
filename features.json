@@ -5,7 +5,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-10T11:58+0800",
+    "verify_note": "guang-tech/apify PR #12 commit cd6209d (branch feat/bl108-crawler-pause, 本地 clone ~/project/apify-kol). service_settings 单行表(integer pk CHECK id=1, scraping_enabled/refresh_enabled both default true, updated_at/updated_by) + migration 0005(幂等 CREATE+seed 默认行, journal 手动追加 idx5 与repo惯例一致). SettingsRepo getState(行缺失 fail-open both true)/setState(单行 upsert onConflictDoUpdate, set 只含显式传入开关, insert 兜底路径未指定开关落默认true). 路由 admin-crawler-state.ts 照搬 admin-schedules requireAdmin DI 模式: GET 返 {scrapingEnabled,refreshEnabled,updatedAt,updatedBy}; PATCH zod safeParse(至少一开关, 非法400 validation+issues 不触repo), updatedBy 可由 kolmatrix proxy 透传缺省 'admin-api'. server.ts 注册. 单测9个(settings-repo 4: 映射/缺行默认/partial upsert两向; admin-crawler-state 5: 401/403/GET装配/PATCH默认updatedBy/透传/400). L1: pnpm --filter @apify-kol/service test 131/131 绿(前置坑: workspace 包 @apify-kol/{apify,sdk} 需先 pnpm build 出 dist 否则 vitest/tsc 解析失败, 与 Dockerfile 顺序一致); tsc tsconfig.test.json --noEmit=0. lint script 引用的 eslint 该 repo 从未安装(预存, 非本批). ⏭️ F002 同 PR 追加 commit.",
     "acceptance": [
       "新建 service_settings 表(drizzle pgTable, 单行: scraping_enabled boolean default true / refresh_enabled boolean default true / updated_at / updated_by text); migration + seed 默认行(both true)",
       "SettingsRepo: getState() / setState({scraping_enabled?, refresh_enabled?, updatedBy})(单行 upsert)",

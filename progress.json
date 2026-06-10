@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-108 爬虫暂停开关 — 监控页手动控制(主开关全停所有抓取 + refresh 子开关). 用户监控页观察 refresh 持续消耗成本但0新增(refresh职责刷新存量指标本就不产新KOL), 要手动管控. 决策 ADR-019: 两层开关(主 scraping_enabled 全停所有抓取含 manual_seed + 子 refresh_enabled 仅 refresh, 主⊇子, 主OFF时子置灰) + 状态存爬虫 DB service_settings(非env, ≤5min生效) + gate在入队源(无积压恢复无尖峰) + 已入队自然drain + 读API不受影响 + 全停不保hot. 跨2repo. 5 features: F001 爬虫 service_settings表+admin API / F002 爬虫各入队点gate / F003 kolmatrix proxy+状态装配 / F004 kolmatrix 两toggle UI+确认+audit+i18n / F005 Codex. 插队波0(BL-099后第一优先).",
   "total_features": 5,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
   "current_sprint": "BL-108-crawler-pause-switches",
-  "last_updated": "2026-06-10T12:00+0800",
+  "last_updated": "2026-06-10T11:58+0800",
   "reference_docs": [
     "docs/specs/BL-108-crawler-pause-switches-spec.md",
     "docs/adr/ADR-019-crawler-runtime-pause-control-surface.md",
@@ -27,7 +27,7 @@
   "generator_handoff": "[2026-06-10 12:00 BJT Planner Kimi 开 BL-108 building] 爬虫暂停开关, 插队波0(BL-099 done后第一优先, 用户决策). 决策 ADR-019: 两层开关. ⚠️ 跨2repo: F001/F002 是 guang-tech/apify upstream patch(走 BL-086-F001 流程: Generator 写 patch+测试→PR→用户 merge+部署 /opt/apify-kol-service docker compose up -d --build, 注意 3004:3003 端口 + 本地 docker 定制 stash/pop, 不积累本地分叉); F003/F004 是 kolmatrix 推 main+用户部署. ⚠️ 顺序: 爬虫 API(F001/F002)契约先定, F003 可按契约 mock 并行; L2 需爬虫+kolmatrix 都部署后才能实测. 关键设计: gate在入队源非worker(无积压恢复无尖峰); manual_seed 受主开关管(409拒绝); 主开关只停抓取不停读API; 默认 true 纯增量. 下一步 Generator 启 F001(爬虫 service_settings 表+admin crawler-state API). 详见 spec §2 + ADR-019 D1-D6.",
   "session_notes": {
     "Kimi_planner": "[2026-06-10 12:00 BJT Planner Kimi] BL-099 DONE(6/6 fix_round1 signoff prod@62c3114). 开 BL-108 波0 爬虫暂停开关(用户监控页观察 refresh 消耗→要手动开关, 经详细设计讨论定稿 ADR-019 两层开关). 跨2repo. 关键设计抉择已记 ADR: gate入队源/DB service_settings非env/读API不受影响/全停不保hot/manual_seed也管. 下一步 Generator F001 爬虫端 service_settings+admin API. 注: BL-098/BL-080 prod 部署已随 BL-099 main HEAD 部署解决.",
-    "Kimi_generator": null,
+    "Kimi_generator": "[2026-06-10 11:58 BJT] BL-108 F001 done → PR guang-tech/apify #12 (branch feat/bl108-crawler-pause @ cd6209d). 本地爬虫 clone 落在 ~/project/apify-kol(此前会话无持久 clone, 已建). 关键工程事实: ①workspace 包 @apify-kol/{apify,sdk} 必须先 pnpm --filter build 出 dist, 否则 service 的 vitest/tsc 解析失败(Dockerfile 同序); ②migration 是手写 SQL + meta/_journal.json 手动追加 entry(idx5 when=1781100000000); ③lint script 引用 eslint 但 repo 从未装过(预存债, 不在本批修); ④repo 测试模式 = fake 链式 db(参 admin-stats computeAdminStats), 路由测试 = 真 Fastify+真 authPlugin+mock repo+inject. ⏭️ F002 同 PR 追加: 6 入队点 gate(refresh-scheduler tick 主&&子 / index.ts:51 yt-email :61 aggregator :84 cron scrape 主 / admin-seeds:48 + admin-jobs:45,57,90 409 crawler_paused), 计划注入 SettingsRepo 经 index.ts scrapeDeps + server deps; 每 tick 读一次 getState. F003/F004 在 kolmatrix(可按契约并行). 注意铁律#6: 我不执行 F005(codex).",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
