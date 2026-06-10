@@ -3,11 +3,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-099-email-template-asset-unification BUILDING (4/6) — ADR-011 迁移收尾, 统一 Asset 单一真相源
+## 🚧 BL-099-email-template-asset-unification VERIFYING (5/6 generator done, F006 Codex 待验) — ADR-011 迁移收尾, 统一 Asset 单一真相源
 - 决策 ADR-018(C: email_log 去FK+template_name 快照, drop email_template) + 一次到位(用户 2026-06-09). spec docs/specs/BL-099-*.md
 - ✅ F001-F004 done + **已部署 prod @ 5d83f68**(2026-06-10 Generator Kimi SSH deploy-prod.sh, healthcheck绿): F001写路径统一Asset(published止血) / F002迁移脚本 / F003 email_log快照列+解耦FK(migration 20260609130000已apply prod) / F004 analytics读快照去join
 - ✅ **F002 prod --execute 已跑+验证零丢失**(2026-06-10): 17条user email_template全部已在Asset(16 published+1 draft匹配), 0新建. SQL实证每行has_asset=t. ⚠️LOSS是脚本只数published的误报. **DROP email_template零用户数据丢失确认**
-- ✅ **F005(删双写+DROP email_template表) 代码done+CI绿@7999041+已部署staging@bff060d**(2026-06-10): staging migrate deploy 跑通, email_template 表 DROPPED(to_regclass null), Asset 20 system_seed+1 user 完好, health绿. ⏳ **待用户确认窗口部署 prod**(deploy-prod.sh 自动pg_dump备份; prod零丢失已验)→然后切 verifying 给 F006 Codex
+- ✅ **F005(删双写+DROP email_template表) done+CI绿@7999041+已部署 staging@bff060d + prod@bf32047**(2026-06-10): 两环境 migrate deploy 跑通, email_template DROPPED(to_regclass null), prod 非系统published email asset=16 与drop前完全一致(零丢失再确认)+10 system_seed完好, prod pre-deploy备份 db-20260610-013749.sql.gz. 状态已切 **verifying**
+- ⏭️ **F006 Codex 待验**: L1(lint/tsc/test) + L2 上线验证(工作区建模板→composer即现 / AI定制含system_seed / top快照名 / email_log.template_name / DB无email_template表+user零丢失) + signoff
 - 坑沉淀: 本地vitest exclude tests/integration(testcontainers只CI跑); 本地DB migration历史漂移→migrate diff确认FK名手写migration; schema改动连带的integration断言失效(bm2-schema旧FK断言)只能CI抓
 ## ✅ BL-098 DONE (2/2, signoff 2026-06-09) — PROD 邮件AI定制'模板不存在' hotfix(Asset查询). ⚠️ **prod deploy 待手动触发**(BL-099 为其根治)
 ## ✅ BL-080 DONE (6/6, signoff @ docs/test-reports/BL-080-signoff-2026-06-09.md) — 落地页 AI 插画(8张)替video+动画; Lighthouse perf99/LCP870/CLS0; staging部署
