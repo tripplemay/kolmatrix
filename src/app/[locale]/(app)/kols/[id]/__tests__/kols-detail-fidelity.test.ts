@@ -74,4 +74,15 @@ describe("/kols/:id fidelity guards (MVP-vf-F006)", () => {
     const page = read("page.tsx");
     expect(page).not.toMatch(/<[A-Z][a-zA-Z]*[\s\S]*?[a-z]+:\s*\([^)]*\)\s*=>\s*[^,{}]/);
   });
+
+  // BL-110-F001 — the "Back to Database" breadcrumb must point at the real
+  // KOL workbench route (/match). The old `/{locale}/kols` href 404'd because
+  // (app)/kols/ only has the [id] dynamic route, no kols/page.tsx.
+  it("breadcrumb links to /match, never to the dead /kols route", () => {
+    const page = read("page.tsx");
+    const breadcrumbHref = page.match(/<Breadcrumb\b[\s\S]*?\/>/);
+    expect(breadcrumbHref).not.toBeNull();
+    expect(breadcrumbHref![0]).toMatch(/href=\{`\/\$\{locale\}\/match`\}/);
+    expect(breadcrumbHref![0]).not.toMatch(/href=\{`\/\$\{locale\}\/kols`\}/);
+  });
 });

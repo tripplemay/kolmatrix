@@ -158,8 +158,12 @@ export default async function KolProfilePage({ params, searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-6 pb-16">
+      {/* BL-110-F001 — breadcrumb returns to the KOL workbench at /match.
+          `/{locale}/kols` has no page.tsx (only the [id] dynamic route), so
+          the old href 404'd. /match is the real KOL database/discovery entry;
+          the "Back to Database" label keeps its semantics. */}
       <Breadcrumb
-        href={`/${locale}/kols`}
+        href={`/${locale}/match`}
         backLabel={t("backToDatabase")}
         currentName={kol.displayName}
       />

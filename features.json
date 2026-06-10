@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "kols/[id]/page.tsx:162 面包屑 'Back to Database' href /{locale}/kols(该路由不存在, (app)/kols/ 下只有 [id]/ 无 page.tsx)→ 点击 404",
       "修: 面包屑改指 /{locale}/match(或加 /kols→/match redirect, 择一, 建议改链接); label 语义可保留",
