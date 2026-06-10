@@ -46,8 +46,16 @@ export async function RecentRepliesCard({ rows }: Props) {
         <p className="text-[11px] text-on-surface-variant/70">{t("subtitle")}</p>
       </header>
       {rows.length === 0 ? (
-        <p className="py-8 text-center text-xs text-on-surface-variant">
-          {t("empty")}
+        // BL-110-F004 — reply tracking isn't wired (inbound email = B4),
+        // so nothing ever writes repliedAt and this list is empty in prod.
+        // Show an honest "待上线(B4)" message instead of "No replies yet"
+        // (which falsely implies replies are being tracked at 0). Once B4
+        // writes repliedAt, rows populate and the list revives.
+        <p
+          data-testid="outreach-recent-replies-pending"
+          className="py-8 text-center text-xs text-on-surface-variant"
+        >
+          {t("pending")}
         </p>
       ) : (
         <ul className="flex flex-col gap-4">

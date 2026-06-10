@@ -46,7 +46,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "病灶: Reply Rate KPI/Recent Replies卡(analytics.ts:183)/tracking replied列/Dashboard邮件趋势Replied线(email-performance.ts:47)全读 repliedAt, 但全仓无写入(回复需inbound-email B4 deferred未实装), dev seed假数据撑场prod恒空却显得像真数据",
       "止血(不实装inbound仅诚实化): 三处回复面板+Dashboard Replied维度在无真实回复数据时显诚实空态/标注('回复追踪待上线(B4)'/'—'而非伪装0%/0条), 保留UI骨架(B4上线即复活); Dashboard Replied线保留加脚注'回复数据待inbound接入'",

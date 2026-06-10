@@ -203,7 +203,8 @@
       "sent": "Enviados",
       "opened": "Abiertos",
       "replied": "Respondidos"
-    }
+    },
+    "emailPerformanceReplyNote": "Los datos de respuestas están pendientes de la integración de correo entrante (B4)."
   },
   "common": {
     "openRate": "Tasa de apertura",
@@ -1319,7 +1320,8 @@
         "bounceReason": "Motivo del rebote"
       },
       "emptyState": "No hay correos para este filtro.",
-      "nextPage": "Siguiente"
+      "nextPage": "Siguiente",
+      "replyTrackingNote": "El seguimiento de respuestas está pendiente de la integración de correo entrante (B4)."
     },
     "suppression": {
       "title": "Lista de supresión",
@@ -1339,7 +1341,8 @@
       "replyRate": "Tasa de respuesta",
       "bounceRate": "Tasa de rebote",
       "deliverability": "Entregabilidad",
-      "windowHint": "Últimos 30 días"
+      "windowHint": "Últimos 30 días",
+      "replyPending": "Seguimiento de respuestas pendiente (B4)"
     },
     "performance": {
       "title": "Rendimiento de envío",
@@ -1376,7 +1379,8 @@
       "subtitle": "Últimas respuestas de los Creador",
       "empty": "Aún no hay respuestas; envíe su primer contacto.",
       "subjectPrefix": "Re:",
-      "bodyPlaceholderTooltip": "El cuerpo de la respuesta requiere el Webhook de Resend (B4)."
+      "bodyPlaceholderTooltip": "El cuerpo de la respuesta requiere el Webhook de Resend (B4).",
+      "pending": "El seguimiento de respuestas aún no está activo: las respuestas aparecerán aquí cuando se conecte el correo entrante (B4)."
     },
     "recentlySent": {
       "title": "Enviado recientemente",

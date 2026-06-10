@@ -203,7 +203,8 @@
       "sent": "已发送",
       "opened": "已打开",
       "replied": "已回复"
-    }
+    },
+    "emailPerformanceReplyNote": "回复数据待 inbound 邮件接入(B4)。"
   },
   "common": {
     "openRate": "打开率",
@@ -1228,7 +1229,8 @@
         "bounceReason": "退信原因"
       },
       "emptyState": "暂无符合该筛选的邮件记录。",
-      "nextPage": "下一页"
+      "nextPage": "下一页",
+      "replyTrackingNote": "回复追踪待 inbound 邮件接入(B4)。"
     },
     "suppression": {
       "title": "黑名单",
@@ -1248,7 +1250,8 @@
       "replyRate": "回复率",
       "bounceRate": "退信率",
       "deliverability": "送达率",
-      "windowHint": "近 30 天"
+      "windowHint": "近 30 天",
+      "replyPending": "回复追踪待上线(B4)"
     },
     "performance": {
       "title": "发送表现",
@@ -1285,7 +1288,8 @@
       "subtitle": "最新的创作者回复",
       "empty": "还没有回复 — 发第一封邀请试试。",
       "subjectPrefix": "Re:",
-      "bodyPlaceholderTooltip": "回复正文需要 Resend webhook（B4 交付）。"
+      "bodyPlaceholderTooltip": "回复正文需要 Resend webhook（B4 交付）。",
+      "pending": "回复追踪尚未上线 —— 接入 inbound 邮件后(B4)回复将显示在此。"
     },
     "recentlySent": {
       "title": "最近发送",

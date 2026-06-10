@@ -15,6 +15,13 @@ export interface EmailQuickStats {
   bounceRatePercent: number | null;
   deliverabilityPercent: number | null;
   totalSent30d: number;
+  // BL-110-F004 — reply tracking is not wired yet (inbound email is B4,
+  // deferred). Nothing writes email_log.repliedAt, so replyRatePercent
+  // is a fabricated 0% in prod. This flag is true when there is no real
+  // reply data in the window, letting the KPI strip show an honest "—" +
+  // "回复追踪待上线(B4)" annotation instead of a misleading 0.0%. It flips
+  // to false automatically once inbound email starts writing repliedAt.
+  replyTrackingPending: boolean;
 }
 
 export interface Daily {
@@ -102,6 +109,9 @@ export async function runEmailQuickStats(
       bounceRatePercent,
       deliverabilityPercent,
       totalSent30d: sent,
+      // No replied rows in the window → reply tracking has produced no
+      // real data (B4 inbound email not yet wired). See interface note.
+      replyTrackingPending: replied === 0,
     };
   });
 }

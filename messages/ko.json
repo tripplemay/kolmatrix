@@ -203,7 +203,8 @@
       "sent": "발송됨",
       "opened": "열림",
       "replied": "회신됨"
-    }
+    },
+    "emailPerformanceReplyNote": "답장 데이터는 인바운드 이메일 연동 대기 중입니다(B4)."
   },
   "common": {
     "openRate": "오픈율",
@@ -1319,7 +1320,8 @@
         "bounceReason": "반송 사유"
       },
       "emptyState": "해당 필터의 이메일이 아직 없습니다.",
-      "nextPage": "다음"
+      "nextPage": "다음",
+      "replyTrackingNote": "답장 추적은 인바운드 이메일 연동 대기 중입니다(B4)."
     },
     "suppression": {
       "title": "차단 목록",
@@ -1339,7 +1341,8 @@
       "replyRate": "답장률",
       "bounceRate": "반송률",
       "deliverability": "전송 가능성",
-      "windowHint": "최근 30일"
+      "windowHint": "최근 30일",
+      "replyPending": "답장 추적 준비 중(B4)"
     },
     "performance": {
       "title": "전송 성능",
@@ -1376,7 +1379,8 @@
       "subtitle": "최신 크리에이터 응답",
       "empty": "아직 답장이 없습니다. 첫 번째 아웃리치를 보내보세요.",
       "subjectPrefix": "Re:",
-      "bodyPlaceholderTooltip": "답장 본문은 Resend 웹훅(B4)이 필요합니다."
+      "bodyPlaceholderTooltip": "답장 본문은 Resend 웹훅(B4)이 필요합니다.",
+      "pending": "답장 추적이 아직 제공되지 않습니다 — 인바운드 이메일 연결 후(B4) 답장이 여기에 표시됩니다."
     },
     "recentlySent": {
       "title": "최근 발송한 이메일",

@@ -24,11 +24,15 @@ function formatInt(v: number): string {
 
 export async function OutreachQuickStats({ stats }: Props) {
   const t = await getTranslations("outreach.quickStats");
+  // BL-110-F004 — reply tracking isn't wired (inbound email = B4). When
+  // there's no real reply data, show an honest "—" + "待上线(B4)" hint for
+  // the Reply rate cell instead of a fabricated 0.0%.
   const cells: Array<{
     label: string;
     value: string;
     testId: string;
     tone?: "neutral" | "accent" | "error";
+    hint?: string;
   }> = [
     {
       label: t("sentToday"),
@@ -43,9 +47,12 @@ export async function OutreachQuickStats({ stats }: Props) {
     },
     {
       label: t("replyRate"),
-      value: formatPercent(stats.replyRatePercent),
+      value: stats.replyTrackingPending
+        ? "—"
+        : formatPercent(stats.replyRatePercent),
       testId: "outreach-kpi-reply-rate",
       tone: "accent",
+      hint: stats.replyTrackingPending ? t("replyPending") : undefined,
     },
     {
       label: t("bounceRate"),
@@ -86,8 +93,11 @@ export async function OutreachQuickStats({ stats }: Props) {
           >
             {c.value}
           </p>
-          <p className="mt-1 text-[10px] text-on-surface-variant/70">
-            {t("windowHint")}
+          <p
+            className="mt-1 text-[10px] text-on-surface-variant/70"
+            data-testid={c.hint ? `${c.testId}-hint` : undefined}
+          >
+            {c.hint ?? t("windowHint")}
           </p>
         </div>
       ))}

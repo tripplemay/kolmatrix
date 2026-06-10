@@ -203,7 +203,8 @@
       "sent": "Sent",
       "opened": "Opened",
       "replied": "Replied"
-    }
+    },
+    "emailPerformanceReplyNote": "Reply data is pending inbound email integration (B4)."
   },
   "common": {
     "openRate": "Open Rate",
@@ -1228,7 +1229,8 @@
         "bounceReason": "Bounce reason"
       },
       "emptyState": "No emails match this filter yet.",
-      "nextPage": "Next"
+      "nextPage": "Next",
+      "replyTrackingNote": "Reply tracking is pending inbound email integration (B4)."
     },
     "suppression": {
       "title": "Suppression List",
@@ -1248,7 +1250,8 @@
       "replyRate": "Reply rate",
       "bounceRate": "Bounce rate",
       "deliverability": "Deliverability",
-      "windowHint": "Last 30 days"
+      "windowHint": "Last 30 days",
+      "replyPending": "Reply tracking coming soon (B4)"
     },
     "performance": {
       "title": "Sending performance",
@@ -1285,7 +1288,8 @@
       "subtitle": "Latest creator responses",
       "empty": "No replies yet — send your first outreach.",
       "subjectPrefix": "Re:",
-      "bodyPlaceholderTooltip": "Reply body requires Resend webhook (B4)."
+      "bodyPlaceholderTooltip": "Reply body requires Resend webhook (B4).",
+      "pending": "Reply tracking isn't live yet — replies will appear here once inbound email is connected (B4)."
     },
     "recentlySent": {
       "title": "Recently sent",

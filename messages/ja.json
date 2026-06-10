@@ -203,7 +203,8 @@
       "sent": "送信済み",
       "opened": "開封済み",
       "replied": "返信済み"
-    }
+    },
+    "emailPerformanceReplyNote": "返信データはインバウンドメール接続待ちです(B4)。"
   },
   "common": {
     "openRate": "開封率",
@@ -1319,7 +1320,8 @@
         "bounceReason": "バウンス理由"
       },
       "emptyState": "該当するメールはありません。",
-      "nextPage": "次へ"
+      "nextPage": "次へ",
+      "replyTrackingNote": "返信トラッキングはインバウンドメール接続待ちです(B4)。"
     },
     "suppression": {
       "title": "抑制リスト",
@@ -1339,7 +1341,8 @@
       "replyRate": "返信率",
       "bounceRate": " bounce率",
       "deliverability": "配信率",
-      "windowHint": "過去30日間"
+      "windowHint": "過去30日間",
+      "replyPending": "返信トラッキングは準備中(B4)"
     },
     "performance": {
       "title": "送信パフォーマンス",
@@ -1376,7 +1379,8 @@
       "subtitle": "最新のクリエイターの返信",
       "empty": "まだ返信がありません — 最初のアウトリーチを送信してください。",
       "subjectPrefix": "Re:",
-      "bodyPlaceholderTooltip": "返信本文にはResend Webhook (B4) が必要です。"
+      "bodyPlaceholderTooltip": "返信本文にはResend Webhook (B4) が必要です。",
+      "pending": "返信トラッキングは未提供です — インバウンドメール接続後(B4)に返信がここに表示されます。"
     },
     "recentlySent": {
       "title": "最近送信したメッセージ",

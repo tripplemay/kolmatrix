@@ -41,6 +41,7 @@ interface TrackingLabels {
   colBounceReason: string;
   emptyState: string;
   nextPage: string;
+  replyTrackingNote: string;
 }
 
 interface Props {
@@ -49,6 +50,9 @@ interface Props {
   nextCursorHref: string | null;
   labels: TrackingLabels;
   basePath: string;
+  // BL-110-F004 — true when no visible row has a repliedAt; renders an
+  // honest "reply tracking pending (B4)" footnote under the table.
+  replyTrackingPending: boolean;
 }
 
 const STATUS_OPTIONS = [
@@ -83,6 +87,7 @@ export function TrackingTable({
   nextCursorHref,
   labels,
   basePath,
+  replyTrackingPending,
 }: Props) {
   return (
     <div className="flex flex-col gap-4" data-testid="outreach-tracking-table">
@@ -118,6 +123,7 @@ export function TrackingTable({
           <p className="text-sm text-on-surface-variant">{labels.emptyState}</p>
         </div>
       ) : (
+        <>
         <div className="glass-panel overflow-hidden rounded-2xl border border-on-surface/5">
           <table className="w-full text-left text-sm">
             <thead className="bg-surface-high/30 text-xs uppercase tracking-wide text-on-surface-variant">
@@ -172,6 +178,15 @@ export function TrackingTable({
             </tbody>
           </table>
         </div>
+        {replyTrackingPending ? (
+          <p
+            data-testid="outreach-tracking-reply-note"
+            className="text-xs text-on-surface-variant/70"
+          >
+            {labels.replyTrackingNote}
+          </p>
+        ) : null}
+        </>
       )}
 
       {nextCursorHref ? (

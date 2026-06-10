@@ -2,7 +2,7 @@
   "status": "building",
   "user_goal": "BL-110 split-brain 快赢止血(波1) — 合并 backlog BL-101/102/103/104. 来源全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md. 4个小改用户可见低风险各自独立: F001 KOL详情面包屑死链→/match(BL-104) / F002 /assets列表type白名单收口防泄漏AI解释缓存脏卡+welcome(BL-103) / F003 kol_campaign accept读口径统一 skip/swap不再显示已接受(BL-102) / F004 Reply链诚实空态止血 repliedAt只读不写prod假数据(BL-101) / F005 Codex. 纯kolmatrix. H6 Edit Brief死链不在本批(留波3 BL-105). 路线图波1.",
   "total_features": 5,
-  "completed_features": 3,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "BL-110-splitbrain-quickwins-wave1",
   "last_updated": "2026-06-10T23:10+0800",

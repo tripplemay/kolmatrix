@@ -124,6 +124,12 @@ export default async function TrackingPage({ params, searchParams }: Props) {
     bounceReason: r.bounceReason,
   }));
 
+  // BL-110-F004 — reply tracking isn't wired (inbound email = B4), so the
+  // Replied column is all "—". Surface an honest footnote when no visible
+  // row carries a repliedAt instead of leaving the column header implying
+  // replies are being tracked. Revives automatically once B4 writes data.
+  const replyTrackingPending = tableRows.every((r) => r.repliedAt == null);
+
   return (
     <div
       className="mx-auto flex max-w-[1600px] flex-col gap-6 pb-16"
@@ -140,6 +146,7 @@ export default async function TrackingPage({ params, searchParams }: Props) {
       <TrackingTable
         rows={tableRows}
         statusFilter={status}
+        replyTrackingPending={replyTrackingPending}
         nextCursorHref={
           nextCursor
             ? `/${locale}/reach/tracking?${new URLSearchParams({
@@ -166,6 +173,7 @@ export default async function TrackingPage({ params, searchParams }: Props) {
           colBounceReason: t("columns.bounceReason"),
           emptyState: t("emptyState"),
           nextPage: t("nextPage"),
+          replyTrackingNote: t("replyTrackingNote"),
         }}
         basePath={`/${locale}/reach/tracking`}
       />
