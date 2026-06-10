@@ -3,10 +3,12 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-108-crawler-pause-switches BUILDING (0/5) — 爬虫暂停开关(监控页手动控制)
-- 决策 ADR-019(两层开关: 主 scraping_enabled 全停所有抓取含manual_seed + 子 refresh_enabled 仅refresh, 主⊇子). spec docs/specs/BL-108-*. 插队波0(用户决BL-099后第一优先)
-- 跨2repo: F001/F002 爬虫 guang-tech/apify upstream patch(用户 merge+部署) + F003/F004 kolmatrix UI + F005 Codex. 关键: gate入队源(无尖峰)/DB service_settings非env/读API不受影响/全停不保hot
-- 下一步 Generator F001(爬虫 service_settings 表 + admin /admin/crawler-state API). ⚠️ L2 需爬虫+kolmatrix 都部署后实测
+## 🚧 BL-108-crawler-pause-switches VERIFYING (4/4 generator done, F005 Codex 待验) — 爬虫暂停开关
+- 决策 ADR-019(两层开关: 主 scraping_enabled 全停含manual_seed + 子 refresh_enabled 仅refresh, 主⊇子, gate在入队源无尖峰). spec docs/specs/BL-108-*
+- ✅ 爬虫侧 F001+F002: **PR guang-tech/apify #12 (5 commits) 待用户 merge+部署** — service_settings 单行表+GET/PATCH /admin/crawler-state + 6 入队点 gate(自动静默跳/手动409)+ops脚本 gate + Dockerfile COPY packages/apify 部署债修复(merge 后 runbook awk 热补丁可删) + stats lastRefreshAt(ISO). 147 tests 本地绿(该 repo 无 CI)
+- ✅ kolmatrix 侧 F003+F004: proxy+装配(不可达→unknown 不 500)+两 toggle+确认弹窗+audit(event_log)+i18n 5 locale. CI 绿, **staging deployed @ 2c86347**
+- 两轮对抗审查(15 agents)1 blocking+7 should-fix 全采纳(含子开关 payload 突变实证)
+- ⏭️ **Codex F005**: L1 两仓即可跑; ⚠️ **L2 前置=用户 merge PR#12 + 部署 /opt/apify-kol-service**(docker compose up -d --build, boot 自动 apply migration 0005); 爬虫未部署前 staging 暂停面显示 unknown(降级正常)
 ## ✅ BL-099 DONE (6/6, fix_rounds=1, signoff @ docs/test-reports/BL-099-signoff-2026-06-10.md) — ADR-011 收尾, Email Template 统一 Asset 单一真相源
 - 决策 ADR-018(C: email_log 去FK+template_name 快照, drop email_template) 已落地
 - ✅ F001-F005 done+deploy：staging `07e8b09` / prod `62c3114`；两环境 `email_template` 已 drop，旧 FK 已移除，prod user 模板零丢失维持 `16 published`

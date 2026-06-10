@@ -41,7 +41,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-10T16:30+0800",
+    "verify_note": "commit bd097ef(CI 绿)+审查修复 2c86347. crawler-state-client(GET/PATCH /admin/crawler-state 代理, 复用 CrawlerMonitorError 分类, updatedBy 透传); crawler-control-state(assembleCrawlerControlState: availability ok/unknown + 暂停时长仅暂停中计 now-updatedAt NaN防御 + 积压dueNow + lastRefreshAt, stats/state 任一失败独立降级; loadCrawlerControlState allSettled 绝不抛); setCrawlerStateAction(use server: admin 鉴权→PATCH→event_log crawler.state_toggled 审计→revalidate, 错误{ok:false,error:kind}; updatedBy=email||id||fallback slice200). 配套: 爬虫 /admin/stats +lastRefreshAt 只读字段(PR#12 e6f590c, 71763a4 改 to_char ISO — 审查发现 pg ::text 非 ISO 老 Safari 拒解); kolmatrix CrawlerStatsSchema +lastRefreshAt default(null) 旧 API 优雅降级. 单测16个+审查后加固. 审查确认: 契约字段/可空性/序列化两端一致; 爬虫未部署新路由时 404→unknown 态不 500(实测路径).",
     "acceptance": [
       "server action/route 代理爬虫 /admin/crawler-state(GET 读 / PATCH 写, 用 APIFY_KOL_BASE_URL + admin key, 复用现有 client 模式); 错误优雅处理(爬虫不可达→状态未知态不 500)",
       "状态装配供 UI: 当前主/子开关态 + updatedAt/updatedBy + 暂停时长(now-updatedAt, 暂停中才算) + 积压过期 refresh 数(爬虫 kols where next_refresh_at<=now() count, 经 /admin/stats 或新增只读字段) + 最近一次 refresh 时间(scrape_jobs kind=refresh max createdAt)",
@@ -55,7 +58,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-10T16:30+0800",
+    "verify_note": "commit 59e5c87(CI 绿)+审查修复 2c86347. CrawlerPauseControls: 两 switch(checked=已暂停语义), 主暂停→子置灰强制 checked+已覆盖提示(D1), unknown 双禁用; 确认弹窗讲清代价(DialogHeader 排版对齐全库惯例 — 审查修复); 乐观翻转+失败回滚+内联瞬态错误条(库无全局 toast, 文档化偏离)+成功采用爬虫确认态+router.refresh; props 同步用 render 期间调整模式(过 react-hooks lint). 状态行: Paused/Running/Unknown badge+暂停时长+积压+最近 refresh+操作人. audit=F003 action event_log. page 装配复用已拉 stats(单次请求, 测试钉死), 控制面渲染独立于 stats 失败; BL-096 READ-ONLY 文案随控制面落地更新(title+banner, 审查确认无测试/e2e/视觉基线断言旧文案). i18n pause.* 26 keys×5 locale(占位符一致性审查实证). 单测: 组件8(含审查补的子开关 payload 显式断言[blocking 修复]+deferred 乐观属性)+page 2+action 4. 8-agent 对抗审查 1 blocking+4 should-fix 全采纳. ⚠️ 'toast'验收实现为内联瞬态错误条(库惯例, 无 toast 基建).",
     "acceptance": [
       "监控页加两个 toggle: 主「暂停所有爬虫抓取」+ 子「暂停 refresh」; 主 OFF 时子置灰(已被覆盖); 显示 F003 装配状态(暂停中 + 已暂停 X 天 + 积压数 + 最近 refresh)",
       "翻转前确认弹窗(讲清代价: 主=全停抓取 / 子=存量指标冻结); 乐观 UI + 失败回滚 + toast",

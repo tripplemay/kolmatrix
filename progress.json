@@ -1,11 +1,11 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "BL-108 爬虫暂停开关 — 监控页手动控制(主开关全停所有抓取 + refresh 子开关). 用户监控页观察 refresh 持续消耗成本但0新增(refresh职责刷新存量指标本就不产新KOL), 要手动管控. 决策 ADR-019: 两层开关(主 scraping_enabled 全停所有抓取含 manual_seed + 子 refresh_enabled 仅 refresh, 主⊇子, 主OFF时子置灰) + 状态存爬虫 DB service_settings(非env, ≤5min生效) + gate在入队源(无积压恢复无尖峰) + 已入队自然drain + 读API不受影响 + 全停不保hot. 跨2repo. 5 features: F001 爬虫 service_settings表+admin API / F002 爬虫各入队点gate / F003 kolmatrix proxy+状态装配 / F004 kolmatrix 两toggle UI+确认+audit+i18n / F005 Codex. 插队波0(BL-099后第一优先).",
   "total_features": 5,
-  "completed_features": 2,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "BL-108-crawler-pause-switches",
-  "last_updated": "2026-06-10T12:40+0800",
+  "last_updated": "2026-06-10T16:45+0800",
   "reference_docs": [
     "docs/specs/BL-108-crawler-pause-switches-spec.md",
     "docs/adr/ADR-019-crawler-runtime-pause-control-surface.md",
@@ -27,7 +27,7 @@
   "generator_handoff": "[2026-06-10 12:00 BJT Planner Kimi 开 BL-108 building] 爬虫暂停开关, 插队波0(BL-099 done后第一优先, 用户决策). 决策 ADR-019: 两层开关. ⚠️ 跨2repo: F001/F002 是 guang-tech/apify upstream patch(走 BL-086-F001 流程: Generator 写 patch+测试→PR→用户 merge+部署 /opt/apify-kol-service docker compose up -d --build, 注意 3004:3003 端口 + 本地 docker 定制 stash/pop, 不积累本地分叉); F003/F004 是 kolmatrix 推 main+用户部署. ⚠️ 顺序: 爬虫 API(F001/F002)契约先定, F003 可按契约 mock 并行; L2 需爬虫+kolmatrix 都部署后才能实测. 关键设计: gate在入队源非worker(无积压恢复无尖峰); manual_seed 受主开关管(409拒绝); 主开关只停抓取不停读API; 默认 true 纯增量. 下一步 Generator 启 F001(爬虫 service_settings 表+admin crawler-state API). 详见 spec §2 + ADR-019 D1-D6.",
   "session_notes": {
     "Kimi_planner": "[2026-06-10 12:00 BJT Planner Kimi] BL-099 DONE(6/6 fix_round1 signoff prod@62c3114). 开 BL-108 波0 爬虫暂停开关(用户监控页观察 refresh 消耗→要手动开关, 经详细设计讨论定稿 ADR-019 两层开关). 跨2repo. 关键设计抉择已记 ADR: gate入队源/DB service_settings非env/读API不受影响/全停不保hot/manual_seed也管. 下一步 Generator F001 爬虫端 service_settings+admin API. 注: BL-098/BL-080 prod 部署已随 BL-099 main HEAD 部署解决.",
-    "Kimi_generator": "[2026-06-10 12:40 BJT] BL-108 F001+F002 done → PR guang-tech/apify #12 三 commits(cd6209d F001 / 8cd71d7 F002 / 564d9a0 Dockerfile 部署债), PR body 已含部署步骤. 本地爬虫 clone ~/project/apify-kol. 工程事实: ①workspace 包 @apify-kol/{apify,sdk} 须先 pnpm --filter build 出 dist 否则 vitest/tsc 解析失败; ②migration 手写 SQL + journal 手动追加(idx5, when 必须严格递增否则 migrator 静默不 apply — 审查 migration lens 实测 PG16 干净 apply+幂等); ③该 repo 无 CI, 146/146 只本地跑; ④对抗审查 3 should-fix 已采纳(ops 脚本 gate / Dockerfile COPY packages/apify — 即 environment.md 'fork 上游需要修(a)' 项, 上游修掉后 runbook awk 热补丁可删 / retry 断言加强). ⚠️ 部署链: 用户 merge PR #12 → /opt sync(awk 步骤可删, 保留 3004:3003 端口 stash/pop)→ docker compose up -d --build → boot 自动 apply 0005 → curl /admin/crawler-state 验证. ⏭️ F003(kolmatrix proxy+状态装配, 可立即按契约开发, 爬虫部署前用 mock/降级路径测) → F004(toggle UI). 注意铁律#6: F005 归 Codex.",
+    "Kimi_generator": "[2026-06-10 16:45 BJT] BL-108 generator 4/4 done → verifying. [staging deployed @ 2c86347 @ 2026-06-10 08:45 UTC] health 绿 SHA 对齐. 爬虫侧: PR guang-tech/apify #12 五 commits(cd6209d F001 表+API / 8cd71d7 F002 六入队点 gate+ops 脚本 gate / 564d9a0 Dockerfile COPY packages/apify 部署债[即 environment.md 'fork 上游需要修(a)', merge 后 runbook awk 热补丁可删] / e6f590c stats +lastRefreshAt / 71763a4 ISO 时间戳契约), 147/147 tests+tsc 0, ⚠️ 该 repo 无 CI 只本地跑. kolmatrix 侧: F003 proxy+装配(bd097ef) F004 toggle UI+i18n(59e5c87) 审查修复(2c86347) 全 CI 绿, vitest 1588. 两轮对抗审查(8+7 agents)共 1 blocking+7 should-fix 全采纳(突变测试实证: 子开关 payload 翻错字段全套照绿→已钉死). ⏭️ Codex F005: L1 两仓(kolmatrix lint/tsc/test + 爬虫 pnpm --filter @apify-kol/service test); ⚠️ L2 前置=用户 merge PR#12 + 部署 /opt/apify-kol-service(docker compose up -d --build, boot 自动 apply migration 0005) — 爬虫未部署前 staging 监控页暂停控制面显示 unknown 态(降级正常, 即 F003 验收的'不可达不 500'); L2 五项见 features.json F005. 工程事实沉淀: 爬虫 workspace 包须先 pnpm build 出 dist; migration journal when 须严格递增; pg ::text 时间戳非 ISO 老 Safari 拒解.",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
