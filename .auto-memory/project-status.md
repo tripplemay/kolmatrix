@@ -3,13 +3,13 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-099-email-template-asset-unification VERIFYING (5/6 generator done, F006 Codex 待验) — ADR-011 迁移收尾, 统一 Asset 单一真相源
+## 🚧 BL-099-email-template-asset-unification REVERIFYING (fix_rounds=1) — ADR-011 迁移收尾, 统一 Asset 单一真相源
 - 决策 ADR-018(C: email_log 去FK+template_name 快照, drop email_template) + 一次到位(用户 2026-06-09). spec docs/specs/BL-099-*.md
-- ✅ F001-F004 done + **已部署 prod @ 5d83f68**(2026-06-10 Generator Kimi SSH deploy-prod.sh, healthcheck绿): F001写路径统一Asset(published止血) / F002迁移脚本 / F003 email_log快照列+解耦FK(migration 20260609130000已apply prod) / F004 analytics读快照去join
-- ✅ **F002 prod --execute 已跑+验证零丢失**(2026-06-10): 17条user email_template全部已在Asset(16 published+1 draft匹配), 0新建. SQL实证每行has_asset=t. ⚠️LOSS是脚本只数published的误报. **DROP email_template零用户数据丢失确认**
-- ✅ **F005(删双写+DROP email_template表) done+CI绿@7999041+已部署 staging@bff060d + prod@bf32047**(2026-06-10): 两环境 migrate deploy 跑通, email_template DROPPED(to_regclass null), prod 非系统published email asset=16 与drop前完全一致(零丢失再确认)+10 system_seed完好, prod pre-deploy备份 db-20260610-013749.sql.gz. 状态已切 **verifying**
-- ⏭️ **F006 Codex 待验**: L1(lint/tsc/test) + L2 上线验证(工作区建模板→composer即现 / AI定制含system_seed / top快照名 / email_log.template_name / DB无email_template表+user零丢失) + signoff
-- 坑沉淀: 本地vitest exclude tests/integration(testcontainers只CI跑); 本地DB migration历史漂移→migrate diff确认FK名手写migration; schema改动连带的integration断言失效(bm2-schema旧FK断言)只能CI抓
+- ✅ F001-F005 done. F005 已部署 staging+prod, email_template DROPPED 两环境, prod 零用户数据丢失实证(16 user published 一致), prod 备份 db-20260610-013749.sql.gz
+- 🔁 **F006 首轮 verifying 3 PASS/1 PARTIAL/1 FAIL**(Codex 2026-06-10): FAIL=composer 严格 product 谓词×campaign 默认筛选隐藏全部 productId=null 模板(新建模板 No matches); PARTIAL=prod 登录态 UI 缺已轮换凭据
+- ✅ **fix-round 1 done @07e8b09**(Kimi 2026-06-10): reach/templateFilter.ts 纯模块 — OR-generic 语义+product 行分区在前(BL-031 DoD 口径)+picker cap 20→100(=COMPOSER_MAX_RESULTS). 回归测试 9个(旧谓词实证 4 fail). CI 绿+**staging deployed @07e8b09** SHA 对齐. 状态已切 **reverifying**
+- ⏭️ Codex 复验 staging acceptance ①(新建模板→composer 即现). ⚠️ **prod 仍 @bf32047 未含修复** — prod 复验 ① 前需用户部署; prod 登录态复验需用户给凭据
+- 坑沉淀: BL-031 DoD 本要求 generic 在 product filter 下可见(严格谓词系 BL-026-F005 偏离); BL-031 spec §6 deploy-check 行127 是旧表述勿按其判 FAIL; staging health git_sha 需 X-Health-Token
 ## ✅ BL-098 DONE (2/2, signoff 2026-06-09) — PROD 邮件AI定制'模板不存在' hotfix(Asset查询). ⚠️ **prod deploy 待手动触发**(BL-099 为其根治)
 ## ✅ BL-080 DONE (6/6, signoff @ docs/test-reports/BL-080-signoff-2026-06-09.md) — 落地页 AI 插画(8张)替video+动画; Lighthouse perf99/LCP870/CLS0; staging部署
 - ⚠️ prod 部署待手动触发(让访客见新插画落地页); dead i18n key beforeAfter.{colTask/colBefore/colAfter/rows}(可并 BL-070)
