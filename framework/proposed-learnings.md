@@ -260,3 +260,15 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 **建议写入：** `framework/harness/generator.md` §15（Perf/image/Suspense 落地段邻近，同属"客户端渲染正确性"）补「client 组件初始 SSR 渲染禁非确定性时间/locale 格式化（#418 会废掉整个 hydration root 的交互）+ 确定性 UTC/mount-gate 三选一 + 确定性回归」；`framework/harness/evaluator.md` §13 测试设计补「带交互的 client 页面 L2 必跑 headless 点击并断言 console 无 React #418/#425 水合错误」。Planner spec 起草含交互的 client 页面时把"无水合错误"列入 acceptance。
 
 **状态：** 待确认
+
+---
+
+## [2026-06-10] Claude CLI (Kimi) — 来源：BL-108-F004 reverify fix-round 2（#418 修好后开关点击仍失效）
+
+**类型：** 新坑（前端水合时序）+ Evaluator 测法铁律 + Generator mount-gate 模式
+
+**内容：** 上一条（#418 水合失配）修好后，Codex reverify 发现开关点击**仍**不生效，但已无任何 console 错误——这是**另一个独立根因：水合时序竞态**。SSR 把交互按钮渲进 HTML 后，到 React 完成水合、给 onClick 绑定事件之间有一段延迟窗口（staging 实测开关 DOM @728ms 出现、onClick @1253ms 才绑定，窗口 ~525ms；弱机/慢网更长）。**这个窗口里按钮可见、可 focus、可点，但事件未绑定**；窗口内的点击被**永久丢弃**，且 **React 18+ 的 discrete-event replay 在 Next.js App Router 这种 RSC+client-island 场景不补触发**（staging 实测 trusted click 等 3s 也不重放）。这是**真实面向用户的 bug**（用户在页面加载后 ~1s 内点关键控件会点了个寂寞），不是纯测试问题。**为什么极难诊断**：jsdom 下 RTL `render()` 是纯客户端渲染、从不经过 SSR+hydrate，单测全绿；只有真实浏览器（或 `renderToString`→`hydrateRoot` 测试）才暴露。**修复模式（mount-gate）**：用 `useSyncExternalStore(()=>()=>{}, ()=>true, ()=>false)`（server=false/client=true，水合安全、且避开 `react-hooks/set-state-in-effect` 规则——`useState(false)+useEffect(setReady(true))` 会被该规则报错）做客户端就绪检测；水合完成前关键控件 `disabled` + 根节点 `data-ready=false` + 显示"初始化中"，完成后 enabled。使「控件可点 ⟺ 已水合」：真实用户见诚实未就绪态，Playwright 标准 `click()` 自动等 enabled 跨过窗口。**Evaluator 测法铁律（关键）**：测含交互的 SSR 页面，**必须用标准 `locator.click()`（自动等 actionability/enabled）或显式 `await [data-ready=true]` 再点**；**严禁 `force:true` / `dispatchEvent` / `evaluate(el=>el.click())`**——这些跳过 enabled 检查，会点在未水合的按钮上、稳定复现"假 bug"（Codex 两轮 reverify 即因落此窗口而误判）。**回归**：`renderToString`→`hydrateRoot` 路径断言「SSR 阶段 disabled / 水合后 enabled+可点」（RTL `render` 测不到）。
+
+**建议写入：** `framework/harness/generator.md` §15 补「mount-gate 模式：SSR 关键交互控件水合前 disabled + data-ready 信号（useSyncExternalStore 实现，避开 set-state-in-effect）+ renderToString/hydrateRoot 回归」；`framework/harness/evaluator.md` §13 **铁律级**补「含交互 SSR 页面 L2 用标准 click（自动等 enabled）或 await data-ready，严禁 force/dispatch/evaluate-click —— 否则会稳定复现水合窗口假 bug」。与上一条（#418）合并为「客户端水合正确性」一节的两个子坑（失配 vs 时序窗口）。
+
+**状态：** 待确认
