@@ -23,7 +23,10 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "done",
+    "done_by": "Kimi_generator",
+    "done_at": "2026-06-10T12:40+0800",
+    "verify_note": "PR #12 commit 8cd71d7(gates) + 564d9a0(Dockerfile 部署债). gate 在入队源(D3): 自动调度静默跳过 — refresh-scheduler tick(主&&子, settingsRepo 进 deps) / schedule-syncer runScheduledJob cron(主, 不落 scrape_jobs) / yt-email+aggregator+cross-platform(index.ts 三闭包抽到 jobs/enqueues.ts 工厂加主开关 gate, 行为逐项保持: cache-window 去重/cross-platform findByUsername 去重/isSeed/payload 形状). 手动入口 409 crawler_paused: admin-seeds POST + admin-jobs create/retry(rejectIfPaused helper, GET 不受影响). 刻意无 worker backstop(与 drain 语义一致, 审查 3 lens 均认同). 对抗审查(7 agent)3 confirmed should-fix 全采纳: ①bl091-yt-email-backfill.ts ops 脚本漏 gate(唯一未拦成本路径)→暂停时大声中止 exit 1; ②Dockerfile 自 BL-091 起两 stage 都缺 COPY packages/apify(clean checkout docker build 必败→旧容器静默跑, runbook awk 热补丁的根因)→上游修掉, BL-108 migration 0005 部署依赖此修; ③admin-gates-409 retry 断言空洞(boss.send 被前两个 POST 满足)→显式断言 retry 重入队 jobDbId 22+状态重置. 单测15个(每 gate 点 OFF/ON 双向). L1: 146/146 绿 + tsc=0. ⚠️ 该 repo 无 CI, 测试只本地跑(Codex F005 L1 会复跑). ⏭️ 用户 merge PR #12 + 部署 /opt(runbook sync, awk 步骤可删); F003/F004 kolmatrix 端可先按契约开发.",
     "acceptance": [
       "主开关 scraping_enabled=false → 跳过/拒绝所有入队: 自动调度(refresh-scheduler tick / cron scrape index.ts:84 / yt-email enqueue index.ts:51 / aggregator enqueue index.ts:61) tick 内读标志 false 则 return(不入队不报错)",
       "手动 admin 入口(admin-seeds.ts manual_seed / admin-jobs.ts 手动 job) scraping_enabled=false → reply 409 {error:'crawler_paused'} 明确消息; manual_seed 受主开关管(用户决策)",
