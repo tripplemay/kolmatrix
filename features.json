@@ -1,101 +1,73 @@
 [
   {
     "id": "F001",
-    "title": "写路径统一到 Asset (建/改/删/复制模板 + countUserTemplates badge)",
+    "title": "爬虫: service_settings 表 + repo + admin crawler-state API (generator, guang-tech/apify)",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "done",
-    "done_by": "Kimi_generator",
-    "done_at": "2026-06-09T12:15+0800",
-    "verify_note": "templates.ts 5 写函数改走 assets/mutations(createAsset/updateAsset/deleteAsset, type=email source=user_created); createUserTemplate/duplicateUserTemplate 设 status=published(止活血核心: loadAssetsForComposer 只读 published, 否则建完即消失); update/delete guard 限 source≠system_seed 防改系统模板; 加 assetDetailToOption 适配 AssetDetail→EmailTemplateOption(签名/返回不变, saveTemplateAction 无需改). countUserTemplates 改 count Asset(type=email,source≠system_seed,status=published, 与 composer 列表口径一致), 去多余 tenantId 参(RLS 隔离)→同步 OutreachTabs 调用. dual-write 经 mutations 仍镜像 email_template(F005删). variables 来自现有模板content(符合 AssetVariableSchema)或[], createAsset zod 不破. 单测: templates.test.ts 重写为 mock mutations 测委托+guard+published+adapt(7 test), OutreachTabs.test.tsx mock 同步单参. L1全绿 lint 0err/3预存warn + tsc + vitest 1549/1549 + build. 纯前端无schema变更.",
+    "status": "pending",
     "acceptance": [
-      "templates.ts createUserTemplate/updateUserTemplate/deleteUserTemplate/duplicateUserTemplate 改为操作 Asset(走 assets/mutations createAsset/updateAsset/deleteAsset, type=email, source=user_created, content JSONB 存 subject/body/locale/variables 与 loadAssetsForComposer 读口径一致); 函数签名/返回 EmailTemplateOption 不变, saveTemplateAction 等调用方无需改",
-      "countUserTemplates 改 count Asset(type=email, source≠system_seed, 当前 tenant)",
-      "withTenant RLS 保持; 非法/跨租户/不存在 → 优雅返回不 500",
-      "验收: 工作区/Composer 建模板→立即出现在 composer 下拉+工作区列表; badge 数==列表用户模板数(不再打架); 改/删/复制对 Asset 生效。dual-write 仍在(F005才删)email_template 仍被镜像写可接受",
-      "含单测; L1 全绿 lint 0err warn≤3 / tsc=0 / npm test"
+      "新建 service_settings 表(drizzle pgTable, 单行: scraping_enabled boolean default true / refresh_enabled boolean default true / updated_at / updated_by text); migration + seed 默认行(both true)",
+      "SettingsRepo: getState() / setState({scraping_enabled?, refresh_enabled?, updatedBy})(单行 upsert)",
+      "admin 路由(照搬 admin-schedules.ts requireAdmin 模式): GET /admin/crawler-state → {scrapingEnabled, refreshEnabled, updatedAt, updatedBy}; PATCH /admin/crawler-state {scrapingEnabled?, refreshEnabled?}(zod 校验, 写 repo + updatedBy)",
+      "单测(repo upsert / API GET-PATCH / 默认值 true); 爬虫端 pnpm --filter @apify-kol/service test 绿",
+      "交付: guang-tech/apify upstream patch/PR(走 BL-086-F001 流程), 不积累本地分叉; 用户 merge + 部署 /opt/apify-kol-service"
     ]
   },
   {
     "id": "F002",
-    "title": "历史 user email_template 行迁移到 Asset (一次性幂等, 防数据丢失)",
+    "title": "爬虫: 各入队点 gate 两层开关 (generator, guang-tech/apify)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.0,
-    "status": "done",
-    "done_by": "Kimi_generator",
-    "done_at": "2026-06-09T12:50+0800",
-    "verify_note": "scripts/bl099-f002-migrate-user-templates.ts(仿 migrate-product-aiassets 模式): 跨tenant scan via prisma.tenant.findMany→withTenant 读 email_template type=user; 迁成 Asset(type=email,source=user_created,status=published,metadata.migrated_from_email_template_id=et.id 经 createAsset/dual-write). dry-run 默认 --execute 写. 去重三查(id相同/migration marker/同tenant content subject+body相同)→幂等重跑不重复. variables sanitize(历史free-form JSON→保留{token,...}符合 AssetVariableSchema 的, 其余drop, 核心 name/subject/body/locale 必保). 10个 legacy system 不迁(Asset system_seed 是规范源). main summary 打印 per-tenant before(et user count)/after(asset user published count) 无丢失检查. 单测 tests/unit/bl099-f002-*.test.ts 7个(sanitizeVariables过滤/findExistingAsset去重/migrate skip幂等+dry-run+execute参数). L1全绿(tsc+lint 0err/3warn+vitest 1556+build). ⚠️ 实际迁移执行(--execute)在 staging/prod 部署后跑(Codex F006 或用户), 此 feature 交付脚本+单测.",
+    "estimated_hours": 2.5,
+    "status": "pending",
     "acceptance": [
-      "一次性迁移(脚本或 migration data step, 幂等): email_template WHERE type='user' 行迁成 Asset(type=email, source=user_created, tenant 对位); 去重: 已在 Asset(id 相同或 content 相同)的不重复建",
-      "10 个 legacy type='system' email_template 行不迁(Asset 10 个 system_seed 是规范源, legacy 是过时副本)",
-      "验收: 迁移前后断言 user 模板无丢失(每 tenant user 模板在 Asset 可见数 ≥ 迁移前 email_template user 数); 幂等(重跑不产生重复); 脚本支持只读 dry-run 预览 count",
-      "含单测(迁移逻辑+去重+幂等); L1 全绿"
+      "主开关 scraping_enabled=false → 跳过/拒绝所有入队: 自动调度(refresh-scheduler tick / cron scrape index.ts:84 / yt-email enqueue index.ts:51 / aggregator enqueue index.ts:61) tick 内读标志 false 则 return(不入队不报错)",
+      "手动 admin 入口(admin-seeds.ts manual_seed / admin-jobs.ts 手动 job) scraping_enabled=false → reply 409 {error:'crawler_paused'} 明确消息; manual_seed 受主开关管(用户决策)",
+      "子开关 refresh_enabled=false → 仅 refresh-scheduler tick return(其它抓取不受影响); refresh-scheduler 实际 gate = scraping_enabled && refresh_enabled",
+      "标志每 tick 读一次(SettingsRepo.getState, ≤5min 生效); 已入队 job 自然 drain 不取消; 可选 worker backstop(scrape/yt-email/aggregator 处理前再查主开关)",
+      "单测(主开关 off→各入队点跳过/拒绝 / 子开关 off→仅 refresh 跳过 / 都 on→正常); 前置 F001; 同一 PR 后续 commit"
     ]
   },
   {
     "id": "F003",
-    "title": "email_log 快照列 template_name + 回填 + 解耦 FK + 发送写快照",
+    "title": "kolmatrix: 监控页 proxy + 状态装配 (generator, kolmatrix)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.5,
-    "status": "done",
-    "done_by": "Kimi_generator",
-    "done_at": "2026-06-09T13:30+0800",
-    "verify_note": "schema: EmailLog +templateName String?@map(template_name), 双边删 template/emailLogs relation(FK 解耦), templateId 保 plain uuid 供历史关联. migration 20260609130000_bl099_f003_email_log_template_name_snapshot: ADD COLUMN + 回填 UPDATE(from email_template join, 趁表在 F005前) + DROP CONSTRAINT email_log_template_id_fkey + ROLLBACK 注释(inverse ADD CONSTRAINT+DROP COLUMN). ⚠️手写 migration(本地 DB migration 历史漂移 migrate dev 要 reset 清库, 改用 migrate diff --from-config-datasource 确认 FK 名=email_log_template_id_fkey 后手写; 本地未 apply, 靠 CI 'Build+migrate smoke'(干净PG migrate deploy)+'Validate ROLLBACK' 验证). batch-send.ts: withTenant tx 内 emailLog.create 前查 asset.findUnique name 写 templateName 快照(templateId null/asset gone→null), 不改 sendBatchAction(快照在 batch-send 取符合 spec+'发送当时名字'语义). prisma generate 更新 client. 单测 batch-send-template-name.test.ts 3个(快照/null模板/asset缺). L1全绿 tsc+lint 0err/3warn+vitest 1559+build.",
+    "estimated_hours": 2.0,
+    "status": "pending",
     "acceptance": [
-      "prisma migration: EmailLog 加 templateName String? @map(template_name); 回填 UPDATE email_log SET template_name=(SELECT name FROM email_template WHERE id=email_log.template_id) WHERE template_id IS NOT NULL(趁 email_template 还在); 去掉 template EmailTemplate? relation + FK 约束, template_id 保留 plain uuid",
-      "batch-send.ts:104/201 发送创建 email_log 时写 templateName(从发送用的 Asset 模板取名, 快照)",
-      "验收: migration 跑通; 历史行 template_name 回填; 新发送写入快照名; FK 约束已移除(可验 information_schema 无该 constraint)",
-      "含单测; L1 全绿 + prisma migrate dev"
+      "server action/route 代理爬虫 /admin/crawler-state(GET 读 / PATCH 写, 用 APIFY_KOL_BASE_URL + admin key, 复用现有 client 模式); 错误优雅处理(爬虫不可达→状态未知态不 500)",
+      "状态装配供 UI: 当前主/子开关态 + updatedAt/updatedBy + 暂停时长(now-updatedAt, 暂停中才算) + 积压过期 refresh 数(爬虫 kols where next_refresh_at<=now() count, 经 /admin/stats 或新增只读字段) + 最近一次 refresh 时间(scrape_jobs kind=refresh max createdAt)",
+      "单测(proxy 读写 / 状态装配 / 爬虫不可达降级); L1 全绿",
+      "可与爬虫 F001/F002 并行开发(按 /admin/crawler-state 接口契约 mock)"
     ]
   },
   {
     "id": "F004",
-    "title": "analytics getTopTemplates 改读快照名 (去 join email_template)",
+    "title": "kolmatrix: 监控页两个 toggle UI + 确认 + audit + i18n (generator, kolmatrix)",
     "executor": "generator",
-    "priority": "medium",
-    "estimated_hours": 1.0,
-    "status": "done",
-    "done_by": "Kimi_generator",
-    "done_at": "2026-06-09T13:45+0800",
-    "verify_note": "analytics.ts runTopTemplates(spec 称 getTopTemplates): 删 tx.emailTemplate.findMany join + templateName map; 改用每组 tx.emailLog.findFirst({templateId, templateName:{not:null}}, orderBy createdAt desc) 取最近发送的 template_name 快照(与 opened count 同循环 Promise.all). name 来自 email_log.template_name 快照(F003 回填+发送写入), system_seed 发送回填后不再 null 名. 单测 top-templates.test.ts 3个(读快照不join+断言不调 emailTemplate.findMany / 空sends返[] / 无快照name null). L1全绿 tsc+lint 0err/3warn+vitest 1562+build. analytics 无现成 integration/e2e test 受影响(grep 确认).",
+    "priority": "high",
+    "estimated_hours": 2.5,
+    "status": "pending",
     "acceptance": [
-      "analytics.ts:147-160 getTopTemplates 改用 email_log 自身 template_name(groupBy 带 templateName 或取每组快照名), 删除 tx.emailTemplate.findMany join",
-      "验收: top templates 名称来自 email_log 快照; system_seed 发送不再 null 名(若已回填)",
-      "含单测; L1 全绿"
+      "监控页加两个 toggle: 主「暂停所有爬虫抓取」+ 子「暂停 refresh」; 主 OFF 时子置灰(已被覆盖); 显示 F003 装配状态(暂停中 + 已暂停 X 天 + 积压数 + 最近 refresh)",
+      "翻转前确认弹窗(讲清代价: 主=全停抓取 / 子=存量指标冻结); 乐观 UI + 失败回滚 + toast",
+      "audit log(kolmatrix 侧记录谁翻的 + 目标态); i18n 5 locale(zh/en/ja/ko/es)",
+      "单测(toggle 调 action / 置灰逻辑 / 确认流 / admin-gated 非 admin 不显); L1 全绿"
     ]
   },
   {
     "id": "F005",
-    "title": "删双写 + DROP email_template 表 + 清 EmailTemplate model/引用 (不可逆, 最后)",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 2.0,
-    "status": "done",
-    "done_by": "Kimi_generator",
-    "done_at": "2026-06-10T02:45+0800",
-    "verify_note": "前置满足: F001-F004 已部署 prod @5d83f68 (本会话 SSH deploy-prod.sh, healthcheck绿), F002 --execute 已跑+SQL实证 17条 user email_template 全部已在 Asset(16 published+1 draft 匹配, 0新建), DROP 零用户数据丢失. 实现: (1)mutations.ts 删 dualWriteEmailTemplateOnCreate/Update/Delete 3 helper+emailTemplateIdFor/TypeFor/emailContentFromAsset + 3 调用点; deleteAsset 简化为纯 delete+P2025 catch(去 metadata 预读). (2)schema.prisma 删 model EmailTemplate + Tenant.templates 反向关系. (3)migration 20260610120000_bl099_f005_drop_email_template: DROP TABLE(不可逆, ROLLBACK skeleton+pg_dump 注; FK 已在 F003 解耦, pg_constraint scan 确认 0 其它表引用). (4)seed-email-templates.ts seedSystemTemplates 改写 Asset(type=email,source=system_seed,tenantId=null,published)keyed (name,content.locale), 不再碰 email_template; seed.ts import/call 签名不变. (5)删一次性 scripts/bl099-f002-migrate-user-templates.ts+单测(prod 已跑验证). (6)测试: 删 dual-write/mirror 断言(mutations/top-templates/composer-load); email-template-seed+rls-isolation+asset-rls+bm2-schema integration 改 Asset 口径, 删 email_template-only 过时用例(schema/RLS/FK/migration-parity). 全仓 0 处 tx.emailTemplate/prisma.emailTemplate 残留(grep实证). L1全绿 tsc clean+lint 0err/3warn+vitest 1554 pass+build. ⚠️ 待用户单独窗口部署 F005 到 prod(DROP 执行)+staging, 然后切 verifying 给 Codex F006.",
-    "acceptance": [
-      "移除 assets/mutations.ts 的 email_template 镜像写(create/update/archive/delete 四处)",
-      "prisma migration DROP TABLE email_template; 删 schema EmailTemplate model",
-      "grep 全仓确认零 tx.emailTemplate / prisma.emailTemplate / EmailTemplate model 引用残留(纯 TS 类型 EmailTemplateRecord/Option 可保留)",
-      "前置: F001-F003 须先验收通过(数据已迁/FK 已解耦); 验收: 全仓 0 处引用 email_template 表; migration 跑通; L1 全绿+build",
-      "含单测"
-    ]
-  },
-  {
-    "id": "F006",
     "title": "Codex L1+L2 + signoff (executor:codex)",
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
     "status": "pending",
     "acceptance": [
-      "L1: lint 0err warn≤3 / tsc=0 / npm test(含各 feature 新单测)",
-      "L2 部署后 prod/staging: ① 工作区新建模板→立即出现在 composer 下拉(修活 bug) ② AI 定制全部模板含 system_seed 正常 ③ 邮件分析 top templates 显示快照名 ④ 发送→email_log.template_name 有快照 ⑤ DB 无 email_template 表 + user 模板零丢失(计数对比)",
-      "signoff docs/test-reports/BL-099-signoff-2026-06-XX.md"
+      "L1: kolmatrix lint 0err warn≤3 / tsc=0 / npm test; 爬虫 pnpm --filter @apify-kol/service test 绿",
+      "L2(爬虫+kolmatrix 都部署后): ① 翻主开关 OFF→各类 scrape 入队停(scrape_jobs 不再新增/成本停涨), 手动 manual_seed 投喂被拒(409) ② 翻 refresh 子开关 OFF(主 ON)→仅 refresh 停 hashtag 发现等仍跑 ③ 状态显示准确(暂停时长/积压/最近 refresh) ④ 恢复主开关→抓取恢复无 catch-up 尖峰 ⑤ admin-only",
+      "signoff docs/test-reports/BL-108-signoff-2026-06-XX.md"
     ]
   }
 ]
