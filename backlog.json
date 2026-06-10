@@ -509,5 +509,27 @@
     "discovered_in": "2026-06-09 全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md",
     "wave": 4,
     "roadmap": "docs/reviews/split-brain-remediation-roadmap-2026-06.md"
+  },
+  {
+    "id": "BL-111",
+    "priority": "high",
+    "wave": 0.5,
+    "title": "修爬虫暂停开关样式 — 暂停态 bg-error 浅粉(#ffb4ab)用错色 (BL-108 视觉bug)",
+    "description": "用户2026-06-10报: /admin/crawler-monitor 暂停开关样式错误. 根因: CrawlerPauseControls.tsx:77 手搓toggle 'checked?(已暂停) bg-error : bg-white/15', 而 --color-error=#ffb4ab(globals.css:67)是浅鲑粉Material error-container色, 当整条轨道实色填充→刺眼粉/棕(图1); 子开关被主覆盖置灰时更糊(暗化叠加). 本质: 暂停是正常操作态非错误, error红语义+观感都错. 结构本身正常(iOS式开关, 运行态bg-white/15图2正常), 仅暂停态颜色token用错. 修: bg-error→bg-warning(琥珀#fec931, 暂停=注意语义, 与组件已用的text-warning一致), 运行态保留bg-white/15; 检查子开关covered暗化态在琥珀下干净; 状态徽章 bg-error/15 paused 可一并对齐warning. ~1-2行CSS. 视觉选择, staging看效果可再调.",
+    "decisions": [
+      "暂停态 bg-error→bg-warning(琥珀); 运行态保留 bg-white/15; 状态徽章一并对齐",
+      "登记BL-111排BL-110之后(避免与BL-110 building的Generator并发抢状态文件+保BL-110 split-brain范围纯净)",
+      "应在用户把BL-108 kolmatrix UI部署prod之前修好(否则带bug上prod)"
+    ],
+    "confirmed_at": "2026-06-10T23:50+0800",
+    "tags": [
+      "crawler-monitor",
+      "ui",
+      "css",
+      "bl-108-followup",
+      "visual-bug",
+      "small"
+    ],
+    "discovered_in": "2026-06-10 用户截图反馈 crawler-monitor 开关样式"
   }
 ]

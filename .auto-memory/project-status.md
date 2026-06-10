@@ -29,6 +29,7 @@ type: project
 1. aigcgateway VM .git remote PAT(gho_*)轮换(安全)
 
 ## Backlog — 路线图(波1 BL-110 已转 BUILDING 见顶部, 合并 BL-101~104)
+- **BL-111**(高, BL-110后): 修爬虫暂停开关样式(CrawlerPauseControls.tsx:77 暂停态 bg-error浅粉#ffb4ab用错→bg-warning琥珀; BL-108视觉bug, ~1-2行). ⚠️ 应在BL-108 kolmatrix UI上prod前修
 - 波2：BL-100 邮件发送异步化
 - 波3：BL-105 campaign 编辑 UI 补回
 - 波4：BL-107 / BL-106 链路收口
