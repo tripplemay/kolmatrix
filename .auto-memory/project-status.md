@@ -8,7 +8,7 @@ type: project
 - ✅ F001-F005 done. F005 已部署 staging+prod, email_template DROPPED 两环境, prod 零用户数据丢失实证(16 user published 一致), prod 备份 db-20260610-013749.sql.gz
 - 🔁 **F006 首轮 verifying 3 PASS/1 PARTIAL/1 FAIL**(Codex 2026-06-10): FAIL=composer 严格 product 谓词×campaign 默认筛选隐藏全部 productId=null 模板(新建模板 No matches); PARTIAL=prod 登录态 UI 缺已轮换凭据
 - ✅ **fix-round 1 done @07e8b09**(Kimi 2026-06-10): reach/templateFilter.ts 纯模块 — OR-generic 语义+product 行分区在前(BL-031 DoD 口径)+picker cap 20→100(=COMPOSER_MAX_RESULTS). 回归测试 9个(旧谓词实证 4 fail). CI 绿+**staging deployed @07e8b09** SHA 对齐. 状态已切 **reverifying**
-- ⏭️ Codex 复验 staging acceptance ①(新建模板→composer 即现). ⚠️ **prod 仍 @bf32047 未含修复** — prod 复验 ① 前需用户部署; prod 登录态复验需用户给凭据
+- ✅ **prod 已部署 @62c3114**(2026-06-10 用户授权, 备份 db-20260610-030321.sql.gz, health绿 SHA对齐) — 两环境均含修复. ⏭️ Codex 复验 acceptance ①; prod 登录态复验仍需用户给已轮换凭据
 - 坑沉淀: BL-031 DoD 本要求 generic 在 product filter 下可见(严格谓词系 BL-026-F005 偏离); BL-031 spec §6 deploy-check 行127 是旧表述勿按其判 FAIL; staging health git_sha 需 X-Health-Token
 ## ✅ BL-098 DONE (2/2, signoff 2026-06-09) — PROD 邮件AI定制'模板不存在' hotfix(Asset查询). ⚠️ **prod deploy 待手动触发**(BL-099 为其根治)
 ## ✅ BL-080 DONE (6/6, signoff @ docs/test-reports/BL-080-signoff-2026-06-09.md) — 落地页 AI 插画(8张)替video+动画; Lighthouse perf99/LCP870/CLS0; staging部署
