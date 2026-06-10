@@ -183,6 +183,23 @@ describe("CrawlerPauseControls", () => {
     );
   });
 
+  it("回归(BL-108 #418):lastRefresh 用确定性 UTC 渲染, 非 toLocaleString(防水合失配)", () => {
+    // 根因:`new Date(iso).toLocaleString()` 依赖运行时时区/locale, SSR 与
+    // 水合输出不一致 → React #418 → 客户端子树重渲 → 开关点击失效。
+    // 守门:输出必须是确定性 UTC(任意 CI 时区下逐字符固定), 与服务端一致。
+    renderControls({ lastRefreshAt: "2026-06-10T02:00:00Z" });
+    expect(screen.getByTestId("pause-last-refresh").textContent).toBe("2026-06-10 02:00 UTC");
+
+    // 旧实现 toLocaleString() 会带 "/"、","、"AM/PM" 或本地时区偏移 — 全部禁止
+    const text = screen.getByTestId("pause-last-refresh").textContent ?? "";
+    expect(text).not.toMatch(/[/,]|AM|PM/);
+  });
+
+  it("lastRefresh 为空时显示 never(回归同段守门保留空态语义)", () => {
+    renderControls({ lastRefreshAt: null });
+    expect(screen.getByTestId("pause-last-refresh").textContent).toBe("never");
+  });
+
   it("乐观翻转在 action resolve 前即生效(deferred promise 钉住乐观属性)", async () => {
     let resolveAction!: (v: unknown) => void;
     setCrawlerStateAction.mockImplementationOnce(

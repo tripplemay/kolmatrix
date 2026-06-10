@@ -101,6 +101,27 @@ function formatDuration(ms: number, t: DurationT): string {
   return t("durationMinutes", { minutes });
 }
 
+/**
+ * 确定性 UTC 时间戳格式化(BL-108 fixing 修 React #418 水合失配)。
+ *
+ * 原实现 `new Date(iso).toLocaleString()` 依赖运行时时区+locale:SSR 在
+ * 服务器时区渲染、客户端水合时按浏览器时区重渲 → 文本节点不一致 → React
+ * 抛 #418 水合失配 → 整个客户端子树(含两个开关)被丢弃重渲, onClick 不再
+ * 绑定 → 监控页开关点击无效(Codex verifying L2 blocker)。
+ *
+ * 用 `getUTC*` 输出固定 `YYYY-MM-DD HH:mm UTC` 格式:服务端/客户端逐字符
+ * 一致, 杜绝失配;UTC 也是 ops 监控页的惯例口径(团队跨时区无歧义)。
+ */
+function formatTimestampUtc(iso: string): string {
+  const d = new Date(iso);
+  if (!Number.isFinite(d.getTime())) return iso;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return (
+    `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ` +
+    `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} UTC`
+  );
+}
+
 export function CrawlerPauseControls({ control }: { control: CrawlerControlState }) {
   const t = useTranslations("admin.crawlerMonitor.pause");
   const router = useRouter();
@@ -235,7 +256,7 @@ export function CrawlerPauseControls({ control }: { control: CrawlerControlState
         <div>
           <dt className="text-white/40">{t("lastRefresh")}</dt>
           <dd className="font-semibold text-white" data-testid="pause-last-refresh">
-            {control.lastRefreshAt ? new Date(control.lastRefreshAt).toLocaleString() : t("never")}
+            {control.lastRefreshAt ? formatTimestampUtc(control.lastRefreshAt) : t("never")}
           </dd>
         </div>
         <div>
