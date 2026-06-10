@@ -248,3 +248,15 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 **建议写入：** `framework/harness/generator.md` §15（Perf/image 落地段邻近）补「视觉改动 feature 的 CI 时序」；或 `framework/harness/deploy-patterns.md` §CI baseline 重拍时序 + bot commit 不触发 CI + Docker Hub 500 rerun。
 
 **状态：** ✅ 2026-06-09 用户 ack，已沉淀入 `framework/harness/generator.md` §21（改落地页视觉 feature 的 CI 时序 — baseline 须 Linux runner 重拍）+ cross-ref `framework/harness/deploy-patterns.md §4.1`（已有 bot commit 不触发下游 workflow 段，未重复新建）
+
+---
+
+## [2026-06-10] Claude CLI (Kimi) — 来源：BL-108-F004 verifying fix-round 1（监控页开关点击失效 React #418）
+
+**类型：** 新坑（前端水合）+ 建议补 Generator/Evaluator checklist
+
+**内容：** `'use client'` 组件在**初始 SSR 渲染路径**里调用 `new Date(iso).toLocaleString()`（或任何依赖运行时时区/locale 的格式化，如无显式 `timeZone` 的 `Intl.DateTimeFormat`/`toLocaleDateString`），SSR 在服务器时区生成文本、客户端水合时按浏览器时区重渲 → 文本节点不一致 → React minified **#418 水合失配** → React 丢弃该 hydration root 的整棵服务端树并客户端重渲。**致命连带：失去交互的不只是那个时间戳——同一 root 内所有控件的事件处理器都来不及/不再正确绑定**（本例两个暂停开关 onClick 全失效，headless Playwright 点击无任何反应，console 仅留一行 #418）。极易误诊为"开关逻辑 bug"而去查 onClick/state，实则根因在一个看似无害的时间戳渲染。**修复**：用 `getUTC*` 手写确定性 `YYYY-MM-DD HH:mm UTC`（服务端/客户端逐字符一致，UTC 也合 ops 监控页口径）；或 mount-gate（`useState(false)`+`useEffect` 后再渲本地时间，SSR 期渲占位）；或 `suppressHydrationWarning`（仅文本节点级，最弱）。**回归测试**可确定性化：断言渲染输出为固定 UTC 串（非 `toLocaleString` 的 `/`、`,`、`AM/PM`），`TZ=America/New_York npx vitest` 实证 fail-before/pass-after。**潜伏面**：本仓另有 `RoiInsightsPanel`/`AiSuggestionsClient`/`UsedInTab` 等多处 client `toLocaleString`，目前仅因"在用户交互后才渲染、不进初始 SSR"而侥幸不炸——一旦被挪进初始渲染即同病。
+
+**建议写入：** `framework/harness/generator.md` §15（Perf/image/Suspense 落地段邻近，同属"客户端渲染正确性"）补「client 组件初始 SSR 渲染禁非确定性时间/locale 格式化（#418 会废掉整个 hydration root 的交互）+ 确定性 UTC/mount-gate 三选一 + 确定性回归」；`framework/harness/evaluator.md` §13 测试设计补「带交互的 client 页面 L2 必跑 headless 点击并断言 console 无 React #418/#425 水合错误」。Planner spec 起草含交互的 client 页面时把"无水合错误"列入 acceptance。
+
+**状态：** 待确认
