@@ -2,7 +2,7 @@
   "status": "building",
   "user_goal": "BL-111 修爬虫暂停开关样式(BL-108 视觉 followup). 用户截图反馈 /admin/crawler-monitor 暂停开关显刺眼浅粉. 根因: CrawlerPauseControls.tsx:77 手搓 toggle 暂停态用 bg-error(--color-error=#ffb4ab 浅鲑粉 Material error-container 色)当整条轨道实色填充. 修: bg-error→bg-warning(琥珀, 暂停=注意非错误, 与组件 text-warning 一致), 运行态保留, 检查子开关 covered 态+状态徽章对齐. bug修复批次(spec软性省略, 诊断在 features acceptance). 2 features: F001 generator CSS修 / F002 Codex. 纯kolmatrix ~1-2行. 排BL-110后, 应在BL-108 kolmatrix UI上prod前修(凑一次prod部署带BL-108开关+BL-110四修+BL-111).",
   "total_features": 2,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
   "current_sprint": "BL-111-crawler-toggle-style-fix",
   "last_updated": "2026-06-11T10:00+0800",

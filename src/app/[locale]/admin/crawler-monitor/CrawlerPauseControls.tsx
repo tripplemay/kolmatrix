@@ -74,7 +74,14 @@ function SwitchRow({
         onClick={() => onFlip(!checked)}
         className={[
           "relative h-6 w-11 shrink-0 rounded-full transition-colors",
-          checked ? "bg-error" : "bg-white/15",
+          // BL-111-F001 — paused track is amber (warning), not error-pink.
+          // --color-error (#ffb4ab) is Material's error-container salmon;
+          // filling the whole track with it read as a harsh pink. Pausing
+          // is an "attention" state, not an error — amber (#fec931) matches
+          // the component's existing text-warning and stays clean even when
+          // the covered sub-switch dims it to opacity-40 (pink muddied to
+          // brown there). Run state keeps bg-white/15; thumb unchanged.
+          checked ? "bg-warning" : "bg-white/15",
           disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer",
         ].join(" ")}
       >
@@ -220,10 +227,12 @@ export function CrawlerPauseControls({ control }: { control: CrawlerControlState
           data-state={unknown ? "unknown" : anyPaused ? "paused" : "running"}
           className={[
             "rounded-full px-2.5 py-0.5 text-xs font-medium",
+            // BL-111-F001 — paused badge aligns with the amber track
+            // (warning = "paused/attention" semantics), not error-pink.
             unknown
               ? "bg-white/10 text-white/50"
               : anyPaused
-                ? "bg-error/15 text-error"
+                ? "bg-warning/15 text-warning"
                 : "bg-success/15 text-success",
           ].join(" ")}
         >

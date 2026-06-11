@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "根因: src/app/[locale]/admin/crawler-monitor/CrawlerPauseControls.tsx:77 手搓 toggle 'checked?(已暂停) bg-error : bg-white/15', --color-error=#ffb4ab(globals.css:67)浅鲑粉 Material error-container 色, 当整条轨道实色填充→刺眼粉(图1); 子开关被主覆盖置灰时更糊(暗化叠加)",
       "修: 暂停态 bg-error → bg-warning(琥珀 #fec931, 暂停=注意语义非错误, 与组件已用的 text-warning 一致); 运行态保留 bg-white/15; thumb 保持白色+滑动(translate)不变",

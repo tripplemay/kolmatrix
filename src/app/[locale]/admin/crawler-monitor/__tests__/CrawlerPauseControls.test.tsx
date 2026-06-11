@@ -116,6 +116,36 @@ describe("CrawlerPauseControls", () => {
     expect(screen.getByText("paused for 2d 0h")).toBeInTheDocument();
   });
 
+  it("BL-111: 暂停态轨道+徽章用 warning(琥珀)不再用 error(粉)", () => {
+    renderControls({ scrapingEnabled: false });
+
+    // Toggle track: paused (checked) track is amber, never error-pink.
+    const mainTrack = screen.getByTestId("pause-main-switch");
+    expect(mainTrack).toHaveClass("bg-warning");
+    expect(mainTrack).not.toHaveClass("bg-error");
+
+    // Covered sub-switch (main paused → checked + disabled) shares the
+    // amber track — the harsh salmon→brown muddiness is gone.
+    const subTrack = screen.getByTestId("pause-refresh-switch");
+    expect(subTrack).toHaveClass("bg-warning");
+    expect(subTrack).not.toHaveClass("bg-error");
+
+    // Status badge: paused pill aligns to warning, not error.
+    const badge = screen.getByTestId("pause-status");
+    expect(badge).toHaveClass("bg-warning/15");
+    expect(badge).toHaveClass("text-warning");
+    expect(badge).not.toHaveClass("bg-error/15");
+    expect(badge).not.toHaveClass("text-error");
+  });
+
+  it("BL-111: 运行态轨道仍是 bg-white/15(未误改运行态)", () => {
+    renderControls();
+    const mainTrack = screen.getByTestId("pause-main-switch");
+    expect(mainTrack).toHaveClass("bg-white/15");
+    expect(mainTrack).not.toHaveClass("bg-warning");
+    expect(mainTrack).not.toHaveClass("bg-error");
+  });
+
   it("unknown 态:两开关禁用 + 提示条", () => {
     renderControls({
       availability: "unknown",
