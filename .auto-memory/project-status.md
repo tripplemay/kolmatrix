@@ -3,10 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-100-email-async-bullmq BUILDING (0/5) — 邮件发送异步化 + 真 BullMQ 队列(波2)
-- 审计 H1: sendBatchAction 同步await+60s race, 每封sleep6000→>10收件人必超时. 决策 ADR-020: BullMQ(同JobQueue接口)+worker进程内(用户决, instrumentation复用prewarm)+发送异步(enqueue立即返batchId+进度轮询)+幂等(batchId+kolId)+Redis挂回退同步(用户决). prewarm自动迁移. spec docs/specs/BL-100-*
-- 利好: 基建大半预建(JobQueue抽象/instrumentation worker/ioredis/handlers模板). 5features: F001 BullMQ基建 / F002 email_log batchId+幂等 / F003 handler+异步+状态 / F004 Composer进度UX / F005 Codex. 下一步 Generator F001
-- ⚠️ +bullmq依赖 + 1 migration(email_log.batchId nullable); Next多worker用concurrency控; worker进程内不加进程
+## 🔬 BL-100-email-async-bullmq VERIFYING (4/5 generator done, F005 Codex) — 邮件发送异步化 + 真 BullMQ 队列(波2)
+- 审计 H1: sendBatchAction 同步await+60s race, 每封sleep6000→>10收件人必超时. 决策 ADR-020: BullMQ(同JobQueue接口)+worker进程内+发送异步(enqueue立即返batchId+进度轮询)+幂等(batchId+kolId)+Redis挂回退同步. spec docs/specs/BL-100-*
+- F001 BullMQJobQueue+工厂(REDIS_URL→BullMQ/否则InMemory)+getBullConnection(maxRetriesPerRequest:null) / F002 email_log.batchId migration+幂等跳已发 / F003 send-email-batch handler+sendBatchAction异步(去60s race)+D5回退+getSendBatchStatus / F004 useSendBatch hook 进度轮询UX+i18n 5locale+cap 100. F005 Codex L1+L2+signoff
+- ✅ staging deployed @ 6566c97(F002 migration applied, health git_sha 一致 healthy). L1 本地全绿(tsc=0/lint 0e3w/test 1653). 下一步 Codex verifying
+- ⚠️ staging Redis 6.0.16 < BullMQ 推荐 6.2.0(core 功能可用, Codex L2 须实测 enqueue→consume 通); +bullmq 依赖; worker 进程内不加进程
 ## ✅ BL-111-crawler-toggle-style-fix DONE (F001 done, F002 Codex 用户授权免除, closure @ docs/test-reports/BL-111-closure-2026-06-11.md) — 爬虫开关样式修复
 - CrawlerPauseControls.tsx 暂停态轨道+状态徽章 bg-error(#ffb4ab浅鲑粉)→bg-warning(#fec931琥珀); 运行态保留, 健康卡真错误态bg-error未动; +30行回归测试. staging@a6f7c08
 - 关闭方式: 用户授权快track(trivial 2行视觉修, 免Codex评估), Planner代码review干净+独立跑12/12 PASS. ⚠️琥珀视觉观感 staging 用户自查(1行可调)
