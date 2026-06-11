@@ -1,11 +1,11 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "BL-111 修爬虫暂停开关样式(BL-108 视觉 followup). 用户截图反馈 /admin/crawler-monitor 暂停开关显刺眼浅粉. 根因: CrawlerPauseControls.tsx:77 手搓 toggle 暂停态用 bg-error(--color-error=#ffb4ab 浅鲑粉 Material error-container 色)当整条轨道实色填充. 修: bg-error→bg-warning(琥珀, 暂停=注意非错误, 与组件 text-warning 一致), 运行态保留, 检查子开关 covered 态+状态徽章对齐. bug修复批次(spec软性省略, 诊断在 features acceptance). 2 features: F001 generator CSS修 / F002 Codex. 纯kolmatrix ~1-2行. 排BL-110后, 应在BL-108 kolmatrix UI上prod前修(凑一次prod部署带BL-108开关+BL-110四修+BL-111).",
   "total_features": 2,
   "completed_features": 1,
   "fix_rounds": 0,
   "current_sprint": "BL-111-crawler-toggle-style-fix",
-  "last_updated": "2026-06-11T10:00+0800",
+  "last_updated": "2026-06-11T12:15+0800",
   "reference_docs": [
     "src/app/[locale]/admin/crawler-monitor/CrawlerPauseControls.tsx:77(暂停态 bg-error→bg-warning)",
     "src/styles/globals.css:67(--color-error=#ffb4ab 浅鲑粉) / :67-68(--color-warning=#fec931 琥珀)",
@@ -21,10 +21,10 @@
   "role_assignments": null,
   "evaluator_feedback": null,
   "fix_rounds_history": [],
-  "generator_handoff": "[2026-06-11 10:00 BJT Planner Kimi 开 BL-111 building] 爬虫开关样式 bug 修复(BL-108 followup). 根因明确: CrawlerPauseControls.tsx:77 暂停态 bg-error(#ffb4ab浅鲑粉)当轨道实色→刺眼粉. 修: bg-error→bg-warning(琥珀#fec931). 也检查: 子开关被主覆盖covered态在琥珀下干净(原糊棕)+状态徽章paused的bg-error/15一并对齐warning(同暂停语义视觉一致)+thumb白色滑动不变. 更新 CrawlerPauseControls.test.tsx 断言暂停态class. bug修复spec软性已省, 诊断在features acceptance. 下一步Generator F001(~1-2行+测试). ⚠️琥珀是Planner视觉决策, 用户staging看效果可再调. ⚠️部署: 本批+BL-108 UI+BL-110 凑一次prod部署(main HEAD一次带全).",
+  "generator_handoff": "[2026-06-11 12:15 BJT Generator Kimi building→verifying] F001 完成+CI全绿+staging已部署@a6f7c08(HEALTH_SHA 对齐). F002 交 Codex(L1+L2+signoff). 改动: CrawlerPauseControls.tsx 两处 — (1)SwitchRow 轨道暂停态 bg-error→bg-warning(琥珀#fec931); (2)状态徽章 paused bg-error/15 text-error→bg-warning/15 text-warning. 运行态保留 bg-white/15, thumb 白色滑动不变. 健康卡 critical/错误条的 bg-error(page.tsx:33,103)是真错误态, 不在本批未动. 含 2 回归测试(暂停态轨道+覆盖子开关+徽章断言 bg-warning 非 bg-error 修前 fail / 运行态仍 bg-white/15 守门). L1: lint 0e/3w, tsc=0, CrawlerPauseControls 12/12 绿. ⚠️琥珀色是 Planner 视觉决策, 用户 staging 看效果可再调. 本批无 migration/env/seed. 给 Codex L2: staging /admin/crawler-monitor(admin 登录态)暂停开关显琥珀不再粉, 主暂停时子开关 covered 态干净不糊棕, 状态徽章一致. ⚠️ git_sha 验证带 ?token=HEALTH_DETAIL_TOKEN. 部署建议(Planner): 本批+BL-108 UI+BL-110 凑一次 prod 部署.",
   "session_notes": {
     "Kimi_planner": "[2026-06-11 10:00 BJT Planner Kimi] BL-110 DONE(波1 5/5 fix_round1, F004修法=全时段repliedAt判定 signoff). 开BL-111(用户同意)修BL-108开关粉色样式. bug修复批次2features. 旁挂: BL-108 UI待prod / 2条水合learnings待ack / H6留波3. 部署建议: BL-111后凑一次prod部署带BL-108开关+BL-110+BL-111. 下一步Generator F001.",
-    "Kimi_generator": null,
+    "Kimi_generator": "[2026-06-11 12:15 BJT Generator Kimi] BL-111 F001 做完(commit a6f7c08, CI 代码 jobs 全绿, E2E 收尾中). 爬虫暂停开关样式: bg-error(#ffb4ab 浅鲑粉)→bg-warning(#fec931 琥珀), 轨道+状态徽章两处. 2 行 class 改 + 2 回归测试. staging 重部署@a6f7c08(HEALTH_SHA 对齐). 健康卡真错误态 bg-error 未动. 给 Codex: staging /admin/crawler-monitor admin 登录态走查暂停开关琥珀化(图1 反馈的刺眼粉已消), 主暂停子开关 covered 态干净. 琥珀是 Planner 决策, 用户可再调.",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
