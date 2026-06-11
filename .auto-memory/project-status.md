@@ -3,7 +3,9 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## ✅ BL-100-email-async-bullmq DONE (5/5, fix-round 0 PASS) — 邮件发送异步化 + 真 BullMQ 队列(波2)
+## ✅ BL-100-email-async-bullmq DONE (5/5, fix-round 0 PASS) + 🚀 PROD 部署 — 邮件发送异步化 + 真 BullMQ 队列(波2)
+- ✅ **PROD 已部署(用户 2026-06-11/12)+ Planner 只读核验**: prod health healthy(db/redis ok), email_log.batch_id 列已落 prod(F002 migration applied), kolmatrix 进程 online. BL-108/110/111/100 四批随 main HEAD 一并上 prod(积压清零)
+- ⚠️ watch: prod Redis **6.0.16** < BullMQ 推荐 6.2.0(staging 同版本 L2 实测 13 人发送通, 可用; 若未来 BullMQ 用 6.2+ 特性需升级). prod 真实 >10 收件人发送建议用户日常使用中验一次
 - Codex reverifying PASS：F001-F004 全部通过，signoff 写入 `docs/test-reports/BL-100-signoff-2026-06-11.md`
 - L1：eslint 0e/3w，tsc=0，npm test 1653/1653 PASS
 - L2 staging git_sha=6566c97：13 人发送立即返回并完成 13 sent / 0 mocked / 0 failed；pm2 reload 中途 job 未丢；Redis 停机时触发 D5 回退同步发送并落告警；prewarm 正常，`ai_recommendation_explanation_short` 计数 0→25
@@ -23,7 +25,7 @@ type: project
 - fix-round 1 根因已闭环：dashboard/quick stats/tracking 统一改为全时段 repliedAt 存在判定，不再受 14-day/当前页窗口误导
 - 本批无 migration/env 变更。H6 Edit Brief 死链仍留波3 BL-105
 ## ✅ BL-108-crawler-pause-switches DONE (5/5, fix-round 2 complete, signoff @ docs/test-reports/BL-108-signoff-2026-06-10.md) — 爬虫暂停开关
-- ⚠️ **kolmatrix UI 仅 staging@706d806, 待 prod 部署**(让开关上 prod 监控页); 爬虫后端gate+API已上prod/opt(PR#12@15c2ba3). 2条水合proposed-learnings待ack
+- ✅ **kolmatrix UI 已上 prod**(2026-06-11/12 随四批部署, 开关带 BL-111 琥珀样式在 prod 监控页可用); 爬虫后端gate+API已上prod/opt(PR#12@15c2ba3). 2条水合proposed-learnings待ack
 - 决策 ADR-019(两层开关: 主 scraping_enabled 全停含manual_seed + 子 refresh_enabled 仅refresh, 主⊇子, gate在入队源无尖峰). spec docs/specs/BL-108-*
 - ✅ 爬虫侧 F001+F002: **PR#12 已 merge(squash @15c2ba3) + 已部署 /opt**(2026-06-10 用户授权) — service_settings 表+GET/PATCH /admin/crawler-state + 6 入队点 gate + ops脚本 gate + Dockerfile 部署债修复. 部署实证: clean build EXIT=0(无 awk 补丁), migration 0005 applied(默认行 both true), /admin/crawler-state 200, kolmatrix staging 配置的 key 直连可用, 40 schedules 同步, lastRefreshAt ISO. refreshBacklog total 8832/dueNow 2363
 - ✅ kolmatrix 侧 F003+F004: proxy+装配+两 toggle+确认弹窗+audit+i18n 5 locale. CI 绿, **staging deployed @ 2c86347**
