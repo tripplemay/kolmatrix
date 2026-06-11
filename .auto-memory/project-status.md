@@ -3,9 +3,9 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-111-crawler-toggle-style-fix VERIFYING (1/2 generator done, 交 Codex F002) — 修爬虫暂停开关样式(BL-108 视觉 followup)
-- F001 完成+CI全绿+staging已部署@a6f7c08(HEALTH_SHA 对齐). CrawlerPauseControls.tsx 暂停态轨道+状态徽章 bg-error(#ffb4ab浅鲑粉)→bg-warning(#fec931琥珀, 暂停=注意非错误, 与 text-warning 一致). 运行态保留, 健康卡真错误态 bg-error 未动. 含 2 回归测试(暂停 bg-warning 非 bg-error / 运行仍 bg-white/15)
-- 下一步 Codex F002: L1+L2(staging /admin/crawler-monitor 暂停开关琥珀化走查)+signoff. ⚠️琥珀是 Planner 视觉决策用户可再调. 本批无 migration/env/seed
+## ✅ BL-111-crawler-toggle-style-fix DONE (F001 done, F002 Codex 用户授权免除, closure @ docs/test-reports/BL-111-closure-2026-06-11.md) — 爬虫开关样式修复
+- CrawlerPauseControls.tsx 暂停态轨道+状态徽章 bg-error(#ffb4ab浅鲑粉)→bg-warning(#fec931琥珀); 运行态保留, 健康卡真错误态bg-error未动; +30行回归测试. staging@a6f7c08
+- 关闭方式: 用户授权快track(trivial 2行视觉修, 免Codex评估), Planner代码review干净+独立跑12/12 PASS. ⚠️琥珀视觉观感 staging 用户自查(1行可调)
 - ⚠️ 部署建议: 本批+BL-108 UI+BL-110 凑一次 prod 部署(main HEAD 一次带全, 让 BL-108 开关带修正样式上 prod)
 ## ✅ BL-110-splitbrain-quickwins-wave1 DONE (5/5, fix-round 1 PASS) — split-brain 快赢止血(波1, 合并 BL-101/102/103/104)
 - Codex reverifying PASS：F001-F004 全部通过，signoff 写入 `docs/test-reports/BL-110-signoff-2026-06-11.md`
