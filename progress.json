@@ -1,11 +1,11 @@
 {
-  "status": "reverifying",
+  "status": "done",
   "user_goal": "BL-110 split-brain 快赢止血(波1) — 合并 backlog BL-101/102/103/104. 来源全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md. 4个小改用户可见低风险各自独立: F001 KOL详情面包屑死链→/match(BL-104) / F002 /assets列表type白名单收口防泄漏AI解释缓存脏卡+welcome(BL-103) / F003 kol_campaign accept读口径统一 skip/swap不再显示已接受(BL-102) / F004 Reply链诚实空态止血 repliedAt只读不写prod假数据(BL-101) / F005 Codex. 纯kolmatrix. H6 Edit Brief死链不在本批(留波3 BL-105). 路线图波1.",
   "total_features": 5,
-  "completed_features": 4,
+  "completed_features": 5,
   "fix_rounds": 1,
   "current_sprint": "BL-110-splitbrain-quickwins-wave1",
-  "last_updated": "2026-06-11T02:45+0800",
+  "last_updated": "2026-06-11T10:20+0800",
   "reference_docs": [
     "docs/specs/BL-110-splitbrain-quickwins-wave1-spec.md",
     "docs/reviews/full-feature-chain-audit-2026-06-09.md(审计根因 file:line)",
@@ -18,24 +18,11 @@
     "spec": "docs/specs/BL-110-splitbrain-quickwins-wave1-spec.md",
     "audit": "docs/reviews/full-feature-chain-audit-2026-06-09.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/BL-110-signoff-2026-06-11.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": {
-    "summary": "F001-F003 pass, but F004 still has a dashboard false-positive pending note on staging, so BL-110 cannot sign off yet.",
-    "pass_count": 3,
-    "partial_count": 0,
-    "fail_count": 1,
-    "issues": [
-      {
-        "feature_id": "F004",
-        "result": "FAIL",
-        "description": "On staging, /en/reach and /en/reach/tracking both show real reply data, but /en/insight still renders the B4 pending note. The dashboard pending heuristic keys off the 14-day chart only, so it mislabels tenants that already have historical repliedAt rows.",
-        "steps_to_reproduce": "1. Login to staging as admin@kolmatrix.local. 2. Open /en/reach and observe reply KPI 18.5% with no pending note. 3. Open /en/reach/tracking and observe 50 rows with no reply footnote. 4. Open /en/insight and observe dashboard-email-perf-reply-note visible."
-      }
-    ]
-  },
+  "evaluator_feedback": null,
   "fix_rounds_history": [
     {
       "round": 1,
@@ -52,7 +39,7 @@
   "session_notes": {
     "Kimi_planner": "[2026-06-10 23:10 BJT Planner Kimi] BL-108 DONE(爬虫暂停开关5/5 fix_round2水合坑 signoff; 爬虫已上prod /opt, kolmatrix UI仅staging待prod部署). 按路线图开波1 BL-110(用户选B). 合并BL-101~104四个split-brain快赢. 2条BL-108水合proposed-learnings仍队列待ack(用户选B未选A). 下一步Generator F001. 注: BL-108 kolmatrix prod部署仍是遗留手动动作(让开关上prod监控页).",
     "Kimi_generator": "[2026-06-11 02:45 BJT Generator Kimi fix-round 1] F004 verifying blocker 已修+staging 重部署@95f348d(HEALTH_SHA 对齐). 根因: dashboard 14-day chart 判 reply pending, 租户 753ee82c 的 56 条 repliedAt 在窗口外→误报 B4 待上线(而 /reach KPI 18.5% 显真实数据). 同类窗口/分页作用域 bug 潜伏 QuickStats(30d)/TrackingTable(当前页), 一并根治为单一全时段信号 isReplyTrackingPending(tx)=repliedAt count===0. 改: analytics.ts 新 helper + runEmailQuickStats; DashboardContent 传 prop 给 EmailPerformanceCard(弃 chart 推断); tracking page 用 helper(弃 tableRows.every); RecentRepliesCard 本就 all-time 无需改. DB 实证: staging 753ee82c repliedAt=56→pending false→note 隐藏. 含 3 回归测试(修前 fail). commit 95f348d CI in_progress(代码 jobs 应绿, 本地 124 测试+tsc+lint 已验). 注: 上轮 F001-F003 已 PASS 未动. 给 Codex 复验重点: staging 同租户 /en/insight dashboard-email-perf-reply-note 现应消失; 无 repliedAt 租户仍显 pending.",
-    "Reviewer": "[2026-06-11 02:05 BJT Evaluator Reviewer] BL-110 verifying complete. L1 pass (eslint 0e/3w, tsc pass, npm test 1624/1624). Local seeded fixtures proved F001-F003 and F004 pending-path. Staging/prod read-only UI proved F001/F002, and staging real campaign 2d11dd71-1a98-4ee0-b15d-314dae9fcd3c proved F003 skip filtering. Blocker: staging /en/insight still shows dashboard-email-perf-reply-note even though same tenant /en/reach shows reply KPI 18.5% and /en/reach/tracking has 50 rows with no pending footnote. Root cause likely dashboard heuristic only inspects 14-day chart rows, not existence of any real repliedAt data. Returned batch to fixing; report: docs/test-reports/BL-110-verifying-2026-06-11.md.",
+    "Reviewer": "[2026-06-11 10:20 BJT Evaluator Reviewer] BL-110 reverifying PASS. L1 rerun: eslint 0e/3w, tsc PASS, npm test 1627/1627 PASS. Staging/prod F004 recheck after 95f348d: a tenant with historical repliedAt no longer shows dashboard pending note; `/en/reach` and `/en/reach/tracking` stay consistent. Signoff written to docs/test-reports/BL-110-signoff-2026-06-11.md; status advanced to done.",
     "johnsong_planner": null,
     "johnsong_generator": null
   },

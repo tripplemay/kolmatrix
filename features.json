@@ -60,7 +60,7 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "L1: lint 0err warn≤3 / tsc=0 / npm test(含各feature新测)",
       "L2 部署后 staging/prod: ① KOL详情面包屑→/match不404 ② /assets无空白脏卡+解释缓存租户进welcome ③ /match skip/swap的KOL不在/campaigns/[id]已接受列表 ④ 回复面板诚实空态(无误导0%)",

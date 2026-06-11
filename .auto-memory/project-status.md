@@ -3,13 +3,15 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-110-splitbrain-quickwins-wave1 REVERIFYING (fix-round 1, F004 blocker 已修) — split-brain 快赢止血(波1, 合并 BL-101/102/103/104)
-- 上轮 verifying: F001-F003 PASS(报告 docs/test-reports/BL-110-verifying-2026-06-11.md), F004 FAIL→已修→reverifying
-  - F001 面包屑 /kols/[id]→/match: local+staging+prod 登录态点击都不再 404
-  - F002 /assets 白名单收口: local/staging/prod explanation cache rows 不入 grid; local explanation-only tenant 进 welcome
-  - F003 accepted 读口径: local + staging 真 campaign 2d11dd71 证明 skip 不进 accepted panel/count
-- F004 fix-round 1(commit 95f348d, staging@95f348d): dashboard 误报 B4 pending 根因=按 14-day chart 判定, 租户 753ee82c 56 条历史 repliedAt 在窗口外→误报. 修: analytics.ts isReplyTrackingPending(tx)=全仓 repliedAt count===0 单一真相源, QuickStats/Dashboard(prop)/tracking page 全改用之(同时根治 30d/当前页 同类窗口 bug); RecentRepliesCard 本就 all-time. DB 实证 753ee82c repliedAt=56→note 隐藏. 含 3 回归测试
-- 给 Codex 复验④: staging 同租户 /en/insight reply-note 现应消失; 无 repliedAt 租户仍显 pending. staging@95f348d(SHA对齐); 本批无 migration/env/seed. H6 Edit Brief 留波3 BL-105
+## ✅ BL-110-splitbrain-quickwins-wave1 DONE (5/5, fix-round 1 PASS) — split-brain 快赢止血(波1, 合并 BL-101/102/103/104)
+- Codex reverifying PASS：F001-F004 全部通过，signoff 写入 `docs/test-reports/BL-110-signoff-2026-06-11.md`
+- 已证实 PASS：
+  - F001 面包屑 `/kols/[id] -> /match`：local + staging + prod 登录态点击都不再 404
+  - F002 `/assets` 白名单收口：local/staging/prod explanation cache rows都不再出现在 grid；local explanation-only tenant 正确进入 welcome
+  - F003 accepted 读口径：local 构造数据与 staging 真 campaign `2d11dd71-1a98-4ee0-b15d-314dae9fcd3c` 都证明 skip 不再进入 accepted panel / count
+  - F004 reply 链诚实空态：staging/prod 对有历史 repliedAt 的 tenant 不再显示 B4 pending note；local pending tenant 仍保留 honest empty state
+- fix-round 1 根因已闭环：dashboard/quick stats/tracking 统一改为全时段 repliedAt 存在判定，不再受 14-day/当前页窗口误导
+- 本批无 migration/env 变更。H6 Edit Brief 死链仍留波3 BL-105
 ## ✅ BL-108-crawler-pause-switches DONE (5/5, fix-round 2 complete, signoff @ docs/test-reports/BL-108-signoff-2026-06-10.md) — 爬虫暂停开关
 - ⚠️ **kolmatrix UI 仅 staging@706d806, 待 prod 部署**(让开关上 prod 监控页); 爬虫后端gate+API已上prod/opt(PR#12@15c2ba3). 2条水合proposed-learnings待ack
 - 决策 ADR-019(两层开关: 主 scraping_enabled 全停含manual_seed + 子 refresh_enabled 仅refresh, 主⊇子, gate在入队源无尖峰). spec docs/specs/BL-108-*
