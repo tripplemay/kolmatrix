@@ -35,6 +35,40 @@ export function getRedis(): IORedis {
   return _client;
 }
 
+/**
+ * BL-100-F001 — dedicated Redis connection for BullMQ.
+ *
+ * BullMQ Workers issue blocking commands (BRPOPLPUSH / BZPOPMIN) and
+ * refuse any ioredis connection whose `maxRetriesPerRequest` is not
+ * `null` (it would throw on construction in v5). The default `getRedis()`
+ * client above keeps `maxRetriesPerRequest: 3` so login rate-limit /
+ * health probes fail fast; BullMQ needs its own client with retries
+ * disabled. We share ONE base connection across all Queue producers and
+ * `.duplicate()` it per Worker (blocking ops must not share a socket with
+ * producer ops) — see `src/lib/jobs/bullmq-queue.ts`.
+ *
+ * Lazy singleton so a process without any enqueued jobs never opens it.
+ */
+let _bullClient: IORedis | null = null;
+
+export function getBullConnection(): IORedis {
+  if (_bullClient) return _bullClient;
+  const url = process.env.REDIS_URL;
+  if (!url) {
+    throw new Error("REDIS_URL is not configured");
+  }
+  _bullClient = new IORedis(url, {
+    // Required by BullMQ for blocking worker commands.
+    maxRetriesPerRequest: null,
+    retryStrategy: (times) => Math.min(times * 200, 2000),
+    enableReadyCheck: false,
+  });
+  _bullClient.on("error", (err) => {
+    console.error("[redis:bull] error:", err.message);
+  });
+  return _bullClient;
+}
+
 export async function pingRedis(): Promise<{ ok: boolean; latencyMs?: number; error?: string }> {
   try {
     const t0 = Date.now();
@@ -55,4 +89,8 @@ export function __resetRedisForTests(): void {
     void _client.quit().catch(() => {});
   }
   _client = null;
+  if (_bullClient) {
+    void _bullClient.quit().catch(() => {});
+  }
+  _bullClient = null;
 }

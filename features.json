@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "加 bullmq 依赖; BullMQJobQueue implements JobQueue(register/add/stats, 以 getRedis() 为后端): register(name,handler) 起 BullMQ Worker(concurrency 控) / add(name,payload,opts) 入 Queue(支持 delay/idempotencyKey via jobId/tenantId)",
       "工厂: jobQueue 单例 = REDIS_URL 存在→BullMQJobQueue 否则→InMemoryJobQueue(测试/dev回退); 导出名/类型不变调用点零改",

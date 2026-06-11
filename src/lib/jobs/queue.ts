@@ -1,6 +1,10 @@
-// Job Queue abstraction. MVP ships with an in-memory executor; the B5
-// sprint will swap in a BullMQ-backed implementation without touching
-// any call sites (same interface, JSON-safe payload contract).
+import { BullMQJobQueue } from "./bullmq-queue";
+
+// Job Queue abstraction. The factory at the bottom picks the concrete
+// implementation at boot: a BullMQ-backed queue when REDIS_URL is set
+// (prod / staging) or the in-memory executor otherwise (tests / dev with
+// no Redis). Both honour the same interface + JSON-safe payload contract,
+// so call sites never change (BL-100-F001 / ADR-020 D1).
 
 export interface JobPayload {
   [key: string]: unknown;
@@ -127,8 +131,33 @@ export class InMemoryJobQueue implements JobQueue {
 }
 
 /**
+ * Factory — REDIS_URL present → BullMQ (persistent, cross-restart,
+ * retryable); absent → in-memory stub (tests / Redis-less dev). The
+ * BullMQ import is lazy + guarded so a require/connection failure
+ * degrades to in-memory rather than taking down boot (the InMemory path
+ * still runs handlers inline, so prewarm self-heals on mount).
+ */
+function createJobQueue(): JobQueue {
+  if (!process.env.REDIS_URL) {
+    return new InMemoryJobQueue();
+  }
+  try {
+    // The constructor opens no connection — Queue/Worker are created
+    // lazily on first add()/register() — so a `new BullMQJobQueue()` is
+    // cheap and only the REDIS_URL path ever touches it.
+    return new BullMQJobQueue();
+  } catch (err) {
+    console.error(
+      "[jobQueue] BullMQ init failed; falling back to InMemoryJobQueue:",
+      err,
+    );
+    return new InMemoryJobQueue();
+  }
+}
+
+/**
  * Process-wide singleton. Handlers register into this instance at app
  * startup via src/lib/jobs/handlers/register.ts, which is imported by
  * src/instrumentation.ts.
  */
-export const jobQueue: JobQueue = new InMemoryJobQueue();
+export const jobQueue: JobQueue = createJobQueue();
