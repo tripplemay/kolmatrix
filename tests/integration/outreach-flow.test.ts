@@ -151,6 +151,7 @@ describe("batchSendOutreach — mock fallback (no RESEND_API_KEY)", () => {
       OWNER,
       campaignId,
       items,
+      null,
       { skipSleep: true }
     );
 
@@ -221,6 +222,7 @@ describe("batchSendOutreach — real provider path (mocked SDK)", () => {
       OWNER,
       campaignId,
       items,
+      null,
       { skipSleep: true }
     );
     expect(res.sent).toBe(1);
@@ -255,6 +257,7 @@ describe("batchSendOutreach — real provider path (mocked SDK)", () => {
       OWNER,
       campaignId,
       items,
+      null,
       { skipSleep: true }
     );
     expect(res.failed).toBe(1);

@@ -323,6 +323,7 @@ export async function sendBatchAction(
       session.userId,
       parsed.data.campaignId,
       items,
+      null, // BL-100-F002: batchId wiring lands in F003 (async enqueue)
       { skipSleep: false },
     );
     const raced = await Promise.race([sendPromise, timeoutPromise]);

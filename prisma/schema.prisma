@@ -397,6 +397,12 @@ model EmailLog {
   bounceReason      String?   @map("bounce_reason")
   // BM2-F001 audit #F3: flag AI-customized sends for PRD §2.2 adoption metric.
   aiCustomized      Boolean   @default(false) @map("ai_customized")
+  // BL-100-F002 (ADR-020 D3/D4) — the async send batch this row belongs
+  // to. Populated by batch-send when sendBatchAction enqueues a job;
+  // nullable so legacy rows + non-batch sends stay valid. Drives the
+  // getSendBatchStatus progress poll + the (batchId,kolId) idempotency
+  // guard that makes a job retry skip already-sent rows.
+  batchId           String?   @map("batch_id") @db.Uuid
   createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
 
   campaign Campaign? @relation(fields: [campaignId], references: [id])
@@ -407,6 +413,7 @@ model EmailLog {
 
   @@index([tenantId, campaignId, status])
   @@index([tenantId, kolId])
+  @@index([tenantId, batchId])
   @@map("email_log")
 }
 

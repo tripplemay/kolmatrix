@@ -54,7 +54,7 @@ describe("BL-099-F003 batchSendOutreach template_name snapshot", () => {
   it("snapshots the Asset name into email_log.template_name", async () => {
     assetFindUnique.mockResolvedValueOnce({ name: "Welcome Email" });
 
-    await batchSendOutreach("tenant-a", "actor-1", "campaign-1", [item()], {
+    await batchSendOutreach("tenant-a", "actor-1", "campaign-1", [item()], null, {
       skipSleep: true,
     });
 
@@ -73,7 +73,7 @@ describe("BL-099-F003 batchSendOutreach template_name snapshot", () => {
   });
 
   it("writes null template_name and skips the lookup when there's no template", async () => {
-    await batchSendOutreach("tenant-a", "actor-1", "campaign-1", [item({ templateId: null })], {
+    await batchSendOutreach("tenant-a", "actor-1", "campaign-1", [item({ templateId: null })], null, {
       skipSleep: true,
     });
 
@@ -88,7 +88,7 @@ describe("BL-099-F003 batchSendOutreach template_name snapshot", () => {
   it("writes null template_name when the template asset no longer exists", async () => {
     assetFindUnique.mockResolvedValueOnce(null);
 
-    await batchSendOutreach("tenant-a", "actor-1", "campaign-1", [item()], {
+    await batchSendOutreach("tenant-a", "actor-1", "campaign-1", [item()], null, {
       skipSleep: true,
     });
 

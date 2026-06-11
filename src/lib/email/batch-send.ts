@@ -46,6 +46,9 @@ export interface BatchSendResult {
     error?: string;
     providerMessageId?: string | null;
     emailLogId?: string;
+    // BL-100-F002 (ADR-020 D4) — true when a job retry found this
+    // (batchId,kolId) already sent and skipped the resend.
+    skipped?: boolean;
   }>;
 }
 
@@ -65,6 +68,11 @@ export async function batchSendOutreach(
   actorId: string,
   campaignId: string,
   items: BatchSendItem[],
+  // BL-100-F002 (ADR-020 D3/D4) — the async send batch this run belongs
+  // to. Persisted on every email_log row + used for the (batchId,kolId)
+  // idempotency guard so a BullMQ job retry never re-sends an address
+  // that already went out. `null` = legacy / non-batch send (no guard).
+  batchId: string | null,
   opts: { throttleMs?: number; skipSleep?: boolean } = {}
 ): Promise<BatchSendResult> {
   const throttle = opts.throttleMs ?? THROTTLE_MS;
@@ -77,6 +85,38 @@ export async function batchSendOutreach(
 
   for (let i = 0; i < items.length; i += 1) {
     const item = items[i]!;
+
+    // D4 idempotency — when this run is part of a batch, skip any KOL
+    // that already has a sent / mock_sent row for the same batch so a
+    // job retry is a no-op rather than a duplicate send. A prior `failed`
+    // row is NOT a skip: retries should re-attempt it.
+    if (batchId) {
+      const already = await withTenant(tenantId, (tx) =>
+        tx.emailLog.findFirst({
+          where: {
+            tenantId,
+            campaignId,
+            kolId: item.kolId,
+            batchId,
+            status: { in: ["sent", "mock_sent"] },
+          },
+          select: { id: true, status: true },
+        })
+      );
+      if (already) {
+        const status = already.status === "mock_sent" ? "mock_sent" : "sent";
+        out.items.push({
+          kolId: item.kolId,
+          status,
+          emailLogId: already.id,
+          skipped: true,
+        });
+        if (status === "mock_sent") out.mocked += 1;
+        else out.sent += 1;
+        continue;
+      }
+    }
+
     let providerMessageId: string | null = null;
     let mocked = false;
     let errorMessage: string | null = null;
@@ -122,6 +162,7 @@ export async function batchSendOutreach(
           kolId: item.kolId,
           templateId: item.templateId ?? null,
           templateName,
+          batchId, // BL-100-F002 — associate this row with the send batch
           aiCustomized: item.aiCustomized ?? false,
           toAddress: item.toAddress,
           fromAddress: FROM_ADDRESS,

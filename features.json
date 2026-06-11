@@ -20,7 +20,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "prisma migration: EmailLog 加 batchId String? @map(batch_id) @db.Uuid + @@index([tenantId, batchId])",
       "batch-send.ts 每封 email_log 写入传入 batchId",
