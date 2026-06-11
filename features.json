@@ -1,70 +1,29 @@
 [
   {
     "id": "F001",
-    "title": "KOL 详情面包屑死链修复 → /match (generator, 源 BL-104)",
+    "title": "修爬虫暂停开关样式 — 暂停态 bg-error 浅粉→bg-warning 琥珀 (generator, kolmatrix)",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 0.5,
-    "status": "done",
+    "status": "pending",
     "acceptance": [
-      "kols/[id]/page.tsx:162 面包屑 'Back to Database' href /{locale}/kols(该路由不存在, (app)/kols/ 下只有 [id]/ 无 page.tsx)→ 点击 404",
-      "修: 面包屑改指 /{locale}/match(或加 /kols→/match redirect, 择一, 建议改链接); label 语义可保留",
-      "验收: KOL 详情点面包屑→到 /match 不再 404; 含断言新 href 测试; L1 全绿"
+      "根因: src/app/[locale]/admin/crawler-monitor/CrawlerPauseControls.tsx:77 手搓 toggle 'checked?(已暂停) bg-error : bg-white/15', --color-error=#ffb4ab(globals.css:67)浅鲑粉 Material error-container 色, 当整条轨道实色填充→刺眼粉(图1); 子开关被主覆盖置灰时更糊(暗化叠加)",
+      "修: 暂停态 bg-error → bg-warning(琥珀 #fec931, 暂停=注意语义非错误, 与组件已用的 text-warning 一致); 运行态保留 bg-white/15; thumb 保持白色+滑动(translate)不变",
+      "检查子开关被主覆盖(covered/置灰)态在琥珀下干净不再糊棕; 状态徽章 paused 的 bg-error/15 text-error 一并对齐 warning(视觉一致, 同一暂停语义)",
+      "含/更新单测(CrawlerPauseControls.test.tsx 断言暂停态 track class = bg-warning 不再 bg-error); L1 全绿 lint 0err warn≤3 / tsc=0 / npm test"
     ]
   },
   {
     "id": "F002",
-    "title": "/assets 列表 type 白名单收口 (generator, 源 BL-103)",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "done",
-    "acceptance": [
-      "buildListWhere(queries.ts:120)仅当 filter.types 非空才加 type 谓词→/assets 默认无过滤返回全部4种type, 混入 ai_recommendation_explanation_short/detailed 缓存行(cache.ts:126,208直写)→空白脏卡",
-      "修: buildListWhere 无显式 type filter 时默认 where.type IN LISTABLE_ASSET_TYPES(常量 [email,video_script], 与 filter-shape.ts:31 对齐, 加注释提示未来新增type需更新白名单)",
-      "同步修 welcome: assets/page.tsx:65 userOwnedCount 按 LISTABLE_ASSET_TYPES 限定/排除解释类型, 避免跑过AI解释的租户误判跳过welcome",
-      "验收: /assets 只显 email/video_script 无脏卡; 仅有解释缓存的租户正确进 welcome; 含测试(白名单+welcome排除); L1 全绿"
-    ]
-  },
-  {
-    "id": "F003",
-    "title": "kol_campaign accept 读口径统一 (generator, 源 BL-102)",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "done",
-    "acceptance": [
-      "病灶: AI面板skip/swap走suggestion-actions.ts:55写suggestionStatus(skip也插source=ai_smart_match行); 详情页accept走recommend-actions.ts:132只写status/source不写suggestionStatus; 读面detail.ts:115 select无suggestionStatus, AcceptedKolsPanel.tsx:66只filter source, page.tsx:72 acceptedCount=kols.length→skip/swap错误进'已接受'",
-      "止血(读口径): detail.ts kolCampaigns select 加 suggestionStatus; AcceptedKolsPanel+acceptedCount 过滤 suggestionStatus∈{accepted,NULL}(NULL=详情页直accept+legacy backfill)",
-      "根治(写口径小改一并): recommend-actions.ts:132 详情页accept也写 suggestionStatus=accepted(合ADR-016); 读口径保留 accepted OR NULL 兼容历史",
-      "验收: /match skip/swap的KOL不再出现在/campaigns/[id]已接受列表+acceptedCount不含; 详情accept的KOL正常显示; 含测试(skip/swap过滤+详情accept写status+legacy NULL仍显示); L1全绿"
-    ]
-  },
-  {
-    "id": "F004",
-    "title": "Reply 链诚实空态止血 (generator, 源 BL-101)",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "done",
-    "acceptance": [
-      "病灶: Reply Rate KPI/Recent Replies卡(analytics.ts:183)/tracking replied列/Dashboard邮件趋势Replied线(email-performance.ts:47)全读 repliedAt, 但全仓无写入(回复需inbound-email B4 deferred未实装), dev seed假数据撑场prod恒空却显得像真数据",
-      "止血(不实装inbound仅诚实化): 三处回复面板+Dashboard Replied维度在无真实回复数据时显诚实空态/标注('回复追踪待上线(B4)'/'—'而非伪装0%/0条), 保留UI骨架(B4上线即复活); Dashboard Replied线保留加脚注'回复数据待inbound接入'",
-      "Planner决策: 选诚实标注空态而非删Replied维度(保留骨架/改动更小/B4零返工)",
-      "验收: prod无repliedAt环境三处面板不再显误导性0%/数字而是诚实空态; dev有seed时仍正常; 含测试(repliedAt全空→空态/有值→正常); L1全绿"
-    ]
-  },
-  {
-    "id": "F005",
     "title": "Codex L1+L2 + signoff (executor:codex)",
     "executor": "codex",
     "priority": "high",
-    "estimated_hours": 1.0,
-    "status": "completed",
+    "estimated_hours": 0.5,
+    "status": "pending",
     "acceptance": [
-      "L1: lint 0err warn≤3 / tsc=0 / npm test(含各feature新测)",
-      "L2 部署后 staging/prod: ① KOL详情面包屑→/match不404 ② /assets无空白脏卡+解释缓存租户进welcome ③ /match skip/swap的KOL不在/campaigns/[id]已接受列表 ④ 回复面板诚实空态(无误导0%)",
-      "signoff docs/test-reports/BL-110-signoff-2026-06-XX.md"
+      "L1: lint 0err warn≤3 / tsc=0 / npm test(含 CrawlerPauseControls 断言)",
+      "L2 部署后 staging: /admin/crawler-monitor 暂停态开关显琥珀(不再粉/糊), 运行态正常; 主开关暂停时子开关 covered 态干净; 状态徽章一致",
+      "signoff docs/test-reports/BL-111-signoff-2026-06-XX.md"
     ]
   }
 ]

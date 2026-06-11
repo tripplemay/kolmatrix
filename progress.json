@@ -1,45 +1,31 @@
 {
-  "status": "done",
-  "user_goal": "BL-110 split-brain 快赢止血(波1) — 合并 backlog BL-101/102/103/104. 来源全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md. 4个小改用户可见低风险各自独立: F001 KOL详情面包屑死链→/match(BL-104) / F002 /assets列表type白名单收口防泄漏AI解释缓存脏卡+welcome(BL-103) / F003 kol_campaign accept读口径统一 skip/swap不再显示已接受(BL-102) / F004 Reply链诚实空态止血 repliedAt只读不写prod假数据(BL-101) / F005 Codex. 纯kolmatrix. H6 Edit Brief死链不在本批(留波3 BL-105). 路线图波1.",
-  "total_features": 5,
-  "completed_features": 5,
-  "fix_rounds": 1,
-  "current_sprint": "BL-110-splitbrain-quickwins-wave1",
-  "last_updated": "2026-06-11T10:20+0800",
+  "status": "building",
+  "user_goal": "BL-111 修爬虫暂停开关样式(BL-108 视觉 followup). 用户截图反馈 /admin/crawler-monitor 暂停开关显刺眼浅粉. 根因: CrawlerPauseControls.tsx:77 手搓 toggle 暂停态用 bg-error(--color-error=#ffb4ab 浅鲑粉 Material error-container 色)当整条轨道实色填充. 修: bg-error→bg-warning(琥珀, 暂停=注意非错误, 与组件 text-warning 一致), 运行态保留, 检查子开关 covered 态+状态徽章对齐. bug修复批次(spec软性省略, 诊断在 features acceptance). 2 features: F001 generator CSS修 / F002 Codex. 纯kolmatrix ~1-2行. 排BL-110后, 应在BL-108 kolmatrix UI上prod前修(凑一次prod部署带BL-108开关+BL-110四修+BL-111).",
+  "total_features": 2,
+  "completed_features": 0,
+  "fix_rounds": 0,
+  "current_sprint": "BL-111-crawler-toggle-style-fix",
+  "last_updated": "2026-06-11T10:00+0800",
   "reference_docs": [
-    "docs/specs/BL-110-splitbrain-quickwins-wave1-spec.md",
-    "docs/reviews/full-feature-chain-audit-2026-06-09.md(审计根因 file:line)",
-    "F001 BL-104: kols/[id]/page.tsx:162 面包屑 / middleware-helpers.ts:19",
-    "F002 BL-103: lib/assets/queries.ts:120 buildListWhere / cache.ts:126,208 / filter-shape.ts:31 / assets/page.tsx:65",
-    "F003 BL-102: suggestion-actions.ts:55 / recommend-actions.ts:132 / campaigns/[id] detail.ts:115 / AcceptedKolsPanel.tsx:66 / page.tsx:72",
-    "F004 BL-101: lib/email/analytics.ts:183 / email-performance.ts:47 / webhooks/resend/handler.ts:43(无replied事件)"
+    "src/app/[locale]/admin/crawler-monitor/CrawlerPauseControls.tsx:77(暂停态 bg-error→bg-warning)",
+    "src/styles/globals.css:67(--color-error=#ffb4ab 浅鲑粉) / :67-68(--color-warning=#fec931 琥珀)",
+    "BL-108(开关本体) / ADR-019(两层开关语义)"
   ],
   "docs": {
-    "spec": "docs/specs/BL-110-splitbrain-quickwins-wave1-spec.md",
-    "audit": "docs/reviews/full-feature-chain-audit-2026-06-09.md",
+    "spec": null,
+    "audit": null,
     "test_cases": null,
-    "signoff": "docs/test-reports/BL-110-signoff-2026-06-11.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": null,
-  "fix_rounds_history": [
-    {
-      "round": 1,
-      "feature_id": "F004",
-      "blocker": "staging dashboard /en/insight 仍显 dashboard-email-perf-reply-note, 但同租户 /en/reach reply KPI=18.5% + /en/reach/tracking 50 行无脚注(租户 753ee82c 有 56 条历史 repliedAt 在 14-day chart 窗口外)",
-      "root_cause": "dashboard 按 14-day chart data.every(replied===0) 判 pending(窗口作用域 proxy); 同类 bug 也潜伏 QuickStats(30d window)/TrackingTable(当前页)",
-      "fix": "新增 analytics.ts isReplyTrackingPending(tx)=全仓 repliedAt 计数===0 单一真相源; runEmailQuickStats/DashboardContent(EmailPerformanceCard prop)/tracking page 全改用之; RecentRepliesCard 本就 all-time 无需改. 任一 repliedAt 存在即 pending=false(合 B4 即复活)",
-      "commit": "95f348d",
-      "staging": "95f348d (HEALTH_SHA 对齐); DB 实证租户 753ee82c repliedAt=56→pending=false→note 隐藏",
-      "regression_tests": "EmailPerformanceCard 14-day全0+历史有回复→note隐藏; runEmailQuickStats 30d空+全时段有回复→pending false; isReplyTrackingPending 0/有值+where=repliedAt NOT NULL 断言"
-    }
-  ],
-  "generator_handoff": "[2026-06-11 02:45 BJT Generator Kimi fixing→reverifying fix-round 1] F004 dashboard 误报 B4 pending 已修. 根因: dashboard 按 14-day chart 判 pending, 租户 753ee82c 56 条历史 repliedAt 在窗口外→误报; 同类窗口/分页 bug 也潜伏 QuickStats(30d)/TrackingTable(当前页), 一并根治. 修法: analytics.ts isReplyTrackingPending(tx)=全仓 repliedAt count===0 单一真相源, runEmailQuickStats + DashboardContent(EmailPerformanceCard 改 prop 驱动) + tracking page 全改用之; RecentRepliesCard 本就 all-time. commit 95f348d, staging 已部署@95f348d(HEALTH_SHA 对齐), DB 实证租户 753ee82c repliedAt=56→pending false→note 隐藏. 含 3 组回归测试(修前 fail). L1: lint 0e/3w, tsc=0, 本地 reach+dashboard+email 124 测试绿. 给 Codex 复验: 重点 ④ 用 staging 同一登录态 /en/insight 该租户 dashboard-email-perf-reply-note 现应**消失**(因有真实 repliedAt); 反向: 无 repliedAt 租户(local pending tenant)仍显 pending. F001-F003 上轮已 PASS 未动. 本批仍无 migration/env/seed.",
+  "fix_rounds_history": [],
+  "generator_handoff": "[2026-06-11 10:00 BJT Planner Kimi 开 BL-111 building] 爬虫开关样式 bug 修复(BL-108 followup). 根因明确: CrawlerPauseControls.tsx:77 暂停态 bg-error(#ffb4ab浅鲑粉)当轨道实色→刺眼粉. 修: bg-error→bg-warning(琥珀#fec931). 也检查: 子开关被主覆盖covered态在琥珀下干净(原糊棕)+状态徽章paused的bg-error/15一并对齐warning(同暂停语义视觉一致)+thumb白色滑动不变. 更新 CrawlerPauseControls.test.tsx 断言暂停态class. bug修复spec软性已省, 诊断在features acceptance. 下一步Generator F001(~1-2行+测试). ⚠️琥珀是Planner视觉决策, 用户staging看效果可再调. ⚠️部署: 本批+BL-108 UI+BL-110 凑一次prod部署(main HEAD一次带全).",
   "session_notes": {
-    "Kimi_planner": "[2026-06-10 23:10 BJT Planner Kimi] BL-108 DONE(爬虫暂停开关5/5 fix_round2水合坑 signoff; 爬虫已上prod /opt, kolmatrix UI仅staging待prod部署). 按路线图开波1 BL-110(用户选B). 合并BL-101~104四个split-brain快赢. 2条BL-108水合proposed-learnings仍队列待ack(用户选B未选A). 下一步Generator F001. 注: BL-108 kolmatrix prod部署仍是遗留手动动作(让开关上prod监控页).",
-    "Kimi_generator": "[2026-06-11 02:45 BJT Generator Kimi fix-round 1] F004 verifying blocker 已修+staging 重部署@95f348d(HEALTH_SHA 对齐). 根因: dashboard 14-day chart 判 reply pending, 租户 753ee82c 的 56 条 repliedAt 在窗口外→误报 B4 待上线(而 /reach KPI 18.5% 显真实数据). 同类窗口/分页作用域 bug 潜伏 QuickStats(30d)/TrackingTable(当前页), 一并根治为单一全时段信号 isReplyTrackingPending(tx)=repliedAt count===0. 改: analytics.ts 新 helper + runEmailQuickStats; DashboardContent 传 prop 给 EmailPerformanceCard(弃 chart 推断); tracking page 用 helper(弃 tableRows.every); RecentRepliesCard 本就 all-time 无需改. DB 实证: staging 753ee82c repliedAt=56→pending false→note 隐藏. 含 3 回归测试(修前 fail). commit 95f348d CI in_progress(代码 jobs 应绿, 本地 124 测试+tsc+lint 已验). 注: 上轮 F001-F003 已 PASS 未动. 给 Codex 复验重点: staging 同租户 /en/insight dashboard-email-perf-reply-note 现应消失; 无 repliedAt 租户仍显 pending.",
-    "Reviewer": "[2026-06-11 10:20 BJT Evaluator Reviewer] BL-110 reverifying PASS. L1 rerun: eslint 0e/3w, tsc PASS, npm test 1627/1627 PASS. Staging/prod F004 recheck after 95f348d: a tenant with historical repliedAt no longer shows dashboard pending note; `/en/reach` and `/en/reach/tracking` stay consistent. Signoff written to docs/test-reports/BL-110-signoff-2026-06-11.md; status advanced to done.",
+    "Kimi_planner": "[2026-06-11 10:00 BJT Planner Kimi] BL-110 DONE(波1 5/5 fix_round1, F004修法=全时段repliedAt判定 signoff). 开BL-111(用户同意)修BL-108开关粉色样式. bug修复批次2features. 旁挂: BL-108 UI待prod / 2条水合learnings待ack / H6留波3. 部署建议: BL-111后凑一次prod部署带BL-108开关+BL-110+BL-111. 下一步Generator F001.",
+    "Kimi_generator": null,
+    "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
   },
