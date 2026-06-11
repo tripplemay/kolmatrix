@@ -1202,6 +1202,22 @@
       "save": "保存更改",
       "saving": "保存中…",
       "saved": "更改已保存。",
+      "statusControl": {
+        "label": "状态",
+        "current": "当前",
+        "moveTo": "切换为{status}",
+        "applying": "更新中…",
+        "updated": "状态已更新。",
+        "noTransitions": "当前状态无可用的状态变更。"
+      },
+      "revenue": {
+        "label": "已记录营收（USD）",
+        "hint": "留空则清除。",
+        "lockedHint": "请先重新激活活动再编辑营收。",
+        "save": "记录营收",
+        "saving": "保存中…",
+        "saved": "营收已记录。"
+      },
       "errors": {
         "unauthorized": "你没有执行该操作的权限。",
         "invalid_input": "输入无效。",

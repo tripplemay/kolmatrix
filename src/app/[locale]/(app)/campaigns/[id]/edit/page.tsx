@@ -18,8 +18,13 @@ import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { runCampaignDetail } from "@/lib/campaigns/detail";
+import { CAMPAIGN_STATUS_VALUES } from "@/lib/campaigns/status";
+import { isAllowedStatusTransition } from "@/lib/campaigns/update";
 
 import { CampaignEditForm } from "./CampaignEditForm";
+import { CampaignRevenueControl } from "./CampaignRevenueControl";
+import { CampaignStatusControl } from "./CampaignStatusControl";
+import { editErrorLabels } from "./error-labels";
 import { canEditCampaign } from "./permissions";
 
 export const metadata = { title: "Edit campaign — KOLMatrix" };
@@ -49,6 +54,19 @@ export default async function CampaignEditPage({ params }: Props) {
   }
 
   const t = await getTranslations("campaigns.edit");
+  const tStatus = await getTranslations("campaigns.status");
+
+  // Single source of truth for allowed transitions = the lib guard;
+  // computed server-side so the client control ships no server code.
+  const allowedNext = CAMPAIGN_STATUS_VALUES.filter(
+    (s) => s !== campaign.status && isAllowedStatusTransition(campaign.status, s),
+  );
+  const statusNames: Record<string, string> = {
+    draft: tStatus("draft"),
+    active: tStatus("active"),
+    completed: tStatus("completed"),
+  };
+  const errors = editErrorLabels(t);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 pb-16">
@@ -97,29 +115,40 @@ export default async function CampaignEditPage({ params }: Props) {
           save: t("save"),
           saving: t("saving"),
           saved: t("saved"),
-          errors: editErrorLabels(t),
+          errors,
+        }}
+      />
+
+      <CampaignStatusControl
+        campaignId={campaign.id}
+        current={campaign.status}
+        allowedNext={allowedNext}
+        labels={{
+          label: t("statusControl.label"),
+          current: t("statusControl.current"),
+          moveToTemplate: t.raw("statusControl.moveTo") as string,
+          applying: t("statusControl.applying"),
+          updated: t("statusControl.updated"),
+          noTransitions: t("statusControl.noTransitions"),
+          statusNames,
+          errors,
+        }}
+      />
+
+      <CampaignRevenueControl
+        campaignId={campaign.id}
+        currentRevenue={campaign.revenueRecorded}
+        locked={campaign.status === "completed"}
+        labels={{
+          label: t("revenue.label"),
+          hint: t("revenue.hint"),
+          lockedHint: t("revenue.lockedHint"),
+          save: t("revenue.save"),
+          saving: t("revenue.saving"),
+          saved: t("revenue.saved"),
+          errors,
         }}
       />
     </div>
   );
-}
-
-type TFn = Awaited<ReturnType<typeof getTranslations>>;
-
-// Shared error-label assembler — also consumed by F002's status / revenue
-// controls so every edit surface renders the same action error codes.
-export function editErrorLabels(t: TFn): Record<string, string> {
-  return {
-    unauthorized: t("errors.unauthorized"),
-    invalid_input: t("errors.invalid_input"),
-    validation_failed: t("errors.validation_failed"),
-    endBeforeStart: t("errors.endBeforeStart"),
-    budgetInvalid: t("errors.budgetInvalid"),
-    revenueInvalid: t("errors.revenueInvalid"),
-    not_found: t("errors.not_found"),
-    invalid_transition: t("errors.invalid_transition"),
-    forbidden_when_completed: t("errors.forbidden_when_completed"),
-    db_error: t("errors.db_error"),
-    generic: t("errors.generic"),
-  };
 }

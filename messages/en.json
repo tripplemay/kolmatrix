@@ -1202,6 +1202,22 @@
       "save": "Save changes",
       "saving": "Saving…",
       "saved": "Changes saved.",
+      "statusControl": {
+        "label": "Status",
+        "current": "Current",
+        "moveTo": "Move to {status}",
+        "applying": "Updating…",
+        "updated": "Status updated.",
+        "noTransitions": "No status change available from here."
+      },
+      "revenue": {
+        "label": "Recorded revenue (USD)",
+        "hint": "Leave blank to clear.",
+        "lockedHint": "Reactivate the campaign to edit revenue.",
+        "save": "Record revenue",
+        "saving": "Saving…",
+        "saved": "Revenue recorded."
+      },
       "errors": {
         "unauthorized": "You don't have permission to do that.",
         "invalid_input": "Invalid input.",

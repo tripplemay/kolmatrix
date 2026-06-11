@@ -1202,6 +1202,22 @@
       "save": "Guardar cambios",
       "saving": "Guardando…",
       "saved": "Cambios guardados.",
+      "statusControl": {
+        "label": "Estado",
+        "current": "Actual",
+        "moveTo": "Cambiar a {status}",
+        "applying": "Actualizando…",
+        "updated": "Estado actualizado.",
+        "noTransitions": "No hay cambios de estado disponibles desde aquí."
+      },
+      "revenue": {
+        "label": "Ingresos registrados (USD)",
+        "hint": "Déjalo en blanco para borrar.",
+        "lockedHint": "Reactiva la campaña para editar los ingresos.",
+        "save": "Registrar ingresos",
+        "saving": "Guardando…",
+        "saved": "Ingresos registrados."
+      },
       "errors": {
         "unauthorized": "No tienes permiso para hacer eso.",
         "invalid_input": "Entrada no válida.",

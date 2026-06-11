@@ -1202,6 +1202,22 @@
       "save": "変更を保存",
       "saving": "保存中…",
       "saved": "変更を保存しました。",
+      "statusControl": {
+        "label": "ステータス",
+        "current": "現在",
+        "moveTo": "{status}に変更",
+        "applying": "更新中…",
+        "updated": "ステータスを更新しました。",
+        "noTransitions": "現在のステータスから変更できる状態はありません。"
+      },
+      "revenue": {
+        "label": "記録済み売上（USD）",
+        "hint": "空欄でクリアします。",
+        "lockedHint": "売上を編集するにはキャンペーンを再開してください。",
+        "save": "売上を記録",
+        "saving": "保存中…",
+        "saved": "売上を記録しました。"
+      },
       "errors": {
         "unauthorized": "この操作を行う権限がありません。",
         "invalid_input": "入力が無効です。",

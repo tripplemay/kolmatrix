@@ -19,7 +19,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "编辑页加状态流转控件(draft→active→completed 合法流转, 接 transitionStatusAction)+ 营收记录输入(接 recordRevenueAction); 读 actions.ts:101/124 源对齐",
       "成功后 revalidate 详情页(BriefSummaryPanel status pill / ROI 页营收随之更新)",
