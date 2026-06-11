@@ -1093,7 +1093,26 @@
           "legacy": "历史"
         },
         "viewProfile": "查看资料",
-        "feeUnset": "—"
+        "feeUnset": "—",
+        "edit": {
+          "statusAria": "更改联系状态",
+          "feeEdit": "编辑费用",
+          "feeSave": "保存",
+          "feeCancel": "取消",
+          "feeAria": "费用（USD）",
+          "remove": "从活动中移除",
+          "removeConfirm": "移除？",
+          "removeYes": "移除",
+          "removeNo": "取消",
+          "errors": {
+            "feeInvalid": "请输入有效的费用。",
+            "invalid_fee": "请输入有效的费用。",
+            "invalid_status": "状态无效。",
+            "link_not_found": "该 KOL 已不在此活动中。",
+            "unauthorized": "你没有执行该操作的权限。",
+            "generic": "出错了，请重试。"
+          }
+        }
       },
       "kolStatus": {
         "pending": "待联系",

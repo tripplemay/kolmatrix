@@ -1093,7 +1093,26 @@
           "legacy": "기존"
         },
         "viewProfile": "프로필 보기",
-        "feeUnset": "—"
+        "feeUnset": "—",
+        "edit": {
+          "statusAria": "연락 상태 변경",
+          "feeEdit": "비용 편집",
+          "feeSave": "저장",
+          "feeCancel": "취소",
+          "feeAria": "비용 (USD)",
+          "remove": "캠페인에서 제거",
+          "removeConfirm": "제거할까요?",
+          "removeYes": "제거",
+          "removeNo": "취소",
+          "errors": {
+            "feeInvalid": "올바른 비용을 입력하세요.",
+            "invalid_fee": "올바른 비용을 입력하세요.",
+            "invalid_status": "상태가 올바르지 않습니다.",
+            "link_not_found": "이 KOL은 더 이상 이 캠페인에 없습니다.",
+            "unauthorized": "이 작업을 수행할 권한이 없습니다.",
+            "generic": "문제가 발생했습니다. 다시 시도하세요."
+          }
+        }
       },
       "kolStatus": {
         "pending": "대기 중",

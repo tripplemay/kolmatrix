@@ -99,22 +99,23 @@ describe("/campaigns/:id fidelity guards (BL-066 F002 + F006)", () => {
     expect(page).not.toMatch(/acceptedCount = campaign\.kols\.length/);
   });
 
-  it("AcceptedKolRow exposes a source chip and renders the status / fee read-only", () => {
+  it("AcceptedKolRow keeps the source chip + view-profile and restores canEdit-gated inline ops (BL-105-F003)", () => {
     const row = read("AcceptedKolRow.tsx");
-    // Source chip column is the F006 anchor — independent column,
-    // not inlined into the creator cell (per F006 audit §裁决 #4=A).
+    // Source chip column stays the F006 anchor; view-profile stays.
     expect(row).toMatch(/accepted-kol-source-chip/);
     expect(row).toMatch(/sourceChipLabels/);
-    // Status / fee cells are read-only after F006 — no <Select> /
-    // <Input> mutation surfaces (those were removed alongside the
-    // manual-edit entries).
-    expect(row).not.toMatch(/<Select\b/);
-    expect(row).not.toMatch(/<Input\b/);
-    // View-profile link is the only action — deep links into the
-    // KOL detail page; remove button was retired with the edit
-    // surfaces.
     expect(row).toMatch(/accepted-kol-view-profile/);
-    expect(row).not.toMatch(/campaign-kol-remove/);
+    // BL-105-F003 reverses the F006 read-only call (user decision
+    // 2026-06-09 / audit M1): the orphaned KOL-op actions get a UI again.
+    // Inline status <Select> + fee <Input> + remove are gated behind
+    // `canEdit` so a non-owner / non-admin still sees the read-only row.
+    expect(row).toMatch(/canEdit/);
+    expect(row).toMatch(/<Select\b/);
+    expect(row).toMatch(/<Input\b/);
+    expect(row).toMatch(/accepted-kol-remove/);
+    expect(row).toMatch(/updateKolContactStatusAction/);
+    expect(row).toMatch(/updateKolFeeAction/);
+    expect(row).toMatch(/removeKolAction/);
   });
 
   // BL-066-F005: AddKolDialog.tsx deleted (AI recommendation flow

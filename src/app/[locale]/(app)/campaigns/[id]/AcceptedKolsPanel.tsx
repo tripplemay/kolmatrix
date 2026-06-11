@@ -29,7 +29,7 @@ import { Table, TBody, TCell, THead, TRow } from "@/components/ui";
 import type { CampaignKolRow as CampaignKolRowData } from "@/lib/campaigns/detail";
 
 import { isAcceptedKolRow } from "./accepted-filter";
-import { AcceptedKolRow } from "./AcceptedKolRow";
+import { AcceptedKolRow, type AcceptedKolRowEditLabels } from "./AcceptedKolRow";
 
 interface Labels {
   title: string;
@@ -53,16 +53,24 @@ interface Labels {
 
 interface Props {
   locale: string;
+  campaignId: string;
   kols: CampaignKolRowData[];
   labels: Labels;
   statusLabels: Record<string, string>;
+  // BL-105-F003 — owner/admin gate for the inline ops; false keeps the
+  // panel byte-identical to the BL-066-F006 read-only table.
+  canEdit: boolean;
+  editLabels: AcceptedKolRowEditLabels;
 }
 
 export function AcceptedKolsPanel({
   locale,
+  campaignId,
   kols,
   labels,
   statusLabels,
+  canEdit,
+  editLabels,
 }: Props) {
   // BL-110-F003 — source whitelist + suggestionStatus ∈ {accepted, NULL}
   // (shared with the page's acceptedCount so they stay in lockstep).
@@ -100,11 +108,14 @@ export function AcceptedKolsPanel({
               <AcceptedKolRow
                 key={row.kolCampaignId}
                 locale={locale}
+                campaignId={campaignId}
                 row={row}
                 statusLabels={statusLabels}
                 sourceChipLabels={labels.sourceChip}
                 viewProfileLabel={labels.viewProfile}
                 feeUnsetLabel={labels.feeUnset}
+                canEdit={canEdit}
+                editLabels={editLabels}
               />
             ))}
           </TBody>

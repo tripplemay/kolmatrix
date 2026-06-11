@@ -32,7 +32,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "AcceptedKolsPanel.tsx 每行恢复操作(BL-070删的): 移除KOL(removeKolAction)/改fee(updateKolFeeAction)/改contact-status(updateKolContactStatusAction); 读 actions.ts:162/185/215 源对齐",
       "inline 控件+确认(移除)+乐观/revalidate; 详情页保持只读基调仅名单行加最小编辑操作(不改 AI panel, 守 ADR-013 AI-native)",

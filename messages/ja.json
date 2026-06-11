@@ -1093,7 +1093,26 @@
           "legacy": "従来"
         },
         "viewProfile": "プロフィールを表示",
-        "feeUnset": "—"
+        "feeUnset": "—",
+        "edit": {
+          "statusAria": "コンタクトステータスを変更",
+          "feeEdit": "料金を編集",
+          "feeSave": "保存",
+          "feeCancel": "キャンセル",
+          "feeAria": "料金（USD）",
+          "remove": "キャンペーンから削除",
+          "removeConfirm": "削除しますか？",
+          "removeYes": "削除",
+          "removeNo": "キャンセル",
+          "errors": {
+            "feeInvalid": "有効な料金を入力してください。",
+            "invalid_fee": "有効な料金を入力してください。",
+            "invalid_status": "ステータスが無効です。",
+            "link_not_found": "この KOL はこのキャンペーンに含まれていません。",
+            "unauthorized": "この操作を行う権限がありません。",
+            "generic": "問題が発生しました。再度お試しください。"
+          }
+        }
       },
       "kolStatus": {
         "pending": "保留中",

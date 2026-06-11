@@ -31,6 +31,7 @@ import { isAcceptedKolRow } from "./accepted-filter";
 import { AcceptedKolsPanel } from "./AcceptedKolsPanel";
 import { AiRecommendationPanel } from "./AiRecommendationPanel";
 import { BriefSummaryPanel } from "./BriefSummaryPanel";
+import { canEditCampaign } from "./edit/permissions";
 
 export const metadata = { title: "Campaign — KOLMatrix" };
 
@@ -80,6 +81,14 @@ export default async function CampaignDetailPage({ params }: Props) {
     CONTACTED_STATUSES.has(k.contactStatus)
   ).length;
 
+  // BL-105-F003 — owner/admin gate for inline KOL ops. Non-editors see
+  // the unchanged read-only panel.
+  const canEdit = canEditCampaign(
+    campaign.ownerUserId,
+    session?.user?.id,
+    session?.user?.role
+  );
+
   const productId = campaign.product?.isDeleted
     ? null
     : (campaign.product?.id ?? null);
@@ -116,9 +125,12 @@ export default async function CampaignDetailPage({ params }: Props) {
 
       <AcceptedKolsPanel
         locale={locale}
+        campaignId={campaign.id}
         kols={campaign.kols}
         labels={kolPanelLabels(t)}
         statusLabels={kolStatusLabels(tKolStatus)}
+        canEdit={canEdit}
+        editLabels={kolEditLabels(t)}
       />
     </div>
   );
@@ -300,5 +312,29 @@ function kolStatusLabels(t: TFn) {
     signed: t("signed"),
     delivered: t("delivered"),
     paid: t("paid"),
+  };
+}
+
+// BL-105-F003 — inline KOL-op labels (status / fee / remove). Read from
+// campaigns.detail.kolPanel.edit; only rendered when canEdit is true.
+function kolEditLabels(t: TFn) {
+  return {
+    statusAria: t("kolPanel.edit.statusAria"),
+    feeEdit: t("kolPanel.edit.feeEdit"),
+    feeSave: t("kolPanel.edit.feeSave"),
+    feeCancel: t("kolPanel.edit.feeCancel"),
+    feeAria: t("kolPanel.edit.feeAria"),
+    remove: t("kolPanel.edit.remove"),
+    removeConfirm: t("kolPanel.edit.removeConfirm"),
+    removeYes: t("kolPanel.edit.removeYes"),
+    removeNo: t("kolPanel.edit.removeNo"),
+    errors: {
+      feeInvalid: t("kolPanel.edit.errors.feeInvalid"),
+      invalid_fee: t("kolPanel.edit.errors.invalid_fee"),
+      invalid_status: t("kolPanel.edit.errors.invalid_status"),
+      link_not_found: t("kolPanel.edit.errors.link_not_found"),
+      unauthorized: t("kolPanel.edit.errors.unauthorized"),
+      generic: t("kolPanel.edit.errors.generic"),
+    },
   };
 }

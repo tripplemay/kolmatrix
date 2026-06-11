@@ -1093,7 +1093,26 @@
           "legacy": "Legacy"
         },
         "viewProfile": "View profile",
-        "feeUnset": "—"
+        "feeUnset": "—",
+        "edit": {
+          "statusAria": "Change contact status",
+          "feeEdit": "Edit fee",
+          "feeSave": "Save",
+          "feeCancel": "Cancel",
+          "feeAria": "Fee in USD",
+          "remove": "Remove from campaign",
+          "removeConfirm": "Remove?",
+          "removeYes": "Remove",
+          "removeNo": "Cancel",
+          "errors": {
+            "feeInvalid": "Enter a valid fee.",
+            "invalid_fee": "Enter a valid fee.",
+            "invalid_status": "Invalid status.",
+            "link_not_found": "This KOL is no longer in the campaign.",
+            "unauthorized": "You don't have permission to do that.",
+            "generic": "Something went wrong. Please try again."
+          }
+        }
       },
       "kolStatus": {
         "pending": "Pending",

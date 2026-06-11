@@ -1093,7 +1093,26 @@
           "legacy": "Heredado"
         },
         "viewProfile": "Ver perfil",
-        "feeUnset": "—"
+        "feeUnset": "—",
+        "edit": {
+          "statusAria": "Cambiar estado de contacto",
+          "feeEdit": "Editar tarifa",
+          "feeSave": "Guardar",
+          "feeCancel": "Cancelar",
+          "feeAria": "Tarifa en USD",
+          "remove": "Quitar de la campaña",
+          "removeConfirm": "¿Quitar?",
+          "removeYes": "Quitar",
+          "removeNo": "Cancelar",
+          "errors": {
+            "feeInvalid": "Introduce una tarifa válida.",
+            "invalid_fee": "Introduce una tarifa válida.",
+            "invalid_status": "Estado no válido.",
+            "link_not_found": "Este KOL ya no está en la campaña.",
+            "unauthorized": "No tienes permiso para hacer eso.",
+            "generic": "Algo salió mal. Inténtalo de nuevo."
+          }
+        }
       },
       "kolStatus": {
         "pending": "Pendiente",
