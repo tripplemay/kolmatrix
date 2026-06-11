@@ -1,72 +1,55 @@
 [
   {
     "id": "F001",
-    "title": "BullMQ 队列实现 + 工厂 + 进程内 worker 注册 (generator, kolmatrix)",
+    "title": "/campaigns/[id]/edit 页 + campaign 字段编辑 + H6 Edit Brief 接线 (generator)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 3.0,
-    "status": "done",
+    "estimated_hours": 2.5,
+    "status": "pending",
     "acceptance": [
-      "加 bullmq 依赖; BullMQJobQueue implements JobQueue(register/add/stats, 以 getRedis() 为后端): register(name,handler) 起 BullMQ Worker(concurrency 控) / add(name,payload,opts) 入 Queue(支持 delay/idempotencyKey via jobId/tenantId)",
-      "工厂: jobQueue 单例 = REDIS_URL 存在→BullMQJobQueue 否则→InMemoryJobQueue(测试/dev回退); 导出名/类型不变调用点零改",
-      "worker 进程内启动: 经现有 instrumentation.ts→handlers/register.ts(已 registerExplainPrewarmHandler), BullMQ worker 随之消费; 一次注册/进程幂等",
-      "Redis 挂回退(D5): add() 若 Redis 不可达→抛/返回信号让上层(F003)回退同步; 日志告警",
-      "验收: BullMQ 入队/消费通 + prewarm 在 BullMQ 下仍工作 + REDIS_URL 缺失回退 InMemory; 单测(InMemory 行为/BullMQ 入队 mock/工厂选择/幂等 jobId); L1 全绿"
+      "新建路由 src/app/[locale]/(app)/campaigns/[id]/edit/page.tsx: 加载 campaign(复用 runCampaignDetail 或精简 loader), 非 owner/admin 或不存在→notFound/redirect",
+      "表单编辑 campaign 字段(name/brief/budget amount+currency/markets 等, 以 updateCampaignFieldsAction 实际接受字段为准, 读 actions.ts:57+update.ts 源对齐不改契约), 提交接 updateCampaignFieldsAction, 成功 toast+revalidate 详情页",
+      "H6 修复: BriefSummaryPanel.tsx 'Edit Brief' href /[locale]/campaigns/[id]/edit 现指向真页不再 404",
+      "i18n 5 locale(zh/en/ja/ko/es)编辑表单标签/校验/成功; 单测(表单提交调 action / 非 owner 不可达 / 校验); L1 全绿"
     ]
   },
   {
     "id": "F002",
-    "title": "email_log batchId 关联 + 幂等 (generator, schema migration)",
+    "title": "编辑页状态流转 + 营收记录 (generator)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.0,
-    "status": "done",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "prisma migration: EmailLog 加 batchId String? @map(batch_id) @db.Uuid + @@index([tenantId, batchId])",
-      "batch-send.ts 每封 email_log 写入传入 batchId",
-      "幂等: handler 发每封前按 (batchId,kolId) 查 email_log 是否已 sent/mock_sent, 已发跳过→job 重试不重复发",
-      "验收: migration 跑通 + email_log 带 batchId + 重跑同 batchId 不重复发(单测构造已发行断言跳过); L1 全绿 + prisma migrate"
+      "编辑页加状态流转控件(draft→active→completed 合法流转, 接 transitionStatusAction)+ 营收记录输入(接 recordRevenueAction); 读 actions.ts:101/124 源对齐",
+      "成功后 revalidate 详情页(BriefSummaryPanel status pill / ROI 页营收随之更新)",
+      "i18n 5 locale; 单测(流转调 action / 非法流转挡 / 营收校验); L1 全绿"
     ]
   },
   {
     "id": "F003",
-    "title": "send-email-batch handler + sendBatchAction 异步化 + 状态查询 (generator)",
+    "title": "AcceptedKolsPanel 名单 inline 操作恢复 (generator)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.5,
-    "status": "done",
+    "estimated_hours": 2.0,
+    "status": "pending",
     "acceptance": [
-      "handlers/register.ts 注册 send-email-batch handler: worker 内跑 batchSendOutreach(...,batchId,{skipSleep:false})(节流 sleep 留 worker)",
-      "sendBatchAction: 生成 batchId(uuid)→jobQueue.add('send-email-batch',{tenantId,userId,campaignId,items,batchId})→立即返回 {ok,batchId,total}(去掉 60s race + 同步 await)",
-      "Redis 挂回退(D5): 入队失败→回退同步 batchSendOutreach(旧行为)+返回同步结果+日志告警",
-      "新 action getSendBatchStatus(batchId): withTenant 查 email_log by batchId 计数 {total,sent,failed,mock_sent,pending}",
-      "验收: 发送立即返回不阻塞 + worker 后台跑 + 状态计数正确 + Redis 挂回退同步通; 单测(enqueue/回退/状态计数); L1 全绿"
+      "AcceptedKolsPanel.tsx 每行恢复操作(BL-070删的): 移除KOL(removeKolAction)/改fee(updateKolFeeAction)/改contact-status(updateKolContactStatusAction); 读 actions.ts:162/185/215 源对齐",
+      "inline 控件+确认(移除)+乐观/revalidate; 详情页保持只读基调仅名单行加最小编辑操作(不改 AI panel, 守 ADR-013 AI-native)",
+      "i18n 5 locale; 单测(每操作调对应 action / 移除确认 / 乐观回滚); L1 全绿"
     ]
   },
   {
     "id": "F004",
-    "title": "OutreachComposer 异步进度 UX + i18n (generator)",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 2.5,
-    "status": "done",
-    "acceptance": [
-      "发送按钮→sendBatchAction 拿 batchId→显'发送中 X/Y'进度(轮询 getSendBatchStatus 每~2s)→完成显 sent/failed 汇总; 失败/超时优雅提示; 回退同步路径(无batchId/直接结果)兼容显示",
-      "i18n 5 locale(zh/en/ja/ko/es)新文案(发送中/进度/完成/失败)",
-      "验收: UI 发送不再卡 60s + 进度条随 worker 推进 + >10 收件人正常完成; 含组件测试(轮询 mock+进度渲染+完成态); L1 全绿"
-    ]
-  },
-  {
-    "id": "F005",
     "title": "Codex L1+L2 + signoff (executor:codex)",
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "completed",
+    "status": "pending",
     "acceptance": [
       "L1: lint 0err warn≤3 / tsc=0 / npm test(含各 feature 新测)",
-      "L2 部署后 staging: ① BullMQ worker 随进程启动(instrumentation) ② 发 >10 收件人→立即返回+进度推进+完成, 不再 60s 超时 ③ job 持久化: 发送中 pm2 reload/重启→worker 续跑剩余(Redis 中 job 不丢) ④ Redis 临时停→回退同步发送+告警 ⑤ prewarm 在 BullMQ 下仍工作 ⑥ 幂等: job 重试不重复发",
-      "signoff docs/test-reports/BL-100-signoff-2026-06-XX.md"
+      "L2 部署后 staging: ① 'Edit Brief'→/edit 不再 404 ② 编辑 campaign 字段保存生效(详情页/DB 反映) ③ 状态流转 draft→active→completed 生效 ④ 营收记录→ROI 页反映 ⑤ 名单移除/改fee/改status 生效 ⑥ 非 owner/admin 不可编辑",
+      "signoff docs/test-reports/BL-105-signoff-2026-06-XX.md"
     ]
   }
 ]

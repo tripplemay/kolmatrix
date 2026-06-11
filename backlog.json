@@ -440,23 +440,6 @@
     "discovered_in": "BL-092 F003 verified-live 2026-06-08 (IG 仍 0 产出, F005 节流未解决)"
   },
   {
-    "id": "BL-105",
-    "priority": "medium",
-    "title": "补回 campaign 编辑 UI 入口 (M1: 下层5 action+API已齐, 只缺前端接线)",
-    "description": "审计 M1[形态C]. 用户决策(2026-06-09): 该补回编辑入口(非退役). 现状: campaign 整条编辑/状态流转(draft→active→completed)/营收记录/KOL移除改名单 的5个server action(update.ts/kol-operations.ts)+API route+lib全部实装且有单测, 但前端零调用方——BL-066-F006+BL-070-F005 AI-native重构把详情页改只读3-panel(删6个编辑组件含CampaignRevenueRecorder/CampaignStatusController/AddKolDialog), 下层未同步退役. CampaignHeader.tsx(唯一import编辑action者)无任何render. 范围: 在AI-native只读布局基础上补回编辑入口——编辑活动字段(接updateCampaignFieldsAction)/状态流转(transitionStatusAction)/营收(recordRevenueAction)/KOL移除改fee状态(removeKolAction等)/单条加KOL. 复用现成已测action/API, 主要是前端UI. H6 Edit Brief按钮顺势接真编辑页. 下层能力已齐故估时偏前端.",
-    "tags": [
-      "campaigns",
-      "ui-rewire",
-      "split-brain-C",
-      "feature"
-    ],
-    "decisions": [],
-    "confirmed_at": "2026-06-09T13:30+0800",
-    "discovered_in": "2026-06-09 全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md",
-    "wave": 3,
-    "roadmap": "docs/reviews/split-brain-remediation-roadmap-2026-06.md"
-  },
-  {
     "id": "BL-106",
     "priority": "medium",
     "title": "KPI 快照 cron prod 接线核实 (M2: 趋势可能从未生效)",
