@@ -34,7 +34,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "handlers/register.ts 注册 send-email-batch handler: worker 内跑 batchSendOutreach(...,batchId,{skipSleep:false})(节流 sleep 留 worker)",
       "sendBatchAction: 生成 batchId(uuid)→jobQueue.add('send-email-batch',{tenantId,userId,campaignId,items,batchId})→立即返回 {ok,batchId,total}(去掉 60s race + 同步 await)",

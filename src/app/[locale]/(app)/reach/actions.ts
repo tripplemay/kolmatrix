@@ -11,12 +11,20 @@
  *   - analyticsAction: used by integration tests to surface cached
  *     analytics (the RSC already computes these at render time)
  */
+import { randomUUID } from "node:crypto";
+
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { auth } from "@/auth";
 import { withTenant } from "@/lib/db";
 import { logEvent } from "@/lib/events/log";
+import { jobQueue } from "@/lib/jobs/queue";
+import { SEND_BATCH_MAX } from "@/lib/email/batch-constants";
+import {
+  SEND_EMAIL_BATCH_JOB,
+  type SendEmailBatchPayload,
+} from "@/lib/email/send-batch-worker";
 import {
   CustomizeEmailError,
   customizeEmail,
@@ -225,15 +233,11 @@ export async function updateKolEmailAction(
 
 // --- Batch send ------------------------------------------------------
 
-// BL-035-F008 (AI-H4): batch upper bound dropped from 50 → 8 + 60s
-// total timeout. Resend rate-limits ~6 sends/sec, so 50 × ~6s/send was
-// pushing every batch past Next 16's default 60s server-action budget.
-// 8 leaves ~12s of headroom for RPC + DB overhead. Promise.race()
-// guards the 60s wall-clock so a stuck Resend call surfaces a clean
-// `timeout` error instead of a request-aborted stack trace. Larger
-// batches will move to a BullMQ async queue in BL-040+.
-const SEND_BATCH_MAX = 8;
-const SEND_BATCH_TIMEOUT_MS = 60_000;
+// BL-100-F003 (ADR-020 D3): sending is now async — sendBatchAction
+// enqueues one BullMQ job and returns a batchId immediately, so the old
+// BL-035-F008 8-cap + 60s wall-clock race are gone. The cap (now in
+// batch-constants.ts) only bounds a single job's size; the throttle
+// sleep lives in the worker.
 
 const sendBatchSchema = z.object({
   campaignId: z.string().regex(UUID_RE),
@@ -255,17 +259,34 @@ const sendBatchSchema = z.object({
 
 export type SendBatchInput = z.infer<typeof sendBatchSchema>;
 
+/**
+ * BL-100-F003 (ADR-020 D3) — batch send result.
+ *
+ * `mode: "async"` → the batch was enqueued; the UI polls
+ * getSendBatchStatus(batchId) for progress. `mode: "sync"` → D5 fallback
+ * (Redis unreachable): the batch ran inline and `data` carries the final
+ * counts so the UI can render the summary without polling.
+ */
+export type SendBatchActionResult = {
+  ok: boolean;
+  error?: string;
+  retryAfter?: number;
+  batchId?: string;
+  total?: number;
+  mode?: "async" | "sync";
+  data?: BatchSendResult;
+};
+
 export async function sendBatchAction(
   input: SendBatchInput
-): Promise<ComposerActionState<BatchSendResult> & { retryAfter?: number }> {
+): Promise<SendBatchActionResult> {
   const session = await requireSession();
   if (!session) return { ok: false, error: "unauthorized" };
 
   const parsed = sendBatchSchema.safeParse(input);
   if (!parsed.success) {
-    // BL-035-F008: surface the cap explicitly so the UI can show
-    // "split into smaller batches" copy instead of a generic
-    // "invalid_input" toast.
+    // Surface the cap explicitly so the UI can show "split into smaller
+    // batches" copy instead of a generic "invalid_input" toast.
     const tooLarge = parsed.error.issues.some(
       (issue) =>
         issue.path.length >= 1 &&
@@ -307,38 +328,108 @@ export async function sendBatchAction(
     aiCustomized: i.aiCustomized ?? false,
   }));
 
-  let result: BatchSendResult;
+  const batchId = randomUUID();
+  const total = items.length;
+  const payload: SendEmailBatchPayload = {
+    tenantId: session.tenantId,
+    userId: session.userId,
+    campaignId: parsed.data.campaignId,
+    items,
+    batchId,
+  };
+
+  // Async path: enqueue and return immediately. The throttled send runs
+  // in the in-process worker; the UI polls getSendBatchStatus(batchId).
   try {
-    // BL-035-F008: 60s wall-clock guard. If Resend / DB stalls, abort
-    // before Next 16 cancels the server action and the user sees a
-    // generic 500. The actual send attempts are not aborted (no
-    // mid-flight cancellation primitive) — the timeout simply lets us
-    // return a graceful `timeout` error instead.
-    const TIMEOUT_SENTINEL = Symbol("timeout");
-    const timeoutPromise = new Promise<typeof TIMEOUT_SENTINEL>((resolve) => {
-      setTimeout(() => resolve(TIMEOUT_SENTINEL), SEND_BATCH_TIMEOUT_MS);
+    await jobQueue.add<SendEmailBatchPayload>(SEND_EMAIL_BATCH_JOB, payload, {
+      idempotencyKey: batchId,
+      tenantId: session.tenantId,
     });
-    const sendPromise = batchSendOutreach(
-      session.tenantId,
-      session.userId,
-      parsed.data.campaignId,
-      items,
-      null, // BL-100-F002: batchId wiring lands in F003 (async enqueue)
-      { skipSleep: false },
+    return { ok: true, batchId, total, mode: "async" };
+  } catch (enqueueErr) {
+    // D5 (ADR-020): Redis unreachable → fall back to a synchronous send
+    // (old behaviour, small batches still go out) using the SAME batchId
+    // so email_log rows + (batchId,kolId) idempotency stay consistent if
+    // the abandoned enqueue ever lands.
+    console.error(
+      "[sendBatchAction] enqueue failed; falling back to sync send:",
+      enqueueErr,
     );
-    const raced = await Promise.race([sendPromise, timeoutPromise]);
-    if (raced === TIMEOUT_SENTINEL) {
-      return { ok: false, error: "timeout" };
+    let result: BatchSendResult;
+    try {
+      result = await batchSendOutreach(
+        session.tenantId,
+        session.userId,
+        parsed.data.campaignId,
+        items,
+        batchId,
+        { skipSleep: false },
+      );
+    } catch (sendErr) {
+      console.error("[sendBatchAction] sync fallback failed:", sendErr);
+      return { ok: false, error: "db_error" };
     }
-    result = raced;
-  } catch (err) {
-    console.error("[sendBatchAction] failed:", err);
-    return { ok: false, error: "db_error" };
+    revalidatePath("/[locale]/reach", "page");
+    revalidatePath(`/[locale]/campaigns/${parsed.data.campaignId}`, "page");
+    return { ok: true, batchId, total, mode: "sync", data: result };
+  }
+}
+
+/**
+ * BL-100-F003 (ADR-020 D3) — poll the progress of an async send batch.
+ *
+ * Counts the email_log rows written so far for the batch (tenant-scoped
+ * via withTenant). `processed` is sent + mockSent + failed; the UI knows
+ * the intended `total` from the sendBatchAction response and renders
+ * pending = total - processed.
+ */
+export interface SendBatchStatusCounts {
+  sent: number;
+  mockSent: number;
+  failed: number;
+  processed: number;
+}
+
+export type GetSendBatchStatusResult =
+  | { ok: false; error: string }
+  | { ok: true; counts: SendBatchStatusCounts };
+
+export async function getSendBatchStatus(
+  batchId: string,
+): Promise<GetSendBatchStatusResult> {
+  const session = await requireSession();
+  if (!session) return { ok: false, error: "unauthorized" };
+  if (typeof batchId !== "string" || !UUID_RE.test(batchId)) {
+    return { ok: false, error: "invalid_input" };
   }
 
-  revalidatePath("/[locale]/reach", "page");
-  revalidatePath(`/[locale]/campaigns/${parsed.data.campaignId}`, "page");
-  return { ok: true, data: result };
+  try {
+    const grouped = await withTenant(session.tenantId, (tx) =>
+      tx.emailLog.groupBy({
+        by: ["status"],
+        where: { tenantId: session.tenantId, batchId },
+        _count: { _all: true },
+      }),
+    );
+
+    let sent = 0;
+    let mockSent = 0;
+    let failed = 0;
+    for (const row of grouped) {
+      const n = row._count._all;
+      if (row.status === "sent") sent = n;
+      else if (row.status === "mock_sent") mockSent = n;
+      else if (row.status === "failed") failed = n;
+    }
+
+    return {
+      ok: true,
+      counts: { sent, mockSent, failed, processed: sent + mockSent + failed },
+    };
+  } catch (err) {
+    console.error("[getSendBatchStatus] failed:", err);
+    return { ok: false, error: "db_error" };
+  }
 }
 
 // --- Template library ------------------------------------------------
