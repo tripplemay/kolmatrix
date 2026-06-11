@@ -285,3 +285,15 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 **建议写入：** `framework/harness/generator.md` §13（InMemoryJobQueue 段邻近）补「升 BullMQ 的连接拓扑铁律：getBullConnection retries:null + 每 Worker .duplicate() + 生产者共享」+「D5 enqueue timeout + 业务层幂等而非 jobId 去重」；`framework/harness/database-patterns.md` 或 `environment.md` 记 Redis 6.0.16 < BullMQ 6.2 推荐的约束。
 
 **状态：** 待确认
+
+## [2026-06-12] Claude CLI (Kimi) — 来源：BL-105-F001 CI 红（新建 route page）
+
+**类型：** 新坑（Next App Router build）+ Generator 验证铁律补充
+
+**内容：** 新建/修改 App Router `page.tsx`（或 layout/route）的 feature，**本地 `tsc --noEmit` + `npm run lint` 全绿 ≠ `next build` 绿**。BL-105-F001 在 `campaigns/[id]/edit/page.tsx` 里 `export function editErrorLabels(...)`（一个共享 helper），tsc/lint 都不报，但 `next build` 的 "Build + migrate smoke" job 直接 fail——**Next App Router 的 page/layout/route 文件只允许 export `default` + 路由 segment config（`metadata`/`generateMetadata`/`dynamic`/`revalidate`/`fetchCache`/`runtime`/`preferredRegion` 等），任何其它命名 export 触发 build error**。修复：把 helper 抽到同目录普通模块（`error-labels.ts`）再 import。**根因**：这是 Next 的构建期 RSC 约束校验，不在 TS 类型系统内，故 tsc 漏报；lint 也无对应 rule。
+
+**配套铁律建议**：Generator 完成"新建 route segment 文件（page/layout/route/template/default/loading/error/not-found）"类 feature 时，**commit 前必须本地跑一次 `npm run build`**（不能只靠 tsc+lint+vitest）。CI 的 build job 会抓，但本地先跑省一轮 main 红 + 一次 staging deploy 前的返工。同类还会抓：'use server' 文件非 async export（generator.md §14.2 已记）、client/server 边界 props 不可序列化、动态路由 generateStaticParams 缺失等——都是 build-only。
+
+**建议写入**：`framework/harness/generator.md` §"切 verifying 前" 或 §14 邻近补「新建 route segment 文件 feature 的 commit 前 `npm run build` 自检铁律 + Next page 文件合法 export 白名单」；与 §14.2（'use server' 非 async export）合并为「Next 构建期约束（tsc/lint 漏报）」一节。
+
+**状态：** 待确认

@@ -3,9 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-105-campaign-edit-ui-restore BUILDING (0/4) — campaign 编辑 UI 补回(波3)
-- 审计 M1: 6孤儿action(campaign字段/状态/营收 + KOL名单移除/fee/contact-status)全实装有测试零UI(BL-070删编辑组件); H6 Edit Brief→/edit 404. 用户决补回. 设计守 ADR-013: 详情页保持只读+新建/edit页(campaign级)+AcceptedKolsPanel每行inline(名单级). spec docs/specs/BL-105-*
-- 复用现成已测action主要前端接线. F001 /edit页+字段+H6 / F002 状态流转+营收 / F003 名单inline / F004 Codex. 下一步 Generator F001. 无schema/env变更
+## 🔬 BL-105-campaign-edit-ui-restore VERIFYING (3/4 generator done, F004 Codex) — campaign 编辑 UI 补回(波3)
+- 审计 M1: 6孤儿action(campaign字段/状态/营收 + KOL名单移除/fee/contact-status)全实装有测试零UI(BL-070删编辑组件); H6 Edit Brief→/edit 404. 用户决补回. 守 ADR-013: 详情页保持只读+新建/edit页+AcceptedKolsPanel每行inline. spec docs/specs/BL-105-*
+- F001 /edit页(owner/admin gate)+字段编辑+H6修(链早指/edit,建真页即解) / F002 状态流转+营收(completed锁定) / F003 AcceptedKol inline(canEdit门控,status乐观/fee/remove确认) / F004 Codex
+- ✅ staging deployed @ 969b4d5(无 migration, health git_sha 一致 healthy). L1 全绿(tsc=0/lint 0e3w/test 1673/**build EXIT=0**). 下一步 Codex verifying
+- ⚠️ 权限: owner/admin 限制在 UI 门控层(canEditCampaign), 底层 6 action 仅租户级鉴权(spec 假设其有 owner 鉴权与实际不符, 未改 action 契约). ⚠️ 教训: 新建 route page 须本地 npm run build(F001 page.tsx 非法命名 export 致 CI 红, tsc/lint 不报)
 ## ✅ BL-100-email-async-bullmq DONE (5/5, fix-round 0 PASS) + 🚀 PROD 部署 — 邮件发送异步化 + 真 BullMQ 队列(波2)
 - ✅ **PROD 已部署(用户 2026-06-11/12)+ Planner 只读核验**: prod health healthy(db/redis ok), email_log.batch_id 列已落 prod(F002 migration applied), kolmatrix 进程 online. BL-108/110/111/100 四批随 main HEAD 一并上 prod(积压清零)
 - ⚠️ watch: prod Redis **6.0.16** < BullMQ 推荐 6.2.0(staging 同版本 L2 实测 13 人发送通, 可用; 若未来 BullMQ 用 6.2+ 特性需升级). prod 真实 >10 收件人发送建议用户日常使用中验一次
