@@ -62,7 +62,7 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "completed",
     "acceptance": [
       "L1: lint 0err warn≤3 / tsc=0 / npm test(含各 feature 新测)",
       "L2 部署后 staging: ① BullMQ worker 随进程启动(instrumentation) ② 发 >10 收件人→立即返回+进度推进+完成, 不再 60s 超时 ③ job 持久化: 发送中 pm2 reload/重启→worker 续跑剩余(Redis 中 job 不丢) ④ Redis 临时停→回退同步发送+告警 ⑤ prewarm 在 BullMQ 下仍工作 ⑥ 幂等: job 重试不重复发",
