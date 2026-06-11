@@ -39,11 +39,12 @@ import { cn } from "@/lib/utils";
 
 import {
   customizeAction,
-  sendBatchAction,
   saveTemplateAction,
   updateKolEmailAction,
   type ComposerActionState,
 } from "./actions";
+import { useSendBatch } from "./useSendBatch";
+import { SEND_BATCH_MAX } from "@/lib/email/batch-constants";
 import { useProductFilter } from "./useProductFilter";
 import { filterComposerTemplates } from "./templateFilter";
 import { isBioRegexOnly } from "@/lib/email/composer-email-utils";
@@ -96,6 +97,9 @@ interface Labels {
   aiCustomizePending: string;
   sendButton: string;
   sendPending: string;
+  // BL-100-F004 — async progress UX strings.
+  sendProgressTemplate: string; // "Sending {done}/{total}…"
+  sendStillRunning: string; // graceful "poll deadline passed" hint
   resultSentCountTemplate: string;
   resultMockedCountTemplate: string;
   resultFailedCountTemplate: string;
@@ -104,8 +108,8 @@ interface Labels {
   errorLabels: Record<string, string>;
   selectAllLabel: string;
   noSelectableKols: string;
-  // BL-035-F008: optional UX hint shown when checked.size > 8.
-  // Falls back to "Limit 8 per send." when the parent omits it.
+  // Optional UX hint shown when checked.size > SEND_BATCH_MAX. May carry
+  // a "{max}" token. Falls back to a plain English string when omitted.
   batchTooLargeHint?: string;
 }
 
@@ -324,18 +328,26 @@ export function OutreachComposer({
     setAiOpen(false);
   };
 
-  const [sendPending, startSend] = useTransition();
-  const [sendResult, setSendResult] = useState<{
-    sent: number;
-    mocked: number;
-    failed: number;
-    items: Array<{ kolId: string; status: string; error?: string }>;
-  } | null>(null);
-  const [sendError, setSendError] = useState<string | null>(null);
+  // BL-100-F004 — async send state machine: submit → poll progress →
+  // summary (or D5 sync fallback returns counts inline). onSettled clears
+  // the selection + refreshes server data once a batch finishes.
+  const {
+    phase: sendPhase,
+    progress: sendProgress,
+    result: sendResult,
+    error: sendError,
+    send: sendBatch,
+    dismiss: dismissSend,
+  } = useSendBatch({
+    onSettled: () => {
+      setChecked(new Set());
+      router.refresh();
+    },
+  });
+  const sending = sendPhase === "submitting" || sendPhase === "sending";
 
   const doSend = () => {
     if (!selectedCampaign || !activeTemplate || checked.size === 0) return;
-    setSendError(null);
     const items = selectableKols
       .filter((k) => checked.has(k.kolId))
       .map((k) => {
@@ -363,19 +375,10 @@ export function OutreachComposer({
         };
       });
 
-    startSend(async () => {
-      const result = await sendBatchAction({
-        campaignId: selectedCampaign.id,
-        aiAccepted: overrideTemplate?.fromAi ?? false,
-        items,
-      });
-      if (!result.ok) {
-        setSendError(result.error ?? "generic");
-        return;
-      }
-      setSendResult(result.data ?? { sent: 0, mocked: 0, failed: 0, items: [] });
-      setChecked(new Set());
-      router.refresh();
+    sendBatch({
+      campaignId: selectedCampaign.id,
+      aiAccepted: overrideTemplate?.fromAi ?? false,
+      items,
     });
   };
 
@@ -546,16 +549,19 @@ export function OutreachComposer({
           {labels.kolSelectedTemplate
             .replace("{count}", String(checked.size))
             .replace("{total}", String(selectableKols.length))}
-          {checked.size > 8 ? (
-            // BL-035-F008: server-side cap is 8 per batch. Surface
-            // the limit before the user clicks Send so they can
-            // narrow the selection rather than discover the cap via
-            // the `batch_too_large` error toast.
+          {checked.size > SEND_BATCH_MAX ? (
+            // BL-100-F003: per-call cap is SEND_BATCH_MAX. Surface the
+            // limit before the user clicks Send so they can narrow the
+            // selection rather than discover the cap via the
+            // `batch_too_large` error toast.
             <span
               className="text-amber-300 ml-2"
               data-testid="outreach-batch-cap-hint"
             >
-              {labels.batchTooLargeHint ?? "Limit 8 per send."}
+              {(labels.batchTooLargeHint ?? "Limit {max} per send.").replace(
+                "{max}",
+                String(SEND_BATCH_MAX)
+              )}
             </span>
           ) : null}
         </div>
@@ -566,8 +572,8 @@ export function OutreachComposer({
             !selectedCampaign ||
             !activeTemplate ||
             checked.size === 0 ||
-            checked.size > 8 ||
-            sendPending
+            checked.size > SEND_BATCH_MAX ||
+            sending
           }
           onClick={doSend}
           data-testid="outreach-send-button"
@@ -575,9 +581,67 @@ export function OutreachComposer({
           <span className="material-symbols-outlined text-[18px]" aria-hidden>
             send
           </span>
-          {sendPending ? labels.sendPending : labels.sendButton}
+          {sending ? labels.sendPending : labels.sendButton}
         </Button>
       </div>
+
+      {/* BL-100-F004 — async send progress (poll-driven). */}
+      {sendPhase === "sending" && sendProgress ? (
+        <div
+          data-testid="outreach-send-progress"
+          role="status"
+          aria-live="polite"
+          className="border-cyan/30 bg-cyan/5 mt-4 flex flex-col gap-2 rounded-xl border p-4"
+        >
+          <p className="text-on-surface text-sm font-semibold">
+            {labels.sendProgressTemplate
+              .replace("{done}", String(sendProgress.processed))
+              .replace("{total}", String(sendProgress.total))}
+          </p>
+          <div
+            className="bg-surface/60 h-2 w-full overflow-hidden rounded-full"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={sendProgress.total}
+            aria-valuenow={sendProgress.processed}
+          >
+            <div
+              data-testid="outreach-send-progress-bar"
+              className="bg-cyan h-full rounded-full transition-[width] duration-500"
+              style={{
+                width: `${
+                  sendProgress.total > 0
+                    ? Math.min(
+                        100,
+                        Math.round((sendProgress.processed / sendProgress.total) * 100)
+                      )
+                    : 0
+                }%`,
+              }}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {/* Poll deadline passed — the job keeps running in the worker. */}
+      {sendPhase === "stalled" ? (
+        <div
+          data-testid="outreach-send-stalled"
+          role="status"
+          aria-live="polite"
+          className="border-warning/40 bg-warning/10 text-warning mt-4 flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm"
+        >
+          <span>{labels.sendStillRunning}</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={dismissSend}
+            data-testid="outreach-send-stalled-dismiss"
+          >
+            {labels.resultDismiss}
+          </Button>
+        </div>
+      ) : null}
 
       {sendError ? (
         <p
@@ -620,7 +684,7 @@ export function OutreachComposer({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setSendResult(null)}
+            onClick={dismissSend}
             data-testid="outreach-send-result-dismiss"
           >
             {labels.resultDismiss}

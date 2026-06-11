@@ -49,7 +49,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "发送按钮→sendBatchAction 拿 batchId→显'发送中 X/Y'进度(轮询 getSendBatchStatus 每~2s)→完成显 sent/failed 汇总; 失败/超时优雅提示; 回退同步路径(无batchId/直接结果)兼容显示",
       "i18n 5 locale(zh/en/ja/ko/es)新文案(发送中/进度/完成/失败)",
