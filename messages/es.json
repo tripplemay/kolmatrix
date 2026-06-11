@@ -1188,6 +1188,34 @@
         "swap_pool": "Reserva"
       }
     },
+    "edit": {
+      "title": "Editar campaña",
+      "subtitle": "Actualiza los detalles, el estado y los ingresos de la campaña.",
+      "backToCampaign": "Volver a la campaña",
+      "fields": {
+        "name": "Nombre de la campaña",
+        "budgetAmount": "Presupuesto (USD)",
+        "startDate": "Fecha de inicio",
+        "endDate": "Fecha de fin",
+        "game": "Juego"
+      },
+      "save": "Guardar cambios",
+      "saving": "Guardando…",
+      "saved": "Cambios guardados.",
+      "errors": {
+        "unauthorized": "No tienes permiso para hacer eso.",
+        "invalid_input": "Entrada no válida.",
+        "validation_failed": "Revisa los campos e inténtalo de nuevo.",
+        "endBeforeStart": "La fecha de fin no puede ser anterior a la de inicio.",
+        "budgetInvalid": "Introduce un importe de presupuesto válido.",
+        "revenueInvalid": "Introduce un importe de ingresos válido.",
+        "not_found": "Campaña no encontrada.",
+        "invalid_transition": "Ese cambio de estado no está permitido.",
+        "forbidden_when_completed": "Los ingresos están bloqueados mientras la campaña está completada.",
+        "db_error": "Algo salió mal. Inténtalo de nuevo.",
+        "generic": "Algo salió mal. Inténtalo de nuevo."
+      }
+    },
     "matchKolAction": {
       "label": "Match de KOL",
       "actionColumn": "Acción",

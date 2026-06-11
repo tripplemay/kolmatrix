@@ -1188,6 +1188,34 @@
         "swap_pool": "控え"
       }
     },
+    "edit": {
+      "title": "キャンペーンを編集",
+      "subtitle": "キャンペーンの詳細・ステータス・売上を更新します。",
+      "backToCampaign": "キャンペーンに戻る",
+      "fields": {
+        "name": "キャンペーン名",
+        "budgetAmount": "予算（USD）",
+        "startDate": "開始日",
+        "endDate": "終了日",
+        "game": "ゲーム"
+      },
+      "save": "変更を保存",
+      "saving": "保存中…",
+      "saved": "変更を保存しました。",
+      "errors": {
+        "unauthorized": "この操作を行う権限がありません。",
+        "invalid_input": "入力が無効です。",
+        "validation_failed": "項目を確認して再度お試しください。",
+        "endBeforeStart": "終了日は開始日より前にできません。",
+        "budgetInvalid": "有効な予算額を入力してください。",
+        "revenueInvalid": "有効な売上額を入力してください。",
+        "not_found": "キャンペーンが見つかりません。",
+        "invalid_transition": "そのステータス変更は許可されていません。",
+        "forbidden_when_completed": "完了中はキャンペーンの売上がロックされます。",
+        "db_error": "問題が発生しました。再度お試しください。",
+        "generic": "問題が発生しました。再度お試しください。"
+      }
+    },
     "matchKolAction": {
       "label": "KOL マッチ",
       "actionColumn": "操作",

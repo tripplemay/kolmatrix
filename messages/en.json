@@ -1188,6 +1188,34 @@
         "swap_pool": "Bench"
       }
     },
+    "edit": {
+      "title": "Edit campaign",
+      "subtitle": "Update campaign details, status, and revenue.",
+      "backToCampaign": "Back to campaign",
+      "fields": {
+        "name": "Campaign name",
+        "budgetAmount": "Budget (USD)",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "game": "Game"
+      },
+      "save": "Save changes",
+      "saving": "Saving…",
+      "saved": "Changes saved.",
+      "errors": {
+        "unauthorized": "You don't have permission to do that.",
+        "invalid_input": "Invalid input.",
+        "validation_failed": "Please check the fields and try again.",
+        "endBeforeStart": "End date can't be before the start date.",
+        "budgetInvalid": "Enter a valid budget amount.",
+        "revenueInvalid": "Enter a valid revenue amount.",
+        "not_found": "Campaign not found.",
+        "invalid_transition": "That status change isn't allowed.",
+        "forbidden_when_completed": "Revenue is locked while the campaign is completed.",
+        "db_error": "Something went wrong. Please try again.",
+        "generic": "Something went wrong. Please try again."
+      }
+    },
     "matchKolAction": {
       "label": "Match KOL",
       "actionColumn": "Action",

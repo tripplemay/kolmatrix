@@ -1188,6 +1188,34 @@
         "swap_pool": "候补"
       }
     },
+    "edit": {
+      "title": "编辑活动",
+      "subtitle": "更新活动详情、状态与营收。",
+      "backToCampaign": "返回活动",
+      "fields": {
+        "name": "活动名称",
+        "budgetAmount": "预算（USD）",
+        "startDate": "开始日期",
+        "endDate": "结束日期",
+        "game": "游戏"
+      },
+      "save": "保存更改",
+      "saving": "保存中…",
+      "saved": "更改已保存。",
+      "errors": {
+        "unauthorized": "你没有执行该操作的权限。",
+        "invalid_input": "输入无效。",
+        "validation_failed": "请检查字段后重试。",
+        "endBeforeStart": "结束日期不能早于开始日期。",
+        "budgetInvalid": "请输入有效的预算金额。",
+        "revenueInvalid": "请输入有效的营收金额。",
+        "not_found": "未找到活动。",
+        "invalid_transition": "不允许该状态变更。",
+        "forbidden_when_completed": "活动已完成时营收被锁定。",
+        "db_error": "出错了，请重试。",
+        "generic": "出错了，请重试。"
+      }
+    },
     "matchKolAction": {
       "label": "匹配 KOL",
       "actionColumn": "操作",

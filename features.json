@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "新建路由 src/app/[locale]/(app)/campaigns/[id]/edit/page.tsx: 加载 campaign(复用 runCampaignDetail 或精简 loader), 非 owner/admin 或不存在→notFound/redirect",
       "表单编辑 campaign 字段(name/brief/budget amount+currency/markets 等, 以 updateCampaignFieldsAction 实际接受字段为准, 读 actions.ts:57+update.ts 源对齐不改契约), 提交接 updateCampaignFieldsAction, 成功 toast+revalidate 详情页",

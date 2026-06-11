@@ -2,7 +2,7 @@
   "status": "building",
   "user_goal": "BL-105 campaign 编辑 UI 补回(波3). 审计 M1: campaign 编辑/状态/营收/KOL名单管理 6个孤儿 server action(campaigns/[id]/actions.ts)全实装有单测但零 UI 入口(BL-070-F005 删了6编辑组件); H6 Edit Brief→/campaigns/[id]/edit 路由缺失404. 用户决策(2026-06-09): 补回编辑入口非退役. 设计(与ADR-013 AI-native一致): 详情页保持只读, campaign级编辑走新建 /edit 页(H6接此), KOL名单操作 AcceptedKolsPanel每行inline恢复. 复用现成已测action/lib主要前端接线. 4 features: F001 /edit页+字段编辑+H6 / F002 状态流转+营收 / F003 名单inline操作 / F004 Codex. 纯kolmatrix 无schema/env变更.",
   "total_features": 4,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
   "current_sprint": "BL-105-campaign-edit-ui-restore",
   "last_updated": "2026-06-12T10:00+0800",
@@ -26,7 +26,7 @@
   "generator_handoff": "[2026-06-12 10:00 BJT Planner Kimi 开 BL-105 building] campaign编辑UI补回, 波3. 6孤儿action全实装有单测零UI(审计M1). 用户决补回. 设计(守ADR-013 AI-native): 详情页保持只读 + 新建/edit页(campaign级: 字段/状态/营收) + AcceptedKolsPanel每行inline(名单: 移除/fee/contact-status). ⚠️ 复用现成已测action/lib, Generator读 actions.ts+update.ts源对齐字段契约不改action; 孤儿action首次真用UI接线, Codex L2端到端验. 权限: 编辑限owner/admin(action既有鉴权+页面门控双层). H6: BriefSummaryPanel Edit Brief href已是/edit, F001建真页即修. 下一步 Generator F001(/edit页+字段编辑+H6). 详见 spec §2. 无schema/env变更.",
   "session_notes": {
     "Kimi_planner": "[2026-06-12 10:00 BJT Planner Kimi] 四批(BL-108/110/111/100)已上prod+Planner核验健康(batch_id列在prod, health ok). 开波3 BL-105(用户'开始波3')campaign编辑UI补回. 6孤儿action接UI. 设计守ADR-013只读详情+独立/edit页+名单inline. 4features. 下一步Generator F001. 旁挂: 2条水合learnings待ack; prod Redis 6.0.16 watch; 波4(BL-107/106)在后.",
-    "Kimi_generator": null,
+    "Kimi_generator": "[2026-06-12 03:33 BJT Generator Kimi] F001 DONE: 新建 /campaigns/[id]/edit 页(server, owner/admin gate canEditCampaign→非owner非admin redirect回详情/不存在notFound) + CampaignEditForm(client, name/budgetAmount/startDate/endDate/game 字段, useTransition 接 updateCampaignFieldsAction 不改契约, 成功 saved banner) + permissions.ts(纯 canEditCampaign 可测). H6 自动修(BriefSummaryPanel Edit Brief href 早已是 /edit, 建真页即解 404). i18n campaigns.edit 5 locale(含 F002 共用 errors 全集). 单测 8(permissions owner/admin/deny + form 渲染/提交调action/saved/error). L1 绿(tsc=0/lint 0e3w/i18n+fidelity 20 pass). ⚠️复用 CampaignHeader.tsx(orphan未mount)的 form 模式但新写独立页, 未动详情页只读. 下一步 F002(/edit 加状态流转+营收控件).",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
