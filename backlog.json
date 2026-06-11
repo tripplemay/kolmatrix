@@ -440,24 +440,6 @@
     "discovered_in": "BL-092 F003 verified-live 2026-06-08 (IG 仍 0 产出, F005 节流未解决)"
   },
   {
-    "id": "BL-100",
-    "priority": "high",
-    "title": "邮件批量发送异步化 + 真 BullMQ 队列 (H1: 同步阻塞, >10收件人必超时)",
-    "description": "审计 H1[形态C]. 现象: 批量外联收件人>~10 必触发 60s 超时报错, 但部分邮件已真发出, 用户无从得知发了几封, 批量发送实质不可用. 根因: jobQueue(lib/jobs/queue.ts:134)是 InMemoryJobQueue(无持久化/重试/跨进程); 邮件发送根本没接队列——reach/actions.ts:321 直接 await batchSendOutreach, batch-send.ts:213 每封 await sleep(6000)(10封/分节流), 整个发送在 server action 内同步执行与 60s wall-clock 竞速(actions.ts:317 注释自承超时不取消已发). register.ts:5 'BM2 email sending will populate' 从未兑现. 同源: prewarm 队列也是内存 stub(多实例进程隔离). 止血: 分批降单次量+明确回报'已发N封'. 根治: 上真 BullMQ + 发送改异步队列任务(server action 立即返回, 后台续跑, EmailLog 轮询进度).",
-    "tags": [
-      "email",
-      "queue",
-      "bullmq",
-      "split-brain-C",
-      "user-visible"
-    ],
-    "decisions": [],
-    "confirmed_at": "2026-06-09T13:30+0800",
-    "discovered_in": "2026-06-09 全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md",
-    "wave": 2,
-    "roadmap": "docs/reviews/split-brain-remediation-roadmap-2026-06.md"
-  },
-  {
     "id": "BL-105",
     "priority": "medium",
     "title": "补回 campaign 编辑 UI 入口 (M1: 下层5 action+API已齐, 只缺前端接线)",

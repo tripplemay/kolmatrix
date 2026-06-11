@@ -75,6 +75,7 @@ Proposed ──► Accepted ──► [Deprecated | Superseded by ADR-YYY]
 | [017](./ADR-017-kol-source-strategy-and-upstream-acquisition-governance.md) | **KOL 源策略 + 上游抓取治理** | 旧源=discovery 资产不复活(收割 2535 id 喂 manual_seed)；apify-kol-service 运维归我方/代码归爬虫团队；发现优先(refresh 不挤占 discovery)；余额+成本告警；75% 入库率属预期 | Accepted | 2026-06-06 |
 | [018](./ADR-018-email-template-unify-asset-snapshot-decouple.md) | **邮件模板统一 Asset 单一真相源** | ADR-011 收尾：Asset(type=email)=唯一真相源；写路径统一 Asset；email_log 去 FK + 加 `template_name` 快照列(审计语义=发送当时名)；历史 user 模板迁 Asset 防丢失；drop email_template 表+双写。落地 BL-099 | Accepted | 2026-06-09 |
 | [019](./ADR-019-crawler-runtime-pause-control-surface.md) | **爬虫运行时暂停控制面** | 扩展 ADR-017：爬虫加两层 UI 手控开关(主 `scraping_enabled` 全停所有抓取含 manual_seed / 子 `refresh_enabled` 仅 refresh)；状态存爬虫 DB `service_settings`(非 env, ≤5min 生效)；gate 在入队源(无积压恢复无尖峰)；读 API 不受影响。落地 BL-108 | Accepted | 2026-06-09 |
+| [020](./ADR-020-job-queue-bullmq-inprocess-worker.md) | **任务队列 BullMQ 化 + 邮件异步** | InMemoryJobQueue→BullMQ(同 JobQueue 接口调用点不改, 工厂 REDIS_URL→BullMQ 否则 InMemory)；worker 进程内(instrumentation, 不加进程, job 存 Redis 重启续跑)；邮件发送异步(enqueue 立即返 batchId + 进度轮询, 去 60s 同步阻塞)；幂等 batchId+kolId；Redis 挂回退同步。落地 BL-100 | Accepted | 2026-06-11 |
 
 ## 按主题索引
 

@@ -3,6 +3,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
+## 🚧 BL-100-email-async-bullmq BUILDING (0/5) — 邮件发送异步化 + 真 BullMQ 队列(波2)
+- 审计 H1: sendBatchAction 同步await+60s race, 每封sleep6000→>10收件人必超时. 决策 ADR-020: BullMQ(同JobQueue接口)+worker进程内(用户决, instrumentation复用prewarm)+发送异步(enqueue立即返batchId+进度轮询)+幂等(batchId+kolId)+Redis挂回退同步(用户决). prewarm自动迁移. spec docs/specs/BL-100-*
+- 利好: 基建大半预建(JobQueue抽象/instrumentation worker/ioredis/handlers模板). 5features: F001 BullMQ基建 / F002 email_log batchId+幂等 / F003 handler+异步+状态 / F004 Composer进度UX / F005 Codex. 下一步 Generator F001
+- ⚠️ +bullmq依赖 + 1 migration(email_log.batchId nullable); Next多worker用concurrency控; worker进程内不加进程
 ## ✅ BL-111-crawler-toggle-style-fix DONE (F001 done, F002 Codex 用户授权免除, closure @ docs/test-reports/BL-111-closure-2026-06-11.md) — 爬虫开关样式修复
 - CrawlerPauseControls.tsx 暂停态轨道+状态徽章 bg-error(#ffb4ab浅鲑粉)→bg-warning(#fec931琥珀); 运行态保留, 健康卡真错误态bg-error未动; +30行回归测试. staging@a6f7c08
 - 关闭方式: 用户授权快track(trivial 2行视觉修, 免Codex评估), Planner代码review干净+独立跑12/12 PASS. ⚠️琥珀视觉观感 staging 用户自查(1行可调)
@@ -38,9 +42,7 @@ type: project
 ## 用户手工待办
 1. aigcgateway VM .git remote PAT(gho_*)轮换(安全)
 
-## Backlog — 路线图(波1 BL-110 已转 BUILDING 见顶部, 合并 BL-101~104)
-- **BL-111**(高, BL-110后): 修爬虫暂停开关样式(CrawlerPauseControls.tsx:77 暂停态 bg-error浅粉#ffb4ab用错→bg-warning琥珀; BL-108视觉bug, ~1-2行). ⚠️ 应在BL-108 kolmatrix UI上prod前修
-- 波2：BL-100 邮件发送异步化
+## Backlog — 路线图(波2 BL-100 已转 BUILDING 见顶部)
 - 波3：BL-105 campaign 编辑 UI 补回
 - 波4：BL-107 / BL-106 链路收口
 - 其余：BL-095 / BL-089 / BL-058 / BL-048 / BL-011 等详见 backlog.json

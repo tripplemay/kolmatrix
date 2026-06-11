@@ -1,30 +1,72 @@
 [
   {
     "id": "F001",
-    "title": "修爬虫暂停开关样式 — 暂停态 bg-error 浅粉→bg-warning 琥珀 (generator, kolmatrix)",
+    "title": "BullMQ 队列实现 + 工厂 + 进程内 worker 注册 (generator, kolmatrix)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "done",
+    "estimated_hours": 3.0,
+    "status": "pending",
     "acceptance": [
-      "根因: src/app/[locale]/admin/crawler-monitor/CrawlerPauseControls.tsx:77 手搓 toggle 'checked?(已暂停) bg-error : bg-white/15', --color-error=#ffb4ab(globals.css:67)浅鲑粉 Material error-container 色, 当整条轨道实色填充→刺眼粉(图1); 子开关被主覆盖置灰时更糊(暗化叠加)",
-      "修: 暂停态 bg-error → bg-warning(琥珀 #fec931, 暂停=注意语义非错误, 与组件已用的 text-warning 一致); 运行态保留 bg-white/15; thumb 保持白色+滑动(translate)不变",
-      "检查子开关被主覆盖(covered/置灰)态在琥珀下干净不再糊棕; 状态徽章 paused 的 bg-error/15 text-error 一并对齐 warning(视觉一致, 同一暂停语义)",
-      "含/更新单测(CrawlerPauseControls.test.tsx 断言暂停态 track class = bg-warning 不再 bg-error); L1 全绿 lint 0err warn≤3 / tsc=0 / npm test"
+      "加 bullmq 依赖; BullMQJobQueue implements JobQueue(register/add/stats, 以 getRedis() 为后端): register(name,handler) 起 BullMQ Worker(concurrency 控) / add(name,payload,opts) 入 Queue(支持 delay/idempotencyKey via jobId/tenantId)",
+      "工厂: jobQueue 单例 = REDIS_URL 存在→BullMQJobQueue 否则→InMemoryJobQueue(测试/dev回退); 导出名/类型不变调用点零改",
+      "worker 进程内启动: 经现有 instrumentation.ts→handlers/register.ts(已 registerExplainPrewarmHandler), BullMQ worker 随之消费; 一次注册/进程幂等",
+      "Redis 挂回退(D5): add() 若 Redis 不可达→抛/返回信号让上层(F003)回退同步; 日志告警",
+      "验收: BullMQ 入队/消费通 + prewarm 在 BullMQ 下仍工作 + REDIS_URL 缺失回退 InMemory; 单测(InMemory 行为/BullMQ 入队 mock/工厂选择/幂等 jobId); L1 全绿"
     ]
   },
   {
     "id": "F002",
+    "title": "email_log batchId 关联 + 幂等 (generator, schema migration)",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 2.0,
+    "status": "pending",
+    "acceptance": [
+      "prisma migration: EmailLog 加 batchId String? @map(batch_id) @db.Uuid + @@index([tenantId, batchId])",
+      "batch-send.ts 每封 email_log 写入传入 batchId",
+      "幂等: handler 发每封前按 (batchId,kolId) 查 email_log 是否已 sent/mock_sent, 已发跳过→job 重试不重复发",
+      "验收: migration 跑通 + email_log 带 batchId + 重跑同 batchId 不重复发(单测构造已发行断言跳过); L1 全绿 + prisma migrate"
+    ]
+  },
+  {
+    "id": "F003",
+    "title": "send-email-batch handler + sendBatchAction 异步化 + 状态查询 (generator)",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 2.5,
+    "status": "pending",
+    "acceptance": [
+      "handlers/register.ts 注册 send-email-batch handler: worker 内跑 batchSendOutreach(...,batchId,{skipSleep:false})(节流 sleep 留 worker)",
+      "sendBatchAction: 生成 batchId(uuid)→jobQueue.add('send-email-batch',{tenantId,userId,campaignId,items,batchId})→立即返回 {ok,batchId,total}(去掉 60s race + 同步 await)",
+      "Redis 挂回退(D5): 入队失败→回退同步 batchSendOutreach(旧行为)+返回同步结果+日志告警",
+      "新 action getSendBatchStatus(batchId): withTenant 查 email_log by batchId 计数 {total,sent,failed,mock_sent,pending}",
+      "验收: 发送立即返回不阻塞 + worker 后台跑 + 状态计数正确 + Redis 挂回退同步通; 单测(enqueue/回退/状态计数); L1 全绿"
+    ]
+  },
+  {
+    "id": "F004",
+    "title": "OutreachComposer 异步进度 UX + i18n (generator)",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 2.5,
+    "status": "pending",
+    "acceptance": [
+      "发送按钮→sendBatchAction 拿 batchId→显'发送中 X/Y'进度(轮询 getSendBatchStatus 每~2s)→完成显 sent/failed 汇总; 失败/超时优雅提示; 回退同步路径(无batchId/直接结果)兼容显示",
+      "i18n 5 locale(zh/en/ja/ko/es)新文案(发送中/进度/完成/失败)",
+      "验收: UI 发送不再卡 60s + 进度条随 worker 推进 + >10 收件人正常完成; 含组件测试(轮询 mock+进度渲染+完成态); L1 全绿"
+    ]
+  },
+  {
+    "id": "F005",
     "title": "Codex L1+L2 + signoff (executor:codex)",
     "executor": "codex",
     "priority": "high",
-    "estimated_hours": 0.5,
-    "status": "skipped",
-    "skip_reason": "用户 2026-06-11 授权快track: trivial 视觉修复(2行class), 免除 Codex 评估(铁律#4用户对自有harness行使权限), 由 Planner 代码 review 替代关闭. 记录 docs/test-reports/BL-111-closure-2026-06-11.md. Planner 独立跑 12/12 PASS + 代码review干净. 未验证项: 琥珀视觉观感(staging@a6f7c08 用户自查).",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "L1: lint 0err warn≤3 / tsc=0 / npm test(含 CrawlerPauseControls 断言)",
-      "L2 部署后 staging: /admin/crawler-monitor 暂停态开关显琥珀(不再粉/糊), 运行态正常; 主开关暂停时子开关 covered 态干净; 状态徽章一致",
-      "signoff docs/test-reports/BL-111-signoff-2026-06-XX.md"
+      "L1: lint 0err warn≤3 / tsc=0 / npm test(含各 feature 新测)",
+      "L2 部署后 staging: ① BullMQ worker 随进程启动(instrumentation) ② 发 >10 收件人→立即返回+进度推进+完成, 不再 60s 超时 ③ job 持久化: 发送中 pm2 reload/重启→worker 续跑剩余(Redis 中 job 不丢) ④ Redis 临时停→回退同步发送+告警 ⑤ prewarm 在 BullMQ 下仍工作 ⑥ 幂等: job 重试不重复发",
+      "signoff docs/test-reports/BL-100-signoff-2026-06-XX.md"
     ]
   }
 ]
