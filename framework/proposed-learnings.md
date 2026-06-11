@@ -272,3 +272,16 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 **建议写入：** `framework/harness/generator.md` §15 补「mount-gate 模式：SSR 关键交互控件水合前 disabled + data-ready 信号（useSyncExternalStore 实现，避开 set-state-in-effect）+ renderToString/hydrateRoot 回归」；`framework/harness/evaluator.md` §13 **铁律级**补「含交互 SSR 页面 L2 用标准 click（自动等 enabled）或 await data-ready，严禁 force/dispatch/evaluate-click —— 否则会稳定复现水合窗口假 bug」。与上一条（#418）合并为「客户端水合正确性」一节的两个子坑（失配 vs 时序窗口）。
 
 **状态：** 待确认
+
+## [2026-06-11] Claude CLI (Kimi) — 来源：BL-100 F001/F003（BullMQ 化邮件异步队列）
+
+**类型：** 新坑（BullMQ 集成）+ 环境 caveat + Generator 后台任务模式
+
+**内容：** 把 InMemoryJobQueue swap 成真 BullMQ（同 JobQueue 接口）踩到三个非显然点，建议沉淀给后续任何"接 BullMQ / 后台队列"批次：
+① **Worker 连接必须 `maxRetriesPerRequest: null`**：BullMQ v5 的 Worker 用阻塞命令（BRPOPLPUSH/BZPOPMIN），构造时若 connection 的 `maxRetriesPerRequest` 非 null 直接抛错。本仓 `getRedis()`（rate-limit/health 用，retries:3）**不能直接复用给 Worker**——新增 `getBullConnection()`（retries:null, enableReadyCheck:false）；Queue 生产者共享它，每个 Worker 用 `.duplicate()` 拿专用阻塞连接（阻塞 socket 不能与生产者 socket 混用）。spec/ADR 写"以 getRedis() 为后端"应理解为"同 Redis 实例"而非"同 client 对象"。
+② **D5 回退的 enqueue fast-fail 与 null-retries 冲突**：retries:null 让 `queue.add()` 在 Redis 挂时**无限重试不返回**，与"入队失败→回退同步发"矛盾。解法：`add()` 内 `Promise.race` 包 5s timeout 强制 reject，上层 catch→同步兜底。残留风险：超时被放弃的 enqueue 若 Redis 恢复后才落地会造成重复 job——靠业务层幂等（本例 email_log (batchId,kolId) 发前查跳已发）兜住，**故"队列幂等"要做在 handler/业务层而非依赖 BullMQ jobId 去重**（jobId 去重仅在 job 仍驻留时有效，removeOnComplete 后失效）。
+③ **环境 caveat：prod/staging VM Redis = 6.0.16 < BullMQ 推荐 6.2.0**。core add/process/retry/delay/jobId-dedup 在 6.0 可用（staging boot 见 4× "minimum Redis version 6.2.0" 警告=连接已建非错误），但 BullMQ 部分高级特性（debounce/部分 rate-limiter）需 6.2。本批未用这些，Codex L2 须实测 enqueue→consume 端到端通；若未来用到高级特性需先升 Redis。建议 Planner 评估是否把 Redis 升级列入环境待办 + environment.md 记 BullMQ 版本约束。
+
+**建议写入：** `framework/harness/generator.md` §13（InMemoryJobQueue 段邻近）补「升 BullMQ 的连接拓扑铁律：getBullConnection retries:null + 每 Worker .duplicate() + 生产者共享」+「D5 enqueue timeout + 业务层幂等而非 jobId 去重」；`framework/harness/database-patterns.md` 或 `environment.md` 记 Redis 6.0.16 < BullMQ 6.2 推荐的约束。
+
+**状态：** 待确认
