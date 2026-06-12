@@ -5,8 +5,8 @@ type: project
 ---
 ## ✅ BL-105-campaign-edit-ui-restore DONE (4/4, fix_rounds=0, signoff @ docs/test-reports/BL-105-signoff-2026-06-12.md) — campaign 编辑 UI 补回(波3)
 - 6孤儿action接UI: /edit页(字段/状态流转/营收, owner/admin gate)+AcceptedKolsPanel每行inline(status/fee/remove)+H6 Edit Brief 修404. 守 ADR-013 详情页只读. staging@969b4d5(无migration). Codex L2 E2E 12/12 PASS
-- ⚠️ **遗留-authz**: owner/admin 限制仅在 UI 门控层(canEditCampaign); 底层 6 action 仅 requireSession 租户级(RLS)鉴权, **无 per-user owner/admin 强制** → 非owner租户成员可绕UI直调action改/删campaign. spec 假设action有owner鉴权与实际不符(未改action契约). **需Planner决策**: 接受UI门控 or 补server端owner/admin强制(独立批次, 改action契约)
-- ⚠️ **待ack学习**: 新建 route page 非法命名 export(非 default/segment config)→`next build` fail 但 tsc/lint 不报(F001 CI红根因) → 新route page feature 须本地 npm run build
+- ✅ **authz 已决(用户 2026-06-12)**: campaign 编辑 = **租户级权限**(与全app RLS 模型一致, 无 per-user owner/admin 角色), 不补 server 端强制; UI owner/admin 门控为软限制保留. 安全上非真漏洞(租户即信任边界)
+- 📋 proposed-learnings 积压 **4 条待 ack**: 2水合(BL-108) + BullMQ连接拓扑(BL-100) + 新route page须npm run build(BL-105)
 ## ✅ BL-100-email-async-bullmq DONE (5/5, fix-round 0 PASS) + 🚀 PROD 部署 — 邮件发送异步化 + 真 BullMQ 队列(波2)
 - ✅ **PROD 已部署(用户 2026-06-11/12)+ Planner 只读核验**: prod health healthy(db/redis ok), email_log.batch_id 列已落 prod(F002 migration applied), kolmatrix 进程 online. BL-108/110/111/100 四批随 main HEAD 一并上 prod(积压清零)
 - ⚠️ watch: prod Redis **6.0.16** < BullMQ 推荐 6.2.0(staging 同版本 L2 实测 13 人发送通, 可用; 若未来 BullMQ 用 6.2+ 特性需升级). prod 真实 >10 收件人发送建议用户日常使用中验一次
