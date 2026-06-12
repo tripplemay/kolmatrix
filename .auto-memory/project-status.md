@@ -3,9 +3,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-107-link-closure-wave4 VERIFYING (4/5 generator done) — 链路收口(波4 split-brain 收官)+ BL-106 KPI cron
-- F001 M4软删/可疑过滤+M8 ROI删硬编码 ✅ / F002 M5 tsvector死码删+M6删4孤儿路由(零fetch调用方实证) ✅ / F003 M7 ?ai=止血(删假chip/banner+中和parse/serialize, **保留引擎**待BL-112) ✅ / F004 BL-106 KPI cron装deploy-prod.sh step8b(抗VM reset+自愈backup) ✅. **下一步 Codex F005 L1+L2+signoff**
-- **staging@02ba1fe**(git_sha+页面实证; ⚠️build触发系统OOM→SSH掉线exit255但build实际完成, 见session_notes教训). L1: tsc0/lint0e3w(全预存)/test1681 PASS. 旁: 用户授权删BL-105 e2e spec死码修预存红CI(现绿). ⚠️F004 cron实装验证gated on prod部署; F002 relationship-status路由有契约header歧义待复核(详generator_handoff)
+## ✅ BL-107-link-closure-wave4 DONE (5/5, fix_rounds=0, signoff @ docs/test-reports/BL-107-signoff-2026-06-12.md) — 链路收口(波4)= **split-brain 路线图收官**
+- M4软删过滤 / M8 ROI删硬编码 / M5 tsvector死码删 / M6删4孤儿路由(含relationship-status, 零fetch实证) / M7 ?ai=止血(保留引擎待BL-112) / BL-106 KPI cron装deploy-prod.sh step8b(自愈+抗VM reset). L1 1681 test绿. Codex L2 代码审查5/5 PASS(0 crit/high/med). staging@02ba1fe
+- ⚠️ **BL-106 KPI cron 仅 prod 部署时实装**(staging 不跑 deploy-prod.sh): 脚本/装配 dry-run 验过, 但 **prod 部署后才生效** → 届时验 kpi_daily_snapshot count>0 + dashboard KPI 趋势脱"—"(需≥若干天数据)
+- 🎉 **split-brain 修复路线图全完成**: 波0 BL-108 → 波1 BL-110 → 波2 BL-100 → 波3 BL-105 → 波4 BL-107. 审计(6高危+8中危)全remediate
 ## ✅ BL-105-campaign-edit-ui-restore DONE (4/4, fix_rounds=0, signoff @ docs/test-reports/BL-105-signoff-2026-06-12.md) — campaign 编辑 UI 补回(波3)
 - 6孤儿action接UI: /edit页(字段/状态流转/营收, owner/admin gate)+AcceptedKolsPanel每行inline(status/fee/remove)+H6 Edit Brief 修404. 守 ADR-013 详情页只读. staging@969b4d5(无migration). Codex L2 E2E 12/12 PASS
 - ✅ **authz 已决(用户 2026-06-12)**: campaign 编辑 = **租户级权限**(与全app RLS 模型一致, 无 per-user owner/admin 角色), 不补 server 端强制; UI owner/admin 门控为软限制保留. 安全上非真漏洞(租户即信任边界)
