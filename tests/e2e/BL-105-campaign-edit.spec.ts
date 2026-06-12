@@ -36,7 +36,6 @@ import * as fs from "fs";
 import * as path from "path";
 
 import { expect, test } from "@playwright/test";
-import type { Page } from "@playwright/test";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -67,26 +66,6 @@ const HOK_NAME_ORIGINAL = "Honor of Kings — Global Launch";
 const AUTH_DIR = path.join(process.cwd(), "playwright", ".auth");
 const ADMIN_AUTH = path.join(AUTH_DIR, "BL105-admin.json");
 const MARKETER_AUTH = path.join(AUTH_DIR, "BL105-marketer.json");
-
-async function loginAndSave(
-  browser: Parameters<typeof test>[1] extends (...args: infer A) => void
-    ? never
-    : never,
-  page: Page,
-  credentials: typeof ADMIN,
-  authFile: string,
-): Promise<void> {
-  await page.goto(`${BASE_URL}/login`);
-  await page.locator('input[name="email"]').fill(credentials.email);
-  await page.locator('input[name="password"]').fill(credentials.password);
-  await page.getByRole("button", { name: /Sign in/i }).click();
-  await page.waitForURL(
-    /\/(?:en|zh|ja|ko|es)\/(?:dashboard|insight|match|campaigns)(\/|$)/,
-    { timeout: 45_000 },
-  );
-  fs.mkdirSync(AUTH_DIR, { recursive: true });
-  await page.context().storageState({ path: authFile });
-}
 
 // ---------------------------------------------------------------------------
 // Global setup: login once per credential, save storageState
@@ -124,22 +103,6 @@ test.beforeAll(async ({ browser }) => {
   await mktrCtx.storageState({ path: MARKETER_AUTH });
   await mktrCtx.close();
 });
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-/** Open a page pre-authenticated as admin. */
-async function adminPage(browser: Parameters<(typeof test)["beforeAll"]>[0] extends (...args: infer A) => void ? A[0] : never): Promise<Page> {
-  const ctx = await browser.newContext({ storageState: ADMIN_AUTH });
-  return ctx.newPage();
-}
-
-/** Open a page pre-authenticated as marketer. */
-async function marketerPage(browser: Parameters<(typeof test)["beforeAll"]>[0] extends (...args: infer A) => void ? A[0] : never): Promise<Page> {
-  const ctx = await browser.newContext({ storageState: MARKETER_AUTH });
-  return ctx.newPage();
-}
 
 // ---------------------------------------------------------------------------
 // AC1 — H6 Edit Brief link → /edit (no longer 404)
