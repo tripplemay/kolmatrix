@@ -19,7 +19,6 @@ import { type DiscoveryFilters, serializeFilters } from "@/lib/kol/filters";
 interface Props {
   filters: DiscoveryFilters;
   basePath: string;
-  aiFallbackActive?: boolean;
 }
 
 interface ChipDescriptor {
@@ -31,7 +30,6 @@ interface ChipDescriptor {
 export async function MatchActiveFilters({
   filters,
   basePath,
-  aiFallbackActive = false,
 }: Props) {
   const t = await getTranslations("match.activeFilters");
   const tFilters = await getTranslations("match.filters");
@@ -43,13 +41,9 @@ export async function MatchActiveFilters({
 
   const chips: ChipDescriptor[] = [];
 
-  if (filters.aiQuery) {
-    chips.push({
-      key: "aiQuery",
-      label: `${t("aiPrefix")}${filters.aiQuery}`,
-      clear: { aiQuery: undefined, cursor: undefined },
-    });
-  } else if (filters.search) {
+  // BL-107-F002/M7 — the fake "AI: …" chip (URL `?ai=`) is removed; it
+  // filtered nothing. Only the real free-text search chip renders.
+  if (filters.search) {
     chips.push({
       key: "search",
       label: `"${filters.search}"`,
@@ -290,24 +284,15 @@ export async function MatchActiveFilters({
     });
   }
 
-  if (chips.length === 0 && !aiFallbackActive) {
+  if (chips.length === 0) {
     return null;
   }
 
   return (
     <div className="space-y-2" data-testid="match-active-filters-wrapper">
-      {aiFallbackActive ? (
-        <div
-          role="status"
-          data-testid="match-ai-fallback-banner"
-          className="border-amber/40 bg-amber/10 text-amber-fixed flex items-center gap-2 rounded-lg border px-3 py-2 text-xs"
-        >
-          <span className="material-symbols-outlined text-[16px]" aria-hidden>
-            info
-          </span>
-          <span>{t("aiFallbackBanner")}</span>
-        </div>
-      ) : null}
+      {/* BL-107-F002/M7 — the retired status banner for the never-wired
+          semantic-search path was dead UI (driven by a prop no caller ever
+          passed); removed alongside the fake query chip. */}
       {chips.length > 0 ? (
         <div
           data-testid="match-active-filters"

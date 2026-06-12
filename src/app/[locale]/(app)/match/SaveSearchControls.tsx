@@ -39,12 +39,10 @@ export function SaveSearchControls({
     const name = window.prompt(labels.savePrompt);
     if (!name || !name.trim()) return;
 
-    // BL-044 #11:A — SaveSearch keeps the legacy filter semantics. AI
-    // semantic queries (`aiQuery`) are not persisted: a saved search is
-    // a deterministic filter recipe, while semantic queries are
-    // ephemeral natural-language intents that the user re-types each
-    // time. Stripping aiQuery here keeps the saved JSON shape stable
-    // and prevents stale `?ai=…` URLs from springing back to life.
+    // BL-107-F002/M7 — `aiQuery` is a retired no-op (the `?ai=` semantic
+    // UI was never wired). We still strip it from the saved recipe so no
+    // legacy `?ai=…` value is persisted and the saved JSON shape stays a
+    // deterministic filter recipe.
     const filtersForSave: DiscoveryFilters = { ...currentFilters, aiQuery: undefined };
     const payload = {
       name: name.trim(),

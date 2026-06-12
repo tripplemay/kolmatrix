@@ -121,6 +121,21 @@ describe("parseFilters()", () => {
     expect(parseFilters(new URLSearchParams({ search: "   " })).search).toBeUndefined();
   });
 
+  it("BL-107-F002/M7 — a stray ?ai= is a no-op: never sets aiQuery, never drops search", () => {
+    // The fake `?ai=` semantic-search UI was retired. A leftover/shared
+    // `?ai=` URL must NOT surface a fake chip (aiQuery stays undefined)
+    // and must NOT suppress the real ILIKE search term.
+    const both = parseFilters(
+      new URLSearchParams({ ai: "find esports streamers", search: "Nintendo" }),
+    );
+    expect(both.aiQuery).toBeUndefined();
+    expect(both.search).toBe("Nintendo");
+
+    const aiOnly = parseFilters(new URLSearchParams({ ai: "find esports streamers" }));
+    expect(aiOnly.aiQuery).toBeUndefined();
+    expect(aiOnly.search).toBeUndefined();
+  });
+
   it("accepts Next.js page searchParams shape (record of string | string[])", () => {
     const parsed = parseFilters({
       regions: ["US", "GB"],
@@ -186,6 +201,19 @@ describe("serializeFilters()", () => {
     expect(back.cursor).toBe("second");
     expect(back.search).toBe("Nintendo");
     expect(back.regions).toEqual(["US"]);
+  });
+
+  it("BL-107-F002/M7 — never emits ?ai=, even when a legacy aiQuery lingers", () => {
+    // Legacy SaveSearch JSON may still carry aiQuery; the serializer must
+    // drop it (no `?ai=`) while keeping the real search term.
+    const withLegacyAi: DiscoveryFilters = {
+      ...empty,
+      search: "Nintendo",
+      aiQuery: "stale semantic intent",
+    };
+    const params = serializeFilters(withLegacyAi);
+    expect(params.has("ai")).toBe(false);
+    expect(params.get("search")).toBe("Nintendo");
   });
 });
 

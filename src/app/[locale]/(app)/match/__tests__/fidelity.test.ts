@@ -100,10 +100,19 @@ describe("/match active-filter chip strip (BL-065-F002)", () => {
     expect(af).toMatch(/tiers \?\? \[\]/);
   });
 
+  it("BL-107-F002/M7 — the fake `?ai=` AI chip + fallback banner are removed", () => {
+    const af = read("MatchActiveFilters.tsx");
+    // Target the actual render code (not prose) so the guard is precise.
+    expect(af).not.toMatch(/key:\s*"aiQuery"/);
+    expect(af).not.toMatch(/t\("aiPrefix"\)/);
+    expect(af).not.toMatch(/t\("aiFallbackBanner"\)/);
+    expect(af).not.toMatch(/data-testid="match-ai-fallback-banner"/);
+  });
+
   it("preserves every Discovery ActiveFilters chip dimension (no regressions)", () => {
     const af = read("MatchActiveFilters.tsx");
     for (const key of [
-      "aiQuery",
+      // BL-107-F002/M7 — "aiQuery" chip removed (fake AI search retired).
       "search",
       "followers",
       "region-",

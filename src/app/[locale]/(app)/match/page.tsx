@@ -386,7 +386,6 @@ export default async function MatchPage({ params, searchParams }: Props) {
             // below the filter-applied set.
             const hasActiveFilters = Boolean(
               filters.search ||
-                filters.aiQuery ||
                 filters.regions.length ||
                 filters.platforms.length ||
                 filters.languages.length ||

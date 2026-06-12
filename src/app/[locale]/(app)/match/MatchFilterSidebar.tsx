@@ -535,8 +535,8 @@ function serializeFiltersInline(
 ): string {
   const merged = { ...f, ...overrides };
   const params = new URLSearchParams();
-  if (merged.aiQuery) params.set("ai", merged.aiQuery);
-  else if (merged.search) params.set("search", merged.search);
+  // BL-107-F002/M7 — never emit `?ai=` (retired); only the real search term.
+  if (merged.search) params.set("search", merged.search);
   if (merged.followersMin != null)
     params.set("followersMin", String(merged.followersMin));
   if (merged.followersMax != null)

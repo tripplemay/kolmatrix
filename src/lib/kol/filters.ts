@@ -183,10 +183,14 @@ export type RelationshipStatus = (typeof RELATIONSHIP_STATUSES)[number];
 export interface DiscoveryFilters {
   search?: string;
   /**
-   * BL-044 F002 — natural-language semantic search query (URL `?ai=`).
-   * When set, `runSemanticKolSearch` replaces the ILIKE substring path
-   * and `search` is cleared (the two are mutually exclusive — pre-impl
-   * audit decision #11:A first iteration).
+   * BL-107-F002/M7 — DORMANT. The `?ai=` semantic-search UI was never
+   * wired (`buildKolWhere` never read this, `runSemanticKolSearch` had
+   * zero callers), so it rendered a fake "AI: …" chip that filtered
+   * nothing. The misleading UI is removed; `parseFilters` no longer
+   * reads `?ai=` and `serializeFilters` never emits it (stray `?ai=`
+   * is a no-op). The field is retained — not deleted — so legacy
+   * SaveSearch JSON that still carries `aiQuery` deserializes without a
+   * type break, and BL-112 can re-wire real semantic search onto it.
    */
   aiQuery?: string;
   followersMin?: number;
@@ -308,15 +312,12 @@ export function parseFilters(
   const searchRaw = get("search");
   const searchTrimmed = searchRaw && searchRaw.trim() ? searchRaw.trim() : undefined;
 
-  // BL-044 F002 — `?ai=<query>` activates semantic search. Per pre-impl
-  // audit #11:A (first iteration), `?ai=` and `?search=` are mutually
-  // exclusive: when both are present in the URL, `?ai=` wins and the
-  // ILIKE `search` is dropped. This keeps SaveSearch JSON shape simple
-  // and prevents the UI from rendering two competing query chips.
-  const aiRaw = get("ai");
-  const aiQueryTrimmed = aiRaw && aiRaw.trim() ? aiRaw.trim() : undefined;
-  const aiQuery = aiQueryTrimmed;
-  const search = aiQuery ? undefined : searchTrimmed;
+  // BL-107-F002/M7 — `?ai=` is no longer parsed. The semantic-search UI
+  // was never wired (it filtered nothing), so a stray `?ai=` must NOT
+  // drop the real `search` term nor surface a fake chip. aiQuery stays
+  // permanently undefined here; BL-112 will re-introduce a real parse.
+  const search = searchTrimmed;
+  const aiQuery = undefined;
 
   return {
     search,
@@ -368,13 +369,10 @@ export function serializeFilters(
 ): URLSearchParams {
   const merged = { ...filters, ...overrides };
   const params = new URLSearchParams();
-  // BL-044 F002 — emit `?ai=<query>` when aiQuery is set. The mutual
-  // exclusion (D9 / #11:A) is enforced at parse time, but we also drop
-  // `search` here when `aiQuery` overrides it during a serializeFilters
-  // override call.
-  if (merged.aiQuery) {
-    params.set("ai", merged.aiQuery);
-  } else if (merged.search) {
+  // BL-107-F002/M7 — never emit `?ai=`; the semantic-search UI is
+  // retired (see DiscoveryFilters.aiQuery). Only the deterministic
+  // `?search=` free-text term is serialized.
+  if (merged.search) {
     params.set("search", merged.search);
   }
   if (merged.followersMin != null) params.set("followersMin", String(merged.followersMin));
