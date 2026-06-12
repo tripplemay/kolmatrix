@@ -1,11 +1,11 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "BL-105 campaign 编辑 UI 补回(波3). 审计 M1: campaign 编辑/状态/营收/KOL名单管理 6个孤儿 server action(campaigns/[id]/actions.ts)全实装有单测但零 UI 入口(BL-070-F005 删了6编辑组件); H6 Edit Brief→/campaigns/[id]/edit 路由缺失404. 用户决策(2026-06-09): 补回编辑入口非退役. 设计(与ADR-013 AI-native一致): 详情页保持只读, campaign级编辑走新建 /edit 页(H6接此), KOL名单操作 AcceptedKolsPanel每行inline恢复. 复用现成已测action/lib主要前端接线. 4 features: F001 /edit页+字段编辑+H6 / F002 状态流转+营收 / F003 名单inline操作 / F004 Codex. 纯kolmatrix 无schema/env变更.",
   "total_features": 4,
-  "completed_features": 3,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "BL-105-campaign-edit-ui-restore",
-  "last_updated": "2026-06-12T10:00+0800",
+  "last_updated": "2026-06-12T10:30+0800",
   "reference_docs": [
     "docs/specs/BL-105-campaign-edit-ui-restore-spec.md",
     "docs/reviews/full-feature-chain-audit-2026-06-09.md(M1+H6)",
@@ -16,8 +16,8 @@
   "docs": {
     "spec": "docs/specs/BL-105-campaign-edit-ui-restore-spec.md",
     "audit": "docs/reviews/full-feature-chain-audit-2026-06-09.md",
-    "test_cases": null,
-    "signoff": null,
+    "test_cases": "docs/test-cases/BL-105-L2-manual-verification-checklist.md",
+    "signoff": "docs/test-reports/BL-105-signoff-2026-06-12.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
@@ -27,7 +27,7 @@
   "session_notes": {
     "Kimi_planner": "[2026-06-12 10:00 BJT Planner Kimi] 四批(BL-108/110/111/100)已上prod+Planner核验健康(batch_id列在prod, health ok). 开波3 BL-105(用户'开始波3')campaign编辑UI补回. 6孤儿action接UI. 设计守ADR-013只读详情+独立/edit页+名单inline. 4features. 下一步Generator F001. 旁挂: 2条水合learnings待ack; prod Redis 6.0.16 watch; 波4(BL-107/106)在后.",
     "Kimi_generator": "[2026-06-12 03:33 BJT Generator Kimi] F001 DONE: 新建 /campaigns/[id]/edit 页(server, owner/admin gate canEditCampaign→非owner非admin redirect回详情/不存在notFound) + CampaignEditForm(client, name/budgetAmount/startDate/endDate/game 字段, useTransition 接 updateCampaignFieldsAction 不改契约, 成功 saved banner) + permissions.ts(纯 canEditCampaign 可测). H6 自动修(BriefSummaryPanel Edit Brief href 早已是 /edit, 建真页即解 404). i18n campaigns.edit 5 locale(含 F002 共用 errors 全集). 单测 8(permissions owner/admin/deny + form 渲染/提交调action/saved/error). L1 绿(tsc=0/lint 0e3w/i18n+fidelity 20 pass). ⚠️复用 CampaignHeader.tsx(orphan未mount)的 form 模式但新写独立页, 未动详情页只读. 下一步 F002(/edit 加状态流转+营收控件). [03:53 F002 DONE] CampaignStatusControl(allowedNext server算 isAllowedStatusTransition→client按钮接 transitionStatusAction, router.refresh)+CampaignRevenueControl(接 recordRevenueAction, status=completed 锁定 disable+lockedHint). page.tsx 接线两控件+statusNames(复用 campaigns.status)+errors. i18n campaigns.edit.statusControl/revenue 5 locale. 单测 8(状态: 渲染/提交/无流转/error; 营收: 提交/锁定/error). ⚠️⚠️ **F001 CI 红根因+修复**: page.tsx 导出非法命名 export editErrorLabels → Next App Router page 仅许 default+segment config → `next build` fail(tsc/lint 不报!). 修: 抽 editErrorLabels 到 edit/error-labels.ts. **本地 npm run build EXIT=0 实证**(edit 路由编译). 教训: 新建 route page feature 须本地 npm run build, tsc/lint 不够. L1 绿(tsc=0/lint 0e3w/test 23). 下一步 F003(AcceptedKol inline ops + 改 fidelity 只读 guard). [04:23 F003 DONE] AcceptedKolRow 转 client, canEdit 门控 inline ops(status Select 乐观更新+回滚→updateKolContactStatusAction / fee 点击编辑→updateKolFeeAction / remove 内联确认→removeKolAction, 均 router.refresh). !canEdit 路径保持 F006 只读 markup 不变(非编辑者无感). AcceptedKolsPanel+detail page.tsx 接线 canEdit(canEditCampaign 复用 F001 permissions)+campaignId+editLabels. 改 fidelity 只读 guard→锁新 inline 契约. i18n campaigns.detail.kolPanel.edit 5 locale. 单测 8(只读/状态改+回滚/fee/remove确认). ⚠️权限: inline ops UI 门控 owner/admin, 但底层 action 仅 tenant 级鉴权(既有契约未改, spec 假设 action 有 owner 鉴权与实际不符—见 handoff). 全量 npm test 1673/1673, **npm run build EXIT=0**(吸取F002教训), tsc=0, lint 0e3w. 下一步: 切 verifying 前 staging deploy(无 migration, 纯前端). F004 Codex. [04:30 staging deployed @ 969b4d5 @ 2026-06-12T... ] F001-F003 building done 切 verifying. 无 migration(migrate deploy: no pending). health git_sha=969b4d5 healthy. ⚠️ 权限: owner/admin 限制在 UI 门控层(canEditCampaign), 底层 action 仅租户级(spec 假设与实际不符, 见 generator_handoff). 待 Codex L1+L2+signoff.",
-    "Reviewer": null,
+    "Reviewer": "[2026-06-12 10:30 BJT Evaluator Reviewer] BL-105 verifying PASS. L1: eslint 2w(pre-existing ≤3), tsc=0, npm test 1673 PASS+26新. L2 staging git_sha=969b4d5: E2E 12/12 PASS(AC1 H6 Edit Brief不再404; AC2 字段编辑保存后详情反映; AC3 状态流转status pill更新; AC4 营收→ROI页反映; AC5a/b KOL inline改status/fee生效; AC6a/b/c/d 权限门控admin/owner可编辑/非owner被拒; i18n en/zh采样正确). Signoff: docs/test-reports/BL-105-signoff-2026-06-12.md. 权限: UI层(canEditCampaign)有效, 底层action仅租户级(非本批scope). 首轮验收PASS无阻断.",
     "johnsong_planner": null,
     "johnsong_generator": null
   },
