@@ -67,9 +67,10 @@ export async function generateRoiInsightsAction(
         spendTotal: c.spendTotal,
         revenueRecorded: c.revenueRecorded,
         roiPercent: c.roiPercent,
-        startedAt: null,
+        // BL-107-F001 (M8): no `startedAt:null` / `kolCount:0` hardcode —
+        // `loadRoiCampaigns` sources neither, so feeding them fabricated
+        // values misled the AI. closedAt is the only date the loader carries.
         closedAt: c.closedAt,
-        kolCount: 0,
       })),
       summary: {
         totalSpend: summary.totalSpend,

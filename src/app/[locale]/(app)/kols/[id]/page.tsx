@@ -10,14 +10,13 @@
  * Behaviour preserved end-to-end: same data load, same tab routing,
  * same Save / RelationshipStatus actions.
  */
-import type { Prisma } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { withTenant } from "@/lib/db";
+import { loadKol } from "@/lib/kol-detail/load-kol";
 import { loadRecentVideos } from "@/lib/kol-detail/recent-videos";
 
 import { EmptyTabState } from "./EmptyTabState";
@@ -48,75 +47,6 @@ function resolveTab(raw: string | string[] | undefined): KolTabKey {
   const v = Array.isArray(raw) ? raw[0] : raw;
   if (v === "collabs" || v === "contacts" || v === "ai") return v;
   return "overview";
-}
-
-type KolDetailShape = Prisma.KolGetPayload<{
-  select: {
-    id: true;
-    platform: true;
-    handle: true;
-    displayName: true;
-    bio: true;
-    avatarUrl: true;
-    countryCode: true;
-    language: true;
-    followerCount: true;
-    engagementRate: true;
-    avgViews: true;
-    categories: true;
-    tags: true;
-    valueScore: true;
-    uploadsPerMonth: true;
-    lastUploadAt: true;
-    monetizationStatus: true;
-    brandSafetyRating: true;
-    isGaming: true;
-    relationshipStatus: true;
-    bannerUrl: true;
-    channelCreatedAt: true;
-    videoCount: true;
-    externalId: true;
-    metadata: true;
-    emails: true;
-    emailSource: true;
-  };
-}>;
-
-async function loadKol(tenantId: string, kolId: string): Promise<KolDetailShape | null> {
-  return withTenant(tenantId, async (tx) => {
-    return tx.kol.findUnique({
-      where: { id: kolId },
-      select: {
-        id: true,
-        platform: true,
-        handle: true,
-        displayName: true,
-        bio: true,
-        avatarUrl: true,
-        countryCode: true,
-        language: true,
-        followerCount: true,
-        engagementRate: true,
-        avgViews: true,
-        categories: true,
-        tags: true,
-        valueScore: true,
-        uploadsPerMonth: true,
-        lastUploadAt: true,
-        monetizationStatus: true,
-        brandSafetyRating: true,
-        isGaming: true,
-        relationshipStatus: true,
-        bannerUrl: true,
-        channelCreatedAt: true,
-        videoCount: true,
-        externalId: true,
-        metadata: true,
-        emails: true,
-        emailSource: true,
-      },
-    });
-  });
 }
 
 export default async function KolProfilePage({ params, searchParams }: Props) {

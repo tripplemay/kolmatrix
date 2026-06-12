@@ -27,9 +27,12 @@ export interface RoiInsightCampaign {
   spendTotal: number;
   revenueRecorded: number | null;
   roiPercent: number | null;
-  startedAt: string | null;
+  // BL-107-F001 (M8): `startedAt` / `kolCount` were removed — the ROI
+  // loader (`loadRoiCampaigns`) carries neither, so the action previously
+  // fed the AI hardcoded `startedAt:null` + `kolCount:0` for every
+  // campaign. Dropping them keeps the type honest (no fabricated values)
+  // rather than lying about data the loader never sources.
   closedAt: string | null;
-  kolCount: number;
 }
 
 export interface RoiInsightInput {

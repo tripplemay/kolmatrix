@@ -26,9 +26,7 @@ const baseInput = {
       spendTotal: 100,
       revenueRecorded: 273,
       roiPercent: 173,
-      startedAt: "2026-03-01T00:00:00Z",
       closedAt: "2026-04-01T00:00:00Z",
-      kolCount: 4,
     },
   ],
   summary: {
