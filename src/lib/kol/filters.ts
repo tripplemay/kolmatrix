@@ -411,10 +411,11 @@ export function serializeFilters(
  *  - `isGaming` defaults to true so MVP gaming-only view is always the
  *    starting point; `includeNonGaming` drops the filter so non-gaming
  *    creators appear mixed-in (sparse but present).
- *  - Search is a case-insensitive `contains` on displayName + handle.
- *    tsvector-backed search is available via searchKols() but is not
- *    compatible with cursor pagination; BM1 stays on ILIKE until the
- *    BI4-F005 helper gains pagination support.
+ *  - Search is a case-insensitive `contains` (ILIKE) on displayName +
+ *    handle, which supports cursor pagination — the path the product
+ *    uses. (BL-107-F001/M5: the dormant tsvector `searchKols()` helper
+ *    was deleted as dead code; the DB `search_vector` column + trigger
+ *    are retained for BL-112's real semantic search.)
  *  - Nullable numeric thresholds (engagement etc.) use `gte` which
  *    naturally excludes NULL rows in Postgres. This is the expected
  *    behavior — a KOL with unknown engagement cannot satisfy "≥ 5%".

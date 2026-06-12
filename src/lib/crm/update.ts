@@ -6,7 +6,10 @@
  *     (kept as-is for the kol profile page; we only re-export the
  *     enum + return shape from there if needed in future cleanup)
  *   - BM2-F007 `/crm` row select (Server Action wrapping this helper)
- *   - BM2-F007 `PATCH /api/kols/[id]/relationship-status` REST route
+ *
+ * BL-107-F002/M6: the `PATCH /api/kols/[id]/relationship-status` REST
+ * wrapper was deleted as an orphan (zero fetch callers; the /crm Server
+ * Action calls this helper directly). The helper itself is unchanged.
  *
  * Logs `kol.relationship_changed` to audit_log (the existing BM1
  * action name — Planner §13 #J:A locked) so /crm Recent Changes
