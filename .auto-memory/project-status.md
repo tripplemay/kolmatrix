@@ -5,7 +5,7 @@ type: project
 ---
 ## ✅ BL-113-ai-cost-cap-fix DONE (3/3, fix_rounds=0, signoff @ docs/test-reports/BL-113-signoff-2026-06-12.md) — PROD 故障 hotfix: AI 成本上限修复
 - 根因: cost-cap.ts 按 count×$0.01 计(忽略真实costUsd), 后台 kol_country_enrichment 500事件=$5触顶(真实$0.45)→前台AI被挡. 修: A cap改sum真实costUsd+排除source=system / B 后台AI(enrichment/prewarm)打costBucket=system不计前台配额. L1 1689 PASS. Codex L2 code-review 5/5(0 crit/high). staging@686f758
-- ⚠️ **prod故障未真修复前需 prod 部署**(staging@686f758, 用户报的AI降级要部署才生效; 配额UTC零点临时重置但enrichment再跑会复触). 3批待prod部署: BL-105+BL-107+BL-113
+- ✅ **PROD 已部署(用户 2026-06-12/13)+ Planner 核验**: 该租户今日500 enrichment 事件前台真实成本 $0.00→不再触顶(A+B 生效, 故障已根治). BL-105+BL-107+BL-113 三批随 main HEAD 上 prod(积压清零). BL-107 KPI cron 已装 /etc/cron.d/kolmatrix-kpi-snapshot(00:30 UTC 首跑填 kpi_daily_snapshot, 现仍空待今晚)
 - 📋 soft-watch(Codex 1 MEDIUM): enrichment/prewarm 测试未覆盖 costBucket 参数, 下批补
 ## ✅ BL-107-link-closure-wave4 DONE (5/5, fix_rounds=0, signoff @ docs/test-reports/BL-107-signoff-2026-06-12.md) — 链路收口(波4)= **split-brain 路线图收官**
 - M4软删过滤 / M8 ROI删硬编码 / M5 tsvector死码删 / M6删4孤儿路由(含relationship-status, 零fetch实证) / M7 ?ai=止血(保留引擎待BL-112) / BL-106 KPI cron装deploy-prod.sh step8b(自愈+抗VM reset). L1 1681 test绿. Codex L2 代码审查5/5 PASS(0 crit/high/med). staging@02ba1fe
