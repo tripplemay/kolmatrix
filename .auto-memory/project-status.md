@@ -3,9 +3,9 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-107-link-closure-wave4 BUILDING (0/5) — 链路收口(波4 split-brain 收官)+ BL-106 KPI cron
-- 审计中危收尾: M4 KOL软删过滤 / M8 ROI硬编码修 / M5 tsvector死码删 / M6 孤儿API删 / M7 ?ai=假AI搜索止血(移除误导UI, 保留引擎; 用户决真功能单开 BL-112) / BL-106 持久KPI快照cron(prod实证cron缺失+kpi_daily_snapshot表空, deploy脚本装cron.d抗VM reset). spec docs/specs/BL-107-*
-- F001 M4+M8 / F002 M5+M6删 / F003 M7止血 / F004 KPI cron / F005 Codex. 下一步 Generator F001. ⚠️删除类须 npm run build(generator §14.4)
+## 🚧 BL-107-link-closure-wave4 VERIFYING (4/5 generator done) — 链路收口(波4 split-brain 收官)+ BL-106 KPI cron
+- F001 M4软删/可疑过滤+M8 ROI删硬编码 ✅ / F002 M5 tsvector死码删+M6删4孤儿路由(零fetch调用方实证) ✅ / F003 M7 ?ai=止血(删假chip/banner+中和parse/serialize, **保留引擎**待BL-112) ✅ / F004 BL-106 KPI cron装deploy-prod.sh step8b(抗VM reset+自愈backup) ✅. **下一步 Codex F005 L1+L2+signoff**
+- **staging@02ba1fe**(git_sha+页面实证; ⚠️build触发系统OOM→SSH掉线exit255但build实际完成, 见session_notes教训). L1: tsc0/lint0e3w(全预存)/test1681 PASS. 旁: 用户授权删BL-105 e2e spec死码修预存红CI(现绿). ⚠️F004 cron实装验证gated on prod部署; F002 relationship-status路由有契约header歧义待复核(详generator_handoff)
 ## ✅ BL-105-campaign-edit-ui-restore DONE (4/4, fix_rounds=0, signoff @ docs/test-reports/BL-105-signoff-2026-06-12.md) — campaign 编辑 UI 补回(波3)
 - 6孤儿action接UI: /edit页(字段/状态流转/营收, owner/admin gate)+AcceptedKolsPanel每行inline(status/fee/remove)+H6 Edit Brief 修404. 守 ADR-013 详情页只读. staging@969b4d5(无migration). Codex L2 E2E 12/12 PASS
 - ✅ **authz 已决(用户 2026-06-12)**: campaign 编辑 = **租户级权限**(与全app RLS 模型一致, 无 per-user owner/admin 角色), 不补 server 端强制; UI owner/admin 门控为软限制保留. 安全上非真漏洞(租户即信任边界)

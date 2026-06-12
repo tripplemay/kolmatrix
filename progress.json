@@ -1,11 +1,11 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "BL-107 链路收口(波4)+ BL-106 KPI快照cron. 审计中危合集收尾. M4 KOL详情软删过滤 / M8 ROI喂AI硬编码修 / M5 tsvector死码删 / M6 孤儿API删 / M7 假AI语义搜索?ai=止血移除误导UI(用户决M7真功能单开批次BL-112, 本批保留引擎仅去UI误导) / BL-106 持久KPI快照cron(prod实证cron缺失+kpi_daily_snapshot表空count=0, deploy脚本装cron.d抗VM reset). 5 features: F001 M4+M8 / F002 M5+M6删 / F003 M7止血 / F004 BL-106 KPI cron / F005 Codex. 纯kolmatrix.",
   "total_features": 5,
   "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "BL-107-link-closure-wave4",
-  "last_updated": "2026-06-12T11:30+0800",
+  "last_updated": "2026-06-12T18:05+0800",
   "reference_docs": [
     "docs/specs/BL-107-link-closure-wave4-spec.md",
     "docs/reviews/full-feature-chain-audit-2026-06-09.md(M2/M4/M5/M6/M7/M8)",
@@ -24,10 +24,10 @@
   "role_assignments": null,
   "evaluator_feedback": null,
   "fix_rounds_history": [],
-  "generator_handoff": "[2026-06-12 11:30 BJT Planner Kimi 开 BL-107 building] 链路收口波4(split-brain 收官)+ BL-106 KPI cron. M4软删过滤/M8 ROI硬编码=小修; M5 tsvector死码+M6孤儿API=删(⚠️删前grep全仓零调用方+npm run build绿); M7 ?ai=止血(移除误导UI chip/empty-state, **保留 semantic-search.ts 引擎**, 用户决真AI搜索单开BL-112); BL-106 KPI cron(prod实证缺失+表空, deploy-prod.sh装/etc/cron.d/kolmatrix-kpi-snapshot抗VM reset, 同backup-retention教训, 建议同步ensure backup cron自愈). ⚠️ M5 DB列/trigger保留(drop要migration无害), 仅删TS死码. ⚠️ 删除类feature须npm run build(新沉淀 generator §14.4: route变更须build, 删route同理). 下一步 Generator F001(M4+M8最小). 详见 spec §2. 纯kolmatrix.",
+  "generator_handoff": "[2026-06-12 18:05 BJT Generator Kimi building→verifying] F001-F004 全done, staging@02ba1fe (page-load+git_sha实证, 详session_notes). L1本地: tsc=0(仅修了预存e2e错见下), lint=0err/3warn(全预存非本批), npm test 1681 PASS. 交Codex F005 L1+L2+signoff. **L2要点**: ① M4软删: 直链软删/可疑KOL应notFound(loadKol findFirst+{deletedAt:null,isSuspicious:false}, 与/match filters.ts:424口径一致), 需登录态+真软删KOL验. ② M6删4路由(全仓零fetch调用方实证): POST /api/campaigns/[id]/kols, PATCH /api/kols/[id], [kolId] PATCH/DELETE, relationship-status PATCH — ⚠️**relationship-status路由header自述'future mobile/external clients契约', 但零fetch调用方+无mobile端在建, 我依spec点名删, 如Planner/Codex认为应保留为契约则一行git revert可恢复**; helper全保留(Server Action直接调). build绿已验(route manifest确认4路由消失). ③ M7: stray ?ai=不显假chip/banner(MatchActiveFilters删aiQuery chip+死aiFallbackActive banner; filters.ts parse/serialize不再读/发?ai=; 引擎semantic-search.ts保留待BL-112). ④ M8: roi/actions.ts不再喂硬编码startedAt/kolCount. ⑤ **KPI cron(F004)验证gated on PROD部署**: deploy-prod.sh step8b装/etc/cron.d/kolmatrix-kpi-snapshot(dry-run测过heredoc+if+cron.d格式), 但cron实装在prod deploy时才发生(staging不跑deploy-prod.sh). Codex可: code-review脚本块 + 手动跑`npm run kpi-snapshot:daily`确认写kpi_daily_snapshot count>0(脚本逻辑验证), cron实装待用户prod部署后复验. **旁注**: (a) 修了预存红CI — 用户授权删BL-105 e2e spec 3个死helper(commit 3133a46), 非本批引入; 现main CI绿. (b) M5删tsvector.ts连带删tests/integration/kol-tsvector.test.ts(无法编译), 其中3用例测的是保留的DB search_vector trigger/GIN index — 如需保留该infra覆盖供BL-112, 由Codex(测试域)补焦点infra测试. (c) 3个lint warn全预存(health route test/worker/nullif test), 非本批文件.",
   "session_notes": {
     "Kimi_planner": "[2026-06-12 11:30 BJT Planner Kimi] ack沉淀4条learnings(21d4af1). 开波4 BL-107收口(用户'同意'ack+开波4). M7决: 真AI搜索单开BL-112, 本批仅止血. BL-106核实prod cron缺失+表空(KPI趋势prod从未生效). 5features. 下一步Generator F001. 波4是split-brain路线图收官. 旁挂: prod Redis6.0.16 watch; 新backlog BL-112(真AI语义搜索).",
-    "Kimi_generator": null,
+    "Kimi_generator": "[2026-06-12 18:05 BJT Generator Kimi] BL-107 F001-F004 building 完成→verifying. **staging deployed @ 02ba1fe @ 2026-06-12 ~09:31 UTC**: git pull 969b4d5→02ba1fe + npm ci + prisma generate + migrate(无pending) + build(webpack,4GB heap) + pm2 reload kolmatrix-staging. ⚠️**staging build OOM坑(再现+确认无害)**: build峰值触发系统级OOM(8GB共享VM: prod+aigc4进程+staging+build), SSH会话在收尾掉线报exit255 'Connection closed by remote host', 但**build实际完成**(BUILD_ID 09:31写入, git_sha=02ba1fe, /en/login 200/102KB, .next完整server24/chunks34, pm2 reload已跑uptime稳定增长无crash-loop). prod未受波及(uptime15h healthy). 内存已恢复(4.4Gi avail). 教训: staging build触发系统OOM时SSH掉线≠build失败, 必须查git_sha+实页加载实证而非凭exit code. 用Workflow做了6路并行discovery(F001-F004目标文件深读+删除项零调用方验证)加速. F002 M6 relationship-status路由删除有契约-header歧义已在generator_handoff标注待Codex/Planner复核.",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
