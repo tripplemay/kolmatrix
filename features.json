@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "Hero(HeroVideo.tsx)重做: 去 hero 插画, 大 display 标题+副文+主/次CTA+微妙渐变/mesh背景(CSS无asset)+大留白, jina.ai 居中/呼吸感. Generator 实现时直接参考 jina.ai 现场对齐",
       "全局排版/留白向 jina.ai 收敛: type scale/section间距/分隔线层级(globals.css token微调, 不破 perf/a11y)",

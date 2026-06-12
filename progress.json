@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-114 落地页 jina.ai 风格重做 — 文字驱动极简. 用户'落地页风格和 https://jina.ai/ 一样'. jina.ai 底色与现状接近(深色+青)但文字驱动极简/几乎不用插画/大留白/排版技术质感. 用户决: ①全去 BL-080 8张插画走文字驱动极简(反转BL-080) ②重点=文字驱动极简/大留白+排版/技术质感(未选去暖白light区/金色). 审计 docs/reviews/landing-visual-audit-2026-06-13.md. 5 features: F001 Hero重做+全局排版收敛(tone-setter, Hero-first staging检查点待用户确认方向) / F002 Features+BeforeAfter文字驱动 / F003 EmailCenterDemo+其余section极简 / F004 清插画asset+死动效+baseline重拍 / F005 Codex. 守 perf99/a11y/reduced-motion 不回退. 纯kolmatrix.",
   "total_features": 5,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
   "current_sprint": "BL-114-landing-jina-style-redesign",
-  "last_updated": "2026-06-13T11:00+0800",
+  "last_updated": "2026-06-13T14:30+0800",
   "reference_docs": [
     "docs/specs/BL-114-landing-jina-style-redesign-spec.md",
     "docs/reviews/landing-visual-audit-2026-06-13.md(动效/插画/氛围审计)",
@@ -27,7 +27,7 @@
   "generator_handoff": "[2026-06-13 11:00 BJT Planner Kimi 开 BL-114 building] 落地页 jina.ai 风格重做(文字驱动极简). 用户决: 全去8插画+文字驱动极简/大留白+排版技术质感(反转BL-080). jina.ai 底色与现状接近(深色+青), 核心=去插画/极简/留白/排版, 非推翻配色. ⚠️⚠️ **F001 Hero-first 硬检查点**: F001(Hero重做+全局排版收敛)完成→部署staging→**停下让用户确认jina.ai方向, 用户OK再推F002+**(避免主观重做做满才发现偏). Generator实现时直接参考 https://jina.ai/ 现场对齐. ⚠️ 硬约束守BL-080不回退: Lighthouse perf99/WCAG AA/reduced-motion; landing visual baseline 必Linux runner重拍(generator §21 + update-visual-baselines.yml)+连带e2e断言更新, 否则main持续红. ⚠️ 新route/视觉改动须本地npm run build(generator §14.4). 截图(/landing/screenshots/)按极简口径克制或转文字. 用户未选去暖白light区/金色→不强推, 若去插画后割裂明显可在done提议不擅改. 下一步 Generator F001(tone-setter). 详见 spec §2-§3.",
   "session_notes": {
     "Kimi_planner": "[2026-06-13 11:00 BJT Planner Kimi] BL-113 AI hotfix done+prod部署核验(故障根治). 用户要落地页对齐jina.ai→Planner视觉审计(亲看8插画+子agent代码审计, 报告landing-visual-audit-2026-06-13.md)→WebFetch读jina.ai→用户决全去插画走文字驱动极简. 开BL-114重做. F001 Hero-first检查点(staging先验方向). 反转BL-080(用户决). 守perf99/a11y/baseline重拍. 下一步Generator F001. 旁挂: KPI cron今晚00:30UTC首跑(验kpi_daily_snapshot); BL-112真AI搜索/BL-095等backlog; 落地页改进审计还有B光温/C glow/D-E动效等项未纳入本批(本批聚焦jina对齐去插画)可后续.",
-    "Kimi_generator": null,
+    "Kimi_generator": "[2026-06-13 14:30 BJT Generator] F001 Hero-first 完成并提交(6c62938). 去 hero-illustration.png，纯 CSS mesh 背景，min-h-[100svh] py-32/lg:py-40，max-w-4xl，eyebrow mb-8，CTA gap-4/px-8。globals.css: hero字号 44-88→48-96px，section-y 5-9→6-10.5rem，mesh cyan光晕强化。E2E更新去插画测试。build+1689测试全绿。⚠️ Hero-first硬检查点：staging已推，等用户确认jina.ai方向后再推F002+。",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
