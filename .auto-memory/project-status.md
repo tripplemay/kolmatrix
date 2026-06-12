@@ -3,6 +3,9 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
+## 🚧 BL-114-landing-jina-style-redesign BUILDING (0/5) — 落地页 jina.ai 风格重做(文字驱动极简)
+- 用户'落地页风格和 jina.ai 一样'→Planner审计(docs/reviews/landing-visual-audit-2026-06-13.md)+WebFetch读jina. 用户决: 全去8插画走文字驱动极简(反转BL-080)+重点文字驱动/大留白/排版技术质感. jina底色与现状接近(深色+青), 核心去插画/极简非推翻配色
+- F001 Hero重做+全局排版收敛(⚠️tone-setter, Hero-first staging检查点待用户确认方向再推) / F002 Features+BeforeAfter文字驱动 / F003 EmailCenterDemo+其余section极简 / F004 清插画asset+死动效+baseline重拍 / F005 Codex. 守perf99/a11y/reduced-motion不回退, baseline必Linux重拍. 下一步 Generator F001
 ## ✅ BL-113-ai-cost-cap-fix DONE (3/3, fix_rounds=0, signoff @ docs/test-reports/BL-113-signoff-2026-06-12.md) — PROD 故障 hotfix: AI 成本上限修复
 - 根因: cost-cap.ts 按 count×$0.01 计(忽略真实costUsd), 后台 kol_country_enrichment 500事件=$5触顶(真实$0.45)→前台AI被挡. 修: A cap改sum真实costUsd+排除source=system / B 后台AI(enrichment/prewarm)打costBucket=system不计前台配额. L1 1689 PASS. Codex L2 code-review 5/5(0 crit/high). staging@686f758
 - ✅ **PROD 已部署(用户 2026-06-12/13)+ Planner 核验**: 该租户今日500 enrichment 事件前台真实成本 $0.00→不再触顶(A+B 生效, 故障已根治). BL-105+BL-107+BL-113 三批随 main HEAD 上 prod(积压清零). BL-107 KPI cron 已装 /etc/cron.d/kolmatrix-kpi-snapshot(00:30 UTC 首跑填 kpi_daily_snapshot, 现仍空待今晚)

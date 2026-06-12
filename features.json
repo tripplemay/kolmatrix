@@ -1,43 +1,68 @@
 [
   {
     "id": "F001",
-    "title": "cost-cap 改累加真实 costUsd + 排除后台 source (A+B 查询侧) (generator)",
+    "title": "Hero 文字驱动极简重做 + 全局排版/留白向 jina 收敛 (generator) 【tone-setter 检查点】",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "done",
+    "estimated_hours": 3.0,
+    "status": "pending",
     "acceptance": [
-      "cost-cap.ts assertDailyCostBudget(+checkLlmCostBudget): count(events)×0.01 → sum(payload->>costUsd)(今日/本租户/ai.usage)与 limit 比; null/缺失 costUsd 按 0 或保守小额",
-      "B 查询侧: sum 排除后台标记(payload->>source='system')→后台 AI 不计入用户前台配额",
-      "保持 fail-open(limit≤0 返回)+ 抛 AiDailyCostExceededError(金额用真实 sum)",
-      "单测(sum 真实成本 / system source 排除 / 真实达$5才触顶 / null costUsd / fail-open); L1 全绿"
+      "Hero(HeroVideo.tsx)重做: 去 hero 插画, 大 display 标题+副文+主/次CTA+微妙渐变/mesh背景(CSS无asset)+大留白, jina.ai 居中/呼吸感. Generator 实现时直接参考 jina.ai 现场对齐",
+      "全局排版/留白向 jina.ai 收敛: type scale/section间距/分隔线层级(globals.css token微调, 不破 perf/a11y)",
+      "⚠️ Hero-first 检查点(硬要求): F001 完成→部署 staging→停下让用户确认 jina.ai 方向, 再推 F002+. handoff/session_notes 标注待用户确认",
+      "i18n + 单测 + npm run build 绿; reduced-motion 兜底"
     ]
   },
   {
     "id": "F002",
-    "title": "后台 AI 调用打 source=system 标 (B 调用侧) (generator)",
+    "title": "Features + BeforeAfter 转文字驱动极简 (generator)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "done",
+    "estimated_hours": 2.5,
+    "status": "pending",
     "acceptance": [
-      "run-action.ts runAigcAction opts 加可选 flag(如 costBucket:'system'|'user' 默认 user)→透传 recordAiUsage extras source",
-      "后台 call sites 标 system: kol-sync/enrichment-stage.ts(kol_country_enrichment)+ explain prewarm worker(explain-recommendations-worker/prewarm-actions)+ grep 识别其它系统cron/worker/backfill触发的 runAigcAction",
-      "前台不动(默认 user): match_rerank/explain dialog/email_customize/brief_parse/refine/roi_insights 等用户主动触发",
-      "单测(后台调用 recordAiUsage 带 source=system / 前台默认 user); L1 全绿"
+      "Features(Features.tsx): 去5张feature插画, 重做文字驱动(干净图标+标题+描述+大留白, jina.ai极简列表/网格); 截图(/landing/screenshots/)克制处理(保留须极简干净或转文字驱动)",
+      "BeforeAfter: 去 before-after 插画, 改文字/极简对比(两列before/after文字 or 极简几何, 无mockup)",
+      "i18n + 单测 + npm run build 绿"
     ]
   },
   {
     "id": "F003",
+    "title": "EmailCenterDemo + 其余 section 对齐极简 (generator)",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 2.5,
+    "status": "pending",
+    "acceptance": [
+      "EmailCenterDemo: 去 email 插画, 转文字驱动极简(StickyParallax 可保留滚动叙事但内容文字化/极简)",
+      "PainPoints/TrustPlaceholder/FAQ/FooterCTA/TopNav/SectionTransition 对齐极简文字驱动+大留白+技术质感(分隔线/mono/留白); Trust logo grid 按 jina.ai 干净排布",
+      "i18n + 单测 + npm run build 绿"
+    ]
+  },
+  {
+    "id": "F004",
+    "title": "清理插画 asset + 死动效 + perf/a11y/baseline 重拍 (generator)",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 2.0,
+    "status": "pending",
+    "acceptance": [
+      "删 public/landing/illustrations/*.png(8张)+ 不再引用的 illustration-asset 逻辑/相关 i18n key",
+      "删审计标的死动效(landing-hero-video-scale/cta-glow-pulse 等无引用 keyframe, globals.css)",
+      "visual-regression baseline 重拍(Linux runner update-visual-baselines.yml)+ 连带失效断言更新(删hero-video等); Lighthouse perf99/a11y AA 复验不回退; npm run build 绿"
+    ]
+  },
+  {
+    "id": "F005",
     "title": "Codex L1+L2 + signoff (executor:codex)",
     "executor": "codex",
     "priority": "high",
-    "estimated_hours": 1.0,
+    "estimated_hours": 1.5,
     "status": "pending",
     "acceptance": [
-      "L1: lint 0err warn≤3 / tsc=0 / npm test",
-      "L2 部署后 prod/staging: ① AI Match 重排恢复(不再'AI重排暂不可用') ② KOL 问号解释恢复(不再'配额已用尽') ③ 后台 country enrichment 不再吃前台配额 ④ cap 反映真实 USD(sum costUsd) ⑤ fail-open/真实达$5仍触顶",
-      "signoff docs/test-reports/BL-113-signoff-2026-06-XX.md"
+      "L1: lint 0err warn≤3 / tsc=0 / npm test + npm run build",
+      "L2 部署后 staging: ① 落地页对齐 jina.ai 文字驱动极简(无插画/大留白/技术质感) ② 各section视觉走查 ③ Lighthouse perf≥99/WCAG AA/reduced-motion 不回退 ④ visual baseline 已重拍绿 ⑤ 5 locale 文案正常",
+      "signoff docs/test-reports/BL-114-signoff-2026-06-XX.md"
     ]
   }
 ]

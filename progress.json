@@ -1,34 +1,34 @@
 {
-  "status": "done",
-  "user_goal": "BL-113 AI 成本上限修复(prod 故障 hotfix). 用户报 prod 两处 AI 降级: ①/campaigns/[id] AI推荐'AI重排暂不可用-按相似度' ②KOL问号'每日AI配额已用尽-仅简要'. 同一根因(Planner已诊断): per-tenant每日AI成本上限被后台吃光→前台AI全被assertDailyCostBudget挡. prod实证租户2b1dcaa2今日500个ai.usage全是kol_country_enrichment(后台国家补全), cost-cap按count×$0.01计为$5触顶, 真实仅~$0.45. 两缺陷: ①cost-cap.ts:83按事件数×$0.01忽略真实costUsd(11×高估) ②后台批量任务与前台共用配额. 用户决A+B都修. A: cap改sum真实costUsd. B: 后台AI(enrichment/prewarm)打source=system不计前台配额. 利好recordAiUsage集中run-action.ts:240已传真实costUsd. 3 features: F001 cap查询A+B / F002 后台打标 / F003 Codex. 纯kolmatrix.",
-  "total_features": 3,
-  "completed_features": 3,
+  "status": "building",
+  "user_goal": "BL-114 落地页 jina.ai 风格重做 — 文字驱动极简. 用户'落地页风格和 https://jina.ai/ 一样'. jina.ai 底色与现状接近(深色+青)但文字驱动极简/几乎不用插画/大留白/排版技术质感. 用户决: ①全去 BL-080 8张插画走文字驱动极简(反转BL-080) ②重点=文字驱动极简/大留白+排版/技术质感(未选去暖白light区/金色). 审计 docs/reviews/landing-visual-audit-2026-06-13.md. 5 features: F001 Hero重做+全局排版收敛(tone-setter, Hero-first staging检查点待用户确认方向) / F002 Features+BeforeAfter文字驱动 / F003 EmailCenterDemo+其余section极简 / F004 清插画asset+死动效+baseline重拍 / F005 Codex. 守 perf99/a11y/reduced-motion 不回退. 纯kolmatrix.",
+  "total_features": 5,
+  "completed_features": 0,
   "fix_rounds": 0,
-  "current_sprint": "BL-113-ai-cost-cap-fix",
-  "last_updated": "2026-06-12T21:55+0800",
+  "current_sprint": "BL-114-landing-jina-style-redesign",
+  "last_updated": "2026-06-13T11:00+0800",
   "reference_docs": [
-    "docs/specs/BL-113-ai-cost-cap-fix-spec.md",
-    "src/lib/ai/cost-cap.ts:73-83(assertDailyCostBudget count×0.01→sum costUsd)+:104 recordAiUsage(已传真实costUsd)+ checkLlmCostBudget",
-    "src/lib/aigc/run-action.ts:164(assertDailyCostBudget gate)+:240(recordAiUsage集中点, 加source flag)",
-    "src/lib/kol-sync/enrichment-stage.ts(kol_country_enrichment 后台站点)+ explain prewarm worker(explain-recommendations-worker/prewarm-actions)",
-    "prod实证: 租户2b1dcaa2今日500 kol_country_enrichment事件=cap $5触顶, 真实~$0.45"
+    "docs/specs/BL-114-landing-jina-style-redesign-spec.md",
+    "docs/reviews/landing-visual-audit-2026-06-13.md(动效/插画/氛围审计)",
+    "src/app/[locale]/(marketing)/_components/(HeroVideo/Features/BeforeAfter/EmailCenterDemo/PainPoints/Trust/FAQ/FooterCTA/SectionTransition/TopNav)",
+    "src/components/landing/(ScrollFadeIn/StickyParallax/StickyStack/useScrollProgress) + src/styles/globals.css(@theme token + 动效)",
+    "public/landing/illustrations/*.png(8张待删) + /landing/screenshots/(截图克制处理) + design-draft/design-system.md",
+    "参考: https://jina.ai/ (Generator 实现时直接对齐现场)"
   ],
   "docs": {
-    "spec": "docs/specs/BL-113-ai-cost-cap-fix-spec.md",
-    "audit": null,
+    "spec": "docs/specs/BL-114-landing-jina-style-redesign-spec.md",
+    "audit": "docs/reviews/landing-visual-audit-2026-06-13.md",
     "test_cases": null,
-    "signoff": "docs/test-reports/BL-113-signoff-2026-06-12.md",
+    "signoff": null,
     "framework_reviewed": false
   },
   "role_assignments": null,
   "evaluator_feedback": null,
   "fix_rounds_history": [],
-  "generator_handoff": "[2026-06-12 13:00 BJT Planner Kimi 开 BL-113 hotfix building] prod AI降级故障(铁律#9). 根因诊断完: per-tenant每日AI成本上限被后台country enrichment吃光(500事件×$0.01=$5触顶, 真实$0.45)→前台rerank/explain被assertDailyCostBudget挡. 用户决A+B. F001: cost-cap.ts count×0.01→sum真实costUsd(payload已有)+排除source=system. F002: run-action.ts:240 recordAiUsage加source flag, 后台站点(enrichment-stage/explain prewarm)标system, 前台默认user. ⚠️ recordAiUsage集中run-action.ts:240一处, 真实usage.costUsd已传→A数据现成. ⚠️ 保持fail-open(limit=0)+AiDailyCostExceededError契约; 改后cost-cap测试断言要同步(count→sum). ⚠️ B排除后台后后台无前台上限→A真实累加是主防护(enrichment真实极低), 未来后台暴增需独立全局预算(follow-up非本批). 不立即止血(配额UTC零点自动重置). 下一步Generator F001. 详见 spec §2.",
+  "generator_handoff": "[2026-06-13 11:00 BJT Planner Kimi 开 BL-114 building] 落地页 jina.ai 风格重做(文字驱动极简). 用户决: 全去8插画+文字驱动极简/大留白+排版技术质感(反转BL-080). jina.ai 底色与现状接近(深色+青), 核心=去插画/极简/留白/排版, 非推翻配色. ⚠️⚠️ **F001 Hero-first 硬检查点**: F001(Hero重做+全局排版收敛)完成→部署staging→**停下让用户确认jina.ai方向, 用户OK再推F002+**(避免主观重做做满才发现偏). Generator实现时直接参考 https://jina.ai/ 现场对齐. ⚠️ 硬约束守BL-080不回退: Lighthouse perf99/WCAG AA/reduced-motion; landing visual baseline 必Linux runner重拍(generator §21 + update-visual-baselines.yml)+连带e2e断言更新, 否则main持续红. ⚠️ 新route/视觉改动须本地npm run build(generator §14.4). 截图(/landing/screenshots/)按极简口径克制或转文字. 用户未选去暖白light区/金色→不强推, 若去插画后割裂明显可在done提议不擅改. 下一步 Generator F001(tone-setter). 详见 spec §2-§3.",
   "session_notes": {
-    "Kimi_planner": "[2026-06-12 13:00 BJT Planner Kimi] BL-107波4 done(split-brain路线图收官). 用户报prod两AI降级→诊断同根因: cost-cap event-count×$0.01被后台enrichment 500事件吃光(真实$0.45). 开BL-113 hotfix(铁律#9), 用户决A+B(sum真实成本+后台排除). 不立即止血(UTC零点重置). 下一步Generator F001. 旁挂: 落地页视觉优化用户问到一半被打断(未开批次, 可续); 2批BL-105/107待prod部署(顺带激活KPI cron); BL-112真AI搜索backlog.",
-    "Kimi_generator": "[2026-06-12 21:50 BJT Generator] F001+F002 done + staging deployed @ 686f758. F001: assertDailyCostBudget改$queryRaw sum(costUsd) + COALESCE/CASE null保护 + WHERE排除source=system; 移除count×$0.01逻辑. F002: RunAigcActionOpts加costBucket:'system'|'user'(默认user), 透传source到recordAiUsage extras; enrichment.ts+explain-prewarm-worker加costBucket:system. L1: 1689/1689 PASS, tsc=0, lint 0err. staging health=healthy, git_sha=686f758 ✅. status已切verifying, 交Codex F003. ⚠️ staging git_sha需 HEALTH_DETAIL_TOKEN 才显示(非bug,门控设计). Codex L2验收:①AI推荐恢复 ②KOL explain恢复 ③后台enrichment不饿死前台 ④cap=真实USD ⑤fail-open不断.",
-    "Reviewer": "[2026-06-12 21:55 BJT Evaluator Reviewer] BL-113 hotfix verifying PASS. L1: npm test 1689 PASS / tsc=0 / eslint 2warn(pre-existing). L2 code-review 5/5(A:SUM真实costUsd+排除system / B:后台打source=system标 / 向后兼容 / fail-open保留 / error消息准确). 0 CRITICAL/HIGH, 1 MEDIUM缺口(enrichment/prewarm测试未覆盖costBucket参数, 下批补齐). Signoff: docs/test-reports/BL-113-signoff-2026-06-12.md. 11倍高估已纠正, 后台/前台配额隔离已实装, 可部署生产.",
-
+    "Kimi_planner": "[2026-06-13 11:00 BJT Planner Kimi] BL-113 AI hotfix done+prod部署核验(故障根治). 用户要落地页对齐jina.ai→Planner视觉审计(亲看8插画+子agent代码审计, 报告landing-visual-audit-2026-06-13.md)→WebFetch读jina.ai→用户决全去插画走文字驱动极简. 开BL-114重做. F001 Hero-first检查点(staging先验方向). 反转BL-080(用户决). 守perf99/a11y/baseline重拍. 下一步Generator F001. 旁挂: KPI cron今晚00:30UTC首跑(验kpi_daily_snapshot); BL-112真AI搜索/BL-095等backlog; 落地页改进审计还有B光温/C glow/D-E动效等项未纳入本批(本批聚焦jina对齐去插画)可后续.",
+    "Kimi_generator": null,
+    "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
   },
