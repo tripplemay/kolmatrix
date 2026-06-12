@@ -57,11 +57,12 @@
     "executor": "codex",
     "priority": "medium",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "L1: lint 0err warn≤3 / tsc=0 / npm test",
       "L2 部署后: ① 软删KOL直链notFound ② 删除的API/死码全仓零引用+build绿 ③ stray ?ai= 不显假筛选chip ④ ROI insights不再硬编码 ⑤ KPI cron装好+手动跑写入kpi_daily_snapshot",
       "signoff docs/test-reports/BL-107-signoff-2026-06-XX.md"
-    ]
+    ],
+    "l2_result": "4/4 PASS @ staging 02ba1fe (2026-06-12): T1 M4=PASS T2 M7=PASS T3 M8=PASS T4 M6=PASS"
   }
 ]

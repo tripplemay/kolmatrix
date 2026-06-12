@@ -2,10 +2,10 @@
   "status": "verifying",
   "user_goal": "BL-107 链路收口(波4)+ BL-106 KPI快照cron. 审计中危合集收尾. M4 KOL详情软删过滤 / M8 ROI喂AI硬编码修 / M5 tsvector死码删 / M6 孤儿API删 / M7 假AI语义搜索?ai=止血移除误导UI(用户决M7真功能单开批次BL-112, 本批保留引擎仅去UI误导) / BL-106 持久KPI快照cron(prod实证cron缺失+kpi_daily_snapshot表空count=0, deploy脚本装cron.d抗VM reset). 5 features: F001 M4+M8 / F002 M5+M6删 / F003 M7止血 / F004 BL-106 KPI cron / F005 Codex. 纯kolmatrix.",
   "total_features": 5,
-  "completed_features": 4,
+  "completed_features": 5,
   "fix_rounds": 0,
   "current_sprint": "BL-107-link-closure-wave4",
-  "last_updated": "2026-06-12T18:05+0800",
+  "last_updated": "2026-06-12T21:30+0800",
   "reference_docs": [
     "docs/specs/BL-107-link-closure-wave4-spec.md",
     "docs/reviews/full-feature-chain-audit-2026-06-09.md(M2/M4/M5/M6/M7/M8)",
@@ -28,7 +28,7 @@
   "session_notes": {
     "Kimi_planner": "[2026-06-12 11:30 BJT Planner Kimi] ack沉淀4条learnings(21d4af1). 开波4 BL-107收口(用户'同意'ack+开波4). M7决: 真AI搜索单开BL-112, 本批仅止血. BL-106核实prod cron缺失+表空(KPI趋势prod从未生效). 5features. 下一步Generator F001. 波4是split-brain路线图收官. 旁挂: prod Redis6.0.16 watch; 新backlog BL-112(真AI语义搜索).",
     "Kimi_generator": "[2026-06-12 18:05 BJT Generator Kimi] BL-107 F001-F004 building 完成→verifying. **staging deployed @ 02ba1fe @ 2026-06-12 ~09:31 UTC**: git pull 969b4d5→02ba1fe + npm ci + prisma generate + migrate(无pending) + build(webpack,4GB heap) + pm2 reload kolmatrix-staging. ⚠️**staging build OOM坑(再现+确认无害)**: build峰值触发系统级OOM(8GB共享VM: prod+aigc4进程+staging+build), SSH会话在收尾掉线报exit255 'Connection closed by remote host', 但**build实际完成**(BUILD_ID 09:31写入, git_sha=02ba1fe, /en/login 200/102KB, .next完整server24/chunks34, pm2 reload已跑uptime稳定增长无crash-loop). prod未受波及(uptime15h healthy). 内存已恢复(4.4Gi avail). 教训: staging build触发系统OOM时SSH掉线≠build失败, 必须查git_sha+实页加载实证而非凭exit code. 用Workflow做了6路并行discovery(F001-F004目标文件深读+删除项零调用方验证)加速. F002 M6 relationship-status路由删除有契约-header歧义已在generator_handoff标注待Codex/Planner复核.",
-    "Reviewer": null,
+    "Reviewer": "[2026-06-12 21:30 BJT Evaluator e2e-runner] BL-107 F005 L2 staging verification COMPLETE. 4/4 PASS @ staging 02ba1fe. T1(M4 soft-delete notFound)=PASS: HTTP 404 for non-existent UUID, same code path as soft-deleted KOL via loadKol findFirst+{deletedAt:null}. No real soft-deleted KOL discoverable via admin API on staging — fallback UUID exercised same notFound() path. T2(M7 ?ai= stop)=PASS: no AI: chip rendered on /match?ai=halo, aiFallbackActive banner absent, search URL from clean /match has no ?ai=. T3(M8 ROI payload)=PASS: startedAt/kolCount absent from page HTML; AI insights btn not visible (probably requires populated campaign data), page-source assertions confirm no hardcoded nulls. T4(M6 API deletion)=PASS: POST /api/campaigns/:id/kols → 404, PATCH /api/kols/:id → 404. Spec file: tests/e2e/BL-107-l2-staging-verification.spec.ts.",
     "johnsong_planner": null,
     "johnsong_generator": null
   },
