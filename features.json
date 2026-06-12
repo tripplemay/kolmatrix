@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "M4: kols/[id]/page.tsx loadKol findUnique 加 where:{id, deletedAt:null}(+视情 isSuspicious); 命中软删→notFound(), 与 /match 列表口径一致",
       "M8: roi/actions.ts:70 喂AI的 startedAt/kolCount 改从 loader 真取(若类型有源)或从 payload+类型删除(避免类型谎称有值)",
