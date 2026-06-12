@@ -2,7 +2,9 @@
  * BL-059 · Daily cron entry point (apify-kol single-source).
  *
  * Runs once per day at 08:30 BJ (= 00:30 UTC) on prod via
- * /etc/cron.d/kolmatrix-kol-sync. After BL-059 (5/9 deprecate) the
+ * /etc/cron.d/kolmatrix-kpi-snapshot (BL-107-F004 — deploy-managed; it
+ * chains kol-sync:daily ⇒ kpi-snapshot:daily, superseding the legacy
+ * kolmatrix-kol-sync file). After BL-059 (5/9 deprecate) the
  * YouTube Data API path + engagement-batch enrichment were removed; the
  * daily sync drives a single adapter (`apify-kol-service`) through
  * healthCheck → discover → import → refresh → import → embed-hook.

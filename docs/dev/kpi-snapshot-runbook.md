@@ -16,7 +16,7 @@ fallback.
 
 | Path | Purpose |
 |---|---|
-| `/etc/cron.d/kolmatrix-kol-sync` | shared crontab entry — chains `kol-sync:daily` then `kpi-snapshot:daily` at 00:30 UTC = 08:30 BJ daily |
+| `/etc/cron.d/kolmatrix-kpi-snapshot` | single-rooted entry — chains `kol-sync:daily` then `kpi-snapshot:daily` at 00:30 UTC = 08:30 BJ daily. **On prod, written by `scripts/deploy-prod.sh` on every deploy (BL-107-F004); it supersedes the legacy `/etc/cron.d/kolmatrix-kol-sync`.** |
 | `/var/log/kolmatrix-kpi-snapshot.log` | structured JSON, one line per run |
 | `scripts/kpi-snapshot-daily.ts` | the binary the cron invokes |
 | `src/lib/dashboard/kpi-snapshot.ts` | takeKpiSnapshot + takeAllTenantsKpiSnapshot |
@@ -30,8 +30,10 @@ The two scripts share one cron entry to keep the schedule single-rooted.
 
 ## Cron line
 
-The single line in `/etc/cron.d/kolmatrix-kol-sync` (replaces the
-previous `kol-sync:daily`-only line):
+The single line in `/etc/cron.d/kolmatrix-kpi-snapshot`. **On prod this
+file is (re)written automatically by `scripts/deploy-prod.sh` on every
+deploy** (BL-107-F004 — idempotent, VM-reset-resistant); you should not
+hand-edit it on prod (the next deploy overwrites it).
 
 ```cron
 30 0 * * * tripplezhou cd /opt/kolmatrix && npm run kol-sync:daily 2>&1 | tee -a /var/log/kolmatrix-kol-sync.log && npm run kpi-snapshot:daily 2>&1 | tee -a /var/log/kolmatrix-kpi-snapshot.log
@@ -80,25 +82,29 @@ tail -1 /var/log/kolmatrix-kpi-snapshot.log | jq '.failed[]'
 
 ---
 
-## SSH ops — first-time install (prod + staging)
+## SSH ops — install
 
-After this batch ships, edit the existing cron entry on each host:
+**Prod: automatic.** `scripts/deploy-prod.sh` (step 8b, BL-107-F004)
+writes `/etc/cron.d/kolmatrix-kpi-snapshot` + pre-creates the log files
+on every deploy. Nothing to do by hand — just deploy. Verify with:
+
+```bash
+sudo cat /etc/cron.d/kolmatrix-kpi-snapshot
+```
+
+**Staging: manual** (there is no `deploy-staging.sh`). Install the same
+cron once on staging, pointing `cd` at `/opt/kolmatrix-staging`:
 
 ```bash
 ssh tripplezhou@34.180.93.185
-sudo cp /etc/cron.d/kolmatrix-kol-sync /etc/cron.d/kolmatrix-kol-sync.bak.$(date +%Y%m%d)
-sudo vi /etc/cron.d/kolmatrix-kol-sync
-# Replace the existing single-script line with the chained line above.
-sudo systemctl restart cron        # cron picks up file changes automatically; restart only if paranoid
+sudo tee /etc/cron.d/kolmatrix-kpi-snapshot-staging >/dev/null <<'CRON'
+# /etc/cron.d/kolmatrix-kpi-snapshot-staging
+30 0 * * * tripplezhou cd /opt/kolmatrix-staging && set -a && . .env.staging && set +a && npm run kol-sync:daily 2>&1 | tee -a /var/log/kolmatrix-kol-sync-staging.log && npm run kpi-snapshot:daily 2>&1 | tee -a /var/log/kolmatrix-kpi-snapshot-staging.log
+CRON
+sudo chmod 0644 /etc/cron.d/kolmatrix-kpi-snapshot-staging
 sudo touch /var/log/kolmatrix-kpi-snapshot.log
 sudo chown tripplezhou:tripplezhou /var/log/kolmatrix-kpi-snapshot.log
-sudo chmod 0664 /var/log/kolmatrix-kpi-snapshot.log
 ```
-
-For staging the path is identical (`/opt/kolmatrix-staging` instead of
-`/opt/kolmatrix` — staging has its own cron file
-`/etc/cron.d/kolmatrix-kol-sync-staging` if present, otherwise just
-update the prod entry's `cd` path on staging).
 
 ---
 

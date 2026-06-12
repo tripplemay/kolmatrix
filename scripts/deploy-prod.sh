@@ -12,6 +12,9 @@
 #   6. npx prisma migrate deploy — failure aborts before PM2 touches new code
 #   7. npm run build
 #   8. pm2 reload kolmatrix --update-env  (zero-downtime)
+#   8b. ensure durable /etc/cron.d/kolmatrix-kpi-snapshot (+ self-heal
+#       backup-retention) — BL-107-F004 / BL-106, rebuilt every deploy so a
+#       VM reset can't drop the KPI snapshot schedule
 #   9. scripts/healthcheck.sh — 5× / 3s retry against /api/health
 #  10. healthcheck fail → scripts/rollback.sh, exit 1
 #
@@ -119,6 +122,57 @@ node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build --webpack
 
 echo "── 8/9  pm2 reload kolmatrix (zero-downtime)"
 pm2 reload kolmatrix --update-env
+
+# BL-107-F004 (BL-106) — ensure the durable KPI-snapshot cron exists and is
+# rebuilt on EVERY deploy so a VM reset can't silently drop it. Root cause
+# this fixes: prod had no KPI cron at all → `kpi_daily_snapshot` sat empty
+# (count=0) → the dashboard KPI trend chips were permanently "—". Written to
+# /etc/cron.d/ (system cron survives reboot + VM-rebuild) — unlike a
+# `crontab -e` entry, which was lost on the 2026-06-07 reset (same lesson as
+# backup-retention). Every sudo write is wrapped in `if … ; then` so `set -e`
+# is suspended and a cron hiccup never fails an otherwise-healthy deploy;
+# Codex L2 verifies the file + a manual run post-deploy.
+echo "── ensure durable cron.d (KPI snapshot + backup-retention self-heal)"
+
+# Pre-create the append-only logs owned by the cron user so the first
+# `tee -a` from cron (running as tripplezhou) can open them under the
+# root-owned /var/log dir.
+sudo touch /var/log/kolmatrix-kol-sync.log /var/log/kolmatrix-kpi-snapshot.log 2>/dev/null || true
+sudo chown tripplezhou:tripplezhou /var/log/kolmatrix-kol-sync.log /var/log/kolmatrix-kpi-snapshot.log 2>/dev/null || true
+
+# Single-rooted schedule: one line runs kol-sync:daily then chains
+# kpi-snapshot:daily via && (so the KPI counts already include this
+# morning's fresh sync). 00:30 UTC = 08:30 BJ, matching the prior kol-sync
+# timing (kpi-snapshot-runbook.md §Cron line). This file supersedes the
+# legacy kol-sync-only entry.
+if sudo tee /etc/cron.d/kolmatrix-kpi-snapshot >/dev/null <<'CRON'; then
+# /etc/cron.d/kolmatrix-kpi-snapshot — BL-106 (managed by deploy-prod.sh; idempotent, rebuilt every deploy)
+# Daily KOL sync ⇒ KPI snapshot, single-rooted at 00:30 UTC (08:30 BJ).
+30 0 * * * tripplezhou cd /opt/kolmatrix && npm run kol-sync:daily 2>&1 | tee -a /var/log/kolmatrix-kol-sync.log && npm run kpi-snapshot:daily 2>&1 | tee -a /var/log/kolmatrix-kpi-snapshot.log
+CRON
+  sudo chmod 0644 /etc/cron.d/kolmatrix-kpi-snapshot
+  # The new file now owns the kol-sync schedule too — drop the legacy
+  # kol-sync-only file so kol-sync isn't double-scheduled. `rm -f` is a
+  # no-op if that file was already lost on a VM reset; kol-sync is never
+  # dropped because the new file runs it first.
+  sudo rm -f /etc/cron.d/kolmatrix-kol-sync
+  echo "   ✓ /etc/cron.d/kolmatrix-kpi-snapshot (kol-sync ⇒ kpi-snapshot, 00:30 UTC)"
+else
+  echo "   ⚠️  could not write kpi-snapshot cron (non-fatal; install manually — see docs/dev/kpi-snapshot-runbook.md)"
+fi
+
+# Self-heal the backup-retention cron in the same pass (same VM-reset
+# lesson: it vanished on 2026-06-07, letting backups grow to 1.6G).
+if sudo tee /etc/cron.d/kolmatrix-backup-retention >/dev/null <<'CRON'; then
+# /etc/cron.d/kolmatrix-backup-retention — BI2 (managed by deploy-prod.sh; idempotent)
+# Prune DB dumps older than 14 days nightly at 04:00 local.
+0 4 * * * root find /opt/kolmatrix-backups -name 'db-*.sql.gz' -mtime +14 -delete
+CRON
+  sudo chmod 0644 /etc/cron.d/kolmatrix-backup-retention
+  echo "   ✓ /etc/cron.d/kolmatrix-backup-retention"
+else
+  echo "   ⚠️  could not write backup-retention cron (non-fatal; install manually — see docs/dev/deployment-runbook.md §Backups)"
+fi
 
 echo "── 9/9  healthcheck"
 if "$REPO_DIR/scripts/healthcheck.sh"; then

@@ -150,7 +150,8 @@ NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) n
 ## 扩容信号
 
 - RAM 接近 14GB、CPU 持续 >70%、或 KOL 采集 worker 影响 aigcgateway 响应时，拆独立 VM。
-- **磁盘 `/` 仅 49G（2026-06-10 曾达 90%）。** 清理杠杆：`npm cache clean --force`(~3G) / `docker builder prune`(~3G) / `journalctl --vacuum-size=200M` / `apt clean`。备份保留 cron 在 `/etc/cron.d/kolmatrix-backup-retention`(db dump >14天每日删，**VM reset 后须重建**——原 root-crontab 版 6/07 reset 丢失致备份堆到 1.6G)。docker volume(pg 数据)/node_modules/active .next 不可删。
+- **磁盘 `/` 仅 49G（2026-06-10 曾达 90%）。** 清理杠杆：`npm cache clean --force`(~3G) / `docker builder prune`(~3G) / `journalctl --vacuum-size=200M` / `apt clean`。docker volume(pg 数据)/node_modules/active .next 不可删。
+- **持久 cron（BL-107-F004 起 deploy-prod.sh 每次部署自愈重建，抗 VM reset）：** `/etc/cron.d/kolmatrix-kpi-snapshot`(00:30 UTC=08:30BJ，单根 kol-sync:daily ⇒ kpi-snapshot:daily 链，写 kpi_daily_snapshot 喂 dashboard 趋势；取代 legacy `kolmatrix-kol-sync`) + `/etc/cron.d/kolmatrix-backup-retention`(db dump >14天每日删)。**不再需手动 VM reset 后重建**（原 root-crontab 版 6/07 reset 丢失致备份堆 1.6G + kpi 表空，已由部署脚本自愈）。staging 仍手动装（无 deploy-staging.sh，见 kpi-snapshot-runbook §SSH ops）。
 
 ## 测试账号
 

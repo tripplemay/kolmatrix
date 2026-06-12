@@ -104,9 +104,39 @@ Files older than **14 days** are pruned every night at 04:00 local time
 ~5/day × 49M, so 30 days could reach ~7G on the 49G disk). `manifest.log`
 is never truncated; tail it for history past the retention window.
 
-> ⚠️ **After any VM rebuild/reset, re-create this `cron.d` file** (verify
-> with `cat /etc/cron.d/kolmatrix-backup-retention`). Without it backups
-> accumulate unbounded — that's how disk hit 90% on 2026-06-10.
+> ✅ **BL-107-F004 — self-healing.** `scripts/deploy-prod.sh` now re-creates
+> this `cron.d` file on **every** deploy (idempotent), so a VM rebuild/reset
+> can no longer silently drop it. See §Cron below. Manual re-creation is
+> only needed between deploys if you reset the VM and don't redeploy.
+
+## Cron (durable `/etc/cron.d/` entries — deploy-managed)
+
+All production cron is defined as durable `/etc/cron.d/` files (system
+cron — survives reboot + VM-rebuild, unlike `crontab -e`). `scripts/
+deploy-prod.sh` **re-writes them on every deploy** (idempotent), so the
+2026-06-07-style silent loss on a VM reset self-heals on the next deploy.
+
+| File | Schedule | Purpose | Source |
+|---|---|---|---|
+| `/etc/cron.d/kolmatrix-kpi-snapshot` | `30 0 * * *` (00:30 UTC / 08:30 BJ) | single-rooted **kol-sync:daily ⇒ kpi-snapshot:daily** (`&&` chain) — the KPI snapshot writes one `kpi_daily_snapshot` row per tenant/day so the dashboard trend chips leave the "—" fallback | deploy-prod.sh step 8b (BL-107-F004 / BL-106) |
+| `/etc/cron.d/kolmatrix-backup-retention` | `0 4 * * *` | prune DB dumps >14 days (see §Backups) | deploy-prod.sh step 8b |
+
+`kolmatrix-kpi-snapshot` **supersedes** the legacy `kolmatrix-kol-sync`
+file (deploy-prod.sh removes it so kol-sync isn't double-scheduled); the
+new file runs kol-sync first, then the KPI snapshot, so the counts already
+include this morning's sync.
+
+**Verify after deploy:**
+```bash
+sudo cat /etc/cron.d/kolmatrix-kpi-snapshot
+sudo cat /etc/cron.d/kolmatrix-backup-retention
+# Manual KPI snapshot run (populates kpi_daily_snapshot immediately):
+cd /opt/kolmatrix && set -a && source .env.production && set +a \
+  && npm run kpi-snapshot:daily | tee -a /var/log/kolmatrix-kpi-snapshot.log
+```
+
+> **Staging** still installs cron manually (no `deploy-staging.sh`); see
+> `docs/dev/kpi-snapshot-runbook.md` §SSH ops.
 
 Manual restore (from any surviving `db-*.sql.gz`):
 

@@ -17,8 +17,8 @@ mean and what do I do about it".
 
 | Path | Purpose |
 |---|---|
-| `/etc/cron.d/kolmatrix-kol-sync` | crontab entry — fires at 00:30 UTC = 08:30 BJ daily |
-| `/etc/logrotate.d/kolmatrix-kol-sync` | 30-day daily rotation, gzip after delaycompress |
+| `/etc/cron.d/kolmatrix-kpi-snapshot` | crontab entry — fires at 00:30 UTC = 08:30 BJ daily, runs **kol-sync:daily ⇒ kpi-snapshot:daily**. **Deploy-managed** (BL-107-F004 — `deploy-prod.sh` rewrites it every deploy); supersedes the old `kolmatrix-kol-sync` file |
+| `/etc/logrotate.d/kolmatrix-kol-sync` | 30-day daily rotation, gzip after delaycompress (log file name unchanged) |
 | `/var/log/kolmatrix-kol-sync.log` | structured JSON, one line per run |
 | `/opt/kolmatrix/docs/test-reports/kol-sync-daily-{YYYY-MM-DD}.md` | per-run markdown summary |
 | `scripts/kol-sync-daily.ts` | the binary the cron invokes |
@@ -116,10 +116,15 @@ npm run kol-sync:daily:dry
 ### Revoke the cron temporarily
 
 ```bash
-sudo mv /etc/cron.d/kolmatrix-kol-sync /etc/cron.d/kolmatrix-kol-sync.disabled
+sudo mv /etc/cron.d/kolmatrix-kpi-snapshot /etc/cron.d/kolmatrix-kpi-snapshot.disabled
 # … investigate …
-sudo mv /etc/cron.d/kolmatrix-kol-sync.disabled /etc/cron.d/kolmatrix-kol-sync
+sudo mv /etc/cron.d/kolmatrix-kpi-snapshot.disabled /etc/cron.d/kolmatrix-kpi-snapshot
 ```
+
+> ⚠️ **Deploy-managed (BL-107-F004):** the next `deploy-prod.sh` run
+> re-creates `/etc/cron.d/kolmatrix-kpi-snapshot`, so a disable only holds
+> until the next deploy. To pause across a deploy, also comment the cron
+> step in `scripts/deploy-prod.sh`, or pause deploys.
 
 ---
 
