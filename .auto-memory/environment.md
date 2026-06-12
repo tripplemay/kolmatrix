@@ -85,6 +85,8 @@ type: reference
 | Redis | 共用 prod Redis 实例，db index `2`（aigcgateway 0 / prod 1 / staging 2）；`.env.staging` 必含 `REDIS_URL=redis://localhost:6379/2`（BL-020-F005 部署时由 Generator SSH 落地，备份 `.env.staging.bak.bl020-f005`） |
 | Health URL | `https://staging.kol.guangai.ai/api/health` |
 
+> **Redis 版本 vs BullMQ 约束（BL-100 lock 2026-06-11）：** prod/staging VM Redis = **6.0.16 < BullMQ 推荐 6.2.0**。BullMQ core（add/process/retry/delay）在 6.0 可用，boot 见 4× "minimum Redis version 6.2.0" 警告 = 连接已建非错误；但部分高级特性（debounce / 部分 rate-limiter）需 6.2，**用到前须先升 Redis**。Worker 连接拓扑铁律详 `framework/harness/generator.md §13.1`。
+
 ### Postgres kolmatrix_app role 密码 sync 协议（BL-043 lock 2026-05-06）
 
 | # | 文件 / 资源 | 字段 | 必须一致 |

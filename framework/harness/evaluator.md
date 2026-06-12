@@ -629,3 +629,15 @@ for (const file of glob.sync("src/app/**/page.tsx")) {
 
 **合并段来源（per D7 强制合并 3 同主题候选）：** BL-072-F007 v1 三件套 + BL-073-F005 v2 key existence + BL-073-F007 STRICT_MODE 渐进 = v0.9.24 #3 + #7 + #9 三 sub-section 合并入 §13.4，避免开 §14/§15/§16 三独立段。
 
+### §13.5 含交互 client/SSR 页面 L2 必跑 headless 点击 + 严禁 force-click（铁律级，BL-108-F004 fix-round 1+2）
+
+**铁律：** 验收含交互的 `'use client'` / SSR 页面，L2 必须用 headless 浏览器**真点**关键控件并断言：
+1. **console 无 React #418/#425 水合错误**（#418 = 文本节点失配会废掉整个 hydration root 交互，详 generator.md §15.3 子坑 A）
+2. **点击产生预期 onClick 效果**（state 切换 / toast / 跳转）
+
+**测法铁律（关键）：** 必须用标准 `locator.click()`（Playwright 自动等 actionability/enabled）**或**先 `await [data-ready=true]` 再点。**严禁 `force: true` / `dispatchEvent` / `evaluate(el => el.click())`** —— 这些跳过 enabled 检查，会点在水合时序窗口内未绑事件的按钮上（详 generator.md §15.3 子坑 B），**稳定复现"假 bug"**（BL-108 Codex 两轮 reverify 即因落此窗口误判开关失效）。
+
+**反例：** RTL `render()` 是纯客户端渲染从不经 SSR+hydrate，单测全绿 ≠ 真实浏览器无水合问题；含交互 SSR 页面不能只靠 jsdom 单测签收。
+
+来源：BL-108-F004 fix-round 1（#418 水合失配）+ fix-round 2（force-click 落时序窗口误判）+ 用户 2026-06-10 ack。配套 Generator 端见 `framework/harness/generator.md §15.3`。
+

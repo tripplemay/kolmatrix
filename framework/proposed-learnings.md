@@ -259,7 +259,7 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 
 **建议写入：** `framework/harness/generator.md` §15（Perf/image/Suspense 落地段邻近，同属"客户端渲染正确性"）补「client 组件初始 SSR 渲染禁非确定性时间/locale 格式化（#418 会废掉整个 hydration root 的交互）+ 确定性 UTC/mount-gate 三选一 + 确定性回归」；`framework/harness/evaluator.md` §13 测试设计补「带交互的 client 页面 L2 必跑 headless 点击并断言 console 无 React #418/#425 水合错误」。Planner spec 起草含交互的 client 页面时把"无水合错误"列入 acceptance。
 
-**状态：** 待确认
+**状态：** ✅ 2026-06-12 用户 ack，已沉淀入 `framework/harness/generator.md §15.3`（客户端水合正确性 — 子坑 A 水合失配/#418）+ `framework/harness/evaluator.md §13.5`（含交互 client/SSR 页面 L2 必跑 headless 点击断言无 #418/#425）。与下一条（时序窗口）合并为「客户端水合正确性」一节两子坑
 
 ---
 
@@ -271,7 +271,7 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 
 **建议写入：** `framework/harness/generator.md` §15 补「mount-gate 模式：SSR 关键交互控件水合前 disabled + data-ready 信号（useSyncExternalStore 实现，避开 set-state-in-effect）+ renderToString/hydrateRoot 回归」；`framework/harness/evaluator.md` §13 **铁律级**补「含交互 SSR 页面 L2 用标准 click（自动等 enabled）或 await data-ready，严禁 force/dispatch/evaluate-click —— 否则会稳定复现水合窗口假 bug」。与上一条（#418）合并为「客户端水合正确性」一节的两个子坑（失配 vs 时序窗口）。
 
-**状态：** 待确认
+**状态：** ✅ 2026-06-12 用户 ack，已沉淀入 `framework/harness/generator.md §15.3`（客户端水合正确性 — 子坑 B 时序窗口 + mount-gate useSyncExternalStore 模式）+ `framework/harness/evaluator.md §13.5`（铁律级：标准 click/await data-ready，严禁 force/dispatch/evaluate-click）。与上一条 inline-merge 为两子坑单节
 
 ## [2026-06-11] Claude CLI (Kimi) — 来源：BL-100 F001/F003（BullMQ 化邮件异步队列）
 
@@ -284,7 +284,7 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 
 **建议写入：** `framework/harness/generator.md` §13（InMemoryJobQueue 段邻近）补「升 BullMQ 的连接拓扑铁律：getBullConnection retries:null + 每 Worker .duplicate() + 生产者共享」+「D5 enqueue timeout + 业务层幂等而非 jobId 去重」；`framework/harness/database-patterns.md` 或 `environment.md` 记 Redis 6.0.16 < BullMQ 6.2 推荐的约束。
 
-**状态：** 待确认
+**状态：** ✅ 2026-06-11 用户 ack，已沉淀入 `framework/harness/generator.md §13.1`（升 BullMQ 连接拓扑铁律：getBullConnection retries:null + 每 Worker .duplicate() + enqueue timeout race + 业务层幂等）+ `.auto-memory/environment.md` Staging 表后 Redis 版本约束 note（6.0.16 < BullMQ 6.2 推荐）
 
 ## [2026-06-12] Claude CLI (Kimi) — 来源：BL-105-F001 CI 红（新建 route page）
 
@@ -296,4 +296,4 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 
 **建议写入**：`framework/harness/generator.md` §"切 verifying 前" 或 §14 邻近补「新建 route segment 文件 feature 的 commit 前 `npm run build` 自检铁律 + Next page 文件合法 export 白名单」；与 §14.2（'use server' 非 async export）合并为「Next 构建期约束（tsc/lint 漏报）」一节。
 
-**状态：** 待确认
+**状态：** ✅ 2026-06-12 用户 ack，已沉淀入 `framework/harness/generator.md §14.4`（新建/改 route segment 文件 feature commit 前必跑 `npm run build` 铁律 + page 文件合法 export 白名单），并在 §14.2 头加「Next 构建期约束（tsc/lint 漏报）」共性框统辖 §14.2+§14.4

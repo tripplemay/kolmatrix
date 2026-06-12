@@ -447,6 +447,18 @@ LLM 类 fix-round 必先 MCP `get_log_detail` trace 抓真实输出 + 与预期 
 
 来源：BL-067 F005 实战 + v0.9.22 #5。
 
+### 13.1 升 BullMQ 连接拓扑铁律（BL-100 F001/F003）
+
+把 InMemoryJobQueue swap 成真 BullMQ（同 JobQueue 接口）的三条铁律：
+
+1. **Worker 连接必须 `maxRetriesPerRequest: null`** — BullMQ v5 Worker 用阻塞命令（BRPOPLPUSH/BZPOPMIN），connection 非 null 直接抛错。普通 `getRedis()`（rate-limit/health 用 retries:3）**不能复用给 Worker**；新增独立 `getBullConnection()`（`retries:null` + `enableReadyCheck:false`），Queue 生产者共享它，**每个 Worker 用 `.duplicate()`** 拿专用阻塞连接（阻塞 socket 不能与生产者 socket 混用）。spec/ADR 写"以 getRedis() 为后端"应理解为"同 Redis 实例"而非"同 client 对象"。
+2. **enqueue fast-fail 用 timeout race，不依赖 retries** — `retries:null` 让 `queue.add()` 在 Redis 挂时无限重试不返回，与"入队失败→回退同步发"矛盾。解法：`add()` 内 `Promise.race` 包 5s timeout 强制 reject，上层 catch → 同步兜底。
+3. **队列幂等做在 handler/业务层，不依赖 BullMQ jobId 去重** — timeout 放弃的 enqueue 若 Redis 恢复后才落地会重复 job；BullMQ jobId 去重仅在 job 仍驻留时有效，`removeOnComplete` 后失效。靠业务层幂等兜（本例 `email_log (batchId,kolId)` 发前查跳已发）。
+
+**环境 caveat：** prod/staging Redis 6.0.16 < BullMQ 推荐 6.2.0 — core add/process/retry/delay 在 6.0 可用（boot 见 "minimum Redis version 6.2.0" 警告 = 连接已建非错误），但部分高级特性（debounce / 部分 rate-limiter）需 6.2，用到前须先升 Redis。详见 `.auto-memory/environment.md` Redis 段。
+
+来源：BL-100 F001/F003 InMemoryJobQueue → BullMQ swap 实战 + 用户 2026-06-11 ack。
+
 ---
 
 ## 14. 编译时约束 / migration 工程化（BL-070 #22 + #23 沉淀）
@@ -483,7 +495,9 @@ fi
 
 来源：BL-070 fix-round 1 #22 — `scripts/validate-rollback-sql.sh` CI 检查触发后回头补 ROLLBACK 注释（fix-round 浪费）；上游 wrap 自动注入避免。
 
-### 14.2 Next.js 16 `'use server'` file-level directive 约束清单（BL-070 #23）
+### 14.2 Next 构建期约束（tsc/lint 漏报）—— `'use server'` 文件 export 约束清单（BL-070 #23）
+
+> **共性（§14.2 + §14.4）：** 以下两类是 Next 构建期 RSC 约束校验，**不在 TS 类型系统内**，故 `tsc --noEmit` + `npm run lint` 全绿 ≠ `next build` 绿，只有 `next build` / CI build job 才抓。涉及 `'use server'` 文件 export 或新建/改 route segment 文件的 feature，commit 前必须本地跑 `npm run build`（§14.4 铁律）。
 
 Next.js 16 `'use server'` 文件**禁非 async function exports**。在此文件里加 zod schema / 常量 / 普通对象 / 类的 export 会触发 build/runtime error。
 
@@ -514,6 +528,25 @@ export async function requestAccess(input: unknown) {
 ```
 
 来源：BL-070 fix-round 1 #23 — landing batch 加 `AccessRequestSchema` 到 actions.ts 触发 Next.js 16 build error，抽到独立 `schema.ts` 解。
+
+### 14.4 新建/改 route segment 文件 feature 必须 commit 前 `npm run build`（BL-105-F001）
+
+**铁律：** 新建/修改 App Router route segment 文件（`page` / `layout` / `route` / `template` / `default` / `loading` / `error` / `not-found`）类 feature，**commit 前必须本地跑一次 `npm run build`**（tsc + lint + vitest 不够，理由见 §14.2 共性框）。
+
+**page/layout/route 文件合法 export 白名单** —— 只允许 `export default` + 路由 segment config：`metadata` / `generateMetadata` / `dynamic` / `revalidate` / `fetchCache` / `runtime` / `preferredRegion` / `generateStaticParams` 等。**任何其它命名 export 触发 build error**（tsc/lint 漏报）。
+
+```typescript
+// ❌ campaigns/[id]/edit/page.tsx 里 export 共享 helper → next build fail（tsc/lint 全绿）
+export function editErrorLabels(...) { ... }
+
+// ✅ 抽到同目录普通模块再 import
+// error-labels.ts:  export function editErrorLabels(...) { ... }
+// page.tsx:         import { editErrorLabels } from "./error-labels";
+```
+
+同属 build-only（tsc/lint 漏报）还会抓：`'use server'` 文件非 async export（§14.2）、client/server 边界 props 不可序列化、动态路由缺 `generateStaticParams`。本地先跑 `npm run build` 省一轮 main 红 + 一次 staging deploy 前返工。
+
+来源：BL-105-F001 在 `campaigns/[id]/edit/page.tsx` export `editErrorLabels` helper → "Build + migrate smoke" CI job fail（tsc/lint 全绿）+ 用户 2026-06-12 ack。与 §14.2 同属「Next 构建期约束」。
 
 ### 14.3 Schema migration ROLLBACK 不对称风险 — cross-ref database-patterns（v0.9.24 #16 / BL-076 #16）
 
@@ -726,6 +759,29 @@ npx lighthouse http://localhost:3001/<route> --preset=desktop --view --only-cate
 - BL-070 fix-round 3 #29（`/match` CLS 0.348 → 0.008 高度镜像 fix）
 - BL-070 fix-round 3 #30（`SaveSearchControls` flex-wrap 横向 reflow → 宽度等宽 fix + Lighthouse `cls-culprits-insight` 定位法）
 - 两条同主题 inline-merge 为 §15.2 「Suspense fallback 规范」单段含两 source（per D7 强制合并）+ 用户 2026-05-25 ack。
+
+### 15.3 客户端水合正确性 — 失配 vs 时序窗口两子坑（BL-108-F004 fix-round 1+2）
+
+含交互的 `'use client'` / SSR 页面有两个独立的水合坑，症状都是「点击失效 + 单测全绿」，极易误诊为 onClick/state 逻辑 bug。
+
+**子坑 A — 水合失配（React #418）：** client 组件在**初始 SSR 渲染路径**里调用 `new Date(iso).toLocaleString()`（或任何无显式 `timeZone` 的 `Intl.DateTimeFormat`/`toLocaleDateString` 等依赖运行时时区/locale 的格式化）→ 服务端按服务器时区生成文本、客户端按浏览器时区重渲 → 文本节点不一致 → React **#418** 丢弃该 hydration root 整棵服务端树客户端重渲。**致命连带：失去交互的不只是那个时间戳——同 root 内所有控件的事件处理器都来不及绑定**（headless 点击无反应、console 仅一行 #418）。三选一修复：① `getUTC*` 手写确定性 `YYYY-MM-DD HH:mm UTC`（服务端/客户端逐字符一致，UTC 也合 ops 口径，首选）；② mount-gate（见子坑 B）；③ `suppressHydrationWarning`（仅文本节点级，最弱）。回归：断言渲染输出为固定 UTC 串，`TZ=America/New_York npx vitest` 实证 fail-before/pass-after。**潜伏面：** 凡 client `toLocaleString` 当前仅因「交互后才渲、不进初始 SSR」侥幸不炸，一旦挪进初始渲染即同病。
+
+**子坑 B — 水合时序窗口（mount-gate 模式）：** #418 修好后仍可能点击失效且无 console 错误——这是另一独立根因。SSR 把交互按钮渲进 HTML 后，到 React 完成水合绑 onClick 之间有延迟窗口（staging 实测 DOM @728ms 出现、onClick @1253ms 才绑，窗口 ~525ms，弱机/慢网更长）。**窗口内按钮可见可点但事件未绑，点击被永久丢弃，React 18+ discrete-event replay 在 App Router RSC+client-island 场景不补触发**——这是真实面向用户的 bug，不是纯测试问题。jsdom 下 RTL `render()` 纯客户端渲染从不经 SSR+hydrate，单测全绿，**只有真实浏览器或 `renderToString`→`hydrateRoot` 测试才暴露**。修复模式 mount-gate：
+
+```tsx
+// 客户端就绪检测：server=false / client=true，水合安全
+// 用 useSyncExternalStore 而非 useState(false)+useEffect(setReady(true))
+// 后者会被 react-hooks/set-state-in-effect 规则报错
+const ready = useSyncExternalStore(() => () => {}, () => true, () => false);
+// 水合完成前：关键控件 disabled + 根节点 data-ready=false + 显示"初始化中"
+// 完成后 enabled。使「控件可点 ⟺ 已水合」
+```
+
+真实用户见诚实未就绪态，Playwright 标准 `click()` 自动等 enabled 跨过窗口。回归：`renderToString`→`hydrateRoot` 路径断言「SSR 阶段 disabled / 水合后 enabled+可点」（RTL `render` 测不到）。
+
+**配套：** Evaluator 测含交互 SSR 页面的铁律见 `framework/harness/evaluator.md §13.5`（必跑 headless 点击断言无 #418/#425 + 严禁 force-click）。
+
+来源：BL-108-F004 fix-round 1（#418 监控页开关失效）+ fix-round 2（#418 修好后时序窗口仍失效）+ 用户 2026-06-10 ack。
 
 ---
 
