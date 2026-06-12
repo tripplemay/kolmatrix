@@ -31,7 +31,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "移除/中和 ?ai= 误导UI: MatchActiveFilters 不再渲染 'AI: xxx' chip; filters.ts:317-319 不再特殊处理 aiQuery(stray ?ai= 变 no-op 或回落 search 不显假筛选); empty-state 计数不引 aiQuery",
       "保留 lib/discovery/semantic-search.ts(runSemanticKolSearch 引擎)+核心 filter 逻辑供 BL-112 真 AI 语义搜索接; 本批仅去 UI 误导",
