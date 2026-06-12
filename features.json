@@ -44,7 +44,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "prod 实证 KPI cron 缺失+kpi_daily_snapshot 表空(count=0). deploy-prod.sh 加步骤 ensure /etc/cron.d/kolmatrix-kpi-snapshot(每日, 链 kol-sync 后, 跑 cd /opt/kolmatrix && npm run kpi-snapshot:daily), 每次部署重建抗VM reset(同 backup-retention 教训); 建议同步 ensure backup-retention cron.d(自愈)",
       "更新 deployment-runbook §Cron + environment.md",

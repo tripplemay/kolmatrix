@@ -2,7 +2,7 @@
   "status": "building",
   "user_goal": "BL-107 链路收口(波4)+ BL-106 KPI快照cron. 审计中危合集收尾. M4 KOL详情软删过滤 / M8 ROI喂AI硬编码修 / M5 tsvector死码删 / M6 孤儿API删 / M7 假AI语义搜索?ai=止血移除误导UI(用户决M7真功能单开批次BL-112, 本批保留引擎仅去UI误导) / BL-106 持久KPI快照cron(prod实证cron缺失+kpi_daily_snapshot表空count=0, deploy脚本装cron.d抗VM reset). 5 features: F001 M4+M8 / F002 M5+M6删 / F003 M7止血 / F004 BL-106 KPI cron / F005 Codex. 纯kolmatrix.",
   "total_features": 5,
-  "completed_features": 3,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "BL-107-link-closure-wave4",
   "last_updated": "2026-06-12T11:30+0800",
