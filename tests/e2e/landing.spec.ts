@@ -24,19 +24,17 @@ test.describe("Anonymous root path", () => {
     await expect(page.getByTestId("landing-hero")).toBeVisible();
   });
 
-  // BL-080-F003 — the looping product-demo video was replaced by the AI
-  // hero illustration (A1 lock 2026-06-08). The illustration is the LCP
-  // element, loaded via next/image with `priority`.
-  test("hero illustration is present and eagerly loaded (LCP)", async ({ page }) => {
+  // BL-114-F001 — hero illustration removed; Hero is now pure CSS mesh
+  // background (text-driven minimal, jina.ai style). Verify CSS-only hero.
+  test("hero section renders with text content and no illustration image", async ({ page }) => {
     await page.goto("/zh");
-    const illustration = page.getByTestId("landing-hero-illustration");
-    await expect(illustration).toBeAttached();
-    // next/image `priority` opts out of lazy loading so the LCP image
-    // fetches immediately.
-    await expect(illustration).not.toHaveAttribute("loading", "lazy");
-    // src resolves through the next/image optimizer to the illustration
-    // (or the poster fallback if the PNG were ever missing).
-    await expect(illustration).toHaveAttribute("src", /hero-illustration|hero-poster/);
+    const hero = page.getByTestId("landing-hero");
+    await expect(hero).toBeVisible();
+    // No illustration img inside the hero (image removed in BL-114-F001).
+    await expect(hero.locator('[data-testid="landing-hero-illustration"]')).toHaveCount(0);
+    // CTAs are present.
+    await expect(page.getByTestId("landing-cta-primary")).toBeVisible();
+    await expect(page.getByTestId("landing-cta-secondary")).toBeVisible();
   });
 });
 

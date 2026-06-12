@@ -89,7 +89,7 @@
      ============================================================ */
 
   /* Typography scale — fluid clamp, Linear-style display + grotesk body */
-  --text-landing-hero: clamp(2.75rem, 6vw, 5.5rem);     /* 44-88px */
+  --text-landing-hero: clamp(3rem, 7vw, 6rem);           /* 48-96px — BL-114 jina.ai 大字 */
   --text-landing-h2: clamp(2rem, 4vw, 3.25rem);         /* 32-52px */
   --text-landing-h3: clamp(1.25rem, 2vw, 1.75rem);      /* 20-28px */
   --text-landing-body-lg: 1.125rem;                     /* 18px */
@@ -133,7 +133,7 @@
   --color-landing-cyan-deep: oklch(45% 0.10 215);
 
   /* Spacing rhythm — vertical / horizontal section + sub-element levels */
-  --spacing-landing-section-y: clamp(5rem, 9vw, 9rem);
+  --spacing-landing-section-y: clamp(6rem, 10vw, 10.5rem); /* BL-114 jina.ai 大留白 */
   --spacing-landing-container-x: clamp(1.5rem, 5vw, 6rem);
   --spacing-landing-element-tight: 0.5rem;
   --spacing-landing-element-normal: 1.5rem;
@@ -432,13 +432,14 @@
   }
 }
 
-/* Hero mesh gradient — multi-blob radial stack on landing canvas base */
+/* Hero mesh gradient — jina.ai 风格：深 navy + 强电蓝/青光晕，纯 CSS 无图片 */
 .landing-mesh-hero {
   background:
-    radial-gradient(ellipse 90% 65% at 18% 8%, oklch(62% 0.20 220 / 0.30), transparent 55%),
-    radial-gradient(ellipse 55% 45% at 82% 78%, oklch(58% 0.22 295 / 0.28), transparent 55%),
-    radial-gradient(ellipse 70% 50% at 50% 100%, oklch(55% 0.16 240 / 0.18), transparent 70%),
-    radial-gradient(ellipse 110% 70% at 50% 50%, oklch(50% 0.10 235 / 0.10), transparent 75%),
+    radial-gradient(ellipse 80% 55% at 15% 5%, oklch(65% 0.26 205 / 0.42), transparent 55%),
+    radial-gradient(ellipse 45% 35% at 80% 75%, oklch(60% 0.22 290 / 0.30), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 55% 42%, oklch(68% 0.30 200 / 0.14), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 50% 100%, oklch(55% 0.16 240 / 0.16), transparent 70%),
+    radial-gradient(ellipse 110% 70% at 50% 50%, oklch(50% 0.10 235 / 0.08), transparent 75%),
     linear-gradient(
       180deg,
       var(--color-landing-canvas) 0%,
