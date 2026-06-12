@@ -1,55 +1,67 @@
 [
   {
     "id": "F001",
-    "title": "/campaigns/[id]/edit 页 + campaign 字段编辑 + H6 Edit Brief 接线 (generator)",
+    "title": "M4 KOL详情软删过滤 + M8 ROI 硬编码修 (generator)",
     "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 2.5,
-    "status": "done",
+    "priority": "medium",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "新建路由 src/app/[locale]/(app)/campaigns/[id]/edit/page.tsx: 加载 campaign(复用 runCampaignDetail 或精简 loader), 非 owner/admin 或不存在→notFound/redirect",
-      "表单编辑 campaign 字段(name/brief/budget amount+currency/markets 等, 以 updateCampaignFieldsAction 实际接受字段为准, 读 actions.ts:57+update.ts 源对齐不改契约), 提交接 updateCampaignFieldsAction, 成功 toast+revalidate 详情页",
-      "H6 修复: BriefSummaryPanel.tsx 'Edit Brief' href /[locale]/campaigns/[id]/edit 现指向真页不再 404",
-      "i18n 5 locale(zh/en/ja/ko/es)编辑表单标签/校验/成功; 单测(表单提交调 action / 非 owner 不可达 / 校验); L1 全绿"
+      "M4: kols/[id]/page.tsx loadKol findUnique 加 where:{id, deletedAt:null}(+视情 isSuspicious); 命中软删→notFound(), 与 /match 列表口径一致",
+      "M8: roi/actions.ts:70 喂AI的 startedAt/kolCount 改从 loader 真取(若类型有源)或从 payload+类型删除(避免类型谎称有值)",
+      "单测(软删KOL直链notFound / ROI payload字段); L1 全绿"
     ]
   },
   {
     "id": "F002",
-    "title": "编辑页状态流转 + 营收记录 (generator)",
+    "title": "M5 tsvector 死码删 + M6 孤儿 API 删 (generator)",
     "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "done",
+    "priority": "medium",
+    "estimated_hours": 2.0,
+    "status": "pending",
     "acceptance": [
-      "编辑页加状态流转控件(draft→active→completed 合法流转, 接 transitionStatusAction)+ 营收记录输入(接 recordRevenueAction); 读 actions.ts:101/124 源对齐",
-      "成功后 revalidate 详情页(BriefSummaryPanel status pill / ROI 页营收随之更新)",
-      "i18n 5 locale; 单测(流转调 action / 非法流转挡 / 营收校验); L1 全绿"
+      "M5: 删 searchKols/buildKolSearchQuery(tsvector.ts)+ filters.ts:415 谎称注释; DB search_vector 列+trigger 保留(drop要migration无害, 优先只删TS死码低风险)",
+      "M6: 删孤儿 route PATCH /api/kols/[id](邮箱)、POST /api/campaigns/[id]/kols + [kolId]、relationship-status REST(确认全仓零fetch调用方再删; 保留仍有调用方的)",
+      "grep 全仓确认删除项零残留引用; 单测/npm run build 绿"
     ]
   },
   {
     "id": "F003",
-    "title": "AcceptedKolsPanel 名单 inline 操作恢复 (generator)",
+    "title": "M7 ?ai= 误导 UI 止血(保留引擎待 BL-112) (generator)",
     "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 2.0,
-    "status": "done",
+    "priority": "medium",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "AcceptedKolsPanel.tsx 每行恢复操作(BL-070删的): 移除KOL(removeKolAction)/改fee(updateKolFeeAction)/改contact-status(updateKolContactStatusAction); 读 actions.ts:162/185/215 源对齐",
-      "inline 控件+确认(移除)+乐观/revalidate; 详情页保持只读基调仅名单行加最小编辑操作(不改 AI panel, 守 ADR-013 AI-native)",
-      "i18n 5 locale; 单测(每操作调对应 action / 移除确认 / 乐观回滚); L1 全绿"
+      "移除/中和 ?ai= 误导UI: MatchActiveFilters 不再渲染 'AI: xxx' chip; filters.ts:317-319 不再特殊处理 aiQuery(stray ?ai= 变 no-op 或回落 search 不显假筛选); empty-state 计数不引 aiQuery",
+      "保留 lib/discovery/semantic-search.ts(runSemanticKolSearch 引擎)+核心 filter 逻辑供 BL-112 真 AI 语义搜索接; 本批仅去 UI 误导",
+      "单测(?ai= 在 URL 时不渲染假 chip / 不影响正常 search); L1 全绿"
     ]
   },
   {
     "id": "F004",
-    "title": "Codex L1+L2 + signoff (executor:codex)",
-    "executor": "codex",
-    "priority": "high",
+    "title": "BL-106 持久 KPI 快照 cron(deploy 脚本装, 抗 VM reset) (generator, ops)",
+    "executor": "generator",
+    "priority": "medium",
     "estimated_hours": 1.5,
     "status": "pending",
     "acceptance": [
-      "L1: lint 0err warn≤3 / tsc=0 / npm test(含各 feature 新测)",
-      "L2 部署后 staging: ① 'Edit Brief'→/edit 不再 404 ② 编辑 campaign 字段保存生效(详情页/DB 反映) ③ 状态流转 draft→active→completed 生效 ④ 营收记录→ROI 页反映 ⑤ 名单移除/改fee/改status 生效 ⑥ 非 owner/admin 不可编辑",
-      "signoff docs/test-reports/BL-105-signoff-2026-06-XX.md"
+      "prod 实证 KPI cron 缺失+kpi_daily_snapshot 表空(count=0). deploy-prod.sh 加步骤 ensure /etc/cron.d/kolmatrix-kpi-snapshot(每日, 链 kol-sync 后, 跑 cd /opt/kolmatrix && npm run kpi-snapshot:daily), 每次部署重建抗VM reset(同 backup-retention 教训); 建议同步 ensure backup-retention cron.d(自愈)",
+      "更新 deployment-runbook §Cron + environment.md",
+      "验收: 部署后 /etc/cron.d/kolmatrix-kpi-snapshot 存在 + 手动跑脚本→kpi_daily_snapshot count>0; L1 全绿"
+    ]
+  },
+  {
+    "id": "F005",
+    "title": "Codex L1+L2 + signoff (executor:codex)",
+    "executor": "codex",
+    "priority": "medium",
+    "estimated_hours": 1.5,
+    "status": "pending",
+    "acceptance": [
+      "L1: lint 0err warn≤3 / tsc=0 / npm test",
+      "L2 部署后: ① 软删KOL直链notFound ② 删除的API/死码全仓零引用+build绿 ③ stray ?ai= 不显假筛选chip ④ ROI insights不再硬编码 ⑤ KPI cron装好+手动跑写入kpi_daily_snapshot",
+      "signoff docs/test-reports/BL-107-signoff-2026-06-XX.md"
     ]
   }
 ]

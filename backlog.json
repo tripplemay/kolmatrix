@@ -440,39 +440,23 @@
     "discovered_in": "BL-092 F003 verified-live 2026-06-08 (IG 仍 0 产出, F005 节流未解决)"
   },
   {
-    "id": "BL-106",
+    "id": "BL-112",
     "priority": "medium",
-    "title": "KPI 快照 cron prod 接线核实 (M2: 趋势可能从未生效)",
-    "description": "审计 M2. kpi_daily_snapshot 写入依赖仓库外手工crontab——scripts/kpi-snapshot-daily.ts注释说挂/etc/cron.d, 但仓库无vercel.json/GH cron/任何调度证据. 若部署环境没挂这条cron, 快照表永空→所有KPI趋势chip永久停'—'降级态(降级诚实不显假趋势, 但'真趋势'功能prod可能从未生效, 代码内无法自证). 动作: 核实prod crontab是否真在跑(可登VPS查 crontab -l / /etc/cron.d); 若依赖Vercel需补vercel.json cron或GH Actions schedule把调度纳入仓库(可证). 关联BL-050(KPI真趋势化).",
-    "tags": [
-      "kpi",
-      "cron",
-      "ops",
-      "dashboard",
-      "needs-verification"
+    "title": "真 AI 语义搜索 /match ?ai= — 接现成 runSemanticKolSearch 引擎到 UI",
+    "description": "用户 2026-06-12 决: M7 假AI语义搜索单开批次认真做(非波4止血删). 审计H7/M7: ?ai= 基建(解析filters.ts:317/chip MatchActiveFilters/empty-state)+引擎 lib/discovery/semantic-search.ts runSemanticKolSearch 都在, 但从未接线(buildKolWhere不读aiQuery, 引擎零调用)→显示筛选实不筛. 波4 BL-107-F003 已止血移除误导UI但保留引擎. 本批=真接线: ?ai= 输入→runSemanticKolSearch(embedding语义召回)→结果驱动/match列表; UI入口(搜索框AI模式toggle或独立入口)+chip+空态真实化; Codex L2实测语义查询召回正确. 注意: embedding成本/延迟; 与现有cosine smart-match关系(复用?). 需spec设计AI搜索UX.",
+    "decisions": [
+      "真功能单开批次(非波4止血)",
+      "复用现成 runSemanticKolSearch 引擎 + 波4保留的核心逻辑",
+      "需设计 AI 搜索 UX 入口(搜索框模式 vs 独立) + 与 smart-match 关系"
     ],
-    "decisions": [],
-    "confirmed_at": "2026-06-09T13:30+0800",
-    "discovered_in": "2026-06-09 全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md",
-    "wave": 4,
-    "roadmap": "docs/reviews/split-brain-remediation-roadmap-2026-06.md"
-  },
-  {
-    "id": "BL-107",
-    "priority": "medium",
-    "title": "实装链路收口杂项 (M4软删过滤/M5 tsvector死码/M6孤儿API/M7假AI搜索/M8 ROI硬编码)",
-    "description": "审计中危合集(各自小, 合一批收口). M4[形态D]: KOL详情loadKol(page.tsx:87)findUnique无deletedAt/isSuspicious过滤→软删/可疑KOL经直链仍可渲染与列表口径不一致; 修 where:{id,deletedAt:null}命中走notFound. M5[形态B]: kol.search_vector由DB trigger每写必更, 唯一读者searchKols(tsvector.ts:49)全仓零调用(UI搜索走ILIKE), 且buildKolSearchQuery replace(/ /g)把多词压单token已坏, filters.ts:415注释谎称available→接线或删除. M6[形态C]孤儿API零fetch调用: PATCH /api/kols/[id](邮箱,emailSource enum已过期)/POST campaigns/[id]/kols+[kolId] PATCH/DELETE/relationship-status REST→删或对齐. M7[形态B/C]假AI语义搜索: ?ai= 全套基建(解析filters.ts:317/chip MatchActiveFilters.tsx:46/empty-state)但buildKolWhere从不读aiQuery, runSemanticKolSearch(semantic-search.ts:115)零调用, filters.ts:319还抹掉search→接线runSemanticKolSearch 或整链移除(现网search框name=search暂不产?ai=, 入口未暴露). M8: ROI AI Insights roi/actions.ts:70喂模型startedAt:null/kolCount:0硬编码→loader真取或删payload. 另低优死代码: runSemanticKolSearch/loadCoverageGapSummary零调用/Dashboard进度条硬编码75%/status:queued死筛选项/stats.ts不过滤isSuspicious.",
+    "confirmed_at": "2026-06-12T11:30+0800",
     "tags": [
-      "tech-debt",
-      "dead-code",
-      "orphan-api",
-      "split-brain-mixed",
-      "cleanup"
+      "match",
+      "ai-search",
+      "semantic",
+      "feature",
+      "wire-existing-engine"
     ],
-    "decisions": [],
-    "confirmed_at": "2026-06-09T13:30+0800",
-    "discovered_in": "2026-06-09 全功能链路审计 docs/reviews/full-feature-chain-audit-2026-06-09.md",
-    "wave": 4,
-    "roadmap": "docs/reviews/split-brain-remediation-roadmap-2026-06.md"
+    "discovered_in": "2026-06-09 审计 M7 + 2026-06-12 用户决单开批次"
   }
 ]
