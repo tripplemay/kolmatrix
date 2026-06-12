@@ -223,6 +223,7 @@ async function inferCountryViaLlm(
       tenantId: deps.tenantId,
       actionLabel: "kol_country_enrichment",
       timeoutMs: COUNTRY_LLM_TIMEOUT_MS,
+      costBucket: "system",
     });
     if (!output || !output.country) return null;
     const confidence = Number(output.confidence ?? 0);

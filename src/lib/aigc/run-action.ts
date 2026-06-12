@@ -108,6 +108,12 @@ export interface RunAigcActionOpts {
    * max output so output isn't truncated.
    */
   maxTokens?: number;
+  /**
+   * BL-113 F002: cost bucket for the metered call. 'system' marks backend
+   * AI (enrichment/prewarm/cron) so assertDailyCostBudget excludes it from
+   * the user-facing per-tenant quota. Default 'user' (all frontend calls).
+   */
+  costBucket?: "system" | "user";
   /** Internal: stub fetch for tests. */
   fetchImpl?: typeof fetch;
 }
@@ -237,11 +243,14 @@ export async function runAigcAction<T>(opts: RunAigcActionOpts): Promise<AigcAct
   // Meter the successful call. recordAiUsage swallows DB errors so a
   // logEvent failure never propagates back to the caller's business
   // logic; the worst case is the next assertDailyCostBudget undercounts.
+  // BL-113 F002: source='system' marks backend calls so assertDailyCostBudget
+  // can exclude them from the user-facing per-tenant daily quota.
   await recordAiUsage(opts.tenantId, opts.actionLabel, usage.costUsd, {
     totalTokens: usage.totalTokens,
     promptTokens: usage.promptTokens,
     completionTokens: usage.completionTokens,
     traceId: body.traceId ?? body.trace_id ?? null,
+    source: opts.costBucket ?? "user",
   });
 
   return {

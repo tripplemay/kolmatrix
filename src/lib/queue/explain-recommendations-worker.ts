@@ -231,6 +231,7 @@ export async function processExplainPrewarm(
         tenantId,
         actionLabel: "ai_recommendation_explain_short",
         timeoutMs: 30_000,
+        costBucket: "system",
       });
     } catch (err) {
       if (err instanceof AiDailyCostExceededError) {

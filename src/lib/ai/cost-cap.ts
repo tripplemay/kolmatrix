@@ -1,5 +1,6 @@
 /**
- * BL-034 F005 fix-round 1 · per-tenant daily AI cost cap (MVP).
+ * BL-034 F005 fix-round 1 · per-tenant daily AI cost cap.
+ * BL-113 F001 · cap改sum真实costUsd + 排除后台source=system
  *
  * Defends the aigcgateway monthly budget against a single tenant burning
  * the per-day quota with bursty AI calls (audit CRIT-5 second prong —
@@ -14,13 +15,8 @@
  *     the DISABLE escape hatch (fail-open) — same shape as
  *     BL-020 F005 `DISABLE_LOGIN_RATELIMIT`.
  *
- * MVP simplification (spec §F005 D5): we do not yet read the actual cost
- * the gateway returns — `event_log` carries it but aggregating JSON
- * payload across rows requires raw SQL. Use a flat
- * "count(today's ai.usage events) × $0.01" estimate instead. The 5 USD
- * default = 500 calls/day/tenant, which already covers all early
- * customers; BL-040+ will graduate to a dedicated `ai_usage` table with
- * actual costUsd numerics.
+ * BL-113 A+B: cap sums real costUsd from payload (not count×$0.01)
+ * and excludes backend AI calls marked source='system'.
  */
 
 import { withTenant } from "@/lib/db";
@@ -40,7 +36,7 @@ export class AiDailyCostExceededError extends Error {
 }
 
 const DEFAULT_LIMIT_USD = 5.0;
-/** D5 MVP estimate per AI call (covers email customise + similar). */
+/** Fallback default for recordAiUsage callers that don't supply costUsd. */
 const DEFAULT_COST_PER_CALL_USD = 0.01;
 
 /**
@@ -59,9 +55,12 @@ function resolveLimitUsd(): number {
 
 /**
  * Assert that `tenantId` has not yet hit the daily AI cost cap. Throws
- * `AiDailyCostExceededError` when the running count would push spend to
- * or past the configured limit. Fail-open when the cap is disabled
- * (env=0).
+ * `AiDailyCostExceededError` when the sum of real costUsd reaches the
+ * configured limit. Fail-open when the cap is disabled (env=0).
+ *
+ * BL-113 A+B: sums real costUsd from payload (fixes count×$0.01 overestimate)
+ * and excludes events with source='system' (backend calls don't count against
+ * the user-facing per-tenant quota).
  */
 export async function assertDailyCostBudget(tenantId: string): Promise<void> {
   const limit = resolveLimitUsd();
@@ -70,17 +69,28 @@ export async function assertDailyCostBudget(tenantId: string): Promise<void> {
   const todayStart = new Date();
   todayStart.setUTCHours(0, 0, 0, 0);
 
-  const count = await withTenant(tenantId, (tx) =>
-    tx.eventLog.count({
-      where: {
-        type: "ai.usage",
-        tenantId,
-        createdAt: { gte: todayStart },
-      },
-    }),
+  // Raw SQL needed for SUM over JSONB payload field.
+  // NULL/invalid costUsd treated as 0 via CASE WHEN regex guard.
+  // source='system' events excluded so backend AI (enrichment/prewarm)
+  // does not eat the user-facing daily quota.
+  const rows = await withTenant(tenantId, (tx) =>
+    tx.$queryRaw<[{ costUsdToday: string }]>`
+      SELECT COALESCE(SUM(
+        CASE
+          WHEN payload->>'costUsd' ~ '^[0-9]+(\.[0-9]+)?$'
+          THEN (payload->>'costUsd')::numeric
+          ELSE 0
+        END
+      ), 0)::text AS "costUsdToday"
+      FROM event_log
+      WHERE type = 'ai.usage'
+        AND tenant_id = ${tenantId}::uuid
+        AND created_at >= ${todayStart}
+        AND COALESCE(payload->>'source', 'user') <> 'system'
+    `,
   );
 
-  const costUsdToday = count * DEFAULT_COST_PER_CALL_USD;
+  const costUsdToday = Number(rows[0]?.costUsdToday ?? 0);
   if (costUsdToday >= limit) {
     throw new AiDailyCostExceededError(tenantId, costUsdToday, limit);
   }
@@ -146,6 +156,5 @@ export async function checkLlmCostBudget(
 // without re-deriving them.
 export const __internal = {
   DEFAULT_LIMIT_USD,
-  DEFAULT_COST_PER_CALL_USD,
   resolveLimitUsd,
 };

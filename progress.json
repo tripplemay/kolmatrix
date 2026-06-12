@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-113 AI 成本上限修复(prod 故障 hotfix). 用户报 prod 两处 AI 降级: ①/campaigns/[id] AI推荐'AI重排暂不可用-按相似度' ②KOL问号'每日AI配额已用尽-仅简要'. 同一根因(Planner已诊断): per-tenant每日AI成本上限被后台吃光→前台AI全被assertDailyCostBudget挡. prod实证租户2b1dcaa2今日500个ai.usage全是kol_country_enrichment(后台国家补全), cost-cap按count×$0.01计为$5触顶, 真实仅~$0.45. 两缺陷: ①cost-cap.ts:83按事件数×$0.01忽略真实costUsd(11×高估) ②后台批量任务与前台共用配额. 用户决A+B都修. A: cap改sum真实costUsd. B: 后台AI(enrichment/prewarm)打source=system不计前台配额. 利好recordAiUsage集中run-action.ts:240已传真实costUsd. 3 features: F001 cap查询A+B / F002 后台打标 / F003 Codex. 纯kolmatrix.",
   "total_features": 3,
-  "completed_features": 0,
+  "completed_features": 2,
   "fix_rounds": 0,
   "current_sprint": "BL-113-ai-cost-cap-fix",
-  "last_updated": "2026-06-12T13:00+0800",
+  "last_updated": "2026-06-12T21:20+0800",
   "reference_docs": [
     "docs/specs/BL-113-ai-cost-cap-fix-spec.md",
     "src/lib/ai/cost-cap.ts:73-83(assertDailyCostBudget count×0.01→sum costUsd)+:104 recordAiUsage(已传真实costUsd)+ checkLlmCostBudget",
@@ -26,7 +26,7 @@
   "generator_handoff": "[2026-06-12 13:00 BJT Planner Kimi 开 BL-113 hotfix building] prod AI降级故障(铁律#9). 根因诊断完: per-tenant每日AI成本上限被后台country enrichment吃光(500事件×$0.01=$5触顶, 真实$0.45)→前台rerank/explain被assertDailyCostBudget挡. 用户决A+B. F001: cost-cap.ts count×0.01→sum真实costUsd(payload已有)+排除source=system. F002: run-action.ts:240 recordAiUsage加source flag, 后台站点(enrichment-stage/explain prewarm)标system, 前台默认user. ⚠️ recordAiUsage集中run-action.ts:240一处, 真实usage.costUsd已传→A数据现成. ⚠️ 保持fail-open(limit=0)+AiDailyCostExceededError契约; 改后cost-cap测试断言要同步(count→sum). ⚠️ B排除后台后后台无前台上限→A真实累加是主防护(enrichment真实极低), 未来后台暴增需独立全局预算(follow-up非本批). 不立即止血(配额UTC零点自动重置). 下一步Generator F001. 详见 spec §2.",
   "session_notes": {
     "Kimi_planner": "[2026-06-12 13:00 BJT Planner Kimi] BL-107波4 done(split-brain路线图收官). 用户报prod两AI降级→诊断同根因: cost-cap event-count×$0.01被后台enrichment 500事件吃光(真实$0.45). 开BL-113 hotfix(铁律#9), 用户决A+B(sum真实成本+后台排除). 不立即止血(UTC零点重置). 下一步Generator F001. 旁挂: 落地页视觉优化用户问到一半被打断(未开批次, 可续); 2批BL-105/107待prod部署(顺带激活KPI cron); BL-112真AI搜索backlog.",
-    "Kimi_generator": null,
+    "Kimi_generator": "[2026-06-12 21:20 BJT Generator] F001+F002 done. F001: assertDailyCostBudget改$queryRaw sum(costUsd) + COALESCE/CASE null保护 + WHERE排除source=system; 移除count×$0.01逻辑; 更新__internal去掉DEFAULT_COST_PER_CALL_USD. F002: RunAigcActionOpts加costBucket:'system'|'user'(默认user), 透传source到recordAiUsage extras; enrichment.ts+explain-prewarm-worker加costBucket:system. 单测13+3条全新. L1: 1689/1689 PASS, tsc=0, lint 0err. 待切verifying前需staging deploy.",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null

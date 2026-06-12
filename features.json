@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "cost-cap.ts assertDailyCostBudget(+checkLlmCostBudget): count(events)×0.01 → sum(payload->>costUsd)(今日/本租户/ai.usage)与 limit 比; null/缺失 costUsd 按 0 或保守小额",
       "B 查询侧: sum 排除后台标记(payload->>source='system')→后台 AI 不计入用户前台配额",
@@ -19,7 +19,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "run-action.ts runAigcAction opts 加可选 flag(如 costBucket:'system'|'user' 默认 user)→透传 recordAiUsage extras source",
       "后台 call sites 标 system: kol-sync/enrichment-stage.ts(kol_country_enrichment)+ explain prewarm worker(explain-recommendations-worker/prewarm-actions)+ grep 识别其它系统cron/worker/backfill触发的 runAigcAction",

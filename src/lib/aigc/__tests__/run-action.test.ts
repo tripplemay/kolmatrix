@@ -261,6 +261,73 @@ describe("runAigcAction — config error path", () => {
   });
 });
 
+describe("runAigcAction — BL-113 costBucket / source metering", () => {
+  it("passes source='user' to recordAiUsage when costBucket is omitted (default)", async () => {
+    const fetchStub = makeFetchStub({
+      status: 200,
+      body: { output: "{}", usage: { cost_usd: 0.001 } },
+    });
+    const { runAigcAction } = await import("@/lib/aigc/run-action");
+    await runAigcAction({
+      actionId: "act-1",
+      variables: {},
+      tenantId: TENANT_ID,
+      actionLabel: "match_rerank",
+      fetchImpl: fetchStub,
+    });
+    expect(recordAiUsage).toHaveBeenCalledWith(
+      TENANT_ID,
+      "match_rerank",
+      expect.any(Number),
+      expect.objectContaining({ source: "user" }),
+    );
+  });
+
+  it("passes source='system' to recordAiUsage when costBucket='system' (backend calls)", async () => {
+    const fetchStub = makeFetchStub({
+      status: 200,
+      body: { output: "{}", usage: { cost_usd: 0.0009 } },
+    });
+    const { runAigcAction } = await import("@/lib/aigc/run-action");
+    await runAigcAction({
+      actionId: "act-1",
+      variables: {},
+      tenantId: TENANT_ID,
+      actionLabel: "kol_country_enrichment",
+      costBucket: "system",
+      fetchImpl: fetchStub,
+    });
+    expect(recordAiUsage).toHaveBeenCalledWith(
+      TENANT_ID,
+      "kol_country_enrichment",
+      expect.any(Number),
+      expect.objectContaining({ source: "system" }),
+    );
+  });
+
+  it("passes source='user' to recordAiUsage when costBucket='user' (explicit)", async () => {
+    const fetchStub = makeFetchStub({
+      status: 200,
+      body: { output: "{}", usage: { cost_usd: 0.001 } },
+    });
+    const { runAigcAction } = await import("@/lib/aigc/run-action");
+    await runAigcAction({
+      actionId: "act-1",
+      variables: {},
+      tenantId: TENANT_ID,
+      actionLabel: "email_customize",
+      costBucket: "user",
+      fetchImpl: fetchStub,
+    });
+    expect(recordAiUsage).toHaveBeenCalledWith(
+      TENANT_ID,
+      "email_customize",
+      expect.any(Number),
+      expect.objectContaining({ source: "user" }),
+    );
+  });
+});
+
 describe("runAigcAction — BL-093 max_tokens", () => {
   function bodyOf(fetchStub: typeof fetch): Record<string, unknown> {
     const calls = (fetchStub as unknown as { mock: { calls: unknown[][] } }).mock.calls;
