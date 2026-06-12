@@ -3,6 +3,9 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
+## 🚧 BL-113-ai-cost-cap-fix BUILDING (0/3) — PROD 故障 hotfix: AI 成本上限被后台吃光致前台AI降级
+- 用户报 prod ①AI推荐'AI重排暂不可用' ②KOL问号'每日AI配额已用尽'. 诊断同根因: cost-cap.ts:83 按 count×$0.01 计(忽略真实costUsd), prod租户2b1dcaa2今日500个 kol_country_enrichment(后台)事件=$5触顶(真实$0.45)→前台rerank/explain被挡. 用户决A+B
+- A: cap改 sum真实costUsd(payload已有) / B: 后台AI(enrichment/prewarm)打source=system不计前台配额. F001 cap查询 / F002 后台打标 / F003 Codex. 利好recordAiUsage集中run-action.ts:240. 下一步 Generator F001. 不立即止血(配额UTC零点重置)
 ## ✅ BL-107-link-closure-wave4 DONE (5/5, fix_rounds=0, signoff @ docs/test-reports/BL-107-signoff-2026-06-12.md) — 链路收口(波4)= **split-brain 路线图收官**
 - M4软删过滤 / M8 ROI删硬编码 / M5 tsvector死码删 / M6删4孤儿路由(含relationship-status, 零fetch实证) / M7 ?ai=止血(保留引擎待BL-112) / BL-106 KPI cron装deploy-prod.sh step8b(自愈+抗VM reset). L1 1681 test绿. Codex L2 代码审查5/5 PASS(0 crit/high/med). staging@02ba1fe
 - ⚠️ **BL-106 KPI cron 仅 prod 部署时实装**(staging 不跑 deploy-prod.sh): 脚本/装配 dry-run 验过, 但 **prod 部署后才生效** → 届时验 kpi_daily_snapshot count>0 + dashboard KPI 趋势脱"—"(需≥若干天数据)

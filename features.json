@@ -1,68 +1,43 @@
 [
   {
     "id": "F001",
-    "title": "M4 KOL详情软删过滤 + M8 ROI 硬编码修 (generator)",
+    "title": "cost-cap 改累加真实 costUsd + 排除后台 source (A+B 查询侧) (generator)",
     "executor": "generator",
-    "priority": "medium",
+    "priority": "high",
     "estimated_hours": 1.5,
-    "status": "done",
+    "status": "pending",
     "acceptance": [
-      "M4: kols/[id]/page.tsx loadKol findUnique 加 where:{id, deletedAt:null}(+视情 isSuspicious); 命中软删→notFound(), 与 /match 列表口径一致",
-      "M8: roi/actions.ts:70 喂AI的 startedAt/kolCount 改从 loader 真取(若类型有源)或从 payload+类型删除(避免类型谎称有值)",
-      "单测(软删KOL直链notFound / ROI payload字段); L1 全绿"
+      "cost-cap.ts assertDailyCostBudget(+checkLlmCostBudget): count(events)×0.01 → sum(payload->>costUsd)(今日/本租户/ai.usage)与 limit 比; null/缺失 costUsd 按 0 或保守小额",
+      "B 查询侧: sum 排除后台标记(payload->>source='system')→后台 AI 不计入用户前台配额",
+      "保持 fail-open(limit≤0 返回)+ 抛 AiDailyCostExceededError(金额用真实 sum)",
+      "单测(sum 真实成本 / system source 排除 / 真实达$5才触顶 / null costUsd / fail-open); L1 全绿"
     ]
   },
   {
     "id": "F002",
-    "title": "M5 tsvector 死码删 + M6 孤儿 API 删 (generator)",
+    "title": "后台 AI 调用打 source=system 标 (B 调用侧) (generator)",
     "executor": "generator",
-    "priority": "medium",
-    "estimated_hours": 2.0,
-    "status": "done",
+    "priority": "high",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "M5: 删 searchKols/buildKolSearchQuery(tsvector.ts)+ filters.ts:415 谎称注释; DB search_vector 列+trigger 保留(drop要migration无害, 优先只删TS死码低风险)",
-      "M6: 删孤儿 route PATCH /api/kols/[id](邮箱)、POST /api/campaigns/[id]/kols + [kolId]、relationship-status REST(确认全仓零fetch调用方再删; 保留仍有调用方的)",
-      "grep 全仓确认删除项零残留引用; 单测/npm run build 绿"
+      "run-action.ts runAigcAction opts 加可选 flag(如 costBucket:'system'|'user' 默认 user)→透传 recordAiUsage extras source",
+      "后台 call sites 标 system: kol-sync/enrichment-stage.ts(kol_country_enrichment)+ explain prewarm worker(explain-recommendations-worker/prewarm-actions)+ grep 识别其它系统cron/worker/backfill触发的 runAigcAction",
+      "前台不动(默认 user): match_rerank/explain dialog/email_customize/brief_parse/refine/roi_insights 等用户主动触发",
+      "单测(后台调用 recordAiUsage 带 source=system / 前台默认 user); L1 全绿"
     ]
   },
   {
     "id": "F003",
-    "title": "M7 ?ai= 误导 UI 止血(保留引擎待 BL-112) (generator)",
-    "executor": "generator",
-    "priority": "medium",
-    "estimated_hours": 1.5,
-    "status": "done",
-    "acceptance": [
-      "移除/中和 ?ai= 误导UI: MatchActiveFilters 不再渲染 'AI: xxx' chip; filters.ts:317-319 不再特殊处理 aiQuery(stray ?ai= 变 no-op 或回落 search 不显假筛选); empty-state 计数不引 aiQuery",
-      "保留 lib/discovery/semantic-search.ts(runSemanticKolSearch 引擎)+核心 filter 逻辑供 BL-112 真 AI 语义搜索接; 本批仅去 UI 误导",
-      "单测(?ai= 在 URL 时不渲染假 chip / 不影响正常 search); L1 全绿"
-    ]
-  },
-  {
-    "id": "F004",
-    "title": "BL-106 持久 KPI 快照 cron(deploy 脚本装, 抗 VM reset) (generator, ops)",
-    "executor": "generator",
-    "priority": "medium",
-    "estimated_hours": 1.5,
-    "status": "done",
-    "acceptance": [
-      "prod 实证 KPI cron 缺失+kpi_daily_snapshot 表空(count=0). deploy-prod.sh 加步骤 ensure /etc/cron.d/kolmatrix-kpi-snapshot(每日, 链 kol-sync 后, 跑 cd /opt/kolmatrix && npm run kpi-snapshot:daily), 每次部署重建抗VM reset(同 backup-retention 教训); 建议同步 ensure backup-retention cron.d(自愈)",
-      "更新 deployment-runbook §Cron + environment.md",
-      "验收: 部署后 /etc/cron.d/kolmatrix-kpi-snapshot 存在 + 手动跑脚本→kpi_daily_snapshot count>0; L1 全绿"
-    ]
-  },
-  {
-    "id": "F005",
     "title": "Codex L1+L2 + signoff (executor:codex)",
     "executor": "codex",
-    "priority": "medium",
-    "estimated_hours": 1.5,
-    "status": "done",
+    "priority": "high",
+    "estimated_hours": 1.0,
+    "status": "pending",
     "acceptance": [
       "L1: lint 0err warn≤3 / tsc=0 / npm test",
-      "L2 部署后: ① 软删KOL直链notFound ② 删除的API/死码全仓零引用+build绿 ③ stray ?ai= 不显假筛选chip ④ ROI insights不再硬编码 ⑤ KPI cron装好+手动跑写入kpi_daily_snapshot",
-      "signoff docs/test-reports/BL-107-signoff-2026-06-XX.md"
-    ],
-    "l2_result": "4/4 PASS @ staging 02ba1fe (2026-06-12): T1 M4=PASS T2 M7=PASS T3 M8=PASS T4 M6=PASS"
+      "L2 部署后 prod/staging: ① AI Match 重排恢复(不再'AI重排暂不可用') ② KOL 问号解释恢复(不再'配额已用尽') ③ 后台 country enrichment 不再吃前台配额 ④ cap 反映真实 USD(sum costUsd) ⑤ fail-open/真实达$5仍触顶",
+      "signoff docs/test-reports/BL-113-signoff-2026-06-XX.md"
+    ]
   }
 ]
