@@ -18,7 +18,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "M5: 删 searchKols/buildKolSearchQuery(tsvector.ts)+ filters.ts:415 谎称注释; DB search_vector 列+trigger 保留(drop要migration无害, 优先只删TS死码低风险)",
       "M6: 删孤儿 route PATCH /api/kols/[id](邮箱)、POST /api/campaigns/[id]/kols + [kolId]、relationship-status REST(确认全仓零fetch调用方再删; 保留仍有调用方的)",
