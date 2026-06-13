@@ -3,10 +3,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-114-landing-redesign VERIFYING (4/5 generator done) — 落地页照 Stitch 原型重做完成, 待 Codex F005 验收
-- ✅ **F001-F004 全 done + main CI 全绿(run 27464021808) + staging @ 50f0180 healthy**. 全页照原型重做: F001 Hero(渐变标题/光晕/dashboard 预览)+全局(JetBrains Mono→font-landing-mono/.glow-blob/.landing-cta-primary gradient-btn) / F002 Bento4卡(.landing-bento-card)+Logo条 / F003 HowItWorks+Stats+FAQ+收尾CTA+结构重组(改原型顺序+移除 PainPoints/BeforeAfter/EmailCenterDemo+SectionTransition, main bg→navy-base) / F004 清7插画+死组件+死CSS+死i18n, icon 子集 107→104 收缩, **landing-*.png baseline 用 update-visual-baselines workflow Linux 重拍(bot-commit 50f0180)**
-- ⏭️ **F005 = Codex/Reviewer 验收(verifying)**: L1(实测 lint 0e3w/tsc=0/vitest 1693/build OK)+ L2 staging(视觉对齐 screen.png / Lighthouse perf99·WCAG AA·reduced-motion 不回退 / baseline 绿 / 5 locale)+ signoff. 详见 progress.generator_handoff
-- ⚠️ 待用户定主观项(非阻断): eyebrow 'GAME·KOL·AI·NATIVE'(非原型 'Neural Velocity AI', 守 BL-055) / logo 条 5 占位 wordmark / stats 数字按 spec. 用户走查: https://staging.kol.guangai.ai/en
+## ✅ BL-114-landing-redesign DONE (F001-F004 done, F005 Codex 用户授权免除, closure @ docs/test-reports/BL-114-closure-2026-06-13.md) — 落地页照 Stitch 原型重做
+- 全页照 Stitch 原型(Neural Velocity)重做: Hero(渐变标题/光晕/dashboard预览)+Bento4卡+HowItWorks+Stats+FAQ+收尾CTA+结构重组(去PainPoints/BeforeAfter/EmailCenterDemo)+清7插画(留hero). **用户手工验收staging视觉通过**+main CI全绿(run 27464021808)+staging@50f0180. baseline经 update-visual-baselines workflow Linux重拍
+- ⚠️ soft-watch(F005免除未显式验): Lighthouse perf99/WCAG AA/reduced-motion(BL-080硬约束, 风险低, 建议prod前后抽查). 主观项用户可微调: eyebrow/logo占位/stats数字
+- ⚠️ **待 prod 部署**让访客见新落地页(顺带Lighthouse抽查). 教训沉淀(generator session_notes): 改全局token前grep app用量/新图标跑子集/删文件前grep零引用/baseline用workflow重拍
 ## ✅ BL-113-ai-cost-cap-fix DONE (3/3, fix_rounds=0, signoff @ docs/test-reports/BL-113-signoff-2026-06-12.md) — PROD 故障 hotfix: AI 成本上限修复
 - 根因: cost-cap.ts 按 count×$0.01 计(忽略真实costUsd), 后台 kol_country_enrichment 500事件=$5触顶(真实$0.45)→前台AI被挡. 修: A cap改sum真实costUsd+排除source=system / B 后台AI(enrichment/prewarm)打costBucket=system不计前台配额. L1 1689 PASS. Codex L2 code-review 5/5(0 crit/high). staging@686f758
 - ✅ **PROD 已部署(用户 2026-06-12/13)+ Planner 核验**: 该租户今日500 enrichment 事件前台真实成本 $0.00→不再触顶(A+B 生效, 故障已根治). BL-105+BL-107+BL-113 三批随 main HEAD 上 prod(积压清零). BL-107 KPI cron 已装 /etc/cron.d/kolmatrix-kpi-snapshot(00:30 UTC 首跑填 kpi_daily_snapshot, 现仍空待今晚)

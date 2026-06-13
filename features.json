@@ -59,7 +59,8 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "skipped",
+    "skip_reason": "用户 2026-06-13 手工验收 staging 视觉通过, 授权免除 Codex F005(视觉批次用户肉眼验收为主门, 对自有harness行使权限). 覆盖: 用户视觉accept+main CI全绿(run 27464021808)+staging healthy. soft-watch: Lighthouse perf99/WCAG AA 未显式再验(建议prod前后抽查). 记录 docs/test-reports/BL-114-closure-2026-06-13.md.",
     "acceptance": [
       "L1: lint 0err warn≤3 / tsc=0 / npm test + npm run build",
       "L2 部署后 staging: ① 落地页视觉对齐 Stitch 原型(screen.png 对比: hero/bento/steps/stats/FAQ/CTA + Neural Velocity 色阶/渐变/光晕/mono) ② Lighthouse perf≥99/WCAG AA/reduced-motion 不回退 ③ visual baseline 已重拍绿 ④ 5 locale 正常",

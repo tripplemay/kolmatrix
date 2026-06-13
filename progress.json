@@ -1,5 +1,5 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "BL-114 落地页重做 — 照 Stitch 原型(Neural Velocity 设计系统). 用户视觉优化→先想复刻 jina.ai→Generator F001 jina版'根本不像'→用户改用项目自有设计系统(Neural Velocity)在 Stitch 生成落地页原型(design-draft/landing-stitch-prototype/ code.html+screen.png+DESIGN.md)=精确目标. 用户决: ①完全照原型含结构重组(去PainPoints/BeforeAfter/EmailCenterDemo, 加How-it-works/Stats) ②hero保留hero-illustration.png其余7张删. 原型=Neural Velocity(底#0b1326/青#00e5ff/渐变CTA#00daf3→c3f5ff/Inter+JetBrainsMono/色阶分层无边框/光晕/玻璃). 5 features: F001 Hero+token照原型(redo, tone-setter检查点) / F002 Bento4卡+logo条 / F003 How-it-works+Stats+FAQ+CTA+结构重组 / F004 清7插画/死组件/baseline重拍 / F005 Codex. 守perf99/a11y不回退.",
   "total_features": 5,
   "completed_features": 4,
@@ -18,11 +18,11 @@
     "audit": "docs/reviews/landing-visual-audit-2026-06-13.md",
     "prototype": "design-draft/landing-stitch-prototype/",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/BL-114-closure-2026-06-13.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
+  "evaluator_feedback": "用户手工验收 staging 视觉通过, 授权免除 Codex F005(2026-06-13, 视觉批次用户肉眼验收为主门, 用户对自有harness行使权限, 非Codex signoff). 覆盖: 用户视觉accept + main CI全绿(run 27464021808 lint/tsc/test/build/E2E/visual-baseline重拍) + staging@50f0180 healthy. ⚠️未显式再验(F005免除, soft-watch): Lighthouse perf99/WCAG AA/reduced-motion(BL-080硬约束, 风险低-删7图更快+设计系统token AA, 建议prod前后Lighthouse抽查). 主观项(用户可微调): eyebrow/logo占位/stats数字. closure docs/test-reports/BL-114-closure-2026-06-13.md.",
   "fix_rounds_history": [],
   "generator_handoff": "[2026-06-13 18:30 BJT Generator Kimi → Codex/Reviewer] ✅ F001-F004 全部 done(4/5), 切 verifying. 落地页照 Stitch 原型(design-draft/landing-stitch-prototype/screen.png+code.html)完整重做. **staging 已部署 @ 50f0180 healthy** (https://staging.kol.guangai.ai/en, /zh). **main CI 全绿** (run 27464021808 workflow_dispatch: lint/tsc/unit/integration×2/build/E2E 全 ✓, 含 visual-regression landing-*.png 新基线已由 update-visual-baselines workflow 重拍提交 @ 50f0180). **F005 你的验收(executor:codex)**: L1 = lint 0e/warn≤3(实测 0e/3w)/tsc=0/npm test(1693)/npm run build; L2 staging = ① 视觉对齐原型 screen.png(hero 渐变标题+光晕+dashboard 预览 / bento 4 卡 Brief·Match·Reach·Insight 青 icon+mono 标签 / how-it-works 3 步 01·02·03 / stats 6,000+·5+·100% / FAQ 色阶 accordion / 收尾 CTA 玻璃面板 + Neural Velocity 色阶·渐变·光晕·mono) ② Lighthouse perf≥99 / WCAG AA / reduced-motion 不回退(BL-080 基线) ③ visual baseline 已重拍绿 ④ 5 locale(en/zh/ja/ko/es)文案正常. testid: landing-hero/-logos/-features/-feature-{brief,match,reach,insight}/-how-it-works/-step-{1,2,3}/-stats/-stat-{kols,languages,roi}/-faq/-footer-cta. signoff → docs/test-reports/BL-114-signoff-2026-06-13.md. ⚠️ 待用户定的主观项(非阻断): eyebrow 用 'GAME·KOL·AI·NATIVE'(非原型 'Neural Velocity AI', 守 BL-055 codename 移除) / logo 条 5 占位 wordmark / stats 数字按 spec.",
   "session_notes": {
