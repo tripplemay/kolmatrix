@@ -329,9 +329,6 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   // brand; GAME · KOL · AI · NATIVE is a proper-noun chain).
   "landing.hero.kicker",
   "landing.hero.eyebrow",
-  // beforeAfter table — "After" column header is the brand name across
-  // all locales (matches landing.hero.kicker convention).
-  "landing.beforeAfter.colAfter",
   // BL-114-F002 — bento capability labels (Brief / Match / Reach / Insight)
   // are mono uppercase category tags kept language-neutral by design (same
   // convention as landing.hero.eyebrow). The localized content lives in the

@@ -2195,28 +2195,6 @@
       "videoFallbackHint": "（动画版本不可用，已显示静态截图）",
       "illustrationAlt": "KolMatrix 一体化工作台 — KOL 发现、AI 推荐与营销数据分析"
     },
-    "painPoints": {
-      "sectionTitle": "游戏出海 KOL 营销 4 大痛点",
-      "items": {
-        "find": {
-          "title": "跨平台找 KOL 慢",
-          "body": "筛选散、数据不准，4 大平台来回切换效率低"
-        },
-        "match": {
-          "title": "受众分析模糊匹配不准",
-          "body": "凭感觉投放，ROI 不可控，烧钱不见声量"
-        },
-        "email": {
-          "title": "邮件送达率低开信率为 0",
-          "body": "不知道是合规配置问题还是内容问题"
-        },
-        "workflow": {
-          "title": "全流程割裂合规风险高",
-          "body": "合作进度全靠人工 Excel 统计，回款复盘没体系"
-        }
-      },
-      "tagline": "找达人 → AI 匹配 → 发起合作 → 邮件协作 → 数据复盘 — 一站搞定"
-    },
     "features": {
       "items": {
         "brief": {
@@ -2240,25 +2218,6 @@
           "body": "转化归因与留存数据实时汇入你的营销中枢。"
         }
       }
-    },
-    "demo": {
-      "sectionTitle": "看一眼 KolMatrix 的实际样子",
-      "screenshotAlt": "KolMatrix /match 主面板 — AI 推荐 + KOL 库",
-      "callouts": [
-        {
-          "title": "找 KOL，从 4 小时到 5 分钟",
-          "body": "上传产品 brief，AI 在 15 个维度筛选全球 4 大平台 KOL 库，5 分钟内给出 TOP-30 候选名单 + 契合度分数。"
-        },
-        {
-          "title": "发起合作，DKIM/SPF 一键合规",
-          "body": "Resend 合规邮件中心内置，DKIM/SPF/DMARC 三套合规验证开箱可用，信誉分 98+ 让冷邮件落进收件箱。"
-        },
-        {
-          "title": "复盘 ROI，4 平台自动归因",
-          "body": "播放、互动、引流、转化、ROI 全维度看板，4 大平台数据自动归因，告别人工 Excel 拼接。"
-        }
-      ],
-      "illustrationAlt": "KolMatrix 邮件中心 — 撰写、发送追踪与送达合规仪表盘"
     },
     "trust": {
       "caption": "领先游戏厂商的信赖之选"
@@ -2298,36 +2257,6 @@
     "nav": {
       "login": "登录",
       "cta": "申请试用"
-    },
-    "beforeAfter": {
-      "sectionTitle": "传统流程 vs KolMatrix",
-      "demoBadge": "演示数据",
-      "colTask": "环节",
-      "colBefore": "传统流程",
-      "colAfter": "KolMatrix",
-      "rows": {
-        "discover": {
-          "task": "找 KOL",
-          "before": "4 平台来回切，4 小时筛 30 人",
-          "after": "1 个库 15 维筛，5 分钟出短名单"
-        },
-        "match": {
-          "task": "评估匹配度",
-          "before": "凭经验拍脑袋，准度 50%",
-          "after": "AI 多模态推荐，附契合度分"
-        },
-        "email": {
-          "task": "邮件触达",
-          "before": "DKIM/SPF 自配置，送达率忽高忽低",
-          "after": "一键合规 + 信誉分 98 实时监控"
-        },
-        "review": {
-          "task": "数据复盘",
-          "before": "Excel 拼合 3 平台导出表",
-          "after": "实时看板 · 4 平台自动归因"
-        }
-      },
-      "illustrationAlt": "前后对比 — 零散的人工 KOL 表格对比井然有序的 KolMatrix 工作台"
     },
     "howItWorks": {
       "title": "为高速团队打造。",

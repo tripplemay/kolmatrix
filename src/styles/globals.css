@@ -367,7 +367,7 @@
    Cinematic v2 landing — motion-safety + mobile fallback
    ============================================================ */
 
-/* Reduced-motion: kill anim durations + force [data-parallax] back to normal flow. */
+/* Reduced-motion: kill anim durations across the landing canvas. */
 @media (prefers-reduced-motion: reduce) {
   [data-landing-cinematic] *,
   [data-landing-cinematic] *::before,
@@ -376,38 +376,6 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  [data-landing-cinematic] [data-parallax="sticky"] {
-    position: static !important;
-    top: auto !important;
-  }
-}
-
-/* Mobile (<1024px): disable sticky parallax — too jittery on touch devices. */
-@media (max-width: 1023px) {
-  [data-landing-cinematic] [data-parallax="sticky"] {
-    position: static !important;
-    top: auto !important;
-  }
-}
-
-/* Cinematic gradient text recipe — reusable utility */
-.cinematic-text {
-  background: linear-gradient(135deg, #ffffff 0%, var(--color-cyan) 50%, var(--color-purple) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 80px rgba(0, 229, 255, 0.4);
-}
-
-/* CTA glow-pulse for FooterCTA */
-@keyframes landing-cta-pulse {
-  0%, 100% { box-shadow: 0 0 24px var(--glow-cyan); }
-  50% { box-shadow: 0 0 40px var(--glow-cyan), 0 0 0 6px rgba(0, 229, 255, 0.15); }
-}
-.cta-glow-pulse {
-  animation: landing-cta-pulse 3s ease-in-out infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .cta-glow-pulse { animation: none; box-shadow: 0 0 24px var(--glow-cyan); }
 }
 
 /* ============================================================
@@ -437,32 +405,11 @@
   }
 }
 
-/* Hero mesh gradient — jina.ai 风格：深 navy + 强电蓝/青光晕，纯 CSS 无图片 */
-.landing-mesh-hero {
-  background:
-    radial-gradient(ellipse 80% 55% at 15% 5%, oklch(65% 0.26 205 / 0.42), transparent 55%),
-    radial-gradient(ellipse 45% 35% at 80% 75%, oklch(60% 0.22 290 / 0.30), transparent 55%),
-    radial-gradient(ellipse 50% 35% at 55% 42%, oklch(68% 0.30 200 / 0.14), transparent 60%),
-    radial-gradient(ellipse 70% 50% at 50% 100%, oklch(55% 0.16 240 / 0.16), transparent 70%),
-    radial-gradient(ellipse 110% 70% at 50% 50%, oklch(50% 0.10 235 / 0.08), transparent 75%),
-    linear-gradient(
-      180deg,
-      var(--color-landing-canvas) 0%,
-      var(--color-navy-deep) 50%,
-      var(--color-landing-canvas) 100%
-    );
-}
-
-/* Hero entrance + scroll-driven motion. Wrapped in @supports so Firefox / 旧
+/* Hero entrance — scroll-driven fade. Wrapped in @supports so Firefox / 旧
    Safari simply render the static end-state (visible) — fallback graceful. */
 @keyframes landing-hero-fade-in {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes landing-hero-video-scale {
-  from { transform: scale(1); }
-  to { transform: scale(1.08); }
 }
 
 @supports (animation-timeline: view()) {
@@ -471,11 +418,6 @@
       animation: landing-hero-fade-in linear both;
       animation-timeline: view();
       animation-range: cover 0% cover 35%;
-    }
-    .landing-hero-video-scale {
-      animation: landing-hero-video-scale linear both;
-      animation-timeline: view();
-      animation-range: cover 0% cover 80%;
     }
   }
 }
@@ -516,32 +458,6 @@
   .landing-cta-primary:hover { transform: none; }
 }
 
-/* Secondary outline CTA — visually paired with primary; subtle hover */
-.landing-cta-secondary {
-  background: color-mix(in srgb, var(--color-landing-canvas) 50%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in srgb, var(--color-cyan) 38%, transparent);
-  color: var(--color-cyan);
-  transition:
-    transform var(--duration-landing-short) var(--ease-landing-out),
-    background-color var(--duration-landing-short) var(--ease-landing-out),
-    border-color var(--duration-landing-short) var(--ease-landing-out);
-}
-.landing-cta-secondary:hover {
-  transform: translateY(-1px);
-  background: color-mix(in srgb, var(--color-cyan) 12%, transparent);
-  border-color: var(--color-cyan);
-}
-.landing-cta-secondary:focus-visible {
-  outline: 2px solid var(--color-cyan);
-  outline-offset: 3px;
-}
-@media (prefers-reduced-motion: reduce) {
-  .landing-cta-secondary { transition: none; }
-  .landing-cta-secondary:hover { transform: none; }
-}
-
 /* TopNav glass — Linear-style refined backdrop (blur + saturate + subtle
    hairline border via color-mix). */
 .landing-topnav-glass {
@@ -549,48 +465,6 @@
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid color-mix(in srgb, var(--color-cyan) 10%, transparent);
-}
-
-/* Landing cards — unified Linear-style surface for body section cards.
-   Light variant for sections with bg-surface-light (PainPoints / Features /
-   Trust); dark variant for sections with bg-surface (BeforeAfter / Email
-   callouts / FAQ items). */
-.landing-card-light {
-  border-radius: var(--radius-landing-card);
-  background: var(--color-surface-light-container);
-  border: 1px solid color-mix(in srgb, var(--color-on-surface-light) 8%, transparent);
-  transition:
-    transform var(--duration-landing-short) var(--ease-landing-out),
-    border-color var(--duration-landing-short) var(--ease-landing-out),
-    box-shadow var(--duration-landing-medium) var(--ease-landing-out);
-}
-.landing-card-light:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--color-cyan) 42%, transparent);
-  box-shadow: 0 12px 32px color-mix(in srgb, var(--color-cyan) 16%, transparent);
-}
-@media (prefers-reduced-motion: reduce) {
-  .landing-card-light { transition: none; }
-  .landing-card-light:hover { transform: none; }
-}
-
-.landing-card-dark {
-  border-radius: var(--radius-landing-card);
-  background: var(--color-landing-canvas-elevated);
-  border: 1px solid color-mix(in srgb, var(--color-cyan) 10%, transparent);
-  transition:
-    transform var(--duration-landing-short) var(--ease-landing-out),
-    border-color var(--duration-landing-short) var(--ease-landing-out),
-    box-shadow var(--duration-landing-medium) var(--ease-landing-out);
-}
-.landing-card-dark:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--color-cyan) 45%, transparent);
-  box-shadow: 0 12px 32px color-mix(in srgb, var(--color-cyan) 20%, transparent);
-}
-@media (prefers-reduced-motion: reduce) {
-  .landing-card-dark { transition: none; }
-  .landing-card-dark:hover { transform: none; }
 }
 
 /* Bento capability card — 照 Stitch 原型 (BL-114-F002): 色阶分层(无 1px 边框)
@@ -647,44 +521,3 @@
   .landing-faq-item summary .landing-faq-chevron { transition: none; }
 }
 
-/* SectionTransition — refined gradient seam with subtle mesh blur */
-.landing-section-seam {
-  position: relative;
-  isolation: isolate;
-}
-.landing-section-seam::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 70% 100% at 50% 50%, color-mix(in srgb, var(--color-cyan) 4%, transparent), transparent 60%);
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* Icon halo — subtle cyan glow background for section card icons.
-   Used as a wrapper around <span class="material-symbols-outlined"> to lift
-   the icon visually without changing icon weight. */
-.landing-icon-halo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--color-cyan) 10%, transparent);
-  color: var(--color-cyan);
-  transition:
-    background-color var(--duration-landing-short) var(--ease-landing-out),
-    transform var(--duration-landing-short) var(--ease-landing-out);
-}
-.landing-card-light:hover .landing-icon-halo,
-.landing-card-dark:hover .landing-icon-halo {
-  background: color-mix(in srgb, var(--color-cyan) 22%, transparent);
-  transform: scale(1.06);
-}
-@media (prefers-reduced-motion: reduce) {
-  .landing-icon-halo { transition: none; }
-  .landing-card-light:hover .landing-icon-halo,
-  .landing-card-dark:hover .landing-icon-halo { transform: none; }
-}

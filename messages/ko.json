@@ -2196,28 +2196,6 @@
       "videoFallbackHint": "(애니메이션을 사용할 수 없어 정지 이미지를 표시합니다)",
       "illustrationAlt": "KolMatrix 통합 워크스페이스 — KOL 발굴, AI 추천, 캠페인 분석"
     },
-    "painPoints": {
-      "sectionTitle": "게임 스튜디오가 마주하는 4가지 과제",
-      "items": {
-        "find": {
-          "title": "크로스 플랫폼 KOL 발굴이 느립니다",
-          "body": "데이터가 흩어져 있고 지표가 제각각, 4대 플랫폼을 오가며 효율이 떨어집니다"
-        },
-        "match": {
-          "title": "오디언스 분석이 감에 의존해 매칭 정확도가 낮습니다",
-          "body": "감으로 집행하면 ROI를 예측할 수 없고 예산이 낭비됩니다"
-        },
-        "email": {
-          "title": "메일 도달률이 낮고 오픈율이 0%입니다",
-          "body": "컴플라이언스 문제인지 콘텐츠 문제인지 구분할 수 없습니다"
-        },
-        "workflow": {
-          "title": "워크플로우가 단절되고 컴플라이언스 리스크가 큽니다",
-          "body": "진행 상황을 Excel로 수기 관리, 컴플라이언스 빈틈이 브랜드 리스크로 직결됩니다"
-        }
-      },
-      "tagline": "발굴 → AI 매칭 → 아웃리치 → 협업 → 효과 측정 — 모두 한곳에서"
-    },
     "features": {
       "items": {
         "brief": {
@@ -2241,25 +2219,6 @@
           "body": "전환 어트리뷰션과 리텐션 데이터가 마케팅 허브로 바로 흘러듭니다."
         }
       }
-    },
-    "demo": {
-      "sectionTitle": "KolMatrix의 실제 모습",
-      "screenshotAlt": "KolMatrix /match 메인 화면 — AI 추천 + KOL 라이브러리",
-      "callouts": [
-        {
-          "title": "몇 시간이 아닌 몇 분 안에 발굴",
-          "body": "브리프를 업로드하면 AI가 4 개 플랫폼의 KOL을 15 개 축으로 평가하여, 5 분 안에 상위 30 명의 후보 명단과 적합도 점수를 제공합니다."
-        },
-        {
-          "title": "원클릭 컴플라이언스로 아웃리치",
-          "body": "Resend 기반 이메일 센터에 DKIM/SPF/DMARC가 내장되어 있어, 신뢰도 점수 98+로 콜드 메일도 인박스에 도달합니다."
-        },
-        {
-          "title": "4 개 플랫폼 통합 어트리뷰션",
-          "body": "재생, 인게이지먼트, 트래픽, 컨버전, ROI — 모든 지표를 4 개 플랫폼에서 자동 귀속합니다. 엑셀 작업은 더 이상 필요 없습니다."
-        }
-      ],
-      "illustrationAlt": "KolMatrix 이메일 센터 — 작성, 발송 추적, 도달률 규정 준수 대시보드"
     },
     "trust": {
       "caption": "주요 게임 스튜디오가 신뢰합니다"
@@ -2299,36 +2258,6 @@
     "nav": {
       "login": "로그인",
       "cta": "체험 신청"
-    },
-    "beforeAfter": {
-      "sectionTitle": "기존 워크플로우 vs KolMatrix",
-      "demoBadge": "예시 데이터",
-      "colTask": "단계",
-      "colBefore": "기존 워크플로우",
-      "colAfter": "KolMatrix",
-      "rows": {
-        "discover": {
-          "task": "KOL 발굴",
-          "before": "4 개 플랫폼을 오가며 30 명 추리는 데 4 시간",
-          "after": "단일 라이브러리, 15 개 필터, 5 분 만에 후보 확정"
-        },
-        "match": {
-          "task": "적합도 평가",
-          "before": "직감으로 판단, 정확도 약 50%",
-          "after": "멀티모달 AI 추천 + 적합도 점수"
-        },
-        "email": {
-          "task": "아웃리치",
-          "before": "DKIM/SPF 수동 설정, 도달률 변동",
-          "after": "원클릭 컴플라이언스 + 신뢰도 98 실시간 모니터링"
-        },
-        "review": {
-          "task": "성과 분석",
-          "before": "3 개 플랫폼 엑셀 export 결합",
-          "after": "실시간 대시보드 · 4 개 플랫폼 자동 어트리뷰션"
-        }
-      },
-      "illustrationAlt": "전후 비교 — 흩어진 수작업 KOL 스프레드시트와 정돈된 KolMatrix 워크스페이스"
     },
     "howItWorks": {
       "title": "고속 팀을 위해 설계되었습니다.",

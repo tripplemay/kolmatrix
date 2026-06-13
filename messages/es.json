@@ -2196,28 +2196,6 @@
       "videoFallbackHint": "(Animación no disponible; mostrando imagen estática)",
       "illustrationAlt": "Espacio de trabajo unificado de KolMatrix: descubrimiento de KOL, recomendaciones con IA y analítica de campañas"
     },
-    "painPoints": {
-      "sectionTitle": "Cuatro retos que enfrenta todo estudio de videojuegos",
-      "items": {
-        "find": {
-          "title": "Descubrir KOL entre plataformas es lento",
-          "body": "Datos dispersos, métricas inconsistentes y cuatro plataformas que gestionar"
-        },
-        "match": {
-          "title": "El encaje de audiencia se decide por intuición",
-          "body": "Matching impreciso, ROI impredecible y presupuesto desperdiciado"
-        },
-        "email": {
-          "title": "Los correos no llegan a la bandeja de entrada",
-          "body": "Tasa de apertura en cero sin saber si es por compliance o contenido"
-        },
-        "workflow": {
-          "title": "Flujo de trabajo fragmentado y arriesgado",
-          "body": "Progreso seguido en hojas de cálculo; los huecos de compliance crean riesgo de marca"
-        }
-      },
-      "tagline": "Encontrar → Matching con IA → Outreach → Colaborar → Medir — todo en un solo lugar"
-    },
     "features": {
       "items": {
         "brief": {
@@ -2241,25 +2219,6 @@
           "body": "Atribución de conversiones y datos de retención que fluyen directo a tu hub de marketing."
         }
       }
-    },
-    "demo": {
-      "sectionTitle": "Así se ve KolMatrix en realidad",
-      "screenshotAlt": "Vista principal de /match en KolMatrix — recomendaciones IA + biblioteca de KOLs",
-      "callouts": [
-        {
-          "title": "Descubre en minutos, no en horas",
-          "body": "Sube un brief; la IA clasifica creadores en 4 plataformas según 15 dimensiones y devuelve un top-30 con puntuaciones de afinidad en menos de 5 minutos."
-        },
-        {
-          "title": "Outreach con cumplimiento integrado",
-          "body": "Centro de correo con Resend y DKIM/SPF/DMARC listos. Reputación 98+ para que tu outreach en frío llegue a la bandeja de entrada."
-        },
-        {
-          "title": "Atribución multi-plataforma",
-          "body": "Reproducciones, engagement, tráfico, conversión, ROI — todo. 4 plataformas con atribución automática. Sin cosido de Excel."
-        }
-      ],
-      "illustrationAlt": "Centro de correo de KolMatrix: redacción, seguimiento de envíos y panel de cumplimiento de entregabilidad"
     },
     "trust": {
       "caption": "La elección de los principales estudios de videojuegos"
@@ -2299,36 +2258,6 @@
     "nav": {
       "login": "Iniciar sesión",
       "cta": "Solicitar prueba"
-    },
-    "beforeAfter": {
-      "sectionTitle": "Flujo tradicional vs KolMatrix",
-      "demoBadge": "Ilustrativo",
-      "colTask": "Etapa",
-      "colBefore": "Flujo tradicional",
-      "colAfter": "KolMatrix",
-      "rows": {
-        "discover": {
-          "task": "Encontrar KOLs",
-          "before": "Alternar 4 plataformas, 4 h para preseleccionar 30",
-          "after": "Una biblioteca, 15 filtros, lista corta en 5 minutos"
-        },
-        "match": {
-          "task": "Evaluar afinidad",
-          "before": "Decisión intuitiva, precisión ~50%",
-          "after": "Recomendaciones IA multimodal con puntaje de afinidad"
-        },
-        "email": {
-          "task": "Contactar",
-          "before": "DKIM/SPF manual, entrega irregular",
-          "after": "Cumplimiento en un clic + reputación 98 en vivo"
-        },
-        "review": {
-          "task": "Medir resultados",
-          "before": "Combinar export Excel de 3 plataformas",
-          "after": "Panel en vivo · atribución automática multi-plataforma"
-        }
-      },
-      "illustrationAlt": "Comparación antes y después: hojas de cálculo de KOL manuales y dispersas frente al espacio de trabajo organizado de KolMatrix"
     },
     "howItWorks": {
       "title": "Diseñado para equipos de alta velocidad.",
