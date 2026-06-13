@@ -2186,14 +2186,29 @@
     "hero": {
       "kicker": "KOLMATRIX",
       "eyebrow": "GAME · KOL · AI · NATIVE",
-      "title_line1": "AI 驱动的",
-      "title_line2": "全球游戏 KOL 营销指挥中心",
-      "subtitle": "用语义匹配、AI 驱动的活动编排与实时 ROI 追踪，在所有平台规模化你的全球创作者触达。",
+      "title_line1": "游戏 KOL 营销全流程",
+      "title_line2": "邮件协作中心",
+      "subtitle": "送达率低？合规风险高？跨平台邮件杂乱？KolMatrix 把游戏 KOL 邮件收拢进一个协作中心 —— DKIM/SPF/DMARC 合规、送达管理与开信率实时追踪。",
       "ctaPrimary": "免费开始",
       "ctaSecondary": "预约 1v1 演示",
       "videoAlt": "KolMatrix 产品演示循环",
       "videoFallbackHint": "（动画版本不可用，已显示静态截图）",
-      "illustrationAlt": "KolMatrix 一体化工作台 — KOL 发现、AI 推荐与营销数据分析"
+      "illustrationAlt": "KolMatrix 一体化工作台 — KOL 发现、AI 推荐与营销数据分析",
+      "stats": {
+        "templates": {
+          "label": "游戏邮件模板"
+        },
+        "compliance": {
+          "label": "邮件送达合规"
+        },
+        "tracking": {
+          "value": "开信率 · 送达率",
+          "label": "实时数据追踪"
+        },
+        "reputation": {
+          "label": "送达信誉分"
+        }
+      }
     },
     "features": {
       "items": {

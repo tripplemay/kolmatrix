@@ -7,14 +7,30 @@ interface Props {
 }
 
 /**
- * BL-114-F001 (redo) — Hero rebuilt to the Stitch "Neural Velocity"
- * prototype (design-draft/landing-stitch-prototype/code.html + screen.png):
- * cyan mono eyebrow, large display title with a gradient second line, lede,
- * gradient "Start free" CTA + "Book a demo" secondary, ambient glow blobs,
- * and the kept hero-illustration.png as a glass-framed dashboard preview.
+ * BL-114-F001 (redo) — Hero on the Stitch "Neural Velocity" prototype.
+ * BL-115-F002 — repositioned to the game-KOL "email collaboration hub"
+ * (title/subtitle pivot to deliverability / compliance / open-rate pain
+ * points) + a 4-item email data bar.
  *
- * The earlier jina.ai variant (pure CSS mesh, no image) is superseded.
+ * Data-bar truthfulness (spec §1): `templates` uses the doc figure (1000+;
+ * real count 27 tracked as a build-out follow-up, user-decided); `compliance`
+ * lists the protocols, not a "one-click config tool"; `tracking` shows only
+ * open/delivery rate — NO reply rate (repliedAt is never written, so a trial
+ * would expose empty data); `reputation` is the honest 98% figure (not a
+ * "guarantee"). No fabricated "+300% open rate" outcome claim.
  */
+const HERO_STATS: ReadonlyArray<{
+  key: "templates" | "compliance" | "tracking" | "reputation";
+  // Universal values (number/protocols) are constants; `tracking` is
+  // localized via i18n (stats.tracking.value).
+  value?: string;
+}> = [
+  { key: "templates", value: "1000+" },
+  { key: "compliance", value: "DKIM · SPF · DMARC" },
+  { key: "tracking" },
+  { key: "reputation", value: "98%" },
+];
+
 export async function HeroVideo({ locale }: Props) {
   const t = await getTranslations("landing.hero");
 
@@ -61,6 +77,24 @@ export async function HeroVideo({ locale }: Props) {
             {t("ctaSecondary")}
           </Link>
         </div>
+
+        {/* BL-115-F002 — email-collaboration data bar (4 highlights). See the
+            component docstring for the per-item truthfulness handling. */}
+        <dl
+          data-testid="landing-hero-stats"
+          className="mx-auto mt-14 grid max-w-3xl grid-cols-2 gap-x-6 gap-y-8 border-t border-outline-variant/10 pt-10 sm:gap-x-10 md:max-w-4xl md:grid-cols-4"
+        >
+          {HERO_STATS.map(({ key, value }) => (
+            <div key={key} data-testid={`landing-hero-stat-${key}`} className="text-center">
+              <dt className="gradient-text text-xl font-extrabold leading-tight md:text-2xl">
+                {value ?? t(`stats.${key}.value`)}
+              </dt>
+              <dd className="mt-2 text-xs uppercase tracking-wide text-on-surface-variant">
+                {t(`stats.${key}.label`)}
+              </dd>
+            </div>
+          ))}
+        </dl>
 
         {/* Dashboard preview — kept hero-illustration.png, glass-framed with a
             bottom fade into the page background (照原型 dashboard preview). */}

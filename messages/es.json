@@ -2187,14 +2187,29 @@
     "hero": {
       "kicker": "KOLMATRIX",
       "eyebrow": "GAME · KOL · AI · NATIVE",
-      "title_line1": "El centro de comando con IA para",
-      "title_line2": "el marketing global de KOLs de gaming",
-      "subtitle": "Escala tu alcance con creadores mediante emparejamiento semántico, estructuración de campañas con IA y seguimiento de ROI en tiempo real en todas las plataformas.",
+      "title_line1": "Marketing global de KOLs de gaming,",
+      "title_line2": "un hub de colaboración de email",
+      "subtitle": "¿Baja entregabilidad, riesgo de cumplimiento, alcance disperso? KolMatrix unifica el email de KOLs de gaming con cumplimiento DKIM/SPF/DMARC, gestión de entregabilidad y seguimiento de tasa de apertura en tiempo real.",
       "ctaPrimary": "Empezar gratis",
       "ctaSecondary": "Reservar demo 1:1",
       "videoAlt": "Demostración del producto KolMatrix en bucle",
       "videoFallbackHint": "(Animación no disponible; mostrando imagen estática)",
-      "illustrationAlt": "Espacio de trabajo unificado de KolMatrix: descubrimiento de KOL, recomendaciones con IA y analítica de campañas"
+      "illustrationAlt": "Espacio de trabajo unificado de KolMatrix: descubrimiento de KOL, recomendaciones con IA y analítica de campañas",
+      "stats": {
+        "templates": {
+          "label": "Plantillas de email de gaming"
+        },
+        "compliance": {
+          "label": "Cumplimiento de entregabilidad"
+        },
+        "tracking": {
+          "value": "Tasa de apertura y entrega",
+          "label": "Seguimiento en tiempo real"
+        },
+        "reputation": {
+          "label": "Puntuación de reputación del remitente"
+        }
+      }
     },
     "features": {
       "items": {

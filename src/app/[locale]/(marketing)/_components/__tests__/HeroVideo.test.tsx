@@ -64,4 +64,26 @@ describe("BL-114-F001 Hero (照 Stitch 原型 redo)", () => {
     expect(html).toContain("/ja/request-access");
     expect(html).toContain("/ja/request-access?demo=1");
   });
+
+  // BL-115-F002 — email-collaboration data bar.
+  it("renders the 4-item email data bar with truthful values (no reply rate)", async () => {
+    const html = renderToStaticMarkup(await HeroVideo({ locale: "en" }));
+
+    expect(html).toContain('data-testid="landing-hero-stats"');
+    for (const key of ["templates", "compliance", "tracking", "reputation"]) {
+      expect(html).toContain(`data-testid="landing-hero-stat-${key}"`);
+      expect(html).toContain(`landing.hero.stats.${key}.label`);
+    }
+    expect(html.match(/data-testid="landing-hero-stat-/g)?.length).toBe(4);
+
+    // Universal constant values; tracking value comes from i18n.
+    expect(html).toContain("1000+");
+    expect(html).toContain("DKIM · SPF · DMARC");
+    expect(html).toContain("98%");
+    expect(html).toContain("landing.hero.stats.tracking.value");
+
+    // Truthfulness guard: reply rate must NOT appear (repliedAt never written).
+    expect(html.toLowerCase()).not.toContain("reply rate");
+    expect(html).not.toContain("回复率");
+  });
 });

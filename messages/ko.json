@@ -2187,14 +2187,29 @@
     "hero": {
       "kicker": "KOLMATRIX",
       "eyebrow": "GAME · KOL · AI · NATIVE",
-      "title_line1": "글로벌 게임 KOL 마케팅을 위한",
-      "title_line2": "AI 커맨드 센터",
-      "subtitle": "시맨틱 매칭, AI 기반 캠페인 설계, 실시간 ROI 추적으로 모든 플랫폼에서 크리에이터 아웃리치를 확장하세요.",
+      "title_line1": "게임 KOL 마케팅을 위한",
+      "title_line2": "이메일 협업 허브",
+      "subtitle": "낮은 전달률, 컴플라이언스 리스크, 흩어진 아웃리치 —— KolMatrix는 게임 KOL 이메일을 하나의 협업 센터로 통합합니다. DKIM/SPF/DMARC 준수, 전달 관리, 오픈율 실시간 추적.",
       "ctaPrimary": "무료로 시작하기",
       "ctaSecondary": "1:1 데모 예약",
       "videoAlt": "KolMatrix 제품 데모 루프",
       "videoFallbackHint": "(애니메이션을 사용할 수 없어 정지 이미지를 표시합니다)",
-      "illustrationAlt": "KolMatrix 통합 워크스페이스 — KOL 발굴, AI 추천, 캠페인 분석"
+      "illustrationAlt": "KolMatrix 통합 워크스페이스 — KOL 발굴, AI 추천, 캠페인 분석",
+      "stats": {
+        "templates": {
+          "label": "게임 이메일 템플릿"
+        },
+        "compliance": {
+          "label": "이메일 전달 컴플라이언스"
+        },
+        "tracking": {
+          "value": "오픈율 · 전달률",
+          "label": "실시간 추적"
+        },
+        "reputation": {
+          "label": "발신자 평판 점수"
+        }
+      }
     },
     "features": {
       "items": {
