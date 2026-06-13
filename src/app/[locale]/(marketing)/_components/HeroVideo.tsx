@@ -30,7 +30,7 @@ export async function HeroVideo({ locale }: Props) {
 
       <div className="landing-hero-fade-in relative z-10 mx-auto max-w-5xl">
         <div className="mb-6 inline-block rounded-full bg-surface-low px-4 py-1.5">
-          <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-cyan-fixed-dim">
+          <span className="font-landing-mono text-[11px] uppercase tracking-[0.2em] text-cyan-fixed-dim">
             {t("eyebrow")}
           </span>
         </div>
@@ -71,6 +71,7 @@ export async function HeroVideo({ locale }: Props) {
                 src="/landing/illustrations/hero-illustration.png"
                 alt={t("illustrationAlt")}
                 fill
+                priority
                 sizes="(max-width: 768px) 100vw, 1024px"
                 className="object-cover opacity-95"
                 data-testid="landing-hero-illustration"

@@ -80,8 +80,9 @@
   --font-geist-mono: var(--font-geist-mono-raw), "SF Mono", Menlo, "Source Han Mono", monospace;
   /* BL-114-F001 — JetBrains Mono drives the landing's technical labels
      (mono eyebrow / step numbers / stat captions) per the Stitch prototype.
-     Overrides Tailwind's default `--font-mono` so `font-mono` renders it. */
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, "Source Han Mono", monospace;
+     Scoped to a landing-only `font-landing-mono` utility — the global
+     `--font-mono` (app code editors / id chips) is deliberately untouched. */
+  --font-landing-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, "Source Han Mono", monospace;
 
   /* ============================================================
      BL-078 — Landing v2 visual tokens (D1 现代极简 / D2 Linear+Plausible)
