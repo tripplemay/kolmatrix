@@ -11,7 +11,8 @@
       "UTM捕获: URL query(utm_source/medium/campaign)存入lead+cookie分渠道归因",
       "埋点: CTA点击/表单提交/滚动深度/关键模块停留→event_log或前端hook(投放全链路)",
       "副CTA'查看完整PRD文档'→kol.saga1001.com/prd(⚠️部署前确认链接); 底部'预约1v1产品演示'(表单或日历链接)",
-      "单测(表单校验/提交落库/UTM捕获/埋点触发); L1全绿+npm run build"
+      "单测(表单校验/提交落库/UTM捕获/埋点触发); L1全绿+npm run build",
+      "⚠️交付节奏(用户硬要求): 本feature完成→部署staging→STOP等用户确认效果通过→Planner才放行下一feature; 不通过则在staging迭代"
     ]
   },
   {
@@ -24,7 +25,8 @@
     "acceptance": [
       "Hero标题/副标向邮件协作中心侧重(按文档口径: 送达率/合规/开信率痛点)",
       "Hero核心数据栏4条(按文档口径, 见spec §1处理: 模板库/合规配置/开信率送达率/信誉分)",
-      "视觉沿用Neural Velocity(渐变/光晕/色阶); i18n 5 locale + 单测 + npm run build"
+      "视觉沿用Neural Velocity(渐变/光晕/色阶); i18n 5 locale + 单测 + npm run build",
+      "⚠️交付节奏(用户硬要求): 本feature完成→部署staging→STOP等用户确认效果通过→Planner才放行下一feature; 不通过则在staging迭代"
     ]
   },
   {
@@ -37,7 +39,8 @@
     "acceptance": [
       "痛点模块(文档4条邮件痛点: 跨平台邮件乱/送达率低/无法追踪状态/无合规校验)新加section",
       "邮件中心演示模块: 复用真实reach UI(DomainHealthCard DKIM/SPF/DMARC+信誉分 / 最近发送列表 / 游戏垂类模板库)截图或静态展示+标功能点",
-      "i18n 5 locale + 单测 + npm run build"
+      "i18n 5 locale + 单测 + npm run build",
+      "⚠️交付节奏(用户硬要求): 本feature完成→部署staging→STOP等用户确认效果通过→Planner才放行下一feature; 不通过则在staging迭代"
     ]
   },
   {
@@ -51,7 +54,8 @@
       "游戏IP用'游戏垂类覆盖/模板主题'展示(非Trusted by客户, 避虚假背书+商标风险); 安全认证仅写真实具备的; 客户证言留占位(待用户给真实来源)",
       "FAQ邮件化(文档3问: 自定义游戏IP模板/DKIM·SPF技术成本/数据更新频率)替换现通用FAQ",
       "SEO关键词自然植入(游戏KOL营销/出海邮件管理/送达率优化/DKIM·SPF合规/游戏合作模板/开信率追踪)",
-      "i18n 5 locale + 单测 + npm run build"
+      "i18n 5 locale + 单测 + npm run build",
+      "⚠️交付节奏(用户硬要求): 本feature完成→部署staging→STOP等用户确认效果通过→Planner才放行下一feature; 不通过则在staging迭代"
     ]
   },
   {

@@ -24,6 +24,8 @@
 ## §2 Features
 
 > 全 generator 含单测 + i18n 5 locale + L1 全绿 + npm run build。加装到 BL-114 结构,守 perf99/a11y/reduced-motion 不回退;视觉沿用 Neural Velocity。
+>
+> ⚠️⚠️ **交付节奏(用户 2026-06-14 硬要求,吸取 BL-114 大批量返工教训):每个 generator feature 完成 → 部署 staging → STOP 等用户确认效果通过 → Planner 才放行下一个 feature。** 不得一口气把 F001-F04 做完再给用户看。每个 feature 独立可上 staging 评审。用户不通过 → 当前 feature 在 staging 迭代直到通过。
 
 ### F001 — 转化机制（最高价值, 投放刚需, 真实无 overclaim）(generator)
 - **3 字段试用表单**(姓名 / 公司邮箱 / 所属游戏工作室)→ server action 落 leads(新表或复用 request-access)+ 校验 + 成功态。主 CTA "立即申请试用" 触发表单(模态或 Hero 内嵌)。
