@@ -1,55 +1,56 @@
 [
   {
     "id": "F001",
-    "title": "Hero 文字驱动极简重做 + 全局排版/留白向 jina 收敛 (generator) 【tone-setter 检查点】",
+    "title": "Hero + 全局 token/字体 照 Stitch 原型重做 (generator) 【tone-setter 检查点, redo】",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "done",
+    "status": "pending",
     "acceptance": [
-      "Hero(HeroVideo.tsx)重做: 去 hero 插画, 大 display 标题+副文+主/次CTA+微妙渐变/mesh背景(CSS无asset)+大留白, jina.ai 居中/呼吸感. Generator 实现时直接参考 jina.ai 现场对齐",
-      "全局排版/留白向 jina.ai 收敛: type scale/section间距/分隔线层级(globals.css token微调, 不破 perf/a11y)",
-      "⚠️ Hero-first 检查点(硬要求): F001 完成→部署 staging→停下让用户确认 jina.ai 方向, 再推 F002+. handoff/session_notes 标注待用户确认",
+      "⚠️ 取代 jina 版(作废). 以 design-draft/landing-stitch-prototype/(code.html+screen.png)为精确参照. Hero 照原型: 青 mono eyebrow + 大 display 标题(渐变第二行)+ 副文 + 渐变 'Start free' CTA + 'Book a demo' 次CTA + 光晕 blob 背景 + 下方 hero-illustration.png dashboard 预览(保留, 玻璃/光晕装饰)",
+      "全局: 接 Inter + JetBrains Mono 字体; gradient-btn(135°#00daf3→c3f5ff CTA)+ glow-blob 环境光晕 utility + mono 技术标签(globals.css 复用 Neural Velocity token)",
+      "⚠️ Hero-first 检查点(redo): F001 完成→部署 staging→停下让用户确认照原型方向, 再推 F002+",
       "i18n + 单测 + npm run build 绿; reduced-motion 兜底"
     ]
   },
   {
     "id": "F002",
-    "title": "Features + BeforeAfter 转文字驱动极简 (generator)",
+    "title": "Bento 能力区(4卡) + Logo 条 照原型 (generator)",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
     "status": "pending",
     "acceptance": [
-      "Features(Features.tsx): 去5张feature插画, 重做文字驱动(干净图标+标题+描述+大留白, jina.ai极简列表/网格); 截图(/landing/screenshots/)克制处理(保留须极简干净或转文字驱动)",
-      "BeforeAfter: 去 before-after 插画, 改文字/极简对比(两列before/after文字 or 极简几何, 无mockup)",
+      "Features.tsx 照原型重做 4 张 bento 色阶卡(Brief/Match/Reach/Insight): material 图标(auto_awesome/travel_explore/forward_to_inbox/query_stats)+ 青 mono 标签 + 粗标题 + 描述; 色阶分层无边框, hover升级+青内发光. 去5张feature插画",
+      "Logo 条: 'Trusted by leading game studios' + 5 muted wordmark(可占位)",
       "i18n + 单测 + npm run build 绿"
     ]
   },
   {
     "id": "F003",
-    "title": "EmailCenterDemo + 其余 section 对齐极简 (generator)",
+    "title": "How-it-works + Stats + FAQ + 收尾CTA + 结构重组 (generator)",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
     "status": "pending",
     "acceptance": [
-      "EmailCenterDemo: 去 email 插画, 转文字驱动极简(StickyParallax 可保留滚动叙事但内容文字化/极简)",
-      "PainPoints/TrustPlaceholder/FAQ/FooterCTA/TopNav/SectionTransition 对齐极简文字驱动+大留白+技术质感(分隔线/mono/留白); Trust logo grid 按 jina.ai 干净排布",
+      "加 How it works(3步 01/02/03 mono + Define Objective/Neural Discovery/Execute&Track)+ Stats(3大青数字 6000+KOLs/5+languages/100% + caption)",
+      "FAQ/FooterCTA 照原型(色阶accordion / 'Ready to lead the game?' 光晕CTA面板)",
+      "结构重组: LandingPage.tsx 组合改原型顺序, 移除 PainPoints/BeforeAfter/EmailCenterDemo section(原型无)",
       "i18n + 单测 + npm run build 绿"
     ]
   },
   {
     "id": "F004",
-    "title": "清理插画 asset + 死动效 + perf/a11y/baseline 重拍 (generator)",
+    "title": "清理 7插画/死组件/死动效 + visual baseline 重拍 (generator)",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
     "status": "pending",
     "acceptance": [
-      "删 public/landing/illustrations/*.png(8张)+ 不再引用的 illustration-asset 逻辑/相关 i18n key",
-      "删审计标的死动效(landing-hero-video-scale/cta-glow-pulse 等无引用 keyframe, globals.css)",
-      "visual-regression baseline 重拍(Linux runner update-visual-baselines.yml)+ 连带失效断言更新(删hero-video等); Lighthouse perf99/a11y AA 复验不回退; npm run build 绿"
+      "删 public/landing/illustrations/ 7张(保留 hero-illustration.png)+ 不再用的 illustration-asset 逻辑",
+      "删不再mount组件(PainPoints/BeforeAfter/EmailCenterDemo 若全仓零引用)+ 死动效keyframe(landing-hero-video-scale/cta-glow-pulse等); grep零引用再删",
+      "visual-regression baseline 重拍(Linux runner)+连带e2e断言更新; Lighthouse perf99/a11y AA 复验不回退; npm run build 绿"
     ]
   },
   {
@@ -61,7 +62,7 @@
     "status": "pending",
     "acceptance": [
       "L1: lint 0err warn≤3 / tsc=0 / npm test + npm run build",
-      "L2 部署后 staging: ① 落地页对齐 jina.ai 文字驱动极简(无插画/大留白/技术质感) ② 各section视觉走查 ③ Lighthouse perf≥99/WCAG AA/reduced-motion 不回退 ④ visual baseline 已重拍绿 ⑤ 5 locale 文案正常",
+      "L2 部署后 staging: ① 落地页视觉对齐 Stitch 原型(screen.png 对比: hero/bento/steps/stats/FAQ/CTA + Neural Velocity 色阶/渐变/光晕/mono) ② Lighthouse perf≥99/WCAG AA/reduced-motion 不回退 ③ visual baseline 已重拍绿 ④ 5 locale 正常",
       "signoff docs/test-reports/BL-114-signoff-2026-06-XX.md"
     ]
   }
