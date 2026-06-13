@@ -1,11 +1,11 @@
 {
-  "status": "building",
+  "status": "verifying",
   "user_goal": "BL-114 落地页重做 — 照 Stitch 原型(Neural Velocity 设计系统). 用户视觉优化→先想复刻 jina.ai→Generator F001 jina版'根本不像'→用户改用项目自有设计系统(Neural Velocity)在 Stitch 生成落地页原型(design-draft/landing-stitch-prototype/ code.html+screen.png+DESIGN.md)=精确目标. 用户决: ①完全照原型含结构重组(去PainPoints/BeforeAfter/EmailCenterDemo, 加How-it-works/Stats) ②hero保留hero-illustration.png其余7张删. 原型=Neural Velocity(底#0b1326/青#00e5ff/渐变CTA#00daf3→c3f5ff/Inter+JetBrainsMono/色阶分层无边框/光晕/玻璃). 5 features: F001 Hero+token照原型(redo, tone-setter检查点) / F002 Bento4卡+logo条 / F003 How-it-works+Stats+FAQ+CTA+结构重组 / F004 清7插画/死组件/baseline重拍 / F005 Codex. 守perf99/a11y不回退.",
   "total_features": 5,
-  "completed_features": 3,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "BL-114-landing-jina-style-redesign",
-  "last_updated": "2026-06-13T17:20+0800",
+  "last_updated": "2026-06-13T18:30+0800",
   "reference_docs": [
     "docs/specs/BL-114-landing-jina-style-redesign-spec.md(已改为照原型)",
     "design-draft/landing-stitch-prototype/(code.html 完整结构+token / screen.png 渲染图 / DESIGN.md = Generator 精确参照)",
@@ -24,10 +24,10 @@
   "role_assignments": null,
   "evaluator_feedback": null,
   "fix_rounds_history": [],
-  "generator_handoff": "[2026-06-13 17:20 BJT Generator Kimi] F001+F002+F003 done(3/5) — 落地页视觉重做完成, 全页照 Stitch 原型. F001 Hero(staging 已部署用户确认方向✓) / F002 Bento4卡+Logo条 / F003 HowItWorks+Stats+FAQ+收尾CTA+结构重组(改原型顺序 Hero→Logo→Bento→HowItWorks→Stats→FAQ→CTA, 移除 PainPoints/BeforeAfter/EmailCenterDemo+SectionTransition, main bg→navy-base 统一深色). L1 全绿(tsc=0/lint 0e3w/vitest 1700/build OK). **下一步 F004(cleanup+baseline)**: ①删 public/landing/illustrations/ 7张(留 hero-illustration.png)+ illustration-asset.ts 逻辑 ②删死组件文件 PainPoints/BeforeAfter/EmailCenterDemo + StickyStack/StickyParallax/SectionTransition/ScrollFadeIn(若全仓零引用, grep 确认)+ 死动效 keyframe ③⚠️ landing-*.png visual baseline 必 Linux runner 重拍(本机 macOS 无法生成 Linux 基线 — 走 CI artifact: 下载失败 run 的 -actual.png 提交为新基线, 或加 update-snapshots workflow) + 连带 e2e 断言 ④Lighthouse perf99/a11y AA 复验. 然后 staging 部署→切 verifying 交 Codex F005.",
+  "generator_handoff": "[2026-06-13 18:30 BJT Generator Kimi → Codex/Reviewer] ✅ F001-F004 全部 done(4/5), 切 verifying. 落地页照 Stitch 原型(design-draft/landing-stitch-prototype/screen.png+code.html)完整重做. **staging 已部署 @ 50f0180 healthy** (https://staging.kol.guangai.ai/en, /zh). **main CI 全绿** (run 27464021808 workflow_dispatch: lint/tsc/unit/integration×2/build/E2E 全 ✓, 含 visual-regression landing-*.png 新基线已由 update-visual-baselines workflow 重拍提交 @ 50f0180). **F005 你的验收(executor:codex)**: L1 = lint 0e/warn≤3(实测 0e/3w)/tsc=0/npm test(1693)/npm run build; L2 staging = ① 视觉对齐原型 screen.png(hero 渐变标题+光晕+dashboard 预览 / bento 4 卡 Brief·Match·Reach·Insight 青 icon+mono 标签 / how-it-works 3 步 01·02·03 / stats 6,000+·5+·100% / FAQ 色阶 accordion / 收尾 CTA 玻璃面板 + Neural Velocity 色阶·渐变·光晕·mono) ② Lighthouse perf≥99 / WCAG AA / reduced-motion 不回退(BL-080 基线) ③ visual baseline 已重拍绿 ④ 5 locale(en/zh/ja/ko/es)文案正常. testid: landing-hero/-logos/-features/-feature-{brief,match,reach,insight}/-how-it-works/-step-{1,2,3}/-stats/-stat-{kols,languages,roi}/-faq/-footer-cta. signoff → docs/test-reports/BL-114-signoff-2026-06-13.md. ⚠️ 待用户定的主观项(非阻断): eyebrow 用 'GAME·KOL·AI·NATIVE'(非原型 'Neural Velocity AI', 守 BL-055 codename 移除) / logo 条 5 占位 wordmark / stats 数字按 spec.",
   "session_notes": {
     "Kimi_planner": "[2026-06-13 15:00 BJT Planner Kimi] BL-114 重定向: jina F001'根本不像'(我靠文字工具读jina画像就错了)→用户改用项目Neural Velocity设计系统在Stitch生成落地页原型导出zip→我解压亲看screen.png(很好, 干净高级dark-cyan)→存档design-draft/landing-stitch-prototype/作精确参照→用户决完全照原型+hero留hero-illustration. 改spec/features照原型, 重置F001 redo. Generator照原型重做F001(Hero-first检查点). 教训: 视觉参考站靠文字抓取不可靠, 应早让用户出原型/截图.",
-    "Kimi_generator": "[2026-06-13 17:20 BJT Generator] F001(bd25849+f8084cc)+F002(2f7801a)+F003(8c6182e) done, 落地页视觉重做完整. F003: 新增 HowItWorks/Stats, FAQ/FooterCTA 照原型重做(dark), LandingPage 结构重组改原型顺序+移除 3 旧 section+全部 SectionTransition+main bg→navy-base. FAQ chevron 用 expand_more(子集已含)+globals .landing-faq-chevron 改 rotate 180°. i18n 加 howItWorks/stats+footerCta 重写. 新增 5 单测(含 LandingPage 结构锁 source-grep). 注意: 3 旧组件文件(PainPoints/BeforeAfter/EmailCenterDemo)+ StickyStack/StickyParallax/SectionTransition/ScrollFadeIn/illustration-asset.ts 现已零 mount 但文件还在→F004 grep 零引用后删. 接 F004: 删 7 插画+死组件+死 keyframe + ⚠️ landing-*.png baseline 重拍(macOS 不能生成 Linux 基线, 走 CI artifact 下载 actual 提交). 然后 deploy staging→切 verifying.",
+    "Kimi_generator": "[2026-06-13 18:30 BJT Generator] BL-114 生成端全部完成 F001-F004(4/5), 切 verifying 交 Codex F005. 提交链: F001 bd25849+f8084cc / F002 2f7801a / F003 8c6182e / F004 f246357 + baseline bot-commit 50f0180. F004: 删 7 插画+5 死组件(PainPoints/BeforeAfter/EmailCenterDemo/SectionTransition/illustration-asset)+4 landing infra(Sticky*/ScrollFadeIn/useScrollProgress)+2 测+大量死 CSS+死 i18n namespace; icon 子集 107→104 收缩重拍. **baseline 重拍走 sanctioned update-visual-baselines.yml workflow**(workflow_dispatch, Linux runner, --update-snapshots, bot-commit 50f0180 只改 4 张 landing-*.png 无 app 基线动) — 关键经验: bot-commit 默认 GITHUB_TOKEN 不级联触发 CI, 必须 gh workflow run ci.yml --ref main 手动触发验证(run 27464021808 全绿). staging @ 50f0180 healthy. 全程坑沉淀: ①改全局 Tailwind font/color token 前 grep app 用量(F001 --font-mono 误伤 reach-templates) ②新 material 图标必跑 regenerate 子集+提交 woff2 ③删文件前 grep 零引用 ④baseline 重拍用 workflow 不要本机生成.",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null

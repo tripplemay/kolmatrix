@@ -46,7 +46,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "删 public/landing/illustrations/ 7张(保留 hero-illustration.png)+ 不再用的 illustration-asset 逻辑",
       "删不再mount组件(PainPoints/BeforeAfter/EmailCenterDemo 若全仓零引用)+ 死动效keyframe(landing-hero-video-scale/cta-glow-pulse等); grep零引用再删",
