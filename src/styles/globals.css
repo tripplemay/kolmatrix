@@ -640,7 +640,8 @@
   transition: transform var(--duration-landing-short) var(--ease-landing-out);
 }
 .landing-faq-item[open] summary .landing-faq-chevron {
-  transform: rotate(45deg);
+  /* BL-114-F003 — expand_more chevron flips up when open (照 Stitch 原型). */
+  transform: rotate(180deg);
 }
 @media (prefers-reduced-motion: reduce) {
   .landing-faq-item summary .landing-faq-chevron { transition: none; }

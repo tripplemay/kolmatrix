@@ -2290,10 +2290,11 @@
       ]
     },
     "footerCta": {
-      "sectionTitle": "Empieza hoy a ejecutar campañas KOL más inteligentes",
-      "ctaPrimary": "Solicitar prueba",
-      "ctaSecondary": "Reservar demo 1:1",
-      "footerLine": "© 2026 KolMatrix · SaaS de marketing global de KOL para videojuegos"
+      "sectionTitle": "¿Listo para liderar el juego?",
+      "subtitle": "Únete a los estudios de videojuegos más innovadores del mundo y empieza a escalar tu marketing global de KOLs.",
+      "ctaPrimary": "Únete ahora",
+      "ctaSecondary": "Contactar ventas",
+      "footerLine": "© 2026 KOLMatrix · SaaS de marketing global de KOL para juegos"
     },
     "nav": {
       "login": "Iniciar sesión",
@@ -2328,6 +2329,37 @@
         }
       },
       "illustrationAlt": "Comparación antes y después: hojas de cálculo de KOL manuales y dispersas frente al espacio de trabajo organizado de KolMatrix"
+    },
+    "howItWorks": {
+      "title": "Diseñado para equipos de alta velocidad.",
+      "subtitle": "Optimiza todo el ciclo de vida de tu marketing de influencers en tres fases potenciadas por IA.",
+      "steps": {
+        "s1": {
+          "title": "Define el objetivo",
+          "body": "Introduce el género de tu juego, el público objetivo y el presupuesto. Nuestra IA crea una estrategia a medida basada en datos históricos de rendimiento."
+        },
+        "s2": {
+          "title": "Descubrimiento neuronal",
+          "body": "Conecta con nuestra base de datos de más de 6.000 KOLs verificados. El emparejamiento semántico encuentra a los creadores que conectan de verdad con el ADN de tu juego."
+        },
+        "s3": {
+          "title": "Ejecuta y mide",
+          "body": "Lanza campañas y observa los datos en tiempo real. Mide clics, instalaciones y valor de vida en un centro de comando unificado."
+        }
+      }
+    },
+    "stats": {
+      "items": {
+        "kols": {
+          "label": "KOLs globales verificados"
+        },
+        "languages": {
+          "label": "Idiomas principales del mundo"
+        },
+        "roi": {
+          "label": "ROI medido con precisión"
+        }
+      }
     }
   }
 }

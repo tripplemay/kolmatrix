@@ -2290,10 +2290,11 @@
       ]
     },
     "footerCta": {
-      "sectionTitle": "지금 바로 글로벌 게임 KOL 고효율 집행을 시작하세요",
-      "ctaPrimary": "체험판 신청",
-      "ctaSecondary": "1:1 데모 예약",
-      "footerLine": "© 2026 KolMatrix · 글로벌 게임 KOL 마케팅 SaaS"
+      "sectionTitle": "게임을 선도할 준비가 되셨나요?",
+      "subtitle": "세계에서 가장 혁신적인 게임 스튜디오와 함께 글로벌 KOL 마케팅을 확장하세요.",
+      "ctaPrimary": "지금 시작하기",
+      "ctaSecondary": "영업팀 문의",
+      "footerLine": "© 2026 KOLMatrix · 글로벌 게임 KOL 마케팅 SaaS"
     },
     "nav": {
       "login": "로그인",
@@ -2328,6 +2329,37 @@
         }
       },
       "illustrationAlt": "전후 비교 — 흩어진 수작업 KOL 스프레드시트와 정돈된 KolMatrix 워크스페이스"
+    },
+    "howItWorks": {
+      "title": "고속 팀을 위해 설계되었습니다.",
+      "subtitle": "인플루언서 마케팅의 전체 라이프사이클을 세 가지 AI 최적화 단계로 간소화합니다.",
+      "steps": {
+        "s1": {
+          "title": "목표 정의",
+          "body": "게임 장르, 타깃 인구통계, 예산을 입력하세요. AI가 과거 성과 데이터를 기반으로 맞춤 전략을 구축합니다."
+        },
+        "s2": {
+          "title": "뉴럴 디스커버리",
+          "body": "6,000+ 검증된 KOL 데이터베이스에 연결하세요. 시맨틱 매칭이 게임의 DNA에 진정으로 공감하는 크리에이터를 찾아냅니다."
+        },
+        "s3": {
+          "title": "실행 및 추적",
+          "body": "캠페인을 배포하고 데이터를 실시간으로 확인하세요. 클릭, 설치, 생애 가치를 통합 커맨드 센터에서 추적합니다."
+        }
+      }
+    },
+    "stats": {
+      "items": {
+        "kols": {
+          "label": "검증된 글로벌 KOL"
+        },
+        "languages": {
+          "label": "주요 세계 언어"
+        },
+        "roi": {
+          "label": "정확한 ROI 추적"
+        }
+      }
     }
   }
 }

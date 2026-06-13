@@ -2289,10 +2289,11 @@
       ]
     },
     "footerCta": {
-      "sectionTitle": "立即开启全球游戏 KOL 高效投放",
-      "ctaPrimary": "申请试用",
-      "ctaSecondary": "预约 1v1 演示",
-      "footerLine": "© 2026 KolMatrix · 全球游戏 KOL 营销 SaaS"
+      "sectionTitle": "准备好领跑了吗？",
+      "subtitle": "加入全球最具创新力的游戏厂商，开始规模化你的全球 KOL 营销。",
+      "ctaPrimary": "立即加入",
+      "ctaSecondary": "联系销售",
+      "footerLine": "© 2026 KOLMatrix · 全球游戏 KOL 营销 SaaS"
     },
     "nav": {
       "login": "登录",
@@ -2327,6 +2328,37 @@
         }
       },
       "illustrationAlt": "前后对比 — 零散的人工 KOL 表格对比井然有序的 KolMatrix 工作台"
+    },
+    "howItWorks": {
+      "title": "为高速团队打造。",
+      "subtitle": "把完整的红人营销生命周期，精简为三个 AI 优化阶段。",
+      "steps": {
+        "s1": {
+          "title": "定义目标",
+          "body": "输入你的游戏品类、目标人群与预算。AI 基于历史投放数据为你构建定制策略。"
+        },
+        "s2": {
+          "title": "智能发现",
+          "body": "接入我们 6,000+ 经审核的 KOL 数据库。语义匹配找到真正契合你游戏调性的创作者。"
+        },
+        "s3": {
+          "title": "执行与追踪",
+          "body": "投放活动并实时看数据。在统一指挥中心追踪点击、安装与生命周期价值。"
+        }
+      }
+    },
+    "stats": {
+      "items": {
+        "kols": {
+          "label": "经审核的全球 KOL"
+        },
+        "languages": {
+          "label": "主要世界语言"
+        },
+        "roi": {
+          "label": "ROI 精准追踪"
+        }
+      }
     }
   }
 }

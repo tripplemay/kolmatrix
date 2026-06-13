@@ -2289,10 +2289,11 @@
       ]
     },
     "footerCta": {
-      "sectionTitle": "Start running smarter KOL campaigns today",
-      "ctaPrimary": "Request a trial",
-      "ctaSecondary": "Book a 1:1 demo",
-      "footerLine": "© 2026 KolMatrix · Global Game KOL Marketing SaaS"
+      "sectionTitle": "Ready to lead the game?",
+      "subtitle": "Join the world's most innovative game studios and start scaling your global KOL marketing.",
+      "ctaPrimary": "Join the Matrix",
+      "ctaSecondary": "Contact sales",
+      "footerLine": "© 2026 KOLMatrix · Global Game KOL Marketing SaaS"
     },
     "nav": {
       "login": "Sign in",
@@ -2327,6 +2328,37 @@
         }
       },
       "illustrationAlt": "Before and after comparison — scattered manual KOL spreadsheets versus the organized KolMatrix workspace"
+    },
+    "howItWorks": {
+      "title": "Built for high-velocity teams.",
+      "subtitle": "Streamline your entire influencer lifecycle into three AI-optimized phases.",
+      "steps": {
+        "s1": {
+          "title": "Define Objective",
+          "body": "Input your game genre, target demographic, and budget. Our AI builds a custom strategy based on historical performance data."
+        },
+        "s2": {
+          "title": "Neural Discovery",
+          "body": "Connect with our database of 6,000+ vetted KOLs. Semantic matching finds the creators who genuinely resonate with your game's DNA."
+        },
+        "s3": {
+          "title": "Execute & Track",
+          "body": "Deploy campaigns and watch the data roll in. Track click-throughs, installs, and lifetime value in one unified command center."
+        }
+      }
+    },
+    "stats": {
+      "items": {
+        "kols": {
+          "label": "Vetted Global KOLs"
+        },
+        "languages": {
+          "label": "Major World Languages"
+        },
+        "roi": {
+          "label": "ROI Tracked Accurately"
+        }
+      }
     }
   }
 }

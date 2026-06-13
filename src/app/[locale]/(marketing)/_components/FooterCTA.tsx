@@ -1,56 +1,57 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { ScrollFadeIn } from "@/components/landing/ScrollFadeIn";
 
 interface Props {
   locale: string;
 }
 
+/**
+ * BL-114-F003 — Closing CTA panel, built to the Stitch "Neural Velocity"
+ * prototype: a glass-surface panel with an ambient cyan glow, gradient
+ * primary CTA + text secondary, followed by a muted copyright line. CTA
+ * destinations keep the real request-access routes.
+ */
 export async function FooterCTA({ locale }: Props) {
   const t = await getTranslations("landing.footerCta");
 
   return (
     <section
       data-testid="landing-footer-cta"
-      className="relative overflow-hidden bg-surface text-on-surface px-6 lg:px-12"
-      style={{ paddingTop: "var(--spacing-landing-section-y)", paddingBottom: "var(--spacing-landing-section-y)" }}
+      className="bg-navy-base px-6 py-24 lg:px-8 lg:py-32"
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan/40 to-transparent" />
-      {/* Subtle hero-style mesh glow framing the final CTA */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 60% 50% at 50% 50%, color-mix(in srgb, var(--color-cyan) 8%, transparent), transparent 70%)",
-        }}
-      />
-      <ScrollFadeIn>
-        <div className="relative z-10 mx-auto max-w-3xl text-center">
-          <h2 className="cinematic-text font-geist text-landing-hero font-extrabold leading-landing-display tracking-landing-display">
+      <div className="relative mx-auto max-w-5xl overflow-hidden rounded-[24px] bg-surface-high p-12 text-center md:p-24">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 translate-y-1/3 bg-cyan/10 blur-[80px]"
+        />
+        <div className="relative z-10">
+          <h2 className="mb-8 text-4xl font-extrabold tracking-tight text-white md:text-6xl">
             {t("sectionTitle")}
           </h2>
-          <div className="mt-12 flex flex-wrap justify-center gap-3">
+          <p className="mx-auto mb-12 max-w-xl text-lg text-on-surface-variant md:text-xl">
+            {t("subtitle")}
+          </p>
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               href={`/${locale}/request-access`}
-              className="landing-cta-primary inline-flex items-center gap-2 rounded-full px-10 py-4 text-base font-semibold"
+              className="landing-cta-primary inline-flex items-center justify-center rounded-md px-10 py-5 text-lg font-extrabold"
               data-testid="landing-footer-cta-primary"
             >
-              {t("ctaPrimary")} →
+              {t("ctaPrimary")}
             </Link>
             <Link
               href={`/${locale}/request-access?demo=1`}
-              className="landing-cta-secondary inline-flex items-center gap-2 rounded-full px-10 py-4 text-base font-semibold"
+              className="inline-flex items-center font-bold text-on-surface transition-colors duration-[var(--duration-landing-short)] hover:text-white"
               data-testid="landing-footer-cta-secondary"
             >
-              {t("ctaSecondary")}
+              {t("ctaSecondary")} →
             </Link>
           </div>
-          <div className="mt-20 font-geist-mono text-landing-eyebrow text-landing-ink-subtle uppercase tracking-landing-eyebrow">
-            <p>{t("footerLine")}</p>
-          </div>
         </div>
-      </ScrollFadeIn>
+      </div>
+      <p className="mt-16 text-center font-landing-mono text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/60">
+        {t("footerLine")}
+      </p>
     </section>
   );
 }
