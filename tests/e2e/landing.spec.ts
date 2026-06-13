@@ -24,14 +24,14 @@ test.describe("Anonymous root path", () => {
     await expect(page.getByTestId("landing-hero")).toBeVisible();
   });
 
-  // BL-114-F001 — hero illustration removed; Hero is now pure CSS mesh
-  // background (text-driven minimal, jina.ai style). Verify CSS-only hero.
-  test("hero section renders with text content and no illustration image", async ({ page }) => {
+  // BL-114-F001 (redo, 照 Stitch 原型) — Hero restores the dashboard preview
+  // (hero-illustration.png) below the CTAs per the Neural Velocity prototype.
+  test("hero section renders text content + dashboard preview illustration", async ({ page }) => {
     await page.goto("/zh");
     const hero = page.getByTestId("landing-hero");
     await expect(hero).toBeVisible();
-    // No illustration img inside the hero (image removed in BL-114-F001).
-    await expect(hero.locator('[data-testid="landing-hero-illustration"]')).toHaveCount(0);
+    // Dashboard preview illustration is present (restored in BL-114-F001 redo).
+    await expect(hero.getByTestId("landing-hero-illustration")).toBeVisible();
     // CTAs are present.
     await expect(page.getByTestId("landing-cta-primary")).toBeVisible();
     await expect(page.getByTestId("landing-cta-secondary")).toBeVisible();

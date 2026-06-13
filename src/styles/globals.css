@@ -78,6 +78,10 @@
   /* Cinematic v2 landing — Geist family. App side stays on Inter (--font-sans). */
   --font-geist: var(--font-geist-sans-raw), ui-sans-serif, -apple-system, "PingFang SC", "Source Han Sans", sans-serif;
   --font-geist-mono: var(--font-geist-mono-raw), "SF Mono", Menlo, "Source Han Mono", monospace;
+  /* BL-114-F001 — JetBrains Mono drives the landing's technical labels
+     (mono eyebrow / step numbers / stat captions) per the Stitch prototype.
+     Overrides Tailwind's default `--font-mono` so `font-mono` renders it. */
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, "Source Han Mono", monospace;
 
   /* ============================================================
      BL-078 — Landing v2 visual tokens (D1 现代极简 / D2 Linear+Plausible)
@@ -475,26 +479,32 @@
   }
 }
 
-/* CTA — Linear-style refined: static glow + rich hover lift. Replaces the
-   continuous pulse in Hero (FooterCTA still uses cta-glow-pulse until F004). */
+/* Ambient glow blob — Neural Velocity 环境光晕 (BL-114-F001, 照 Stitch
+   原型). Per-instance size / position / color come from Tailwind utilities
+   (w-/h-/top-/left-/bg-); this base supplies the blur + soft opacity +
+   round shape. Purely decorative, non-animated → no reduced-motion guard. */
+.glow-blob {
+  position: absolute;
+  filter: blur(120px);
+  opacity: 0.15;
+  border-radius: 9999px;
+  pointer-events: none;
+}
+
+/* Primary CTA — `gradient-btn` 照 Stitch 原型 (BL-114-F001 redo): clean
+   135° #00daf3→#c3f5ff gradient, no always-on glow, lit-from-within hover
+   (cyan halo + 1px lift). Shared by TopNav / Hero / FooterCTA. */
 .landing-cta-primary {
   position: relative;
-  background: linear-gradient(135deg, var(--color-cyan) 0%, var(--color-cyan-fixed-dim) 100%);
+  background: linear-gradient(135deg, var(--color-cyan-fixed-dim) 0%, var(--color-cyan-soft) 100%);
   color: var(--color-on-primary);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--color-cyan) 40%, transparent),
-    0 8px 28px color-mix(in srgb, var(--color-cyan) 32%, transparent),
-    0 0 22px color-mix(in srgb, var(--color-cyan) 48%, transparent);
   transition:
     transform var(--duration-landing-short) var(--ease-landing-out),
     box-shadow var(--duration-landing-medium) var(--ease-landing-out);
 }
 .landing-cta-primary:hover {
-  transform: translateY(-1px) scale(1.02);
-  box-shadow:
-    0 0 0 1px var(--color-cyan),
-    0 12px 36px color-mix(in srgb, var(--color-cyan) 48%, transparent),
-    0 0 34px color-mix(in srgb, var(--color-cyan) 68%, transparent);
+  transform: translateY(-1px);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-cyan) 40%, transparent);
 }
 .landing-cta-primary:focus-visible {
   outline: 2px solid var(--color-cyan);
