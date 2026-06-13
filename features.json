@@ -1,56 +1,57 @@
 [
   {
     "id": "F001",
-    "title": "Hero + 全局 token/字体 照 Stitch 原型重做 (generator) 【tone-setter 检查点, redo】",
+    "title": "转化机制: 3字段试用表单 + UTM捕获 + 埋点 + PRD/演示链接 (generator, 投放刚需)",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "done",
+    "status": "pending",
     "acceptance": [
-      "⚠️ 取代 jina 版(作废). 以 design-draft/landing-stitch-prototype/(code.html+screen.png)为精确参照. Hero 照原型: 青 mono eyebrow + 大 display 标题(渐变第二行)+ 副文 + 渐变 'Start free' CTA + 'Book a demo' 次CTA + 光晕 blob 背景 + 下方 hero-illustration.png dashboard 预览(保留, 玻璃/光晕装饰)",
-      "全局: 接 Inter + JetBrains Mono 字体; gradient-btn(135°#00daf3→c3f5ff CTA)+ glow-blob 环境光晕 utility + mono 技术标签(globals.css 复用 Neural Velocity token)",
-      "⚠️ Hero-first 检查点(redo): F001 完成→部署 staging→停下让用户确认照原型方向, 再推 F002+",
-      "i18n + 单测 + npm run build 绿; reduced-motion 兜底"
+      "3字段试用表单(姓名/公司邮箱/所属游戏工作室)→server action落leads(新表或复用request-access)+校验+成功态; 主CTA'立即申请试用'触发(模态或Hero内嵌)",
+      "UTM捕获: URL query(utm_source/medium/campaign)存入lead+cookie分渠道归因",
+      "埋点: CTA点击/表单提交/滚动深度/关键模块停留→event_log或前端hook(投放全链路)",
+      "副CTA'查看完整PRD文档'→kol.saga1001.com/prd(⚠️部署前确认链接); 底部'预约1v1产品演示'(表单或日历链接)",
+      "单测(表单校验/提交落库/UTM捕获/埋点触发); L1全绿+npm run build"
     ]
   },
   {
     "id": "F002",
-    "title": "Bento 能力区(4卡) + Logo 条 照原型 (generator)",
+    "title": "Hero 邮件协作侧重 + 数据栏 + 痛点副标 (generator)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.5,
-    "status": "done",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "Features.tsx 照原型重做 4 张 bento 色阶卡(Brief/Match/Reach/Insight): material 图标(auto_awesome/travel_explore/forward_to_inbox/query_stats)+ 青 mono 标签 + 粗标题 + 描述; 色阶分层无边框, hover升级+青内发光. 去5张feature插画",
-      "Logo 条: 'Trusted by leading game studios' + 5 muted wordmark(可占位)",
-      "i18n + 单测 + npm run build 绿"
+      "Hero标题/副标向邮件协作中心侧重(按文档口径: 送达率/合规/开信率痛点)",
+      "Hero核心数据栏4条(按文档口径, 见spec §1处理: 模板库/合规配置/开信率送达率/信誉分)",
+      "视觉沿用Neural Velocity(渐变/光晕/色阶); i18n 5 locale + 单测 + npm run build"
     ]
   },
   {
     "id": "F003",
-    "title": "How-it-works + Stats + FAQ + 收尾CTA + 结构重组 (generator)",
+    "title": "痛点模块 + 邮件中心演示模块 (重新加回, BL-114删过) (generator)",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "done",
+    "status": "pending",
     "acceptance": [
-      "加 How it works(3步 01/02/03 mono + Define Objective/Neural Discovery/Execute&Track)+ Stats(3大青数字 6000+KOLs/5+languages/100% + caption)",
-      "FAQ/FooterCTA 照原型(色阶accordion / 'Ready to lead the game?' 光晕CTA面板)",
-      "结构重组: LandingPage.tsx 组合改原型顺序, 移除 PainPoints/BeforeAfter/EmailCenterDemo section(原型无)",
-      "i18n + 单测 + npm run build 绿"
+      "痛点模块(文档4条邮件痛点: 跨平台邮件乱/送达率低/无法追踪状态/无合规校验)新加section",
+      "邮件中心演示模块: 复用真实reach UI(DomainHealthCard DKIM/SPF/DMARC+信誉分 / 最近发送列表 / 游戏垂类模板库)截图或静态展示+标功能点",
+      "i18n 5 locale + 单测 + npm run build"
     ]
   },
   {
     "id": "F004",
-    "title": "清理 7插画/死组件/死动效 + visual baseline 重拍 (generator)",
+    "title": "信任背书(真实框架) + 邮件FAQ + SEO关键词 (generator)",
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "done",
+    "status": "pending",
     "acceptance": [
-      "删 public/landing/illustrations/ 7张(保留 hero-illustration.png)+ 不再用的 illustration-asset 逻辑",
-      "删不再mount组件(PainPoints/BeforeAfter/EmailCenterDemo 若全仓零引用)+ 死动效keyframe(landing-hero-video-scale/cta-glow-pulse等); grep零引用再删",
-      "visual-regression baseline 重拍(Linux runner)+连带e2e断言更新; Lighthouse perf99/a11y AA 复验不回退; npm run build 绿"
+      "游戏IP用'游戏垂类覆盖/模板主题'展示(非Trusted by客户, 避虚假背书+商标风险); 安全认证仅写真实具备的; 客户证言留占位(待用户给真实来源)",
+      "FAQ邮件化(文档3问: 自定义游戏IP模板/DKIM·SPF技术成本/数据更新频率)替换现通用FAQ",
+      "SEO关键词自然植入(游戏KOL营销/出海邮件管理/送达率优化/DKIM·SPF合规/游戏合作模板/开信率追踪)",
+      "i18n 5 locale + 单测 + npm run build"
     ]
   },
   {
@@ -59,12 +60,11 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "skipped",
-    "skip_reason": "用户 2026-06-13 手工验收 staging 视觉通过, 授权免除 Codex F005(视觉批次用户肉眼验收为主门, 对自有harness行使权限). 覆盖: 用户视觉accept+main CI全绿(run 27464021808)+staging healthy. soft-watch: Lighthouse perf99/WCAG AA 未显式再验(建议prod前后抽查). 记录 docs/test-reports/BL-114-closure-2026-06-13.md.",
+    "status": "pending",
     "acceptance": [
       "L1: lint 0err warn≤3 / tsc=0 / npm test + npm run build",
-      "L2 部署后 staging: ① 落地页视觉对齐 Stitch 原型(screen.png 对比: hero/bento/steps/stats/FAQ/CTA + Neural Velocity 色阶/渐变/光晕/mono) ② Lighthouse perf≥99/WCAG AA/reduced-motion 不回退 ③ visual baseline 已重拍绿 ④ 5 locale 正常",
-      "signoff docs/test-reports/BL-114-signoff-2026-06-XX.md"
+      "L2 staging: ① 3字段表单提交落库+UTM捕获+埋点触发(投放转化链路通) ② PRD/演示链接正确 ③ 邮件协作定位+痛点+邮件中心演示+邮件FAQ体现 ④ Lighthouse perf99/WCAG AA/reduced-motion不回退 ⑤ visual baseline重拍 ⑥ 5 locale+响应式PC/移动",
+      "signoff docs/test-reports/BL-115-signoff-2026-06-XX.md"
     ]
   }
 ]

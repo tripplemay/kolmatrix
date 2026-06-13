@@ -458,5 +458,25 @@
       "wire-existing-engine"
     ],
     "discovered_in": "2026-06-09 审计 M7 + 2026-06-12 用户决单开批次"
+  },
+  {
+    "id": "BL-116",
+    "priority": "medium",
+    "title": "邮件能力真实化 — 落地页宣称对齐产品(回复追踪/模板扩充/真信誉分)",
+    "description": "BL-115 落地页按投放文档口径宣称了超出产品现状的能力(用户决: 用文档口径缺失以后建). 此项=把这些真实化, 避免长期虚标. 跟进: ①回复率追踪真实化(inbound email ingestion 写 email_log.repliedAt, 现从不写 BL-101 仅诚实空态)→落地页才敢宣称'回复率追踪' ②游戏垂类邮件模板扩充(现真实27个, 文档称1000+)→按需扩 ③真实送达信誉分(现 DomainHealthCard 硬编码静态98%)→接真实 reputation/deliverability 算分. 来源: docs/reviews/landing-vs-prd-doc-gap-2026-06-13.md 产品现状对照. 优先级看投放上线后是否需兑现宣称.",
+    "decisions": [
+      "BL-115落地页先按文档口径上(用户决), 真功能此项跟进",
+      "回复率追踪=BL-101根治(inbound写repliedAt)"
+    ],
+    "confirmed_at": "2026-06-13T20:00+0800",
+    "tags": [
+      "email",
+      "landing-truthfulness",
+      "reply-tracking",
+      "templates",
+      "reputation",
+      "follow-up"
+    ],
+    "discovered_in": "2026-06-13 BL-115 落地页投放文档对齐 产品现状核查"
   }
 ]

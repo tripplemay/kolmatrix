@@ -3,6 +3,9 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
+## 🚧 BL-115-landing-conversion-email-positioning BUILDING (0/5) — 落地页折中加装(投放规范对齐: 转化机制+邮件协作定位)
+- 用户给飞书投放规范→缺漏分析(docs/reviews/landing-vs-prd-doc-gap-2026-06-13.md). 折中加装到BL-114. ⚠️文档多处overclaim(1000+模板真27/回复率未实装/一键DKIM实静态/IP非客户), 用户决用文档口径缺失后建+IP按PRD. 真实性处理: IP用'垂类覆盖'框架非客户背书/证言占位/回复率建议只开信率/留痕跟进BL-116
+- F001 转化机制(3字段表单+UTM+埋点+PRD/演示链接, 投放刚需真实)优先 / F002 Hero邮件侧重+数据栏 / F003 痛点+邮件中心演示(重加回BL-114删的) / F004 信任真实框架+邮件FAQ+SEO / F005 Codex. 守perf99/a11y. 下一步 Generator F001
 ## ✅ BL-114-landing-redesign DONE (F001-F004 done, F005 Codex 用户授权免除, closure @ docs/test-reports/BL-114-closure-2026-06-13.md) — 落地页照 Stitch 原型重做
 - 全页照 Stitch 原型(Neural Velocity)重做: Hero(渐变标题/光晕/dashboard预览)+Bento4卡+HowItWorks+Stats+FAQ+收尾CTA+结构重组(去PainPoints/BeforeAfter/EmailCenterDemo)+清7插画(留hero). **用户手工验收staging视觉通过**+main CI全绿(run 27464021808)+staging@50f0180. baseline经 update-visual-baselines workflow Linux重拍
 - ⚠️ soft-watch(F005免除未显式验): Lighthouse perf99/WCAG AA/reduced-motion(BL-080硬约束, 风险低, 建议prod前后抽查). 主观项用户可微调: eyebrow/logo占位/stats数字
