@@ -19,7 +19,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "Features.tsx 照原型重做 4 张 bento 色阶卡(Brief/Match/Reach/Insight): material 图标(auto_awesome/travel_explore/forward_to_inbox/query_stats)+ 青 mono 标签 + 粗标题 + 描述; 色阶分层无边框, hover升级+青内发光. 去5张feature插画",
       "Logo 条: 'Trusted by leading game studios' + 5 muted wordmark(可占位)",
