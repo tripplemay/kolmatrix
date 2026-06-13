@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "⚠️ 取代 jina 版(作废). 以 design-draft/landing-stitch-prototype/(code.html+screen.png)为精确参照. Hero 照原型: 青 mono eyebrow + 大 display 标题(渐变第二行)+ 副文 + 渐变 'Start free' CTA + 'Book a demo' 次CTA + 光晕 blob 背景 + 下方 hero-illustration.png dashboard 预览(保留, 玻璃/光晕装饰)",
       "全局: 接 Inter + JetBrains Mono 字体; gradient-btn(135°#00daf3→c3f5ff CTA)+ glow-blob 环境光晕 utility + mono 技术标签(globals.css 复用 Neural Velocity token)",

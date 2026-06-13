@@ -3,9 +3,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-114-landing-redesign BUILDING (0/5) — 落地页重做照 Stitch 原型(Neural Velocity)
-- ⚠️ 方向变更: jina F001'根本不像'(Planner文字工具读jina画像就错)→用户改用项目自有设计系统(Neural Velocity)在Stitch生成落地页原型(design-draft/landing-stitch-prototype/ code.html+screen.png=精确参照)→完全照原型. 取代jina方向(jina F001作废)
-- 用户决: 完全照原型(结构重组去PainPoints/BeforeAfter/EmailCenterDemo加How-it-works/Stats)+ hero留hero-illustration.png其余7张删. F001 Hero+token照原型(redo, ⚠️Hero-first检查点) / F002 Bento4卡+logo / F003 How-it-works+Stats+FAQ+CTA+结构重组 / F004 清7插画/死组件/baseline重拍 / F005 Codex. 守perf99/a11y. 下一步 Generator F001 redo
+## 🚧 BL-114-landing-redesign BUILDING (1/5) — 落地页重做照 Stitch 原型(Neural Velocity) ⏸️ Hero-first 检查点
+- ⏸️ **F001 done(redo, 照原型)+ staging 部署 @ f8084cc(healthy) — 暂停待用户确认照原型方向再推 F002+**. Hero 全重做(青 mono eyebrow/渐变标题/双CTA/光晕blob/hero-illustration 玻璃 dashboard 预览)+ 全局(JetBrains Mono 限定 font-landing-mono/.glow-blob/.landing-cta-primary 对齐原型 gradient-btn)+ TopNav 渐变K tile/wordmark + i18n 5 locale. 用户走查: https://staging.kol.guangai.ai/en
+- ⚠️ CI E2E 预期红=仅 4 张 landing-*.png 基线 mismatch(hero 重做使然, 留 F004 Linux runner 重拍); 其余 L1/Integration/Build 全绿; app 端 en-reach-templates 回归已修. ⚠️待用户定夺: eyebrow 保留'GAME·KOL·AI·NATIVE'(避 BL-055 删的 Neural Velocity 用户面文案) vs 原型'Neural Velocity AI'
+- 剩余: F002 Bento4卡+logo / F003 How-it-works+Stats+FAQ+CTA+结构重组(去PainPoints/BeforeAfter/EmailCenterDemo) / F004 清7插画/死组件/baseline重拍 / F005 Codex. 守perf99/a11y. hero留hero-illustration.png其余7张F004删
 ## ✅ BL-113-ai-cost-cap-fix DONE (3/3, fix_rounds=0, signoff @ docs/test-reports/BL-113-signoff-2026-06-12.md) — PROD 故障 hotfix: AI 成本上限修复
 - 根因: cost-cap.ts 按 count×$0.01 计(忽略真实costUsd), 后台 kol_country_enrichment 500事件=$5触顶(真实$0.45)→前台AI被挡. 修: A cap改sum真实costUsd+排除source=system / B 后台AI(enrichment/prewarm)打costBucket=system不计前台配额. L1 1689 PASS. Codex L2 code-review 5/5(0 crit/high). staging@686f758
 - ✅ **PROD 已部署(用户 2026-06-12/13)+ Planner 核验**: 该租户今日500 enrichment 事件前台真实成本 $0.00→不再触顶(A+B 生效, 故障已根治). BL-105+BL-107+BL-113 三批随 main HEAD 上 prod(积压清零). BL-107 KPI cron 已装 /etc/cron.d/kolmatrix-kpi-snapshot(00:30 UTC 首跑填 kpi_daily_snapshot, 现仍空待今晚)

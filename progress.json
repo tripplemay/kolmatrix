@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-114 落地页重做 — 照 Stitch 原型(Neural Velocity 设计系统). 用户视觉优化→先想复刻 jina.ai→Generator F001 jina版'根本不像'→用户改用项目自有设计系统(Neural Velocity)在 Stitch 生成落地页原型(design-draft/landing-stitch-prototype/ code.html+screen.png+DESIGN.md)=精确目标. 用户决: ①完全照原型含结构重组(去PainPoints/BeforeAfter/EmailCenterDemo, 加How-it-works/Stats) ②hero保留hero-illustration.png其余7张删. 原型=Neural Velocity(底#0b1326/青#00e5ff/渐变CTA#00daf3→c3f5ff/Inter+JetBrainsMono/色阶分层无边框/光晕/玻璃). 5 features: F001 Hero+token照原型(redo, tone-setter检查点) / F002 Bento4卡+logo条 / F003 How-it-works+Stats+FAQ+CTA+结构重组 / F004 清7插画/死组件/baseline重拍 / F005 Codex. 守perf99/a11y不回退.",
   "total_features": 5,
-  "completed_features": 0,
+  "completed_features": 1,
   "fix_rounds": 0,
   "current_sprint": "BL-114-landing-jina-style-redesign",
-  "last_updated": "2026-06-13T15:00+0800",
+  "last_updated": "2026-06-13T16:05+0800",
   "reference_docs": [
     "docs/specs/BL-114-landing-jina-style-redesign-spec.md(已改为照原型)",
     "design-draft/landing-stitch-prototype/(code.html 完整结构+token / screen.png 渲染图 / DESIGN.md = Generator 精确参照)",
@@ -24,10 +24,10 @@
   "role_assignments": null,
   "evaluator_feedback": null,
   "fix_rounds_history": [],
-  "generator_handoff": "[2026-06-13 15:00 BJT Planner Kimi 重定向 BL-114] ⚠️ 方向变更: 放弃 jina.ai, 改照 Stitch 原型(design-draft/landing-stitch-prototype/). Generator 之前的 jina F001(6c62938)作废, 照原型重做. 目标=用项目 Neural Velocity 设计系统的落地页原型(code.html+screen.png 精确参照, token 多已在 globals.css). 用户决: 完全照原型(结构重组去PainPoints/BeforeAfter/EmailCenterDemo加How-it-works/Stats)+ hero保留hero-illustration.png其余7张删. ⚠️⚠️ F001 Hero-first 检查点仍硬性: F001(Hero+全局token/字体照原型)完成→部署staging→停下让用户确认照原型方向对了→再推F002+. 翻译原型 Tailwind CDN HTML→项目 Tailwind v4 @theme+现有组件惯例(i18n/a11y/测试), 视觉对齐 screen.png 即可非像素拷贝. ⚠️ 守 perf99/a11y/reduced-motion 不回退; visual baseline 必 Linux runner 重拍+连带断言(generator §21); 视觉/删除改动须 npm run build(§14.4). 下一步 Generator F001(redo, 照原型). 详见 spec §1-§2 + 原型文件.",
+  "generator_handoff": "[2026-06-13 16:05 BJT Generator Kimi] ⏸️ F001 完成(redo, 照 Stitch 原型) + staging 已部署 @ f8084cc — **Hero-first 检查点: 暂停, 待用户确认照原型方向对了再推 F002+**. 已交付: Hero(HeroVideo.tsx 全重做: 青 mono eyebrow + 渐变第二行标题 + 副文 + Start free/Book a demo CTA + 3 光晕 blob + hero-illustration.png 玻璃 dashboard 预览 next/image priority) / 全局(layout 接 JetBrains Mono → font-landing-mono landing 专用 utility, 不动 app --font-mono / .glow-blob utility / .landing-cta-primary 对齐原型 gradient-btn 135°#00daf3→c3f5ff) / TopNav 随 tone-setter 对齐(渐变 K tile + 渐变 wordmark + Inter, 省 Product/Pricing/Docs 死链) / i18n 5 locale hero title·subtitle·ctaPrimary 照原型(eyebrow 保留 GAME·KOL·AI·NATIVE, 不复用 BL-055 删的 Neural Velocity 用户面文案 — ⚠️待用户定夺是否要原型的 'Neural Velocity AI' eyebrow) / e2e 连带断言翻转(hero 'no illustration'→'dashboard preview 存在') + 新增 HeroVideo 单测. L1 全绿(tsc=0/lint 0e3w/vitest 1691/build OK). ⚠️ **CI E2E 预期红**: 仅 4 张 landing-*.png 视觉基线 mismatch(hero 重做使然), 留 F004 Linux runner 重拍; app 端 en-reach-templates 回归已修(font scope). **下一步: 用户在 https://staging.kol.guangai.ai/en 走查 hero, 确认方向→指示推 F002(Bento+logo)**.",
   "session_notes": {
     "Kimi_planner": "[2026-06-13 15:00 BJT Planner Kimi] BL-114 重定向: jina F001'根本不像'(我靠文字工具读jina画像就错了)→用户改用项目Neural Velocity设计系统在Stitch生成落地页原型导出zip→我解压亲看screen.png(很好, 干净高级dark-cyan)→存档design-draft/landing-stitch-prototype/作精确参照→用户决完全照原型+hero留hero-illustration. 改spec/features照原型, 重置F001 redo. Generator照原型重做F001(Hero-first检查点). 教训: 视觉参考站靠文字抓取不可靠, 应早让用户出原型/截图.",
-    "Kimi_generator": "[2026-06-13 14:30 BJT Generator] (jina版F001, 已作废)F001 Hero-first完成6c62938: 去hero插画纯CSS mesh, 但用户判定'根本不像jina'→方向废. 现照Stitch原型redo(见planner handoff).",
+    "Kimi_generator": "[2026-06-13 16:05 BJT Generator] F001 redo 完成(照 Stitch 原型, bd25849+f8084cc)+ staging 部署验证 git_sha=f8084cc healthy. Hero 全重做对齐 screen.png(青 mono eyebrow/渐变标题/双CTA/光晕blob/hero-illustration 玻璃预览). 关键坑: 首提交 --font-mono 全局覆写误改 app 端等宽字体致 en-reach-templates.png 回归→改 landing 专用 --font-landing-mono 修复(经验: 改 Tailwind 全局 font/color token 前先 grep app 端用量). CI E2E 仅 landing-*.png 基线红=预期(F004 重拍). ⏸️ 停在 Hero-first 检查点等用户确认. 留给 F002 Generator: bento 4 卡照原型用 .landing-card-dark/glow + material 图标, logo 条; 注意 main bg 现仍 bg-surface(#171f33), hero 自带 bg-navy-base, F003 结构重组时统一 main bg→navy-base.",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null
