@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOLMatrix | Neural Velocity AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-highest": "#2d3449",
+                        "on-primary": "#00363d",
+                        "on-primary-fixed-variant": "#004f58",
+                        "on-primary-container": "#00626e",
+                        "error": "#ffb4ab",
+                        "on-background": "#dbe2fd",
+                        "outline": "#849396",
+                        "on-tertiary-fixed": "#251a00",
+                        "background": "#0b1326",
+                        "error-container": "#93000a",
+                        "surface-container-high": "#222a3e",
+                        "surface-container-lowest": "#060d20",
+                        "surface-dim": "#0b1326",
+                        "primary-fixed": "#9cf0ff",
+                        "on-secondary-container": "#d5b5ff",
+                        "surface-container-low": "#131b2e",
+                        "secondary-fixed-dim": "#d8b9ff",
+                        "on-secondary": "#450086",
+                        "tertiary-fixed-dim": "#f3bf26",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed": "#ffdf96",
+                        "inverse-on-surface": "#283044",
+                        "primary-fixed-dim": "#00daf3",
+                        "surface-container": "#171f33",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "outline-variant": "#3b494c",
+                        "primary-container": "#00e5ff",
+                        "on-surface": "#dbe2fd",
+                        "on-surface-variant": "#bac9cc",
+                        "secondary-fixed": "#eddcff",
+                        "inverse-surface": "#dbe2fd",
+                        "tertiary-container": "#fec931",
+                        "primary": "#c3f5ff",
+                        "on-primary-fixed": "#001f24",
+                        "on-tertiary": "#3e2e00",
+                        "surface-tint": "#00daf3",
+                        "on-error": "#690005",
+                        "inverse-primary": "#006875",
+                        "secondary-container": "#6e06d0",
+                        "secondary": "#d8b9ff",
+                        "surface": "#0b1326",
+                        "surface-bright": "#31394e",
+                        "on-secondary-fixed-variant": "#6200bc",
+                        "on-tertiary-container": "#6f5500",
+                        "on-secondary-fixed": "#290055",
+                        "tertiary": "#ffeac0",
+                        "surface-variant": "#2d3449"
+                    },
+                    fontFamily: {
+                        headline: ["Inter", "sans-serif"],
+                        display: ["Inter", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                        label: ["Inter", "sans-serif"],
+                        mono: ["JetBrains Mono", "monospace"]
+                    },
+                    letterSpacing: {
+                        tightest: '-0.02em',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #dbe2fd;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .glass-nav {
+            background: rgba(11, 19, 38, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #00daf3 0%, #c3f5ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gradient-btn {
+            background: linear-gradient(135deg, #00daf3 0%, #c3f5ff 100%);
+            color: #00363d;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .gradient-btn:hover {
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .glow-blob {
+            position: absolute;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.15;
+            border-radius: 50%;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+        }
+
+        .faq-accordion[open] .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        ::selection {
+            background: rgba(0, 229, 255, 0.3);
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- Ambient Background Blobs -->
+<div class="glow-blob bg-[#00E5FF] w-[500px] h-[500px] -top-48 -left-24"></div>
+<div class="glow-blob bg-[#9D50FF] w-[600px] h-[600px] top-1/4 -right-48"></div>
+<div class="glow-blob bg-[#00E5FF] w-[400px] h-[400px] bottom-0 left-1/3"></div>
+<!-- Navigation Shell -->
+<nav class="fixed top-0 w-full z-50 flex items-center justify-between px-8 h-16 glass-nav shadow-lg shadow-cyan-500/5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-[10px] bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] flex items-center justify-center">
+<span class="text-[#00363d] font-bold text-lg">K</span>
+</div>
+<span class="text-lg font-bold bg-gradient-to-br from-[#00daf3] to-[#c3f5ff] bg-clip-text text-transparent tracking-tight">KOLMatrix</span>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-[#bac9cc] hover:text-[#00E5FF] transition-all font-medium text-sm" href="#">Product</a>
+<a class="text-[#bac9cc] hover:text-[#00E5FF] transition-all font-medium text-sm" href="#">Pricing</a>
+<a class="text-[#bac9cc] hover:text-[#00E5FF] transition-all font-medium text-sm" href="#">Docs</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-[#bac9cc] font-medium text-sm hover:text-white transition-colors">Log in</button>
+<button class="gradient-btn px-6 py-2 rounded-xl font-bold text-sm">Get started</button>
+</div>
+</nav>
+<!-- Hero Section -->
+<section class="relative pt-48 pb-24 px-8 max-w-7xl mx-auto text-center overflow-hidden">
+<div class="inline-block mb-6 px-4 py-1.5 rounded-full bg-surface-container-low border border-outline-variant/10">
+<span class="font-mono text-[11px] tracking-[0.2em] uppercase text-primary-fixed-dim">Neural Velocity AI</span>
+</div>
+<h1 class="text-5xl md:text-7xl font-extrabold text-white tracking-tightest mb-8 leading-[1.1]">
+            The AI command center for<br/>
+<span class="gradient-text">global game KOL marketing</span>
+</h1>
+<p class="max-w-2xl mx-auto text-on-surface-variant text-lg md:text-xl mb-12 leading-relaxed">
+            Scale your creator outreach with semantic matching, neural-driven campaign structuring, and real-time ROI tracking across all platforms.
+        </p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+<button class="gradient-btn px-8 py-4 rounded-xl font-bold text-base w-full sm:w-auto">Start free</button>
+<button class="bg-surface-container-high hover:bg-surface-container-highest text-white px-8 py-4 rounded-xl font-bold text-base transition-colors w-full sm:w-auto">Book a demo</button>
+</div>
+<!-- Dashboard Preview -->
+<div class="mt-24 relative max-w-5xl mx-auto">
+<div class="absolute inset-0 bg-gradient-to-t from-[#0b1326] via-transparent to-transparent z-10 h-full"></div>
+<div class="p-4 bg-surface-container-low rounded-2xl shadow-2xl shadow-cyan-500/10">
+<img alt="KOLMatrix Dashboard Preview" class="rounded-xl w-full object-cover h-[400px] md:h-[600px] opacity-90" data-alt="A high-end, futuristic SaaS dashboard interface for a gaming influencer marketing platform. The UI features deep navy backgrounds, glowing cyan charts showing growth metrics, and a grid of professional gaming creator profiles with cinematic lighting. The aesthetic is sophisticated and editorial, with sharp typography and glassmorphic elements throughout the data visualization components." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB59nCkBUwrp2prmuyHSLnDA4Bvbl-DNXWAlZwMAbvQs0DWioZ_xuHQtkNKw0xvTLkXl_HGKJhgvQxFQMQnV69rT5rAbFMw-nbk_X9PKNxLrHtiRIYF03dI-Hx_68HaIwmEHjzLRpSLmXky9WkYXCrdAPOmlbcvHLNfICt1BXqdf_T3Yk3xMGC_aP0_u0IMf1C4yErubMo79dCrZ-VPpVU3TlZ5meL9Hk7MSVq6PPwLbrCaR8XADAZ0cgbgwNHzZNDx5fCtxx-sY-E"/>
+</div>
+</div>
+</section>
+<!-- Logo Strip -->
+<section class="py-12 border-y border-outline-variant/5">
+<div class="max-w-7xl mx-auto px-8">
+<p class="text-center font-mono text-[10px] tracking-[0.25em] uppercase text-on-surface-variant mb-10">Trusted by leading game studios</p>
+<div class="flex flex-wrap justify-center items-center gap-12 md:gap-20 opacity-40 grayscale contrast-125">
+<span class="text-2xl font-black italic tracking-tighter">ZENITH</span>
+<span class="text-2xl font-black italic tracking-tighter">NEXUS_G</span>
+<span class="text-2xl font-black italic tracking-tighter">VOID_LABS</span>
+<span class="text-2xl font-black italic tracking-tighter">APEX_INT</span>
+<span class="text-2xl font-black italic tracking-tighter">STORM_WK</span>
+</div>
+</div>
+</section>
+<!-- Core Capabilities (Bento Grid) -->
+<section class="py-32 px-8 max-w-7xl mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Brief -->
+<div class="group p-8 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-all duration-300 flex flex-col justify-between min-h-[300px]">
+<div>
+<div class="w-12 h-12 rounded-xl bg-primary-fixed-dim/10 flex items-center justify-center mb-6 text-primary-fixed-dim">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<h3 class="text-sm font-mono tracking-widest text-primary-fixed-dim mb-4 uppercase">Brief</h3>
+<p class="text-xl font-bold text-white leading-tight">AI-generated campaign structures</p>
+</div>
+<p class="text-sm text-on-surface-variant leading-relaxed">Turn creative goals into deployment-ready briefs in seconds with neural pattern matching.</p>
+</div>
+<!-- Match -->
+<div class="group p-8 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-all duration-300 flex flex-col justify-between min-h-[300px]">
+<div>
+<div class="w-12 h-12 rounded-xl bg-primary-fixed-dim/10 flex items-center justify-center mb-6 text-primary-fixed-dim">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">travel_explore</span>
+</div>
+<h3 class="text-sm font-mono tracking-widest text-primary-fixed-dim mb-4 uppercase">Match</h3>
+<p class="text-xl font-bold text-white leading-tight">Semantic KOL ranking engine</p>
+</div>
+<p class="text-sm text-on-surface-variant leading-relaxed">Beyond basic tags—our engine understands creator content style and audience sentiment.</p>
+</div>
+<!-- Reach -->
+<div class="group p-8 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-all duration-300 flex flex-col justify-between min-h-[300px]">
+<div>
+<div class="w-12 h-12 rounded-xl bg-primary-fixed-dim/10 flex items-center justify-center mb-6 text-primary-fixed-dim">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
+</div>
+<h3 class="text-sm font-mono tracking-widest text-primary-fixed-dim mb-4 uppercase">Reach</h3>
+<p class="text-xl font-bold text-white leading-tight">Scale compliant outreach</p>
+</div>
+<p class="text-sm text-on-surface-variant leading-relaxed">Automate personalized conversations with thousands of creators while ensuring 100% compliance.</p>
+</div>
+<!-- Insight -->
+<div class="group p-8 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-all duration-300 flex flex-col justify-between min-h-[300px]">
+<div>
+<div class="w-12 h-12 rounded-xl bg-primary-fixed-dim/10 flex items-center justify-center mb-6 text-primary-fixed-dim">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">query_stats</span>
+</div>
+<h3 class="text-sm font-mono tracking-widest text-primary-fixed-dim mb-4 uppercase">Insight</h3>
+<p class="text-xl font-bold text-white leading-tight">Real-time ROI analytics</p>
+</div>
+<p class="text-sm text-on-surface-variant leading-relaxed">Live conversion attribution and retention data flowing straight to your marketing hub.</p>
+</div>
+</div>
+</section>
+<!-- How it Works -->
+<section class="py-32 bg-surface-container-lowest overflow-hidden">
+<div class="max-w-7xl mx-auto px-8">
+<div class="flex flex-col md:flex-row justify-between items-end mb-24 gap-8">
+<div class="max-w-xl">
+<h2 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">Built for high-velocity teams.</h2>
+<p class="text-on-surface-variant text-lg">Streamline your entire influencer lifecycle into three neural-optimized phases.</p>
+</div>
+<div class="hidden md:block h-px flex-1 bg-outline-variant/10 mx-12 mb-6"></div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-16 relative">
+<!-- Step 01 -->
+<div class="relative">
+<span class="font-mono text-4xl text-primary-fixed-dim font-bold mb-8 block">01</span>
+<h4 class="text-2xl font-bold text-white mb-4">Define Objective</h4>
+<p class="text-on-surface-variant leading-relaxed">Input your game genre, target demographic, and budget. Our AI builds a custom strategy based on historical performance data.</p>
+</div>
+<!-- Step 02 -->
+<div class="relative">
+<span class="font-mono text-4xl text-primary-fixed-dim font-bold mb-8 block">02</span>
+<h4 class="text-2xl font-bold text-white mb-4">Neural Discovery</h4>
+<p class="text-on-surface-variant leading-relaxed">Connect with our database of 6,000+ vetted KOLs. Semantic matching finds the creators who genuinely resonate with your game's DNA.</p>
+</div>
+<!-- Step 03 -->
+<div class="relative">
+<span class="font-mono text-4xl text-primary-fixed-dim font-bold mb-8 block">03</span>
+<h4 class="text-2xl font-bold text-white mb-4">Execute &amp; Track</h4>
+<p class="text-on-surface-variant leading-relaxed">Deploy campaigns and watch the data roll in. Track click-throughs, installs, and lifetime value in one unified neural command center.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Stats -->
+<section class="py-32 px-8 max-w-7xl mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center md:text-left">
+<div>
+<p class="text-5xl md:text-7xl font-extrabold gradient-text mb-4">6,000+</p>
+<p class="text-on-surface-variant font-medium tracking-wide uppercase text-sm">Vetted Global KOLs</p>
+</div>
+<div>
+<p class="text-5xl md:text-7xl font-extrabold gradient-text mb-4">5+</p>
+<p class="text-on-surface-variant font-medium tracking-wide uppercase text-sm">Major World Languages</p>
+</div>
+<div>
+<p class="text-5xl md:text-7xl font-extrabold gradient-text mb-4">100%</p>
+<p class="text-on-surface-variant font-medium tracking-wide uppercase text-sm">ROI Tracked accurately</p>
+</div>
+</div>
+</section>
+<!-- FAQ -->
+<section class="py-32 px-8 max-w-3xl mx-auto">
+<h2 class="text-3xl font-extrabold text-white text-center mb-16">Common Enquiries</h2>
+<div class="space-y-4">
+<details class="faq-accordion group bg-surface-container-low rounded-2xl overflow-hidden">
+<summary class="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-surface-container-high transition-colors">
+<span class="font-bold text-lg text-white">How does semantic matching differ from traditional tagging?</span>
+<span class="material-symbols-outlined faq-icon transition-transform text-primary-fixed-dim">expand_more</span>
+</summary>
+<div class="p-6 pt-0 text-on-surface-variant leading-relaxed">
+                    Unlike basic tags (e.g., "FPS", "RPG"), our semantic engine analyzes actual video transcripts and chat logs to understand the creator's true expertise and the specific interests of their sub-communities.
+                </div>
+</details>
+<details class="faq-accordion group bg-surface-container-low rounded-2xl overflow-hidden">
+<summary class="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-surface-container-high transition-colors">
+<span class="font-bold text-lg text-white">Does KOLMatrix handle global payments?</span>
+<span class="material-symbols-outlined faq-icon transition-transform text-primary-fixed-dim">expand_more</span>
+</summary>
+<div class="p-6 pt-0 text-on-surface-variant leading-relaxed">
+                    Yes. We automate the entire payout process, including currency conversion and tax compliance across 50+ regions, allowing you to focus on the marketing strategy.
+                </div>
+</details>
+<details class="faq-accordion group bg-surface-container-low rounded-2xl overflow-hidden">
+<summary class="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-surface-container-high transition-colors">
+<span class="font-bold text-lg text-white">Can we integrate our internal CRM data?</span>
+<span class="material-symbols-outlined faq-icon transition-transform text-primary-fixed-dim">expand_more</span>
+</summary>
+<div class="p-6 pt-0 text-on-surface-variant leading-relaxed">
+                    KOLMatrix provides a robust API and native integrations for most major gaming CRMs and analytics hubs, ensuring a seamless flow of ROI and LTV data.
+                </div>
+</details>
+</div>
+</section>
+<!-- Closing CTA -->
+<section class="py-32 px-8">
+<div class="max-w-5xl mx-auto rounded-3xl p-12 md:p-24 relative overflow-hidden bg-surface-container-high text-center">
+<div class="absolute inset-0 bg-[#00E5FF]/5 blur-[80px] -z-10 translate-y-1/2"></div>
+<h2 class="text-4xl md:text-6xl font-extrabold text-white tracking-tight mb-8">Ready to lead the game?</h2>
+<p class="text-on-surface-variant text-lg md:text-xl mb-12 max-w-xl mx-auto">Join the world's most innovative game studios and start scaling your marketing with Neural Velocity.</p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+<button class="gradient-btn px-10 py-5 rounded-2xl font-extrabold text-lg w-full sm:w-auto shadow-2xl shadow-cyan-500/20">Join the Matrix</button>
+<button class="text-on-surface hover:text-white font-bold transition-colors">Contact Sales →</button>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="w-full py-12 px-12 bg-surface-container-lowest flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex flex-col items-center md:items-start gap-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded bg-gradient-to-br from-[#00daf3] to-[#c3f5ff]"></div>
+<span class="text-sm font-bold text-white tracking-tight">KOLMatrix</span>
+</div>
+<p class="text-[11px] uppercase tracking-[0.15em] font-semibold text-[#6B7280]">
+                © 2024 KOLMatrix Neural Velocity. All rights reserved.
+            </p>
+</div>
+<div class="flex gap-8">
+<a class="text-[11px] uppercase tracking-[0.15em] font-semibold text-[#6B7280] hover:text-[#00E5FF] transition-colors" href="#">Privacy Policy</a>
+<a class="text-[11px] uppercase tracking-[0.15em] font-semibold text-[#6B7280] hover:text-[#00E5FF] transition-colors" href="#">Terms of Service</a>
+<a class="text-[11px] uppercase tracking-[0.15em] font-semibold text-[#6B7280] hover:text-[#00E5FF] transition-colors" href="#">Support</a>
+</div>
+</footer>
+<script>
+        // Smooth reveal animations on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-8');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section > div').forEach(el => {
+            el.classList.add('transition-all', 'duration-1000', 'opacity-0', 'translate-y-8');
+            observer.observe(el);
+        });
+
+        // Hover interaction for bento cards
+        document.querySelectorAll('.group').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+    </script>
+</body></html>
