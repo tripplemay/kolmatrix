@@ -332,12 +332,15 @@ const KEEP_AS_EN_PATHS = new Set<string>([
   // beforeAfter table — "After" column header is the brand name across
   // all locales (matches landing.hero.kicker convention).
   "landing.beforeAfter.colAfter",
-  // "KOL CRM" — both tokens are industry acronyms already kept-as-en
-  // elsewhere (assets.usedIn.kolFallback for KOL; CRM has no
-  // localized equivalent in common ja/ko marketing usage). es renders
-  // it differently as "CRM de KOL" so the gate stays useful as a
-  // drift check for the locales where divergence is expected.
-  "landing.features.items.crm.title",
+  // BL-114-F002 — bento capability labels (Brief / Match / Reach / Insight)
+  // are mono uppercase category tags kept language-neutral by design (same
+  // convention as landing.hero.eyebrow). The localized content lives in the
+  // sibling .title / .body leaves, which the gate still drift-checks.
+  // (Supersedes the removed 6-card structure incl. landing.features.items.crm.title.)
+  "landing.features.items.brief.label",
+  "landing.features.items.match.label",
+  "landing.features.items.reach.label",
+  "landing.features.items.insight.label",
   // BL-096-F002 crawler-monitor health lights:
   // - "Instagram" is a brand (same across every locale, like
   //   discovery.platforms.instagram above).

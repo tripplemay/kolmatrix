@@ -2219,43 +2219,27 @@
       "tagline": "発掘 → AI マッチ → アウトリーチ → コラボレーション → 効果測定 — すべてワンストップで"
     },
     "features": {
-      "sectionTitle": "ライフサイクル全体をカバーする 6 つのモジュール",
       "items": {
-        "library": {
-          "title": "ゲーム特化 KOL ライブラリ",
-          "body": "15 次元のフィルタリングでジャンル・スタイル・地域・オーディエンスを精密に設定",
-          "linkLabel": "/match を開く"
+        "brief": {
+          "label": "Brief",
+          "title": "AI 生成のキャンペーン構成",
+          "body": "AI パターンマッチングで、クリエイティブ目標を数秒でデプロイ可能な brief に変換。"
         },
-        "aiMatch": {
-          "title": "AI スマートマッチング",
-          "body": "ブリーフをアップロードすると AI が最適なクリエイター構成を提案",
-          "linkLabel": "/match を開く"
-        },
-        "insight": {
-          "title": "マルチプラットフォーム分析",
-          "body": "再生数・エンゲージメント・オーディエンス・コンバージョンを 1 つのダッシュボードで",
-          "linkLabel": "/insight を開く"
+        "match": {
+          "label": "Match",
+          "title": "セマンティック KOL ランキングエンジン",
+          "body": "基本タグを超えて —— エンジンがクリエイターのコンテンツスタイルと視聴者の感情を理解。"
         },
         "reach": {
-          "title": "メール協業 & コンプライアンス",
-          "body": "DKIM/SPF/DMARC をワンクリック設定 + 信頼度 98 + フルファネル追跡",
-          "linkLabel": "/reach を開く"
+          "label": "Reach",
+          "title": "スケールするコンプライアンス対応アウトリーチ",
+          "body": "数千人のクリエイターとのパーソナライズされた会話を自動化し、100% のコンプライアンスを担保。"
         },
-        "crm": {
-          "title": "KOL CRM",
-          "body": "タグ・セグメント・会話履歴・案件進捗を一元管理",
-          "linkLabel": "/crm を開く"
-        },
-        "roi": {
-          "title": "レポート & ROI",
-          "body": "インプレッション・エンゲージメント・流入・コンバージョン・ROI を全方位で追跡",
-          "linkLabel": "/roi を開く"
+        "insight": {
+          "label": "Insight",
+          "title": "リアルタイム ROI 分析",
+          "body": "コンバージョンアトリビューションとリテンションデータをマーケティングハブへ直結。"
         }
-      },
-      "intro": {
-        "label": "6 つのモジュール",
-        "title": "6 つのモジュール。\n1 つのワークフロー。",
-        "subtitle": "発見からアトリビューションまで — 必要なすべてが揃い、スプレッドシートのつなぎ込みは不要。"
       }
     },
     "demo": {
@@ -2278,26 +2262,7 @@
       "illustrationAlt": "KolMatrix メールセンター — 作成、送信トラッキング、到達性コンプライアンスダッシュボード"
     },
     "trust": {
-      "sectionTitle": "エンタープライズ級のセキュリティとコンプライアンス",
-      "items": {
-        "encryption": {
-          "title": "エンタープライズ級データ暗号化",
-          "body": "TLS 1.3 通信暗号化 + Postgres RLS によるマルチテナント分離"
-        },
-        "email": {
-          "title": "メールコンプライアンス認証",
-          "body": "Resend SPF / DKIM / DMARC をフル認証、信頼度 98"
-        },
-        "stack": {
-          "title": "モダンスタック採用",
-          "body": "Anthropic Claude · Resend · Next.js · Postgres RLS で構築"
-        }
-      },
-      "intro": {
-        "label": "信頼性とコンプライアンス",
-        "title": "企業の精査に耐える\nインフラを基盤に。",
-        "subtitle": "暗号化、メールコンプライアンス、モダンスタックの信頼性 — 初日からエンタープライズグレード。"
-      }
+      "caption": "主要ゲームスタジオに信頼されています"
     },
     "faq": {
       "sectionTitle": "よくある質問",

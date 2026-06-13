@@ -2219,43 +2219,27 @@
       "tagline": "발굴 → AI 매칭 → 아웃리치 → 협업 → 효과 측정 — 모두 한곳에서"
     },
     "features": {
-      "sectionTitle": "전체 라이프사이클을 아우르는 6가지 모듈",
       "items": {
-        "library": {
-          "title": "게임 특화 KOL 라이브러리",
-          "body": "15차원 필터링으로 장르·스타일·지역·오디언스를 정밀하게 좁힙니다",
-          "linkLabel": "/match 열기"
+        "brief": {
+          "label": "Brief",
+          "title": "AI 생성 캠페인 구조",
+          "body": "AI 패턴 매칭으로 크리에이티브 목표를 몇 초 만에 배포 가능한 브리프로 전환합니다."
         },
-        "aiMatch": {
-          "title": "AI 스마트 매칭",
-          "body": "브리프를 업로드하면 AI가 최적의 크리에이터 조합을 추천합니다",
-          "linkLabel": "/match 열기"
-        },
-        "insight": {
-          "title": "멀티 플랫폼 데이터 분석",
-          "body": "재생·인게이지먼트·오디언스·전환을 하나의 대시보드에서",
-          "linkLabel": "/insight 열기"
+        "match": {
+          "label": "Match",
+          "title": "시맨틱 KOL 랭킹 엔진",
+          "body": "기본 태그를 넘어 —— 엔진이 크리에이터의 콘텐츠 스타일과 오디언스 감성을 이해합니다."
         },
         "reach": {
-          "title": "메일 협업 & 컴플라이언스",
-          "body": "DKIM/SPF/DMARC 원클릭 설정 + 신뢰도 98 + 전 과정 추적",
-          "linkLabel": "/reach 열기"
+          "label": "Reach",
+          "title": "규모 있는 컴플라이언스 아웃리치",
+          "body": "수천 명의 크리에이터와의 개인화된 대화를 자동화하면서 100% 컴플라이언스를 보장합니다."
         },
-        "crm": {
-          "title": "KOL CRM",
-          "body": "태그·세그먼트·대화 기록·딜 진행 상황을 일원화",
-          "linkLabel": "/crm 열기"
-        },
-        "roi": {
-          "title": "리포트 & ROI",
-          "body": "노출·인게이지먼트·트래픽·전환·ROI를 전 차원으로 추적",
-          "linkLabel": "/roi 열기"
+        "insight": {
+          "label": "Insight",
+          "title": "실시간 ROI 분석",
+          "body": "전환 어트리뷰션과 리텐션 데이터가 마케팅 허브로 바로 흘러듭니다."
         }
-      },
-      "intro": {
-        "label": "6개의 모듈",
-        "title": "6개의 모듈,\n하나의 워크플로우.",
-        "subtitle": "발굴부터 어트리뷰션까지 — 필요한 모든 것이 내장되어 있고, 스프레드시트 작업은 필요 없습니다."
       }
     },
     "demo": {
@@ -2278,26 +2262,7 @@
       "illustrationAlt": "KolMatrix 이메일 센터 — 작성, 발송 추적, 도달률 규정 준수 대시보드"
     },
     "trust": {
-      "sectionTitle": "엔터프라이즈급 보안과 컴플라이언스",
-      "items": {
-        "encryption": {
-          "title": "엔터프라이즈급 데이터 암호화",
-          "body": "TLS 1.3 전송 암호화 + Postgres RLS 멀티 테넌트 격리"
-        },
-        "email": {
-          "title": "메일 컴플라이언스 인증",
-          "body": "Resend SPF / DKIM / DMARC 풀 인증, 신뢰도 98"
-        },
-        "stack": {
-          "title": "현대적인 기술 스택 기반",
-          "body": "Anthropic Claude · Resend · Next.js · Postgres RLS 기반 구축"
-        }
-      },
-      "intro": {
-        "label": "신뢰와 컴플라이언스",
-        "title": "기업의 검증을 견디는\n인프라 위에.",
-        "subtitle": "암호화, 이메일 컴플라이언스, 현대적인 기술 스택 — 첫날부터 엔터프라이즈 수준."
-      }
+      "caption": "주요 게임 스튜디오가 신뢰합니다"
     },
     "faq": {
       "sectionTitle": "자주 묻는 질문",

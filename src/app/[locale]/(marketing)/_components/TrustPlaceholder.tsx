@@ -1,63 +1,38 @@
 import { getTranslations } from "next-intl/server";
-import { StickyStack } from "@/components/landing/StickyStack";
-import { ScrollFadeIn } from "@/components/landing/ScrollFadeIn";
 
-interface TrustItem {
-  key: "encryption" | "email" | "stack";
-  icon: string;
-}
-
-const ITEMS: ReadonlyArray<TrustItem> = [
-  { key: "encryption", icon: "lock" },
-  { key: "email", icon: "verified" },
-  { key: "stack", icon: "hub" },
-];
+/**
+ * BL-114-F002 — Logo strip, rebuilt to the Stitch "Neural Velocity"
+ * prototype: a "Trusted by leading game studios" mono caption above five
+ * muted/grayscale studio wordmarks. The wordmarks are intentional
+ * placeholders (spec F002 "可占位") — fictional brand names, not real
+ * customer claims — pending real partner logos.
+ */
+const WORDMARKS = ["ZENITH", "NEXUS_G", "VOID_LABS", "APEX_INT", "STORM_WK"] as const;
 
 export async function TrustPlaceholder() {
   const t = await getTranslations("landing.trust");
 
   return (
-    <StickyStack
-      sectionTestId="landing-trust"
-      bgClassName="bg-surface-light"
-      textClassName="text-on-surface-light"
-      leftContent={
-        <>
-          <div className="font-geist-mono text-landing-eyebrow tracking-landing-eyebrow text-landing-cyan-deep uppercase">
-            {t("intro.label")}
-          </div>
-          <h2 className="mt-4 font-geist text-landing-h2 font-bold leading-landing-tight tracking-landing-tight whitespace-pre-line">
-            {t("intro.title")}
-          </h2>
-          <p className="mt-5 text-landing-body-lg leading-landing-relaxed text-on-surface-light-variant max-w-md">
-            {t("intro.subtitle")}
-          </p>
-        </>
-      }
+    <section
+      data-testid="landing-logos"
+      className="border-y border-outline-variant/5 bg-navy-base px-6 py-12 lg:px-8"
     >
-      {ITEMS.map(({ key, icon }, idx) => (
-        <ScrollFadeIn key={key} delayMs={idx * 150}>
-          <div
-            data-testid={`landing-trust-${key}`}
-            className="landing-card-light p-8"
-          >
-            <span className="landing-icon-halo" style={{ width: "56px", height: "56px" }}>
-              <span
-                className="material-symbols-outlined text-[28px]"
-                aria-hidden="true"
-              >
-                {icon}
-              </span>
+      <div className="mx-auto max-w-7xl">
+        <p className="mb-10 text-center font-landing-mono text-[10px] uppercase tracking-[0.25em] text-on-surface-variant">
+          {t("caption")}
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-12 opacity-40 contrast-125 grayscale md:gap-20">
+          {WORDMARKS.map((name) => (
+            <span
+              key={name}
+              data-testid={`landing-logo-${name}`}
+              className="text-2xl font-black italic tracking-tighter text-white"
+            >
+              {name}
             </span>
-            <h3 className="mt-5 font-geist text-landing-h3 font-semibold leading-landing-tight tracking-landing-tight text-on-surface-light">
-              {t(`items.${key}.title`)}
-            </h3>
-            <p className="mt-3 text-landing-body leading-landing-relaxed text-on-surface-light-variant">
-              {t(`items.${key}.body`)}
-            </p>
-          </div>
-        </ScrollFadeIn>
-      ))}
-    </StickyStack>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

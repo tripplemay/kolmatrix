@@ -593,6 +593,27 @@
   .landing-card-dark:hover { transform: none; }
 }
 
+/* Bento capability card — 照 Stitch 原型 (BL-114-F002): 色阶分层(无 1px 边框)
+   bg-surface-low → hover bg-surface-high + 青内发光(ambient glow, 非硬阴影)
+   + 1px 上浮. 守 DESIGN.md「负空间分隔, 不用边框」. */
+.landing-bento-card {
+  background: var(--color-surface-low);
+  border-radius: var(--radius-lg);
+  transition:
+    background-color var(--duration-landing-medium) var(--ease-landing-out),
+    box-shadow var(--duration-landing-medium) var(--ease-landing-out),
+    transform var(--duration-landing-short) var(--ease-landing-out);
+}
+.landing-bento-card:hover {
+  background: var(--color-surface-high);
+  transform: translateY(-2px);
+  box-shadow: 0 0 32px color-mix(in srgb, var(--color-cyan) 16%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-bento-card { transition: none; }
+  .landing-bento-card:hover { transform: none; }
+}
+
 /* FAQ smooth-height — progressive enhancement using ::details-content +
    interpolate-size (Chrome 129+ / Safari TP). Browsers without support
    fall back to native instant open/close (no break). Reduced-motion

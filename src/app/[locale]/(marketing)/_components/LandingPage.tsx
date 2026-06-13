@@ -28,7 +28,7 @@ export function LandingPage({ locale }: Props) {
       <SectionTransition from="light" to="dark" />
       <BeforeAfter />
       <SectionTransition from="dark" to="light" />
-      <Features locale={locale} />
+      <Features />
       <SectionTransition from="light" to="dark" />
       <EmailCenterDemo />
       <SectionTransition from="dark" to="light" />

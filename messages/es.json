@@ -2219,43 +2219,27 @@
       "tagline": "Encontrar → Matching con IA → Outreach → Colaborar → Medir — todo en un solo lugar"
     },
     "features": {
-      "sectionTitle": "Seis módulos que cubren todo el ciclo de vida",
       "items": {
-        "library": {
-          "title": "Biblioteca de KOL especializada en videojuegos",
-          "body": "Filtrado en 15 dimensiones por género, estilo, región y perfil de audiencia",
-          "linkLabel": "Abrir /match"
+        "brief": {
+          "label": "Brief",
+          "title": "Estructuras de campaña generadas por IA",
+          "body": "Convierte objetivos creativos en briefs listos para desplegar en segundos con emparejamiento de patrones por IA."
         },
-        "aiMatch": {
-          "title": "Matching con IA",
-          "body": "Sube tu brief; la IA recomienda la mezcla de creadores con mayor encaje",
-          "linkLabel": "Abrir /match"
-        },
-        "insight": {
-          "title": "Analítica multiplataforma",
-          "body": "Reproducciones, engagement, perfil de audiencia y conversión en un solo dashboard",
-          "linkLabel": "Abrir /insight"
+        "match": {
+          "label": "Match",
+          "title": "Motor de ranking semántico de KOLs",
+          "body": "Más allá de las etiquetas básicas: nuestro motor entiende el estilo de contenido y el sentimiento de la audiencia."
         },
         "reach": {
-          "title": "Colaboración y compliance de correo",
-          "body": "DKIM/SPF/DMARC con un clic + reputación 98 + seguimiento del embudo completo",
-          "linkLabel": "Abrir /reach"
+          "label": "Reach",
+          "title": "Alcance conforme a escala",
+          "body": "Automatiza conversaciones personalizadas con miles de creadores garantizando un 100% de cumplimiento."
         },
-        "crm": {
-          "title": "CRM de KOL",
-          "body": "Etiquetas, segmentos, historial de conversación y progreso de deals unificados",
-          "linkLabel": "Abrir /crm"
-        },
-        "roi": {
-          "title": "Reportes y ROI",
-          "body": "Impresiones, engagement, tráfico, conversión y ROI en cada dimensión",
-          "linkLabel": "Abrir /roi"
+        "insight": {
+          "label": "Insight",
+          "title": "Analítica de ROI en tiempo real",
+          "body": "Atribución de conversiones y datos de retención que fluyen directo a tu hub de marketing."
         }
-      },
-      "intro": {
-        "label": "SEIS MÓDULOS",
-        "title": "Seis módulos.\nUn solo flujo.",
-        "subtitle": "Del descubrimiento a la atribución — todo lo que necesitas, sin la costura de hojas de cálculo."
       }
     },
     "demo": {
@@ -2278,26 +2262,7 @@
       "illustrationAlt": "Centro de correo de KolMatrix: redacción, seguimiento de envíos y panel de cumplimiento de entregabilidad"
     },
     "trust": {
-      "sectionTitle": "Seguridad y cumplimiento de nivel empresarial",
-      "items": {
-        "encryption": {
-          "title": "Cifrado de datos de nivel empresarial",
-          "body": "TLS 1.3 en tránsito + aislamiento multi-tenant con Postgres RLS"
-        },
-        "email": {
-          "title": "Cumplimiento de correo",
-          "body": "Resend SPF / DKIM / DMARC totalmente verificados, reputación 98"
-        },
-        "stack": {
-          "title": "Construido sobre un stack moderno",
-          "body": "Impulsado por Anthropic Claude · Resend · Next.js · Postgres RLS"
-        }
-      },
-      "intro": {
-        "label": "CONFIANZA Y CUMPLIMIENTO",
-        "title": "Sobre infraestructura\nque aguanta el escrutinio.",
-        "subtitle": "Cifrado, cumplimiento de correo, stack moderno — nivel empresarial desde el día uno."
-      }
+      "caption": "La elección de los principales estudios de videojuegos"
     },
     "faq": {
       "sectionTitle": "Preguntas frecuentes",

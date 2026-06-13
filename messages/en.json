@@ -2218,43 +2218,27 @@
       "tagline": "Find → AI Match → Outreach → Collaborate → Measure — all in one place"
     },
     "features": {
-      "sectionTitle": "Six modules cover the full lifecycle",
       "items": {
-        "library": {
-          "title": "Game-vertical KOL library",
-          "body": "15-dimension filtering by genre, style, region, audience profile",
-          "linkLabel": "Open /match"
+        "brief": {
+          "label": "Brief",
+          "title": "AI-generated campaign structures",
+          "body": "Turn creative goals into deployment-ready briefs in seconds with AI pattern matching."
         },
-        "aiMatch": {
-          "title": "AI-powered matching",
-          "body": "Upload your brief; AI recommends the highest-fit creator mix",
-          "linkLabel": "Open /match"
-        },
-        "insight": {
-          "title": "Multi-platform analytics",
-          "body": "Plays, engagement, audience profile, conversion — all in one dashboard",
-          "linkLabel": "Open /insight"
+        "match": {
+          "label": "Match",
+          "title": "Semantic KOL ranking engine",
+          "body": "Beyond basic tags — our engine understands creator content style and audience sentiment."
         },
         "reach": {
-          "title": "Email collaboration & compliance",
-          "body": "One-click DKIM/SPF/DMARC + reputation 98 + full-funnel tracking",
-          "linkLabel": "Open /reach"
+          "label": "Reach",
+          "title": "Scale compliant outreach",
+          "body": "Automate personalized conversations with thousands of creators while ensuring 100% compliance."
         },
-        "crm": {
-          "title": "KOL CRM",
-          "body": "Tags, segments, conversation history, deal progress — unified",
-          "linkLabel": "Open /crm"
-        },
-        "roi": {
-          "title": "Reporting & ROI",
-          "body": "Impressions, engagement, traffic, conversion, ROI — every dimension",
-          "linkLabel": "Open /roi"
+        "insight": {
+          "label": "Insight",
+          "title": "Real-time ROI analytics",
+          "body": "Live conversion attribution and retention data flowing straight to your marketing hub."
         }
-      },
-      "intro": {
-        "label": "SIX MODULES",
-        "title": "Six modules.\nOne workflow.",
-        "subtitle": "From discovery to attribution — everything you need, none of the spreadsheet stitching."
       }
     },
     "demo": {
@@ -2277,26 +2261,7 @@
       "illustrationAlt": "KolMatrix email center — composer, send tracking, and deliverability compliance dashboard"
     },
     "trust": {
-      "sectionTitle": "Enterprise-grade security and compliance",
-      "items": {
-        "encryption": {
-          "title": "Enterprise data encryption",
-          "body": "TLS 1.3 in transit + Postgres RLS multi-tenant isolation"
-        },
-        "email": {
-          "title": "Email compliance",
-          "body": "Resend SPF / DKIM / DMARC fully verified, reputation 98"
-        },
-        "stack": {
-          "title": "Built on a modern stack",
-          "body": "Powered by Anthropic Claude · Resend · Next.js · Postgres RLS"
-        }
-      },
-      "intro": {
-        "label": "TRUST & COMPLIANCE",
-        "title": "Built on infrastructure\nthat holds up.",
-        "subtitle": "Encryption, email compliance, modern stack credibility — enterprise-grade from day one."
-      }
+      "caption": "Trusted by leading game studios"
     },
     "faq": {
       "sectionTitle": "Frequently asked",
