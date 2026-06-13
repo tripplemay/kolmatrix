@@ -21,7 +21,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "Hero标题/副标向邮件协作中心侧重(按文档口径: 送达率/合规/开信率痛点)",
       "Hero核心数据栏4条(按文档口径, 见spec §1处理: 模板库/合规配置/开信率送达率/信誉分)",

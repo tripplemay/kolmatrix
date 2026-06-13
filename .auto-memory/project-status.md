@@ -3,10 +3,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-115-landing-conversion-email-positioning BUILDING (0/5) — 落地页折中加装(投放规范对齐: 转化机制+邮件协作定位)
-- 用户给飞书投放规范→缺漏分析(docs/reviews/landing-vs-prd-doc-gap-2026-06-13.md). 折中加装到BL-114. ⚠️文档多处overclaim(1000+模板真27/回复率未实装/一键DKIM实静态/IP非客户), 用户决用文档口径缺失后建+IP按PRD. 真实性处理: IP用'垂类覆盖'框架非客户背书/证言占位/回复率建议只开信率/留痕跟进BL-116
-- F001 转化机制(3字段表单+UTM+埋点+PRD/演示链接, 投放刚需真实) / F002 Hero邮件侧重+数据栏 / F003 痛点+邮件中心演示(重加回BL-114删的) / F004 信任真实框架+邮件FAQ+SEO / F005 Codex. 守perf99/a11y
-- ⚠️⚠️ **交付节奏(用户2026-06-14硬要求, 吸取BL-114返工教训): 每个 generator feature 完成→部署staging→STOP等用户确认效果通过→才放行下一个**. 一次只做一个, 不批量. 下一步 Generator 先做一个feature(建议Hero F002定方向 或 F001转化机制)→上staging→用户确认
+## 🚧 BL-115-landing-conversion-email-positioning BUILDING (1/5) — 落地页折中加装(投放规范对齐) ⏸️ F002 staging 检查点
+- ⏸️ **F002 done + staging @ 9196ba7(healthy) — 待用户确认 Hero 邮件协作方向**. Hero 转'游戏 KOL 邮件协作中心'定位(渐变'邮件协作中心'+送达率/合规/开信率痛点副标)+ 4 条数据栏(1000+模板/DKIM·SPF·DMARC合规/开信率·送达率/98%信誉分), 视觉 Neural Velocity 不变. 真实性: 1000+用文档口径(真27待建)/**追踪不提回复率(repliedAt从不写)**/信誉分诚实/不编300%. 用户走查 https://staging.kol.guangai.ai/en
+- ⚠️⚠️ **交付节奏(用户2026-06-14硬要求): 每 generator feature 完成→staging→STOP等用户确认→Planner放行下一个**. 一次一个不批量. 剩 F001 转化机制(3字段表单+UTM+埋点+PRD链接, 最高价值真实) / F003 痛点+邮件中心演示(重加回BL-114删的) / F004 信任真实框架+邮件FAQ+SEO / F005 Codex
+- ⚠️文档多处overclaim(1000+模板真27/回复率未实装BL-101/一键DKIM实静态/98%硬编码/IP非客户), 用户决用文档口径缺失后建. 真实性铁律: IP用'垂类覆盖'非客户背书/证言占位/PRD链接部署前确认. 缺漏分析 docs/reviews/landing-vs-prd-doc-gap-2026-06-13.md
 ## ✅ BL-114-landing-redesign DONE (F001-F004 done, F005 Codex 用户授权免除, closure @ docs/test-reports/BL-114-closure-2026-06-13.md) — 落地页照 Stitch 原型重做
 - 全页照 Stitch 原型(Neural Velocity)重做: Hero(渐变标题/光晕/dashboard预览)+Bento4卡+HowItWorks+Stats+FAQ+收尾CTA+结构重组(去PainPoints/BeforeAfter/EmailCenterDemo)+清7插画(留hero). **用户手工验收staging视觉通过**+main CI全绿(run 27464021808)+staging@50f0180. baseline经 update-visual-baselines workflow Linux重拍
 - ⚠️ soft-watch(F005免除未显式验): Lighthouse perf99/WCAG AA/reduced-motion(BL-080硬约束, 风险低, 建议prod前后抽查). 主观项用户可微调: eyebrow/logo占位/stats数字
