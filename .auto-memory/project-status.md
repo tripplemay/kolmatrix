@@ -3,9 +3,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-115-landing-conversion-email-positioning BUILDING (1/5) — 落地页折中加装(投放规范对齐) ⏸️ F002 staging 检查点
-- ⏸️ **F002 done + staging @ 9196ba7(healthy) — 待用户确认 Hero 邮件协作方向**. Hero 转'游戏 KOL 邮件协作中心'定位(渐变'邮件协作中心'+送达率/合规/开信率痛点副标)+ 4 条数据栏(1000+模板/DKIM·SPF·DMARC合规/开信率·送达率/98%信誉分), 视觉 Neural Velocity 不变. 真实性: 1000+用文档口径(真27待建)/**追踪不提回复率(repliedAt从不写)**/信誉分诚实/不编300%. 用户走查 https://staging.kol.guangai.ai/en
-- ⚠️⚠️ **交付节奏(用户2026-06-14硬要求): 每 generator feature 完成→staging→STOP等用户确认→Planner放行下一个**. 一次一个不批量. 剩 F001 转化机制(3字段表单+UTM+埋点+PRD链接, 最高价值真实) / F003 痛点+邮件中心演示(重加回BL-114删的) / F004 信任真实框架+邮件FAQ+SEO / F005 Codex
+## 🚧 BL-115-landing-conversion-email-positioning BUILDING (2/5) — 落地页折中加装(投放规范对齐) ⏸️ F001 staging 检查点
+- ⏸️ **F001 done(转化机制)+ staging @ 9b84d5f(healthy, migration applied) — 待用户确认转化效果**. 用户确认架构: 新 lead 表/落地页模态/PRD占位. 交付: 新建 lead 表(匿名无RLS+UTM, migration 已上 staging) + submitLead action; TrialLeadCta 模态(Hero+Footer 主CTA'立即申请试用'弹3字段表单) + UTM 捕获(cookie持久) + 埋点 LandingAnalytics+/api/landing-event→event_log + 副CTA PRD(kol.saga1001.com/prd ⚠️待确认)+底部演示(request-access?demo=1). staging 实证: 埋点 event_log 落 landing.cta_click + lead 表 0 行可查. 用户走查 https://staging.kol.guangai.ai/en (点'立即申请试用'测模态)
+- ✅ F002 done @ 9196ba7: Hero 邮件协作中心定位 + 4 数据栏(回复率穿帮已避, 用户已确认方向)
+- ⚠️⚠️ **交付节奏(用户2026-06-14硬要求): 每 generator feature 完成→staging→STOP等用户确认→Planner放行下一个**. 一次一个不批量. 剩 F003 痛点+邮件中心演示(重加回BL-114删的) / F004 信任真实框架+邮件FAQ+SEO / F005 Codex
 - ⚠️文档多处overclaim(1000+模板真27/回复率未实装BL-101/一键DKIM实静态/98%硬编码/IP非客户), 用户决用文档口径缺失后建. 真实性铁律: IP用'垂类覆盖'非客户背书/证言占位/PRD链接部署前确认. 缺漏分析 docs/reviews/landing-vs-prd-doc-gap-2026-06-13.md
 ## ✅ BL-114-landing-redesign DONE (F001-F004 done, F005 Codex 用户授权免除, closure @ docs/test-reports/BL-114-closure-2026-06-13.md) — 落地页照 Stitch 原型重做
 - 全页照 Stitch 原型(Neural Velocity)重做: Hero(渐变标题/光晕/dashboard预览)+Bento4卡+HowItWorks+Stats+FAQ+收尾CTA+结构重组(去PainPoints/BeforeAfter/EmailCenterDemo)+清7插画(留hero). **用户手工验收staging视觉通过**+main CI全绿(run 27464021808)+staging@50f0180. baseline经 update-visual-baselines workflow Linux重拍

@@ -5,7 +5,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "3字段试用表单(姓名/公司邮箱/所属游戏工作室)→server action落leads(新表或复用request-access)+校验+成功态; 主CTA'立即申请试用'触发(模态或Hero内嵌)",
       "UTM捕获: URL query(utm_source/medium/campaign)存入lead+cookie分渠道归因",
