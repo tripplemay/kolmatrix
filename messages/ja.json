@@ -2190,8 +2190,8 @@
       "title_line1": "ゲーム KOL マーケティングの",
       "title_line2": "メール協働ハブ",
       "subtitle": "送達率の低さ、コンプライアンスリスク、分散したアウトリーチ —— KolMatrix はゲーム KOL メールを一つの協働センターに集約。DKIM/SPF/DMARC 対応、送達管理、開封率のリアルタイム追跡。",
-      "ctaPrimary": "無料で始める",
-      "ctaSecondary": "1:1 デモ予約",
+      "ctaPrimary": "無料トライアルを申請",
+      "ctaSecondary": "PRD 全文を見る",
       "videoAlt": "KolMatrix プロダクトデモループ",
       "videoFallbackHint": "(アニメーションは利用できません。静止画を表示中)",
       "illustrationAlt": "KolMatrix 統合ワークスペース — KOL 発見、AI レコメンド、キャンペーン分析",
@@ -2266,8 +2266,8 @@
     "footerCta": {
       "sectionTitle": "ゲームをリードする準備はできていますか？",
       "subtitle": "世界で最も革新的なゲームスタジオに加わり、グローバル KOL マーケティングをスケールさせましょう。",
-      "ctaPrimary": "今すぐ参加",
-      "ctaSecondary": "営業に問い合わせ",
+      "ctaPrimary": "無料トライアルを申請",
+      "ctaSecondary": "1:1 デモを予約",
       "footerLine": "© 2026 KOLMatrix · グローバルゲーム KOL マーケティング SaaS"
     },
     "nav": {
@@ -2304,6 +2304,19 @@
           "label": "ROI を正確に計測"
         }
       }
+    },
+    "trial": {
+      "title": "無料トライアルを申請",
+      "subtitle": "情報をご記入ください。折り返しセットアップいたします。",
+      "name": "お名前",
+      "email": "会社メールアドレス",
+      "studio": "所属ゲームスタジオ",
+      "submit": "申請する",
+      "submitting": "送信中…",
+      "success": "受け付けました！トライアル開通のためご連絡します。",
+      "errorInvalid": "入力内容をご確認ください。",
+      "errorEmail": "有効な会社メールアドレスを入力してください。",
+      "errorGeneric": "送信に失敗しました。後でもう一度お試しください。"
     }
   }
 }

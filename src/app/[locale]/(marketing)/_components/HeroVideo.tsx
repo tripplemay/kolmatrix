@@ -1,10 +1,8 @@
 import Image from "next/image";
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
-interface Props {
-  locale: string;
-}
+import { PRD_DOC_URL } from "./landing-links";
+import { TrialLeadCta } from "./TrialLeadCta";
 
 /**
  * BL-114-F001 (redo) — Hero on the Stitch "Neural Velocity" prototype.
@@ -31,12 +29,13 @@ const HERO_STATS: ReadonlyArray<{
   { key: "reputation", value: "98%" },
 ];
 
-export async function HeroVideo({ locale }: Props) {
+export async function HeroVideo() {
   const t = await getTranslations("landing.hero");
 
   return (
     <section
       data-testid="landing-hero"
+      data-analytics-section="hero"
       className="relative overflow-hidden bg-navy-base px-6 pt-36 pb-24 text-center lg:px-8 lg:pt-48"
     >
       {/* Ambient glow blobs — decorative, behind content (照原型 body blobs) */}
@@ -62,20 +61,23 @@ export async function HeroVideo({ locale }: Props) {
         </p>
 
         <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link
-            href={`/${locale}/request-access`}
+          {/* BL-115-F001 — primary CTA opens the in-page 3-field trial modal. */}
+          <TrialLeadCta
+            ctaId="hero"
+            label={t("ctaPrimary")}
             className="landing-cta-primary inline-flex w-full items-center justify-center rounded-md px-8 py-4 text-base font-bold sm:w-auto"
-            data-testid="landing-cta-primary"
-          >
-            {t("ctaPrimary")}
-          </Link>
-          <Link
-            href={`/${locale}/request-access?demo=1`}
+          />
+          {/* Secondary CTA → full PRD doc (external; ⚠️ confirm link before prod). */}
+          <a
+            href={PRD_DOC_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-analytics-cta="prd-hero"
+            data-testid="landing-cta-prd"
             className="inline-flex w-full items-center justify-center rounded-md bg-surface-high px-8 py-4 text-base font-bold text-white transition-colors duration-[var(--duration-landing-short)] hover:bg-surface-highest sm:w-auto"
-            data-testid="landing-cta-secondary"
           >
             {t("ctaSecondary")}
-          </Link>
+          </a>
         </div>
 
         {/* BL-115-F002 — email-collaboration data bar (4 highlights). See the

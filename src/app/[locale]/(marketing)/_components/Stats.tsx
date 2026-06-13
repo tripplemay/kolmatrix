@@ -22,6 +22,7 @@ export async function Stats() {
   return (
     <section
       data-testid="landing-stats"
+      data-analytics-section="stats"
       className="bg-navy-base px-6 py-24 lg:px-8 lg:py-32"
     >
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 text-center md:grid-cols-3 md:text-left">

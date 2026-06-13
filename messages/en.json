@@ -2189,8 +2189,8 @@
       "title_line1": "Global game KOL marketing,",
       "title_line2": "one email collaboration hub",
       "subtitle": "Low deliverability, compliance risk, scattered outreach — KolMatrix unifies game KOL email with DKIM/SPF/DMARC compliance, deliverability management, and real-time open-rate tracking.",
-      "ctaPrimary": "Start free",
-      "ctaSecondary": "Book a demo",
+      "ctaPrimary": "Start free trial",
+      "ctaSecondary": "View full PRD",
       "videoAlt": "KolMatrix product demo loop",
       "videoFallbackHint": "(Animation unavailable; showing still image)",
       "illustrationAlt": "KolMatrix unified workspace — KOL discovery, AI recommendations, and campaign analytics",
@@ -2265,8 +2265,8 @@
     "footerCta": {
       "sectionTitle": "Ready to lead the game?",
       "subtitle": "Join the world's most innovative game studios and start scaling your global KOL marketing.",
-      "ctaPrimary": "Join the Matrix",
-      "ctaSecondary": "Contact sales",
+      "ctaPrimary": "Start free trial",
+      "ctaSecondary": "Book a 1:1 demo",
       "footerLine": "© 2026 KOLMatrix · Global Game KOL Marketing SaaS"
     },
     "nav": {
@@ -2303,6 +2303,19 @@
           "label": "ROI Tracked Accurately"
         }
       }
+    },
+    "trial": {
+      "title": "Start your free trial",
+      "subtitle": "Leave your details and we'll set you up shortly.",
+      "name": "Name",
+      "email": "Company email",
+      "studio": "Game studio",
+      "submit": "Submit request",
+      "submitting": "Submitting…",
+      "success": "Got it! We'll reach out to set up your trial shortly.",
+      "errorInvalid": "Please check the highlighted fields.",
+      "errorEmail": "Enter a valid company email.",
+      "errorGeneric": "Something went wrong. Please try again."
     }
   }
 }

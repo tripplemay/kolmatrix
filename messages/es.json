@@ -2190,8 +2190,8 @@
       "title_line1": "Marketing global de KOLs de gaming,",
       "title_line2": "un hub de colaboración de email",
       "subtitle": "¿Baja entregabilidad, riesgo de cumplimiento, alcance disperso? KolMatrix unifica el email de KOLs de gaming con cumplimiento DKIM/SPF/DMARC, gestión de entregabilidad y seguimiento de tasa de apertura en tiempo real.",
-      "ctaPrimary": "Empezar gratis",
-      "ctaSecondary": "Reservar demo 1:1",
+      "ctaPrimary": "Prueba gratuita",
+      "ctaSecondary": "Ver PRD completo",
       "videoAlt": "Demostración del producto KolMatrix en bucle",
       "videoFallbackHint": "(Animación no disponible; mostrando imagen estática)",
       "illustrationAlt": "Espacio de trabajo unificado de KolMatrix: descubrimiento de KOL, recomendaciones con IA y analítica de campañas",
@@ -2266,8 +2266,8 @@
     "footerCta": {
       "sectionTitle": "¿Listo para liderar el juego?",
       "subtitle": "Únete a los estudios de videojuegos más innovadores del mundo y empieza a escalar tu marketing global de KOLs.",
-      "ctaPrimary": "Únete ahora",
-      "ctaSecondary": "Contactar ventas",
+      "ctaPrimary": "Prueba gratuita",
+      "ctaSecondary": "Reservar demo 1:1",
       "footerLine": "© 2026 KOLMatrix · SaaS de marketing global de KOL para juegos"
     },
     "nav": {
@@ -2304,6 +2304,19 @@
           "label": "ROI medido con precisión"
         }
       }
+    },
+    "trial": {
+      "title": "Solicita tu prueba gratuita",
+      "subtitle": "Déjanos tus datos y te daremos acceso en breve.",
+      "name": "Nombre",
+      "email": "Email corporativo",
+      "studio": "Estudio de videojuegos",
+      "submit": "Enviar solicitud",
+      "submitting": "Enviando…",
+      "success": "¡Recibido! Te contactaremos para activar tu prueba en breve.",
+      "errorInvalid": "Revisa los campos marcados.",
+      "errorEmail": "Introduce un email corporativo válido.",
+      "errorGeneric": "Algo salió mal. Inténtalo de nuevo."
     }
   }
 }

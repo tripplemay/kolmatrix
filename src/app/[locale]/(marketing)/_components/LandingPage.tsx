@@ -1,5 +1,6 @@
 import { TopNav } from "./TopNav";
 import { HeroVideo } from "./HeroVideo";
+import { LandingAnalytics } from "./LandingAnalytics";
 import { TrustPlaceholder } from "./TrustPlaceholder";
 import { Features } from "./Features";
 import { HowItWorks } from "./HowItWorks";
@@ -27,8 +28,9 @@ export function LandingPage({ locale }: Props) {
       data-landing-cinematic
       data-locale={locale}
     >
+      <LandingAnalytics />
       <TopNav locale={locale} />
-      <HeroVideo locale={locale} />
+      <HeroVideo />
       <TrustPlaceholder />
       <Features />
       <HowItWorks />

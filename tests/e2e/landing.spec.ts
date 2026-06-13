@@ -24,31 +24,39 @@ test.describe("Anonymous root path", () => {
     await expect(page.getByTestId("landing-hero")).toBeVisible();
   });
 
-  // BL-114-F001 (redo, 照 Stitch 原型) — Hero restores the dashboard preview
-  // (hero-illustration.png) below the CTAs per the Neural Velocity prototype.
-  test("hero section renders text content + dashboard preview illustration", async ({ page }) => {
+  // BL-114-F001 (redo) — Hero dashboard preview. BL-115-F001 — primary CTA is
+  // the in-page trial modal trigger; secondary is the external PRD link.
+  test("hero section renders text content + dashboard preview + CTAs", async ({ page }) => {
     await page.goto("/zh");
     const hero = page.getByTestId("landing-hero");
     await expect(hero).toBeVisible();
-    // Dashboard preview illustration is present (restored in BL-114-F001 redo).
     await expect(hero.getByTestId("landing-hero-illustration")).toBeVisible();
-    // CTAs are present.
-    await expect(page.getByTestId("landing-cta-primary")).toBeVisible();
-    await expect(page.getByTestId("landing-cta-secondary")).toBeVisible();
+    await expect(page.getByTestId("trial-cta-hero")).toBeVisible();
+    await expect(page.getByTestId("landing-cta-prd")).toBeVisible();
   });
 });
 
-test.describe("Landing CTAs", () => {
-  test("Hero primary CTA goes to /request-access", async ({ page }) => {
+test.describe("Landing CTAs (BL-115-F001 conversion)", () => {
+  test("Hero primary CTA opens the in-page trial modal", async ({ page }) => {
     await page.goto("/zh");
-    await page.getByTestId("landing-cta-primary").click();
-    await expect(page).toHaveURL(/\/zh\/request-access$/);
+    await page.getByTestId("trial-cta-hero").click();
+    await expect(page.getByTestId("trial-lead-modal")).toBeVisible();
+    await expect(page.getByTestId("trial-field-email")).toBeVisible();
   });
 
-  test("Hero secondary CTA goes to /request-access?demo=1 with wantsDemo pre-checked", async ({ page }) => {
+  test("trial modal submits the 3-field lead form", async ({ page }) => {
+    await page.goto("/zh?utm_source=playwright&utm_campaign=e2e");
+    await page.getByTestId("trial-cta-hero").click();
+    await page.getByTestId("trial-field-name").fill("E2E Tester");
+    await page.getByTestId("trial-field-email").fill("e2e@studio.example");
+    await page.getByTestId("trial-field-studio").fill("Example Game Studio");
+    await page.getByTestId("trial-submit").click();
+    await expect(page.getByTestId("trial-lead-success")).toBeVisible();
+  });
+
+  test("Hero secondary CTA links to the PRD doc", async ({ page }) => {
     await page.goto("/zh");
-    await page.getByTestId("landing-cta-secondary").click();
-    await expect(page).toHaveURL(/\/zh\/request-access\?demo=1$/);
-    await expect(page.getByTestId("request-access-wants-demo")).toBeChecked();
+    const prd = page.getByTestId("landing-cta-prd");
+    await expect(prd).toHaveAttribute("href", /saga1001\.com\/prd/);
   });
 });

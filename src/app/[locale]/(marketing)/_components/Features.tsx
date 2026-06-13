@@ -30,6 +30,7 @@ export async function Features() {
   return (
     <section
       data-testid="landing-features"
+      data-analytics-section="features"
       className="bg-navy-base px-6 py-24 lg:px-8 lg:py-32"
     >
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">

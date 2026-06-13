@@ -1,15 +1,16 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
+import { TrialLeadCta } from "./TrialLeadCta";
+
 interface Props {
   locale: string;
 }
 
 /**
- * BL-114-F003 — Closing CTA panel, built to the Stitch "Neural Velocity"
- * prototype: a glass-surface panel with an ambient cyan glow, gradient
- * primary CTA + text secondary, followed by a muted copyright line. CTA
- * destinations keep the real request-access routes.
+ * BL-114-F003 — Closing CTA panel (Stitch "Neural Velocity" prototype).
+ * BL-115-F001 — primary CTA now opens the in-page trial modal; secondary
+ * books a 1:1 demo via the real request-access?demo=1 flow.
  */
 export async function FooterCTA({ locale }: Props) {
   const t = await getTranslations("landing.footerCta");
@@ -17,6 +18,7 @@ export async function FooterCTA({ locale }: Props) {
   return (
     <section
       data-testid="landing-footer-cta"
+      data-analytics-section="cta"
       className="bg-navy-base px-6 py-24 lg:px-8 lg:py-32"
     >
       <div className="relative mx-auto max-w-5xl overflow-hidden rounded-[24px] bg-surface-high p-12 text-center md:p-24">
@@ -32,15 +34,14 @@ export async function FooterCTA({ locale }: Props) {
             {t("subtitle")}
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href={`/${locale}/request-access`}
+            <TrialLeadCta
+              ctaId="footer"
+              label={t("ctaPrimary")}
               className="landing-cta-primary inline-flex items-center justify-center rounded-md px-10 py-5 text-lg font-extrabold"
-              data-testid="landing-footer-cta-primary"
-            >
-              {t("ctaPrimary")}
-            </Link>
+            />
             <Link
               href={`/${locale}/request-access?demo=1`}
+              data-analytics-cta="demo-footer"
               className="inline-flex items-center font-bold text-on-surface transition-colors duration-[var(--duration-landing-short)] hover:text-white"
               data-testid="landing-footer-cta-secondary"
             >

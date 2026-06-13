@@ -2189,8 +2189,8 @@
       "title_line1": "游戏 KOL 营销全流程",
       "title_line2": "邮件协作中心",
       "subtitle": "送达率低？合规风险高？跨平台邮件杂乱？KolMatrix 把游戏 KOL 邮件收拢进一个协作中心 —— DKIM/SPF/DMARC 合规、送达管理与开信率实时追踪。",
-      "ctaPrimary": "免费开始",
-      "ctaSecondary": "预约 1v1 演示",
+      "ctaPrimary": "立即申请试用",
+      "ctaSecondary": "查看完整 PRD 文档",
       "videoAlt": "KolMatrix 产品演示循环",
       "videoFallbackHint": "（动画版本不可用，已显示静态截图）",
       "illustrationAlt": "KolMatrix 一体化工作台 — KOL 发现、AI 推荐与营销数据分析",
@@ -2265,8 +2265,8 @@
     "footerCta": {
       "sectionTitle": "准备好领跑了吗？",
       "subtitle": "加入全球最具创新力的游戏厂商，开始规模化你的全球 KOL 营销。",
-      "ctaPrimary": "立即加入",
-      "ctaSecondary": "联系销售",
+      "ctaPrimary": "立即申请试用",
+      "ctaSecondary": "预约 1v1 产品演示",
       "footerLine": "© 2026 KOLMatrix · 全球游戏 KOL 营销 SaaS"
     },
     "nav": {
@@ -2303,6 +2303,19 @@
           "label": "ROI 精准追踪"
         }
       }
+    },
+    "trial": {
+      "title": "申请免费试用",
+      "subtitle": "留下信息，我们会尽快为你开通试用。",
+      "name": "姓名",
+      "email": "公司邮箱",
+      "studio": "所属游戏工作室",
+      "submit": "提交申请",
+      "submitting": "提交中…",
+      "success": "已收到！我们会尽快联系你开通试用。",
+      "errorInvalid": "请检查表单填写。",
+      "errorEmail": "请输入有效的公司邮箱。",
+      "errorGeneric": "提交失败，请稍后重试。"
     }
   }
 }

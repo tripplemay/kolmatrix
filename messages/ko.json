@@ -2190,8 +2190,8 @@
       "title_line1": "게임 KOL 마케팅을 위한",
       "title_line2": "이메일 협업 허브",
       "subtitle": "낮은 전달률, 컴플라이언스 리스크, 흩어진 아웃리치 —— KolMatrix는 게임 KOL 이메일을 하나의 협업 센터로 통합합니다. DKIM/SPF/DMARC 준수, 전달 관리, 오픈율 실시간 추적.",
-      "ctaPrimary": "무료로 시작하기",
-      "ctaSecondary": "1:1 데모 예약",
+      "ctaPrimary": "무료 체험 신청",
+      "ctaSecondary": "전체 PRD 보기",
       "videoAlt": "KolMatrix 제품 데모 루프",
       "videoFallbackHint": "(애니메이션을 사용할 수 없어 정지 이미지를 표시합니다)",
       "illustrationAlt": "KolMatrix 통합 워크스페이스 — KOL 발굴, AI 추천, 캠페인 분석",
@@ -2266,8 +2266,8 @@
     "footerCta": {
       "sectionTitle": "게임을 선도할 준비가 되셨나요?",
       "subtitle": "세계에서 가장 혁신적인 게임 스튜디오와 함께 글로벌 KOL 마케팅을 확장하세요.",
-      "ctaPrimary": "지금 시작하기",
-      "ctaSecondary": "영업팀 문의",
+      "ctaPrimary": "무료 체험 신청",
+      "ctaSecondary": "1:1 데모 예약",
       "footerLine": "© 2026 KOLMatrix · 글로벌 게임 KOL 마케팅 SaaS"
     },
     "nav": {
@@ -2304,6 +2304,19 @@
           "label": "정확한 ROI 추적"
         }
       }
+    },
+    "trial": {
+      "title": "무료 체험 신청",
+      "subtitle": "정보를 남겨 주시면 곧 설정해 드리겠습니다.",
+      "name": "이름",
+      "email": "회사 이메일",
+      "studio": "소속 게임 스튜디오",
+      "submit": "신청하기",
+      "submitting": "제출 중…",
+      "success": "접수되었습니다! 체험 개설을 위해 곧 연락드리겠습니다.",
+      "errorInvalid": "입력 내용을 확인해 주세요.",
+      "errorEmail": "유효한 회사 이메일을 입력해 주세요.",
+      "errorGeneric": "제출에 실패했습니다. 잠시 후 다시 시도해 주세요."
     }
   }
 }

@@ -495,6 +495,35 @@ model AccessRequest {
 }
 
 // ============================================================
+//  Leads (BL-115-F001)
+//
+//  Lightweight ad-funnel trial-request intake from the marketing landing
+//  page: a 3-field form (name / company email / game studio) + UTM
+//  attribution. Like AccessRequest, rows are anonymous public intake
+//  created before any tenant/user exists — NOT tenant-scoped, no RLS;
+//  reads are gated in application code (platform-admin / marketing).
+// ============================================================
+
+model Lead {
+  id          String   @id @default(cuid())
+  name        String   @db.VarChar(128)
+  email       String   @db.VarChar(320)
+  studio      String   @db.VarChar(160)
+  utmSource   String?  @map("utm_source") @db.VarChar(128)
+  utmMedium   String?  @map("utm_medium") @db.VarChar(128)
+  utmCampaign String?  @map("utm_campaign") @db.VarChar(128)
+  utmTerm     String?  @map("utm_term") @db.VarChar(128)
+  utmContent  String?  @map("utm_content") @db.VarChar(128)
+  referrer    String?  @db.Text
+  landingPath String?  @map("landing_path") @db.VarChar(512)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([email])
+  @@map("lead")
+}
+
+// ============================================================
 //  Products (BM1-F001)
 //
 //  Game products that tenants register in the Knowledge Base. Tenant-
