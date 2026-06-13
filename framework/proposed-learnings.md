@@ -297,3 +297,17 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 **建议写入**：`framework/harness/generator.md` §"切 verifying 前" 或 §14 邻近补「新建 route segment 文件 feature 的 commit 前 `npm run build` 自检铁律 + Next page 文件合法 export 白名单」；与 §14.2（'use server' 非 async export）合并为「Next 构建期约束（tsc/lint 漏报）」一节。
 
 **状态：** ✅ 2026-06-12 用户 ack，已沉淀入 `framework/harness/generator.md §14.4`（新建/改 route segment 文件 feature commit 前必跑 `npm run build` 铁律 + page 文件合法 export 白名单），并在 §14.2 头加「Next 构建期约束（tsc/lint 漏报）」共性框统辖 §14.2+§14.4
+
+---
+
+## [2026-06-13] Claude CLI — 来源：BL-114 落地页视觉重做（F001/F004）
+
+**类型：** 新坑 / 铁律补充
+
+**内容：** 视觉重做类批次踩的两个非显性坑，建议沉淀进 `generator.md`：
+1. **改全局 Tailwind `@theme` font/color token 前必须先 grep app 端用量。** BL-114-F001 为 landing 接 JetBrains Mono 时直接覆写全局 `--font-mono`，误改了 app 端 `font-mono`（reach 模板编辑器/kolId chip 等 7 处），CI 实测 `en-reach-templates.png` 视觉回归。修法：landing 专用 token（`--font-landing-mono` → `font-landing-mono` utility），不动全局。规律：globals.css `@theme` 里的 token 是全仓共享，landing 专属视觉应走 landing 前缀 token/utility，改既有全局 token 前 `grep -rn "font-mono\|<token>" src/app/.../(app)` 评估爆炸半径。
+2. **visual baseline 重拍走 `update-visual-baselines.yml` workflow，且 bot-commit 不级联 CI 须手动触发。** macOS/WSL 本机无法生成 Linux-canonical 基线；sanctioned 路径是 `gh workflow run update-visual-baselines.yml`（Linux runner `--update-snapshots` + 自动 bot-commit 只改变更的 `*.png`）。关键：bot-commit 用默认 `GITHUB_TOKEN` **不会级联触发 ci.yml**（GitHub 防递归），必须 `gh workflow run ci.yml --ref main` 手动触发那一次校验 run 才能确认 E2E 视觉对齐新基线。视觉重做批次 F001-F03 期间 landing-*.png 基线红是预期，到 cleanup 批次（本批 F004）末尾一次性重拍。
+
+**建议写入：** `framework/harness/generator.md` §15（Perf/image 邻近）或新 §"视觉重做批次"：1=全局 token 爆炸半径自检；2=baseline 重拍 workflow + bot-commit 手动触发 ci 流程（与 `deploy-patterns.md` bot commit cascade 节交叉引用）。
+
+**状态：** 待确认
