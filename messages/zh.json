@@ -2316,6 +2316,51 @@
       "errorInvalid": "请检查表单填写。",
       "errorEmail": "请输入有效的公司邮箱。",
       "errorGeneric": "提交失败，请稍后重试。"
+    },
+    "painPoints": {
+      "title": "游戏 KOL 邮件，正在拖慢你的出海",
+      "subtitle": "出海团队规模化之前，几乎都会撞上这四个邮件协作痛点。",
+      "items": {
+        "scattered": {
+          "title": "跨平台邮件杂乱",
+          "body": "Gmail、Outlook、各种表格之间来回切，模板不统一、版本混乱。"
+        },
+        "deliverability": {
+          "title": "送达率低、进收件箱难",
+          "body": "没有 DKIM/SPF/DMARC，邮件进垃圾箱，开信率上不去，也分不清是合规还是内容问题。"
+        },
+        "tracking": {
+          "title": "无法追踪邮件状态",
+          "body": "发出去就石沉大海，不知道谁送达、谁打开，没法系统跟进。"
+        },
+        "compliance": {
+          "title": "游戏 IP 合规风险",
+          "body": "游戏 IP 邮件缺少合规校验，品牌词、商标使用稍有不慎就有风险。"
+        }
+      }
+    },
+    "demo": {
+      "title": "一个邮件协作中心，从模板到送达到追踪",
+      "subtitle": "复用真实的邮件中心界面，看看 KolMatrix 怎么管游戏 KOL 邮件。",
+      "health": {
+        "title": "发件域健康",
+        "status": "健康",
+        "configured": "已配置",
+        "validated": "已验证",
+        "enforced": "已启用",
+        "reputation": "送达信誉分",
+        "note": "发件域 DKIM/SPF/DMARC 已校验，送达信誉分持续监控。"
+      },
+      "sends": {
+        "title": "最近发送",
+        "statusDelivered": "已送达",
+        "statusOpened": "已打开",
+        "note": "实时追踪每封邮件的送达与开信状态，系统化跟进。"
+      },
+      "templates": {
+        "title": "游戏垂类模板库",
+        "note": "按游戏品类与合作阶段筛选，几秒套用一套合规邮件模板。"
+      }
     }
   }
 }

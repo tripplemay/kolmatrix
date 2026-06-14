@@ -17,7 +17,9 @@ describe("BL-114-F003 LandingPage structure (照 Stitch 原型)", () => {
       "<TopNav",
       "<HeroVideo",
       "<TrustPlaceholder",
+      "<PainPoints",
       "<Features",
+      "<EmailCenterDemo",
       "<HowItWorks",
       "<Stats",
       "<FAQ",
@@ -32,10 +34,11 @@ describe("BL-114-F003 LandingPage structure (照 Stitch 原型)", () => {
     }
   });
 
-  it("drops the legacy sections absent from the prototype", () => {
-    // Check for real import + JSX mount (the docstring may still name them
-    // while explaining the removal).
-    for (const gone of ["PainPoints", "BeforeAfter", "EmailCenterDemo", "SectionTransition"]) {
+  it("drops the sections absent from the prototype (BeforeAfter / SectionTransition)", () => {
+    // BL-115-F003 re-added the email-focused PainPoints + EmailCenterDemo, so
+    // only BeforeAfter + SectionTransition stay gone. Check real import + mount
+    // (the docstring may still name them while explaining the history).
+    for (const gone of ["BeforeAfter", "SectionTransition"]) {
       expect(SRC, `<${gone}> should be unmounted`).not.toContain(`<${gone}`);
       expect(SRC, `${gone} should not be imported`).not.toMatch(
         new RegExp(`import\\s+\\{[^}]*\\b${gone}\\b`)

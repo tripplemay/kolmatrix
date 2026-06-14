@@ -2317,6 +2317,51 @@
       "errorInvalid": "Revisa los campos marcados.",
       "errorEmail": "Introduce un email corporativo válido.",
       "errorGeneric": "Algo salió mal. Inténtalo de nuevo."
+    },
+    "painPoints": {
+      "title": "El email de KOLs de gaming frena tu lanzamiento",
+      "subtitle": "Los cuatro problemas de colaboración por email que todo estudio encuentra antes de escalar.",
+      "items": {
+        "scattered": {
+          "title": "Email disperso entre plataformas",
+          "body": "Saltando entre Gmail, Outlook y hojas de cálculo: plantillas inconsistentes y caos de versiones."
+        },
+        "deliverability": {
+          "title": "Baja entregabilidad",
+          "body": "Sin DKIM/SPF/DMARC el correo cae en spam; la tasa de apertura se estanca y no sabes si es cumplimiento o contenido."
+        },
+        "tracking": {
+          "title": "Sin seguimiento de estado",
+          "body": "Enviado y olvidado: sin visibilidad de quién recibió o abrió, sin seguimiento sistemático."
+        },
+        "compliance": {
+          "title": "Riesgo de cumplimiento con IP de juegos",
+          "body": "Los emails con IP de juegos no tienen verificación de cumplimiento; el uso de marca conlleva riesgo real."
+        }
+      }
+    },
+    "demo": {
+      "title": "Un hub de email: de la plantilla a la entrega y el seguimiento",
+      "subtitle": "Un vistazo al centro de email real detrás de KolMatrix.",
+      "health": {
+        "title": "Salud del dominio",
+        "status": "Saludable",
+        "configured": "Configurado",
+        "validated": "Validado",
+        "enforced": "Aplicado",
+        "reputation": "Reputación del remitente",
+        "note": "Dominio de envío con DKIM/SPF/DMARC verificados; reputación monitorizada de forma continua."
+      },
+      "sends": {
+        "title": "Envíos recientes",
+        "statusDelivered": "Entregado",
+        "statusOpened": "Abierto",
+        "note": "Sigue el estado de entrega y apertura de cada email, con seguimiento sistemático."
+      },
+      "templates": {
+        "title": "Plantillas por vertical de juego",
+        "note": "Filtra por género y fase de colaboración y aplica una plantilla conforme en segundos."
+      }
     }
   }
 }

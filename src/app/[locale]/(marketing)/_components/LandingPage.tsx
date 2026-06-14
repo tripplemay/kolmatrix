@@ -2,7 +2,9 @@ import { TopNav } from "./TopNav";
 import { HeroVideo } from "./HeroVideo";
 import { LandingAnalytics } from "./LandingAnalytics";
 import { TrustPlaceholder } from "./TrustPlaceholder";
+import { PainPoints } from "./PainPoints";
 import { Features } from "./Features";
+import { EmailCenterDemo } from "./EmailCenterDemo";
 import { HowItWorks } from "./HowItWorks";
 import { Stats } from "./Stats";
 import { FAQ } from "./FAQ";
@@ -13,12 +15,12 @@ interface Props {
 }
 
 /**
- * BL-114-F003 — section order recomposed to the Stitch "Neural Velocity"
- * prototype: Hero → logo strip → bento → how-it-works → stats → FAQ →
- * closing CTA, all on a single dark navy-base canvas (no light sections, no
- * dark↔light SectionTransition seams). The legacy PainPoints / BeforeAfter /
- * EmailCenterDemo sections (absent from the prototype) are unmounted here;
- * their files + now-unused helpers are deleted in F004.
+ * BL-114-F003 — single dark navy-base canvas (no light sections / no
+ * SectionTransition seams). BL-115-F001 — LandingAnalytics + trial CTAs.
+ * BL-115-F003 — re-adds the email-focused PainPoints + EmailCenterDemo per
+ * the placement doc, ordered: Hero → logo strip → pain points → capability
+ * bento → email-center demo → how-it-works → stats → FAQ → closing CTA.
+ * (BeforeAfter + SectionTransition stay deleted — absent from the prototype.)
  */
 export function LandingPage({ locale }: Props) {
   return (
@@ -32,7 +34,9 @@ export function LandingPage({ locale }: Props) {
       <TopNav locale={locale} />
       <HeroVideo />
       <TrustPlaceholder />
+      <PainPoints />
       <Features />
+      <EmailCenterDemo />
       <HowItWorks />
       <Stats />
       <FAQ />

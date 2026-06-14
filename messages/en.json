@@ -2316,6 +2316,51 @@
       "errorInvalid": "Please check the highlighted fields.",
       "errorEmail": "Enter a valid company email.",
       "errorGeneric": "Something went wrong. Please try again."
+    },
+    "painPoints": {
+      "title": "Game KOL email is slowing your launch",
+      "subtitle": "The four email-collaboration pains every studio hits before they scale.",
+      "items": {
+        "scattered": {
+          "title": "Scattered cross-platform email",
+          "body": "Juggling Gmail, Outlook and spreadsheets — inconsistent templates and version chaos."
+        },
+        "deliverability": {
+          "title": "Low deliverability",
+          "body": "Without DKIM/SPF/DMARC, mail lands in spam — open rates stall and you can't tell if it's compliance or content."
+        },
+        "tracking": {
+          "title": "No status tracking",
+          "body": "Sent and forgotten — no view of who received or opened, no systematic follow-up."
+        },
+        "compliance": {
+          "title": "Game-IP compliance risk",
+          "body": "Game-IP emails lack compliance checks — brand and trademark use carry real risk."
+        }
+      }
+    },
+    "demo": {
+      "title": "One email hub — template to delivery to tracking",
+      "subtitle": "A look at the real email center behind KolMatrix.",
+      "health": {
+        "title": "Domain health",
+        "status": "Healthy",
+        "configured": "Configured",
+        "validated": "Validated",
+        "enforced": "Enforced",
+        "reputation": "Sender reputation",
+        "note": "Sending domain DKIM/SPF/DMARC verified; sender reputation monitored continuously."
+      },
+      "sends": {
+        "title": "Recent sends",
+        "statusDelivered": "Delivered",
+        "statusOpened": "Opened",
+        "note": "Track delivery and open status for every email, with systematic follow-up."
+      },
+      "templates": {
+        "title": "Game-vertical templates",
+        "note": "Filter by game genre and collaboration stage, then apply a compliant email template in seconds."
+      }
     }
   }
 }

@@ -2317,6 +2317,51 @@
       "errorInvalid": "입력 내용을 확인해 주세요.",
       "errorEmail": "유효한 회사 이메일을 입력해 주세요.",
       "errorGeneric": "제출에 실패했습니다. 잠시 후 다시 시도해 주세요."
+    },
+    "painPoints": {
+      "title": "게임 KOL 이메일이 글로벌 출시를 늦추고 있습니다",
+      "subtitle": "스케일 전 거의 모든 스튜디오가 부딪히는 4가지 이메일 협업 문제.",
+      "items": {
+        "scattered": {
+          "title": "흩어진 크로스플랫폼 이메일",
+          "body": "Gmail, Outlook, 각종 스프레드시트를 오가며 템플릿과 버전이 제각각."
+        },
+        "deliverability": {
+          "title": "낮은 전달률",
+          "body": "DKIM/SPF/DMARC가 없으면 스팸으로. 오픈율이 정체되고 원인이 컴플라이언스인지 콘텐츠인지 알 수 없습니다."
+        },
+        "tracking": {
+          "title": "상태 추적 불가",
+          "body": "보내면 끝. 누가 받고 열었는지 알 수 없어 체계적 후속이 어렵습니다."
+        },
+        "compliance": {
+          "title": "게임 IP 컴플라이언스 리스크",
+          "body": "게임 IP 이메일에 컴플라이언스 점검이 없어 브랜드·상표 사용에 리스크가 있습니다."
+        }
+      }
+    },
+    "demo": {
+      "title": "템플릿에서 전달, 추적까지 하나의 이메일 허브",
+      "subtitle": "실제 이메일 센터 UI로 KolMatrix의 이메일 운영을 살펴보세요.",
+      "health": {
+        "title": "발신 도메인 상태",
+        "status": "정상",
+        "configured": "구성됨",
+        "validated": "검증됨",
+        "enforced": "적용됨",
+        "reputation": "발신자 평판",
+        "note": "발신 도메인 DKIM/SPF/DMARC 검증 완료, 평판을 지속 모니터링."
+      },
+      "sends": {
+        "title": "최근 발송",
+        "statusDelivered": "전달됨",
+        "statusOpened": "열람됨",
+        "note": "모든 이메일의 전달·열람 상태를 실시간 추적하고 체계적으로 후속 관리."
+      },
+      "templates": {
+        "title": "게임 버티컬 템플릿",
+        "note": "게임 장르와 협업 단계로 필터링해 컴플라이언스 템플릿을 몇 초 만에 적용."
+      }
     }
   }
 }
