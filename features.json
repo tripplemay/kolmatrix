@@ -49,7 +49,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "游戏IP用'游戏垂类覆盖/模板主题'展示(非Trusted by客户, 避虚假背书+商标风险); 安全认证仅写真实具备的; 客户证言留占位(待用户给真实来源)",
       "FAQ邮件化(文档3问: 自定义游戏IP模板/DKIM·SPF技术成本/数据更新频率)替换现通用FAQ",

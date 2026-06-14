@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-115 落地页折中加装 — 转化机制+邮件协作定位(对齐投放规范文档). 用户提供飞书投放规范(邮件协作中心定位+强转化), 缺漏分析 docs/reviews/landing-vs-prd-doc-gap-2026-06-13.md. 取向折中加装到BL-114(不整页重做). ⚠️文档若干overclaim(1000+模板真实27/回复率追踪未实装BL-101/一键DKIM实为静态展示/98%信誉分硬编码/游戏IP非客户), 用户决: 用文档口径缺失以后建, 游戏IP按PRD(本批用真实'垂类覆盖'框架默认避虚假背书). 5 features: F001 转化机制(3字段表单+UTM+埋点+PRD/演示链接, 投放刚需真实无overclaim) / F002 Hero邮件侧重+数据栏 / F003 痛点模块+邮件中心演示(重加回BL-114删的) / F004 信任背书真实框架+邮件FAQ+SEO / F005 Codex. 守perf99/a11y.",
   "total_features": 5,
-  "completed_features": 3,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "BL-115-landing-conversion-email-positioning",
-  "last_updated": "2026-06-14T11:30+0800",
+  "last_updated": "2026-06-14T12:15+0800",
   "reference_docs": [
     "docs/specs/BL-115-landing-conversion-email-positioning-spec.md",
     "docs/reviews/landing-vs-prd-doc-gap-2026-06-13.md(缺漏分析+产品现状对照)",
@@ -26,7 +26,7 @@
   "generator_handoff": "[2026-06-14 更新 交付节奏硬要求] ⚠️⚠️ 用户要求分批确认(吸取BL-114大批量返工教训): **每个 generator feature 做完→部署staging→STOP 等用户确认效果通过→Planner放行下一个**. 不得一口气F001-F004做完再给看. 每feature独立上staging评审, 不通过则当前feature在staging迭代. Generator: 一次只做一个feature, 完成即切'待用户确认'状态(session_notes标注 staging URL+本feature改了什么), 不自动进下一个. [2026-06-13 20:00 BJT Planner Kimi 开 BL-115 building] 落地页折中加装(投放规范对齐). 加装到BL-114不整页重做. ⚠️⚠️ 真实性铁律(详spec §1): 文档overclaim用户决用文档口径但留痕'待建真功能'; **第三方游戏IP不作虚假客户背书→用'垂类覆盖/模板主题'框架**; 证言留占位待真实来源; **回复率穿帮风险(repliedAt从不写)强烈建议Hero数据栏仅'开信率/送达率'**; PRD链接部署前确认. F001 转化机制最高价值真实(3字段表单+UTM+埋点+PRD/演示链接, 投放测试刚需) → 优先. F002 Hero邮件侧重. F003 重加回痛点+邮件中心演示(用真实reach DomainHealthCard/最近发送/模板库). F004 信任真实框架+邮件FAQ+SEO. ⚠️守 perf99/a11y/reduced-motion(新表单注意JS/LCP); visual baseline 必Linux重拍; 视觉沿用Neural Velocity. **下一步 Generator 先做 F002(Hero 邮件协作侧重+数据栏, 用户2026-06-14选先定方向)** → 部署staging → STOP等用户确认Hero方向通过 → 再放行其余(F001转化机制/F003痛点+演示/F004信任+FAQ). F002 视觉沿用Neural Velocity, Hero向'邮件协作中心'定位(送达率/合规/开信率痛点)+数据栏4条(按文档口径见spec §1处理: 模板库/合规配置/开信率送达率/信誉分, 回复率建议不提). 详见 spec §2.",
   "session_notes": {
     "Kimi_planner": "[2026-06-13 20:00 BJT Planner Kimi] BL-114落地页done(用户验收). 用户给飞书投放规范文档→我读(私有登录墙, 用户粘正文)+核产品现状(文档多处overclaim: 1000+模板真27/回复率未实装/一键DKIM实静态/IP非客户)→缺漏分析报告. 用户决折中加装+用文档口径缺失后建+IP按PRD. 开BL-115. 真实性处理: IP用垂类框架非客户背书/证言占位/回复率建议只开信率/留痕待建真功能. F001转化机制(真实投放刚需)优先. 下一步Generator F001. 跟进backlog: 邮件能力真实化(回复追踪BL-101/模板扩充/真信誉分).",
-    "Kimi_generator": "[2026-06-14 11:30 BJT Generator Kimi] ⏸️ **F003 done + staging @ 9954338(healthy) — 待用户确认痛点+邮件演示效果, 不自动进下一 feature**(守分批节奏). F003: 重加 PainPoints(4 邮件痛点卡 跨平台乱/送达率低/无法追踪/IP合规风险, error 色调; 子集补 inbox/visibility_off/gpp_maybe→107 icons 重拍 woff2) + EmailCenterDemo(静态镜像真实 reach UI 3 面板+标注: 发件域健康 DKIM已配置/SPF已验证/DMARC已启用+98信誉分(措辞状态展示非'一键工具') / 最近发送 送达·打开状态**无回复率** / 游戏垂类模板 chips; DKIM/SPF/DMARC+genre 通用常量免 i18n 漂移). LandingPage 插入顺序 Hero→Logo→痛点→Bento→邮件演示→HowItWorks→Stats→FAQ→CTA, 结构锁测试更新(痛点/邮件演示回归; BeforeAfter/SectionTransition 仍删). i18n landing.painPoints+demo 5 locale. staging 实证两 section 渲染(landing-painpoints 4卡 + landing-email-demo 3面板). L1 绿(tsc=0/lint0e3w/vitest 1705/build OK/icon coverage 7/7). 用户走查 https://staging.kol.guangai.ai/en. 剩 F004 信任真实框架+邮件FAQ+SEO / F005 Codex. [前] F001 转化机制 done@9b84d5f(lead表+模态+UTM+埋点) / F002 Hero邮件定位 done@9196ba7.",
+    "Kimi_generator": "[2026-06-14 12:15 BJT Generator Kimi] ⏸️ **F004 done + staging @ de2cfe4(healthy) — 待用户确认; F004=最后一个 generator feature, 确认后整批 generator(F001-F004)完成→可切 verifying 交 Codex F005**(守分批节奏, 未自动切). F004: ① 信任区(TrustPlaceholder)去虚假'Trusted by'wordmark(虚假背书+商标风险)→ 游戏 genre 通用品类 tags(非真实IP名)+ 4 真实安全合规 badge(TLS1.3/Postgres RLS/DKIM·SPF·DMARC/Anthropic Claude)+ 证言占位卡(虚线, 待真实授权不编造) ② FAQ 邮件化(4 问: 自定义模板/DKIM成本/数据频率/试用)替换通用 5 问; 修正旧 DKIM 答案 overclaim('引导部署DNS')→诚实'发件域已预配置零DNS'; 数据频率不提回复率 ③ SEO: meta title/description 强化关键词 + generateMetadata 加 keywords(本地化). staging 实证: landing-trust+4 badge+genre+证言占位渲染, ZENITH 假背书已除, keywords meta tag 生效. L1 绿(tsc=0/lint0e3w/vitest 1705/build OK). 用户走查 https://staging.kol.guangai.ai/en. **全 4 generator feature done: F001 转化机制@9b84d5f / F002 Hero邮件定位@9196ba7 / F003 痛点+邮件演示@9954338 / F004 信任+FAQ+SEO@de2cfe4. 用户确认 F004→切 verifying, Codex F005 验收(L1+L2 staging: 表单落库/UTM/埋点链路 + 邮件定位/痛点/演示/FAQ + Lighthouse perf99/a11y + visual baseline 重拍 + 5 locale; PRD 链接 kol.saga1001.com/prd 部署前确认)。**",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null

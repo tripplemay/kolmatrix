@@ -3,10 +3,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-115-landing-conversion-email-positioning BUILDING (3/5) — 落地页折中加装(投放规范对齐) ⏸️ F003 staging 检查点
-- ⏸️ **F003 done(痛点+邮件中心演示)+ staging @ 9954338(healthy) — 待用户确认**. 重加 PainPoints(4 邮件痛点卡)+ EmailCenterDemo(静态镜像 reach: 发件域健康 DKIM/SPF/DMARC+98 / 最近发送 送达·打开**无回复率** / 游戏垂类模板 chips). LandingPage 序 Hero→Logo→痛点→Bento→邮件演示→HowItWorks→Stats→FAQ→CTA. 子集补 3 图标→107. 用户走查 https://staging.kol.guangai.ai/en
-- ✅ F001 done @ 9b84d5f(转化机制: 新lead表migration+TrialLeadCta模态3字段+UTM cookie+埋点 LandingAnalytics+/api/landing-event→event_log+PRD占位/演示) / F002 done @ 9196ba7(Hero邮件协作定位+4数据栏, 回复率穿帮已避). 用户均已确认
-- ⚠️⚠️ **交付节奏(用户2026-06-14硬要求): 每 generator feature 完成→staging→STOP等用户确认→Planner放行下一个**. 一次一个不批量. 剩 F004 信任真实框架+邮件FAQ+SEO / F005 Codex. ⚠️真实性: 1000+模板用文档口径(真27待建)/回复率不提(repliedAt从不写)/PRD链接 kol.saga1001.com/prd 部署前确认/游戏IP用垂类框架非客户背书
+## 🚧 BL-115-landing-conversion-email-positioning BUILDING (4/5 generator done) — 落地页折中加装 ⏸️ F004 检查点(最后一个 generator feature)
+- ⏸️ **F004 done(信任真实框架+邮件FAQ+SEO)+ staging @ de2cfe4(healthy) — 待用户确认; 确认后整批 generator 完成→切 verifying 交 Codex F005**(未自动切, 守分批节奏). F004: 去虚假'Trusted by'wordmark→genre 通用品类 tags(非真实IP)+4 真实安全合规 badge(TLS1.3/RLS/DKIM·SPF·DMARC/Claude)+证言占位; FAQ 换 4 邮件问(修正旧 DKIM overclaim→诚实'发件域预配置零DNS'); SEO meta+keywords 强化. 用户走查 https://staging.kol.guangai.ai/en
+- ✅ 全 4 generator feature done: F001 转化机制@9b84d5f(lead表+模态+UTM+埋点) / F002 Hero邮件定位@9196ba7 / F003 痛点+邮件演示@9954338 / F004 信任+FAQ+SEO@de2cfe4. 用户已确认 F001-F003
+- ⏭️ F005 = Codex 验收(切 verifying 后): L1 + L2 staging(表单落库/UTM/埋点链路 + 邮件定位/痛点/演示/FAQ + Lighthouse perf99/a11y + visual baseline 重拍 + 5 locale). ⚠️真实性留痕: 1000+模板用文档口径(真27待建BL-101)/回复率不提(repliedAt从不写)/**PRD链接 kol.saga1001.com/prd 部署前须确认**/游戏IP用垂类框架非客户背书/证言占位待真实来源
 - ⚠️文档多处overclaim(1000+模板真27/回复率未实装BL-101/一键DKIM实静态/98%硬编码/IP非客户), 用户决用文档口径缺失后建. 真实性铁律: IP用'垂类覆盖'非客户背书/证言占位/PRD链接部署前确认. 缺漏分析 docs/reviews/landing-vs-prd-doc-gap-2026-06-13.md
 ## ✅ BL-114-landing-redesign DONE (F001-F004 done, F005 Codex 用户授权免除, closure @ docs/test-reports/BL-114-closure-2026-06-13.md) — 落地页照 Stitch 原型重做
 - 全页照 Stitch 原型(Neural Velocity)重做: Hero(渐变标题/光晕/dashboard预览)+Bento4卡+HowItWorks+Stats+FAQ+收尾CTA+结构重组(去PainPoints/BeforeAfter/EmailCenterDemo)+清7插画(留hero). **用户手工验收staging视觉通过**+main CI全绿(run 27464021808)+staging@50f0180. baseline经 update-visual-baselines workflow Linux重拍
