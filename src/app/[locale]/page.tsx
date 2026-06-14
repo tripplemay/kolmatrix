@@ -28,6 +28,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: t("title"),
     description: t("description"),
+    // BL-115-F004 — SEO keywords (localized, comma-separated in i18n).
+    keywords: t("keywords").split(",").map((k) => k.trim()).filter(Boolean),
     openGraph: {
       title: t("title"),
       description: t("description"),

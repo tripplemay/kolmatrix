@@ -2180,8 +2180,9 @@
   },
   "landing": {
     "meta": {
-      "title": "KolMatrix — Global Game KOL Marketing Command Center",
-      "description": "AI-powered matching, end-to-end collaboration, and email compliance in one place. Covering KOLs across YouTube, TikTok, Twitch, and Bilibili."
+      "title": "KolMatrix — Game KOL Email Marketing & Outreach Command Center",
+      "description": "The email collaboration hub for global game KOL marketing — game-vertical templates, DKIM/SPF/DMARC deliverability compliance, and real-time open-rate tracking across YouTube, TikTok, Twitch, and Bilibili.",
+      "keywords": "game KOL marketing, game email outreach, email deliverability, DKIM SPF DMARC compliance, game collaboration templates, open rate tracking"
     },
     "hero": {
       "kicker": "KOLMATRIX",
@@ -2235,30 +2236,35 @@
       }
     },
     "trust": {
-      "caption": "Trusted by leading game studios"
+      "title": "Built for global game studios, secure by default",
+      "subtitle": "Enterprise-grade security and compliance from day one.",
+      "verticalsCaption": "Email templates across major game genres",
+      "badges": {
+        "encryption": "TLS 1.3 encryption in transit",
+        "isolation": "Postgres RLS multi-tenant isolation",
+        "compliance": "DKIM · SPF · DMARC email compliance",
+        "ai": "Powered by Anthropic Claude"
+      },
+      "testimonialNote": "Customer stories coming soon."
     },
     "faq": {
       "sectionTitle": "Frequently asked",
       "items": [
         {
-          "q": "Does the KOL library support genre-level filtering?",
-          "a": "Yes — RPG, card, casual, competitive, and more. Filter by gameplay style, art style, and target region."
+          "q": "Can we customize email templates for our game IP?",
+          "a": "Yes — duplicate any template and adapt the copy, tone, and offer to your game's genre and collaboration stage. The library is organized by game vertical so you start from a relevant base."
         },
         {
-          "q": "How does AI matching score creator fit?",
-          "a": "We combine semantic analysis of your brief with a creator's historical collaboration data via aigcgateway. Every recommendation comes with a fit score and a per-criterion explanation."
+          "q": "Is DKIM/SPF/DMARC setup a technical burden?",
+          "a": "None on your side. Email sends from our pre-verified sending domain with DKIM, SPF and DMARC already configured — no DNS or DevOps work for your team."
         },
         {
-          "q": "Do DKIM/SPF settings require an engineer?",
-          "a": "No. Our guided setup deploys compliant DNS records in under 3 minutes, no DevOps needed."
+          "q": "How fresh is the email data?",
+          "a": "Delivery and open status are real-time; plays and engagement metrics update T+1."
         },
         {
-          "q": "How fresh is the data?",
-          "a": "Email opens and statuses are real-time. Plays and engagement metrics update T+1. Audience profiles refresh weekly."
-        },
-        {
-          "q": "What does the trial account include?",
-          "a": "Full access to all six modules — real data filtering, AI matching, template sending, and analytics."
+          "q": "What does the trial include?",
+          "a": "Full access to the email center — template library, domain health, sending, and delivery/open tracking — with real data and no credit card."
         }
       ]
     },

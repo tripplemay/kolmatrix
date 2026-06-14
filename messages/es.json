@@ -2181,8 +2181,9 @@
   },
   "landing": {
     "meta": {
-      "title": "KolMatrix — Centro de mando de marketing global de KOL para videojuegos",
-      "description": "Matching con IA, colaboración integral y cumplimiento de correo en un solo lugar. Cubrimos KOL de YouTube, TikTok, Twitch y Bilibili."
+      "title": "KolMatrix — Centro de Marketing y Outreach por Email para KOLs de Gaming",
+      "description": "El hub de colaboración por email para el marketing global de KOLs de gaming — plantillas por vertical de juego, cumplimiento de entregabilidad DKIM/SPF/DMARC y seguimiento de tasa de apertura en tiempo real en YouTube, TikTok, Twitch y Bilibili.",
+      "keywords": "marketing de KOL de gaming, gestión de email global, optimización de entregabilidad, cumplimiento DKIM SPF DMARC, plantillas de colaboración de juegos, seguimiento de tasa de apertura"
     },
     "hero": {
       "kicker": "KOLMATRIX",
@@ -2236,30 +2237,35 @@
       }
     },
     "trust": {
-      "caption": "La elección de los principales estudios de videojuegos"
+      "title": "Hecho para estudios de juegos globales, seguro por defecto",
+      "subtitle": "Seguridad y cumplimiento de nivel empresarial desde el primer día.",
+      "verticalsCaption": "Plantillas de email para los principales géneros de juego",
+      "badges": {
+        "encryption": "Cifrado TLS 1.3 en tránsito",
+        "isolation": "Aislamiento multiinquilino con Postgres RLS",
+        "compliance": "Cumplimiento de email DKIM · SPF · DMARC",
+        "ai": "Impulsado por Anthropic Claude"
+      },
+      "testimonialNote": "Casos de clientes próximamente."
     },
     "faq": {
       "sectionTitle": "Preguntas frecuentes",
       "items": [
         {
-          "q": "¿La biblioteca de KOL admite filtros por género de juego?",
-          "a": "Sí — RPG, cartas, casual, competitivo y más. Filtra por estilo de juego, estilo artístico y región objetivo."
+          "q": "¿Podemos personalizar plantillas de email para nuestra IP de juego?",
+          "a": "Sí: duplica cualquier plantilla y adapta el texto, el tono y la oferta al género y la fase de colaboración de tu juego. La biblioteca está organizada por vertical de juego."
         },
         {
-          "q": "¿Cómo calcula la IA el encaje de cada creador?",
-          "a": "Combinamos análisis semántico de tu brief con el historial de colaboraciones del creador mediante aigcgateway. Cada recomendación incluye una puntuación de encaje y una explicación por criterio."
+          "q": "¿Configurar DKIM/SPF/DMARC es una carga técnica?",
+          "a": "Ninguna por tu parte. El email se envía desde nuestro dominio verificado con DKIM, SPF y DMARC ya configurados — sin trabajo de DNS ni DevOps para tu equipo."
         },
         {
-          "q": "¿Configurar DKIM/SPF requiere un ingeniero?",
-          "a": "No. Nuestra configuración guiada despliega registros DNS conformes en menos de 3 minutos, sin DevOps."
+          "q": "¿Con qué frecuencia se actualizan los datos de email?",
+          "a": "El estado de entrega y apertura es en tiempo real; las métricas de reproducciones e interacción se actualizan en T+1."
         },
         {
-          "q": "¿Con qué frecuencia se actualizan los datos?",
-          "a": "Las aperturas y estados de correo son en tiempo real. Las métricas de reproducción y engagement se actualizan T+1. Los perfiles de audiencia se refrescan semanalmente."
-        },
-        {
-          "q": "¿Qué incluye la cuenta de prueba?",
-          "a": "Acceso completo a los seis módulos — filtrado con datos reales, matching con IA, envío de plantillas y analítica."
+          "q": "¿Qué incluye la prueba?",
+          "a": "Acceso completo al centro de email — biblioteca de plantillas, salud del dominio, envío y seguimiento de entrega/apertura — con datos reales y sin tarjeta de crédito."
         }
       ]
     },
