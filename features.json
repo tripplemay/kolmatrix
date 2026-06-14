@@ -35,7 +35,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "痛点模块(文档4条邮件痛点: 跨平台邮件乱/送达率低/无法追踪状态/无合规校验)新加section",
       "邮件中心演示模块: 复用真实reach UI(DomainHealthCard DKIM/SPF/DMARC+信誉分 / 最近发送列表 / 游戏垂类模板库)截图或静态展示+标功能点",
