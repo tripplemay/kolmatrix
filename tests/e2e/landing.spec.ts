@@ -25,14 +25,14 @@ test.describe("Anonymous root path", () => {
   });
 
   // BL-114-F001 (redo) — Hero dashboard preview. BL-115-F001 — primary CTA is
-  // the in-page trial modal trigger; secondary is the external PRD link.
-  test("hero section renders text content + dashboard preview + CTAs", async ({ page }) => {
+  // the in-page trial modal trigger. BL-117-F001 — PRD-doc CTA removed.
+  test("hero section renders text content + dashboard preview + trial CTA", async ({ page }) => {
     await page.goto("/zh");
     const hero = page.getByTestId("landing-hero");
     await expect(hero).toBeVisible();
     await expect(hero.getByTestId("landing-hero-illustration")).toBeVisible();
     await expect(page.getByTestId("trial-cta-hero")).toBeVisible();
-    await expect(page.getByTestId("landing-cta-prd")).toBeVisible();
+    await expect(page.getByTestId("landing-cta-prd")).toHaveCount(0);
   });
 });
 
@@ -52,11 +52,5 @@ test.describe("Landing CTAs (BL-115-F001 conversion)", () => {
     await page.getByTestId("trial-field-studio").fill("Example Game Studio");
     await page.getByTestId("trial-submit").click();
     await expect(page.getByTestId("trial-lead-success")).toBeVisible();
-  });
-
-  test("Hero secondary CTA links to the PRD doc", async ({ page }) => {
-    await page.goto("/zh");
-    const prd = page.getByTestId("landing-cta-prd");
-    await expect(prd).toHaveAttribute("href", /saga1001\.com\/prd/);
   });
 });

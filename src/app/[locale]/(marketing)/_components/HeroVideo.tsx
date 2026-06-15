@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 
-import { PRD_DOC_URL } from "./landing-links";
 import { TrialLeadCta } from "./TrialLeadCta";
 
 /**
@@ -60,24 +59,14 @@ export async function HeroVideo() {
           {t("subtitle")}
         </p>
 
-        <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          {/* BL-115-F001 — primary CTA opens the in-page 3-field trial modal. */}
+        <div className="mt-12 flex justify-center">
+          {/* BL-115-F001 — primary CTA opens the in-page 3-field trial modal.
+              BL-117-F001 — PRD-doc secondary CTA removed per user request. */}
           <TrialLeadCta
             ctaId="hero"
             label={t("ctaPrimary")}
             className="landing-cta-primary inline-flex w-full items-center justify-center rounded-md px-8 py-4 text-base font-bold sm:w-auto"
           />
-          {/* Secondary CTA → full PRD doc (external; ⚠️ confirm link before prod). */}
-          <a
-            href={PRD_DOC_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-analytics-cta="prd-hero"
-            data-testid="landing-cta-prd"
-            className="inline-flex w-full items-center justify-center rounded-md bg-surface-high px-8 py-4 text-base font-bold text-white transition-colors duration-[var(--duration-landing-short)] hover:bg-surface-highest sm:w-auto"
-          >
-            {t("ctaSecondary")}
-          </a>
         </div>
 
         {/* BL-117-F001 — broad capability data bar (KOL pool / AI match /

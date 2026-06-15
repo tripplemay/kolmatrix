@@ -43,12 +43,12 @@ describe("BL-114 / BL-115 Hero", () => {
     expect(html).toContain("landing.hero.subtitle");
     expect(html).toContain("gradient-text");
 
-    // BL-115-F001: primary CTA = trial modal (stubbed); secondary = PRD link.
+    // BL-115-F001: primary CTA = trial modal (stubbed).
+    // BL-117-F001: PRD-doc secondary CTA removed (single Hero CTA now).
     expect(html).toContain('data-testid="trial-cta-hero"');
     expect(html).toContain("landing.hero.ctaPrimary");
-    expect(html).toContain('data-testid="landing-cta-prd"');
-    expect(html).toContain("https://kol.saga1001.com/prd");
-    expect(html).toContain("landing.hero.ctaSecondary");
+    expect(html).not.toContain('data-testid="landing-cta-prd"');
+    expect(html).not.toContain("saga1001.com/prd");
 
     // Dashboard preview illustration (kept hero-illustration.png).
     expect(html).toContain('data-testid="landing-hero-illustration"');
