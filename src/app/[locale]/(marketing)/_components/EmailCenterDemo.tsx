@@ -37,6 +37,14 @@ export async function EmailCenterDemo() {
     >
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-2xl text-center">
+          {/* BL-117-F002 — eyebrow reframes this as a deep-dive into ONE pillar
+              (Reach), de-emphasizing the standalone "email hub" framing. */}
+          <p
+            data-testid="landing-demo-eyebrow"
+            className="mb-3 font-landing-mono text-[11px] uppercase tracking-[0.2em] text-cyan-fixed-dim"
+          >
+            {t("eyebrow")}
+          </p>
           <h2 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
             {t("title")}
           </h2>

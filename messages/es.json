@@ -2325,30 +2325,30 @@
       "errorGeneric": "Algo salió mal. Inténtalo de nuevo."
     },
     "painPoints": {
-      "title": "El email de KOLs de gaming frena tu lanzamiento",
-      "subtitle": "Los cuatro problemas de colaboración por email que todo estudio encuentra antes de escalar.",
+      "title": "Dónde se atasca el marketing global de KOLs de gaming",
+      "subtitle": "Cuatro cuellos de botella que todo estudio encuentra antes de escalar — y qué hace KolMatrix con cada uno.",
       "items": {
-        "scattered": {
-          "title": "Email disperso entre plataformas",
-          "body": "Saltando entre Gmail, Outlook y hojas de cálculo: plantillas inconsistentes y caos de versiones."
+        "discovery": {
+          "title": "Descubrimiento de creadores disperso",
+          "body": "Buscar los KOLs adecuados entre YouTube, TikTok, Twitch y Bilibili — hojas de cálculo, DMs y callejones sin salida."
         },
-        "deliverability": {
-          "title": "Baja entregabilidad",
-          "body": "Sin DKIM/SPF/DMARC el correo cae en spam; la tasa de apertura se estanca y no sabes si es cumplimiento o contenido."
+        "matching": {
+          "title": "Preselección lenta e imprecisa",
+          "body": "El filtrado por etiquetas no capta la afinidad. Sin emparejamiento semántico con IA, pagas de más a los creadores equivocados y pierdes a los correctos."
         },
-        "tracking": {
-          "title": "Sin seguimiento de estado",
-          "body": "Enviado y olvidado: sin visibilidad de quién recibió o abrió, sin seguimiento sistemático."
+        "conversion": {
+          "title": "Conversión que no puedes ver",
+          "body": "Sin una vista unificada de reproducciones, instalaciones y ROI, no sabes qué funcionó ni puedes potenciarlo."
         },
         "compliance": {
-          "title": "Riesgo de cumplimiento con IP de juegos",
-          "body": "Los emails con IP de juegos no tienen verificación de cumplimiento; el uso de marca conlleva riesgo real."
+          "title": "Entregabilidad y cumplimiento de email",
+          "body": "El alcance cae en spam sin DKIM/SPF/DMARC — y el email con IP de juego conlleva riesgo de marca y cumplimiento."
         }
       }
     },
     "demo": {
-      "title": "Un hub de email: de la plantilla a la entrega y el seguimiento",
-      "subtitle": "Un vistazo al centro de email real detrás de KolMatrix.",
+      "title": "Por dentro de Reach: alcance por email conforme",
+      "subtitle": "Una mirada de cerca a un pilar — cómo el módulo Reach ejecuta el email de KOLs de gaming de forma conforme y rastreable, de extremo a extremo.",
       "health": {
         "title": "Salud del dominio",
         "status": "Saludable",
@@ -2367,7 +2367,8 @@
       "templates": {
         "title": "Plantillas por vertical de juego",
         "note": "Filtra por género y fase de colaboración y aplica una plantilla conforme en segundos."
-      }
+      },
+      "eyebrow": "REACH · UNO DE CUATRO PILARES"
     }
   }
 }

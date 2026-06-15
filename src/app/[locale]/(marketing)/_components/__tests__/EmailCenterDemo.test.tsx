@@ -19,6 +19,9 @@ describe("BL-115-F003 EmailCenterDemo", () => {
   it("renders the 3 email-center panels with real data points", async () => {
     const html = renderToStaticMarkup(await EmailCenterDemo());
     expect(html).toContain('data-testid="landing-email-demo"');
+    // BL-117-F002 — Reach-pillar eyebrow (de-emphasized framing).
+    expect(html).toContain('data-testid="landing-demo-eyebrow"');
+    expect(html).toContain("landing.demo.eyebrow");
     expect(html).toContain('data-testid="landing-demo-health"');
     expect(html).toContain('data-testid="landing-demo-sends"');
     expect(html).toContain('data-testid="landing-demo-templates"');

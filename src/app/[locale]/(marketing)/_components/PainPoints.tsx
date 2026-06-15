@@ -1,21 +1,21 @@
 import { getTranslations } from "next-intl/server";
 
 /**
- * BL-115-F003 — email pain-point section (re-added, now email-focused per the
- * placement-doc's 4 pains: scattered cross-platform email / low deliverability
- * / no status tracking / no compliance check). Neural Velocity dark cards with
- * an error-tinted icon to read as "problem". The BL-114 generic PainPoints was
- * deleted in F004; this is a fresh email-centric version.
+ * BL-115-F003 — email pain-point section. BL-117-F002 — broadened from 4
+ * all-email pains back to the 4 KOL-marketing pains the broad platform solves:
+ * scattered cross-platform discovery, slow/imprecise filtering (AI match),
+ * uncontrollable conversion (data review), and email deliverability/compliance
+ * (the one email pain kept). Error-tinted icons read as "problem".
  */
 interface Pain {
-  key: "scattered" | "deliverability" | "tracking" | "compliance";
+  key: "discovery" | "matching" | "conversion" | "compliance";
   icon: string;
 }
 
 const PAINS: ReadonlyArray<Pain> = [
-  { key: "scattered", icon: "inbox" },
-  { key: "deliverability", icon: "trending_down" },
-  { key: "tracking", icon: "visibility_off" },
+  { key: "discovery", icon: "travel_explore" },
+  { key: "matching", icon: "query_stats" },
+  { key: "conversion", icon: "trending_down" },
   { key: "compliance", icon: "gpp_maybe" },
 ];
 

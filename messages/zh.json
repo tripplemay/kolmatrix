@@ -2324,30 +2324,30 @@
       "errorGeneric": "提交失败，请稍后重试。"
     },
     "painPoints": {
-      "title": "游戏 KOL 邮件，正在拖慢你的出海",
-      "subtitle": "出海团队规模化之前，几乎都会撞上这四个邮件协作痛点。",
+      "title": "全球游戏 KOL 营销，正卡在这四个环节",
+      "subtitle": "规模化之前几乎每个团队都会撞上的四个瓶颈 —— 以及 KolMatrix 如何逐一解决。",
       "items": {
-        "scattered": {
-          "title": "跨平台邮件杂乱",
-          "body": "Gmail、Outlook、各种表格之间来回切，模板不统一、版本混乱。"
+        "discovery": {
+          "title": "跨平台找达人散乱",
+          "body": "在 YouTube、TikTok、Twitch、Bilibili 之间满世界找合适的 KOL —— 表格、私信、死胡同。"
         },
-        "deliverability": {
-          "title": "送达率低、进收件箱难",
-          "body": "没有 DKIM/SPF/DMARC，邮件进垃圾箱，开信率上不去，也分不清是合规还是内容问题。"
+        "matching": {
+          "title": "筛选慢、不精准",
+          "body": "纯标签筛选抓不到契合度。没有语义 AI 匹配，常常为错的达人多付钱、又错过对的。"
         },
-        "tracking": {
-          "title": "无法追踪邮件状态",
-          "body": "发出去就石沉大海，不知道谁送达、谁打开，没法系统跟进。"
+        "conversion": {
+          "title": "转化看不见、不可控",
+          "body": "播放、安装、ROI 没有统一视图，搞不清什么有效、更没法加码。"
         },
         "compliance": {
-          "title": "游戏 IP 合规风险",
-          "body": "游戏 IP 邮件缺少合规校验，品牌词、商标使用稍有不慎就有风险。"
+          "title": "邮件送达与合规",
+          "body": "没有 DKIM/SPF/DMARC，触达进垃圾箱；游戏 IP 邮件还有品牌与合规风险。"
         }
       }
     },
     "demo": {
-      "title": "一个邮件协作中心，从模板到送达到追踪",
-      "subtitle": "复用真实的邮件中心界面，看看 KolMatrix 怎么管游戏 KOL 邮件。",
+      "title": "深挖 Reach：合规可追踪的邮件触达",
+      "subtitle": "聚焦四大能力之一 —— Reach 模块如何把游戏 KOL 邮件触达跑成合规、可追踪的闭环。",
       "health": {
         "title": "发件域健康",
         "status": "健康",
@@ -2366,7 +2366,8 @@
       "templates": {
         "title": "游戏垂类模板库",
         "note": "按游戏品类与合作阶段筛选，几秒套用一套合规邮件模板。"
-      }
+      },
+      "eyebrow": "REACH · 四大能力之一"
     }
   }
 }

@@ -2324,30 +2324,30 @@
       "errorGeneric": "Something went wrong. Please try again."
     },
     "painPoints": {
-      "title": "Game KOL email is slowing your launch",
-      "subtitle": "The four email-collaboration pains every studio hits before they scale.",
+      "title": "Where global game KOL marketing gets stuck",
+      "subtitle": "Four bottlenecks every studio hits before they scale — and what KolMatrix does about each.",
       "items": {
-        "scattered": {
-          "title": "Scattered cross-platform email",
-          "body": "Juggling Gmail, Outlook and spreadsheets — inconsistent templates and version chaos."
+        "discovery": {
+          "title": "Scattered creator discovery",
+          "body": "Hunting for the right KOLs across YouTube, TikTok, Twitch, and Bilibili — spreadsheets, DMs, and dead ends."
         },
-        "deliverability": {
-          "title": "Low deliverability",
-          "body": "Without DKIM/SPF/DMARC, mail lands in spam — open rates stall and you can't tell if it's compliance or content."
+        "matching": {
+          "title": "Slow, imprecise shortlisting",
+          "body": "Tag-based filtering misses fit. Without semantic AI matching, you over-pay the wrong creators and miss the right ones."
         },
-        "tracking": {
-          "title": "No status tracking",
-          "body": "Sent and forgotten — no view of who received or opened, no systematic follow-up."
+        "conversion": {
+          "title": "Conversion you can't see",
+          "body": "No unified view of plays, installs, and ROI means you can't tell what worked — or double down on it."
         },
         "compliance": {
-          "title": "Game-IP compliance risk",
-          "body": "Game-IP emails lack compliance checks — brand and trademark use carry real risk."
+          "title": "Email deliverability & compliance",
+          "body": "Outreach lands in spam without DKIM/SPF/DMARC — and game-IP email carries brand and compliance risk."
         }
       }
     },
     "demo": {
-      "title": "One email hub — template to delivery to tracking",
-      "subtitle": "A look at the real email center behind KolMatrix.",
+      "title": "Inside Reach: compliant email outreach",
+      "subtitle": "A closer look at one pillar — how the Reach module runs compliant, trackable game-KOL email, end to end.",
       "health": {
         "title": "Domain health",
         "status": "Healthy",
@@ -2366,7 +2366,8 @@
       "templates": {
         "title": "Game-vertical templates",
         "note": "Filter by game genre and collaboration stage, then apply a compliant email template in seconds."
-      }
+      },
+      "eyebrow": "REACH · ONE OF FOUR PILLARS"
     }
   }
 }
