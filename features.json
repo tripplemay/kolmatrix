@@ -64,7 +64,8 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "skipped",
+    "skip_reason": "用户2026-06-15分批逐个确认每feature staging+手工免验置done, Codex F005免除. 覆盖: 用户逐个确认+CI全绿+转化数据路径sanity check为真+staging healthy. soft-watch: 转化端到端实测/PRD链接/Lighthouse未再验(建议投放/prod前). closure docs/test-reports/BL-115-closure-2026-06-15.md.",
     "acceptance": [
       "L1: lint 0err warn≤3 / tsc=0 / npm test + npm run build",
       "L2 staging: ① 3字段表单提交落库+UTM捕获+埋点触发(投放转化链路通) ② PRD/演示链接正确 ③ 邮件协作定位+痛点+邮件中心演示+邮件FAQ体现 ④ Lighthouse perf99/WCAG AA/reduced-motion不回退 ⑤ visual baseline重拍 ⑥ 5 locale+响应式PC/移动",

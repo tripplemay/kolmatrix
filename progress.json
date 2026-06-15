@@ -1,5 +1,5 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "BL-115 落地页折中加装 — 转化机制+邮件协作定位(对齐投放规范文档). 用户提供飞书投放规范(邮件协作中心定位+强转化), 缺漏分析 docs/reviews/landing-vs-prd-doc-gap-2026-06-13.md. 取向折中加装到BL-114(不整页重做). ⚠️文档若干overclaim(1000+模板真实27/回复率追踪未实装BL-101/一键DKIM实为静态展示/98%信誉分硬编码/游戏IP非客户), 用户决: 用文档口径缺失以后建, 游戏IP按PRD(本批用真实'垂类覆盖'框架默认避虚假背书). 5 features: F001 转化机制(3字段表单+UTM+埋点+PRD/演示链接, 投放刚需真实无overclaim) / F002 Hero邮件侧重+数据栏 / F003 痛点模块+邮件中心演示(重加回BL-114删的) / F004 信任背书真实框架+邮件FAQ+SEO / F005 Codex. 守perf99/a11y.",
   "total_features": 5,
   "completed_features": 4,
@@ -17,11 +17,11 @@
     "spec": "docs/specs/BL-115-landing-conversion-email-positioning-spec.md",
     "audit": "docs/reviews/landing-vs-prd-doc-gap-2026-06-13.md",
     "test_cases": null,
-    "signoff": null,
+    "signoff": "docs/test-reports/BL-115-closure-2026-06-15.md",
     "framework_reviewed": false
   },
   "role_assignments": null,
-  "evaluator_feedback": null,
+  "evaluator_feedback": "用户分批逐个确认每feature staging(检查点节奏全程执行)+手工免验置done, Codex F005免除(2026-06-15). 覆盖: 用户逐个确认+main CI全绿(run 27488383379)+转化数据路径Planner sanity check为真(lead表migration+UTM字段+/api/landing-event+单测)+staging@9ea2c73. ⚠️soft-watch: 转化端到端(真实提交→lead落库+UTM+event_log)未跑实测建议投放前确认/PRD链接占位待确认/Lighthouse perf-a11y未再验/prod migration部署后确认. 真实性留痕(spec §1, 跟进BL-116). closure docs/test-reports/BL-115-closure-2026-06-15.md.",
   "fix_rounds_history": [],
   "generator_handoff": "[2026-06-14 12:55 BJT Generator Kimi → Codex/Reviewer] ✅ BL-115 generator 全完成 F001-F004(4/4), 切 verifying. staging @ 9ea2c73 healthy(git_sha=HEAD; 之后若有 state commit 仅 progress/features/project-status 属豁免). main CI 全绿(run 27488383379: lint/tsc/unit/integration×2/build/E2E 全✓; landing-*.png 基线已由 update-visual-baselines workflow 重拍 @ 9ea2c73). **F005 验收(executor:codex)**: L1 = lint 0e/warn≤3(实测0e3w)/tsc=0/npm test(1705)/npm run build. L2 staging(https://staging.kol.guangai.ai/en, /zh): ① 转化链路 = 点'立即申请试用'(testid trial-cta-hero / trial-cta-footer)→弹模态 trial-lead-modal→填 trial-field-name/email/studio→trial-submit→成功态 trial-lead-success; 校验 lead 表落库(psql 用 \"${DATABASE_URL%%\\?*}\": SELECT * FROM lead ORDER BY created_at DESC); UTM(带 ?utm_source=x&utm_campaign=y 访问→提交→lead.utm_source/campaign 落); 埋点(event_log WHERE type LIKE 'landing.%': page_view/cta_click/scroll_depth/section_dwell/form_open/form_submit + 服务端 trial_request). ② 链接: Hero 副CTA landing-cta-prd → kol.saga1001.com/prd(⚠️**部署前须确认可访问, 现为占位常量 src/.../_components/landing-links.ts**); 底部 landing-footer-cta-secondary → /request-access?demo=1. ③ 内容体现: Hero 邮件协作中心定位+4 数据栏(landing-hero-stats, 无回复率) / painpoints 4 卡 / email-demo 3 面板(DKIM·SPF·DMARC+98 信誉分, 最近发送送达·打开**无回复率**, genre 模板) / FAQ 4 邮件问 / trust(genre 垂类 tags+4 安全 badge+证言占位, 无假 wordmark). ④ Lighthouse perf≥99 / WCAG AA / reduced-motion 不回退(BL-080 硬约束; 新增 TrialLeadCta 模态 + LandingAnalytics 注意 JS/LCP). ⑤ visual baseline 已重拍绿(landing-*.png @ 9ea2c73). ⑥ 5 locale(en/zh/ja/ko/es)+ 响应式 PC/移动. signoff → docs/test-reports/BL-115-signoff-2026-06-14.md. ⚠️真实性留痕(spec §1, 用户决, 非阻断): 1000+模板用文档口径(真 27 待建)/回复率全程不提(repliedAt 从不写 BL-101)/游戏 IP 用 genre 垂类非客户背书/证言占位待真实来源/PRD 链接待用户确认.",
   "session_notes": {

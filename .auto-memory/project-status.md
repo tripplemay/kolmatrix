@@ -3,7 +3,7 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-115-landing-conversion-email-positioning VERIFYING (4/4 generator done, 用户确认) — 落地页折中加装, 待 Codex F005 验收
+## ✅ BL-115-landing-conversion-email-positioning DONE (F001-F004 done 用户逐个确认, F005 Codex用户免除, closure @ docs/test-reports/BL-115-closure-2026-06-15.md) — 落地页折中加装(投放规范对齐)
 - ✅ **全 4 generator feature done + 用户确认 + main CI 全绿(run 27488383379) + staging @ 9ea2c73(git_sha=HEAD healthy)**. F002 Hero邮件定位+数据栏@9196ba7 / F001 转化机制@9b84d5f(lead表migration+TrialLeadCta模态+UTM cookie+埋点 LandingAnalytics+/api/landing-event→event_log+PRD占位/演示) / F003 痛点4卡+EmailCenterDemo 3面板@9954338 / F004 信任真实框架(genre垂类+安全badge+证言占位, 去假wordmark)+邮件FAQ+SEO@de2cfe4. landing-*.png baseline 已 update-visual-baselines workflow 重拍@9ea2c73
 - ⏭️ **F005 = Codex/Reviewer 验收(verifying)**: L1 + L2 staging(转化链路 表单落库/UTM/埋点 event_log + 邮件定位/痛点/演示/FAQ + Lighthouse perf99/WCAG AA/reduced-motion + baseline 绿 + 5 locale/响应式). 详见 progress.generator_handoff. signoff → docs/test-reports/BL-115-signoff-2026-06-14.md
 - ⚠️真实性留痕(spec §1, 用户决): 1000+模板用文档口径(真27待建BL-101)/回复率全程不提(repliedAt从不写)/**PRD链接 kol.saga1001.com/prd 部署前须用户确认**(占位常量 landing-links.ts)/游戏IP用genre垂类非客户背书/证言占位待真实来源
