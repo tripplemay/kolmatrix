@@ -3,10 +3,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-117-landing-positioning-rebalance BUILDING (1/4) — 落地页定位再平衡(邮件→全球KOL智能营销) ⏸️ F001 检查点
-- ⏸️ **F001 done(Hero 重定位广义)+ staging @ 07dd1e8(healthy) — 待用户确认广义方向**. Hero 标题 email hub→'The AI command center for global game KOL marketing'(BL-114 调性); 副标覆盖 发现→匹配→触达→复盘; 4 数据栏 全邮件→广义(6,000+KOL/AI语义匹配/全流程闭环/DKIM·SPF·DMARC 保留1邮件). BL-115 转化机制全保留. 用户走查 https://staging.kol.guangai.ai/en
-- ⚠️ 仍 email-lean 两处(非 F001 范围, 建议折入 F002/F003): landing.meta.description(SEO)仍以'email collaboration hub'开头; landing.demo.title 'One email hub'(F002 计划邮件演示降 Reach 深度)
-- 决策: 主站直接广义不另做/lp + 每feature staging检查点. 保留BL-115转化机制+真实性把关(回复率不提/IP genre/证言占位). 剩 F002 痛点拓宽+section顺序(Features上移/邮件演示降权) / F003 FAQ混合 / F004 Codex. ⚠️一次只做一个→staging→用户确认→放行下一个
+## 🚧 BL-117-landing-positioning-rebalance BUILDING (2/4) — 落地页定位再平衡(邮件→全球KOL智能营销) ⏸️ F002 检查点
+- ⏸️ **F002 done(痛点拓宽+邮件演示降权)+ staging @ e8f27c9(healthy) — 待用户确认**. PainPoints 4卡 邮件→广义KOL痛点(找达人散乱/筛选不精准/转化不可控/邮件合规保留1); EmailCenterDemo 加'REACH·四大能力之一'eyebrow+标题'One email hub'→'深挖Reach'降权为支柱深挖. 用户走查 https://staging.kol.guangai.ai/en
+- ✅ F001 done @ 07dd1e8(Hero 重定位广义)+ **用户确认方向**; 用户检查点追加要求**删 Hero PRD 文档按钮**→已删(3d60477, Hero 现单 trial CTA). BL-115 转化机制全保留(模态/UTM/埋点/Lead表)
+- ⚠️ landing.meta.description(SEO)仍以'email collaboration hub'开头, 建议折入 F003 一起 rebalance. woff2 暂留 HEAD 超集(F002 弃 inbox/visibility_off 未收缩, coverage 7/7 过), 待 baseline 重拍统一. 剩 F003 FAQ混合 / F004 Codex. ⚠️一次只做一个→staging→确认→放行
 ## ✅ BL-115-landing-conversion-email-positioning DONE (F001-F004 done 用户逐个确认, F005 Codex用户免除, closure @ docs/test-reports/BL-115-closure-2026-06-15.md) — 落地页折中加装(投放规范对齐)
 - ✅ **全 4 generator feature done + 用户确认 + main CI 全绿(run 27488383379) + staging @ 9ea2c73(git_sha=HEAD healthy)**. F002 Hero邮件定位+数据栏@9196ba7 / F001 转化机制@9b84d5f(lead表migration+TrialLeadCta模态+UTM cookie+埋点 LandingAnalytics+/api/landing-event→event_log+PRD占位/演示) / F003 痛点4卡+EmailCenterDemo 3面板@9954338 / F004 信任真实框架(genre垂类+安全badge+证言占位, 去假wordmark)+邮件FAQ+SEO@de2cfe4. landing-*.png baseline 已 update-visual-baselines workflow 重拍@9ea2c73
 - ⏭️ **F005 = Codex/Reviewer 验收(verifying)**: L1 + L2 staging(转化链路 表单落库/UTM/埋点 event_log + 邮件定位/痛点/演示/FAQ + Lighthouse perf99/WCAG AA/reduced-motion + baseline 绿 + 5 locale/响应式). 详见 progress.generator_handoff. signoff → docs/test-reports/BL-115-signoff-2026-06-14.md

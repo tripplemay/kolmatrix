@@ -2,10 +2,10 @@
   "status": "building",
   "user_goal": "BL-117 落地页定位再平衡 — 邮件侧重→全球KOL智能营销. 用户'页面太偏邮件, 想突出全球KOL智能营销工具定位'. 根因(分析): BL-115为对齐投放文档过度旋转邮件(Hero定位成email collaboration hub+痛点/演示/FAQ全邮件), 广义Features(Brief/Match/Reach/Insight)被埋第4屏. 决策: ①主站直接广义不另做/lp(接受投放邮件角度淡) ②每feature staging检查点(Hero先做先验). 保留BL-115转化机制(表单/UTM/埋点)不动+真实性把关(回复率不提/IP genre/证言占位). 4 features: F001 Hero重定位广义(tone-setter) / F002 痛点拓宽+section顺序(Features上移/邮件演示降为Reach深度) / F003 FAQ混合 / F004 Codex. 守perf99/a11y/baseline重拍.",
   "total_features": 4,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
   "current_sprint": "BL-117-landing-positioning-rebalance",
-  "last_updated": "2026-06-15T12:40+0800",
+  "last_updated": "2026-06-16T02:30+0800",
   "reference_docs": [
     "docs/specs/BL-117-landing-positioning-rebalance-spec.md",
     "docs/reviews/landing-vs-prd-doc-gap-2026-06-13.md + landing-visual-audit-2026-06-13.md",
@@ -26,7 +26,7 @@
   "generator_handoff": "[2026-06-15 12:00 BJT Planner Kimi 开 BL-117 building] 落地页定位再平衡(邮件→全球KOL智能营销). 用户决主站直接广义不另做/lp + 每feature staging检查点. ⚠️⚠️ **交付节奏硬要求(同BL-115)**: 一次只做一个feature→部署staging→STOP等用户确认→Planner放行下一个, 不批量. **下一步 Generator F001(Hero重定位广义, tone-setter先做先验)**: 标题从'email collaboration hub'→全球游戏KOL智能营销平台(可复用BL-114调性), 副标覆盖发现/匹配/触达/复盘全流程, 4数据栏全邮件→广义(6000+KOL/AI匹配/全流程/+1送达). 完成→staging→用户确认广义方向→才F002(痛点拓宽+Features上移+邮件演示降Reach深度)→F003(FAQ混合)→F004 Codex. ⚠️保留BL-115转化机制(TrialLeadCta/UTM/埋点/Lead表)不动; 真实性延续(回复率不提/IP genre非客户/证言占位); 守perf99/a11y/reduced-motion; visual baseline必Linux重拍+连带断言; 视觉/route改动npm run build. 详见 spec §2-§3.",
   "session_notes": {
     "Kimi_planner": "[2026-06-15 12:00 BJT Planner Kimi] BL-115 done(用户分批确认+手工免验). 用户觉页面太偏邮件→要突出全球KOL智能营销定位→我分析(根因Hero定位成email hub+前几屏全邮件+广义Features被埋)→用户决主站广义不另/lp+手动收BL-115+开BL-117再平衡每步检查点. F001 Hero重定位先做先验. 保留BL-115转化机制. 下一步Generator F001. 旁挂: PRD链接占位待确认/BL-116邮件能力真实化/落地页待prod部署.",
-    "Kimi_generator": "[2026-06-15 12:40 BJT Generator Kimi] ⏸️ **F001 done + staging @ 07dd1e8(healthy) — 待用户确认广义方向, 不自动进下一 feature**(守分批节奏). F001 Hero 重定位回广义: 标题 email hub→'The AI command center for global game KOL marketing'(BL-114 调性), 副标覆盖 发现→匹配→触达→复盘 全流程; 4 数据栏 全邮件→广义(6,000+全球KOL/AI语义匹配/全流程闭环/DKIM·SPF·DMARC 保留1条邮件), 全真实无回复率. 仅改 hero i18n(title/subtitle/stats 重构 kols/match/lifecycle/compliance)+HERO_STATS 常量; **BL-115 转化机制全保留不动**(TrialLeadCta/PRD/landing-attribution/埋点/Lead表), 视觉 Neural Velocity 不变. i18n 5 locale + Hero 单测更新. staging 实证: 广义标题+4 新数据栏渲染, trial-cta-hero 仍在. L1 绿(tsc=0/lint0e3w/vitest 1705/build OK). ⚠️ 走查发现仍 email-lean 两处(非 F001 Hero 范围, 已向用户 flag): ① landing.meta.description(SEO, BL-115-F004)仍以'email collaboration hub'开头 ② landing.demo.title 'One email hub'(F002 计划把邮件演示降为 Reach 深度). 建议 meta 文案 rebalance 折入 F002/F003. 用户走查 https://staging.kol.guangai.ai/en. 剩 F002 痛点拓宽+section顺序(Features上移/邮件演示降权) / F003 FAQ混合 / F004 Codex.",
+    "Kimi_generator": "[2026-06-16 02:30 BJT Generator Kimi] ⏸️ **F002 done + staging @ e8f27c9(healthy) — 待用户确认, 不自动进下一**(守分批节奏). [本轮还做了 F001 收尾修正] 用户检查点要求删 Hero PRD 文档副CTA → 已删(d2db196+3d60477: 移 HeroVideo PRD<a>/import + 删 landing-links.ts + 删 landing.hero.ctaSecondary 5locale + 测试连带; Hero 现单 trial CTA). ⚠️坑: git add 含已 git rm 的 pathspec 会报错并中止整个 add → 漏提交其余文件致 HEAD 一度断, 补 commit 修复(经验: rm 的文件别再 git add, 或分开 stage). F002: PainPoints 4 卡 邮件→广义 KOL 痛点(discovery/matching/conversion/compliance, 图标 travel_explore/query_stats/trending_down/gpp_maybe 全现有子集无新增)+ EmailCenterDemo 降权(加 'REACH·四大能力之一' eyebrow + 标题'One email hub'→'深挖Reach', reframe 为支柱深挖). section 顺序已满足(痛点→Features→邮件演示). i18n 5 locale. ⚠️ woff2 走查发现 disk 被改成 105 图标(PainPoints 弃 inbox/visibility_off), 来源不明(未跑全 regen)→ 已 revert 回 HEAD(11632 超集, 覆盖全部引用, coverage 7/7), F002 不含 woff2; 待 F003/baseline 重拍时统一收缩. L1 绿(tsc=0/lint0e3w/vitest 1705/build OK/coverage 7/7). 用户走查 https://staging.kol.guangai.ai/en. 剩 F003 FAQ混合(4邮件问→2广义+2邮件) / F004 Codex. ⚠️ landing.meta.description SEO 仍以'email collaboration hub'开头, 建议折入 F003 一起 rebalance. [前] F001 Hero广义@07dd1e8.",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null

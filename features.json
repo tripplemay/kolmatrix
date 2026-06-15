@@ -20,7 +20,7 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "痛点4卡全邮件→KOL营销4痛点: 跨平台找达人散乱/筛选慢不精准(AI匹配解)/转化不可控(数据复盘解)/邮件送达合规(保留1条)",
       "section顺序: Features(Brief/Match/Reach/Insight)上移紧跟痛点(广义能力先亮相); EmailCenterDemo降为Reach触达深度展示移到Features之后弱化(不删降权)",
