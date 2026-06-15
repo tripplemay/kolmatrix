@@ -6,27 +6,27 @@ import { TrialLeadCta } from "./TrialLeadCta";
 
 /**
  * BL-114-F001 (redo) — Hero on the Stitch "Neural Velocity" prototype.
- * BL-115-F002 — repositioned to the game-KOL "email collaboration hub"
- * (title/subtitle pivot to deliverability / compliance / open-rate pain
- * points) + a 4-item email data bar.
+ * BL-115-F001 — primary CTA opens the trial modal; secondary is the PRD link.
+ * BL-117-F001 — repositioned BACK to the broad "global game KOL marketing"
+ * platform (BL-115 over-rotated to an email hub). Title/subtitle now span the
+ * full lifecycle (discover → AI match → reach → measure); the data bar covers
+ * the broad capability set with email kept as one item (not all four).
  *
- * Data-bar truthfulness (spec §1): `templates` uses the doc figure (1000+;
- * real count 27 tracked as a build-out follow-up, user-decided); `compliance`
- * lists the protocols, not a "one-click config tool"; `tracking` shows only
- * open/delivery rate — NO reply rate (repliedAt is never written, so a trial
- * would expose empty data); `reputation` is the honest 98% figure (not a
- * "guarantee"). No fabricated "+300% open rate" outcome claim.
+ * Data-bar truthfulness (spec §1, carried from BL-115): all values are real —
+ * 6,000+ KOL pool, AI semantic matching, the 4-module end-to-end loop, and the
+ * platform's DKIM/SPF/DMARC sending compliance. No reply-rate claim (repliedAt
+ * is never written), no fabricated outcome figures.
  */
 const HERO_STATS: ReadonlyArray<{
-  key: "templates" | "compliance" | "tracking" | "reputation";
-  // Universal values (number/protocols) are constants; `tracking` is
-  // localized via i18n (stats.tracking.value).
+  key: "kols" | "match" | "lifecycle" | "compliance";
+  // Universal values (number / protocols) are constants; `match` + `lifecycle`
+  // are localized via i18n (stats.<key>.value).
   value?: string;
 }> = [
-  { key: "templates", value: "1000+" },
+  { key: "kols", value: "6,000+" },
+  { key: "match" },
+  { key: "lifecycle" },
   { key: "compliance", value: "DKIM · SPF · DMARC" },
-  { key: "tracking" },
-  { key: "reputation", value: "98%" },
 ];
 
 export async function HeroVideo() {
@@ -80,8 +80,8 @@ export async function HeroVideo() {
           </a>
         </div>
 
-        {/* BL-115-F002 — email-collaboration data bar (4 highlights). See the
-            component docstring for the per-item truthfulness handling. */}
+        {/* BL-117-F001 — broad capability data bar (KOL pool / AI match /
+            end-to-end loop / email compliance). See docstring for truthfulness. */}
         <dl
           data-testid="landing-hero-stats"
           className="mx-auto mt-14 grid max-w-3xl grid-cols-2 gap-x-6 gap-y-8 border-t border-outline-variant/10 pt-10 sm:gap-x-10 md:max-w-4xl md:grid-cols-4"

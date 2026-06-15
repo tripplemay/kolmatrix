@@ -2188,27 +2188,28 @@
     "hero": {
       "kicker": "KOLMATRIX",
       "eyebrow": "GAME · KOL · AI · NATIVE",
-      "title_line1": "ゲーム KOL マーケティングの",
-      "title_line2": "メール協働ハブ",
-      "subtitle": "送達率の低さ、コンプライアンスリスク、分散したアウトリーチ —— KolMatrix はゲーム KOL メールを一つの協働センターに集約。DKIM/SPF/DMARC 対応、送達管理、開封率のリアルタイム追跡。",
+      "title_line1": "グローバルゲーム KOL マーケティングの",
+      "title_line2": "AI コマンドセンター",
+      "subtitle": "発見・マッチング・アウトリーチ・分析 —— KolMatrix はグローバルゲーム KOL マーケティングを、AI セマンティックマッチングからコンプライアンス対応のアウトリーチ、リアルタイム ROI まで一気通貫で実行します。",
       "ctaPrimary": "無料トライアルを申請",
       "ctaSecondary": "PRD 全文を見る",
       "videoAlt": "KolMatrix プロダクトデモループ",
       "videoFallbackHint": "(アニメーションは利用できません。静止画を表示中)",
       "illustrationAlt": "KolMatrix 統合ワークスペース — KOL 発見、AI レコメンド、キャンペーン分析",
       "stats": {
-        "templates": {
-          "label": "ゲームメールテンプレート"
+        "kols": {
+          "label": "グローバルゲーム KOL"
+        },
+        "match": {
+          "value": "AI セマンティックマッチ",
+          "label": "横断的に最適なクリエイターを発見"
+        },
+        "lifecycle": {
+          "value": "一気通貫",
+          "label": "発見・マッチング・アウトリーチ・分析"
         },
         "compliance": {
           "label": "メール送達コンプライアンス"
-        },
-        "tracking": {
-          "value": "開封率 · 送達率",
-          "label": "リアルタイム追跡"
-        },
-        "reputation": {
-          "label": "送信者レピュテーションスコア"
         }
       }
     },

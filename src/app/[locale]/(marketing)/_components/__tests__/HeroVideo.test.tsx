@@ -55,20 +55,23 @@ describe("BL-114 / BL-115 Hero", () => {
     expect(html).toContain("/landing/illustrations/hero-illustration.png");
   });
 
-  it("renders the 4-item email data bar with truthful values (no reply rate)", async () => {
+  // BL-117-F001 — broad capability data bar (KOLs / AI match / end-to-end /
+  // email compliance), replacing the BL-115 all-email bar.
+  it("renders the 4-item broad capability data bar (no reply rate)", async () => {
     const html = renderToStaticMarkup(await HeroVideo());
 
     expect(html).toContain('data-testid="landing-hero-stats"');
-    for (const key of ["templates", "compliance", "tracking", "reputation"]) {
+    for (const key of ["kols", "match", "lifecycle", "compliance"]) {
       expect(html).toContain(`data-testid="landing-hero-stat-${key}"`);
       expect(html).toContain(`landing.hero.stats.${key}.label`);
     }
     expect(html.match(/data-testid="landing-hero-stat-/g)?.length).toBe(4);
 
-    expect(html).toContain("1000+");
+    // Constant values + localized match/lifecycle values.
+    expect(html).toContain("6,000+");
     expect(html).toContain("DKIM · SPF · DMARC");
-    expect(html).toContain("98%");
-    expect(html).toContain("landing.hero.stats.tracking.value");
+    expect(html).toContain("landing.hero.stats.match.value");
+    expect(html).toContain("landing.hero.stats.lifecycle.value");
 
     // Truthfulness guard: reply rate must NOT appear (repliedAt never written).
     expect(html.toLowerCase()).not.toContain("reply rate");

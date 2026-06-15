@@ -2187,27 +2187,28 @@
     "hero": {
       "kicker": "KOLMATRIX",
       "eyebrow": "GAME · KOL · AI · NATIVE",
-      "title_line1": "Global game KOL marketing,",
-      "title_line2": "one email collaboration hub",
-      "subtitle": "Low deliverability, compliance risk, scattered outreach — KolMatrix unifies game KOL email with DKIM/SPF/DMARC compliance, deliverability management, and real-time open-rate tracking.",
+      "title_line1": "The AI command center for",
+      "title_line2": "global game KOL marketing",
+      "subtitle": "Discover, match, reach, and measure — KolMatrix runs your global game KOL marketing end to end, from AI semantic matching to compliant outreach and real-time ROI.",
       "ctaPrimary": "Start free trial",
       "ctaSecondary": "View full PRD",
       "videoAlt": "KolMatrix product demo loop",
       "videoFallbackHint": "(Animation unavailable; showing still image)",
       "illustrationAlt": "KolMatrix unified workspace — KOL discovery, AI recommendations, and campaign analytics",
       "stats": {
-        "templates": {
-          "label": "Game email templates"
+        "kols": {
+          "label": "Global game KOLs"
+        },
+        "match": {
+          "value": "AI semantic match",
+          "label": "Find creators across platforms"
+        },
+        "lifecycle": {
+          "value": "End-to-end",
+          "label": "Discover · match · reach · measure"
         },
         "compliance": {
           "label": "Email deliverability compliance"
-        },
-        "tracking": {
-          "value": "Open & delivery rate",
-          "label": "Real-time tracking"
-        },
-        "reputation": {
-          "label": "Sender reputation score"
         }
       }
     },
