@@ -1,75 +1,57 @@
 [
   {
     "id": "F001",
-    "title": "转化机制: 3字段试用表单 + UTM捕获 + 埋点 + PRD/演示链接 (generator, 投放刚需)",
+    "title": "Hero 重定位广义(全球KOL智能营销) (generator) 【tone-setter, Hero-first 检查点】",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 3.0,
-    "status": "done",
+    "estimated_hours": 1.5,
+    "status": "pending",
     "acceptance": [
-      "3字段试用表单(姓名/公司邮箱/所属游戏工作室)→server action落leads(新表或复用request-access)+校验+成功态; 主CTA'立即申请试用'触发(模态或Hero内嵌)",
-      "UTM捕获: URL query(utm_source/medium/campaign)存入lead+cookie分渠道归因",
-      "埋点: CTA点击/表单提交/滚动深度/关键模块停留→event_log或前端hook(投放全链路)",
-      "副CTA'查看完整PRD文档'→kol.saga1001.com/prd(⚠️部署前确认链接); 底部'预约1v1产品演示'(表单或日历链接)",
-      "单测(表单校验/提交落库/UTM捕获/埋点触发); L1全绿+npm run build",
-      "⚠️交付节奏(用户硬要求): 本feature完成→部署staging→STOP等用户确认效果通过→Planner才放行下一feature; 不通过则在staging迭代"
+      "Hero 标题从'email collaboration hub'→全球游戏KOL智能营销平台/AI命令中心(可复用BL-114调性 'The AI command center for global game KOL marketing')",
+      "副标覆盖 发现→AI匹配→触达→复盘 全流程(邮件只是其一, 不再以送达/合规/开信率为主轴)",
+      "Hero 4数据栏全邮件→广义(如6000+全球KOL/AI语义匹配/全流程闭环/+1送达合规), 不再4条全邮件",
+      "视觉沿用Neural Velocity; i18n 5 locale + 单测 + npm run build",
+      "⚠️交付节奏(用户硬要求): 本feature完成→部署staging→STOP等用户确认广义方向通过→Planner才放行F002; 不通过则staging迭代"
     ]
   },
   {
     "id": "F002",
-    "title": "Hero 邮件协作侧重 + 数据栏 + 痛点副标 (generator)",
+    "title": "痛点拓宽 + section 顺序再平衡 (generator)",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "done",
+    "estimated_hours": 2.0,
+    "status": "pending",
     "acceptance": [
-      "Hero标题/副标向邮件协作中心侧重(按文档口径: 送达率/合规/开信率痛点)",
-      "Hero核心数据栏4条(按文档口径, 见spec §1处理: 模板库/合规配置/开信率送达率/信誉分)",
-      "视觉沿用Neural Velocity(渐变/光晕/色阶); i18n 5 locale + 单测 + npm run build",
-      "⚠️交付节奏(用户硬要求): 本feature完成→部署staging→STOP等用户确认效果通过→Planner才放行下一feature; 不通过则在staging迭代"
+      "痛点4卡全邮件→KOL营销4痛点: 跨平台找达人散乱/筛选慢不精准(AI匹配解)/转化不可控(数据复盘解)/邮件送达合规(保留1条)",
+      "section顺序: Features(Brief/Match/Reach/Insight)上移紧跟痛点(广义能力先亮相); EmailCenterDemo降为Reach触达深度展示移到Features之后弱化(不删降权)",
+      "i18n + 单测 + npm run build",
+      "⚠️交付节奏(用户硬要求): 本feature完成→部署staging→STOP等用户确认通过→Planner才放行F003; 不通过则staging迭代"
     ]
   },
   {
     "id": "F003",
-    "title": "痛点模块 + 邮件中心演示模块 (重新加回, BL-114删过) (generator)",
+    "title": "FAQ 混合(广义+邮件) (generator)",
     "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 2.5,
-    "status": "done",
+    "priority": "medium",
+    "estimated_hours": 1.0,
+    "status": "pending",
     "acceptance": [
-      "痛点模块(文档4条邮件痛点: 跨平台邮件乱/送达率低/无法追踪状态/无合规校验)新加section",
-      "邮件中心演示模块: 复用真实reach UI(DomainHealthCard DKIM/SPF/DMARC+信誉分 / 最近发送列表 / 游戏垂类模板库)截图或静态展示+标功能点",
+      "FAQ 4邮件问→2广义(怎么找达人/AI匹配准不准 + ROI怎么算)+2邮件",
       "i18n 5 locale + 单测 + npm run build",
-      "⚠️交付节奏(用户硬要求): 本feature完成→部署staging→STOP等用户确认效果通过→Planner才放行下一feature; 不通过则在staging迭代"
+      "⚠️交付节奏(用户硬要求): 本feature完成→部署staging→STOP等用户确认通过→Planner才放行F004; 不通过则staging迭代"
     ]
   },
   {
     "id": "F004",
-    "title": "信任背书(真实框架) + 邮件FAQ + SEO关键词 (generator)",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 2.0,
-    "status": "done",
-    "acceptance": [
-      "游戏IP用'游戏垂类覆盖/模板主题'展示(非Trusted by客户, 避虚假背书+商标风险); 安全认证仅写真实具备的; 客户证言留占位(待用户给真实来源)",
-      "FAQ邮件化(文档3问: 自定义游戏IP模板/DKIM·SPF技术成本/数据更新频率)替换现通用FAQ",
-      "SEO关键词自然植入(游戏KOL营销/出海邮件管理/送达率优化/DKIM·SPF合规/游戏合作模板/开信率追踪)",
-      "i18n 5 locale + 单测 + npm run build",
-      "⚠️交付节奏(用户硬要求): 本feature完成→部署staging→STOP等用户确认效果通过→Planner才放行下一feature; 不通过则在staging迭代"
-    ]
-  },
-  {
-    "id": "F005",
     "title": "Codex L1+L2 + signoff (executor:codex)",
     "executor": "codex",
-    "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "skipped",
-    "skip_reason": "用户2026-06-15分批逐个确认每feature staging+手工免验置done, Codex F005免除. 覆盖: 用户逐个确认+CI全绿+转化数据路径sanity check为真+staging healthy. soft-watch: 转化端到端实测/PRD链接/Lighthouse未再验(建议投放/prod前). closure docs/test-reports/BL-115-closure-2026-06-15.md.",
+    "priority": "medium",
+    "estimated_hours": 1.0,
+    "status": "pending",
     "acceptance": [
       "L1: lint 0err warn≤3 / tsc=0 / npm test + npm run build",
-      "L2 staging: ① 3字段表单提交落库+UTM捕获+埋点触发(投放转化链路通) ② PRD/演示链接正确 ③ 邮件协作定位+痛点+邮件中心演示+邮件FAQ体现 ④ Lighthouse perf99/WCAG AA/reduced-motion不回退 ⑤ visual baseline重拍 ⑥ 5 locale+响应式PC/移动",
-      "signoff docs/test-reports/BL-115-signoff-2026-06-XX.md"
+      "L2 staging: ① 整页定位回到'全球KOL智能营销'(Hero广义/Features突出/痛点拓宽/邮件降为Reach深度/FAQ混合) ② BL-115转化机制(表单/UTM/埋点)未破坏 ③ Lighthouse perf99/WCAG AA/reduced-motion不回退 ④ visual baseline重拍 ⑤ 5 locale/响应式",
+      "signoff docs/test-reports/BL-117-signoff-2026-06-XX.md"
     ]
   }
 ]

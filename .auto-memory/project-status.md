@@ -3,6 +3,9 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
+## 🚧 BL-117-landing-positioning-rebalance BUILDING (0/4) — 落地页定位再平衡(邮件→全球KOL智能营销)
+- 用户'页面太偏邮件, 突出全球KOL智能营销定位'. 根因(分析): BL-115为投放文档过度旋转邮件(Hero=email hub+前几屏全邮件), 广义Features被埋. 决策: 主站直接广义不另做/lp + 每feature staging检查点(Hero先做先验). 保留BL-115转化机制+真实性把关
+- F001 Hero重定位广义(tone-setter) / F002 痛点拓宽+section顺序(Features上移/邮件演示降Reach深度) / F003 FAQ混合 / F004 Codex. ⚠️一次只做一个→staging→用户确认→放行下一个. 守perf99/a11y. 下一步 Generator F001
 ## ✅ BL-115-landing-conversion-email-positioning DONE (F001-F004 done 用户逐个确认, F005 Codex用户免除, closure @ docs/test-reports/BL-115-closure-2026-06-15.md) — 落地页折中加装(投放规范对齐)
 - ✅ **全 4 generator feature done + 用户确认 + main CI 全绿(run 27488383379) + staging @ 9ea2c73(git_sha=HEAD healthy)**. F002 Hero邮件定位+数据栏@9196ba7 / F001 转化机制@9b84d5f(lead表migration+TrialLeadCta模态+UTM cookie+埋点 LandingAnalytics+/api/landing-event→event_log+PRD占位/演示) / F003 痛点4卡+EmailCenterDemo 3面板@9954338 / F004 信任真实框架(genre垂类+安全badge+证言占位, 去假wordmark)+邮件FAQ+SEO@de2cfe4. landing-*.png baseline 已 update-visual-baselines workflow 重拍@9ea2c73
 - ⏭️ **F005 = Codex/Reviewer 验收(verifying)**: L1 + L2 staging(转化链路 表单落库/UTM/埋点 event_log + 邮件定位/痛点/演示/FAQ + Lighthouse perf99/WCAG AA/reduced-motion + baseline 绿 + 5 locale/响应式). 详见 progress.generator_handoff. signoff → docs/test-reports/BL-115-signoff-2026-06-14.md
