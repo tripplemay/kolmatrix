@@ -2180,9 +2180,9 @@
   },
   "landing": {
     "meta": {
-      "title": "KolMatrix — Game KOL Email Marketing & Outreach Command Center",
-      "description": "The email collaboration hub for global game KOL marketing — game-vertical templates, DKIM/SPF/DMARC deliverability compliance, and real-time open-rate tracking across YouTube, TikTok, Twitch, and Bilibili.",
-      "keywords": "game KOL marketing, game email outreach, email deliverability, DKIM SPF DMARC compliance, game collaboration templates, open rate tracking"
+      "title": "KolMatrix — Global Game KOL Marketing Command Center",
+      "description": "The AI command center for global game KOL marketing — semantic creator discovery and AI matching, compliant outreach, and real-time ROI across YouTube, TikTok, Twitch, and Bilibili.",
+      "keywords": "game KOL marketing, AI creator matching, KOL discovery, campaign ROI, email deliverability, DKIM SPF DMARC compliance, game collaboration templates"
     },
     "hero": {
       "kicker": "KOLMATRIX",
@@ -2251,20 +2251,20 @@
       "sectionTitle": "Frequently asked",
       "items": [
         {
-          "q": "Can we customize email templates for our game IP?",
-          "a": "Yes — duplicate any template and adapt the copy, tone, and offer to your game's genre and collaboration stage. The library is organized by game vertical so you start from a relevant base."
+          "q": "How do you find and shortlist the right KOLs?",
+          "a": "Search 6,000+ vetted creators across YouTube, TikTok, Twitch, and Bilibili, then let semantic AI matching rank them by fit to your game's genre, audience, and brief — each with a fit score and per-criterion reasoning."
+        },
+        {
+          "q": "Is the AI matching accurate, and how do you measure ROI?",
+          "a": "Matching pairs semantic analysis of your brief with each creator's history, so every recommendation carries an explainable fit score. After a campaign, the Insight dashboard tracks plays, engagement, and conversion so you can see what actually worked."
         },
         {
           "q": "Is DKIM/SPF/DMARC setup a technical burden?",
           "a": "None on your side. Email sends from our pre-verified sending domain with DKIM, SPF and DMARC already configured — no DNS or DevOps work for your team."
         },
         {
-          "q": "How fresh is the email data?",
-          "a": "Delivery and open status are real-time; plays and engagement metrics update T+1."
-        },
-        {
-          "q": "What does the trial include?",
-          "a": "Full access to the email center — template library, domain health, sending, and delivery/open tracking — with real data and no credit card."
+          "q": "Can we customize email templates for our game IP?",
+          "a": "Yes — duplicate any template and adapt the copy, tone, and offer to your game's genre and collaboration stage. The library is organized by game vertical so you start from a relevant base."
         }
       ]
     },

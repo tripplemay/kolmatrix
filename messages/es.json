@@ -2181,9 +2181,9 @@
   },
   "landing": {
     "meta": {
-      "title": "KolMatrix — Centro de Marketing y Outreach por Email para KOLs de Gaming",
-      "description": "El hub de colaboración por email para el marketing global de KOLs de gaming — plantillas por vertical de juego, cumplimiento de entregabilidad DKIM/SPF/DMARC y seguimiento de tasa de apertura en tiempo real en YouTube, TikTok, Twitch y Bilibili.",
-      "keywords": "marketing de KOL de gaming, gestión de email global, optimización de entregabilidad, cumplimiento DKIM SPF DMARC, plantillas de colaboración de juegos, seguimiento de tasa de apertura"
+      "title": "KolMatrix — Centro de Comando de Marketing Global de KOLs de Gaming",
+      "description": "El centro de comando con IA para el marketing global de KOLs de gaming — descubrimiento semántico de creadores y emparejamiento con IA, alcance conforme y ROI en tiempo real en YouTube, TikTok, Twitch y Bilibili.",
+      "keywords": "marketing de KOL de gaming, emparejamiento de creadores con IA, descubrimiento de KOL, ROI de campaña, entregabilidad de email, cumplimiento DKIM SPF DMARC, plantillas de colaboración de juegos"
     },
     "hero": {
       "kicker": "KOLMATRIX",
@@ -2252,20 +2252,20 @@
       "sectionTitle": "Preguntas frecuentes",
       "items": [
         {
-          "q": "¿Podemos personalizar plantillas de email para nuestra IP de juego?",
-          "a": "Sí: duplica cualquier plantilla y adapta el texto, el tono y la oferta al género y la fase de colaboración de tu juego. La biblioteca está organizada por vertical de juego."
+          "q": "¿Cómo encuentran y preseleccionan a los KOLs adecuados?",
+          "a": "Busca entre más de 6.000 creadores verificados en YouTube, TikTok, Twitch y Bilibili, y deja que el emparejamiento semántico con IA los ordene por afinidad con el género, la audiencia y el brief de tu juego — cada uno con una puntuación de afinidad y motivos por criterio."
+        },
+        {
+          "q": "¿Es preciso el emparejamiento con IA y cómo se mide el ROI?",
+          "a": "El emparejamiento combina el análisis semántico de tu brief con el historial de cada creador, así cada recomendación lleva una puntuación de afinidad explicable. Tras la campaña, el panel de Insight mide reproducciones, interacción y conversión para ver qué funcionó de verdad."
         },
         {
           "q": "¿Configurar DKIM/SPF/DMARC es una carga técnica?",
           "a": "Ninguna por tu parte. El email se envía desde nuestro dominio verificado con DKIM, SPF y DMARC ya configurados — sin trabajo de DNS ni DevOps para tu equipo."
         },
         {
-          "q": "¿Con qué frecuencia se actualizan los datos de email?",
-          "a": "El estado de entrega y apertura es en tiempo real; las métricas de reproducciones e interacción se actualizan en T+1."
-        },
-        {
-          "q": "¿Qué incluye la prueba?",
-          "a": "Acceso completo al centro de email — biblioteca de plantillas, salud del dominio, envío y seguimiento de entrega/apertura — con datos reales y sin tarjeta de crédito."
+          "q": "¿Podemos personalizar plantillas de email para nuestra IP de juego?",
+          "a": "Sí: duplica cualquier plantilla y adapta el texto, el tono y la oferta al género y la fase de colaboración de tu juego. La biblioteca está organizada por vertical de juego."
         }
       ]
     },
