@@ -3,10 +3,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-117-landing-positioning-rebalance BUILDING (2/4) — 落地页定位再平衡(邮件→全球KOL智能营销) ⏸️ F002 检查点
-- ⏸️ **F002 done(痛点拓宽+邮件演示降权)+ staging @ e8f27c9(healthy) — 待用户确认**. PainPoints 4卡 邮件→广义KOL痛点(找达人散乱/筛选不精准/转化不可控/邮件合规保留1); EmailCenterDemo 加'REACH·四大能力之一'eyebrow+标题'One email hub'→'深挖Reach'降权为支柱深挖. 用户走查 https://staging.kol.guangai.ai/en
-- ✅ F001 done @ 07dd1e8(Hero 重定位广义)+ **用户确认方向**; 用户检查点追加要求**删 Hero PRD 文档按钮**→已删(3d60477, Hero 现单 trial CTA). BL-115 转化机制全保留(模态/UTM/埋点/Lead表)
-- ⚠️ landing.meta.description(SEO)仍以'email collaboration hub'开头, 建议折入 F003 一起 rebalance. woff2 暂留 HEAD 超集(F002 弃 inbox/visibility_off 未收缩, coverage 7/7 过), 待 baseline 重拍统一. 剩 F003 FAQ混合 / F004 Codex. ⚠️一次只做一个→staging→确认→放行
+## 🚧 BL-117-landing-positioning-rebalance BUILDING (3/4 generator done) — 落地页定位再平衡(邮件→全球KOL智能营销) ⏸️ F003 检查点(最后一个 generator feature)
+- ⏸️ **F003 done(FAQ混合+meta广义)+ staging @ 80fe1ee(healthy) — 待用户确认; 确认后整批 generator 完成→重拍 baseline→切 verifying 交 Codex F004**(未自动切). FAQ 4邮件→2广义(找达人/AI匹配+ROI, 不提回复率)+2邮件(DKIM/模板); SEO meta 回广义(title/desc 去 email-hub→Command Center, 解决残留偏邮件). icon 子集 107→105 收缩随附. 用户走查 https://staging.kol.guangai.ai/en
+- ✅ 全 3 generator feature done: F001 Hero广义@07dd1e8(+用户要求删 PRD 按钮@3d60477, Hero 现单 trial CTA) / F002 痛点拓宽+邮件演示降Reach@e8f27c9 / F003 FAQ混合+meta广义@80fe1ee. 用户已确认 F001-F002. BL-115 转化机制全保留(模态/UTM/埋点/Lead表)
+- ⏭️ 用户确认 F003 后: ① update-visual-baselines workflow 重拍 landing-*.png(Hero/痛点/演示/FAQ 全变)→bot-commit→手动 gh workflow run ci.yml 验绿 ② staging 重部署 baseline HEAD ③切 verifying + Codex F004 handoff(整页广义回归 + 转化机制未破坏 + Lighthouse + baseline + 5 locale). 真实性延续(回复率不提/IP genre/证言占位)
 ## ✅ BL-115-landing-conversion-email-positioning DONE (F001-F004 done 用户逐个确认, F005 Codex用户免除, closure @ docs/test-reports/BL-115-closure-2026-06-15.md) — 落地页折中加装(投放规范对齐)
 - ✅ **全 4 generator feature done + 用户确认 + main CI 全绿(run 27488383379) + staging @ 9ea2c73(git_sha=HEAD healthy)**. F002 Hero邮件定位+数据栏@9196ba7 / F001 转化机制@9b84d5f(lead表migration+TrialLeadCta模态+UTM cookie+埋点 LandingAnalytics+/api/landing-event→event_log+PRD占位/演示) / F003 痛点4卡+EmailCenterDemo 3面板@9954338 / F004 信任真实框架(genre垂类+安全badge+证言占位, 去假wordmark)+邮件FAQ+SEO@de2cfe4. landing-*.png baseline 已 update-visual-baselines workflow 重拍@9ea2c73
 - ⏭️ **F005 = Codex/Reviewer 验收(verifying)**: L1 + L2 staging(转化链路 表单落库/UTM/埋点 event_log + 邮件定位/痛点/演示/FAQ + Lighthouse perf99/WCAG AA/reduced-motion + baseline 绿 + 5 locale/响应式). 详见 progress.generator_handoff. signoff → docs/test-reports/BL-115-signoff-2026-06-14.md

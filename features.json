@@ -34,7 +34,7 @@
     "executor": "generator",
     "priority": "medium",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "done",
     "acceptance": [
       "FAQ 4邮件问→2广义(怎么找达人/AI匹配准不准 + ROI怎么算)+2邮件",
       "i18n 5 locale + 单测 + npm run build",
