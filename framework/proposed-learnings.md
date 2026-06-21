@@ -311,3 +311,19 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 **建议写入：** `framework/harness/generator.md` §15（Perf/image 邻近）或新 §"视觉重做批次"：1=全局 token 爆炸半径自检；2=baseline 重拍 workflow + bot-commit 手动触发 ci 流程（与 `deploy-patterns.md` bot commit cascade 节交叉引用）。
 
 **状态：** 待确认
+
+---
+
+## [2026-06-21] Claude CLI — 来源：BL-117 staging 部署撑垮共享 prod VM 事故
+
+**类型：** 新坑 / 铁律补充（ops 安全）
+
+**内容：** 一次 staging 重部署的 `npm run build` 把**共享 8GB VM**（prod + staging 同机 `34.180.93.185`）的内存/swap 撑爆，导致 sshd（banner exchange 超时）+ nginx（443 超时）~50 分钟无响应，**prod `kol.guangai.ai` 一并短时不可用**。诊断特征：`ping` 通 + TCP 22/443 能 connect，但用户态服务不响应 = 资源饥饿（非网络断、非整机崩）。三个叠加放大因素 + 三个非显性坑：
+1. **staging build 在共享 prod VM 上会拖垮 prod。** `environment.md` 已记 staging build 需 `NODE_OPTIONS=4096`（默认 1.6G build OOM），但 4G heap + prod 常驻在 8G 机上仍可能 swap thrash。缓解：build 前 `pkill -f "next build"` 防孤儿；**deploy 期间绝不并发开多个 SSH 探测**（会加剧负载、撞 sshd MaxStartups）；考虑错峰/限并发/独立 build host。
+2. **`TaskStop`/杀本地后台 ssh ≠ 杀远端进程。** 本地 ssh 客户端被杀后，远端 `next build` 常成**孤儿**继续吃内存，VM 不自愈。需 SSH 进去 `pkill` 或 reboot 才能清。
+3. **本机无 `gcloud` + SSH 死 = 无法自助 reboot GCP VM。** 只能靠用户 GCP console reset。建议：本机/CI 备一份 gcloud（或 SA 凭据）以便 VM 故障时 `gcloud compute instances reset` 自助恢复。
+- **恢复后善后：** 中断的 build 留下不完整 `.next` → staging pm2 crash-loop（restart_time 飙高 / status=launching / 0b mem）；修复 = `pm2 delete` + `rm -rf .next` + 干净重 build（确认 `free -m` 有余量再 build）。
+
+**建议写入：** `framework/harness/deploy-patterns.md`（新增「staging build 不得撑垮共享 prod VM」§：防孤儿 + 禁并发探测 + 错峰 + gcloud 备用 + 中断后 .next 清理 crash-loop 修复）。
+
+**状态：** 待确认

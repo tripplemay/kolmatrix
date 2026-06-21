@@ -3,10 +3,10 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-117-landing-positioning-rebalance BUILDING (3/4 generator done) — 落地页定位再平衡(邮件→全球KOL智能营销) ⏸️ F003 检查点(最后一个 generator feature)
-- ⏸️ **F003 done(FAQ混合+meta广义)+ staging @ 80fe1ee(healthy) — 待用户确认; 确认后整批 generator 完成→重拍 baseline→切 verifying 交 Codex F004**(未自动切). FAQ 4邮件→2广义(找达人/AI匹配+ROI, 不提回复率)+2邮件(DKIM/模板); SEO meta 回广义(title/desc 去 email-hub→Command Center, 解决残留偏邮件). icon 子集 107→105 收缩随附. 用户走查 https://staging.kol.guangai.ai/en
-- ✅ 全 3 generator feature done: F001 Hero广义@07dd1e8(+用户要求删 PRD 按钮@3d60477, Hero 现单 trial CTA) / F002 痛点拓宽+邮件演示降Reach@e8f27c9 / F003 FAQ混合+meta广义@80fe1ee. 用户已确认 F001-F002. BL-115 转化机制全保留(模态/UTM/埋点/Lead表)
-- ⏭️ 用户确认 F003 后: ① update-visual-baselines workflow 重拍 landing-*.png(Hero/痛点/演示/FAQ 全变)→bot-commit→手动 gh workflow run ci.yml 验绿 ② staging 重部署 baseline HEAD ③切 verifying + Codex F004 handoff(整页广义回归 + 转化机制未破坏 + Lighthouse + baseline + 5 locale). 真实性延续(回复率不提/IP genre/证言占位)
+## 🚧 BL-117-landing-positioning-rebalance VERIFYING (3/3 generator done, 用户逐个确认) — 落地页定位再平衡, 待 Codex F004 验收
+- ✅ **全 3 generator feature done + 用户确认 + main CI 全绿(run 27894802484 @ baseline 04c0431) + staging @ 9f254e1(git_sha=HEAD healthy, db ok)**. F001 Hero广义@07dd1e8(+用户要求删 PRD 按钮@3d60477) / F002 痛点拓宽+EmailCenterDemo降'REACH四大能力之一'@e8f27c9 / F003 FAQ 2广义+2邮件+SEO meta 回广义@80fe1ee. landing-*.png baseline 已 workflow 重拍@04c0431. BL-115 转化机制全保留(模态/UTM/埋点/Lead表)
+- ⚠️⚠️ **事故已闭环(教训重要)**: 重拍后 staging 重部署 `npm run build` 撑爆共享 8GB VM(prod+staging 同机)→ sshd/nginx ~50min 无响应 + **prod 短时不可用**; 本机无 gcloud/SSH 死无法自助 reboot → **用户 GCP console reset VM** 恢复 → 我清 .next 干净重 build 修好 staging. 已沉淀 proposed-learning(staging build 别撑垮共享 prod VM: 防孤儿/勿并发探测/错峰)
+- ⏭️ **F004 = Codex 验收**: L1 + L2 staging(整页广义回归: Hero广义/Features突出/痛点拓宽/邮件降Reach/FAQ混合/meta广义 + BL-115 转化机制未破坏 + Lighthouse perf99/a11y + baseline绿 + 5 locale). 详见 progress.generator_handoff. signoff → docs/test-reports/BL-117-signoff-2026-06-21.md. 真实性延续(回复率不提/IP genre/证言占位)
 ## ✅ BL-115-landing-conversion-email-positioning DONE (F001-F004 done 用户逐个确认, F005 Codex用户免除, closure @ docs/test-reports/BL-115-closure-2026-06-15.md) — 落地页折中加装(投放规范对齐)
 - ✅ **全 4 generator feature done + 用户确认 + main CI 全绿(run 27488383379) + staging @ 9ea2c73(git_sha=HEAD healthy)**. F002 Hero邮件定位+数据栏@9196ba7 / F001 转化机制@9b84d5f(lead表migration+TrialLeadCta模态+UTM cookie+埋点 LandingAnalytics+/api/landing-event→event_log+PRD占位/演示) / F003 痛点4卡+EmailCenterDemo 3面板@9954338 / F004 信任真实框架(genre垂类+安全badge+证言占位, 去假wordmark)+邮件FAQ+SEO@de2cfe4. landing-*.png baseline 已 update-visual-baselines workflow 重拍@9ea2c73
 - ⏭️ **F005 = Codex/Reviewer 验收(verifying)**: L1 + L2 staging(转化链路 表单落库/UTM/埋点 event_log + 邮件定位/痛点/演示/FAQ + Lighthouse perf99/WCAG AA/reduced-motion + baseline 绿 + 5 locale/响应式). 详见 progress.generator_handoff. signoff → docs/test-reports/BL-115-signoff-2026-06-14.md
