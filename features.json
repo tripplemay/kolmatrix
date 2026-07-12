@@ -1,58 +1,87 @@
 [
   {
-    "id": "F001",
-    "title": "Hero 重定位广义(全球KOL智能营销) (generator) 【tone-setter, Hero-first 检查点】",
+    "id": "F-MIG-01",
+    "title": "容器化部署基座 + 入口配置（next standalone / Dockerfile / compose+pgvector+migrate / .env 模板 / nginx / cron）",
     "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 4.0,
+    "status": "pending",
+    "source": "spec §4 D1-D4/D6/D8, §5 F-MIG-01；用户裁决容器化 GHCR-pull + 直连拓扑",
+    "acceptance": [
+      "next.config.ts 加 output:'standalone'（D2）",
+      "新增 Dockerfile（standalone 多阶段，app + migrate 两 target 或两镜像）+ .dockerignore",
+      "新增 docker-compose.prod.yml：app(127.0.0.1:3001, HOSTNAME=0.0.0.0) + postgres(pgvector/pgvector:pg17 匹配旧机, 实操前确认 major) + redis:7-alpine + 一次性 migrate 服务；pg/redis 不发布 host 端口；命名卷；env_file .env",
+      "migrate 路径（D4/H1/H3/H4）：pg init 建 kolmatrix_app role + DB kolmatrix；migrate 服务 CREATE EXTENSION vector + prisma migrate deploy + ALTER ROLE kolmatrix_app WITH PASSWORD（从 env）",
+      "新增 .env.production.example（deploysvr 版，仅键名占位禁真值）：DATABASE_URL(postgres:5432)/REDIS_URL(redis:6379/1)/NEXTAUTH_SECRET/AUTH_SECRET/KOLMATRIX_APP_PASSWORD/AIGCGATEWAY_BASE_URL/AIGCGATEWAY_API_KEY/RESEND_API_KEY/APIFY_KOL_BASE_URL/APIFY_KOL_BUSINESS_API_KEY/YOUTUBE_API_KEY/全部 AIGCGATEWAY_*_ACTION_ID/NEXTAUTH_URL",
+      "新增 deploy/nginx/kolmatrix.conf：kol.guangai.ai 公网 80/443 反代 127.0.0.1:3001 + ws upgrade + 安全头 + kolquest.com 301 块",
+      "cron 容器化（D8）：kolmatrix-kpi-snapshot + backup-retention 改 host cron 调 docker compose exec，脚本/文档就绪",
+      "不改任何 src/** 产品代码；npx tsc --noEmit + npm run build PASS；独立 commit"
+    ]
+  },
+  {
+    "id": "F-MIG-02",
+    "title": "CI/CD 管道改造 — 镜像构建推 GHCR + deploy-prod 改写为 pull+compose",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 2.5,
+    "status": "pending",
+    "source": "spec §4 D5, §5 F-MIG-02",
+    "acceptance": [
+      "新增 build-push workflow：main push → docker build app + migrate → 推 ghcr.io/tripplemay/kolmatrix/{app,migrate}:<git-sha>+:latest（permissions packages:write, 登录 GHCR）",
+      "改写 .github/workflows/deploy-prod.yml：workflow_dispatch 保留 → SSH deploysvr → cd /opt/apps/kolmatrix → 设 IMAGE_TAG → docker compose pull → migrate → up -d → 健康检查 curl -sf http://127.0.0.1:3001/api/health（重试）",
+      "文档化 GitHub secrets 更新清单：PROD_HOST=194.238.26.173 / PROD_USER=root / PROD_SSH_KEY(deploysvr 私钥)，标注旧值 34.180.93.185 作回滚",
+      "deploy-staging.yml / seed-prod.yml 标注 deprecated（决策 A 弃 staging）",
+      "ci.yml 保持不回归（lint+tsc+vitest+build）；独立 commit"
+    ]
+  },
+  {
+    "id": "F-MIG-03",
+    "title": "apify-kol-service 随迁 deploysvr（修 crash-loop + 迁 docker 栈含 pg:15432）",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 3.0,
+    "status": "pending",
+    "source": "spec §4 D9, §5 F-MIG-03；用户决策 B",
+    "acceptance": [
+      "诊断并修复旧机 apify-kol-service 现有 crash-loop（Restarting）根因",
+      "把 apify-kol-service docker 栈（含自带 postgres:15432）迁到 deploysvr；.env(TIKHUB/APIFY/BUSINESS/ADMIN token 从旧机原样迁, 禁入仓)",
+      "host 端口暴露 3004:3003 供 KOLMatrix 内网 localhost:3004 调用",
+      "验证 curl http://localhost:3004/health 200 + 一次 read GET /kol 正常",
+      "KOLMatrix 侧无代码改动；实操记录写入 migration runbook",
+      "须在 KOLMatrix prod 割接（F-MIG-04 P3/P4）之前完成（H7 先行）"
+    ]
+  },
+  {
+    "id": "F-MIG-04",
+    "title": "迁移 runbook + 生产割接实操（P0-P6，受监督，不可逆门禁 go/no-go）",
+    "executor": "generator",
+    "priority": "high",
+    "estimated_hours": 4.0,
+    "status": "pending",
+    "source": "spec §4 D7/D10/D11, §5 F-MIG-04, §7 回滚；对标 aigc deploysvr-migration-runbook.md",
+    "acceptance": [
+      "新增 docs/ops/deploysvr-kol-migration-runbook.md：P0 准备(建 /opt/apps/kolmatrix + .env 600 + certbot DNS-01 复用) / P2 起新栈(compose up + 灌旧库快照演练 + loopback 冒烟 /api/health+登录+AI定制+KOL流程) / P3 数据终态同步(停旧写→pg_dump kolmatrix→clean restore→逐表行数 parity；Redis 弃旧起新) / P4 边缘割接(Certbot DNS-01 预签 kol+kolquest→装 nginx→Cloudflare A 切→更新 GitHub secrets) / P5 观察期+回滚就绪 / P6 退役门禁(旧 VM 整机退役)",
+      "按 runbook 执行 P0-P5 受监督实操",
+      "H6 三个不可逆门禁(数据终态同步/DNS 切换/旧机停写)执行前取得用户显式 go/no-go",
+      "H1/H2 secrets(kolmatrix_app 密码/NEXTAUTH/AUTH)从旧机原样迁移，禁写入仓库",
+      "割接完成回写 runbook 实测 live state/parity/rollback controls"
+    ]
+  },
+  {
+    "id": "F-MIG-05",
+    "title": "Codex 验收 — 新栈冒烟 + 数据 parity + RLS 隔离 + 直连可达 + 回滚演练 + signoff",
+    "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "done",
+    "status": "pending",
+    "source": "spec §5 F-MIG-05, §6 验收标准",
     "acceptance": [
-      "Hero 标题从'email collaboration hub'→全球游戏KOL智能营销平台/AI命令中心(可复用BL-114调性 'The AI command center for global game KOL marketing')",
-      "副标覆盖 发现→AI匹配→触达→复盘 全流程(邮件只是其一, 不再以送达/合规/开信率为主轴)",
-      "Hero 4数据栏全邮件→广义(如6000+全球KOL/AI语义匹配/全流程闭环/+1送达合规), 不再4条全邮件",
-      "视觉沿用Neural Velocity; i18n 5 locale + 单测 + npm run build",
-      "⚠️交付节奏(用户硬要求): 本feature完成→部署staging→STOP等用户确认广义方向通过→Planner才放行F002; 不通过则staging迭代"
-    ]
-  },
-  {
-    "id": "F002",
-    "title": "痛点拓宽 + section 顺序再平衡 (generator)",
-    "executor": "generator",
-    "priority": "high",
-    "estimated_hours": 2.0,
-    "status": "done",
-    "acceptance": [
-      "痛点4卡全邮件→KOL营销4痛点: 跨平台找达人散乱/筛选慢不精准(AI匹配解)/转化不可控(数据复盘解)/邮件送达合规(保留1条)",
-      "section顺序: Features(Brief/Match/Reach/Insight)上移紧跟痛点(广义能力先亮相); EmailCenterDemo降为Reach触达深度展示移到Features之后弱化(不删降权)",
-      "i18n + 单测 + npm run build",
-      "⚠️交付节奏(用户硬要求): 本feature完成→部署staging→STOP等用户确认通过→Planner才放行F003; 不通过则staging迭代"
-    ]
-  },
-  {
-    "id": "F003",
-    "title": "FAQ 混合(广义+邮件) (generator)",
-    "executor": "generator",
-    "priority": "medium",
-    "estimated_hours": 1.0,
-    "status": "done",
-    "acceptance": [
-      "FAQ 4邮件问→2广义(怎么找达人/AI匹配准不准 + ROI怎么算)+2邮件",
-      "i18n 5 locale + 单测 + npm run build",
-      "⚠️交付节奏(用户硬要求): 本feature完成→部署staging→STOP等用户确认通过→Planner才放行F004; 不通过则staging迭代"
-    ]
-  },
-  {
-    "id": "F004",
-    "title": "Codex L1+L2 + signoff (executor:codex)",
-    "executor": "codex",
-    "priority": "medium",
-    "estimated_hours": 1.0,
-    "status": "done",
-    "closed_note": "用户手工授权关闭 BL-117 并豁免 F004 Codex 验收(2026-07-12): 未执行 L1/L2, 无 signoff 报告. 同 BL-114/BL-115 F005 'Codex 用户授权免除' 先例.",
-    "acceptance": [
-      "L1: lint 0err warn≤3 / tsc=0 / npm test + npm run build",
-      "L2 staging: ① 整页定位回到'全球KOL智能营销'(Hero广义/Features突出/痛点拓宽/邮件降为Reach深度/FAQ混合) ② BL-115转化机制(表单/UTM/埋点)未破坏 ③ Lighthouse perf99/WCAG AA/reduced-motion不回退 ④ visual baseline重拍 ⑤ 5 locale/响应式",
-      "signoff docs/test-reports/BL-117-signoff-2026-06-XX.md"
+      "前置：F-MIG-01~04 完成、新栈已割接",
+      "冒烟：https://kol.guangai.ai 公网 → /api/health(db/redis ok) + 登录(prod 账号) + AI 邮件定制(验公网 aigcgateway) + 一条 KOL 流程(discovery/detail, 验 apify localhost:3004) + 发一封邮件(验 Resend+BullMQ)",
+      "数据 parity：新库关键表行数与旧库一致；抽查 RLS 多租户隔离生效(kolmatrix_app role)",
+      "直连可达 + TLS 有效 + 5 locale 抽查",
+      "回滚演练可行性(旧机可快速拉起 + 旧 DNS/PROD_HOST 回退路径成立，不真正回滚)",
+      "输出 docs/test-reports/BL-PROD-MIGRATE-DEPLOYSVR-signoff-YYYY-MM-DD.md 含命令/日志证据 + PASS/FAIL"
     ]
   }
 ]
