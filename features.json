@@ -5,7 +5,8 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "pending",
+    "status": "done",
+    "completed_note": "2026-07-12 Generator Kimi: 9 文件落地(next.config standalone / Dockerfile base→runner+migrate / .dockerignore / docker-compose.prod.yml pgvector+redis+migrate / postgres init 00-init.sh vector+kolmatrix_app / migrate-and-sync-role.sh / .env.production.example 全量键 / nginx kolmatrix.conf kol+kolquest301 / cron 模板). tsc=0 + npm run build PASS(standalone server.js+BUILD_ID 生成, --webpack 路径验证). 未改任何 src/**.",
     "source": "spec §4 D1-D4/D6/D8, §5 F-MIG-01；用户裁决容器化 GHCR-pull + 直连拓扑",
     "acceptance": [
       "next.config.ts 加 output:'standalone'（D2）",

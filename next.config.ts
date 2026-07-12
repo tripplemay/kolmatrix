@@ -21,6 +21,13 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
  *   to enforce.
  */
 const nextConfig: NextConfig = {
+  // BL-PROD-MIGRATE-DEPLOYSVR F-MIG-01 — containerized deploy on deploysvr.
+  // `standalone` emits `.next/standalone/server.js` + a minimal traced
+  // node_modules so the runtime Docker image stays small (no full deps,
+  // no `next start`). The Dockerfile `runner` stage copies
+  // `.next/standalone`, `.next/static`, `public`, and the generated Prisma
+  // client. Harmless for local `npm run dev` (dev server ignores it).
+  output: "standalone",
   images: {
     remotePatterns: [
       // YouTube — current sole KOL CDN surface

@@ -27,6 +27,8 @@ coverage/
 .env.*.local
 .env.production
 .env.production.*
+# BL-PROD-MIGRATE-DEPLOYSVR F-MIG-01：部署模板（仅键名占位，无真值），需入仓
+!.env.production.example
 .env.staging
 .env.staging.*
 

@@ -1,0 +1,43 @@
+# BL-PROD-MIGRATE-DEPLOYSVR F-MIG-01 — 缩小 build context + 防泄密。
+# base 阶段 `COPY . .` 需要 src/ prisma/ scripts/ messages/ public/ next.config.ts
+# tsconfig 等；以下为构建/运行都不需要或不可入镜像的内容。
+
+# 依赖与构建产物（镜像内重建）
+node_modules
+.next
+out
+
+# ⚠️ 密钥：绝不入镜像
+.env
+.env.*
+
+# 版本控制与 CI
+.git
+.github
+.gitignore
+
+# 测试 / 覆盖率 / E2E 产物
+coverage
+test-results
+playwright-report
+blob-report
+**/__tests__
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+
+# 文档 / 设计稿 / harness 状态（运行时无关，减小 context）
+docs
+design-draft
+.auto-memory
+framework
+*.md
+progress.json
+features.json
+backlog.json
+
+# 杂项
+.DS_Store
+*.log
+.vscode
+.idea
