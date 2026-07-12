@@ -25,7 +25,8 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 2.5,
-    "status": "pending",
+    "status": "done",
+    "completed_note": "2026-07-12 Generator Kimi: build-push.yml(GHCR app+migrate 两 target)+deploy-prod.yml 改写 docker compose pull/up+staging/seed 标 deprecated. build-push CI 首跑失败(next build collect-page-data 读 DATABASE_URL, Dockerfile 缺 build-time 占位)→fix commit 2505fc2 补 DATABASE_URL/NEXTAUTH_SECRET/NEXTAUTH_URL 占位→本地 docker build runner PASS→build-push CI 绿(镜像入 ghcr.io/tripplemay/kolmatrix/{app,migrate}:sha+latest). deploy-prod 首跑待 F-MIG-04 P4(新 secrets 就位后).",
     "source": "spec §4 D5, §5 F-MIG-02",
     "acceptance": [
       "新增 build-push workflow：main push → docker build app + migrate → 推 ghcr.io/tripplemay/kolmatrix/{app,migrate}:<git-sha>+:latest（permissions packages:write, 登录 GHCR）",
@@ -59,6 +60,7 @@
     "priority": "high",
     "estimated_hours": 4.0,
     "status": "pending",
+    "progress_note": "2026-07-12 runbook 草稿完成 @ docs/ops/deploysvr-kol-migration-runbook.md（P0-P6 + 3 不可逆门禁 + 回滚 + parity 校验，对标 aigc 已验证剧本）。P0-P5 受监督实操待用户 go/no-go（前置：F-MIG-03 apify 随迁 + P0 secrets 就位）。",
     "source": "spec §4 D7/D10/D11, §5 F-MIG-04, §7 回滚；对标 aigc deploysvr-migration-runbook.md",
     "acceptance": [
       "新增 docs/ops/deploysvr-kol-migration-runbook.md：P0 准备(建 /opt/apps/kolmatrix + .env 600 + certbot DNS-01 复用) / P2 起新栈(compose up + 灌旧库快照演练 + loopback 冒烟 /api/health+登录+AI定制+KOL流程) / P3 数据终态同步(停旧写→pg_dump kolmatrix→clean restore→逐表行数 parity；Redis 弃旧起新) / P4 边缘割接(Certbot DNS-01 预签 kol+kolquest→装 nginx→Cloudflare A 切→更新 GitHub secrets) / P5 观察期+回滚就绪 / P6 退役门禁(旧 VM 整机退役)",
