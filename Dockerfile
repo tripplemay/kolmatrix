@@ -16,10 +16,17 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# prisma.config.ts `import "dotenv/config"` + `env("DATABASE_ADMIN_URL")` 在任何 prisma CLI
-# 调用（含 npm ci 的 postinstall: prisma generate）时求值。build 阶段无真 .env，给个占位值
-# 保证 generate 不因缺 env 失败（generate 不连库，占位值不会被使用）。
+# build-time 占位 env（对齐 ci.yml build job 的顶层 env:）。原因：
+#   - prisma.config.ts `import "dotenv/config"` + `env("DATABASE_ADMIN_URL")` 在任何 prisma CLI
+#     调用（含 npm ci 的 postinstall: prisma generate）时求值；
+#   - `next build` collect-page-data 阶段会 eval 路由模块，/api/auth/[...nextauth] 在模块加载时
+#     读 DATABASE_URL（构造 Prisma adapter），缺失即 "DATABASE_URL is not set" 构建失败。
+# 这些是**纯构建期占位、不连库**；runner 是独立 FROM(不继承本 ENV)，migrate/app 运行时由 compose
+# env_file .env 的真值遮蔽 → 占位值永不参与真实连接。
 ENV DATABASE_ADMIN_URL="postgresql://build:build@localhost:5432/build?schema=public"
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build?schema=public"
+ENV NEXTAUTH_SECRET="build-placeholder-overridden-at-runtime"
+ENV NEXTAUTH_URL="http://localhost:3000"
 
 # 依赖层（利用缓存）：先只 COPY 清单 + prisma schema，postinstall 需要 schema 才能 generate。
 COPY package.json package-lock.json ./
