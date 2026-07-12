@@ -15,8 +15,11 @@ npx prisma migrate deploy
 
 if [ -n "${KOLMATRIX_APP_PASSWORD:-}" ] && [ -n "${DATABASE_ADMIN_URL:-}" ]; then
   echo "── migrate: 同步 kolmatrix_app 角色密码（幂等，H1/BL-043）"
+  # Prisma 7 的 `db execute` 不接受 --url（会报错退出并打印 help）；datasource URL 由
+  # prisma.config.ts 从 env DATABASE_ADMIN_URL(superuser) 读取。上面的 guard 已确保它已设。
+  # （P2 演练 2026-07-12 实测捕获：原带 --url 的写法致 migrate 服务 exit 1，app 起不来。）
   printf "ALTER ROLE kolmatrix_app WITH PASSWORD '%s';" "$KOLMATRIX_APP_PASSWORD" \
-    | npx prisma db execute --url "$DATABASE_ADMIN_URL" --stdin
+    | npx prisma db execute --stdin
   echo "   ✓ kolmatrix_app 密码已与 .env 同步"
 else
   echo "   ⚠️  KOLMATRIX_APP_PASSWORD 或 DATABASE_ADMIN_URL 未设，跳过角色密码同步" >&2
