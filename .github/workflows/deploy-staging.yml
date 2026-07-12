@@ -1,5 +1,9 @@
 name: Deploy to Staging
 
+# ⚠️ DEPRECATED — BL-PROD-MIGRATE-DEPLOYSVR 决策 A：staging 弃用，随旧 VM 退役而消失。
+# 本 workflow 面向旧机 staging.kol.guangai.ai（PM2 模型），迁移后不再维护。
+# 保留仅为审计/回滚参考；请勿在新 deploysvr 上运行。新部署走 deploy-prod.yml（容器化）。
+
 on:
   workflow_dispatch:
     inputs:

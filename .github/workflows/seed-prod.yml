@@ -1,5 +1,10 @@
 name: Seed Production DB
 
+# ⚠️ DEPRECATED — BL-PROD-MIGRATE-DEPLOYSVR：本 workflow 是旧机 PM2 模型（SSH cd /opt/kolmatrix
+# && npm run db:seed）。容器化 deploysvr 上 seed 改走：
+#   ssh deploysvr 'cd /opt/apps/kolmatrix && docker compose -f docker-compose.prod.yml run --rm migrate npm run db:seed'
+# 保留仅为审计参考；迁移后请用上述容器命令（见 runbook）。
+#
 # One-shot manual workflow for re-running prisma db seed against prod.
 #
 # Use cases:
