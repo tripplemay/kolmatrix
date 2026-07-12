@@ -47,7 +47,8 @@
     "executor": "codex",
     "priority": "medium",
     "estimated_hours": 1.0,
-    "status": "pending",
+    "status": "done",
+    "closed_note": "用户手工授权关闭 BL-117 并豁免 F004 Codex 验收(2026-07-12): 未执行 L1/L2, 无 signoff 报告. 同 BL-114/BL-115 F005 'Codex 用户授权免除' 先例.",
     "acceptance": [
       "L1: lint 0err warn≤3 / tsc=0 / npm test + npm run build",
       "L2 staging: ① 整页定位回到'全球KOL智能营销'(Hero广义/Features突出/痛点拓宽/邮件降为Reach深度/FAQ混合) ② BL-115转化机制(表单/UTM/埋点)未破坏 ③ Lighthouse perf99/WCAG AA/reduced-motion不回退 ④ visual baseline重拍 ⑤ 5 locale/响应式",

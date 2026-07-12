@@ -3,10 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-117-landing-positioning-rebalance VERIFYING (3/3 generator done, 用户逐个确认) — 落地页定位再平衡, 待 Codex F004 验收
-- ✅ **全 3 generator feature done + 用户确认 + main CI 全绿(run 27894802484 @ baseline 04c0431) + staging @ 9f254e1(git_sha=HEAD healthy, db ok)**. F001 Hero广义@07dd1e8(+用户要求删 PRD 按钮@3d60477) / F002 痛点拓宽+EmailCenterDemo降'REACH四大能力之一'@e8f27c9 / F003 FAQ 2广义+2邮件+SEO meta 回广义@80fe1ee. landing-*.png baseline 已 workflow 重拍@04c0431. BL-115 转化机制全保留(模态/UTM/埋点/Lead表)
-- ⚠️⚠️ **事故已闭环(教训重要)**: 重拍后 staging 重部署 `npm run build` 撑爆共享 8GB VM(prod+staging 同机)→ sshd/nginx ~50min 无响应 + **prod 短时不可用**; 本机无 gcloud/SSH 死无法自助 reboot → **用户 GCP console reset VM** 恢复 → 我清 .next 干净重 build 修好 staging. 已沉淀 proposed-learning(staging build 别撑垮共享 prod VM: 防孤儿/勿并发探测/错峰)
-- ⏭️ **F004 = Codex 验收**: L1 + L2 staging(整页广义回归: Hero广义/Features突出/痛点拓宽/邮件降Reach/FAQ混合/meta广义 + BL-115 转化机制未破坏 + Lighthouse perf99/a11y + baseline绿 + 5 locale). 详见 progress.generator_handoff. signoff → docs/test-reports/BL-117-signoff-2026-06-21.md. 真实性延续(回复率不提/IP genre/证言占位)
+## ✅ BL-117-landing-positioning-rebalance DONE (4/4, F004 Codex 用户手工授权免除 2026-07-12) — 落地页定位再平衡
+- ✅ **全 3 generator feature done + 用户逐个确认 + main CI 全绿(run 27894802484 @ baseline 04c0431)**. F001 Hero广义@07dd1e8(+用户要求删 PRD 按钮@3d60477) / F002 痛点拓宽+EmailCenterDemo降'REACH四大能力之一'@e8f27c9 / F003 FAQ 2广义+2邮件+SEO meta 回广义@80fe1ee. landing-*.png baseline 已 workflow 重拍@04c0431. BL-115 转化机制全保留(模态/UTM/埋点/Lead表)
+- ⏭️ **F004 免除**: 用户 2026-07-12 手工置 done, 未经 Codex L1+L2+signoff(同 BL-114/BL-115 F005 先例). soft-watch: Lighthouse perf99/WCAG AA/reduced-motion/5 locale/baseline 未独立复验(风险低). ⚠️ **落地页仍待 prod 部署**才对访客生效
+- ⚠️⚠️ **事故已闭环(教训重要)**: 重拍后 staging 重部署 `npm run build` 撑爆共享 8GB VM(prod+staging 同机)→ sshd/nginx ~50min 无响应 + **prod 短时不可用**; 本机无 gcloud/SSH 死无法自助 reboot → **用户 GCP console reset VM** 恢复. 已沉淀 proposed-learning(staging build 别撑垮共享 prod VM)
+- 🚀 **下一批次已定(backlog 头条)**: BL-PROD-MIGRATE-DEPLOYSVR — 生产迁移 KOLMatrix 旧 GCP VM(34.180.93.185)→deploysvr(194.238.26.173)容器化. 3 决策: A弃staging/B随迁apify-kol/C等BL-117 done(已满足). 待用户指令启动 planning
 ## ✅ BL-115-landing-conversion-email-positioning DONE (F001-F004 done 用户逐个确认, F005 Codex用户免除, closure @ docs/test-reports/BL-115-closure-2026-06-15.md) — 落地页折中加装(投放规范对齐)
 - ✅ **全 4 generator feature done + 用户确认 + main CI 全绿(run 27488383379) + staging @ 9ea2c73(git_sha=HEAD healthy)**. F002 Hero邮件定位+数据栏@9196ba7 / F001 转化机制@9b84d5f(lead表migration+TrialLeadCta模态+UTM cookie+埋点 LandingAnalytics+/api/landing-event→event_log+PRD占位/演示) / F003 痛点4卡+EmailCenterDemo 3面板@9954338 / F004 信任真实框架(genre垂类+安全badge+证言占位, 去假wordmark)+邮件FAQ+SEO@de2cfe4. landing-*.png baseline 已 update-visual-baselines workflow 重拍@9ea2c73
 - ⏭️ **F005 = Codex/Reviewer 验收(verifying)**: L1 + L2 staging(转化链路 表单落库/UTM/埋点 event_log + 邮件定位/痛点/演示/FAQ + Lighthouse perf99/WCAG AA/reduced-motion + baseline 绿 + 5 locale/响应式). 详见 progress.generator_handoff. signoff → docs/test-reports/BL-115-signoff-2026-06-14.md

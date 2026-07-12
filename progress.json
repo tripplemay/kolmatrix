@@ -1,11 +1,11 @@
 {
-  "status": "verifying",
+  "status": "done",
   "user_goal": "BL-117 落地页定位再平衡 — 邮件侧重→全球KOL智能营销. 用户'页面太偏邮件, 想突出全球KOL智能营销工具定位'. 根因(分析): BL-115为对齐投放文档过度旋转邮件(Hero定位成email collaboration hub+痛点/演示/FAQ全邮件), 广义Features(Brief/Match/Reach/Insight)被埋第4屏. 决策: ①主站直接广义不另做/lp(接受投放邮件角度淡) ②每feature staging检查点(Hero先做先验). 保留BL-115转化机制(表单/UTM/埋点)不动+真实性把关(回复率不提/IP genre/证言占位). 4 features: F001 Hero重定位广义(tone-setter) / F002 痛点拓宽+section顺序(Features上移/邮件演示降为Reach深度) / F003 FAQ混合 / F004 Codex. 守perf99/a11y/baseline重拍.",
   "total_features": 4,
-  "completed_features": 3,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "BL-117-landing-positioning-rebalance",
-  "last_updated": "2026-06-21T07:55+0800",
+  "last_updated": "2026-07-12T13:20+0800",
   "reference_docs": [
     "docs/specs/BL-117-landing-positioning-rebalance-spec.md",
     "docs/reviews/landing-vs-prd-doc-gap-2026-06-13.md + landing-visual-audit-2026-06-13.md",
@@ -29,7 +29,8 @@
     "Kimi_generator": "[2026-06-21 07:55 BJT Generator Kimi] ✅ BL-117 generator 全部完成 F001-F003 + 用户逐个确认, 切 verifying 交 Codex F004. 提交链: F001 Hero广义@07dd1e8(+用户要求删 PRD 按钮@3d60477) / F002 痛点拓宽+EmailCenterDemo降Reach@e8f27c9 / F003 FAQ混合+meta广义@80fe1ee / baseline重拍 bot-commit@04c0431 / state@9f254e1. CI 全绿(run 27894802484). ⚠️⚠️ 重大事故+教训: 重拍后 staging 重部署的 `npm run build`(NODE_OPTIONS=4096)在共享 8GB VM 上撑爆内存/swap → sshd banner + nginx 443 ~50min 无响应, **prod kol.guangai.ai 一并短时不可用**(同 VM). 我后台跑 deploy + 期间并发多次 SSH 探测加剧负载; TaskStop 只杀本地 ssh, 远端 build 成孤儿继续吃内存; 本机无 gcloud/SSH 死→无法自助 reboot→用户 GCP console reset 恢复. 恢复后 staging pm2 crash-loop(114 restarts, 中断 build 的 .next 不完整)→我 pm2 delete + rm -rf .next + 干净重 build(内存 6GB available 不再 OOM)修复. **沉淀(强烈建议固化, 见 proposed-learnings)**: ①staging build 在共享 prod VM 上有拖垮 prod 的真实风险 → 应 a)build 前 pkill -f 'next build' 防孤儿 b)deploy 期间绝不并发 SSH 探测 c)考虑错峰/降并发/或独立 build. ②TaskStop 杀本地 ssh 不杀远端进程(孤儿). ③本机无 gcloud → VM 故障只能靠用户 console, 建议装 gcloud 备用. 整页定位已从 BL-115 的偏邮件回到广义'全球KOL智能营销', BL-115 转化机制全程保留. 真实性延续.",
     "Reviewer": null,
     "johnsong_planner": null,
-    "johnsong_generator": null
+    "johnsong_generator": null,
+    "Kimi_planner_done": "[2026-07-12 13:20 BJT Planner Kimi] 用户手工授权把 BL-117 置 done, 豁免 F004 Codex L1+L2+signoff(未执行, 无 signoff 报告; 同 BL-114/BL-115 F005 免除先例). generator F001-F003 全完成+用户逐个确认+main CI 绿(run 27894802484 @ 04c0431). ⚠️ 遗留(soft-watch, 非阻塞): F004 的 L2 客观项(Lighthouse perf99/WCAG AA/reduced-motion/5 locale/baseline)未经 Codex 独立复验; 落地页仍待 prod 部署才对访客生效. **下一批次已定**: backlog 头条 BL-PROD-MIGRATE-DEPLOYSVR(生产迁移 KOLMatrix 旧 GCP VM→deploysvr 容器化, priority=high, 含 3 决策 A弃staging/B随迁apify/C等此done), 待用户指令启动 planning."
   },
   "paused_batches": []
 }
