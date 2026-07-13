@@ -6,15 +6,15 @@
 #   - 故用一次性 `docker compose run --rm --no-deps migrate`（migrate 镜像含全量依赖 + tsx + 源码），
 #     它 join compose 网络、按服务名连 postgres/redis，env 来自同一 .env。
 #
-# ⚠️ TZ：cron.d 按服务器本地时区执行。旧机 `30 0`=00:30 UTC=08:30 BJ。落地前 `timedatectl` 确认
-#    deploysvr 时区，必要时换算保持 08:30 BJ 的业务意图。
-#
-# 变量（若 cron 环境需要）：COMPOSE=/usr/bin/docker compose -f /opt/apps/kolmatrix/docker-compose.prod.yml
+# ⚠️ TZ：deploysvr 是 Europe/Berlin（非 UTC）。用 CRON_TZ=UTC 锁定，使 `30 0`=00:30 UTC=08:30 BJ
+#    与旧机业务意图一致，不随夏令时/服务器时区漂移。
+CRON_TZ=UTC
 SHELL=/bin/sh
 PATH=/usr/local/bin:/usr/bin:/bin
 
-# 每日 KOL 同步 ⇒ KPI 快照（单根链，KPI 计数含当日新同步）。00:30（见上 TZ 注）。
-30 0 * * * root cd /opt/apps/kolmatrix && docker compose -f docker-compose.prod.yml run --rm --no-deps migrate sh -c "npm run kol-sync:daily && npm run kpi-snapshot:daily" >> /var/log/kolmatrix-cron.log 2>&1
+# 每日 KOL 同步 ⇒ KPI 快照。00:30 UTC。用 `;` 而非 `&&`：apify 停用期 kol-sync 会失败，
+# 但 KPI 快照(读当前库)仍应跑，保证 dashboard 趋势不断档。apify 恢复后 sync 自然成功。
+30 0 * * * root cd /opt/apps/kolmatrix && docker compose -f docker-compose.prod.yml run --rm --no-deps migrate sh -c "npm run kol-sync:daily ; npm run kpi-snapshot:daily" >> /var/log/kolmatrix-cron.log 2>&1
 
 # 每日 DB 备份：从 postgres 容器 pg_dump 到宿主 backups/（迁移期已有卷持久化，此为额外冷备）。02:00。
 0 2 * * * root cd /opt/apps/kolmatrix && mkdir -p backups && docker compose -f docker-compose.prod.yml exec -T postgres pg_dump -U kolmatrix -Fc kolmatrix > backups/db-$(date +\%Y\%m\%d-\%H\%M).dump 2>> /var/log/kolmatrix-cron.log
