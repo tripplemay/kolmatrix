@@ -1,12 +1,39 @@
-# KOLMatrix — Neural Velocity 设计系统（视觉基调基准）
+# KOLMatrix — 设计系统（视觉基调基准）
 
-> 状态：✅ 已定稿（2026-04-18）
-> 来源：Stitch Variant A 对比评审
-> Stitch 项目：`projects/9338165817879839093`（Stitch MCP 可调）
->
-> 所有 UI 页面必须以本文件为唯一视觉参考源。
+> 状态：🔄 **视觉语言切换中（2026-07-14，ADR-021 / BL-HORIZON-FE-PILOT）** — 下方 §0 为现行方向；§1+ 的 Neural Velocity 文档在过渡期仍作非试点页参考。
+> Stitch 项目（Neural Velocity 原型）：`projects/9338165817879839093` — Horizon 原型重做**推迟**到全量铺开。
 
-## 1. 核心哲学
+---
+
+## 0. 视觉语言 = Horizon 紫色美学（现行，ADR-021）
+
+**2026-07-14 起，KOLMatrix 前端视觉语言从 Neural Velocity（电流青 cyan）切换到 Horizon 紫色美学**（源自付费模板 Horizon UI Tailwind React NextJS Pro）。底座（App Router/RSC/i18n/RLS/shadcn/Tailwind v4）不变，只换视觉。决策见 **[ADR-021](../docs/adr/ADR-021-frontend-visual-language-horizon.md)**；token 映射与消费指引见 **[horizon-tokens.md](./horizon-tokens.md)**。
+
+### Horizon 设计语言要点（dark-first 变体）
+
+| 维度 | Horizon 值 | Tailwind 工具类 |
+|---|---|---|
+| 品牌主色 | 紫 `#422AFB`（brand-500 ramp 50-900） | `bg-brand-500` `text-brand-400` |
+| 卡片表面 | navy `#111c44`（暗色浮起卡） | `bg-navy-800` |
+| Canvas | navy `#0b1437` | `bg-navy-900` / `bg-navy-base` |
+| 卡片圆角 | 20px（招牌） | `rounded-hz-card` |
+| 卡片阴影 | 柔和浮起 `14px 17px 40px rgba(112,144,176,.08)` | `shadow-hz-card` |
+| 正文字体 | DM Sans | `font-dm`（app 子树全局） |
+| 标题字体 | Poppins | `font-poppins` |
+| 图表 | recharts（保留），配色走 brand 紫 | — |
+
+### 试点范围（BL-HORIZON-FE-PILOT）
+✅ 已 Horizon 化：全局 App Shell（Sidebar/Topbar）+ 旗舰页 `/insight` dashboard + 共享设计系统层（`components/common/` StatCard/KolCard/GlassPanel/SectionHeader/按钮等）。
+⏸️ 推迟到全量铺开：其余 ~20 页专属内容、登录/auth 页、landing 营销页、删旧 NV token、Stitch 原型重做。
+
+### token 策略
+Horizon token 以 **additive** 方式加进 `src/styles/globals.css` `@theme`，**不删** Neural Velocity token；试点面消费 Horizon token，其余页仍消费 NV token（过渡期并存，可回滚）。全量铺开批次再迁移剩余页 + 删旧 NV token。
+
+> **下方 §1+ 是 Neural Velocity 原始文档**，记录仍在并存的 NV token（cyan/glass 等）。过渡期非试点页仍参考它；全量铺开完成后将整体以 Horizon 重写。
+
+---
+
+## 1. 核心哲学（Neural Velocity — 过渡期并存，非试点页参考）
 
 全球游戏营销的数据很重，但体验必须轻盈。远离标准 SaaS dashboard（装在盒子里的 Excel），走向 **High-End Editorial** 沉浸式界面 —— 命令中心级的专业感，AI 驱动的能量脉冲。
 

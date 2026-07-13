@@ -52,7 +52,8 @@
     "title": "ADR-021 视觉语言切换 + design-draft/design-system.md 更新",
     "executor": "generator",
     "priority": "high",
-    "status": "pending",
+    "status": "done",
+    "completed_note": "2026-07-14 Generator: docs-only。新建 docs/adr/ADR-021-frontend-visual-language-horizon.md(背景+可行性分析表+决策 additive token+试点范围+amends ADR-003 像素标准延续/基线重定+amends ADR-004 组件视觉演进+3 备选 A/B/C+consequences+重评估触发)。更 docs/adr/README.md(索引表加 021 行+视觉/UI 分类加条目+ADR-003/004 状态标注 amended by 021)。ADR-003 Status 加双向 'Amended by ADR-021' 注。design-draft/design-system.md 加 §0 Horizon 视觉语言段(要点表 brand/navy/圆角/阴影/字体+试点范围+token additive 策略; NV §1+ 过渡期并存保留)。Stitch 原型重做推迟(§2.5 决策记于 ADR-021+design-system.md)。无产品代码改动(docs 豁免 build)。",
     "source": "spec §4 D3, §7 §2.5 Stitch 决策, §6 F004；用户拍板 4（ADR-003 重定基线继续生效）",
     "acceptance": [
       "新建 docs/adr/ADR-021-frontend-visual-language-horizon.md：记录切换到 Horizon 紫色美学的决策、背景、备选（保留 NV / 局部借鉴 / 全量替换底座）、后果",

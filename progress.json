@@ -2,11 +2,11 @@
   "status": "building",
   "user_goal": "BL-HORIZON-FE-PILOT 前端 Horizon 视觉焕新（试点批次）— 用户想用付费模板 Horizon UI Tailwind React NextJS Pro 3.0.0 重构 KOLMatrix 前端。Planner 可行性结论: 模板无法直接套入替换底座(框架/路由/样式引擎 Tailwind v3 vs v4/i18n/数据层几乎每层不兼容), 可行路径=保留 App Router+RSC+5 语言 i18n+多租户 RLS 底座, 把 Horizon 紫色美学重实现进现有 shadcn+Tailwind v4 栈。考虑 ~165 组件+339 处 i18n+~30 基线体量, 本批为试点: Horizon 美学落到 App Shell(全局共享)+ 旗舰页 /insight dashboard, 跑通视觉+i18n+水合+基线全链路作为是否全量铺开的决策点。用户 4 拍板: 试点先行移植/整体切 Horizon 紫色美学/旗舰页 /insight/ADR-003 重定基线继续生效。6 features: F001 token+字体译进@theme(additive) / F002 App Shell 化 / F003 /insight dashboard 化 / F004 ADR-021+design-system.md / F005 基线重生+i18n 回归 / F006 evaluator 试点验收+铺开建议。",
   "total_features": 6,
-  "completed_features": 3,
+  "completed_features": 4,
   "fix_rounds": 0,
   "current_sprint": "BL-HORIZON-FE-PILOT",
   "dashboard_url": null,
-  "last_updated": "2026-07-14T04:37+0800",
+  "last_updated": "2026-07-14T04:47+0800",
   "reference_docs": [
     "docs/specs/BL-HORIZON-FE-PILOT-spec.md",
     "/Users/yixingzhou/project/db4rDjuaSCqaEFW9XcFo_horizon-tailwind-react-nextjs-pro-3.0.0/horizon-tailwind-react-nextjs-pro-main (Horizon 模板源 — 视觉设计语言参考)",

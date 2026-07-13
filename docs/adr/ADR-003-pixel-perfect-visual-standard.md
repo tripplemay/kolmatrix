@@ -2,7 +2,7 @@
 
 ## Status
 
-**Accepted**
+**Accepted** — ⚠️ **Amended by [ADR-021](./ADR-021-frontend-visual-language-horizon.md)（2026-07-14）**：像素级标准（±2px / ΔE<2 / 字号 100% / 布局 100% / 禁硬编码 HEX）**继续生效、严格度不降**，仅将参照基线从 Neural Velocity Stitch PNG **重定为 Horizon 紫色美学新截图**（BL-HORIZON-FE-PILOT F005 重生）。
 
 - 日期：2026-04-18
 - 作者：用户直接决策 + Kimi 落地

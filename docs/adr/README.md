@@ -58,8 +58,8 @@ Proposed ──► Accepted ──► [Deprecated | Superseded by ADR-YYY]
 |---|---|---|---|---|
 | [001](./ADR-001-option-alpha-infra-first.md) | Option α Infra-First Sequencing | B0→BI1→BI2→BI3→B1 串行，infra 全完再启动业务 | Accepted | 2026-04-19 |
 | [002](./ADR-002-tech-stack-latest-greenfield.md) | Tech Stack Latest Greenfield | Next.js 16 + React 19.2 + Tailwind v4 CSS-first + Prisma 7 | Accepted | 2026-04-19 |
-| [003](./ADR-003-pixel-perfect-visual-standard.md) | Pixel-Perfect Visual Standard | 视觉验收 ±2px / ΔE<2 / 字号 100% / 布局 100% | Accepted | 2026-04-18 |
-| [004](./ADR-004-f010-component-library-lock.md) | F010 Component Library Lock (12) | 硬锁 12 个公共组件，页面专属放 features/ | Accepted | 2026-04-18 |
+| [003](./ADR-003-pixel-perfect-visual-standard.md) | Pixel-Perfect Visual Standard | 视觉验收 ±2px / ΔE<2 / 字号 100% / 布局 100% | Accepted（baseline 重定 by ADR-021） | 2026-04-18 |
+| [004](./ADR-004-f010-component-library-lock.md) | F010 Component Library Lock (12) | 硬锁 12 个公共组件，页面专属放 features/ | Accepted（视觉演进 by ADR-021） | 2026-04-18 |
 | [005](./ADR-005-f007-component-adoption-criteria.md) | F007 §11.2 组件接入口径 | direct ≥5 + render tree 12 全覆盖 + 不 inline | Accepted | 2026-04-19 |
 | [006](./ADR-006-pre-impl-audit-pattern.md) | Pre-Impl Audit → Planner Adjudication | Generator 主动审计 + Planner 裁决后开工 | Accepted | 2026-04-19 |
 | [007](./ADR-007-multi-tenant-rls-strategy.md) | Multi-Tenant RLS Strategy | 共享 DB + PostgreSQL RLS + tenant_id current_setting | Accepted | 2026-04-18 |
@@ -76,6 +76,7 @@ Proposed ──► Accepted ──► [Deprecated | Superseded by ADR-YYY]
 | [018](./ADR-018-email-template-unify-asset-snapshot-decouple.md) | **邮件模板统一 Asset 单一真相源** | ADR-011 收尾：Asset(type=email)=唯一真相源；写路径统一 Asset；email_log 去 FK + 加 `template_name` 快照列(审计语义=发送当时名)；历史 user 模板迁 Asset 防丢失；drop email_template 表+双写。落地 BL-099 | Accepted | 2026-06-09 |
 | [019](./ADR-019-crawler-runtime-pause-control-surface.md) | **爬虫运行时暂停控制面** | 扩展 ADR-017：爬虫加两层 UI 手控开关(主 `scraping_enabled` 全停所有抓取含 manual_seed / 子 `refresh_enabled` 仅 refresh)；状态存爬虫 DB `service_settings`(非 env, ≤5min 生效)；gate 在入队源(无积压恢复无尖峰)；读 API 不受影响。落地 BL-108 | Accepted | 2026-06-09 |
 | [020](./ADR-020-job-queue-bullmq-inprocess-worker.md) | **任务队列 BullMQ 化 + 邮件异步** | InMemoryJobQueue→BullMQ(同 JobQueue 接口调用点不改, 工厂 REDIS_URL→BullMQ 否则 InMemory)；worker 进程内(instrumentation, 不加进程, job 存 Redis 重启续跑)；邮件发送异步(enqueue 立即返 batchId + 进度轮询, 去 60s 同步阻塞)；幂等 batchId+kolId；Redis 挂回退同步。落地 BL-100 | Accepted | 2026-06-11 |
+| [021](./ADR-021-frontend-visual-language-horizon.md) | **前端视觉语言切换 — Horizon 紫色美学** | Neural Velocity(cyan)→Horizon(紫 #422AFB + navy 暗色卡 + 20px 圆角 + 柔和浮起阴影 + DM Sans/Poppins)；保底座(App Router/RSC/i18n/RLS)只换视觉；additive token 可回滚；试点=App Shell + /insight + 共享设计系统层。amends ADR-003(像素标准延续/基线重定)+ADR-004(组件视觉演进)。落地 BL-HORIZON-FE-PILOT | Accepted | 2026-07-14 |
 
 ## 按主题索引
 
@@ -92,6 +93,7 @@ Proposed ──► Accepted ──► [Deprecated | Superseded by ADR-YYY]
 - [ADR-004](./ADR-004-f010-component-library-lock.md) 组件库锁定
 - [ADR-005](./ADR-005-f007-component-adoption-criteria.md) 组件使用口径
 - [ADR-012](./ADR-012-assets-ux-redesign-outreach-first.md) BL-026 /assets UX 重设计（推翻 BL-025 §F004.B 部分）
+- [ADR-021](./ADR-021-frontend-visual-language-horizon.md) **前端视觉语言切换 — Horizon 紫色美学**（BL-HORIZON-FE-PILOT / amends ADR-003 基线 + ADR-004 视觉 / additive token 可回滚 / 试点=Shell+/insight+共享层）
 
 ### 数据与安全
 - [ADR-007](./ADR-007-multi-tenant-rls-strategy.md) 多租户隔离
