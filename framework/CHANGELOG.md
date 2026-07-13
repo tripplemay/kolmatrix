@@ -5,298 +5,143 @@
 
 ---
 
-## v0.9.25 — 2026-05-27（BL-079 sediment batch，5 条 sediment inline-merge，1 同主题合并段）
+## v1.0.3-kolmatrix — 2026-07-13（KOLMatrix 知识回植 · v1.0.3 结构 fork-merge）
 
-**来源批次：**
-- BL-078 done 5 条（5/27 ack）：opacity-dimming a11y trap / landing visual token layer 规范 / view transitions + scroll-driven 渐进增强 / Reference URL 提炼方法论 / prefers-reduced-motion 守门
+**来源：** joyce（KOLMatrix 产品线，自有沉淀链最新 v0.9.25 + v0.9.26 新条目区）采用 harness-template **v1.0.3** 结构（上下文隔离 + 两条车道 + 机制化守门 + harness/patterns 目录分层）重建；本次 fork-merge 把 KOLMatrix 硬获取知识回植到 v1.0.3 骨架上，而非用 v1.0.3 空模板覆盖。
 
-**触发原因：**
-- BL-078 landing 视觉精修 done 后 proposed-learnings.md 累积 5 条用户 5/27 ack sediment 候选
-- 按 BL-071 D7 lock（强制 inline-merge）+ BL-077 v0.9.24 模式复用，独立 framework sediment batch 一并落地
-- Scope 比 BL-077 17 条小约 3x，但同含 1 个同主题合并段（#1 + #5 a11y → evaluator.md §11.6）
-- A1 用户 5/27 lock 1 决策：范围 A 全做（5 inline-merge + 1 同主题合并 + CHANGELOG + archive + 清 proposed-learnings 5 entries）
+**版本编号策略：** 保留 joyce 自有 KOLMatrix 版本线（v0.9.21→v0.9.25 沉淀链），**不与 harness-template 的 aigcgateway 版本编号统一**（两条线的 v0.9.21-v0.9.23 同号异物：joyce=BL-064/065/066-068/BL-071，harness=BL-IMG-PERSIST-GCS/BL-VISION-INPUT/BL-SYNC-ADAPTERTYPE）；harness 的 aigcgateway v0.9.21-23 条目不并入 joyce。本条为 fork-merge 事件记录，冠 `-kolmatrix` 后缀以示与 harness-template v1.0.3 主线区分。
 
-**5 条 1-line summary（详见 `framework/archive/proposed-learnings-archive-v0.9.25.md`）：**
+**变更（sediment artifact：`proposed-learnings.md` + `archive/` + 本 CHANGELOG）：**
+- `proposed-learnings.md`：在 4 行 intro 与 markers 块之间**回植** joyce 的「写入流程（D7 + D8 lock，BL-071 F007）」全流程段（4 步 propose→ack→inline-merge→archive + D7 inline-merge 4 级优先梯（合并矩阵行 > 加子段 > 修订段内文字 > 开新 topic 段）+ 禁 chronological-append §N 反模式 + 类型分类 + 写入位置决策树 + Entry 格式）—— v1.0.3 曾把此段剥成 4 行裸 intro，harness 全仓无沉淀纪律文档，此段为最强 backflow 候选。路径已改 v1.0.3 布局（`framework/patterns/*.md` + 合并后的 `planner.md`），历史评审角色名统一为 `Evaluator`。
+- `proposed-learnings.md` markers 块：splice 回 KOLMatrix 沉淀链 v0.9.21→v0.9.25 provenance markers（填补 v1.0.3 header v0.9.20→v1.0.0 的断档）。
+- `proposed-learnings.md` 新条目区：携入 joyce 4 条 KOLMatrix **待确认**条目（BL-114 落地页 @theme token 爆炸半径 + Linux-runner baseline / BL-117 共享 prod VM staging-build OOM 事故 / F-MIG-04 生产割接停机超预估 / F-MIG-03 apify fork 服务 migrate 建不出 schema），与 harness-fit P0-P2 结构性 backlog **并存**（均为待确认）。
+- `proposed-learnings.md` + `archive/`：按 D7 步骤 4 将 11 条「已 ack 但未清理」KOLMatrix provenance 条目（BL-083/084/086×2/prod-outage/097/080-F003/108×2/100/105）移出新条目区、全文归档到 `framework/archive/proposed-learnings-archive-v0.9.26-kolmatrix.md`，并在 markers 块加 done-marker。其知识已在 joyce v1.0.3 `patterns/*.md` + `evaluator.md` 重植，本档仅存审计轨迹。
 
-| # | 1-line summary | 类型 | 来源 | 写入位置 |
-|---|---|---|---|---|
-| #1 | opacity-based dimming 在 WCAG AA contrast 上 fragile — parent opacity × text alpha 双重 dimming kills contrast + 4 重 distinction 替代模板 | 新坑 | BL-078-F005 fix-round 1 | evaluator.md §11.6（与 #5 合并）|
-| #2 | landing visual token layer 规范模板 — typography / color / spacing / motion 4 类 token 分层 + light-theme accent 必有 deep variant | 新规律 | BL-078-F001 | ui-fidelity-guardrail.md §3.4 |
-| #3 | @view-transition + animation-timeline + interpolate-size 渐进增强模式 — Native API + Fallback + reduced-motion 三层守门 | 新规律 | BL-078-F002+F003 | generator.md §18 |
-| #4 | Landing / marketing 视觉重做项目: Reference URL 提炼方法论 — 解构 → 筛选 → 抽象 3 步法 + "精神参考"非"像素复刻" | 模板修订 | BL-078 plan v2 D2 lock | planner-checklists.md §"Visual polish reference URL 提炼方法论" |
-| #5 | prefers-reduced-motion 守门是 motion 类 batch 的 a11y 必修课 — 全局 default + component 级精细兜底双层模板 | 新规律 | BL-078-F005 | evaluator.md §11.6（与 #1 合并）|
-
-**同主题合并段 1 组（D7 强制 inline-merge 示范）：**
-
-| 合并段 | 合并 source | 写入位置 |
-|---|---|---|
-| motion a11y 三件套（contrast WCAG AA + opacity-dimming trap + prefers-reduced-motion 守门）| #1 opacity-dimming + #5 reduced-motion（与现有 contrast WCAG AA 配套）| evaluator.md §11.6（统一段含 3 件套 + 4 重 distinction 模板 + grep 防御 + 实测 checklist）|
-
-**4 实际段（按文件）：**
-
-| 文件 | 段 | 含 sediment |
-|---|---|---|
-| `framework/harness/evaluator.md` | §11.6 motion a11y 三件套 | #1 + #5（合并段）|
-| `framework/harness/ui-fidelity-guardrail.md` | §3.4 Landing / marketing 视觉 token layer 规范 | #2 |
-| `framework/harness/generator.md` | §18 现代 CSS 渐进增强 — Native + Fallback + reduced-motion 三层守门 | #3 |
-| `framework/harness/planner-checklists.md` | §"Visual polish reference URL 提炼方法论" | #4 |
-
-**配套：4 段相互 cross-ref**
-
-- evaluator.md §11.6 ↔ generator.md §18.3 reduced-motion 守门模板配套
-- ui-fidelity-guardrail.md §3.4 token layer ↔ generator.md §18 duration/ease token 配套
-- planner-checklists.md §reference 提炼 ↔ ui-fidelity-guardrail.md §3.4（落 token 而非 copy css）
-
-**0 chronological-append §N：** 全 inline-merge 落入现有 topic（evaluator §11 / ui-fidelity §3 / generator §15-17 之后顺序 §18 / planner-checklists §spec 起草 checklist 末尾）。`generator.md §18` 顺位续接 §17（v0.9.24 末段），不是 chronological dump。
-
-**proposed-learnings.md 清理：** 5 entries 全清，header 加 `<!-- 2026-05-27: v0.9.25 沉淀完成 (5 条 sediment 来源 BL-078 done), 全部已写入 framework/harness/*.md (1 同主题合并 + 4 实际段). 归档 framework/archive/proposed-learnings-archive-v0.9.25.md -->` marker。
+**兼容性：** 均为 sediment artifact 的结构性回植，不改 v1.0.3 状态机 / 角色协议 / 目录分层；harness-fit P0-P2 与 KOLMatrix 4 待确认条目留待 done 阶段逐条确认。
 
 ---
 
-## v0.9.24 — 2026-05-27（BL-077 sediment batch，17 条 sediment inline-merge，5 同主题合并段）
+## v1.0.3 — 2026-07-13（自主开发模式 + 进度看板：默认安装）
 
-**来源批次：**
-- BL-072 done 4 条（5/26 ack）：IA refactor outbound 扫描 / subset Pattern 6 / advisory test 三件套 / 删 X 前 grep callers
-- BL-073 done 5 条（5/26 ack）：Pattern 7 multi-line span bare / 嵌套 max-w grep / i18n key existence v2 / prod alerting MISSING_MESSAGE / STRICT_MODE 渐进
-- BL-075 done 4 条（5/26-27 ack）：pm2 reload --update-env 必须先 source shell / AI_DAILY_COST 估算 5-10x 高估 / aigcgateway 30 RPM rate gate / withPlatformAdmin RLS 不通用
-- BL-076 done 4 条（5/27 ack）：prod alerting 14 天 outage 实战代价 / batch try/catch 模板 / Schema migration ROLLBACK 不对称 / adapter output 边界 check 三件套
+**来源：** 单工具 Claude + dynamic Workflow 工作流下两项能力落地，用户确认默认安装。
+- 自主开发模式：design workflow `w05dglv38`（4 立场架构师 → 4 评委对抗打分 → 红队攻击领先方案 S2 Heartbeat）
+- 进度看板：Claude Artifact 快照（CSP 禁 fetch → 阶段边界重渲染 + 重发同一 URL）
 
-**触发原因：**
-- BL-072 / 073 / 075 / 076 连续 4 批 prod hotfix + IA v2（BL-074）done 后，proposed-learnings.md 累积 17 条用户 ack sediment 候选
-- 按 BL-071 D8 lock（sediment workflow 入 proposed-learnings header）+ D7 lock（强制 inline-merge）模式，独立 framework sediment batch 一并落地
-- 类 BL-071 v0.9.23 batch 模式（31 sediment + 11 结构变更），但 BL-077 **仅 inline-merge 17 条 sediment，无结构变更**（framework 结构已 BL-071 lock 完整）
-- A1 用户 5/27 lock 2 决策：范围 A 全做（17 inline-merge + 5 同主题合并段 + CHANGELOG + archive + 清 proposed-learnings）+ Reviewer A L1 grep + L2 抽样 5 段阅读
+**变更（自主开发模式，默认安装到 `.claude/`）：**
+- `templates/claude/agents/generator-restricted.md`（机件 #0 受限 generator，配 deny-list）、`spec-lock-critic.md`（机件 #2 越界稽核，只读只判）
+- `templates/claude/skills/autodrive/SKILL.md`（Dispatcher / §4 单次唤醒指令周期，前置断言 fail-closed）
+- `templates/claude/autonomous/`：`gate-arbiter.workflow.js`（机件 #4 纯函数 governor/闸门 + #2/#3/#5/#6 嫁接）、`autonomy-policy.schema.json` + `validate-autonomy-policy.sh`（机件 #1）、`verdict-artifact.schema.json` + `validate-verdict-artifact.sh`（机件 #3）、`settings.autodrive.json`（deny-list，开启自主时人类手动合入）、`progress.autonomy-fields.md`（机件 #5，默认不铺 progress.init.json）
+- `harness/autonomous-mode.md` 规范文档（T2）；`bootstrap.sh` 加 `.claude/autonomous/*.sh` chmod
+- **安全边界：** 安装 ≠ 开启；开启需人类建 `autonomy-policy.json` + 显式 `/autodrive`（步骤 0 前置断言机件/策略，否则 HARD_HALT）；deploy/prod/spend 永留人类闸门（工具层 deny-list，非闸门分类器）
+- **仍待建（需接真实项目）：** §9 并发锁 / 存活告警运行时、gate-arbiter build/plan 接真实 `/build` `/plan`、端到端演练
 
-**17 条 1-line summary（详见 `framework/archive/proposed-learnings-archive-v0.9.24.md`）：**
+**变更（进度看板，默认安装）：**
+- `templates/dashboard.template.html`（内联 CSS 自包含渲染骨架，禁 fetch/外链）+ `templates/claude/skills/dashboard/SKILL.md`（`/dashboard`：读状态 → 套模板 → 首发写回 `dashboard_url` / 后续传 `url` 更新同一 Artifact）
+- `progress.init.json` 加 `dashboard_url: null`；`harness-rules.md §四` + `templates/CLAUDE.md` 各加"阶段边界顺手刷看板"
+- 看板是**只读镜像非真相源**；默认私有，可分享只读链接给非技术干系人
 
-| # | 1-line summary | 类型 | 来源 | 写入位置 |
-|---|---|---|---|---|
-| #1 | IA refactor / 路由删除批次 outbound 一致性扫描清单（4 维度：visual / i18n / Material Symbols / outbound 链接）| 新规律 | BL-072 prod hotfix | planner-checklists.md §"IA refactor / 路由删除批次 outbound 一致性扫描清单" |
-| #2 | subset script grep Pattern 6 JSX 三元 模板 + manifest 维护惯例 | 模板修订 | BL-072-F005 | checklists/material-symbols-pattern.md §"Pattern 进化路径 v1 → v2 → v3 总览"（与 #5 合并） |
-| #3 | i18n 消费侧 test 探针 + 三件套模式（page-side hardcoded English sweep + link-target audit + Material Symbols 三向断言）| 新规律 | BL-072-F007 | evaluator.md §13.4.1（与 #7 + #9 合并） |
-| #4 | 删 X 前 grep callers 矩阵扩展（i18n ns + 路由 outbound 同主题合并）| 新规律（扩展 v0.9.23 #19）| BL-072-F006 | generator.md §11 J |
-| #5 | subset script Pattern 进化路径 v1→v2→v3（Pattern 7 multi-line span bare）| 模板修订 | BL-073-F002 | checklists/material-symbols-pattern.md §"Pattern 进化路径 v1 → v2 → v3 总览"（与 #2 合并） |
-| #6 | spec acceptance 嵌套二级约束 grep 全仓模板（视觉 / i18n / CSS variant 三类）| 新规律 | BL-073 / BL-072-F001 反例 | planner-checklists.md §"spec acceptance 嵌套二级约束 grep 防御" |
-| #7 | i18n page-side test v2 key existence 检测（扫 t() 调用拼 namespace 验 messages exist）| 新规律（扩展 v0.9.24 #3）| BL-073-F005 | evaluator.md §13.4.2（与 #3 + #9 合并） |
-| #8 | prod error log MISSING_MESSAGE / Prisma / 5xx 应触发告警链 | 新规律 | BL-073 prod log audit | deploy-patterns.md §8（与 #14 合并） |
-| #9 | STRICT_MODE 渐进升级路径 — advisory → strict 渐进 flip 模板 | 新规律 | BL-073-F007 | evaluator.md §13.4.3（与 #3 + #7 合并） |
-| #10 | pm2 reload --update-env 不重读 env_file — 必须先 set -a; source .env; set +a 4 步流程 | 新坑 | BL-075-F002 | deploy-patterns.md §1.6.1 |
-| #11 | AI_DAILY_COST_USD_PER_TENANT_MAX 默认 count×$0.01 是 5-10x 高估 实际 ~$0.0009/call + Workaround 一次性提升 cap | 新坑 | BL-075-F004 | ai-action-contract.md §6.1（与 #12 合并） |
-| #12 | aigcgateway 30 RPM 硬限 + makeLlmRateGate(intervalMs=2100) 模板 + 与 retry 分工 | 新坑 | BL-075-F004 | ai-action-contract.md §6.2（与 #11 合并） |
-| #13 | withPlatformAdmin 仅在 RLS policy 有 platform_admin 旁路时有效 — kol 等业务表必须循环 tenant + per-tenant set_config | 新坑 | BL-075-F006 prod regression | database-patterns.md §4.6 |
-| #14 | prod 关键 error 多日累积未触发任何告警 — log-based alerting 14 天 outage 代价（实战扩展 #8）| 新规律 | BL-076 prod outage | deploy-patterns.md §8（与 #8 合并） |
-| #15 | batch insert / sync loop 必须包 per-element try/catch — 单元素 fail 不阻塞整 batch + audit forensic | 新规律 | BL-076-F003 | generator.md §16 |
-| #16 | Schema migration ROLLBACK 不对称风险 — 扩范围 migration 必带 UPDATE clamp 前置 step（扩展 BL-070 #22）| 模板修订 | BL-076-F001 | database-patterns.md §9 + generator.md §14.3 1 行 cross-ref |
-| #17 | adapter output 边界 check 三件套 — clamp + outlier flag + 业务阈值 < DB 上限 | 新规律 | BL-076-F002 | generator.md §17 |
-
-**同主题合并段 5 组（D7 强制 inline-merge 示范）：**
-
-| 合并段 | 合并 source | 写入位置 |
-|---|---|---|
-| AI 调用经济与速率防御 | #11 cost-cap 5-10x 高估 + #12 makeLlmRateGate(2100) | ai-action-contract.md §6（§6.1 + §6.2） |
-| advisory test 三件套 v1 → v2 → STRICT_MODE | #3 v1 三件套 + #7 v2 key existence + #9 STRICT_MODE 渐进 flip | evaluator.md §13.4（§13.4.1 + §13.4.2 + §13.4.3） |
-| prod 关键流程 log-based alerting | #8 MISSING_MESSAGE 识别 gap + #14 BL-076 14 天 outage 实战代价 | deploy-patterns.md §8（§8.1 反例 + §8.2 三件套 + §8.3 grep pattern + §8.4 实装项） |
-| Pattern v1 → v2 → v3 进化 | #2 Pattern 6 quoted JSX 三元 + #5 Pattern 7 multi-line span bare | checklists/material-symbols-pattern.md §"Pattern 进化路径 v1 → v2 → v3 总览" |
-| Schema migration ROLLBACK 不对称风险（双归属）| #16 主写 database-patterns + generator 1 行 cross-ref | database-patterns.md §9（主写）+ generator.md §14.3（cross-ref） |
-
-**实际写入位置（按文件分组）：**
-
-| 文件 | 段数 | 写入内容 |
-|---|---|---|
-| `ai-action-contract.md` | 1 合并段 | §6 AI 调用经济与速率防御（#11 + #12 双 sub-section） |
-| `generator.md` | 4 段 | §11 J 删 X 前 grep callers 矩阵（#4）+ §14.3 Schema rollback cross-ref（#16）+ §16 batch try/catch（#15）+ §17 adapter output check（#17） |
-| `evaluator.md` | 1 合并段 | §13.4 advisory test 三件套（#3 + #7 + #9 三 sub-section） |
-| `deploy-patterns.md` | 2 段 | §1.6.1 SSH 加 env var pm2 reload 4 步（#10）+ §8 prod log-based alerting 合并段（#8 + #14） |
-| `planner-checklists.md` | 2 段 | §"IA refactor / 路由删除批次 outbound 一致性扫描清单"（#1）+ §"spec acceptance 嵌套二级约束 grep 防御"（#6） |
-| `database-patterns.md` | 2 段 | §4.6 withPlatformAdmin vs 循环 tenant set_config（#13）+ §9 Schema migration ROLLBACK 不对称风险（#16 主写） |
-| `checklists/material-symbols-pattern.md` | 1 合并段 | §"Pattern 进化路径 v1 → v2 → v3 总览"（#2 + #5） |
-| **总：13 framework 段** | — | 17 候选 inline-merge 合并后 13 实际段（5 同主题合并段贡献 12→7 段缩减） |
-
-**统计：**
-- 17 候选 sediment inline-merge 物理 13 段（含 5 组同主题合并段）
-- 0 条 chronological-append §N（per BL-071 D7 强制 lock）
-- 0 行业务代码改动（仅 framework/ + framework/archive/ + framework/CHANGELOG.md + framework/proposed-learnings.md）
-- 框架结构变更：0 项（BL-071 D1-D12 已 lock 完整，本批次仅 sediment 不动结构）
-- 引用关系：generator.md §14.3 → database-patterns.md §9（#16 双归属 cross-ref）+ generator.md §17 ↔ database-patterns.md §9（adapter clamp ↔ ROLLBACK 配套）
-
-**架构影响：**
-- 4 P1 prod hotfix 批次（BL-072/073/075/076）+ 1 IA v2（BL-074）经验 inline-merge 到 framework/harness/*.md 对应 topic 段，未来类似批次起 spec 时可直接 cross-ref 相关 § 防御
-- D7 inline-merge 强制规则在 17 候选 全量场景下首次大规模验证：5 同主题合并段成功落地，无任何 chronological-append §N（vs BL-071 v0.9.23 batch 31 sediment 时已示范 3 组合并）
-- v0.9.24 的 sediment 反映了 KOLMatrix prod 运营进入"实战暴露 → 沉淀防御"循环（不同于早期 v0.9.5-v0.9.20 多是 framework 自身演进）
+**兼容性：** 均为新增，不改状态机 7 状态 / 既有字段 / 角色协议。自主模式默认不开启（无 policy 即 inert）。存量项目重跑 bootstrap 或增量拷贝 `.claude/` 即得。
 
 ---
 
-## v0.9.23 — 2026-05-25（BL-071 harness-cleanup + v0.9.23 framework sediment + 12 决策点 lock + 31 条 sediment inline-merge）
+## v1.0.2 — 2026-07-12（orchestration §8：Workflow ⇄ progress.json 日志契约）
 
-**来源批次：**
-- BL-071-harness-cleanup（5/25 1 day）— Phase A0 audit + A1 12 决策点 lock + B 重组 + C 31 条 sediment + D 收尾 + E Reviewer L1+L2 抽样
-- 31 条 sediment source：v0.9.22 archive 13 + BL-069 user-acked 3 + BL-070 user-acked 12 + BL-071 audit §5 缺失 3
+**来源：** 单工具 Claude + dynamic Workflow 工作流契合度评估（本会话 workflow wt27gd5xu，三视角 + 红队对抗复核）。用户已把主 coding 工作流收敛到单工具、编码阶段用 dynamic Workflow 编排；评估确认 harness 高契合，但把"阶段内部编排"交给引擎需先定交接契约，否则引入正确性回归。
 
-**触发原因：**
-- v0.9.22 沉淀完成时 framework/harness/*.md 实际段落起草留独立 framework batch（避免冲淡 BL-069 节奏）→ 累积到 v0.9.23 一并沉淀
-- BL-070 done 后 backlog 累积 28 条 sediment + framework 结构问题（5 处重复 + 4 处编号错乱 + cowork 死文档 + chronological-append 反模式）→ 用户 ack 全做 5-day phased
-- 12 决策点 D1-D12 5/25 三批 12 问题用户 lock：D1/D2 保原名 banner + 同步 / D3 cowork 全清 / D4 planner.md 拆 3 文件 / D5 evaluator.md topic 重组 / D6 scope tag / D7 inline-merge / D8 sediment workflow header / D9 3 层入口 / D10 case subdir / D11 全做 5-day / D12 fix_rounds 计数
-
-**11 项结构变更（D1-D12 lock 落地）：**
-
-| Decision | 变更 | 文件 | F |
-|---|---|---|---|
-| D1 | framework/harness/harness-rules.md 顶部加 TEMPLATE banner + 同步铁律 #11/#12 抽象版（去 commit hash） | framework/harness/harness-rules.md | F001 |
-| D2 | framework/memory/ 5 文件顶部加 HTML 注释 banner（MEMORY / project-status / environment / user-role / reference-docs） | framework/memory/*.md | F001 |
-| D3 | cowork 死文档全清：git rm framework/cowork-constraint-design.md（90 LOC）+ 删 bootstrap.sh line 100 防御性 mv + 删 framework/README.md §历史说明段 | framework/cowork-* + bootstrap.sh + README.md | F002 |
-| D4 | planner.md 625 LOC 拆 3 文件 + 索引页：planner-workflow.md 217 / planner-arbitration.md 160 / planner-checklists.md 321 / planner.md 24 索引 | framework/harness/planner*.md | F003 |
-| D5 | evaluator.md 432 LOC 按 topic 重组 §10-§20 11 段合并到 §10 L1 前置 / §11 L2 手段 / §12 验收口径 / §13 测试设计（F008 补全） | framework/harness/evaluator.md | F004 |
-| D6 | framework/harness/*.md scope tag frontmatter（10 framework-generic + 2 mixed + 2 project-specific）+ framework/README.md §scope tag 用法 | framework/harness/*.md + README.md | F005 |
-| D7 | sediment 写入规则 D7 inline-merge 强制规则正式化（禁 chronological-append §N）入 proposed-learnings.md header | framework/proposed-learnings.md | F007 |
-| D8 | sediment workflow doc 合并入 proposed-learnings.md header §「写入流程」段 ~69 LOC | framework/proposed-learnings.md | F007 |
-| D9 | framework/README.md 顶部加 banner + §「新规则演进流程（防漂移）」段 21 LOC（4 步流程：落地→评估→回流→登记） | framework/README.md | F001 |
-| D10 | 项目特定 case 文件移 checklists/ subdir：material-symbols-pattern.md + i18n-namespace-add-checklist.md + framework/README.md §checklists subdir 用法 | framework/harness/checklists/* | F006 |
-| D11 | 全做 5-day phased（A0 audit + A1 lock + B 重组 F001-F007 + C sediment F008 + D 收尾 F009 + E Reviewer F010） | 整批次 | — |
-| D12 | fix_rounds 计数语义入 planner-workflow.md §「阶段转换 + fix_rounds 计数」（verifying→fixing→reverifying 循环次数 ≠ 任意 fix commit 数 + BL-070 反例） | framework/harness/planner-workflow.md | F003 |
-
-**编号错乱修复 4 处（F004 + F007）：**
-
-| 文件 | 修复 |
-|---|---|
-| evaluator.md | §3 / §4 / §7 重复编号清理 → §1-§9 核心 workflow 编号连续 |
-| pre-impl-adjudication.md | 原 §11 partial-pending → §10（顺接 §9）；原 §10 版本历史 → §11 last（F008 加 §11 多 audit 串联后版本历史 → §12） |
-| deploy-patterns.md | 原 §5.1 spec/deploy-script/yml workflow → §6 独立 topic + §1.7 PM2 reload .env merge 入 §1.6（D7 inline-merge 示范） |
-| generator.md | §7 重复（"框架提案" + "Handoff 说明"）→ §7 框架提案 / §8 Handoff，§8-§10 顺延为 §9-§11 |
-
-**cowork 死文档清理 3 处（F002）：**
-
-| 位置 | 操作 |
-|---|---|
-| framework/cowork-constraint-design.md | git rm 整文件 90 LOC（早期 "Cowork = Claude Desktop 作为 Planner" 设计决策记录，文档自述 "Cowork 不再参与" 已与现实脱节） |
-| framework/bootstrap.sh line 100 | 删除 cowork-constraint-design.md 防御性 mv 整行 |
-| framework/README.md line 88-95 | 删除 §「历史说明」段（cowork 历史交给 CHANGELOG v0.7.0 + framework/archive/proposed-learnings-archive-v0.5.md 承担） |
-
-**31 条 sediment 1-line summary（按目标文件分组，详见 `framework/archive/proposed-learnings-archive-v0.9.23.md`）：**
-
-| # | 1-line summary | 类型 | 来源 | 写入位置 |
-|---|---|---|---|---|
-| #1 | 批次级多 audit 串联模式（≥9 features 推荐 3 audit）| 模板修订 | v0.9.22 BL-066 | pre-impl-adjudication.md §11 |
-| #2 | 量化 verifying gate criterion 设计（语义 vs 字面陷阱）| 新规律/新坑 | v0.9.22 BL-066 | evaluator.md §13.1 |
-| #3 | Generator audit 起草前实测原子组件 surface | 新规律 | v0.9.22 BL-066 | generator.md §12.1 |
-| #4 | Next.js 16.x Turbopack BUILD_ID bug + --webpack 防御 | 新坑/模板 | v0.9.22 BL-067 | deploy-patterns.md §7 |
-| #5 | InMemoryJobQueue + fire-and-forget + mount self-heal MVP 模式 | 新规律 | v0.9.22 BL-067 | generator.md §13 |
-| #6 | aigcgateway caller SDK 抽象层沉淀触发门槛 ≥3 重复 | 模板修订 | v0.9.22 BL-067 | ai-action-contract.md §5 |
-| #7 | Generator 建议命中率作为 audit 质量信号 | 新规律 | v0.9.22 BL-067 | pre-impl-adjudication.md §6.4 |
-| #8 | Next.js / 构建器切换 hidden TS errors checklist | 新坑 | v0.9.22 BL-067 | generator.md §12.2 |
-| #9 | LLM fix-round 必先 MCP trace 抓真因 | 新坑/工具链 | v0.9.22 BL-068 | generator.md §12.3 |
-| #10 | LLM 输出 dedupe-then-validate 模式 | 新规律 | v0.9.22 BL-068 | ai-action-contract.md §3.4 |
-| #11 | Prompt 自检 § + 末尾 reminder 双层强化 | 模板修订 | v0.9.22 BL-068 | ai-action-contract.md §3.5 |
-| #12 | mock 不可用三件套 always-skip + unit + staging | 新规律 | v0.9.22 BL-068 | evaluator.md §13.2（与 #21 合并段） |
-| #13 | verifying gate 失败时优先 trace 真因 | 新规律/反例 | v0.9.22 BL-068 | planner-arbitration.md §P5.3 |
-| #14 | middleware IaRedirectRule mixed-status 模式 | 新规律 | BL-069 | generator.md §10D |
-| #15 | staging-only chaos test flag + runbook | 新规律/模板 | BL-069 | evaluator.md §13.3 |
-| #16 | fix-round 类型分类 A implementation-gap vs B LLM-behavior | 新规律/对比 | BL-069 | planner-workflow.md §D12 扩展 |
-| #17 | 删显式子路由前必加上游 [id] UUID guard | 新坑 | BL-070-F004 | generator.md §11F |
-| #18 | next-intl + notFound() HTTP status 不可靠 | 新坑 | BL-070-F004 | generator.md §11G |
-| #19 | i18n deprecated ns 删除前 caller-grep 自检 | 新坑 | BL-070-F005 | generator.md §11H |
-| #21 | e2e server-action mock 不可用 RSC wire format | 新坑 | BL-070-F006 | evaluator.md §13.2（与 #12 合并段） |
-| #22 | prisma migrate dev wrap script 自动注入 ROLLBACK skeleton | 模板修订 | BL-070 | generator.md §14.1 |
-| #23 | Next.js 16 'use server' file-level directive 约束 | 新坑 | BL-070 | generator.md §14.2 |
-| #24 | github-actions[bot] commit 不 cascade CI → workflow_dispatch 通解 | 模板修订 | BL-070 | deploy-patterns.md §4.1 扩展 |
-| #25 | perf 量化门槛入 acceptance 反 retrofit 模式 | 新规律 | BL-070 Planner | planner-checklists.md §perf 合并段（与 #26） |
-| #26 | perf acceptance 区分 client (chunk-split) vs server (Suspense) | 新规律 | BL-070-F009 | planner-checklists.md §perf 合并段（与 #25） |
-| #27 | next/image 异构 CDN unoptimized + explicit dims | 新规律 | BL-070-F010 | generator.md §15.1 |
-| #28 | lazy boundary 引入时 fidelity test 同步清单 | 新坑 | BL-070-F009 | generator.md §11I |
-| #29+#30 | Suspense fallback skeleton 像素级镜像（高度 + 宽度等宽 flex-wrap）+ Lighthouse cls-culprits-insight 定位法 | 新规律（合并段，两 source）| BL-070-F011 | generator.md §15.2 |
-| audit §5.1 | staging deploy 前置 git pull --ff-only 硬要求 | 模板修订 | BL-071 audit | deploy-patterns.md §3.2 step 2 注释 |
-| audit §5.2 | session_notes 写作惯例（覆盖不追加 + 段落建议 + 禁忌）| 模板修订 | BL-071 audit | planner-workflow.md §5b |
-| audit §5.3 | commit message 格式规范 + 铁律 #10 commit-tag 一致性 | 模板修订 | BL-071 audit | planner-workflow.md §commit |
-
-**同主题合并段 3 组（D7 强制 inline-merge 示范）：**
-
-| 合并段 | 合并 source | 写入位置 |
-|---|---|---|
-| Suspense fallback 规范 | BL-070 #29 + #30（高度镜像 + 宽度等宽，两 source）| generator.md §15.2 |
-| mock 不可用三件套 | v0.9.22 #12 + BL-070 #21（BL-068 + BL-070 实证）| evaluator.md §13.2 |
-| perf 量化门槛 + client/server 分类 | BL-070 #25 + #26（量化 + 分类两 source）| planner-checklists.md §perf 段尾 |
-
-**统计：**
-- 11 项结构变更 D1-D12 + 编号修复 4 处 + cowork 清理 3 处 = 18 项结构层落地
-- 31 条 sediment inline-merge 物理 29 段（含 3 组合并）
-- 0 条 chronological-append §N（per D7 强制）
-- framework/harness/ 新增 LOC ~693（per F008 commit diff）
-- 0 行业务代码改动（src/ / prisma/migrations/ / tests/ 全部不动）
-
-**架构影响：**
-- 三层入口（CLAUDE.md → harness-rules.md → .auto-memory/）正式化 + framework/ template 与项目根 instance 关系明示（D1/D2/D9）
-- 沉淀工作流统一到 proposed-learnings.md header（D7+D8），未来 sediment 走单一路径不再散落
-- scope tag（framework-generic / project-specific / mixed）让 framework template 可被复用筛选（D6）
-
----
-
-## v0.9.22 — 2026-05-17（BL-066 + BL-067 + BL-068 沉淀，13 条 learnings — 中等深度沉淀）
-
-**来源批次：**
-- BL-066 done 收尾（5/15, 3 条 — F002/F006/F007 audit 模式 + 量化 criterion 语义 + audit 起草前实测原子组件）
-- BL-067 done 收尾（5/16, 5 条 — Next.js Turbopack BUILD_ID bug + InMemoryJobQueue MVP + runAigcAction SDK 抽象层 + audit 命中率信号 + webpack typecheck checklist）
-- BL-068 done 收尾（5/17, 5 条 — MCP get_log_detail trace 抓真因 + dedupe-then-validate + prompt 自检 § + mock infeasible dogfood 替代 + verifying gate 优先 trace 反思）
-
-**触发原因：**
-- Phase 3 完整 done 后整体回顾：BL-066 fix_rounds=0 一次成型 vs BL-068 fix_rounds=3 真因深挖代价对比，沉淀 LLM 类批次完整方法论
-- BL-067 Turbopack BUILD_ID bug 是 Next.js 16.2.x 上游 known issue 需文档化防御
-- BL-067 runAigcAction SDK 抽象层 + BL-068 dedupe-then-validate 是 LLM 类 caller 通用模式
-- BL-068 fix-round 2→3 真因发现（dup not hallucination）是 LLM fix-round 标准方法论触发点
-
-**13 条 1-line summary（详见 `framework/archive/proposed-learnings-archive-v0.9.22.md` §1-§3）：**
-
-| # | 1-line summary | 类型 | 来源 | 待写入文件 |
-|---|---|---|---|---|
-| #1 | 批次级多 audit 串联模式 (BL-066 F002+F006+F007 3 audit → 0 fix-round 一次成型) | 模板修订 | BL-066 | pre-impl-adjudication.md |
-| #2 | verifying gate 量化 criterion 锚定语义而非字面（BL-066 F007 §7 反面案例） | 新规律 / 新坑 | BL-066 | evaluator.md |
-| #3 | Generator audit 起草前实测原子组件 surface（BL-066 F006 Table.tsx 反面案例） | 新规律 | BL-066 | generator.md |
-| #4 | Next.js 16.2.x Turbopack 生产 build BUILD_ID bug + --webpack 防御（BL-067 fix-round 1 f284d35 实战） | 新坑 / 模板修订 | BL-067 | deploy-patterns.md |
-| #5 | InMemoryJobQueue fire-and-forget + mount self-heal 模式（BullMQ MVP 前置方案） | 新规律 | BL-067 | generator.md |
-| #6 | aigcgateway caller SDK 抽象层沉淀触发门槛（≥3 inline + 即将第 4 处） | 模板修订 | BL-067 | ai-action-contract.md |
-| #7 | pre-impl-adjudication Generator 建议命中率作为 audit 质量信号（4 audit 累积统计） | 新规律 | BL-067 | pre-impl-adjudication.md |
-| #8 | Next.js 16 webpack 严格 typecheck 暴露 hidden TS errors checklist | 新坑 | BL-067 | generator.md（或合并 #4 同段） |
-| #9 | MCP `get_log_detail` trace 抓 LLM 真实输出作为 LLM fix-round 标准动作 | 新坑 / 工具链 | BL-068 | generator.md |
-| #10 | LLM 输出 noise 兼容 dedupe-then-validate 模式（BL-068 35% dup rate 实战） | 新规律 | BL-068 | ai-action-contract.md |
-| #11 | Prompt 自检 § + 末尾 reminder 双层强化模式（Claude Haiku 单点约束不够时） | 模板修订 | BL-068 | ai-action-contract.md |
-| #12 | 测试 mock infeasible 时的 dogfood 替代覆盖模式（与 BL-067 §8 24h soak 同源） | 新规律 | BL-068 | evaluator.md |
-| #13 | verifying gate 失败时优先 trace 真因而非直接 ack fix（与 #9 配对方法论） | 新规律 / 反面案例 | BL-068 | planner.md |
-
-**沉淀模式（中等深度）：**
-
-- ✅ `framework/archive/proposed-learnings-archive-v0.9.22.md` 新建归档 13 条全文（保留所有 detail + 实战案例 + 待写入文件 cross-reference）
-- ✅ `framework/proposed-learnings.md` 清空 13 条 + 加 v0.9.22 历史 marker（同 v0.9.20 风格）
-- ✅ `framework/CHANGELOG.md` v0.9.22 段（本段，含 13 条 1-line summary + 待写入文件 cross-reference）
-- ⏸️ `framework/harness/*.md` 实际段落起草（估 12 段 × 30-80 行 = 600-1000 LOC docs）**留独立 framework batch 或合并 v0.9.23 同沉淀**，避免 v0.9.22 commit 范围过大冲淡 BL-069 启动节奏
-
-**沉淀模式参考：** v0.9.20 沉淀（"归档暂未写... git history 已有 commits cae1f8f / 821c094 完整记录"）采用类似轻沉淀；本 v0.9.22 比 v0.9.20 更深一层（archive 完整保留 + CHANGELOG 完整 cross-reference），但 framework/harness/* 段落同样留下批次。
+**触发原因（红队暴露的两类回归 + 一处恢复盲区）：**
+- Workflow 的 loop-until-done 天生自主推进到"完成"，会越过 orchestration §6 硬铁律「→verifying/→done 不得无人值守自动完成」的用户闸门 → 正确性回归
+- in-tool Workflow 若只在 context 里验完、不落命名验收工件，`proposed-learnings.md` 会因无 emitter 而**静默饿死**（本文件当时已现"当前无待确认提案"征兆）→ 框架自我进化引擎停摆
+- fan-out 途中崩溃（5 条验了 3 条）留下 progress.json 不表示的中间态 → 断点恢复铁律未贯彻到阶段内部
 
 **变更：**
-- 新建 `framework/archive/proposed-learnings-archive-v0.9.22.md`（13 条完整归档 + 待写入位置表）
-- 修改 `framework/proposed-learnings.md`：清空 13 条 + 加 v0.9.22 历史 marker
-- 修改 `framework/CHANGELOG.md`：加 v0.9.22 段（本段）
+- `harness/orchestration-patterns.md` 新增 §8「Workflow run ⇄ progress.json 日志契约」：① 引擎不得自主越阶段边界（return 交还用户闸门）② 状态机械原样回写（铁律 12）③ 每验完一条即落盘 features.json 抗中途崩溃 ④ 每轮产出命名验收工件 `{BL-id, verdict, fix_round, 证据摘要}` 回喂沉淀；文末版本历史补 2026-07-12 行
 
-**下次 framework batch 起步指引：** 按 archive §1-§3 逐条对应 `framework/harness/*.md` 文件 append 实际段落。优先级建议（按 BL-069+ 使用频次）：(1) `ai-action-contract.md` 3 段（BL-069 Brief 自然语言解析直接复用 LLM 模式）/ (2) `generator.md` 4 段（含 audit 实测 + MCP trace 是 Generator 标准动作）/ (3) `pre-impl-adjudication.md` 2 段（4 audit 统计可固化）/ (4) 其余文件段落随 BL-070+ 自然沉淀。
+**兼容性：** 纯新增文档小节，不改状态机 / 字段 / 既有编排语义。相关但未纳入本版的提案（/verify /build skill 真正 invoke Workflow、慢车道拆分、快车道热路径剥离、存量项目接入等）留在 `proposed-learnings.md` 待后续确认。
 
 ---
 
-## v0.9.21 — 2026-05-14（BL-064 + BL-065 沉淀，4 条 learnings）
+## v1.0.1 — 2026-07-12（patterns/deploy §7 不可逆生产迁移剧本）
 
-**来源批次：**
-- BL-064 fix-round 3（IA refactor 7→4 路由 / embed-old-components redirect scope wire-readiness）
-- BL-065-R1（/admin/kol-csv-import next-intl FORMATTING_ERROR latent bug — Codex Reviewer 手动 admin role probe 发现）
-- BL-065-F006（大型 atomic delete commit 净 -4658 lines / CI 3 轮自修才全绿 / Checkbox E2E selector + UUID guard pattern）
-- BL-065-F007 fix-rounds=1（latent vs 新引入区分 + Reviewer role-gate probe 价值）
-
-**触发原因：**
-- BL-064 redirect 12→6 缩减是 fix-round 1-3 实战才确定的最优 scope；embed-old destination 上 redirect 反而 UX 比 kept 差。规律值得沉淀避免下次 IA refactor 重新踩
-- BL-065-R1 是路由迁移暴露的 6 个月 latent bug — t(key) 在 server 看到未绑定 ICU 占位符抛 FORMATTING_ERROR；老路由被 redirect 掩盖。CI 全绿 + audit PASS 都漏，Reviewer 手动 admin role probe 才抓到 → 角色门禁手动探针价值需明文沉淀
-- BL-065-F006 大型 delete commit 本地 L1 全绿但 CI 3 轮才全绿 — baseline-tracking / fidelity-grep / types-regen 类测试只在 CI 完整链路暴露。删除批次执行模板 + 预扫清单需沉淀
+**来源：** aigcgateway BL-PROD-MIGRATE-DEPLOYSVR（生产从 GCP 原生 PM2 `34.180.93.185` 迁到 deploysvr `194.238.26.173` 容器化，用户手工验收通过）。
 
 **变更：**
-- 修改 `framework/harness/planner.md`：(1) 铁律 1 矩阵新增 1 行 — i18n template 在 server 组件 + 路由迁移核查；(2) 新增 §"fix-rounds 数解读"段（latent vs 新引入区分 + 二维统计 + Reviewer role-gate probe 价值）
-- 修改 `framework/harness/generator.md`：新增 §9 "IA refactor / route migration redirect scope wire-readiness 评估" + §10 "大型删除批次执行模板"
-- 修改 `framework/harness/evaluator.md`：新增 §20 "L1 + 角色门禁手动探针"
-- 同步写入 `.auto-memory/role-context/{generator,planner,evaluator}.md` 短摘要段（3 + 2 + 1 段）
-- 归档 `framework/archive/proposed-learnings-archive-v0.9.21.md`
+- `patterns/deploy-patterns.md` 新增 §7「不可逆生产迁移（换机 / 换部署模型）」：
+  - §7.1 四段剧本：并行演练（灌生产快照冒烟，旧机不动）→ 可逆预置（DNS-01 签证/装 vhost/`curl --resolve` 绕 DNS 验公网可达）→ 最短停机窗口（停写→数据终态 drop schema+restore→切 DNS，逐门禁 go/no-go）→ 回滚就绪（旧机冻结 + 旧值留档 + 多服务机退役单列）+ Planner spec checklist
+  - §7.2 凭据一致性红线：解密 DB 的密钥（ENCRYPTION_KEY 等）必须与源机 sha256 逐字一致（跨机比对只传 hash）；配套 env_file 引号坑（bash source 的带引号值迁到 compose env_file 被当字面量）
+  - §7.3 容器化 Next.js standalone HOSTNAME 坑：默认绑 `$HOSTNAME`（Docker 注入容器 ID）→ 容器内 127.0.0.1 不监听、healthcheck ECONNREFUSED（但发布端口经 docker-proxy 仍可达，掩盖问题）→ compose `HOSTNAME=0.0.0.0`
+- `patterns/README.md` deploy-patterns 触发条件补「换机/换部署模型迁移、容器化(Docker compose)、Next.js standalone 部署」
+
+---
+
+## v1.0.0 — 2026-07-09（Claude Code 时代重构：上下文隔离 + 两条车道 + 机制化守门 + 目录分层）
+
+**来源：** 用户发起的框架全面升级审计（2026-07-09），四项决议：混合模式 Evaluator / v1.0 重构 / 编排三模式（Workflow 编排 + 灵活日常流 + /loop 自排程）/ BL-064 提案闭环。
+
+**触发原因（v0.x 已过时的点）：**
+- 双工具架构假设（Codex 专职 Evaluator + 3099 端口 / PTY 启动 / 方向 B 限制）——Claude Code 已原生支持 fresh-context subagent 与多 agent 编排，「无自评」的实现基础从「第二个产品」变为「上下文隔离」
+- 铁律 3「上下文不足 20% 保存进度重启会话」——上下文自动压缩续接已成标配，人为中断不再必要
+- 角色加载 = 模型自觉读 md 文件、JSON 校验寄望手动 pre-commit——hooks / skills / subagent 定义可将约束机制化（cowork-constraint-design.md 当年无解的「知情自律」问题现有技术强制层）
+- 串行执行假设——独立 feature 并行实现（worktree）与 fan-out 验收 + 对抗复核已可行
+- README 引用的 docs/01-03 与 INIT.md 长期缺失；evaluator.md / generator.md 章节编号重复
+
+**变更（架构）：**
+- `harness/harness-rules.md` 重写：新增「角色与执行形态」（快车道 = 同会话，Evaluator 以隔离 subagent 运行；慢车道 = git 总线，跨机器/跨工具照旧）+「独立性铁则」（fresh context / 评估基于实物 / 结论原样落盘 / 不改产品代码）+「机制化守门」章节；铁律 3 改为「阶段边界状态落盘 + 信任压缩续跑」；铁律 11 改为 hook 机制化优先；新增铁律 12（编排者不得污染 evaluator 输入、不得改写其结论）；`executor:"codex"` 更名 `"evaluator"`（旧值作别名兼容）；`.agent-id` 格式 `main:`/`evaluator:`（`cli:`/`codex:` 兼容）
+- `harness/orchestration-patterns.md` 新增：角色↔机制映射（plan mode / subagent / worktree）、快车道标准流、并行 building 判定与汇合、fan-out 验收 + 对抗复核三阶段、Workflow 脚本场景（审计 loop-until-dry / 迁移 pipeline）、后台 CI 与 /loop 自排程纪律（无人值守不得自动切阶段）、模型分层建议、慢车道保留场景
+- **目录分层**：新建 `patterns/`（技术域经验库，触发条件命中才读，含索引 README）——deploy / database / ai-action-contract / ui-fidelity / i18n / material-symbols 自 harness/ 迁入；generator.md §8-§9 抽出为 `patterns/web-runtime-patterns.md`；evaluator.md §13-§16/§18-§19 抽出为 `patterns/testing-env-patterns.md`。harness/ 只保留状态机 + 角色协议 + 编排 + 裁决模式
+- `templates/claude/` 新增（bootstrap 装配到项目 `.claude/`）：SessionStart 状态注入 hook + PostToolUse 状态 JSON 校验 hook（铁律 11 机制化）+ `agents/evaluator.md` 隔离验收 subagent 定义 + `/plan` `/build` `/verify` 角色技能入口
+- `templates/AGENTS.md` 重写为工具无关的「独立 evaluator 实例」指令（agents.md 业界惯例），Codex 沙箱细节移除；`templates/CLAUDE.md` 更新启动流程与技能入口
+- 角色文件修订：planner.md 去工具耦合 + 新增 §6.5 车道与编排确认 + plan mode 提示（铁律 1-9 与裁决规则全保留）；generator.md 新增并行执行说明 + CI 后台 watch + 状态持久化检查点（替代 20% 规则）+ 修复重复编号；evaluator.md 新增执行形态章节 + 修复重复编号（§3/§4 各出现两次 → 顺序编号）+ 清除 aigcgateway 项目残留引用
+- **补齐缺失文件**：INIT.md（初始化引导，README/bootstrap 引用两个月的悬空引用）+ docs/01-concepts.md / 02-usage.md / 03-quickstart.md；README 重写反映 v1.0；bootstrap.sh 装配 .claude/ + 归整 patterns/ 与 framework docs；repo 根 .gitignore 新增（.obsidian/ / .DS_Store）
+
+**变更（沉淀闭环）：**
+- BL-064 提案（2026-05-11 挂起）闭环：IA refactor redirect scope 按 destination wire-readiness 评估 → 写入 `memory/role-context/generator.md` + `memory/role-context/planner.md`，归档 `archive/proposed-learnings-archive-v1.0.md`
+
+**兼容性：** 状态机 7 状态、progress.json/features.json 字段、L1/L2 分层、记忆 T0/T1/T2、签收/backlog/role_assignments 约定均不变。存量 v0.x 项目无需迁移即可继续运行（codex/cli 别名兼容）；建议增量采纳：拷贝 `.claude/` 模板 + 替换 harness 角色文件。
+
+---
+
+## v0.9.23 — 2026-07-03（aigcgateway BL-SYNC-ADAPTERTYPE-FALLBACK 沉淀，2 条 learnings）
+
+**来源批次：**
+- aigcgateway BL-SYNC-ADAPTERTYPE-FALLBACK（后台新增 provider guangtech 模型同步失败根治，fix_rounds=1）
+
+**触发原因：**
+- 首轮 FAIL：spec D2 断言适配器返回的 `SyncedModel.name`（带 `provider/` 前缀）会入库，但 `reconcile()` 的 `resolveCanonicalName(modelId)` 丢弃它、直接存裸 modelId → 命名前缀从未落库 → fix-round-1。
+- fix-round-1 部署坑：部署后 boot sync 立即用新命名逻辑跑，在旧裸名数据 + 新前缀逻辑间建了 6 个 orphan 模型 → 数据修复脚本需自愈 orphan。
+
+**变更：**
+- `harness/planner.md` §铁律 9：spec 断言某值"写入 DB / 流向下游"前必须追踪实际写入路径（grep 落点列反查真实来源，警惕 canonical/reconcile/transform 中间层重算/丢弃；铁律 1 向数据流终点维度扩展）。
+- `harness/deploy-patterns.md` §6：数据命名/结构变更类修复——部署会立即触发 on-boot 后台任务产生 orphan/中间态，须配套幂等数据修复脚本（自愈 orphan + 先部署后修数据 + dry-run 默认 + Reviewer 复验 dry-run=0）。
+
+---
+
+## v0.9.22 — 2026-06-14（aigcgateway BL-VISION-INPUT 沉淀，1 条 learning）
+
+**来源批次：**
+- aigcgateway BL-VISION-INPUT（网关图片输入/vision，一轮通过，fix_rounds=0）
+
+**触发原因：**
+- L2 首轮图片输入 E2E 返回 400，排查后发现是测试图坏了（wikipedia 缩略图 URL 返回 HTML 错误页而非 JPEG，被 base64 后上游正确判 invalid image）——坏 fixture 伪装成产品 bug，换真实 JPEG 后全 200。
+
+**变更：**
+- `harness/evaluator.md` §2 编写测试：新增「测试素材校验」——E2E fixture（图片/URL/文件）必须先用 `file`/magic-bytes 确认是预期 content-type 再断言上游行为；URL 选上游可达稳定源；优先自带 base64 而非外部 fetch。
+
+---
+
+## v0.9.21 — 2026-06-05（aigcgateway BL-IMG-PERSIST-GCS 沉淀，2 条 learnings）
+
+**来源批次：**
+- aigcgateway BL-IMG-PERSIST-GCS（生产图片无法下载根治，fix_rounds=2）
+
+**触发原因：**
+- fix_round1：图片签名代理 URL 的 origin 被签成 `0.0.0.0:3000`（Next standalone `request.url` 取监听地址、无视 Host 头）→ 客户端不可达 → Codex FAIL
+- fix_round2：spec acceptance 要求 seedream-3 做 http 上游 E2E，但该模型 realModelId 未配 ep-ID（火山恒 404）且本就在下线名单 → 验收返工
+
+**变更：**
+- 新增 `harness/planner.md` §铁律 8：spec 引用外部模型/服务做 E2E acceptance 前必须验证其真实可用（本地 enabled ≠ 运行时可用；火山须 ep-ID + 非下线名单）
+- 新增 `harness/generator.md` §9：Next.js standalone 模式 `request.url` 的 origin 取监听地址，反代后构造对外绝对 URL 须从 `X-Forwarded-Host`/`X-Forwarded-Proto` 推导（附 `resolveRequestOrigin` 范式 + nginx 前置确认）
+
+> 注：本条同步发现 aigcgateway 旧线（v0.9.6–v0.9.10，铁律 1.1–1.8 等）未并入本 canonical 线，暂存于 aigcgateway clone 的 `backup-local-v0.9.5-line-20260605` 分支，待后续单独 reconcile。
 
 ---
 

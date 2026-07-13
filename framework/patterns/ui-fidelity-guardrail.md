@@ -1,8 +1,3 @@
----
-scope: framework-generic
-last-updated: 2026-05-25
----
-
 # UI Fidelity Guardrail
 
 > **沉淀来源：** KOLMatrix BM1 批次签收后 UI fidelity 审计（2026-04-24）
@@ -45,7 +40,7 @@ Generator 实现 UI 页面时常见 3 类偏离：
 
 > **⚠️ 严格强制 — Planner spec 起草自检 checklist + Reviewer L1 受理前 checklist**
 >
-> Planner 起草 UI 类 feature spec 必须自检 4 段全含（见 `planner-checklists.md §"UI 类 spec 起草前 mandatory self-check checklist"`，BL-071 F003 拆分后位置）；Reviewer L1 受理前必须 grep spec 确认 4 段都在，缺任一段 → 拒收 spec 退回 Planner 补全（不是 FAIL feature，是规格本身不合规）。
+> Planner 起草 UI 类 feature spec 必须自检 4 段全含（见 `planner.md` §UI 类 spec 起草前 mandatory self-check checklist）；Reviewer L1 受理前必须 grep spec 确认 4 段都在，缺任一段 → 拒收 spec 退回 Planner 补全（不是 FAIL feature，是规格本身不合规）。
 >
 > 反面案例：BL-025 spec v1 仅含 §2.1，§2.2/2.3/2.4 全缺，靠用户 challenge 才补 → 来源 v0.9.6 [#5]。
 
@@ -136,7 +131,7 @@ Generator 在 audit 里列 5-8 条"本页将用哪些 `@/components/*` 组件"�
 | **Typography** | font scale + line-height + tracking | `--text-landing-hero: clamp(2.75rem, 6vw, 5.5rem)` / `--leading-landing-display: 0.95` / `--tracking-landing-display: -0.035em` | Hero h1 / section h2/h3 / body lg/base / eyebrow 等 6 类 size + 4 类 leading + 3 类 tracking |
 | **Color** | bg layer + text layer + accent layer | `--color-landing-canvas` / `--color-landing-ink` / `--color-landing-ink-muted` / `--color-landing-cyan-deep`（light-theme accent）| dark canvas + 现 brand cyan/purple/navy 复用 + 必含 deep variant for light-theme contrast |
 | **Spacing** | section-y + container-x + element-y | `--spacing-landing-section-y: clamp(5rem, 9vw, 9rem)` / `--spacing-landing-container-x: clamp(1.5rem, 5vw, 6rem)` / `--spacing-landing-element-{tight,normal,loose}` | 3 级 element + section padding + container padding |
-| **Motion** | duration + ease curves | `--duration-landing-short: 200ms` (medium 400 / long 800) + `--ease-landing-out: cubic-bezier(0.16, 1, 0.3, 1)` (Linear-style) | 3 级 duration + 2 ease 曲线（out / in-out）配套 #3 渐进增强 |
+| **Motion** | duration + ease curves | `--duration-landing-short: 200ms` (medium 400 / long 800) + `--ease-landing-out: cubic-bezier(0.16, 1, 0.3, 1)` (Linear-style) | 3 级 duration + 2 ease 曲线（out / in-out）配套 §3.5 渐进增强 |
 
 **复用规则（不破坏现有 brand）：**
 
@@ -151,19 +146,160 @@ Generator 在 audit 里列 5-8 条"本页将用哪些 `@/components/*` 组件"�
 |---|---|
 | `src/styles/globals.css` | `@theme` 扩展 25 个 `--*-landing-*` token + `landing-canvas` / `landing-ink` / `landing-cyan-deep` 等 |
 | `design-draft/landing-v2-tokens.md` | 110 LOC token 规范文档：Linear / Plausible 风格对照表 + 4 类 token 完整清单 + 复用规则 + a11y contrast 复核（ink vs canvas ≈ 16:1） |
-| `framework/harness/evaluator.md §11.6` | a11y 三件套验收（与 token color layer 配套）|
+| `framework/patterns/testing-env-patterns.md` §8 | a11y 三件套验收（与 token color layer 配套）|
 
 **避免反模式：**
 - ❌ 在 component 内 inline 写 `style={{ color: "#7d8593" }}` / `text-[14px]` 等硬编码
 - ❌ 仅靠 Tailwind preset utility（`text-gray-500`）— 与现有 brand 调色板不一致
-- ❌ 直接 copy reference URL（如 Linear）的 css 值 — 应按 §"reference URL 提炼方法论"（planner-checklists.md，BL-078 #4）抽象成本项目 token
+- ❌ 直接 copy reference URL（如 Linear）的 css 值 — 应按 §"reference URL 提炼方法论"（`planner.md`，BL-078 #4）抽象成本项目 token
 
 **配套：**
-- `framework/harness/generator.md` §"现代 CSS 渐进增强 — Native + Fallback + reduced-motion 三层守门"（BL-078 #3）
-- `framework/harness/planner-checklists.md` §"Visual polish reference URL 提炼方法论"（BL-078 #4）
-- `framework/harness/evaluator.md §11.6` motion a11y 三件套（BL-078 #1 + #5）
+- 本文件 §3.5 现代 CSS 渐进增强三层守门（BL-078 #3 — `--duration-*` + `--ease-*` token 与该段配套）
+- `planner.md` §"Visual polish reference URL 提炼方法论"（BL-078 #4）
+- `framework/patterns/testing-env-patterns.md` §8 motion a11y 三件套（BL-078 #1 + #5）
 
 来源：BL-078-F001 实物落 `src/styles/globals.css @theme` + `design-draft/landing-v2-tokens.md` + 用户 2026-05-27 ack。
+
+### 3.5 现代 CSS 渐进增强三层守门（BL-078 #3 / BL-078-F002+F003）
+
+**触发场景：** 引入现代 CSS API（view transitions / scroll-driven animations / `interpolate-size: allow-keywords` / container queries 等）做 motion / transition / animation 类视觉效果。BL-078 实战：landing 视觉精修引入 `@view-transition { navigation: auto; }` 跨文档过渡 + `animation-timeline: view()` scroll-driven entrance + `interpolate-size` FAQ smooth height transition。
+
+**核心原则：** 现代 CSS API 在 Chrome 115+/Safari 18+ 原生支持，Firefox / 旧 Safari 走 fallback 退化（功能不破，仅 motion 缺失）；最后所有 motion 必经 `prefers-reduced-motion` 守门，启用 reduce 后退化静态/瞬时切换（与 `framework/patterns/testing-env-patterns.md` §8 motion a11y 三件套 配套）。
+
+三层守门 = **Native API 优先** + **Fallback 兜底** + **reduced-motion 强制守门**。任一层缺失 → motion a11y 反例。
+
+#### 3.5.1 Native API 优先（Chrome 115+/Safari 18+）
+
+`@supports` 检测后启用 native CSS API。Firefox / 旧 Safari 不支持 → `@supports` 块整段忽略，无副作用。
+
+```css
+/* Cross-document view transitions opt-in (Chrome 126+/Safari 18+) */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--duration-landing-medium);
+  animation-timing-function: var(--ease-landing-out);
+}
+
+/* Scroll-driven animation 检测 + 启用 */
+@supports (animation-timeline: view()) {
+  .landing-hero-fade-in {
+    animation: hero-fade-in linear both;
+    animation-timeline: view();
+    animation-range: cover 0% cover 35%;
+  }
+}
+
+/* interpolate-size: allow-keywords (Chrome 129+) for FAQ smooth height */
+@supports (interpolate-size: allow-keywords) {
+  :root { interpolate-size: allow-keywords; }
+  details.landing-faq-item::details-content {
+    height: 0;
+    overflow: hidden;
+    transition:
+      height var(--duration-landing-medium) var(--ease-landing-out),
+      content-visibility var(--duration-landing-medium) allow-discrete;
+  }
+  details.landing-faq-item[open]::details-content {
+    height: auto;
+  }
+}
+```
+
+#### 3.5.2 Fallback 兜底 — Firefox / 旧 Safari
+
+Native API 不支持时，JS-driven 兜底（IntersectionObserver / framer-motion）或干脆 graceful degradation（无 motion 但功能/navigation 不破）。
+
+**两种 fallback 选择：**
+
+| 方案 | 用法 | 适合场景 |
+|---|---|---|
+| **JS-driven 兜底** | `IntersectionObserver` 监听 viewport 进入 → 触发 CSS class 切换 `animation` / `transform` | scroll-driven entrance（淡入 / scale-on-enter）|
+| **Graceful degradation** | 不写 fallback，native 失败时直接显示静态 end-state | view transitions 跨页 navigation（无 motion 但 navigation 不破）/ FAQ smooth height（无 motion 但 toggle OK）|
+
+**BL-078 实例（`ScrollFadeIn` helper）：** IntersectionObserver-based 一次性 reveal（fire once），与 `@supports (animation-timeline: view())` 并存：
+- Chrome/Safari：`@supports` 命中 → native scroll-driven 持续追踪 + IntersectionObserver one-shot fade-in（双跑无冲突）
+- Firefox / 旧 Safari：`@supports` 块跳过 → 只剩 IntersectionObserver fade-in（仍有 motion，仅缺连续 scroll-bind）
+
+```tsx
+// src/components/landing/ScrollFadeIn.tsx (BL-078 fallback helper)
+export function ScrollFadeIn({ children, delayMs = 0 }: Props) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) { setVisible(true); observer.disconnect(); break; }
+      },
+      { rootMargin: "0px 0px -10% 0px" }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+  return (
+    <div ref={ref} style={{ transitionDelay: `${delayMs}ms` }}
+         className={`transition-all duration-700 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+      {children}
+    </div>
+  );
+}
+```
+
+#### 3.5.3 prefers-reduced-motion 强制守门
+
+任何 `animation` / `transition` / `transform` 必带 reduced-motion 兜底，启用系统选项后退化静态/瞬时。
+
+**全局默认 + component 级精细兜底（双层）：**
+
+```css
+/* 1. 全局 default: 尊重用户系统偏好（globals.css 顶层） */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 2. component 级精细兜底（重要 motion 路径显式覆盖）*/
+.landing-cta-primary { transition: transform 200ms, box-shadow 400ms; }
+.landing-cta-primary:hover { transform: translateY(-1px) scale(1.02); }
+@media (prefers-reduced-motion: reduce) {
+  .landing-cta-primary { transition: none; }
+  .landing-cta-primary:hover { transform: none; }
+}
+
+/* 3. view transitions 也要单独 honor reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.01ms !important;
+  }
+}
+```
+
+**实测 checklist（与 `framework/patterns/testing-env-patterns.md` §8 配套）：** DevTools Rendering panel 模拟 `prefers-reduced-motion: reduce` → 抽 3-5 个 motion 路径（hero entrance / sticky-parallax / scroll-driven / view transitions / FAQ smooth height）实测无 motion 或 ≤ 0.01ms `animation-duration`。
+
+#### 3.5.4 适用边界
+
+| 适用 | 不适用 |
+|---|---|
+| `animation` / `transition` / `transform` / view transitions / scroll-driven / interpolate-size 类 motion | 静态 CSS（color / spacing / typography / layout）|
+| 现代 API 检测 + fallback + reduced-motion 三层（任一缺失即 review FAIL） | 仅纯 CSS 静态规则（color token / radii / shadows / border 等不需 motion 守门）|
+| landing / marketing 页（motion-heavy） | app CRUD 页（motion-light，通常仅 hover / focus transitions 也建议带 reduced-motion 守门）|
+
+**配套：**
+- 本文件 §3.4 landing visual token layer（BL-078 #2 — `--duration-*` + `--ease-*` token 与本段配套）
+- `framework/patterns/testing-env-patterns.md` §8 motion a11y 三件套（BL-078 #1 + #5 — opacity-dimming trap + reduced-motion 验收）
+- `planner.md` §"Visual polish reference URL 提炼方法论"（BL-078 #4 — 决定哪些 motion 信号契合自身 brand）
+
+来源：BL-078-F002 `src/styles/globals.css` `@view-transition` + `landing-hero-fade-in` + `landing-hero-video-scale` 实物 + BL-078-F003/F004 `interpolate-size` FAQ smooth height + BL-078 #3 用户 2026-05-27 ack。
 
 ---
 
@@ -241,3 +377,5 @@ Generator 在 audit 里列 5-8 条"本页将用哪些 `@/components/*` 组件"�
 | 日期 | 修订 | 来源 |
 |---|---|---|
 | 2026-04-24 | 初版沉淀 | KOLMatrix BM1 签收后 UI fidelity 审计 + BM2 F003/F005 重演确认 |
+| 2026-05-27 | §3.4 Landing / marketing 视觉 token layer 规范（4 类 token + 复用规则 + light-theme deep variant WCAG AA） | BL-078-F001（v0.9.24 #2） |
+| 2026-05-27 | §3.5 现代 CSS 渐进增强三层守门（Native API + Fallback + prefers-reduced-motion） | BL-078-F002/F003/F004（v0.9.24 #3） |

@@ -1,4 +1,3 @@
-<!-- TEMPLATE FILE: copy to .auto-memory/ via bootstrap.sh — agent 运行时读 .auto-memory/environment.md，本文件不参与运行时加载 -->
 ---
 name: environment
 description: 生产/Staging 环境地址、服务器配置、测试账号（很少变）

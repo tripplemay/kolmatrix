@@ -1,8 +1,3 @@
----
-scope: framework-generic
-last-updated: 2026-05-25
----
-
 # Pre-Implementation Audit → Planner Adjudication Pattern
 
 > **沉淀来源：** KOLMatrix 项目 B0 sprint（2026-04-18 ~ 2026-04-19）
@@ -155,7 +150,7 @@ Generator git pull 看到裁决 → 真正开始实现
 
 ### 4.1 Planner 凭印象裁决
 **错误：** Planner 没读代码就下结论
-**正确：** 按 `planner-checklists.md §"铁律 1：spec 涉及具体代码细节时必须核查源码"`（BL-071 F003 拆分后位置），Read 现状再判
+**正确：** 按 `planner.md` 铁律 1「涉及代码细节必须核查源码」，Read 现状再判
 
 ### 4.2 Generator 审计过度笼统
 **错误：** "F005 有歧义，请 Planner 确认" —— 没列具体分歧点
@@ -239,12 +234,28 @@ Planner 在累积裁决多个 audit 后，可以**Generator 建议命中率**作
 **规则：**
 
 - **命中率 ≥80%：** Planner 裁决可降复杂度（直接 ack + 短理由），节省 turnaround 时间
-- **命中率 < 80%：** Planner 需深挖偏离项，从中沉淀新规律（如 BL-066 F006 #4 沉淀为 v0.9.22 #3「audit 起草前实测原子组件」）
+- **命中率 < 80%：** Planner 需深挖偏离项，从中沉淀新规律（如 BL-066 F006 #4 沉淀为 v0.9.22 #3「audit 起草前实测原子组件」，详 §6.5）
 - **累积命中率持续 < 70%：** 警示 Generator audit 起草纪律有偏差，需起 framework 修订或更新 audit 模板
 
 **应用：** 4 次 audit 累积后即可作 Generator audit 质量指标；Planner 在 done 阶段评估批次质量时纳入此指标（与 fix_rounds 一起作为质量 dashboard）。
 
 来源：BL-066 + BL-067 4 次 audit 实战 + v0.9.22 #7（用户 2026-05-16 ack）。
+
+### 6.5 Audit 起草前必实测原子组件 surface（v0.9.22 #3）
+
+Generator 在 pre-impl audit 起草前必须**实测原子组件实际 surface**，而非按 README / 类型签名"字面想象"。
+
+**实测优先级 checklist：**
+1. **原子组件实测：** Read 组件源码 + 验 props 类型签名（如 BL-066 F006 Table.tsx README 看似有 col cap，实测 forwardRef + className 透传 fully flexible）
+2. **路径配置实测：** `find` / `grep` 实际文件位置（如 spec 写 `/foo/bar` 但实际位置可能漂移）
+3. **SQL 实际行为实测：** `ssh prod-db` sample 5-10 rows（如 zod schema 与 prod 数据 shape 比对）
+4. **API response shape 实测：** 跨服务 GET 拉真数据 JSON parse 验证
+
+**反面（BL-066 F006）：** Generator audit 建议保守拆列（怕 Table col cap），Planner 实测纠偏 fully flexible → 裁决 #4=A（6 列方案）偏离 Generator 建议。系统性"文档想象"偏差需 Planner 反复实测纠偏，成本高。
+
+**配套 Planner 端：** Generator 建议命中率 ≥80% 时 Planner 裁决可降复杂度（直接 ack + 短理由）；< 80% 时 Planner 需深挖偏离项 + 沉淀新规律。详见 §6.4。
+
+来源：BL-066 F006 audit 实战 + v0.9.22 #3。
 
 ---
 
@@ -252,7 +263,7 @@ Planner 在累积裁决多个 audit 后，可以**Generator 建议命中率**作
 
 | 机制 | 关系 |
 |---|---|
-| `铁律 6` Generator 不得执行 `executor:codex` | pre-impl 审计仍由 Generator 主动发起，不违反 |
+| `铁律 6` Generator 不得执行 `executor:evaluator` | pre-impl 审计仍由 Generator 主动发起，不违反 |
 | `铁律 9` 生产紧急故障也走流程 | hotfix 批次同样适用 pre-impl 审计（时间压力下可缩略） |
 | Planner `铁律 1` spec 必须核查源码 | 裁决前 Planner 必须 Read 实现文件确认现状 |
 | Role assignments | 多 Planner 项目：审计请求发给 `role_assignments.planner` |
@@ -283,7 +294,7 @@ Planner 在累积裁决多个 audit 后，可以**Generator 建议命中率**作
 
 新 sprint 启动时，Planner 确认：
 
-- [ ] `planner.md` 索引页或 `planner-arbitration.md` 引用了本文件（§Pre-impl 裁决 P1-P5 段；BL-071 F003 拆分后位置）
+- [ ] `planner.md` 引用了本文件（§规格偏差处理）
 - [ ] `generator.md` 引用了本文件（§开工前审计）
 - [ ] `.auto-memory/MEMORY.md` T2 条目触发条件含"pre-impl 审计"
 - [ ] `features.json` 的 acceptance 足够清晰，不留 3 类错误场景（§1）
@@ -339,7 +350,7 @@ Generator 在 building 实装某 feature 时，发现 spec acceptance 包含**�
 | 接口契约漂移（隐式） | spec 引 API 现状是 v1，实装才看 v2 已 deploy，behaviour 已变 |
 | 数据 shape 漂移（隐式） | spec 预期返 array，实装跑 dry-run 才看到返 wrapped object |
 
-**判据：偏差是 pre-impl 阶段**无法**暴露的**（需要 Read 实装代码 / 跑 dry-run / 触达 prod 数据才看到）→ 不是 spec 起草质量问题，是天然 building 中段才显形 → 走本变种处理；偏差是 pre-impl 阶段**应当**能暴露的（Read schema / grep 调用方就能看见）→ 是 spec 起草质量问题 → 走 §1-§10 主 pattern 反向召回责任 + Planner 修订 spec。
+**判据：偏差是 pre-impl 阶段**无法**暴露的**（需要 Read 实装代码 / 跑 dry-run / 触达 prod 数据才看到）→ 不是 spec 起草质量问题，是天然 building 中段才显形 → 走本变种处理；偏差是 pre-impl 阶段**应当**能暴露的（Read schema / grep 调用方就能看见）→ 是 spec 起草质量问题 → 走 §1-§9 主 pattern 反向召回责任 + Planner 修订 spec。
 
 ### 10.2 Generator 行为指引
 
@@ -437,5 +448,5 @@ Generator 在 building 实装某 feature 时，发现 spec acceptance 包含**�
 | 2026-04-20 | §9.1 Planner 写 spec 自检清单 | KOLMatrix BI1-F010 acceptance 偏离案例 |
 | 2026-05-01 | §9.2 数据准备步骤 + 白名单 ID 防抽样污染 | KOLMatrix B5 fixing-3 + MVP fixing-2 |
 | 2026-05-05 | §10 Building 中段良性 partial-pending 变种（v0.9.12 — BL-034 F005 沉淀）| KOLMatrix BL-034 F005 实测 → Planner 短格式裁决 → fix-round 1 |
-| 2026-05-25 | §6.4 Generator 建议命中率 + §11 批次级多 audit 串联模式（BL-071 F008 v0.9.22 #1 + #7 inline-merge）| BL-066 + BL-067 累积实战，用户 2026-05-15 / 2026-05-16 ack |
-| 2026-05-25 | §10/§11/§12 编号修复（BL-071 F007 + F008）| F007 顺接 §10/§11；F008 加 §11 后 §11→§12 |
+| 2026-05-25 | §6.4 Generator 建议命中率 + §6.5 audit 起草前实测组件 surface + §11 批次级多 audit 串联模式（v0.9.22 #1 + #3 + #7）| BL-066 + BL-067 累积实战，用户 2026-05-15 / 2026-05-16 ack |
+| 2026-05-25 | §10/§11/§12 编号修复（partial-pending 归位 §10，新增 §11 批次级多 audit，版本历史顺延 §12）| F007 顺接 §10/§11；F008 加 §11 后版本历史→§12 |

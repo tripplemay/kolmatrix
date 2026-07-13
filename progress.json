@@ -5,6 +5,7 @@
   "completed_features": 5,
   "fix_rounds": 0,
   "current_sprint": "BL-PROD-MIGRATE-DEPLOYSVR",
+  "dashboard_url": null,
   "last_updated": "2026-07-13T09:30+0800",
   "reference_docs": [
     "docs/specs/BL-PROD-MIGRATE-DEPLOYSVR-spec.md",

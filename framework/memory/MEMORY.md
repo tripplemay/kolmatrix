@@ -1,5 +1,3 @@
-<!-- TEMPLATE FILE: copy to .auto-memory/ via bootstrap.sh — agent 运行时读 .auto-memory/MEMORY.md，本文件不参与运行时加载 -->
-
 # Memory Index
 
 ## T0 — 每次启动必读
@@ -14,6 +12,7 @@
 ## T2 — 触发条件命中时加载
 - [用户角色与工作方式](user-role.md) — 用户身份、技术背景、沟通偏好 | 加载：需要调整沟通风格时
 - [文档结构与查阅入口](reference-docs.md) — docs/ 各子目录用途 | 加载：需要查找文档时
+- [技术域 pattern 库](../framework/patterns/README.md) — 部署/DB/LLM 集成/UI 还原/i18n/测试环境实战坑 | 加载：按索引表触发条件命中时
 
 <!-- 后续可按需追加 feedback-*.md / reference-*.md 条目 -->
 <!-- 格式：- [标题](文件名) — 一行描述 | 加载：触发条件 -->

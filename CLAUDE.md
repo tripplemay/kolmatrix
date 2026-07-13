@@ -5,17 +5,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Harness 规则（最高优先级）
 读取并严格遵守 @harness-rules.md 中的所有规则。
 
-**每次会话启动必须执行（所有 agent 通用）：**
-1. 读取 `.auto-memory/MEMORY.md`（项目记忆索引），按需加载记忆文件
-2. 读取 `progress.json`，确认当前阶段，再加载对应角色文件（generator.md / evaluator.md / planner.md）
+**每次会话启动必须执行：**
+1. SessionStart hook 会自动注入当前状态机 status（`.claude/hooks/session-start.sh`）；据此进入对应角色入口
+2. 读取 `.auto-memory/MEMORY.md`（项目记忆索引），按 T0/T1/T2 分层加载记忆
+3. 阶段角色入口：`/plan`（new / planning / done）、`/build`（building / fixing）、`/verify`（verifying / reverifying，编排隔离 evaluator subagent）
 
-**分支规则：** 代码提交推 `main` 分支。部署由用户手动触发。
+**独立性铁则：** 验收必须在隔离上下文中进行（`.claude/agents/evaluator.md`），结论原样落盘。任何人不得评估自己的工作。
 
-**记忆分层：** `.auto-memory/`（git-tracked）是跨 agent 共享记忆源。本机用户偏好存储在 `~/.claude/projects/.../memory/` 中，不入 git。
+**分支规则：** 代码提交推 `main` 分支（触发 CI）。部署由用户手动触发。（若迁移后 push main 已改为自动部署，则改走 branch → PR，勿自动 push main。）
+
+**自主模式（/autodrive）：** 机件已装但默认不开启；开启需人类建 `autonomy-policy.json` 并手动合入 deny-list，deploy/prod/spend 永留人类闸门。
+
+**进度看板：** 阶段边界可 `/dashboard` 刷新图形化看板（Artifact 快照，URL 存 `progress.json.dashboard_url`）。
+
+**记忆分层：** `.auto-memory/`（git-tracked）是跨会话共享记忆源。本机用户偏好存储在 `~/.claude/` 中，不入 git。
 
 **规格文档分级：** 新功能批次须有 `docs/specs/` 下的规格文档（硬性）；Bug 修复批次可省略（软性）。
 
 **架构决策记录（ADR）：** 关键决策沉淀在 `docs/adr/`（跨批次影响 / 不可逆 / 当时辩论过的）。做新决策前读 `docs/adr/README.md` 索引核对一致性，避免违反已有 ADR。新决策 ADR-worthy 时加新编号文件。
+
+**编排：** 并行实现 / fan-out 验收 / 后台 CI / /loop 见 `orchestration-patterns.md`。
 
 ---
 

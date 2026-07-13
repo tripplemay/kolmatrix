@@ -1,4 +1,3 @@
-<!-- TEMPLATE FILE: copy to .auto-memory/ via bootstrap.sh — agent 运行时读 .auto-memory/reference-docs.md，本文件不参与运行时加载 -->
 ---
 name: reference-docs
 description: 项目文档结构及各类文档的查阅入口（按需加载）

@@ -782,7 +782,7 @@ grep -c "BL-076 #17" framework/harness/generator.md   # 1+
 | Generator 角色 | johnsong | Kimi（同 Planner） |
 | 决策点 | 12 个 D1-D12 user lock | 2 个 A1 user lock（范围 + Reviewer 模式） |
 
-**Generator 同 Planner 优势：** Kimi 同时担任 Planner + Generator，避免 handoff 信息丢失（spec 写时已 mental model 17 候选目标文件 + 5 合并段，开工无需重新 ramp）。**Risk：** 自己评估自己代码违反铁律 #4 — 所以 Reviewer 必须由 Codex 独立执行（F009 executor:codex）。
+**Generator 同 Planner 优势：** Kimi 同时担任 Planner + Generator，避免 handoff 信息丢失（spec 写时已 mental model 17 候选目标文件 + 5 合并段，开工无需重新 ramp）。**Risk：** 自己评估自己代码违反铁律 #4 — 所以 Reviewer 必须由 Evaluator 独立执行（F009 executor:codex）。
 
 ---
 

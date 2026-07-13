@@ -1,9 +1,3 @@
----
-scope: mixed
-project-specific-sections: ["§1.6", "§1.7", "§1.8", "§3.2", "§3.5", "§5.1", "§9"]
-last-updated: 2026-06-09
----
-
 # Deploy Patterns（框架沉淀）
 
 > 跨批次通用的生产部署 / 运行时进程管理 / 反向代理模式。Planner 在写涉及 deploy / PM2 / process management / nginx 的 spec 时必读。
@@ -121,30 +115,44 @@ sudo cat /proc/<NEW_PID>/environ | tr '\0' '\n' | grep <NEW_VAR>  # 验证
 
 **spec 起草陷阱：** `ecosystem.config.js` 的 `env_file:` 字段名给人「PM2 会管」的强烈错觉。实际它只在初次 spawn 读一次。任何依赖「reload 自动注入新 env」的 runbook 都会踩。如果你的 deploy runbook 里写 `pm2 reload <app> --update-env`，**那是错的**，必须改成 delete + sourced-shell start。
 
-**扩范围（v0.9.14 实战再现 — 不限 `env_file` 字段用法）：** BL-043 staging .env.staging 修复（2026-05-06）证明 — 即便 `ecosystem.config.js` 不含 `env_file` 字段（PM2 由 `set -a; source .env; set +a; pm2 start` 启动方式启动），**任何 `.env` 改动后 `pm2 reload --update-env` / `pm2 restart --update-env` 都不重读**：
+### 1.7 不限于 `env_file` — 任何 `.env` 改动后 PM2 reload/restart 都不重读（v0.9.14 实战再现）
+
+**实战触发：** BL-043 staging .env.staging 修复（2026-05-06）— Planner 添加新 env var `KOLMATRIX_APP_PASSWORD` + 同步改 `DATABASE_URL` 中密码后：
 
 ```bash
+# 路径 1（标准 ecosystem.config.js 但不含 env_file 字段，PM2 启动时由 deploy-staging.sh 跑：
+#   set -a; source .env.staging; set +a; pm2 start ecosystem.config.js --only <app>）
 # .env 改动后：
 pm2 reload kolmatrix-staging --update-env  # ❌ 仍 28P01 password authentication failed
 pm2 restart kolmatrix-staging --update-env  # ❌ 同
-# 必须 delete + sourced start：
-pm2 delete <app> && set -a && source .env.<env> && set +a && pm2 start ecosystem.config.js --only <app>
 ```
 
-**深层原因：** PM2 daemon 持有所有 process 的 env snapshot（process 启动时从 fork 的 shell 继承）。`reload --update-env` 只重启 process（保持 daemon 缓存的 env），不会重新 source `.env` 文件 — 因为 PM2 daemon 不知道 .env 文件存在（除非用 `env_file:` 字段，但本节已证 `env_file:` 也只初次读）。
+**深入诊断（pm2 jlist 验证）：**
+- `DATABASE_URL` 在 process env 中存在但**值是旧的**（PM2 daemon 启动时缓存的 env snapshot）
+- `KOLMATRIX_APP_PASSWORD` 在 process env 中**根本不存在**（PM2 没读 `.env.staging` 新加的 line）
+- 直接 `PGPASSWORD=$NEW_PWD psql -h localhost -U kolmatrix_app -d kolmatrix_staging` 通过 → 证明 PG 角色密码与 .env 一致，根因不是 PG 配置错位，而是 **PM2 进程内 env 与 .env 文件不一致**
 
-**深入诊断手段（pm2 jlist 验证）：**
-- `DATABASE_URL` 在 process env 中存在但**值是旧的** → daemon 缓存的 snapshot
-- 新加的 env var 在 process env 中**根本不存在** → PM2 没读 `.env` 新行
-- 验证：`pm2 jlist | jq '.[] | select(.name=="<app>") | .pm2_env.<NEW_VAR>'` 应非空
+**修订规则（reaffirm 加强）：** 不限于 §1.6 `env_file` 字段用法 — **任何环境下** `.env` 改动后必须 `pm2 delete + sourced shell start`（不是 reload / restart）。
 
-**反面案例：** BL-043 staging .env.staging 修复时 Planner 先尝 reload + restart 全失败 → 才用 delete + sourced start 解。未来 spec 起草凡涉及"新增 .env var + PM2 应用读"必须明示「pm2 delete + sourced shell start」流程，不可依赖 reload/restart --update-env。
+**深层原因：** PM2 daemon 持有所有 process 的 env snapshot（process 启动时从 fork 的 shell 继承）。`reload --update-env` 只重启 process（保持 daemon 缓存的 env），不会重新 source `.env` 文件 — 因为 PM2 daemon 不知道 .env 文件存在（除非你用 `env_file:` 字段，但 §1.6 已证 `env_file:` 也只初次读）。
 
-**来源：** v0.9.7 §1.6 初版（B5 fixing-4 `env_file` 字段）+ v0.9.14 BL-043 实战扩范围（不限 env_file 字段用法，用户 2026-05-06 全 Accept）+ BL-071 F007 D7 inline-merge 合并到本段（原 §1.7 chronological-append 历史已合并入此 §1.6 同主题）。
+**修复模板（与 §1.6 一致，加注 .env 改动场景）：**
 
-### §1.6.1 SSH 加 env var pm2 reload --update-env 的成功条件 — 必须先 source shell（v0.9.24 #10 / BL-075 #10）
+```bash
+cd /opt/<app>
+pm2 delete <app>                          # 不是 reload / restart — daemon 不重读 .env
+set -a && source .env.<env> && set +a     # 显式 source 注入当前 shell（含新加的 var）
+pm2 start ecosystem.config.js --only <app>  # PM2 daemon 从新 shell 重新缓存 env
+# 如需验证：pm2 jlist | jq '.[] | select(.name=="<app>") | .pm2_env.<NEW_VAR>' 应非空
+```
 
-§1.6 强调"`pm2 reload --update-env` 不重读 `.env` 文件"，但 `--update-env` 标志的真实语义是"从**当前 shell** 重新继承 env"。BL-075-F002 实战补充：**先 `set -a; source .env; set +a` 显式注入到当前 shell，再 `pm2 reload --update-env` 会成功 carry over 新 vars**，比 §1.6 的"pm2 delete + sourced start"更轻量（零 downtime）。
+**反面案例（已落实战）：** BL-043 staging .env.staging 修复时 Planner 先尝 reload + restart 全失败 → 才用 delete + sourced start 解。**未来 spec 起草时凡涉及"新增 .env var + PM2 应用读"必须明示「pm2 delete + sourced shell start」流程，不可依赖 reload/restart --update-env**。
+
+**来源：** v0.9.14 沉淀（BL-043 staging gap 修复 2026-05-06）。reaffirm v0.9.7 §1.6 + 扩范围（不限 env_file 字段用法）。Planner johnsong 在 prod redeploy ops 期间踩到，用户 2026-05-06 全 Accept。
+
+### 1.6.1 SSH 加 env var `pm2 reload --update-env` 的成功条件 — 必须先 source shell（v0.9.24 #10 / BL-075 #10）
+
+§1.6 / §1.7 强调"`pm2 reload --update-env` 不重读 `.env` 文件"，但 `--update-env` 标志的真实语义是"从**当前 shell** 重新继承 env"。BL-075-F002 实战补充：**先 `set -a; source .env; set +a` 显式注入到当前 shell，再 `pm2 reload --update-env` 会成功 carry over 新 vars**，比 §1.6 的"pm2 delete + sourced start"更轻量（零 downtime）。
 
 #### 反例（无 source 直接 reload — §1.6 BL-043 模式）
 
@@ -195,11 +203,11 @@ sudo cat /proc/$(pgrep -f "PM2.*kolmatrix" | head -1)/environ \
 
 #### 同 protocol 适用
 
-BL-075-F002 (`AIGCGATEWAY_KOL_COUNTRY_ACTION_ID` prod + staging) + BL-068-F001 (`AIGCGATEWAY_REFINE_ACTION_ID`) + BL-069-F001 (`AIGCGATEWAY_BRIEF_PARSE_ACTION_ID`) 都按此流程落地 (详 `.auto-memory/environment.md` aigcgateway Actions 清单)。
+BL-075-F002 (`AIGCGATEWAY_KOL_COUNTRY_ACTION_ID` prod + staging) + BL-068-F001 (`AIGCGATEWAY_REFINE_ACTION_ID`) + BL-069-F001 (`AIGCGATEWAY_BRIEF_PARSE_ACTION_ID`) 都按此流程落地（详 `framework/memory/environment.md` aigcgateway Actions 清单）。
 
-**来源：** BL-075-F002 prod + staging deploy 实战（2026-05-26 03:55 UTC，backup `.env.{production,staging}.bl075-f002.20260526-035529`）+ v0.9.24 #10 用户 2026-05-26 ack（done 阶段提出，落 v0.9.24 framework sediment batch）。
+**来源：** BL-075-F002 prod + staging deploy 实战（2026-05-26 03:55 UTC，backup `.env.{production,staging}.bl075-f002.20260526-035529`）+ v0.9.24 #10 用户 2026-05-26 ack。
 
-### §1.8 外部 API token 配置前必 dry-run 验证（v0.9.26 — BL-083 fork .env ops）
+### 1.8 外部 API token 配置前必 dry-run 验证（v0.9.26 — BL-083 fork .env ops）
 
 任何外部 API token 写入 `.env` 前必须先 dry-run 验 token 有效，不可"写完 restart 才发现 invalid"。
 
@@ -224,6 +232,8 @@ cp .env .env.bak.$(date +%Y%m%d-%H%M%S) && vi .env && <restart service>
 | Apify | `GET /v2/users/me` |
 | TikHub | me/identity endpoint（TBD，按 API 文档定） |
 | 其他 | 找 `/me` / `/account` / `/identity` 类 endpoint |
+
+**通则：** 任何"不可逆写入生产配置前先验证"场景（token / 密钥 / 端点 URL）都适用本模板 —— 写入即生效且回滚有代价（99 次 scrape fail 窗口）时，dry-run 探测是唯一防线。
 
 **来源：** BL-083 fork TIKHUB_TOKEN invalid 踩坑 + APIFY_API_TOKEN dry-run 避坑实战 + 用户 2026-06-09 ack。
 
@@ -458,6 +468,23 @@ KOLMatrix B5 F006 case：
 
 任何条件渲染的 UI 元素，visual test 必须用 stable data-attribute 锚点而非位置 selector。
 
+### 4.4 改落地页视觉的 feature 须 Linux runner 重拍 baseline + 连带断言同 commit（BL-080-F003 #1）
+
+**坑：** 本仓 `ci.yml` 每次 push main 还跑完整 Playwright e2e + visual-regression（`landing-{en,zh}-{desktop,mobile}` 4 张 baseline + 功能断言）。若 spec 把 L1 acceptance 只写「lint + tsc + vitest」，据此判本地全绿即 push → 但任何改落地页视觉的 feature 一 push 即 CI 红，直到：
+
+1. **baseline 在 Linux runner 重拍**：跑 `update-visual-baselines.yml` workflow_dispatch 重拍（本地 mac/WSL 生成的 PNG 因字体 hinting 差异在 CI diff，**不可本地重拍**）
+2. **失效的功能断言同步更新**：因视觉改动失效的断言（如删 hero video → `landing-hero-video` 断言）同 commit 改
+
+**两连带坑：**
+- bot 用 `GITHUB_TOKEN` push 的 baseline commit **不触发 CI**（GitHub loop 防护）→ 须手动 `gh workflow run ci.yml` 验 HEAD（同 §4.1 通解）
+- Docker Hub 偶发 `docker pull pgvector 500` 让 service-container init 挂，非代码问题 → `gh run rerun <id> --failed`
+
+**spec 起草建议：** 对「改视觉的 feature」显式把 **baseline 重拍 + 连带断言更新纳入同一 feature 的 acceptance**，而非拆到后续 feature，避免 main 中途红。删 video 导致的 e2e 断言更新本属 Evaluator 测试域，但 CI 红阻塞 main 时 Generator 被迫改测试 = scope 边界争议，提前并入同 feature 可消解。
+
+**配套：** 本文件 §4.1（GITHUB_TOKEN bot commit 不触发下游 workflow + workflow_dispatch 通解）；上游断言健壮性详 `framework/harness/generator.md`。
+
+**来源：** BL-080-F003 落地页视觉改动 push 后 CI 红 + 用户 2026-06-09 ack。
+
 ---
 
 ## 5. 新 auth-gated endpoint 配套 deploy script（v0.9.12 — BL-034 F007 沉淀）
@@ -523,7 +550,7 @@ echo "✅ git_sha verified: $ACTUAL_SHA"
 
 ---
 
-## 6. spec acceptance 改 deploy-script 时同 commit 必须改对应 yml workflow（v0.9.13 — BL-024-F006 retroactive 沉淀）
+### 5.1 spec acceptance 改 deploy-script 时同 commit 必须改对应 yml workflow（v0.9.13 — BL-024-F006 retroactive 沉淀）
 
 **坑：** BL-034 F001 spec acceptance 已 done @ dbbfbb3（deploy-prod.sh 加 ALTER ROLE 段 line 71-81）但漏了同 commit 改 `.github/workflows/deploy-prod.yml` script 块加 `set -a; source .env.production; set +a` 桥接 → GH Actions Run 时 `KOLMATRIX_APP_PASSWORD` env var 不会 export 到 shell 环境 → ALTER ROLE 段 silent skip → prod kolmatrix_app 角色实际仍用 init migration 字面 `'kolmatrix_app'` 弱密码（**CRIT-1 fix 未在 prod 生效 1+ 周**）。
 
@@ -558,7 +585,77 @@ Planner johnsong 在 BL-024 prod redeploy ops 准备阶段（2026-05-05 23:00）
 
 ---
 
-## 7. Next.js 16.x Turbopack 生产 build 兼容性陷阱 + --webpack 防御（v0.9.22 #4）
+## 6. 数据命名/结构变更类修复：部署立即触发 on-boot 后台任务，需配套幂等数据修复（v0.9.23 — aigcgateway BL-SYNC-ADAPTERTYPE-FALLBACK 沉淀）
+
+### 6.1 坑
+
+当修复**改变已存在数据的命名 / 结构规则**（如给某类记录的 canonical name 加前缀、改字段派生逻辑），且项目存在 **on-boot / 定时后台任务**（如 model sync 在 `instrumentation.ts` boot 时跑、cron 回填）时：
+
+**部署 = `git reset --hard` + 重启 → 后台任务立即用新代码跑一次**，在"旧数据（旧命名）+ 新逻辑（新命名）"之间产生 **orphan / 中间态**。
+
+aigcgateway BL-SYNC-ADAPTERTYPE-FALLBACK fix-round-1 实例：修复让 guangtech 模型 canonical 从裸 `gpt-5.5` 改为 `guangtech/gpt-5.5`。部署后 boot sync 立即跑 → 用新命名建了 6 个 `guangtech/*` 模型行，但**活跃 channel 仍按 `realModelId` 匹配、挂在旧的裸名模型上** → 新模型 orphan（0 channel）、旧模型仍带活跃 channel。一次性重命名脚本因此必须"先删 orphan 再 rename"。
+
+### 6.2 规律
+
+- **数据命名/结构变更类修复必须配套幂等数据修复脚本**（committed，非临时 SQL），把存量旧数据迁到新规则
+- **修复脚本要能自愈部署后 boot 任务产生的中间态**（如"目标名已被 orphan 占用 → 无引用则删 orphan 再迁"），否则脚本会因"目标已存在"卡住
+- **时序：先部署（让 prod 跑新代码）→ 再跑数据修复**。反序（先改数据、后部署）会被部署前旧代码的 boot 任务打回旧规则
+- 脚本必须**幂等**：dry-run 默认 + 复跑无变化，Reviewer 可安全复验
+
+### 6.3 Planner spec 起草 / Generator 实装 / Reviewer 复验 checklist
+
+- [ ] 本批次是否改了"已存在数据的命名/派生规则"？是 → 必须配套数据修复脚本（feature 或 ops 步骤显式列出）
+- [ ] 项目有 on-boot / cron 后台任务吗？会消费/重算被改的数据吗？→ acceptance 标注"部署后 boot 任务时序"
+- [ ] 修复脚本处理 orphan / 目标已存在 / 共享引用等中间态（护栏跳过或自愈）
+- [ ] 脚本幂等（dry-run 默认，复跑 0 变更）；Reviewer 复验含"脚本 dry-run 待处理 = 0"
+
+**来源：** aigcgateway BL-SYNC-ADAPTERTYPE-FALLBACK fix-round-1（部署后 boot sync 建 orphan，一次性重命名脚本增强为删 orphan 再 rename）。
+
+---
+
+## 7. 不可逆生产迁移（换机 / 换部署模型）— v1.0.1（aigcgateway BL-PROD-MIGRATE-DEPLOYSVR 沉淀）
+
+换生产服务器、或换部署模型（原生 PM2 → 容器化）属不可逆操作，必须按固定剧本，否则一次翻车全站瘫痪或数据丢失。
+
+### 7.1 迁移剧本：演练 → 预置 → 最短停机窗口 → 回滚就绪
+
+四段式，前两段完全可逆、旧机全程照常服务：
+
+1. **并行演练（旧机不动）**：新机起完整新栈 + 灌一份**生产数据快照** + 全链路冒烟（真实凭据解密、跨云资源读写、流式、鉴权、MCP 等）。演练在新机 loopback 跑，不切流量。价值：本次演练即捕获 Next standalone HOSTNAME bug（§7.3），割接前挡掉。
+2. **可逆预置（旧机不动）**：割接要用的**一切可逆步骤全预置完** —— 签 TLS 证书（DNS-01 免停机）、装反向代理 vhost、验证公网入口可达（`curl --resolve <域名>:443:<新IP>` 绕 DNS 直验新机 200 + 证书）。目的：把不可逆窗口压到只剩数据同步 + DNS 切换。
+3. **最短停机窗口**：`停旧机写入 → 数据终态同步 → 切 DNS`。每个不可逆点（停写 / 数据终态 / DNS 切）执行前取用户 go/no-go。数据终态用 `drop schema public cascade + pg_restore --no-owner`（清演练残留）。
+4. **回滚就绪**：旧机停写**冻结**（DB 不再写）作回滚点；旧 DNS 值 / `VPS_HOST` 旧值 / last-known-good 镜像 tag 全留档。观察期内不退旧机；旧机若还承载其他服务，整机退役单列。
+
+**Planner spec checklist（迁移批次）：**
+- [ ] acceptance 含"演练冒烟"（新栈 loopback）+ "割接后公网端到端"两层
+- [ ] 三个不可逆门禁（停写 / 数据终态 / DNS 切）标注 go/no-go
+- [ ] 回滚手册显式（流量回滚命令 + 镜像/进程回滚命令 + 旧机冻结确认）
+- [ ] 旧机若跑多服务，退役范围 = 仅本服务冻结；整机下线依赖其他服务迁移，单列
+
+### 7.2 凭据一致性（有状态应用迁移红线）
+
+**"解密 DB 数据的密钥"必须与源机逐字节一致，且 sha256 跨机比对证明** —— 不能只"复制了就算"。一旦不一致，DB 内所有加密字段（如 provider 凭据）无法解密 = 全站瘫痪。
+
+```bash
+# 跨机比对（只传 hash，不落明文 / 不进日志）：源机 authoritative 配置 vs 新机 .env 逐项 ✓ 才继续
+h() { printf '%s' "$1" | sha256sum | cut -c1-16; }   # 对 ENCRYPTION_KEY / JWT / 签名 secret / DB 密码逐项
+```
+
+**配套坑 — env_file 引号**：源机 `.env` 若被 bash `source`（值带引号 `KEY="v"`），迁到 docker compose `env_file` 时**引号被当字面量保留**（值变成 `"v"` 而非 `v`）→ 密钥错位。构建新 `.env` 时必须去外层引号规范化。
+
+### 7.3 容器化 Next.js standalone 的 HOSTNAME 坑
+
+Next.js standalone `server.js` 默认绑 `process.env.HOSTNAME`，而 **Docker 运行时把 HOSTNAME 注入为容器 ID** → app 绑到容器 IP 而非 `0.0.0.0`：
+- 发布端口经 docker-proxy 仍可达（宿主 / 外部 curl 200）——**掩盖问题**
+- 但**容器内** `127.0.0.1:<port>` 不监听 → 容器 HEALTHCHECK（`fetch 127.0.0.1`）ECONNREFUSED、状态永远卡 `starting`
+
+**修复**：compose `environment: HOSTNAME=0.0.0.0`（发布端口仅绑 127.0.0.1 loopback 时无安全影响）。与 `web-runtime-patterns.md` §"Next standalone request.url origin 反代推导" 同族——一个是绑定地址、一个是对外 URL 构造。
+
+**来源：** aigcgateway BL-PROD-MIGRATE-DEPLOYSVR（GCP 原生 PM2 → deploysvr 容器化，2026-07-12）。演练捕获 HOSTNAME bug；sha256 校验 ENCRYPTION_KEY 逐字一致；Certbot DNS-01 预签零停机割接。
+
+---
+
+## 8. Next.js 16.x Turbopack 生产 build 兼容性陷阱 + --webpack 防御（v0.9.22 #4）
 
 **坑：** Next.js 16.2.x 默认 `next build` 走 Turbopack → 生产构建**不写 `.next/BUILD_ID` 文件**（仅在 `.next/static/<hash>/` 子目录名编码 BUILD_ID）。但 `server.js` 用 `next({ dev: false })` + `app.prepare()` 启动时**仍走旧 webpack 路径**读 `.next/BUILD_ID` 文本 → 抛 `production-start-no-build-id` → 进程启动失败 → PM2 fallback 旧 worker → 旧 worker 内存 build manifest 不含新 chunks → per-chunk 404 ErrorBoundary。
 
@@ -582,9 +679,9 @@ rm -rf .next/build .next/turbopack .next/static/[A-Za-z0-9]*
 NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) npm run build
 ```
 
-**附加（v0.9.22 #8 链接）：** webpack 严格 typecheck 比 Turbopack 严，迁移时常暴露 hidden TS errors（如 BL-067 commit 6dbe231 修 4 处 Record exhaustive / undefined access / mock shape）。Next.js 升级 / Turbopack ↔ webpack 切换 checklist 详见 `framework/harness/generator.md §12.2`。
+**附加（v0.9.22 #8 链接）：** webpack 严格 typecheck 比 Turbopack 严，迁移时常暴露 hidden TS errors（如 BL-067 commit 6dbe231 修 4 处 Record exhaustive / undefined access / mock shape）。Next.js 升级 / Turbopack ↔ webpack 切换 checklist 详见 `framework/patterns/web-runtime-patterns.md`（Next 构建期 RSC / Turbopack↔webpack）。
 
-**应用：** 任何使用 custom `server.js` + `next({ dev: false })` 的项目（如 Next.js custom server 路径，参 §1）必须 force `--webpack`，不要依赖默认 Turbopack。
+**应用：** 任何使用 custom `server.js` + `next({ dev: false })` 的项目（即 §1.3 Next.js 生产部署唯一可靠路径）必须 force `--webpack`，不要依赖默认 Turbopack。
 
 **build artifact 健康检查（建议加 deploy script）：**
 ```bash
@@ -593,21 +690,21 @@ NODE_OPTIONS='--max-old-space-size=4096' GIT_SHA=$(git rev-parse --short HEAD) n
 [ -f .next/required-server-files.json ] || (echo "✗ Missing required-server-files.json" && exit 1)
 ```
 
-来源：BL-067 fix-round 1 commit f284d35 实战验证 + v0.9.22 #4（用户 2026-05-16 ack）。
+**来源：** BL-067 fix-round 1 commit f284d35 实战验证 + v0.9.22 #4（用户 2026-05-16 ack）。
 
 ---
 
-## 8. prod 关键流程 log-based alerting（v0.9.24 合并段 — BL-073 #8 + BL-076 #14）
+## 9. prod 关键流程 log-based alerting（v0.9.24 合并段 — BL-073 #8 + BL-076 #14）
 
 prod 关键 batch / sync / external API call 持续失败时**必须**触发 alerting，否则会复现 BL-076 14 天沉默 outage 模式。本段合并 BL-073 #8（识别 gap）+ BL-076 #14（实战代价证实）两候选，提供 grep pattern + 三件套防御模板。
 
-### 8.1 反例 — BL-076 14 天 prod outage 未告警代价（v0.9.24 #14 / BL-076 #14）
+### 9.1 反例 — BL-076 14 天 prod outage 未告警代价（v0.9.24 #14 / BL-076 #14）
 
 **实战：** BL-076 SSH prod `/var/log/kolmatrix-kol-sync.log` 实测：`discover-import[apify-kol]: numeric field overflow` 自 5/12 起每天 daily-sync fail，**inserted=0 updated=0 持续 14+ 天**，prod 数据同步管道彻底断；全程未触发任何告警 → 1397 KOL 库 stale → 影响所有 `/match` 用户。
 
 **关联识别 gap（v0.9.24 #8 / BL-073 #8）：** BL-073 SSH prod log 实测 `match.emptyState.body` + `weeklyReport.title` MISSING_MESSAGE 已多次出现于 prod log（5/25 17:18 ~ 18:02 UTC 至少 6 次），但**未触发任何告警** → next-intl 默认 production fallback 返 key 字面 + log 但不 throw，CI 跑不到 prod log，prod log 也无监控钩子。BL-072 #4 已识别 gap 未实装，BL-076 实战代价证实。
 
-### 8.2 三件套防御模板（log-based alerting 三层防御）
+### 9.2 三件套防御模板（log-based alerting 三层防御）
 
 **(a) Slack webhook on level=WARN/ERROR：**
 
@@ -654,7 +751,7 @@ return Response.json({
 });
 ```
 
-### 8.3 grep pattern（log alerting 抓什么）
+### 9.3 grep pattern（log alerting 抓什么）
 
 | 错误 pattern | 含义 | grep 正则 | 告警等级 |
 |---|---|---|---|
@@ -664,27 +761,27 @@ return Response.json({
 | `inserted=0 updated=0` | sync 全 fail（per BL-076） | `inserted=0.*updated=0` | ERROR（连续 3 天 PagerDuty） |
 | `429 RPM limit exceeded` | aigcgateway 限速 → LLM call skip | `RPM limit exceeded\|429` | WARN（连续 1 天 → ERROR） |
 
-### 8.4 配套实装项 (建议 BL-078+ follow-up)
+### 9.4 配套实装项（建议 BL-078+ follow-up）
 
 本段是 framework 沉淀**模板与原则**，实物落地（prod Slack webhook URL + GCP Cloud Monitoring 配置 + /api/health 加 last_successful_sync 字段 + 关键脚本配 level/stats 落 log）留 BL-078+ 独立 batch 评估。优先级 = (a) Slack webhook 最低 → 1 day；(b) /api/health degraded 信号 → 0.5 day；(c) GCP Cloud Monitoring → 0.5 day。
 
-### 8.5 配套上游沉淀 (caller side)
+### 9.5 配套上游沉淀（caller side）
 
-batch loop 内 per-element try/catch + stats.failed 累加是本节 alerting 的**数据源前提**，详 `framework/harness/generator.md` §16 DB / 外部 API batch 健壮性（v0.9.24 #15 / BL-076 #15）。
+batch loop 内 per-element try/catch + stats.failed 累加是本节 alerting 的**数据源前提**，详 `framework/patterns/database-patterns.md`（per-element try/catch） DB / 外部 API batch 健壮性（v0.9.24 #15 / BL-076 #15）。
 
-来源：BL-073 SSH prod log 实测 MISSING_MESSAGE 多发未告警（v0.9.24 #8）+ BL-076 14 天 prod outage 实战代价（v0.9.24 #14）+ 用户 2026-05-26 / 2026-05-27 ack。同主题合并 §8 单段（识别 gap → 实战代价 → 三件套防御），不开两独立段。
+**来源：** BL-073 SSH prod log 实测 MISSING_MESSAGE 多发未告警（v0.9.24 #8）+ BL-076 14 天 prod outage 实战代价（v0.9.24 #14）+ 用户 2026-05-26 / 2026-05-27 ack。同主题合并单段（识别 gap → 实战代价 → 三件套防御），不开两独立段。
 
 ---
 
-## 9. prod-outage-recovery + VM 内存超额防护（v0.9.26 — BL-080+ deploy build OOM 拖垮整机）
+## 10. prod-outage-recovery + VM 内存超额防护（v0.9.26 — BL-080+ deploy build OOM 拖垮整机）
 
-### 9.1 事故与根因
+### 10.1 事故与根因
 
 **事故（2026-06-06）：** deploy-prod.yml 两次触发均失败，报 `ssh: handshake failed: EOF`（部署跑 17 分钟后）；`kol.guangai.ai` 宕机（HTTP 000，端口 22+443 超时，SSH banner 阶段断），staging 同 VM 一起挂。
 
 **根因：整机系统内存耗尽。** 东京 VM（`instance-20260403-154049`，**仅 7.8Gi RAM**）同时跑 kolmatrix app + postgres + **aigcgateway 姊妹项目（4 cluster）** + **apify-kol-service docker（postgres+service）**。`deploy-prod.sh` 的 `node --max-old-space-size=4096 next build`（限的是 V8 堆，非系统 RAM）叠加常驻服务把系统 RAM 打满 → 内核 thrash → sshd 握手都完不成 → 部署失败 + rollback 也连不上 → 主机卡死，只能 GCP console reset。
 
-### 9.2 恢复 runbook（已验证 3 步）
+### 10.2 恢复 runbook（已验证 3 步）
 
 1. **GCP console reset VM**（agent 无 gcloud，须用户操作）。
 2. **逐服务重建 .next（build OOM 中断留下残缺 → pm2 online 但 app 502）：**
@@ -699,7 +796,7 @@ batch loop 内 per-element try/catch + stats.failed 累加是本节 alerting 的
    cd /opt/apify-kol-service && docker compose up -d   # 按 depends_on 顺序 + 重建网络；restart policy 单独不够
    ```
 
-### 9.3 防复发（待 Planner/ops 定，4 选项）
+### 10.3 防复发（待 Planner/ops 定，4 选项）
 
 VM 7.8Gi 跑 4 套服务 + 4GB build 严重超额。**在落实其一前不要重试 prod 部署，会再 OOM。**
 
@@ -710,7 +807,7 @@ VM 7.8Gi 跑 4 套服务 + 4GB build 严重超额。**在落实其一前不要�
 | (c) 扩 VM 内存 | GCP 改机型 | 治本但增成本 |
 | (d) CI runner build artifact | 在 CI build 出 artifact 再传 VM | VM 不再承担 build 内存峰值（最优） |
 
-### 9.4 ⚠️ 远端 bash heredoc 坑
+### 10.4 ⚠️ 远端 bash heredoc 坑
 
 SSH `bash -lc "..."` 里 `echo` 含括号 `(` 会 `syntax error near unexpected token`。**远端 echo 一律不带括号。**
 
@@ -718,11 +815,11 @@ SSH `bash -lc "..."` 里 `echo` 含括号 `(` 会 `syntax error near unexpected 
 
 ---
 
-## 10. 部署触发 — `gh workflow run -f ref=` 只用 main 或完整 40 位 SHA（v0.9.26 — BL-097）
+## 11. 部署触发 — `gh workflow run -f ref=` 只用 main 或完整 40 位 SHA（v0.9.26 — BL-097）
 
 **坑：** `gh workflow run deploy-staging.yml -f ref=<短SHA>` 会在 `actions/checkout@v4` 步骤直接失败（`The process '/usr/bin/git' failed with exit code 1`），部署根本到不了 VM。**根因：** checkout@v4 用 `fetch-depth: 1` 浅拉取**指定 ref**，短 SHA（如 `04e5414`）不是可单独 fetch 的 ref，git 报错退出。`ref` 输入只能是**分支名 / tag / 完整 40 位 SHA**。改 `-f ref=main`（或完整 SHA）即过。
 
-**误判风险：** 失败日志在 checkout 阶段，容易被误读成 VM 侧 build/OOM（§9），实际连 VM 都没碰。
+**误判风险：** 失败日志在 checkout 阶段，容易被误读成 VM 侧 build/OOM（§10），实际连 VM 都没碰。
 
 **来源：** BL-097 staging 首次部署 ref=短SHA 失败 + 用户 2026-06-09 ack。
 
@@ -749,5 +846,6 @@ SSH `bash -lc "..."` 里 `echo` 含括号 `(` 会 `syntax error near unexpected 
 | 2026-05-01 | §1 扩展 PM2 6.0.14 env_file anti-pattern；§3 完整链 checklist（schema + enrich + SHA 对齐边界）；§4 Visual baseline regen 注意事项 | KOLMatrix B5 7 轮 fixing + MVP-internal-demo-prep 3 轮 fixing 累积 |
 | 2026-05-05 | §5 新 auth-gated endpoint 配套 deploy script（v0.9.12，含 graceful-degrade 模板 + bash 旧 bytecode 重启 deploy run）| KOLMatrix BL-034 F007 deploy-staging.sh 死循环 + bash bytecode 双坑 |
 | 2026-05-06 | §5.1 spec acceptance 改 deploy-script 时同 commit 必须改对应 yml workflow（v0.9.13，含 Planner spec lock checklist + Generator 实装 checklist + Reviewer L2 deploy log warning 抓取强制）| KOLMatrix BL-024-F006 retroactive hotfix（BL-034 F001 root cause 1+ 周后实地核查发现）|
-| 2026-05-27 | §1.6.1 SSH 加 env var pm2 reload --update-env 的成功条件 — 必须先 source shell (v0.9.24 #10 / BL-075 #10)：4 步标准流程 + 与 §1.6 pm2 delete + sourced start 选用矩阵；§8 prod 关键流程 log-based alerting 合并段 (v0.9.24 #8 + #14): BL-076 14 天 outage 反例 + 三件套防御 (Slack webhook + GCP Cloud Monitoring + /api/health degraded) + grep pattern 表 | BL-075-F002 prod deploy + BL-076 14 天 prod outage 实战；用户 2026-05-26 / 27 ack |
-| 2026-06-09 | §1.8 外部 API token 配置前必 dry-run 验证（BL-083，Apify /v2/users/me + ops 模板）；§3.5 路径 B fork sync 模板（BL-086，bundle 绕凭据 + stash/ff/pop + /admin/stats 验新字段）；§9 prod-outage-recovery + VM 内存超额防护（BL-080+，OOM 拖垮整机 + 3 步恢复 runbook + 4 防复发选项 + heredoc 括号坑）；§10 部署触发 ref 只用 main 或完整 SHA（BL-097，短 SHA 在 checkout@v4 必失败）| BL-083 fork .env ops + BL-086 路径 B sync + BL-080+ deploy OOM + BL-097 部署；用户 2026-06-09 ack |
+| 2026-07-03 | §6 数据命名/结构变更类修复：部署立即触发 on-boot 后台任务产生 orphan/中间态，须配套幂等数据修复脚本（自愈 orphan + 先部署后修数据 + dry-run 默认）| aigcgateway BL-SYNC-ADAPTERTYPE-FALLBACK fix-round-1（v0.9.23）|
+| 2026-07-12 | §7 不可逆生产迁移（换机/换部署模型）：演练→预置→最短停机窗口→回滚就绪四段剧本 + 凭据 sha256 逐字一致红线（含 env_file 引号坑）+ 容器化 Next.js standalone HOSTNAME=0.0.0.0 坑 | aigcgateway BL-PROD-MIGRATE-DEPLOYSVR（GCP 原生 PM2 → deploysvr 容器化，v1.0.1）|
+| 2026-07-13 | v1.0.3 KOLMatrix 回填：§1.6.1 SSH 加 env var `pm2 reload --update-env` 先 source shell（BL-075）；§1.8 外部 API token 写入前 dry-run 验证（BL-083）；§3.2 step 2 `git pull --ff-only` 硬要求根因注解；§3.5 路径 B fork sync 模板 bundle 绕凭据 + stash/ff/pop（BL-086）；§4.1 workflow_dispatch 扩范围通解 + 清单；§4.4 改落地页视觉 feature 须 Linux runner 重拍 baseline（BL-080-F003）；§8 Turbopack 生产 build force --webpack（BL-067）；§9 prod log-based alerting 三件套（BL-073+BL-076）；§10 prod-outage-recovery + VM 内存超额 OOM（BL-080+）；§11 `gh workflow run -f ref=` 只用 main/全 40 位 SHA（BL-097）| joyce v0.9.25 → v1.0.3 结构合并（KOLMatrix 沉淀移植，来源标注 patterns #7-#15 + generator #18）|

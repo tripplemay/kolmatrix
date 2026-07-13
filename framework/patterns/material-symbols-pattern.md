@@ -1,8 +1,3 @@
----
-scope: project-specific
-last-updated: 2026-05-27
----
-
 # Material Symbols Subset — Maintenance Pattern
 
 **Source:** BL-025-F009 (sweep done 2026-05-02 → 2026-05-03 after
@@ -184,7 +179,7 @@ Material Symbols 字体子集是"沉默 fail"的高危区：grep 漏一个 icon 
 
 ## Pattern 进化路径 v1 → v2 → v3 总览（v0.9.24 BL-077-F007 sediment marker）
 
-本 checklist 文件经 BL-072-F005 (Pattern 6 + manifest 维护惯例) + BL-073-F002 (Pattern 7 multi-line span bare) + BL-073-F007 (STRICT_MS_ICONS flip strict) 三批次 incrementally inline-merge 而成。BL-077-F007 整合 source ID 引用 + 进化路径总览 sediment：
+本 pattern 文件经 BL-072-F005 (Pattern 6 + manifest 维护惯例) + BL-073-F002 (Pattern 7 multi-line span bare) + BL-073-F007 (STRICT_MS_ICONS flip strict) 三批次 incrementally inline-merge 而成。BL-077-F007 整合 source ID 引用 + 进化路径总览 sediment：
 
 | Pattern 版本 | 来源 | 覆盖范围 | 局限 |
 |---|---|---|---|
@@ -213,6 +208,6 @@ Material Symbols 字体子集是"沉默 fail"的高危区：grep 漏一个 icon 
 - 行格式：`<icon_name>  # <file:LINE>  | <pattern_label>` 三段强制
 - IA refactor 改名时：同 commit 修正 manifest path label
 
-**scope tag 维持 `project-specific`（BL-071 F005 lock）：** 本 checklist 与 KOLMatrix `scripts/regenerate-material-symbols-subset.sh` + `scripts/material-symbols-icons-manifest.txt` + `tests/integration/material-symbols-coverage.test.ts` 紧耦合，project-specific 不抽 framework-generic（未来其他项目 fork 时按其字体子集生成 pipeline 自定）。
+> **scope 内联说明 — 本 pattern 维持 `project-specific`（BL-071 F005 lock）：** 本 pattern 与 KOLMatrix `scripts/regenerate-material-symbols-subset.sh` + `scripts/material-symbols-icons-manifest.txt` + `tests/integration/material-symbols-coverage.test.ts` 紧耦合，属 project-specific，不抽 framework-generic（未来其他项目 fork 时按其字体子集生成 pipeline 自定 grep pattern / manifest / 守门 test）。此 scope-lock 推理保留为内联说明（v1.0 目录分层已弃用 YAML frontmatter，改由 patterns/README 触发表表达"字体子集项目才读"）。
 
 **来源：** BL-072-F005 实物落 Pattern 6 + manifest 增量维护惯例（v0.9.24 #2 用户 2026-05-26 ack）+ BL-073-F002 实物落 Pattern 7 multi-line span bare（v0.9.24 #5 用户 2026-05-26 ack）+ BL-073-F007 STRICT_MS_ICONS flip strict。BL-077-F007 整合进化路径总览 + 穷举 JSX pattern 7 种位置覆盖状态 + scope tag lock 显式 sediment marker。

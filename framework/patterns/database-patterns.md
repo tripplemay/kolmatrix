@@ -1,9 +1,3 @@
----
-scope: mixed
-project-specific-sections: ["§2"]
-last-updated: 2026-05-25
----
-
 # Database Patterns（框架沉淀）
 
 > 跨批次通用的数据库设计 / schema 写作坑。Planner 在写涉及 DB schema、migration、RLS 的 spec 时必读本文件核对。
@@ -472,7 +466,7 @@ grep -rn "logAudit\|logEvent\|metrics\.\|analytics\." src/ | wc -l
 
 ## 9. Schema migration ROLLBACK 不对称风险 — 扩范围 migration 必带 UPDATE clamp 前置 step（v0.9.24 #16 / BL-076 #16，扩展 BL-070 #22）
 
-**Migration 顺向无损 ≠ ROLLBACK 无损。** 扩范围 migration（NUMERIC(M,N) / VARCHAR(N) 增大）顺向无损（小集合 ⊂ 大集合），但 ROLLBACK（大集合 → 小集合）若 prod 已含越界 row → `value out of range` throw。本段是 generator.md §14.1 `validate-rollback-sql.sh` CI 检查 + ROLLBACK skeleton 注入（BL-070 #22）的 **数据维度补充** — 即使 ROLLBACK SQL 形式正确，运行时仍可能 fail。
+**Migration 顺向无损 ≠ ROLLBACK 无损。** 扩范围 migration（NUMERIC(M,N) / VARCHAR(N) 增大）顺向无损（小集合 ⊂ 大集合），但 ROLLBACK（大集合 → 小集合）若 prod 已含越界 row → `value out of range` throw。本段是 §12 `prisma migrate dev` wrap ROLLBACK skeleton 注入 + `scripts/validate-rollback-sql.sh` CI 检查（BL-070 #22）的 **数据维度补充** — 即使 ROLLBACK SQL 形式正确，运行时仍可能 fail。
 
 ### 9.1 反例 — BL-076-F001 engagement_rate NUMERIC(5,2) → (7,2)
 
@@ -489,7 +483,7 @@ ALTER TABLE "kol" ALTER COLUMN "engagement_rate" TYPE NUMERIC(7, 2);
 ALTER TABLE "kol" ALTER COLUMN "engagement_rate" TYPE NUMERIC(5, 2);
 -- ❌ ERROR: numeric field overflow
 -- DETAIL: A field with precision 5, scale 2 must round to an absolute value less than 10^3.
--- prod 已含 15 行 engagement_rate > 999.99（adapter clamp 上限 99999.99，详 generator.md §17）
+-- prod 已含 15 行 engagement_rate > 999.99（adapter clamp 上限 99999.99，详 §11）
 ```
 
 ### 9.2 模板 — ROLLBACK SQL 含 UPDATE clamp 前置 step
@@ -524,7 +518,7 @@ ALTER TABLE "kol" ALTER COLUMN "engagement_rate" TYPE NUMERIC(5, 2);
 | **Int → SmallInt** | ✅ 有 — int 值可能超 smallint 范围 | ROLLBACK 必带 UPDATE clamp 或 fail-fast |
 | **Int / BigInt / Text / Uuid / Boolean / Json** | ❌ 无尺寸约束 | ROLLBACK 安全，不需 UPDATE 前置 |
 
-**ROLLBACK skeleton 默认模板（BL-070 #22 sediment 已实装 `scripts/prisma-migrate-dev-wrap.sh`）当前不自动检测尺寸约束扩缩。**未来 enhancement：wrap script 增量解析 ALTER COLUMN TYPE 是否含尺寸约束类型 + 顺向是否「扩」 → 自动注入「ROLLBACK: 提醒 prod 数据查 max(col)」step。留 BL-078+ follow-up。
+**ROLLBACK skeleton 默认模板（BL-070 #22 sediment 已实装 `scripts/prisma-migrate-dev-wrap.sh`，详 §12）当前不自动检测尺寸约束扩缩。**未来 enhancement：wrap script 增量解析 ALTER COLUMN TYPE 是否含尺寸约束类型 + 顺向是否「扩」 → 自动注入「ROLLBACK: 提醒 prod 数据查 max(col)」step。留 BL-078+ follow-up。
 
 ### 9.4 Generator self-check 流程
 
@@ -540,13 +534,160 @@ ALTER TABLE "kol" ALTER COLUMN "engagement_rate" TYPE NUMERIC(5, 2);
 
 ### 9.5 配套上游沉淀（adapter 端 clamp）
 
-`engagement_rate > 999.99` 现象的本质是 adapter 输出未 clamp 业务阈值 + DB 上限留余量。**详 `generator.md §17 adapter output 边界 check 三件套 — clamp + outlier flag + 业务阈值 < DB 上限（v0.9.24 #17）`**：业务阈值 (100%) < DB 上限 (99999.99) — 异常先标 flag 不丢数据，DB 边界仅最后兜底。
+`engagement_rate > 999.99` 现象的本质是 adapter 输出未 clamp 业务阈值 + DB 上限留余量。**详 §11 adapter output 边界 check 三件套 — clamp + outlier flag + 业务阈值 < DB 上限**：业务阈值 (100%) < DB 上限 (99999.99) — 异常先标 flag 不丢数据，DB 边界仅最后兜底。
 
-### 9.6 与 generator.md §14.3 cross-ref 关系
+**来源：** BL-076-F001 prod schema migration 实战（顺向 deploy OK，ROLLBACK 测试时 fail）+ v0.9.24 #16 用户 2026-05-27 ack（扩展 BL-070 #22 §12 ROLLBACK skeleton 注入）。
 
-`generator.md §14.3 Schema migration ROLLBACK 不对称风险` 是 1 行 cross-ref 指回本段（database-patterns.md §9 主写），双归属避免内容重复 + 双角色（Generator 写 SQL / DBA 类 ops review）触发点都能找到。
+---
 
-**来源：** BL-076-F001 prod schema migration 实战（顺向 deploy OK，ROLLBACK 测试时 fail）+ v0.9.24 #16 用户 2026-05-27 ack（扩展 BL-070 #22 generator.md §14.1 ROLLBACK skeleton 注入）。双归属：database-patterns 主写 + generator §14.3 1 行 cross-ref。
+## 10. DB / 外部 API batch 健壮性 — per-element try/catch + stats + audit forensic（v0.9.24 #15 / BL-076 #15）
+
+**坑：** `for ... of` 内 `prisma.upsert` / 外部 API call / 文件 IO 默认假设全部成功 → 单元素异常 throw 阻塞整 batch。BL-076-F003 根因：`scripts/kol-sync-daily.ts` import.ts `for raw of raws` loop 无 per-KOL try/catch → 第一个 numeric overflow throw → 整 2567 KOL batch fail（`inserted=0 updated=0 errors=1`），prod 数据同步管道在沉默中断 14 天。
+
+**模板：**
+
+```typescript
+const stats = { success: 0, failed: 0 };
+
+for (const item of items) {
+  try {
+    await prisma.X.upsert({ where: { ... }, create: { ... }, update: { ... } });
+    stats.success += 1;
+  } catch (err) {
+    stats.failed += 1;
+    console.error("[batch] item failed:", item.id, err);
+
+    // forensic：失败明细落 audit_log（嵌 try/catch 防 audit 再 throw recurse）
+    try {
+      await prisma.auditLog.create({
+        data: {
+          action: "X.failed",
+          tenantId: item.tenantId ?? null,
+          payload: {
+            itemId: item.id,
+            itemSummary: { /* 最小可识别字段，避免敏感数据 */ },
+            error: String(err).slice(0, 500),
+          },
+        },
+      });
+    } catch (auditErr) {
+      // swallow — audit 失败不能阻塞主 batch；上层 log monitoring 兜底
+      console.error("[batch] audit failed:", auditErr);
+    }
+  }
+}
+
+return stats; // 上层 caller 据 stats.failed / stats.success 决定 alerting
+```
+
+**关键设计：**
+- `stats.failed` 累加而非 throw — caller 据 stats 决策是否 alert，不是单元素 fail 即全停
+- audit_log 落 forensic 明细 — 后置追溯单条失败原因（v0.9.24 #14 prod alerting 抓 stats.failed > 0 配套）
+- audit 嵌 try/catch — audit 自身失败不能 recurse 阻塞主 batch
+- 错误 message slice(0, 500) — 防超长 stack trace 撑爆 payload column
+
+**适用边界：**
+- ✅ DB write loop（`prisma.upsert` / `prisma.create` 批量）
+- ✅ 外部 API call loop（aigcgateway / Resend / 第三方平台 fetch 批量）
+- ✅ 文件 IO 批量（CSV 行解析 + 落 DB / 图片处理 batch）
+- ❌ 业务 critical 单 transaction（payment / 唯一性 reservation 等 — fail-fast 更安全）
+- ❌ ACID 跨表多 step 操作（事务原子性优先于个体隔离）
+
+**配套 alerting（详 `deploy-patterns.md` §"prod 关键流程 log-based alerting"）：** stats.failed > 0 时 caller log `level=WARN/ERROR + stats`，触发 Slack webhook + GCP Cloud Monitoring，避免 BL-076 同款 14 天沉默 outage。
+
+来源：BL-076-F003 实战（import.ts 加 per-KOL try/catch + stats.failed + audit forensic）+ v0.9.24 #15 用户 2026-05-27 ack。
+
+---
+
+## 11. adapter output 边界 check 三件套 — clamp + outlier flag + 业务阈值 < DB 上限（v0.9.24 #17 / BL-076 #17）
+
+**坑：** adapter (external API → DB) 数据流默认信任 upstream 数值 → 超出 DB column type 范围即 `numeric field overflow` throw。BL-076-F002 实战：apify-kol adapter 计算 `engagementRate = totalLikes / postsCount / followers * 100`，少量 KOL 因 followers 异常小或 totalLikes 异常大 → rawRate > 99999.99 → `Decimal(7,2)` overflow → 整 batch fail（配合 §10 缺失同时暴露）。
+
+**三件套模板：**
+
+```typescript
+// 三件套：clamp + outlier flag + 业务阈值 < DB 上限
+const BUSINESS_THRESHOLD = 100;     // 业务阈值（百分比合理上限）
+const DB_MAX = 99999.99;            // DB Decimal(7,2) 上限
+// 业务阈值 < DB 上限 — 异常先标 flag 不丢数据，DB 边界仅最后兜底
+
+const rawValue = computeFromExternalAPI(input); // 可能 null / NaN / 超大
+const clampedValue = rawValue == null
+  ? null
+  : Math.min(Math.max(rawValue, 0), DB_MAX);
+
+const isOutlier = rawValue != null && rawValue > BUSINESS_THRESHOLD;
+
+return {
+  field: clampedValue,
+  metadata: {
+    flags: {
+      ...existingFlags,
+      field_outlier: isOutlier,        // 业务异常 flag — 后置 dashboard / audit 关注
+      field_raw_overflow: rawValue != null && rawValue > DB_MAX, // DB 兜底触发 flag
+    },
+  },
+};
+```
+
+**三层关系：**
+
+| 层 | 触发条件 | 用途 |
+|---|---|---|
+| **业务阈值 BUSINESS_THRESHOLD** | rawValue > 业务合理范围（如 100% engagement rate） | 标 `outlier=true` flag，下游 dashboard 过滤 / 人工 audit |
+| **DB 上限 DB_MAX**（必须 >> 业务阈值） | rawValue > DB column type 上限 | clamp 到 DB_MAX 防 overflow throw + 标 `raw_overflow` flag |
+| **null 兜底** | rawValue == null / NaN | 写 null（DB column 允许 null）+ 上游 stats 计 `metadata_missing` |
+
+**关键设计：**
+- **业务阈值 < DB 上限是设计原则** — 异常值先标 flag 不丢数据，DB 边界仅最后兜底（不是业务阈值即 reject）
+- **outlier flag 落 metadata.flags 而非独立 column** — JSON 字段灵活扩展，避免 schema migration 抖动
+- **不 throw / 不 skip 异常 row** — 上游 batch loop（§10）依赖每条都返回 stats.success，flag 后置审查
+
+**适用边界：**
+- ✅ Decimal(M,N) / SmallInt / VARCHAR(N) 有尺寸约束的 DB 列上游 adapter
+- ✅ LLM 返回数值字段（如 `score / weight`）— 模型可能输出超范围或非数字
+- ✅ 用户 input 数值字段（age / count 等）— 业务阈值过滤 + DB 兜底
+- ⚠️ Int / Float / Text 无尺寸约束 type 不需 clamp，但仍建议加 `outlier` flag（业务阈值过滤）
+
+**配套 schema 设计（详 §9 Schema migration ROLLBACK 不对称风险）：** DB 列尺寸定义时留余量（如 BL-076 把 `engagement_rate` 从 NUMERIC(5,2) 扩到 NUMERIC(7,2)），余量比业务阈值至少大 100x，避免频繁 ALTER。
+
+来源：BL-076-F002 实战（apify-kol adapter Math.min(rawRate, 99999.99) + outlier=rawRate>100 + metadata.flags 落地）+ v0.9.24 #17 用户 2026-05-27 ack。
+
+---
+
+## 12. `prisma migrate dev` wrap script — 自动注入 ROLLBACK skeleton（v0.9.24 沉淀 / BL-070 #22）
+
+`prisma migrate dev` 创 migration 不自动加 ROLLBACK 注释，`scripts/validate-rollback-sql.sh` 是后置 CI 检查，触发 CI 红才发现。**建议 wrap script 自动注入 ROLLBACK skeleton 从生产源头避免 CI 红：**
+
+```bash
+#!/usr/bin/env bash
+# scripts/prisma-migrate-dev-wrap.sh
+npx prisma migrate dev "$@"
+
+# 找最新 migration 文件，未含 ROLLBACK 注释则注入 skeleton
+LATEST=$(ls -t prisma/migrations/*/migration.sql | head -1)
+if ! grep -q "^-- ROLLBACK:" "$LATEST"; then
+  cat >> "$LATEST" <<EOF
+
+-- ROLLBACK: <inverse SQL here>
+-- TODO(BL-XXX): fill in inverse SQL before merge
+EOF
+  echo "✓ Injected ROLLBACK skeleton in $LATEST — please fill before commit"
+fi
+```
+
+**配置 package.json：**
+```json
+{
+  "scripts": {
+    "db:migrate": "bash scripts/prisma-migrate-dev-wrap.sh"
+  }
+}
+```
+
+**注意：** 此 wrap 仅注入 skeleton 提示，**不检测尺寸约束扩缩类 ROLLBACK 的数据维度风险** —— 扩范围 migration（NUMERIC/VARCHAR 增大）的 ROLLBACK 仍须按 §9 手动加 `UPDATE clamp` 前置 step。
+
+来源：BL-070 fix-round 1 #22 — `scripts/validate-rollback-sql.sh` CI 检查触发后回头补 ROLLBACK 注释（fix-round 浪费）；上游 wrap 自动注入避免。
 
 ---
 
@@ -561,3 +702,6 @@ ALTER TABLE "kol" ALTER COLUMN "engagement_rate" TYPE NUMERIC(5, 2);
 | 2026-05-04 | §5 跨表 id 类型一致性 / §6 Silent updateMany / §7 staging 端到端跑 .ts 脚本 | KOLMatrix BL-031 cuid cast hotfix + BL-032 S3 |
 | 2026-05-05 | §8 Migration 引入新表必查 RLS policy 默认 enabled | KOLMatrix backend-full-scan-2026-05-04 audit DB-CRIT-1 |
 | 2026-05-05 | §8.1 同 migration 启用多表 RLS 时 cross-cutting helper 必须同 commit 配套改 withTenant（v0.9.12）| BL-034 F003 logAudit + logEvent 33+ 调用方 silent-fail 风险 |
+| 2026-05-26 | §4.6 跨 tenant 平台级聚合（withPlatformAdmin vs 循环 tenant set_config）| KOLMatrix BL-075-F006 /api/health kol_coverage 0 行 prod regression（v0.9.24 #13） |
+| 2026-05-27 | §9 Schema migration ROLLBACK 不对称风险 / §10 batch per-element try/catch + stats + audit forensic / §11 adapter 边界三件套（clamp+outlier+阈值<DB上限）| KOLMatrix BL-076-F001/F002/F003（engagement_rate NUMERIC(5,2)→(7,2) + 2567 KOL 14 天沉默 outage）v0.9.24 #15/#16/#17 |
+| 2026-05-27 | §12 `prisma migrate dev` wrap 自动注入 ROLLBACK skeleton | KOLMatrix BL-070 #22 |

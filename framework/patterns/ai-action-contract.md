@@ -1,8 +1,3 @@
----
-scope: framework-generic
-last-updated: 2026-05-27
----
-
 # AI Action Contract（aigcgateway / 类似 LLM 网关 集成规范）
 
 > 来源：KOLMatrix B5 fixing-5/6 + MVP-internal-demo-prep fixing-3 累积经验。
@@ -493,6 +488,42 @@ for (const kol of kols) {
 
 ---
 
+## 7. LLM fix-round 必先 MCP trace 抓真因（v0.9.22 #9 — BL-068 沉淀）
+
+LLM 类 fix-round 必先 MCP `get_log_detail` trace 抓真实输出 + 与预期 diff，不要凭"LLM 应该怎样"推断。
+
+**反例（BL-068 fix-round 1+2）：** 凭"LLM 幻觉新增 ID"假设改 prompt（加约束 / 动态 N），收敛 drift 但仍不通过 → fix-round 3 通过 MCP `get_log_detail trc_ew4fi0u4hihjdw07bu73xer3` 抓出 LLM **实际返回**：30 IDs 中**重复 1 个已有 id**（index 8 + 29），不是幻觉新 ID。真因 = dedupe 问题非 set-membership 问题，前两轮 fix prompt 都打错点。
+
+**工具链：**
+- aigcgateway dashboard `logs` API + MCP `list_logs(project_id, limit=20)` 列 failed call
+- MCP `get_log_detail(log_id)` 抓 input variables + output text + metadata（latency / cost / model）
+- diff 真实输出 vs 预期 → 找模式（dup ID / format drift / missing field）
+
+**应用：** 每次 LLM-related fix-round 第一动作 = trace 5-10 个 failed call 找模式，不要直接改 prompt。Planner 配套规则：verifying gate 失败时优先 trace 真因而非直接 ack fix（详见 `planner.md` 规则 P5.3）。配合本文件 §3.4 dedupe-then-validate：trace 抓出真因是 dup 而非幻觉，才能定位到 dedupe 层修复。
+
+**来源：** BL-068 fix-round 3 MCP trace 实战 + v0.9.22 #9。
+
+---
+
+## 8. AI 调用客户端超时必须 ≥ 服务端 timeoutMs 且基于实测延迟校准（BL-084 #1 / BL-084 fix-round 1）
+
+**铁律：** 任何 AI 调用的**客户端**超时（dialog / fetch / setState error 计时器）必须 ≥ **服务端** `runAigcAction` 的 `timeoutMs`，且数值基于 **gateway `list_logs` 实测 latency 分布**校准，不可凭 roadmap 乐观假设。
+
+**反例（BL-084 Why dialog）：** `DetailedExplanationDialog` 客户端硬超时 5s（BL-067 设），但 `EXPLAIN_DETAILED` action 真实延迟 15-21s（gateway trace `trc_rkxiis8qp4uyuvx53ioadsd2` 实测 21.1s 才 success + write-through 缓存）→ 客户端 5s 已 setState error 显示「暂时不可用」。该 bug 在 BL-067 就潜伏，被 F005 prewarm + 偶发 cache-hit 掩盖；BL-084 match 面板无 prewarm，缓存未命中时 **100% 必现**。
+
+**根因：多 locale × 多段 write-through payload 天然慢** — `EXPLAIN_DETAILED` / `MATCH_RERANK` 单次 5 locale × 5 段 ≈ 4500 token ≈ 20s。BL-067 假设 <5s P99，实测 4-20× 偏差。
+
+**self-check 流程：**
+1. 调 `list_logs` / `get_log_detail` 看该 action 真实 latency 分布（P50/P95/P99），不看 roadmap 数字
+2. 客户端超时 = max(服务端 timeoutMs, P99 实测) + buffer
+3. 多 locale write-through / 大 payload 类调用尤其要核（延迟大头）
+
+**衍生（Planner ADR 候选）：** 多 locale 一次 write-through vs 仅当前 locale + 其余懒加载的延迟/成本权衡（detailed 仅当前 locale 5 段 ≈900 token ~4s，但牺牲"一次预热 5 locale"）。
+
+**来源：** BL-084 fix-round 1 Why dialog FAIL 根因 + 用户 2026-06-09 ack。
+
+---
+
 ## 来源
 
 - KOLMatrix B5-F006 fixing-5（output shape 漂移；commit 4d1057c）
@@ -513,5 +544,8 @@ for (const kol of kols) {
 | 2026-05-05 | §4 AI 调用必含 max_tokens + 用户输入必用 XML tag 包裹 | KOLMatrix backend-full-scan-2026-05-04 audit AI-CRIT-5 + AI-H5 |
 | 2026-05-06 | §4.7 mcp 自动化可达性（v0.9.13，max_tokens 字段 mcp 不可达 → 短期 spec 注解 + 长期跨项目 issue）| KOLMatrix BL-035 F013 + BL-024 Q2 ops 共 12 次 max_tokens 推延 Soft-watch |
 | 2026-05-06 | §4.7 修订（v0.9.13 fix-up）：实测后改为 「Action 抽象层根本不绑定 max_tokens」（mcp + UI 都不支持）+ P1/P2/P3/P4 4 种长期修复方向 + KOLMatrix 短期 spec 起草约束修订 | 用户 2026-05-06 实地确认 Dashboard UI 无 max_tokens 字段 |
-| 2026-05-27 | §6 AI 调用经济与速率防御（v0.9.24 合并段）：§6.1 cost-cap 5-10x 高估 + Workaround / §6.2 makeLlmRateGate(intervalMs=2100) 模板 + 适用边界 | BL-075-F004 一次性 backfill 1383 KOL 双坑实战；v0.9.24 #11 #12 用户 2026-05-26 ack |
-| 2026-05-27 | last-updated bump 2026-05-25 → 2026-05-27（v0.9.24 framework sediment batch BL-077-F001）| — |
+| 2026-05-16 | §5 aigcgateway caller SDK 抽象层沉淀触发门槛（≥3 处重复 + 即将第 4 处 → 抽 runAigcAction<T>） | KOLMatrix BL-067 F001（v0.9.22 #6） |
+| 2026-05-17 | §3.4 dedupe-then-validate 模式 + §3.5 Prompt 自检 + 末尾 reminder 双层强化（原 §3.4 适用范围 顺延为 §3.6） | KOLMatrix BL-068 fix-round 3（v0.9.22 #10 #11） |
+| 2026-05-17 | §7 LLM fix-round 必先 MCP trace 抓真因 | KOLMatrix BL-068 fix-round 3 MCP trace（v0.9.22 #9） |
+| 2026-05-26 | §6 AI 调用经济与速率防御（cost-cap 5-10x 高估 + makeLlmRateGate(2100)） | KOLMatrix BL-075-F004（v0.9.24 #11 #12） |
+| 2026-06-09 | §8 AI 调用客户端超时 ≥ 服务端 timeoutMs 且基于实测延迟校准 | KOLMatrix BL-084 fix-round 1 |
