@@ -1,92 +1,96 @@
 [
   {
-    "id": "F-MIG-01",
-    "title": "容器化部署基座 + 入口配置（next standalone / Dockerfile / compose+pgvector+migrate / .env 模板 / nginx / cron）",
+    "id": "F001",
+    "title": "Horizon 设计 token + 字体移植进 Tailwind v4 @theme（additive 基座）",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 4.0,
-    "status": "done",
-    "completed_note": "2026-07-12 Generator Kimi: 9 文件落地(next.config standalone / Dockerfile base→runner+migrate / .dockerignore / docker-compose.prod.yml pgvector+redis+migrate / postgres init 00-init.sh vector+kolmatrix_app / migrate-and-sync-role.sh / .env.production.example 全量键 / nginx kolmatrix.conf kol+kolquest301 / cron 模板). tsc=0 + npm run build PASS(standalone server.js+BUILD_ID 生成, --webpack 路径验证). 未改任何 src/**.",
-    "source": "spec §4 D1-D4/D6/D8, §5 F-MIG-01；用户裁决容器化 GHCR-pull + 直连拓扑",
+    "status": "pending",
+    "source": "spec §4 D1/D2, §6 F001；用户拍板 2（整体切 Horizon 紫色美学）",
     "acceptance": [
-      "next.config.ts 加 output:'standalone'（D2）",
-      "新增 Dockerfile（standalone 多阶段，app + migrate 两 target 或两镜像）+ .dockerignore",
-      "新增 docker-compose.prod.yml：app(127.0.0.1:3001, HOSTNAME=0.0.0.0) + postgres(pgvector/pgvector:pg17 匹配旧机, 实操前确认 major) + redis:7-alpine + 一次性 migrate 服务；pg/redis 不发布 host 端口；命名卷；env_file .env",
-      "migrate 路径（D4/H1/H3/H4）：pg init 建 kolmatrix_app role + DB kolmatrix；migrate 服务 CREATE EXTENSION vector + prisma migrate deploy + ALTER ROLE kolmatrix_app WITH PASSWORD（从 env）",
-      "新增 .env.production.example（deploysvr 版，仅键名占位禁真值）：DATABASE_URL(postgres:5432)/REDIS_URL(redis:6379/1)/NEXTAUTH_SECRET/AUTH_SECRET/KOLMATRIX_APP_PASSWORD/AIGCGATEWAY_BASE_URL/AIGCGATEWAY_API_KEY/RESEND_API_KEY/APIFY_KOL_BASE_URL/APIFY_KOL_BUSINESS_API_KEY/YOUTUBE_API_KEY/全部 AIGCGATEWAY_*_ACTION_ID/NEXTAUTH_URL",
-      "新增 deploy/nginx/kolmatrix.conf：kol.guangai.ai 公网 80/443 反代 127.0.0.1:3001 + ws upgrade + 安全头 + kolquest.com 301 块",
-      "cron 容器化（D8）：kolmatrix-kpi-snapshot + backup-retention 改 host cron 调 docker compose exec，脚本/文档就绪",
-      "不改任何 src/** 产品代码；npx tsc --noEmit + npm run build PASS；独立 commit"
+      "在 src/styles/globals.css @theme 中 additive 新增 Horizon token（不删现有 Neural Velocity token）：紫色 brand 阶 --color-brand-50..900（含 #4318FF/#422AFB）、navy 表面调和、20px 圆角 token、柔和悬浮阴影（shadow-3xl 等价，用 @utility 或 token 实现）",
+      "全局字体切换：Inter → DM Sans（正文）+ Poppins（标题），沿用项目现有 next/font 配置方式（grep 定位 src/app/layout.tsx / [locale]/layout.tsx 实际配置处后改）",
+      "输出 token 映射表（Horizon tailwind.config.js → KOLMatrix @theme 的对应关系）写入 design-draft/design-system.md 或 spec 附录，供 F002/F003 消费",
+      "npx tsc --noEmit 通过 + npm run build PASS",
+      "additive 引入不破坏现有 22 个非试点页的内容色渲染（除 D2 声明的外壳+字体波及）；独立 commit"
     ]
   },
   {
-    "id": "F-MIG-02",
-    "title": "CI/CD 管道改造 — 镜像构建推 GHCR + deploy-prod 改写为 pull+compose",
+    "id": "F002",
+    "title": "App Shell（Sidebar + Topbar）Horizon 化焕新",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 2.5,
-    "status": "done",
-    "completed_note": "2026-07-12 Generator Kimi: build-push.yml(GHCR app+migrate 两 target)+deploy-prod.yml 改写 docker compose pull/up+staging/seed 标 deprecated. build-push CI 首跑失败(next build collect-page-data 读 DATABASE_URL, Dockerfile 缺 build-time 占位)→fix commit 2505fc2 补 DATABASE_URL/NEXTAUTH_SECRET/NEXTAUTH_URL 占位→本地 docker build runner PASS→build-push CI 绿(镜像入 ghcr.io/tripplemay/kolmatrix/{app,migrate}:sha+latest). deploy-prod 首跑待 F-MIG-04 P4(新 secrets 就位后).",
-    "source": "spec §4 D5, §5 F-MIG-02",
+    "status": "pending",
+    "source": "spec §4 D2/D5/D6, §6 F002",
     "acceptance": [
-      "新增 build-push workflow：main push → docker build app + migrate → 推 ghcr.io/tripplemay/kolmatrix/{app,migrate}:<git-sha>+:latest（permissions packages:write, 登录 GHCR）",
-      "改写 .github/workflows/deploy-prod.yml：workflow_dispatch 保留 → SSH deploysvr → cd /opt/apps/kolmatrix → 设 IMAGE_TAG → docker compose pull → migrate → up -d → 健康检查 curl -sf http://127.0.0.1:3001/api/health（重试）",
-      "文档化 GitHub secrets 更新清单：PROD_HOST=194.238.26.173 / PROD_USER=root / PROD_SSH_KEY(deploysvr 私钥)，标注旧值 34.180.93.185 作回滚",
-      "deploy-staging.yml / seed-prod.yml 标注 deprecated（决策 A 弃 staging）",
-      "ci.yml 保持不回归（lint+tsc+vitest+build）；独立 commit"
+      "src/components/layout/ 全套（Sidebar/SidebarNav/SidebarLogo/SidebarUserChip/Topbar/TopbarActions/TopbarSearch）改用 F001 Horizon token 重塑视觉：紫色强调 + navy 表面 + 柔和阴影 + Horizon 侧栏/顶栏样式",
+      "nav-config.ts 的 NAV_ITEMS 结构与 deriveActiveNav 逻辑不改（IA 由 ADR-015 锁定，仅改视觉不改导航结构）",
+      "i18n 保真：sidebar 品牌副标题/nav 文案/topbar 全部保留 useTranslations/getTranslations 接线，不引入硬编码英文，5 locale key 不断（D5）",
+      "水合正确性（铁律 14/D6）：含交互的 'use client' 组件（TopbarSearch/TopbarActions/用户菜单等）重构后 console 无 React #418/#425，交互 onClick 生效",
+      "Material Symbols 图标沿用（不换 react-icons）；tsc=0 + build PASS；独立 commit"
     ]
   },
   {
-    "id": "F-MIG-03",
-    "title": "apify-kol-service 随迁 deploysvr（修 crash-loop + 迁 docker 栈含 pg:15432）",
+    "id": "F003",
+    "title": "旗舰页 /insight dashboard 内容 Horizon 化",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 3.0,
-    "status": "done",
-    "completed_note": "2026-07-13 apify 随迁完成(用户安排). 诊断根因: apify-kol-service-postgres-1 Exited 3 周前(疑 VM OOM/reset)→service EAI_AGAIN getaddrinfo postgres→crash-loop. 迁移: 旧机 docker save apify-kol-service-service:latest(301MB)→docker load deploysvr(避 build+fork hot-fix, H5); pg_dump apify_kol(7.8M, 全表 0 行但含 public 6 app 表+drizzle+pgboss schema, 服务自身 migrate 建不出 schema=fork 镜像缺陷, 故 restore 拿 schema); deploysvr 新写 compose(build→image + restart:unless-stopped 根治复发 + kol-shared external 网络+alias apify-kol + loopback 3004); fresh pg + restore schema. 接线: KOLMatrix app+migrate 加 kol-shared, .env APIFY_KOL_BASE_URL localhost:3004→http://apify-kol:3003(运行中 app docker network connect 活体接入零重启). 验证: apify /health 200; app→apify-kol 200; cron/migrate→apify-kol 200. kol-sync 无未见即删逻辑(refresh/upsert), 空 apify 安全 no-op. ⚠️apify 现空(无 schedules/数据, 3周前就空)→需爬虫团队重加 schedules 才恢复采集(其域, 不阻塞); app admin-preview 待下次 deploy 重启才用新 env(cron/daily-sync 已用).",
-    "source": "spec §4 D9, §5 F-MIG-03；用户决策 B",
+    "status": "pending",
+    "source": "spec §4 D4/D5/D6, §6 F003；用户拍板 3（旗舰页 /insight dashboard）",
     "acceptance": [
-      "诊断并修复旧机 apify-kol-service 现有 crash-loop（Restarting）根因",
-      "把 apify-kol-service docker 栈（含自带 postgres:15432）迁到 deploysvr；.env(TIKHUB/APIFY/BUSINESS/ADMIN token 从旧机原样迁, 禁入仓)",
-      "host 端口暴露 3004:3003 供 KOLMatrix 内网 localhost:3004 调用",
-      "验证 curl http://localhost:3004/health 200 + 一次 read GET /kol 正常",
-      "KOLMatrix 侧无代码改动；实操记录写入 migration runbook",
-      "须在 KOLMatrix prod 割接（F-MIG-04 P3/P4）之前完成（H7 先行）"
+      "src/app/[locale]/(app)/insight/page.tsx 挂载的 DashboardContent + src/features/dashboard/* 组件（KpiRow/EmailPerformanceChart/RoiTrendCard/AiMatchRingCard 等）改用 Horizon 视觉：stat 卡样式 + recharts 图表卡包裹样式 + widget + 柔和阴影 + 紫色强调",
+      "保留 recharts（不换 apexcharts），仅借鉴 Horizon 图表卡的容器/配色/圆角视觉",
+      "保 RSC 数据获取路径 + server/client island 拆分不破（*Impl 懒加载分层维持），dashboard 真实数据正常渲染",
+      "i18n 保真（D5）：KPI 卡标题/图表图例/空状态全部保 translation key，5 locale 不断",
+      "水合正确性（铁律 14/D6）：dashboard 交互控件（tab 切换/图表 tooltip 等）console 无 #418/#425 + 交互生效；tsc=0 + build PASS；独立 commit"
     ]
   },
   {
-    "id": "F-MIG-04",
-    "title": "迁移 runbook + 生产割接实操（P0-P6，受监督，不可逆门禁 go/no-go）",
+    "id": "F004",
+    "title": "ADR-021 视觉语言切换 + design-draft/design-system.md 更新",
     "executor": "generator",
     "priority": "high",
-    "estimated_hours": 4.0,
-    "status": "done",
-    "progress_note": "2026-07-13 P0-P4 割接完成(用户 go). P0: clone+.env 构造. P2: 起栈+灌快照演练+冒烟全绿, 捕获并修 2 bug(Dockerfile build-time DATABASE_URL / migrate db execute --url). P3(🔴 用户 go): 停旧机(23:26:17Z)+终态 pg_dump+clean restore+12 表逐行 parity 一致(零丢失, migrate 应用 pending bl115 lead 表 41→42). P4(🔴 用户 go): certbot 预签 kol.guangai.ai(kolquest 推迟-CF token 不覆盖其 zone)+装 nginx vhost+Cloudflare A 34.180.93.185→194.238.26.173(proxied=False/TTL60)+更新 GitHub secrets+装 cron(CRON_TZ=UTC, kpi-snapshot 实测 2/2). 公网 https://kol.guangai.ai 200 healthy+5 locale+TLS 有效. ⚠️停机 ~32-37min 超预估(根因 终态 dump 经本机管道慢, 教训入 runbook). runbook 实测记录已回填. P5 观察期中(旧机 STOPPED+DB 冻结作回滚), P6 旧机退役待用户验收.",
-    "source": "spec §4 D7/D10/D11, §5 F-MIG-04, §7 回滚；对标 aigc deploysvr-migration-runbook.md",
+    "status": "pending",
+    "source": "spec §4 D3, §7 §2.5 Stitch 决策, §6 F004；用户拍板 4（ADR-003 重定基线继续生效）",
     "acceptance": [
-      "新增 docs/ops/deploysvr-kol-migration-runbook.md：P0 准备(建 /opt/apps/kolmatrix + .env 600 + certbot DNS-01 复用) / P2 起新栈(compose up + 灌旧库快照演练 + loopback 冒烟 /api/health+登录+AI定制+KOL流程) / P3 数据终态同步(停旧写→pg_dump kolmatrix→clean restore→逐表行数 parity；Redis 弃旧起新) / P4 边缘割接(Certbot DNS-01 预签 kol+kolquest→装 nginx→Cloudflare A 切→更新 GitHub secrets) / P5 观察期+回滚就绪 / P6 退役门禁(旧 VM 整机退役)",
-      "按 runbook 执行 P0-P5 受监督实操",
-      "H6 三个不可逆门禁(数据终态同步/DNS 切换/旧机停写)执行前取得用户显式 go/no-go",
-      "H1/H2 secrets(kolmatrix_app 密码/NEXTAUTH/AUTH)从旧机原样迁移，禁写入仓库",
-      "割接完成回写 runbook 实测 live state/parity/rollback controls"
+      "新建 docs/adr/ADR-021-frontend-visual-language-horizon.md：记录切换到 Horizon 紫色美学的决策、背景、备选（保留 NV / 局部借鉴 / 全量替换底座）、后果",
+      "ADR-021 amend ADR-003：明确像素级验收标准（±2px/ΔE<2 CIE76/字号布局 100%）继续生效，参照基线由 Neural Velocity 重定为 Horizon 新截图（用户拍板 4）",
+      "ADR-021 记 ADR-004 组件库演进口径（Horizon 新 widget/卡样式纳入公共组件层）",
+      "更新 docs/adr/README.md 索引表加 ADR-021 行 + 视觉分类区加条目",
+      "更新 design-draft/design-system.md：增/改 Horizon 设计语言段（配色/字体/圆角/阴影/卡片风格），仍作唯一视觉真相源；注明 Stitch 原型重做推迟到全量铺开",
+      "docs-only，不改产品代码；独立 commit"
     ]
   },
   {
-    "id": "F-MIG-05",
-    "title": "Codex 验收 — 新栈冒烟 + 数据 parity + RLS 隔离 + 直连可达 + 回滚演练 + signoff",
-    "executor": "codex",
+    "id": "F005",
+    "title": "视觉基线重生 + shape 测试同步 + i18n 5 locale 保真回归",
+    "executor": "generator",
     "priority": "high",
-    "estimated_hours": 1.5,
-    "status": "waived",
-    "completed_note": "2026-07-13 用户手工授权免除 Codex 验收，直接置批次 done（同 BL-114/BL-115/BL-117 Codex feature 免除先例）。未经独立 L1+L2+signoff。软验收依据: F-MIG-04 P3 割接时 Generator 已做 12 表逐行 parity 一致(零丢失)+公网 https://kol.guangai.ai 200 healthy+5 locale+TLS 有效+cron kpi-snapshot 实测 2/2+app→apify-kol:3003 200(F-MIG-03)。soft-watch(未独立复验): RLS 多租户隔离(kolmatrix_app role)/回滚演练/公网 aigcgateway+Resend 端到端邮件链路。旧机 STOPPED+DB 冻结作回滚点仍在。",
-    "source": "spec §5 F-MIG-05, §6 验收标准",
+    "status": "pending",
+    "source": "spec §4 D2/D5, §5 数据准备, §6 F005",
     "acceptance": [
-      "前置：F-MIG-01~04 完成、新栈已割接",
-      "冒烟：https://kol.guangai.ai 公网 → /api/health(db/redis ok) + 登录(prod 账号) + AI 邮件定制(验公网 aigcgateway) + 一条 KOL 流程(discovery/detail, 验 apify localhost:3004) + 发一封邮件(验 Resend+BullMQ)",
-      "数据 parity：新库关键表行数与旧库一致；抽查 RLS 多租户隔离生效(kolmatrix_app role)",
-      "直连可达 + TLS 有效 + 5 locale 抽查",
-      "回滚演练可行性(旧机可快速拉起 + 旧 DNS/PROD_HOST 回退路径成立，不真正回滚)",
-      "输出 docs/test-reports/BL-PROD-MIGRATE-DEPLOYSVR-signoff-YYYY-MM-DD.md 含命令/日志证据 + PASS/FAIL"
+      "经 update-visual-baselines.yml workflow（Linux canonical runner）重生受 F002+F003 影响页的 Playwright 视觉基线（外壳波及全 app 页 + /insight 深度重做）",
+      "tests/unit/visual-baselines-shape.test.ts 同步更新（如基线文件集变化）",
+      "i18n 保真回归：对 F002/F003 restyle 的组件跑 5 locale（重点 en/zh）抽查，确认无硬编码英文、无缺失 key、无 FORMATTING_ERROR",
+      "npm test（L1 单测）全绿；重生的基线随 commit 一并推送（推送前 git status --short 检查测试产物，铁律 #13）",
+      "独立 commit（基线 PNG + shape 测试 + 回归结果）"
+    ]
+  },
+  {
+    "id": "F006",
+    "title": "试点验收 signoff — L1 + L2 headless 水合 + 基线复核 + i18n + ADR 一致性 + 全量铺开建议",
+    "executor": "evaluator",
+    "priority": "high",
+    "status": "pending",
+    "source": "spec §6 F006, §8 决策点；铁律 4/12/14 独立性",
+    "acceptance": [
+      "前置：F001-F005 完成",
+      "L1：npm run lint（0 error）+ npx tsc --noEmit（0）+ npm test 全绿",
+      "L2 headless 浏览器（铁律 14）：登录 /insight，标准 locator.click() 或先等 [data-ready] 再点关键交互控件；断言 (1) console 无 React #418/#425 水合错误 (2) onClick 产生预期效果；严禁 force:true/dispatchEvent/evaluate(el=>el.click())",
+      "视觉复核：App Shell + /insight dashboard 呈现 Horizon 紫色美学（紫 brand + navy + 柔和阴影 + DM Sans）；抽查 en/zh 两 locale + 桌面 viewport",
+      "i18n 抽查：restyle 组件文案走 translation key，5 locale 无断裂",
+      "ADR 一致性：ADR-021 存在且 amend ADR-003/记 ADR-004 口径完整，design-system.md 已更新，视觉实现与 ADR-021 声明的设计语言一致",
+      "输出全量铺开可行性建议：单页平均工时估算 + i18n 回接成本 + 水合风险点 + 基线规模（供用户决定是否启动 BL-HORIZON-FE-ROLLOUT）",
+      "产出 docs/test-reports/BL-HORIZON-FE-PILOT-signoff-YYYY-MM-DD.md 含命令/日志/截图证据 + 逐条 PASS/PARTIAL/FAIL；结论原样落盘（独立性铁则）"
     ]
   }
 ]

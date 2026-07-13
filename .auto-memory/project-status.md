@@ -3,6 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
+## 🚧 BL-HORIZON-FE-PILOT BUILDING (0/6) — 前端 Horizon 视觉焕新(试点)
+- **目标**: 用户想用付费模板 Horizon(Next15/Tailwind v3/纯 Tailwind 视觉层/无 i18n/SPA) 重构前端。Planner 可行性结论: 不能直接套模板(每层不兼容, 实为重写), 走"保留 App Router/RSC/i18n/RLS 底座 + Horizon 紫色美学重实现进 shadcn+Tailwind v4"。~165 组件+339 i18n 体量→本批为**试点**: App Shell(全局)+旗舰页 /insight dashboard, 跑通全链路作全量铺开决策点
+- **用户 4 拍板**: 试点先行移植 / 整体切 Horizon 紫色美学 / 旗舰页 /insight / ADR-003 重定基线继续生效. spec @ docs/specs/BL-HORIZON-FE-PILOT-spec.md
+- **6 features(F001-05 generator 串行 + F006 evaluator)**: token+字体译@theme(additive 不删 NV) → App Shell 化 → /insight dashboard 化 → ADR-021+design-system.md → 基线重生+i18n 回归 → 试点验收+铺开建议. 硬约束: token additive 可回滚 / i18n 保真禁硬编码 / 铁律14 水合 no #418/#425 / 保 recharts+Material Symbols 不引 Chakra
+- **⚠️ 分支**: 当前在 chore/harness-merge-v1.0.3(领先 main 1 harness-merge commit), 本批 commit/push 分支策略待用户确认(harness merge 是否先合 main)
 ## ✅ BL-PROD-MIGRATE-DEPLOYSVR DONE (5/5, F-MIG-05 Codex 用户手工授权免除 2026-07-13) — 生产迁移 KOLMatrix→deploysvr 容器化
 - ✅ **割接完成 2026-07-13**: https://kol.guangai.ai 现由 deploysvr(194.238.26.173) 容器化栈服务(app+pgvector:pg17+redis, GIT_SHA 25e1b40). Cloudflare A 已切(proxied=False/TTL60), TLS 有效, 5 locale 200, 12 表逐行 parity 零丢失(kol 10059/tenant 2 等). GitHub secrets 已更(PROD_HOST=194.238.26.173/root). cron 装(CRON_TZ=UTC). ⚠️停机 ~32-37min 超预估(根因 终态 dump 经本机管道慢, 教训入 runbook + proposed-learning 待确认)
 - ✅ F-MIG-01/02/03/04 全 generator done: 容器化基座+CI(GHCR build-push+deploy 改写)+apify 随迁(restart:unless-stopped 根治 crash-loop, app/migrate→apify-kol:3003 200, /opt/apps/apify-kol-service)+割接实操. 途中修 3 bug(Dockerfile build-time DATABASE_URL/migrate db execute --url/nginx kolquest 证书). runbook @ docs/ops/deploysvr-kol-migration-runbook.md
