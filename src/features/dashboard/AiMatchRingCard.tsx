@@ -21,20 +21,20 @@ export function AiMatchRingCard({ score, label = "Avg AI Match", className }: Pr
   return (
     <div
       className={cn(
-        "bg-surface-low ambient-glow relative flex items-center justify-between overflow-hidden rounded-[16px] p-6",
+        "bg-navy-800 shadow-hz-card relative flex items-center justify-between overflow-hidden rounded-hz-card p-6",
         className
       )}
     >
       <div>
-        <p className="text-cyan-fixed flex items-center gap-1 text-sm font-medium">
+        <p className="text-brand-300 flex items-center gap-1 text-sm font-medium">
           <span className="material-symbols-outlined text-[14px]" aria-hidden>
             auto_awesome
           </span>
           {label}
         </p>
-        <h3 className="text-cyan mt-1 text-4xl font-black">
+        <h3 className="text-brand-400 font-poppins mt-1 text-4xl font-black">
           {clamped}
-          <span className="text-cyan/50 ml-0.5 text-xl">%</span>
+          <span className="text-brand-400/50 ml-0.5 text-xl">%</span>
         </h3>
       </div>
       <div className="relative flex h-20 w-20 items-center justify-center">
@@ -44,7 +44,7 @@ export function AiMatchRingCard({ score, label = "Avg AI Match", className }: Pr
             cy="50"
             r={RADIUS}
             fill="transparent"
-            stroke="rgba(0, 229, 255, 0.1)"
+            stroke="rgba(117, 81, 255, 0.1)"
             strokeWidth="8"
           />
           <circle
@@ -53,14 +53,14 @@ export function AiMatchRingCard({ score, label = "Avg AI Match", className }: Pr
             r={RADIUS}
             fill="transparent"
             stroke="currentColor"
-            className="text-cyan"
+            className="text-brand-400"
             strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={CIRCUMFERENCE}
             strokeDashoffset={offset}
           />
         </svg>
-        <span className="material-symbols-outlined text-cyan/50 absolute text-2xl" aria-hidden>
+        <span className="material-symbols-outlined text-brand-400/50 absolute text-2xl" aria-hidden>
           psychology
         </span>
       </div>

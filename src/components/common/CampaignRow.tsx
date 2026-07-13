@@ -32,7 +32,7 @@ const STATUS_DOT: Record<Status, string> = {
   active: "bg-emerald-400",
   paused: "bg-amber-400",
   draft: "bg-on-surface-variant/50",
-  completed: "bg-cyan",
+  completed: "bg-brand-500",
 };
 
 export function CampaignRow(props: CampaignRowProps) {
@@ -90,10 +90,13 @@ export function CampaignRow(props: CampaignRowProps) {
         <div className="w-full flex-1 sm:px-4">
           <div className="mb-1 flex items-center justify-between text-xs">
             <span className="text-on-surface-variant">Progress</span>
-            <span className="text-cyan font-semibold">{clampedProgress}%</span>
+            <span className="text-brand-400 font-semibold">{clampedProgress}%</span>
           </div>
           <div className="bg-navy-base h-1.5 w-full overflow-hidden rounded-full">
-            <div className="gradient-cta h-full" style={{ width: `${clampedProgress}%` }} />
+            <div
+              className="h-full bg-gradient-to-r from-brand-500 to-brand-linear"
+              style={{ width: `${clampedProgress}%` }}
+            />
           </div>
         </div>
       ) : null}

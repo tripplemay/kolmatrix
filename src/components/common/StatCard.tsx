@@ -66,7 +66,7 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "bg-surface-low ambient-glow relative flex flex-col justify-between overflow-hidden rounded-[16px] p-6",
+        "bg-navy-800 shadow-hz-card relative flex flex-col justify-between overflow-hidden rounded-hz-card p-6",
         className
       )}
     >
@@ -79,7 +79,7 @@ export function StatCard({
         </span>
       ) : null}
       <p className="text-on-surface-variant mb-1 text-sm font-medium">{label}</p>
-      <h3 className="text-on-surface mb-4 text-3xl font-bold">
+      <h3 className="text-on-surface font-poppins mb-4 text-3xl font-bold">
         {value}
         {subLabel ? (
           <span className="text-on-surface-variant/70 ml-1.5 text-sm font-medium">{subLabel}</span>
@@ -116,8 +116,8 @@ export function StatCard({
               <div
                 key={i}
                 className={cn(
-                  "bg-cyan/60 w-1.5 rounded-t-sm",
-                  i === sparkline.length - 1 && "bg-cyan"
+                  "bg-brand-500/60 w-1.5 rounded-t-sm",
+                  i === sparkline.length - 1 && "bg-brand-500"
                 )}
                 style={{ height: `${Math.max((v / sparkMax) * 100, 8)}%` }}
               />

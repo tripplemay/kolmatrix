@@ -22,7 +22,7 @@ export type StatusDomain =
   | "email";
 
 const NEUTRAL = "border-outline-variant bg-surface-high/40 text-on-surface-variant";
-const CYAN = "border-cyan/30 bg-cyan/10 text-cyan";
+const CYAN = "border-brand-500/30 bg-brand-500/10 text-brand-400";
 const EMERALD = "border-emerald-500/30 bg-emerald-500/10 text-emerald-300";
 const PURPLE = "border-purple/30 bg-purple/10 text-purple";
 const ERROR = "border-error/30 bg-error/10 text-error";

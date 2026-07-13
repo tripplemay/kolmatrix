@@ -36,7 +36,7 @@ export function GhostButton({
       type="button"
       disabled={disabled}
       className={cn(
-        "text-on-surface-variant hover:text-cyan inline-flex items-center rounded-[8px] font-medium transition-colors duration-200",
+        "text-on-surface-variant hover:text-brand-400 inline-flex items-center rounded-[8px] font-medium transition-colors duration-200",
         "disabled:cursor-not-allowed disabled:opacity-50",
         SIZE_MAP[size],
         className

@@ -1,7 +1,7 @@
 /**
- * GradientButton — Cyan 渐变主 CTA
+ * GradientButton — Horizon brand 紫渐变主 CTA（BL-HORIZON F003）
  *
- * 统一消费 `@utility gradient-cta`。三尺寸：sm/md/lg 映射 Stitch HTML
+ * Horizon brand 渐变（from-brand-500 → to-brand-linear）。三尺寸：sm/md/lg 映射 Stitch HTML
  * 里 rounded-lg (size md) / rounded-xl (size lg) 的变体。
  * HTML 源：dashboard.html:182-185 ("+ New Campaign")。
  * 用途：每页头部的主 CTA（New Campaign / Apply Filters / Edit 等）。
@@ -43,7 +43,7 @@ const SIZE_MAP: Record<Size, string> = {
 };
 
 const BASE_CLASS =
-  "gradient-cta inline-flex items-center justify-center gap-2 font-semibold transition-shadow duration-200 hover:shadow-[0_0_24px_rgba(0,229,255,0.4)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:shadow-none";
+  "bg-gradient-to-r from-brand-500 to-brand-linear text-white inline-flex items-center justify-center gap-2 font-semibold transition-shadow duration-200 hover:shadow-[0_0_24px_rgba(66,42,251,0.45)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:shadow-none";
 
 function Inner({
   icon,

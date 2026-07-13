@@ -47,7 +47,7 @@ export function KolCard({
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
       className={cn(
-        "group bg-surface-low hover:bg-surface-high hover:border-cyan/30 relative rounded-[16px] border border-transparent transition-colors",
+        "group bg-navy-800 shadow-hz-card hover:bg-navy-700 hover:border-brand-500/30 relative rounded-hz-card border border-transparent transition-colors",
         isGrid ? "flex flex-col items-center p-5 text-center" : "flex items-center gap-4 p-4",
         onClick && "cursor-pointer",
         className

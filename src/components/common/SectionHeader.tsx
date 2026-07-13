@@ -37,7 +37,7 @@ export function SectionHeader({
   return (
     <header className={cn("mb-6 flex items-start justify-between gap-4", className)}>
       <div className="min-w-0">
-        <Heading className={cn("text-on-surface", TITLE_SIZE[as])}>{title}</Heading>
+        <Heading className={cn("text-on-surface font-poppins", TITLE_SIZE[as])}>{title}</Heading>
         {subtitle ? (
           <p className="text-on-surface-variant/70 mt-1 text-[13px]">{subtitle}</p>
         ) : null}

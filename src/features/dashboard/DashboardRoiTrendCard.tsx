@@ -21,7 +21,7 @@ export function DashboardRoiTrendCard({ trend }: Props) {
     <GlassPanel padding="md" rounded="2xl" tone="neutral" data-testid="dashboard-roi-card">
       <div className="mb-3 flex items-baseline justify-between gap-3">
         <SectionHeader title={t("title")} as="h3" />
-        <p className="text-cyan/80 text-[11px] font-bold tracking-widest uppercase">
+        <p className="text-brand-400/80 text-[11px] font-bold tracking-widest uppercase">
           {tRoi("windowLabel")}
         </p>
       </div>

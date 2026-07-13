@@ -36,7 +36,8 @@
     "title": "旗舰页 /insight dashboard 内容 Horizon 化",
     "executor": "generator",
     "priority": "high",
-    "status": "pending",
+    "status": "done",
+    "completed_note": "2026-07-14 Generator(委派受限 subagent 实现+主上下文验收补齐): 26 文件 Horizon 化。7 dashboard 专属组件(AiMatchRingCard/CompetitorCpiCard/DashboardRoiTrendCard/EmailPerformanceChartImpl/GreetingBar/QuickActions/WorkflowSteps) + 15 共享设计系统组件(StatCard/KolCard/AiScoreBadge/GlassPanel/SectionHeader/SecondaryButton/GhostButton/TagChip/RingProgress/Sparkline/ActivityFeedItem/CampaignRow/StatusBadge/GradientButton/AvatarWithPlatformBadge) + 4 单测更新(cyan 类名断言→brand)。映射: 卡面 glass-panel/bg-surface-low→bg-navy-800 rounded-hz-card shadow-hz-card; cyan 强调→brand 紫; KPI 数字/标题 font-poppins; recharts stroke/fill cyan→var(--color-brand-500)(保 recharts 不换 apexcharts)。⚠️**共享层波及(用户批准 Option1)**: StatCard(5页)/KolCard(7页)/GlassPanel(7页)/SectionHeader(全站标题)等继承 Horizon 观感, 属推进全量铺开; F005 统一重生基线。2 补齐(GradientButton/Avatar)+4 单测更新由主上下文完成(subagent 诚实报告 scope 外未碰)。验证: grep 0 残留 cyan(dashboard 链) + tsc=0 + dashboard/common 单测 24 文件 96 测试 PASS + build PASS(standalone)。纯 className 改动→水合不受影响(铁律14 headless 留 F006)。⚠️视觉观感未经真实浏览器渲染确认→留 F006 evaluator 复核(含 WCAG AA 对比度)。",
     "source": "spec §4 D4/D5/D6, §6 F003；用户拍板 3（旗舰页 /insight dashboard）",
     "acceptance": [
       "src/app/[locale]/(app)/insight/page.tsx 挂载的 DashboardContent + src/features/dashboard/* 组件（KpiRow/EmailPerformanceChart/RoiTrendCard/AiMatchRingCard 等）改用 Horizon 视觉：stat 卡样式 + recharts 图表卡包裹样式 + widget + 柔和阴影 + 紫色强调",

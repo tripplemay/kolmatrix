@@ -22,7 +22,7 @@ const TONE_MAP: Record<Tone, string> = {
   neutral:
     "bg-on-surface/5 text-on-surface border-on-surface/10 hover:bg-on-surface/10 hover:text-on-surface",
   purple: "bg-purple/10 text-purple border-purple/30 hover:bg-purple/15 hover:text-purple",
-  cyan: "bg-cyan/10 text-cyan border-cyan/30 hover:bg-cyan/15 hover:text-cyan",
+  cyan: "bg-brand-500/10 text-brand-400 border-brand-500/30 hover:bg-brand-500/15 hover:text-brand-400",
 };
 
 const SIZE_MAP: Record<Size, string> = {

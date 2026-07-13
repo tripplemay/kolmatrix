@@ -36,18 +36,18 @@ export default function EmailPerformanceChartImpl({ data }: Props) {
         <XAxis dataKey="date" stroke="rgba(186, 201, 204, 0.7)" fontSize={11} tickMargin={6} />
         <YAxis stroke="rgba(186, 201, 204, 0.7)" fontSize={11} />
         <Tooltip
-          cursor={{ stroke: "rgba(0, 229, 255, 0.25)" }}
+          cursor={{ stroke: "rgba(66, 42, 251, 0.25)" }}
           contentStyle={{
             background: "rgba(11, 19, 38, 0.95)",
-            border: "1px solid rgba(0, 229, 255, 0.2)",
+            border: "1px solid rgba(66, 42, 251, 0.2)",
             borderRadius: 8,
             fontSize: 12,
           }}
         />
         <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Line {...LINE_PROPS} dataKey="sent" name={t("sent")} stroke="var(--color-cyan)" />
+        <Line {...LINE_PROPS} dataKey="sent" name={t("sent")} stroke="var(--color-brand-500)" />
         <Line {...LINE_PROPS} dataKey="opened" name={t("opened")} stroke="var(--color-purple)" />
-        <Line {...LINE_PROPS} dataKey="replied" name={t("replied")} stroke="var(--color-cyan-soft)" />
+        <Line {...LINE_PROPS} dataKey="replied" name={t("replied")} stroke="var(--color-brand-linear)" />
       </LineChart>
     </ResponsiveContainer>
   );

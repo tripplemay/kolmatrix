@@ -6,7 +6,8 @@
  *  - pill : 药丸内嵌（表格 / 行列表）
  *  - inline: 纯文本（KPI 卡内嵌数字，无背景）
  * HTML 源：dashboard.html:366-368 (circle) / kol-database.html (pill)。
- * Canonical（F010 决议 #4）：cyan 发光由 `ai-glow` utility 承担，不内联 HEX。
+ * Horizon（BL-HORIZON F003）：brand 紫强调；发光/浮起由 `shadow-hz-card`
+ * 承担，不内联 HEX。
  */
 import { cn } from "@/lib/utils";
 
@@ -46,7 +47,7 @@ export function AiScoreBadge({
 
   if (variant === "inline") {
     return (
-      <span aria-label={label} className={cn("text-cyan font-bold", TEXT_SIZE[size], className)}>
+      <span aria-label={label} className={cn("text-brand-400 font-bold", TEXT_SIZE[size], className)}>
         {score}
       </span>
     );
@@ -57,9 +58,9 @@ export function AiScoreBadge({
       <span
         aria-label={label}
         className={cn(
-          "text-cyan bg-cyan/10 border-cyan/30 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-semibold",
+          "text-brand-400 bg-brand-500/10 border-brand-500/30 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-semibold",
           TEXT_SIZE[size],
-          glow && "ai-glow",
+          glow && "shadow-hz-card",
           className
         )}
       >
@@ -72,10 +73,10 @@ export function AiScoreBadge({
     <span
       aria-label={label}
       className={cn(
-        "glass-panel text-cyan border-cyan/30 inline-flex items-center justify-center rounded-full border font-bold",
+        "glass-panel text-brand-400 border-brand-500/30 inline-flex items-center justify-center rounded-full border font-bold",
         CIRCLE_SIZE[size],
         TEXT_SIZE[size],
-        glow && "ai-glow",
+        glow && "shadow-hz-card",
         className
       )}
     >

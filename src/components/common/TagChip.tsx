@@ -24,7 +24,7 @@ interface TagChipProps {
 const TONE_MAP: Record<Tone, string> = {
   neutral: "bg-on-surface/5 text-on-surface-variant border border-on-surface/10",
   navy: "bg-surface-lowest text-on-surface-variant border border-transparent",
-  cyan: "bg-cyan/10 text-cyan border border-cyan/25",
+  cyan: "bg-brand-500/10 text-brand-400 border border-brand-500/25",
   purple: "bg-purple/10 text-purple border border-purple/25",
 };
 

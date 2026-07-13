@@ -14,7 +14,7 @@ describe("AiScoreBadge", () => {
     const { container } = render(<AiScoreBadge score={55} variant="inline" />);
     const node = container.firstElementChild as HTMLElement;
     expect(node.className).not.toContain("glass-panel");
-    expect(node.className).toContain("text-cyan");
+    expect(node.className).toContain("text-brand-400");
   });
 
   it("honours ariaLabel override", () => {

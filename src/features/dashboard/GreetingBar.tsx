@@ -19,7 +19,7 @@ export async function GreetingBar({ name, dateLabel, locale }: Props) {
   return (
     <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
       <div>
-        <h2 className="text-on-surface mb-2 text-4xl font-extrabold tracking-[-0.02em] md:text-5xl">
+        <h2 className="text-on-surface font-poppins mb-2 text-4xl font-extrabold tracking-[-0.02em] md:text-5xl">
           {t("greeting", { name })}
         </h2>
         <p className="text-on-surface-variant md:text-lg">{t("subtitle", { date: dateLabel })}</p>

@@ -20,8 +20,8 @@ describe("GlassPanel", () => {
       </GlassPanel>
     );
     const panel = container.firstElementChild as HTMLElement;
-    expect(panel.className).toContain("border-cyan/20");
-    expect(panel.className).toContain("ambient-glow");
+    expect(panel.className).toContain("border-brand-500/20");
+    expect(panel.className).toContain("shadow-hz-card");
   });
 
   it("switches padding scale when padding=sm", () => {

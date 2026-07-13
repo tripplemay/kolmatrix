@@ -36,8 +36,8 @@ const ACTIONS: QuickAction[] = [
 ];
 
 const TONE_CLASS: Record<QuickAction["tone"], string> = {
-  cyan: "bg-cyan/15 text-cyan border-cyan/30",
-  "cyan-soft": "bg-cyan-fixed/10 text-cyan-fixed border-cyan-fixed/25",
+  cyan: "bg-brand-500/15 text-brand-400 border-brand-500/30",
+  "cyan-soft": "bg-brand-500/10 text-brand-300 border-brand-500/25",
   purple: "bg-purple/15 text-purple border-purple/25",
   neutral: "bg-surface-high text-on-surface-variant border-outline-variant",
 };

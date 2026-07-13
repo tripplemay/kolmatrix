@@ -23,7 +23,7 @@ interface ActivityFeedItemProps {
 }
 
 const ACCENT_BORDER: Record<Accent, string> = {
-  cyan: "border-cyan",
+  cyan: "border-brand-500",
   purple: "border-purple",
   secondary: "border-on-surface-variant",
 };

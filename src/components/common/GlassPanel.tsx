@@ -44,12 +44,12 @@ export function GlassPanel({
   return (
     <div
       className={cn(
-        "glass-panel",
+        "bg-navy-800 shadow-hz-card",
         ROUNDED_MAP[rounded],
         PADDING_MAP[padding],
         "border",
-        tone === "cyan" ? "border-cyan/20" : "border-on-surface/5",
-        glow && "ambient-glow",
+        tone === "cyan" ? "border-brand-500/20" : "border-on-surface/5",
+        glow && "shadow-hz-card",
         className
       )}
       {...rest}

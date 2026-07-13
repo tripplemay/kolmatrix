@@ -47,7 +47,7 @@ export function CompetitorCpiCard() {
     <GlassPanel padding="md" rounded="2xl" tone="neutral" data-testid="dashboard-cpi-card">
       <div className="mb-3 flex items-start justify-between gap-2">
         <SectionHeader title={t("title")} as="h3" />
-        <span className="border-cyan/30 bg-cyan/10 text-cyan shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase">
+        <span className="border-brand-500/30 bg-brand-500/10 text-brand-400 shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase">
           {t("sampleBadge")}
         </span>
       </div>
@@ -81,16 +81,16 @@ export function CompetitorCpiCard() {
             }}
             contentStyle={{
               background: "rgba(11, 19, 38, 0.95)",
-              border: "1px solid rgba(0, 229, 255, 0.2)",
+              border: "1px solid rgba(66, 42, 251, 0.2)",
               borderRadius: 8,
               fontSize: 12,
             }}
-            cursor={{ fill: "rgba(0, 229, 255, 0.06)" }}
+            cursor={{ fill: "rgba(66, 42, 251, 0.06)" }}
           />
           <Bar dataKey="cpi" radius={[0, 3, 3, 0]}>
             {chartData.map((entry, i) =>
               (entry as { isMe?: boolean }).isMe ? (
-                <Cell key={i} fill="var(--color-cyan)" />
+                <Cell key={i} fill="var(--color-brand-500)" />
               ) : (
                 <Cell key={i} fill="rgba(186, 201, 204, 0.25)" />
               )

@@ -11,7 +11,7 @@ describe("StatusBadge", () => {
 
   it("picks the cyan tone for campaign active", () => {
     render(<StatusBadge domain="campaign" status="active" label="Active" />);
-    expect(screen.getByTestId("status-badge").className).toContain("text-cyan");
+    expect(screen.getByTestId("status-badge").className).toContain("text-brand-400");
   });
 
   it("picks the emerald tone for campaign completed", () => {

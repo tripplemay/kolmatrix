@@ -43,7 +43,7 @@ export function RingProgress({
         width={size}
         height={size}
         viewBox={`0 0 ${size} ${size}`}
-        className="-rotate-90 text-cyan"
+        className="-rotate-90 text-brand-400"
       >
         <circle
           cx={center}
@@ -70,7 +70,7 @@ export function RingProgress({
       {label ? (
         <span
           aria-hidden
-          className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-cyan tabular-nums"
+          className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-brand-400 tabular-nums"
         >
           {label}
         </span>

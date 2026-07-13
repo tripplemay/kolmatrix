@@ -54,7 +54,7 @@ export function Sparkline({
   return (
     <svg
       viewBox={`0 0 ${width} ${height}`}
-      className={cn("text-cyan", className)}
+      className={cn("text-brand-400", className)}
       role="img"
       aria-label={label ?? "Sparkline trend"}
     >

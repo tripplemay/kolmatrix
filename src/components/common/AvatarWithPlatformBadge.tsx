@@ -69,12 +69,12 @@ export function AvatarWithPlatformBadge({
     <div
       className={cn(
         "relative inline-flex shrink-0 overflow-visible rounded-full border-2 border-transparent transition-colors",
-        hoverBorder && "group-hover:border-cyan hover:border-cyan",
+        hoverBorder && "group-hover:border-brand-500 hover:border-brand-500",
         AVATAR_SIZE[size],
         className
       )}
     >
-      <div className="bg-surface-high relative h-full w-full overflow-hidden rounded-full">
+      <div className="bg-navy-700 relative h-full w-full overflow-hidden rounded-full">
         {src ? (
           <Image
             src={src}
@@ -84,8 +84,8 @@ export function AvatarWithPlatformBadge({
             className="object-cover"
           />
         ) : (
-          <div className="gradient-cta flex h-full w-full items-center justify-center">
-            <span className="text-navy-base text-sm font-bold">{initial}</span>
+          <div className="bg-brand-500 flex h-full w-full items-center justify-center">
+            <span className="text-sm font-bold text-white">{initial}</span>
           </div>
         )}
       </div>

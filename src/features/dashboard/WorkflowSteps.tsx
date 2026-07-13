@@ -40,7 +40,7 @@ export function WorkflowSteps({
 
   return (
     <GlassPanel padding="md" rounded="2xl" tone="neutral" data-testid="dashboard-workflow-steps">
-      <h3 className="text-on-surface-variant mb-4 text-sm font-semibold tracking-widest uppercase">
+      <h3 className="text-on-surface-variant font-poppins mb-4 text-sm font-semibold tracking-widest uppercase">
         {t("title")}
       </h3>
       {/* overflow-x-auto keeps the row scrollable on small screens */}
@@ -52,21 +52,21 @@ export function WorkflowSteps({
               <div className="flex w-full items-center">
                 {/* left connector */}
                 <div
-                  className={`h-[2px] flex-1 ${i === 0 ? "invisible" : step.done ? "bg-cyan/60" : "bg-white/10"}`}
+                  className={`h-[2px] flex-1 ${i === 0 ? "invisible" : step.done ? "bg-brand-500/60" : "bg-white/10"}`}
                 />
                 {/* circle */}
                 <div
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                     step.done
-                      ? "border-cyan bg-cyan/15 text-cyan"
-                      : "bg-surface-low text-on-surface-variant border-white/20"
+                      ? "border-brand-500 bg-brand-500/15 text-brand-400"
+                      : "bg-navy-700 text-on-surface-variant border-white/20"
                   }`}
                 >
                   <span className="material-symbols-outlined text-[18px]">{step.icon}</span>
                 </div>
                 {/* right connector */}
                 <div
-                  className={`h-[2px] flex-1 ${i === steps.length - 1 ? "invisible" : step.done ? "bg-cyan/60" : "bg-white/10"}`}
+                  className={`h-[2px] flex-1 ${i === steps.length - 1 ? "invisible" : step.done ? "bg-brand-500/60" : "bg-white/10"}`}
                 />
               </div>
               {/* label */}

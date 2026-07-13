@@ -12,7 +12,7 @@ describe("TagChip", () => {
   it("applies tone-specific classes (cyan)", () => {
     const { container } = render(<TagChip label="AI" tone="cyan" />);
     const chip = container.firstElementChild as HTMLElement;
-    expect(chip.className).toContain("text-cyan");
+    expect(chip.className).toContain("text-brand-400");
   });
 
   it("forwards an optional icon before the label", () => {
