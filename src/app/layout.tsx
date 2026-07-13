@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, DM_Sans, Poppins } from "next/font/google";
 import localFont from "next/font/local";
 
 import "../styles/globals.css";
@@ -18,6 +18,25 @@ const inter = Inter({
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-jetbrains-mono",
+  display: "swap",
+});
+
+// BL-HORIZON-FE-PILOT F001 — Horizon UI design language (ported from Horizon
+// Tailwind React NextJS Pro 3.0.0). DM Sans drives app body copy, Poppins
+// drives display headings. Exposed as `--font-dm-sans-raw` /
+// `--font-poppins-raw` and wired to the `font-dm` / `font-poppins` Tailwind v4
+// utilities via @theme tokens in globals.css. Applied on the app shell
+// (AppShellLayout) so landing / auth surfaces stay on Inter (out of pilot scope).
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans-raw",
+  display: "swap",
+});
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-poppins-raw",
   display: "swap",
 });
 
@@ -75,7 +94,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${inter.variable} ${materialSymbols.variable} ${geistSans.variable} ${geistMono.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${materialSymbols.variable} ${geistSans.variable} ${geistMono.variable} ${jetbrainsMono.variable} ${dmSans.variable} ${poppins.variable} h-full antialiased`}
     >
       <body className="bg-background text-foreground flex min-h-full flex-col font-sans">
         {children}

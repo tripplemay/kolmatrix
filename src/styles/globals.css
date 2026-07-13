@@ -157,6 +157,82 @@
 }
 
 /* ============================================================
+   BL-HORIZON-FE-PILOT F001 — Horizon UI design tokens (ADDITIVE)
+   ------------------------------------------------------------
+   Ported from Horizon Tailwind React NextJS Pro 3.0.0
+   (tailwind.config.js). Layered ON TOP of Neural Velocity — the
+   existing app/landing tokens (text-cyan, bg-surface, font-sans …)
+   stay 100% valid and untouched (D1 additive策略 = 可回滚).
+
+   Pilot surfaces (App Shell + /insight dashboard) consume the
+   `brand-*` / `navy-*` / `hz-*` / `font-dm` / `font-poppins` /
+   `shadow-hz-card` tokens below. The remaining ~20 pages keep
+   consuming Neural Velocity tokens until the full-rollout batch.
+
+   KOLMatrix is dark-first (color-scheme: dark, no light mode), so
+   this is Horizon's DARK variant: navy-900 canvas / navy-800 cards /
+   purple brand accents / DM Sans body / Poppins display / 20px radius
+   / soft floating shadow.
+
+   Mapping doc: design-draft/horizon-tokens.md
+   ============================================================ */
+@theme {
+  /* Horizon brand — signature purple ramp (#422AFB) */
+  --color-brand-50: #efebff;
+  --color-brand-100: #e9e3ff;
+  --color-brand-200: #c0b8fe;
+  --color-brand-300: #a195fd;
+  --color-brand-400: #7551ff;
+  --color-brand-500: #422afb;
+  --color-brand-600: #3311db;
+  --color-brand-700: #2111a5;
+  --color-brand-800: #190793;
+  --color-brand-900: #11047a;
+  --color-brand-linear: #868cff; /* Horizon brandLinear — gradient partner */
+
+  /* Horizon navy surface ramp — dark-mode canvas / cards / elevation */
+  --color-navy-50: #d0dcfb;
+  --color-navy-100: #aac0fe;
+  --color-navy-200: #a3b9f8;
+  --color-navy-300: #728fea;
+  --color-navy-400: #3652ba;
+  --color-navy-500: #1b3bbb;
+  --color-navy-600: #24388a;
+  --color-navy-700: #1b254b; /* elevated card / hover surface */
+  --color-navy-800: #111c44; /* card surface */
+  --color-navy-900: #0b1437; /* app canvas */
+
+  /* Horizon neutral text ramp on navy (blue-grays) */
+  --color-hz-gray-400: #b0bbd5;
+  --color-hz-gray-500: #b5bed9;
+  --color-hz-gray-600: #a3aed0; /* muted body text */
+  --color-hz-gray-700: #707eae; /* secondary label */
+  --color-hz-light-primary: #f4f7fe;
+
+  /* Horizon soft floating-card shadow color (rgba composes on any bg) */
+  --color-hz-shadow: rgba(112, 144, 176, 0.08);
+
+  /* Horizon signature card radius (20px) */
+  --radius-hz-card: 20px;
+
+  /* Horizon typography — DM Sans body / Poppins display.
+     next/font wires --font-dm-sans-raw / --font-poppins-raw in
+     src/app/layout.tsx; these expose the `font-dm` / `font-poppins`
+     Tailwind v4 utilities. */
+  --font-dm: var(--font-dm-sans-raw), ui-sans-serif, system-ui, -apple-system,
+    "PingFang SC", "Source Han Sans", sans-serif;
+  --font-poppins: var(--font-poppins-raw), ui-sans-serif, system-ui,
+    -apple-system, "PingFang SC", "Source Han Sans", sans-serif;
+}
+
+/* Horizon signature floating-card shadow utility (soft, subtle on dark).
+   Faithful to Horizon `shadow-3xl` (14px 17px 40px 4px) + `shadow-500`
+   color. Consumed by F002/F003 pilot cards. */
+@utility shadow-hz-card {
+  box-shadow: 14px 17px 40px 4px var(--color-hz-shadow);
+}
+
+/* ============================================================
    shadcn/ui compatibility bridge
    Map shadcn semantic vars onto Neural Velocity tokens so that
    existing shadcn primitives (button, etc.) render in brand palette.

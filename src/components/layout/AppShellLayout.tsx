@@ -37,7 +37,11 @@ export function AppShellLayout({
   onSignOut,
 }: AppShellLayoutProps) {
   return (
-    <div className="bg-navy-base min-h-screen">
+    // BL-HORIZON-FE-PILOT F001 — `font-dm` switches the entire app subtree to
+    // DM Sans (Horizon body font). Scoped here (not on <body>) so landing /
+    // auth surfaces stay on Inter (out of pilot scope). F002 restyles the
+    // shell colors + applies Poppins to headings.
+    <div className="bg-navy-base min-h-screen font-dm">
       <Sidebar user={user} />
       <div className="ml-[240px] flex min-h-screen flex-col">
         <Topbar

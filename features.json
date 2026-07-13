@@ -4,7 +4,8 @@
     "title": "Horizon 设计 token + 字体移植进 Tailwind v4 @theme（additive 基座）",
     "executor": "generator",
     "priority": "high",
-    "status": "pending",
+    "status": "done",
+    "completed_note": "2026-07-14 Generator: 4 处改动。layout.tsx 加 DM_Sans+Poppins(next/font/google, --font-dm-sans-raw/--font-poppins-raw 挂 <html>)。globals.css additive @theme(不删任何 NV token, D1): brand 紫 ramp 50-900(500=#422afb)+brand-linear / navy 暗色 ramp 50-900(700 卡内层/800 卡面/900 canvas) / hz-gray 400-700 蓝灰文字 / --color-hz-shadow rgba(112,144,176,.08) / --radius-hz-card 20px / --font-dm+--font-poppins; @utility shadow-hz-card(14px 17px 40px 4px 招牌柔和阴影)。AppShellLayout 根 div 加 font-dm(app 子树全局 DM Sans; landing/auth 不在其下保 Inter)。design-draft/horizon-tokens.md 映射文档(Horizon config→@theme + F002/F003 消费指引)。验证: tsc=0 + build PASS(standalone server.js+BUILD_ID) + lint 0err(3 既有 warning) + AppShellLayout 单测 2/2。",
     "source": "spec §4 D1/D2, §6 F001；用户拍板 2（整体切 Horizon 紫色美学）",
     "acceptance": [
       "在 src/styles/globals.css @theme 中 additive 新增 Horizon token（不删现有 Neural Velocity token）：紫色 brand 阶 --color-brand-50..900（含 #4318FF/#422AFB）、navy 表面调和、20px 圆角 token、柔和悬浮阴影（shadow-3xl 等价，用 @utility 或 token 实现）",
