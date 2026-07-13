@@ -42,8 +42,8 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "deferred",
-    "deferred_note": "2026-07-12 用户决策: 推迟到 KOLMatrix 割接后处理. 诊断: apify-kol-service-postgres-1 Exited 3 周前→service crash-loop, apify 实际已坏 3 周(KOL 日更本就停滞, 非迁移致). 不阻塞割接(app 无它也起, KOLMatrix .env APIFY_KOL_BASE_URL 暂留旧 localhost:3004 容器内不可达=采集停, 与现状同). ⚠️必须在 P6 旧机退役前完成(否则 apify 永久消失). 届时: deploysvr 重建 apify 栈(含自带 pg)+接 shared docker network+改 KOLMatrix APIFY_KOL_BASE_URL 为容器名.",
+    "status": "done",
+    "completed_note": "2026-07-13 apify 随迁完成(用户安排). 诊断根因: apify-kol-service-postgres-1 Exited 3 周前(疑 VM OOM/reset)→service EAI_AGAIN getaddrinfo postgres→crash-loop. 迁移: 旧机 docker save apify-kol-service-service:latest(301MB)→docker load deploysvr(避 build+fork hot-fix, H5); pg_dump apify_kol(7.8M, 全表 0 行但含 public 6 app 表+drizzle+pgboss schema, 服务自身 migrate 建不出 schema=fork 镜像缺陷, 故 restore 拿 schema); deploysvr 新写 compose(build→image + restart:unless-stopped 根治复发 + kol-shared external 网络+alias apify-kol + loopback 3004); fresh pg + restore schema. 接线: KOLMatrix app+migrate 加 kol-shared, .env APIFY_KOL_BASE_URL localhost:3004→http://apify-kol:3003(运行中 app docker network connect 活体接入零重启). 验证: apify /health 200; app→apify-kol 200; cron/migrate→apify-kol 200. kol-sync 无未见即删逻辑(refresh/upsert), 空 apify 安全 no-op. ⚠️apify 现空(无 schedules/数据, 3周前就空)→需爬虫团队重加 schedules 才恢复采集(其域, 不阻塞); app admin-preview 待下次 deploy 重启才用新 env(cron/daily-sync 已用).",
     "source": "spec §4 D9, §5 F-MIG-03；用户决策 B",
     "acceptance": [
       "诊断并修复旧机 apify-kol-service 现有 crash-loop（Restarting）根因",

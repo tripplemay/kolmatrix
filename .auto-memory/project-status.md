@@ -3,10 +3,11 @@ name: project-status
 description: 项目当前状态快照（覆盖写，≤30 行）— 当前批次、计划、决策、遗留问题
 type: project
 ---
-## 🚧 BL-PROD-MIGRATE-DEPLOYSVR BUILDING (3/5) — 生产迁移 KOLMatrix→deploysvr 容器化 · ✅割接完成·P5观察期
+## 🚧 BL-PROD-MIGRATE-DEPLOYSVR BUILDING (4/5) — 生产迁移 KOLMatrix→deploysvr 容器化 · ✅割接+apify随迁完成·P5观察期
 - ✅ **割接完成 2026-07-13**: https://kol.guangai.ai 现由 deploysvr(194.238.26.173) 容器化栈服务(app+pgvector:pg17+redis, GIT_SHA 25e1b40). Cloudflare A 已切(proxied=False/TTL60), TLS 有效, 5 locale 200, 12 表逐行 parity 零丢失(kol 10059/tenant 2 等). GitHub secrets 已更(PROD_HOST=194.238.26.173/root). cron 装(CRON_TZ=UTC). ⚠️停机 ~32-37min 超预估(根因 终态 dump 经本机管道慢, 教训入 runbook)
 - ✅ F-MIG-01/02/04 done: 容器化基座+CI(GHCR build-push+deploy 改写)+割接实操. 途中修 3 bug(Dockerfile build-time DATABASE_URL/migrate db execute --url/nginx kolquest 证书). runbook 实测记录已回填 docs/ops/deploysvr-kol-migration-runbook.md
-- ⏭️ **剩**: F-MIG-05 Codex 验收(可启, 验 P0-P4) / F-MIG-03 apify 随迁(**deferred**, 诊断:其 pg 挂 3 周 service crash-loop, **P6 旧机退役前必做**) / P6 旧机退役(用户验收后)
+- ✅ **F-MIG-03 apify 随迁 done**(2026-07-13): docker save|load 镜像+pg_dump 恢复 schema+新 compose(restart:unless-stopped 根治原 crash-loop+kol-shared 网络 alias apify-kol). KOLMatrix app/migrate 均 200 到达 apify-kol:3003. ⚠️apify 空需爬虫团队重加 schedules(其域). 位置 deploysvr /opt/apps/apify-kol-service
+- ⏭️ **剩**: F-MIG-05 Codex 验收(可启) / P6 旧机退役(用户验收后, aigc+kolmatrix+apify 皆已迁→可整机退役)
 - 🔴 **回滚点**: 旧机 34.180.93.185 kolmatrix+staging STOPPED+DB 冻结, 旧 nginx active. 回滚=CF A 改回+PROD_HOST 改回+旧机 pm2 start. 用户验收(含中国访问)前不进 P6
 - ⚠️ 遗留: environment.md 内网 URL 记忆待校正为公网; kolquest.com 301 待处理(CF token 不覆盖其 zone→用 CF Redirect Rule 或换 token); APIFY_KOL_BASE_URL 待 F-MIG-03 改容器名
 ## ✅ BL-117-landing-positioning-rebalance DONE (4/4, F004 Codex 用户手工授权免除 2026-07-12) — 落地页定位再平衡
