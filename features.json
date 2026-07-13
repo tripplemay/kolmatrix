@@ -77,7 +77,8 @@
     "executor": "codex",
     "priority": "high",
     "estimated_hours": 1.5,
-    "status": "pending",
+    "status": "waived",
+    "completed_note": "2026-07-13 用户手工授权免除 Codex 验收，直接置批次 done（同 BL-114/BL-115/BL-117 Codex feature 免除先例）。未经独立 L1+L2+signoff。软验收依据: F-MIG-04 P3 割接时 Generator 已做 12 表逐行 parity 一致(零丢失)+公网 https://kol.guangai.ai 200 healthy+5 locale+TLS 有效+cron kpi-snapshot 实测 2/2+app→apify-kol:3003 200(F-MIG-03)。soft-watch(未独立复验): RLS 多租户隔离(kolmatrix_app role)/回滚演练/公网 aigcgateway+Resend 端到端邮件链路。旧机 STOPPED+DB 冻结作回滚点仍在。",
     "source": "spec §5 F-MIG-05, §6 验收标准",
     "acceptance": [
       "前置：F-MIG-01~04 完成、新栈已割接",

@@ -327,3 +327,27 @@ BL-086 诊断 + spec 假设"充值前把 2535 id POST /admin/seeds 入队 → �
 **建议写入：** `framework/harness/deploy-patterns.md`（新增「staging build 不得撑垮共享 prod VM」§：防孤儿 + 禁并发探测 + 错峰 + gcloud 备用 + 中断后 .next 清理 crash-loop 修复）。
 
 **状态：** 待确认
+
+---
+
+## [2026-07-13] Claude CLI (Kimi) — 来源：BL-PROD-MIGRATE-DEPLOYSVR F-MIG-04 P3 生产割接停机超预估
+
+**类型：** 新坑（迁移 ops）+ runbook 修订
+
+**内容：** F-MIG-04 P3 数据终态同步阶段，实际停机 ~32-37min，**远超预估**（原估割接窗口 <2min，依据是旧库仅 432MB）。根因：终态 `pg_dump kolmatrix`（停旧写后）走了「旧机 → 本机 Mac → deploysvr」的管道中转（本机做 dump-source 与 restore-target 的桥），**受本机上行带宽瓶颈**拖慢，而非 DB 体积。教训：跨机数据迁移的终态同步，dump/restore 应**两台服务器直连**（deploysvr 直接 `pg_dump -h 旧机` 或旧机 `pg_dump | ssh deploysvr psql`），绝不让本地开发机做中转管道 —— 本机上行带宽通常是最窄的一段，把 432MB 的 <2min 传输放大成半小时级停机。停机窗口估算须基于**实际传输路径的最窄带宽段**，而非纯数据体积。已回填 runbook 实测记录。
+
+**建议写入：** `framework/harness/deploy-patterns.md` §迁移/割接 —— 终态数据同步两服务器直连、禁本机中转管道 + 停机窗口按最窄带宽段估算（非数据体积）。
+
+**状态：** 待确认
+
+---
+
+## [2026-07-13] Claude CLI (Kimi) — 来源：BL-PROD-MIGRATE-DEPLOYSVR F-MIG-03 apify fork 服务自身 migrate 建不出 schema
+
+**类型：** 新坑（fork 迁移）+ 诊断洞察
+
+**内容：** F-MIG-03 迁移 apify-kol-service（fork 服务）到 deploysvr 时，原计划让服务容器起来后自身 `migrate` 建 schema（drizzle + pgboss + public 6 张 app 表），但**服务自带的 migrate 建不出完整 schema = fork 镜像缺陷**。被迫改走 `pg_dump apify_kol`（7.8M，全表 0 行但含完整 schema 定义）→ deploysvr fresh pg restore schema 的路子拿到表结构。另一根因洞察：原 crash-loop 是 `apify-kol-service-postgres-1` 三周前 Exited（疑 VM OOM/reset）→ service `EAI_AGAIN getaddrinfo postgres` → crash-loop；新 compose 加 `restart:unless-stopped` 根治复发。教训：迁移**fork/第三方服务**时，别假设「服务自身 migrate 能重建 schema」—— fork 可能缺 migration 文件或 migrate 逻辑不全，迁移前应先 `pg_dump --schema-only` 拿到确定性 schema 作为 fallback，而非依赖服务首启自建。
+
+**建议写入：** `framework/harness/deploy-patterns.md` §fork 迁移 —— fork/第三方服务迁移别依赖服务自身 migrate 建 schema（可能缺失），先 pg_dump --schema-only 拿确定性 schema fallback；+ 与 §3.5 路径 B fork sync 模板交叉引用。
+
+**状态：** 待确认
