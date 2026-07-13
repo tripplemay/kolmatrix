@@ -42,7 +42,8 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 3.0,
-    "status": "pending",
+    "status": "deferred",
+    "deferred_note": "2026-07-12 用户决策: 推迟到 KOLMatrix 割接后处理. 诊断: apify-kol-service-postgres-1 Exited 3 周前→service crash-loop, apify 实际已坏 3 周(KOL 日更本就停滞, 非迁移致). 不阻塞割接(app 无它也起, KOLMatrix .env APIFY_KOL_BASE_URL 暂留旧 localhost:3004 容器内不可达=采集停, 与现状同). ⚠️必须在 P6 旧机退役前完成(否则 apify 永久消失). 届时: deploysvr 重建 apify 栈(含自带 pg)+接 shared docker network+改 KOLMatrix APIFY_KOL_BASE_URL 为容器名.",
     "source": "spec §4 D9, §5 F-MIG-03；用户决策 B",
     "acceptance": [
       "诊断并修复旧机 apify-kol-service 现有 crash-loop（Restarting）根因",
@@ -59,8 +60,8 @@
     "executor": "generator",
     "priority": "high",
     "estimated_hours": 4.0,
-    "status": "pending",
-    "progress_note": "2026-07-12 runbook 草稿完成 @ docs/ops/deploysvr-kol-migration-runbook.md（P0-P6 + 3 不可逆门禁 + 回滚 + parity 校验，对标 aigc 已验证剧本）。P0-P5 受监督实操待用户 go/no-go（前置：F-MIG-03 apify 随迁 + P0 secrets 就位）。",
+    "status": "done",
+    "progress_note": "2026-07-13 P0-P4 割接完成(用户 go). P0: clone+.env 构造. P2: 起栈+灌快照演练+冒烟全绿, 捕获并修 2 bug(Dockerfile build-time DATABASE_URL / migrate db execute --url). P3(🔴 用户 go): 停旧机(23:26:17Z)+终态 pg_dump+clean restore+12 表逐行 parity 一致(零丢失, migrate 应用 pending bl115 lead 表 41→42). P4(🔴 用户 go): certbot 预签 kol.guangai.ai(kolquest 推迟-CF token 不覆盖其 zone)+装 nginx vhost+Cloudflare A 34.180.93.185→194.238.26.173(proxied=False/TTL60)+更新 GitHub secrets+装 cron(CRON_TZ=UTC, kpi-snapshot 实测 2/2). 公网 https://kol.guangai.ai 200 healthy+5 locale+TLS 有效. ⚠️停机 ~32-37min 超预估(根因 终态 dump 经本机管道慢, 教训入 runbook). runbook 实测记录已回填. P5 观察期中(旧机 STOPPED+DB 冻结作回滚), P6 旧机退役待用户验收.",
     "source": "spec §4 D7/D10/D11, §5 F-MIG-04, §7 回滚；对标 aigc deploysvr-migration-runbook.md",
     "acceptance": [
       "新增 docs/ops/deploysvr-kol-migration-runbook.md：P0 准备(建 /opt/apps/kolmatrix + .env 600 + certbot DNS-01 复用) / P2 起新栈(compose up + 灌旧库快照演练 + loopback 冒烟 /api/health+登录+AI定制+KOL流程) / P3 数据终态同步(停旧写→pg_dump kolmatrix→clean restore→逐表行数 parity；Redis 弃旧起新) / P4 边缘割接(Certbot DNS-01 预签 kol+kolquest→装 nginx→Cloudflare A 切→更新 GitHub secrets) / P5 观察期+回滚就绪 / P6 退役门禁(旧 VM 整机退役)",

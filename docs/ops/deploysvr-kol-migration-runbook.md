@@ -186,15 +186,17 @@
 
 ---
 
-## 割接实测记录（执行时回填）
+## 割接实测记录（2026-07-13 ✅ P3+P4 完成，观察期中）
 
 > 对标 aigc runbook 的 "Live state / Verified parity / Rollback controls"。
 
-- **Last verified:** _(待填)_
-- **Live state:** _(新机容器状态 / IMAGE_TAG / 健康)_
-- **Public 验证:** _(https://kol.guangai.ai 证书 + 登录 + 5 locale + kolquest 301)_
-- **Verified parity:** _(逐表行数对比结果)_
-- **DNS:** _(Cloudflare A 记录 / TTL / proxied)_
-- **Edge / TLS:** _(certbot 证书到期 / nginx vhost)_
-- **CI/CD:** _(GitHub secrets 更新 / deploy workflow 首跑)_
-- **Rollback controls:** _(旧机 STOPPED + DB 冻结 / PROD_HOST 旧值 / 镜像回滚 tag)_
+- **Last verified:** 2026-07-13 00:05Z（P3 数据终态同步 + P4 DNS 割接一次性完成）。
+- **停机窗口:** 旧机停 2026-07-12 23:26:17Z → DNS 切 ~23:58Z + 传播 ~5min ≈ **恢复 ~00:03Z，约 32-37min**。⚠️ 远超预估 3-6min，根因：终态 pg_dump 走 `ssh 旧机 | ssh 新机` 管道**经本机 Mac 中转**，受本机上行带宽瓶颈（Tokyo→本机→Europe，压缩 dump ~100-200MB 在慢上行下 ~28min）。**教训：大库终态 dump 应旧机落文件后 scp 旧→新直传（两端云机走快路径），或用 --compress + 直连路径，勿经本机管道。**
+- **Live state:** 新机 `194.238.26.173` 三容器全 healthy —— app(`ghcr.io/tripplemay/kolmatrix/app:latest`, GIT_SHA=25e1b40, HOSTNAME=0.0.0.0, 127.0.0.1:3001) / postgres(pgvector:pg17) / redis:7；`docker compose -f docker-compose.prod.yml` 编排；IMAGE_TAG=latest。
+- **Public 验证:** `https://kol.guangai.ai/api/health` 200 healthy(db 33ms/redis 4ms)；LE 证书 CN=kol.guangai.ai 到期 2026-10-10；5 locale(/en /zh /ja /ko /es)+/login 全 200；7475 活跃 KOL。**kolquest.com 推迟**(CF token 不覆盖其 zone，DNS 仍指旧机正常 301)。
+- **Verified parity:** 12 关键表逐行一致（tenant 2/user 2/kol 10059/campaign 6/kol_campaign 31/product 5/asset 47/email_log 315/audit_log 56106/event_log 13914/weekly_report 1/kpi_daily_snapshot 60），新库=旧机冻结态，零丢失。migrate 应用 pending bl115 lead 表(41→42)。
+- **DNS:** Cloudflare `kol.guangai.ai` A `34.180.93.185`→`194.238.26.173`，proxied=False，TTL 60（zone `ca43cb02…`，record id `8827aba1…`）。
+- **Edge / TLS:** Certbot DNS-01（CF token，`/root/.secrets/cloudflare.ini`）；vhost `/etc/nginx/sites-enabled/kolmatrix.conf`（公网 80/443，与 aigc/grandtianfu/invoce 共存）；cron `/etc/cron.d/kolmatrix`(CRON_TZ=UTC，kpi-snapshot 实测 2/2 tenant 成功)。
+- **CI/CD:** GitHub secrets 已更 `PROD_HOST=194.238.26.173 / PROD_USER=root / PROD_SSH_KEY=deploysvr 私钥`；deploy-prod workflow 未实跑（首次 deploy 或 Codex 验证）。
+- **Rollback controls:** ①流量回滚：Cloudflare `kol` A 改回 `34.180.93.185` + `gh secret set PROD_HOST -b 34.180.93.185` + 旧机 `pm2 start kolmatrix`。②镜像回滚：`IMAGE_TAG=<good sha> docker compose up -d`。③旧机 kolmatrix+staging **STOPPED 冻结**、DB 未写（P3 后），旧 nginx 仍 active。
+- **⚠️ 观察期门禁:** 用户明确验收前不进 P6（旧机 KOLMatrix 下线 + 旧 VM 整机退役）。**apify-kol-service 随迁(F-MIG-03)推迟**(已坏 3 周)，须在 P6 旧机退役前完成。
