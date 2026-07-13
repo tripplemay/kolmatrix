@@ -29,7 +29,7 @@ export function TopbarSearch({ placeholder, className }: TopbarSearchProps) {
   return (
     <label
       className={cn(
-        "bg-surface-highest focus-within:ring-cyan group flex h-10 w-full items-center gap-2.5 rounded-full px-4 transition-shadow focus-within:shadow-[0_0_0_4px_rgba(0,229,255,0.20)] focus-within:ring-1",
+        "bg-navy-700 focus-within:ring-brand-500 group flex h-10 w-full items-center gap-2.5 rounded-full px-4 transition-shadow focus-within:shadow-[0_0_0_4px_rgba(66,42,251,0.22)] focus-within:ring-1",
         className
       )}
     >

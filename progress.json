@@ -2,11 +2,11 @@
   "status": "building",
   "user_goal": "BL-HORIZON-FE-PILOT 前端 Horizon 视觉焕新（试点批次）— 用户想用付费模板 Horizon UI Tailwind React NextJS Pro 3.0.0 重构 KOLMatrix 前端。Planner 可行性结论: 模板无法直接套入替换底座(框架/路由/样式引擎 Tailwind v3 vs v4/i18n/数据层几乎每层不兼容), 可行路径=保留 App Router+RSC+5 语言 i18n+多租户 RLS 底座, 把 Horizon 紫色美学重实现进现有 shadcn+Tailwind v4 栈。考虑 ~165 组件+339 处 i18n+~30 基线体量, 本批为试点: Horizon 美学落到 App Shell(全局共享)+ 旗舰页 /insight dashboard, 跑通视觉+i18n+水合+基线全链路作为是否全量铺开的决策点。用户 4 拍板: 试点先行移植/整体切 Horizon 紫色美学/旗舰页 /insight/ADR-003 重定基线继续生效。6 features: F001 token+字体译进@theme(additive) / F002 App Shell 化 / F003 /insight dashboard 化 / F004 ADR-021+design-system.md / F005 基线重生+i18n 回归 / F006 evaluator 试点验收+铺开建议。",
   "total_features": 6,
-  "completed_features": 1,
+  "completed_features": 2,
   "fix_rounds": 0,
   "current_sprint": "BL-HORIZON-FE-PILOT",
   "dashboard_url": null,
-  "last_updated": "2026-07-14T03:31+0800",
+  "last_updated": "2026-07-14T03:53+0800",
   "reference_docs": [
     "docs/specs/BL-HORIZON-FE-PILOT-spec.md",
     "/Users/yixingzhou/project/db4rDjuaSCqaEFW9XcFo_horizon-tailwind-react-nextjs-pro-3.0.0/horizon-tailwind-react-nextjs-pro-main (Horizon 模板源 — 视觉设计语言参考)",
@@ -27,7 +27,7 @@
   "generator_handoff": "[2026-07-14 03:11 BJT Planner → Generator] BL-HORIZON-FE-PILOT planning 完成, 转 building。spec @ docs/specs/BL-HORIZON-FE-PILOT-spec.md。实施顺序(串行, 不并行 subagent/worktree — 共享 globals.css token 层+视觉/水合敏感): F001(token+字体译进 @theme, additive 不删 NV token, 是 F002/F003 前置) → F002(App Shell Sidebar/Topbar 化, 保 nav-config/i18n/水合) → F003(/insight dashboard 内容化, 保 RSC/数据/i18n) → F004(ADR-021+design-system.md, docs-only) → F005(基线重生 update-visual-baselines workflow + i18n 5 locale 回归)。⚠️硬约束: (D1)token additive 可回滚,别删 NV token; (D5)i18n 保真——restyle 组件必须保 useTranslations/getTranslations, 禁引入模板硬编码英文, 5 locale key 不断; (D6/铁律14)含交互 SSR 组件水合正确, console 无 React #418/#425 + onClick 生效; 保 recharts 不换 apexcharts; 保 Material Symbols 不换 react-icons; 不引入 Chakra/Emotion。旗舰页 /insight 挂 DashboardContent(await import)。字体配置 grep src/app/layout.tsx + [locale]/layout.tsx 定位实际 next/font 处再改。基线在 Linux runner 重生(非本机 macOS)。",
   "session_notes": {
     "Planner": "[2026-07-14 03:11 BJT Planner] 开新批次 BL-HORIZON-FE-PILOT。前置分析: 派 2 Explore agent 盘点两边——Horizon 模板(Next15/React19rc/Tailwind v3/纯 Tailwind 视觉层 183/215+7 Chakra 原语/apexcharts/react-icons/无 i18n/SPA routes.tsx) vs KOLMatrix(Next16 App Router/React19.2/Tailwind v4 @theme Neural Velocity/shadcn/recharts/next-intl 5 locale 339 调用/RLS/23 页 165 组件)。结论: 不能直接套模板(重写风险), 走设计语言移植。用户 4 拍板见 user_goal。核查实物: 旗舰页=/insight(DashboardContent await import)/字体全局 Inter(root layout)/ADR 最新 020→新 021/基线 workflow update-visual-baselines.yml 在/design-system.md 354 行。分支决议: 用户选合 harness-merge 分支到 main(已 ff 合并+推 main), 本批在 main 上做。",
-    "Generator": "[2026-07-14 03:31 BJT Generator] F001 done(1/6)。Horizon token+字体译进 @theme(additive)。关键实现决策: (1)KOLMatrix dark-first→采用 Horizon 暗色变体(navy-900 canvas/navy-800 卡/紫 brand); (2)additive 不删 NV token, 试点面消费 brand-*/navy-*/hz-*, 其余页保 NV(可回滚); (3)字体 app 级切换——font-dm 加在 AppShellLayout 根(app 子树), landing/auth 不在其下保 Inter(范围边界); (4)CI 洞察: push CI=lint+tsc+vitest+build, 视觉回归 Playwright 不在 push CI→F001-F004 视觉改动不红 push CI, 像素基线 F005 统一重生, 串行 CI 全程可绿。验证: tsc=0/build PASS/lint 0err/AppShellLayout 单测 2/2。下一步 F002 App Shell 视觉化(消费 F001 token, 保 nav-config/i18n/水合)。",
+    "Generator": "[2026-07-14 03:53 BJT Generator] F001+F002 done(2/6)。F001: Horizon token+字体译进 @theme(additive, dark-first→Horizon 暗色变体, 不删 NV token 可回滚, font-dm 加 AppShellLayout 根 app 子树)。F002: App Shell 10 组件纯 className Horizon 化(青→紫 brand / navy 表面 / Poppins 标题 / shadow-hz-card, grep 0 残留 cyan, shell 单测 45 PASS)。⚠️**CI 现实(修正认知)**: push CI **确实含 E2E(Playwright+visual) job**, 且 **main 在本批之前已长期红**——F-MIG-03(非视觉改动)那次 E2E 就红在 2 个正交功能测试(BL-105-campaign-edit AC1 + BL-107 soft-delete 404), 根因=CI 环境缺 REDIS_URL/RESEND_API_KEY/embedding→locator.fill Test ended(env-dependent, 非本批引入)。→ **本批 CI gate 策略**: 只 gate lint/tsc/vitest/build/integration 这些 job(F001 实测全绿); E2E job 本就红+我视觉漂移会叠加 visual 失败, F005 重生基线修 visual 部分, 但 BL-105/BL-107 正交 env 失败不归本批(P5.2, Evaluator F006 需注明)。验证 F002: tsc=0/build PASS/shell 单测 12 文件 45 测试 PASS。下一步 F003 旗舰页 /insight dashboard(DashboardContent+features/dashboard/* ~13 组件)Horizon 化。",
     "Reviewer": null,
     "johnsong_planner": null,
     "johnsong_generator": null

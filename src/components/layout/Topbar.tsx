@@ -17,7 +17,7 @@ interface TopbarProps {
 
 export function Topbar({ user, roleEnum, unreadNotifications, onSignOut }: TopbarProps) {
   return (
-    <header className="bg-navy-base/85 sticky top-0 z-40 flex h-16 items-center gap-6 px-8 shadow-[0_4px_20px_rgba(0,0,0,0.30)] backdrop-blur-[24px]">
+    <header className="bg-navy-900/80 sticky top-0 z-40 flex h-16 items-center gap-6 px-8 shadow-[0_4px_20px_rgba(0,0,0,0.30)] backdrop-blur-[24px]">
       <PageTitleClient />
       <div className="flex flex-1 justify-center">
         <TopbarSearch className="max-w-[480px]" />

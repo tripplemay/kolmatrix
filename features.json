@@ -20,7 +20,8 @@
     "title": "App Shell（Sidebar + Topbar）Horizon 化焕新",
     "executor": "generator",
     "priority": "high",
-    "status": "pending",
+    "status": "done",
+    "completed_note": "2026-07-14 Generator: App Shell 10 组件 Horizon 化(纯 className, 不动逻辑/结构/nav-config/i18n)。NV 青→Horizon 紫: SidebarNav active=bg-brand-500/15 text-brand-400 rounded-[14px] / SidebarLogo tile=bg-brand-500 + wordmark font-poppins text-white / SidebarUserChip+UserAvatarMenu avatar=bg-brand-500 / TopbarSearch focus=ring-brand-500 + rgba(66,42,251) / NotificationBell+LanguageSwitcher+UserAvatarMenu hover=text-brand-400。Horizon 表面: Sidebar bg-navy-800 / Topbar bg-navy-900/80 / search+chip+dropdown→navy-700/800。Poppins 标题: PageTitleClient + SidebarLogo font-poppins。logo tile 加 shadow-hz-card。grep 确认 0 残留 cyan/gradient-cta/ai-glow/ring-cyan/text-navy-base。验证: tsc=0 + build PASS(standalone server.js) + 全套 shell 单测 12 文件/45 测试 PASS。client 组件仅 className→水合不受影响(铁律 14 headless 留 F006)。",
     "source": "spec §4 D2/D5/D6, §6 F002",
     "acceptance": [
       "src/components/layout/ 全套（Sidebar/SidebarNav/SidebarLogo/SidebarUserChip/Topbar/TopbarActions/TopbarSearch）改用 F001 Horizon token 重塑视觉：紫色强调 + navy 表面 + 柔和阴影 + Horizon 侧栏/顶栏样式",

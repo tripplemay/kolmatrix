@@ -12,7 +12,7 @@ interface SidebarProps {
 
 export function Sidebar({ user }: SidebarProps) {
   return (
-    <aside className="bg-surface-lowest fixed top-0 left-0 z-50 flex h-screen w-[240px] flex-col px-6 py-6 shadow-[20px_0_20px_-15px_rgba(0,229,255,0.03)]">
+    <aside className="bg-navy-800 fixed top-0 left-0 z-50 flex h-screen w-[240px] flex-col px-6 py-6 shadow-[20px_0_40px_-24px_rgba(0,0,0,0.55)]">
       <SidebarLogo />
       <SidebarNav />
       <SidebarUserChip name={user.name} role={user.role} avatarUrl={user.avatarUrl} />

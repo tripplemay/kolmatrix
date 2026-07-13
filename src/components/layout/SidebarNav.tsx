@@ -38,8 +38,8 @@ export function SidebarNav() {
                 className={cn(
                   "flex items-center gap-3 px-3.5 py-2.5 text-[14px] font-medium transition-colors duration-200",
                   isActive
-                    ? "text-cyan border-cyan from-cyan/10 rounded-none border-l-2 bg-gradient-to-r to-transparent font-semibold"
-                    : "text-on-surface-variant hover:text-on-surface hover:bg-surface-high/50 rounded-[10px]"
+                    ? "bg-brand-500/15 text-brand-400 rounded-[14px] font-semibold"
+                    : "text-on-surface-variant hover:text-on-surface hover:bg-navy-700/50 rounded-[14px]"
                 )}
               >
                 <span className="material-symbols-outlined text-[20px]" aria-hidden>

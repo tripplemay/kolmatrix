@@ -25,7 +25,7 @@ export function PageTitleClient() {
   return (
     <h1
       data-testid="topbar-page-title"
-      className="text-on-surface shrink-0 text-[16px] font-semibold"
+      className="text-on-surface font-poppins shrink-0 text-[16px] font-semibold"
     >
       {title}
     </h1>

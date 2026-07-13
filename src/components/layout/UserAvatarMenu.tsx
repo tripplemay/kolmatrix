@@ -59,16 +59,16 @@ export function UserAvatarMenu({ user, role, onSignOut }: UserAvatarMenuProps) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="hover:bg-surface-high/60 inline-flex items-center gap-1.5 rounded-full p-1 transition-colors"
+        className="hover:bg-navy-700/60 inline-flex items-center gap-1.5 rounded-full p-1 transition-colors"
         aria-haspopup="menu"
         aria-expanded={open}
       >
-        <div className="bg-surface-high relative h-8 w-8 overflow-hidden rounded-full">
+        <div className="bg-navy-700 relative h-8 w-8 overflow-hidden rounded-full">
           {user.avatarUrl ? (
             <Image src={user.avatarUrl} alt="" fill sizes="32px" className="object-cover" />
           ) : (
-            <div className="gradient-cta flex h-full w-full items-center justify-center">
-              <span className="text-navy-base text-[13px] font-bold">{initial}</span>
+            <div className="bg-brand-500 flex h-full w-full items-center justify-center">
+              <span className="text-[13px] font-bold text-white">{initial}</span>
             </div>
           )}
         </div>
@@ -84,7 +84,7 @@ export function UserAvatarMenu({ user, role, onSignOut }: UserAvatarMenuProps) {
           role="menu"
           data-testid="user-avatar-menu"
           className={cn(
-            "bg-surface-low ring-cyan/15 ambient-glow absolute right-0 z-[60] mt-2 w-56 overflow-hidden rounded-[14px] p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.45)] ring-1"
+            "bg-navy-800 ring-brand-500/20 ambient-glow absolute right-0 z-[60] mt-2 w-56 overflow-hidden rounded-[14px] p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.45)] ring-1"
           )}
         >
           <div className="px-3 py-2">
@@ -101,7 +101,7 @@ export function UserAvatarMenu({ user, role, onSignOut }: UserAvatarMenuProps) {
             href={`/${locale}/settings`}
             role="menuitem"
             onClick={() => setOpen(false)}
-            className="text-on-surface-variant hover:text-cyan hover:bg-surface-high/60 flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2 text-left text-[13px] transition-colors"
+            className="text-on-surface-variant hover:text-brand-400 hover:bg-navy-700/60 flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2 text-left text-[13px] transition-colors"
           >
             <span className="material-symbols-outlined text-[18px]" aria-hidden>
               settings
@@ -118,7 +118,7 @@ export function UserAvatarMenu({ user, role, onSignOut }: UserAvatarMenuProps) {
                 href={`/${locale}/admin/apify-preview`}
                 role="menuitem"
                 onClick={() => setOpen(false)}
-                className="text-on-surface-variant hover:text-cyan hover:bg-surface-high/60 flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2 text-left text-[13px] transition-colors"
+                className="text-on-surface-variant hover:text-brand-400 hover:bg-navy-700/60 flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2 text-left text-[13px] transition-colors"
               >
                 <span className="material-symbols-outlined text-[18px]" aria-hidden>
                   admin_panel_settings
@@ -133,7 +133,7 @@ export function UserAvatarMenu({ user, role, onSignOut }: UserAvatarMenuProps) {
                 href={`/${locale}/admin/crawler-monitor`}
                 role="menuitem"
                 onClick={() => setOpen(false)}
-                className="text-on-surface-variant hover:text-cyan hover:bg-surface-high/60 flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2 text-left text-[13px] transition-colors"
+                className="text-on-surface-variant hover:text-brand-400 hover:bg-navy-700/60 flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2 text-left text-[13px] transition-colors"
               >
                 <span className="material-symbols-outlined text-[18px]" aria-hidden>
                   insights
@@ -148,7 +148,7 @@ export function UserAvatarMenu({ user, role, onSignOut }: UserAvatarMenuProps) {
               <button
                 type="submit"
                 role="menuitem"
-                className="text-on-surface-variant hover:text-cyan hover:bg-surface-high/60 flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2 text-left text-[13px] transition-colors"
+                className="text-on-surface-variant hover:text-brand-400 hover:bg-navy-700/60 flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2 text-left text-[13px] transition-colors"
               >
                 <span className="material-symbols-outlined text-[18px]" aria-hidden>
                   logout
@@ -168,7 +168,7 @@ function MenuItem({ icon, children }: { icon: string; children: React.ReactNode 
     <button
       type="button"
       role="menuitem"
-      className="text-on-surface-variant hover:text-cyan hover:bg-surface-high/60 flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2 text-left text-[13px] transition-colors"
+      className="text-on-surface-variant hover:text-brand-400 hover:bg-navy-700/60 flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2 text-left text-[13px] transition-colors"
     >
       <span className="material-symbols-outlined text-[18px]" aria-hidden>
         {icon}
