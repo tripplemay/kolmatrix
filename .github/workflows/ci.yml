@@ -13,6 +13,9 @@ on:
       - "framework/**"
       - "**/*.md"
       - "harness-rules.md"
+      - ".claude/**"
+      - "harness.json"
+      - "harness.lock"
   pull_request:
     branches: [main]
     paths-ignore:

@@ -2,7 +2,7 @@
 .agent-id
 
 # Claude Code runtime locks
-.claude/
+.claude/settings.local.json
 
 # Superpowers brainstorming session artifacts (本机临时, 不入 git)
 .superpowers/
